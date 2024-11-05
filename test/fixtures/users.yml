@@ -4,8 +4,75 @@
 # model remove the "{}" from the fixture names and add the columns immediately
 # below each fixture, per the syntax in the comments below
 #
-one: {}
-# column: value
-#
-two: {}
-# column: value
+hidalgo:
+  organisation: mairie_paris
+  nom: Hidalgo
+  prénom: Anne
+  email: anne.hidalgo@gmail.commmmm
+  rôle: manager
+  encrypted_password: "$2a$04$Sq0rBR0/IqysddNW29bcJO2S5vfi54HoOqWsnoEEBUDV9aajeJhUm"
+
+weil:
+  organisation: mairie_paris
+  nom: Weil
+  prénom: Ariel
+  email: ariel.weil@gmail.commmmm
+  rôle: adhérent
+
+berthout:
+  organisation: mairie_paris
+  nom: Berthout
+  prénom: Florence
+  email: florence.berthout@gmail.commmmm
+  rôle: adhérent
+
+électricité:
+  organisation: mairie_paris
+  nom: Team
+  prénom: Électricité
+  email: electricite@gmail.commmmm
+  rôle: équipe
+
+bond:
+  organisation: mairie_paris
+  nom: Bond
+  prénom: James
+  email: james.bond@gmail.commmmm
+  rôle: agent
+  encrypted_password: "$2a$04$Sq0rBR0/IqysddNW29bcJO2S5vfi54HoOqWsnoEEBUDV9aajeJhUm"
+
+martin:
+  organisation: mairie_paris
+  nom: Martin
+  prénom: Michel
+  email: michel.martin@gmail.commmmm
+  rôle: agent
+
+# Organisation marseille
+manager_marseille:
+  organisation: mairie_marseille
+  nom: Payan
+  prénom: Benoît
+  email: benoit.payan@gmail.commmmm
+  rôle: manager
+
+nettoyeur_marseille:
+  organisation: mairie_marseille
+  nom: Team
+  prénom: Nettoyage Marseille
+  email: nettoyage_marseille@gmail.commmmm
+  rôle: équipe
+
+agent_marseille:
+  organisation: mairie_marseille
+  nom: Dupont
+  prénom: René
+  email: rene.dupont@gmail.commmmm
+  rôle: équipe
+
+adherent_marseille:
+  organisation: mairie_marseille
+  nom: Tapie
+  prénom: Bernard
+  email: bernard.tapie@gmail.commmmm
+  rôle: adhérent

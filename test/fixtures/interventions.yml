@@ -1,15 +1,54 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  début: 2024-04-19 10:33:24
-  fin: 2024-04-19 10:33:24
+tonte_locaux:
+  organisation: mairie_paris
+  user_id: <%= ActiveRecord::FixtureSet.identify(:électricité) %>
+  agent_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>
+  adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
+  début: 2024-04-19 8:30:00
+  fin: 2024-04-19 17:30:00
   temps_de_pause: 1
-  description: MyString
-  workflow_state: MyString
+  description: Tonte locaux
+  workflow_state: Validé
+  commentaires:
+  note: 4
+  avis: Ça s'est très bien passé
 
-two:
-  début: 2024-04-19 10:33:24
-  fin: 2024-04-19 10:33:24
+nouvelle_intervention:
+  organisation: mairie_paris
+  user_id: <%= ActiveRecord::FixtureSet.identify(:électricité) %>
+  agent_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>
+  adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
+  début: 2024-04-19 8:30:00
+  description: Ramasser les feuilles
+  workflow_state: nouveau
+
+intervention_terminée:
+  organisation: mairie_paris
+  user_id: <%= ActiveRecord::FixtureSet.identify(:électricité) %>
+  agent_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>
+  adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
+  début: 2024-04-19 8:30:00
+  description: Tailler les arbres
+  workflow_state: terminé
+
+autre_intervention:
+  organisation: mairie_paris
+  user_id: <%= ActiveRecord::FixtureSet.identify(:électricité) %>
+  agent_id: <%= ActiveRecord::FixtureSet.identify(:martin) %>
+  adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
+  début: 2024-04-19 8:30:00
+  description: L'intervetion d'une autre personne
+  workflow_state: terminé
+
+# Organisation Marseille
+nettoyage_port:
+  organisation: mairie_marseille
+  user_id: <%= ActiveRecord::FixtureSet.identify(:nettoyeur_marseille) %>
+  agent_id: <%= ActiveRecord::FixtureSet.identify(:agent_marseille) %>
+  adherent_id: <%= ActiveRecord::FixtureSet.identify(:adherent_marseille) %>
+  début: 2024-04-19 8:30:00
+  fin: 2024-04-19 17:30:00
   temps_de_pause: 1
-  description: MyString
-  workflow_state: MyString
+  description: Nettoyage Marseille
+  workflow_state: Validé

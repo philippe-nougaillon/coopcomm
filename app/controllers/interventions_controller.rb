@@ -128,7 +128,7 @@ class InterventionsController < ApplicationController
     @intervention.destroy!
 
     respond_to do |format|
-      format.html { redirect_to interventions_url, notice: "Intervention détruite avec succès." }
+      format.html { redirect_to interventions_url, notice: "Intervention supprimée avec succès." }
       format.json { head :no_content }
     end
   end

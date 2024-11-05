@@ -1,7 +1,8 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  nom: MyString
+mairie_paris:
+  nom: Mairie de Paris
 
-two:
-  nom: MyString
+mairie_marseille:
+  nom: Mairie de Marseille
+

@@ -1,13 +1,13 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  to: MyString
-  subject: MyString
-  message_id: MyString
-  organisation: one
+# one:
+#   to: MyString
+#   subject: MyString
+#   message_id: MyString
+#   organisation: one
 
-two:
-  to: MyString
-  subject: MyString
-  message_id: MyString
-  organisation: two
+# two:
+#   to: MyString
+#   subject: MyString
+#   message_id: MyString
+#   organisation: two
