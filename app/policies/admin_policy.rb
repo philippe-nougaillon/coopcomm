@@ -6,7 +6,7 @@ class AdminPolicy < ApplicationPolicy
   end
 
   def audits?
-    user
+    user && user.manager?
   end
 
   def create_new_user?

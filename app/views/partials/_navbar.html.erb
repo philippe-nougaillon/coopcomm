@@ -13,10 +13,12 @@
     <% end %>
   <% end %>
 
-  <%= link_to admin_audits_path, class: "text-primary hover-active hover:shadow #{'active shadow' if params[:action] == 'audits'}", title: 'Activité (historique des modifications)' do %>
-    <span class="material-symbols-outlined">
-      history
-    </span>
+  <% if policy(:admin).audits? %>
+    <%= link_to admin_audits_path, class: "text-primary hover-active hover:shadow #{'active shadow' if params[:action] == 'audits'}", title: 'Activité (historique des modifications)' do %>
+      <span class="material-symbols-outlined">
+        history
+      </span>
+    <% end %>
   <% end %>
 
   <% if policy(MailLog).index? %>
