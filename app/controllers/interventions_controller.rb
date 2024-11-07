@@ -66,6 +66,8 @@ class InterventionsController < ApplicationController
 
   # GET /interventions/1 or /interventions/1.json
   def show
+    @audits = @intervention.audits.includes(:user).reorder(id: :desc)
+    @pagy, @audits = pagy(@audits, items: 10)
   end
 
   # GET /interventions/new

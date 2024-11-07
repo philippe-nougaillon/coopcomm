@@ -48,8 +48,12 @@
           </tr>
         </thead>
 
-        <%= render partial: 'audit', collection: @intervention.audits.includes(:user).reorder(id: :desc) %>
+        <%= render partial: 'audit', collection: @audits %>
       </table>
+    </div>
+    <div class="my-6">
+      <%== pagy_info(@pagy) %>
+      <%== pagy_nav(@pagy) %>
     </div>
   </div>
 
