@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_07_01_131249) do
+ActiveRecord::Schema[7.1].define(version: 2024_11_07_094454) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -109,6 +109,14 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_01_131249) do
     t.boolean "etat", default: false
     t.json "error_message"
     t.index ["organisation_id"], name: "index_mail_logs_on_organisation_id"
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.text "message"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
   create_table "organisations", force: :cascade do |t|
@@ -270,6 +278,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_01_131249) do
     t.integer "service"
     t.string "uid"
     t.string "provider"
+    t.datetime "notifications_last_seen_at", default: "2024-11-07 09:50:54"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["organisation_id"], name: "index_users_on_organisation_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -280,6 +289,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_01_131249) do
   add_foreign_key "interventions", "organisations"
   add_foreign_key "interventions", "users"
   add_foreign_key "mail_logs", "organisations"
+  add_foreign_key "notifications", "users"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

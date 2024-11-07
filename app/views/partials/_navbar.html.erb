@@ -13,10 +13,12 @@
     <% end %>
   <% end %>
 
-  <%= link_to admin_audits_path, class: "text-primary hover-active hover:shadow #{'active shadow' if params[:controller] == 'admin'}", title: 'Activité (historique des modifications)' do %>
-    <span class="material-symbols-outlined">
-      history
-    </span>
+  <% if policy(:admin).audits? %>
+    <%= link_to admin_audits_path, class: "text-primary hover-active hover:shadow #{'active shadow' if params[:action] == 'audits'}", title: 'Activité (historique des modifications)' do %>
+      <span class="material-symbols-outlined">
+        history
+      </span>
+    <% end %>
   <% end %>
 
   <% if policy(MailLog).index? %>
@@ -27,8 +29,20 @@
     <% end %>
   <% end %>
 
+  <%= link_to admin_notifications_path, class: "text-primary hover-active hover:shadow #{'active shadow' if params[:action] == 'notifications'}", title: 'Notifications', 'data-turbo': false do %>
+    <% if current_user.new_notifications? %>
+      <span class="material-symbols-outlined text-error">
+        notifications_unread
+      </span>
+    <% else %>
+      <span class="material-symbols-outlined text-primary">
+        notifications
+      </span>
+    <% end %>
+  <% end %>
+
   <% if policy(:pages).assistant? %>
-    <%= link_to pages_assistant_path, class: "text-primary hover-active hover:shadow #{'active shadow' if params[:controller] == 'pages'}", title: 'Assistant TALEA' do %>
+    <%= link_to pages_assistant_path, class: "text-primary hover-active hover:shadow #{'active shadow' if params[:action] == 'assistant'}", title: 'Assistant TALEA' do %>
       <% image_tag "ai.png", width: "25px" %>
     <% end %>
   <% end %>

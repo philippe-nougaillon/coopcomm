@@ -15,6 +15,7 @@ class User < ApplicationRecord
   has_many :interventions_agent, class_name: :Intervention, foreign_key: :agent_id
   has_many :interventions_agent_binome, class_name: :Intervention, foreign_key: :agent_binome_id
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
+  has_many :notifications
 
   normalizes :nom,    with: -> nom { nom.humanize.strip }
   normalizes :prénom, with: -> prénom { prénom.humanize.strip }
@@ -118,5 +119,9 @@ class User < ApplicationRecord
     when "adhérent"
       "🏢"
     end
+  end
+
+  def new_notifications?
+    return self.notifications.where("notifications.created_at > ?", self.notifications_last_seen_at).any?
   end
 end

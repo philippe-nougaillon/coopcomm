@@ -1,0 +1,10 @@
+<div class="w-full">
+  <div class="flex flex-wrap justify-between items-center">
+    <h1 class="text-4xl text-primary font-bold mt-1">Notifications</h1>
+  </div>
+
+  <div id="notifications" class="min-w-full mt-8">
+    <%= turbo_stream_from "notifications" %>
+    <%= render partial: "admin/notification", collection: @notifications %>
+  </div>
+</div>

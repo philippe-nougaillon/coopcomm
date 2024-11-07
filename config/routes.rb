@@ -39,6 +39,7 @@ Rails.application.routes.draw do
     get :audits
     get :create_new_user
     post :create_new_user_do
+    get :notifications
   end
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

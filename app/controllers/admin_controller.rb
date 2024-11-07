@@ -54,6 +54,12 @@ class AdminController < ApplicationController
     end
   end
 
+  def notifications
+    @notifications = current_user.notifications.ordered
+    @new_notification_ids = @notifications.where("notifications.created_at > ?", current_user.notifications_last_seen_at).pluck(:id)
+    current_user.update!(notifications_last_seen_at: DateTime.now)
+  end
+
   private
 
   def is_user_authorized

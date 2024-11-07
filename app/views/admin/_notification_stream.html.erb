@@ -1,0 +1,9 @@
+<div id="<%= dom_id notification %>">
+  <p class="font-black text-primary">
+    <%= notification.message %>
+  </p>
+  <small>
+    <i>il y a <%= time_ago_in_words notification.created_at %></i>
+  </small>
+  <div class="divider"></div>
+</div>

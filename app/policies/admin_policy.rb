@@ -6,7 +6,7 @@ class AdminPolicy < ApplicationPolicy
   end
 
   def audits?
-    true
+    user && user.manager?
   end
 
   def create_new_user?
@@ -15,5 +15,9 @@ class AdminPolicy < ApplicationPolicy
 
   def create_new_user_do?
     create_new_user?
+  end
+
+  def notifications?
+    user
   end
 end
