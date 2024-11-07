@@ -1,4 +1,4 @@
-<div id="<%= dom_id intervention %>">
+<div id="<%= dom_id intervention %>" class="overflow-x-auto">
 
   <small>
     <i>il y a <%= time_ago_in_words intervention.updated_at %></i>
@@ -15,100 +15,102 @@
   </p>
 
   <div class="sm:flex sm:gap-4 overflow-x-auto">
-    <div class="sm:flex gap-8 sm:w-3/5">
-      <div>
-        <p class="my-2">
-          <strong class="block text-slate-400 mb-1">Statut</strong>
-          <span class="badge badge-lg text-nowrap font-bold <%= intervention.style %>">
-            <%= intervention.workflow_state.humanize %>
-          </span>
-        </p>
-      </div>
-        
-      <div>
-        <p class="my-2">
-          <strong class="block text-slate-400 mb-1">Adhérent</strong>
-          <b><%= intervention.adherent.try(:nom_prénom) %></b>
-        </p>
-        <p class="my-2">
-          <strong class="block text-slate-400 mb-1">Équipe</strong>
-          <b><%= intervention.user.nom_prénom %></b>
-        </p>
-
-      </div>
-
-      <div>
-        <p class="my-2">
-          <strong class="block text-slate-400 mb-1">Agent#1</strong>
-          <b><%= intervention.agent.try(:nom_prénom) %></b>
-        </p>
-
-        <p class="<%= (params[:action] == "index") ? 'hidden sm:block' : 'my-2' %>">
-          <strong class="block text-slate-400 mb-1">Agent#2</strong>
-          <b><%= intervention.agent_binome.try(:nom_prénom) %></b>
-        </p>
-      </div>
-
-      <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
-        <p class="my-2">
-          <strong class="block text-slate-400 mb-1">Début</strong>
-          <%= l(intervention.début, format: :long) if intervention.début %>
-        </p>
-
-        <p class="my-2">
-          <strong class="block text-slate-400 mb-1">Fin</strong>
-          <%= l(intervention.fin, format: :long) if intervention.fin%>
-        </p>
-      </div>
-
-      <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
-        <p class="my-2">
-          <strong class="block text-slate-400 mb-1">Temps passé</strong>
-          <%= intervention.temps_total %> h
-        </p>
-
-        <p class="my-2">
-          <strong class="block text-slate-400 mb-1">Pause</strong>
-          <%= intervention.temps_de_pause %> h
-        </p>
-      </div>
-    </div>
-
-    <div class="hidden sm:flex gap-8 sm:w-2/5">
-      <div>
-        <p class="my-2">
-          <strong class="block text-slate-400 mb-1">Commentaires</strong>
-          <%= intervention.commentaires %>
-        </p>
-      </div>
-
-      <% if intervention.photos.attached? %>
+    <div class="sm:flex sm:gap-4 flex-1">
+      <div class="sm:flex gap-8">
         <div>
-          <% if intervention.photos.count > 1 %>
-            <button onclick="my_modal_<%= intervention.id %>.showModal()">
-              <div class="stack w-36">
-                <% intervention.photos.limit(3).each do |photo| %>
-                  <div class="avatar">
-                    <div class="w-36 rounded">
-                      <%= image_tag photo, loading: 'lazy' %>
-                    </div>
-                  </div>
-                <% end %>
-              </div>
-            </button>
-          <% else %>
-            <div class="avatar">
-              <div class="w-36 rounded">
-                <%= link_to image_tag(intervention.photos.last, loading: 'lazy'), intervention.photos.last, target: "_blank" %>
-              </div>
-            </div>
-          <% end %>
+          <p class="my-2">
+            <strong class="block text-slate-400 mb-1">Statut</strong>
+            <span class="badge badge-lg text-nowrap font-bold <%= intervention.style %>">
+              <%= intervention.workflow_state.humanize %>
+            </span>
+          </p>
         </div>
-      <% end %>
+          
+        <div>
+          <p class="my-2">
+            <strong class="block text-slate-400 mb-1">Adhérent</strong>
+            <b><%= intervention.adherent.try(:nom_prénom) %></b>
+          </p>
+          <p class="my-2">
+            <strong class="block text-slate-400 mb-1">Équipe</strong>
+            <b><%= intervention.user.nom_prénom %></b>
+          </p>
 
+        </div>
+
+        <div>
+          <p class="my-2">
+            <strong class="block text-slate-400 mb-1">Agent#1</strong>
+            <b><%= intervention.agent.try(:nom_prénom) %></b>
+          </p>
+
+          <p class="<%= (params[:action] == "index") ? 'hidden sm:block' : 'my-2' %>">
+            <strong class="block text-slate-400 mb-1">Agent#2</strong>
+            <b><%= intervention.agent_binome.try(:nom_prénom) %></b>
+          </p>
+        </div>
+
+        <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
+          <p class="my-2">
+            <strong class="block text-slate-400 mb-1">Début</strong>
+            <%= l(intervention.début, format: :long) if intervention.début %>
+          </p>
+
+          <p class="my-2">
+            <strong class="block text-slate-400 mb-1">Fin</strong>
+            <%= l(intervention.fin, format: :long) if intervention.fin%>
+          </p>
+        </div>
+
+        <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
+          <p class="my-2">
+            <strong class="block text-slate-400 mb-1">Temps passé</strong>
+            <%= intervention.temps_total %> h
+          </p>
+
+          <p class="my-2">
+            <strong class="block text-slate-400 mb-1">Pause</strong>
+            <%= intervention.temps_de_pause %> h
+          </p>
+        </div>
+      </div>
+
+      <div class="hidden sm:flex gap-8">
+        <div>
+          <p class="my-2">
+            <strong class="block text-slate-400 mb-1">Commentaires</strong>
+            <%= intervention.commentaires %>
+          </p>
+        </div>
+
+        <% if intervention.photos.attached? %>
+          <div>
+            <% if intervention.photos.count > 1 %>
+              <button onclick="my_modal_<%= intervention.id %>.showModal()">
+                <div class="stack w-36">
+                  <% intervention.photos.limit(3).each do |photo| %>
+                    <div class="avatar">
+                      <div class="w-36 rounded">
+                        <%= image_tag photo, loading: 'lazy' %>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </button>
+            <% else %>
+              <div class="avatar">
+                <div class="w-36 rounded">
+                  <%= link_to image_tag(intervention.photos.last, loading: 'lazy'), intervention.photos.last, target: "_blank" %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
+      </div>
     </div>
 
-    <div>
+    <div class="mr-4">
       <% if intervention.validé? || intervention.refusé? %>
         <div>
           <div class="rating rating-xs">
