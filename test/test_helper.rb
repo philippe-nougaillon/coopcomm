@@ -12,12 +12,9 @@ module ActiveSupport
     fixtures :all
 
     setup do
-    #   mairie_paris = organisations(:mairie_paris)
-      # @manager = mairie_paris.users.create(prénom: "Manon", email: 'manager@gmail.commmm', rôle: 'manager', password: 'azeaze', password_confirmation: 'azeaze')
       @manager = users(:hidalgo)
-    #   # @adhérent = mairie_paris.users.create(prénom: "Ulysse", email: 'ulysse@gmail.commm', rôle: 'adhérent', password: '@wGheRSJikuM2ng', password_confirmation: '@wGheRSJikuM2ng')
-    #   @agent = mairie_paris.users.create(prénom: "Agénor", email: 'agenor@gmail.commm', rôle: 'agent', service: 'informatique', password: '5bc323c18b587678b6b9', password_confirmation: '5bc323c18b587678b6b9')
       @agent = users(:bond)
+      @adhérent = users(:weil)
     end
 
     def login(user)
@@ -30,12 +27,67 @@ module ActiveSupport
 
     # def js_select(item_text, options)
     #   container = find(:xpath, "//parent::*[label[text()='#{options[:from]}']]")
+    #   puts "aaaaa"
+    #   puts container
+    #   puts "bb"
+    #   puts container.inspect
+    #   puts "cc"
     #   within "##{container[:id]}", visible: false do
+    #     puts "dd"
     #     find('.ss-arrow').click
     #     input = find(".ss-search input").native
     #     input.send_keys(item_text)
     #     find('div.ss-list').click
     #   end
+    # end
+
+    # def select_from_slim_select(item_text, options)
+    #   from = options.fetch(:from)
+    #   puts "aa"
+    #   puts from
+    #   puts "bb"
+
+    #   if !from.include?("#")
+    #     label = find("label", text: from)
+    #     from = "##{label["for"]}"
+    #   end
+
+    #   puts label.inspect
+    #   puts from
+    #   puts "cc"
+
+    #   select_field = find(from, visible: false, wait: 2)
+    #   puts select_field.inspect
+    #   puts "dd"
+    #   slim_select_id = select_field["data-ssid"]
+    #   puts slim_select_id
+    #   puts "ee"
+    #   slim_select_container = find("div.#{slim_select_id}")
+
+    #   within(slim_select_container) do
+    #     find(".ss-arrow, .ss-add").click
+
+    #     sleep(0.5)
+
+    #     input = find(".ss-search input").native
+    #     input.send_keys(item_text)
+    #     find("div.ss-list").click
+    #   end
+
+    #   click_off
+    #   expect_ss_list_to_not_be_visible
+    # end
+
+    # def expect_ss_list_to_be_visible
+    #   expect(page).to have_css("div.ss-list")
+    # end
+
+    # def expect_ss_list_to_not_be_visible
+    #   expect(page).to_not have_css("div.ss-list")
+    # end
+
+    # def click_off
+    #   page.execute_script('document.querySelector("body").click();')
     # end
 
     # Add more helper methods to be used by all tests here...

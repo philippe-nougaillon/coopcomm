@@ -27,7 +27,9 @@ class ManagerFlowTest < ApplicationSystemTestCase
   #   fill_in "Description", with: "Tailler les arbres"
   #   # fill_in "Mots clés", with: "tailler"
   #   # js_select 'tailler', from: 'Mots clés'
+  #   # find("select[id='intervention_adherent_id']").select_option('Weil Ariel')
   #   # js_select "Weil Ariel", from: "Adhérent"
+  #   select_from_slim_select("Weil Ariel", from: "Adhérent")
   #   # js_select "Team Électricité", from: "Équipe"
   #   # js_select "Bond James", from: "Agent 1"
   #   fill_in 'Début', with: DateTime.current.strftime("%m%d%Y\t%I%M%P")
@@ -137,6 +139,14 @@ class ManagerFlowTest < ApplicationSystemTestCase
 
   # test "le temps total est correctement calculé" do
   
+  # end
+
+  # test "les filtres fonctionnent dans interventions/users/maillogs" do
+
+  # end
+
+  # test "export XLS" do
+
   # end
 
 end

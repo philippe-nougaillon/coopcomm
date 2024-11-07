@@ -18,6 +18,7 @@ weil:
   prénom: Ariel
   email: ariel.weil@gmail.commmmm
   rôle: adhérent
+  encrypted_password: "$2a$04$Sq0rBR0/IqysddNW29bcJO2S5vfi54HoOqWsnoEEBUDV9aajeJhUm"
 
 berthout:
   organisation: mairie_paris

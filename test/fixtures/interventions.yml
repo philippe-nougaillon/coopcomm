@@ -32,13 +32,22 @@ intervention_terminée:
   description: Tailler les arbres
   workflow_state: terminé
 
-autre_intervention:
+intervention_autre_agent:
   organisation: mairie_paris
   user_id: <%= ActiveRecord::FixtureSet.identify(:électricité) %>
   agent_id: <%= ActiveRecord::FixtureSet.identify(:martin) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
   début: 2024-04-19 8:30:00
-  description: L'intervetion d'une autre personne
+  description: L'intervetion d'un autre agent
+  workflow_state: terminé
+
+intervention_autre_adhérent:
+  organisation: mairie_paris
+  user_id: <%= ActiveRecord::FixtureSet.identify(:électricité) %>
+  agent_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>
+  adherent_id: <%= ActiveRecord::FixtureSet.identify(:berthout) %>
+  début: 2024-04-19 8:30:00
+  description: L'intervetion d'un autre adhérent
   workflow_state: terminé
 
 # Organisation Marseille
