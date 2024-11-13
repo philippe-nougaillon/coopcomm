@@ -5,9 +5,13 @@
     </span>
     <%= @user.nom_prénom %>
   </p>
+
   <div class="flex flex-wrap gap-24">
     <div>
-      <span class="text-success text-xl"><%= @user.rôle.humanize %> <%= @user.service.try(:humanize) %> </span>
+      <span class="text-success text-xl">
+        <%= @user.rôle.humanize %> 
+        <%= @user.service.try(:humanize) %> 
+      </span>
 
       <p class="my-4">
         <b><%= @user.email %></b>
@@ -65,6 +69,7 @@
       </tbody>
     </table>
   </div>
+  
   <div class="my-6">
     <%== pagy_info(@pagy) %>
     <%== pagy_nav(@pagy) %>
