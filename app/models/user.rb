@@ -110,14 +110,14 @@ class User < ApplicationRecord
 
   def avatar
     case self.rôle
-    when "manager"
-      "👑"
-    when "agent"
-      "👷"
+    when 'manager'
+      'manage_accounts'
+    when 'agent'
+      'person'
     when "équipe"
-      "🛻"
-    when "adhérent"
-      "🏢"
+      'group'
+    when 'adhérent'
+      'corporate_fare'
     end
   end
 

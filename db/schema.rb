@@ -278,7 +278,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_07_094454) do
     t.integer "service"
     t.string "uid"
     t.string "provider"
-    t.datetime "notifications_last_seen_at", default: "2024-11-07 09:50:54"
+    t.datetime "notifications_last_seen_at", default: "2024-11-13 09:23:59"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["organisation_id"], name: "index_users_on_organisation_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
