@@ -4,10 +4,12 @@
       <%= user.avatar %>
     </span>
   </td>
-  <td class="text-2xl font-black">
+  <td class="text-2xl font-black text-primary">
     <%= link_to user.nom_prénom, user, class: 'hover:underline hover:text-base-content' %>
   </td>
-  <td><%= user.rôle.upcase %> <%= "(#{user.service.humanize})" if user.service %> </td>
+  <td class="text-success font-black">
+    <%= user.rôle.upcase %> <%= "(#{user.service.humanize})" if user.service %>
+  </td>
   <td><%= user.email %></td>
   <td><%= user.moyenne %></td>
 </tr>
