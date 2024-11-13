@@ -8,8 +8,9 @@
     <%= link_to user.nom_prénom, user, class: 'hover:underline hover:text-base-content' %>
   </td>
   <td class="text-success font-black">
-    <%= user.rôle.upcase %> <%= "(#{user.service.humanize})" if user.service %>
+    <%= user.rôle.upcase %>
   </td>
+  <td><%= user.service.try(:capitalize) %></td>
   <td><%= user.email %></td>
   <td><%= user.moyenne %></td>
 </tr>
