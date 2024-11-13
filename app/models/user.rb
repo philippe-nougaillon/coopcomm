@@ -20,7 +20,6 @@ class User < ApplicationRecord
   normalizes :nom,    with: -> nom { nom.humanize.strip }
   normalizes :prénom, with: -> prénom { prénom.humanize.strip }
 
-
   enum rôle: {
     adhérent: 0,
     agent: 1,
@@ -37,7 +36,7 @@ class User < ApplicationRecord
     ménage: 5
   }
 
-  scope :ordered, -> {order(:nom)}
+  scope :ordered, -> { order(:nom) }
 
   def self.grouped_agents(users)
     h = {}
@@ -56,10 +55,16 @@ class User < ApplicationRecord
   end
 
   def moyenne
-    sum = self.interventions_agent.where.not(note: 0).sum(:note) + self.interventions_agent_binome.where.not(note: 0).sum(:note)
-    count = self.interventions_agent.where.not(note: 0).count + self.interventions_agent_binome.where.not(note: 0).count
-    
-    return count != 0 ? "#{(sum.to_f / count).round(1)} / 5" : ""
+    notes_agents  = self.interventions_agent.where.not(note: 0)
+    notes_binomes = self.interventions_agent_binome.where.not(note: 0)
+    count = notes_agents.count + notes_binomes.count
+    if count != 0
+      sum = notes_agents.sum(:note) + notes_binomes.sum(:note)
+      moyenne = (sum.to_f / count).round(1)
+      return "#{ moyenne } / 5"
+    else 
+      return nil 
+    end
   end
 
   def star_count(rating)
@@ -73,7 +78,7 @@ class User < ApplicationRecord
   end
 
   def total_rating
-    return self.interventions_agent.where.not(note: 0).count + self.interventions_agent_binome.where.not(note: 0).count
+    self.interventions_agent.where.not(note: 0).count + self.interventions_agent_binome.where.not(note: 0).count
   end
 
   def self.from_omniauth(auth)
@@ -124,4 +129,5 @@ class User < ApplicationRecord
   def new_notifications?
     return self.notifications.where("notifications.created_at > ?", self.notifications_last_seen_at).any?
   end
+
 end
