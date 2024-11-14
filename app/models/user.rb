@@ -58,11 +58,11 @@ class User < ApplicationRecord
     notes_agents  = self.interventions_agent.where.not(note: 0)
     notes_binomes = self.interventions_agent_binome.where.not(note: 0)
     count = notes_agents.count + notes_binomes.count
+
     unless count.zero?
-      return (notes_agents.sum(:note) + notes_binomes.sum(:note)).to_f / count
-      #return "#{ number_with_precision(la_moyenne, precision: 2, strip_insignificant_zeros: true) } / 5"
+      (notes_agents.sum(:note) + notes_binomes.sum(:note)).to_f / count
     else 
-      return nil 
+      nil
     end
   end
 
