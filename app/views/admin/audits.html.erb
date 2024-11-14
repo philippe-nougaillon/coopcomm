@@ -39,7 +39,9 @@
     </div>
   <% end %>
 
-  <div class="overflow-x-auto mt-8">
+  <div class="divider"></div>
+
+  <div class="overflow-x-auto mt-4">
     <table class="table table-sm">
       <thead class="bg-slate-100">
         <tr>
@@ -52,7 +54,15 @@
         </tr>
       </thead>
 
-      <%= render partial: 'audit', collection: @audits.includes(:user) %>
+      <tbody>
+        <%= render partial: 'audit', collection: @audits.includes(:user) %>
+      </tbody>
+
+      <tfoot>
+        <tr>
+          <th colspan=6></th>
+        </tr>
+      </tfoot>
     </table>
   </div>
 

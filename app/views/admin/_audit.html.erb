@@ -1,8 +1,8 @@
 <tr class="hover">
   <td class="whitespace-nowrap">
-    Il y a <%= time_ago_in_words(audit.created_at) %>
+    <b>Il y a <%= time_ago_in_words(audit.created_at) %></b>
     <br>
-    (<%= l(audit.created_at, format: :long) %>)
+    <i><%= l(audit.created_at, format: :long) %></i>
   </td>
   <td>
     <% if audit.user_id %>
