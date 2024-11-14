@@ -22,7 +22,12 @@
       <div>
         <strong class="block text-slate-400 mb-1">Évaluation</strong>
         <div class="flex justify-between w-32">
-          <b><%= number_with_precision(@user.moyenne, precision: 2, strip_insignificant_zeros: true) %> / 5</b>
+          <% if @user.moyenne %>
+            <b>
+              <%= number_with_precision(@user.moyenne, precision: 2, strip_insignificant_zeros: true) %>
+              / 5
+            </b>
+          <% end %>
           <%= pluralize(@user.total_rating, 'note') %>
         </div>
         <div class="flex flex-col-reverse">
@@ -35,7 +40,7 @@
                   </span>                
                 <% end %>
               </div>
-              <progress class="progress progress-secondary w-56" value="<%= @user.star_count(i) %>" max="100"></progress>
+              <progress class="progress progress-primary w-56" value="<%= @user.star_count(i) %>" max="100"></progress>
             </div>
           <% end %>
         </div>
