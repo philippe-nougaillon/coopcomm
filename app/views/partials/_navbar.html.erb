@@ -1,53 +1,53 @@
 <div class="btm-nav z-10 shadow-2xl">
-  <%= link_to interventions_path, class: "text-primary hover-active hover:shadow #{'active shadow' if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
+  <%= link_to interventions_path, class: "text-secondary hover-active hover:shadow #{'active shadow' if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
     <span class="material-symbols-outlined">
       home
     </span>
   <% end %>
 
   <% if policy(User).index? %>
-    <%= link_to users_path, class: "text-primary hover-active hover:shadow #{'active shadow' if params[:controller] == 'users'}", title: "Liste des utilisateurs" do %>
+    <%= link_to users_path, class: "text-secondary hover-active hover:shadow #{'active shadow' if params[:controller] == 'users'}", title: "Liste des utilisateurs" do %>
       <span class="material-symbols-outlined">
         group
       </span>
     <% end %>
   <% end %>
 
-  <% if policy(:admin).audits? %>
-    <%= link_to admin_audits_path, class: "text-primary hover-active hover:shadow #{'active shadow' if params[:action] == 'audits'}", title: 'Activité (historique des modifications)' do %>
-      <span class="material-symbols-outlined">
-        history
-      </span>
-    <% end %>
-  <% end %>
-
-  <% if policy(MailLog).index? %>
-    <%= link_to mail_logs_path, class: "text-primary hover-active hover:shadow #{'active shadow' if params[:controller] == 'mail_logs'}", title: "Mail Logs (historique des mails envoyés)" do %>
-      <span class="material-symbols-outlined">
-        mark_email_read
-      </span>
-    <% end %>
-  <% end %>
-
-  <%= link_to admin_notifications_path, class: "text-primary hover-active hover:shadow #{'active shadow' if params[:action] == 'notifications'}", title: 'Notifications', 'data-turbo': false do %>
+  <%= link_to admin_notifications_path, class: "text-secondary hover-active hover:shadow #{'active shadow' if params[:action] == 'notifications'}", title: 'Notifications', 'data-turbo': false do %>
     <% if current_user.new_notifications? %>
       <span class="material-symbols-outlined text-error">
         notifications_unread
       </span>
     <% else %>
-      <span class="material-symbols-outlined text-primary">
+      <span class="material-symbols-outlined text-secondary">
         notifications
       </span>
     <% end %>
   <% end %>
 
   <% if policy(:pages).assistant? %>
-    <%= link_to pages_assistant_path, class: "text-primary hover-active hover:shadow #{'active shadow' if params[:action] == 'assistant'}", title: 'Assistant TALEA' do %>
-      <% image_tag "ai.png", width: "25px" %>
+    <%= link_to pages_assistant_path, class: "text-secondary hover-active hover:shadow #{'active shadow' if params[:action] == 'assistant'}", title: 'Assistant TALEA' do %>
+      IA
     <% end %>
   <% end %>
 
-  <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session TALEA ?" }, title: "Fermer la session de #{current_user.email} (#{current_user.rôle})", class: 'text-primary hover-active hover:shadow' do %>
+  <% if policy(MailLog).index? %>
+    <%= link_to mail_logs_path, class: "text-secondary hover-active hover:shadow #{'active shadow' if params[:controller] == 'mail_logs'}", title: "Mail Logs (historique des mails envoyés)" do %>
+      <span class="material-symbols-outlined">
+        mark_email_read
+      </span>
+    <% end %>
+  <% end %>
+
+  <% if policy(:admin).audits? %>
+    <%= link_to admin_audits_path, class: "text-secondary hover-active hover:shadow #{'active shadow' if params[:action] == 'audits'}", title: 'Activité (historique des modifications)' do %>
+      <span class="material-symbols-outlined">
+        history
+      </span>
+    <% end %>
+  <% end %>
+
+  <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session TALEA ?" }, title: "Fermer la session de #{current_user.email} (#{current_user.rôle})", class: 'text-secondary hover-active hover:shadow' do %>
     <span class="material-symbols-outlined">
       logout
     </span>

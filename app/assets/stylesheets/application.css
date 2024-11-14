@@ -22,11 +22,11 @@
   background-color: rgb(250 204 21 / var(--tw-bg-opacity));
 }
 
-.btm-nav>:where(.hover-active):hover {
+/* .btm-nav>:where(.hover-active):hover {
   border-top-width: 2px;
   --tw-bg-opacity: 1;
   background-color: var(--fallback-b1, oklch(var(--b1) / var(--tw-bg-opacity)));
-}
+} */
 
 /* TypeWriter */
 
