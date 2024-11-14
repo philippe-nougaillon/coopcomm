@@ -29,6 +29,8 @@ class EmailSubscription
     commentaires_changed = last_audit.audited_changes.include?('commentaires')
     send_notif = (user.adhérent? && commentaires_changed && !intervention.commentaires.blank?)
     agent_ids = User.where(id: [intervention.agent.try(:id), intervention.agent_binome.try(:id)]).pluck(:id)
+    #agent_ids = [1]
+    #send_notif = true
     if send_notif && agent_ids.any?
       NotifAgentsCommentairesChangedJob.perform_later(intervention, agent_ids, user.id)
     end
