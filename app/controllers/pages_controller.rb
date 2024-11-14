@@ -19,7 +19,7 @@ class PagesController < ApplicationController
         llm = Langchain::LLM::OpenAI.new(api_key: ENV["OPENAI_API_KEY"])
         @results = llm.chat(messages: [{role: "user", content: "Génère moi des nouvelles tâches en te basant sur cette liste : #{description_list.join(', ')}"}]).completion
       else
-        @results = "Il n'y a pas encore assez d'interventions planifiées pour faire une prévision fiable.\n Il en faudrait au moins #{ minimum } pour commencer..."
+        @results = "Oups ! Il n'y a pas encore assez d'interventions passées pour générer une proposition fiable.\n Il en faudrait un minimum de #{ minimum } pour commencer..."
       end
     end
 

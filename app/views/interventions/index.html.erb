@@ -87,8 +87,6 @@
     <%== pagy_nav(@pagy) %>
   </div>
 
-
-
   <% if @interventions.any? %>
     <p class="text-sm mt-4">
       Nombre d'interventions par statut : <%= JSON.pretty_generate(Intervention.workflow_states_count(@interventions)) %>
