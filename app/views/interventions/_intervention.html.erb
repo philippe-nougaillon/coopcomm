@@ -4,7 +4,7 @@
     <i>il y a <%= time_ago_in_words intervention.updated_at %></i>
   </small>
 
-  <p class="text-4xl text-<%= intervention.style.split.first.split('-').last %> font-black">
+  <p class="text-3xl text-<%= intervention.style.split.first.split('-').last %> font-black">
     <%= link_to_if params[:action] == "index", intervention.description.humanize, intervention, class: 'hover:underline' %>
   </p>
 
