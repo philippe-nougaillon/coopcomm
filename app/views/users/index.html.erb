@@ -14,13 +14,7 @@
 
       <div class="w-full md:w-5/12 lg:w-2/12">
         <%= label_tag :rôle %>
-        <%= select_tag :rôle, 
-        options_for_select(User.rôles, 
-        params[:rôle]), 
-        include_blank:true,
-        class: 'select select-bordered w-full', 
-        onchange: 'this.form.submit()' 
-        %>    
+        <%= select_tag :rôle, options_for_select(User.rôles, params[:rôle]), include_blank:true, class: 'select select-bordered w-full', onchange: 'this.form.submit()' %>    
       </div>
 
       <div class="w-full md:w-5/12 lg:w-2/12">
