@@ -187,11 +187,15 @@ class InterventionsController < ApplicationController
   private
 
     def send_workflow_changed_notification
-      Events.instance.publish('intervention.workflow_changed', payload: {intervention_id: @intervention.id})
+      unless Rails.env.development? 
+        Events.instance.publish('intervention.workflow_changed', payload: {intervention_id: @intervention.id})
+      end
     end
 
     def send_intervention_termine_notification
-      Events.instance.publish('intervention.done', payload: {intervention_id: @intervention.id})
+      unless Rails.env.development?
+        Events.instance.publish('intervention.done', payload: {intervention_id: @intervention.id})
+      end
     end
 
     # Use callbacks to share common setup or constraints between actions.

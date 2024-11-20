@@ -105,7 +105,10 @@ class User < ApplicationRecord
         user.rôle = "manager"
         
         user.save
-        Events.instance.publish('organisation.created', payload: {user_id: user.id})
+
+        unless Rails.env.development?
+          Events.instance.publish('organisation.created', payload: {user_id: user.id})
+        end
 
         user
       end
