@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_11_20_140159) do
+ActiveRecord::Schema[7.1].define(version: 2024_11_20_152932) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -95,7 +95,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_20_140159) do
     t.integer "agent_id"
     t.integer "agent_binome_id"
     t.integer "adherent_id"
-    t.decimal "temps_total", precision: 4, scale: 2, default: "0.0"
+    t.decimal "temps_total", precision: 8, scale: 2, default: "0.0"
     t.text "commentaires"
     t.integer "note", default: 5
     t.bigint "user_id", null: false
