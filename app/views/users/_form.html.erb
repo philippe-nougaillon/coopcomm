@@ -51,24 +51,26 @@
     </div>
   </div>
 
-  <div class="flex mt-8 gap-4 mb-4">
-    <h2 class="text-2xl text-secondary">Absences</h2>
-    <button type="button" data-action="nested-form#add" class="btn btn-sm btn-outline btn-success hover:!text-white">+</button>
-  </div>
+  <% if @user.agent? %>
+    <div class="flex mt-8 gap-4 mb-4">
+      <h2 class="text-2xl text-secondary">Absences</h2>
+      <button type="button" data-action="nested-form#add" class="btn btn-sm btn-outline btn-success hover:!text-white">+</button>
+    </div>
 
 
-  <%= form.fields_for :absences do |absence_fields| %>
-    <%= render "absence_form", f: absence_fields %>
-  <% end %>
-
-  <template data-nested-form-target="template">
-    <%= form.fields_for :absences, Absence.new, child_index: 'NEW_RECORD' do |absence_fields| %>
+    <%= form.fields_for :absences do |absence_fields| %>
       <%= render "absence_form", f: absence_fields %>
     <% end %>
-  </template>
 
-  <!-- Inserted elements will be injected before that target. -->
-  <div data-nested-form-target="target"></div>
+    <template data-nested-form-target="template">
+      <%= form.fields_for :absences, Absence.new, child_index: 'NEW_RECORD' do |absence_fields| %>
+        <%= render "absence_form", f: absence_fields %>
+      <% end %>
+    </template>
+
+    <!-- Inserted elements will be injected before that target. -->
+    <div data-nested-form-target="target"></div>
+  <% end %>
 
   <%= form.submit class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer mt-4" %>
 <% end %>
