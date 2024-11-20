@@ -100,13 +100,13 @@ class Intervention < ApplicationRecord
   def check_absence
     absence_ids = []
     if self.agent
-      absence_ids << self.agent.absences.where("absences.du BETWEEN ? AND ?", self.début, self.fin).pluck(:id)
+      absence_ids << self.agent.absences.where("(absences.du BETWEEN :debut AND :fin) OR (absences.au BETWEEN :debut AND :fin) OR (absences.du < :debut AND absences.au > :fin)", {debut: self.début, fin: self.fin}).pluck(:id)
     end
     if self.agent_binome
-      absence_ids << self.agent_binome.absences.where("absences.du BETWEEN ? AND ?", self.début, self.fin).pluck(:id)
+      absence_ids << self.agent_binome.absences.where("(absences.du BETWEEN :debut AND :fin) OR (absences.au BETWEEN :debut AND :fin) OR (absences.du < :debut AND absences.au > :fin)", {debut: self.début, fin: self.fin}).pluck(:id)
     end
     unless absence_ids.flatten.empty?
-      errors.add(:interventions, ": Agent(s) '#{User.where(id: Absence.where(id: absence_ids.flatten).pluck(:user_id)).pluck(:nom).uniq.join(', ')}' pas disponible(s) à ces dates")
+      errors.add(:interventions, ": Agent(s) '#{User.where(id: Absence.where(id: absence_ids.uniq.flatten).pluck(:user_id)).pluck(:nom).uniq.join(', ')}' pas disponible(s) à ces dates")
     end
   end
 
