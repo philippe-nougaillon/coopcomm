@@ -24,6 +24,7 @@ class UsersController < ApplicationController
 
   # GET /users/1 or /users/1.json
   def show
+    @absences = @user.absences.ordered
     @audits = Audited::Audit.where(user_id: @user.id).reorder(id: :desc)
     @pagy, @audits = pagy(@audits, items: 10)
   end
@@ -84,7 +85,7 @@ class UsersController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def user_params
-      params.require(:user).permit(:nom, :prénom, :email, :password, :rôle, :service)
+      params.require(:user).permit(:nom, :prénom, :email, :password, :rôle, :service, absences_attributes: [:id, :_destroy, :du, :au, :motif])
     end
 
     def is_user_authorized

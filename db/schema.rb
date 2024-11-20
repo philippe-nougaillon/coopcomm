@@ -10,9 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_11_07_094454) do
+ActiveRecord::Schema[7.1].define(version: 2024_11_20_140159) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "absences", force: :cascade do |t|
+    t.date "du"
+    t.date "au"
+    t.string "motif"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_absences_on_user_id"
+  end
 
   create_table "action_mailbox_inbound_emails", force: :cascade do |t|
     t.integer "status", default: 0, null: false
@@ -278,12 +288,13 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_07_094454) do
     t.integer "service"
     t.string "uid"
     t.string "provider"
-    t.datetime "notifications_last_seen_at", default: "2024-11-13 09:23:59"
+    t.datetime "notifications_last_seen_at", default: "2024-11-07 09:50:54"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["organisation_id"], name: "index_users_on_organisation_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "absences", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "interventions", "organisations"

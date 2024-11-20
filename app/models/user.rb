@@ -17,7 +17,12 @@ class User < ApplicationRecord
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
   has_many :notifications
 
-  normalizes :nom,    with: -> nom { nom.humanize.strip }
+  has_many :absences
+  accepts_nested_attributes_for :absences, 
+                              allow_destroy:true, 
+                              reject_if: lambda {|attributes| attributes['du'].blank? || attributes['au'].blank? }
+
+  normalizes :nom,    with: -> nom { nom.upcase.strip }
   normalizes :prénom, with: -> prénom { prénom.humanize.strip }
 
   enum rôle: {

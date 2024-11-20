@@ -16,6 +16,8 @@ class Intervention < ApplicationRecord
 
   validates :description, presence: true
 
+  before_validation :check_absence
+
   scope :ordered, -> { order(updated_at: :desc) }
 
   # WORKFLOW
@@ -92,6 +94,19 @@ class Intervention < ApplicationRecord
       user.organisation.interventions.where("agent_id = :id OR agent_binome_id = :id", {id: user.id}).ordered
     when 'équipe'
       user.organisation.interventions.where(user_id: user.id)
+    end
+  end
+
+  def check_absence
+    absence_ids = []
+    if self.agent
+      absence_ids << self.agent.absences.where("absences.du BETWEEN ? AND ?", self.début, self.fin).pluck(:id)
+    end
+    if self.agent_binome
+      absence_ids << self.agent_binome.absences.where("absences.du BETWEEN ? AND ?", self.début, self.fin).pluck(:id)
+    end
+    unless absence_ids.flatten.empty?
+      errors.add(:interventions, ": Agent(s) '#{User.where(id: Absence.where(id: absence_ids.flatten).pluck(:user_id)).pluck(:nom).uniq.join(', ')}' pas disponible(s) à ces dates")
     end
   end
 

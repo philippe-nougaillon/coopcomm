@@ -113,9 +113,9 @@ class InterventionsController < ApplicationController
           @intervention.tag_list = params[:intervention][:tags]
         end
         @intervention.save
-        #unless Rails.env.development?
+        unless Rails.env.development?
           Events.instance.publish('intervention.updated', payload: {intervention_id: @intervention.id})
-        #end
+        end
         format.html { redirect_to intervention_url(@intervention), notice: "Intervention modifiée avec succès." }
         format.json { render :show, status: :ok, location: @intervention }
       else
