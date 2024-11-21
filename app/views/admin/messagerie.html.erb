@@ -10,7 +10,7 @@
 
   <% if policy(:admin).send_notification? %>
     <%= form_tag({action: "send_notification", method: :post}, class:'flex items-end flex-wrap gap-4 mt-12 bg-base-200 rounded p-2', data: {controller: "message", action: "submit->message#submit" } ) do %>
-      <%= select_tag :user_id, options_from_collection_for_select(@users, :id, :nom_role), include_blank:true, class: "select select-sm select-bordered", required: true, 'data-message-target': 'user' %>
+      <%= select_tag :user_id, options_from_collection_for_select(@users, :id, :nom_role), include_blank:true, class: "select select-sm select-bordered", required: true %>
       <div class="join flex-1">
         <%= text_field_tag :message, params[:message],{ class: "input input-bordered input-sm flex-1 join-item", required: true, include_blank:true, placeholder: "Entrez le message pour l'agent", 'data-message-target': 'message' } %>
         <%= button_tag type: :submit, class: 'btn btn-sm join-item rounded-r-full' do %>
