@@ -13,27 +13,27 @@
 
   <div class="mt-4">
     <%= form.label :nom, style: "display: block" %>
-    <%= form.text_field :nom, class: 'input input-bordered w-full', required: true %>
+    <%= form.text_field :nom, class: 'input input-bordered input-sm w-full', required: true %>
   </div>
 
   <div class="mt-4">
     <%= form.label :prénom, style: "display: block" %>
-    <%= form.text_field :prénom, class: 'input input-bordered w-full', required: true %>
+    <%= form.text_field :prénom, class: 'input input-bordered input-sm w-full', required: true %>
   </div>
 
   <div class="mt-4">
     <%= form.label :email, style: "display: block" %>
-    <%= form.email_field :email, class: 'input input-bordered w-full', required: true %>
+    <%= form.email_field :email, class: 'input input-bordered input-sm w-full', required: true %>
   </div>
 
   <% if user.new_record? %>
     <div class="mt-4">
       <%= form.label :password, style: "display: block" %>
-      <%= form.password_field :password, class: 'input input-bordered w-full' %>
+      <%= form.password_field :password, class: 'input input-bordered input-sm w-full' %>
     </div>
     <div class="mt-4">
       <%= form.label :password_confirmation, style: "display: block" %>
-      <%= form.password_field :password_confirmation, class: 'input input-bordered w-full' %>
+      <%= form.password_field :password_confirmation, class: 'input input-bordered input-sm w-full' %>
     </div>
   <% end %>
 
@@ -41,13 +41,13 @@
     <div class="my-4">
       <%= form.label :rôle, "Rôle" %>
       <span data-action="change->toggle-agent-service#change">
-        <%= form.select :rôle, options_for_select(User.rôles.keys, @user.rôle), {}, class: 'select select-bordered w-full', data: { 'toggle-agent-service-target': 'role' } %>
+        <%= form.select :rôle, options_for_select(User.rôles.keys, @user.rôle), {}, class: 'select select-bordered select-sm w-full', data: { 'toggle-agent-service-target': 'role' } %>
       </span>
     </div>
 
     <div data-toggle-agent-service-target='service' class="my-4">
       <%= form.label :service, "Service" %>
-      <%= form.select :service, options_for_select(User.services.keys, @user.service), {include_blank: true}, class: 'select select-bordered w-full' %>
+      <%= form.select :service, options_for_select(User.services.keys, @user.service), {include_blank: true}, class: 'select select-bordered select-sm w-full' %>
     </div>
   </div>
 

@@ -61,27 +61,27 @@
       <div class="flex flex-wrap gap-5 sm:gap-8 my-5 items-end">
         <div class="w-full sm:flex-1">
           <%= form.label :début %>
-          <%= form.datetime_field :début, class: "input input-bordered input w-full",
+          <%= form.datetime_field :début, class: "input input-bordered input-sm w-full",
                                   data: { 'calc-temps-passe-target': 'debut', action: "change->calc-temps-passe#calc" } %>
         </div>
 
         <div class="w-full sm:flex-1">
           <%= form.label :fin %>
-          <%= form.datetime_field :fin, class: "input input-bordered input w-full",
+          <%= form.datetime_field :fin, class: "input input-bordered input-sm w-full",
                                   data: { 'calc-temps-passe-target': 'fin', action: "change->calc-temps-passe#calc" } %>
         </div>
 
         <div class="w-full sm:flex-1">
           <%= form.label :temps_de_pause, "Temps de pause (h)" %>
           <%= form.select :temps_de_pause, options_for_select([0.0, 0.5, 1.0], intervention.temps_de_pause),
-                          {}, class: "select select-bordered select w-full",
+                          {}, class: "select select-bordered select-sm w-full",
                           data: { 'calc-temps-passe-target': 'pause', action: "change->calc-temps-passe#calc" } %>
         </div>
 
         <div class="w-full sm:flex-1">
           <%= form.label :temps_total %>
           <%= form.number_field :temps_total,
-                                readonly: true, class: 'input input-bordered input w-full font-black',
+                                readonly: true, class: 'input input-bordered input-sm w-full font-black',
                                 data: { 'calc-temps-passe-target': 'temps' }  %>
         </div>
       </div>
@@ -107,7 +107,7 @@
     <% if !current_user.adhérent? %>
       <div class="flex items-center gap-2 my-5">
         <%= form.label :workflow_state, 'Statut :' %>
-        <%= form.select :workflow_state, Intervention.workflow_spec.states.keys.to_a, {}, class: "flex-1 sm:flex-none select select-bordered" %>
+        <%= form.select :workflow_state, Intervention.workflow_spec.states.keys.to_a, {}, class: "flex-1 sm:flex-none select select-bordered select-sm" %>
       </div>
     <% end %>
   <% end %>

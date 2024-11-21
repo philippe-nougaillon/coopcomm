@@ -7,34 +7,34 @@
 
       <div class="w-full sm:w-1/5 pr-4">
         <%= label_tag :search, "Rechercher" %>      
-        <%= text_field_tag :search, params[:search], onchange:'this.form.submit()', class:"input input-bordered w-full" %>
+        <%= text_field_tag :search, params[:search], onchange:'this.form.submit()', class:"input input-bordered input-sm w-full" %>
       </div> 
 
       <div class="w-full sm:w-auto pr-4">
         <%= label_tag :start_date, "Du" %>    
-        <%= text_field_tag :start_date, params[:start_date], type:'date', class:"input input-bordered w-full" %>
+        <%= text_field_tag :start_date, params[:start_date], type:'date', class:"input input-bordered input-sm w-full" %>
       </div>
 
       <div class="w-full sm:w-auto pr-4">
         <%= label_tag :end_date, "Au" %>    
-        <%= text_field_tag :end_date, params[:end_date], type:'date', class:"input input-bordered w-full", onchange:'this.form.submit()' %>
+        <%= text_field_tag :end_date, params[:end_date], type:'date', class:"input input-bordered input-sm w-full", onchange:'this.form.submit()' %>
       </div>
 
       <div class="w-full sm:w-1/6 pr-4">
         <%= label_tag :user_id, "Utilisateur" %>
-        <%= select_tag :user_id, options_from_collection_for_select(@users, 'id', 'nom', params[:user_id]), include_blank:true, onchange:'this.form.submit()', class:"select select-bordered w-full" %>
+        <%= select_tag :user_id, options_from_collection_for_select(@users, 'id', 'nom', params[:user_id]), include_blank:true, onchange:'this.form.submit()', class:"select select-bordered select-sm w-full" %>
       </div>
 
       <div class="w-full sm:w-1/6 pr-4">
         <%= label_tag :type, "Type" %>
         <%= select_tag :type,
-            options_for_select(@types, params[:type]), include_blank:true, onchange:'this.form.submit()', class:"select select-bordered w-full" %>
+            options_for_select(@types, params[:type]), include_blank:true, onchange:'this.form.submit()', class:"select select-bordered select-sm w-full" %>
       </div>
 
       <div class="w-full sm:w-1/12 pr-4">
         <%= label_tag :action_name, "Action" %>
         <%= select_tag :action_name,
-            options_for_select(@actions, params[:action_name]), include_blank:true, onchange:'this.form.submit()', class:"select select-bordered w-full" %>
+            options_for_select(@actions, params[:action_name]), include_blank:true, onchange:'this.form.submit()', class:"select select-bordered select-sm w-full" %>
       </div>  
     </div>
   <% end %>
