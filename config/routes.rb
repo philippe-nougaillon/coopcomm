@@ -39,7 +39,7 @@ Rails.application.routes.draw do
     get :audits
     get :create_new_user
     post :create_new_user_do
-    get :notifications
+    get :messagerie
     post :send_notification
   end
 

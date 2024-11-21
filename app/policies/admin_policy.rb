@@ -17,7 +17,7 @@ class AdminPolicy < ApplicationPolicy
     create_new_user?
   end
 
-  def notifications?
+  def messagerie?
     user
   end
 

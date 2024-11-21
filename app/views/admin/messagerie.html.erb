@@ -1,0 +1,24 @@
+<div class="w-full">
+  <div class="flex flex-wrap justify-between items-center">
+    <h1 class="text-4xl text-primary font-bold mt-1">Messagerie</h1>
+  </div>
+
+  <div id="notifications" class="min-w-full mt-8">
+    <%= turbo_stream_from "notifications_#{current_user.id}" %>
+    <%= render partial: "admin/notification", collection: @notifications %>
+  </div>
+
+  <% if policy(:admin).send_notification? %>
+    <%= form_tag({action: "send_notification", method: :post}, class:'flex items-end flex-wrap gap-4 mt-12 bg-base-200 rounded p-2', 'data-controller': "message" ) do %>
+      <%= select_tag :user_id, options_from_collection_for_select(@users, :id, :nom), include_blank:true, class: "select select-sm select-bordered", required: true, data: {'message-target': 'user'} %>
+      <div class="join flex-1">
+        <%= text_field_tag :message, params[:message],{ class: "input input-bordered input-sm flex-1 join-item", required: true, include_blank:true, placeholder: "Entrez le message pour l'agent", data: {'message-target': 'message'} } %>
+        <%= button_tag type: :submit, class: 'btn btn-sm join-item rounded-r-full', data: { 'message-target': 'submit', action: 'click->message#delete_message'} do %>
+          <span class="material-symbols-outlined">
+            send
+          </span>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+</div>
