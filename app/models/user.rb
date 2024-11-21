@@ -59,6 +59,10 @@ class User < ApplicationRecord
     "#{self.nom} #{self.prénom}"
   end
 
+  def nom_role
+    "#{self.nom} (#{self.rôle.upcase})"
+  end
+
   def super_admin?
     %w[philippe.nougaillon@gmail.com contact@philnoug.com pierreemmanuel.dacquet@gmail.com].include?(self.email)
   end

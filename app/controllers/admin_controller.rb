@@ -57,7 +57,9 @@ class AdminController < ApplicationController
   def messagerie
     @notifications = current_user.notifications.ordered
     @new_notification_ids = @notifications.where("notifications.created_at > ?", current_user.notifications_last_seen_at).pluck(:id)
-    @users = current_user.organisation.users.agent.ordered
+    
+    @users = current_user.organisation.users.équipe.ordered
+    @users += current_user.organisation.users.agent.ordered
     current_user.update!(notifications_last_seen_at: DateTime.now)
   end
 
