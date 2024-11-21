@@ -200,7 +200,7 @@ class InterventionsController < ApplicationController
 
     # Use callbacks to share common setup or constraints between actions.
     def set_intervention
-      @intervention = Intervention.find(params[:id])
+      @intervention = Intervention.find_by(slug: params[:id])
     end
 
     def set_form_variables

@@ -1,5 +1,9 @@
 class User < ApplicationRecord
+  extend FriendlyId
+  friendly_id :slug_candidates, use: :slugged
+
   audited except: :notifications_last_seen_at
+
 
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :rememberable, :timeoutable 
@@ -135,6 +139,12 @@ class User < ApplicationRecord
 
   def new_notifications?
     return self.notifications.where("notifications.created_at > ?", self.notifications_last_seen_at).any?
+  end
+
+  private
+
+  def slug_candidates
+    [SecureRandom.uuid]
   end
 
 end

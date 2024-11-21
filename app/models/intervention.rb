@@ -1,4 +1,6 @@
 class Intervention < ApplicationRecord
+  extend FriendlyId
+  friendly_id :slug_candidates, use: :slugged
   include Workflow
   include WorkflowActiverecord
 
@@ -108,6 +110,12 @@ class Intervention < ApplicationRecord
     unless absence_ids.flatten.empty?
       errors.add(:interventions, ": Agent(s) '#{User.where(id: Absence.where(id: absence_ids.uniq.flatten).pluck(:user_id)).pluck(:nom).uniq.join(', ')}' pas disponible(s) à ces dates")
     end
+  end
+
+  private
+
+  def slug_candidates
+    [SecureRandom.uuid]
   end
 
 end

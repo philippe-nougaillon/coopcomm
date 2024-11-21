@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_11_20_152932) do
+ActiveRecord::Schema[7.1].define(version: 2024_11_21_104154) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -100,6 +100,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_20_152932) do
     t.integer "note", default: 5
     t.bigint "user_id", null: false
     t.string "avis"
+    t.string "slug"
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
     t.index ["agent_binome_id"], name: "index_interventions_on_agent_binome_id"
     t.index ["agent_id"], name: "index_interventions_on_agent_id"
@@ -118,6 +119,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_20_152932) do
     t.boolean "statut", default: true
     t.boolean "etat", default: false
     t.json "error_message"
+    t.string "slug"
     t.index ["organisation_id"], name: "index_mail_logs_on_organisation_id"
   end
 
@@ -289,6 +291,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_11_20_152932) do
     t.string "uid"
     t.string "provider"
     t.datetime "notifications_last_seen_at", default: "2024-11-07 09:50:54"
+    t.string "slug"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["organisation_id"], name: "index_users_on_organisation_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
