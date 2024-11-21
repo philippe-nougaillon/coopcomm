@@ -145,6 +145,10 @@ class User < ApplicationRecord
     return self.notifications.where("notifications.created_at > ?", self.notifications_last_seen_at).any?
   end
 
+  def absent?
+    self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", Date.today).any?
+  end
+
   private
 
   def slug_candidates

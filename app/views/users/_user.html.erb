@@ -7,6 +7,13 @@
   <td class="text-2xl font-black text-primary">
     <%= link_to user.nom_prénom, user, class: 'hover:underline hover:text-base-content' %>
   </td>
+  <td class="text-center">
+    <% if user.agent? && user.absent? %>
+      <span class="material-symbols-outlined text-error">
+        check_circle
+      </span>
+    <% end %>
+  </td>
   <td class="text-success font-black">
     <%= user.rôle.upcase %>
   </td>
