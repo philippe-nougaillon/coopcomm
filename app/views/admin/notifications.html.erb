@@ -4,7 +4,7 @@
   </div>
 
   <div id="notifications" class="min-w-full mt-8">
-    <%= turbo_stream_from "notifications" %>
+    <%= turbo_stream_from "notifications_#{current_user.id}" %>
     <%= render partial: "admin/notification", collection: @notifications %>
   </div>
 </div>
