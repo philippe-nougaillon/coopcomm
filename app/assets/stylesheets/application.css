@@ -32,7 +32,7 @@
 
 .typewriter p {
   width: 0;
-  animation: typing 2s steps(40, end) forwards, blink .5s step-end infinite alternate;
+  animation: typing 2s steps(40, end) forwards;
   white-space: nowrap;
   overflow: hidden;
   border-right: 3px solid;
@@ -50,11 +50,11 @@
   }
 }
 
-@keyframes blink {
+/* @keyframes blink {
   50% {
     border-color: transparent
   }
-}
+} */
 /* END TypeWriter */
 
 .select, .input{
