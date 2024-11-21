@@ -64,11 +64,17 @@ class AdminController < ApplicationController
   def send_notification
     notification = Notification.new(params.permit(:user_id))
     notification.message = "De #{current_user.nom_prénom} : " + params[:message]
-    notification.save
+
     self_notification = Notification.new
     self_notification.user_id = current_user.id
     self_notification.message = "À #{User.find(params[:user_id]).nom} : " + params[:message]
-    self_notification.save
+
+    if notification.save && self_notification.save
+      render json: { success: true, message: "Notifications envoyées avec succès" }, status: :ok
+    else
+      errors = notification.errors.full_messages + self_notification.errors.full_messages
+      render json: { success: false, errors: errors }, status: :unprocessable_entity
+    end
   end
 
   private
