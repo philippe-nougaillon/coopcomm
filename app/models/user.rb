@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  audited
+  audited except: :notifications_last_seen_at
 
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :rememberable, :timeoutable 
