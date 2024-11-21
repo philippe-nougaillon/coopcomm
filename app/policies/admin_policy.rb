@@ -20,4 +20,8 @@ class AdminPolicy < ApplicationPolicy
   def notifications?
     user
   end
+
+  def send_notification?
+    user && user.manager?
+  end
 end

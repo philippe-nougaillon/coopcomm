@@ -57,7 +57,18 @@ class AdminController < ApplicationController
   def notifications
     @notifications = current_user.notifications.ordered
     @new_notification_ids = @notifications.where("notifications.created_at > ?", current_user.notifications_last_seen_at).pluck(:id)
+    @users = current_user.organisation.users.agent.ordered
     current_user.update!(notifications_last_seen_at: DateTime.now)
+  end
+
+  def send_notification
+    notification = Notification.new(params.permit(:user_id))
+    notification.message = "De #{current_user.nom_prénom} : " + params[:message]
+    notification.save
+    self_notification = Notification.new
+    self_notification.user_id = current_user.id
+    self_notification.message = "À #{User.find(params[:user_id]).nom} : " + params[:message]
+    self_notification.save
   end
 
   private

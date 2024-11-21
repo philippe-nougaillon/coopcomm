@@ -7,4 +7,18 @@
     <%= turbo_stream_from "notifications_#{current_user.id}" %>
     <%= render partial: "admin/notification", collection: @notifications %>
   </div>
+
+  <% if policy(:admin).send_notification? %>
+    <%= form_tag({action: "send_notification", method: :post}, class:'flex items-end flex-wrap gap-4 mt-12 bg-base-200 rounded p-2' ) do %>
+      <%= select_tag :user_id, options_from_collection_for_select(@users, :id, :nom), include_blank:true, class: "select select-sm select-bordered", required: true %>
+      <div class="join flex-1">
+        <%= text_field_tag :message, params[:message],{ class: "input input-bordered input-sm flex-1 join-item", required: true, include_blank:true, placeholder: "Entrez le message pour l'agent" } %>
+        <%= button_tag type: :submit, class: 'btn btn-sm join-item rounded-r-full' do %>
+          <span class="material-symbols-outlined">
+            send
+          </span>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
 </div>
