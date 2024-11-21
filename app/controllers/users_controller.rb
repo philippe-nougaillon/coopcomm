@@ -25,7 +25,7 @@ class UsersController < ApplicationController
   # GET /users/1 or /users/1.json
   def show
     @absences = @user.absences.ordered
-    @audits = Audited::Audit.where(user_id: @user.id).reorder(id: :desc)
+    @audits = @user.own_and_associated_audits.reorder(id: :desc)
     @pagy, @audits = pagy(@audits, items: 10)
   end
 

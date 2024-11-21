@@ -1,5 +1,5 @@
 class Absence < ApplicationRecord
-  audited
+  audited associated_with: :user
 
   belongs_to :user
 
