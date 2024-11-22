@@ -72,6 +72,7 @@ class AdminController < ApplicationController
     self_notification.message = "À #{User.find(params[:user_id]).nom} : " + params[:message]
 
     if notification.save && self_notification.save
+      current_user.update!(notifications_last_seen_at: DateTime.now)
       render json: { success: true, message: "Notifications envoyées avec succès" }, status: :ok
     else
       errors = notification.errors.full_messages + self_notification.errors.full_messages
