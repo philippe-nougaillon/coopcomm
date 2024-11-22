@@ -14,6 +14,8 @@ class InterventionsController < ApplicationController
     @grouped_agents = User.grouped_agents(@organisation_members)
     @tags = @interventions.tag_counts_on(:tags).order(:name)
 
+    params[:filtre] ||= "à_venir"
+
     if params[:search].present?
       @interventions = @interventions.where("description ILIKE :search OR commentaires ILIKE :search", {search: "%#{params[:search]}%"})
     end
@@ -39,6 +41,10 @@ class InterventionsController < ApplicationController
       end
     elsif params[:au].present?
       @interventions = @interventions.where("DATE(fin) = ?", params[:au])
+    end
+
+    if params[:filtre] == "à_venir"
+      @interventions = @interventions.where("début > ?", DateTime.now).or(@interventions.where(début: nil))
     end
 
     if params[:workflow_state].present?

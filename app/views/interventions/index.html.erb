@@ -48,14 +48,31 @@
       <% end %>
     </div>
     <div class="flex flex-wrap items-end gap-4 mt-4">
-      <div class="w-full lg:w-fit">
-        <%= label_tag :workflow_state, "Statut" %>
-        <%= select_tag :workflow_state, 
-                        options_for_select(Intervention.workflow_state_humanized, params[:workflow_state]), 
-                        include_blank: true,
-                        class: 'select select-bordered select-sm w-full', 
-                        onchange: 'this.form.submit()' %>
+      <div class="flex gap-4 w-full lg:w-fit">
+        <div class="w-full lg:w-fit">
+          <%= label_tag :workflow_state, "Statut" %>
+          <%= select_tag :workflow_state, 
+                          options_for_select(Intervention.workflow_state_humanized, params[:workflow_state]), 
+                          include_blank: true,
+                          class: 'select select-bordered select-sm w-full', 
+                          onchange: 'this.form.submit()' %>
+        </div>
+
+        <div class="w-full lg:w-fit flex flex-col gap-2">
+          <%= label_tag :filtre, "Interventions" %> 
+          <div class="flex gap-4">
+            <div class="flex items-center gap-1">
+              <%= radio_button_tag :filtre, "toutes", (params[:filtre]=='toutes'), id: 'filtre_toutes', onchange: 'this.form.submit()', class: 'radio radio-sm radio-primary' %>
+              <label for="filtre_toutes" class="cursor-pointer">Toutes</label>
+            </div>
+            <div class="flex items-center gap-1">
+              <%= radio_button_tag :filtre, "à_venir", (params[:filtre]!='toutes'), id: 'filtre_a_venir', onchange: 'this.form.submit()', class: 'radio radio-sm radio-primary' %>
+              <label for="filtre_a_venir" class="cursor-pointer">À venir</label>
+            </div>
+          </div>
+        </div>
       </div>
+
       <div class="hidden sm:flex gap-4 w-full min-w-fit lg:w-3/12">
         <div class="flex-1">
           <%= label_tag :du, 'Du' %>
