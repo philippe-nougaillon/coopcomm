@@ -11,41 +11,45 @@
     </div>
   <% end %>
 
-  <div class="mt-4">
-    <%= form.label :nom, style: "display: block" %>
-    <%= form.text_field :nom, class: 'input input-bordered input-sm w-full', required: true %>
-  </div>
+  <div class="flex flex-wrap md:flex-nowrap gap-4 w-full mt-4">
+    <div class="w-full">
+      <%= form.label :nom, style: "display: block" %>
+      <%= form.text_field :nom, class: 'input input-bordered input-sm w-full', required: true %>
+    </div>
 
-  <div class="mt-4">
-    <%= form.label :prénom, style: "display: block" %>
-    <%= form.text_field :prénom, class: 'input input-bordered input-sm w-full', required: true %>
-  </div>
+    <div class="w-full">
+      <%= form.label :prénom, style: "display: block" %>
+      <%= form.text_field :prénom, class: 'input input-bordered input-sm w-full', required: true %>
+    </div>
 
-  <div class="mt-4">
-    <%= form.label :email, style: "display: block" %>
-    <%= form.email_field :email, class: 'input input-bordered input-sm w-full', required: true %>
+    <div class="w-full">
+      <%= form.label :email, style: "display: block" %>
+      <%= form.email_field :email, class: 'input input-bordered input-sm w-full', required: true %>
+    </div>
   </div>
 
   <% if user.new_record? %>
-    <div class="mt-4">
-      <%= form.label :password, style: "display: block" %>
-      <%= form.password_field :password, class: 'input input-bordered input-sm w-full' %>
-    </div>
-    <div class="mt-4">
-      <%= form.label :password_confirmation, style: "display: block" %>
-      <%= form.password_field :password_confirmation, class: 'input input-bordered input-sm w-full' %>
+    <div class="flex flex-wrap md:flex-nowrap gap-4 w-full mt-4">
+      <div class="w-full">
+        <%= form.label :password, style: "display: block" %>
+        <%= form.password_field :password, class: 'input input-bordered input-sm w-full' %>
+      </div>
+      <div class="w-full">
+        <%= form.label :password_confirmation, style: "display: block" %>
+        <%= form.password_field :password_confirmation, class: 'input input-bordered input-sm w-full' %>
+      </div>
     </div>
   <% end %>
 
-  <div data-controller="toggle-agent-service">
-    <div class="my-4">
+  <div data-controller="toggle-agent-service" class="flex flex-wrap md:flex-nowrap gap-4 w-full my-4">
+    <div>
       <%= form.label :rôle, "Rôle" %>
       <span data-action="change->toggle-agent-service#change">
         <%= form.select :rôle, options_for_select(User.rôles.keys, @user.rôle), {}, class: 'select select-bordered select-sm w-full', data: { 'toggle-agent-service-target': 'role' } %>
       </span>
     </div>
 
-    <div data-toggle-agent-service-target='service' class="my-4">
+    <div data-toggle-agent-service-target='service'>
       <%= form.label :service, "Service" %>
       <%= form.select :service, options_for_select(User.services.keys, @user.service), {include_blank: true}, class: 'select select-bordered select-sm w-full' %>
     </div>

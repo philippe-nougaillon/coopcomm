@@ -72,7 +72,7 @@
         </div>
 
         <div class="w-full sm:flex-1">
-          <%= form.label :temps_de_pause, "Temps de pause (h)" %>
+          <%= form.label :temps_de_pause, "Temps de pause (h)", class: 'whitespace-nowrap' %>
           <%= form.select :temps_de_pause, options_for_select([0.0, 0.5, 1.0], intervention.temps_de_pause),
                           {}, class: "select select-bordered select-sm w-full",
                           data: { 'calc-temps-passe-target': 'pause', action: "change->calc-temps-passe#calc" } %>

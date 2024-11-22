@@ -26,7 +26,7 @@
 <p class="mb-4">
   <strong>Statut :</strong>
   <% if status = @result["items"].find{|item| item["message"]["headers"]["message-id"] == @mail_log.message_id } || @mail_log.error_message %>
-    <span class="text-error"><%= JSON.pretty_generate(status) %></span>
+    <span class="text-error !break-words"><%= JSON.pretty_generate(status) %></span>
   <% else %>
     <span class="text-success">OK</span>
   <% end %>

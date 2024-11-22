@@ -19,7 +19,7 @@
       <%= select_tag :search_subject, options_for_select(@mail_logs.pluck(:subject).uniq.sort, params[:search_subject]), include_blank: true, onchange:'this.form.submit()', class:"select select-bordered select-sm w-full" %>
     </div>
 
-    <div class="sm:w-1/4 pr-4">
+    <div class="pr-4">
       <%= check_box_tag :ko, 1, params[:ko], class:'checkbox mr-2', onchange:'this.form.submit()' %>
       <%= label_tag :ko, "Afficher que les échecs (Statut = KO) ?" %>
     </div>

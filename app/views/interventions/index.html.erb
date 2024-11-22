@@ -7,7 +7,7 @@
 
   <%= form_tag request.path, method: :get do %>
     <div class="flex flex-wrap gap-4 mt-8">
-      <div class="flex gap-4 w-full md:w-8/12 lg:w-3/12">
+      <div class="flex gap-4 w-full min-w-fit lg:w-3/12">
         <div class="w-full">
           <%= label_tag :search, "Rechercher" %>
           <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-bordered input-sm w-full', placeholder: 'Description / Commentaires' %>
@@ -15,7 +15,7 @@
       </div>
 
       <% if current_user.manager? || current_user.agent? %>
-        <div class="flex gap-4 w-full md:w-8/12 lg:w-3/12">
+        <div class="flex flex-wrap gap-4 w-full min-w-fit lg:w-3/12">
           <div class="flex-1">
             <%= label_tag :adherent_id, "Adhérent" %>
             <%= select_tag :adherent_id, options_from_collection_for_select(@adhérents, :id, :nom_prénom, params[:adherent_id]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()' %>
@@ -32,7 +32,7 @@
       <% end %>
 
       <% if current_user.manager? || current_user.adhérent? || current_user.équipe? %>
-        <div class="flex gap-4 w-full md:w-8/12 lg:w-3/12">
+        <div class="flex flex-wrap gap-4 w-full min-w-fit lg:w-3/12">
           <% if current_user.manager? || current_user.adhérent? %>
             <div class="flex-1">
               <%= label_tag :service %>
@@ -48,7 +48,7 @@
       <% end %>
     </div>
     <div class="flex flex-wrap items-end gap-4 mt-4">
-      <div class="w-full md:w-8/12 lg:w-3/12">
+      <div class="w-full lg:w-fit">
         <%= label_tag :workflow_state, "Statut" %>
         <%= select_tag :workflow_state, 
                         options_for_select(Intervention.workflow_state_humanized, params[:workflow_state]), 
@@ -56,7 +56,7 @@
                         class: 'select select-bordered select-sm w-full', 
                         onchange: 'this.form.submit()' %>
       </div>
-      <div class="hidden sm:flex gap-4 w-full md:w-8/12 lg:w-3/12">
+      <div class="hidden sm:flex gap-4 w-full min-w-fit lg:w-3/12">
         <div class="flex-1">
           <%= label_tag :du, 'Du' %>
           <%= date_field_tag :du, params[:du], onchange: 'this.form.submit()', class: 'input input-bordered input-sm w-full' %>
