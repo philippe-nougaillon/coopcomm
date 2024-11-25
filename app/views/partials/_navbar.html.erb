@@ -19,7 +19,7 @@
         notifications_unread
       </span>
     <% else %>
-      <span class="material-symbols-outlined text-secondary">
+      <span class="material-symbols-outlined text-secondary <%= '!text-primary' if params[:action] == 'messagerie' %>">
         notifications
       </span>
     <% end %>
