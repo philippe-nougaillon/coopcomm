@@ -47,7 +47,7 @@
         </div>
       <% end %>
     </div>
-    <div class="flex flex-wrap items-end gap-4 mt-4">
+    <div class="flex flex-wrap items-start gap-4 mt-4">
       <div class="flex gap-4 w-full lg:w-fit">
         <div class="w-full lg:w-fit">
           <%= label_tag :workflow_state, "Statut" %>
@@ -60,7 +60,7 @@
 
         <div class="w-full lg:w-fit flex flex-col gap-2">
           <%= label_tag :filtre, "Interventions" %> 
-          <div class="flex gap-4">
+          <div class="flex flex-col">
             <div class="flex items-center gap-1">
               <%= radio_button_tag :filtre, "toutes", (params[:filtre]=='toutes'), id: 'filtre_toutes', onchange: 'this.form.submit()', class: 'radio radio-sm radio-primary' %>
               <label for="filtre_toutes" class="cursor-pointer">Toutes</label>
