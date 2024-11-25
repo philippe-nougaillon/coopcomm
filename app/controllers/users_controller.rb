@@ -19,6 +19,14 @@ class UsersController < ApplicationController
       @users = @users.where(service: params[:service])
     end
 
+    if params[:absent].present?
+      user_ids = []
+      @users.each do |user|
+        user_ids << user.id if user.absent?
+      end
+      @users = @users.where(id: user_ids)
+    end
+
     @pagy, @users = pagy(@users, items: 15)
   end
 

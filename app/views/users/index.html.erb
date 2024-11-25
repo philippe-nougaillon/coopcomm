@@ -12,7 +12,7 @@
         <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-bordered input-sm w-full', placeholder: 'Nom/Prénom/Email' %>
       </div>
 
-      <div class="flex gap-4">
+      <div class="flex items-end gap-4">
         <div class="w-full md:w-fit">
           <%= label_tag :rôle %>
           <%= select_tag :rôle, options_for_select(User.rôles, params[:rôle]), include_blank:true, class: 'select select-bordered select-sm w-full', onchange: 'this.form.submit()' %>    
@@ -21,6 +21,11 @@
         <div class="w-full md:w-fit">
           <%= label_tag :service %>
           <%= select_tag :service, options_for_select(@services, params[:service]), include_blank: true, class: 'select select-bordered select-sm w-full', onchange: 'this.form.submit()' %>
+        </div>
+
+        <div class="pr-4">
+          <%= check_box_tag :absent, 1, params[:absent], class:'checkbox mr-2', onchange:'this.form.submit()' %>
+          <%= label_tag :absent, "Afficher que les absents ?" %>
         </div>
       </div>
     </div>
@@ -34,7 +39,7 @@
         <tr>
           <th></th>
           <th>Nom Prénom</th>
-          <th>Absent?</th>
+          <th>Absent ?</th>
           <th>Rôle</th>
           <th>Service</th>
           <th>Email</th>

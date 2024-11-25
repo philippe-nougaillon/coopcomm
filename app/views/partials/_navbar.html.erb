@@ -1,19 +1,19 @@
 <div class="btm-nav z-10 shadow-2xl">
-  <%= link_to interventions_path, class: "text-secondary hover-active hover:shadow #{'active shadow' if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
+  <%= link_to interventions_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
     <span class="material-symbols-outlined">
       home
     </span>
   <% end %>
 
   <% if policy(User).index? %>
-    <%= link_to users_path, class: "text-secondary hover-active hover:shadow #{'active shadow' if params[:controller] == 'users'}", title: "Liste des utilisateurs" do %>
+    <%= link_to users_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'users'}", title: "Liste des utilisateurs" do %>
       <span class="material-symbols-outlined">
         group
       </span>
     <% end %>
   <% end %>
 
-  <%= link_to admin_messagerie_path, class: "text-secondary hover-active hover:shadow #{'active shadow' if params[:action] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
+  <%= link_to admin_messagerie_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
     <% if current_user.new_notifications? %>
       <span class="material-symbols-outlined text-error">
         notifications_unread
@@ -26,13 +26,13 @@
   <% end %>
 
   <% if policy(:pages).assistant? %>
-    <%= link_to pages_assistant_path, class: "text-secondary hover-active hover:shadow #{'active shadow' if params[:action] == 'assistant'}", title: 'Assistant TALEA' do %>
+    <%= link_to pages_assistant_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'assistant'}", title: 'Assistant TALEA' do %>
       IA
     <% end %>
   <% end %>
 
   <% if policy(MailLog).index? %>
-    <%= link_to mail_logs_path, class: "text-secondary hover-active hover:shadow #{'active shadow' if params[:controller] == 'mail_logs'}", title: "Mail Logs (historique des mails envoyés)" do %>
+    <%= link_to mail_logs_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'mail_logs'}", title: "Mail Logs (historique des mails envoyés)" do %>
       <span class="material-symbols-outlined">
         mark_email_read
       </span>
@@ -40,7 +40,7 @@
   <% end %>
 
   <% if policy(:admin).audits? %>
-    <%= link_to admin_audits_path, class: "text-secondary hover-active hover:shadow #{'active shadow' if params[:action] == 'audits'}", title: 'Activité (historique des modifications)' do %>
+    <%= link_to admin_audits_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'audits'}", title: 'Activité (historique des modifications)' do %>
       <span class="material-symbols-outlined">
         history
       </span>
