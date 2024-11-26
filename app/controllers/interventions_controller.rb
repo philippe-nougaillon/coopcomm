@@ -12,7 +12,7 @@ class InterventionsController < ApplicationController
     @équipes = @organisation_members.équipe
     @services = User.services
     @grouped_agents = User.grouped_agents(@organisation_members)
-    @tags = @interventions.tag_counts_on(:tags).order(:name)
+    @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
 
     params[:filtre] ||= "à_venir"
 

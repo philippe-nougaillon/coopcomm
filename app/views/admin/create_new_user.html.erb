@@ -1,5 +1,7 @@
 <div class="mx-auto w-full">
-  <h1 class="text-primary font-bold text-4xl">Nouvel utilisateur</h1>
+  <div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
+    <h1 class="text-primary font-bold text-4xl">Nouvel utilisateur</h1>
+  </div>
 
   <%= form_with(model: @user, class: "contents", url: "create_new_user_do", html: { autocomplete: "off" }) do |form| %>
     <% if @user.errors.any? %>
