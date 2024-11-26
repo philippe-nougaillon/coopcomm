@@ -1,9 +1,9 @@
-<div class="w-full h-screen overflow-hidden">
+<div class="w-full h-screen overflow-hidden relative">
   <div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
     <h1 class="text-4xl text-primary font-bold">Messagerie</h1>
   </div>
 
-  <div id="notifications" class="min-w-full mt-8 overflow-y-auto h-3/5">
+  <div id="notifications" class="min-w-full mt-8 overflow-y-auto" style="height: calc(85% - 4rem - 6rem);">
     <%= turbo_stream_from "notifications_#{current_user.id}" %>
     <%= render partial: "admin/notification", collection: @notifications %>
   </div>
