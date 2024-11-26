@@ -1,6 +1,6 @@
 Bonjour,
 <br><br>
-Le statut de l'intervention '<b><%= @intervention.description.humanize %></b>' a été changé par <%= @intervention.audits.last.user.nom_prénom %>.
+Le statut de l'intervention '<b><%= @intervention.description.humanize %></b>' a été changé par '<b><%= @intervention.audits.last.user.nom_prénom %></b>'.
 <br><br>
 Le nouveau statut est :  '<b><%= @intervention.workflow_state.humanize %></b>'.
 <br><br>
