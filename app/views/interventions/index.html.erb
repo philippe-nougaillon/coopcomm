@@ -47,14 +47,14 @@
         </div>
       <% end %>
     </div>
-    <div class="flex flex-wrap items-start gap-4 mt-4">
-      <div class="flex items-end gap-6 w-full lg:w-fit">
-        <div class="w-full lg:w-fit flex flex-col justify-between gap-2">
+    <div class="flex flex-wrap w-full items-start gap-4 mt-4">
+      <div class="flex items-end gap-6 w-full lg:w-3/12">
+        <div class="w-full flex flex-col justify-between gap-2">
           <%= label_tag :filtre, "Interventions" %> 
           <div class="flex gap-2">
             <div class="flex items-center gap-1">
               <%= radio_button_tag :filtre, "à_venir", (params[:filtre]!='toutes'), id: 'filtre_a_venir', onchange: 'this.form.submit()', class: 'radio radio-sm radio-primary' %>
-              <label for="filtre_a_venir" class="cursor-pointer">À venir</label>
+              <label for="filtre_a_venir" class="cursor-pointer whitespace-nowrap">À venir</label>
             </div>
             <div class="flex items-center gap-1">
               <%= radio_button_tag :filtre, "toutes", (params[:filtre]=='toutes'), id: 'filtre_toutes', onchange: 'this.form.submit()', class: 'radio radio-sm radio-primary' %>
@@ -63,7 +63,7 @@
           </div>
         </div>
 
-        <div class="w-full lg:w-fit">
+        <div class="w-full">
           <%= label_tag :workflow_state, "Statut" %>
           <%= select_tag :workflow_state, 
                           options_for_select(Intervention.workflow_state_humanized, params[:workflow_state]), 
