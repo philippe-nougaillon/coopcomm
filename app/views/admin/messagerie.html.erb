@@ -3,20 +3,17 @@
     <h1 class="text-4xl text-primary font-bold">Messagerie</h1>
   </div>
 
-  <div id="notifications" class="min-w-full mt-8 overflow-y-auto" style="height: calc(85% - 4rem - 6rem);">
+  <div id="notifications" class="min-w-full mt-8 overflow-y-auto" style="height: calc(85% - 10rem);">
     <%= turbo_stream_from "notifications_#{current_user.id}" %>
     <%= render partial: "admin/notification", collection: @notifications %>
   </div>
 
   <% if policy(:admin).send_notification? %>
-    <%= form_tag({action: "send_notification", method: :post}, class:'fixed bottom-0 flex items-end flex-wrap gap-4 mt-12 bg-base-200 rounded p-2 mb-16 w-screen left-1/2 -translate-x-1/2', style: 'max-width: 1536px;', data: {controller: "message", action: "submit->message#submit" } ) do %>
-      <span class="material-symbols-outlined pl-2">
-        forum
-      </span>
+    <%= form_tag({action: "send_notification", method: :post}, class:'fixed bottom-0 flex items-end flex-wrap gap-4 mt-12 bg-base-200 rounded w-screen left-1/2 -translate-x-1/2 py-2 px-4 mb-16', style: 'max-width: 1536px;', data: {controller: "message", action: "submit->message#submit" } ) do %>
       <%= select_tag :user_id, options_from_collection_for_select(@users, :id, :nom_role), include_blank: "Destinataire", class: "select select-sm select-bordered", required: true %>
       <div class="join flex-1">
         <%= text_field_tag :message, params[:message],{ class: "input input-bordered input-sm flex-1 join-item", required: true, include_blank:true, placeholder: "Entrez le message pour l'agent", 'data-message-target': 'message' } %>
-        <%= button_tag type: :submit, class: 'btn btn-sm join-item rounded-r-full' do %>
+        <%= button_tag type: :submit, class: 'btn btn-sm !btn-active join-item rounded-r-full' do %>
           <span class="material-symbols-outlined">
             send
           </span>
