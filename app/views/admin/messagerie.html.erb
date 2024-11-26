@@ -9,7 +9,7 @@
   </div>
 
   <% if policy(:admin).send_notification? %>
-    <%= form_tag({action: "send_notification", method: :post}, class:'fixed bottom-0 flex items-end flex-wrap gap-4 mt-12 bg-base-200 rounded p-2 mb-16 -ml-4 w-screen', style: 'max-width: 1536px;', data: {controller: "message", action: "submit->message#submit" } ) do %>
+    <%= form_tag({action: "send_notification", method: :post}, class:'fixed bottom-0 flex items-end flex-wrap gap-4 mt-12 bg-base-200 rounded p-2 mb-16 w-screen left-1/2 -translate-x-1/2', style: 'max-width: 1536px;', data: {controller: "message", action: "submit->message#submit" } ) do %>
       <span class="material-symbols-outlined pl-2">
         forum
       </span>
