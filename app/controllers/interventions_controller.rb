@@ -44,7 +44,7 @@ class InterventionsController < ApplicationController
     end
 
     if params[:filtre] == "à_venir"
-      @interventions = @interventions.where("début > ?", DateTime.now).or(@interventions.where(début: nil))
+      @interventions = @interventions.where("fin > ?", DateTime.now).or(@interventions.where(fin: nil))
     end
 
     if params[:workflow_state].present?
