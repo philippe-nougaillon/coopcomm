@@ -92,7 +92,9 @@
     </div>
 
     <% @intervention.photos.each do |photo| %>
-      <%= form.hidden_field :photos, multiple: true, value: photo.signed_id %>
+      <% unless photo.new_record? %>
+        <%= form.hidden_field :photos, multiple: true, value: photo.signed_id %>
+      <% end %>
     <% end %>
 
     <div class="sm:flex flex-wrap gap-8 my-5 items-end">
