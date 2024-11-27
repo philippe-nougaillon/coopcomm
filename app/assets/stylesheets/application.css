@@ -19,7 +19,10 @@
 .mask[type=radio]:checked:hover {
   /* Noir */
   /* background-color: var(--fallback-bc, oklch(var(--bc) / var(--tw-bg-opacity)));; */
-  background-color: rgb(250 204 21 / var(--tw-bg-opacity));
+  /* Jaune */
+  /* background-color: rgb(250 204 21 / var(--tw-bg-opacity)); */
+  /* Primary */
+  background-color: var(--fallback-p, oklch(var(--p) / var(--tw-bg-opacity)));
 }
 
 /* .btm-nav>:where(.hover-active):hover {
