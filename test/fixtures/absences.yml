@@ -4,10 +4,10 @@ one:
   du: 2024-11-20
   au: 2024-11-20
   motif: MyString
-  user: one
+  user_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>
 
 two:
-  du: 2024-11-20
-  au: 2024-11-20
+  du: 2024-11-21
+  au: 2024-11-21
   motif: MyString
-  user: two
+  user_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>

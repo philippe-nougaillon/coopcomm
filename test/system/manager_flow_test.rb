@@ -63,20 +63,17 @@ class ManagerFlowTest < ApplicationSystemTestCase
   end
 
   test "terminer une intervention" do
-    nouvelle_intervention = interventions(:nouvelle_intervention)
-    click_on "Terminer", match: :first
+    find("a:not([disabled])", text: "Terminer", match: :first).click
     assert_text "Intervention terminée"
   end
 
   test "valider une intervention" do
-    intervention_terminée = interventions(:intervention_terminée)
-    click_on "Valider", match: :first
+    find("a:not([disabled])", text: "Valider", match: :first).click
     assert_text "Intervention validée"
   end
 
   test "refuser une intervention" do
-    intervention_terminée = interventions(:intervention_terminée)
-    click_on "Refuser", match: :first
+    find("a:not([disabled])", text: "Refuser", match: :first).click
     assert_text "Intervention refusée"
   end
 
@@ -107,7 +104,7 @@ class ManagerFlowTest < ApplicationSystemTestCase
     click_on "Modifier ce(tte) Utilisateur"
     sleep(1)
     assert_text "Utilisateur modifié avec succès."
-    assert_text "Thomas Didier"
+    assert_text "THOMAS Didier"
     assert_text "thomas.didier@gmail.commmm"
     assert_text "Manager"
   end
@@ -132,7 +129,7 @@ class ManagerFlowTest < ApplicationSystemTestCase
     assert_no_text intervention.description
     visit users_url
     assert_no_text user.nom_prénom
-    visit user_url(user.id)
+    visit user_url(user.slug)
     assert_text "Vous n'êtes pas autorisé à effectuer cette action."
     assert_selector "h1", text: "Interventions"
   end

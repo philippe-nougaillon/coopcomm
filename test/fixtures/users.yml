@@ -11,6 +11,7 @@ hidalgo:
   email: anne.hidalgo@gmail.commmmm
   rôle: manager
   encrypted_password: "$2a$04$Sq0rBR0/IqysddNW29bcJO2S5vfi54HoOqWsnoEEBUDV9aajeJhUm"
+  slug: a188443b-d7d9-44ed-9d59-c1c968eac95b
 
 weil:
   organisation: mairie_paris
@@ -19,6 +20,7 @@ weil:
   email: ariel.weil@gmail.commmmm
   rôle: adhérent
   encrypted_password: "$2a$04$Sq0rBR0/IqysddNW29bcJO2S5vfi54HoOqWsnoEEBUDV9aajeJhUm"
+  slug: fba70281-7004-405d-8afa-153355373125
 
 berthout:
   organisation: mairie_paris
@@ -26,6 +28,7 @@ berthout:
   prénom: Florence
   email: florence.berthout@gmail.commmmm
   rôle: adhérent
+  slug: 193866f0-bff9-4ec8-978c-c2c77b948f32
 
 électricité:
   organisation: mairie_paris
@@ -33,6 +36,7 @@ berthout:
   prénom: Électricité
   email: electricite@gmail.commmmm
   rôle: équipe
+  slug: c379cf52-5e54-4852-bd7a-dc9cfdc70392
 
 bond:
   organisation: mairie_paris
@@ -41,6 +45,7 @@ bond:
   email: james.bond@gmail.commmmm
   rôle: agent
   encrypted_password: "$2a$04$Sq0rBR0/IqysddNW29bcJO2S5vfi54HoOqWsnoEEBUDV9aajeJhUm"
+  slug: 17ede8b7-ff8f-4a48-966e-4ef3186cae7d
 
 martin:
   organisation: mairie_paris
@@ -48,6 +53,7 @@ martin:
   prénom: Michel
   email: michel.martin@gmail.commmmm
   rôle: agent
+  slug: 7133b68a-1386-4f68-9243-10a8a4241191
 
 # Organisation marseille
 manager_marseille:
@@ -56,6 +62,7 @@ manager_marseille:
   prénom: Benoît
   email: benoit.payan@gmail.commmmm
   rôle: manager
+  slug: aca60f88-a19b-4417-bfce-1aee4647a624
 
 nettoyeur_marseille:
   organisation: mairie_marseille
@@ -63,6 +70,7 @@ nettoyeur_marseille:
   prénom: Nettoyage Marseille
   email: nettoyage_marseille@gmail.commmmm
   rôle: équipe
+  slug: 3bd58e3a-508a-4f8e-bef7-c0f5741363b5
 
 agent_marseille:
   organisation: mairie_marseille
@@ -70,6 +78,7 @@ agent_marseille:
   prénom: René
   email: rene.dupont@gmail.commmmm
   rôle: équipe
+  slug: 96a436c3-1b9c-457a-aeb0-60ca4e53b8f0
 
 adherent_marseille:
   organisation: mairie_marseille
@@ -77,3 +86,4 @@ adherent_marseille:
   prénom: Bernard
   email: bernard.tapie@gmail.commmmm
   rôle: adhérent
+  slug: ee438223-a203-43f4-9d97-1654c24d2520

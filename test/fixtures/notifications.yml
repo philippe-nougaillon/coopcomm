@@ -1,9 +1,9 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  message: MyText
-  user: one
+  message: "À BOND : Salut !"
+  user_id: <%= ActiveRecord::FixtureSet.identify(:hidalgo) %>
 
 two:
-  message: MyText
-  user: two
+  message: "De HIDALGO : Salut !"
+  user_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>
