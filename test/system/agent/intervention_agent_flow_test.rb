@@ -56,7 +56,7 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
 
   test "Ne pas pouvoir terminer une intervention" do
     visit interventions_url
-assert_no_selector "a:not([disabled])", text: "Terminer"
+    assert_no_selector "a:not([disabled])", text: "Terminer"
   end
 
   test "Ne pas pouvoir valider une intervention" do
