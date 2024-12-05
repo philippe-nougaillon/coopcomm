@@ -3,40 +3,37 @@ require "application_system_test_case"
 class InterventionManagerFlowTest < ApplicationSystemTestCase
 
   setup do
-    # @manager = users(:hidalgo)
-    # login(@manager)
+    @manager = users(:hidalgo)
+    login(@manager)
   end
-
-  # teardown do
-  #   Rails.cache.clear
-  # end
 
   test "Voir la liste des interventions" do
     visit interventions_url
     assert_selector "h1", text: "Interventions"
   end
 
-  # # test "Créer intervention" do
-  # #   click_on "Ajouter une Intervention"
-  # #   fill_in "Description", with: "Tailler les arbres"
-  # #   # fill_in "Mots clés", with: "tailler"
-  # #   # js_select 'tailler', from: 'Mots clés'
-  # #   # find("select[id='intervention_adherent_id']").select_option('Weil Ariel')
-  # #   # select = find("select[id='intervention_adherent_id']")
-  # #   select "Weil Ariel", from: "Adhérent"
-  # #   # js_select "Weil Ariel", from: "Adhérent"
-  # #   # select_from_slim_select("Weil Ariel", from: "Adhérent")
-  # #   # js_select "Team Électricité", from: "Équipe"
-  # #   # js_select "Bond James", from: "Agent 1"
-  # #   fill_in 'Début', with: DateTime.current.strftime("%m%d%Y\t%I%M%P")
-  # #   fill_in 'Fin', with: (DateTime.current + 8.hours).strftime("%m%d%Y\t%I%M%P")
-  # #   page.select "1.0", from: "Temps de pause (h)"
-  # #   fill_in "Commentaires", with: "Ceci est un commentaire !"
-  # #   click_on "Créer un(e) Intervention"
-  # #   assert_text "Intervention créée avec succès."
-  # # end
+  test "Créer intervention" do
+    visit interventions_url
+    click_on "Ajouter une Intervention"
+    fill_in "Description", with: "Tailler les arbres"
+    find('div.ss-placeholder', text: "Choisissez un ou plusieurs mots clés").click
+    page.driver.browser.switch_to.active_element.send_keys('Coupure électricité', :enter)
+    find('div.ss-single', text: "Choisissez un adhérent").click
+    page.driver.browser.switch_to.active_element.send_keys('Weil', :down, :enter)
+    find('div.ss-single', text: "Choisissez une équipe").click
+    page.driver.browser.switch_to.active_element.send_keys('Élec', :down, :enter)
+    find('div.ss-single', text: "Choisissez un agent", match: :first).click
+    page.driver.browser.switch_to.active_element.send_keys(:down, :enter)
+    fill_in 'Début', with: DateTime.current.strftime("%m%d%Y\t%I%M%P")
+    fill_in 'Fin', with: (DateTime.current + 8.hours).strftime("%m%d%Y\t%I%M%P")
+    page.select "1,0", from: "Temps de pause (h)"
+    fill_in "Commentaires", with: "Ceci est un commentaire !"
+    click_on "Créer un(e) Intervention"
+    assert_text "Intervention créée avec succès."
+  end
 
   test "Modifier intervention" do
+    visit interventions_url
     intervention = interventions(:tonte_locaux)
     click_on intervention.description
     sleep(1)
@@ -48,6 +45,7 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
   end
 
   test "Supprimer intervention" do
+    visit interventions_url
     intervention = interventions(:tonte_locaux)
     click_on intervention.description
     sleep(1)
@@ -59,27 +57,30 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
   end
 
   test "Terminer une intervention" do
+    visit interventions_url
     find("a:not([disabled])", text: "Terminer", match: :first).click
     assert_text "Intervention terminée"
   end
 
   test "Valider une intervention" do
+    visit interventions_url
     find("a:not([disabled])", text: "Valider", match: :first).click
     assert_text "Intervention validée"
   end
 
   test "Refuser une intervention" do
+    visit interventions_url
     find("a:not([disabled])", text: "Refuser", match: :first).click
     assert_text "Intervention refusée"
   end
 
-  # # test "Les filtres fonctionnent dans la liste des interventions" do
-  # # end
+  # test "Les filtres fonctionnent dans la liste des interventions" do
+  # end
 
-  # # test "Le temps total d'une intervention est correctement calculé" do
-  # # end
+  # test "Le temps total d'une intervention est correctement calculé" do
+  # end
 
-  # # test "Export XLS des interventions" do
-  # # end
+  # test "Export XLS des interventions" do
+  # end
 
 end
