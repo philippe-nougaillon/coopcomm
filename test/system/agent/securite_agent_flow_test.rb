@@ -1,10 +1,10 @@
 require "application_system_test_case"
 
-class SecuriteManagerFlowTest < ApplicationSystemTestCase
+class SecuriteAgentFlowTest < ApplicationSystemTestCase
 
   setup do
-    @manager = users(:hidalgo)
-    login(@manager)
+    @agent = users(:bond)
+    login(@agent)
   end
 
 
