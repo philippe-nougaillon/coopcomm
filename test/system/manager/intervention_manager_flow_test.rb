@@ -17,9 +17,11 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     click_on "Ajouter une Intervention"
     fill_in "Description", with: "Tailler les arbres"
     find('div.ss-placeholder', text: "Choisissez un ou plusieurs mots clés").click
-    page.driver.browser.switch_to.active_element.send_keys('Coupure électricité', :enter)
+    page.driver.browser.switch_to.active_element.send_keys('Coupure électricité', :enter, 'Réparation', :enter)
     find('div.ss-single', text: "Choisissez un adhérent").click
-    page.driver.browser.switch_to.active_element.send_keys('Weil', :down, :enter)
+    within('.ss-list') do
+      find('div.ss-option', text: "Weil Ariel").click
+    end
     find('div.ss-single', text: "Choisissez une équipe").click
     page.driver.browser.switch_to.active_element.send_keys('Élec', :down, :enter)
     find('div.ss-single', text: "Choisissez un agent", match: :first).click

@@ -1,10 +1,10 @@
 require "application_system_test_case"
 
-class InterventionAdherentFlowTest < ApplicationSystemTestCase
+class InterventionAgentFlowTest < ApplicationSystemTestCase
 
   setup do
-    @adhérent = users(:weil)
-    login(@adhérent)
+    @agent = users(:bond)
+    login(@agent)
   end
 
   test "Voir la liste des interventions" do
@@ -18,10 +18,14 @@ class InterventionAdherentFlowTest < ApplicationSystemTestCase
     fill_in "Description", with: "Tailler les arbres"
     # find('div.ss-placeholder', text: "Choisissez un ou plusieurs mots clés").click
     # page.driver.browser.switch_to.active_element.send_keys('Coupure électricité', :enter, 'Réparation', :enter)
-    find('div.ss-single', text: "Choisissez une équipe").click
-    page.driver.browser.switch_to.active_element.send_keys('Élec', :down, :enter)
-    find('div.ss-single', text: "Choisissez un agent", match: :first).click
-    page.driver.browser.switch_to.active_element.send_keys(:down, :enter)
+    find('div.ss-single', text: "Choisissez un adhérent").click
+    within('.ss-list') do
+      find('div.ss-option', text: "Weil Ariel").click
+    end
+    # find('div.ss-single', text: "Choisissez une équipe").click
+    # page.driver.browser.switch_to.active_element.send_keys('Élec', :down, :enter)
+    # find('div.ss-single', text: "Choisissez un agent", match: :first).click
+    # page.driver.browser.switch_to.active_element.send_keys(:down, :enter)
     fill_in 'Début', with: DateTime.current.strftime("%m%d%Y\t%I%M%P")
     fill_in 'Fin', with: (DateTime.current + 8.hours).strftime("%m%d%Y\t%I%M%P")
     page.select "1,0", from: "Temps de pause (h)"
@@ -50,22 +54,19 @@ class InterventionAdherentFlowTest < ApplicationSystemTestCase
     assert_no_selector "[data-testid=\"Supprimer l'intervention\"]"
   end
 
-  test "Terminer une intervention" do
+  test "Ne pas pouvoir terminer une intervention" do
     visit interventions_url
-    find("a:not([disabled])", text: "Terminer", match: :first).click
-    assert_text "Intervention terminée"
+assert_no_selector "a:not([disabled])", text: "Terminer"
   end
 
-  test "Valider une intervention" do
+  test "Ne pas pouvoir valider une intervention" do
     visit interventions_url
-    find("a:not([disabled])", text: "Valider", match: :first).click
-    assert_text "Intervention validée"
+    assert_no_selector "a:not([disabled])", text: "Valider"
   end
 
-  test "Refuser une intervention" do
+  test "Ne pas pouvoir refuser une intervention" do
     visit interventions_url
-    find("a:not([disabled])", text: "Refuser", match: :first).click
-    assert_text "Intervention refusée"
+    assert_no_selector "a:not([disabled])", text: "Refuser"
   end
 
   # test "Les filtres fonctionnent dans la liste des interventions" do

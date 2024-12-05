@@ -44,6 +44,7 @@ bond:
   prénom: James
   email: james.bond@gmail.commmmm
   rôle: agent
+  service: comptabilité
   encrypted_password: "$2a$04$Sq0rBR0/IqysddNW29bcJO2S5vfi54HoOqWsnoEEBUDV9aajeJhUm"
   slug: 17ede8b7-ff8f-4a48-966e-4ef3186cae7d
 
@@ -53,6 +54,7 @@ martin:
   prénom: Michel
   email: michel.martin@gmail.commmmm
   rôle: agent
+  service: technique
   slug: 7133b68a-1386-4f68-9243-10a8a4241191
 
 # Organisation marseille

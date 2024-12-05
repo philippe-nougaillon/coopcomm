@@ -1,10 +1,10 @@
 require "application_system_test_case"
 
-class UserAdherentFlowTest < ApplicationSystemTestCase
+class UserAgentFlowTest < ApplicationSystemTestCase
 
   setup do
-    @adhérent = users(:weil)
-    login(@adhérent)
+    @agent = users(:bond)
+    login(@agent)
   end
 
   test "Ne peut pas visiter la liste des utilisateurs" do
