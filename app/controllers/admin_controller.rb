@@ -17,7 +17,7 @@ class AdminController < ApplicationController
     end
 
     if params[:start_date].present? && params[:end_date].present? 
-      @audits = @audits.where("created_at BETWEEN (?) AND (?)", params[:start_date], params[:end_date])
+      @audits = @audits.where("DATE(created_at) BETWEEN (?) AND (?)", params[:start_date], params[:end_date])
     end
 
     if params[:user_id].present?
