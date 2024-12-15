@@ -20,6 +20,8 @@
   <td><%= user.service.try(:capitalize) %></td>
   <td><%= user.email %></td>
   <td>
-    <%= "#{ number_with_precision(user.moyenne, precision: 2, strip_insignificant_zeros: true) } / 5" if user.moyenne %>
+    <% if user.agent? %>
+      <%= "#{ number_with_precision(user.moyenne, precision: 2, strip_insignificant_zeros: true) } / 5" if user.moyenne %>
+    <% end %>
   </td>
 </tr>
