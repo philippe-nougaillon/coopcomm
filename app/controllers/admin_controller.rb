@@ -82,7 +82,7 @@ class AdminController < ApplicationController
 
   def stats
     @organisations = Organisation.all
-    @pagy, @organisations = pagy(@organisations, items: 5)
+    # @pagy, @organisations = pagy(@organisations, items: 5)
   end
 
   private
