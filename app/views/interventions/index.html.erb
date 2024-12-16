@@ -52,11 +52,11 @@
         <div class="w-full flex flex-col justify-between gap-2">
           <%= label_tag :filtre, "Interventions" %> 
           <div class="flex gap-2">
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-1" title="Affiche les interventions qui ne sont pas terminés ou qui n'ont pas de date de fin">
               <%= radio_button_tag :filtre, "à_venir", (params[:filtre]!='toutes'), id: 'filtre_a_venir', onchange: 'this.form.submit()', class: 'radio radio-sm radio-primary' %>
               <label for="filtre_a_venir" class="cursor-pointer whitespace-nowrap">À venir</label>
             </div>
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-1" title="Affiche les interventions terminées et non terminées">
               <%= radio_button_tag :filtre, "toutes", (params[:filtre]=='toutes'), id: 'filtre_toutes', onchange: 'this.form.submit()', class: 'radio radio-sm radio-primary' %>
               <label for="filtre_toutes" class="cursor-pointer">Toutes</label>
             </div>
