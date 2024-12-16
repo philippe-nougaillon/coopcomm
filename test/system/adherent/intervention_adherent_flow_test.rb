@@ -7,13 +7,18 @@ class InterventionAdherentFlowTest < ApplicationSystemTestCase
     login(@adhérent)
   end
 
-  test "Voir la liste des interventions" do
-    visit interventions_url
+  test "Voir la liste des interventions en se connectant" do
     assert_selector "h1", text: "Interventions"
   end
 
+  test "Voir que ses interventions" do
+    agent_intervention = interventions(:tonte_locaux)
+    other_intervention = interventions(:intervention_autre_adhérent)
+    assert_text agent_intervention.description
+    assert_no_text other_intervention.description
+  end
+
   test "Créer intervention" do
-    visit interventions_url
     click_on "Ajouter une Intervention"
     fill_in "Description", with: "Tailler les arbres"
     # find('div.ss-placeholder', text: "Choisissez un ou plusieurs mots clés").click
@@ -31,7 +36,6 @@ class InterventionAdherentFlowTest < ApplicationSystemTestCase
   end
 
   test "Modifier intervention" do
-    visit interventions_url
     intervention = interventions(:tonte_locaux)
     click_on intervention.description
     sleep(1)
@@ -43,7 +47,6 @@ class InterventionAdherentFlowTest < ApplicationSystemTestCase
   end
 
   test "Ne pas pouvoir supprimer intervention" do
-    visit interventions_url
     intervention = interventions(:tonte_locaux)
     click_on intervention.description
     sleep(1)
@@ -51,19 +54,16 @@ class InterventionAdherentFlowTest < ApplicationSystemTestCase
   end
 
   test "Terminer une intervention" do
-    visit interventions_url
     find("a:not([disabled])", text: "Terminer", match: :first).click
     assert_text "Intervention terminée"
   end
 
   test "Valider une intervention" do
-    visit interventions_url
     find("a:not([disabled])", text: "Valider", match: :first).click
     assert_text "Intervention validée"
   end
 
   test "Refuser une intervention" do
-    visit interventions_url
     find("a:not([disabled])", text: "Refuser", match: :first).click
     assert_text "Intervention refusée"
   end

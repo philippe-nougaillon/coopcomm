@@ -12,7 +12,7 @@ class SecuriteManagerFlowTest < ApplicationSystemTestCase
     user = users(:manager_marseille)
     intervention = interventions(:nettoyage_port)
     assert_no_text intervention.description
-    visit users_url
+    click_on "Liste des utilisateurs"
     assert_no_text user.nom_prénom
     visit user_url(user.slug)
     assert_text "Vous n'êtes pas autorisé à effectuer cette action."
