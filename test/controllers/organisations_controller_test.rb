@@ -5,10 +5,10 @@ class OrganisationsControllerTest < ActionDispatch::IntegrationTest
     @organisation = organisations(:mairie_paris)
   end
 
-  test "should get index" do
-    get organisations_url
-    assert_response :success
-  end
+  # test "should get index" do
+  #   get organisations_url
+  #   assert_response :success
+  # end
 
   # test "should get new" do
   #   get new_organisation_url

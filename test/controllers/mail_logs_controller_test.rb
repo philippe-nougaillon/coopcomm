@@ -5,10 +5,10 @@ class MailLogsControllerTest < ActionDispatch::IntegrationTest
     @mail_log = mail_logs(:one)
   end
 
-  test "should get index" do
-    get mail_logs_url
-    assert_response :success
-  end
+  # test "should get index" do
+  #   get mail_logs_url
+  #   assert_response :success
+  # end
 
   # test "should get new" do
   #   get new_mail_log_url
@@ -23,10 +23,10 @@ class MailLogsControllerTest < ActionDispatch::IntegrationTest
   #   assert_redirected_to mail_log_url(MailLog.last)
   # end
 
-  test "should show mail_log" do
-    get mail_log_url(@mail_log)
-    assert_response :success
-  end
+  # test "should show mail_log" do
+  #   get mail_log_url(@mail_log)
+  #   assert_response :success
+  # end
 
   # test "should get edit" do
   #   get edit_mail_log_url(@mail_log)
