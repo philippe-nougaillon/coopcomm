@@ -41,9 +41,11 @@ class AuditManagerFlowTest < ApplicationSystemTestCase
     go_to_audit_page
     fill_in "Du", with: (Date.today - 14).strftime("%m-%d-%Y")
     fill_in "Au", with: Date.today.strftime("%m-%d-%Y")
+    sleep(1)
     page.driver.browser.switch_to.active_element.send_keys(:enter)
     assert_text "Affichage de 1 élément"
     fill_in "Au", with: (Date.today - 1).strftime("%m-%d-%Y")
+    sleep(1)
     page.driver.browser.switch_to.active_element.send_keys(:enter)
     assert_text "Aucun élément trouvé"
   end
