@@ -80,6 +80,11 @@ class AdminController < ApplicationController
     end
   end
 
+  def stats
+    @organisations = Organisation.all
+    @pagy, @organisations = pagy(@organisations, items: 5)
+  end
+
   private
 
   def is_user_authorized

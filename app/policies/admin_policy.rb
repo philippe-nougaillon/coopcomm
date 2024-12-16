@@ -24,4 +24,8 @@ class AdminPolicy < ApplicationPolicy
   def send_notification?
     user && user.manager?
   end
+
+  def stats?
+    user && ['pierre-emmanuel.dacquet@aikku.eu', 'philippe.nougaillon@aikku.eu', 'sebastien.pourchaire@aikku.eu'].include?(user.email)
+  end
 end

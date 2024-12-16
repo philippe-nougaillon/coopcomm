@@ -41,6 +41,7 @@ Rails.application.routes.draw do
     post :create_new_user_do
     get :messagerie
     post :send_notification
+    get :stats
   end
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

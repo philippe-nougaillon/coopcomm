@@ -1,0 +1,55 @@
+<div>
+  <h1 class="font-bold text-4xl mb-6">Stats</h1>
+
+  <div class='overflow-x-auto mt-6'>
+    <table class='table'>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Dernière Connexion</th>
+          <th>Rôle</th>
+          <th>Co</th>
+          <th>Interventions</th>
+          <th>Absences</th>
+          <th>Notifications</th>
+          <th>Créé depuis</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @organisations.each do |organisation| %>
+          <% organisation.users.each do |user| %>
+            <tr>
+              <td><%= user.email %></td>
+              <td><%= time_ago_in_words user.current_sign_in_at if user.sign_in_count.positive? %></td>
+              <td><%= user.rôle %></td>
+              <td class=" <%= user.sign_in_count.positive? ? 'text-danger font-black' : ''  %>"><%= user.sign_in_count %></td>
+              <td><%= Intervention.by_role_for(user).count %></td>
+              <td><%= user.absences.count %></td>
+              <td><%= user.notifications.count %></td>
+              <td><%= time_ago_in_words user.created_at %></td>
+              <%# link_to "[X]", user_path(user), 'data-turbo-method': :delete, class:"btn btn-ghost btn-sm" %>
+            </tr>
+          <% end %>
+
+          <tr>
+            <td class="font-bold"><i>Total: <%= organisation.nom %></i></td>
+            <td></td>
+            <td></td>
+            <td><%# organisation.users.count %></td>
+            <td class="font-bold"><%= organisation.interventions.count %></td>
+            <td class="font-bold"><%= organisation.absences.count %></td>
+            <td class="font-bold"><%= organisation.notifications.count %></td>
+            <td><%= l(organisation.created_at, format: :long) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="my-6">
+    <%== pagy_info(@pagy) %>
+    <%== pagy_nav(@pagy) %>
+  </div>
+
+
+</div>
