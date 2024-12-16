@@ -2,7 +2,7 @@ require "test_helper"
 
 class InterventionsControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @intervention = interventions(:one)
+    @intervention = interventions(:tonte_locaux)
   end
 
   test "should get index" do
