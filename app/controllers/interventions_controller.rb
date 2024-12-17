@@ -6,12 +6,22 @@ class InterventionsController < ApplicationController
   # GET /interventions or /interventions.json
   def index
     @interventions = Intervention.by_role_for(current_user)
-    @interventions_count = @interventions.count
-    @organisation_members = current_user.organisation.users
-    @adhérents = @organisation_members.adhérent.order(:nom)
-    @équipes = @organisation_members.équipe
-    @services = User.services
-    @grouped_agents = User.grouped_agents(@organisation_members)
+    organisation_members = current_user.organisation.users
+    if current_user.manager?
+      @adhérents = organisation_members.adhérent.order(:nom)
+      @services = User.services
+      @équipes = organisation_members.équipe
+      @grouped_agents = User.grouped_agents(organisation_members)
+    elsif current_user.adhérent?
+      @adhérents = organisation_members.adhérent.order(:nom)
+      @services = User.services
+      @grouped_agents = User.grouped_agents(organisation_members)
+    elsif current_user.équipe?
+      @services = User.services
+      @grouped_agents = User.grouped_agents(organisation_members)
+    elsif current_user.agent?
+      @adhérents = organisation_members.adhérent.order(:nom)
+    end
     @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
 
     params[:filtre] ||= "à_venir"
@@ -29,7 +39,7 @@ class InterventionsController < ApplicationController
     end
 
     if params[:service].present?
-      agents_ids = @organisation_members.agent.where(service: params[:service]).pluck(:id)
+      agents_ids = organisation_members.agent.where(service: params[:service]).pluck(:id)
       @interventions = @interventions.where(agent_id: agents_ids)
     end
 
