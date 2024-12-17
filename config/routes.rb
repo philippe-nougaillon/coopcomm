@@ -30,7 +30,7 @@ Rails.application.routes.draw do
       get :terminer
       get :valider
       get :refuser
-      # get :archiver
+      get :archiver
       delete :purge
     end
   end

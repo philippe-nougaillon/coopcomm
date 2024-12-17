@@ -1,11 +1,19 @@
 class InterventionsController < ApplicationController
-  before_action :set_intervention, only: %i[ show edit update destroy accepter en_cours terminer valider refuser purge ]
+  before_action :set_intervention, only: %i[ show edit update destroy accepter en_cours terminer valider refuser archiver purge ]
   before_action :set_form_variables, only: %i[ new edit create update ]
   before_action :is_user_authorized
 
   # GET /interventions or /interventions.json
   def index
     @interventions = Intervention.by_role_for(current_user)
+    if params[:archives].present?
+      @interventions = @interventions.where(workflow_state: 'archivé')
+    elsif params[:workflow_state].present?
+      @interventions = @interventions.where("interventions.workflow_state = ?", params[:workflow_state].to_s.downcase)
+    else
+      @interventions = @interventions.where.not(workflow_state: 'archivé')
+    end
+
     organisation_members = current_user.organisation.users
     if current_user.manager?
       @adhérents = organisation_members.adhérent.order(:nom)
@@ -23,8 +31,6 @@ class InterventionsController < ApplicationController
       @adhérents = organisation_members.adhérent.order(:nom)
     end
     @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
-
-    params[:filtre] ||= "à_venir"
 
     if params[:search].present?
       @interventions = @interventions.where("description ILIKE :search OR commentaires ILIKE :search", {search: "%#{params[:search]}%"})
@@ -51,14 +57,6 @@ class InterventionsController < ApplicationController
       end
     elsif params[:au].present?
       @interventions = @interventions.where("DATE(fin) = ?", params[:au])
-    end
-
-    if params[:filtre] == "à_venir"
-      @interventions = @interventions.where("fin > ?", DateTime.now).or(@interventions.where(fin: nil))
-    end
-
-    if params[:workflow_state].present?
-      @interventions = @interventions.where("interventions.workflow_state = ?", params[:workflow_state].to_s.downcase)
     end
 
     if params[:tags].present?
@@ -188,11 +186,11 @@ class InterventionsController < ApplicationController
     redirect_to edit_intervention_path(@intervention, terminé: terminé), notice: "Intervention refusée"
   end
 
-  # def archiver
-  #   @intervention.archiver!
-  # #   send_workflow_changed_notification
-  #   redirect_to @intervention, notice: "Intervention archivée"
-  # end
+  def archiver
+    @intervention.archiver!
+  #   send_workflow_changed_notification
+    redirect_to @intervention, notice: "Intervention archivée"
+  end
 
   def purge
     @intervention.photos.find(params[:photo_id]).purge

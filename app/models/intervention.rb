@@ -29,7 +29,7 @@ class Intervention < ApplicationRecord
   TERMINE   = 'terminé'
   VALIDE    = 'validé'
   REFUSE    = 'refusé'
-  # ARCHIVE   = 'archivé'
+  ARCHIVE   = 'archivé'
 
   workflow do
     state NOUVEAU, meta: {style: 'badge-info text-white'} do
@@ -51,15 +51,15 @@ class Intervention < ApplicationRecord
     end
 
     state VALIDE, meta: {style: 'badge-success text-white'} do
-      # event :archiver, transitions_to: ARCHIVE
+      event :archiver, transitions_to: ARCHIVE
     end
 
     state REFUSE, meta: {style: 'badge-error text-white'} do
       # event :accepter, transitions_to: ACCEPTE
-      # event :archiver, transitions_to: ARCHIVE
+      event :archiver, transitions_to: ARCHIVE
     end
 
-    # state ARCHIVE, meta: {style: 'badge-ghost'}
+    state ARCHIVE, meta: {style: 'badge-ghost'}
   end
 
   # pour que le changement de 'workflow_state' se voit dans l'audit trail

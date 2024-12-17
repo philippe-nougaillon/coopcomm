@@ -47,22 +47,8 @@
         </div>
       <% end %>
     </div>
-    <div class="flex flex-wrap w-full items-start gap-4 mt-4">
+    <div class="flex flex-wrap w-full items-end gap-4 mt-4">
       <div class="flex items-start gap-6 w-full min-w-fit lg:w-3/12 items-end">
-        <div class="w-full flex flex-col justify-between gap-2">
-          <%= label_tag :filtre, "Interventions" %> 
-          <div class="flex gap-2">
-            <div class="flex items-center gap-1" title="Affiche les interventions qui ne sont pas terminés ou qui n'ont pas de date de fin">
-              <%= radio_button_tag :filtre, "à_venir", (params[:filtre]!='toutes'), id: 'filtre_a_venir', onchange: 'this.form.submit()', class: 'radio radio-sm radio-primary' %>
-              <label for="filtre_a_venir" class="cursor-pointer whitespace-nowrap">À venir</label>
-            </div>
-            <div class="flex items-center gap-1" title="Affiche les interventions terminées et non terminées">
-              <%= radio_button_tag :filtre, "toutes", (params[:filtre]=='toutes'), id: 'filtre_toutes', onchange: 'this.form.submit()', class: 'radio radio-sm radio-primary' %>
-              <label for="filtre_toutes" class="cursor-pointer">Toutes</label>
-            </div>
-          </div>
-        </div>
-
         <div class="w-full">
           <%= label_tag :workflow_state, "Statut" %>
           <%= select_tag :workflow_state, 
@@ -83,6 +69,11 @@
           <%= label_tag :au, 'Au' %>
           <%= date_field_tag :au, params[:au], onchange: 'this.form.submit()', class: 'input input-bordered input-sm w-full' %>
         </div>
+      </div>
+
+      <div class="hidden sm:flex w-full min-w-fit lg:w-3/12">
+        <%= check_box_tag :archives, 1, params[:archives], class:'checkbox mr-2', onchange:'this.form.submit()' %>
+        <%= label_tag :archives, "Archivées ?", class: 'cursor-pointer' %>
       </div>
 
       <div class="flex flex-wrap gap-1 w-full mt-4">
