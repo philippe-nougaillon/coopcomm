@@ -1,9 +1,9 @@
-<div class="mx-auto w-full">
-  <div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
+<div class="mx-auto w-full max-w-sm">
+  <div class="flex flex-wrap justify-between items-center h-12 sm:h-16 mb-4">
     <h1 class="text-primary font-bold text-4xl">Nouvel utilisateur</h1>
   </div>
 
-  <%= form_with(model: @user, class: "contents", url: "create_new_user_do", html: { autocomplete: "off" }) do |form| %>
+  <%= form_with(model: @user, class: "contents", url: "create_new_user_do", html: { autocomplete: "off", class: 'flex flex-col gap-2' }) do |form| %>
     <% if @user.errors.any? %>
       <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3">
         <h2><%= pluralize(@user.errors.count, "erreur") %> empêche(nt) cet utilisateur d'être sauvegardé :</h2>
@@ -15,36 +15,31 @@
         </ul>
       </div>
     <% end %>
-
-    <div class="flex flex-wrap md:flex-nowrap gap-4 w-full mt-4">
-      <div class="w-full">
-        <%= form.label :nom, style: "display: block" %>
-        <%= form.text_field :nom, class: 'input input-bordered input-sm w-full', required: true %>
-      </div>
-
-      <div class="w-full">
-        <%= form.label :prénom, style: "display: block" %>
-        <%= form.text_field :prénom, class: 'input input-bordered input-sm w-full', required: true %>
-      </div>
-
-      <div class="w-full">
-        <%= form.label :email, style: "display: block" %>
-        <%= form.email_field :email, class: 'input input-bordered input-sm w-full', required: true %>
-      </div>
+    <div class="w-full">
+      <%= form.label :nom, style: "display: block" %>
+      <%= form.text_field :nom, class: 'input input-bordered input-sm w-full', required: true %>
     </div>
 
-    <div class="flex flex-wrap md:flex-nowrap gap-4 w-full mt-4">
-      <div class="w-full">
-        <%= form.label :password, style: "display: block" %>
-        <%= form.password_field :password, class: 'input input-bordered input-sm w-full' %>
-      </div>
-      <div class="w-full">
-        <%= form.label :password_confirmation, style: "display: block" %>
-        <%= form.password_field :password_confirmation, class: 'input input-bordered input-sm w-full' %>
-      </div>
+    <div class="w-full">
+      <%= form.label :prénom, style: "display: block" %>
+      <%= form.text_field :prénom, class: 'input input-bordered input-sm w-full', required: true %>
     </div>
 
-    <div data-controller="toggle-agent-service" class="flex flex-wrap md:flex-nowrap gap-4 w-full my-4">
+    <div class="w-full">
+      <%= form.label :email, style: "display: block" %>
+      <%= form.email_field :email, class: 'input input-bordered input-sm w-full', required: true %>
+    </div>
+
+    <div class="w-full">
+      <%= form.label :password, style: "display: block" %>
+      <%= form.password_field :password, class: 'input input-bordered input-sm w-full' %>
+    </div>
+    <div class="w-full">
+      <%= form.label :password_confirmation, style: "display: block" %>
+      <%= form.password_field :password_confirmation, class: 'input input-bordered input-sm w-full' %>
+    </div>
+
+    <div data-controller="toggle-agent-service" class="flex flex-wrap md:flex-nowrap gap-2 w-full">
       <div>
         <%= form.label :rôle, "Rôle" %>
         <span data-action="change->toggle-agent-service#change">
@@ -52,7 +47,7 @@
         </span>
       </div>
 
-      <div data-toggle-agent-service-target='service'>
+      <div data-toggle-agent-service-target='service' class="flex-1">
         <%= form.label :service, "Service" %>
         <%= form.select :service, options_for_select(User.services.keys, @user.service), {include_blank: true}, class: 'select select-bordered select-sm w-full' %>
       </div>
