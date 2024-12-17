@@ -22,7 +22,7 @@ ExceptionNotification.configure do |config|
   config.add_notifier :email, {
     email_prefix: '[TALEA ERROR] ',
     sender_address: %{"Talea Notifier" <contact@philnoug.com>},
-    exception_recipients: %w{philippe.nougaillon@gmail.com, pierreemmanuel.dacquet@gmail.com}
+    exception_recipients: %w{philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu}
   }
 
   # Campfire notifier sends notifications to your Campfire room. Requires 'tinder' gem.
