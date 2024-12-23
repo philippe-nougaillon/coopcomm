@@ -72,7 +72,7 @@ Rails.application.configure do
 
   # Use a real queuing backend for Active Job (and separate queues per environment).
   config.active_job.queue_adapter = :solid_queue
-  # config.active_job.queue_name_prefix = "talea_production"
+  # config.active_job.queue_name_prefix = "coopcom_production"
 
   config.action_mailer.perform_caching = false
 
@@ -105,6 +105,6 @@ Rails.application.configure do
     :api_host => 'api.eu.mailgun.net'  # Uncomment this line for EU region domains
   }
 
-  config.action_mailer.default_url_options = { host: 'www.talea2.fr', protocol: 'https' }
-  config.action_mailer.asset_host = 'https://www.talea2.fr/'
+  config.action_mailer.default_url_options = { host: 'www.coopcom.fr', protocol: 'https' }
+  config.action_mailer.asset_host = 'https://www.coopcom.fr/'
 end

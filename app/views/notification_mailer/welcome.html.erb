@@ -1,12 +1,12 @@
 <h1 style="text-align: center">Bienvenue !</h1>
 <br><br>
-Votre compte TALEA a été créé avec succès.
+Votre compte Aikku COOPCOM a été créé avec succès.
 <br><br>
 Pour vous connecter, cliquez sur le lien suivant :
 <%= link_to root_url, root_url %>
 <br><br><br>
 Voici les informations à donner aux intéressés pour qu'ils puissent 
-<b>créer une intervention à partir d'un simple email</b> envoyé à TALEA :
+<b>créer une intervention à partir d'un simple email</b> envoyé à Aikku COOPCOM :
 <br><br>
 1/ Le destinataire du email doit être <b>support@mg.talea2.fr</b>
 <br><br>
@@ -16,6 +16,6 @@ OU
 <br><br>
 2/ Le sujet de l'email doit contenir cet identifiant : <b><%= @user.organisation.numero %></b>
 <br><br>
-<%= mail_to "support@mg.talea2.fr", "Exemple de demande de support TALEA", subject: "[#{@user.organisation.numero}] Demande d'intervention", body: "Détail de l'intervention demandée..." %>
+<%= mail_to "support@mg.talea2.fr", "Exemple de demande de support Aikku COOPCOM", subject: "[#{@user.organisation.numero}] Demande d'intervention", body: "Détail de l'intervention demandée..." %>
 <br><br><br>
-En cas de besoin, vous pouvez nous contacter à l'adresse suivante : <%= link_to "https://www.aikku.eu/contact", "https://www.aikku.eu/contact?objet=TALEA" %>
+En cas de besoin, vous pouvez nous contacter à l'adresse suivante : <%= link_to "https://www.aikku.eu/contact", "https://www.aikku.eu/contact?objet=Aikku%20COOPCOM" %>

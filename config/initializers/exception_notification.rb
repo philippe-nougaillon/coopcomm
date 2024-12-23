@@ -20,8 +20,8 @@ ExceptionNotification.configure do |config|
 
   # Email notifier sends notifications by email.
   config.add_notifier :email, {
-    email_prefix: '[TALEA ERROR] ',
-    sender_address: %{"Talea Notifier" <contact@philnoug.com>},
+    email_prefix: '[COOPCOM ERROR] ',
+    sender_address: %{"COOPCOM Notifier" <contact@philnoug.com>},
     exception_recipients: %w{philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu}
   }
 

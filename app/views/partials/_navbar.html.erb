@@ -26,7 +26,7 @@
   <% end %>
 
   <% if policy(:pages).assistant? %>
-    <%= link_to pages_assistant_path, class: "hidden sm:flex text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'assistant'}", title: 'Assistant TALEA' do %>
+    <%= link_to pages_assistant_path, class: "hidden sm:flex text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'assistant'}", title: 'Assistant (IA)' do %>
       IA
     <% end %>
   <% end %>
@@ -47,7 +47,7 @@
     <% end %>
   <% end %>
 
-  <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session TALEA ?" }, title: "Fermer la session de #{current_user.email} (#{current_user.rôle})", class: "#{'hidden sm:flex' if current_user.manager?} text-secondary hover-active hover:shadow" do %>
+  <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?" }, title: "Fermer la session de #{current_user.email} (#{current_user.rôle})", class: "#{'hidden sm:flex' if current_user.manager?} text-secondary hover-active hover:shadow" do %>
     <span class="material-symbols-outlined">
       logout
     </span>
