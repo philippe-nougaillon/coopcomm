@@ -11,7 +11,7 @@ Rails.application.routes.draw do
     end
     
     unauthenticated do
-      root 'devise/sessions#new', as: :unauthenticated_root
+      root 'pages#welcome', as: :unauthenticated_root
     end
   end
 
@@ -44,6 +44,7 @@ Rails.application.routes.draw do
   end
 
   controller :pages do
+    get :welcome, to: 'pages#welcome', as: :welcome
     get :assistant, to: 'pages#assistant', as: :assistant
     get :mentions_legales, to: 'pages#mentions_legales', as: :mentions_legales
   end

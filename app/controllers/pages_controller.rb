@@ -1,6 +1,6 @@
 class PagesController < ApplicationController
-  before_action :is_user_authorized, except: %i[mentions_legales]
-  skip_before_action :authenticate_user!, only: %i[mentions_legales]
+  before_action :is_user_authorized, except: %i[welcome mentions_legales]
+  skip_before_action :authenticate_user!, only: %i[welcome mentions_legales]
   
   def assistant
 
@@ -27,6 +27,9 @@ class PagesController < ApplicationController
   end
 
   def mentions_legales
+  end
+
+  def welcome
   end
 
   private
