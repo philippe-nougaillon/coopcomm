@@ -1,12 +1,39 @@
-<%= image_tag 'aikku.png', width: 200 %>
-
-<h1 class="text-4xl font-black">
-  COOPCOM
+<h1 class="text-5xl font-black text-primary my-4">
+  COO<span class="underline">P</span>COM
 </h1>
 
-<h2 class="text-3xl text-secondary mb-12">
-  Application de coopération et de mutualisation de services entre communes
-</h2>
+<div class="divider mb-12"></div>
+
+<h2 class="text-3xl font-black my-12">
+  <span class="underline">P</span>lateforme de mutualisation
+  <br> 
+  de services communs 
+<h2>
+
+<h3 class="text-xl text-secondary my-12">
+  Gérez facilement la coopération intercommunale
+  <br> 
+  et la mutualisation des services et des ressources 
+</h3>
+
+<div class="mb-12">
+  <%= link_to 'En savoir plus', "/wiki_path", class: 'underline hover:text-primary' %>
+  |
+  <%= link_to 'Mentions légales', mentions_legales_path, class: 'underline hover:text-primary' %>
+</div>
+
+
+<h3 class="text-xl text-secondary font-black my-6">
+
+  <div class="mt-8">
+    <%= link_to "S'inscrire", '/users/sign_up', class: 'btn btn-outline lg:btn-lg btn-success hover:!text-white' %>
+    <%= link_to "Se connecter", '/users/sign_in', class: 'btn btn-outline lg:btn-lg btn-primary hover:!text-white' %>
+  </div>
+
+</h3>
+
+
+<% if false %>
 
 <h3 class="text-xl text-secondary font-black my-6">
   Une information claire et partagée entre les acteurs et services.
@@ -76,14 +103,6 @@
   + Création automatique d'une Intervention via un email envoyé à support@mg.coopcom.fr
   <br>
   + Assistant (IA) : vous propose de nouvelles interventions à planifier
-  <br><br>
-  <%= link_to 'En savoir plus', "/wiki_path", class: 'underline hover:text-primary' %>
-  |
-  <%= link_to 'Mentions légales', mentions_legales_path, class: 'underline hover:text-primary' %>
 
-  <div class="mt-8">
-    <%= link_to "Se connecter", '/users/sign_in', class: 'btn btn-outline lg:btn-lg btn-primary hover:!text-white' %>
-    <%= link_to "S'inscrire", '/users/sign_up', class: 'btn btn-outline lg:btn-lg btn-success hover:!text-white' %>
-  </div>
+<% end %>
 
-</h3>
