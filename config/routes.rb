@@ -1,5 +1,4 @@
 Rails.application.routes.draw do
-  get 'pages/assistant'
 
   devise_for :users, controllers: { 
     registrations: 'users/registrations',
@@ -42,6 +41,11 @@ Rails.application.routes.draw do
     get :messagerie
     post :send_notification
     get :stats
+  end
+
+  controller :pages do
+    get :assistant, to: 'pages#assistant', as: :assistant
+    get :mentions_legales, to: 'pages#mentions_legales', as: :mentions_legales
   end
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

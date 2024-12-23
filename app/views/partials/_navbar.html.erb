@@ -26,7 +26,7 @@
   <% end %>
 
   <% if policy(:pages).assistant? %>
-    <%= link_to pages_assistant_path, class: "hidden sm:flex text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'assistant'}", title: 'Assistant (IA)' do %>
+    <%= link_to assistant_path, class: "hidden sm:flex text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'assistant'}", title: 'Assistant (IA)' do %>
       IA
     <% end %>
   <% end %>
