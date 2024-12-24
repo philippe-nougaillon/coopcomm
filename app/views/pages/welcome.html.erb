@@ -15,7 +15,7 @@
     <br> 
     de services et ressources dans votre intercommunalité.
     <br><br>
-    <%= link_to 'En savoir plus...', "/wiki_path", class: "hover:text-primary" %>
+    <%= link_to 'En savoir plus...', "#more", class: "hover:text-primary" %>
   </p>
 
   <h3 class="text-xl text-secondary font-black mb-4 lg:mb-20">
@@ -80,7 +80,7 @@
           engineering
         </span>
         <br><br>
-        Gestion des interventions
+        Gestion des Interventions
       </p>
     </div>
     
@@ -90,7 +90,7 @@
           location_city
         </span>
         <br><br>
-        Gestion des adhérents
+        Gestion des Adhérents
       </p>
     </div>
     
@@ -100,7 +100,7 @@
           groups
         </span>
         <br><br>
-        Gestion des agents, équipes, managers
+        Gestion des Agents, Equipes, Managers
       </p>
     </div>
     
@@ -110,7 +110,7 @@
           beach_access
         </span>
         <br><br>
-        Gestion des absences 
+        Gestion des Absences 
       </p>
     </div>
 
@@ -160,7 +160,7 @@
 
 </div>
 
-<div>
+<div id="more" class="min-h-screen">
   <h1 class="text-5xl text-primary font-black my-24">
     En savoir plus
     <div class="divider mb-12"></div>
@@ -174,12 +174,11 @@
   <div class="text-2xl my-4">
     Nous contacter
   </div>
-
   <div class="text-2xl my-4">
     Wiki (documentation/guides/etc...)
   </div>
 
-  <div class="text-2xl mb-12">
+  <div class="text-2xl">
     <%= link_to 'Mentions légales', mentions_legales_path, class: 'text-secondary hover:text-primary' %>
   </div>
 
