@@ -25,9 +25,6 @@
     </div>
   </h3>
 
-  <div class="mb-12">
-    <%= link_to 'Mentions légales', mentions_legales_path, class: 'text-secondary hover:text-primary' %>
-  </div>
 </div>
 
 <div>
@@ -43,7 +40,7 @@
         <span class="material-symbols-outlined text-error">
           graph_3
         </span>
-        <br>
+        <br><br>
         Une information claire et partagée 
       </p>
     </div>
@@ -53,8 +50,28 @@
         <span class="material-symbols-outlined text-error">
           smartphone
         </span>
-        <br>
-        Une référence unique sur tous les supports 
+        <br><br>
+        Une référence unique sur tous supports 
+      </p>
+    </div>
+
+     <div class="shadow w-full lg:w-1/5">
+      <p class="text-lg lg:text-3xl p-4 lg:p-12">
+        <span class="material-symbols-outlined text-error">
+          steppers
+        </span>
+        <br><br>
+        Workflow 
+      </p>
+    </div>
+
+    <div class="shadow w-full lg:w-1/5">
+      <p class="text-lg lg:text-3xl p-4 lg:p-12">
+        <span class="material-symbols-outlined text-error">
+          monitoring
+        </span>
+        <br><br>
+        Maîtrise budgétaire
       </p>
     </div>
 
@@ -63,7 +80,7 @@
         <span class="material-symbols-outlined text-error">
           engineering
         </span>
-        <br>
+        <br><br>
         Gestion des interventions
       </p>
     </div>
@@ -73,7 +90,7 @@
         <span class="material-symbols-outlined text-error">
           location_city
         </span>
-        <br>
+        <br><br>
         Gestion des adhérents
       </p>
     </div>
@@ -83,7 +100,7 @@
         <span class="material-symbols-outlined text-error">
           groups
         </span>
-        <br>
+        <br><br>
         Gestion des agents, équipes, managers
       </p>
     </div>
@@ -93,56 +110,39 @@
         <span class="material-symbols-outlined text-error">
           beach_access
         </span>
-        <br>
+        <br><br>
         Gestion des absences 
       </p>
     </div>
 
-    <div class="shadow w-full lg:w-1/5">
-      <p class="text-lg lg:text-3xl p-4 lg:p-12">
-        <span class="material-symbols-outlined text-error">
-          location_city
-        </span>
-        <br>
-        Gestion des adhérents
-      </p>
-    </div>
 
     <div class="shadow w-full lg:w-1/5">
       <p class="text-lg lg:text-3xl p-4 lg:p-12">
         <span class="material-symbols-outlined text-error">
           qr_code_2
         </span>
-        <br>
+        <br><br>
         Pointage par QR Code
       </p>
     </div>
     
+   
     <div class="shadow w-full lg:w-1/5">
       <p class="text-lg lg:text-3xl p-4 lg:p-12">
         <span class="material-symbols-outlined text-error">
-          steppers
+          chat
         </span>
-        <br>
-        Workflow 
+        <br><br>
+        Messagerie instantanée
       </p>
     </div>
 
     <div class="shadow w-full lg:w-1/5">
       <p class="text-lg lg:text-3xl p-4 lg:p-12">
         <span class="material-symbols-outlined text-error">
-          chat
-        </span>
-        <br>
-        Messagerie instantanée
-      </p>
-    </div>
-    <div class="shadow w-full lg:w-1/5">
-      <p class="text-lg lg:text-3xl p-4 lg:p-12">
-        <span class="material-symbols-outlined text-error">
           notifications
         </span>
-        <br>
+        <br><br>
         Notification et alerte
       </p>
     </div>
@@ -150,89 +150,39 @@
     <div class="shadow w-full lg:w-1/5">
       <p class="text-lg lg:text-3xl p-4 lg:p-12">
         <span class="material-symbols-outlined text-error">
-          monitoring
+          network_intelligence
         </span>
-        <br>
-        Maîtrise budgétaire
+        <br><br>
+        IA pour prévoir futures interventions
       </p>
     </div>
+    
   </div>
 
 </div>
 
+<div>
+  <h1 class="text-5xl text-primary font-black my-24">
+    En savoir plus sur  
+    COO<span class="underline">P</span>COM
+    <div class="divider mb-12"></div>
+  </h1>
+  <div class="text-2xl my-4">
+    Tutorial vidéo ?
+  </div>
+  <div class="text-2xl my-4">
+    Demande de démonstration
+  </div>
+  <div class="text-2xl my-4">
+    Nous contacter
+  </div>
 
+  <div class="text-2xl my-4">
+    Wiki (documentation/guides/etc...)
+  </div>
 
-<% if false %>
+  <div class="text-2xl mb-12">
+    <%= link_to 'Mentions légales', mentions_legales_path, class: 'text-secondary hover:text-primary' %>
+  </div>
 
-<h3 class="text-xl text-secondary font-black my-6">
-  Une information claire et partagée entre les acteurs et services.
-  <br>
-  Une référence unique et sur tous les supports (PC/Smartphone/Tablette)
-</h3>
-
-<div class="hidden lg:block">
-  <ul class="timeline">
-    <li>
-      <div class="timeline-start timeline-box shadow-md" title="Une notification est reçue à chaque changement de statut">
-        Client/Adhérent
-        <span class="loading loading-ring loading-xs text-primary"></span>
-      </div>
-      <div class="timeline-middle">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-      </div>
-      <hr class="bg-primary"/>
-    </li>
-    <li>
-    <hr class="bg-primary"/>
-      <div class="timeline-middle">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-      </div>
-      <div class="timeline-end timeline-box shadow-md" title="Une notification est envoyée à chaque changement de statut">
-        <span class="loading loading-ring loading-xs text-primary"></span>
-        Agent technique
-      </div>
-      <hr class="bg-primary"/>
-    </li>
-    <li>
-      <hr class="bg-primary"/>
-      <div class="timeline-start timeline-box shadow-md" title="Une notification est reçue à chaque changement de statut">
-        <span class="loading loading-ring loading-xs text-primary"></span>
-        Manager
-      </div>
-      <div class="timeline-middle">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-      </div>
-      <hr/>
-    </li>
-    <li>
-      <hr/>
-      <div class="timeline-middle">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-secondary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-      </div>
-      <div class="timeline-end timeline-box shadow-md">Comptabilité</div>
-      <hr/>
-    </li>
-    <li>
-      <hr/>
-      <div class="timeline-start timeline-box shadow-md">Archives</div>
-      <div class="timeline-middle">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-secondary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-      </div>
-    </li>
-  </ul>
 </div>
-
-<h3 class="text-xl text-secondary font-black my-6">
-  + Un Workflow simple pour suivre le statut de chaque Intervention
-  <br>
-  + Photos de l'Intervention / Notification sur changement de Statut
-  <br> 
-  + Export Excel des interventions / Audit des modifications (Activité)  
-  <br>
-  + Création automatique d'une Intervention via un email envoyé à support@mg.coopcom.fr
-  <br>
-  + Assistant (IA) : vous propose de nouvelles interventions à planifier
-</h3>
-
-<% end %>
-
