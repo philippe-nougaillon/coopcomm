@@ -3,6 +3,9 @@
     <%= render @intervention %>
 
     <div class="flex flex-wrap gap-2">
+      <% if @intervention.repeter %>
+        <%= link_to "Imprimer", intervention_path(format: :pdf), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
+      <% end %>
       <%= link_to "Modifier", edit_intervention_path(@intervention), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
       <% if policy(@intervention).destroy? %>
         <%= button_to intervention_path(@intervention), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette intervention ?" }, class: "rounded-lg py-3 px-5 bg-gray-100 font-medium", 'data-testid': "Supprimer l'intervention" do %>

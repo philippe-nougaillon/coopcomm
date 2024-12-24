@@ -107,4 +107,5 @@ Rails.application.configure do
 
   config.action_mailer.default_url_options = { host: 'www.coopcom.fr', protocol: 'https' }
   config.action_mailer.asset_host = 'https://www.coopcom.fr/'
+  config.default_url_options = { host: 'www.coopcom.fr', protocol: 'https' }
 end

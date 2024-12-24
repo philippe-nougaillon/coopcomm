@@ -1,5 +1,5 @@
 class InterventionsController < ApplicationController
-  before_action :set_intervention, only: %i[ show edit update destroy accepter en_cours terminer valider refuser archiver purge ]
+  before_action :set_intervention, only: %i[ show edit update destroy accepter en_cours terminer valider refuser archiver purge pointer ]
   before_action :set_form_variables, only: %i[ new edit create update ]
   before_action :is_user_authorized
 
@@ -80,8 +80,23 @@ class InterventionsController < ApplicationController
 
   # GET /interventions/1 or /interventions/1.json
   def show
-    @audits = @intervention.audits.includes(:user).reorder(id: :desc)
-    @pagy, @audits = pagy(@audits, items: 10)
+    respond_to do |format|
+      format.html do
+        @audits = @intervention.audits.includes(:user).reorder(id: :desc)
+        @pagy, @audits = pagy(@audits, items: 10)
+      end
+
+      format.pdf do
+        filename = "QRCode_Pointeuse_#{@intervention.agent.nom_prénom}"
+        pdf = InterventionPdf.new
+        pdf.pointeuse_qrcode(@intervention)
+
+        send_data pdf.render,
+            filename: filename.concat('.pdf'),
+            type: 'application/pdf',
+            disposition: 'inline'
+      end
+    end
   end
 
   # GET /interventions/new
@@ -104,6 +119,10 @@ class InterventionsController < ApplicationController
     else
       @intervention.user_id ||= current_user.id
       @intervention.tag_list.add(params[:intervention][:tags])
+    end
+
+    if @intervention.nouveau? && @intervention.repeter?
+      @intervention.workflow_state = 'attente'
     end
 
     respond_to do |format|
@@ -198,6 +217,24 @@ class InterventionsController < ApplicationController
     redirect_to @intervention, notice: "Photo supprimée"
   end
 
+  def pointer
+    # Prendre l'intervention la plus récente
+    intervention = current_user.interventions_agent.where(description: @intervention.description).where.not(id: @intervention.id).order(début: :desc).first
+
+    # Mettre à jour l'intervention et créer une nouvelle si besoin
+    if intervention.début
+      intervention.fin = DateTime.now
+      intervention.workflow_state = "terminé"
+      intervention.save
+      @intervention.create_next_intervention
+    else
+      intervention.début = DateTime.now
+      intervention.save
+    end
+
+    redirect_to intervention_path(intervention), notice: "Pointeuse réalisée"
+  end
+
   private
 
     def send_workflow_changed_notification
@@ -226,7 +263,7 @@ class InterventionsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def intervention_params
-      params.require(:intervention).permit(:organisation_id, :agent_id, :agent_binome_id, :adherent_id, :début, :fin, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :user_id, photos: [])
+      params.require(:intervention).permit(:organisation_id, :agent_id, :agent_binome_id, :adherent_id, :début, :fin, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :user_id, :repeter, :repeter_lun, :repeter_mar, :repeter_mer, :repeter_jeu, :repeter_ven, :repeter_sam, :repeter_dim, :fin_repeter, photos: [])
     end
 
     def is_user_authorized

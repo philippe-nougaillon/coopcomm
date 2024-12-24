@@ -85,4 +85,5 @@ config.active_job.queue_adapter = :solid_queue
   }
 
   config.action_mailer.default_url_options = { host: 'localhost', protocol: 'http', port: 3000 }
+  config.default_url_options = { host: 'localhost', port: 3000, protocol: 'http' }
 end

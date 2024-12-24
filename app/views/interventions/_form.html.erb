@@ -91,16 +91,24 @@
       </div>
     </div>
 
-    <% @intervention.photos.each do |photo| %>
-      <% unless photo.new_record? %>
-        <%= form.hidden_field :photos, multiple: true, value: photo.signed_id %>
+    <div class="flex flex-wrap gap-5 sm:gap-8">
+      <% @intervention.photos.each do |photo| %>
+        <% unless photo.new_record? %>
+          <%= form.hidden_field :photos, multiple: true, value: photo.signed_id %>
+        <% end %>
       <% end %>
-    <% end %>
 
-    <div class="sm:flex flex-wrap gap-8 my-5 items-end">
-      <div class="flex-1">
-        <%= form.label :photos, 'Photos : ' %>
-        <%= form.file_field :photos, multiple: true, accept: 'image/png,image/gif,image/jpeg', class: 'w-full max-w-md' %>
+
+      <div class="sm:flex flex-wrap gap-8 my-5 items-end">
+        <div class="flex-1">
+          <%= form.label :photos %>
+          <%= form.file_field :photos, multiple: true, accept: 'image/png,image/gif,image/jpeg', class: 'w-full max-w-md' %>
+        </div>
+      </div>
+
+      <div class="flex gap-1 items-center mt-4" title="Répéter cette session ?">
+        <%= form.check_box :repeter, data: { 'toggle-repeat-target': 'checkbox' }, class: 'checkbox checkbox-sm checkbox-primary' %>
+        <%= form.label :repeter, "Répéter cette session ?" %>
       </div>
     </div>
 

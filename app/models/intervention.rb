@@ -20,10 +20,13 @@ class Intervention < ApplicationRecord
 
   before_validation :check_absence
 
+  after_create :create_next_intervention, if: :repeter?
+
   scope :ordered, -> { order(updated_at: :desc) }
 
   # WORKFLOW
   NOUVEAU   = 'nouveau'
+  ATTENTE   = 'attente'
   # ACCEPTE   = 'accepté'
   # EN_COURS  = 'en cours'
   TERMINE   = 'terminé'
@@ -36,6 +39,7 @@ class Intervention < ApplicationRecord
       # event :accepter, transitions_to: ACCEPTE
       event :terminer, transitions_to: TERMINE
     end
+    state ATTENTE,  meta: {style: 'badge-secondary text-white'}
 
     # state ACCEPTE, meta: {style: 'badge-primary text-white'} do
     #   event :en_cours, transitions_to: EN_COURS
@@ -110,6 +114,23 @@ class Intervention < ApplicationRecord
     unless absence_ids.flatten.empty?
       errors.add(:interventions, ": Agent(s) '#{User.where(id: Absence.where(id: absence_ids.uniq.flatten).pluck(:user_id)).pluck(:nom).uniq.join(', ')}' pas disponible(s) à ces dates")
     end
+  end
+
+  def qrcode(url)
+    RQRCode::QRCode.new(url).as_svg(
+                color: "000",
+                shape_rendering: "crispEdges",
+                module_size: 3,
+                standalone: true,
+                use_path: true)
+  end
+
+  def create_next_intervention
+    new_intervention = self.dup
+    new_intervention.début = new_intervention.fin = nil
+    new_intervention.repeter = false
+    new_intervention.workflow_state = 'nouveau'
+    new_intervention.save
   end
 
   private

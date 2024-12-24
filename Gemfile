@@ -113,3 +113,9 @@ gem "omniauth-google-oauth2", "~> 1.1"
 gem "friendly_id", "~> 5.5"
 
 gem "skylight"
+
+gem "rqrcode", "~> 2.2"
+
+gem "prawn", "~> 2.5"
+
+gem "prawn-qrcode", "~> 0.5.2"

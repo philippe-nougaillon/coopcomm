@@ -5,7 +5,23 @@
   </small>
 
   <p class="text-3xl text-<%= intervention.style.split.first.split('-').last %> font-black">
-    <%= link_to_if params[:action] == "index", intervention.description.humanize, intervention, class: 'hover:underline' %>
+    <% if params[:action] == "index" %>
+      <%= link_to intervention, class: 'hover:underline' do %>
+        <%= intervention.description.humanize %>
+        <% if intervention.repeter %>
+          <span class="material-symbols-outlined">
+            event_repeat
+          </span>
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= intervention.description.humanize %>
+      <% if intervention.repeter %>
+        <span class="material-symbols-outlined">
+          event_repeat
+        </span>
+      <% end %>
+    <% end %>
   </p>
 
   <p class="my-2">

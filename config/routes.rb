@@ -31,6 +31,7 @@ Rails.application.routes.draw do
       get :refuser
       get :archiver
       delete :purge
+      get :pointer
     end
   end
 
