@@ -20,8 +20,6 @@ class Intervention < ApplicationRecord
 
   before_validation :check_absence
 
-  after_create :create_next_intervention, if: :repeter?
-
   scope :ordered, -> { order(updated_at: :desc) }
 
   # WORKFLOW
@@ -127,10 +125,17 @@ class Intervention < ApplicationRecord
 
   def create_next_intervention
     new_intervention = self.dup
-    new_intervention.début = new_intervention.fin = nil
+    new_intervention.template_slug = self.slug
+    new_intervention.début = DateTime.now
+    new_intervention.fin = nil
     new_intervention.repeter = false
     new_intervention.workflow_state = 'nouveau'
     new_intervention.save
+    new_intervention
+  end
+
+  def pointages
+    Intervention.where(template_slug: self.slug).order(updated_at: :desc)
   end
 
   private

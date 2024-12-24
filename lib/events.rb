@@ -8,4 +8,5 @@ class Events
   register_event('intervention.updated')
   register_event('intervention.done')
   register_event('organisation.created')
+  register_event('intervention.pointage')
 end

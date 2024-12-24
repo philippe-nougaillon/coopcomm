@@ -9,7 +9,7 @@
       <%= link_to intervention, class: 'hover:underline' do %>
         <%= intervention.description.humanize %>
         <% if intervention.repeter %>
-          <span class="material-symbols-outlined">
+          <span class="material-symbols-outlined" title="Modèle pour le pointage">
             event_repeat
           </span>
         <% end %>
@@ -17,7 +17,7 @@
     <% else %>
       <%= intervention.description.humanize %>
       <% if intervention.repeter %>
-        <span class="material-symbols-outlined">
+        <span class="material-symbols-outlined" title="Modèle pour le pointage">
           event_repeat
         </span>
       <% end %>

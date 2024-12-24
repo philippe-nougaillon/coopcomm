@@ -17,4 +17,8 @@ class NotificationMailerPreview < ActionMailer::Preview
     NotificationMailer.welcome(User.last)
   end
 
+  def intervention_pointage
+    NotificationMailer.intervention_pointage(Intervention.last)
+  end
+
 end

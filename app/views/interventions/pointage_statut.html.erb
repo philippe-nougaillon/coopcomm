@@ -1,0 +1,30 @@
+<% flash.each do |type, msg| %>
+  <h1 class="text-3xl mb-8 <%= type == "alert" ? 'text-error' : 'text-success' %>">
+    <%= msg %>
+  </h1>
+<% end %>
+
+<h2 class="text-2xl mb-4">
+  <%= @intervention.agent.nom_prénom %>
+</h2>
+
+<p class="text-xl mb-4">
+  <%= @intervention.description %>
+</p>
+
+Début :
+<%= l @intervention.début %>
+
+<% if @intervention.fin %>
+  <br>
+  Fin :
+  <%= l @intervention.fin %>
+<% end %>
+
+
+<% if @intervention.fin && flash[:notice] %>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script>
+    confetti({});
+  </script>
+<% end %>

@@ -32,6 +32,7 @@ Rails.application.routes.draw do
       get :archiver
       delete :purge
       get :pointer
+      get :pointage_statut
     end
   end
 

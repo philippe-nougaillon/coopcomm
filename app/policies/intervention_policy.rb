@@ -60,8 +60,4 @@ class InterventionPolicy < ApplicationPolicy
   def purge?
     show?
   end
-
-  def pointer?
-    show? && record.agent_id == user.id
-  end
 end

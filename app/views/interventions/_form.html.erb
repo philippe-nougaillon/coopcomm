@@ -106,10 +106,12 @@
         </div>
       </div>
 
-      <div class="flex gap-1 items-center mt-4" title="Répéter cette session ?">
-        <%= form.check_box :repeter, data: { 'toggle-repeat-target': 'checkbox' }, class: 'checkbox checkbox-sm checkbox-primary' %>
-        <%= form.label :repeter, "Répéter cette session ?" %>
-      </div>
+      <% if current_user.manager? || current_user.adhérent? %>
+        <div class="flex gap-1 items-center mt-4" title="Cocher pour activer le pointage ?">
+          <%= form.check_box :repeter, class: 'checkbox checkbox-sm checkbox-secondary' %>
+          <%= form.label :repeter, "Modèle pour le pointage ?" %>
+        </div>
+      <% end %>
     </div>
 
     <div class="my-5">

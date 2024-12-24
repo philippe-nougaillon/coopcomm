@@ -36,6 +36,18 @@ class NotificationMailer < ApplicationMailer
     end
   end
 
+  def intervention_pointage(intervention)
+    @intervention = intervention
+
+    mail(to: intervention.adherent.email,
+          bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu',
+          subject: "[COOPCOM] Pointage").tap do |message|
+      message.mailgun_options = {
+        "tag" => ["pointage"]
+      }
+    end
+  end
+
   def welcome(user)
     @user = user
     mail(to: @user.email, subject: '[COOPCOM] Bienvenue !')

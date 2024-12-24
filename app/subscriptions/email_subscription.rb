@@ -36,6 +36,10 @@ class EmailSubscription
     end
   end
 
+  def on_intervention_pointage(event)
+    NotifAdherentInterventionPointageJob.perform_later(Intervention.find(event[:payload][:intervention_id]))
+  end
+
   def on_organisation_created(event)
     user = User.find(event[:payload][:user_id])
     WelcomeNotificationJob.perform_later(user)

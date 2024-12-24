@@ -3,14 +3,18 @@
     <%= render @intervention %>
 
     <div class="flex flex-wrap gap-2">
-      <% if @intervention.repeter %>
-        <%= link_to "Imprimer", intervention_path(format: :pdf), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
-      <% end %>
       <%= link_to "Modifier", edit_intervention_path(@intervention), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
       <% if policy(@intervention).destroy? %>
         <%= button_to intervention_path(@intervention), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette intervention ?" }, class: "rounded-lg py-3 px-5 bg-gray-100 font-medium", 'data-testid': "Supprimer l'intervention" do %>
           <span class="material-symbols-outlined">
             delete
+          </span>
+        <% end %>
+      <% end %>
+      <% if @intervention.repeter %>
+        <%= link_to intervention_path(format: :pdf), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium", title: "Voir le QRCode de pointage" do %>
+          <span class="material-symbols-outlined">
+            qr_code_2
           </span>
         <% end %>
       <% end %>
@@ -37,6 +41,41 @@
       </div>
     <% else %>
       <p class="mt-4">Aucune photo n'est attachée à cette intervention.</p>
+    <% end %>
+
+    <% if @intervention.repeter %>
+      <h2 class="text-2xl text-secondary mt-8">Pointages</h2>
+      <div class="overflow-x-auto mt-4">
+        <table class="table table-sm">
+          <thead class="bg-slate-100">
+            <tr>
+              <th>Il y a</th>
+              <th>Id</th>
+              <th>Date</th>
+              <th>Début</th>
+              <th>Fin</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <% @intervention.pointages.each do |pointage| %>
+              <tr>
+                <td><%= time_ago_in_words pointage.début %></td>
+                <td><%= link_to pointage.id, pointage, class: 'underline' %></td>
+                <td><%= l pointage.début.to_date %></td>
+                <td><%= l pointage.début %></td>
+                <td><%= l pointage.fin if pointage.fin %></td>
+                <td>
+                  <span class="badge badge text-nowrap font-bold <%= pointage.style %>">
+                    <%= pointage.workflow_state.humanize %>
+                  </span>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
     <% end %>
 
     <h2 class="text-2xl text-secondary mt-8">Activité</h2>

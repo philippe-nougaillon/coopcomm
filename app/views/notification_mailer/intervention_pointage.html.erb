@@ -1,0 +1,15 @@
+Bonjour,
+<br><br>
+L'intervention '<b><%= @intervention.description.humanize %></b>' vient d'être pointée par '<b><%= @intervention.adherent.nom_prénom %></b>'.
+
+<br><br>
+Début :
+<%= I18n.l(@intervention.début) %>
+<% if @intervention.fin %>
+  <br>
+  Fin:
+  <%= I18n.l(@intervention.fin) %>
+<% end %>
+
+<br><br>
+<%= link_to "Voir l'intervention", intervention_url(@intervention) %>

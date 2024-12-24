@@ -1,7 +1,8 @@
 class InterventionsController < ApplicationController
-  before_action :set_intervention, only: %i[ show edit update destroy accepter en_cours terminer valider refuser archiver purge pointer ]
+  before_action :set_intervention, only: %i[ show edit update destroy accepter en_cours terminer valider refuser archiver purge pointer pointage_statut ]
   before_action :set_form_variables, only: %i[ new edit create update ]
-  before_action :is_user_authorized
+  before_action :is_user_authorized, except: %i[ pointer pointage_statut ]
+  skip_before_action :authenticate_user!, only: %i[ pointer pointage_statut ]
 
   # GET /interventions or /interventions.json
   def index
@@ -219,20 +220,31 @@ class InterventionsController < ApplicationController
 
   def pointer
     # Prendre l'intervention la plus récente
-    intervention = current_user.interventions_agent.where(description: @intervention.description).where.not(id: @intervention.id).order(début: :desc).first
+    current_intervention = Intervention.where(template_slug: @intervention.slug).find_by("DATE(début) = ?", Date.today)
 
-    # Mettre à jour l'intervention et créer une nouvelle si besoin
-    if intervention.début
-      intervention.fin = DateTime.now
-      intervention.workflow_state = "terminé"
-      intervention.save
-      @intervention.create_next_intervention
+    # Mettre à jour l'intervention ou créer une nouvelle
+    if current_intervention
+      unless current_intervention.fin
+        current_intervention.fin = DateTime.now
+        current_intervention.workflow_state = "terminé"
+        current_intervention.save
+        flash[:notice] = "Fin de journée enregistrée"
+      else
+        flash[:alert] = "Fin de journée déjà enregistrée !"
+      end
     else
-      intervention.début = DateTime.now
-      intervention.save
+      current_intervention = @intervention.create_next_intervention
+      flash[:notice] = "Début de journée enregistrée"
     end
 
-    redirect_to intervention_path(intervention), notice: "Pointeuse réalisée"
+    unless Rails.env.development?
+      Events.instance.publish('intervention.pointage', payload: {intervention_id: current_intervention.id})
+    end
+    
+    redirect_to pointage_statut_intervention_path(current_intervention)
+  end
+
+  def pointage_statut
   end
 
   private
