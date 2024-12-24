@@ -1,12 +1,166 @@
-<%= image_tag 'aikku.png', width: 200 %>
-
-<h1 class="text-4xl font-black">
-  COOPCOM
+<h1 class="text-5xl font-black text-primary my-4">
+  COO<span class="underline">P</span>COM
+  <div class="divider mb-12"></div>
 </h1>
 
-<h2 class="text-3xl text-secondary mb-12">
-  Application de coopération et de mutualisation de services entre communes
-</h2>
+<h2 class="text-3xl font-black mt-12">
+  <span class="underline">P</span>lateforme de mutualisation
+  <br> 
+  de services communs 
+<h2>
+
+<p class="text-xl text-secondary mt-8 mb-12 py-8">
+  Gérez facilement la coopération et la mutualisation
+  <br> 
+  de services et ressources dans votre intercommunalité.
+  <br><br>
+  <%= link_to 'En savoir plus...', "/wiki_path", class: "hover:text-primary" %>
+</p>
+
+<h3 class="text-xl text-secondary font-black mb-12 py-8">
+  <div class="mt-8 flex gap-4">
+    <%= link_to "S'inscrire", '/users/sign_up', class: 'btn btn-outline lg:btn-lg btn-success hover:!text-white' %>
+    <%= link_to "Se connecter", '/users/sign_in', class: 'btn btn-outline lg:btn-lg btn-primary hover:!text-white' %>
+  </div>
+</h3>
+
+<div class="mb-12">
+  <%= link_to 'Mentions légales', mentions_legales_path, class: 'text-secondary hover:text-primary' %>
+</div>
+
+<div class="">
+  <h1 class="text-5xl text-primary font-black my-12">
+    Les bénéfices de 
+    COO<span class="underline">P</span>COM
+    <div class="divider mb-12"></div>
+  </h1>
+  
+  <div class="flex flex-wrap gap-4 p-4">
+    <div class="shadow w-1/5">
+      <p class="text-3xl p-12">
+        <span class="material-symbols-outlined text-error">
+          graph_3
+        </span>
+        <br>
+        Une information claire et partagée 
+      </p>
+    </div>
+    
+    <div class="shadow w-1/5">
+      <p class="text-3xl p-12">
+        <span class="material-symbols-outlined text-error">
+          smartphone
+        </span>
+        <br>
+        Une référence unique sur tous les supports 
+      </p>
+    </div>
+
+    <div class="shadow w-1/5">
+      <p class="text-3xl p-12">
+        <span class="material-symbols-outlined text-error">
+          engineering
+        </span>
+        <br>
+        Gestion des interventions
+      </p>
+    </div>
+    
+    <div class="shadow w-1/5">
+      <p class="text-3xl p-12">
+        <span class="material-symbols-outlined text-error">
+          location_city
+        </span>
+        <br>
+        Gestion des adhérents
+      </p>
+    </div>
+    
+    <div class="shadow w-1/5">
+      <p class="text-3xl p-12">
+        <span class="material-symbols-outlined text-error">
+          groups
+        </span>
+        <br>
+        Gestion des agents, équipes, managers
+      </p>
+    </div>
+    
+    <div class="shadow w-1/5">
+      <p class="text-3xl p-12">
+        <span class="material-symbols-outlined text-error">
+          beach_access
+        </span>
+        <br>
+        Gestion des absences 
+      </p>
+    </div>
+
+    <div class="shadow w-1/5">
+      <p class="text-3xl p-12">
+        <span class="material-symbols-outlined text-error">
+          location_city
+        </span>
+        <br>
+        Gestion des adhérents
+      </p>
+    </div>
+
+    <div class="shadow w-1/5">
+      <p class="text-3xl p-12">
+        <span class="material-symbols-outlined text-error">
+          qr_code_2
+        </span>
+        <br>
+        Pointage par QR Code
+      </p>
+    </div>
+    
+    <div class="shadow w-1/5">
+      <p class="text-3xl p-12">
+        <span class="material-symbols-outlined text-error">
+          steppers
+        </span>
+        <br>
+        Workflow 
+      </p>
+    </div>
+
+    <div class="shadow w-1/5">
+      <p class="text-3xl p-12">
+        <span class="material-symbols-outlined text-error">
+          chat
+        </span>
+        <br>
+        Messagerie instantanée
+      </p>
+    </div>
+    <div class="shadow w-1/5">
+      <p class="text-3xl p-12">
+        <span class="material-symbols-outlined text-error">
+          notifications
+        </span>
+        <br>
+        Notification et alerte
+      </p>
+    </div>
+
+    <div class="shadow w-1/5">
+      <p class="text-3xl p-12">
+        <span class="material-symbols-outlined text-error">
+          monitoring
+        </span>
+        <br>
+        Maîtrise budgétaire
+      </p>
+    </div>
+  </div>
+
+</div>
+
+
+
+<% if false %>
 
 <h3 class="text-xl text-secondary font-black my-6">
   Une information claire et partagée entre les acteurs et services.
@@ -76,14 +230,7 @@
   + Création automatique d'une Intervention via un email envoyé à support@mg.coopcom.fr
   <br>
   + Assistant (IA) : vous propose de nouvelles interventions à planifier
-  <br><br>
-  <%= link_to 'En savoir plus', "/wiki_path", class: 'underline hover:text-primary' %>
-  |
-  <%= link_to 'Mentions légales', mentions_legales_path, class: 'underline hover:text-primary' %>
-
-  <div class="mt-8">
-    <%= link_to "Se connecter", '/users/sign_in', class: 'btn btn-outline lg:btn-lg btn-primary hover:!text-white' %>
-    <%= link_to "S'inscrire", '/users/sign_up', class: 'btn btn-outline lg:btn-lg btn-success hover:!text-white' %>
-  </div>
-
 </h3>
+
+<% end %>
+
