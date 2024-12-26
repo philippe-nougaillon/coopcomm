@@ -226,6 +226,7 @@ class InterventionsController < ApplicationController
     if current_intervention
       unless current_intervention.fin
         current_intervention.fin = DateTime.now
+        current_intervention.temps_total = current_intervention.calc_temps_total
         current_intervention.workflow_state = "terminé"
         current_intervention.save
         flash[:notice] = "Fin de journée enregistrée"

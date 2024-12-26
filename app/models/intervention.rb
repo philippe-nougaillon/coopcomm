@@ -138,6 +138,16 @@ class Intervention < ApplicationRecord
     Intervention.where(template_slug: self.slug).order(updated_at: :desc)
   end
 
+  def calc_temps_total
+    temps_total = (self.fin - self.début) / (60 * 60) - self.temps_de_pause
+
+    if self.agent_binome
+      temps_total = temps_total * 2
+    end
+
+    temps_total
+  end
+
   private
 
   def slug_candidates

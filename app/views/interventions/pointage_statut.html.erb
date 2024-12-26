@@ -19,8 +19,10 @@ Début :
   <br>
   Fin :
   <%= l @intervention.fin %>
+  <br><br>
+  Temps total :
+  <%= @intervention.temps_total %>
 <% end %>
-
 
 <% if @intervention.fin && flash[:notice] %>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
