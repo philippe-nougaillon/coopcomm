@@ -54,6 +54,7 @@
               <th>Date</th>
               <th>Début</th>
               <th>Fin</th>
+              <th>Temps total</th>
               <th>Statut</th>
             </tr>
           </thead>
@@ -66,6 +67,7 @@
                 <td><%= l pointage.début.to_date %></td>
                 <td><%= l pointage.début %></td>
                 <td><%= l pointage.fin if pointage.fin %></td>
+                <td><%= pointage.temps_total %></td>
                 <td>
                   <span class="badge badge text-nowrap font-bold <%= pointage.style %>">
                     <%= pointage.workflow_state.humanize %>
