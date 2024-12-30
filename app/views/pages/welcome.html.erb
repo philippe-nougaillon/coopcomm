@@ -4,19 +4,26 @@
     <div class="divider"></div>
   </h1>
 
-  <h2 class="text-4xl font-black mb-16">
-    <span class="underline">P</span>lateforme de mutualisation
-    <br> 
-    de services communs 
-  <h2>
+  <div class="flex flex-wrap">
+    <div class="flex-1">
+      <h2 class="text-4xl font-black mb-16">
+        <span class="underline">P</span>lateforme de mutualisation
+        <br> 
+        de services communs 
+      </h2>
 
-  <p class="text-3xl text-secondary mb-12 lg:mb-36">
-    Gérez facilement la coopération et la mutualisation
-    <br> 
-    des services et ressources de votre intercommunalité 
-    <br><br>
-    <%= link_to 'En savoir plus...', "#more", class: "hover:text-primary" %>
-  </p>
+      <p class="text-3xl text-secondary mb-12 lg:mb-36">
+        Gérez facilement la coopération et la mutualisation
+        <br> 
+        des services et ressources de votre intercommunalité 
+        <br><br>
+        <%= link_to 'En savoir plus...', "#more", class: "hover:text-primary" %>
+      </p>
+    </div>
+    <div class="lg:w-64">
+      <%= image_tag 'Cooperation.svg', class: 'opacity-10' %>
+    </div>
+  </div>
 
   <h3 class="text-xl text-secondary font-black mb-4 lg:mb-20">
     <div class="mt-8 flex gap-4">
@@ -174,6 +181,44 @@
 
 <div class="min-h-screen">
   <h1 class="text-5xl text-primary font-black my-12">
+    Témoignages de nos clients
+    <div class="divider mb-12"></div>
+  </h1>
+
+  <div class="chat chat-start">
+    <div class="chat-image avatar">
+      <div class="w-10 rounded-full">
+        <img
+          alt="Tailwind CSS chat bubble component"
+          src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+      </div>
+    </div>
+    <div class="chat-bubble text-warning">It was said that you would, destroy the Sith, not join them.</div>
+  </div>
+  <div class="chat chat-start">
+    <div class="chat-image avatar">
+      <div class="w-10 rounded-full">
+        <img
+          alt="Tailwind CSS chat bubble component"
+          src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+      </div>
+    </div>
+    <div class="chat-bubble">It was you who would bring balance to the Force</div>
+  </div>
+  <div class="chat chat-start">
+    <div class="chat-image avatar">
+      <div class="w-10 rounded-full">
+        <img
+          alt="Tailwind CSS chat bubble component"
+          src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+      </div>
+    </div>
+    <div class="chat-bubble text-primary">Not leave it in Darkness</div>
+  </div>
+</div>
+
+<div class="min-h-screen">
+  <h1 class="text-5xl text-primary font-black my-12">
     Tutorial vidéo
     <div class="divider mb-12"></div>
   </h1>
@@ -216,13 +261,16 @@
       Demande de démonstration
     </li>
     <li class="text-2xl my-4">
-      <%= link_to 'Nous contacter', 'https://www.aikku.eu/fr/contact?objet=COOPCOM', target: '_blank', class: 'hover:text-primary' %>
+      Essai gratuit
     </li>
     <li class="text-2xl my-4">
       Forums de discussions
     </li>
     <li class="text-2xl my-4">
       <%= link_to 'Mentions légales', mentions_legales_path, class: 'hover:text-primary' %>
+    </li>
+    <li class="text-2xl my-4">
+      <%= link_to 'Nous contacter', 'https://www.aikku.eu/fr/contact?objet=COOPCOM', target: '_blank', class: 'hover:text-primary' %>
     </li>
     <li class="text-2xl my-4">
       ...      
