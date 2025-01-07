@@ -1,0 +1,221 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
+  <h1 class="text-4xl text-primary font-bold">Tableau de bord</h1>
+</div>
+
+<% if current_user.manager? %>
+<% elsif current_user.adhérent? %>
+  <div class="flex flex-wrap">
+    <div class="sm:w-1/2 max-h-64 flex flex-col items-center mb-12">
+      <h2 class="text-2xl">Proportion temps consommé/restant</h2>
+      <canvas id="proportionTempsConsomméChart" data-turbo="false"></canvas>
+    </div>
+    <div class="sm:w-1/2 max-h-64 flex flex-col items-center mb-12">
+      <h2 class="text-2xl">Cumul durée d'intervention par mois</h2>
+      <canvas id="tempsTotalParMoisChart" data-turbo="false"></canvas>
+    </div>
+    <div class="sm:w-1/2 max-h-64 flex flex-col items-center mb-12">
+      <h2 class="text-2xl">Nombre d'intervention par état et par mois</h2>
+      <canvas id="workflowChart" data-turbo="false"></canvas>
+    </div>
+    <div class="flex-1 flex items-between">
+      <div class="sm:w-1/2 max-h-64 flex flex-col items-center mb-12">
+        <h2 class="text-2xl whitespace-nowrap">Nombre d'intervention par service</h2>
+        <canvas id="qtéInterventionsParServiceChart" data-turbo="false"></canvas>
+      </div>
+      <div class="sm:w-1/2 max-h-64 flex flex-col items-center mb-12">
+        <h2 class="text-2xl">Temps total par service</h2>
+        <canvas id="tempsTotalParServiceChart" data-turbo="false"></canvas>
+      </div>
+    </div>
+  </div>
+  <script>
+    /*
+      Proportion temps consommé
+    */
+    var dataProportionTempsConsommé = {
+      labels: <%= @proportion_temps_consommé.keys.to_json.html_safe %>,
+      datasets: [
+        {
+          label: "Temps(h)",
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.4)',
+              'rgba(75, 192, 192, 0.4)',
+            ],
+            borderColor: [
+              'rgb(255, 99, 132)',
+              'rgb(75, 192, 192)',
+            ],
+            borderWidth: 1,
+          data: <%= @proportion_temps_consommé.values.to_json.html_safe %>,
+        },
+      ],
+    };
+
+    var configProportionTempsConsommé = {
+      type: "pie",
+      data: dataProportionTempsConsommé,
+      options: {},
+    };
+
+    var elementProportionTempsConsomméChart = document.getElementById("proportionTempsConsomméChart");
+    if (proportionTempsConsomméChart) {
+      new Chart(proportionTempsConsomméChart, configProportionTempsConsommé);
+    }
+
+    /*
+      Temps total par mois
+    */
+    var dataTempsTotalParMoisChart = {
+      labels: <%= @temps_total_par_mois.keys.to_json.html_safe %>,
+      datasets: [
+        {
+          label: "Temps total (h)",
+            backgroundColor: [
+              'rgba(54, 162, 235, 0.4)',
+            ],
+            borderColor: [
+              'rgb(54, 162, 235)',
+            ],
+            borderWidth: 1,
+          data: <%= @temps_total_par_mois.values.to_json.html_safe %>,
+        },
+      ],
+    };
+
+    var configTempsTotalParMoisChart = {
+      type: "bar",
+      data: dataTempsTotalParMoisChart,
+      options: {},
+    };
+
+    var elementTempsTotalParMoisChart = document.getElementById("tempsTotalParMoisChart");
+    if (elementTempsTotalParMoisChart) {
+      new Chart(elementTempsTotalParMoisChart, configTempsTotalParMoisChart);
+    }
+
+    /*
+      Quantité intervention par workflow par mois
+    */
+    var dataWorkflowChart = <%= @data_workflow_chart.to_json.html_safe %>; // Passez les données depuis Rails au JS
+
+    var configWorkflowChart = {
+      type: "bar",
+      data: dataWorkflowChart,
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+          }
+        },
+        scales: {
+          x: {
+            stacked: true, // Barres empilées sur l'axe X
+          },
+          y: {
+            stacked: true, // Barres empilées sur l'axe Y
+          }
+        }
+      }
+    };
+
+    var elementWorkflowChart = document.getElementById("workflowChart");
+    if (elementWorkflowChart) {
+      new Chart(elementWorkflowChart, configWorkflowChart);
+    }
+
+    /*
+      Quantité intervention par service
+    */
+
+    var dataQtéInterventionsParService = {
+      labels: <%= @qté_interventions_par_service.keys.to_json.html_safe %>,
+      datasets: [
+        {
+          label: "Nombre intervention",
+          backgroundColor: [
+            'rgba(153, 101, 255, 0.4)',
+            'rgba(255,159, 64, 0.4)',
+            'rgba(54, 162, 235, 0.4)',
+            'rgba(75, 192, 192, 0.4)',
+            'rgba(255, 205, 86, 0.4)',
+            'rgba(255, 99, 132, 0.4)',
+            'rgba(201, 203, 207, 0.4)',
+          ],
+          borderColor: [
+            'rgb(153, 102, 255)',
+            'rgb(255, 159, 64)',
+            'rgb(54, 162, 235)',
+            'rgb(75, 192, 192)',
+            'rgb(255, 205, 86)',
+            'rgb(255, 99, 132)',
+            'rgb(201, 203, 207)'
+          ],
+            borderWidth: 1,
+          data: <%= @qté_interventions_par_service.values.to_json.html_safe %>,
+        },
+      ],
+    };
+
+    var configQtéInterventionsParService = {
+      type: "pie",
+      data: dataQtéInterventionsParService,
+      options: {},
+    };
+
+    var elementQtéInterventionsParService = document.getElementById("qtéInterventionsParServiceChart");
+    if (elementQtéInterventionsParService) {
+      new Chart(elementQtéInterventionsParService, configQtéInterventionsParService);
+    }
+
+    /*
+      Temps total par service
+    */
+
+    var dataTempsTotalParService = {
+      labels: <%= @temps_total_par_service.keys.to_json.html_safe %>,
+      datasets: [
+        {
+          label: "Temps total (h)",
+          backgroundColor: [
+            'rgba(153, 101, 255, 0.4)',
+            'rgba(255,159, 64, 0.4)',
+            'rgba(54, 162, 235, 0.4)',
+            'rgba(75, 192, 192, 0.4)',
+            'rgba(255, 205, 86, 0.4)',
+            'rgba(255, 99, 132, 0.4)',
+            'rgba(201, 203, 207, 0.4)',
+          ],
+          borderColor: [
+            'rgb(153, 102, 255)',
+            'rgb(255, 159, 64)',
+            'rgb(54, 162, 235)',
+            'rgb(75, 192, 192)',
+            'rgb(255, 205, 86)',
+            'rgb(255, 99, 132)',
+            'rgb(201, 203, 207)'
+          ],
+            borderWidth: 1,
+          data: <%= @temps_total_par_service.values.to_json.html_safe %>,
+        },
+      ],
+    };
+
+    var configTempsTotalParService = {
+      type: "pie",
+      data: dataTempsTotalParService,
+      options: {},
+    };
+
+    var elementTempsTotalParService = document.getElementById("tempsTotalParServiceChart");
+    if (elementTempsTotalParService) {
+      new Chart(elementTempsTotalParService, configTempsTotalParService);
+    }
+  </script>
+<% end %>

@@ -32,6 +32,126 @@ class PagesController < ApplicationController
   def welcome
   end
 
+  def dashboard
+    
+    if current_user.manager?
+      # TODO : afficher ce que chaque adhérent a consommé, mais globalement, càd une somme du temps consommé
+      # à réfléchir : bar chart avec comme clé le nom_prénom ou l'ID de l'adhérent, et en valeur adhérent.interventions_adherent.sum(:temps_total)
+      @data = Hash.new
+      current_user.organisation.users.adhérent.each do |adhérent|
+        @data[adhérent.nom_prénom] = adhérent.interventions_adherent.sum(:temps_total)
+      end
+
+      # TODO : p-e faire une ligne sur le bar chart (donc un multiple chart ou jsp quoi)
+      # qui permet de voir la limite des adhérents
+      # (si chaque ville a sa propre limite, superposer deux data sur un même bar pou)
+
+      # TODO : il faudrait aussi un graphique en barres verticales
+      # où chaque barre représente un état et le nombre d'intervention dans cet état
+
+    elsif current_user.adhérent?
+      temps_consommable_mensuellement = 100
+      start_date = 9.months.ago.beginning_of_month
+      end_date = 3.months.from_now.end_of_month
+
+      #
+      # Graphe temps consommé
+      #
+
+      @proportion_temps_consommé = {}
+      @proportion_temps_consommé["temps_consommé"] = current_user.interventions_adherent.sum(:temps_total)
+      @proportion_temps_consommé["temps_restant"] = temps_consommable_mensuellement - current_user.interventions_adherent.sum(:temps_total)
+
+
+
+      #
+      # Graphe temps_total par mois
+      #
+
+      @temps_total_par_mois = {}
+
+      current_user.interventions_adherent.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:temps_total).each do |month, total|
+        formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
+        @temps_total_par_mois[formatted_month] = total
+      end
+
+      # Compléter les mois manquants avec des valeurs par défaut
+      (start_date.to_date..end_date.to_date).map { |date| date.beginning_of_month }.uniq.each do |month|
+        formatted_month = month.strftime('%Y-%m')
+        @temps_total_par_mois[formatted_month] ||= 0.0
+      end
+
+      @temps_total_par_mois = @temps_total_par_mois.sort.to_h # Trier par ordre chronologique
+
+
+
+      #
+      # Graphe Quantité d'interventions par état et par mois
+      #
+
+      qté_interventions_par_mois_par_état = {}
+
+      current_user.interventions_adherent.where(début: start_date..end_date).group("DATE_TRUNC('month', début)", :workflow_state).count.each do |(month, state), count|
+        formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
+        qté_interventions_par_mois_par_état[formatted_month] ||= {}
+        qté_interventions_par_mois_par_état[formatted_month][state] = count
+      end
+
+      # Compléter les mois et workflows manquants avec des valeurs par défaut
+      workflows = [Intervention::NOUVEAU, Intervention::ATTENTE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
+
+      (start_date.to_date..end_date.to_date).map { |date| date.beginning_of_month }.uniq.each do |month|
+        formatted_month = month.strftime('%Y-%m')
+        qté_interventions_par_mois_par_état[formatted_month] ||= {}
+        workflows.each do |state|
+          qté_interventions_par_mois_par_état[formatted_month][state] ||= 0
+        end
+      end
+
+      qté_interventions_par_mois_par_état = qté_interventions_par_mois_par_état.sort.to_h # Trier par ordre chronologique
+
+      labels = qté_interventions_par_mois_par_état.keys # Les mois comme étiquettes pour l'axe X
+      workflows = [Intervention::NOUVEAU, Intervention::ATTENTE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
+
+      datasets = workflows.map do |workflow|
+        {
+          label: workflow.capitalize, # Nom de l'état de workflow
+          data: labels.map { |month| qté_interventions_par_mois_par_état[month][workflow] }, # Quantités par mois
+          backgroundColor: case workflow
+                          when Intervention::NOUVEAU then "rgba(0,181,255,255)" # Info
+                          when Intervention::ATTENTE then "rgba(123,146,178,255)" # Secondary
+                          when Intervention::TERMINE then "rgba(77,110,255,255)" # Primary
+                          when Intervention::VALIDE then "rgba(0,169,110,255)" # Success
+                          when Intervention::REFUSE then "rgba(255,88,97,255)" # Error
+                          when Intervention::ARCHIVE then "rgba(232,232,232,255)" # Ghost
+                          end
+        }
+      end
+
+      @data_workflow_chart = { labels: labels, datasets: datasets }
+
+
+      #
+      # Graphe qté d'intervention par service
+      #
+
+      @qté_interventions_par_service = current_user.interventions_adherent.joins(:agent).group("users.service").count
+
+
+      #
+      # Graphe temps_total par service
+      #
+
+      @temps_total_par_service = {}
+      # pour chaque service, faire le sum des temps totaux
+      # current_user.interventions_adherent.joins(:agent).each do |intervention|
+      #   @temps_total_par_service
+      # end
+
+      @temps_total_par_service = current_user.interventions_adherent.joins(:agent).group("users.service").sum(:temps_total)
+    end
+  end
+
   private
 
   def is_user_authorized

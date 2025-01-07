@@ -33,7 +33,7 @@ class Intervention < ApplicationRecord
   ARCHIVE   = 'archivé'
 
   workflow do
-    state NOUVEAU, meta: {style: 'badge-info text-white'} do
+    state NOUVEAU, meta: {style: 'badge-info text-white', rgba: '0,181,255,255'} do
       # event :accepter, transitions_to: ACCEPTE
       event :terminer, transitions_to: TERMINE
     end
@@ -72,6 +72,10 @@ class Intervention < ApplicationRecord
   
   def style
     self.current_state.meta[:style]
+  end
+
+  def rgba
+    self.current_state.meta[:rgba]
   end
 
   def self.workflow_states_count(interventions)

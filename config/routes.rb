@@ -49,6 +49,7 @@ Rails.application.routes.draw do
     get :welcome, to: 'pages#welcome', as: :welcome
     get :assistant, to: 'pages#assistant', as: :assistant
     get :mentions_legales, to: 'pages#mentions_legales', as: :mentions_legales
+    get :dashboard, to: 'pages#dashboard', as: :dashboard
   end
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
