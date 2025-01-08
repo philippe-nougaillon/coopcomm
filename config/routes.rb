@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :wiki_pages
 
   devise_for :users, controllers: { 
     registrations: 'users/registrations',

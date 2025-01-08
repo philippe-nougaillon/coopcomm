@@ -1,0 +1,14 @@
+<div class="flex w-full">
+  <%= render "wiki_navbar" %>
+  <div class="ml-64">
+    <%= render @wiki_page %>
+
+    <% if user_signed_in? %>
+      <%= link_to "Modifier", edit_wiki_page_path(@wiki_page), class: "mt-2 rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
+      <div class="inline-block ml-2">
+        <%= button_to "[X]", wiki_page_path(@wiki_page), method: :delete, class: "mt-2 rounded-lg py-3 px-5 bg-gray-100 font-medium" %>
+      </div>
+    <% end %>
+    <%= link_to "Retour", wiki_pages_path(catégorie: params[:catégorie]), class: "ml-2 rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium mt-8" %>
+  </div>
+</div>

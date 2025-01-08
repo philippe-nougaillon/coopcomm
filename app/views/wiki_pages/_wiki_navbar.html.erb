@@ -1,0 +1,14 @@
+<nav class="h-screen shadow fixed bottom-0 -ml-4 <%= (user_signed_in? && current_user.super_admin?) ? 'pt-12' : 'pt-8' %> ">
+  <h1 class="text-4xl font-black text-primary text-center mb-12 mx-8">
+    <%= link_to wiki_pages_path do %>
+      COO<span class="underline">P</span>COM
+    <% end %>
+  </h1>
+  <% WikiPage.catégories.each do |catégorie, id| %>
+    <%= link_to wiki_pages_path(catégorie: catégorie) do %>
+      <div class="text-xl font-black hover:bg-base-200 py-3 pl-8 <%= 'bg-base-300 hover:bg-base-300' if params[:catégorie] == catégorie %>">
+        <%= catégorie.humanize %>
+      </div>
+    <% end %>
+  <% end %>
+</nav>

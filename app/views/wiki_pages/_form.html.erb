@@ -1,0 +1,44 @@
+<%= form_with(model: wiki_page, class: "contents") do |form| %>
+  <% if wiki_page.errors.any? %>
+    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3">
+      <h2><%= pluralize(wiki_page.errors.count, "error") %> prohibited this wiki_page from being saved:</h2>
+
+      <ul>
+        <% wiki_page.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="my-5">
+    <%= form.text_field :titre, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full", placeholder: "Titre", required: true %>
+  </div>
+
+  <div class="my-5">
+    <%= form.rich_text_area :contenu, class: "min-h-72" %>
+  </div>
+
+  <div class="flex gap-4 my-5">
+
+    <div class="my-5">
+      <%= form.label :catégorie %>
+      <%= form.select :catégorie, options_for_select(WikiPage.catégories.keys, @wiki_page.catégorie), {required: true, include_blank: true}, class: 'select select-bordered select-sm w-full' %>
+    </div>
+
+    <div class="my-5">
+      <%= form.label :publiée, "Publiée ?" %>
+      <br>
+      <%= form.check_box :publiée, class: "checkbox checkbox-lg checkbox-primary" %>
+    </div>
+
+    <div class="my-5">
+      <%= form.label :poids %>
+      <%= form.number_field :poids, class: "input input-bordered input-sm w-full" %>
+    </div>
+  </div>
+
+  <div class="inline">
+    <%= form.submit class: "btn btn-primary btn-outline hover:!text-white" %>
+  </div>
+<% end %>

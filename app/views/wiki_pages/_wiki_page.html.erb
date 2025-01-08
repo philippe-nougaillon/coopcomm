@@ -1,0 +1,33 @@
+<div id="<%= dom_id wiki_page %>">
+  <h1 class="text-2xl font-bold <%= 'hover:underline' if params[:action] == 'index' %>">
+    <%= link_to_if params[:action] == 'index', wiki_page.titre, wiki_page_path(wiki_page, catégorie: params[:catégorie]) %>
+  </h1>
+
+  <% if action_name == "show" %>
+    <p class="my-5">
+      <%= wiki_page.contenu %>
+    </p>
+  <% else %>
+    <%= truncate(wiki_page.contenu.to_plain_text, length: 200)%>
+  <% end %>
+  <% if user_signed_in? && current_user.super_admin? %>
+    <div class="flex gap-4">
+      <p class="my-5">
+        <strong class="block font-black mb-1">Catégorie</strong>
+        <%= wiki_page.catégorie %>
+      </p>
+      <p class="my-5">
+        <strong class="block font-black mb-1">Publiée ?</strong>
+        <%= wiki_page.publiée %>
+      </p>
+      <p class="my-5">
+        <strong class="block font-black mb-1">Poids</strong>
+        <%= wiki_page.poids %>
+      </p>
+    </div>
+  <% end %>
+
+  <% if action_name != "show" %>
+    <hr class="mt-6">
+  <% end %>
+</div>

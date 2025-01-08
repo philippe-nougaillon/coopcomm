@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_12_24_091433) do
+ActiveRecord::Schema[7.1].define(version: 2025_01_08_084700) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -31,6 +31,16 @@ ActiveRecord::Schema[7.1].define(version: 2024_12_24_091433) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["message_id", "message_checksum"], name: "index_action_mailbox_inbound_emails_uniqueness", unique: true
+  end
+
+  create_table "action_text_rich_texts", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "body"
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["record_type", "record_id", "name"], name: "index_action_text_rich_texts_uniqueness", unique: true
   end
 
   create_table "active_storage_attachments", force: :cascade do |t|
@@ -297,6 +307,17 @@ ActiveRecord::Schema[7.1].define(version: 2024_12_24_091433) do
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["organisation_id"], name: "index_users_on_organisation_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
+  create_table "wiki_pages", force: :cascade do |t|
+    t.string "titre"
+    t.boolean "publiée", default: false
+    t.integer "poids", default: 0
+    t.integer "catégorie"
+    t.string "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["slug"], name: "index_wiki_pages_on_slug", unique: true
   end
 
   add_foreign_key "absences", "users"
