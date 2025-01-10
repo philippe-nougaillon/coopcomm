@@ -27,11 +27,16 @@ class InterventionPdf
   def pointeuse_qrcode(intervention)
     qrcode_content = "#{pointer_intervention_url(intervention, host: Rails.application.config.default_url_options[:host])}"
     qrcode = RQRCode::QRCode.new(qrcode_content)
-    render_qr_code(qrcode, extent: bounds.width / 2)
 
-    move_down @margin_down * 3
-    text "#{intervention.description.upcase}"
+    move_down @margin_down * 15
+    text "#{intervention.description.upcase}", align: :center
     move_down @margin_down
-    text "#{intervention.agent.nom_prénom}"
+    text "#{intervention.agent.nom_prénom}", align: :center
+    move_down @margin_down * 3
+
+    qr_code_size = bounds.width / 2 # Taille du QR code (moitié de la largeur du conteneur)
+    x_position = (bounds.width - qr_code_size) / 2 # Position horizontale pour centrer
+    render_qr_code(qrcode, pos: [x_position, cursor], extent: qr_code_size)
+
   end
 end
