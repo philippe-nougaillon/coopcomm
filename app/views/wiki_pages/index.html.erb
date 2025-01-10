@@ -17,11 +17,13 @@
         <%= render @wiki_pages %>
       </div>
     <% else %>
-      <h2 class="text-3xl text-secondary mb-12 lg:mb-36">
-        Bienvenue sur le wiki
+      <h2 class="text-3xl text-secondary mb-12">
+        Pages épinglées
       </h2>
 
-      liste des épinglés
+      <div id="wiki_pages" class="min-w-full">
+        <%= render @wiki_pages %>
+      </div>
     <% end %>
   </div>
 </div>

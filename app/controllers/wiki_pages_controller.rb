@@ -13,7 +13,7 @@ class WikiPagesController < ApplicationController
     when 'fiche'
       @wiki_pages = WikiPage.fiche
     else
-      @wiki_pages = WikiPage.none
+      @wiki_pages = WikiPage.where(épinglée: true)
     end
 
     if params[:search].present?
@@ -87,7 +87,7 @@ class WikiPagesController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def wiki_page_params
-      params.require(:wiki_page).permit(:titre, :publiée, :poids, :contenu, :catégorie)
+      params.require(:wiki_page).permit(:titre, :publiée, :poids, :contenu, :catégorie, :épinglée)
     end
 
     def is_user_authorized

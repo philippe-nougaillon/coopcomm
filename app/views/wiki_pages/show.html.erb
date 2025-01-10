@@ -1,6 +1,9 @@
 <div class="flex w-full">
   <%= render "wiki_navbar" %>
   <div class="ml-64">
+    <h1 class="text-4xl text-primary font-bold">
+      <%= link_to 'Wiki', wiki_pages_path %>
+    </h1>
     <%= render @wiki_page %>
 
     <% if user_signed_in? %>
