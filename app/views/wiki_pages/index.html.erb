@@ -1,27 +1,27 @@
 <div class="flex w-full">
   <%= render "wiki_navbar" %>
 
-  <div class="w-full ml-64">
+  <div class="w-full ml-8 lg:ml-64">
     <div class="flex flex-wrap justify-between items-center mb-8">
-      <h1 class="text-4xl text-primary font-bold">Pages wiki</h1>
+      <h1 class="text-4xl text-primary font-bold">
+        <%= link_to 'Wiki', wiki_pages_path %>
+      </h1>
       <% if user_signed_in? && current_user.super_admin? %>
         <%= link_to "Ajouter une Page", new_wiki_page_path, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:!text-white" %>
         <%= link_to "+", new_wiki_page_path, class: "inline-flex sm:hidden btn btn-primary btn-outline hover:!text-white" %>
       <% end %>
     </div>
 
-    <% if params[:catégorie].present? %>
+    <% if params[:catégorie].present? || params[:search].present? %>
       <div id="wiki_pages" class="min-w-full">
         <%= render @wiki_pages %>
       </div>
     <% else %>
-      Bienvenue sur la page wiki
+      <h2 class="text-3xl text-secondary mb-12 lg:mb-36">
+        Bienvenue sur le wiki
+      </h2>
 
-      <h3 class="text-xl text-secondary font-black mb-4 lg:mb-20">
-        <div class="mt-8 flex gap-4">
-          <%= link_to 'Retour à la page d\'accueil', root_path, class: 'btn btn-outline lg:btn-lg btn-primary hover:!text-white' %>
-        </div>
-      </h3>
+      liste des épinglés
     <% end %>
   </div>
 </div>

@@ -1,14 +1,37 @@
-<nav class="h-screen shadow fixed bottom-0 -ml-4 <%= (user_signed_in? && current_user.super_admin?) ? 'pt-12' : 'pt-8' %> ">
-  <h1 class="text-4xl font-black text-primary text-center mb-12 mx-8">
-    <%= link_to wiki_pages_path do %>
-      COO<span class="underline">P</span>COM
-    <% end %>
-  </h1>
-  <% WikiPage.catégories.each do |catégorie, id| %>
-    <%= link_to wiki_pages_path(catégorie: catégorie) do %>
-      <div class="text-xl font-black hover:bg-base-200 py-3 pl-8 <%= 'bg-base-300 hover:bg-base-300' if params[:catégorie] == catégorie %>">
-        <%= catégorie.humanize %>
-      </div>
-    <% end %>
-  <% end %>
-</nav>
+<div class="drawer lg:drawer-open w-min">
+  <input id="my-drawer" type="checkbox" class="lg:hidden drawer-toggle" />
+  <div class="drawer-content">
+    <div class="sm:hidden">
+      <label id="drawer-label" for="my-drawer">
+        <div></div>
+        <div></div>
+        <div></div>
+      </label>
+    </div>
+  </div>
+  <div class="drawer-side">
+    <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+    <nav class="h-screen bg-base-100 shadow w-64 fixed bottom-0 -ml-4 pt-12 <%= (user_signed_in? && current_user.super_admin?) ? 'lg:pt-11' : 'lg:pt-8' %> ">
+      <h1 class="text-4xl font-black text-primary text-center mb-12 mx-8">
+        <%= link_to root_path do %>
+          COO<span class="underline">P</span>COM
+        <% end %>
+      </h1>
+      <%= form_tag request.path, method: :get, class: 'mb-12' do %>
+        <label class="input input-bordered flex items-center py-2">
+          <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', placeholder: 'Rechercher', class: 'w-24 border-none grow focus:bg-transparent focus:!outline-none focus:border-none' %>
+          <span class="material-symbols-outlined">
+            search
+          </span>
+        </label>
+      <% end %>
+      <% WikiPage.catégories.each do |catégorie, id| %>
+        <%= link_to wiki_pages_path(catégorie: catégorie) do %>
+          <div class="text-xl font-black hover:bg-base-200 py-3 pl-8 <%= 'bg-base-300 hover:bg-base-300' if params[:catégorie] == catégorie %>">
+            <%= catégorie.humanize %>
+          </div>
+        <% end %>
+      <% end %>
+    </nav>
+  </div>
+</div>
