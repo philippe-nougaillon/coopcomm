@@ -25,7 +25,7 @@ class WikiPagesController < ApplicationController
     end
 
 
-    @wiki_pages.order(updated_at: :desc)
+    @wiki_pages.order(poids: :desc)
   end
 
   # GET /wiki_pages/1 or /wiki_pages/1.json
