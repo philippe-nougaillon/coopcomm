@@ -14,6 +14,12 @@
  *= require_self
  */
 
+.select, .input {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* ÉTOILES */ 
 .mask[type=radio]:checked,
 .mask[type=radio]:checked:focus,
 .mask[type=radio]:checked:hover {
@@ -25,13 +31,15 @@
   background-color: var(--fallback-p, oklch(var(--p) / var(--tw-bg-opacity)));
 }
 
+/* END ÉTOILES */
+
 /* .btm-nav>:where(.hover-active):hover {
   border-top-width: 2px;
   --tw-bg-opacity: 1;
   background-color: var(--fallback-b1, oklch(var(--b1) / var(--tw-bg-opacity)));
 } */
 
-/* TypeWriter */
+/* TYPE WRITER */
 
 .typewriter p {
   width: 0;
@@ -58,9 +66,80 @@
     border-color: transparent
   }
 } */
-/* END TypeWriter */
 
-.select, .input{
-  padding-top: 0;
-  padding-bottom: 0;
+/* END TYPE WRITER */
+
+
+/* BURGER MENU */
+
+#my-drawer {
+  display: none;
 }
+
+
+/* WIDTH / HEIGHT / MARGIN À modifier proportionnellement aux autre propriétés avec le même commentaire pour adapter la taille */
+label#drawer-label {
+  top: 10px;
+  right: 0;
+  left: 0;
+  display: block;
+  width: 10px; 
+  height: 10px;
+  margin: -5px auto 0 auto;
+  cursor: pointer;
+  position: relative;
+  z-index: 50
+}
+
+label#drawer-label:before {
+  content: none;
+}
+
+/* HEIGHT / MARGIN-BOTTOM À modifier proportionnellement aux autre propriétés avec le même commentaire pour adapter la taille */
+label#drawer-label div {
+  position: relative;
+  top: 0;
+  height: 2px;
+  background-color: #000;
+  margin-bottom: 2px;
+  transition: 0.3s ease transform, 0.3s ease top, 0.3s ease width, 0.3s ease right;
+  border-radius: 2px;
+}
+
+label#drawer-label div:first-child {
+  transform-origin: 0;
+}
+
+/* TRANSFORM-ORIGIN À modifier proportionnellement aux autre propriétés avec le même commentaire pour adapter la taille */
+label#drawer-label div:last-child {
+  margin-bottom: 0;
+  transform-origin: 10px;
+}
+
+/* WIDTH À modifier proportionnellement aux autre propriétés avec le même commentaire pour adapter la taille */
+label#drawer-label div:nth-child(2) {
+  right: 0;
+  width: 10px;
+}
+
+/* TOP À modifier proportionnellement aux autre propriétés avec le même commentaire pour adapter la taille */
+#my-drawer:checked+div.drawer-content label#drawer-label div:first-child {
+  top: -1px;
+  transform: rotateZ(45deg);
+}
+
+/* TOP À modifier proportionnellement aux autre propriétés avec le même commentaire pour adapter la taille */
+#my-drawer:checked+div.drawer-content label#drawer-label div:last-child {
+  top: 1px;
+  transform: rotateZ(45deg);
+}
+
+/* WIDTH / RIGHT À modifier proportionnellement aux autre propriétés avec le même commentaire pour adapter la taille */
+#my-drawer:checked+div.drawer-content label#drawer-label div:nth-child(2) {
+  width: 14.1666666px;
+  top: 0;
+  right: 2.1666666px;
+  transform: rotateZ(-45deg);
+}
+
+/* END BURGER MENU */

@@ -276,6 +276,9 @@ GEM
     pagy (8.3.0)
     pdf-core (0.10.0)
     pg (1.5.6)
+    pg_search (2.3.7)
+      activerecord (>= 6.1)
+      activesupport (>= 6.1)
     pragmatic_segmenter (0.3.23)
       unicode
     prawn (2.5.0)
@@ -484,6 +487,7 @@ DEPENDENCIES
   omniauth-rails_csrf_protection (~> 1.0)
   pagy (~> 8.3)
   pg (~> 1.1)
+  pg_search (~> 2.3)
   prawn (~> 2.5)
   prawn-qrcode (~> 0.5.2)
   puma (>= 5.0)

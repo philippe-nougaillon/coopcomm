@@ -16,9 +16,14 @@ class WikiPagesController < ApplicationController
       @wiki_pages = WikiPage.none
     end
 
+    if params[:search].present?
+      @wiki_pages = WikiPage.search_titre_and_contenu("%#{ params[:search] }%")
+    end
+
     unless user_signed_in? && current_user.super_admin?
       @wiki_pages = @wiki_pages.where(publiée: true)
     end
+
 
     @wiki_pages.order(updated_at: :desc)
   end

@@ -18,11 +18,13 @@
         <% end %>
       </h1>
       <%= form_tag request.path, method: :get, class: 'mb-12' do %>
-        <label class="input input-bordered flex items-center py-2">
-          <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', placeholder: 'Rechercher', class: 'w-24 border-none grow focus:bg-transparent focus:!outline-none focus:border-none' %>
-          <span class="material-symbols-outlined">
-            search
-          </span>
+        <label class="input input-bordered flex items-center py-2 px-0 border-x-0 rounded-none !outline-0 hover:bg-base-200 active:bg-slate-200">
+          <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', placeholder: 'Rechercher', class: 'w-24 border-none grow focus:ring-0' %>
+          <button type="submit" class="flex items-center cursor-pointer ">
+            <span class="material-symbols-outlined p-2">
+              search
+            </span>
+          </button>
         </label>
       <% end %>
       <% WikiPage.catégories.each do |catégorie, id| %>
