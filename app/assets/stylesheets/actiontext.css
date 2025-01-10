@@ -29,3 +29,7 @@
   padding: 0 !important;
   max-width: 100% !important;
 }
+
+trix-editor[input="wiki_page_contenu_trix_input_wiki_page"] {
+  min-height: 15em;
+}
