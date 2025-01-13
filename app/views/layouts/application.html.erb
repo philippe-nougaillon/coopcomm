@@ -21,7 +21,7 @@
   </head>
 
   <body class="bg-slate-50" style="<%= 'overflow: hidden;' if params[:action] == "messagerie" %>">
-    <main class="container min-h-screen mx-auto py-4 md:pt-8 px-4 pb-24">
+    <main class="container min-h-screen mx-auto py-4 md:pt-8 px-4 pb-24 <%= 'mx-0' if params[:controller] == 'wiki_pages' %>">
       <%= render 'partials/notification' %>
       <%= yield %>
     </main>

@@ -1,5 +1,5 @@
-<div class="drawer lg:drawer-open w-min">
-  <input id="my-drawer" type="checkbox" class="lg:hidden drawer-toggle" />
+<div class="drawer sm:drawer-open w-min">
+  <input id="my-drawer" type="checkbox" class="sm:hidden drawer-toggle" />
   <div class="drawer-content">
     <div class="sm:hidden">
       <label id="drawer-label" for="my-drawer">
@@ -11,13 +11,13 @@
   </div>
   <div class="drawer-side">
     <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-    <nav class="h-screen bg-base-100 shadow w-64 fixed bottom-0 -ml-4 overflow-hidden">
-      <h1 class="text-4xl font-black text-primary text-center mb-12 mx-8 mt-12 <%= (user_signed_in? && current_user.super_admin?) ? 'lg:mt-11' : 'lg:mt-8' %>">
+    <nav class="min-h-screen h-96 bg-base-100 shadow w-64 fixed top-0 -ml-4 overflow-y-auto">
+      <h1 class="text-4xl font-black text-primary text-center mb-12 mx-8 mt-12 <%= (user_signed_in? && current_user.super_admin?) ? 'sm:mt-11' : 'sm:mt-8' %>">
         <%= link_to root_path do %>
           COO<span class="underline">P</span>COM
         <% end %>
       </h1>
-      <%= form_tag request.path, method: :get, class: 'mb-12' do %>
+      <%= form_tag request.path, method: :get do %>
         <label class="input input-bordered flex items-center py-2 px-0 border-x-0 rounded-none !outline-0 hover:bg-base-200 active:bg-slate-200">
           <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', placeholder: 'Rechercher', class: 'w-24 border-none grow focus:ring-0 ml-2' %>
           <button type="submit" class="flex items-center cursor-pointer ">
@@ -42,6 +42,7 @@
           </div>
         <% end %>
       <% end %>
+      <br><br><br>
     </nav>
   </div>
 </div>
