@@ -11,7 +11,7 @@
   </div>
   <div class="drawer-side">
     <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-    <nav class="h-screen bg-base-100 shadow w-64 fixed bottom-0 -ml-4">
+    <nav class="h-screen bg-base-100 shadow w-64 fixed bottom-0 -ml-4 overflow-hidden">
       <h1 class="text-4xl font-black text-primary text-center mb-12 mx-8 mt-12 <%= (user_signed_in? && current_user.super_admin?) ? 'lg:mt-11' : 'lg:mt-8' %>">
         <%= link_to root_path do %>
           COO<span class="underline">P</span>COM
