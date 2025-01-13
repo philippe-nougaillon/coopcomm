@@ -1,5 +1,13 @@
 <div id="<%= dom_id wiki_page %>">
-  <h1 class="text-2xl font-bold <%= 'hover:underline' if params[:action] == 'index' %>">
+  <h1 class="text-2xl font-bold flex items-center gap-2 <%= 'hover:underline' if params[:action] == 'index' %>">
+    <span class="material-symbols-outlined">
+      <% icon_name = case wiki_page.catégorie %>
+        <% when 'documentation' then 'description' %>
+        <% when 'guide' then 'help' %>
+        <% when 'fiche' then 'assignment' %>
+      <% end %>
+      <%= icon_name %>
+    </span>
     <%= link_to_if params[:action] == 'index', wiki_page.titre, wiki_page_path(wiki_page, catégorie: params[:catégorie]) %>
   </h1>
 
