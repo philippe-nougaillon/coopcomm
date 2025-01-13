@@ -6,26 +6,26 @@
 
 <% if current_user.manager? %>
   <div class="flex flex-wrap">
-    <div class="sm:w-1/2 max-h-64 flex flex-col items-center mb-12">
-      <h2 class="text-2xl">Temps total par adhérent</h2>
-      <canvas id="tempsTotalParAdhérentChart" data-turbo="false"></canvas>
+    <div class="w-full sm:w-1/2 flex flex-col items-center mb-12">
+      <h2 class="text-2xl sm:whitespace-nowrap text-center">Temps total par adhérent</h2>
+      <canvas id="tempsTotalParAdhérentChart" class="max-h-64" data-turbo="false"></canvas>
     </div>
-    <div class="sm:w-1/2 max-h-64 flex flex-col items-center mb-12">
-      <h2 class="text-2xl">Temps total par agent</h2>
-      <canvas id="tempsTotalParAgentChart" data-turbo="false"></canvas>
+    <div class="w-full sm:w-1/2 flex flex-col items-center mb-12">
+      <h2 class="text-2xl sm:whitespace-nowrap text-center">Temps total par agent</h2>
+      <canvas id="tempsTotalParAgentChart" class="max-h-64" data-turbo="false"></canvas>
     </div>
-    <div class="sm:w-1/2 max-h-64 flex flex-col items-center mb-12">
-      <h2 class="text-2xl">Nombre d'intervention par état et par mois</h2>
-      <canvas id="workflowChart" data-turbo="false"></canvas>
+    <div class="w-full sm:w-1/2 flex flex-col items-center mb-12">
+      <h2 class="text-2xl sm:whitespace-nowrap text-center">Nombre d'intervention par état et par mois</h2>
+      <canvas id="workflowChart" class="max-h-64" data-turbo="false"></canvas>
     </div>
-    <div class="flex-1 flex items-between">
-      <div class="sm:w-1/2 max-h-64 flex flex-col items-center mb-12">
-        <h2 class="text-2xl whitespace-nowrap">Nombre d'intervention par service</h2>
-        <canvas id="qtéInterventionsParServiceChart" data-turbo="false"></canvas>
+    <div class="flex-1 flex flex-wrap gap-12 items-between">
+      <div class="flex-1 sm:w-1/2 flex flex-col items-center mb-12">
+        <h2 class="text-2xl sm:whitespace-nowrap text-center">Nombre d'intervention par service</h2>
+        <canvas id="qtéInterventionsParServiceChart" class="max-h-64" data-turbo="false"></canvas>
       </div>
-      <div class="sm:w-1/2 max-h-64 flex flex-col items-center mb-12">
-        <h2 class="text-2xl">Temps total par service</h2>
-        <canvas id="tempsTotalParServiceChart" data-turbo="false"></canvas>
+      <div class="flex-1 sm:w-1/2 flex flex-col items-center mb-12">
+        <h2 class="text-2xl sm:whitespace-nowrap text-center">Temps total par service</h2>
+        <canvas id="tempsTotalParServiceChart" class="max-h-64" data-turbo="false"></canvas>
       </div>
     </div>
   </div>
@@ -236,26 +236,26 @@
   </script>
 <% elsif current_user.adhérent? %>
   <div class="flex flex-wrap">
-    <div class="sm:w-1/2 max-h-64 flex flex-col items-center mb-12">
-      <h2 class="text-2xl">Proportion temps consommé/restant</h2>
-      <canvas id="proportionTempsConsomméChart" data-turbo="false"></canvas>
+    <div class="w-full sm:w-1/2 flex flex-col items-center mb-12">
+      <h2 class="text-2xl sm:whitespace-nowrap text-center">Proportion temps consommé/restant</h2>
+      <canvas id="proportionTempsConsomméChart" class="max-h-64" data-turbo="false"></canvas>
     </div>
-    <div class="sm:w-1/2 max-h-64 flex flex-col items-center mb-12">
-      <h2 class="text-2xl">Cumul durée d'intervention par mois</h2>
-      <canvas id="tempsTotalParMoisChart" data-turbo="false"></canvas>
+    <div class="w-full sm:w-1/2 flex flex-col items-center mb-12">
+      <h2 class="text-2xl sm:whitespace-nowrap text-center">Cumul durée d'intervention par mois</h2>
+      <canvas id="tempsTotalParMoisChart" class="max-h-64" data-turbo="false"></canvas>
     </div>
-    <div class="sm:w-1/2 max-h-64 flex flex-col items-center mb-12">
-      <h2 class="text-2xl">Nombre d'intervention par état et par mois</h2>
-      <canvas id="workflowChart" data-turbo="false"></canvas>
+    <div class="w-full sm:w-1/2 flex flex-col items-center mb-12">
+      <h2 class="text-2xl sm:whitespace-nowrap text-center">Nombre d'intervention par état et par mois</h2>
+      <canvas id="workflowChart" class="max-h-64" data-turbo="false"></canvas>
     </div>
-    <div class="flex-1 flex items-between">
-      <div class="sm:w-1/2 max-h-64 flex flex-col items-center mb-12">
-        <h2 class="text-2xl whitespace-nowrap">Nombre d'intervention par service</h2>
-        <canvas id="qtéInterventionsParServiceChart" data-turbo="false"></canvas>
+    <div class="flex flex-wrap items-between gap-12">
+      <div class="flex-1 sm:w-1/2 flex flex-col items-center mb-12">
+        <h2 class="text-2xl sm:whitespace-nowrap text-center">Nombre d'intervention par service</h2>
+        <canvas id="qtéInterventionsParServiceChart" class="max-h-64" data-turbo="false"></canvas>
       </div>
-      <div class="sm:w-1/2 max-h-64 flex flex-col items-center mb-12">
-        <h2 class="text-2xl">Temps total par service</h2>
-        <canvas id="tempsTotalParServiceChart" data-turbo="false"></canvas>
+      <div class="flex-1 sm:w-1/2 flex flex-col items-center mb-12">
+        <h2 class="text-2xl sm:whitespace-nowrap text-center">Temps total par service</h2>
+        <canvas id="tempsTotalParServiceChart" class="max-h-64" data-turbo="false"></canvas>
       </div>
     </div>
   </div>
