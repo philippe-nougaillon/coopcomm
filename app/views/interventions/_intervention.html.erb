@@ -55,15 +55,12 @@
         </div>
 
         <div>
-          <p class="my-2">
-            <strong class="block text-slate-400 mb-1">Agent#1</strong>
-            <b><%= intervention.agent.try(:nom_prénom) %></b>
-          </p>
-
-          <p class="<%= (params[:action] == "index") ? 'hidden sm:block' : 'my-2' %>">
-            <strong class="block text-slate-400 mb-1">Agent#2</strong>
-            <b><%= intervention.agent_binome.try(:nom_prénom) %></b>
-          </p>
+          <% intervention.agents.each_with_index do |agent, index| %>
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Agent#<%= index + 1 %></strong>
+              <b><%= agent.nom_prénom %></b>
+            </p>
+          <% end %>
         </div>
 
         <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">

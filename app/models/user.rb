@@ -16,9 +16,9 @@ class User < ApplicationRecord
          omniauth_providers: [:google_oauth2]
 
   belongs_to :organisation, optional: true
-  has_many :interventions_agent, class_name: :Intervention, foreign_key: :agent_id
-  has_many :interventions_agent_binome, class_name: :Intervention, foreign_key: :agent_binome_id
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
+  has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention'
+  has_many :interventions, through: :agent_interventions
   has_many :notifications, dependent: :destroy
   has_many :absences, dependent: :destroy
   accepts_nested_attributes_for :absences, 
@@ -67,12 +67,11 @@ class User < ApplicationRecord
   end
 
   def moyenne
-    notes_agents  = self.interventions_agent.where.not(note: 0)
-    notes_binomes = self.interventions_agent_binome.where.not(note: 0)
-    count = notes_agents.count + notes_binomes.count
+    notes_agents  = self.interventions.where.not(note: 0)
+    count = notes_agents.count
 
     unless count.zero?
-      (notes_agents.sum(:note) + notes_binomes.sum(:note)).to_f / count
+      notes_agents.sum(:note).to_f / count
     else 
       nil
     end
@@ -82,14 +81,14 @@ class User < ApplicationRecord
     rating_per_star = {}
     sum = 0
     (1..5).each do |i|
-      rating_per_star[i] = self.interventions_agent.where(note: i).count + self.interventions_agent_binome.where(note: i).count
+      rating_per_star[i] = self.interventions.where(note: i).count
       sum += rating_per_star[i]
     end
     return (rating_per_star[rating].to_f / sum) * 100
   end
 
   def total_rating
-    self.interventions_agent.where.not(note: 0).count + self.interventions_agent_binome.where.not(note: 0).count
+    self.interventions.where.not(note: 0).count
   end
 
   def self.from_omniauth(auth)

@@ -54,12 +54,8 @@ class PagesController < ApplicationController
       @temps_total_par_agent = {}
       current_user.organisation.users.agent.each do |agent|
         @temps_total_par_agent[agent.nom_prénom] = 0
-        agent.interventions_agent.or(agent.interventions_agent_binome).each do |intervention|
-          if intervention.agent && intervention.agent_binome
-            @temps_total_par_agent[agent.nom_prénom] += intervention.temps_total / 2
-          else
-            @temps_total_par_agent[agent.nom_prénom] += intervention.temps_total
-          end
+        agent.interventions.each do |intervention|
+          @temps_total_par_agent[agent.nom_prénom] += intervention.temps_total / intervention.agents.count
         end
       end
 
@@ -112,7 +108,7 @@ class PagesController < ApplicationController
       # Graphe qté d'intervention par service
       #
 
-      @qté_interventions_par_service = current_user.organisation.interventions.joins(:agent).group("users.service").count
+      @qté_interventions_par_service = current_user.organisation.interventions.joins(agent_interventions: :agent).group('users.service').count
 
 
       #
@@ -121,11 +117,11 @@ class PagesController < ApplicationController
 
       @temps_total_par_service = {}
       # pour chaque service, faire le sum des temps totaux
-      # current_user.interventions_adherent.joins(:agent).each do |intervention|
+      # current_user.interventions_adherent.joins(agent_interventions: :agent).each do |intervention|
       #   @temps_total_par_service
       # end
 
-      @temps_total_par_service = current_user.organisation.interventions.joins(:agent).group("users.service").sum(:temps_total)
+      @temps_total_par_service = current_user.organisation.interventions.joins(agent_interventions: :agent).group("users.service").sum(:temps_total)
 
     elsif current_user.adhérent?
       temps_consommable_adhérent_mensuellement = 100
@@ -211,7 +207,7 @@ class PagesController < ApplicationController
       # Graphe qté d'intervention par service
       #
 
-      @qté_interventions_par_service = current_user.interventions_adherent.joins(:agent).group("users.service").count
+      @qté_interventions_par_service = current_user.interventions_adherent.joins(agent_interventions: :agent).group("users.service").count
 
 
       #
@@ -220,11 +216,11 @@ class PagesController < ApplicationController
 
       @temps_total_par_service = {}
       # pour chaque service, faire le sum des temps totaux
-      # current_user.interventions_adherent.joins(:agent).each do |intervention|
+      # current_user.interventions_adherent.joins(agent_interventions: :agent).each do |intervention|
       #   @temps_total_par_service
       # end
 
-      @temps_total_par_service = current_user.interventions_adherent.joins(:agent).group("users.service").sum(:temps_total)
+      @temps_total_par_service = current_user.interventions_adherent.joins(agent_interventions: :agent).group("users.service").sum(:temps_total)
     end
   end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_01_10_144413) do
+ActiveRecord::Schema[7.1].define(version: 2025_01_20_140926) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -71,6 +71,16 @@ ActiveRecord::Schema[7.1].define(version: 2025_01_10_144413) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "agent_interventions", force: :cascade do |t|
+    t.bigint "agent_id", null: false
+    t.bigint "intervention_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["agent_id", "intervention_id"], name: "index_agent_interventions_on_agent_id_and_intervention_id", unique: true
+    t.index ["agent_id"], name: "index_agent_interventions_on_agent_id"
+    t.index ["intervention_id"], name: "index_agent_interventions_on_intervention_id"
+  end
+
   create_table "audits", force: :cascade do |t|
     t.integer "auditable_id"
     t.string "auditable_type"
@@ -102,8 +112,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_01_10_144413) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "organisation_id", null: false
-    t.integer "agent_id"
-    t.integer "agent_binome_id"
     t.integer "adherent_id"
     t.decimal "temps_total", precision: 8, scale: 2, default: "0.0"
     t.text "commentaires"
@@ -114,8 +122,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_01_10_144413) do
     t.boolean "repeter"
     t.string "template_slug"
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
-    t.index ["agent_binome_id"], name: "index_interventions_on_agent_binome_id"
-    t.index ["agent_id"], name: "index_interventions_on_agent_id"
     t.index ["organisation_id"], name: "index_interventions_on_organisation_id"
     t.index ["user_id"], name: "index_interventions_on_user_id"
   end
@@ -324,6 +330,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_01_10_144413) do
   add_foreign_key "absences", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "agent_interventions", "interventions"
+  add_foreign_key "agent_interventions", "users", column: "agent_id"
   add_foreign_key "interventions", "organisations"
   add_foreign_key "interventions", "users"
   add_foreign_key "mail_logs", "organisations"

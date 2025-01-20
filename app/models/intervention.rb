@@ -10,9 +10,9 @@ class Intervention < ApplicationRecord
 
   belongs_to :organisation
   belongs_to :user
-  belongs_to :agent, class_name: :User, foreign_key: :agent_id, optional: true 
-  belongs_to :agent_binome, class_name: :User, foreign_key: :agent_binome_id, optional: true 
-  belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true 
+  belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
+  has_many :agent_interventions
+  has_many :agents, through: :agent_interventions, class_name: 'User'
 
   has_many_attached :photos
 
@@ -107,11 +107,8 @@ class Intervention < ApplicationRecord
 
   def check_absence
     absence_ids = []
-    if self.agent
-      absence_ids << self.agent.absences.where("(absences.du BETWEEN :debut AND :fin) OR (absences.au BETWEEN :debut AND :fin) OR (absences.du < :debut AND absences.au > :fin)", {debut: self.début, fin: self.fin}).pluck(:id)
-    end
-    if self.agent_binome
-      absence_ids << self.agent_binome.absences.where("(absences.du BETWEEN :debut AND :fin) OR (absences.au BETWEEN :debut AND :fin) OR (absences.du < :debut AND absences.au > :fin)", {debut: self.début, fin: self.fin}).pluck(:id)
+    self.agents.each do |agent|
+      absence_ids << agent.absences.where("(absences.du BETWEEN :debut AND :fin) OR (absences.au BETWEEN :debut AND :fin) OR (absences.du < :debut AND absences.au > :fin)", {debut: self.début, fin: self.fin}).pluck(:id)
     end
     unless absence_ids.flatten.empty?
       errors.add(:interventions, ": Agent(s) '#{User.where(id: Absence.where(id: absence_ids.uniq.flatten).pluck(:user_id)).pluck(:nom).uniq.join(', ')}' pas disponible(s) à ces dates")

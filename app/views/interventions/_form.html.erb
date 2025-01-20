@@ -46,15 +46,10 @@
         <% end %>
 
         <div class="w-full sm:flex-1">
-          <%= form.label :agent_id, "Agent #1" %>
-          <%= form.select :agent_id, grouped_options_for_select(@grouped_agents, intervention.agent_id), {include_blank: 'Choisissez un agent'}, class: "slim-select w-full" %>
-        </div>
-
-        <div class="w-full sm:flex-1">
-          <%= form.label :agent_binome_id, "Agent #2" %>
-          <%= form.select :agent_binome_id, grouped_options_for_select(@grouped_agents, intervention.agent_binome_id),
-                          { include_blank: 'Choisissez un agent' }, class: "slim-select w-full",
-                          data: { 'calc-temps-passe-target': 'agent2', action: "change->calc-temps-passe#calc" } %>
+          <%= form.label :agent_ids, "Agents" %>
+          <%= form.select :agent_ids, grouped_options_for_select(@grouped_agents, intervention.agent_ids),
+                          { include_blank: 'Choisissez un/des agent.s' }, class: "slim-select w-full", multiple: :true,
+                          data: { 'calc-temps-passe-target': 'agents', action: "change->calc-temps-passe#calc" } %>
         </div>
       </div>
 

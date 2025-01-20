@@ -32,11 +32,11 @@
 
     <div class="w-full">
       <%= form.label :password, style: "display: block" %>
-      <%= form.password_field :password, class: 'input input-bordered input-sm w-full' %>
+      <%= form.password_field :password, class: 'input input-bordered input-sm w-full', required: true %>
     </div>
     <div class="w-full">
       <%= form.label :password_confirmation, style: "display: block" %>
-      <%= form.password_field :password_confirmation, class: 'input input-bordered input-sm w-full' %>
+      <%= form.password_field :password_confirmation, class: 'input input-bordered input-sm w-full', required: true %>
     </div>
 
     <div data-controller="toggle-agent-service" class="flex flex-wrap md:flex-nowrap gap-2 w-full">

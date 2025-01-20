@@ -69,7 +69,7 @@ class InterventionsController < ApplicationController
 
     respond_to do |format|
       format.html do
-        @pagy, @interventions = pagy(@interventions.includes(:tags, :user, :agent, :agent_binome, :adherent).with_attached_photos)
+        @pagy, @interventions = pagy(@interventions.includes(:tags, :user, :agents, :adherent).with_attached_photos)
       end
 
       format.xls do
@@ -276,7 +276,7 @@ class InterventionsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def intervention_params
-      params.require(:intervention).permit(:organisation_id, :agent_id, :agent_binome_id, :adherent_id, :début, :fin, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :user_id, :repeter, :repeter_lun, :repeter_mar, :repeter_mer, :repeter_jeu, :repeter_ven, :repeter_sam, :repeter_dim, :fin_repeter, photos: [])
+      params.require(:intervention).permit(:organisation_id, :adherent_id, :user_id, :début, :fin, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :repeter, :repeter_lun, :repeter_mar, :repeter_mer, :repeter_jeu, :repeter_ven, :repeter_sam, :repeter_dim, :fin_repeter, photos: [], agent_ids: [])
     end
 
     def is_user_authorized
