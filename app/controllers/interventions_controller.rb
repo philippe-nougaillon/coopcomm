@@ -19,7 +19,7 @@ class InterventionsController < ApplicationController
     if current_user.manager?
       @adhérents = organisation_members.adhérent.order(:nom)
       @services = User.services
-      @équipes = organisation_members.équipe
+      @teams = organisation_members.équipe
       @grouped_agents = User.grouped_agents(organisation_members)
     elsif current_user.adhérent?
       @adhérents = organisation_members.adhérent.order(:nom)
@@ -41,14 +41,18 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.where(adherent_id: params[:adherent_id])
     end
 
-    if params[:agent_id].present?
-      @interventions = @interventions.where(agent_id: params[:agent_id]).or(@interventions.where(agent_binome_id: params[:agent_id]))
+    if params[:team_id].present?
+      @interventions = @interventions.where(user_id: params[:team_id])
     end
 
     if params[:service].present?
-      agents_ids = organisation_members.agent.where(service: params[:service]).pluck(:id)
-      @interventions = @interventions.where(agent_id: agents_ids)
+      @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {service: params[:service]})
     end
+
+    if params[:agent_id].present?
+      @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {id: params[:agent_id]})
+    end
+
 
     if params[:du].present?
       if params[:au].present?
@@ -69,7 +73,7 @@ class InterventionsController < ApplicationController
 
     respond_to do |format|
       format.html do
-        @pagy, @interventions = pagy(@interventions.includes(:tags, :user, :agent, :agent_binome, :adherent).with_attached_photos)
+        @pagy, @interventions = pagy(@interventions.includes(:tags, :user, :agents, :adherent).with_attached_photos)
       end
 
       format.xls do
@@ -88,7 +92,7 @@ class InterventionsController < ApplicationController
       end
 
       format.pdf do
-        filename = "QRCode_Pointeuse_#{@intervention.agent.nom_prénom}"
+        filename = "QRCode_Pointeuse_#{@intervention.agents.first.nom_prénom}"
         pdf = InterventionPdf.new
         pdf.pointeuse_qrcode(@intervention)
 
@@ -104,7 +108,7 @@ class InterventionsController < ApplicationController
   def new
     @intervention = Intervention.new
     @intervention.adherent_id = current_user.id if current_user.adhérent?
-    @intervention.agent_id = current_user.id if current_user.agent?
+    @intervention.agent_ids = current_user.id if current_user.agent?
   end
 
   # GET /interventions/1/edit
@@ -276,7 +280,7 @@ class InterventionsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def intervention_params
-      params.require(:intervention).permit(:organisation_id, :agent_id, :agent_binome_id, :adherent_id, :début, :fin, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :user_id, :repeter, :repeter_lun, :repeter_mar, :repeter_mer, :repeter_jeu, :repeter_ven, :repeter_sam, :repeter_dim, :fin_repeter, photos: [])
+      params.require(:intervention).permit(:organisation_id, :adherent_id, :user_id, :début, :fin, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :repeter, :repeter_lun, :repeter_mar, :repeter_mer, :repeter_jeu, :repeter_ven, :repeter_sam, :repeter_dim, :fin_repeter, photos: [], agent_ids: [])
     end
 
     def is_user_authorized
