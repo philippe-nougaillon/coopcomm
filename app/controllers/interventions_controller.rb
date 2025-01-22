@@ -92,7 +92,7 @@ class InterventionsController < ApplicationController
       end
 
       format.pdf do
-        filename = "QRCode_Pointeuse_#{@intervention.agents.first.nom_prénom}"
+        filename = "QRCode_Pointeuse_#{@intervention.description}"
         pdf = InterventionPdf.new
         pdf.pointeuse_qrcode(@intervention)
 

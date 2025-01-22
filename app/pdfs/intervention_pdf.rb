@@ -28,10 +28,12 @@ class InterventionPdf
     qrcode_content = "#{pointer_intervention_url(intervention, host: Rails.application.config.default_url_options[:host])}"
     qrcode = RQRCode::QRCode.new(qrcode_content)
 
-    move_down @margin_down * 15
-    text "#{intervention.description.upcase}", align: :center
+    text "WWW.COOPCOM.FR", align: :center, color: "CCCCCC"
+    move_down @margin_down * 12
+    text "#{intervention.description.upcase}", align: :center, size: 24
     move_down @margin_down
-    text "#{intervention.agents.first.nom_prénom}", align: :center
+    # Nom de l'agent retiré le temps de voir si l'on affiche le nom de l'équipe, tous les agents ou s'il n'y aura qu'un seul agent par pointage
+    # text "#{intervention.agents.first.nom_prénom}", align: :center
     move_down @margin_down * 3
 
     qr_code_size = bounds.width / 2 # Taille du QR code (moitié de la largeur du conteneur)
