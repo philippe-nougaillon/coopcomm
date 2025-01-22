@@ -17,7 +17,7 @@
         <br> 
         des services et ressources de votre intercommunalité 
         <br><br>
-        <%= link_to 'En savoir plus...', "#more", class: "hover:text-primary" %>
+        <%= link_to 'En savoir plus...', "#more", class: "text-primary hover:underline" %>
       </p>
     </div>
     <div class="lg:w-64 hover:animate-pulse">
@@ -25,16 +25,16 @@
     </div>
   </div>
 
-  <h3 class="text-xl text-secondary font-black mb-4 lg:mb-20">
+  <h3 class="text-xl text-secondary font-black mb-4 lg:mb-20 lg:mt-12">
     <div class="mt-8 flex gap-4">
       <%= link_to "S'inscrire", '/users/sign_up', class: 'btn btn-outline lg:btn-lg btn-success hover:!text-white' %>
-      <%= link_to "Se connecter", '/users/sign_in', class: 'btn btn-outline lg:btn-lg btn-primary hover:!text-white' %>
+      <%= link_to "Se connecter", '/users/sign_in', class: 'btn btn-outline lg:btn-lg lg:btn-wide btn-primary hover:!text-white' %>
     </div>
   </h3>
 
 </div>
 
-<div class="mt-12">
+<div id="more" class="mt-12">
   <h1 class="text-4xl lg:text-5xl text-primary font-black">
     Les bénéfices de la plateforme COOPCOM
   </h1>
@@ -270,7 +270,7 @@
   <%= link_to 'Consultez notre wiki', wiki_pages_path, class: 'text-3xl text-primary hover:underline' %>
 </div>
 
-<div id="more" class="min-h-screen mt-12">
+<div class="min-h-screen mt-12">
   <h1 class="text-4xl lg:text-5xl text-primary font-black">
     En savoir plus
   </h1>

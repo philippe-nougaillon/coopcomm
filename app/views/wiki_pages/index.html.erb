@@ -12,18 +12,14 @@
       <% end %>
     </div>
 
-    <% if params[:catégorie].present? || params[:search].present? %>
-      <div id="wiki_pages" class="min-w-full">
-        <%= render @wiki_pages %>
-      </div>
-    <% else %>
+    <% if !(params[:catégorie].present? || params[:search].present?) %>
       <h2 class="text-3xl text-secondary mb-12">
         Pages épinglées
       </h2>
-
-      <div id="wiki_pages" class="min-w-full">
-        <%= render @wiki_pages %>
-      </div>
     <% end %>
+    
+    <div id="wiki_pages" class="min-w-full">
+      <%= render @wiki_pages %>
+    </div>
   </div>
 </div>

@@ -28,4 +28,13 @@ class WikiPage < ApplicationRecord
   def should_generate_new_friendly_id?
     titre_changed? || super
   end
+
+  def icone_catégorie
+    icone = case self.catégorie
+      when 'documentation' then 'description'
+      when 'guide' then 'help'
+      when 'fiche' then 'assignment'
+    end
+    icone
+  end
 end
