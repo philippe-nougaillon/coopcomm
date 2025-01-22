@@ -85,6 +85,7 @@
   <hr class="mt-8">
 
   <div id="interventions" class="min-w-full">
+    <%= turbo_stream_from "interventions_#{current_user.organisation.id}" %>
     <%= render @interventions %>
   </div>
 

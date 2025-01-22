@@ -24,6 +24,11 @@ class Intervention < ApplicationRecord
 
   scope :ordered, -> { order(updated_at: :desc) }
 
+  after_create_commit -> { broadcast_prepend_to "interventions_#{self.organisation.id}", 
+                                              partial: "interventions/intervention", 
+                                              locals: { intervention: self }, 
+                                              target: "interventions" }
+
   # WORKFLOW
   NOUVEAU   = 'nouveau'
   ATTENTE   = 'attente'
