@@ -31,7 +31,7 @@ class InterventionPdf
     move_down @margin_down * 15
     text "#{intervention.description.upcase}", align: :center
     move_down @margin_down
-    text "#{intervention.agent.nom_prénom}", align: :center
+    text "#{intervention.agents.first.nom_prénom}", align: :center
     move_down @margin_down * 3
 
     qr_code_size = bounds.width / 2 # Taille du QR code (moitié de la largeur du conteneur)

@@ -1,179 +1,175 @@
-<div id="<%= dom_id intervention %>" class="overflow-x-auto">
+<details id="<%= dom_id intervention %>" class="overflow-x-auto collapse collapse-arrow">
+  <summary class="collapse-title text-xl font-medium">
+    <small>
+      <i>il y a <%= time_ago_in_words intervention.updated_at %></i>
+    </small>
 
-  <small>
-    <i>il y a <%= time_ago_in_words intervention.updated_at %></i>
-  </small>
-
-  <p class="text-3xl text-<%= intervention.style.split.first.split('-').last %> font-black">
-    <% if params[:action] == "index" %>
+    <p class="text-3xl text-<%= intervention.style.split.first.split('-').last %> font-black">
       <%= link_to intervention, class: 'hover:underline' do %>
-        <%= intervention.description.humanize %>
         <% if intervention.repeter %>
           <span class="material-symbols-outlined" title="Modèle pour le pointage">
             event_repeat
           </span>
         <% end %>
+        <%= intervention.description.humanize %>
       <% end %>
-    <% else %>
-      <%= intervention.description.humanize %>
-      <% if intervention.repeter %>
-        <span class="material-symbols-outlined" title="Modèle pour le pointage">
-          event_repeat
-        </span>
+    </p>
+  </summary>
+
+  <div class="collapse-content">
+    <p class="my-2">
+      <% intervention.tags.each do |tag| %>
+        <span class="badge badge-primary badge-outline text-white"><%= tag.name.humanize %></span>
       <% end %>
-    <% end %>
-  </p>
+    </p>
 
-  <p class="my-2">
-    <% intervention.tags.each do |tag| %>
-      <span class="badge badge-primary badge-outline text-white"><%= tag.name.humanize %></span>
-    <% end %>
-  </p>
-
-  <div class="sm:flex sm:gap-4 overflow-x-auto">
-    <div class="sm:flex sm:gap-4 flex-1">
-      <div class="sm:flex gap-8">
-        <div>
-          <p class="my-2">
-            <strong class="block text-slate-400 mb-1">Statut</strong>
-            <span class="badge badge-lg text-nowrap font-bold <%= intervention.style %>">
-              <%= intervention.workflow_state.humanize %>
-            </span>
-          </p>
-        </div>
-          
-        <div>
-          <p class="my-2">
-            <strong class="block text-slate-400 mb-1">Adhérent</strong>
-            <b><%= intervention.adherent.try(:nom_prénom) %></b>
-          </p>
-          <p class="my-2">
-            <strong class="block text-slate-400 mb-1">Équipe</strong>
-            <b><%= intervention.user.nom_prénom %></b>
-          </p>
-
-        </div>
-
-        <div>
-          <% intervention.agents.each_with_index do |agent, index| %>
+    <div class="sm:flex sm:gap-4 overflow-x-auto">
+      <div class="sm:flex sm:gap-4 flex-1">
+        <div class="sm:flex gap-8">
+          <div>
             <p class="my-2">
-              <strong class="block text-slate-400 mb-1">Agent#<%= index + 1 %></strong>
-              <b><%= agent.nom_prénom %></b>
+              <strong class="block text-slate-400 mb-1">Statut</strong>
+              <span class="badge badge-lg text-nowrap font-bold <%= intervention.style %>">
+                <%= intervention.workflow_state.humanize %>
+              </span>
             </p>
+          </div>
+            
+          <div>
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Adhérent</strong>
+              <b><%= intervention.adherent.try(:nom_prénom) %></b>
+            </p>
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Équipe</strong>
+              <b><%= intervention.user.nom_prénom %></b>
+            </p>
+
+          </div>
+
+          <div>
+            <% if !intervention.agents.any? %>
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Agent</strong>
+              </p>
+            <% end %>
+            <% intervention.agents.each_with_index do |agent, index| %>
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Agent#<%= index + 1 %></strong>
+                <b><%= agent.nom_prénom %></b>
+              </p>
+            <% end %>
+          </div>
+
+          <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Début</strong>
+              <%= l(intervention.début, format: :long) if intervention.début %>
+            </p>
+
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Fin</strong>
+              <%= l(intervention.fin, format: :long) if intervention.fin%>
+            </p>
+          </div>
+
+          <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Temps passé</strong>
+              <%= intervention.temps_total %> h
+            </p>
+
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Pause</strong>
+              <%= intervention.temps_de_pause %> h
+            </p>
+          </div>
+        </div>
+
+        <div class="hidden sm:flex gap-8">
+          <div>
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Commentaires</strong>
+              <%= intervention.commentaires %>
+            </p>
+          </div>
+
+          <% if intervention.photos.attached? %>
+            <div>
+              <% if intervention.photos.count > 1 %>
+                <button onclick="my_modal_<%= intervention.id %>.showModal()">
+                  <div class="stack w-36">
+                    <% intervention.photos.limit(3).each do |photo| %>
+                      <div class="avatar">
+                        <div class="w-36 rounded">
+                          <%= image_tag photo, loading: 'lazy' %>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                </button>
+              <% else %>
+                <div class="avatar">
+                  <div class="w-36 rounded">
+                    <%= link_to image_tag(intervention.photos.last, loading: 'lazy'), intervention.photos.last, target: "_blank" %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
           <% end %>
-        </div>
 
-        <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
-          <p class="my-2">
-            <strong class="block text-slate-400 mb-1">Début</strong>
-            <%= l(intervention.début, format: :long) if intervention.début %>
-          </p>
-
-          <p class="my-2">
-            <strong class="block text-slate-400 mb-1">Fin</strong>
-            <%= l(intervention.fin, format: :long) if intervention.fin%>
-          </p>
-        </div>
-
-        <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
-          <p class="my-2">
-            <strong class="block text-slate-400 mb-1">Temps passé</strong>
-            <%= intervention.temps_total %> h
-          </p>
-
-          <p class="my-2">
-            <strong class="block text-slate-400 mb-1">Pause</strong>
-            <%= intervention.temps_de_pause %> h
-          </p>
         </div>
       </div>
 
-      <div class="hidden sm:flex gap-8">
-        <div>
-          <p class="my-2">
-            <strong class="block text-slate-400 mb-1">Commentaires</strong>
-            <%= intervention.commentaires %>
-          </p>
-        </div>
-
-        <% if intervention.photos.attached? %>
+      <div class="w-72 mr-4">
+        <% if intervention.validé? || intervention.refusé? %>
           <div>
-            <% if intervention.photos.count > 1 %>
-              <button onclick="my_modal_<%= intervention.id %>.showModal()">
-                <div class="stack w-36">
-                  <% intervention.photos.limit(3).each do |photo| %>
-                    <div class="avatar">
-                      <div class="w-36 rounded">
-                        <%= image_tag photo, loading: 'lazy' %>
-                      </div>
-                    </div>
-                  <% end %>
-                </div>
-              </button>
-            <% else %>
-              <div class="avatar">
-                <div class="w-36 rounded">
-                  <%= link_to image_tag(intervention.photos.last, loading: 'lazy'), intervention.photos.last, target: "_blank" %>
-                </div>
-              </div>
-            <% end %>
+            <div class="rating">
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Évaluation</strong>
+                <% 5.times do |index| %>
+                  <input type="radio" name="rating-<%= intervention.id %>" class="mask mask-star bg-primary cursor-text" <%= "checked" if intervention.note == index + 1 %> disabled/>
+                <% end %>
+              </p>
+            </div>
+
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Avis</strong>
+              <%= intervention.avis %>
+            </p>
+          </div>
+        <% elsif current_user.manager? || current_user.adhérent? %>
+          <div class="my-2">
+            <strong class="block text-slate-400 mb-1">Actions</strong>
+            <p class="flex gap-2">
+              <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'btn btn-primary btn-outline hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? %>
+              <%= link_to 'Valider', valider_intervention_path(intervention), class: 'btn btn-success btn-outline hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
+              <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'btn btn-error btn-outline hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
+            <p>
           </div>
         <% end %>
 
       </div>
     </div>
 
-    <div class="w-72 mr-4">
-      <% if intervention.validé? || intervention.refusé? %>
-        <div>
-          <div class="rating">
-            <p class="my-2">
-              <strong class="block text-slate-400 mb-1">Évaluation</strong>
-              <% 5.times do |index| %>
-                <input type="radio" name="rating-<%= intervention.id %>" class="mask mask-star bg-primary cursor-text" <%= "checked" if intervention.note == index + 1 %> disabled/>
-              <% end %>
-            </p>
+    <dialog id="my_modal_<%= intervention.id %>" class="modal w-full mx-auto my-auto mx-24">
+      <div class="flex justify-end">
+        <button onclick="my_modal_<%= intervention.id %>.close()">
+          <span class="material-symbols-outlined text-5xl text-white font-black">
+            cancel
+          </span>      
+        </button>
+      </div>
+      <div class="carousel">
+        <% intervention.photos.each do |photo| %>
+          <div class="carousel-item">
+            <%= image_tag(photo, class: "h-96", loading: 'lazy') %>
           </div>
-
-          <p class="my-2">
-            <strong class="block text-slate-400 mb-1">Avis</strong>
-            <%= intervention.avis %>
-          </p>
-        </div>
-      <% elsif current_user.manager? || current_user.adhérent? %>
-        <div class="my-2">
-          <strong class="block text-slate-400 mb-1">Actions</strong>
-          <p class="flex gap-2">
-            <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'btn btn-primary btn-outline hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? %>
-            <%= link_to 'Valider', valider_intervention_path(intervention), class: 'btn btn-success btn-outline hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
-            <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'btn btn-error btn-outline hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
-          <p>
-        </div>
-      <% end %>
-
-    </div>
+        <% end %>
+      </div>
+    </dialog>
   </div>
 
-  <div class="divider my-2"></div>
+</details>
 
-  <dialog id="my_modal_<%= intervention.id %>" class="modal w-full mx-auto my-auto mx-24">
-    <div class="flex justify-end">
-      <button onclick="my_modal_<%= intervention.id %>.close()">
-        <span class="material-symbols-outlined text-5xl text-white font-black">
-          cancel
-        </span>      
-      </button>
-    </div>
-    <div class="carousel">
-      <% intervention.photos.each do |photo| %>
-        <div class="carousel-item">
-          <%= image_tag(photo, class: "h-96", loading: 'lazy') %>
-        </div>
-      <% end %>
-    </div>
-  </dialog>
-
-</div>
-
-
-
+<hr>

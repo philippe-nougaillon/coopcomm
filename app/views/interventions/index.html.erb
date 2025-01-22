@@ -23,8 +23,8 @@
 
           <% if current_user.manager? %>
             <div class="flex-1">
-              <%= label_tag :équipe, "Équipe" %>
-              <%= select_tag :équipe, options_from_collection_for_select(@équipes, 'id', 'nom_prénom', params[:équipe]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()' %>
+              <%= label_tag :team_id, "Équipe" %>
+              <%= select_tag :team_id, options_from_collection_for_select(@teams, 'id', 'nom_prénom', params[:team_id]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()' %>
             </div>
           <% end %>
 
@@ -82,7 +82,7 @@
     </div>
   <% end %>
 
-  <div class="divider"></div>
+  <hr class="mt-8">
 
   <div id="interventions" class="min-w-full">
     <%= render @interventions %>
@@ -117,7 +117,7 @@
   })
 
   new SlimSelect({
-    select: '#_quipe',
+    select: '#team_id',
     settings: {
       searchPlaceholder: 'Recherche',
       searchText: 'Pas de résultat',
