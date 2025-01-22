@@ -20,6 +20,8 @@ class Intervention < ApplicationRecord
 
   before_validation :check_absence
 
+  before_save :calc_temps_total
+
   scope :ordered, -> { order(updated_at: :desc) }
 
   # WORKFLOW
@@ -146,8 +148,14 @@ class Intervention < ApplicationRecord
   end
 
   def calc_temps_total
-    temps_total = (self.fin - self.début) / (60 * 60) - self.temps_de_pause
-    temps_total = temps_total * self.agents.count
+    if !self.fin
+      temps_total = 0
+    elsif self.fin > self.début
+      temps_total = (self.fin - self.début) / (60 * 60) - self.temps_de_pause
+      temps_total = temps_total * self.agents.count
+    else
+      temps_total = -1
+    end
     temps_total
   end
 

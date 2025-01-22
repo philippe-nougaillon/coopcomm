@@ -12,15 +12,14 @@ export default class extends Controller {
   }
 
   calc() {
+    let temps = this.tempsTarget
     if (this.debutTarget.value != "" && this.finTarget.value != "") {
       let debut = new Date(this.debutTarget.value)
       let fin = new Date(this.finTarget.value)
-      let pause = this.pauseTarget.value * 60
-      let temps = this.tempsTarget
+      let temps_pause = this.pauseTarget.value
 
       if (fin > debut) {
         let temps_passé = Math.abs(fin - debut) / (1000 * 60 * 60)
-        let temps_pause = pause / 60
         let temps_total = temps_passé - temps_pause
 
         // Si plusieurs agents sont sélectionnés, multiplier par le nombre d'agents
@@ -36,6 +35,10 @@ export default class extends Controller {
         temps.classList.add('!text-red-500')
         temps.classList.remove('!text-green-500')
       }
+    } else {
+      temps.value = 0
+      temps.classList.remove('!text-green-500')
+      temps.classList.remove('!text-red-500')
     }
   }
 }
