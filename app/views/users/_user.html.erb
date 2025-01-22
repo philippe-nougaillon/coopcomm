@@ -9,7 +9,7 @@
   </td>
   <td>
     <% if user.agent? && user.absent? %>
-      <span class="material-symbols-outlined text-error">
+      <span class="material-symbols-outlined text-error cursor-help" title="Du <%= l user.current_absence.du %> au <%= l user.current_absence.au %>, motif : <%= user.current_absence.motif %>">
         check_circle
       </span>
     <% end %>
