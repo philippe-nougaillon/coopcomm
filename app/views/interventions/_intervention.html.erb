@@ -15,15 +15,16 @@
         </span>
       <% end %>
       <%= link_to intervention.description.humanize, intervention, class: 'hover:underline' %>
-    </p>
-  </summary>
+    </div>
 
-  <div class="collapse-content">
-    <p class="my-2">
+    <p>
       <% intervention.tags.each do |tag| %>
         <span class="badge badge-primary badge-outline text-white"><%= tag.name.humanize %></span>
       <% end %>
     </p>
+  </summary>
+
+  <div class="collapse-content">
 
     <div class="sm:flex sm:gap-4 overflow-x-auto">
       <div class="sm:flex sm:gap-4 flex-1">

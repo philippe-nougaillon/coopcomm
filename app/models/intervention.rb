@@ -39,7 +39,7 @@ class Intervention < ApplicationRecord
       # event :accepter, transitions_to: ACCEPTE
       event :terminer, transitions_to: TERMINE
     end
-    state ATTENTE,  meta: {style: 'badge-secondary text-white'}
+    state ATTENTE,  meta: {style: 'badge-warning text-white'}
 
     # state ACCEPTE, meta: {style: 'badge-primary text-white'} do
     #   event :en_cours, transitions_to: EN_COURS
@@ -133,6 +133,7 @@ class Intervention < ApplicationRecord
     new_intervention.fin = nil
     new_intervention.repeter = false
     new_intervention.workflow_state = 'nouveau'
+    new_intervention.tags = self.tags
     
     if new_intervention.save
       self.agent_interventions.each do |agent_intervention|
