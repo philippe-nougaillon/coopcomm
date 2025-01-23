@@ -26,7 +26,7 @@ class Intervention < ApplicationRecord
 
   after_create_commit -> { broadcast_prepend_to "interventions_#{self.organisation.id}", 
                                               partial: "interventions/intervention", 
-                                              locals: { intervention: self }, 
+                                              locals: { intervention: self, from_turbo_stream: true }, 
                                               target: "interventions" }
 
   # WORKFLOW

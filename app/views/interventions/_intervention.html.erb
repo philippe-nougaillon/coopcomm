@@ -1,5 +1,5 @@
-<details id="<%= dom_id intervention %>" class="overflow-x-auto collapse collapse-arrow">
-  <summary class="collapse-title text-xl font-medium">
+<div id="<%= dom_id intervention %>" tabindex="0" class="overflow-x-auto collapse collapse-arrow <%= 'collapse-open' if defined?(from_turbo_stream) || intervention.id == @interventions.first.id %>">
+  <div class="collapse-title text-xl font-medium">
     <small>
       <i>il y a <%= time_ago_in_words intervention.updated_at %></i>
     </small>
@@ -22,7 +22,7 @@
         <span class="badge badge-primary badge-outline text-white"><%= tag.name.humanize %></span>
       <% end %>
     </p>
-  </summary>
+  </div>
 
   <div class="collapse-content">
 
@@ -173,6 +173,6 @@
     </dialog>
   </div>
 
-</details>
+</div>
 
 <hr>
