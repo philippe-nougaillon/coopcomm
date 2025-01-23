@@ -4,17 +4,32 @@
       <i>il y a <%= time_ago_in_words intervention.updated_at %></i>
     </small>
 
-    <div class="flex items-center gap-2 text-3xl text-<%= intervention.style.split.first.split('-').last %> font-black">
-      <% if intervention.repeter %>
-        <span class="material-symbols-outlined" title="Modèle pour le pointage">
-          event_repeat
-        </span>
-      <% elsif intervention.template_slug %>
-        <span class="material-symbols-outlined" title="Pointage">
-          qr_code_2
-        </span>
-      <% end %>
-      <%= link_to intervention.description.humanize, intervention, class: 'hover:underline' %>
+    <div class="flex justify-between">
+      <div class="flex items-center gap-2 text-3xl text-<%= intervention.style.split.first.split('-').last %> font-black">
+        <% if intervention.repeter %>
+          <span class="material-symbols-outlined" title="Modèle pour le pointage">
+            event_repeat
+          </span>
+        <% elsif intervention.template_slug %>
+          <span class="material-symbols-outlined" title="Pointage">
+            qr_code_2
+          </span>
+        <% end %>
+        <%= link_to intervention.description.humanize, intervention, class: 'hover:underline' %>
+      </div>
+
+      <div class="w-72 mr-4 text-base">
+        <% if !(intervention.validé? || intervention.refusé?) %>
+          <div class="my-2">
+            <strong class="block text-slate-400 mb-1">Actions</strong>
+            <p class="flex gap-2">
+              <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'btn btn-primary btn-outline hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? %>
+              <%= link_to 'Valider', valider_intervention_path(intervention), class: 'btn btn-success btn-outline hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
+              <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'btn btn-error btn-outline hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
+            <p>
+          </div>
+        <% end %>
+      </div>
     </div>
 
     <p>
@@ -124,7 +139,7 @@
         </div>
       </div>
 
-      <div class="w-72 mr-4">
+      <div class="w-72 mr-4 text-base">
         <% if intervention.validé? || intervention.refusé? %>
           <div>
             <div class="rating">
@@ -141,17 +156,7 @@
               <%= intervention.avis %>
             </p>
           </div>
-        <% else %>
-          <div class="my-2">
-            <strong class="block text-slate-400 mb-1">Actions</strong>
-            <p class="flex gap-2">
-              <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'btn btn-primary btn-outline hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? %>
-              <%= link_to 'Valider', valider_intervention_path(intervention), class: 'btn btn-success btn-outline hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
-              <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'btn btn-error btn-outline hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
-            <p>
-          </div>
         <% end %>
-
       </div>
     </div>
 
