@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_01_20_140926) do
+ActiveRecord::Schema[7.1].define(version: 2025_01_23_141014) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -138,6 +138,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_01_20_140926) do
     t.boolean "etat", default: false
     t.json "error_message"
     t.string "slug"
+    t.integer "channel"
     t.index ["organisation_id"], name: "index_mail_logs_on_organisation_id"
   end
 
@@ -310,6 +311,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_01_20_140926) do
     t.string "provider"
     t.datetime "notifications_last_seen_at", default: "2024-11-07 09:50:54"
     t.string "slug"
+    t.string "téléphone"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["organisation_id"], name: "index_users_on_organisation_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true

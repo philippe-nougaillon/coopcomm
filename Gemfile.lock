@@ -101,6 +101,7 @@ GEM
     baran (0.1.12)
     base64 (0.2.0)
     bcrypt (3.1.20)
+    benchmark (0.4.0)
     bigdecimal (3.1.7)
     bindex (0.8.1)
     bootsnap (1.18.3)
@@ -273,6 +274,7 @@ GEM
       actionpack (>= 4.2)
       omniauth (~> 2.0)
     orm_adapter (0.5.0)
+    ostruct (0.6.1)
     pagy (8.3.0)
     pdf-core (0.10.0)
     pg (1.5.6)
@@ -426,6 +428,12 @@ GEM
       actionpack (>= 6.0.0)
       activejob (>= 6.0.0)
       railties (>= 6.0.0)
+    twilio-ruby (7.4.2)
+      benchmark
+      faraday (>= 0.9, < 3.0)
+      jwt (>= 1.5, < 3.0)
+      nokogiri (>= 1.6, < 2.0)
+      ostruct
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode (0.4.4.5)
@@ -505,6 +513,7 @@ DEPENDENCIES
   tailwindcss-rails
   tiktoken_ruby (~> 0.0.9)
   turbo-rails
+  twilio-ruby (~> 7.4)
   tzinfo-data
   view_component (~> 3.12)
   web-console
