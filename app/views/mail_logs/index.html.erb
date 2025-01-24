@@ -1,10 +1,11 @@
 <div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
-  <h1 class="text-4xl text-primary font-bold">Mail Logs</h1>
+  <h1 class="text-4xl text-primary font-bold">Notifications</h1>
 </div>
 
 <p class="mb-4">
-  Historique des mails envoyés via 
-  <%= link_to "MailGun", "https://www.mailgun.com/fr/", target: "_blank", class: "text-primary hover:underline" %>,
+  Historique des notifications envoyés via 
+  <%= link_to "MailGun", "https://www.mailgun.com/fr/", target: "_blank", class: "text-primary hover:underline" %>
+  ou WhatsApp,
   avec Statut et État (OK = acheminé, OUVERT = vu).
 </p>
 
@@ -36,6 +37,7 @@
     <thead class="bg-slate-100">
       <tr>
         <th>Il y a</th>
+        <th>Via</th>
         <th>Expéditeur</th>
         <th>Destinataire</th>
         <th>Sujet</th>

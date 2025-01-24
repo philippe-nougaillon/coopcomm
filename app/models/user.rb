@@ -36,12 +36,12 @@ class User < ApplicationRecord
   }
 
   enum service: {
-    technique: 0,
-    comptabilité: 1,
-    informatique: 2,
-    secrétariat: 3,
-    périscolaire: 4,
-    ménage: 5
+    Technique: 0,
+    Comptabilité: 1,
+    Informatique: 2,
+    Secrétariat: 3,
+    Périscolaire: 4,
+    Ménage: 5
   }
 
   scope :ordered, -> { order(:nom) }

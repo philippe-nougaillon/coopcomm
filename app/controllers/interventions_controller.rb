@@ -18,7 +18,7 @@ class InterventionsController < ApplicationController
     organisation_members = current_user.organisation.users
     if current_user.manager?
       @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services
+      @services = User.services.sort
       @teams = organisation_members.équipe
       @grouped_agents = User.grouped_agents(organisation_members)
     elsif current_user.adhérent?
