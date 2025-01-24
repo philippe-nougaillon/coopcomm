@@ -7,7 +7,7 @@ namespace :interventions do
         interventions.each do |intervention|
             if intervention.adherent
                 mailer_response = NotificationMailer.relance(intervention).deliver_now
-                MailLog.create(organisation_id: intervention.organisation_id, user_id: 0, message_id: mailer_response.message_id, to: intervention.adherent.email, subject: "Relance : intervention terminée")
+                MailLog.create(organisation_id: intervention.organisation_id, user_id: 0, message_id: mailer_response.message_id, to: intervention.adherent.email, subject: "Relance : intervention terminée", channel: 0)
                 intervention.update!(audit_comment: "Adhérent relancé par mail pour la validation de l'intervention")
                 # puts "-- Traitement terminé --"
                 # puts "'#{intervention.description}' traitée"
