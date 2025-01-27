@@ -2,7 +2,7 @@
   <%= render "wiki_navbar" %>
 
   <div class="w-full ml-8 sm:ml-64">
-    <div class="flex flex-wrap justify-between items-center mb-8">
+    <div class="flex flex-wrap justify-between items-center">
       <h1 class="text-4xl text-primary font-bold">
         <%= link_to 'Wiki', wiki_pages_path %>
       </h1>
@@ -14,7 +14,7 @@
 
     <% if !(params[:catégorie].present? || params[:search].present?) %>
       <h2 class="text-3xl text-secondary mb-12">
-        Pages épinglées
+        Bienvenue !
       </h2>
     <% end %>
     
