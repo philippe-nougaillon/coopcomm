@@ -212,7 +212,7 @@ class InterventionsController < ApplicationController
 
   def archiver
     @intervention.archiver!
-  #   send_workflow_changed_notification
+    # send_workflow_changed_notification
     redirect_to @intervention, notice: "Intervention archivée"
   end
 
