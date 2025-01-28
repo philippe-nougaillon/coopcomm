@@ -37,7 +37,14 @@ class EmailSubscription
   end
 
   def on_intervention_pointage(event)
-    NotifAdherentInterventionPointageJob.perform_later(Intervention.find(event[:payload][:intervention_id]))
+    intervention = Intervention.find(event[:payload][:intervention_id])
+
+    NotifMailAdherentInterventionPointageJob.perform_later(intervention)
+
+    # Envoyer un message WhatsApp
+    if intervention.adherent.téléphone?
+      NotifWhatsappAdherentInterventionPointageJob.perform_later(intervention)
+    end
   end
 
   def on_organisation_created(event)

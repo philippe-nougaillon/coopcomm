@@ -242,9 +242,9 @@ class InterventionsController < ApplicationController
       flash[:notice] = "Début de journée enregistrée"
     end
 
-    # unless Rails.env.development?
+    unless Rails.env.development?
       Events.instance.publish('intervention.pointage', payload: {intervention_id: current_intervention.id})
-    # end
+    end
     
     redirect_to pointage_statut_intervention_path(current_intervention)
   end
