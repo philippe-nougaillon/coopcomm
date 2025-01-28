@@ -1,14 +1,21 @@
 Bonjour,
 <br><br>
-L'intervention '<b><%= @intervention.description.humanize %></b>' vient d'être pointée par '<b><%= @intervention.adherent.nom_prénom %></b>'.
+L'intervention '<b><%= @intervention.description.humanize %></b>' vient d'être pointée.
 
 <br><br>
-Début :
-<%= I18n.l(@intervention.début) %>
+Arrivée
+<br>
+<strong><%= I18n.l(@intervention.début, format: :long) %></strong>
 <% if @intervention.fin %>
+  <br><br>
+  Départ
   <br>
-  Fin:
-  <%= I18n.l(@intervention.fin) %>
+  <strong><%= I18n.l(@intervention.fin, format: :long) %></strong>
+
+  <br><br>
+  Durée
+  <br>
+  <strong><%= ((@intervention.fin - @intervention.début).seconds.in_hours - @intervention.temps_de_pause).round(2) %> h</strong>
 <% end %>
 
 <br><br>

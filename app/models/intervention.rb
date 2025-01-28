@@ -157,7 +157,7 @@ class Intervention < ApplicationRecord
     if !self.fin
       temps_total = 0
     elsif self.fin > self.début
-      temps_total = (self.fin - self.début) / (60 * 60) - self.temps_de_pause
+      temps_total = (self.fin - self.début).seconds.in_hours - self.temps_de_pause
       temps_total = temps_total * self.agents.count
     else
       temps_total = -1
