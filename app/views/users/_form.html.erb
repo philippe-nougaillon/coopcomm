@@ -36,6 +36,11 @@
   </div>
 
   <div class="w-full">
+    <%= form.label :téléphone, style: "display: block" %>
+    <%= form.text_field :téléphone, class: 'input input-bordered input-sm w-full' %>
+  </div>
+
+  <div class="w-full">
     <%= form.label :email, style: "display: block" %>
     <%= form.email_field :email, class: 'input input-bordered input-sm w-full', required: true %>
   </div>
