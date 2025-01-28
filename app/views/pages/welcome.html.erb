@@ -1,5 +1,5 @@
 <div class="lg:px-8">
-  <div class="min-h-screen">
+  <div class="min-h-screen lg:max-h-screen flex flex-col justify-between">
     <h1 class="text-5xl font-black text-primary mt-4 mb-12">
       COO<span class="underline">P</span>COM
       <div class="divider"></div>
@@ -13,7 +13,7 @@
           de services communs 
         </h2>
 
-        <p class="text-3xl text-secondary mb-12 lg:mb-36">
+        <p class="text-3xl text-secondary mb-12">
           Gérez facilement la coopération et la mutualisation
           <br> 
           des services et ressources de votre intercommunalité 
@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <h3 class="text-xl text-secondary font-black mb-4 lg:mb-20 lg:mt-12">
+    <h3 class="text-xl text-secondary font-black mb-4 lg:mb-20">
       <div class="mt-8 flex gap-4">
         <%= link_to "S'inscrire", '/users/sign_up', class: 'btn btn-outline lg:btn-lg btn-success hover:!text-white' %>
         <%= link_to "Se connecter", '/users/sign_in', class: 'btn btn-outline lg:btn-lg lg:btn-wide btn-primary hover:!text-white' %>
@@ -42,59 +42,120 @@
     <div class="divider mb-12"></div>
     
     <div class="flex flex-wrap gap-4 p-4">
-      <div class="card shadow w-full lg:w-1/5 text-left tooltip tooltip-bottom tooltip-warning" 
-          data-tip="Plateforme source unique de référence (SSOT), robuste et fiable. Chaque modification de données est auditable.">
-        <p class="text-lg lg:text-2xl p-4 lg:p-12 hover:font-black hover:font-black">
-          <span class="material-symbols-outlined text-error">
-            communities
-          </span>
-          <br><br>
-          Une information claire et partagée 
-        </p>
-      </div>
-      
-      <div class="card shadow w-full lg:w-1/5 text-left tooltip tooltip-bottom tooltip-warning" 
-          data-tip="Design Responvie pour une utilisation sur Smartphone/PC/Tablette">
-        <p class="text-lg lg:text-2xl p-4 lg:p-12 hover:font-black">
-          <span class="material-symbols-outlined text-error">
-            smartphone
-          </span>
-          <br><br>
-          Une référence unique sur tous supports 
-        </p>
-      </div>
-
-      <div class="card shadow w-full lg:w-1/5 text-left tooltip tooltip-bottom tooltip-warning" 
-            data-tip="Chaque intervention passe d'un état à un autre grâce à des actions déterminées à l'avance. Certaines actions provoque l'envoi de notification.">
-        <p class="text-lg lg:text-2xl p-4 lg:p-12 hover:font-black">
-          <span class="material-symbols-outlined text-error">
-            steppers
-          </span>
-          <br><br>
-          Workflow 
-        </p>
+      <div class="flip-card">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <p class="text-lg lg:text-2xl p-4 lg:px-12 lg:pb-12">
+              <span class="material-symbols-outlined text-error">
+                communities
+              </span>
+              <br><br>
+              Une information claire et partagée 
+            </p>
+          </div>
+          <div class="flip-card-back">
+            <p class="text-lg lg:text-2xl p-4">
+              <span class="material-symbols-outlined text-error">
+                communities
+              </span>
+              <br><br>
+              Plateforme source unique de référence (SSOT), robuste et fiable.
+              Chaque modification de données est auditable.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div class="card shadow w-full lg:w-1/5 text-left tooltip tooltip-bottom tooltip-warning" 
-          data-tip="Un tableau de bord de gestion permet aux adhérents et managers de suivre leurs indicateurs clés">
-        <p class="text-lg lg:text-2xl p-4 lg:p-12 hover:font-black">
-          <span class="material-symbols-outlined text-error">
-            monitoring
-          </span>
-          <br><br>
-          Maîtrise budgétaire
-        </p>
+      <div class="flip-card">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <p class="text-lg lg:text-2xl p-4 lg:px-12 lg:pb-12">
+              <span class="material-symbols-outlined text-error">
+                smartphone
+              </span>
+              <br><br>
+              Une référence unique sur tous supports 
+            </p>
+          </div>
+          <div class="flip-card-back">
+            <p class="text-lg lg:text-2xl p-4">
+              <span class="material-symbols-outlined text-error">
+                smartphone
+              </span>
+              <br><br>
+              Design Responsive pour une utilisation sur Smartphone/PC/Tablette
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div class="card shadow w-full lg:w-1/5 text-left tooltip tooltip-bottom tooltip-warning"
-          data-tip="Une demande d'intervention est émise par l'adhérent à destination d'une équipe (espace vert, secrétariat, petite-enfance, etc...). L'équipe va ensuite planifier l'intervention en lui attribuant une date et un agent. Une fois l'intervention terminée, l'agent change l'état par l'action 'Terminer', ce qui provoque l'envoi d'une notification à destination de l'adhérent demander, qui devra la valider ou la refuser, et lui attribuer une note et donner son avis.">
-        <p class="text-lg lg:text-2xl p-4 lg:p-12 hover:font-black">
-          <span class="material-symbols-outlined text-error">
-            engineering
-          </span>
-          <br><br>
-          Gestion des Interventions
-        </p>
+      <div class="flip-card">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <p class="text-lg lg:text-2xl p-4 lg:px-12 lg:pb-12">
+              <span class="material-symbols-outlined text-error">
+                steppers
+              </span>
+              <br><br>
+              Workflow
+            </p>
+          </div>
+          <div class="flip-card-back">
+            <p class="text-lg lg:text-2xl p-4">
+              <span class="material-symbols-outlined text-error">
+                steppers
+              </span>
+              <br><br>
+              Chaque intervention passe d'un état à un autre grâce à des actions déterminées à l'avance. Certaines actions provoque l'envoi de notification.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-card">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <p class="text-lg lg:text-2xl p-4 lg:px-12 lg:pb-12">
+              <span class="material-symbols-outlined text-error">
+                monitoring
+              </span>
+              <br><br>
+              Maîtrise budgétaire
+            </p>
+          </div>
+          <div class="flip-card-back">
+            <p class="text-lg lg:text-2xl p-4">
+              <span class="material-symbols-outlined text-error">
+                monitoring
+              </span>
+              <br><br>
+              Un tableau de bord de gestion permet aux adhérents et managers de suivre leurs indicateurs clés
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-card">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <p class="text-lg lg:text-2xl p-4 lg:px-12 lg:pb-12">
+              <span class="material-symbols-outlined text-error">
+                engineering
+              </span>
+              <br><br>
+              Gestion des Interventions
+            </p>
+          </div>
+          <div class="flip-card-back overflow-y-auto">
+            <p class="text-lg lg:text-2xl p-4">
+              <span class="material-symbols-outlined text-error">
+                engineering
+              </span>
+              <br><br>
+              Une demande d'intervention est émise par l'adhérent à destination d'une équipe (espace vert, secrétariat, petite-enfance, etc...). L'équipe va ensuite planifier l'intervention en lui attribuant une date et un agent. Une fois l'intervention terminée, l'agent change l'état par l'action 'Terminer', ce qui provoque l'envoi d'une notification à destination de l'adhérent demander, qui devra la valider ou la refuser, et lui attribuer une note et donner son avis.
+            </p>
+          </div>
+        </div>
       </div>
       
       <div class="card shadow w-full lg:w-1/5 text-left tooltip tooltip-bottom tooltip-warning"
@@ -154,7 +215,7 @@
       </div>
 
       <div class="card shadow w-full lg:w-1/5 text-left tooltip tooltip-bottom tooltip-warning"
-          data-tip="Certains changements d'état provoque l'envoi d'email afin d'en informer toutes les parties prenantes.">
+          data-tip="Certains changements d'état provoque l'envoi d'email ou de message WhatsApp afin d'en informer toutes les parties prenantes.">
 
         <p class="text-lg lg:text-2xl p-4 lg:p-12 hover:font-black">
           <span class="material-symbols-outlined text-error">
