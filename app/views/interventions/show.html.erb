@@ -12,6 +12,10 @@
               <span class="material-symbols-outlined" title="Modèle pour le pointage">
                 event_repeat
               </span>
+            <% elsif @intervention.template_slug %>
+              <span class="material-symbols-outlined" title="Pointage">
+                qr_code_2
+              </span>
             <% end %>
             <%= @intervention.description.humanize %>
           </p>
