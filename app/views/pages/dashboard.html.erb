@@ -1,7 +1,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="flex flex-wrap justify-between items-center h-12 sm:h-16 mb-12">
-  <h1 class="text-4xl text-primary font-bold">Tableau de bord</h1>
+  <h1 class="text-4xl text-primary font-bold">Tableau de bord - <%= current_user.rôle.humanize %></h1>
 </div>
 
 <% if current_user.manager? %>
