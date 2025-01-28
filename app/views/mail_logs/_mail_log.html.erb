@@ -12,7 +12,7 @@
     <% end %>
   </td>
   <td>
-    <% if !status_ko && (mail_log.etat || @result_opened["items"].find{|item| item["message"]["headers"]["message-id"] == mail_log.message_id }) %>
+    <% if !status_ko && (mail_log.etat || (mail_log.mail? && @result_opened["items"].find{|item| item["message"]["headers"]["message-id"] == mail_log.message_id })) %>
       <span class="text-info">OUVERT</span>
     <% end %>
   </td>

@@ -41,7 +41,7 @@
 
 <% if @mail_log.whatsapp? %>
   <p class="mb-4">
-    <%= link_to "Voir le 'Message Details Twilio'", "https://console.twilio.com/us1/monitor/logs/sms/ACa85a7c6ea39f153d08fe0a9619ea0040/#{@mail_log.message_id}", class: 'text-primary hover:underline'%>
+    <%= link_to "Voir le 'Message Details Twilio'", "https://console.twilio.com/us1/monitor/logs/sms/#{ENV['TWILIO_ACCOUNT_SID']}/#{@mail_log.message_id}", class: 'text-primary hover:underline'%>
   </p>
 <% end %>
 
