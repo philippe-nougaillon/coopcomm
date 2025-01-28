@@ -1,5 +1,5 @@
 <div id="<%= dom_id wiki_page %>">
-  <h1 class="text-2xl font-bold mb-4 <%= 'hover:underline' if params[:action] == 'index' %>">
+  <h1 class="text-2xl text-primary font-black mb-4 <%= 'hover:underline' if params[:action] == 'index' %>">
     <%= link_to_if params[:action] == 'index', wiki_page.titre, wiki_page_path(wiki_page, catégorie: params[:catégorie]) %>
   </h1>
 
