@@ -1,7 +1,7 @@
-namespace :mail_logs do
+namespace :notifications do
   
-  desc "Récupérer statut mail_logs"
-  task :fetch, [:enregistrer] => :environment do |task, args|
+  desc "Récupérer statut mail_logs dans mailgun"
+  task :fetch_mailgun, [:enregistrer] => :environment do |task, args|
     require 'dotenv/tasks'
 
     domain = ENV["MAILGUN_DOMAIN"]
