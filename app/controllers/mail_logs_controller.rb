@@ -26,7 +26,6 @@ class MailLogsController < ApplicationController
       @result_opened = mg_client.get("#{domain}/events", {:event => 'opened'}).to_h
       @pagy, @mail_logs = pagy(@mail_logs)
     end
-
   end
 
   # GET /mail_logs/1 or /mail_logs/1.json

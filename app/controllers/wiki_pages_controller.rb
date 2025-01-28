@@ -1,19 +1,19 @@
 class WikiPagesController < ApplicationController
-  before_action :is_user_authorized, except: %i[ index show ]
   skip_before_action :authenticate_user!, only: %i[ index show ]
+  before_action :is_user_authorized, except: %i[ index show ]
   before_action :set_wiki_page, only: %i[ show edit update destroy ]
 
   # GET /wiki_pages or /wiki_pages.json
   def index
     case params[:catégorie]
-    when 'documentation'
-      @wiki_pages = WikiPage.documentation
-    when 'guide'
-      @wiki_pages = WikiPage.guide
-    when 'fiche'
-      @wiki_pages = WikiPage.fiche
-    else
-      @wiki_pages = WikiPage.where(épinglée: true)
+      when 'blog'
+        @wiki_pages = WikiPage.blog
+      when 'guide'
+        @wiki_pages = WikiPage.guide
+      when 'fiches'
+        @wiki_pages = WikiPage.fiches
+      else
+        @wiki_pages = WikiPage.where(épinglée: true)
     end
 
     if params[:search].present?
@@ -23,8 +23,6 @@ class WikiPagesController < ApplicationController
     unless user_signed_in? && current_user.super_admin?
       @wiki_pages = @wiki_pages.where(publiée: true)
     end
-
-
     @wiki_pages.order(poids: :desc)
   end
 

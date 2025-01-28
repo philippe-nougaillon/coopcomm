@@ -1,26 +1,49 @@
 <div class="mx-auto w-full">
   <div class="mx-auto">
     <div id="<%= dom_id @intervention %>" class="overflow-x-auto">
-      <small>
-        <i>il y a <%= time_ago_in_words @intervention.updated_at %></i>
-      </small>
+      <div class="flex justify-between">
+        <div>
+          <small>
+            <i>il y a <%= time_ago_in_words @intervention.updated_at %></i>
+          </small>
 
-      <p class="text-3xl text-<%= @intervention.style.split.first.split('-').last %> font-black">
-        <% if @intervention.repeter %>
-          <span class="material-symbols-outlined" title="Modèle pour le pointage">
-            event_repeat
-          </span>
-        <% end %>
-        <%= @intervention.description.humanize %>
-      </p>
+          <p class="text-3xl text-<%= @intervention.style.split.first.split('-').last %> font-black">
+            <% if @intervention.repeter %>
+              <span class="material-symbols-outlined" title="Modèle pour le pointage">
+                event_repeat
+              </span>
+            <% end %>
+            <%= @intervention.description.humanize %>
+          </p>
 
-      <p class="my-2">
-        <% @intervention.tags.each do |tag| %>
-          <span class="badge badge-primary badge-outline text-white"><%= tag.name.humanize %></span>
-        <% end %>
-      </p>
+          <p class="my-2">
+            <% @intervention.tags.each do |tag| %>
+              <span class="badge badge-primary badge-outline text-white"><%= tag.name.humanize %></span>
+            <% end %>
+          </p>
+        </div>
 
-      <div class="sm:flex sm:gap-4 overflow-x-auto">
+        <div class="flex flex-wrap gap-2 mt-4 h-fit">
+          <%= link_to "Modifier", edit_intervention_path(@intervention), class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer h-12" %>
+          <% if policy(@intervention).destroy? %>
+            <%= button_to intervention_path(@intervention), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette intervention ?" }, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium h-12", 'data-testid': "Supprimer l'intervention" do %>
+              <span class="material-symbols-outlined">
+                delete
+              </span>
+            <% end %>
+          <% end %>
+          <% if @intervention.repeter %>
+            <%= link_to intervention_path(format: :pdf), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium h-12", title: "Voir le QRCode de pointage" do %>
+              <span class="material-symbols-outlined">
+                qr_code_2
+              </span>
+            <% end %>
+          <% end %>
+          <%= link_to "Retour", interventions_path, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium h-12" %>
+        </div>
+      </div>
+
+      <div class="sm:flex sm:gap-4 overflow-x-auto mt-4">
         <div class="sm:flex sm:gap-4 flex-1">
           <div class="sm:flex gap-8">
             <div>
@@ -113,7 +136,7 @@
           </div>
         </div>
 
-        <div class="w-72 mr-4">
+        <div class="w-72 mr-4 place-self-center">
           <% if @intervention.validé? || @intervention.refusé? %>
             <div>
               <div class="rating">
@@ -163,26 +186,7 @@
 
     </div>
 
-    <div class="flex flex-wrap gap-2 mt-4">
-      <%= link_to "Modifier", edit_intervention_path(@intervention), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
-      <% if policy(@intervention).destroy? %>
-        <%= button_to intervention_path(@intervention), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette intervention ?" }, class: "rounded-lg py-3 px-5 bg-gray-100 font-medium", 'data-testid': "Supprimer l'intervention" do %>
-          <span class="material-symbols-outlined">
-            delete
-          </span>
-        <% end %>
-      <% end %>
-      <% if @intervention.repeter %>
-        <%= link_to intervention_path(format: :pdf), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium", title: "Voir le QRCode de pointage" do %>
-          <span class="material-symbols-outlined">
-            qr_code_2
-          </span>
-        <% end %>
-      <% end %>
-      <%= link_to "Retour", interventions_path, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
-    </div>
-
-    <h2 class="text-2xl text-secondary mt-8">Photos</h2>
+    <h2 class="text-2xl text-secondary mt-4">Photos</h2>
     <% if @intervention.photos.attached? %>
       <div class="flex flex-wrap gap-8 mt-4">
         <% @intervention.photos.each do |photo| %>

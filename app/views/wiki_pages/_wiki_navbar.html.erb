@@ -1,4 +1,4 @@
-<div class="drawer sm:drawer-open w-min">
+<div class="drawer sm:drawer-open w-min lg:mr-6">
   <input id="my-drawer" type="checkbox" class="sm:hidden drawer-toggle" />
   <div class="drawer-content fixed top-0 left-0 z-40 ml-4 mt-6">
     <div class="sm:hidden">
@@ -12,7 +12,7 @@
   <div class="drawer-side">
     <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
     <nav class="min-h-screen h-96 bg-base-100 shadow w-64 fixed top-0 -ml-4 overflow-y-auto">
-      <h1 class="text-4xl font-black text-primary text-center mb-12 mx-8 mt-12 <%= (user_signed_in? && current_user.super_admin?) ? 'sm:mt-11' : 'sm:mt-8' %>">
+      <h1 class="text-4xl font-black text-center mb-12 mx-8 mt-12 <%= (user_signed_in? && current_user.super_admin?) ? 'sm:mt-11' : 'sm:mt-8' %>">
         <%= link_to root_path do %>
           COO<span class="underline">P</span>COM
         <% end %>
@@ -29,14 +29,14 @@
       <% end %>
       <% WikiPage.catégories.each do |catégorie, id| %>
         <%= link_to wiki_pages_path(catégorie: catégorie) do %>
-          <div class="flex gap-2 items-center text-xl font-black hover:bg-base-200 py-3 pl-8 <%= 'bg-base-300 hover:bg-base-300' if params[:catégorie] == catégorie %>">
+          <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-base-200 py-3 pl-8 <%= 'bg-base-300 hover:bg-base-300' if params[:catégorie] == catégorie %>">
             <span class="material-symbols-outlined">
-              <% icon_name = case id %>
-                <% when 0 then 'description' %>
-                <% when 1 then 'help' %>
+              <% icone_name = case id %>
+                <% when 0 then 'newspaper' %>
+                <% when 1 then 'description' %>
                 <% when 2 then 'assignment' %>
               <% end %>
-              <%= icon_name %>
+              <%= icone_name %>
             </span>
             <%= catégorie.humanize %>
           </div>

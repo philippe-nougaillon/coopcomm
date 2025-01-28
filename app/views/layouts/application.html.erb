@@ -20,8 +20,8 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   </head>
 
-  <body class="bg-slate-50" style="<%= 'overflow: hidden;' if params[:action] == "messagerie" %>">
-    <main class="container min-h-screen mx-auto py-4 md:pt-8 px-4 pb-24 <%= 'mx-0' if params[:controller] == 'wiki_pages' %>">
+  <body class="bg-slate-50">
+    <main class="min-h-screen mx-auto py-4 md:pt-8 px-4 pb-24">
       <%= render 'partials/notification' %>
       <%= yield %>
     </main>

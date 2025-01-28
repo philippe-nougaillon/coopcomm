@@ -37,7 +37,7 @@ class PagesController < ApplicationController
     start_date = 9.months.ago.beginning_of_month
     end_date = 3.months.from_now.end_of_month
     if current_user.manager?
-      temps_consommable_agent_mensuellement = 35 * 4
+      # temps_consommable_agent_mensuellement = 35 * 4
       # temps_consommable_organisation_mensuellement = current_user.organisation.users.adherent.count * 100
       #
       # Temps total par adhérent

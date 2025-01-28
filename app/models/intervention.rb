@@ -9,7 +9,7 @@ class Intervention < ApplicationRecord
   audited
 
   belongs_to :organisation
-  belongs_to :user
+  belongs_to :user, optional: true
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
   has_many :agent_interventions, dependent: :destroy
   has_many :agents, through: :agent_interventions, class_name: 'User'
