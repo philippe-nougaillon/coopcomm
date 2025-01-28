@@ -2,7 +2,7 @@
   <%= render "wiki_navbar" %>
 
   <div class="w-full ml-8 sm:ml-64">
-    <div class="flex flex-wrap justify-between items-center">
+    <div class="flex flex-wrap justify-between items-center mb-12">
       <h1 class="text-4xl text-primary font-bold">
         <%= link_to 'Wiki', wiki_pages_path %>
       </h1>
@@ -12,11 +12,13 @@
       <% end %>
     </div>
 
-    <% if !(params[:catégorie].present? || params[:search].present?) %>
-      <h2 class="text-3xl text-secondary mb-12">
+    <h2 class="text-3xl text-secondary mb-12">
+      <% if !(params[:catégorie].present? || params[:search].present?) %>
         Bienvenue !
-      </h2>
-    <% end %>
+      <% elsif params[:catégorie].present? %>
+        <%= params[:catégorie].humanize %>
+      <% end %>
+    </h2>
     
     <div id="wiki_pages" class="min-w-full">
       <%= render @wiki_pages %>

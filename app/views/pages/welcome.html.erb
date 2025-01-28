@@ -236,10 +236,10 @@
 
     <ul class="list-disc list-inside">
       <li class="text-2xl my-4">
-        Documentation
+        Blog
       </li>
       <ul class="list-disc list-inside text-xl ml-8 my-4">
-        <% @wiki_pages.documentation.where(publiée: true).order(poids: :desc).each do |wiki_page| %>
+        <% @wiki_pages.blog.where(publiée: true).order(poids: :desc).each do |wiki_page| %>
           <li>
             <%= link_to wiki_page.titre, wiki_page, class: "text-primary hover:underline" %>
           </li>
@@ -259,7 +259,7 @@
         Fiches mémo
       </li>
       <ul class="list-disc list-inside text-xl ml-8 my-4">
-        <% @wiki_pages.fiche.where(publiée: true).order(poids: :desc).each do |wiki_page| %>
+        <% @wiki_pages.fiches.where(publiée: true).order(poids: :desc).each do |wiki_page| %>
           <li>
             <%= link_to wiki_page.titre, wiki_page, class: "text-primary hover:underline" %>
           </li>

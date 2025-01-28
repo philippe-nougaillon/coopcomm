@@ -6,12 +6,12 @@ class WikiPagesController < ApplicationController
   # GET /wiki_pages or /wiki_pages.json
   def index
     case params[:catégorie]
-      when 'documentation'
-        @wiki_pages = WikiPage.documentation
+      when 'blog'
+        @wiki_pages = WikiPage.blog
       when 'guide'
         @wiki_pages = WikiPage.guide
-      when 'fiche'
-        @wiki_pages = WikiPage.fiche
+      when 'fiches'
+        @wiki_pages = WikiPage.fiches
       else
         @wiki_pages = WikiPage.where(épinglée: true)
     end

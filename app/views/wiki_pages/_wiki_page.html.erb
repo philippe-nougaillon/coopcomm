@@ -1,9 +1,5 @@
 <div id="<%= dom_id wiki_page %>">
-  <h1 class="text-2xl font-bold <%= 'hover:underline' if params[:action] == 'index' %>">
-    <span class="material-symbols-outlined">
-      <%= wiki_page.icone_catégorie %>
-    </span>
-    <br>
+  <h1 class="text-2xl font-bold mb-4 <%= 'hover:underline' if params[:action] == 'index' %>">
     <%= link_to_if params[:action] == 'index', wiki_page.titre, wiki_page_path(wiki_page, catégorie: params[:catégorie]) %>
   </h1>
 
@@ -12,10 +8,9 @@
       <%= wiki_page.contenu %>
     </p>
   <% else %>
-    <%= truncate(wiki_page.contenu.to_plain_text, length: 200)%>
-  <% end %>
-
-  <% if action_name != "show" %>
+    <div class="h-24 overflow-y-hidden"><%= wiki_page.contenu %></div>
+    <br>
+    <%= link_to 'Lire l\'article', wiki_page, class: 'rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium mt-4' %>
     <hr class="mt-6">
   <% end %>
 </div>
