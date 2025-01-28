@@ -9,7 +9,7 @@ class Intervention < ApplicationRecord
   audited
 
   belongs_to :organisation
-  belongs_to :user, optional: true
+  belongs_to :team, class_name: :User, foreign_key: :team_id, optional: true
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
   has_many :agent_interventions, dependent: :destroy
   has_many :agents, through: :agent_interventions, class_name: 'User'
@@ -108,7 +108,7 @@ class Intervention < ApplicationRecord
     when 'agent'
       user.interventions.ordered
     when 'équipe'
-      user.organisation.interventions.where(user_id: user.id)
+      user.organisation.interventions.where(team_id: user.id)
     end
   end
 

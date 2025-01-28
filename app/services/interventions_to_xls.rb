@@ -28,7 +28,7 @@ class InterventionsToXls < ApplicationService
         intervention.tag_list.join(', '),
         intervention.workflow_state.humanize,
         intervention.adherent.try(:nom_prénom),
-        intervention.user.nom_prénom,
+        intervention.team.try(:nom_prénom),
         intervention.agents.first.try(:nom_prénom),
         intervention.agents.offset(1).first.try(:nom_prénom),
         intervention.agents.offset(2).first.try(:nom_prénom),

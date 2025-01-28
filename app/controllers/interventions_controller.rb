@@ -42,7 +42,7 @@ class InterventionsController < ApplicationController
     end
 
     if params[:team_id].present?
-      @interventions = @interventions.where(user_id: params[:team_id])
+      @interventions = @interventions.where(team_id: params[:team_id])
     end
 
     if params[:service].present?
@@ -73,7 +73,7 @@ class InterventionsController < ApplicationController
 
     respond_to do |format|
       format.html do
-        @pagy, @interventions = pagy(@interventions.includes(:tags, :user, :agents, :adherent).with_attached_photos)
+        @pagy, @interventions = pagy(@interventions.includes(:tags, :team, :agents, :adherent).with_attached_photos)
       end
 
       format.xls do
@@ -122,8 +122,11 @@ class InterventionsController < ApplicationController
     if current_user.manager?
       @intervention.tag_list.add(params[:intervention][:tags_manager])
     else
-      @intervention.user_id ||= current_user.id
       @intervention.tag_list.add(params[:intervention][:tags])
+    end
+
+    if current_user.équipe?
+      @intervention.team_id = current_user.id
     end
 
     if @intervention.nouveau? && @intervention.repeter?
@@ -280,7 +283,7 @@ class InterventionsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def intervention_params
-      params.require(:intervention).permit(:organisation_id, :adherent_id, :user_id, :début, :fin, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :repeter, :repeter_lun, :repeter_mar, :repeter_mer, :repeter_jeu, :repeter_ven, :repeter_sam, :repeter_dim, :fin_repeter, photos: [], agent_ids: [])
+      params.require(:intervention).permit(:organisation_id, :adherent_id, :team_id, :début, :fin, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :repeter, :repeter_lun, :repeter_mar, :repeter_mer, :repeter_jeu, :repeter_ven, :repeter_sam, :repeter_dim, :fin_repeter, photos: [], agent_ids: [])
     end
 
     def is_user_authorized

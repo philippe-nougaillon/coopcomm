@@ -40,8 +40,8 @@
 
         <% if current_user.manager? || current_user.adhérent? %>
           <div class="w-full sm:flex-1">
-            <%= form.label :user_id, "Équipe" %>
-            <%= form.select :user_id, options_from_collection_for_select(@équipes, 'id', 'nom_prénom', intervention.user_id), {include_blank: 'Choisissez une équipe'}, class: "slim-select w-full" %>
+            <%= form.label :team_id, "Équipe" %>
+            <%= form.select :team_id, options_from_collection_for_select(@équipes, 'id', 'nom_prénom', intervention.team_id), {include_blank: 'Choisissez une équipe'}, class: "slim-select w-full" %>
           </div>
         <% end %>
 
