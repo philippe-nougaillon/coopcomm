@@ -1,7 +1,7 @@
 class PagesController < ApplicationController
   before_action :is_user_authorized, except: %i[welcome mentions_legales]
   skip_before_action :authenticate_user!, only: %i[welcome mentions_legales]
-  
+
   def assistant
 
     if params[:commit].present?
