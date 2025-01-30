@@ -1,18 +1,20 @@
-<div id="<%= dom_id intervention %>" tabindex="0" class="overflow-x-auto collapse collapse-arrow <%= 'collapse-open' if defined?(from_turbo_stream) || intervention.id == @interventions.first.id %>">
+<div id="<%= dom_id intervention %>" tabindex="0" class="overflow-x-auto collapse collapse-arrow <%= 'collapse-open' if !defined?(from_turbo_stream) && intervention.id == @interventions.first.id %>">
   <div class="collapse-title text-xl font-medium">
     <div class="flex justify-between">
       <div>
         <small>
-          <i>il y a <%= time_ago_in_words intervention.updated_at %></i>
+          <i class="<%= 'text-error animate-pulse' if defined?(from_turbo_stream) %>">
+            il y a <%= time_ago_in_words intervention.updated_at %>
+          </i>
         </small>
 
         <div class="flex items-center gap-2 text-3xl text-<%= intervention.style.split.first.split('-').last %> font-black">
           <% if intervention.repeter %>
-            <span class="material-symbols-outlined" title="Modèle pour le pointage">
+            <span class="material-symbols-outlined text-black" title="Modèle pour le pointage">
               event_repeat
             </span>
           <% elsif intervention.template_slug %>
-            <span class="material-symbols-outlined" title="Pointage">
+            <span class="material-symbols-outlined text-black" title="Pointage">
               qr_code_2
             </span>
           <% end %>

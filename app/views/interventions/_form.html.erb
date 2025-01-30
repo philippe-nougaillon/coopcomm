@@ -52,6 +52,9 @@
                           data: { 'calc-temps-passe-target': 'agents', action: "change->calc-temps-passe#calc" } %>
         </div>
         <div class="w-full sm:flex-1">
+          <%= form.label :materiel %>
+          <%= form.select :materiel, options_for_select(['Camionette', 'Tondeuse', 'Escabeau', 'Nacelle', 'Pelleteuse'].sort),
+                          { include_blank: '(EN COURS DE DÉVELOPPEMENT)' }, class: "slim-select w-full", multiple: :true %>
         </div>
       </div>
 
@@ -89,12 +92,15 @@
     </div>
 
     <div class="flex flex-wrap gap-5 sm:gap-8">
-      <% @intervention.photos.each do |photo| %>
+      <% intervention.photos.each do |photo| %>
         <% unless photo.new_record? %>
           <%= form.hidden_field :photos, multiple: true, value: photo.signed_id %>
+          <div>
+            <%= image_tag photo.variant(resize: "100x100") if photo.variable? %>
+            <p><%= photo.filename %></p>
+          </div>
         <% end %>
       <% end %>
-
 
       <div class="sm:flex flex-wrap gap-8 my-5 items-end">
         <div class="flex-1">
