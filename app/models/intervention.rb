@@ -114,18 +114,30 @@ class Intervention < ApplicationRecord
 
   def check_absence
     absence_ids = []
-    self.agents.each do |agent|
-      absence_ids << agent.absences.where(
-        "(absences.du BETWEEN :debut AND :fin) OR
-        (absences.au BETWEEN :debut AND :fin) OR
-        (absences.du <= :debut AND absences.au >= :fin) OR
-        (:debut IS NULL AND absences.au >= :fin)",
-        debut: self.début, fin: self.fin
+    absence_ids = self.agents.flat_map do |agent|
+      agent.absences.where(
+        "
+          (absences.du = :debut) OR
+          (absences.du = :fin) OR
+          (absences.au = :debut) OR
+          (absences.au = :fin) OR
+          (absences.du BETWEEN :debut AND :fin) OR
+          (absences.au BETWEEN :debut AND :fin) OR
+          (:debut BETWEEN absences.du AND absences.au) OR
+          (:fin BETWEEN absences.du AND absences.au) OR
+          (absences.du <= :debut AND absences.au >= :fin) OR
+          (absences.du >= :debut AND absences.au <= :fin)",
+        debut: self.début.try(:to_date), fin: self.fin.try(:to_date)
       ).pluck(:id)
+    end.uniq
+
+    return if absence_ids.empty?
+
+    absences = Absence.where(id: absence_ids.uniq.flatten)
+    messages = absences.includes(:user).map do |absence|
+      "#{absence.user.nom_prénom} (du #{absence.du.strftime('%d/%m/%Y')} au #{absence.au.strftime('%d/%m/%Y')}, motif : '#{absence.motif}')"
     end
-    unless absence_ids.flatten.empty?
-      errors.add(:interventions, ": Agent(s) '#{User.where(id: Absence.where(id: absence_ids.uniq.flatten).pluck(:user_id)).pluck(:nom).uniq.join(', ')}' pas disponible(s) à ces dates")
-    end
+    errors.add(:interventions, ": Agent(s) indisponible(s) : #{messages.to_sentence}")
   end
 
   def qrcode(url)
