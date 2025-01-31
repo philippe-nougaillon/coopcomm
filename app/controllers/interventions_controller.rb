@@ -49,8 +49,8 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {service: params[:service]})
     end
 
-    if params[:agent_id].present?
-      @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {id: params[:agent_id]})
+    if params[:agent_ids].present?
+      @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {id: params[:agent_ids]})
     end
 
 

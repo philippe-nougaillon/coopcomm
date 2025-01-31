@@ -41,8 +41,8 @@
           <% end %>
 
           <div class="flex-1">
-            <%= label_tag :agent_id, "Agent" %>
-            <%= select_tag :agent_id, grouped_options_for_select(@grouped_agents, params[:agent_id]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()' %>
+            <%= label_tag :agent_ids, "Agent(s)" %>
+            <%= select_tag :agent_ids, grouped_options_for_select(@grouped_agents, params[:agent_ids]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()', multiple: true %>
           </div>
         </div>
       <% end %>
@@ -140,7 +140,7 @@
   })
 
   new SlimSelect({
-    select: '#agent_id',
+    select: '#agent_ids',
     settings: {
       searchPlaceholder: 'Recherche',
       searchText: 'Pas de résultat',
