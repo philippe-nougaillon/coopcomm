@@ -14,7 +14,7 @@
     <nav class="min-h-screen h-96 bg-base-100 shadow w-64 fixed top-0 -ml-4 overflow-y-auto flex flex-col justify-between">
       <div>
         <h1 class="text-4xl font-black text-accent text-center mb-12 mx-8 mt-12 <%= (user_signed_in? && current_user.super_admin?) ? 'sm:mt-11' : 'sm:mt-8' %>">
-          <%= link_to root_path do %>
+          <%= link_to wiki_path do %>
             Wiki
           <% end %>
         </h1>
@@ -29,7 +29,7 @@
           </label>
         <% end %>
         <% WikiPage.catégories.each do |catégorie, id| %>
-          <%= link_to wiki_pages_path(catégorie: catégorie) do %>
+          <%= link_to wiki_path(catégorie: catégorie) do %>
             <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-base-200 py-3 pl-8 <%= 'bg-base-300 hover:bg-base-300' if params[:catégorie] == catégorie %>">
               <span class="material-symbols-outlined">
                 <% icone_name = case id %>
