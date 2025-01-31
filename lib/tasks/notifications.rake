@@ -31,6 +31,7 @@ namespace :notifications do
   desc "Récupérer statut mail_logs dans twilio"
   task :fetch_twilio, [:enregistrer] => :environment do |task, args|
     require 'dotenv/tasks'
+    require 'twilio-ruby'
 
     tw_client = Twilio::REST::Client.new(ENV['TWILIO_ACCOUNT_SID'], ENV['TWILIO_AUTH_TOKEN'])
     whatsapp_logs = MailLog.where(created_at: [DateTime.now-20.minutes..DateTime.now], channel: 1)
