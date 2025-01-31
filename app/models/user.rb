@@ -49,7 +49,7 @@ class User < ApplicationRecord
   def self.grouped_agents(users)
     h = {}
     User.services.keys.each do |key|
-      h[key.humanize] = users.agent.where(service: key).order(:nom).pluck(:nom, :id)
+      h[key.humanize] = users.agent.where(service: key).order(:nom, :prénom).pluck(:nom, :prénom, :id).map { |nom, prénom, id| ["#{nom} #{prénom}", id] }
     end
     return h
   end
