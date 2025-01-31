@@ -160,7 +160,7 @@ class Intervention < ApplicationRecord
   end
 
   def calc_temps_total
-    if !self.fin
+    if !self.fin || !self.début
       temps_total = 0
     elsif self.fin > self.début
       temps_total = (self.fin - self.début).seconds.in_hours - self.temps_de_pause
