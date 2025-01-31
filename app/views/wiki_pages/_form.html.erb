@@ -1,9 +1,11 @@
 <%= form_with(model: wiki_page, class: "contents") do |form| %>
   <% if wiki_page.errors.any? %>
-    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3">
-      <h2><%= pluralize(wiki_page.errors.count, "error") %> prohibited this wiki_page from being saved:</h2>
+    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
+      <h2 class="!font-black">
+        <%= pluralize(wiki_page.errors.count, "error") %> prohibited this wiki_page from being saved:
+      </h2>
 
-      <ul>
+      <ul class="list-disc list-inside">
         <% wiki_page.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>

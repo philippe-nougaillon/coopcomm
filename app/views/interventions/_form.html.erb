@@ -1,9 +1,11 @@
 <%= form_with(model: intervention, class: "contents") do |form| %>
   <% if intervention.errors.any? %>
-    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3">
-      <h2><%= pluralize(intervention.errors.count, "error") %> empêche(nt) cette intervention d'être sauvegardée :</h2>
+    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
+      <h2 class="!font-black">
+        <%= pluralize(intervention.errors.count, "error") %> empêche(nt) cette intervention d'être sauvegardée :
+      </h2>
 
-      <ul>
+      <ul class="list-disc list-inside">
         <% intervention.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
