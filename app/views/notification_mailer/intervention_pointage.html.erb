@@ -15,7 +15,9 @@ Arrivée
   <br><br>
   Durée
   <br>
-  <strong><%= ((@intervention.fin - @intervention.début).seconds.in_hours - @intervention.temps_de_pause).round(2) %> h</strong>
+  <strong>
+    <%= @intervention.durée_humanized %>
+  </strong>
 <% end %>
 
 <br><br>

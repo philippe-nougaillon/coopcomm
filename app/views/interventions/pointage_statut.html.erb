@@ -31,7 +31,7 @@
           clip-rule="evenodd" />
       </svg>
     </div>
-    <div class="timeline-end timeline-box mb-4"><%= l @intervention.début %></div>
+    <div class="timeline-end timeline-box mb-4"><%= l(@intervention.début, format: :short) %></div>
     <hr />
   </li>
   <li>
@@ -50,7 +50,13 @@
       </svg>
     </div>
     <% if @intervention.fin %>
-      <div class="timeline-end timeline-box mt-4"><%= l @intervention.fin %></div>
+      <div class="timeline-end timeline-box mt-4">
+        <%= l(@intervention.fin, format: :short) %>
+        <br>
+        Durée : 
+        <br>
+        <%= @intervention.durée_humanized %>
+      </div>
     <% end %>
   </li>
 </ul>
