@@ -221,6 +221,10 @@ class Intervention < ApplicationRecord
     end
   end
 
+  def durée_humanized
+    Time.at(self.fin - self.début).utc.strftime("%Hh %Mmin")
+  end
+
   private
 
   def slug_candidates
