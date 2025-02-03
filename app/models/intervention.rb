@@ -13,7 +13,7 @@ class Intervention < ApplicationRecord
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
   has_many :agent_interventions, dependent: :destroy
   has_many :agents, through: :agent_interventions, class_name: 'User'
-  belongs_to :tool
+  belongs_to :tool, optional: :true
 
   has_many_attached :photos
 
