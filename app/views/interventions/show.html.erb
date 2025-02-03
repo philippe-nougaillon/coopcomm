@@ -57,10 +57,6 @@
                   <%= @intervention.workflow_state.humanize %>
                 </span>
               </p>
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Outil</strong>
-                <b><%= @intervention.tool.try(:name) %></b>
-              </p>
             </div>
               
             <div>
@@ -82,6 +78,13 @@
                   <b><%= agent.nom_prénom %></b>
                 </p>
               <% end %>
+            </div>
+
+            <div>
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Outil</strong>
+                <b><%= @intervention.tool.try(:name) %></b>
+              </p>
             </div>
 
             <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">

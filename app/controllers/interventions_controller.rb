@@ -31,10 +31,21 @@ class InterventionsController < ApplicationController
     elsif current_user.agent?
       @adhérents = organisation_members.adhérent.order(:nom)
     end
+    @tools = current_user.organisation.tools.ordered
     @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
 
     if params[:search].present?
       @interventions = @interventions.where("description ILIKE :search OR commentaires ILIKE :search", {search: "%#{params[:search]}%"})
+    end
+
+    if params[:du].present?
+      if params[:au].present?
+        @interventions = @interventions.where("DATE(début) BETWEEN ? AND ?", params[:du], params[:au])
+      else
+        @interventions = @interventions.where("DATE(début) = ?", params[:du]).or(@interventions.where("DATE(fin) = ?", params[:du]))
+      end
+    elsif params[:au].present?
+      @interventions = @interventions.where("DATE(fin) = ?", params[:au])
     end
 
     if params[:adherent_id].present?
@@ -53,15 +64,8 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {id: params[:agent_ids]})
     end
 
-
-    if params[:du].present?
-      if params[:au].present?
-        @interventions = @interventions.where("DATE(début) BETWEEN ? AND ?", params[:du], params[:au])
-      else
-        @interventions = @interventions.where("DATE(début) = ?", params[:du]).or(@interventions.where("DATE(fin) = ?", params[:du]))
-      end
-    elsif params[:au].present?
-      @interventions = @interventions.where("DATE(fin) = ?", params[:au])
+    if params[:tool_ids].present?
+      @interventions = @interventions.joins(:tool).where(tool: {id: params[:tool_ids]})
     end
 
     if params[:tags].present?
@@ -279,7 +283,7 @@ class InterventionsController < ApplicationController
       @organisation_members = current_user.organisation.users
       @équipes = @organisation_members.équipe
       @grouped_agents = User.grouped_agents(@organisation_members)
-      @tools = current_user.organisation.tools
+      @tools = current_user.organisation.tools.ordered
     end
 
     # Only allow a list of trusted parameters through.

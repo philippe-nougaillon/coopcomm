@@ -4,7 +4,21 @@ class ToolsController < ApplicationController
 
   # GET /tools or /tools.json
   def index
+    params[:tool_disponibilite] ||= 'tout'
     @tools = current_user.organisation.tools.ordered
+
+    if params[:search].present?
+      @tools = @tools.where("name ILIKE :search OR description ILIKE :search", {search: "%#{params[:search]}%"})
+    end
+
+    if params[:tool_disponibilite].present?
+      case params[:tool_disponibilite]
+      when 'disponible'
+        @tools = @tools.where.not(id: Tool.indisponibles_ids(current_user.organisation_id))
+      when 'indisponible'
+        @tools = @tools.where(id: Tool.indisponibles_ids(current_user.organisation_id))
+      end
+    end
 
     @pagy, @tools = pagy(@tools, items: 15)
   end

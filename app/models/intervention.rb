@@ -20,7 +20,7 @@ class Intervention < ApplicationRecord
   validates :description, presence: true
 
   before_validation :check_absence
-  # before_validation :check_tool_disponibilite
+  before_validation :check_tool_disponibilite
 
   before_save :calc_temps_total
 
@@ -115,37 +115,62 @@ class Intervention < ApplicationRecord
   end
 
   def check_absence
-    absence_ids = []
-    absence_ids = self.agents.flat_map do |agent|
-      agent.absences.where(
-        "
-          (absences.du = :debut) OR
-          (absences.du = :fin) OR
-          (absences.au = :debut) OR
-          (absences.au = :fin) OR
-          (absences.du BETWEEN :debut AND :fin) OR
-          (absences.au BETWEEN :debut AND :fin) OR
-          (:debut BETWEEN absences.du AND absences.au) OR
-          (:fin BETWEEN absences.du AND absences.au) OR
-          (absences.du <= :debut AND absences.au >= :fin) OR
-          (absences.du >= :debut AND absences.au <= :fin)",
-        debut: self.début.try(:to_date), fin: self.fin.try(:to_date)
-      ).pluck(:id)
-    end.uniq
+    if self.agents.any?
+      absence_ids = []
+      absence_ids = self.agents.flat_map do |agent|
+        agent.absences.where(
+          " (absences.du = :debut) OR
+            (absences.du = :fin) OR
+            (absences.au = :debut) OR
+            (absences.au = :fin) OR
+            (absences.du BETWEEN :debut AND :fin) OR
+            (absences.au BETWEEN :debut AND :fin) OR
+            (:debut BETWEEN absences.du AND absences.au) OR
+            (:fin BETWEEN absences.du AND absences.au) OR
+            (absences.du <= :debut AND absences.au >= :fin) OR
+            (absences.du >= :debut AND absences.au <= :fin)
+          ",
+          debut: self.début.try(:to_date), fin: self.fin.try(:to_date)
+        ).pluck(:id)
+      end.uniq
 
-    return if absence_ids.empty?
+      return if absence_ids.empty?
 
-    absences = Absence.where(id: absence_ids.uniq.flatten)
-    messages = absences.includes(:user).map do |absence|
-      "#{absence.user.nom_prénom} (du #{absence.du.strftime('%d/%m/%Y')} au #{absence.au.strftime('%d/%m/%Y')}, motif : '#{absence.motif}')"
+      absences = Absence.where(id: absence_ids.uniq.flatten)
+      messages = absences.includes(:user).map do |absence|
+        "#{absence.user.nom_prénom} (du #{absence.du.strftime('%d/%m/%Y')} au #{absence.au.strftime('%d/%m/%Y')}, motif : '#{absence.motif}')"
+      end
+      errors.add(:interventions, ": Agent(s) indisponible(s) : #{messages.to_sentence}")
     end
-    errors.add(:interventions, ": Agent(s) indisponible(s) : #{messages.to_sentence}")
   end
 
-  # def check_tool_disponibilite
-  #   # TODO : faire les mêmes check sur les dates que dans check_absence, mais avec les dates des autres interventions
-  #   self.tool.interventions
-  # end
+  def check_tool_disponibilite
+    if self.tool
+      conflict_ids = self.tool.interventions.where.not(id: self.id).where(
+        " (interventions.début = :debut) OR
+          (interventions.début = :fin) OR
+          (interventions.fin = :debut) OR
+          (interventions.fin = :fin) OR
+          (interventions.début BETWEEN :debut AND :fin) OR
+          (interventions.fin BETWEEN :debut AND :fin) OR
+          (:debut BETWEEN interventions.début AND interventions.fin) OR
+          (:fin BETWEEN interventions.début AND interventions.fin) OR
+          (interventions.début <= :debut AND interventions.fin >= :fin) OR
+          (interventions.début >= :debut AND interventions.fin <= :fin)
+        ",
+        debut: self.début, fin: self.fin
+      ).pluck(:id).uniq.flatten
+
+      return if conflict_ids.empty?
+
+      conflicting_interventions = Intervention.where(id: conflict_ids)
+      messages = conflicting_interventions.includes(:tool).map do |intervention|
+        "Déjà utilisé par l'intervention '#{intervention.description}' du #{intervention.début ? intervention.début.strftime('%d/%m/%Y %H:%M') : '?'} au #{intervention.fin ? intervention.fin.strftime('%d/%m/%Y %H:%M') : '?'}"
+      end
+      
+      errors.add(:tools, ": Outil indisponible : #{messages.to_sentence}")
+    end
+  end
 
   def qrcode(url)
     RQRCode::QRCode.new(url).as_svg(
@@ -188,6 +213,12 @@ class Intervention < ApplicationRecord
       temps_total = -1
     end
     temps_total
+  end
+
+  def en_cours?
+    if self.début && self.fin
+      DateTime.now.between?(self.début, self.fin)
+    end
   end
 
   private

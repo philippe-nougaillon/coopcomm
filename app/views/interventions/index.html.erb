@@ -13,7 +13,36 @@
           <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-bordered input-sm w-full', placeholder: 'Description / Commentaires' %>
         </div>
       </div>
+      <div class="flex gap-4 w-full min-w-fit lg:w-4/12 pr-4">
+        <div class="flex items-start gap-6 w-full min-w-fit items-end">
+          <div class="flex-1">
+            <%= label_tag :workflow_state, "Statut" %>
+            <%= select_tag :workflow_state, 
+                            options_for_select(Intervention.workflow_state_humanized, params[:workflow_state]), 
+                            include_blank: true,
+                            class: 'select select-bordered select-sm w-full', 
+                            onchange: 'this.form.submit()' %>
+          </div>
+          <div class="flex-1">
+            <%= label_tag :du, 'Du' %>
+            <%= date_field_tag :du, params[:du], onchange: 'this.form.submit()', class: 'input input-bordered input-sm w-full' %>
+          </div>
+        </div>
+      </div>
 
+      <div class="hidden sm:flex sm:items-end gap-4 w-full min-w-fit lg:w-4/12 pr-4">
+        <div class="flex-1">
+          <%= label_tag :au, 'Au' %>
+          <%= date_field_tag :au, params[:au], onchange: 'this.form.submit()', class: 'input input-bordered input-sm w-full' %>
+        </div>
+        <div class="flex-1 hidden sm:flex w-full min-w-fit lg:w-4/12 gap-2">
+          <%= check_box_tag :archives, 1, params[:archives], class:'checkbox', onchange:'this.form.submit()' %>
+          <%= label_tag :archives, "Archivées ?", class: 'cursor-pointer' %>
+        </div>
+      </div>
+
+    </div>
+    <div class="flex flex-wrap w-full items-end mt-4">
       <% if current_user.manager? || current_user.agent? %>
         <div class="flex flex-wrap gap-4 w-full min-w-fit lg:w-4/12 pr-4">
           <div class="flex-1">
@@ -46,34 +75,12 @@
           </div>
         </div>
       <% end %>
-    </div>
-    <div class="flex flex-wrap w-full items-end mt-4">
-      <div class="flex items-start gap-6 w-full min-w-fit lg:w-4/12 items-end pr-4">
-        <div class="w-full">
-          <%= label_tag :workflow_state, "Statut" %>
-          <%= select_tag :workflow_state, 
-                          options_for_select(Intervention.workflow_state_humanized, params[:workflow_state]), 
-                          include_blank: true,
-                          class: 'select select-bordered select-sm w-full', 
-                          onchange: 'this.form.submit()' %>
-        </div>
-      </div>
 
-      <div class="hidden sm:flex gap-4 w-full min-w-fit lg:w-4/12 pr-4">
+      <div class="flex flex-wrap gap-4 w-full min-w-fit lg:w-4/12 pr-4">
         <div class="flex-1">
-          <%= label_tag :du, 'Du' %>
-          <%= date_field_tag :du, params[:du], onchange: 'this.form.submit()', class: 'input input-bordered input-sm w-full' %>
+          <%= label_tag :tool_ids, "Outil(s)" %>
+          <%= select_tag :tool_ids, options_from_collection_for_select(@tools, 'id', 'name', params[:tool_ids]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()', multiple: true %>
         </div>
-
-        <div class="flex-1">
-          <%= label_tag :au, 'Au' %>
-          <%= date_field_tag :au, params[:au], onchange: 'this.form.submit()', class: 'input input-bordered input-sm w-full' %>
-        </div>
-      </div>
-
-      <div class="hidden sm:flex w-full min-w-fit lg:w-4/12">
-        <%= check_box_tag :archives, 1, params[:archives], class:'checkbox mr-2', onchange:'this.form.submit()' %>
-        <%= label_tag :archives, "Archivées ?", class: 'cursor-pointer' %>
       </div>
 
       <div class="flex flex-wrap gap-1 w-full mt-4">
@@ -145,7 +152,18 @@
       searchPlaceholder: 'Recherche',
       searchText: 'Pas de résultat',
       searchingText: 'Recherche...',
-      placeholderText: 'Choisissez un agent',
+      placeholderText: '',
+      allowDeselect: true,
+    }
+  })
+
+  new SlimSelect({
+    select: '#tool_ids',
+    settings: {
+      searchPlaceholder: 'Recherche',
+      searchText: 'Pas de résultat',
+      searchingText: 'Recherche...',
+      placeholderText: '',
       allowDeselect: true,
     }
   })

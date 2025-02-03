@@ -2,16 +2,20 @@
   <td class="text-2xl font-black text-primary">
     <%= link_to tool.name.humanize, tool, class: 'text-primary hover:underline' %>
   </td>
-  <td><%= tool.description %></td>
   <td>
     <% if tool.disponible? %>
       <span class="material-symbols-outlined text-success">
         check_circle
       </span>
+    <% else %>
+      <span class="material-symbols-outlined text-error">
+        cancel
+      </span>
     <% end %>
   </td>
-  <td>
-    <% if false %>
+  <td><%= tool.description %></td>
+  <% if false %>
+    <td>
       <div class="flex justify-end items-center gap-2">
         <% if policy(tool).show? %>
           <%= link_to tool, title: 'Voir' do %>
@@ -35,6 +39,6 @@
           <% end %>
         <% end %>
       </div>
-    <% end %>
-  </td>
+    </td>
+  <% end %>
 </tr>

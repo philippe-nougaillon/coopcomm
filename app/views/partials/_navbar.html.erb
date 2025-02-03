@@ -5,18 +5,18 @@
     </span>
   <% end %>
 
-  <% if policy(User).index? %>
-    <%= link_to users_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'users'}", title: "Liste des utilisateurs" do %>
+  <% if policy(Tool).index? %>
+    <%= link_to tools_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'tools'}", title: "Liste des outils" do %>
       <span class="material-symbols-outlined">
-        group
+        construction
       </span>
     <% end %>
   <% end %>
 
-  <% if policy(Tool).index? %>
-    <%= link_to tools_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'tools'}", title: "Liste des outils" do %>
+  <% if policy(User).index? %>
+    <%= link_to users_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'users'}", title: "Liste des utilisateurs" do %>
       <span class="material-symbols-outlined">
-        agriculture
+        group
       </span>
     <% end %>
   <% end %>
