@@ -2,7 +2,7 @@
   <% if intervention.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
       <h2 class="!font-black">
-        <%= pluralize(intervention.errors.count, "error") %> empêche(nt) cette intervention d'être sauvegardée :
+        <%= pluralize(intervention.errors.count, "erreur") %> empêche(nt) cette intervention d'être sauvegardée :
       </h2>
 
       <ul class="list-disc list-inside">
@@ -37,26 +37,25 @@
       <div class="flex flex-wrap gap-5 sm:gap-8 my-5">
         <div class="w-full sm:flex-1">
           <%= form.label :adherent_id, "Adhérent" %>
-          <%= form.select :adherent_id, options_from_collection_for_select(@organisation_members.adhérent, :id, :nom_prénom, intervention.adherent_id), {include_blank: 'Choisissez un adhérent'}, class: "slim-select w-full" %>
+          <%= form.select :adherent_id, options_from_collection_for_select(@organisation_members.adhérent, :id, :nom_prénom, intervention.adherent_id), {include_blank: true}, class: "slim-select w-full" %>
         </div>
 
         <% if current_user.manager? || current_user.adhérent? %>
           <div class="w-full sm:flex-1">
             <%= form.label :team_id, "Équipe" %>
-            <%= form.select :team_id, options_from_collection_for_select(@équipes, 'id', 'nom_prénom', intervention.team_id), {include_blank: 'Choisissez une équipe'}, class: "slim-select w-full" %>
+            <%= form.select :team_id, options_from_collection_for_select(@équipes, 'id', 'nom_prénom', intervention.team_id), {include_blank: true}, class: "slim-select w-full" %>
           </div>
         <% end %>
 
         <div class="w-full sm:flex-1">
           <%= form.label :agent_ids, "Agents" %>
           <%= form.select :agent_ids, grouped_options_for_select(@grouped_agents, intervention.agent_ids),
-                          { include_blank: 'Choisissez un/des agent.s' }, class: "slim-select w-full", multiple: :true,
+                          { include_blank: true }, class: "slim-select w-full", multiple: :true,
                           data: { 'calc-temps-passe-target': 'agents', action: "change->calc-temps-passe#calc" } %>
         </div>
         <div class="w-full sm:flex-1">
-          <%= form.label :materiel %>
-          <%= form.select :materiel, options_for_select(['Camionette', 'Tondeuse', 'Escabeau', 'Nacelle', 'Pelleteuse'].sort),
-                          { include_blank: '(EN COURS DE DÉVELOPPEMENT)' }, class: "slim-select w-full", multiple: :true %>
+          <%= form.label :tool_id, "Outil" %>
+          <%= form.select :tool_id, options_from_collection_for_select(@tools, 'id', 'name', intervention.tool_id), {include_blank: true}, class: "slim-select w-full" %>
         </div>
       </div>
 
@@ -180,7 +179,7 @@
       searchPlaceholder: 'Recherche',
       searchText: 'Pas de résultat',
       searchingText: 'Recherche...',
-      placeholderText: 'Choisissez un ou plusieurs mots clés',
+      placeholderText: '',
       allowDeselect: true,
     }
   })
@@ -191,7 +190,7 @@
       searchPlaceholder: 'Recherche',
       searchText: 'Pas de résultat',
       searchingText: 'Recherche...',
-      placeholderText: 'Choisissez un ou plusieurs mots clés',
+      placeholderText: '',
       allowDeselect: true,
       addableText: 'Appuyez sur "Entrer" pour ajouter {value}',
     },

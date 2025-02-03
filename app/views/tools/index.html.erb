@@ -1,0 +1,57 @@
+<div class="w-full mb-24">
+  <div class="flex flex-wrap justify-between items-center">
+    <h1 class="text-4xl text-primary font-bold">Outils</h1>
+    <% if policy(Tool).new? %>
+      <%= link_to "Ajouter un Outil", new_tool_path, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:!text-white" %>
+      <%= link_to "+", new_tool_path, class: "inline-flex sm:hidden btn btn-primary btn-outline hover:!text-white" %>
+    <% end %>
+  </div>
+
+    <%= form_tag request.path, method: :get do %>
+    <div class="flex flex-wrap items-start gap-4 mt-8">
+      <div class="w-full md:w-fit">
+        <%= label_tag :search, "Rechercher" %>
+        <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-bordered input-sm w-full', placeholder: 'Nom/Description' %>
+      </div>
+
+      <div class="sm:w-3/12 px-2">
+        <%= label_tag :tool_disponibilite, "Disponibilité" %>
+        <br>
+        <%= radio_button_tag :tool_disponibilite, "disponible", (params[:tool_disponibilite]=='disponible'), onchange:'this.form.submit()', class: 'radio radio-xs radio-primary' %>    
+        Disponible
+        <%= radio_button_tag :tool_disponibilite, "indisponible", (params[:tool_disponibilite]=='indisponible'), onchange:'this.form.submit()', class: 'radio radio-xs radio-primary ml-2' %>
+        Indisponible
+        <%= radio_button_tag :tool_disponibilite, "tout", (params[:tool_disponibilite]=='tout'), onchange:'this.form.submit()', class: 'radio radio-xs radio-primary ml-2' %>
+        Tout
+      </div>
+    </div>
+  <% end %>
+
+  <div class="divider"></div>
+
+  <div class="overflow-x-auto">
+    <table id="tools" class="table table-sm">
+      <thead class="bg-slate-100">
+        <tr>
+          <th>Nom</th>
+          <th>Disponible ?</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%= render @tools %>
+      </tbody>
+      <tfoot>
+        <tr>
+          <th colspan=5></th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="my-6">
+    <%== pagy_info(@pagy) %>
+    <%== pagy_nav(@pagy) %>
+  </div>
+
+</div>

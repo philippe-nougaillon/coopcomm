@@ -2,7 +2,7 @@
   <% if wiki_page.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
       <h2 class="!font-black">
-        <%= pluralize(wiki_page.errors.count, "error") %> prohibited this wiki_page from being saved:
+        <%= pluralize(wiki_page.errors.count, "erreur") %> empêche(nt) cette page wiki d'être sauvegardée :
       </h2>
 
       <ul class="list-disc list-inside">

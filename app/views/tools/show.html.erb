@@ -1,0 +1,48 @@
+<div class="mx-auto lg:w-2/3 w-full">
+  <div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
+    <h1 class="text-4xl text-primary font-bold">
+      <%= @tool.name %>
+      <% if @tool.disponible? %>
+        <span class="material-symbols-outlined text-success">
+          check_circle
+        </span>
+      <% end %>
+    </h1>
+  </div>
+
+  <div class="flex flex-wrap justify-between gap-24">
+    <p class="text-xl">
+      <%= @tool.description %>
+    </p>
+  </div>
+
+
+  <div class="flex flex-wrap gap-2 mt-8">
+    <%= link_to "Modifier", edit_tool_path(@tool), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
+    <%= button_to tool_path(@tool), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, class: "rounded-lg py-3 px-5 bg-gray-100 font-medium", 'data-testid': "Supprimer l'outil", disabled: @tool.interventions.any? do %>
+      <span class="material-symbols-outlined">
+        delete
+      </span>
+    <% end %>
+    <%= link_to "Retour", tools_path, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
+  </div>
+
+  <h2 class="text-2xl text-secondary mt-8">Utilisations</h2>
+  <div class="overflow-x-auto mt-4">
+    <table class="table table-sm">
+      <thead class="bg-slate-100">
+        <tr>
+          <th>Intervention</th>
+          <th>Du</th>
+          <th>Au</th>
+          <th>Adhérent</th>
+          <th>Équipe</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <%= render partial: 'intervention', collection: @tool.interventions.ordered %>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,44 @@
+<tr id="<%= dom_id tool %>" class="hover">
+  <td class="text-2xl font-black text-primary">
+    <%= link_to tool.name.humanize, tool, class: 'text-primary hover:underline' %>
+  </td>
+  <td>
+    <% if tool.disponible? %>
+      <span class="material-symbols-outlined text-success">
+        check_circle
+      </span>
+    <% else %>
+      <span class="material-symbols-outlined text-error">
+        cancel
+      </span>
+    <% end %>
+  </td>
+  <td><%= tool.description %></td>
+  <% if false %>
+    <td>
+      <div class="flex justify-end items-center gap-2">
+        <% if policy(tool).show? %>
+          <%= link_to tool, title: 'Voir' do %>
+            <span class="material-symbols-outlined">
+              visibility
+            </span>
+          <% end %>
+        <% end %>
+        <% if policy(tool).edit? %>
+          <%= link_to edit_tool_path(tool), title: 'Modifier' do %>
+            <span class="material-symbols-outlined">
+              edit
+            </span>
+          <% end %>
+        <% end %>
+        <% if policy(tool).destroy? %>
+          <%= button_to tool_path(tool), title: "Supprimer l'outil", method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, form: { class: "flex items-center" }, 'data-testid': "Supprimer l'outil" do %>
+            <span class="material-symbols-outlined">
+              delete
+            </span>
+          <% end %>
+        <% end %>
+      </div>
+    </td>
+  <% end %>
+</tr>
