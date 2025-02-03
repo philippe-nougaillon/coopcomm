@@ -13,12 +13,14 @@ class Intervention < ApplicationRecord
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
   has_many :agent_interventions, dependent: :destroy
   has_many :agents, through: :agent_interventions, class_name: 'User'
+  belongs_to :tool
 
   has_many_attached :photos
 
   validates :description, presence: true
 
   before_validation :check_absence
+  # before_validation :check_tool_disponibilite
 
   before_save :calc_temps_total
 
@@ -139,6 +141,11 @@ class Intervention < ApplicationRecord
     end
     errors.add(:interventions, ": Agent(s) indisponible(s) : #{messages.to_sentence}")
   end
+
+  # def check_tool_disponibilite
+  #   # TODO : faire les mêmes check sur les dates que dans check_absence, mais avec les dates des autres interventions
+  #   self.tool.interventions
+  # end
 
   def qrcode(url)
     RQRCode::QRCode.new(url).as_svg(

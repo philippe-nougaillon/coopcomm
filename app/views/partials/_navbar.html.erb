@@ -13,6 +13,14 @@
     <% end %>
   <% end %>
 
+  <% if policy(Tool).index? %>
+    <%= link_to tools_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'tools'}", title: "Liste des outils" do %>
+      <span class="material-symbols-outlined">
+        agriculture
+      </span>
+    <% end %>
+  <% end %>
+
   <%= link_to admin_messagerie_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
     <% if current_user.new_notifications? %>
       <span class="material-symbols-outlined text-error">

@@ -57,6 +57,10 @@
                   <%= @intervention.workflow_state.humanize %>
                 </span>
               </p>
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Outil</strong>
+                <b><%= @intervention.tool.try(:name) %></b>
+              </p>
             </div>
               
             <div>

@@ -2,7 +2,7 @@
   <% if intervention.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
       <h2 class="!font-black">
-        <%= pluralize(intervention.errors.count, "error") %> empêche(nt) cette intervention d'être sauvegardée :
+        <%= pluralize(intervention.errors.count, "erreur") %> empêche(nt) cette intervention d'être sauvegardée :
       </h2>
 
       <ul class="list-disc list-inside">
@@ -54,9 +54,8 @@
                           data: { 'calc-temps-passe-target': 'agents', action: "change->calc-temps-passe#calc" } %>
         </div>
         <div class="w-full sm:flex-1">
-          <%= form.label :materiel %>
-          <%= form.select :materiel, options_for_select(['Camionette', 'Tondeuse', 'Escabeau', 'Nacelle', 'Pelleteuse'].sort),
-                          { include_blank: '(EN COURS DE DÉVELOPPEMENT)' }, class: "slim-select w-full", multiple: :true %>
+          <%= form.label :tool_id, "Outil" %>
+          <%= form.select :tool_id, options_from_collection_for_select(@tools, 'id', 'name', intervention.tool_id), {include_blank: 'Choisissez un outil'}, class: "slim-select w-full" %>
         </div>
       </div>
 

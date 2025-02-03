@@ -1,0 +1,27 @@
+<%= form_with(model: tool, class: "contents", html: { class: 'flex flex-col gap-2' }) do |form| %>
+  <% if tool.errors.any? %>
+    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
+      <h2 class="!font-black">
+        <%= pluralize(tool.errors.count, "erreur") %> empêche(nt) ce matériel d'être sauvegardé :
+      </h2>
+
+      <ul class="list-disc list-inside">
+        <% tool.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="w-full">
+    <%= form.label :name, 'Nom' %>
+    <%= form.text_field :name, class: 'input input-bordered input-sm w-full', required: true %>
+  </div>
+
+  <div class="w-full">
+    <%= form.label :description %>
+    <%= form.text_field :description, class: "input input-bordered input-sm w-full" %>
+  </div>
+
+  <%= form.submit class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer mt-4" %>
+<% end %>

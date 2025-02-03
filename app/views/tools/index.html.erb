@@ -1,0 +1,38 @@
+<div class="w-full mb-24">
+  <div class="flex flex-wrap justify-between items-center">
+    <h1 class="text-4xl text-primary font-bold">Outils</h1>
+    <% if policy(Tool).new? %>
+      <%= link_to "Ajouter un Outil", new_tool_path, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:!text-white" %>
+      <%= link_to "+", new_tool_path, class: "inline-flex sm:hidden btn btn-primary btn-outline hover:!text-white" %>
+    <% end %>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="overflow-x-auto">
+    <table id="tools" class="table table-sm">
+      <thead class="bg-slate-100">
+        <tr>
+          <th>Nom</th>
+          <th>Description</th>
+          <th>Disponible ?</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <%= render @tools %>
+      </tbody>
+      <tfoot>
+        <tr>
+          <th colspan=5></th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="my-6">
+    <%== pagy_info(@pagy) %>
+    <%== pagy_nav(@pagy) %>
+  </div>
+
+</div>

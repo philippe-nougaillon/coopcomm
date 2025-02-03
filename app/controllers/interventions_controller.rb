@@ -279,11 +279,12 @@ class InterventionsController < ApplicationController
       @organisation_members = current_user.organisation.users
       @équipes = @organisation_members.équipe
       @grouped_agents = User.grouped_agents(@organisation_members)
+      @tools = current_user.organisation.tools
     end
 
     # Only allow a list of trusted parameters through.
     def intervention_params
-      params.require(:intervention).permit(:organisation_id, :adherent_id, :team_id, :début, :fin, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :repeter, :repeter_lun, :repeter_mar, :repeter_mer, :repeter_jeu, :repeter_ven, :repeter_sam, :repeter_dim, :fin_repeter, photos: [], agent_ids: [])
+      params.require(:intervention).permit(:organisation_id, :adherent_id, :team_id, :tool_id, :début, :fin, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :repeter, :repeter_lun, :repeter_mar, :repeter_mer, :repeter_jeu, :repeter_ven, :repeter_sam, :repeter_dim, :fin_repeter, photos: [], agent_ids: [])
     end
 
     def is_user_authorized

@@ -19,6 +19,7 @@ Rails.application.routes.draw do
   
   resources :users
   resources :mail_logs
+  resources :tools
   resources :wiki_pages
   match 'wiki', to: 'wiki_pages#index', via: :get
 
