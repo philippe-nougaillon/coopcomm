@@ -58,8 +58,8 @@ class User < ApplicationRecord
     "#{self.nom} #{self.prénom}"
   end
 
-  def nom_role
-    "#{self.nom} (#{self.rôle.upcase})"
+  def nom_prenom_role
+    "#{self.nom_prénom} (#{self.rôle.upcase})"
   end
 
   def super_admin?
