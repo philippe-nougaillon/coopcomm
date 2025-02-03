@@ -1,12 +1,13 @@
-<div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
-  <h1 class="text-4xl text-primary font-bold">Notifications</h1>
+<div class="flex flex-wrap justify-between items-center">
+<h1 class="text-4xl text-primary font-bold">Notifications</h1>
+  <%= link_to "Actualiser", refresh_mail_logs_path, class: "inline-flex btn btn-primary btn-outline btn-lg rounded hover:!text-white" %>
 </div>
 
-<p class="mb-4">
-  Historique des notifications envoyés via 
+<p class="mb-8">
+  Historique des notifications envoyées via 
   <%= link_to "MailGun", "https://www.mailgun.com/fr/", target: "_blank", class: "text-primary hover:underline" %>
-  ou WhatsApp,
-  avec Statut et État (OK = acheminé, OUVERT = vu).
+  ou WhatsApp (<%= link_to "Twilio", "https://www.twilio.com/fr-fr", target: "_blank", class: "text-primary hover:underline" %>),
+  avec Statut et État (OK = Acheminé, OUVERT = Vu).
 </p>
 
 <%= form_tag request.path, method: :get do %>
@@ -49,10 +50,7 @@
 
     <tbody>
       <% @mail_logs.each_with_index do |mail_log, index| %>
-        <% status_ko = mail_log.error_message || @result_failed["items"].find{|item| item["message"]["headers"]["message-id"] == mail_log.message_id } %>
-        <% if params[:ko].blank? || status_ko %>
-          <%= render partial: "mail_log", locals: {mail_log: mail_log, status_ko: status_ko, index:} %>
-        <% end %>
+        <%= render partial: "mail_log", locals: {mail_log: mail_log, index:} %>
       <% end %>
     </tbody>
 

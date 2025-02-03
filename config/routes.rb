@@ -18,7 +18,12 @@ Rails.application.routes.draw do
   end
   
   resources :users
-  resources :mail_logs
+  resources :mail_logs do
+    collection do
+      get :refresh
+    end
+  end
+  match 'notifications', to: 'mail_logs#index', via: :get
   resources :tools
   resources :wiki_pages
   match 'wiki', to: 'wiki_pages#index', via: :get
