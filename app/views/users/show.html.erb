@@ -19,6 +19,13 @@
       <p class="mb-4">
         <b><%= @user.email %></b>
       </p>
+
+      <% if @user.memo %>
+        <p class="mb-4">
+          <strong class="block text-slate-400 mb-1">Mémo</strong>
+          <%= @user.memo %>
+        </p>
+      <% end %>
     </div>
 
     <% if @user.agent? %>
