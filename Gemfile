@@ -123,3 +123,5 @@ gem "prawn-qrcode", "~> 0.5.2"
 gem "pg_search", "~> 2.3"
 
 gem "twilio-ruby", "~> 7.4"
+
+gem "discard", "~> 1.4"

@@ -5,6 +5,7 @@ class WikiPage < ApplicationRecord
   has_rich_text :contenu
   
   include PgSearch::Model
+  include Discard::Model
   
   pg_search_scope :search_titre_and_contenu,
                   against: :titre,
@@ -17,13 +18,13 @@ class WikiPage < ApplicationRecord
                   
   has_one :rich_text_content, -> { where(name: "contenu") }, class_name: "ActionText::RichText", as: :record
 
-
-
   enum catégorie: {
     blog: 0,
     guide: 1,
     fiches: 2
   }
+
+  default_scope -> { kept } # Sans les discarded
 
   def should_generate_new_friendly_id?
     titre_changed? || super

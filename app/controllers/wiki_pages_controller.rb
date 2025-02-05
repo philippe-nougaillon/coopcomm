@@ -45,7 +45,7 @@ class WikiPagesController < ApplicationController
 
     respond_to do |format|
       if @wiki_page.save
-        format.html { redirect_to wiki_page_url(@wiki_page), notice: "Wiki page was successfully created." }
+        format.html { redirect_to wiki_page_url(@wiki_page), notice: "Page wiki créée avec succès." }
         format.json { render :show, status: :created, location: @wiki_page }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -58,7 +58,7 @@ class WikiPagesController < ApplicationController
   def update
     respond_to do |format|
       if @wiki_page.update(wiki_page_params)
-        format.html { redirect_to wiki_page_url(@wiki_page), notice: "Wiki page was successfully updated." }
+        format.html { redirect_to wiki_page_url(@wiki_page), notice: "Page wiki modifiée avec succès." }
         format.json { render :show, status: :ok, location: @wiki_page }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -69,10 +69,10 @@ class WikiPagesController < ApplicationController
 
   # DELETE /wiki_pages/1 or /wiki_pages/1.json
   def destroy
-    @wiki_page.destroy!
+    @wiki_page.discard
 
     respond_to do |format|
-      format.html { redirect_to wiki_pages_url, notice: "Wiki page was successfully destroyed." }
+      format.html { redirect_to wiki_pages_url, notice: "Page wiki supprimée avec succès." }
       format.json { head :no_content }
     end
   end
