@@ -125,5 +125,3 @@ gem "pg_search", "~> 2.3"
 gem "twilio-ruby", "~> 7.4"
 
 gem "discard", "~> 1.4"
-
-gem "rack-cors", "~> 2.0"

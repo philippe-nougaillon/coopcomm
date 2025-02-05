@@ -35,13 +35,5 @@ module COOPCOM
     # You might want to implement some kind of authentication for this in your app. 
     # To make this easier, you can specify a different controller as the base class
     config.mission_control.jobs.base_controller_class = "MissionControlAdminController"
-
-    # RackCors conf 
-    config.middleware.insert_before 0, Rack::Cors do
-      allow do
-        origins '*'
-        resource '*', headers: :any, methods: [:get]
-      end
-    end
   end
 end
