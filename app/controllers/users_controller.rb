@@ -4,7 +4,7 @@ class UsersController < ApplicationController
 
   # GET /users or /users.json
   def index
-    @services = User.services
+    @services = User.services.sort
     @users = current_user.organisation.users.ordered
 
     if params[:search].present?

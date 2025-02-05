@@ -15,7 +15,7 @@
       <div class="flex items-end gap-4">
         <div class="w-full md:w-fit">
           <%= label_tag :rôle %>
-          <%= select_tag :rôle, options_for_select(User.rôles, params[:rôle]), include_blank:true, class: 'select select-bordered select-sm w-full', onchange: 'this.form.submit()' %>    
+          <%= select_tag :rôle, options_for_select(User.rôles.sort_by { |k, _| I18n.transliterate(k) }, params[:rôle]), include_blank:true, class: 'select select-bordered select-sm w-full', onchange: 'this.form.submit()' %>    
         </div>
 
         <div class="w-full md:w-fit">

@@ -51,7 +51,7 @@ class User < ApplicationRecord
     User.services.keys.each do |key|
       h[key.humanize] = users.agent.where(service: key).order(:nom, :prénom).pluck(:nom, :prénom, :id).map { |nom, prénom, id| ["#{nom} #{prénom}", id] }
     end
-    return h
+    return h.sort_by { |k, _| I18n.transliterate(k) }.to_h
   end
 
   def nom_prénom
