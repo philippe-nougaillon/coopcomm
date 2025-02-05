@@ -15,6 +15,10 @@ class Tool < ApplicationRecord
     self.interventions.where("NOW() BETWEEN interventions.début AND interventions.fin").empty?
   end
 
+  def current_intervention
+    self.interventions.where("NOW() BETWEEN interventions.début AND interventions.fin").first
+  end
+
   def self.indisponibles_ids(organisation_id)
     Intervention.where(organisation_id:)
                 .where("NOW() BETWEEN interventions.début AND interventions.fin")

@@ -5,10 +5,23 @@ class ToolsController < ApplicationController
   # GET /tools or /tools.json
   def index
     params[:tool_disponibilite] ||= 'tout'
+    params[:vue] ||= 'liste'
     @tools = current_user.organisation.tools.ordered
 
     if params[:search].present?
       @tools = @tools.where("name ILIKE :search OR description ILIKE :search", {search: "%#{params[:search]}%"})
+    end
+
+    if params[:vue] == 'carte'
+      params[:tool_disponibilite] = 'indisponible'
+      @lng = []
+      @lat = []
+      current_user.organisation.users.where.not(memo: nil).pluck(:memo).uniq.each do |memo|
+        if memo.include?('[')
+          @lng << memo.tr('[]', '').split(',').first
+          @lat << memo.tr('[]', '').split(',').last
+        end
+      end
     end
 
     if params[:tool_disponibilite].present?

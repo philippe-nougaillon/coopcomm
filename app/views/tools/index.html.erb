@@ -7,14 +7,14 @@
     <% end %>
   </div>
 
-    <%= form_tag request.path, method: :get do %>
+  <%= form_tag request.path, method: :get do %>
     <div class="flex flex-wrap items-start gap-4 mt-8">
       <div class="w-full md:w-fit">
         <%= label_tag :search, "Rechercher" %>
         <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-bordered input-sm w-full', placeholder: 'Nom / Description' %>
       </div>
 
-      <div class="sm:w-3/12 px-2">
+      <div class="w-full sm:w-fit px-2">
         <%= label_tag :tool_disponibilite, "Disponibilité" %>
         <br>
         <%= radio_button_tag :tool_disponibilite, "disponible", (params[:tool_disponibilite]=='disponible'), onchange:'this.form.submit()', class: 'radio radio-xs radio-primary' %>    
@@ -24,34 +24,35 @@
         <%= radio_button_tag :tool_disponibilite, "tout", (params[:tool_disponibilite]=='tout'), onchange:'this.form.submit()', class: 'radio radio-xs radio-primary ml-2' %>
         Tout
       </div>
+
+      <div class="sm:w-3/12 px-2">
+        <%= label_tag :vue %>
+        <br>
+        <div class="join">
+          <%= radio_button_tag :vue, "liste", (params[:vue]=='liste'), id: 'radio_button_liste', onchange:'this.form.submit()', class: 'hidden' %>
+          <label class="btn btn-primary text-white <%= 'btn-outline' if params[:vue] != 'liste' %> btn-sm join-item" for="radio_button_liste" title="vue liste">
+            <span class="material-symbols-outlined">
+              view_list
+            </span>
+          </label>
+          <%= radio_button_tag :vue, "carte", (params[:vue]=='carte'), id: 'radio_button_carte', onchange:'this.form.submit()', class: 'hidden' %>
+          <label class="btn btn-primary text-white <%= 'btn-outline' if params[:vue] != 'carte' %> btn-sm join-item" for="radio_button_carte" title="vue carte">
+            <span class="material-symbols-outlined">
+              map
+            </span>
+          </label>
+        </div>
+      </div>
     </div>
   <% end %>
 
   <div class="divider"></div>
 
-  <div class="overflow-x-auto">
-    <table id="tools" class="table table-sm">
-      <thead class="bg-slate-100">
-        <tr>
-          <th>Nom</th>
-          <th>Disponible ?</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <%= render @tools %>
-      </tbody>
-      <tfoot>
-        <tr>
-          <th colspan=5></th>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
-
-  <div class="my-6">
-    <%== pagy_info(@pagy) %>
-    <%== pagy_nav(@pagy) %>
-  </div>
+  <% case params[:vue] %>
+    <% when 'liste' %>
+      <%= render partial: 'view_list' %>
+    <% when 'carte' %>
+      <%= render partial: 'view_map' %>
+  <% end %>
 
 </div>
