@@ -96,18 +96,12 @@
       <% intervention.photos.each do |photo| %>
         <% unless photo.new_record? %>
           <%= form.hidden_field :photos, multiple: true, value: photo.signed_id %>
-          <div>
-            <%= image_tag photo.variant(resize: "100x100") if photo.variable? %>
-            <p><%= photo.filename %></p>
-          </div>
         <% end %>
       <% end %>
 
-      <div class="sm:flex flex-wrap gap-8 my-5 items-end">
-        <div class="flex-1">
-          <%= form.label :photos %>
-          <%= form.file_field :photos, multiple: true, accept: 'image/png,image/gif,image/jpeg', class: 'w-full max-w-md' %>
-        </div>
+      <div class="my-5">
+        <%= form.label :photos %>
+        <%= form.file_field :photos, multiple: true, accept: 'image/png,image/gif,image/jpeg', class: 'w-full max-w-md' %>
       </div>
 
       <% if current_user.manager? || current_user.adhérent? %>
