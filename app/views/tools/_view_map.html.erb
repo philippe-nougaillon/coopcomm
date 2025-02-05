@@ -1,7 +1,7 @@
 <div id='map' style='height: 70vh;'></div>
 
 <script>
-  mapboxgl.accessToken = 'pk.eyJ1IjoicGVkYWNxdWV0IiwiYSI6ImNtNnMxajh6ZDAybXoycXF2Z3ZjN204ZGYifQ.neBnFUls3x-vLMx0Vs5prQ';
+  mapboxgl.accessToken = '<%= ENV['MAPBOX_TOKEN'] %>';
   var map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v11'
