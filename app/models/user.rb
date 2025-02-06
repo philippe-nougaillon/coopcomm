@@ -155,8 +155,6 @@ class User < ApplicationRecord
     # Inverse les variables pour correspondre aux valeurs de google
     if self.memo
       self.memo.gsub(/\[(.*?), (.*?)\]/) { "[#{$2}, #{$1}]" }
-    else
-      [2.2944902701101944, 48.85832427183496]
     end
   end
 
