@@ -153,7 +153,11 @@ class User < ApplicationRecord
 
   def lng_lat
     # Inverse les variables pour correspondre aux valeurs de google
-    self.memo.gsub(/\[(.*?), (.*?)\]/) { "[#{$2}, #{$1}]" }
+    if self.memo
+      self.memo.gsub(/\[(.*?), (.*?)\]/) { "[#{$2}, #{$1}]" }
+    else
+      [2.2944902701101944, 48.85832427183496]
+    end
   end
 
   private
