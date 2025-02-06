@@ -30,7 +30,7 @@
         <% end %>
         <% WikiPage.catégories.each do |catégorie, id| %>
           <%= link_to wiki_path(catégorie: catégorie) do %>
-            <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-base-200 py-3 pl-8 <%= 'bg-base-300 hover:bg-base-300' if params[:catégorie] == catégorie %>">
+            <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-slate-100 py-3 pl-8 <%= 'bg-slate-50 hover:bg-base-300' if params[:catégorie] == catégorie %>">
               <span class="material-symbols-outlined">
                 <% icone_name = case id %>
                   <% when 0 then 'newspaper' %>

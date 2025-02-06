@@ -25,7 +25,7 @@
 
     <div class="my-5">
       <%= form.label :catégorie %>
-      <%= form.select :catégorie, options_for_select(WikiPage.catégories.keys, @wiki_page.catégorie), {required: true, include_blank: true}, class: 'select select-bordered select-sm w-full' %>
+      <%= form.select :catégorie, options_for_select(WikiPage.catégories.keys, @wiki_page.catégorie), {}, class: 'select select-bordered select-sm w-full' %>
     </div>
 
     <div class="my-5">
