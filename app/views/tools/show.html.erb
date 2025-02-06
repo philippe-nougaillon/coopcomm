@@ -2,7 +2,7 @@
   <div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
     <h1 class="text-4xl text-primary font-bold">
       <%= @tool.name %>
-      <% if @tool.disponible? %>
+      <% if @tool.disponible?(DateTime.now) %>
         <span class="material-symbols-outlined text-success">
           check_circle
         </span>
