@@ -10,6 +10,10 @@ class Tool < ApplicationRecord
   validates_uniqueness_of :name, scope: :organisation_id
 
   scope :ordered, -> { order(:name, :description) }
+
+  def self.icons
+    {'Brouette': 'garden_cart', 'Camionette': 'local_shipping', 'Tracteur': 'agriculture', 'Échelle': 'tools_ladder', 'Perçeuse': 'tools_power_drill' }
+  end
   
   def disponible?(quand)
     self.interventions.where(":quand BETWEEN interventions.début AND interventions.fin", quand:).empty?
