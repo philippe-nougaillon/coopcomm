@@ -1,5 +1,14 @@
-<tr class="hover <%= 'text-error font-bold' if intervention.en_cours? %>">
-  <td class="text-xl"><%= link_to intervention.description.humanize, intervention, class: 'font-black text-primary hover:underline' %></td>
+<tr class="hover">
+  <td>
+    <% if intervention.en_cours? %>
+      <span class="material-symbols-outlined text-error">
+        cancel
+      </span>
+    <% end %>
+  </td>
+  <td class="text-xl">
+    <%= link_to intervention.description.humanize, intervention, class: 'font-black text-primary hover:underline' %>
+  </td>
   <td><%= l(intervention.début, format: :long) if intervention.début %></td>
   <td><%= l(intervention.fin, format: :long) if intervention.fin %></td>
   <td><%= intervention.adherent.try(:nom_prénom) %></td>

@@ -20,7 +20,7 @@
       </div>
 
       <div class="w-full sm:w-fit">
-        <%= label_tag :vue %>
+        <%= label_tag :vue, 'Filtre' %>
         <br>
         <%= radio_button_tag :vue, "tout", (params[:vue] == 'tout'), onchange:'this.form.submit()', class: 'radio radio-xs radio-primary' %>
         Tous
