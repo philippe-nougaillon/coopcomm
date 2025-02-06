@@ -3,14 +3,25 @@
     <%= link_to tool.name.humanize, tool, class: 'text-primary hover:underline' %>
   </td>
   <td>
-    <% if tool.disponible? %>
+    <% case params[:vue]%>
+    <% when 'disponible' %>
       <span class="material-symbols-outlined text-success">
         check_circle
       </span>
-    <% else %>
+    <% when 'indisponible' %>
       <span class="material-symbols-outlined text-error">
         cancel
       </span>
+    <% when 'tout' %>
+      <% if tool.disponible?(params[:quand] || DateTime.now) %>
+        <span class="material-symbols-outlined text-success">
+          check_circle
+        </span>
+      <% elsif  %>
+        <span class="material-symbols-outlined text-error">
+          cancel
+        </span>
+      <% end %>
     <% end %>
   </td>
   <td><%= tool.description %></td>

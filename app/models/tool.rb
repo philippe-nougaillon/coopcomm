@@ -11,18 +11,22 @@ class Tool < ApplicationRecord
 
   scope :ordered, -> { order(:name, :description) }
   
-  def disponible?
-    self.interventions.where("NOW() BETWEEN interventions.début AND interventions.fin").empty?
+  def disponible?(quand)
+    self.interventions.where(":quand BETWEEN interventions.début AND interventions.fin", quand:).empty?
   end
 
   def current_intervention
     self.interventions.where("NOW() BETWEEN interventions.début AND interventions.fin").first
   end
 
-  def self.indisponibles_ids(organisation_id)
+  def self.indisponibles_ids(organisation_id, quand)
     Intervention.where(organisation_id:)
-                .where("NOW() BETWEEN interventions.début AND interventions.fin")
+                .where(":quand BETWEEN interventions.début AND interventions.fin", quand:)
                 .pluck(:tool_id)
+  end
+
+  def intervention_at(quand)
+    self.interventions.where(":quand BETWEEN interventions.début AND interventions.fin", quand:).first
   end
 
   private

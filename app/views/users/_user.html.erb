@@ -19,6 +19,7 @@
   </td>
   <td><%= user.service.try(:capitalize) %></td>
   <td><%= user.email %></td>
+  <td><%= truncate(user.memo, length: 20) %></td>
   <td>
     <% if user.agent? %>
       <%= "#{ number_with_precision(user.moyenne, precision: 2, strip_insignificant_zeros: true) } / 5" if user.moyenne %>

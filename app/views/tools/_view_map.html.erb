@@ -6,13 +6,13 @@
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v11'
   });
-
   <% @tools.includes(:interventions).each do |tool| %>
-      var marker = new mapboxgl.Marker({ color: "#FF0000"})
-        .setLngLat(<%= tool.current_intervention.adherent.memo %>)
-        .setPopup(new mapboxgl.Popup({ offset: 25 }) // add popups
-        .setHTML("<a id='pin' href='#<%= tool.slug %>'><p class='font-black text-center text-xl'><%= tool.name %></p><p class='text-lg'><%= tool.description %></p><hr><p class='text-lg'><%= tool.current_intervention.adherent.nom_prénom %></p></a>"))
-        .addTo(map);
+    <% adhérent = tool.intervention_at(params[:quand]).adherent %>
+    var marker = new mapboxgl.Marker({ color: "#FF0000"})
+      .setLngLat(<%= adhérent.lng_lat %>)
+      .setPopup(new mapboxgl.Popup({ offset: 25 }) // add popups
+      .setHTML("<a id='pin' href='#<%= tool.slug %>'><p class='font-black text-center text-xl'><%= tool.name %></p><p class='text-lg'><%= tool.description %></p><hr><p class='text-lg'><%= adhérent.nom_prénom %></p></a>"))
+      .addTo(map);
   <% end %>
 
   map.fitBounds([

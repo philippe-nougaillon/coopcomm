@@ -4,7 +4,7 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ['debut', 'fin', 'pause', 'agents', 'temps']
   connect() {
-    console.log('Hello, Stimulus! TEMPS PASSE', this.element)
+    // console.log('Hello, Stimulus! TEMPS PASSE', this.element)
   }
 
   initialize() {

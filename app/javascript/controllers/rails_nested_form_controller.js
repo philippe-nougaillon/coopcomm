@@ -7,6 +7,6 @@ application.register('nested-form', RailsNestedForm)
 // Connects to data-controller="nested-form"
 export default class extends Controller {
   connect() {
-    console.log('NestedForm controller connected')
+    // console.log('NestedForm controller connected')
   }
 }

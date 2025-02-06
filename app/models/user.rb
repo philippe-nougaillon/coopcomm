@@ -151,6 +151,11 @@ class User < ApplicationRecord
     self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", Date.today).first
   end
 
+  def lng_lat
+    # Inverse les variables pour correspondre aux valeurs de google
+    self.memo.gsub(/\[(.*?), (.*?)\]/) { "[#{$2}, #{$1}]" }
+  end
+
   private
 
   def slug_candidates

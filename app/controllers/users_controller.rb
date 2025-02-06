@@ -34,6 +34,10 @@ class UsersController < ApplicationController
   def show
     @absences = @user.absences.ordered
     @audits = @user.own_and_associated_audits.reorder(id: :desc)
+    if @user.memo && @user.memo.include?('[')
+      @lng = @user.memo.tr('[] ', '').split(',').last
+      @lat = @user.memo.tr('[] ', '').split(',').first
+    end
     @pagy, @audits = pagy(@audits, items: 10)
   end
 
