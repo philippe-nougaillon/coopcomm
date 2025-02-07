@@ -8,9 +8,16 @@
       <%= wiki_page.contenu %>
     </p>
   <% else %>
-    <div class="h-24 overflow-y-hidden"><%= wiki_page.contenu %></div>
+    <div class="max-h-24 overflow-y-hidden"><%= wiki_page.contenu %></div>
     <br>
     <%= link_to 'Lire l\'article', wiki_page, class: 'rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium' %>
+    <% if wiki_page.document.attached? %>
+      <% if wiki_page.document.representable? %>
+        <%= link_to 'Voir le document', wiki_page.document, class: "btn btn-primary" %>
+      <% else %>
+        <%= link_to "Télécharger le document", rails_blob_path(wiki_page.document, disposition: "attachment"), class: "btn btn-primary" %>
+      <% end %>
+    <% end %>
     <hr class="my-6">
   <% end %>
 </div>
