@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_02_06_154908) do
+ActiveRecord::Schema[7.1].define(version: 2025_02_07_082654) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -341,8 +341,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_02_06_154908) do
     t.datetime "updated_at", null: false
     t.boolean "épinglée"
     t.datetime "discarded_at"
+    t.bigint "user_id", null: false
     t.index ["discarded_at"], name: "index_wiki_pages_on_discarded_at"
     t.index ["slug"], name: "index_wiki_pages_on_slug", unique: true
+    t.index ["user_id"], name: "index_wiki_pages_on_user_id"
   end
 
   add_foreign_key "absences", "users"
@@ -364,4 +366,5 @@ ActiveRecord::Schema[7.1].define(version: 2025_02_06_154908) do
   add_foreign_key "taggings", "tags"
   add_foreign_key "tools", "organisations"
   add_foreign_key "users", "organisations"
+  add_foreign_key "wiki_pages", "users"
 end

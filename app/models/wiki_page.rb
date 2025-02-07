@@ -2,7 +2,9 @@ class WikiPage < ApplicationRecord
   extend FriendlyId
   friendly_id :titre, use: :slugged
   
+  belongs_to :user
   has_rich_text :contenu
+  has_one_attached :document
   
   include PgSearch::Model
   include Discard::Model

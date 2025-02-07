@@ -1,7 +1,7 @@
 class WikiPagesController < ApplicationController
   skip_before_action :authenticate_user!, only: %i[ index show ]
-  before_action :is_user_authorized, except: %i[ index show ]
   before_action :set_wiki_page, only: %i[ show edit update destroy ]
+  before_action :is_user_authorized, except: %i[ index show ]
 
   # GET /wiki_pages or /wiki_pages.json
   def index
@@ -42,6 +42,7 @@ class WikiPagesController < ApplicationController
   # POST /wiki_pages or /wiki_pages.json
   def create
     @wiki_page = WikiPage.new(wiki_page_params)
+    @wiki_page.user_id = current_user.id
 
     respond_to do |format|
       if @wiki_page.save
@@ -85,7 +86,7 @@ class WikiPagesController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def wiki_page_params
-      params.require(:wiki_page).permit(:titre, :publiée, :poids, :contenu, :catégorie, :épinglée)
+      params.require(:wiki_page).permit(:titre, :publiée, :poids, :contenu, :catégorie, :épinglée, :document)
     end
 
     def is_user_authorized

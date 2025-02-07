@@ -30,6 +30,6 @@ class WikiPagePolicy < ApplicationPolicy
   end
 
   def destroy?
-    user && user.super_admin?
+    edit? && record.user == user
   end
 end
