@@ -52,7 +52,7 @@ class ToolsController < ApplicationController
 
     respond_to do |format|
       if @tool.save
-        format.html { redirect_to tools_url(@tool), notice: "Outil créé avec succès." }
+        format.html { redirect_to tool_url(@tool), notice: "Outil créé avec succès." }
         format.json { render :show, status: :created, location: @tool }
       else
         format.html { render :new, status: :unprocessable_entity }
