@@ -148,9 +148,17 @@ label#drawer-label div:nth-child(2) {
 
 .flip-card {
   background-color: transparent;
-  width: 300px;
-  height: 300px;
+  width: 100vw;
+  height: 200px;
   perspective: 1000px;
+}
+
+/* Format lg de TailwindCSS */
+@media (min-width: 64rem) {
+  .flip-card {
+    width: 300px;
+    height: 300px;
+  }
 }
 
 .flip-card-inner {

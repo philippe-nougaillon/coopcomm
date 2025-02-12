@@ -1,44 +1,40 @@
 <div class="lg:px-8">
-  <div class="min-h-screen lg:max-h-screen flex flex-col justify-between">
-    <h1 class="text-5xl font-black text-primary mt-4 mb-12">
+  <div class="flex flex-col justify-between">
+    <h1 class="text-4xl lg:text-5xl font-black text-primary mb-4 lg:mb-8">
       COO<span class="underline">P</span>COM
       <div class="divider"></div>
     </h1>
 
-    <div class="flex flex-wrap">
+    <div class="lg:flex lg:flex-wrap">
       <div class="flex-1">
-        <h2 class="text-4xl font-black mb-16">
+        <h2 class="text-3xl lg:text-4xl font-black mb-6 lg:mb-12">
           <span class="underline">P</span>lateforme de mutualisation
           <br> 
           de services communs
         </h2>
 
-        <p class="text-3xl text-secondary mb-12">
+        <h3 class="text-2xl lg:text-3xl text-secondary mb-6 lg:mb-12">
           Gérez facilement la coopération et la mutualisation
-          <br> 
+          <br>
           des services et ressources de votre intercommunalité (EPCI)
-          <br><br>
-          <%= link_to 'En savoir plus...', "#more", class: "text-primary hover:underline" %>
-        </p>
+        </h3>
+
+        <div class="mt-8 flex flex-wrap gap-4 text-xl font-black mb-4 lg:mb-12">
+          <% link_to "En savoir plus", url_for(anchor: 'more'), class: 'btn lg:btn-lg lg:btn-wide btn-primary text-white' %>
+          <%= link_to "S'inscrire", '/users/sign_up', class: 'btn btn-outline lg:btn-lg btn-success hover:!text-white' %>
+          <%= link_to "Se connecter", '/users/sign_in', class: 'btn btn-outline lg:btn-lg lg:btn-wide btn-primary hover:!text-white' %>
+        </div>
       </div>
-      <div class="lg:w-64 hover:animate-pulse">
+      <div class="w-36 lg:w-64 hover:animate-pulse">
         <%= image_tag 'Cooperation.svg', class: 'opacity-15' %>
       </div>
     </div>
-
-    <h3 class="text-xl text-secondary font-black mb-4 lg:mb-20">
-      <div class="mt-8 flex gap-4">
-        <%= link_to "S'inscrire", '/users/sign_up', class: 'btn btn-outline lg:btn-lg btn-success hover:!text-white' %>
-        <%= link_to "Se connecter", '/users/sign_in', class: 'btn btn-outline lg:btn-lg lg:btn-wide btn-primary hover:!text-white' %>
-      </div>
-    </h3>
-
   </div>
 
-  <div id="more" class="mt-12">
-    <h1 class="text-4xl lg:text-5xl text-primary font-black">
+  <div id="more" class="mt-12" style="scroll-snap-align: start;">
+    <h2 class="text-3xl lg:text-4xl text-primary font-black">
       Les bénéfices de la plateforme COOPCOM
-    </h1>
+    </h2>
     <div class="divider mb-12"></div>
     
     <div class="flex flex-wrap gap-4 p-4">
@@ -346,9 +342,9 @@
   </div>
 
   <div class="min-h-screen mt-12">
-    <h1 class="text-4xl lg:text-5xl text-primary font-black">
+    <h2 class="text-3xl lg:text-4xl text-primary font-black">
       Tutoriel vidéo
-    </h1>
+    </h2>
     <div class="divider mb-12"></div>
     <div class="mockup-window bg-base-300 border">
       <div class="bg-base-200 flex justify-center px-4 py-64">En cours de tournage !</div>
@@ -356,9 +352,9 @@
   </div>
 
   <div class="min-h-screen mt-12">
-    <h1 class="text-4xl lg:text-5xl text-primary font-black">
+    <h2 class="text-3xl lg:text-4xl text-primary font-black">
       Wiki
-    </h1>
+    </h2>
     <div class="divider mb-12"></div>
 
     <ul class="list-disc list-inside">
@@ -401,9 +397,9 @@
   </div>
 
   <div class="min-h-screen mt-12">
-    <h1 class="text-4xl lg:text-5xl text-primary font-black">
+    <h2 class="text-3xl lg:text-4xl text-primary font-black">
       En savoir plus
-    </h1>
+    </h2>
     <div class="divider mb-12"></div>
 
     <ul class="list-disc list-inside">
@@ -422,9 +418,9 @@
   </div>
 
   <div class="min-h-screen mt-12">
-    <h1 class="text-4xl lg:text-5xl text-primary font-black">
+    <h2 class="text-3xl lg:text-4xl text-primary font-black">
       Témoignages de nos clients
-    </h1>
+    </h2>
     <div class="divider mb-12"></div>
 
     <div class="chat chat-start">
