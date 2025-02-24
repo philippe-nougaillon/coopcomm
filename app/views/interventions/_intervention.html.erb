@@ -107,7 +107,7 @@
 
             <p class="my-2">
               <strong class="block text-slate-400 mb-1">Fin</strong>
-              <%= l(intervention.fin, format: :long) if intervention.fin%>
+              <%= l(intervention.fin, format: :long) if intervention.fin %>
             </p>
           </div>
 
@@ -120,6 +120,18 @@
             <p class="my-2">
               <strong class="block text-slate-400 mb-1">Pause</strong>
               <%= intervention.temps_de_pause %> h
+            </p>
+          </div>
+
+          <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Début prévu</strong>
+              <%= l(intervention.début_prévue, format: :long) if intervention.début_prévue %>
+            </p>
+
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Fin prévue</strong>
+              <%= l(intervention.fin_prévue, format: :long) if intervention.fin_prévue %>
             </p>
           </div>
         </div>

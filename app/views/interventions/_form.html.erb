@@ -93,23 +93,37 @@
     </div>
 
     <div class="flex flex-wrap gap-5 sm:gap-8">
-      <% intervention.photos.each do |photo| %>
-        <% unless photo.new_record? %>
-          <%= form.hidden_field :photos, multiple: true, value: photo.signed_id %>
-        <% end %>
-      <% end %>
+      <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
+        <div class="w-full min-w-fit flex-1">
+          <%= form.label :début_prévue %>
+          <%= form.datetime_field :début_prévue, class: "input input-bordered input-sm w-full" %>
+        </div>
 
-      <div class="my-5">
-        <%= form.label :photos %>
-        <%= form.file_field :photos, multiple: true, accept: 'image/png,image/gif,image/jpeg', class: 'w-full max-w-md' %>
+        <div class="w-full min-w-fit flex-1">
+          <%= form.label :fin_prévue %>
+          <%= form.datetime_field :fin_prévue, class: "input input-bordered input-sm w-full" %>
+        </div>
       </div>
 
-      <% if current_user.manager? || current_user.adhérent? %>
-        <div class="flex gap-1 items-center mt-4" title="Cocher pour activer le pointage ?">
-          <%= form.check_box :repeter, class: 'checkbox checkbox-sm checkbox-secondary' %>
-          <%= form.label :repeter, "Modèle pour le pointage ?" %>
+      <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
+        <% intervention.photos.each do |photo| %>
+          <% unless photo.new_record? %>
+            <%= form.hidden_field :photos, multiple: true, value: photo.signed_id %>
+          <% end %>
+        <% end %>
+
+        <div>
+          <%= form.label :photos %>
+          <%= form.file_field :photos, multiple: true, accept: 'image/png,image/gif,image/jpeg', class: 'w-full max-w-md' %>
         </div>
-      <% end %>
+
+        <% if current_user.manager? || current_user.adhérent? %>
+          <div class="flex gap-1 items-center mt-4" title="Cocher pour activer le pointage ?">
+            <%= form.check_box :repeter, class: 'checkbox checkbox-sm checkbox-secondary' %>
+            <%= form.label :repeter, "Modèle pour le pointage ?" %>
+          </div>
+        <% end %>
+      </div>
     </div>
 
     <div class="my-5">

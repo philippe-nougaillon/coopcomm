@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_02_21_123534) do
+ActiveRecord::Schema[7.1].define(version: 2025_02_24_100100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -121,6 +121,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_02_21_123534) do
     t.string "slug"
     t.boolean "repeter"
     t.string "template_slug"
+    t.datetime "début_prévue"
+    t.datetime "fin_prévue"
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
     t.index ["organisation_id"], name: "index_interventions_on_organisation_id"
     t.index ["team_id"], name: "index_interventions_on_team_id"
