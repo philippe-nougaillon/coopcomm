@@ -54,8 +54,8 @@
                           data: { 'calc-temps-passe-target': 'agents', action: "change->calc-temps-passe#calc" } %>
         </div>
         <div class="w-full sm:flex-1">
-          <%= form.label :tool_id, "Outil" %>
-          <%= form.select :tool_id, options_from_collection_for_select(@tools, 'id', 'name', intervention.tool_id), {include_blank: true}, class: "slim-select w-full" %>
+          <%= form.label :tool_ids, "Outils" %>
+          <%= form.select :tool_ids, options_from_collection_for_select(@tools, 'id', 'name', intervention.tool_ids), {include_blank: true}, class: "slim-select w-full", multiple: :true %>
         </div>
       </div>
 

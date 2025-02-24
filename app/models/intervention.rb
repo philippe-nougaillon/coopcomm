@@ -13,7 +13,8 @@ class Intervention < ApplicationRecord
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
   has_many :agent_interventions, dependent: :destroy
   has_many :agents, through: :agent_interventions, class_name: 'User'
-  belongs_to :tool, optional: :true
+  has_many :tool_interventions, dependent: :destroy
+  has_many :tools, through: :tool_interventions
 
   has_many_attached :photos
 
@@ -145,32 +146,36 @@ class Intervention < ApplicationRecord
   end
 
   def check_tool_disponibilite
-    if self.tool
-      conflict_ids = self.tool.interventions.where.not(id: self.id).where(
-        " (interventions.début = :debut) OR
-          (interventions.début = :fin) OR
-          (interventions.fin = :debut) OR
-          (interventions.fin = :fin) OR
-          (interventions.début BETWEEN :debut AND :fin) OR
-          (interventions.fin BETWEEN :debut AND :fin) OR
-          (:debut BETWEEN interventions.début AND interventions.fin) OR
-          (:fin BETWEEN interventions.début AND interventions.fin) OR
-          (interventions.début <= :debut AND interventions.fin >= :fin) OR
-          (interventions.début >= :debut AND interventions.fin <= :fin)
-        ",
+    tool_ids = self.tool_ids | tools.map(&:id) # Prend en compte les outils déjà associés + ceux en mémoire
+    return if tool_ids.empty?
+
+    conflict_ids = Intervention.joins(:tools)
+      .where(tools: { id: tool_ids })
+      .where.not(id: self.id)
+      .where(
+        "(interventions.début = :debut) OR
+        (interventions.début = :fin) OR
+        (interventions.fin = :debut) OR
+        (interventions.fin = :fin) OR
+        (interventions.début BETWEEN :debut AND :fin) OR
+        (interventions.fin BETWEEN :debut AND :fin) OR
+        (:debut BETWEEN interventions.début AND interventions.fin) OR
+        (:fin BETWEEN interventions.début AND interventions.fin) OR
+        (interventions.début <= :debut AND interventions.fin >= :fin) OR
+        (interventions.début >= :debut AND interventions.fin <= :fin)",
         debut: self.début, fin: self.fin
       ).pluck(:id).uniq.flatten
 
-      return if conflict_ids.empty?
+    return if conflict_ids.empty?
 
-      conflicting_interventions = Intervention.where(id: conflict_ids)
-      messages = conflicting_interventions.includes(:tool).map do |intervention|
-        "Déjà utilisé par l'intervention '#{intervention.description}' du #{intervention.début ? intervention.début.strftime('%d/%m/%Y %H:%M') : '?'} au #{intervention.fin ? intervention.fin.strftime('%d/%m/%Y %H:%M') : '?'}"
-      end
-      
-      errors.add(:tools, ": Outil indisponible : #{messages.to_sentence}")
+    conflicts = Intervention.where(id: conflict_ids.uniq.flatten)
+    messages = conflicts.includes(:tools).map do |intervention|
+      tools_list = intervention.tools.map(&:name).join(', ')
+      "#{intervention.description} (du #{intervention.début.strftime('%d/%m/%Y %H:%M')} au #{intervention.fin.strftime('%d/%m/%Y %H:%M')}, outils : [#{tools_list}])"
     end
+    errors.add(:interventions, ": Outil(s) indisponible(s) : #{messages.to_sentence}")
   end
+
 
   def qrcode(url)
     RQRCode::QRCode.new(url).as_svg(

@@ -65,7 +65,7 @@ class InterventionsController < ApplicationController
     end
 
     if params[:tool_ids].present?
-      @interventions = @interventions.joins(:tool).where(tool: {id: params[:tool_ids]})
+      @interventions = @interventions.joins(:tool_interventions).where(tool_interventions: {tool_id: params[:tool_ids]})
     end
 
     if params[:tags].present?
@@ -288,7 +288,7 @@ class InterventionsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def intervention_params
-      params.require(:intervention).permit(:organisation_id, :adherent_id, :team_id, :tool_id, :début, :fin, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :repeter, :repeter_lun, :repeter_mar, :repeter_mer, :repeter_jeu, :repeter_ven, :repeter_sam, :repeter_dim, :fin_repeter, photos: [], agent_ids: [])
+      params.require(:intervention).permit(:organisation_id, :adherent_id, :team_id, :début, :fin, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :repeter, :repeter_lun, :repeter_mar, :repeter_mer, :repeter_jeu, :repeter_ven, :repeter_sam, :repeter_dim, :fin_repeter, photos: [], agent_ids: [], tool_ids: [])
     end
 
     def is_user_authorized
