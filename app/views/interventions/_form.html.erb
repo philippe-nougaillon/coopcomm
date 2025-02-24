@@ -55,7 +55,7 @@
         </div>
         <div class="w-full sm:flex-1">
           <%= form.label :tool_ids, "Outils" %>
-          <%= form.select :tool_ids, options_from_collection_for_select(@tools, 'id', 'name', intervention.tool_ids), {include_blank: true}, class: "slim-select w-full", multiple: :true %>
+          <%= form.select :tool_ids, options_from_collection_for_select(@tools, 'id', 'name', intervention.tool_ids.presence || params[:tool_ids]), {include_blank: true}, class: "slim-select w-full", multiple: :true %>
         </div>
       </div>
 

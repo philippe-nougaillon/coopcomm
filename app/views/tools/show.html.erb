@@ -32,7 +32,10 @@
     <%= link_to "Retour", tools_path, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
   </div>
 
-  <h2 class="text-2xl text-secondary mt-8">Utilisations</h2>
+  <h2 class="text-2xl text-secondary mt-8">
+    Utilisations
+    <%= link_to '+', new_intervention_path(tool_ids: @tool.id), class: 'btn btn-sm btn-outline btn-success hover:!text-white' %>
+  </h2>
   <div class="overflow-x-auto mt-4">
     <table class="table table-sm">
       <thead class="bg-slate-100">
