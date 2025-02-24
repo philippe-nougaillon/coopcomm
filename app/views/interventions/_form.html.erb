@@ -17,7 +17,7 @@
     <div class="flex flex-wrap gap-5 sm:gap-8 mb-5">
       <div class="w-full sm:flex-1">
         <%= form.label :description %>
-        <%= form.text_field :description, class: "input input-bordered input-sm w-full", required: :true %>
+        <%= form.text_field :description, class: "input input-bordered input-sm w-full bg-orange-50", required: true %>
       </div>
 
       <% if current_user.manager? %>
