@@ -4,8 +4,9 @@ class ToolsController < ApplicationController
 
   # GET /tools or /tools.json
   def index
-    params[:vue] ||= 'tout'
-    params[:quand] = DateTime.now.strftime("%Y-%m-%dT%H:%M") if params[:quand].blank?
+    params[:vue] ||= 'calendrier'
+    params[:date] = DateTime.now.strftime("%Y-%m-%dT%H:%M") if params[:date].blank?
+    @date = params[:date].to_date
     @tools = current_user.organisation.tools.ordered
 
     if params[:search].present?
@@ -13,12 +14,14 @@ class ToolsController < ApplicationController
     end
 
     case params[:vue]
+    when 'calendrier'
+      @date_fin = @date + 10.day
     when 'disponible'
-      @tools = @tools.where.not(id: Tool.indisponibles_ids(current_user.organisation_id, params[:quand]))
+      @tools = @tools.where.not(id: Tool.indisponibles_ids(current_user.organisation_id, params[:date]))
     when 'indisponible'
-      @tools = @tools.where(id: Tool.indisponibles_ids(current_user.organisation_id, params[:quand]))
+      @tools = @tools.where(id: Tool.indisponibles_ids(current_user.organisation_id, params[:date]))
     when 'indisponible_carte'
-      @tools = @tools.where(id: Tool.indisponibles_ids(current_user.organisation_id, params[:quand]))
+      @tools = @tools.where(id: Tool.indisponibles_ids(current_user.organisation_id, params[:date]))
       @lng = []
       @lat = []
       current_user.organisation.users.where.not(memo: nil).pluck(:memo).uniq.each do |memo|

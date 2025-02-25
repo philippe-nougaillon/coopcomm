@@ -4,7 +4,15 @@
       <tr>
         <th></th>
         <th>Nom</th>
-        <th>Disponible ?</th>
+        <% if params[:vue] == 'calendrier' %>
+          <% (@date..@date_fin).each do |date| %>
+            <th class="-rotate-45 h-12 pb-8">
+              <%= l(date, format: :calendar).humanize %>
+            </th>
+          <% end %>
+        <% else %>
+          <th>Disponible ?</th>
+        <% end %>
         <th>Description</th>
       </tr>
     </thead>

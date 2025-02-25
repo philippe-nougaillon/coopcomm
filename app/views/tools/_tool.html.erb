@@ -9,28 +9,46 @@
   <td class="text-2xl font-black text-primary">
     <%= link_to tool.name.humanize, tool, class: 'text-primary hover:underline' %>
   </td>
-  <td>
-    <% case params[:vue]%>
-    <% when 'disponible' %>
+
+  <% case params[:vue]%>
+  <% when 'disponible' %>
+    <td>
       <span class="material-symbols-outlined text-success">
         check_circle
       </span>
-    <% when 'indisponible' %>
+    </td>
+  <% when 'indisponible' %>
+    <td>
       <span class="material-symbols-outlined text-error">
         cancel
       </span>
-    <% when 'tout' %>
-      <% if tool.disponible?(params[:quand] || DateTime.now) %>
-        <span class="material-symbols-outlined text-success">
-          check_circle
-        </span>
-      <% elsif  %>
-        <span class="material-symbols-outlined text-error">
-          cancel
-        </span>
-      <% end %>
+    </td>
+  <% when 'calendrier' %>
+    <% (@date..@date_fin).each do | date | %>
+      <td>
+        <% interventions = tool.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
+      
+        <% color = interventions.where("début_prévue < ?", Time.parse(date.to_s + " 13:00")).any? ? 'red' : 'lightgreen' %>
+        <span style="background-color:<%= color %>;padding-left: 15px;"></span>
+
+        <% color = interventions.where("fin_prévue >= ?", Time.parse(date.to_s + " 13:00")).any? ? 'red' : 'lightgreen' %>
+        <span style="background-color:<%= color %>;padding-left: 15px;"></span>
+      </td>
     <% end %>
-  </td>
+
+    <!--
+    <%# if tool.disponible?(params[:quand] || DateTime.now) %>
+      <span class="material-symbols-outlined text-success">
+        check_circle
+      </span>
+    <%# elsif  %>
+      <span class="material-symbols-outlined text-error">
+        cancel
+      </span>
+    <%# end %>
+    -->
+
+  <% end %>
   <td><%= tool.description %></td>
   <% if false %>
     <td>

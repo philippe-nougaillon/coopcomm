@@ -15,14 +15,14 @@
       </div>
 
       <div class="w-full md:w-fit">
-        <%= label_tag :quand, 'Quand ?' %>
-        <%= datetime_field_tag :quand, params[:quand], include_blank:true, onchange:'this.form.submit()', class: 'input input-bordered input-sm w-full', placeholder: 'Nom / Description' %>
+        <%= label_tag :date, 'Date' %>
+        <%= datetime_field_tag :date, params[:date], include_blank:true, onchange:'this.form.submit()', class: 'input input-bordered input-sm w-full', placeholder: 'Nom / Description' %>
       </div>
 
       <div class="w-full sm:w-fit">
         <%= label_tag :vue, 'Filtre' %>
         <br>
-        <%= radio_button_tag :vue, "tout", (params[:vue] == 'tout'), onchange:'this.form.submit()', class: 'radio radio-xs radio-primary' %>
+        <%= radio_button_tag :vue, "calendrier", (params[:vue] == 'calendrier'), onchange:'this.form.submit()', class: 'radio radio-xs radio-primary' %>
         Tous
         <%= radio_button_tag :vue, "disponible", (params[:vue] == 'disponible'), onchange:'this.form.submit()', class: 'radio radio-xs radio-primary ml-2' %>    
         Disponibles
@@ -37,7 +37,7 @@
   <div class="divider"></div>
 
   <% case params[:vue] %>
-    <% when 'disponible', 'indisponible', 'tout' %>
+    <% when 'disponible', 'indisponible', 'calendrier' %>
       <%= render partial: 'view_list' %>
     <% when 'indisponible_carte' %>
       <%= render partial: 'view_map' %>
