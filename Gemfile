@@ -127,3 +127,5 @@ gem "twilio-ruby", "~> 7.4"
 gem "discard", "~> 1.4"
 
 gem "rack-cors", "~> 2.0"
+
+gem "simple_calendar", "~> 3.1"

@@ -36,6 +36,21 @@
     Utilisations
     <%= link_to '+', new_intervention_path(tool_ids: @tool.id), class: 'btn btn-sm btn-outline btn-success hover:!text-white' %>
   </h2>
+
+  <%= month_calendar do |date| %>
+    <p>
+      <%= date.day %>
+    </p>
+    
+    <% interventions = @tool.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
+    
+    <% color = interventions.where("début_prévue < ?", Time.parse(date.to_s + " 13:00")).any? ? 'red' : 'lightgreen' %>
+    <span style="background-color:<%= color %>;padding-left: 15px;"></span>
+
+    <% color = interventions.where("fin_prévue >= ?", Time.parse(date.to_s + " 13:00")).any? ? 'red' : 'lightgreen' %>
+    <span style="background-color:<%= color %>;padding-left: 15px;"></span>
+  <% end %>
+
   <div class="overflow-x-auto mt-4">
     <table class="table table-sm">
       <thead class="bg-slate-100">
