@@ -63,13 +63,13 @@
         <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
           <div class="w-full min-w-fit flex-1">
             <%= form.label :début %>
-            <%= form.datetime_field :début, class: "input input-bordered input-sm w-full",
+            <%= form.datetime_field :début, class: "input input-bordered input-sm w-full", step: 300,
                                     data: { 'calc-temps-passe-target': 'debut', action: "change->calc-temps-passe#calc" } %>
           </div>
 
           <div class="w-full min-w-fit flex-1">
             <%= form.label :fin %>
-            <%= form.datetime_field :fin, class: "input input-bordered input-sm w-full",
+            <%= form.datetime_field :fin, class: "input input-bordered input-sm w-full", step: 300,
                                     data: { 'calc-temps-passe-target': 'fin', action: "change->calc-temps-passe#calc" } %>
           </div>
         </div>
@@ -96,12 +96,30 @@
       <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
         <div class="w-full min-w-fit flex-1">
           <%= form.label :début_prévue %>
-          <%= form.datetime_field :début_prévue, class: "input input-bordered input-sm w-full" %>
+          <div class="flex items-center gap-1">
+            <%= form.date_field :début_prévue, class: "flex-1 input input-bordered input-sm" %>
+            <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, 
+                {selected: @intervention.début_prévue&.hour }, 
+                class: "select select-bordered select-sm w-16" %>
+            :
+            <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
+                {selected: @intervention.début_prévue&.min }, 
+                class: "select select-bordered select-sm w-16" %>
+          </div>
         </div>
 
         <div class="w-full min-w-fit flex-1">
           <%= form.label :fin_prévue %>
-          <%= form.datetime_field :fin_prévue, class: "input input-bordered input-sm w-full" %>
+          <div class="flex items-center gap-1">
+            <%= form.date_field :fin_prévue, value: @intervention.fin_prévue&.to_date, class: "flex-1 input input-bordered input-sm" %>
+            <%= form.select :fin_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, 
+                {selected: @intervention.fin_prévue&.hour }, 
+                class: "select select-bordered select-sm w-16" %>
+            :
+            <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
+                {selected: @intervention.fin_prévue&.min }, 
+                class: "select select-bordered select-sm w-16" %>
+          </div>
         </div>
       </div>
 

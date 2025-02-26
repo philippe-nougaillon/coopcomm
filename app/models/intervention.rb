@@ -8,6 +8,8 @@ class Intervention < ApplicationRecord
 
   audited
 
+  attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute
+
   belongs_to :organisation
   belongs_to :team, class_name: :User, foreign_key: :team_id, optional: true
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
@@ -20,6 +22,8 @@ class Intervention < ApplicationRecord
 
   validates :description, presence: true
 
+  before_validation -> { combine_datetime(:début_prévue) }
+  before_validation -> { combine_datetime(:fin_prévue) }
   before_validation :check_absence
   before_validation :check_tool_disponibilite
 
@@ -146,7 +150,7 @@ class Intervention < ApplicationRecord
   end
 
   def check_tool_disponibilite
-    tool_ids = self.tool_ids | tools.map(&:id) # Prend en compte les outils déjà associés + ceux en mémoire
+    tool_ids = self.tool_ids | tools.map(&:id)
     return if tool_ids.empty?
 
     conflict_ids = Intervention.joins(:tools)
@@ -234,6 +238,15 @@ class Intervention < ApplicationRecord
 
   def slug_candidates
     [SecureRandom.uuid]
+  end
+
+  def combine_datetime(field)
+    datetime = send(field)
+    return if datetime.blank?
+
+    hour = send("#{field}_hour").presence || datetime.hour
+    minute = send("#{field}_minute").presence || datetime.min
+    send("#{field}=", datetime.change(hour: hour.to_i, min: minute.to_i))
   end
 
 end
