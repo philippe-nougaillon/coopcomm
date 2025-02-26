@@ -135,7 +135,7 @@ class Intervention < ApplicationRecord
             (absences.du <= :debut AND absences.au >= :fin) OR
             (absences.du >= :debut AND absences.au <= :fin)
           ",
-          debut: self.début.try(:to_date), fin: self.fin.try(:to_date)
+          debut: self.début_prévue.try(:to_date), fin: self.fin_prévue.try(:to_date)
         ).pluck(:id)
       end.uniq
 
@@ -157,17 +157,17 @@ class Intervention < ApplicationRecord
       .where(tools: { id: tool_ids })
       .where.not(id: self.id)
       .where(
-        "(interventions.début = :debut) OR
-        (interventions.début = :fin) OR
-        (interventions.fin = :debut) OR
-        (interventions.fin = :fin) OR
-        (interventions.début BETWEEN :debut AND :fin) OR
-        (interventions.fin BETWEEN :debut AND :fin) OR
-        (:debut BETWEEN interventions.début AND interventions.fin) OR
-        (:fin BETWEEN interventions.début AND interventions.fin) OR
-        (interventions.début <= :debut AND interventions.fin >= :fin) OR
-        (interventions.début >= :debut AND interventions.fin <= :fin)",
-        debut: self.début, fin: self.fin
+        "(interventions.début_prévue = :debut) OR
+        (interventions.début_prévue = :fin) OR
+        (interventions.fin_prévue = :debut) OR
+        (interventions.fin_prévue = :fin) OR
+        (interventions.début_prévue BETWEEN :debut AND :fin) OR
+        (interventions.fin_prévue BETWEEN :debut AND :fin) OR
+        (:debut BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
+        (:fin BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
+        (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
+        (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)",
+        debut: self.début_prévue, fin: self.fin_prévue
       ).pluck(:id).uniq.flatten
 
     return if conflict_ids.empty?
@@ -175,7 +175,7 @@ class Intervention < ApplicationRecord
     conflicts = Intervention.where(id: conflict_ids.uniq.flatten)
     messages = conflicts.includes(:tools).map do |intervention|
       tools_list = intervention.tools.map(&:name).join(', ')
-      "#{intervention.description} (du #{intervention.début.strftime('%d/%m/%Y %H:%M')} au #{intervention.fin.strftime('%d/%m/%Y %H:%M')}, outils : [#{tools_list}])"
+      "#{intervention.description} (du #{intervention.début_prévue.strftime('%d/%m/%Y %H:%M')} au #{intervention.fin_prévue.strftime('%d/%m/%Y %H:%M')}, outils : [#{tools_list}])"
     end
     errors.add(:interventions, ": Outil(s) indisponible(s) : #{messages.to_sentence}")
   end
