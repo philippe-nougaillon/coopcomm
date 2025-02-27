@@ -6,7 +6,7 @@
         <th>Nom</th>
         <% if params[:vue] == 'calendrier' %>
           <% (@date..@date_fin).each do |date| %>
-            <th class="-rotate-45 h-12 pb-8">
+            <th class="-rotate-45 h-12 px-2 py-6">
               <%= l(date, format: :calendar).humanize %>
             </th>
           <% end %>

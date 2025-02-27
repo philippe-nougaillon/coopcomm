@@ -9,7 +9,7 @@
 }
 
 .day { 
-  height:100px;
+  /* height:100px; */
   width:14.28%;
   border:1px solid lightgrey;
   vertical-align:top;
