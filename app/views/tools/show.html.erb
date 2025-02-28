@@ -50,9 +50,11 @@
   <% case params[:vue] %>
   <% when 'calendrier' %>
     <%= month_calendar do |date| %>
-      <p class="text-center">
-        <%= date.day %>
-      </p>
+      <div class="flex justify-center">
+        <p class="<%= date == Date.today ? 'badge badge-info' : '' %>">
+          <%= date.day %>
+        </p>
+      </div>
       
       <% interventions = @tool.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
       <% interventions_matin = interventions.where("début_prévue < ?", Time.parse(date.to_s + " 13:00")) %>
