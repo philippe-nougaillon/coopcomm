@@ -96,7 +96,7 @@ class ToolsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def tool_params
-      params.require(:tool).permit(:name, :description, :icon_name)
+      params.require(:tool).permit(:name, :description, :icon_name, :modèle, :marque)
     end
 
     def is_user_authorized

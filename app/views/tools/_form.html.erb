@@ -28,5 +28,15 @@
     <%= form.select :icon_name, options_for_select(Tool.icons.sort), {include_blank: true}, class: "input input-bordered input-sm w-full" %>
   </div>
 
+  <div class="w-full">
+    <%= form.label :modèle %>
+    <%= form.text_field :modèle, class: 'input input-bordered input-sm w-full' %>
+  </div>
+
+  <div class="w-full">
+    <%= form.label :marque %>
+    <%= form.text_field :marque, class: 'input input-bordered input-sm w-full' %>
+  </div>
+
   <%= form.submit "Enregistrer", class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer mt-4" %>
 <% end %>

@@ -44,7 +44,7 @@
   <div class="divider"></div>
 
   <% case params[:vue] %>
-    <% when 'disponible', 'indisponible', 'calendrier' %>
+    <% when 'calendrier', 'disponible', 'indisponible' %>
       <%= render partial: 'view_list' %>
     <% when 'indisponible_carte' %>
       <%= render partial: 'view_map' %>
