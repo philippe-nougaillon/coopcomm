@@ -8,9 +8,14 @@ class ToolsController < ApplicationController
     params[:date] = DateTime.now.strftime("%Y-%m-%dT%H:%M") if params[:date].blank?
     @date = params[:date].to_date
     @tools = current_user.organisation.tools.ordered
+    @types = Tool.icons
 
     if params[:search].present?
       @tools = @tools.where("name ILIKE :search OR description ILIKE :search", {search: "%#{params[:search]}%"})
+    end
+
+    if params[:type].present?
+      @tools = @tools.where(icon_name: params[:type])
     end
 
     case params[:vue]
