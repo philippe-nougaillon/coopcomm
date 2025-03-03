@@ -20,16 +20,23 @@
       </div>
 
       <div class="w-full sm:w-fit">
-        <%= label_tag :vue, 'Filtre' %>
+        <%= label_tag :vue %>
         <br>
-        <%= radio_button_tag :vue, "calendrier", (params[:vue] == 'calendrier'), onchange:'this.form.submit()', class: 'radio radio-xs radio-primary' %>
-        Tous
-        <%= radio_button_tag :vue, "disponible", (params[:vue] == 'disponible'), onchange:'this.form.submit()', class: 'radio radio-xs radio-primary ml-2' %>    
-        Disponibles
-        <%= radio_button_tag :vue, "indisponible", (params[:vue] == 'indisponible'), onchange:'this.form.submit()', class: 'radio radio-xs radio-primary ml-2' %>
-        Indisponibles
-        <%= radio_button_tag :vue, "indisponible_carte", (params[:vue] == 'indisponible_carte'), onchange:'this.form.submit()', class: 'radio radio-xs radio-primary ml-2' %>
-        Indisponibles (Carte)
+        <div class="join">
+          <%= radio_button_tag :vue, "calendrier", (params[:vue] == 'calendrier'), name: 'vue', id: 'btnradio1', autocomplete: 'off', onchange: 'this.form.submit()', class: 'hidden' %>
+          <label class="btn btn-primary btn-outline btn-sm join-item <%= 'btn-active !text-white' if params[:vue] == 'calendrier' %>" for="btnradio1" title="Mode calendrier">
+            <span class="material-symbols-outlined">
+              calendar_month
+            </span>
+          </label>
+
+          <%= radio_button_tag :vue, 'indisponible_carte', (params[:vue] == 'indisponible_carte'), name: 'vue', id: 'btnradio2', autocomplete: 'off', onchange: 'this.form.submit()', class: 'hidden' %>
+          <label class="btn btn-primary btn-outline btn-sm join-item <%= 'btn-active !text-white' if params[:vue] == 'indisponible_carte' %>" for="btnradio2" title="Mode carte">
+            <span class="material-symbols-outlined">
+              map
+            </span>
+          </label>
+        </div>
       </div>
     </div>
   <% end %>

@@ -39,6 +39,7 @@
     <% end %>
   <% end %>
 
+  <!--
   <% if policy(MailLog).index? %>
     <%= link_to notifications_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'mail_logs'}", title: "Mail Logs (historique des mails envoyés)" do %>
       <span class="material-symbols-outlined">
@@ -46,9 +47,10 @@
       </span>
     <% end %>
   <% end %>
+  -->
 
   <% if policy(:admin).audits? %>
-    <%= link_to admin_audits_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'audits'}", title: 'Activité (historique des modifications)', 'data-testid': "audit_trail" do %>
+    <%= link_to admin_audits_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if (params[:action] == 'audits') || (params[:controller] == 'mail_logs') }", title: 'Activité (historique des modifications)', 'data-testid': "audit_trail" do %>
       <span class="material-symbols-outlined">
         history
       </span>
