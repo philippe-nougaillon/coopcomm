@@ -36,7 +36,7 @@ class ToolsController < ApplicationController
         end
       end
     end
-
+    @tools = @tools.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
     @pagy, @tools = pagy(@tools, items: 15)
   end
 
@@ -106,5 +106,17 @@ class ToolsController < ApplicationController
 
     def is_user_authorized
       authorize @tool ? @tool : Tool
+    end
+
+    def sortable_columns
+      ['tools.name', 'tools.modèle', 'tools.marque', 'tools.icon_name']
+    end
+
+    def sort_column
+      sortable_columns.include?(params[:column]) ? params[:column] : "tools.name"
+    end
+
+    def sort_direction
+      %w[asc desc].include?(params[:direction]) ? params[:direction] : "asc"
     end
 end
