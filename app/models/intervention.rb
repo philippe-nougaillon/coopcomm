@@ -8,17 +8,22 @@ class Intervention < ApplicationRecord
 
   audited
 
+  attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute
+
   belongs_to :organisation
   belongs_to :team, class_name: :User, foreign_key: :team_id, optional: true
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
   has_many :agent_interventions, dependent: :destroy
   has_many :agents, through: :agent_interventions, class_name: 'User'
-  belongs_to :tool, optional: :true
+  has_many :tool_interventions, dependent: :destroy
+  has_many :tools, through: :tool_interventions
 
   has_many_attached :photos
 
   validates :description, presence: true
 
+  before_validation -> { combine_datetime(:début_prévue) }
+  before_validation -> { combine_datetime(:fin_prévue) }
   before_validation :check_absence
   before_validation :check_tool_disponibilite
 
@@ -130,7 +135,7 @@ class Intervention < ApplicationRecord
             (absences.du <= :debut AND absences.au >= :fin) OR
             (absences.du >= :debut AND absences.au <= :fin)
           ",
-          debut: self.début.try(:to_date), fin: self.fin.try(:to_date)
+          debut: self.début_prévue.try(:to_date), fin: self.fin_prévue.try(:to_date)
         ).pluck(:id)
       end.uniq
 
@@ -145,32 +150,36 @@ class Intervention < ApplicationRecord
   end
 
   def check_tool_disponibilite
-    if self.tool
-      conflict_ids = self.tool.interventions.where.not(id: self.id).where(
-        " (interventions.début = :debut) OR
-          (interventions.début = :fin) OR
-          (interventions.fin = :debut) OR
-          (interventions.fin = :fin) OR
-          (interventions.début BETWEEN :debut AND :fin) OR
-          (interventions.fin BETWEEN :debut AND :fin) OR
-          (:debut BETWEEN interventions.début AND interventions.fin) OR
-          (:fin BETWEEN interventions.début AND interventions.fin) OR
-          (interventions.début <= :debut AND interventions.fin >= :fin) OR
-          (interventions.début >= :debut AND interventions.fin <= :fin)
-        ",
-        debut: self.début, fin: self.fin
+    tool_ids = self.tool_ids | tools.map(&:id)
+    return if tool_ids.empty?
+
+    conflict_ids = Intervention.joins(:tools)
+      .where(tools: { id: tool_ids })
+      .where.not(id: self.id)
+      .where(
+        "(interventions.début_prévue = :debut) OR
+        (interventions.début_prévue = :fin) OR
+        (interventions.fin_prévue = :debut) OR
+        (interventions.fin_prévue = :fin) OR
+        (interventions.début_prévue BETWEEN :debut AND :fin) OR
+        (interventions.fin_prévue BETWEEN :debut AND :fin) OR
+        (:debut BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
+        (:fin BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
+        (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
+        (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)",
+        debut: self.début_prévue, fin: self.fin_prévue
       ).pluck(:id).uniq.flatten
 
-      return if conflict_ids.empty?
+    return if conflict_ids.empty?
 
-      conflicting_interventions = Intervention.where(id: conflict_ids)
-      messages = conflicting_interventions.includes(:tool).map do |intervention|
-        "Déjà utilisé par l'intervention '#{intervention.description}' du #{intervention.début ? intervention.début.strftime('%d/%m/%Y %H:%M') : '?'} au #{intervention.fin ? intervention.fin.strftime('%d/%m/%Y %H:%M') : '?'}"
-      end
-      
-      errors.add(:tools, ": Outil indisponible : #{messages.to_sentence}")
+    conflicts = Intervention.where(id: conflict_ids.uniq.flatten)
+    messages = conflicts.includes(:tools).map do |intervention|
+      tools_list = intervention.tools.map(&:name).join(', ')
+      "#{intervention.description} (du #{intervention.début_prévue.strftime('%d/%m/%Y %H:%M')} au #{intervention.fin_prévue.strftime('%d/%m/%Y %H:%M')}, outils : [#{tools_list}])"
     end
+    errors.add(:interventions, ": Outil(s) indisponible(s) : #{messages.to_sentence}")
   end
+
 
   def qrcode(url)
     RQRCode::QRCode.new(url).as_svg(
@@ -229,6 +238,15 @@ class Intervention < ApplicationRecord
 
   def slug_candidates
     [SecureRandom.uuid]
+  end
+
+  def combine_datetime(field)
+    datetime = send(field)
+    return if datetime.blank?
+
+    hour = send("#{field}_hour").presence || datetime.hour
+    minute = send("#{field}_minute").presence || datetime.min
+    send("#{field}=", datetime.change(hour: hour.to_i, min: minute.to_i))
   end
 
 end

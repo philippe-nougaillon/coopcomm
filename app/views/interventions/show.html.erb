@@ -72,19 +72,33 @@
             </div>
 
             <div>
-              <% @intervention.agents.each_with_index do |agent, index| %>
+              <% if !@intervention.agents.any? %>
                 <p class="my-2">
-                  <strong class="block text-slate-400 mb-1">Agent#<%= index + 1 %></strong>
-                  <b><%= agent.nom_prénom %></b>
+                  <strong class="block text-slate-400 mb-1">Agent</strong>
                 </p>
+              <% else %>
+                <% @intervention.agents.each_with_index do |agent, index| %>
+                  <p class="my-2">
+                    <strong class="block text-slate-400 mb-1">Agent#<%= index + 1 %></strong>
+                    <b><%= agent.nom_prénom %></b>
+                  </p>
+                <% end %>
               <% end %>
             </div>
 
             <div>
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Outil</strong>
-                <b><%= @intervention.tool.try(:name) %></b>
-              </p>
+              <% if !@intervention.tools.any? %>
+                <p class="my-2">
+                  <strong class="block text-slate-400 mb-1">Outil</strong>
+                </p>
+              <% else %>
+                <% @intervention.tools.each_with_index do |tool, index| %>
+                  <p class="my-2">
+                    <strong class="block text-slate-400 mb-1">Outil#<%= index + 1 %></strong>
+                    <b><%= tool.name %></b>
+                  </p>
+                <% end %>
+              <% end %>
             </div>
 
             <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
@@ -108,6 +122,18 @@
               <p class="my-2">
                 <strong class="block text-slate-400 mb-1">Pause</strong>
                 <%= @intervention.temps_de_pause %> h
+              </p>
+            </div>
+
+            <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Début prévu</strong>
+                <%= l(@intervention.début_prévue, format: :long) if @intervention.début_prévue %>
+              </p>
+
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Fin prévue</strong>
+                <%= l(@intervention.fin_prévue, format: :long) if @intervention.fin_prévue %>
               </p>
             </div>
           </div>

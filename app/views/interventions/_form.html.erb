@@ -14,27 +14,75 @@
   <% end %>
 
   <% if params[:terminé].blank? %>
-    <div class="flex flex-wrap gap-5 sm:gap-8 mb-5">
-      <div class="w-full sm:flex-1">
-        <%= form.label :description %>
-        <%= form.text_field :description, class: "input input-bordered input-sm w-full", required: :true %>
+    <div class="bg-sky-100 p-2 rounded border border-sky-300">
+      <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8 mb-5">
+        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
+          <div class="w-full sm:flex-1">
+            <%= form.label :description %>
+            <%= form.text_field :description, class: "input input-bordered input-sm w-full", required: true %>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
+          <% if current_user.manager? %>
+            <div class="w-full sm:flex-1">
+              <%= form.label :tags_manager, "Mots clés", style: "display: block" %>
+              <%= form.select :tags_manager, options_from_collection_for_select(@tags, :name, :name, intervention.tags.map(&:name)), multiple: true, class: 'w-full' %>
+            </div>
+          <% else %>
+            <div class="w-full sm:flex-1">
+              <%= form.label :tags, style: "display: block" %>
+              <%= form.select :tags, options_from_collection_for_select(@tags, :name, :name, intervention.tags.map(&:name)), multiple: true, class: 'w-full' %>
+            </div>
+          <% end %>
+
+          <% if current_user.manager? || current_user.adhérent? %>
+            <div class="flex gap-1 items-center mt-4" title="Cocher pour activer le pointage ?">
+              <%= form.check_box :repeter, class: 'checkbox checkbox-sm checkbox-secondary' %>
+              <%= form.label :repeter, "Modèle pour le pointage ?" %>
+            </div>
+          <% end %>
+        </div>
       </div>
 
-      <% if current_user.manager? %>
-        <div class="w-full sm:flex-1">
-          <%= form.label :tags_manager, "Mots clés", style: "display: block" %>
-          <%= form.select :tags_manager, options_from_collection_for_select(@tags, :name, :name, intervention.tags.map(&:name)), multiple: true, class: 'w-full' %>
+      <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8">
+        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
+          <div class="w-full min-w-fit flex-1">
+            <%= form.label :début_prévue %>
+            <div class="flex items-center gap-1">
+              <%= form.date_field :début_prévue, class: "flex-1 input input-bordered input-sm", value: (params[:début_prévue].try(:to_date) || @intervention.début_prévue) %>
+              <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, 
+                  {selected: params[:début_prévue_hour] || @intervention.début_prévue&.hour }, 
+                  class: "select select-bordered select-sm w-16" %>
+              :
+              <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
+                  {selected: @intervention.début_prévue&.min }, 
+                  class: "select select-bordered select-sm w-16" %>
+            </div>
+          </div>
+
+          <div class="w-full min-w-fit flex-1">
+            <%= form.label :fin_prévue %>
+            <div class="flex items-center gap-1">
+              <%= form.date_field :fin_prévue, value: (params[:début_prévue].try(:to_date) || @intervention.fin_prévue&.to_date), class: "flex-1 input input-bordered input-sm" %>
+              <%= form.select :fin_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, 
+                  {selected: params[:fin_prévue_hour] || @intervention.fin_prévue&.hour }, 
+                  class: "select select-bordered select-sm w-16" %>
+              :
+              <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
+                  {selected: @intervention.fin_prévue&.min }, 
+                  class: "select select-bordered select-sm w-16" %>
+            </div>
+          </div>
         </div>
-      <% else %>
-        <div class="w-full sm:flex-1">
-          <%= form.label :tags, style: "display: block" %>
-          <%= form.select :tags, options_from_collection_for_select(@tags, :name, :name, intervention.tags.map(&:name)), multiple: true, class: 'w-full' %>
+
+        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
         </div>
-      <% end %>
+      </div>
     </div>
 
-    <div data-controller="calc-temps-passe">
-      <div class="flex flex-wrap gap-5 sm:gap-8 my-5">
+    <div data-controller="calc-temps-passe" class="bg-green-100 rounded border border-green-300 py-5 px-2 mt-5">
+      <div class="flex flex-wrap gap-5 sm:gap-8 mb-5">
         <div class="w-full sm:flex-1">
           <%= form.label :adherent_id, "Adhérent" %>
           <%= form.select :adherent_id, options_from_collection_for_select(@organisation_members.adhérent, :id, :nom_prénom, intervention.adherent_id), {include_blank: true}, class: "slim-select w-full" %>
@@ -54,22 +102,22 @@
                           data: { 'calc-temps-passe-target': 'agents', action: "change->calc-temps-passe#calc" } %>
         </div>
         <div class="w-full sm:flex-1">
-          <%= form.label :tool_id, "Outil" %>
-          <%= form.select :tool_id, options_from_collection_for_select(@tools, 'id', 'name', intervention.tool_id), {include_blank: true}, class: "slim-select w-full" %>
+          <%= form.label :tool_ids, "Outils" %>
+          <%= form.select :tool_ids, options_from_collection_for_select(@tools, 'id', 'name', intervention.tool_ids.presence || params[:tool_ids]), {include_blank: true}, class: "slim-select w-full", multiple: :true %>
         </div>
       </div>
 
-      <div class="flex flex-wrap gap-5 sm:gap-8 my-5 items-end">
+      <div class="flex flex-wrap gap-5 sm:gap-8 items-end">
         <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
           <div class="w-full min-w-fit flex-1">
             <%= form.label :début %>
-            <%= form.datetime_field :début, class: "input input-bordered input-sm w-full",
+            <%= form.datetime_field :début, class: "input input-bordered input-sm w-full", step: 300,
                                     data: { 'calc-temps-passe-target': 'debut', action: "change->calc-temps-passe#calc" } %>
           </div>
 
           <div class="w-full min-w-fit flex-1">
             <%= form.label :fin %>
-            <%= form.datetime_field :fin, class: "input input-bordered input-sm w-full",
+            <%= form.datetime_field :fin, class: "input input-bordered input-sm w-full", step: 300,
                                     data: { 'calc-temps-passe-target': 'fin', action: "change->calc-temps-passe#calc" } %>
           </div>
         </div>
@@ -92,24 +140,15 @@
       </div>
     </div>
 
-    <div class="flex flex-wrap gap-5 sm:gap-8">
-      <% intervention.photos.each do |photo| %>
-        <% unless photo.new_record? %>
-          <%= form.hidden_field :photos, multiple: true, value: photo.signed_id %>
-        <% end %>
+    <% intervention.photos.each do |photo| %>
+      <% unless photo.new_record? %>
+        <%= form.hidden_field :photos, multiple: true, value: photo.signed_id %>
       <% end %>
+    <% end %>
 
-      <div class="my-5">
-        <%= form.label :photos %>
-        <%= form.file_field :photos, multiple: true, accept: 'image/png,image/gif,image/jpeg', class: 'w-full max-w-md' %>
-      </div>
-
-      <% if current_user.manager? || current_user.adhérent? %>
-        <div class="flex gap-1 items-center mt-4" title="Cocher pour activer le pointage ?">
-          <%= form.check_box :repeter, class: 'checkbox checkbox-sm checkbox-secondary' %>
-          <%= form.label :repeter, "Modèle pour le pointage ?" %>
-        </div>
-      <% end %>
+    <div class="my-5">
+      <%= form.label :photos %>
+      <%= form.file_field :photos, multiple: true, accept: 'image/png,image/gif,image/jpeg', class: 'w-full max-w-md' %>
     </div>
 
     <div class="my-5">

@@ -88,4 +88,14 @@ module ApplicationHelper
     end
   end
 
+  def sort_link(column, title = nil)
+    title ||= (@model_class ? @model_class.human_attribute_name(column) : column.titleize)
+    direction = column == sort_column && sort_direction == "asc" ? "desc" : "asc"
+    icon = sort_direction == "asc" ? "keyboard_arrow_down" : "keyboard_arrow_up"
+    icon = column == sort_column ? icon : nil
+    link_title = sort_direction == "asc" ? "Tri croissant" : "Tri décroissant"
+
+    link_to "<span>#{h title}</span><span class='material-symbols-outlined text-primary'>#{icon}</span>".html_safe, url_for(request.parameters.merge(column: column, direction: direction)), class: 'flex items-center'
+  end
+
 end

@@ -43,6 +43,7 @@ fr:
       default: "%d/%m/%Y"
       long: "%-d %B %Y"
       short: "%-d %b"
+      calendar: "%a %d"
     month_names:
     -
     - janvier
@@ -206,6 +207,11 @@ fr:
     precision:
       format:
         delimiter: ''
+  simple_calendar:
+    previous: "<<"
+    next: ">>"
+    today: "Aujourd'hui"
+    week: Semaine
   support:
     array:
       last_word_connector: " et "

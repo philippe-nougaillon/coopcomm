@@ -5,7 +5,8 @@ class Tool < ApplicationRecord
   audited
 
   belongs_to :organisation
-  has_many :interventions
+  has_many :tool_interventions, dependent: :destroy
+  has_many :interventions, through: :tool_interventions
 
   validates_uniqueness_of :name, scope: :organisation_id
 
@@ -24,9 +25,10 @@ class Tool < ApplicationRecord
   end
 
   def self.indisponibles_ids(organisation_id, quand)
-    Intervention.where(organisation_id:)
+    Intervention.joins(:tools)
+                .where(organisation_id:)
                 .where(":quand BETWEEN interventions.début AND interventions.fin", quand:)
-                .pluck(:tool_id)
+                .pluck('tools.id')
   end
 
   def intervention_at(quand)

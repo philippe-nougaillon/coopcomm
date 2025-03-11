@@ -2,6 +2,8 @@
 
   <div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
     <h1 class="text-4xl text-primary font-bold">Activité</h1>
+
+    <%= link_to "Notifications", notifications_path, class: "btn btn-primary btn-outline btn-lg rounded hover:!text-white", title: "Mail Logs (historique des mails envoyés)" %>
   </div>
 
   <%= form_tag request.path, method: :get do %>

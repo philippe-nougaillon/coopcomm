@@ -4,21 +4,29 @@ class ToolsController < ApplicationController
 
   # GET /tools or /tools.json
   def index
-    params[:vue] ||= 'tout'
-    params[:quand] = DateTime.now.strftime("%Y-%m-%dT%H:%M") if params[:quand].blank?
+    params[:vue] ||= 'calendrier'
+    params[:date] = DateTime.now.strftime("%Y-%m-%dT%H:%M") if params[:date].blank?
+    @date = params[:date].to_date
     @tools = current_user.organisation.tools.ordered
+    @types = Tool.icons
 
     if params[:search].present?
       @tools = @tools.where("name ILIKE :search OR description ILIKE :search", {search: "%#{params[:search]}%"})
     end
 
+    if params[:type].present?
+      @tools = @tools.where(icon_name: params[:type])
+    end
+
     case params[:vue]
+    when 'calendrier'
+      @date_fin = @date + 10.day
     when 'disponible'
-      @tools = @tools.where.not(id: Tool.indisponibles_ids(current_user.organisation_id, params[:quand]))
+      @tools = @tools.where.not(id: Tool.indisponibles_ids(current_user.organisation_id, params[:date]))
     when 'indisponible'
-      @tools = @tools.where(id: Tool.indisponibles_ids(current_user.organisation_id, params[:quand]))
+      @tools = @tools.where(id: Tool.indisponibles_ids(current_user.organisation_id, params[:date]))
     when 'indisponible_carte'
-      @tools = @tools.where(id: Tool.indisponibles_ids(current_user.organisation_id, params[:quand]))
+      @tools = @tools.where(id: Tool.indisponibles_ids(current_user.organisation_id, params[:date]))
       @lng = []
       @lat = []
       current_user.organisation.users.where.not(memo: nil).pluck(:memo).uniq.each do |memo|
@@ -28,12 +36,13 @@ class ToolsController < ApplicationController
         end
       end
     end
-
+    @tools = @tools.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
     @pagy, @tools = pagy(@tools, items: 15)
   end
 
   # GET /tools/1 or /tools/1.json
   def show
+    params[:vue] ||= 'liste'
   end
 
   # GET /tools/new
@@ -92,10 +101,22 @@ class ToolsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def tool_params
-      params.require(:tool).permit(:name, :description, :icon_name)
+      params.require(:tool).permit(:name, :description, :icon_name, :modèle, :marque)
     end
 
     def is_user_authorized
       authorize @tool ? @tool : Tool
+    end
+
+    def sortable_columns
+      ['tools.name', 'tools.modèle', 'tools.marque', 'tools.icon_name']
+    end
+
+    def sort_column
+      sortable_columns.include?(params[:column]) ? params[:column] : "tools.name"
+    end
+
+    def sort_direction
+      %w[asc desc].include?(params[:direction]) ? params[:direction] : "asc"
     end
 end
