@@ -8,6 +8,8 @@ class Tool < ApplicationRecord
   has_many :tool_interventions, dependent: :destroy
   has_many :interventions, through: :tool_interventions
 
+  has_one_attached :carte_grise
+
   validates_uniqueness_of :name, scope: :organisation_id
 
   scope :ordered, -> { order(:name, :description) }

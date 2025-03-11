@@ -36,6 +36,15 @@
   <div class="w-full">
     <%= form.label :marque %>
     <%= form.text_field :marque, class: 'input input-bordered input-sm w-full' %>
+  </div>  
+
+  <% unless tool.carte_grise.new_record? %>
+    <%= form.hidden_field :carte_grise, value: tool.carte_grise.signed_id %>
+  <% end %>
+
+  <div class="w-full">
+    <%= form.label :carte_grise, 'Carte grise' %>
+    <%= form.file_field :carte_grise, accept: 'image/png,image/gif,image/jpeg', class: 'input input-bordered input-sm w-full' %>
   </div>
 
   <%= form.submit "Enregistrer", class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer mt-4" %>
