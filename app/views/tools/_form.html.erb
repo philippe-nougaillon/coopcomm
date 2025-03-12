@@ -38,6 +38,25 @@
     <%= form.text_field :marque, class: 'input input-bordered input-sm w-full' %>
   </div>  
 
+  <% Document.categories.each_with_index do |category| %>
+    <br>
+    <%= form.fields_for :documents, Document.new, child_index: 'NEW_RECORD' do |document_fields| %>
+      <%= form.text_field :category, value: category, readonly: true, class: 'input input-bordered input-sm w-full'  %>
+      <div class="w-full">
+        <%= form.file_field :document, accept: 'image/png,image/jpeg,.pdf', class: 'input input-bordered input-sm w-full' %>
+      </div>
+      <div class="flex w-full justify-between mb-2">
+        <div class="sm:w-fit px-4">
+          <div class="w-full">
+            <%= form.label :workflow_state, 'Statut' %>
+            <%= form.select :workflow_state, Document.workflow_spec.states.keys.to_a, {}, class: 'input input-bordered input-sm w-full' %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if false %>
   <div class="flex flex-wrap mb-8">
     <div>Documents</div>
     <div data-controller="nested-form" nested-form-wrapper-selector-value=".nested-form-wrapper">
@@ -47,9 +66,7 @@
         <% end %>
       </template>
 
-      <%= form.fields_for :documents do |document_fields| %>
-        <%= render "document_form", form: document_fields %>
-      <% end %>
+      
 
       <div data-nested-form-target="target"></div>
 
@@ -59,6 +76,7 @@
 
     </div>
   </div>
+  <% end %>
 
   <%= form.submit "Enregistrer", class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer mt-4" %>
 <% end %>

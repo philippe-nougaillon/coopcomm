@@ -2,9 +2,17 @@ class Document < ApplicationRecord
   include Workflow
   include WorkflowActiverecord
 
+  audited associated_with: :tool
+
   belongs_to :tool
 
   has_one_attached :fichier
+
+  validates :category, uniqueness: {scope: [:tool_id, :version]}
+
+  before_validation :update_version
+
+
 
   NOUVEAU = 'nouveau'
   VALIDE = 'validé'
@@ -21,5 +29,13 @@ class Document < ApplicationRecord
 
   def style
     self.current_state.meta[:style]
+  end
+
+  def update_version
+    self.version = Document.where(tool_id: self.tool_id, category: self.category).maximum(:version) + 1
+  end
+
+  def self.categories
+    ['carte_grise', 'certificat_assurance']
   end
 end
