@@ -1,0 +1,17 @@
+<div class="nested-form-wrapper flex flex-wrap shadow-lg py-4 mb-4" data-new-record="<%= form.object.new_record? %>">
+  <div class="form-control">
+    <%= form.label :category, 'Type' %>
+    <%= form.select :category, ['Carte grise', 'Certificat d\'assurance'], {}, class: 'select select-bordered select-sm w-full' %>
+  </div>
+  <div class="w-full">
+      <%= form.file_field :document, accept: 'image/png,image/jpeg,.pdf', class: 'input input-bordered input-sm w-full' %>
+    </div>
+  <div class="flex w-full justify-between mb-2">
+    <div class="sm:w-fit px-4">
+      <div class="w-full">
+        <%= form.label :workflow_state %>
+        <%= form.text_field :workflow_state, class: 'input input-bordered input-sm w-full' %>
+      </div>
+    </div>
+  </div>
+</div>

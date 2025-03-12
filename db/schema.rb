@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_03_03_131555) do
+ActiveRecord::Schema[7.1].define(version: 2025_03_12_112252) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -101,6 +101,15 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_03_131555) do
     t.index ["created_at"], name: "index_audits_on_created_at"
     t.index ["request_uuid"], name: "index_audits_on_request_uuid"
     t.index ["user_id", "user_type"], name: "user_index"
+  end
+
+  create_table "documents", force: :cascade do |t|
+    t.string "category"
+    t.string "workflow_state"
+    t.bigint "tool_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tool_id"], name: "index_documents_on_tool_id"
   end
 
   create_table "interventions", force: :cascade do |t|
@@ -363,6 +372,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_03_03_131555) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "agent_interventions", "interventions"
   add_foreign_key "agent_interventions", "users", column: "agent_id"
+  add_foreign_key "documents", "tools"
   add_foreign_key "interventions", "organisations"
   add_foreign_key "interventions", "users", column: "team_id"
   add_foreign_key "mail_logs", "organisations"

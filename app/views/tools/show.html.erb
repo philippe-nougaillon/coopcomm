@@ -28,14 +28,26 @@
       <strong class="block text-slate-400 mb-1">Description</strong>
       <b><%= @tool.description %></b>
     </p>
-    <p class="my-2">
-      <strong class="block text-slate-400 mb-1">Carte grise</strong>
-      <b><%= link_to @tool.carte_grise.filename.base, @tool.carte_grise, class:'text-primary hover:underline', target: "_blank" %></b>
-    </p>
-    <p class="my-2">
-      <strong class="block text-slate-400 mb-1">Certificat d'assurance</strong>
-      <b><%= link_to @tool.certificat_assurance.filename.base, @tool.certificat_assurance, class:'text-primary hover:underline', target: "_blank" %></b>
-    </p>
+  
+  </div>
+
+  <div class="mx-auto w-full">
+    <% if @tool.documents.any? %>
+      <div class="overflow-x-auto">
+        <table class="table table-xs shadow">
+          <thead class="bg-slate-100">
+            <th>Type</th>
+            <th>Fichier</th>
+            <th>État</th>
+            <th>MàJ il y a</th>
+            <th></th>
+          </thead>
+          <tbody>
+            <%= render @tool.documents %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
   </div>
 
 

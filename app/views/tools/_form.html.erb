@@ -38,18 +38,26 @@
     <%= form.text_field :marque, class: 'input input-bordered input-sm w-full' %>
   </div>  
 
-  <% unless tool.carte_grise.new_record? %>
-    <%= form.hidden_field :carte_grise, value: tool.carte_grise.signed_id %>
-  <% end %>
+  <div class="flex flex-wrap mb-8">
+    <div>Documents</div>
+    <div data-controller="nested-form" nested-form-wrapper-selector-value=".nested-form-wrapper">
+      <template data-nested-form-target="template">
+        <%= form.fields_for :documents, Document.new, child_index: 'NEW_RECORD' do |document_fields| %>
+          <%= render "document_form", form: document_fields %>
+        <% end %>
+      </template>
 
-  <div class="w-full">
-    <%= form.label :carte_grise, 'Carte grise' %>
-    <%= form.file_field :carte_grise, accept: 'image/png,image/jpeg,.pdf', class: 'input input-bordered input-sm w-full' %>
-  </div>
+      <%= form.fields_for :documents do |document_fields| %>
+        <%= render "document_form", form: document_fields %>
+      <% end %>
 
-  <div class="w-full">
-    <%= form.label :certificat_assurance, 'Certificat d\'assurance' %>
-    <%= form.file_field :certificat_assurance, accept: 'image/png,image/jpeg,.pdf', class: 'input input-bordered input-sm w-full' %>
+      <div data-nested-form-target="target"></div>
+
+      <button type="button" data-action="nested-form#add" class="btn btn-outline btn-success hover:!text-white btn-sm">
+        Ajouter une option
+      </button>
+
+    </div>
   </div>
 
   <%= form.submit "Enregistrer", class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer mt-4" %>
