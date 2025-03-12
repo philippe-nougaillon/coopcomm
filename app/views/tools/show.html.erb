@@ -29,8 +29,12 @@
       <b><%= @tool.description %></b>
     </p>
     <p class="my-2">
-      <strong class="block text-slate-400 mb-1">Fichier</strong>
+      <strong class="block text-slate-400 mb-1">Carte grise</strong>
       <b><%= link_to @tool.carte_grise.filename.base, @tool.carte_grise, class:'text-primary hover:underline', target: "_blank" %></b>
+    </p>
+    <p class="my-2">
+      <strong class="block text-slate-400 mb-1">Certificat d'assurance</strong>
+      <b><%= link_to @tool.certificat_assurance.filename.base, @tool.certificat_assurance, class:'text-primary hover:underline', target: "_blank" %></b>
     </p>
   </div>
 

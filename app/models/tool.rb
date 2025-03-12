@@ -9,6 +9,7 @@ class Tool < ApplicationRecord
   has_many :interventions, through: :tool_interventions
 
   has_one_attached :carte_grise
+  has_one_attached :certificat_assurance
 
   validates_uniqueness_of :name, scope: :organisation_id
 

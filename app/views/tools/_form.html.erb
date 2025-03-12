@@ -44,7 +44,12 @@
 
   <div class="w-full">
     <%= form.label :carte_grise, 'Carte grise' %>
-    <%= form.file_field :carte_grise, accept: 'image/png,image/gif,image/jpeg', class: 'input input-bordered input-sm w-full' %>
+    <%= form.file_field :carte_grise, accept: 'image/png,image/jpeg,.pdf', class: 'input input-bordered input-sm w-full' %>
+  </div>
+
+  <div class="w-full">
+    <%= form.label :certificat_assurance, 'Certificat d\'assurance' %>
+    <%= form.file_field :certificat_assurance, accept: 'image/png,image/jpeg,.pdf', class: 'input input-bordered input-sm w-full' %>
   </div>
 
   <%= form.submit "Enregistrer", class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer mt-4" %>
