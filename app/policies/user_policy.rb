@@ -32,4 +32,8 @@ class UserPolicy < ApplicationPolicy
   def destroy?
     show?
   end
+
+  def agent_calendrier?
+    user && user.manager?
+  end
 end
