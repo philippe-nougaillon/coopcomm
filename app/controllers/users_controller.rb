@@ -89,6 +89,35 @@ class UsersController < ApplicationController
     end
   end
 
+  def agent_calendrier
+    params[:vue] ||= 'calendrier'
+    params[:date] = Date.today if params[:date].blank?
+    @date = params[:date].to_date
+    @agents = current_user.organisation.users.where(rôle: "agent")
+    @services = User.services.sort
+
+    if params[:search].present?
+      @agents = @agents.where("nom ILIKE :search OR prénom ILIKE :search OR email ILIKE :search", {search: "%#{params[:search]}%"})
+    end
+
+    if params[:service].present?
+      @agents = @agents.where(service: params[:service])
+    end
+
+    if params[:absent].present?
+      agent_ids = []
+      @agents.each do |agent|
+        agent_ids << agent.id if agent.absences.any?
+      end
+      @agents = @agents.where(id: agent_ids)
+    end
+
+    @date_fin = @date + 10.day
+
+    @agents = @agents.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
+    @pagy, @agents = pagy(@agents, items: 15)
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_user
@@ -102,6 +131,18 @@ class UsersController < ApplicationController
 
     def is_user_authorized
       authorize @user ? @user : User
+    end
+
+    def sortable_columns
+      ['users.nom', 'users.service']
+    end
+
+    def sort_column
+      sortable_columns.include?(params[:column]) ? params[:column] : "users.nom"
+    end
+
+    def sort_direction
+      %w[asc desc].include?(params[:direction]) ? params[:direction] : "asc"
     end
 
 end

@@ -147,8 +147,8 @@ class User < ApplicationRecord
     self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", Date.today).any?
   end
 
-  def current_absence
-    self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", Date.today).first
+  def current_absence(date = nil)
+    self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", date || Date.today).first
   end
 
   def lng_lat

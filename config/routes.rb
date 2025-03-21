@@ -18,7 +18,12 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :users
+  resources :users do
+    collection do
+      get :agent_calendrier
+    end
+  end
+
   resources :mail_logs do
     collection do
       get :refresh
