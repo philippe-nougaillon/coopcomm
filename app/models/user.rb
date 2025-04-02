@@ -10,10 +10,10 @@ class User < ApplicationRecord
   devise :database_authenticatable,
          :recoverable,
          :validatable,
-         :trackable,
-         :registerable,
-         :omniauthable,
-         omniauth_providers: [:google_oauth2]
+         :trackable
+        #  :registerable,
+        #  :omniauthable,
+        #  omniauth_providers: [:google_oauth2]
 
   belongs_to :organisation, optional: true
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
@@ -147,8 +147,8 @@ class User < ApplicationRecord
     self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", Date.today).any?
   end
 
-  def current_absence
-    self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", Date.today).first
+  def current_absence(date = nil)
+    self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", date || Date.today).first
   end
 
   def lng_lat

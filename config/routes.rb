@@ -2,22 +2,28 @@ Rails.application.routes.draw do
   # Mount Mission Control Job's engine where you wish to have it accessible
   mount MissionControl::Jobs::Engine, at: "/jobs"
 
-  devise_for :users, controllers: { 
-    registrations: 'users/registrations',
-    omniauth_callbacks: 'users/omniauth_callbacks'
-  }
-  
+  devise_for :users
+  # devise_for :users, controllers: {
+  #   registrations: 'users/registrations',
+  #   omniauth_callbacks: 'users/omniauth_callbacks'
+  # }
+
   devise_scope :user do
     authenticated :user do
       root 'interventions#index', as: :authenticated_root
     end
-    
+
     unauthenticated do
       root 'pages#welcome', as: :unauthenticated_root
     end
   end
-  
-  resources :users
+
+  resources :users do
+    collection do
+      get :agent_calendrier
+    end
+  end
+
   resources :mail_logs do
     collection do
       get :refresh
@@ -28,7 +34,7 @@ Rails.application.routes.draw do
   resources :wiki_pages
   match 'wiki', to: 'wiki_pages#index', via: :get
 
-  # resources :organisations, only: %i[ show edit update ] 
+  # resources :organisations, only: %i[ show edit update ]
 
   resources :interventions do
     member do

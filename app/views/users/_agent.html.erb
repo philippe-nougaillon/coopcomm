@@ -1,0 +1,31 @@
+<tr id="" class="hover">
+  <td class="text-center">
+    <% if agent.avatar %>
+      <span class="material-symbols-outlined text-success">
+        <%= agent.avatar %>
+      </span>
+    <% end %>
+  </td>
+
+  <td class="text-2xl font-black text-primary">
+    <%= link_to agent.nom_prénom, agent, class: 'hover:underline hover:text-base-content' %>
+  </td>
+
+  <td>
+    <%= agent.service %>
+  </td>
+
+  <% (@date..@date_fin).each do | date | %>
+    <td>
+      <% interventions = agent.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
+
+      <% absent = agent.current_absence(date) %>
+
+      <% color = (interventions.where("début_prévue < ?", Time.parse(date.to_s + " 13:00")).any? || absent) ? 'red' : 'lightgreen' %>
+      <span style="background-color:<%= color %>;padding-left: 15px;"></span>
+
+      <% color = (interventions.where("fin_prévue >= ?", Time.parse(date.to_s + " 13:00")).any? || absent) ? 'red' : 'lightgreen' %>
+      <span style="background-color:<%= color %>;padding-left: 15px;"></span>
+    </td>
+  <% end %>
+</tr>

@@ -13,8 +13,16 @@
     <% end %>
   <% end %>
 
+  <% if policy(User).agent_calendrier? %>
+    <%= link_to agent_calendrier_users_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'agent_calendrier'}", title: "Liste des agents" do %>
+      <span class="material-symbols-outlined">
+        group
+      </span>
+    <% end %>
+  <% end %>
+
   <% if policy(User).index? %>
-    <%= link_to users_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'users'}", title: "Liste des utilisateurs" do %>
+    <%= link_to users_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'users' && params[:action] != 'agent_calendrier'}", title: "Liste des utilisateurs" do %>
       <span class="material-symbols-outlined">
         group
       </span>
