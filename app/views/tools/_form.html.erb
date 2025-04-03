@@ -38,44 +38,24 @@
     <%= form.text_field :marque, class: 'input input-bordered input-sm w-full' %>
   </div>  
 
+  <h3>Documents</h3>
   <% Document.categories.each_with_index do |category| %>
-    <br>
-    <%= form.fields_for :documents, Document.new, child_index: 'NEW_RECORD' do |document_fields| %>
-      <%= form.text_field :category, value: category, readonly: true, class: 'input input-bordered input-sm w-full'  %>
+    <%= form.fields_for :documents, @tool.documents.build(category: category) do |document_fields| %>
+      <h4><%= category %><h4>
+      <%= document_fields.hidden_field :category, value: category %>
       <div class="w-full">
-        <%= form.file_field :document, accept: 'image/png,image/jpeg,.pdf', class: 'input input-bordered input-sm w-full' %>
+        <%= document_fields.file_field :fichier, accept: 'image/png,image/jpeg,.pdf', class: 'input input-bordered input-sm w-full' %>
       </div>
       <div class="flex w-full justify-between mb-2">
         <div class="sm:w-fit px-4">
           <div class="w-full">
-            <%= form.label :workflow_state, 'Statut' %>
-            <%= form.select :workflow_state, Document.workflow_spec.states.keys.to_a, {}, class: 'input input-bordered input-sm w-full' %>
+            <%= document_fields.label :workflow_state, 'Statut' %>
+            <%= document_fields.select :workflow_state, Document.workflow_spec.states.keys.to_a, {}, class: 'input input-bordered input-sm w-full' %>
           </div>
         </div>
       </div>
+
     <% end %>
-  <% end %>
-
-  <% if false %>
-  <div class="flex flex-wrap mb-8">
-    <div>Documents</div>
-    <div data-controller="nested-form" nested-form-wrapper-selector-value=".nested-form-wrapper">
-      <template data-nested-form-target="template">
-        <%= form.fields_for :documents, Document.new, child_index: 'NEW_RECORD' do |document_fields| %>
-          <%= render "document_form", form: document_fields %>
-        <% end %>
-      </template>
-
-      
-
-      <div data-nested-form-target="target"></div>
-
-      <button type="button" data-action="nested-form#add" class="btn btn-outline btn-success hover:!text-white btn-sm">
-        Ajouter une option
-      </button>
-
-    </div>
-  </div>
   <% end %>
 
   <%= form.submit "Enregistrer", class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer mt-4" %>

@@ -10,7 +10,8 @@ class Tool < ApplicationRecord
   has_many :documents, dependent: :destroy
   
   accepts_nested_attributes_for :documents,
-                                allow_destroy:true
+                                allow_destroy:true,
+                                reject_if: lambda {|attributes| attributes['fichier'].blank?}
 
   validates_uniqueness_of :name, scope: :organisation_id
   
