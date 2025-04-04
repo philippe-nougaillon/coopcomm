@@ -2,23 +2,28 @@
 
 tonte_locaux:
   organisation: mairie_paris
-  user_id: <%= ActiveRecord::FixtureSet.identify(:électricité) %>
-  agent_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>
+#  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
+#  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
   début: <%= (Date.today + 14).beginning_of_week + 8.hours + 30.minutes %>
   fin: <%= (Date.today + 14).beginning_of_week + 17.hours + 30.minutes %>
   temps_de_pause: 1
   description: Tonte locaux
   workflow_state: Validé
-  commentaires:
+  temps_total: 9
+  commentaires: Bien tondre sur le bord des routes
   note: 4
   avis: Ça s'est très bien passé
+  team: nettoyage
+  repeter: false
   slug: 0286beb9-7249-4a29-96c7-f7fd9196c1dc
+  début_prévue: <%= (Date.today + 14).beginning_of_week + 8.hours + 35.minutes %>
+  fin_prévue: <%= (Date.today + 14).beginning_of_week + 17.hours + 15.minutes %>
 
 nouvelle_intervention:
   organisation: mairie_paris
-  user_id: <%= ActiveRecord::FixtureSet.identify(:électricité) %>
-  agent_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>
+#  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
+#  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
   début: 2024-04-19 8:30:00
   description: Ramasser les feuilles
@@ -27,8 +32,8 @@ nouvelle_intervention:
 
 intervention_terminée:
   organisation: mairie_paris
-  user_id: <%= ActiveRecord::FixtureSet.identify(:électricité) %>
-  agent_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>
+#  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
+#  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
   début: 2024-04-19 8:30:00
   description: Tailler les arbres
@@ -37,8 +42,8 @@ intervention_terminée:
 
 intervention_autre_agent:
   organisation: mairie_paris
-  user_id: <%= ActiveRecord::FixtureSet.identify(:électricité) %>
-  agent_id: <%= ActiveRecord::FixtureSet.identify(:martin) %>
+#  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
+#  agent_id: <%#= ActiveRecord::FixtureSet.identify(:martin) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
   début: 2024-04-19 8:30:00
   description: L'intervetion d'un autre agent
@@ -47,8 +52,8 @@ intervention_autre_agent:
 
 intervention_autre_adhérent:
   organisation: mairie_paris
-  user_id: <%= ActiveRecord::FixtureSet.identify(:électricité) %>
-  agent_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>
+#  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
+#  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:berthout) %>
   début: 2024-04-19 8:30:00
   description: L'intervetion d'un autre adhérent
@@ -58,8 +63,8 @@ intervention_autre_adhérent:
 # Organisation Marseille
 nettoyage_port:
   organisation: mairie_marseille
-  user_id: <%= ActiveRecord::FixtureSet.identify(:nettoyeur_marseille) %>
-  agent_id: <%= ActiveRecord::FixtureSet.identify(:agent_marseille) %>
+#  user_id: <%#= ActiveRecord::FixtureSet.identify(:nettoyeur_marseille) %>
+#  agent_id: <%#= ActiveRecord::FixtureSet.identify(:agent_marseille) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:adherent_marseille) %>
   début: 2024-04-19 8:30:00
   fin: 2024-04-19 17:30:00

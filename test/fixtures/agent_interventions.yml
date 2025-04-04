@@ -1,0 +1,25 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+bond_tonte_locaux:
+  agent: bond
+  intervention: tonte_locaux
+
+bond_nouvelle_intervention:
+  agent: bond
+  intervention: nouvelle_intervention
+
+bond_intervention_terminée:
+  agent: bond
+  intervention: intervention_terminée
+
+martin_intervention_autre_agent:
+  agent: martin
+  intervention: intervention_autre_agent
+
+bond_intervention_autre_adhérent:
+  agent: bond
+  intervention: intervention_autre_adhérent
+
+agent_marseille_nettoyage_port:
+  agent: agent_marseille
+  intervention: nettoyage_port
