@@ -7,8 +7,6 @@ require "capybara/dsl"
 
 module ActiveSupport
   class TestCase
-    include Capybara::DSL
-
     include Devise::Test::IntegrationHelpers
 
     # Run tests in parallel with specified workers
