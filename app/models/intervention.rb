@@ -21,10 +21,12 @@ class Intervention < ApplicationRecord
   has_many_attached :photos
 
   validates :description, presence: true
-
+  
   before_validation -> { combine_datetime(:début_prévue) }
   before_validation -> { combine_datetime(:fin_prévue) }
   before_validation :check_absence
+  
+  validate :tools_must_be_available
 
   before_save :calc_temps_total
 
@@ -156,19 +158,27 @@ class Intervention < ApplicationRecord
         .joins(:tools)
         .where(tools: { id: tool.id })
         .where.not(id: id) # exclut soi-même si mise à jour
-        .where("interventions.début_prévue < :debut AND interventions.fin_prévue > :fin OR
-        (interventions.début_prévue = :debut) OR
-        (interventions.début_prévue = :fin) OR
-        (interventions.fin_prévue = :debut) OR
-        (interventions.fin_prévue = :fin)", 
-        debut: début_prévue, fin: fin_prévue
+        .where(
+          " (interventions.début_prévue = :debut) OR
+            (interventions.début_prévue = :fin) OR
+            (interventions.fin_prévue = :debut) OR
+            (interventions.fin_prévue = :fin) OR
+            (interventions.début_prévue BETWEEN :debut AND :fin) OR
+            (interventions.fin_prévue BETWEEN :debut AND :fin) OR
+            (:debut BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
+            (:fin BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
+            (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
+            (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)
+          ",
+          debut: début_prévue, fin: fin_prévue
         )
+
         
       if conflicting_interventions.exists?
         messages = conflicting_interventions.map do |conflict|
-          "#{tool.name} déjà utilisé pour l’intervention « #{conflict.description} » du #{conflict.début_prévue} au #{conflict.fin_prévue}"
+          " #{tool.name} déjà utilisé pour l’intervention « #{conflict.description} » du #{conflict.début_prévue.strftime('%d/%m/%Y %H:%M')} au #{conflict.fin_prévue.strftime('%d/%m/%Y %H:%M')}"
         end
-        errors.add(:tools, "conflit(s) détecté(s) :\n#{messages.join("\n")}")
+        errors.add("", "Conflit(s) détecté(s) sur un outil :#{messages.to_sentence}")
       end
     end
   end
