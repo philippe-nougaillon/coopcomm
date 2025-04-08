@@ -25,7 +25,6 @@ class Intervention < ApplicationRecord
   before_validation -> { combine_datetime(:début_prévue) }
   before_validation -> { combine_datetime(:fin_prévue) }
   before_validation :check_absence
-  before_validation :check_tool_disponibilite
 
   before_save :calc_temps_total
 
@@ -149,37 +148,30 @@ class Intervention < ApplicationRecord
     end
   end
 
-  def check_tool_disponibilite
-    tool_ids = self.tool_ids | tools.map(&:id)
-    return if tool_ids.empty?
+  def tools_must_be_available
+    return if début_prévue.blank? || fin_prévue.blank?
 
-    conflict_ids = Intervention.joins(:tools)
-      .where(tools: { id: tool_ids })
-      .where.not(id: self.id)
-      .where(
-        "(interventions.début_prévue = :debut) OR
+    tools.each do |tool|
+      conflicting_interventions = Intervention
+        .joins(:tools)
+        .where(tools: { id: tool.id })
+        .where.not(id: id) # exclut soi-même si mise à jour
+        .where("interventions.début_prévue < :debut AND interventions.fin_prévue > :fin OR
+        (interventions.début_prévue = :debut) OR
         (interventions.début_prévue = :fin) OR
         (interventions.fin_prévue = :debut) OR
-        (interventions.fin_prévue = :fin) OR
-        (interventions.début_prévue BETWEEN :debut AND :fin) OR
-        (interventions.fin_prévue BETWEEN :debut AND :fin) OR
-        (:debut BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
-        (:fin BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
-        (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
-        (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)",
-        debut: self.début_prévue, fin: self.fin_prévue
-      ).pluck(:id).uniq.flatten
-
-    return if conflict_ids.empty?
-
-    conflicts = Intervention.where(id: conflict_ids.uniq.flatten)
-    messages = conflicts.includes(:tools).map do |intervention|
-      tools_list = intervention.tools.map(&:name).join(', ')
-      "#{intervention.description} (du #{intervention.début_prévue.strftime('%d/%m/%Y %H:%M')} au #{intervention.fin_prévue.strftime('%d/%m/%Y %H:%M')}, outils : [#{tools_list}])"
+        (interventions.fin_prévue = :fin)", 
+        debut: début_prévue, fin: fin_prévue
+        )
+        
+      if conflicting_interventions.exists?
+        messages = conflicting_interventions.map do |conflict|
+          "#{tool.name} déjà utilisé pour l’intervention « #{conflict.description} » du #{conflict.début_prévue} au #{conflict.fin_prévue}"
+        end
+        errors.add(:tools, "conflit(s) détecté(s) :\n#{messages.join("\n")}")
+      end
     end
-    errors.add(:interventions, ": Outil(s) indisponible(s) : #{messages.to_sentence}")
   end
-
 
   def qrcode(url)
     RQRCode::QRCode.new(url).as_svg(
