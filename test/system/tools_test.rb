@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class ToolsTest < ApplicationSystemTestCase
   setup do
-    @tool = tools(:one)
+    @tool = tools(:tondeuse)
   end
 
   test "visiting the index" do

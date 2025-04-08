@@ -1,9 +1,18 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  tool: one
-  intervention: one
 
-two:
-  tool: two
-  intervention: two
+tondeuse_tonte_locaux:
+  tool: tondeuse
+  intervention: tonte_locaux
+
+rateau_nouvelle_intervention:
+  tool: rateau
+  intervention: nouvelle_intervention
+
+cisaille_intervention_terminée:
+  tool: cisaille
+  intervention: intervention_terminée
+
+camion_nettoyage_port:
+  tool: camion
+  intervention: nettoyage_port

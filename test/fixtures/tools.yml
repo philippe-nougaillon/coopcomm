@@ -1,11 +1,22 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  name: MyString
-  description: MyString
-  organisation: one
+tondeuse:
+  name: Tondeuse
+  description: Roule correctement
+  organisation: mairie_paris
+  icon_name: agriculture
+  modèle: HF 2317 HME
+  marque: Honda
+  slug: e5f67bcb-5902-4b43-a83d-c6a77734582b
 
-two:
-  name: MyString
-  description: MyString
-  organisation: two
+rateau:
+  name: Rateau
+  organisation: mairie_paris
+
+cisaille:
+  name: Cisaille
+  organisation: mairie_paris
+
+camion:
+  name: Camion
+  organisation: mairie_marseille
