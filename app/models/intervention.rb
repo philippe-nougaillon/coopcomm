@@ -27,6 +27,7 @@ class Intervention < ApplicationRecord
   before_validation :check_absence
   
   validate :tools_must_be_available
+  validate :agents_must_be_available
 
   before_save :calc_temps_total
 
@@ -147,6 +148,38 @@ class Intervention < ApplicationRecord
         "#{absence.user.nom_prénom} (du #{absence.du.strftime('%d/%m/%Y')} au #{absence.au.strftime('%d/%m/%Y')}, motif : '#{absence.motif}')"
       end
       errors.add(:interventions, ": Agent(s) indisponible(s) : #{messages.to_sentence}")
+    end
+  end
+
+  def agents_must_be_available
+    return if début_prévue.blank? || fin_prévue.blank?
+
+    agents.each do |agent|
+      conflicting_interventions = Intervention
+        .joins(:agents)
+        .where(agents: { id: agent.id })
+        .where.not(id: id)
+        .where(
+          " (interventions.début_prévue = :debut) OR
+            (interventions.début_prévue = :fin) OR
+            (interventions.fin_prévue = :debut) OR
+            (interventions.fin_prévue = :fin) OR
+            (interventions.début_prévue BETWEEN :debut AND :fin) OR
+            (interventions.fin_prévue BETWEEN :debut AND :fin) OR
+            (:debut BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
+            (:fin BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
+            (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
+            (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)
+          ",
+          debut: self.début_prévue, fin: self.fin_prévue
+        )
+
+      if conflicting_interventions.exists?
+        messages = conflicting_interventions.map do |conflict|
+          " #{agent.nom} déjà utilisé pour l’intervention « #{conflict.description} » du #{conflict.début_prévue.strftime('%d/%m/%Y %H:%M')} au #{conflict.fin_prévue.strftime('%d/%m/%Y %H:%M')}"
+        end
+        errors.add("", "Conflit(s) détecté(s) sur un agent :#{messages.to_sentence}")
+      end
     end
   end
 
