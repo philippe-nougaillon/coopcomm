@@ -6,25 +6,108 @@ class ToolInterventionTest < ActiveSupport::TestCase
     @tool = tools(:tondeuse)
   end
 
-  test "Une intervention ne se créée pas si un outil n'est pas disponible" do
+  test "Intervention créée si l'outil est disponible" do
+    intervention = defaultIntervention
 
-    Intervention.create!(
-      début_prévue: "2025-04-08 10:00",
-      fin_prévue: "2025-04-08 12:00",
-      description: "Maintenance X",
-      organisation:organisations(:mairie_paris),
-      tools: [@tool]
-    )
+    assert intervention.valid?
+  end
 
-    new_intervention = Intervention.new(
-      début_prévue: "2025-04-08 12:00", # juste après, donc interdit
-      fin_prévue: "2025-04-08 14:00",
-      description: "Maintenance Y",
+  test "Intervention non créée si l'outil est occupé à la même heure" do
+    intervention = defaultIntervention
+
+    nouvelle_intervention = tooMuchIntervention(intervention.début_prévue, intervention.fin_prévue)
+
+    assert_not nouvelle_intervention.valid?
+    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un outil"
+  end
+
+  test "Intervention non créée si l'outil commence avant et fini pendant" do
+    intervention = defaultIntervention
+
+    début_prévue_décalé = intervention.début_prévue - 1.hour
+    fin_prévue_décalé = intervention.fin_prévue + 0.hour
+
+    nouvelle_intervention = tooMuchIntervention(début_prévue_décalé, fin_prévue_décalé)
+
+    assert_not nouvelle_intervention.valid?
+    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un outil"
+  end
+
+  test "Intervention non créée si l'outil commence pendant et fini après" do
+    intervention = defaultIntervention
+
+    début_prévue_décalé = intervention.début_prévue + 0.hour
+    fin_prévue_décalé = intervention.fin_prévue + 1.hour
+
+    nouvelle_intervention = tooMuchIntervention(début_prévue_décalé, fin_prévue_décalé)
+
+    assert_not nouvelle_intervention.valid?
+    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un outil"
+  end
+
+  test "Intervention non créée si l'outil commence pendant et fini pendant" do
+    intervention = defaultIntervention
+
+    début_prévue_décalé = intervention.début_prévue + 1.hour
+    fin_prévue_décalé = intervention.fin_prévue - 1.hour
+
+    nouvelle_intervention = tooMuchIntervention(début_prévue_décalé, fin_prévue_décalé)
+
+    assert_not nouvelle_intervention.valid?
+    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un outil"
+  end
+
+  test "Intervention non créée si l'outil commence avant et fini après" do
+    intervention = defaultIntervention
+
+    début_prévue_décalé = intervention.début_prévue - 1.hour
+    fin_prévue_décalé = intervention.fin_prévue + 1.hour
+
+    nouvelle_intervention = tooMuchIntervention(début_prévue_décalé, fin_prévue_décalé)
+
+    assert_not nouvelle_intervention.valid?
+    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un outil"
+  end
+
+  test "Intervention non créée si l'outil fini au début" do
+    intervention = defaultIntervention
+
+    fin_prévue_décalé = intervention.début_prévue
+
+    nouvelle_intervention = tooMuchIntervention(nil, fin_prévue_décalé)
+
+    assert_not nouvelle_intervention.valid?
+    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un outil"
+  end
+
+  test "Intervention non créée si l'outil commence à la fin" do
+    intervention = defaultIntervention
+
+    début_prévue_décalé = intervention.fin_prévue
+
+    nouvelle_intervention = tooMuchIntervention(début_prévue_décalé)
+
+    assert_not nouvelle_intervention.valid?
+    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un outil"
+  end
+
+  def tooMuchIntervention(debut = nil, fin = nil)
+    Intervention.new(
+      début_prévue: debut,
+      fin_prévue: fin,
+      description: "L'intervention de trop",
       organisation: organisations(:mairie_paris),
       tools: [@tool]
     )
+  end
 
-    assert_not new_intervention.valid?
-    assert_includes new_intervention.errors.full_messages[0], "Tondeuse"
+  def defaultIntervention
+    Intervention.create!(
+      début_prévue: "2025-04-08 09:00",
+      fin_prévue: "2025-04-08 12:00",
+      description: "Entretien des locaux",
+      organisation: organisations(:mairie_paris),
+      tools: [@tool]
+    )
   end
 end

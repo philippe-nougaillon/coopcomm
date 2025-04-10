@@ -145,14 +145,14 @@ class Intervention < ApplicationRecord
 
       absences = Absence.where(id: absence_ids.uniq.flatten)
       messages = absences.includes(:user).map do |absence|
-        "#{absence.user.nom_prénom} (du #{absence.du.strftime('%d/%m/%Y')} au #{absence.au.strftime('%d/%m/%Y')}, motif : '#{absence.motif}')"
+        "#{absence.user.nom_prénom} (du #{absence.du&.strftime('%d/%m/%Y')} au #{absence.au&.strftime('%d/%m/%Y')}, motif : '#{absence.motif}')"
       end
       errors.add(:interventions, ": Agent(s) indisponible(s) : #{messages.to_sentence}")
     end
   end
 
   def agents_must_be_available
-    return if début_prévue.blank? || fin_prévue.blank?
+    return if début_prévue.blank? && fin_prévue.blank?
 
     agents.each do |agent|
       conflicting_interventions = Intervention
@@ -171,12 +171,12 @@ class Intervention < ApplicationRecord
             (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
             (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)
           ",
-          debut: self.début_prévue, fin: self.fin_prévue
+          debut: début_prévue, fin: fin_prévue
         )
 
       if conflicting_interventions.exists?
         messages = conflicting_interventions.map do |conflict|
-          " #{agent.nom} déjà utilisé pour l’intervention « #{conflict.description} » du #{conflict.début_prévue.strftime('%d/%m/%Y %H:%M')} au #{conflict.fin_prévue.strftime('%d/%m/%Y %H:%M')}"
+          " #{agent.nom} déjà utilisé pour l’intervention « #{conflict.description} » du #{conflict.début_prévue&.strftime('%d/%m/%Y %H:%M')} au #{conflict.fin_prévue&.strftime('%d/%m/%Y %H:%M')}"
         end
         errors.add("", "Conflit(s) détecté(s) sur un agent :#{messages.to_sentence}")
       end
@@ -184,7 +184,7 @@ class Intervention < ApplicationRecord
   end
 
   def tools_must_be_available
-    return if début_prévue.blank? || fin_prévue.blank?
+    return if début_prévue.blank? && fin_prévue.blank?
 
     tools.each do |tool|
       conflicting_interventions = Intervention
@@ -209,7 +209,7 @@ class Intervention < ApplicationRecord
         
       if conflicting_interventions.exists?
         messages = conflicting_interventions.map do |conflict|
-          " #{tool.name} déjà utilisé pour l’intervention « #{conflict.description} » du #{conflict.début_prévue.strftime('%d/%m/%Y %H:%M')} au #{conflict.fin_prévue.strftime('%d/%m/%Y %H:%M')}"
+          " #{tool.name} déjà utilisé pour l’intervention « #{conflict.description} » du #{conflict.début_prévue&.strftime('%d/%m/%Y %H:%M')} au #{conflict.fin_prévue&.strftime('%d/%m/%Y %H:%M')}"
         end
         errors.add("", "Conflit(s) détecté(s) sur un outil :#{messages.to_sentence}")
       end
