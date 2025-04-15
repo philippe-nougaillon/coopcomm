@@ -17,7 +17,7 @@ class User < ApplicationRecord
 
   belongs_to :organisation, optional: true
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
-  has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention'
+  has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention', dependent: :destroy
   has_many :interventions, through: :agent_interventions
   has_many :notifications, dependent: :destroy
   has_many :absences, dependent: :destroy
