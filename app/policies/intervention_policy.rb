@@ -60,4 +60,8 @@ class InterventionPolicy < ApplicationPolicy
   def purge?
     show?
   end
+
+  def get_unavailable_elements?
+    index?
+  end
 end

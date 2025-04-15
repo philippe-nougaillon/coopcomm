@@ -123,7 +123,6 @@ class Intervention < ApplicationRecord
 
   def check_absence
     if self.agents.any?
-      absence_ids = []
       absence_ids = self.agents.flat_map do |agent|
         agent.absences.where(
           " (absences.du = :debut) OR
@@ -150,6 +149,29 @@ class Intervention < ApplicationRecord
       errors.add(:interventions, ": Agent(s) indisponible(s) : #{messages.to_sentence}")
     end
   end
+
+  # def get_unavailable_agents_with_absence
+  #   return if début_prévue.blank? && fin_prévue.blank?
+  #
+  #   absence_ids = self.agents.flat_map do |agent|
+  #     agent.absences.where(
+  #       " (absences.du = :debut) OR
+  #           (absences.du = :fin) OR
+  #           (absences.au = :debut) OR
+  #           (absences.au = :fin) OR
+  #           (absences.du BETWEEN :debut AND :fin) OR
+  #           (absences.au BETWEEN :debut AND :fin) OR
+  #           (:debut BETWEEN absences.du AND absences.au) OR
+  #           (:fin BETWEEN absences.du AND absences.au) OR
+  #           (absences.du <= :debut AND absences.au >= :fin) OR
+  #           (absences.du >= :debut AND absences.au <= :fin)
+  #         ",
+  #       debut: self.début_prévue.try(:to_date), fin: self.fin_prévue.try(:to_date)
+  #     ).pluck(:id)
+  #   end.uniq
+  #
+  #   absence_ids
+  # end
 
   def agents_must_be_available
     return if début_prévue.blank? && fin_prévue.blank?
@@ -183,6 +205,35 @@ class Intervention < ApplicationRecord
     end
   end
 
+  def self.get_unavailable_agents(agents, début_prévue, fin_prévue)
+    return if début_prévue.blank? && fin_prévue.blank?
+
+    conflicting_interventions = nil
+
+    agents.each do |agent|
+      conflicting_interventions ||= Intervention
+        .joins(:agents)
+        .where(agents: { id: agent.id })
+        .where.not(id: id)
+        .where(
+          " (interventions.début_prévue = :debut) OR
+            (interventions.début_prévue = :fin) OR
+            (interventions.fin_prévue = :debut) OR
+            (interventions.fin_prévue = :fin) OR
+            (interventions.début_prévue BETWEEN :debut AND :fin) OR
+            (interventions.fin_prévue BETWEEN :debut AND :fin) OR
+            (:debut BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
+            (:fin BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
+            (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
+            (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)
+          ",
+          debut: début_prévue, fin: fin_prévue
+        )
+    end
+
+    conflicting_interventions
+  end
+
   def tools_must_be_available
     return if début_prévue.blank? && fin_prévue.blank?
 
@@ -213,6 +264,35 @@ class Intervention < ApplicationRecord
         end
         errors.add("", "Conflit(s) détecté(s) sur un outil :#{messages.to_sentence}")
       end
+    end
+  end
+
+  def get_unavailable_tools
+    return if début_prévue.blank? && fin_prévue.blank?
+
+    conflicting_interventions = nil
+
+    tools.each do |tool|
+      conflicting_interventions ||= Intervention
+        .joins(:tools)
+        .where(tools: { id: tool.id })
+        .where.not(id: id) # exclut soi-même si mise à jour
+        .where(
+          " (interventions.début_prévue = :debut) OR
+            (interventions.début_prévue = :fin) OR
+            (interventions.fin_prévue = :debut) OR
+            (interventions.fin_prévue = :fin) OR
+            (interventions.début_prévue BETWEEN :debut AND :fin) OR
+            (interventions.fin_prévue BETWEEN :debut AND :fin) OR
+            (:debut BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
+            (:fin BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
+            (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
+            (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)
+          ",
+          debut: début_prévue, fin: fin_prévue
+        )
+
+      conflicting_interventions
     end
   end
 

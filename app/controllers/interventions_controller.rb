@@ -307,6 +307,18 @@ class InterventionsController < ApplicationController
   def pointage_statut
   end
 
+  def get_unavailable_elements
+    puts "============================================================> get_unavailable_elements"
+
+    date_debut_prevue = params["date_debut_prevue"]
+    date_fin_prevue = params["date_fin_prevue"]
+
+
+
+    interventions = Intervention.all
+    render json: interventions, status: :ok
+  end
+
   private
 
     def send_workflow_changed_notification
