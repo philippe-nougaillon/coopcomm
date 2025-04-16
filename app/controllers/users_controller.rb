@@ -8,7 +8,7 @@ class UsersController < ApplicationController
     @users = current_user.organisation.users.ordered
 
     if params[:search].present?
-      @users = @users.where("nom ILIKE :search OR prénom ILIKE :search OR email ILIKE :search", {search: "%#{params[:search]}%"})
+      @users = @users.where("nom ILIKE :search OR prénom ILIKE :search", {search: "%#{params[:search]}%"})
     end
 
     if params[:rôle].present?
