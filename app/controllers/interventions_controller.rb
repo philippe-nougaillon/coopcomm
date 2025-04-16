@@ -256,9 +256,6 @@ class InterventionsController < ApplicationController
       if @intervention.can_archiver?
         @intervention.archiver!
         send_workflow_changed_notification
-        if current_user.adhérent?
-          terminé = true
-        end
         redirect_to @intervention, notice: "Intervention archivée"
       elsif @intervention.archivé?
         redirect_to @intervention, alert: "L'intervention est déjà archivée"
@@ -314,7 +311,7 @@ class InterventionsController < ApplicationController
     date_fin_prevue = params["date_fin_prevue"]
 
 
-
+    
     interventions = Intervention.all
     render json: interventions, status: :ok
   end
