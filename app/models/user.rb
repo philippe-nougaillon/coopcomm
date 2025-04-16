@@ -28,14 +28,14 @@ class User < ApplicationRecord
   normalizes :nom,    with: -> nom { nom.upcase.strip }
   normalizes :prénom, with: -> prénom { prénom.humanize.strip }
 
-  enum rôle: {
+  enum :rôle, {
     adhérent: 0,
     agent: 1,
     manager: 2,
     équipe: 3
   }
 
-  enum service: {
+  enum :service, {
     Technique: 0,
     Comptabilité: 1,
     Informatique: 2,

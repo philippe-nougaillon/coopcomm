@@ -20,7 +20,7 @@ class WikiPage < ApplicationRecord
                   
   has_one :rich_text_content, -> { where(name: "contenu") }, class_name: "ActionText::RichText", as: :record
 
-  enum catégorie: {
+  enum :catégorie, {
     blog: 0,
     guide: 1,
     fiches: 2

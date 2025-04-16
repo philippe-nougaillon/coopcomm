@@ -5,7 +5,7 @@ class MailLog < ApplicationRecord
   belongs_to :organisation
   scope :ordered, -> { order('mail_logs.created_at DESC') }
 
-  enum channel: {
+  enum :channel, {
     mail: 0,
     whatsapp: 1,
   }
