@@ -56,7 +56,7 @@
                   class: "select select-bordered select-sm w-16" %>
               :
               <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
-                  {selected: @intervention.début_prévue&.min }, 
+                  {selected: params[:début_prévue_minute] || @intervention.début_prévue&.min }, 
                   class: "select select-bordered select-sm w-16" %>
             </div>
           </div>
@@ -70,7 +70,7 @@
                   class: "select select-bordered select-sm w-16" %>
               :
               <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
-                  {selected: @intervention.fin_prévue&.min }, 
+                  {selected: params[:fin_prévue_minute] ||@intervention.fin_prévue&.min }, 
                   class: "select select-bordered select-sm w-16" %>
             </div>
           </div>
@@ -124,7 +124,7 @@
                   action: "change->calc-temps-passe#calc" } %>
               :
               <%= form.select :début_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
-                  {selected: @intervention.début&.min }, 
+                  {selected: params[:début_minute] ||@intervention.début&.min }, 
                   class: "select select-bordered select-sm w-16",
                   data: { 'calc-temps-passe-target': 'debut_minute',
                   action: "change->calc-temps-passe#calc" } %>
@@ -147,7 +147,7 @@
                   action: "change->calc-temps-passe#calc" } %>
               :
               <%= form.select :fin_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
-                  {selected: @intervention.fin&.min }, 
+                  {selected: params[:fin_minute] || @intervention.fin&.min }, 
                   class: "select select-bordered select-sm w-16",
                   data: { 'calc-temps-passe-target': 'fin_minute',
                   action: "change->calc-temps-passe#calc" } %>
