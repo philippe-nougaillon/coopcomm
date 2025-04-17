@@ -28,6 +28,27 @@
       <strong class="block text-slate-400 mb-1">Description</strong>
       <b><%= @tool.description %></b>
     </p>
+  
+  </div>
+
+  <div class="mx-auto w-full">
+    <% if @tool.documents.any? %>
+      <div class="overflow-x-auto">
+        <table class="table table-xs shadow">
+          <thead class="bg-slate-100">
+            <th>Type</th>
+            <th>Fichier</th>
+            <th>État</th>
+            <th>Version</th>
+            <th>MàJ il y a</th>
+            <th></th>
+          </thead>
+          <tbody>
+            <%= render @tool.documents %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
   </div>
 
 

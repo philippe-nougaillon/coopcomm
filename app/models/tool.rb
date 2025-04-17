@@ -7,11 +7,16 @@ class Tool < ApplicationRecord
   belongs_to :organisation
   has_many :tool_interventions, dependent: :destroy
   has_many :interventions, through: :tool_interventions
+  has_many :documents, dependent: :destroy
+  
+  accepts_nested_attributes_for :documents,
+                                allow_destroy:true,
+                                reject_if: lambda {|attributes| attributes['fichier'].blank?}
 
   validates_uniqueness_of :name, scope: :organisation_id
-
+  
   scope :ordered, -> { order(:name, :description) }
-
+  
   def self.icons
     {'Brouette': 'garden_cart', 'Camionette': 'local_shipping', 'Tracteur': 'agriculture', 'Échelle': 'tools_ladder', 'Perçeuse': 'tools_power_drill' }
   end

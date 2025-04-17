@@ -36,7 +36,27 @@
   <div class="w-full">
     <%= form.label :marque %>
     <%= form.text_field :marque, class: 'input input-bordered input-sm w-full' %>
-  </div>
+  </div>  
+
+  <h3>Documents</h3>
+  <% Document.categories.each_with_index do |category| %>
+    <%= form.fields_for :documents, @tool.documents.build(category: category) do |document_fields| %>
+      <h4><%= category %><h4>
+      <%= document_fields.hidden_field :category, value: category %>
+      <div class="w-full">
+        <%= document_fields.file_field :fichier, accept: 'image/png,image/jpeg,.pdf', class: 'input input-bordered input-sm w-full' %>
+      </div>
+      <div class="flex w-full justify-between mb-2">
+        <div class="sm:w-fit px-4">
+          <div class="w-full">
+            <%= document_fields.label :workflow_state, 'Statut' %>
+            <%= document_fields.select :workflow_state, Document.workflow_spec.states.keys.to_a, {}, class: 'input input-bordered input-sm w-full' %>
+          </div>
+        </div>
+      </div>
+
+    <% end %>
+  <% end %>
 
   <%= form.submit "Enregistrer", class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer mt-4" %>
 <% end %>
