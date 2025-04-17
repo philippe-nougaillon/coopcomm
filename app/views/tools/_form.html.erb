@@ -25,7 +25,7 @@
 
   <div class="w-full">
     <%= form.label :icon_name, "Type" %>
-    <%= form.select :icon_name, options_for_select(Tool.icons.sort), {include_blank: true}, class: "input input-bordered input-sm w-full" %>
+    <%= form.select :icon_name, options_for_select(Tool.icons.sort, @tool.icon_name), {include_blank: true}, class: "input input-bordered input-sm w-full" %>
   </div>
 
   <div class="w-full">

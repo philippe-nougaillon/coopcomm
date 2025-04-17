@@ -14,20 +14,13 @@
   <% end %>
 
   <% if policy(User).agent_calendrier? %>
-    <%= link_to agent_calendrier_users_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'agent_calendrier'}", title: "Liste des agents" do %>
+    <%= link_to agent_calendrier_users_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'agent_calendrier'}", title: "Voir la disponibilité des agents" do %>
       <span class="material-symbols-outlined">
-        group
+        person_apron
       </span>
     <% end %>
   <% end %>
 
-  <% if policy(User).index? %>
-    <%= link_to users_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'users' && params[:action] != 'agent_calendrier'}", title: "Liste des utilisateurs" do %>
-      <span class="material-symbols-outlined">
-        group
-      </span>
-    <% end %>
-  <% end %>
 
   <%= link_to admin_messagerie_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
     <% if current_user.new_notifications? %>
@@ -69,6 +62,14 @@
     <%= link_to dashboard_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'dashboard'}", title: "Tableau de bord", 'data-turbo': false do %>
       <span class="material-symbols-outlined">
         grid_view
+      </span>
+    <% end %>
+  <% end %>
+
+  <% if policy(User).index? %>
+    <%= link_to users_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'users' && params[:action] != 'agent_calendrier'}", title: "Liste des utilisateurs" do %>
+      <span class="material-symbols-outlined">
+        group
       </span>
     <% end %>
   <% end %>

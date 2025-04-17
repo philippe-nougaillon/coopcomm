@@ -17,7 +17,7 @@ class User < ApplicationRecord
 
   belongs_to :organisation, optional: true
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
-  has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention'
+  has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention', dependent: :destroy
   has_many :interventions, through: :agent_interventions
   has_many :notifications, dependent: :destroy
   has_many :absences, dependent: :destroy
@@ -28,14 +28,14 @@ class User < ApplicationRecord
   normalizes :nom,    with: -> nom { nom.upcase.strip }
   normalizes :prénom, with: -> prénom { prénom.humanize.strip }
 
-  enum rôle: {
+  enum :rôle, {
     adhérent: 0,
     agent: 1,
     manager: 2,
     équipe: 3
   }
 
-  enum service: {
+  enum :service, {
     Technique: 0,
     Comptabilité: 1,
     Informatique: 2,
@@ -147,8 +147,8 @@ class User < ApplicationRecord
     self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", Date.today).any?
   end
 
-  def current_absence(date = nil)
-    self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", date || Date.today).first
+  def current_absence(date = Date.today)
+    self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", date).first
   end
 
   def lng_lat

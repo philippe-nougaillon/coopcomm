@@ -123,7 +123,15 @@
         </thead>
 
         <tbody>
-          <%= render partial: 'intervention', collection: @tool.interventions.ordered %>
+          <% if @tool.interventions.any? %>
+            <%= render partial: 'intervention', collection: @tool.interventions.ordered %>
+          <% else %>
+            <tr>
+              <td colspan=6>
+                <i>L'outil n'est pas encore attribué à une intervention </i>
+              </td>
+            </tr>
+          <% end %>
         </tbody>
       </table>
     </div>

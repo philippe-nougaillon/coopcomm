@@ -48,6 +48,10 @@ Rails.application.routes.draw do
       get :pointer
       get :pointage_statut
     end
+
+    collection do
+      get :get_unavailable_elements
+    end
   end
 
   namespace :admin do

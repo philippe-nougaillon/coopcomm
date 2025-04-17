@@ -1,5 +1,5 @@
 class InterventionsController < ApplicationController
-  before_action :set_intervention, only: %i[ show edit update destroy accepter en_cours terminer valider refuser archiver purge pointer pointage_statut ]
+  before_action :set_intervention, only: %i[ show edit update destroy terminer valider refuser archiver purge pointer pointage_statut ]
   before_action :set_form_variables, only: %i[ new edit create update ]
   before_action :is_user_authorized, except: %i[ pointer pointage_statut ]
   skip_before_action :authenticate_user!, only: %i[ pointer pointage_statut ]
@@ -180,47 +180,92 @@ class InterventionsController < ApplicationController
     end
   end
 
-  def accepter
-    @intervention.accepter!
-    # send_workflow_changed_notification
-    redirect_to @intervention, notice: "Intervention acceptée"
-  end
+  # def accepter
+  #   @intervention.accepter!
+  #   # send_workflow_changed_notification
+  #   redirect_to @intervention, notice: "Intervention acceptée"
+  # end
 
-  def en_cours
-    @intervention.en_cours!
-    # send_workflow_changed_notification
-    redirect_to @intervention, notice: "Intervention en cours"
-  end
+  # def en_cours
+  #   @intervention.en_cours!
+  #   # send_workflow_changed_notification
+  #   redirect_to @intervention, notice: "Intervention en cours"
+  # end
 
   def terminer
-    @intervention.terminer!
-    send_workflow_changed_notification
-    send_intervention_termine_notification
-    redirect_to @intervention, notice: "Intervention terminée"
+    if @intervention.valid?
+      if @intervention.can_terminer?
+        @intervention.terminer!
+        send_workflow_changed_notification
+        send_intervention_termine_notification
+        redirect_to @intervention, notice: "Intervention terminée"
+      elsif @intervention.terminé?
+        redirect_to @intervention, alert: "L'intervention est déjà terminée"
+      else
+        redirect_to @intervention, alert: "L'intervention ne peut pas se terminer"
+      end
+    else
+      redirect_to @intervention, alert: "L'intervention n'est pas valide. Elle ne peut pas être terminée"
+    end
   end
 
   def valider
-    @intervention.valider!
-    # send_workflow_changed_notification
-    if current_user.adhérent?
-      terminé = true
+    if @intervention.valid?
+      if @intervention.can_valider?
+        @intervention.valider!
+        send_workflow_changed_notification
+        if current_user.adhérent?
+          terminé = true
+        end
+        redirect_to edit_intervention_path(@intervention, terminé: terminé), notice: "Intervention validée"
+      elsif @intervention.validé?
+        redirect_to @intervention, alert: "L'intervention est déjà validée"
+      else
+        redirect_to @intervention, alert: "L'intervention ne peut pas se valider"
+      end
+    else
+      redirect_to @intervention, alert: "L'intervention n'est pas valide. Elle ne peut pas être validée"
     end
-    redirect_to edit_intervention_path(@intervention, terminé: terminé), notice: "Intervention validée"
+
+    # send_workflow_changed_notification
+    
   end
 
   def refuser
-    @intervention.refuser!
-    # send_workflow_changed_notification
-    if current_user.adhérent?
-      terminé = true
+    if @intervention.valid?
+      if @intervention.can_refuser?
+        @intervention.refuser!
+        send_workflow_changed_notification
+        if current_user.adhérent?
+          terminé = true
+        end
+        redirect_to edit_intervention_path(@intervention, terminé: terminé), notice: "Intervention refusée"
+      elsif @intervention.refusé?
+        redirect_to @intervention, alert: "L'intervention est déjà refusée"
+      else
+        redirect_to @intervention, alert: "L'intervention ne peut pas se refuser"
+      end
+    else
+      redirect_to @intervention, alert: "L'intervention n'est pas valide. Elle ne peut pas être refusée"
     end
-    redirect_to edit_intervention_path(@intervention, terminé: terminé), notice: "Intervention refusée"
+    # send_workflow_changed_notification
   end
 
   def archiver
-    @intervention.archiver!
+    if @intervention.valid?
+      if @intervention.can_archiver?
+        @intervention.archiver!
+        send_workflow_changed_notification
+        redirect_to @intervention, notice: "Intervention archivée"
+      elsif @intervention.archivé?
+        redirect_to @intervention, alert: "L'intervention est déjà archivée"
+      else
+        redirect_to @intervention, alert: "L'intervention ne peut pas se archiver"
+      end
+    else
+      redirect_to @intervention, alert: "L'intervention n'est pas valide. Elle ne peut pas être archivée"
+    end
     # send_workflow_changed_notification
-    redirect_to @intervention, notice: "Intervention archivée"
   end
 
   def purge
@@ -257,6 +302,18 @@ class InterventionsController < ApplicationController
   end
 
   def pointage_statut
+  end
+
+  def get_unavailable_elements
+    puts "============================================================> get_unavailable_elements"
+
+    date_debut_prevue = params["date_debut_prevue"]
+    date_fin_prevue = params["date_fin_prevue"]
+
+
+    
+    interventions = Intervention.all
+    render json: interventions, status: :ok
   end
 
   private

@@ -30,6 +30,15 @@ berthout:
   rôle: adhérent
   slug: 193866f0-bff9-4ec8-978c-c2c77b948f32
 
+nettoyage:
+  organisation: mairie_paris
+  nom: Team
+  prénom: Nettoyage
+  email: nettoyage@gmail.commmmm
+  rôle: équipe
+  slug: 352adeba-4906-44c5-bc28-22339a6f17fe
+
+
 électricité:
   organisation: mairie_paris
   nom: Team

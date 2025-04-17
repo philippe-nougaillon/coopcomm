@@ -2,7 +2,8 @@ require "test_helper"
 
 class ToolsControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @tool = tools(:one)
+    @tool = tools(:tondeuse)
+    sign_in users(:hidalgo)
   end
 
   test "should get index" do
@@ -17,7 +18,17 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
 
   test "should create tool" do
     assert_difference("Tool.count") do
-      post tools_url, params: { tool: { description: @tool.description, name: @tool.name, organisation_id: @tool.organisation_id } }
+      post tools_url, params: {
+        tool: {
+          name: generate_name,
+          description: @tool.description,
+          organisation_id: @tool.organisation_id,
+          icon_name: @tool.icon_name,
+          modèle: @tool.modèle,
+          marque: @tool.marque,
+          slug: @tool.slug
+        }
+      }
     end
 
     assert_redirected_to tool_url(Tool.last)
@@ -34,7 +45,15 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should update tool" do
-    patch tool_url(@tool), params: { tool: { description: @tool.description, name: @tool.name, organisation_id: @tool.organisation_id } }
+    patch tool_url(@tool), params: {
+      tool: {
+        name: generate_name,
+        description: @tool.description,
+        icon_name: @tool.icon_name,
+        modèle: @tool.modèle,
+        marque: @tool.marque
+      }
+    }
     assert_redirected_to tool_url(@tool)
   end
 
@@ -44,5 +63,9 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to tools_url
+  end
+
+  def generate_name
+    "#{@tool.name}-#{SecureRandom.hex(4)}"
   end
 end
