@@ -50,10 +50,7 @@
           <div class="w-full min-w-fit flex-1">
             <%= form.label :début_prévue %>
             <div class="flex items-center gap-1">
-              <%= form.date_field :début_prévue,
-                                  class: "flex-1 input input-bordered input-sm",
-                                  value: (params[:début_prévue].try(:to_date) || @intervention.début_prévue)
-              %>
+              <%= form.date_field :début_prévue, value: (params[:début_prévue].try(:to_date) || @intervention.début_prévue&.to_date), class: "flex-1 input input-bordered input-sm" %>
               <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, 
                   {selected: params[:début_prévue_hour] || @intervention.début_prévue&.hour }, 
                   class: "select select-bordered select-sm w-16" %>
@@ -114,14 +111,47 @@
         <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
           <div class="w-full min-w-fit flex-1">
             <%= form.label :début %>
-            <%= form.datetime_field :début, class: "input input-bordered input-sm w-full", step: 300,
-                                    data: { 'calc-temps-passe-target': 'debut', action: "change->calc-temps-passe#calc" } %>
+            <div class="flex items-center gap-1">
+              <%= form.date_field :début,
+                  class: "flex-1 input input-bordered input-sm",
+                  value: (params[:début].try(:to_date) || @intervention.début&.to_date),
+                  data: { 'calc-temps-passe-target': 'debut_date',
+                  action: "change->calc-temps-passe#calc" } %>
+              <%= form.select :début_hour, (0..23).map { |h| [format('%02d', h), h] }, 
+                  {selected: params[:début_hour] || @intervention.début&.hour }, 
+                  class: "select select-bordered select-sm w-16",
+                  data: { 'calc-temps-passe-target': 'debut_hour',
+                  action: "change->calc-temps-passe#calc" } %>
+              :
+              <%= form.select :début_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
+                  {selected: @intervention.début&.min }, 
+                  class: "select select-bordered select-sm w-16",
+                  data: { 'calc-temps-passe-target': 'debut_minute',
+                  action: "change->calc-temps-passe#calc" } %>
+            </div>
           </div>
 
           <div class="w-full min-w-fit flex-1">
             <%= form.label :fin %>
-            <%= form.datetime_field :fin, class: "input input-bordered input-sm w-full", step: 300,
-                                    data: { 'calc-temps-passe-target': 'fin', action: "change->calc-temps-passe#calc" } %>
+            <div class="flex items-center gap-1">
+              <%= form.date_field :fin,
+                  class: "input input-bordered input-sm w-full",
+                  value: (params[:fin].try(:to_date) || @intervention.fin&.to_date),
+                  data: { 'calc-temps-passe-target': 'fin_date',
+                  action: "change->calc-temps-passe#calc" } %>
+
+              <%= form.select :fin_hour, (0..23).map { |h| [format('%02d', h), h] }, 
+                  {selected: params[:fin_hour] || @intervention.fin&.hour }, 
+                  class: "select select-bordered select-sm w-16",
+                  data: { 'calc-temps-passe-target': 'fin_hour',
+                  action: "change->calc-temps-passe#calc" } %>
+              :
+              <%= form.select :fin_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
+                  {selected: @intervention.fin&.min }, 
+                  class: "select select-bordered select-sm w-16",
+                  data: { 'calc-temps-passe-target': 'fin_minute',
+                  action: "change->calc-temps-passe#calc" } %>
+            </div>
           </div>
         </div>
 

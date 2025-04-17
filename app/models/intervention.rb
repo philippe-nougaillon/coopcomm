@@ -8,7 +8,7 @@ class Intervention < ApplicationRecord
 
   audited
 
-  attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute
+  attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute, :début_hour, :début_minute, :fin_hour, :fin_minute
 
   belongs_to :organisation
   belongs_to :team, class_name: :User, foreign_key: :team_id, optional: true
@@ -24,6 +24,8 @@ class Intervention < ApplicationRecord
   
   before_validation -> { combine_datetime(:début_prévue) }
   before_validation -> { combine_datetime(:fin_prévue) }
+  before_validation -> { combine_datetime(:début) }
+  before_validation -> { combine_datetime(:fin) }
   before_validation :check_absence
   
   validate :tools_must_be_available
