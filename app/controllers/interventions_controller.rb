@@ -112,7 +112,7 @@ class InterventionsController < ApplicationController
   def new
     @intervention = Intervention.new
     @intervention.adherent_id = current_user.id if current_user.adhérent?
-    @intervention.agent_ids = current_user.id if current_user.agent?
+    @intervention.agent_ids = current_user.agent? ? current_user.id : params[:agent_ids]
   end
 
   # GET /interventions/1/edit

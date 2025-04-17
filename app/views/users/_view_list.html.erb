@@ -17,9 +17,7 @@
     </tr>
     </thead>
     <tbody>
-    <% @agents.each do |agent| %>
-      <%= render partial: 'agent', :locals => { :agent => agent } %>
-    <% end %>
+      <%= render partial: 'agent', collection: @agents %>
     </tbody>
   </table>
 </div>
