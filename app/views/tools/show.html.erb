@@ -31,24 +31,33 @@
   
   </div>
 
+  <h2 class="text-2xl text-secondary mt-8 mb-4">
+    Documents
+  </h2>
   <div class="mx-auto w-full">
-    <% if @tool.documents.any? %>
-      <div class="overflow-x-auto">
-        <table class="table table-xs shadow">
-          <thead class="bg-slate-100">
-            <th>Type</th>
-            <th>Fichier</th>
-            <th>État</th>
-            <th>Version</th>
-            <th>MàJ il y a</th>
-            <th></th>
-          </thead>
-          <tbody>
+    <div class="overflow-x-auto">
+      <table class="table table-xs shadow">
+        <thead class="bg-slate-100">
+          <th>Type</th>
+          <th>Fichier</th>
+          <th>État</th>
+          <th>Version</th>
+          <th>MàJ il y a</th>
+          <th></th>
+        </thead>
+        <tbody>
+          <% if @tool.documents.any? %>
             <%= render @tool.documents %>
-          </tbody>
-        </table>
-      </div>
-    <% end %>
+          <% else %>
+            <tr>
+              <td colspan=6>
+                <i>L'outil n'a pas encore de document</i>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
   </div>
 
 
@@ -128,7 +137,7 @@
           <% else %>
             <tr>
               <td colspan=6>
-                <i>L'outil n'est pas encore attribué à une intervention </i>
+                <i>L'outil n'est pas encore attribué à une intervention</i>
               </td>
             </tr>
           <% end %>
