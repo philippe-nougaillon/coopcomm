@@ -207,16 +207,15 @@ class Intervention < ApplicationRecord
     end
   end
 
-  def self.get_unavailable_agents(agents, début_prévue, fin_prévue)
-    return if début_prévue.blank? && fin_prévue.blank?
+  def self.get_unavailable_agents(agent_ids, début_prévue, fin_prévue)
+    conflicting_agents = []
 
-    conflicting_interventions = nil
+    # Pour chaque agent_id, chercher un conflit avec les interventions et les dates
 
-    agents.each do |agent|
-      conflicting_interventions ||= Intervention
-        .joins(:agents)
-        .where(agents: { id: agent.id })
-        .where.not(id: id)
+    agent_ids.each do |agent_id|
+      conflicting_agents += User
+        .joins(:interventions)
+        .where(id: agent_id )
         .where(
           " (interventions.début_prévue = :debut) OR
             (interventions.début_prévue = :fin) OR
@@ -230,10 +229,12 @@ class Intervention < ApplicationRecord
             (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)
           ",
           debut: début_prévue, fin: fin_prévue
-        )
-    end
-
-    conflicting_interventions
+        ).pluck(:id)
+      end
+      
+      
+    # Renvoyer l'id des agents pas disponibles
+    conflicting_agents.uniq
   end
 
   def tools_must_be_available

@@ -304,15 +304,17 @@ class InterventionsController < ApplicationController
   def pointage_statut
   end
 
+  # Récupère les agents en conflit avec les dates passés dans l'URL
   def get_unavailable_elements
-    puts "============================================================> get_unavailable_elements"
+    date_debut_prevue = params["date_debut_prevue"] != "null" ? params["date_debut_prevue"] : nil
+    date_fin_prevue = params["date_fin_prevue"] != "null" ? params["date_fin_prevue"] : nil
+    agentsString = params["agents"]
 
-    date_debut_prevue = params["date_debut_prevue"]
-    date_fin_prevue = params["date_fin_prevue"]
+    # Transforme le string en liste d'agents id
+    agents = agentsString.split(',').map(&:to_i)
 
+    interventions = Intervention.get_unavailable_agents(agents, date_debut_prevue, date_fin_prevue)
 
-    
-    interventions = Intervention.all
     render json: interventions, status: :ok
   end
 

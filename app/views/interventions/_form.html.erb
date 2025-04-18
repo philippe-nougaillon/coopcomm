@@ -50,28 +50,39 @@
           <div class="w-full min-w-fit flex-1">
             <%= form.label :début_prévue %>
             <div class="flex items-center gap-1">
-              <%= form.date_field :début_prévue, value: (params[:début_prévue].try(:to_date) || @intervention.début_prévue&.to_date), class: "flex-1 input input-bordered input-sm" %>
+              <%= form.date_field :début_prévue,
+                                  class: "flex-1 input input-bordered input-sm",
+                                  value: (params[:début_prévue].try(:to_date) || @intervention.début_prévue&.to_date),
+                                  'data-verification-disponibilites-target': "debut_prevue" 
+              %>
               <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, 
                   {selected: params[:début_prévue_hour] || @intervention.début_prévue&.hour }, 
-                  class: "select select-bordered select-sm w-16" %>
+                  class: "select select-bordered select-sm w-16",
+                  'data-verification-disponibilites-target': "debut_prevue_hour"  %>
               :
               <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
                   {selected: params[:début_prévue_minute] || @intervention.début_prévue&.min }, 
-                  class: "select select-bordered select-sm w-16" %>
+                  class: "select select-bordered select-sm w-16",
+                  'data-verification-disponibilites-target': "debut_prevue_minute"  %>
             </div>
           </div>
 
           <div class="w-full min-w-fit flex-1">
             <%= form.label :fin_prévue %>
             <div class="flex items-center gap-1">
-              <%= form.date_field :fin_prévue, value: (params[:début_prévue].try(:to_date) || @intervention.fin_prévue&.to_date), class: "flex-1 input input-bordered input-sm" %>
+              <%= form.date_field :fin_prévue, 
+                  value: (params[:début_prévue].try(:to_date) || @intervention.fin_prévue&.to_date), 
+                  class: "flex-1 input input-bordered input-sm", 
+                  'data-verification-disponibilites-target': "fin_prevue"  %>
               <%= form.select :fin_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, 
                   {selected: params[:fin_prévue_hour] || @intervention.fin_prévue&.hour }, 
-                  class: "select select-bordered select-sm w-16" %>
+                  class: "select select-bordered select-sm w-16",
+                  'data-verification-disponibilites-target': "fin_prevue_hour"  %>
               :
               <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
-                  {selected: params[:fin_prévue_minute] ||@intervention.fin_prévue&.min }, 
-                  class: "select select-bordered select-sm w-16" %>
+                  {selected: params[:fin_prévue_minute] || @intervention.fin_prévue&.min }, 
+                  class: "select select-bordered select-sm w-16",
+                  'data-verification-disponibilites-target': "fin_prevue_minute"  %>
             </div>
           </div>
         </div>
@@ -95,11 +106,16 @@
           </div>
         <% end %>
 
-        <div class="w-full sm:flex-1">
+        <div class="w-full sm:flex-1", data-verification-disponibilites-target = "formAgents" >
           <%= form.label :agent_ids, "Agents" %>
           <%= form.select :agent_ids, grouped_options_for_select(@grouped_agents, intervention.agent_ids),
                           { include_blank: true }, class: "slim-select w-full", multiple: :true,
-                          data: { 'calc-temps-passe-target': 'agents', action: "change->calc-temps-passe#calc", 'verification-disponibilites-target': "agent"  } %>
+                          data: { 
+                            'calc-temps-passe-target': 'agents', 
+                            action: "change->calc-temps-passe#calc",
+                            'verification-disponibilites-target': "agents"  
+                            }
+                            %>
         </div>
         <div class="w-full sm:flex-1">
           <%= form.label :tool_ids, "Outils" %>
