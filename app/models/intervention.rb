@@ -207,7 +207,7 @@ class Intervention < ApplicationRecord
     end
   end
 
-  def self.get_unavailable_agents(agent_ids, début_prévue, fin_prévue)
+  def self.get_unavailable_agents(intervention_id, agent_ids, début_prévue, fin_prévue)
     conflicting_agents = []
 
     # Pour chaque agent_id, chercher un conflit avec les interventions et les dates
@@ -216,6 +216,7 @@ class Intervention < ApplicationRecord
       conflicting_agents += User
         .joins(:interventions)
         .where(id: agent_id )
+        .where.not("interventions.id = ?", intervention_id)
         .where(
           " (interventions.début_prévue = :debut) OR
             (interventions.début_prévue = :fin) OR

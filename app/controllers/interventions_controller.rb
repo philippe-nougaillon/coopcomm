@@ -306,14 +306,17 @@ class InterventionsController < ApplicationController
 
   # Récupère les agents en conflit avec les dates passés dans l'URL
   def get_unavailable_elements
+
+    # Récupération des données dans l'url
+    intervention_id = params["intervention_id"]
+    agents_ids_string = params["agents_ids"]
     date_debut_prevue = params["date_debut_prevue"] != "null" ? params["date_debut_prevue"] : nil
     date_fin_prevue = params["date_fin_prevue"] != "null" ? params["date_fin_prevue"] : nil
-    agentsString = params["agents"]
 
     # Transforme le string en liste d'agents id
-    agents = agentsString.split(',').map(&:to_i)
+    agents = agents_ids_string.split(',').map(&:to_i)
 
-    interventions = Intervention.get_unavailable_agents(agents, date_debut_prevue, date_fin_prevue)
+    interventions = Intervention.get_unavailable_agents(intervention_id, agents, date_debut_prevue, date_fin_prevue)
 
     render json: interventions, status: :ok
   end

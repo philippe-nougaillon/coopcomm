@@ -6,6 +6,10 @@ export default class extends Controller {
   // Cible le slim select des agents
   static targets = ["agents", "formAgents", "debut_prevue", "debut_prevue_hour", "debut_prevue_minute", "fin_prevue", "fin_prevue_hour", "fin_prevue_minute"]
 
+  static values = {
+    interventionId: { type: Number, default: null }
+  }
+
   // Variables d'instance pour début_prévue
   date_debut_prevue = null
   date_debut_prevue_hour = null
@@ -36,7 +40,7 @@ export default class extends Controller {
     const observer = new MutationObserver(mutations => {
       for (const mutation of mutations) {
         if (mutation.addedNodes.length > 0) {
-          this.updateAgentTags()
+          this.updateAgentTagsStyle()
         }
       }
     })
@@ -54,10 +58,7 @@ export default class extends Controller {
   }
 
   change() {
-    let date_début_prévue_to_send = this.createDate(this.date_debut_prevue, this.date_debut_prevue_hour, this.date_debut_prevue_minute)
-    let date_fin_prévue_to_send = this.createDate(this.date_fin_prevue, this.date_fin_prevue_hour, this.date_fin_prevue_minute)
-
-    const agentsSelectedOptions = this.agentsTarget.slim.select.getSelectedOptions()
+    let intervention_id = this.interventionIdValue || null
 
     const agentsOptions = this.agentsTarget.options
 
@@ -67,23 +68,17 @@ export default class extends Controller {
       agent_ids.push(agentsOptions[i].value)
     }
 
-    if (agent_ids && (date_début_prévue_to_send || date_fin_prévue_to_send)) {
+    let date_début_prévue_to_send = this.createDate(this.date_debut_prevue, this.date_debut_prevue_hour, this.date_debut_prevue_minute)
+    let date_fin_prévue_to_send = this.createDate(this.date_fin_prevue, this.date_fin_prevue_hour, this.date_fin_prevue_minute)
 
-      this.get_unavailable_elements(agent_ids, date_début_prévue_to_send, date_fin_prévue_to_send).then(
+    if (agent_ids.length > 0 && (date_début_prévue_to_send || date_fin_prévue_to_send)) {
+
+      this.get_unavailable_elements(intervention_id, agent_ids, date_début_prévue_to_send, date_fin_prévue_to_send).then(
         conflicting_agents_ids => {
           this.conflicting_agents_ids = conflicting_agents_ids
           if (this.conflicting_agents_ids) {
-            for (let i = 0; i < agentsOptions.length; i++) {
-              let option_agent = agentsOptions[i]
-              let option_agent_id = parseInt(option_agent.value)
-              if (this.conflicting_agents_ids.includes(option_agent_id)) {
-                option_agent.style = "background-color:red;"
-              } else {
-                option_agent.style = ""
-              }
-            }
-
-            this.updateAgentTags()
+            this.updateSelectedOptionsStyle();
+            this.updateAgentTagsStyle()
           }
         }
       );
@@ -91,33 +86,83 @@ export default class extends Controller {
 
   }
 
-  updateAgentTags() {
+  updateSelectedOptionsStyle() {
+    const agentsOptions = this.agentsTarget.options
+
+    for (let i = 0; i < agentsOptions.length; i++) {
+      let option_agent = agentsOptions[i]
+      let option_agent_id = parseInt(option_agent.value)
+      if (this.conflicting_agents_ids.includes(option_agent_id)) {
+        option_agent.style = "background-color:red;"
+      } else {
+        option_agent.style = ""
+      }
+    }
+  }
+
+  updateAgentTagsStyle() {
     this.formAgentsTarget.querySelectorAll(".ss-values .ss-value").forEach(tag => {
-      console.log(tag)
-      const agentName = tag.querySelector('.ss-value-text')
-      console.log(this.conflicting_agents_ids)
+      const agentName = tag.querySelector('.ss-value-text').textContent
+
+      console.log("Conflit")
       // Récupérer le nom de l'agent selectionné dans le select
 
-      if (this.conflicting_agents_ids) {
-        tag.style = "background-color:red;"
-      } else {
-        tag.style = ""
+      // Trouver l'option correspondante dans le select pour obtenir l'ID de l'agent
+      const selectedOption = this.agentsTarget.slim.select.getSelectedOptions()
+          .find(option => option.text === agentName)
+
+      if (selectedOption) {
+        const agentId = parseInt(selectedOption.value)
+
+        // Vérifier si l'agent est dans la liste des agents en conflit
+        if (this.conflicting_agents_ids && this.conflicting_agents_ids.includes(agentId)) {
+          tag.style = "background-color:red;"
+        } else {
+          tag.style = ""
+        }
       }
 
     })
 
-    //TODO: Mettre en rouge en fonction de l'agent id du conflit
-    //TODO: Enlever le rouge quand plus de conflit
   }
 
-  get_unavailable_elements(agent_ids, date_début_prévue_to_send, date_fin_prévue_to_send) {
+  get_unavailable_elements(intervention_id, agent_ids, date_début_prévue_to_send, date_fin_prévue_to_send) {
+
     //console.log("Lancement de la requête")
-    const url = this.getUrl(agent_ids, date_début_prévue_to_send, date_fin_prévue_to_send);
+    const url = this.getUrl(intervention_id, agent_ids, date_début_prévue_to_send, date_fin_prévue_to_send);
 
     //console.log("URL générée :", url);
 
     //TODO: Voir si garder le try-catch dans la fonction ou mettre le then directement
     return this.request_unavailable_elements(url)
+  }
+
+  getUrl(intervention_id, agent_ids, date_début_prévue_to_send, date_fin_prévue_to_send) {
+    const begin_url = window.location.protocol + "//" + window.location.host
+
+    const end_url = "/interventions/get_unavailable_elements?intervention_id=" + intervention_id + "&agents_ids=" + agent_ids + "&date_debut_prevue=" + date_début_prévue_to_send + "&date_fin_prevue=" + date_fin_prévue_to_send
+
+    return begin_url + end_url;
+  }
+
+  async request_unavailable_elements(url) {
+    try {
+      const response = await fetch(url, {
+        method: "Get",
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+      });
+
+      if (response.ok) {
+        return await response.json()
+      } else {
+        const errorResult = await response.json();
+        console.error("Erreur :", errorResult.errors.join(", "));
+        alert(`Erreur : ${errorResult.errors.join(", ")}`);
+      }
+    } catch (error) {
+      console.error("Erreur réseau :", error);
+      alert("Une erreur réseau est survenue. Veuillez réessayer.");
+    }
   }
 
   createDate(date, hour, minute) {
@@ -126,14 +171,6 @@ export default class extends Controller {
     } else {
       return null
     }
-  }
-
-  getUrl(agent_ids, date_début_prévue_to_send, date_fin_prévue_to_send) {
-    const begin_url = window.location.protocol + "//" + window.location.host
-
-    const end_url = "/interventions/get_unavailable_elements?agents=" + agent_ids + "&date_debut_prevue=" + date_début_prévue_to_send + "&date_fin_prevue=" + date_fin_prévue_to_send
-
-    return begin_url + end_url;
   }
 
   updateDates() {
@@ -177,26 +214,6 @@ export default class extends Controller {
       case "intervention_fin_prévue_minute":
         this.date_fin_prevue_minute = value_date
         break
-    }
-  }
-
-  async request_unavailable_elements(url) {
-    try {
-      const response = await fetch(url, {
-        method: "Get",
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-      });
-
-      if (response.ok) {
-        return await response.json()
-      } else {
-        const errorResult = await response.json();
-        console.error("Erreur :", errorResult.errors.join(", "));
-        alert(`Erreur : ${errorResult.errors.join(", ")}`);
-      }
-    } catch (error) {
-      console.error("Erreur réseau :", error);
-      alert("Une erreur réseau est survenue. Veuillez réessayer.");
     }
   }
 }
