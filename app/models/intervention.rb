@@ -174,7 +174,7 @@ class Intervention < ApplicationRecord
           ",
           debut: début_prévue.try(:to_date), fin: fin_prévue.try(:to_date)
         )
-        .pluck(:id)
+        .pluck(:user_id)
       end
       
     conflicting_agents.uniq

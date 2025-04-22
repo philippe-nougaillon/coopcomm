@@ -329,10 +329,8 @@ class InterventionsController < ApplicationController
       conflicting_tool_ids = Intervention.get_unavailable_tools(intervention_id, tool_ids, date_debut_prevue, date_fin_prevue)
     end
 
-    #agents_ids = Intervention.all
-
     json = {
-      "agents": conflicting_agents_ids,
+      "agents": conflicting_agents_ids.uniq,
       "tools": conflicting_tool_ids
     }
 
