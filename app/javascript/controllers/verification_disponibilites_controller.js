@@ -56,10 +56,23 @@ export default class extends Controller {
     const date_fin = this.createDate(this.date_fin_prevue, this.date_fin_prevue_hour, this.date_fin_prevue_minute)
 
     // Initialitation de l'id de tous les agents
-    const agent_ids = [...this.agentsTarget.options].slice(1).map(o => o.value)
+    let options = [...this.agentsTarget.options]
+
+    let hasIncludeBlank = options[0]?.value === ""
+
+    // Permet une flexibilité du formulaire pour inclure ou non une case vide
+    const agent_ids = hasIncludeBlank
+      ? options.slice(1).map(o => o.value)
+      : options.map(o => o.value)
 
     // Initialitation de l'id de tous les outils
-    const tool_ids = [...this.toolsTarget.options].slice(1).map(o => o.value)
+    options = [...this.toolsTarget.options]
+
+    hasIncludeBlank = options[0]?.value === ""
+
+    const tool_ids = hasIncludeBlank
+      ? options.slice(1).map(o => o.value)
+      : options.map(o => o.value)
 
     // Lancement de la requête pour récupérer les outils en conflit
     if ((agent_ids.length || tool_ids.length) && (date_debut || date_fin)) {
