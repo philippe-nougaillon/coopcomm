@@ -152,28 +152,33 @@ class Intervention < ApplicationRecord
     end
   end
 
-  # def get_unavailable_agents_with_absence
-  #   return if début_prévue.blank? && fin_prévue.blank?
-  #
-  #   absence_ids = self.agents.flat_map do |agent|
-  #     agent.absences.where(
-  #       " (absences.du = :debut) OR
-  #           (absences.du = :fin) OR
-  #           (absences.au = :debut) OR
-  #           (absences.au = :fin) OR
-  #           (absences.du BETWEEN :debut AND :fin) OR
-  #           (absences.au BETWEEN :debut AND :fin) OR
-  #           (:debut BETWEEN absences.du AND absences.au) OR
-  #           (:fin BETWEEN absences.du AND absences.au) OR
-  #           (absences.du <= :debut AND absences.au >= :fin) OR
-  #           (absences.du >= :debut AND absences.au <= :fin)
-  #         ",
-  #       debut: self.début_prévue.try(:to_date), fin: self.fin_prévue.try(:to_date)
-  #     ).pluck(:id)
-  #   end.uniq
-  #
-  #   absence_ids
-  # end
+  def self.get_unavailable_agents_with_absences(agent_ids, début_prévue, fin_prévue)
+    conflicting_agents = []
+
+    #TODO: Chercher les agents dont leurs absences sont en chevauchement avec les dates
+
+    agent_ids.each do |agent_id|
+      conflicting_agents += User
+        .find(agent_id)
+        .absences.where(
+          " (absences.du = :debut) OR
+            (absences.du = :fin) OR
+            (absences.au = :debut) OR
+            (absences.au = :fin) OR
+            (absences.du BETWEEN :debut AND :fin) OR
+            (absences.au BETWEEN :debut AND :fin) OR
+            (:debut BETWEEN absences.du AND absences.au) OR
+            (:fin BETWEEN absences.du AND absences.au) OR
+            (absences.du <= :debut AND absences.au >= :fin) OR
+            (absences.du >= :debut AND absences.au <= :fin)
+          ",
+          debut: début_prévue.try(:to_date), fin: fin_prévue.try(:to_date)
+        )
+        .pluck(:id)
+      end
+      
+    conflicting_agents.uniq
+  end
 
   def agents_must_be_available
     return if début_prévue.blank? && fin_prévue.blank?
@@ -208,34 +213,28 @@ class Intervention < ApplicationRecord
   end
 
   def self.get_unavailable_agents(intervention_id, agent_ids, début_prévue, fin_prévue)
-    conflicting_agents = []
 
-    # Pour chaque agent_id, chercher un conflit avec les interventions et les dates
+    agents = User.joins(:interventions).where(id: agent_ids )
 
-    agent_ids.each do |agent_id|
-      conflicting_agents += User
-        .joins(:interventions)
-        .where(id: agent_id )
-        .where.not("interventions.id = ?", intervention_id)
-        .where(
-          " (interventions.début_prévue = :debut) OR
-            (interventions.début_prévue = :fin) OR
-            (interventions.fin_prévue = :debut) OR
-            (interventions.fin_prévue = :fin) OR
-            (interventions.début_prévue BETWEEN :debut AND :fin) OR
-            (interventions.fin_prévue BETWEEN :debut AND :fin) OR
-            (:debut BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
-            (:fin BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
-            (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
-            (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)
-          ",
-          debut: début_prévue, fin: fin_prévue
-        ).pluck(:id)
-      end
-      
-      
-    # Renvoyer l'id des agents pas disponibles
-    conflicting_agents.uniq
+    # Condition nécessaire si on est sur la création d'une intervention
+    agents = agents.where.not("interventions.id = ?", intervention_id) if intervention_id
+
+    agents = agents.where(
+        " (interventions.début_prévue = :debut) OR
+          (interventions.début_prévue = :fin) OR
+          (interventions.fin_prévue = :debut) OR
+          (interventions.fin_prévue = :fin) OR
+          (interventions.début_prévue BETWEEN :debut AND :fin) OR
+          (interventions.fin_prévue BETWEEN :debut AND :fin) OR
+          (:debut BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
+          (:fin BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
+          (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
+          (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)
+        ",
+        debut: début_prévue, fin: fin_prévue
+      )
+
+    agents.pluck(:id).uniq
   end
 
   def tools_must_be_available
@@ -245,7 +244,7 @@ class Intervention < ApplicationRecord
       conflicting_interventions = Intervention
         .joins(:tools)
         .where(tools: { id: tool.id })
-        .where.not(id: id) # exclut soi-même si mise à jour
+        .where.not(id: id)
         .where(
           " (interventions.début_prévue = :debut) OR
             (interventions.début_prévue = :fin) OR
@@ -271,17 +270,16 @@ class Intervention < ApplicationRecord
     end
   end
 
-  def get_unavailable_tools
-    return if début_prévue.blank? && fin_prévue.blank?
+  def self.get_unavailable_tools(intervention_id, tools_ids, début_prévue, fin_prévue)
+    conflicting_tools = []
 
-    conflicting_interventions = nil
+    tools_ids.each do |tool|
+      tools = Tool.joins(:interventions).where(id: tools_ids )
 
-    tools.each do |tool|
-      conflicting_interventions ||= Intervention
-        .joins(:tools)
-        .where(tools: { id: tool.id })
-        .where.not(id: id) # exclut soi-même si mise à jour
-        .where(
+      # Condition nécessaire si on est sur la création d'une intervention
+      tools = tools.where.not("interventions.id = ?", intervention_id) if intervention_id
+
+      tools = tools.where(
           " (interventions.début_prévue = :debut) OR
             (interventions.début_prévue = :fin) OR
             (interventions.fin_prévue = :debut) OR
@@ -296,8 +294,9 @@ class Intervention < ApplicationRecord
           debut: début_prévue, fin: fin_prévue
         )
 
-      conflicting_interventions
+      conflicting_tools += tools.pluck(:id)
     end
+    conflicting_tools.uniq
   end
 
   def qrcode(url)

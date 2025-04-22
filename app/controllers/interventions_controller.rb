@@ -308,17 +308,35 @@ class InterventionsController < ApplicationController
   def get_unavailable_elements
 
     # Récupération des données dans l'url
-    intervention_id = params["intervention_id"]
-    agents_ids_string = params["agents_ids"]
+    intervention_id = params["intervention_id"] != "null" ? params["intervention_id"] : nil
     date_debut_prevue = params["date_debut_prevue"] != "null" ? params["date_debut_prevue"] : nil
     date_fin_prevue = params["date_fin_prevue"] != "null" ? params["date_fin_prevue"] : nil
-
+    
+    agent_ids_string = params["agents_ids"] != "null" ? params["agents_ids"] : nil
     # Transforme le string en liste d'agents id
-    agents = agents_ids_string.split(',').map(&:to_i)
+    agent_ids = agent_ids_string.split(',').map(&:to_i) if params["agents_ids"]
 
-    interventions = Intervention.get_unavailable_agents(intervention_id, agents, date_debut_prevue, date_fin_prevue)
+    if agent_ids
+      conflicting_agents_ids = Intervention.get_unavailable_agents(intervention_id, agent_ids, date_debut_prevue, date_fin_prevue)
+      conflicting_agents_ids += Intervention.get_unavailable_agents_with_absences(agent_ids, date_debut_prevue, date_fin_prevue)
+    end
+    
+    tool_ids_string = params["tool_ids"] != "null" ? params["tool_ids"] : nil
+    # Transforme le string en liste d'agents id
+    tool_ids = tool_ids_string.split(',').map(&:to_i) if params["tool_ids"]
+    
+    if tool_ids
+      conflicting_tool_ids = Intervention.get_unavailable_tools(intervention_id, tool_ids, date_debut_prevue, date_fin_prevue)
+    end
 
-    render json: interventions, status: :ok
+    #agents_ids = Intervention.all
+
+    json = {
+      "agents": conflicting_agents_ids,
+      "tools": conflicting_tool_ids
+    }
+
+    render json: json, status: :ok
   end
 
   private
