@@ -3,7 +3,7 @@ source "https://rubygems.org"
 ruby "3.4.2"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 7.2"
+gem "rails", "~> 8.0"
 
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem "sprockets-rails"
@@ -75,7 +75,7 @@ gem "devise", "~> 4.9"
 gem "workflow", "~> 3.0"
 gem "workflow-activerecord", "~> 6.0"
 
-gem "acts-as-taggable-on", "~> 11.0"
+gem "acts-as-taggable-on"
 
 gem "view_component", "~> 3.12"
 
