@@ -29,6 +29,48 @@ module ActiveSupport
       click_on "Se connecter"
       sleep(1)
     end
+    
+    def intervention_for_params(intervention)
+      {
+        intervention: {
+          organisation_id: intervention.organisation_id,
+          début: intervention.début,
+          fin: intervention.fin,
+          temps_de_pause: intervention.temps_de_pause,
+          description: intervention.description,
+          workflow_state: intervention.workflow_state,
+          adherent_id: intervention.adherent_id,
+          temps_total: intervention.temps_total,
+          commentaires: intervention.commentaires,
+          note: intervention.note,
+          team_id: intervention.team_id,
+          avis: intervention.avis,
+          repeter: intervention.repeter,
+          slug: SecureRandom.uuid,
+          début_prévue: intervention.début_prévue,
+          fin_prévue: intervention.fin_prévue
+        }
+      }
+    end
+
+    def create_fake_photo
+      base64_image = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP4z8DwHwAFAAH/VscvDQAAAABJRU5ErkJggg=="
+      decoded_image = Base64.decode64(base64_image)
+
+      tempfile = Tempfile.new(['fake_image', '.png'])
+      tempfile.binmode
+      tempfile.write(decoded_image)
+      tempfile.rewind
+      tempfile
+    end
+
+    def create_uploaded_photo
+      ActionDispatch::Http::UploadedFile.new(
+        tempfile: create_fake_photo,
+        filename: "photo.jpg",
+        type: "image/jpeg"
+      )
+    end
 
     # Add more helper methods to be used by all tests here...
   end

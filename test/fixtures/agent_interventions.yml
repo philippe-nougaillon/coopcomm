@@ -13,7 +13,7 @@ bond_intervention_terminée:
   intervention: intervention_terminée
 
 martin_intervention_autre_agent:
-  agent: martin
+  agent: martin_technique_paris
   intervention: intervention_autre_agent
 
 bond_intervention_autre_adhérent:

@@ -79,4 +79,22 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to interventions_url
   end
+
+  test "should redirect to root if intervention doesn't exist" do
+    get intervention_url("abcdefg")
+    assert_redirected_to root_path
+  end
+
+  test "should destroy photo with purge" do
+    @intervention.photos.attach(create_uploaded_photo)
+    @intervention.save
+
+    assert_difference("@intervention.photos.count", -1) do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos.first.id
+      }
+    end
+
+    assert_redirected_to @intervention
+  end
 end

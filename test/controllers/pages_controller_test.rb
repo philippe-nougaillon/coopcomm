@@ -14,7 +14,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should get dashboard redirected to root with agent" do
-    sign_in users(:martin)
+    sign_in users(:martin_technique_paris)
     get dashboard_url
     assert_redirected_to root_path
   end

@@ -60,6 +60,14 @@ intervention_autre_adhérent:
   workflow_state: terminé
   slug: 49ff96b4-6e36-4636-a652-0f71b5888b12
 
+intervention_paris:
+  organisation: mairie_paris
+  adherent_id: patrick_adherent_paris
+  début: 2025-04-23 12:26:45
+  description: Intervention à paris
+  workflow_state: nouveau
+  slug: ac7e4c84-1ad4-4703-984d-68c1e7d3ce0e
+
 # Organisation Marseille
 nettoyage_port:
   organisation: mairie_marseille
