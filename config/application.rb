@@ -36,5 +36,6 @@ module Coopcom
     # To make this easier, you can specify a different controller as the base class
     config.mission_control.jobs.base_controller_class = "MissionControlAdminController"
 
+    config.active_support.to_time_preserves_timezone = :zone
   end
 end
