@@ -304,7 +304,7 @@ class InterventionsController < ApplicationController
   def pointage_statut
   end
 
-  # Récupère les agents en conflit avec les dates passés dans l'URL
+  # Récupère les agents en conflit avec les dates passées dans l'URL
   def get_unavailable_elements
 
     # Récupération des données dans l'url
