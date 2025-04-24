@@ -1,12 +1,12 @@
 require "test_helper"
 
-class AgentWorkflowStateInterventionPolicyTest < ActionDispatch::IntegrationTest
+class ManagerWorkflowStateInterventionPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    agent_paris = users(:martin_technique_paris)
+    manager_paris = users(:hidalgo)
     
     intervention_paris = interventions(:intervention_paris)
 
-    @policy = InterventionPolicy.new(agent_paris, intervention_paris)
+    @policy = InterventionPolicy.new(manager_paris, intervention_paris)
   end
 
   # Terminer
