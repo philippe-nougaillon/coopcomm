@@ -86,7 +86,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should destroy photo with purge" do
-    @intervention.photos.attach(create_uploaded_photo)
+    @intervention.photos.attach(file_fixture("exemple.png"))
     @intervention.save
 
     assert_difference("@intervention.photos.count", -1) do
