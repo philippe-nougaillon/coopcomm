@@ -1,5 +1,7 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
+# Mairie de Paris
+
 tondeuse:
   name: Tondeuse
   description: Roule correctement
@@ -17,6 +19,18 @@ cisaille:
   name: Cisaille
   organisation: mairie_paris
 
+outil_paris:
+  name: Outil de Paris
+  organisation: mairie_paris
+  
+
+# Mairie de Marseille
+
 camion:
   name: Camion
   organisation: mairie_marseille
+
+outil_marseille:
+  name: Outil de Marseille
+  organisation: mairie_marseille
+  
