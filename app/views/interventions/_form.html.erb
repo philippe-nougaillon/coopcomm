@@ -257,7 +257,7 @@
     <% if params[:action] == 'edit' %>
       <%= link_to "Voir", @intervention, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
     <% end %>
-    <%= link_to "Annuler", interventions_path, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
+    <%= link_to "Annuler", (session[:return_to] || interventions_path), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
   </div>
 <% end %>
 

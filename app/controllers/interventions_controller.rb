@@ -2,6 +2,7 @@ class InterventionsController < ApplicationController
   before_action :set_intervention, only: %i[ show edit update destroy terminer valider refuser archiver purge pointer pointage_statut ]
   before_action :set_form_variables, only: %i[ new edit create update ]
   before_action :is_user_authorized, except: %i[ pointer pointage_statut ]
+  before_action :store_return_location, only: [:new, :edit]
   skip_before_action :authenticate_user!, only: %i[ pointer pointage_statut ]
 
   # GET /interventions or /interventions.json
@@ -378,6 +379,10 @@ class InterventionsController < ApplicationController
 
     def is_user_authorized
       authorize @intervention ? @intervention : Intervention
+    end
+
+    def store_return_location
+      session[:return_to] = request.referer if request.referer.present? && URI(request.referer).host == request.host
     end
 
 end
