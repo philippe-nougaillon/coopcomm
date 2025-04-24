@@ -74,6 +74,15 @@ patrick_adherent_paris:
   rôle: adhérent
   slug: e2845be0-8193-4771-9e99-94b692ad8c5f
 
+user_paris:
+  organisation: mairie_paris
+  nom: user
+  prénom: name
+  email: name.user@gmail.commmmm
+  rôle: adhérent
+  slug: 7b53b6a3-cf0a-43ec-bb03-7af8d36781d1
+
+
 # Organisation marseille
 manager_marseille:
   organisation: mairie_marseille

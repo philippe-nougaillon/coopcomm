@@ -6,7 +6,7 @@ class MailLogPolicy < ApplicationPolicy
   end
 
   def index?
-    user && user.manager?
+    manager
   end
 
   def show?

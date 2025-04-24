@@ -1,11 +1,6 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-# one:
-#   category: MyString
-#   workflow_state: MyString
-#   tool: one
-
-# two:
-#   category: MyString
-#   workflow_state: MyString
-#   tool: two
+carte_grise:
+  category: carte_grise
+  workflow_state: nouveau
+  tool: tondeuse

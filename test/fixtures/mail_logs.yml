@@ -1,15 +1,9 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  to: MyString
-  subject: MyString
-  message_id: MyString
+mail_log:
+  to: abcd
+  subject: abcd
+  message_id: 1234
   organisation: mairie_paris
-  slug: 11084c8d-2095-42e5-96b4-192f7eaea14a
-
-two:
-  to: MyString
-  subject: MyString
-  message_id: MyString
-  organisation: mairie_paris
-  slug: 6f1dd6d0-2e45-43b3-9736-238ee7110e7e
+  etat: false
+  slug: 0fac8165-f8ef-405e-8058-2c4adf46fa3a
