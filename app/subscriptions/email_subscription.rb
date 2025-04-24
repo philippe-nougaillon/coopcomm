@@ -42,7 +42,7 @@ class EmailSubscription
     NotifMailAdherentInterventionPointageJob.perform_later(intervention)
 
     # Envoyer un message WhatsApp
-    if intervention.adherent.téléphone?
+    if intervention.adherent&.téléphone?
       NotifWhatsappAdherentInterventionPointageJob.perform_later(intervention)
     end
   end
