@@ -124,19 +124,13 @@ class InterventionsController < ApplicationController
   def create
     @intervention = Intervention.new(intervention_params)
     @intervention.organisation = current_user.organisation
-    if current_user.manager?
-      @intervention.tag_list.add(params[:intervention][:tags_manager])
-    else
-      @intervention.tag_list.add(params[:intervention][:tags])
-    end
+    update_tag_list
 
     if current_user.équipe?
       @intervention.team_id = current_user.id
     end
 
-    if @intervention.nouveau? && @intervention.repeter?
-      @intervention.workflow_state = 'attente'
-    end
+    check_workflow_pointage_mère
 
     respond_to do |format|
       if @intervention.save
@@ -151,14 +145,12 @@ class InterventionsController < ApplicationController
 
   # PATCH/PUT /interventions/1 or /interventions/1.json
   def update
+    @intervention.assign_attributes(intervention_params)
+    update_tag_list
+    check_workflow_pointage_mère
+
     respond_to do |format|
-      if @intervention.update(intervention_params)
-        if current_user.manager?
-          @intervention.tag_list = params[:intervention][:tags_manager]
-        else
-          @intervention.tag_list = params[:intervention][:tags]
-        end
-        @intervention.save
+      if @intervention.save
         unless Rails.env.development?
           Events.instance.publish('intervention.updated', payload: {intervention_id: @intervention.id})
         end
@@ -383,6 +375,18 @@ class InterventionsController < ApplicationController
 
     def store_return_location
       session[:return_to] = request.referer if request.referer.present? && URI(request.referer).host == request.host
+    end
+
+    def update_tag_list
+      if current_user.manager?
+        @intervention.tag_list = params[:intervention][:tags_manager]
+      else
+        @intervention.tag_list = params[:intervention][:tags]
+      end
+    end
+
+    def check_workflow_pointage_mère
+      @intervention.workflow_state = @intervention.repeter? ? 'attente' : 'nouveau'
     end
 
 end
