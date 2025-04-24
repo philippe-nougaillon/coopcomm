@@ -4,9 +4,9 @@ class AgentWrongOrganisationToolPolicyTest < ActionDispatch::IntegrationTest
   def setup
     agent_marseille = users(:agent_marseille)
     
-    intervention_paris = interventions(:intervention_paris)
+    tool_paris = tools(:outil_paris)
 
-    @wrongPolicy = ToolPolicy.new(agent_marseille, intervention_paris)
+    @wrongPolicy = ToolPolicy.new(agent_marseille, tool_paris)
   end
 
   test "should refute show with wrong organisation" do
