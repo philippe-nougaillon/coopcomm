@@ -38,7 +38,7 @@
         <% interventions_soir = interventions.where("fin_prévue > ?", Time.parse(date.to_s + " 13:00")) %>
       
         <% if interventions_matin.any? %>
-          <span style="background-color: red; padding-left: 15px;"></span>
+          <span style="background-color: red; padding-left: 15px;" title="<%= interventions_matin.pluck(:description) %>"></span>
         <% else %>
           <%= link_to new_intervention_path(tool_ids: tool.id, début_prévue: date, début_prévue_hour: 8, fin_prévue: date, fin_prévue_hour: 13) do %>
             <span style="background-color: lightgreen; padding-left: 15px;"></span>
@@ -46,7 +46,7 @@
         <% end %>
 
         <% if interventions_soir.any? %>
-          <span style="background-color: red; padding-left: 15px;"></span>
+          <span style="background-color: red; padding-left: 15px;" title="<%= interventions_soir.pluck(:description) %>"></span>
         <% else %>
           <%= link_to new_intervention_path(tool_ids: tool.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 5, fin_prévue: date, fin_prévue_hour: 18) do %>
             <span style="background-color: lightgreen; padding-left: 15px;"></span>
