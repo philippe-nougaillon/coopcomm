@@ -38,8 +38,8 @@ Rails.application.routes.draw do
 
   resources :interventions do
     member do
-      get :accepter
-      get :en_cours
+      # get :accepter
+      # get :en_cours
       get :terminer
       get :valider
       get :refuser

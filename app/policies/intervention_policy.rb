@@ -33,13 +33,13 @@ class InterventionPolicy < ApplicationPolicy
     show? && user.manager?
   end
 
-  def accepter?
-    show?
-  end
+  # def accepter?
+  #   show?
+  # end
 
-  def en_cours?
-    show?
-  end
+  # def en_cours?
+  #   show?
+  # end
 
   def terminer?
     show?
