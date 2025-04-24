@@ -10,7 +10,7 @@ class InterventionPolicy < ApplicationPolicy
   end
 
   def show?
-    index? && record.organisation == user.organisation
+    index? && organisation
   end
 
   def new?
@@ -30,7 +30,7 @@ class InterventionPolicy < ApplicationPolicy
   end
 
   def destroy?
-    show? && user.manager?
+    show? && manager
   end
 
   # def accepter?

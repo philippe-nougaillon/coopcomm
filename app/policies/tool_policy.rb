@@ -10,11 +10,11 @@ class ToolPolicy < ApplicationPolicy
   end
 
   def show?
-    index? && record.organisation == user.organisation
+    index? && organisation
   end
 
   def new?
-    user && user.manager?
+    manager
   end
 
   def create?
@@ -22,7 +22,7 @@ class ToolPolicy < ApplicationPolicy
   end
 
   def edit?
-    user && user.manager?
+    manager
   end
 
   def update?
@@ -30,6 +30,6 @@ class ToolPolicy < ApplicationPolicy
   end
 
   def destroy?
-    user && user.manager?
+    manager
   end
 end
