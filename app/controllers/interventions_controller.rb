@@ -316,9 +316,13 @@ class InterventionsController < ApplicationController
     # Transforme le string en liste d'agents id
     agent_ids = agent_ids_string.split(',').map(&:to_i) if params["agents_ids"]
 
+    conflicting_agents_ids = []
+    conflicting_tool_ids = []
+
     if agent_ids
       conflicting_agents_ids = Intervention.get_unavailable_agents(intervention_id, agent_ids, date_debut_prevue, date_fin_prevue)
       conflicting_agents_ids += Intervention.get_unavailable_agents_with_absences(agent_ids, date_debut_prevue, date_fin_prevue)
+      conflicting_agents_ids.uniq
     end
     
     tool_ids_string = params["tool_ids"] != "null" ? params["tool_ids"] : nil
@@ -330,7 +334,7 @@ class InterventionsController < ApplicationController
     end
 
     json = {
-      "agents": conflicting_agents_ids.uniq,
+      "agents": conflicting_agents_ids,
       "tools": conflicting_tool_ids
     }
 
