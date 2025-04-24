@@ -189,3 +189,16 @@ label#drawer-label div:nth-child(2) {
 }
 
 /* END FLIP CARD ANIMATION */
+
+/* SLIM-SELECT INDISPONIBILITÉ */
+
+.ss-option.invalid{
+  color: grey !important;
+}
+.ss-option.invalid.ss-selected,
+.ss-option.invalid:hover {
+  color: white !important;
+  background-color: red !important;
+}
+
+/* END SLIM-SELECT INDISPONIBILITÉ */

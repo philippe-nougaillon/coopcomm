@@ -42,7 +42,7 @@ export default class extends Controller {
   }
 
   // Fonction appelée à chaque changement d'une valeur des dates prévues
-  verif(event) {
+  verificationWithInput(event) {
     this.updateDateValue(event.target)
     this.change()
   }
@@ -95,7 +95,11 @@ export default class extends Controller {
   updateSelectStyles(selectElement, conflictIds) {
     [...selectElement.options].forEach(option => {
       const id = parseInt(option.value)
-      option.style = conflictIds.includes(id) ? "background-color:red;" : ""
+      if (conflictIds.includes(id)) {
+        option.classList.add('invalid')
+      }else{
+        option.classList.remove('invalid')
+      }
     })
     
   }
