@@ -82,6 +82,13 @@ user_paris:
   rôle: adhérent
   slug: 7b53b6a3-cf0a-43ec-bb03-7af8d36781d1
 
+philippe_super_admin:
+  organisation: mairie_paris
+  nom: Nougaillon
+  prénom: Philippe
+  email: philippe.nougaillon@aikku.eu
+  rôle: manager
+  slug: 0fbc869e-8104-4f01-8cb1-c826dc8dfae3
 
 # Organisation marseille
 manager_marseille:

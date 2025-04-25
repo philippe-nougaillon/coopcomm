@@ -6,7 +6,7 @@ class PagesPolicy < ApplicationPolicy
   end
 
   def assistant?
-    user && user.manager?
+    manager
   end
 
   def dashboard?
