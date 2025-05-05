@@ -386,7 +386,10 @@ class InterventionsController < ApplicationController
     end
 
     def check_workflow_pointage_mère
-      @intervention.workflow_state = @intervention.repeter? ? 'attente' : 'nouveau'
+      if @intervention.workflow_state == 'attente' && !@intervention.repeter?
+        @intervention.workflow_state = 'nouveau'
+      end
+      # Si workflow state est en attente et qu'on est pas repeter, on met nouveau
     end
 
 end
