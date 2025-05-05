@@ -1,19 +1,15 @@
 require "test_helper"
 
-class NotifAgentsCommentairesChangedJobTest < ActiveJob::TestCase
-
-  setup do
-
-  end
-
-  test "notifier les agents qu'un commentaire a été ajouté par l'adhérent" do
-    # Récupérer une intervention avec un commentaire
+class NotifAgentsCommentairesChangedJobTest < ActionDispatch::IntegrationTest
+  
+  test "le job est lancé quand un adhérent modifie le commentaire" do
+    sign_in users(:weil)
     intervention = interventions(:tonte_locaux)
-
-    # Se connecter avec un adhérent
-    login(:weil)
-
-    # Modifier le commentaire
-    # Vérifier qu'un job a été performé
+    
+    assert_enqueued_with(job: NotifAgentsCommentairesChangedJob) do
+      patch intervention_path(intervention), params: {
+        intervention: { commentaires: "Passer la tondeuse sur les plantations " }
+      }
+    end
   end
 end

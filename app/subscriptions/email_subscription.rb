@@ -23,16 +23,20 @@ class EmailSubscription
 
   # Notifier les agents qu'un commentaire a été ajouté par l'adhérent
   def on_intervention_updated(event)
+    # Déclaration des variables pour tester si on doit lancer le job
     intervention = Intervention.find(event[:payload][:intervention_id])
     last_audit = intervention.audits.last
     user = User.find(last_audit.user_id)
-    commentaires_changed = last_audit.audited_changes.include?('commentaires')
-    send_notif = (user.adhérent? && commentaires_changed && !intervention.commentaires.blank?)
-    agent_ids = intervention.agents.pluck(:id)
-    #agent_ids = [1]
-    #send_notif = true
-    if send_notif && agent_ids.any?
-      NotifAgentsCommentairesChangedJob.perform_later(intervention, agent_ids, user.id)
+    is_commentaires_changed = last_audit.audited_changes.include?('commentaires')
+    
+    # Vérifie si on doit lancer le job
+    should_notify_agents = (user.adhérent? && is_commentaires_changed && !intervention.commentaires.blank?)
+
+    if should_notify_agents
+      agent_ids = intervention.agents.pluck(:id)
+      if agent_ids.any?
+        NotifAgentsCommentairesChangedJob.perform_later(intervention, agent_ids, user.id)
+      end
     end
   end
 
