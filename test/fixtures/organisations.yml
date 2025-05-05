@@ -6,3 +6,6 @@ mairie_paris:
 mairie_marseille:
   nom: Mairie de Marseille
 
+organisation_sans_manager:
+  nom: Organisation sans manager
+

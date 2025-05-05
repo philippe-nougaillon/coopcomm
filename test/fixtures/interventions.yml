@@ -40,6 +40,14 @@ intervention_terminée:
   workflow_state: terminé
   slug: 7a2bff56-19e4-44aa-891a-441be6b62d6f
 
+intervention_validé:
+  organisation: mairie_paris
+  adherent_id: weil
+  début: 2025-05-05 16:16:27
+  description: Débrousailler la mairie
+  workflow_state: validé
+  slug: 3952eed3-432c-48f2-a591-d79f4c408ff5
+
 intervention_autre_agent:
   organisation: mairie_paris
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
@@ -80,3 +88,13 @@ nettoyage_port:
   description: Nettoyage Marseille
   workflow_state: Validé
   slug: a3c694ca-a6bc-49f5-b273-befe366ee48e
+
+# Organisation sans manager
+
+intervention_sans_manage:
+  organisation: organisation_sans_manager
+  adherent_id: george_lucas
+  début: 2025-04-23 12:26:45
+  description: Intervention sans manager
+  workflow_state: nouveau
+  slug: 8f69ed4e-cc58-4ecc-ab2b-57377f525bd4

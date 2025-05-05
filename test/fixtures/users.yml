@@ -123,3 +123,22 @@ adherent_marseille:
   email: bernard.tapie@gmail.commmmm
   rôle: adhérent
   slug: ee438223-a203-43f4-9d97-1654c24d2520
+
+# Organisation sans manager
+
+john_wick:
+  organisation: organisation_sans_manager
+  nom: wick
+  prénom: john
+  email: john.wick@gmail.commmmmm
+  rôle: agent
+  service: Comptabilité
+  slug: 02cea440-2f32-4f63-9614-df94069a6bca
+
+george_lucas:
+  organisation: organisation_sans_manager
+  nom: Lucas
+  prénom: George
+  email: george.lucas@gmail.commmmmm
+  rôle: adhérent
+  slug: d2a62448-e26a-4a7b-8c07-81f3815825ac
