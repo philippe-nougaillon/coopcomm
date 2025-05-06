@@ -66,7 +66,7 @@
         delete
       </span>
     <% end %>
-    <%= link_to "Retour", users_path, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
+    <%= link_to "Retour", request.referrer, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
   </div>
 
   <% if @user.adhérent? && @user.lng_lat %>
