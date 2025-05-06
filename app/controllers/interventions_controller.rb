@@ -385,11 +385,13 @@ class InterventionsController < ApplicationController
       end
     end
 
+    # Ajoute ou enlève l'état 'attente' selon si c'est un modèle de pointage.
     def check_workflow_pointage_mère
-      if @intervention.workflow_state == 'attente' && !@intervention.repeter?
+      if !@intervention.repeter? && @intervention.workflow_state == 'attente'
         @intervention.workflow_state = 'nouveau'
+      elsif @intervention.repeter? && @intervention.workflow_state != 'attente'
+        @intervention.workflow_state = 'attente'
       end
-      # Si workflow state est en attente et qu'on est pas repeter, on met nouveau
     end
 
 end
