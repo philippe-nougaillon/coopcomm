@@ -40,7 +40,7 @@ class NotifManagersWorkflowChangedJobTest < ActionDispatch::IntegrationTest
 
   test "le job n'est pas mis en file d'attente si un agent modifie le statut avec une organisation sans manager" do
     sign_in users(:john_wick)
-    intervention = interventions(:intervention_sans_manage)
+    intervention = interventions(:intervention_sans_manager)
 
     assert_enqueued_jobs 0 do
       get terminer_intervention_path(intervention)
@@ -55,7 +55,4 @@ class NotifManagersWorkflowChangedJobTest < ActionDispatch::IntegrationTest
       get terminer_intervention_path(intervention)
     end
   end
-
-  # Tester si manager est lui meme
-  # Tester si pas de manager
 end

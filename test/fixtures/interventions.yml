@@ -91,7 +91,7 @@ nettoyage_port:
 
 # Organisation sans manager
 
-intervention_sans_manage:
+intervention_sans_manager:
   organisation: organisation_sans_manager
   adherent_id: george_lucas
   début: 2025-04-23 12:26:45
