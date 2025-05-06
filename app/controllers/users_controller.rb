@@ -104,13 +104,14 @@ class UsersController < ApplicationController
       @agents = @agents.where(service: params[:service])
     end
 
-    if params[:absent].present?
-      agent_ids = []
-      @agents.each do |agent|
-        agent_ids << agent.id if agent.absences.any?
-      end
-      @agents = @agents.where(id: agent_ids)
-    end
+    # Le code actuel n'est pas utile. Si besoin on peut le faire sur la période (@date..@date_fin). Le mieux serait p-e de faire des cases grises directement dans le calendrier.
+    # if params[:absent].present?
+    #   agent_ids = []
+    #   @agents.each do |agent|
+    #     agent_ids << agent.id if agent.absences.any?
+    #   end
+    #   @agents = @agents.where(id: agent_ids)
+    # end
 
     @date_fin = @date + 10.day
 
