@@ -1,8 +1,8 @@
 require "test_helper"
 
-class NotifAgentsCommentairesChangedJobTest < ActionDispatch::IntegrationTest
+class OnInterventionUpdatedTest < ActionDispatch::IntegrationTest
   
-  test "le job est mis en file d'attente quand un adhérent modifie le commentaire d'une intervention" do
+  test "NotifAgentsCommentairesChangedJob mis en file d'attente quand un adhérent modifie le commentaire d'une intervention" do
     sign_in users(:weil)
     intervention = interventions(:tonte_locaux)
     

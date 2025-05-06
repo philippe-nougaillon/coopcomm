@@ -1,8 +1,8 @@
 require "test_helper"
 
-class NotifAdherentInterventionTermineeJobTest < ActionDispatch::IntegrationTest
+class OnInterventionDoneTest < ActionDispatch::IntegrationTest
 
-  test "le job est mis en file d'attente quand un agent termine une intervention avec un adhérent" do
+  test "NotifAdherentInterventionTermineeJob mis en file d'attente quand un agent termine une intervention avec un adhérent" do
     sign_in users(:martin_technique_paris)
     intervention = interventions(:nouvelle_intervention)
     
@@ -11,7 +11,7 @@ class NotifAdherentInterventionTermineeJobTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "le job est mis en file d'attente quand une équipe termine une intervention avec un adhérent" do
+  test "NotifAdherentInterventionTermineeJob mis en file d'attente quand une équipe termine une intervention avec un adhérent" do
     sign_in users(:nettoyage)
     intervention = interventions(:nouvelle_intervention)
     
