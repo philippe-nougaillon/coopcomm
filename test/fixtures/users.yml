@@ -10,7 +10,7 @@ hidalgo:
   prénom: Anne
   email: anne.hidalgo@gmail.commmmm
   rôle: manager
-  encrypted_password: "$2a$04$Sq0rBR0/IqysddNW29bcJO2S5vfi54HoOqWsnoEEBUDV9aajeJhUm"
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: a188443b-d7d9-44ed-9d59-c1c968eac95b
 
 weil:
@@ -20,7 +20,7 @@ weil:
   email: ariel.weil@gmail.commmmm
   rôle: adhérent
   téléphone: 0123456789
-  encrypted_password: "$2a$04$Sq0rBR0/IqysddNW29bcJO2S5vfi54HoOqWsnoEEBUDV9aajeJhUm"
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: fba70281-7004-405d-8afa-153355373125
 
 berthout:
@@ -55,7 +55,7 @@ bond:
   email: james.bond@gmail.commmmm
   rôle: agent
   service: Comptabilité
-  encrypted_password: "$2a$04$Sq0rBR0/IqysddNW29bcJO2S5vfi54HoOqWsnoEEBUDV9aajeJhUm"
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 17ede8b7-ff8f-4a48-966e-4ef3186cae7d
 
 martin_technique_paris:
@@ -89,7 +89,7 @@ philippe_super_admin:
   prénom: Philippe
   email: philippe.nougaillon@aikku.eu
   rôle: manager
-  encrypted_password: "$2a$04$Sq0rBR0/IqysddNW29bcJO2S5vfi54HoOqWsnoEEBUDV9aajeJhUm"
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 0fbc869e-8104-4f01-8cb1-c826dc8dfae3
 
 # Organisation marseille

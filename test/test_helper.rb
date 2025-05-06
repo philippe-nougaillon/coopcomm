@@ -21,11 +21,10 @@ module ActiveSupport
     # end
 
     def login(user)
-      user = users(user)
       visit new_user_session_path
 
       fill_in "user_email", with: user.email
-      fill_in "user_password", with: "password123" # équivalent à encrypted_password: "$2a$04$Sq0rBR0/IqysddNW29bcJO2S5vfi54HoOqWsnoEEBUDV9aajeJhUm", généré avec Devise::Encryptor.digest(User, "password123")
+      fill_in "user_password", with: "qtDug$d843sqACz?V" # équivalent à encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q", généré avec Devise::Encryptor.digest(User, "password123")
       click_on "Se connecter"
       sleep(1)
     end
