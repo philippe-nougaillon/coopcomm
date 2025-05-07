@@ -52,6 +52,19 @@ module ActiveSupport
       }
     end
 
+    def activate_dropdown_slimSelect(id)
+      # Pour activer le dropdown de slimselect
+      ss_main = find(id, visible: false).sibling('div.ss-main')
+      ss_main.click
+    end
+
+    def select_option(id, value)
+      activate_dropdown_slimSelect(id)
+      within('.ss-list') do
+        find('div.ss-option', text: value).click
+      end
+    end
+
     # Add more helper methods to be used by all tests here...
   end
 end
