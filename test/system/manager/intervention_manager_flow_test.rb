@@ -38,7 +38,7 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     sleep(1)
     click_on "Modifier"
     fill_in "Description", with: "Installer la fibre"
-    click_on "Modifier ce(tte) Intervention"
+    click_on "enregistrer_intervention"
     assert_no_text "Modifier intervention"
     assert_text "Installer la fibre"
   end

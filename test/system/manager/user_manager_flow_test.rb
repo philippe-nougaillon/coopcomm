@@ -31,7 +31,7 @@ class UserManagerFlowTest < ApplicationSystemTestCase
     fill_in "Prénom", with: "Didier"
     fill_in "Email", with: "thomas.didier@gmail.commmm"
     page.select "manager", from: "Rôle"
-    click_on "Modifier ce(tte) Utilisateur"
+    click_on "enregistrer_intervention"
     sleep(1)
     assert_text "Utilisateur modifié avec succès."
     assert_text "THOMAS Didier"

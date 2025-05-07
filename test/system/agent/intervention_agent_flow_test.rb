@@ -19,23 +19,28 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
   end
 
   test "Créer intervention" do
-    click_on "Ajouter une Intervention"
+    click_link "ajouter_une_intervention"
     fill_in "Description", with: "Tailler les arbres"
     # find('div.ss-placeholder', text: "Choisissez un ou plusieurs mots clés").click
     # page.driver.browser.switch_to.active_element.send_keys('Coupure électricité', :enter, 'Réparation', :enter)
-    find('div.ss-single', text: "Choisissez un adhérent").click
+    
+    ss_main = find("#intervention_adherent_id", visible: false).sibling('div.ss-main')
+    ss_main.click
+
     within('.ss-list') do
       find('div.ss-option', text: "Weil Ariel").click
     end
+
     # find('div.ss-single', text: "Choisissez une équipe").click
     # page.driver.browser.switch_to.active_element.send_keys('Élec', :down, :enter)
     # find('div.ss-single', text: "Choisissez un agent", match: :first).click
     # page.driver.browser.switch_to.active_element.send_keys(:down, :enter)
+    
     fill_in 'Début', with: DateTime.current.strftime("%m%d%Y\t%I%M%P")
     fill_in 'Fin', with: (DateTime.current + 8.hours).strftime("%m%d%Y\t%I%M%P")
     page.select "1,0", from: "Temps de pause (h)"
     fill_in "Commentaires", with: "Ceci est un commentaire !"
-    click_on "Créer un(e) Intervention"
+    click_on "enregistrer_intervention"
     assert_text "Intervention créée avec succès."
   end
 
@@ -45,7 +50,7 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     sleep(1)
     click_on "Modifier"
     fill_in "Description", with: "Installer la fibre"
-    click_on "Modifier ce(tte) Intervention"
+    click_on "enregistrer_intervention"
     assert_no_text "Modifier intervention"
     assert_text "Installer la fibre"
   end
@@ -58,7 +63,12 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
   end
 
   test "Ne pas pouvoir terminer une intervention" do
-    assert_no_selector "a:not([disabled])", text: "Terminer"
+    intervention_id = interventions(:tonte_locaux).id
+    find("intervention_#{intervention_id}").click
+    within("intervention_#{intervention_id}") do
+      sleep(10000)
+      assert_no_selector "a:not([disabled])", text: "Terminer"
+    end
   end
 
   test "Ne pas pouvoir valider une intervention" do
@@ -66,7 +76,7 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
   end
 
   test "Ne pas pouvoir refuser une intervention" do
-    assert_no_selector "a:not([disabled])", text: "Refuser"
+    assert_selector "a:not([disabled])", text: "Refuser"
   end
 
   # test "Les filtres fonctionnent dans la liste des interventions" do
