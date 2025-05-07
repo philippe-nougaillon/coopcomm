@@ -2,44 +2,44 @@ require "application_system_test_case"
 
 class ToolsTest < ApplicationSystemTestCase
   setup do
-    @tool = tools(:tondeuse)
+    login(users(:hidalgo))
   end
 
-  test "visiting the index" do
+  test "Voir la liste des outils" do
     visit tools_url
-    assert_selector "h1", text: "Tools"
+    assert_selector "h1", text: "Outils / Machine"
   end
 
-  test "should create tool" do
+  test "Créer un outil" do
     visit tools_url
-    click_on "New tool"
+    click_on "ajouter_un_outil"
 
-    fill_in "Description", with: @tool.description
-    fill_in "Name", with: @tool.name
-    fill_in "Organisation", with: @tool.organisation_id
-    click_on "Create Tool"
+    fill_in "Nom", with: "Tondeuse à gazon"
+    fill_in "Description", with: "Tondeuse professionnelle acier inox Marina Systems MX57SH3V moteur Honda GXV160"
+    fill_in "Modèle", with: "MX57SH3V"
+    fill_in "Marque", with: "Marina Systems"
+    within("#tool_icon_name") do
+      find("option", text: "Tracteur").click
+    end
 
-    assert_text "Tool was successfully created"
-    click_on "Back"
+    click_on "enregistrer_tool"
+
+    assert_text "Outil créé avec succès."
   end
 
-  test "should update Tool" do
-    visit tool_url(@tool)
-    click_on "Edit this tool", match: :first
+  test "Supprimer un outil" do
+    visit tool_url(tools(:outil_paris))
 
-    fill_in "Description", with: @tool.description
-    fill_in "Name", with: @tool.name
-    fill_in "Organisation", with: @tool.organisation_id
-    click_on "Update Tool"
+    accept_confirm do
+      click_on "supprimer_outil"
+    end
 
-    assert_text "Tool was successfully updated"
-    click_on "Back"
+    assert_text "Outil supprimé avec succès."
   end
 
-  test "should destroy Tool" do
-    visit tool_url(@tool)
-    click_on "Destroy this tool", match: :first
+  test "Ne pas pouvoir supprimer un outil avec une intervention" do
+    visit tool_url(tools(:tondeuse))
 
-    assert_text "Tool was successfully destroyed"
+    assert_selector "#supprimer_outil[disabled]"
   end
 end

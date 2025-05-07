@@ -12,23 +12,42 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
   end
 
   test "Créer intervention" do
-    click_on "Ajouter une Intervention"
+    click_on "ajouter_une_intervention"
     fill_in "Description", with: "Tailler les arbres"
-    find('div.ss-placeholder', text: "Choisissez un ou plusieurs mots clés").click
+
+    # Sélectionner le tag
+    ss_main = find('#intervention_tags_manager', visible: false).sibling('div.ss-main')
+    ss_main.click
     page.driver.browser.switch_to.active_element.send_keys('Coupure électricité', :enter, 'Réparation', :enter)
-    find('div.ss-single', text: "Choisissez un adhérent").click
+
+    # Sélectionner l'adhérent
+    ss_main = find("#intervention_adherent_id", visible: false).sibling('div.ss-main')
+    ss_main.click
     within('.ss-list') do
       find('div.ss-option', text: "Weil Ariel").click
     end
-    find('div.ss-single', text: "Choisissez une équipe").click
-    page.driver.browser.switch_to.active_element.send_keys('Élec', :down, :enter)
-    find('div.ss-single', text: "Choisissez un agent", match: :first).click
-    page.driver.browser.switch_to.active_element.send_keys(:down, :enter)
+
+    # Sélectionner l'équipe
+    ss_main = find("#intervention_team_id", visible: false).sibling('div.ss-main')
+    ss_main.click
+    within('.ss-list') do
+      find('div.ss-option', text: "Électricité").click
+    end
+
+    # Sélectionner l'agent
+    ss_main = find("#intervention_agent_ids", visible: false).sibling('div.ss-main')
+    ss_main.click
+    within('.ss-list') do
+      find('div.ss-option', text: "Bond James").click
+    end
+
+    # Sélectionner les dates
     fill_in 'Début', with: DateTime.current.strftime("%m%d%Y\t%I%M%P")
     fill_in 'Fin', with: (DateTime.current + 8.hours).strftime("%m%d%Y\t%I%M%P")
+
     page.select "1,0", from: "Temps de pause (h)"
     fill_in "Commentaires", with: "Ceci est un commentaire !"
-    click_on "Créer un(e) Intervention"
+    click_on "enregistrer_intervention"
     assert_text "Intervention créée avec succès."
   end
 

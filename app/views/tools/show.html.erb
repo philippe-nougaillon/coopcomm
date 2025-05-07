@@ -63,7 +63,7 @@
 
   <div class="flex flex-wrap gap-2 mt-8">
     <%= link_to "Modifier", edit_tool_path(@tool), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
-    <%= button_to tool_path(@tool), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, class: "rounded-lg py-3 px-5 bg-gray-100 font-medium", 'data-testid': "Supprimer l'outil", disabled: @tool.interventions.any? do %>
+    <%= button_to tool_path(@tool), method: :delete, id: "supprimer_outil", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, class: "rounded-lg py-3 px-5 bg-gray-100 font-medium", 'data-testid': "Supprimer l'outil", disabled: @tool.interventions.any? do %>
       <span class="material-symbols-outlined">
         delete
       </span>

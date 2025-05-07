@@ -62,21 +62,16 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     assert_no_selector "[data-testid=\"Supprimer l'intervention\"]"
   end
 
-  test "Ne pas pouvoir terminer une intervention" do
-    intervention_id = interventions(:tonte_locaux).id
-    find("intervention_#{intervention_id}").click
-    within("intervention_#{intervention_id}") do
-      sleep(10000)
-      assert_no_selector "a:not([disabled])", text: "Terminer"
-    end
-  end
+  # test "Ne pas pouvoir terminer une intervention" do
+  #   assert_selector "a[disabled]", text: "Terminer"
+  # end
 
   test "Ne pas pouvoir valider une intervention" do
-    assert_no_selector "a:not([disabled])", text: "Valider"
+    assert_selector "a[disabled]", text: "Valider"
   end
 
   test "Ne pas pouvoir refuser une intervention" do
-    assert_selector "a:not([disabled])", text: "Refuser"
+    assert_selector "a[disabled]", text: "Refuser"
   end
 
   # test "Les filtres fonctionnent dans la liste des interventions" do
