@@ -2,42 +2,47 @@ require "application_system_test_case"
 
 class DocumentsTest < ApplicationSystemTestCase
   setup do
-    @document = documents(:one)
-  end
+    @tool = tools(:tondeuse)
+    @document = documents(:carte_grise)
 
-  test "visiting the index" do
-    visit documents_url
-    assert_selector "h1", text: "Documents"
+    login(users(:hidalgo))
   end
 
   test "should create document" do
-    visit documents_url
-    click_on "New document"
+    visit edit_tool_url(@tool)
 
-    fill_in "Refuser", with: @document.refuser
-    fill_in "Valider", with: @document.valider
-    click_on "Create Document"
+    attach_file('tool_documents_attributes_0_fichier', 'test/fixtures/files/carte_grise.jpg')
 
-    assert_text "Document was successfully created"
-    click_on "Back"
+    attach_file('tool_documents_attributes_1_fichier', 'test/fixtures/files/certificat_assurance.jpg')
+
+    select("validé", from: "tool_documents_attributes_1_workflow_state")
+
+    click_on "enregistrer_tool"
+
+    assert_text "Outil modifié avec succès"
   end
 
-  test "should update Document" do
-    visit document_url(@document)
-    click_on "Edit this document", match: :first
+  test "should validate document" do
+    visit tool_url(@tool)
 
-    fill_in "Refuser", with: @document.refuser
-    fill_in "Valider", with: @document.valider
-    click_on "Update Document"
+    assert_link "Valider", match: :first
+    assert_link "Refuser", match: :first
 
-    assert_text "Document was successfully updated"
-    click_on "Back"
+    click_on "Valider", match: :first
+
+    assert_selector "a.btn[disabled]", text: "Valider", match: :first
+    assert_selector "a.btn[disabled]", text: "Refuser", match: :first
   end
 
-  test "should destroy Document" do
-    visit document_url(@document)
-    click_on "Destroy this document", match: :first
+  test "should refuse document" do
+    visit tool_url(@tool)
 
-    assert_text "Document was successfully destroyed"
+    assert_link "Valider", match: :first
+    assert_link "Refuser", match: :first
+
+    click_on "Refuser", match: :first
+
+    assert_selector "a.btn[disabled]", text: "Valider", match: :first
+    assert_selector "a.btn[disabled]", text: "Refuser", match: :first
   end
 end
