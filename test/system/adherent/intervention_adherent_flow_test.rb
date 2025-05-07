@@ -25,19 +25,10 @@ class InterventionAdherentFlowTest < ApplicationSystemTestCase
     # page.driver.browser.switch_to.active_element.send_keys('Coupure électricité', :enter, 'Réparation', :enter)
 
     # Sélectionner l'équipe
-    # Pour activer le dropdown de slimselect
-    ss_main = find("#intervention_team_id", visible: false).sibling('div.ss-main')
-    ss_main.click
-    within('.ss-list') do
-      find('div.ss-option', text: "Électricité").click
-    end
+    select_option("#intervention_team_id", "Électricité")
 
     # Sélectionner l'agent
-    ss_main = find("#intervention_agent_ids", visible: false).sibling('div.ss-main')
-    ss_main.click
-    within('.ss-list') do
-      find('div.ss-option', text: "Bond James").click
-    end
+    select_option("#intervention_agent_ids", "Bond James")
 
     # Choisir les dates
     fill_in 'Début', with: DateTime.current.strftime("%m%d%Y\t%I%M%P")

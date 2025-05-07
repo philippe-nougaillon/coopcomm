@@ -18,6 +18,11 @@ class UserManagerFlowTest < ApplicationSystemTestCase
     fill_in "Mot de passe", with: "c39abcba457c93bcc0a7"
     fill_in "Confirmation du mot de passe", with: "c39abcba457c93bcc0a7"
     page.select "agent", from: "Rôle"
+    page.select "Technique", from: "Service"
+
+    click_on "créer_utilisateur"
+
+    assert_selector "h1", text: "Utilisateurs"
   end
 
   test "modifier un utilisateur" do

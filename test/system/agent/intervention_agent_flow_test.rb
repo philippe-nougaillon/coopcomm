@@ -23,13 +23,9 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     fill_in "Description", with: "Tailler les arbres"
     # find('div.ss-placeholder', text: "Choisissez un ou plusieurs mots clés").click
     # page.driver.browser.switch_to.active_element.send_keys('Coupure électricité', :enter, 'Réparation', :enter)
-    
-    ss_main = find("#intervention_adherent_id", visible: false).sibling('div.ss-main')
-    ss_main.click
 
-    within('.ss-list') do
-      find('div.ss-option', text: "Weil Ariel").click
-    end
+    # Sélectionner l'adhérent
+    select_option("#intervention_adherent_id", "Weil Ariel")
 
     # find('div.ss-single', text: "Choisissez une équipe").click
     # page.driver.browser.switch_to.active_element.send_keys('Élec', :down, :enter)
