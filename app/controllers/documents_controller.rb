@@ -14,7 +14,10 @@ class DocumentsController < ApplicationController
 
   private
     def set_document
-      @document = Document.find(params[:id])
+      @document = Document.find_by(slug: params[:id])
+      if @document.nil?
+        redirect_to root_path, alert: "Document introuvable"
+      end
     end
 
     def is_user_authorized

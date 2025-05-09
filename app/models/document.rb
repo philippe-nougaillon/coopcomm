@@ -1,4 +1,6 @@
 class Document < ApplicationRecord
+  extend FriendlyId
+  friendly_id :slug_candidates, use: :slugged
   include Workflow
   include WorkflowActiverecord
 
@@ -39,4 +41,10 @@ class Document < ApplicationRecord
   def self.categories
     ['carte_grise', 'certificat_assurance']
   end
+
+  private
+
+    def slug_candidates
+      [SecureRandom.uuid]
+    end
 end
