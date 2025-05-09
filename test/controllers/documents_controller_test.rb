@@ -1,48 +1,53 @@
-# require "test_helper"
+require "test_helper"
 
-# class DocumentsControllerTest < ActionDispatch::IntegrationTest
-#   setup do
-#     @document = documents(:one)
-#   end
+class DocumentsControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    @document = documents(:carte_grise)
+    sign_in users(:hidalgo)
+  end
 
-#   test "should get index" do
-#     get documents_url
-#     assert_response :success
-#   end
+  test "doit être validé" do
+    get valider_document_url(@document)
+    assert_redirected_to tool_url(@document.tool)
+    assert_equal "Document accepté", flash[:notice]
+  end
 
-#   test "should get new" do
-#     get new_document_url
-#     assert_response :success
-#   end
+  test "doit être refusé" do
+    get refuser_document_url(@document)
+    assert_redirected_to tool_url(@document.tool)
+    assert_equal "Document refusé", flash[:notice]
+  end
 
-#   test "should create document" do
-#     assert_difference("Document.count") do
-#       post documents_url, params: { document: { refuser: @document.refuser, valider: @document.valider } }
-#     end
+  test "ne peut pas être validé si il est déjà validé" do
+    @document.valider!
+    get valider_document_url(@document)
 
-#     assert_redirected_to document_url(Document.last)
-#   end
+    assert_redirected_to tool_url(@document.tool)
+    assert_equal "Le document est déjà validé", flash[:alert]
+  end
 
-#   test "should show document" do
-#     get document_url(@document)
-#     assert_response :success
-#   end
+  test "ne peut pas être refusé si il est déjà refusé" do
+    @document.refuser!
+    get refuser_document_url(@document)
 
-#   test "should get edit" do
-#     get edit_document_url(@document)
-#     assert_response :success
-#   end
+    assert_redirected_to tool_url(@document.tool)
+    assert_equal "Le document est déjà refusé", flash[:alert]
+  end
 
-#   test "should update document" do
-#     patch document_url(@document), params: { document: { refuser: @document.refuser, valider: @document.valider } }
-#     assert_redirected_to document_url(@document)
-#   end
+  test "ne peut pas être validé si il est refusé" do
+    @document.refuser!
+    get valider_document_url(@document)
 
-#   test "should destroy document" do
-#     assert_difference("Document.count", -1) do
-#       delete document_url(@document)
-#     end
+    assert_redirected_to tool_url(@document.tool)
+    assert_equal "Le document ne peut pas être validé", flash[:alert]
+  end
 
-#     assert_redirected_to documents_url
-#   end
-# end
+  test "ne peut pas être refusé si il est validé" do
+    @document.valider!
+    get refuser_document_url(@document)
+
+    assert_redirected_to tool_url(@document.tool)
+    assert_equal "Le document ne peut pas être refusé", flash[:alert]
+  end
+
+end
