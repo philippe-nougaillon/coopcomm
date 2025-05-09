@@ -9,3 +9,5 @@ mairie_marseille:
 organisation_sans_manager:
   nom: Organisation sans manager
 
+organisation_sans_intervention:
+  nom: Organisation sans intervention

@@ -143,3 +143,21 @@ george_lucas:
   email: george.lucas@gmail.commmmmm
   rôle: adhérent
   slug: d2a62448-e26a-4a7b-8c07-81f3815825ac
+
+# Organisation sans intervention
+
+michael_jackson:
+  organisation: organisation_sans_intervention
+  nom: Jackson
+  prénom: Michael
+  email: michael.jackson@gmail.commmmmm
+  rôle: manager
+  slug: a21e461c-088e-418e-a5df-2720326712b8
+
+emmanuel_valls:
+  organisation: organisation_sans_intervention
+  nom: Valls
+  prénom: Emmanuel
+  email: valls.emmanuel@gmail.commmmmm
+  rôle: adhérent
+  slug: 33872d35-052f-427c-9181-e5aff5db1853

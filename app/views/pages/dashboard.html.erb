@@ -5,7 +5,7 @@
 </div>
 
 <% if current_user.manager? %>
-  <%= render partial:'pages/dashboard_manager' %>
+  <%= render partial:'pages/dashboard/dashboard_manager' %>
 <% elsif current_user.adhérent? %>
-  <%= render partial:'pages/dashboard_adhérent' %>
+  <%= render partial:'pages/dashboard/dashboard_adhérent' %>
 <% end %>
