@@ -4,7 +4,7 @@
     "trix": "^2.1.12"
   },
   "devDependencies": {
-    "daisyui": "^4.12.10",
+    "daisyui": "^4.12.24",
     "postcss": "^8.4.45"
   }
 }
