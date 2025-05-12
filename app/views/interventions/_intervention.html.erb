@@ -1,6 +1,6 @@
 <div id="<%= dom_id intervention %>" tabindex="0" class="overflow-x-auto collapse collapse-arrow <%= 'collapse-open' if !defined?(from_turbo_stream) && intervention.id == @interventions.first.id %>">
   <div class="collapse-title text-xl font-medium">
-    <div class="flex justify-between">
+    <div class="flex flex-col sm:flex-row justify-between">
       <div>
         <small>
           <i class="<%= 'text-error animate-pulse' if defined?(from_turbo_stream) %>">
@@ -28,7 +28,7 @@
         </p>
       </div>
 
-      <div class="w-72 mr-4 text-base">
+      <div class="w-72 text-base">
         <% if !(intervention.validé? || intervention.refusé?) %>
           <div class="my-2">
             <strong class="block text-slate-400 mb-1">Actions</strong>

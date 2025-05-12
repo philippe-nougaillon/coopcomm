@@ -1,7 +1,7 @@
 <div class="mx-auto w-full">
   <div class="mx-auto">
     <div id="<%= dom_id @intervention %>" class="overflow-x-auto">
-      <div class="flex justify-between">
+      <div class="flex flex-col sm:flex-row justify-between">
         <div>
           <small>
             <i>il y a <%= time_ago_in_words @intervention.updated_at %></i>
