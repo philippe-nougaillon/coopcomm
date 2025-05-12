@@ -33,9 +33,9 @@
           <div class="my-2">
             <strong class="block text-slate-400 mb-1">Actions</strong>
             <p class="flex gap-2">
-              <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'btn btn-primary btn-outline hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? %>
-              <%= link_to 'Valider', valider_intervention_path(intervention), class: 'btn btn-success btn-outline hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
-              <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'btn btn-error btn-outline hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
+              <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'btn btn-primary btn-outline btn-sm sm:btn-md hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? %>
+              <%= link_to 'Valider', valider_intervention_path(intervention), class: 'btn btn-success btn-outline btn-sm sm:btn-md hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
+              <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'btn btn-error btn-outline btn-sm sm:btn-md hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
             <p>
           </div>
         <% end %>
