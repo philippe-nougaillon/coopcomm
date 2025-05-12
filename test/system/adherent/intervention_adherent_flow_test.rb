@@ -19,7 +19,9 @@ class InterventionAdherentFlowTest < ApplicationSystemTestCase
   end
 
   test "Créer intervention" do
-    click_on "Ajouter une Intervention"
+
+    click_ajout_intervention_selon_taille_ecran
+
     fill_in "Description", with: "Tailler les arbres"
     # find('div.ss-placeholder', text: "Choisissez un ou plusieurs mots clés").click
     # page.driver.browser.switch_to.active_element.send_keys('Coupure électricité', :enter, 'Réparation', :enter)

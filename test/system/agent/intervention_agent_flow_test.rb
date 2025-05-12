@@ -19,7 +19,18 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
   end
 
   test "Créer intervention" do
-    click_link "ajouter_une_intervention"
+    id_boutton_ajout_intervention_pc = '[data-test-id="ajouter_intervention_pc"]'
+    id_boutton_ajout_intervention_mobile = '[data-test-id="ajouter_intervention_mobile"]'
+
+    taille_pc = ApplicationSystemTestCase.taille_pc
+    taille_tel = ApplicationSystemTestCase.taille_tel
+
+    if Capybara.current_session.current_window.size == taille_pc
+      find(id_boutton_ajout_intervention_pc).click
+    elsif Capybara.current_session.current_window.size == taille_tel
+      find(id_boutton_ajout_intervention_mobile).click
+    end
+    
     fill_in "Description", with: "Tailler les arbres"
     # find('div.ss-placeholder', text: "Choisissez un ou plusieurs mots clés").click
     # page.driver.browser.switch_to.active_element.send_keys('Coupure électricité', :enter, 'Réparation', :enter)

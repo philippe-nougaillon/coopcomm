@@ -1,8 +1,8 @@
 <div class="w-full">
   <div class="flex flex-wrap justify-between items-center">
     <h1 class="text-3xl sm:text-4xl text-primary font-bold">Interventions</h1>
-    <%= link_to "Ajouter une Intervention", new_intervention_path, id: "ajouter_une_intervention", class: "hidden sm:inline-flex btn btn-primary btn-lg rounded btn-outline hover:!text-white" %>
-    <%= link_to "+", new_intervention_path, class: "inline-flex sm:hidden btn btn-primary btn-outline hover:!text-white" %>
+    <%= link_to "Ajouter une Intervention", new_intervention_path, data: { 'test-id': "ajouter_intervention_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-lg rounded btn-outline hover:!text-white" %>
+    <%= link_to "+", new_intervention_path, data: { 'test-id': "ajouter_intervention_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline hover:!text-white" %>
   </div>
 
   <%= form_tag request.path, method: :get, class: 'mt-4 ring ring-base-200' do %>
