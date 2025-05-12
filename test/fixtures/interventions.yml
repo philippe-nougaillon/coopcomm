@@ -1,15 +1,109 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  début: 2024-04-19 10:33:24
-  fin: 2024-04-19 10:33:24
+tonte_locaux:
+  organisation: mairie_paris
+#  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
+#  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
+  adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
+  début: <%= (Date.today + 14).beginning_of_week + 8.hours + 30.minutes %>
+  fin: <%= (Date.today + 14).beginning_of_week + 17.hours + 30.minutes %>
   temps_de_pause: 1
-  description: MyString
-  workflow_state: MyString
+  description: Tonte locaux
+  workflow_state: Validé
+  temps_total: 9
+  commentaires: Bien tondre sur le bord des routes
+  note: 4
+  avis: Ça s'est très bien passé
+  team: nettoyage
+  repeter: false
+  slug: 0286beb9-7249-4a29-96c7-f7fd9196c1dc
+  début_prévue: <%= (Date.today + 14).beginning_of_week + 8.hours + 35.minutes %>
+  fin_prévue: <%= (Date.today + 14).beginning_of_week + 17.hours + 15.minutes %>
 
-two:
-  début: 2024-04-19 10:33:24
-  fin: 2024-04-19 10:33:24
+nouvelle_intervention:
+  organisation: mairie_paris
+#  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
+#  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
+  adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
+  début: 2024-04-19 8:30:00
+  description: Ramasser les feuilles
+  workflow_state: nouveau
+  slug: caa0d044-03c2-4533-abb7-0fc807051335
+
+intervention_terminée:
+  organisation: mairie_paris
+#  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
+#  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
+  adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
+  début: 2024-04-19 8:30:00
+  description: Tailler les arbres
+  workflow_state: terminé
+  slug: 7a2bff56-19e4-44aa-891a-441be6b62d6f
+
+intervention_validé:
+  organisation: mairie_paris
+  adherent_id: weil
+  début: 2025-05-05 16:16:27
+  description: Débrousailler la mairie
+  workflow_state: validé
+  slug: 3952eed3-432c-48f2-a591-d79f4c408ff5
+
+intervention_terminée:
+  organisation: mairie_paris
+  adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
+  début: 2024-04-19 8:30:00
+  début: 2024-04-19 12:30:00
+  description: Préparer salle de réception
+  workflow_state: terminé
+  slug: 73ecbeba-7449-4804-8de0-f6ed7ec98a49
+
+intervention_autre_agent:
+  organisation: mairie_paris
+#  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
+#  agent_id: <%#= ActiveRecord::FixtureSet.identify(:martin) %>
+  adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
+  début: 2024-04-19 8:30:00
+  description: L'intervetion d'un autre agent
+  workflow_state: terminé
+  slug: effe9850-4218-4f61-99df-a89b82a97de8
+
+intervention_autre_adhérent:
+  organisation: mairie_paris
+#  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
+#  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
+  adherent_id: <%= ActiveRecord::FixtureSet.identify(:berthout) %>
+  début: 2024-04-19 8:30:00
+  description: L'intervetion d'un autre adhérent
+  workflow_state: terminé
+  slug: 49ff96b4-6e36-4636-a652-0f71b5888b12
+
+intervention_paris:
+  organisation: mairie_paris
+  adherent_id: patrick_adherent_paris
+  début: 2025-04-23 12:26:45
+  description: Intervention à paris
+  workflow_state: nouveau
+  slug: ac7e4c84-1ad4-4703-984d-68c1e7d3ce0e
+
+# Organisation Marseille
+nettoyage_port:
+  organisation: mairie_marseille
+#  user_id: <%#= ActiveRecord::FixtureSet.identify(:nettoyeur_marseille) %>
+#  agent_id: <%#= ActiveRecord::FixtureSet.identify(:agent_marseille) %>
+  adherent_id: <%= ActiveRecord::FixtureSet.identify(:adherent_marseille) %>
+  début: 2024-04-19 8:30:00
+  fin: 2024-04-19 17:30:00
   temps_de_pause: 1
-  description: MyString
-  workflow_state: MyString
+  description: Nettoyage Marseille
+  workflow_state: validé
+  slug: a3c694ca-a6bc-49f5-b273-befe366ee48e
+
+# Organisation sans manager
+
+intervention_sans_manager:
+  organisation: organisation_sans_manager
+  adherent_id: george_lucas
+  début: 2025-04-23 12:26:45
+  description: Intervention sans manager
+  workflow_state: nouveau
+  slug: 8f69ed4e-cc58-4ecc-ab2b-57377f525bd4

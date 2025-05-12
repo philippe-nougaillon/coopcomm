@@ -10,9 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_07_01_131249) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_09_095223) do
   # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
+  enable_extension "pg_catalog.plpgsql"
+
+  create_table "absences", force: :cascade do |t|
+    t.date "du"
+    t.date "au"
+    t.string "motif"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_absences_on_user_id"
+  end
 
   create_table "action_mailbox_inbound_emails", force: :cascade do |t|
     t.integer "status", default: 0, null: false
@@ -21,6 +31,16 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_01_131249) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["message_id", "message_checksum"], name: "index_action_mailbox_inbound_emails_uniqueness", unique: true
+  end
+
+  create_table "action_text_rich_texts", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "body"
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["record_type", "record_id", "name"], name: "index_action_text_rich_texts_uniqueness", unique: true
   end
 
   create_table "active_storage_attachments", force: :cascade do |t|
@@ -51,6 +71,16 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_01_131249) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "agent_interventions", force: :cascade do |t|
+    t.bigint "agent_id", null: false
+    t.bigint "intervention_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["agent_id", "intervention_id"], name: "index_agent_interventions_on_agent_id_and_intervention_id", unique: true
+    t.index ["agent_id"], name: "index_agent_interventions_on_agent_id"
+    t.index ["intervention_id"], name: "index_agent_interventions_on_intervention_id"
+  end
+
   create_table "audits", force: :cascade do |t|
     t.integer "auditable_id"
     t.string "auditable_type"
@@ -73,6 +103,17 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_01_131249) do
     t.index ["user_id", "user_type"], name: "user_index"
   end
 
+  create_table "documents", force: :cascade do |t|
+    t.string "category"
+    t.string "workflow_state"
+    t.bigint "tool_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.decimal "version", precision: 5, scale: 1
+    t.string "slug"
+    t.index ["tool_id"], name: "index_documents_on_tool_id"
+  end
+
   create_table "interventions", force: :cascade do |t|
     t.datetime "début"
     t.datetime "fin"
@@ -82,19 +123,20 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_01_131249) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "organisation_id", null: false
-    t.integer "agent_id"
-    t.integer "agent_binome_id"
     t.integer "adherent_id"
-    t.decimal "temps_total", precision: 4, scale: 2, default: "0.0"
+    t.decimal "temps_total", precision: 8, scale: 2, default: "0.0"
     t.text "commentaires"
     t.integer "note", default: 5
-    t.bigint "user_id", null: false
+    t.bigint "team_id"
     t.string "avis"
+    t.string "slug"
+    t.boolean "repeter"
+    t.string "template_slug"
+    t.datetime "début_prévue"
+    t.datetime "fin_prévue"
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
-    t.index ["agent_binome_id"], name: "index_interventions_on_agent_binome_id"
-    t.index ["agent_id"], name: "index_interventions_on_agent_id"
     t.index ["organisation_id"], name: "index_interventions_on_organisation_id"
-    t.index ["user_id"], name: "index_interventions_on_user_id"
+    t.index ["team_id"], name: "index_interventions_on_team_id"
   end
 
   create_table "mail_logs", force: :cascade do |t|
@@ -108,7 +150,17 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_01_131249) do
     t.boolean "statut", default: true
     t.boolean "etat", default: false
     t.json "error_message"
+    t.string "slug"
+    t.integer "channel"
     t.index ["organisation_id"], name: "index_mail_logs_on_organisation_id"
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.text "message"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
   create_table "organisations", force: :cascade do |t|
@@ -251,6 +303,28 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_01_131249) do
     t.index ["name"], name: "index_tags_on_name", unique: true
   end
 
+  create_table "tool_interventions", force: :cascade do |t|
+    t.bigint "tool_id", null: false
+    t.bigint "intervention_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["intervention_id"], name: "index_tool_interventions_on_intervention_id"
+    t.index ["tool_id"], name: "index_tool_interventions_on_tool_id"
+  end
+
+  create_table "tools", force: :cascade do |t|
+    t.string "name"
+    t.string "description"
+    t.bigint "organisation_id", null: false
+    t.string "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "icon_name"
+    t.string "modèle"
+    t.string "marque"
+    t.index ["organisation_id"], name: "index_tools_on_organisation_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -270,16 +344,41 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_01_131249) do
     t.integer "service"
     t.string "uid"
     t.string "provider"
+    t.datetime "notifications_last_seen_at", default: "2024-11-07 09:50:54"
+    t.string "slug"
+    t.string "téléphone"
+    t.string "memo"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["organisation_id"], name: "index_users_on_organisation_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "wiki_pages", force: :cascade do |t|
+    t.string "titre"
+    t.boolean "publiée", default: false
+    t.integer "poids", default: 0
+    t.integer "catégorie"
+    t.string "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "épinglée"
+    t.datetime "discarded_at"
+    t.bigint "user_id", null: false
+    t.index ["discarded_at"], name: "index_wiki_pages_on_discarded_at"
+    t.index ["slug"], name: "index_wiki_pages_on_slug", unique: true
+    t.index ["user_id"], name: "index_wiki_pages_on_user_id"
+  end
+
+  add_foreign_key "absences", "users"
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "agent_interventions", "interventions"
+  add_foreign_key "agent_interventions", "users", column: "agent_id"
+  add_foreign_key "documents", "tools"
   add_foreign_key "interventions", "organisations"
-  add_foreign_key "interventions", "users"
+  add_foreign_key "interventions", "users", column: "team_id"
   add_foreign_key "mail_logs", "organisations"
+  add_foreign_key "notifications", "users"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
@@ -287,5 +386,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_07_01_131249) do
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "taggings", "tags"
+  add_foreign_key "tool_interventions", "interventions"
+  add_foreign_key "tool_interventions", "tools"
+  add_foreign_key "tools", "organisations"
   add_foreign_key "users", "organisations"
+  add_foreign_key "wiki_pages", "users"
 end

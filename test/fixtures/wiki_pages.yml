@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+blog:
+  titre: blog
+  publiée: true
+  user: hidalgo
+  poids: 1
+
+guide:
+  titre: guide
+  publiée: false
+  user: hidalgo
+  poids: 14
+
+fiche:
+  titre: fiche
+  publiée: false
+  user: hidalgo
+  poids: 7

@@ -10,7 +10,7 @@ class InterventionPolicy < ApplicationPolicy
   end
 
   def show?
-    index? && record.organisation == user.organisation
+    index? && organisation
   end
 
   def new?
@@ -30,16 +30,16 @@ class InterventionPolicy < ApplicationPolicy
   end
 
   def destroy?
-    show? && user.manager?
+    show? && manager
   end
 
-  def accepter?
-    show?
-  end
+  # def accepter?
+  #   show?
+  # end
 
-  def en_cours?
-    show?
-  end
+  # def en_cours?
+  #   show?
+  # end
 
   def terminer?
     show?
@@ -53,11 +53,15 @@ class InterventionPolicy < ApplicationPolicy
     show?
   end
 
-  # def archiver?
-  #   show?
-  # end
+  def archiver?
+    show?
+  end
 
   def purge?
     show?
+  end
+
+  def get_unavailable_elements?
+    index?
   end
 end

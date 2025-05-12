@@ -1,0 +1,5 @@
+<tr class="hover <%= 'text-error font-bold' if absence.en_cours? %>">
+  <td><%= l(absence.du, format: :long) %></td>
+  <td><%= l(absence.au, format: :long) %></td>
+  <td><%= absence.motif %></td>
+</td>

@@ -16,7 +16,9 @@ class Users::RegistrationsController < Devise::RegistrationsController
     @user.rôle = "manager"
     @user.dispatch_email_to_nom_prénom
     @user.save
-    Events.instance.publish('organisation.created', payload: {user_id: @user.id})
+    unless Rails.env.development?
+      Events.instance.publish('organisation.created', payload: {user_id: @user.id})
+    end
   end
 
   # GET /resource/edit

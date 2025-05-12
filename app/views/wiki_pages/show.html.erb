@@ -1,0 +1,18 @@
+<div class="flex w-full">
+  <%= render "wiki_navbar" %>
+  <div class="ml-8 sm:ml-64">
+    <%= render @wiki_page %>
+
+    <% if user_signed_in? && current_user.super_admin? %>
+      <%= link_to "Modifier", edit_wiki_page_path(@wiki_page), class: "mt-2 rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
+      <div class="inline-block ml-2">
+        <% if policy(@wiki_page).destroy? %>
+          <%= button_to "[X]", wiki_page_path(@wiki_page), method: :delete, form: { data: {'turbo-confirm': "Êtes-vous bien certain.e de vouloir supprimer définitivement cette page ?"} }, class: "mt-2 rounded-lg py-3 px-5 bg-gray-100 font-medium" %>
+        <% else %>
+          <div title="Suppression impossible : Vous n'êtes pas l'auteur de cette page wiki" class="mt-2 rounded-lg py-3 px-5 bg-gray-200 font-medium">[X]</div>
+        <% end %>
+      </div>
+    <% end %>
+    <%= link_to "Retour", wiki_pages_path(catégorie: params[:catégorie]), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium mt-4" %>
+  </div>
+</div>

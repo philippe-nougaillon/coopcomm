@@ -1,183 +1,28 @@
-<div class="hero min-h-screen bg-base-200">
-
-  <div class="flex flex-row flex-wrap gap-12 px-4 mt-8">
-
-    <div class="mx-auto w-full lg:w-96">
-      <div class="card shadow-2xl bg-base-100 p-8">
-        <h1 class="text-2xl font-bold border-b border-gray-400 pb-4 w-full text-center my-8">Connexion</h1>
-
-        <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
-          <div class="field">
-            <%= f.label :email %><br />
-            <%= f.email_field :email, autofocus: true, autocomplete: "email", class:'input input-sm input-bordered w-full', required: true %>
-          </div>
-
-          <div class="field my-4">
-            <%= f.label :password %><br />
-            <%= f.password_field :password, autocomplete: "current-password", class:'input input-sm input-bordered w-full', required: true %>
-          </div>
-
-          <% if devise_mapping.rememberable? %>
-            <div class="field">
-              <%= f.check_box :remember_me %>
-              <%= f.label :remember_me %>
-            </div>
-          <% end %>
-
-          <div class="actions">
-            <%= f.submit "Se connecter", class: 'btn btn-outline btn-lg btn-primary w-full my-4' %>
-          </div>
-        <% end %>
-        <%= render "devise/shared/links" %>
-      </div>
-    </div>
-
-    <div class="mx-auto">
-
-      <h1 class="text-4xl text-primary font-black">
-        TALEA 2
-      </h1>
-
-      <h2 class="text-3xl mb-12">
-        Application de gestion des Interventions
-      </h2>
-
-      <!--
-      <h3 class="text-xl text-secondary font-black my-6">
-        Un Workflow simple pour suivre le statut de chaque Intervention
-      </h3>
-
-      <div class="hidden lg:block">
-        <ul class="timeline">
-          <li>
-            <div class="timeline-start timeline-box text-info shadow-md">Nouveau</div>
-            <div class="timeline-middle">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-            </div>
-            <hr class="bg-primary"/>
-          </li>
-          <li>
-          <hr class="bg-primary"/>
-            <div class="timeline-middle">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-            </div>
-            <div class="timeline-end timeline-box text-primary shadow-md">Accepté</div>
-            <hr class="bg-primary"/>
-          </li>
-          <li>
-            <hr class="bg-primary"/>
-            <div class="timeline-start timeline-box text-warning font-black shadow-md">
-              En cours
-              <span class="loading loading-dots loading-xs"></span>
-            </div>
-            <div class="timeline-middle">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-            </div>
-            <hr/>
-          </li>
-          <li>
-            <hr/>
-            <div class="timeline-middle">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-secondary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-            </div>
-            <div class="timeline-end timeline-box text-error shadow-md">Terminé</div>
-            <hr/>
-          </li>
-          <li>
-            <hr/>
-            <div class="timeline-start timeline-box text-success shadow-md">
-              Validé
-            </div>
-            <div class="timeline-middle">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-secondary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-            </div>
-            <hr/>
-          </li>
-          <li>
-            <hr/>
-            <div class="timeline-middle">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-secondary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-            </div>
-            <div class="timeline-end timeline-box text-secondary shadow-md">Archivé</div>
-          </li>
-        </ul>
-      </div>
-      -->
-
-      <h3 class="text-xl text-secondary font-black my-6">
-        Une information claire et partagée entre les acteurs et services.
-        <br>
-        Une référence unique et sur tous les supports (PC/Smartphone/Tablette)
-      </h3>
-
-      <div class="hidden lg:block">
-        <ul class="timeline">
-          <li>
-            <div class="timeline-start timeline-box shadow-md" title="Une notification est reçue à chaque changement de statut">
-              Client/Adhérent
-              <span class="loading loading-ring loading-xs text-primary"></span>
-            </div>
-            <div class="timeline-middle">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-            </div>
-            <hr class="bg-primary"/>
-          </li>
-          <li>
-          <hr class="bg-primary"/>
-            <div class="timeline-middle">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-            </div>
-            <div class="timeline-end timeline-box shadow-md" title="Une notification est envoyée à chaque changement de statut">
-              <span class="loading loading-ring loading-xs text-primary"></span>
-              Agent technique
-            </div>
-            <hr class="bg-primary"/>
-          </li>
-          <li>
-            <hr class="bg-primary"/>
-            <div class="timeline-start timeline-box shadow-md" title="Une notification est reçue à chaque changement de statut">
-              <span class="loading loading-ring loading-xs text-primary"></span>
-              Manager
-            </div>
-            <div class="timeline-middle">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-primary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-            </div>
-            <hr/>
-          </li>
-          <li>
-            <hr/>
-            <div class="timeline-middle">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-secondary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-            </div>
-            <div class="timeline-end timeline-box shadow-md">Comptabilité</div>
-            <hr/>
-          </li>
-          <li>
-            <hr/>
-            <div class="timeline-start timeline-box shadow-md">Archives</div>
-            <div class="timeline-middle">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-secondary"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
-            </div>
-          </li>
-        </ul>
+<div class="hero min-h-screen">
+  <div class="mx-auto w-full lg:w-96 card shadow bg-base-100 p-8">
+    <h1 class="text-2xl font-bold border-b border-gray-400 pb-4 w-full text-center my-4">Connexion</h1>
+    <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+      <div class="field">
+        <%= f.label :email %><br />
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class:'input input-sm input-bordered w-full', required: true %>
       </div>
 
-      <h3 class="text-xl text-secondary font-black my-6">
-        + Un Workflow simple pour suivre le statut de chaque Intervention
-        <br>
-        + Photos de l'Intervention / Notification sur changement de Statut
-        <br> 
-        + Export Excel des interventions / Audit des modifications (Activité)  
-        <br>
-        + Création automatique d'une Intervention via un email envoyé à support@mg.talea2.fr
-        <br>
-        + IA TALEA : vous permet de visualiser les prochaines interventions à planifier
-        <br>
-        <br>
-        <%= link_to 'En savoir plus', 'https://www.philnoug.com/talea', class: 'underline hover:text-primary' %>
+      <div class="field my-4">
+        <%= f.label :password %><br />
+        <%= f.password_field :password, autocomplete: "current-password", class:'input input-sm input-bordered w-full', required: true %>
+      </div>
 
-      </h3>
-    </div>
+      <% if devise_mapping.rememberable? %>
+        <div class="field">
+          <%= f.check_box :remember_me %>
+          <%= f.label :remember_me %>
+        </div>
+      <% end %>
 
+      <div class="actions">
+        <%= f.submit "Se connecter", class: 'btn btn-outline lg:btn-lg rounded btn-primary hover:!text-white w-full my-4'%>
+      </div>
+    <% end %>
+    <%= render "devise/shared/links" %>
   </div>
 </div>

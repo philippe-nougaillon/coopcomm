@@ -1,0 +1,98 @@
+<tr id="<%= dom_id tool %>" class="hover">
+  <td class="text-center">
+    <% if tool.icon_name %>
+      <span class="material-symbols-outlined text-success">
+        <%= tool.icon_name %>
+      </span>
+    <% end %>
+  </td>
+  <td class="text-xl sm:text-2xl font-black text-primary">
+    <%= link_to tool.name.humanize, tool, class: 'text-primary hover:underline', title: (tool.description.blank? ? 'Aucune description' : tool.description) %>
+  </td>
+
+  <td>
+    <%= tool.modèle %>
+  </td>
+  <td>
+    <%= tool.marque %>
+  </td>
+
+  <% case params[:vue]%>
+  <% when 'disponible' %>
+    <td>
+      <span class="material-symbols-outlined text-success">
+        check_circle
+      </span>
+    </td>
+  <% when 'indisponible' %>
+    <td>
+      <span class="material-symbols-outlined text-error">
+        cancel
+      </span>
+    </td>
+  <% when 'calendrier' %>
+    <% (@date..@date_fin).each do | date | %>
+      <td>
+        <% interventions = tool.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
+        <% interventions_matin = interventions.where("début_prévue < ?", Time.parse(date.to_s + " 13:00")) %>
+        <% interventions_soir = interventions.where("fin_prévue > ?", Time.parse(date.to_s + " 13:00")) %>
+      
+        <% if interventions_matin.any? %>
+          <span style="background-color: red; padding-left: 15px;" title="<%= interventions_matin.pluck(:description) %>"></span>
+        <% else %>
+          <%= link_to new_intervention_path(tool_ids: tool.id, début_prévue: date, début_prévue_hour: 8, fin_prévue: date, fin_prévue_hour: 13) do %>
+            <span style="background-color: lightgreen; padding-left: 15px;"></span>
+          <% end %>
+        <% end %>
+
+        <% if interventions_soir.any? %>
+          <span style="background-color: red; padding-left: 15px;" title="<%= interventions_soir.pluck(:description) %>"></span>
+        <% else %>
+          <%= link_to new_intervention_path(tool_ids: tool.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 5, fin_prévue: date, fin_prévue_hour: 18) do %>
+            <span style="background-color: lightgreen; padding-left: 15px;"></span>
+          <% end %>
+        <% end %>
+      </td>
+    <% end %>
+
+    <!--
+    <%# if tool.disponible?(params[:quand] || DateTime.now) %>
+      <span class="material-symbols-outlined text-success">
+        check_circle
+      </span>
+    <%# elsif  %>
+      <span class="material-symbols-outlined text-error">
+        cancel
+      </span>
+    <%# end %>
+    -->
+
+  <% end %>
+  <% if false %>
+    <td>
+      <div class="flex justify-end items-center gap-2">
+        <% if policy(tool).show? %>
+          <%= link_to tool, title: 'Voir' do %>
+            <span class="material-symbols-outlined">
+              visibility
+            </span>
+          <% end %>
+        <% end %>
+        <% if policy(tool).edit? %>
+          <%= link_to edit_tool_path(tool), title: 'Modifier' do %>
+            <span class="material-symbols-outlined">
+              edit
+            </span>
+          <% end %>
+        <% end %>
+        <% if policy(tool).destroy? %>
+          <%= button_to tool_path(tool), title: "Supprimer l'outil", method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, form: { class: "flex items-center" }, 'data-testid': "Supprimer l'outil" do %>
+            <span class="material-symbols-outlined">
+              delete
+            </span>
+          <% end %>
+        <% end %>
+      </div>
+    </td>
+  <% end %>
+</tr>

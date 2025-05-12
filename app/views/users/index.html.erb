@@ -1,43 +1,66 @@
 <div class="w-full mb-24">
   <div class="flex flex-wrap justify-between items-center">
-    <h1 class="text-4xl text-primary font-bold">Utilisateurs</h1>
-    <%= link_to "Ajouter un Utilisateur", admin_create_new_user_path, class: "hidden sm:block rounded-lg py-3 px-5 bg-blue-600 text-white font-medium" %>
-    <%= link_to "+", admin_create_new_user_path, class: "block sm:hidden rounded-lg py-3 px-5 bg-blue-600 text-white font-medium" %>
+    <h1 class="text-3xl sm:text-4xl text-primary font-bold">Utilisateurs</h1>
+    <%= link_to "Ajouter un Utilisateur", admin_create_new_user_path, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:!text-white" %>
+    <%= link_to "+", admin_create_new_user_path, class: "inline-flex sm:hidden btn btn-primary btn-outline hover:!text-white" %>
   </div>
 
   <%= form_tag request.path, method: :get do %>
     <div class="flex flex-wrap items-end gap-4 mt-8">
-      <div class="w-full md:w-8/12 lg:w-3/12">
+      <div class="w-full md:w-fit">
         <%= label_tag :search, "Rechercher" %>
-        <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-bordered w-full', placeholder: 'Nom/Prénom/Email' %>
+        <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-bordered input-sm w-full', placeholder: 'Nom / Prénom / Email' %>
       </div>
 
-      <div class="w-full md:w-5/12 lg:w-2/12">
-        <%= label_tag :rôle %>
-        <%= select_tag :rôle, 
-        options_for_select(User.rôles, 
-        params[:rôle]), 
-        include_blank:true,
-        class: 'select select-bordered w-full', 
-        onchange: 'this.form.submit()' 
-        %>    
-      </div>
+      <div class="flex items-end gap-4">
+        <div class="w-full md:w-fit">
+          <%= label_tag :rôle %>
+          <%= select_tag :rôle, options_for_select(User.rôles.sort_by { |k, _| I18n.transliterate(k) }, params[:rôle]), include_blank:true, class: 'select select-bordered select-sm w-full', onchange: 'this.form.submit()' %>    
+        </div>
 
-      <div class="w-full md:w-5/12 lg:w-2/12">
-        <%= label_tag :service %>
-        <%= select_tag :service, options_for_select(@services, params[:service]), include_blank: true, class: 'select select-bordered w-full', onchange: 'this.form.submit()' %>
+        <div class="w-full md:w-fit">
+          <%= label_tag :service %>
+          <%= select_tag :service, options_for_select(@services, params[:service]), include_blank: true, class: 'select select-bordered select-sm w-full', onchange: 'this.form.submit()' %>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <%= label_tag :absent, "Absents ?", class: 'whitespace-nowrap cursor-pointer' %>
+          <%= check_box_tag :absent, 1, params[:absent], class:'checkbox mr-2', onchange:'this.form.submit()' %>
+        </div>
       </div>
     </div>
   <% end %>
 
   <div class="divider"></div>
 
-  <div id="users" class="min-w-full">
-    <%= render @users %>
+  <div class="overflow-x-auto">
+    <table id="users" class="table table-sm">
+      <thead class="bg-slate-100">
+        <tr>
+          <th></th>
+          <th>Nom Prénom</th>
+          <th>Absent ?</th>
+          <th>Rôle</th>
+          <th>Service</th>
+          <th>Email</th>
+          <th>Mémo</th>
+          <th>Évaluation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%= render @users %>
+      </tbody>
+      <tfoot>
+        <tr>
+          <th colspan=5></th>
+        </tr>
+      </tfoot>
+    </table>
   </div>
 
-  <p class="mt-8">
-    Affichage de <%= pluralize(@users.count, 'utilisateur', plural: 'utilisateurs') %> sur <%= current_user.organisation.users.count %>
-  </p>
+  <div class="my-6">
+    <%== pagy_info(@pagy) %>
+    <%== pagy_nav(@pagy) %>
+  </div>
 
 </div>

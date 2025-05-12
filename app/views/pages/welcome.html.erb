@@ -1,0 +1,304 @@
+<div class="lg:px-8">
+  <div class="flex flex-col justify-between">
+    <h1 class="text-4xl lg:text-5xl font-black text-primary mb-4 lg:mb-8">
+      COO<span class="underline">P</span>COM
+      <div class="divider"></div>
+    </h1>
+
+    <div class="lg:flex lg:flex-wrap">
+      <div class="flex-1">
+        <h2 class="text-3xl lg:text-4xl font-black mb-6 lg:mb-12">
+          <span class="underline">P</span>lateforme de mutualisation
+          <br> 
+          de services communs
+        </h2>
+
+        <h3 class="text-2xl lg:text-3xl text-secondary mb-6 lg:mb-12">
+          Gérez facilement la coopération et la mutualisation
+          <br>
+          des services et ressources de votre intercommunalité (EPCI)
+        </h3>
+
+        <div class="mt-8 flex flex-wrap gap-4 text-xl font-black mb-4 lg:mb-12">
+          <%# link_to "En savoir plus", url_for(anchor: 'more'), class: 'btn lg:btn-lg lg:btn-wide btn-primary text-white' %>
+          <%# link_to "S'inscrire", '/users/sign_up', class: 'btn btn-outline lg:btn-lg btn-success hover:!text-white' %>
+          <%= link_to "Se connecter", '/users/sign_in', class: 'btn btn-outline lg:btn-lg lg:btn-wide btn-primary hover:!text-white' %>
+        </div>
+      </div>
+      <div class="w-36 lg:w-64 hover:animate-pulse">
+        <%= image_tag 'Cooperation.svg', class: 'opacity-15' %>
+      </div>
+    </div>
+  </div>
+
+  <div id="more" class="mt-12" style="scroll-snap-align: start;">
+    <h2 class="text-3xl lg:text-4xl text-primary font-black">
+      Les bénéfices de la plateforme COOPCOM
+    </h2>
+    <div class="divider mb-12"></div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 p-4 gap-4">
+      <div class="border border-2 border-slate-300 rounded p-4">
+        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
+          <span class="material-symbols-outlined text-error">
+            communities
+          </span>
+          <b>Une information claire et partagée</b> 
+        </p>
+        <p>
+          Plateforme source unique de référence (SSOT), robuste et fiable.
+          Chaque modification de données est auditable
+        </p>
+      </div>
+
+      <div class="border border-2 border-slate-300 rounded p-4">
+        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
+          <span class="material-symbols-outlined text-error">
+            smartphone
+          </span>
+          <b>Une référence unique sur tous supports</b> 
+        </p>
+        <p>
+          Design Responsive pour une utilisation sur Smartphone/PC/Tablette
+        </p>
+      </div>
+
+      <div class="border border-2 border-slate-300 rounded p-4">
+        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
+          <span class="material-symbols-outlined text-error">
+            steppers
+          </span>
+          <b>Workflow</b>
+        </p>
+        <p>
+          Chaque intervention passe d'un état à un autre grâce à des actions déterminées à l'avance. Certaines actions provoque l'envoi de notification.
+        </p>
+      </div>
+
+      <div class="border border-2 border-slate-300 rounded p-4">
+        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
+          <span class="material-symbols-outlined text-error">
+            monitoring
+          </span>
+          <b>Maîtrise budgétaire</b>
+        </p>
+        <p>
+          Un tableau de bord de gestion permet aux adhérents et managers de suivre leurs indicateurs clés
+        </p>
+      </div>
+
+      <div class="border border-2 border-slate-300 rounded p-4">
+        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
+          <span class="material-symbols-outlined text-error">
+            engineering
+          </span>
+          <b>Gestion des Interventions</b>
+        </p>
+        <p>
+          Une demande d'intervention est émise par l'adhérent à destination d'une équipe (espace vert, secrétariat, petite-enfance, etc...). L'équipe va ensuite planifier l'intervention en lui attribuant une date et un agent. Une fois l'intervention terminée, l'agent change l'état par l'action 'Terminer', ce qui provoque l'envoi d'une notification à destination de l'adhérent demander, qui devra la valider ou la refuser, et lui attribuer une note et donner son avis
+        </p>
+      </div>
+
+      <div class="border border-2 border-slate-300 rounded p-4">
+        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
+          <span class="material-symbols-outlined text-error">
+            location_city
+          </span>
+          <b>Gestion des Adhérents</b>
+        </p>
+        <p>
+          Les adhérents ont un accès à la plateforme limité aux données relatives à leurs demande d'interventions
+        </p>
+      </div>
+
+      <div class="border border-2 border-slate-300 rounded p-4">
+        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
+          <span class="material-symbols-outlined text-error">
+            groups
+          </span>
+          <b>Gestion des Agents, Equipes, Managers</b>
+        </p>
+        <p>
+          Les agents et équipes ont un accès à la plateforme limité aux données relatives à leurs interventions. Quant aux managers, ils disposent d'un accès complet aux données de leur organisation
+        </p>
+      </div>
+
+      <div class="border border-2 border-slate-300 rounded p-4">
+        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
+          <span class="material-symbols-outlined text-error">
+            beach_access
+          </span>
+          <b>Gestion des Absences Agents</b>
+        </p>
+        <p>
+          Permet de ne pas planifier ou attribuer une intervention à un agent pour lequel une absence est prévue
+        </p>
+      </div>
+
+      <div class="border border-2 border-slate-300 rounded p-4">
+        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
+          <span class="material-symbols-outlined text-error">
+            qr_code_2
+          </span>
+          <b>Pointage par QR Code</b>
+        </p>
+        <p>
+          Pour les interventions récurrentes, il suffit de créer une intervention modèle et d'imprimer son QR_Code, qui pourra être ensuite flashé afin de signifier le début de l'intervention. 
+          L'adhérent en sera automatiquement notifié. Une seconde utilisation du QR_Code marquera la fin de l'intervention
+        </p>
+      </div>
+
+      <div class="border border-2 border-slate-300 rounded p-4">
+        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
+          <span class="material-symbols-outlined text-error">
+            chat
+          </span>
+          <b>Messagerie instantanée</b>
+        </p>
+        <p>
+          Un espace de communication instantanée permet aux managers de discuter directement avec les agents
+        </p>
+      </div>
+
+      <div class="border border-2 border-slate-300 rounded p-4">
+        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
+          <span class="material-symbols-outlined text-error">
+            notifications
+          </span>
+          <b>Notifications et alertes</b>
+        </p>
+        <p>
+          Certains changements d'état provoque l'envoi d'email ou de message WhatsApp afin d'en informer toutes les parties prenantes
+        </p>
+      </div>
+
+      <div class="border border-2 border-slate-300 rounded p-4">
+        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
+          <span class="material-symbols-outlined text-error">
+            network_intelligence
+          </span>
+          <b>IA pour prévision d'interventions</b>
+        </p>
+        <p>
+          Sur la base des interventions précédentes, une IA va tenter de proposer des interventions à venir
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="min-h-screen mt-12">
+    <h2 class="text-3xl lg:text-4xl text-primary font-black">
+      Tutoriel vidéo
+    </h2>
+    <div class="divider mb-12"></div>
+    <div class="mockup-window bg-base-300 border">
+      <div class="bg-base-200 flex justify-center px-4 py-64">En cours de tournage !</div>
+    </div>
+  </div>
+
+  <div class="min-h-screen mt-12">
+    <h2 class="text-3xl lg:text-4xl text-primary font-black">
+      Wiki
+    </h2>
+    <div class="divider mb-12"></div>
+
+    <ul class="list-disc list-inside">
+      <li class="text-2xl my-4">
+        Blog
+      </li>
+      <ul class="list-disc list-inside text-xl ml-8 my-4">
+        <% @wiki_pages.blog.where(publiée: true).order(poids: :desc).each do |wiki_page| %>
+          <li>
+            <%= link_to wiki_page.titre, wiki_page, class: "text-primary text-2xl font-black hover:underline" %>
+          </li>
+        <% end %>
+      </ul>
+      <li class="text-2xl my-4">
+        Guides
+      </li>
+      <ul class="list-disc list-inside text-xl ml-8 my-4">
+        <% @wiki_pages.guide.where(publiée: true).order(poids: :desc).each do |wiki_page| %>
+          <li>
+            <%= link_to wiki_page.titre, wiki_page, class: "text-primary hover:underline" %>
+          </li>
+        <% end %>
+      </ul>
+      <li class="text-2xl my-4">
+        Fiches mémo
+      </li>
+      <ul class="list-disc list-inside text-xl ml-8 my-4">
+        <% @wiki_pages.fiches.where(publiée: true).order(poids: :desc).each do |wiki_page| %>
+          <li>
+            <%= link_to wiki_page.titre, wiki_page, class: "text-primary hover:underline" %>
+          </li>
+        <% end %>
+      </ul>
+      </li>
+    </ul>
+
+    <p class="mt-12">
+      <%= link_to 'Consultez notre wiki', wiki_pages_path, class: 'text-xl text-primary hover:underline' %>
+    </p>
+  </div>
+
+  <div class="min-h-screen mt-12">
+    <h2 class="text-3xl lg:text-4xl text-primary font-black">
+      En savoir plus
+    </h2>
+    <div class="divider mb-12"></div>
+
+    <ul class="list-disc list-inside">
+      <li class="text-2xl my-4">
+        <%= link_to 'Nous contacter', 'https://www.aikku.eu/fr/contact?objet=COOPCOM', target: '_blank', class: 'text-primary hover:underline' %>
+      </li>
+      <li class="text-2xl my-4">
+        <%= link_to 'Mentions légales', mentions_legales_path, class: 'text-primary hover:underline' %>
+      </li>
+      <li class="text-2xl my-4">
+        ...      
+      </li>
+    </ul>
+
+
+  </div>
+
+  <div class="min-h-screen mt-12">
+    <h2 class="text-3xl lg:text-4xl text-primary font-black">
+      Témoignages de nos clients
+    </h2>
+    <div class="divider mb-12"></div>
+
+    <div class="chat chat-start">
+      <div class="chat-image avatar">
+        <div class="w-10 rounded-full">
+          <img
+            alt="Tailwind CSS chat bubble component"
+            src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+        </div>
+      </div>
+      <div class="chat-bubble text-warning">It was said that you would, destroy the Sith, not join them.</div>
+    </div>
+    <div class="chat chat-start">
+      <div class="chat-image avatar">
+        <div class="w-10 rounded-full">
+          <img
+            alt="Tailwind CSS chat bubble component"
+            src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+        </div>
+      </div>
+      <div class="chat-bubble">It was you who would bring balance to the Force</div>
+    </div>
+    <div class="chat chat-start">
+      <div class="chat-image avatar">
+        <div class="w-10 rounded-full">
+          <img
+            alt="Tailwind CSS chat bubble component"
+            src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+        </div>
+      </div>
+      <div class="chat-bubble text-primary">Not leave it in Darkness</div>
+    </div>
+  </div>
+</div>
+
+<%= render partial: 'partials/footer' %>

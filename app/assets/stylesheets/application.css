@@ -14,16 +14,200 @@
  *= require_self
  */
 
-[type=radio]:checked,
-[type=radio]:checked:focus,
-[type=radio]:checked:hover {
-  /* Noir */
-  /* background-color: var(--fallback-bc, oklch(var(--bc) / var(--tw-bg-opacity)));; */
-  background-color: rgb(250 204 21 / var(--tw-bg-opacity));
+/****** DIVERS *****/
+.select, .input {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
-.btm-nav>:where(.hover-active):hover {
+.ring{
+  border-radius: .5rem;
+}
+
+/***** END DIVERS *****/
+
+
+
+/***** ÉTOILES *****/
+.mask[type=radio]:checked,
+.mask[type=radio]:checked:focus,
+.mask[type=radio]:checked:hover {
+  /* Noir */
+  /* background-color: var(--fallback-bc, oklch(var(--bc) / var(--tw-bg-opacity)));; */
+  /* Jaune */
+  /* background-color: rgb(250 204 21 / var(--tw-bg-opacity)); */
+  /* Primary */
+  background-color: var(--fallback-p, oklch(var(--p) / var(--tw-bg-opacity)));
+}
+
+/***** END ÉTOILES *****/
+
+/* .btm-nav>:where(.hover-active):hover {
   border-top-width: 2px;
   --tw-bg-opacity: 1;
   background-color: var(--fallback-b1, oklch(var(--b1) / var(--tw-bg-opacity)));
+} */
+
+/***** TYPE WRITER *****/
+
+.typewriter p {
+  width: 0;
+  animation: typing 2s steps(40, end) forwards;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 3px solid;
+  font-family: monospace;
+  font-size: 2em;
 }
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+/* @keyframes blink {
+  50% {
+    border-color: transparent
+  }
+} */
+
+/***** END TYPE WRITER *****/
+
+
+/***** BURGER MENU *****/
+
+#my-drawer {
+  display: none;
+}
+
+
+/* WIDTH / HEIGHT / MARGIN À modifier proportionnellement aux autre propriétés avec le même commentaire pour adapter la taille */
+label#drawer-label {
+  top: 10px;
+  right: 0;
+  left: 0;
+  display: block;
+  width: 20px; 
+  height: 20px;
+  margin: -10px auto 0 auto;
+  cursor: pointer;
+  position: relative;
+  z-index: 50
+}
+
+label#drawer-label:before {
+  content: none;
+}
+
+/* HEIGHT / MARGIN-BOTTOM À modifier proportionnellement aux autre propriétés avec le même commentaire pour adapter la taille */
+label#drawer-label div {
+  position: relative;
+  top: 0;
+  height: 4px;
+  background-color: #000;
+  margin-bottom: 4px;
+  transition: 0.3s ease transform, 0.3s ease top, 0.3s ease width, 0.3s ease right;
+  border-radius: 2px;
+}
+
+label#drawer-label div:first-child {
+  transform-origin: 0;
+}
+
+/* TRANSFORM-ORIGIN À modifier proportionnellement aux autre propriétés avec le même commentaire pour adapter la taille */
+label#drawer-label div:last-child {
+  margin-bottom: 0;
+  transform-origin: 20px;
+}
+
+/* WIDTH À modifier proportionnellement aux autre propriétés avec le même commentaire pour adapter la taille */
+label#drawer-label div:nth-child(2) {
+  right: 0;
+  width: 20px;
+}
+
+/* TOP À modifier proportionnellement aux autre propriétés avec le même commentaire pour adapter la taille */
+#my-drawer:checked+div.drawer-content label#drawer-label div:first-child {
+  top: -2px;
+  transform: rotateZ(45deg);
+}
+
+/* TOP À modifier proportionnellement aux autre propriétés avec le même commentaire pour adapter la taille */
+#my-drawer:checked+div.drawer-content label#drawer-label div:last-child {
+  top: 2px;
+  transform: rotateZ(45deg);
+}
+
+/* WIDTH / RIGHT À modifier proportionnellement aux autre propriétés avec le même commentaire pour adapter la taille */
+#my-drawer:checked+div.drawer-content label#drawer-label div:nth-child(2) {
+  width: 28.333333px;
+  top: 0;
+  right: 4.333333px;
+  transform: rotateZ(-45deg);
+}
+
+/***** END BURGER MENU *****/
+
+/***** FLIP CARD ANIMATION *****/
+
+.flip-card {
+  background-color: transparent;
+  width: 100vw;
+  height: 200px;
+  perspective: 1000px;
+}
+
+/* Format lg de TailwindCSS */
+@media (min-width: 64rem) {
+  .flip-card {
+    width: 300px;
+    height: 300px;
+  }
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.flip-card:hover .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+}
+
+/***** END FLIP CARD ANIMATION *****/
+
+/***** SLIM-SELECT INDISPONIBILITÉ *****/
+
+.ss-option.invalid{
+  color: grey !important;
+}
+.ss-option.invalid.ss-selected,
+.ss-option.invalid:hover {
+  color: white !important;
+  background-color: red !important;
+}
+
+/***** END SLIM-SELECT INDISPONIBILITÉ *****/

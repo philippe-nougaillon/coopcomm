@@ -4,11 +4,11 @@ class UsersController < ApplicationController
 
   # GET /users or /users.json
   def index
+    @services = User.services.sort
     @users = current_user.organisation.users.ordered
-    @services = User.services
 
     if params[:search].present?
-      @users = @users.where("nom ILIKE :search OR prénom ILIKE :search OR email ILIKE :search", {search: "%#{params[:search]}%"})
+      @users = @users.where("nom ILIKE :search OR prénom ILIKE :search", {search: "%#{params[:search]}%"})
     end
 
     if params[:rôle].present?
@@ -18,11 +18,27 @@ class UsersController < ApplicationController
     if params[:service].present?
       @users = @users.where(service: params[:service])
     end
+
+    if params[:absent].present?
+      user_ids = []
+      @users.each do |user|
+        user_ids << user.id if user.absent?
+      end
+      @users = @users.where(id: user_ids)
+    end
+
+    @pagy, @users = pagy(@users, items: 15)
   end
 
   # GET /users/1 or /users/1.json
   def show
-    @audits = Audited::Audit.where(user_id: @user.id).reorder(id: :desc)
+    @absences = @user.absences.ordered
+    @audits = @user.own_and_associated_audits.reorder(id: :desc)
+    if @user.memo && @user.memo.include?('[')
+      @lng = @user.memo.tr('[] ', '').split(',').last
+      @lat = @user.memo.tr('[] ', '').split(',').first
+    end
+    @pagy, @audits = pagy(@audits, items: 10)
   end
 
   # GET /users/new
@@ -68,24 +84,66 @@ class UsersController < ApplicationController
     @user.destroy!
 
     respond_to do |format|
-      format.html { redirect_to users_url, notice: "Utilisateur détruit avec succès." }
+      format.html { redirect_to users_url, notice: "Utilisateur supprimé avec succès." }
       format.json { head :no_content }
     end
+  end
+
+  def agent_calendrier
+    params[:vue] ||= 'calendrier'
+    params[:date] = Date.today if params[:date].blank?
+    @date = params[:date].to_date
+    @agents = current_user.organisation.users.where(rôle: "agent")
+    @services = User.services.sort
+
+    if params[:search].present?
+      @agents = @agents.where("nom ILIKE :search OR prénom ILIKE :search OR email ILIKE :search", {search: "%#{params[:search]}%"})
+    end
+
+    if params[:service].present?
+      @agents = @agents.where(service: params[:service])
+    end
+
+    # Le code actuel n'est pas utile. Si besoin on peut le faire sur la période (@date..@date_fin). Le mieux serait p-e de faire des cases grises directement dans le calendrier.
+    # if params[:absent].present?
+    #   agent_ids = []
+    #   @agents.each do |agent|
+    #     agent_ids << agent.id if agent.absences.any?
+    #   end
+    #   @agents = @agents.where(id: agent_ids)
+    # end
+
+    @date_fin = @date + 10.day
+
+    @agents = @agents.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
+    @pagy, @agents = pagy(@agents, items: 15)
   end
 
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_user
-      @user = User.find(params[:id])
+      @user = User.find_by(slug: params[:id])
     end
 
     # Only allow a list of trusted parameters through.
     def user_params
-      params.require(:user).permit(:nom, :prénom, :email, :password, :rôle, :service)
+      params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :rôle, :service, :memo, absences_attributes: [:id, :_destroy, :du, :au, :motif])
     end
 
     def is_user_authorized
       authorize @user ? @user : User
+    end
+
+    def sortable_columns
+      ['users.nom', 'users.service']
+    end
+
+    def sort_column
+      sortable_columns.include?(params[:column]) ? params[:column] : "users.nom"
+    end
+
+    def sort_direction
+      %w[asc desc].include?(params[:direction]) ? params[:direction] : "asc"
     end
 
 end

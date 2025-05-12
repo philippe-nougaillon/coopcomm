@@ -4,8 +4,168 @@
 # model remove the "{}" from the fixture names and add the columns immediately
 # below each fixture, per the syntax in the comments below
 #
-one: {}
-# column: value
-#
-two: {}
-# column: value
+hidalgo:
+  organisation: mairie_paris
+  nom: Hidalgo
+  prénom: Anne
+  email: anne.hidalgo@gmail.commmmm
+  rôle: manager
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
+  slug: a188443b-d7d9-44ed-9d59-c1c968eac95b
+
+weil:
+  organisation: mairie_paris
+  nom: Weil
+  prénom: Ariel
+  email: ariel.weil@gmail.commmmm
+  rôle: adhérent
+  téléphone: 0123456789
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
+  slug: fba70281-7004-405d-8afa-153355373125
+
+berthout:
+  organisation: mairie_paris
+  nom: Berthout
+  prénom: Florence
+  email: florence.berthout@gmail.commmmm
+  rôle: adhérent
+  slug: 193866f0-bff9-4ec8-978c-c2c77b948f32
+
+nettoyage:
+  organisation: mairie_paris
+  nom: Team
+  prénom: Nettoyage
+  email: nettoyage@gmail.commmmm
+  rôle: équipe
+  slug: 352adeba-4906-44c5-bc28-22339a6f17fe
+
+
+électricité:
+  organisation: mairie_paris
+  nom: Team
+  prénom: Électricité
+  email: electricite@gmail.commmmm
+  rôle: équipe
+  slug: c379cf52-5e54-4852-bd7a-dc9cfdc70392
+
+bond:
+  organisation: mairie_paris
+  nom: Bond
+  prénom: James
+  email: james.bond@gmail.commmmm
+  rôle: agent
+  service: Comptabilité
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
+  slug: 17ede8b7-ff8f-4a48-966e-4ef3186cae7d
+
+martin_technique_paris:
+  organisation: mairie_paris
+  nom: Martin
+  prénom: Michel
+  email: michel.martin@gmail.commmmm
+  rôle: agent
+  service: Technique
+  slug: 7133b68a-1386-4f68-9243-10a8a4241191
+
+patrick_adherent_paris:
+  organisation: mairie_paris
+  nom: Bruel
+  prénom: Patrick
+  email: patrick.bruel@gmail.commmmm
+  rôle: adhérent
+  slug: e2845be0-8193-4771-9e99-94b692ad8c5f
+
+user_paris:
+  organisation: mairie_paris
+  nom: user
+  prénom: name
+  email: name.user@gmail.commmmm
+  rôle: adhérent
+  slug: 7b53b6a3-cf0a-43ec-bb03-7af8d36781d1
+
+philippe_super_admin:
+  organisation: mairie_paris
+  nom: Nougaillon
+  prénom: Philippe
+  email: philippe.nougaillon@aikku.eu
+  rôle: manager
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
+  slug: 0fbc869e-8104-4f01-8cb1-c826dc8dfae3
+
+adhérent_sans_intervention:
+  organisation: mairie_paris
+  nom: Dumont
+  prénom: Jules
+  email: adherent-sans-intervention@gmail.commmmm
+  rôle: adhérent
+  slug: f0595980-a28d-4424-82db-ee89e6eadc7d
+
+# Organisation marseille
+manager_marseille:
+  organisation: mairie_marseille
+  nom: Payan
+  prénom: Benoît
+  email: benoit.payan@gmail.commmmm
+  rôle: manager
+  slug: aca60f88-a19b-4417-bfce-1aee4647a624
+
+nettoyeur_marseille:
+  organisation: mairie_marseille
+  nom: Team
+  prénom: Nettoyage Marseille
+  email: nettoyage_marseille@gmail.commmmm
+  rôle: équipe
+  slug: 3bd58e3a-508a-4f8e-bef7-c0f5741363b5
+
+agent_marseille:
+  organisation: mairie_marseille
+  nom: Dupont
+  prénom: René
+  email: rene.dupont@gmail.commmmm
+  rôle: équipe
+  slug: 96a436c3-1b9c-457a-aeb0-60ca4e53b8f0
+
+adherent_marseille:
+  organisation: mairie_marseille
+  nom: Tapie
+  prénom: Bernard
+  email: bernard.tapie@gmail.commmmm
+  rôle: adhérent
+  slug: ee438223-a203-43f4-9d97-1654c24d2520
+
+# Organisation sans manager
+
+john_wick:
+  organisation: organisation_sans_manager
+  nom: wick
+  prénom: john
+  email: john.wick@gmail.commmmmm
+  rôle: agent
+  service: Comptabilité
+  slug: 02cea440-2f32-4f63-9614-df94069a6bca
+
+george_lucas:
+  organisation: organisation_sans_manager
+  nom: Lucas
+  prénom: George
+  email: george.lucas@gmail.commmmmm
+  rôle: adhérent
+  slug: d2a62448-e26a-4a7b-8c07-81f3815825ac
+
+# Organisation sans intervention
+
+michael_jackson:
+  organisation: organisation_sans_intervention
+  nom: Jackson
+  prénom: Michael
+  email: michael.jackson@gmail.commmmmm
+  rôle: manager
+  slug: a21e461c-088e-418e-a5df-2720326712b8
+
+emmanuel_valls:
+  organisation: organisation_sans_intervention
+  nom: Valls
+  prénom: Emmanuel
+  email: valls.emmanuel@gmail.commmmmm
+  rôle: adhérent
+  slug: 33872d35-052f-427c-9181-e5aff5db1853

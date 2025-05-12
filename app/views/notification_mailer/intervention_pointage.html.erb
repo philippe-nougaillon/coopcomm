@@ -1,0 +1,24 @@
+Bonjour,
+<br><br>
+Le QRCode de l'intervention '<b><%= @intervention.description.humanize %></b>' vient d'être flashé.
+
+<br><br>
+Arrivée
+<br>
+<strong><%= I18n.l(@intervention.début, format: :long) %></strong>
+<% if @intervention.fin %>
+  <br><br>
+  Départ
+  <br>
+  <strong><%= I18n.l(@intervention.fin, format: :long) %></strong>
+
+  <br><br>
+  Durée
+  <br>
+  <strong>
+    <%= @intervention.durée_humanized %>
+  </strong>
+<% end %>
+
+<br><br>
+<%= link_to "Voir l'intervention", intervention_url(@intervention) %>

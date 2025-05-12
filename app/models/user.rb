@@ -1,64 +1,94 @@
 class User < ApplicationRecord
-  audited
+  extend FriendlyId
+  friendly_id :slug_candidates, use: :slugged
+
+  audited except: :notifications_last_seen_at
+
 
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :rememberable, :timeoutable 
   devise :database_authenticatable,
          :recoverable,
          :validatable,
-         :trackable,
-         :registerable,
-         :omniauthable,
-         omniauth_providers: [:google_oauth2]
+         :trackable
+        #  :registerable,
+        #  :omniauthable,
+        #  omniauth_providers: [:google_oauth2]
 
   belongs_to :organisation, optional: true
-  has_many :interventions_agent, class_name: :Intervention, foreign_key: :agent_id
-  has_many :interventions_agent_binome, class_name: :Intervention, foreign_key: :agent_binome_id
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
+  has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention', dependent: :destroy
+  has_many :interventions, through: :agent_interventions
+  has_many :notifications, dependent: :destroy
+  has_many :absences, dependent: :destroy
+  accepts_nested_attributes_for :absences, 
+                              allow_destroy:true, 
+                              reject_if: lambda {|attributes| attributes['du'].blank? || attributes['au'].blank? }
 
-  normalizes :nom,    with: -> nom { nom.humanize.strip }
+  normalizes :nom,    with: -> nom { nom.upcase.strip }
   normalizes :prénom, with: -> prénom { prénom.humanize.strip }
 
-
-  enum rôle: {
+  enum :rôle, {
     adhérent: 0,
     agent: 1,
     manager: 2,
     équipe: 3
   }
 
-  enum service: {
-    technique: 0,
-    comptabilité: 1,
-    informatique: 2,
-    secrétariat: 3,
-    périscolaire: 4,
-    ménage: 5
+  enum :service, {
+    Technique: 0,
+    Comptabilité: 1,
+    Informatique: 2,
+    Secrétariat: 3,
+    Périscolaire: 4,
+    Ménage: 5
   }
 
-  scope :ordered, -> {order(:nom)}
+  scope :ordered, -> { order(:nom) }
 
   def self.grouped_agents(users)
     h = {}
     User.services.keys.each do |key|
-      h[key.humanize] = users.agent.where(service: key).order(:nom).pluck(:nom, :id)
+      h[key.humanize] = users.agent.where(service: key).order(:nom, :prénom).pluck(:nom, :prénom, :id).map { |nom, prénom, id| ["#{nom} #{prénom}", id] }
     end
-    return h
+    return h.sort_by { |k, _| I18n.transliterate(k) }.to_h
   end
 
   def nom_prénom
     "#{self.nom} #{self.prénom}"
   end
 
+  def nom_prenom_role
+    "#{self.nom_prénom} (#{self.rôle.upcase})"
+  end
+
   def super_admin?
-    %w[philippe.nougaillon@gmail.com contact@philnoug.com pierreemmanuel.dacquet@gmail.com].include?(self.email)
+    %w[philippe.nougaillon@aikku.eu pierre-emmanuel.dacquet@aikku.eu sebastien.pourchaire@aikku.eu p-edacquet@hotmail.fr].include?(self.email)
   end
 
   def moyenne
-    sum = self.interventions_agent.where.not(note: 0).sum(:note) + self.interventions_agent_binome.where.not(note: 0).sum(:note)
-    count = self.interventions_agent.where.not(note: 0).count + self.interventions_agent_binome.where.not(note: 0).count
-    
-    return count != 0 ? "#{(sum.to_f / count).round(1)} / 5" : ""
+    notes_agents  = self.interventions.where.not(note: 0)
+    count = notes_agents.count
+
+    unless count.zero?
+      notes_agents.sum(:note).to_f / count
+    else 
+      nil
+    end
+  end
+
+  def star_count(rating)
+    rating_per_star = {}
+    sum = 0
+    (1..5).each do |i|
+      rating_per_star[i] = self.interventions.where(note: i).count
+      sum += rating_per_star[i]
+    end
+    return (rating_per_star[rating].to_f / sum) * 100
+  end
+
+  def total_rating
+    self.interventions.where.not(note: 0).count
   end
 
   def self.from_omniauth(auth)
@@ -81,7 +111,10 @@ class User < ApplicationRecord
         user.rôle = "manager"
         
         user.save
-        Events.instance.publish('organisation.created', payload: {user_id: user.id})
+
+        unless Rails.env.development?
+          Events.instance.publish('organisation.created', payload: {user_id: user.id})
+        end
 
         user
       end
@@ -92,4 +125,43 @@ class User < ApplicationRecord
     nom_prénom = self.email.split('@').first
     self.nom, self.prénom = nom_prénom.split('.')
   end
+
+  def avatar
+    case self.rôle
+    when 'manager'
+      'manage_accounts'
+    when 'agent'
+      'person'
+    when "équipe"
+      'group'
+    when 'adhérent'
+      'corporate_fare'
+    end
+  end
+
+  def new_notifications?
+    return self.notifications.where("notifications.created_at > ?", self.notifications_last_seen_at).any?
+  end
+
+  def absent?
+    self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", Date.today).any?
+  end
+
+  def current_absence(date = Date.today)
+    self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", date).first
+  end
+
+  def lng_lat
+    # Inverse les variables pour correspondre aux valeurs de google
+    if self.memo
+      self.memo.gsub(/\[(.*?), (.*?)\]/) { "[#{$2}, #{$1}]" }
+    end
+  end
+
+  private
+
+  def slug_candidates
+    [SecureRandom.uuid]
+  end
+
 end

@@ -17,7 +17,7 @@ class AdminController < ApplicationController
     end
 
     if params[:start_date].present? && params[:end_date].present? 
-      @audits = @audits.where("created_at BETWEEN (?) AND (?)", params[:start_date], params[:end_date])
+      @audits = @audits.where("DATE(created_at) BETWEEN (?) AND (?)", params[:start_date], params[:end_date])
     end
 
     if params[:user_id].present?
@@ -40,7 +40,7 @@ class AdminController < ApplicationController
   end
 
   def create_new_user_do
-    @user = User.new(params.require(:user).permit(:nom, :prénom, :email, :password, :rôle, :service))
+    @user = User.new(params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :rôle, :service))
     @user.organisation = current_user.organisation
 
     respond_to do |format|
@@ -52,6 +52,36 @@ class AdminController < ApplicationController
         format.json { render json: @user.errors, status: :unprocessable_entity }
       end
     end
+  end
+
+  def messagerie
+    @notifications = current_user.notifications.ordered
+    @new_notification_ids = @notifications.where("notifications.created_at > ?", current_user.notifications_last_seen_at).pluck(:id)
+    
+    @users = current_user.organisation.users.where(rôle: ['équipe', 'agent']).ordered
+    current_user.update!(notifications_last_seen_at: DateTime.now)
+  end
+
+  def send_notification
+    notification = Notification.new(params.permit(:user_id))
+    notification.message = "De #{current_user.nom_prénom} : " + params[:message]
+
+    self_notification = Notification.new
+    self_notification.user_id = current_user.id
+    self_notification.message = "À #{User.find(params[:user_id]).nom} : " + params[:message]
+
+    if notification.save && self_notification.save
+      current_user.update!(notifications_last_seen_at: DateTime.now)
+      render json: { success: true, message: "Notifications envoyées avec succès" }, status: :ok
+    else
+      errors = notification.errors.full_messages + self_notification.errors.full_messages
+      render json: { success: false, errors: errors }, status: :unprocessable_entity
+    end
+  end
+
+  def stats
+    @organisations = Organisation.all
+    # @pagy, @organisations = pagy(@organisations, items: 5)
   end
 
   private

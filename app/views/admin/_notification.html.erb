@@ -1,0 +1,8 @@
+<div id="<%= dom_id notification %>" class="mt-2">
+  <p class="<%= "font-black text-error text-xl" if @new_notification_ids.include?(notification.id) %>">
+    <%= notification.message %>
+  </p>
+  <small>
+    <i>il y a <%= time_ago_in_words notification.created_at %></i>
+  </small>
+</div>

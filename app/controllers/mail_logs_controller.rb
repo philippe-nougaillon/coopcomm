@@ -4,11 +4,6 @@ class MailLogsController < ApplicationController
 
   # GET /mail_logs or /mail_logs.json
   def index
-    mg_client = Mailgun::Client.new ENV["MAILGUN_API_KEY"], 'api.eu.mailgun.net'
-    domain = ENV["MAILGUN_DOMAIN"]
-    @result_failed = mg_client.get("#{domain}/events", {:event => 'failed'}).to_h
-    @result_opened = {}.to_h
-
     @organisation_mail_logs = current_user.organisation.mail_logs
     @mail_logs = @organisation_mail_logs.ordered
 
@@ -22,19 +17,15 @@ class MailLogsController < ApplicationController
       @mail_logs = @mail_logs.where(subject: params[:search_subject])
     end
 
-    if params[:ko].blank?
-      @result_opened = mg_client.get("#{domain}/events", {:event => 'opened'}).to_h
-      @pagy, @mail_logs = pagy(@mail_logs)
+    if params[:ko].present?
+      @mail_logs = @mail_logs.where(statut: false)
     end
 
+    @pagy, @mail_logs = pagy(@mail_logs)
   end
 
   # GET /mail_logs/1 or /mail_logs/1.json
   def show
-    mg_client = Mailgun::Client.new ENV["MAILGUN_API_KEY"], 'api.eu.mailgun.net'
-    domain = ENV["MAILGUN_DOMAIN"]
-    @result = mg_client.get("#{domain}/events", {:event => 'failed'}).to_h
-    @result_opened = mg_client.get("#{domain}/events", {:event => 'opened'}).to_h
   end
 
   # GET /mail_logs/new
@@ -79,15 +70,21 @@ class MailLogsController < ApplicationController
     @mail_log.destroy!
 
     respond_to do |format|
-      format.html { redirect_to mail_logs_url, notice: "Mail log was successfully destroyed." }
+      format.html { redirect_to notifications_url, notice: "Mail log was successfully destroyed." }
       format.json { head :no_content }
     end
+  end
+
+  def refresh
+    FetchMailgunInfos.call
+    FetchTwilioInfos.call
+    redirect_to(notifications_path, notice: 'Actualisation réussie')
   end
 
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_mail_log
-      @mail_log = MailLog.find(params[:id])
+      @mail_log = MailLog.find_by(slug: params[:id])
     end
 
     # Only allow a list of trusted parameters through.

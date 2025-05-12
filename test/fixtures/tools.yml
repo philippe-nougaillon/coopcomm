@@ -1,0 +1,41 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+# Mairie de Paris
+
+tondeuse:
+  name: Tondeuse
+  description: Roule correctement
+  organisation: mairie_paris
+  icon_name: agriculture
+  modèle: HF 2317 HME
+  marque: Honda
+  slug: e5f67bcb-5902-4b43-a83d-c6a77734582b
+
+rateau:
+  name: Rateau
+  organisation: mairie_paris
+  slug: df4e2093-e388-4c99-933c-ff24288c29ea
+
+cisaille:
+  name: Cisaille
+  organisation: mairie_paris
+  slug: b02a3472-017e-40ab-a4c0-e45f32b7092f
+
+outil_paris:
+  name: Outil de Paris
+  organisation: mairie_paris
+  slug: d044f5ae-b36a-4d6e-a0e2-1a46ac60344e
+  
+
+# Mairie de Marseille
+
+camion:
+  name: Camion
+  organisation: mairie_marseille
+  slug: faf30b44-0102-4c18-93c0-ffc13153bf29
+
+outil_marseille:
+  name: Outil de Marseille
+  organisation: mairie_marseille
+  slug: 66b4fb95-037c-4e43-8bea-a36bd550978d
+  

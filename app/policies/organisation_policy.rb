@@ -6,7 +6,7 @@ class OrganisationPolicy < ApplicationPolicy
   end
 
   def show?
-    user && user.manager? && record == user.organisation
+    manager && record == user.organisation
   end
 
   def edit?

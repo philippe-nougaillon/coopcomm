@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  du: 2024-11-20
+  au: 2024-11-20
+  motif: MyString
+  user_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>
+
+two:
+  du: 2024-11-21
+  au: 2024-11-21
+  motif: MyString
+  user_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>

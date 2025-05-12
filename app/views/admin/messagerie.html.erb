@@ -1,0 +1,27 @@
+<div class="w-full h-screen mx-auto" style="overflow: hidden;">
+  <div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
+    <h1 class="text-3xl sm:text-4xl text-primary font-bold">Messagerie</h1>
+  </div>
+
+  <div class="divider"></div>
+
+  <div id="notifications" class="min-w-full mt-8 overflow-y-auto">
+    <%= turbo_stream_from "notifications_#{current_user.id}" %>
+    <%= render partial: "admin/notification", collection: @notifications %>
+  </div>
+
+  <% if policy(:admin).send_notification? %>
+    <%= form_tag({action: "send_notification", method: :post}, class:'fixed bottom-0 flex items-end flex-wrap mt-12 rounded w-screen left-1/2 -translate-x-1/2 py-2 px-4 mb-16 lg:mb-24', data: {controller: "message", action: "submit->message#submit" } ) do %>
+      <%= select_tag :user_id, options_from_collection_for_select(@users, :id, :nom_prenom_role), include_blank: "Destinataire", class: "select select-sm lg:select-md select-bordered w-full sm:w-min", required: true %>
+      <div class="join flex-1">
+        <%= text_field_tag :message, params[:message],{ class: "input input-bordered input-sm lg:input-md flex-1 join-item", required: true, include_blank:true, placeholder: "Entrez votre message", 'data-message-target': 'message' } %>
+        <%= button_tag type: :submit, class: 'btn btn-sm lg:btn-md btn-primary text-white join-item' do %>
+          <span class="hidden lg:block">Envoyer</span>
+          <span class="material-symbols-outlined">
+            send
+          </span>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+</div>

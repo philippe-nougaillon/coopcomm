@@ -1,0 +1,41 @@
+<footer class="-mx-8 -mb-24">
+  <div class="footer p-10 bg-base-300 text-base-content text-base">
+    <div>
+      <span class="text-3xl font-black text-purple-800"><%= @sitename %></span>
+
+      <p class="opacity-50 mt-4">
+        <b>AIKKU (SAS)</b>
+        <br>  
+        Tour Ariane - La Défense 
+        <br>
+        5, Place de la Pyramide
+        <br>
+        92800 PUTEAUX
+        <br>
+        FRANCE
+        <br><br>
+        SIREN : 934 780 735 R.C.S. Nanterre
+      </p>
+    </div>
+  </div>
+  <div class="footer px-10 py-6 border-t bg-base-content text-neutral-content border-base-300">
+    <span class="inline">
+      Copyright © 2025 <%= @sitename %> - Tous droits réservés -
+      <%= link_to "Mentions Légales", mentions_legales_path, class:'hover:underline' %>
+    </span>
+    <div class="md:place-self-center md:justify-self-end flex items-center gap-4">
+      <%= link_to 'https://www.aikku.eu/fr/contact', class: 'flex items-center' do %>
+        <span class="material-symbols-outlined">
+          mail
+        </span>
+        <span>Mail</span>
+      <% end %>
+      <%= link_to "https://www.linkedin.com/company/aikku-sas", target: "_blank", class: 'flex items-center' do %>
+        <span class="material-symbols-outlined">
+          open_in_new
+        </span>
+        <span>Linkedin</span>
+      <% end %>
+    </div>
+  </div>
+</footer>

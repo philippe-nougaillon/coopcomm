@@ -1,5 +1,28 @@
-<div id="<%= dom_id user %>">
-  <p class="text-2xl font-black text-primary"><%= link_to user.nom_prénom, user, class: 'hover:underline hover:text-base-content' %></p>
-  <span class="text-success"><%= user.rôle.humanize %> <%= user.service.try(:humanize) %> </span>
-  <hr class="my-1">
-</div>
+<tr id="<%= dom_id user %>" class="hover">
+  <td class="text-center">
+    <span class="material-symbols-outlined text-success">
+      <%= user.avatar %>
+    </span>
+  </td>
+  <td class="text-xl sm:text-2xl font-black text-primary">
+    <%= link_to user.nom_prénom, user, class: 'hover:underline hover:text-base-content' %>
+  </td>
+  <td>
+    <% if user.agent? && user.absent? %>
+      <span class="material-symbols-outlined text-error cursor-help" title="Du <%= l user.current_absence.du %> au <%= l user.current_absence.au %>, motif : <%= user.current_absence.motif %>">
+        check_circle
+      </span>
+    <% end %>
+  </td>
+  <td class="text-success font-black">
+    <%= user.rôle.upcase %>
+  </td>
+  <td><%= user.service.try(:capitalize) %></td>
+  <td><%= user.email %></td>
+  <td><%= truncate(user.memo, length: 20) %></td>
+  <td>
+    <% if user.agent? %>
+      <%= "#{ number_with_precision(user.moyenne, precision: 2, strip_insignificant_zeros: true) } / 5" if user.moyenne %>
+    <% end %>
+  </td>
+</tr>

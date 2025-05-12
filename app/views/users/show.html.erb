@@ -1,43 +1,142 @@
-<div class="mx-auto md:w-2/3 w-full flex">
-  <div class="mx-auto">
-    <p class="text-4xl font-black text-primary mb-4"><%= link_to @user.nom_prénom, @user, class: 'hover:underline hover:text-base-content' %></p>
-    <span class="text-success text-xl"><%= @user.rôle.humanize %> <%= @user.service.try(:humanize) %> </span>
+<div class="mx-auto lg:w-2/3 w-full">
+  <div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
+    <h1 class="text-3xl sm:text-4xl text-primary font-bold">
+      <%= @user.nom_prénom %>
+    </h1>
+  </div>
 
-    <p class="my-4">
-      <strong class="block text-slate-400 mb-1">Email</strong>
-      <b><%= @user.email %></b>
-    </p>
+  <div class="flex flex-wrap justify-between gap-24">
+    <div>
+      <span class="material-symbols-outlined text-success">
+        <%= @user.avatar %>
+      </span>
 
-    <% if @user.agent? %>
-      <p class="my-8">
-        <strong class="block text-slate-400 mb-1">Évaluation</strong>
-        <b><%= @user.moyenne %></b>
+      <span class="text-success text-xl">
+        <%= @user.rôle.upcase %> 
+        <%= @user.service.try(:humanize) %> 
+      </span>
+
+      <p class="mb-4">
+        <b><%= @user.email %></b>
       </p>
-    <% end %>
 
-    <div class="flex flex-wrap gap-2 mt-2">
-      <%= link_to "Modifier", edit_user_path(@user), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
-      <%= button_to "Supprimer", user_path(@user), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet utilisateur ?" }, class: "rounded-lg py-3 px-5 bg-gray-100 font-medium" %>
-      <%= link_to "Retour", users_path, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
+      <% if @user.memo %>
+        <p class="mb-4">
+          <strong class="block text-slate-400 mb-1">Mémo</strong>
+          <%= @user.memo %>
+        </p>
+      <% end %>
     </div>
 
-    <% if @audits.any? %>
-      <h2 class="text-2xl text-secondary mt-8">Activité</h2>
-      <div class="overflow-x-auto mt-4">
-        <table class="table table-sm">
-          <thead class="bg-slate-100">
-            <tr>
-              <th>Date</th>
-              <th>Type</th>
-              <th>Id</th>
-              <th>Action</th>
-              <th>Modifications</th>
-            </tr>
-          </thead>
 
-          <%= render partial: 'audit', collection: @audits %>
-        </table>
+    <% if @user.agent? %>
+      <div>
+        <strong class="block text-slate-400 mb-1">Évaluation</strong>
+        <div class="flex justify-between w-32">
+          <% if @user.moyenne %>
+            <b>
+              <%= number_with_precision(@user.moyenne, precision: 2, strip_insignificant_zeros: true) %>
+              / 5
+            </b>
+          <% end %>
+          <%= pluralize(@user.total_rating, 'note') %>
+        </div>
+        <div class="flex flex-col-reverse">
+          <% (1..5).each do |i| %>
+            <div class="flex items-center">
+              <div class="rating w-36">
+                <% i.times do %>
+                  <span class="material-symbols-outlined text-primary">
+                    star
+                  </span>                
+                <% end %>
+              </div>
+              <progress class="progress progress-primary w-56" value="<%= @user.star_count(i) %>" max="100"></progress>
+            </div>
+          <% end %>
+        </div>
       </div>
     <% end %>
   </div>
+
+  <div class="flex flex-wrap gap-2 mt-2">
+    <%= link_to "Modifier", edit_user_path(@user), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
+    <%= button_to user_path(@user), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet utilisateur ?" }, class: "rounded-lg py-3 px-5 bg-gray-100 font-medium", 'data-testid': "Supprimer l'utilisateur" do %>
+      <span class="material-symbols-outlined">
+        delete
+      </span>
+    <% end %>
+    <%= link_to "Retour", request.referrer, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
+  </div>
+
+  <% if @user.adhérent? && @user.lng_lat %>
+    <div id="map" class="my-8" style="height: 200px;"></div>
+  <% end %>
+
+  <% if @user.agent? %>
+    <h2 class="text-2xl text-secondary mt-8">Absences</h2>
+    <div class="overflow-x-auto mt-4">
+      <table class="table table-sm">
+        <thead class="bg-slate-100">
+          <tr>
+            <th>Du</th>
+            <th>Au</th>
+            <th>Motif</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <%= render partial: 'absence', collection: @absences %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <h2 class="text-2xl text-secondary mt-8">Activité</h2>
+  <div class="overflow-x-auto mt-4">
+    <table class="table table-sm">
+      <thead class="bg-slate-100">
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Id</th>
+          <th>Action</th>
+          <th>Modifications</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <%= render partial: 'audit', collection: @audits %>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="my-6">
+    <%== pagy_info(@pagy) %>
+    <%== pagy_nav(@pagy) %>
+  </div>
 </div>
+
+<script>
+  mapboxgl.accessToken = '<%= ENV['MAPBOX_TOKEN'] %>';
+
+  var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v11',
+  });
+
+  var marker = new mapboxgl.Marker({ color: "#FF0000" })
+    .setLngLat(<%= @user.lng_lat %>)
+    .setPopup(new mapboxgl.Popup({ offset: 25 }))
+    .addTo(map);
+
+
+  map.fitBounds([
+    [<%= @lng %> - 0.05, <%= @lat %> - 0.05],
+    [<%= @lng %> + 0.05, <%= @lat %> + 0.05]
+  ]);
+  map.addControl(new mapboxgl.FullscreenControl());
+  map.addControl(new mapboxgl.NavigationControl());
+  
+  setTimeout(function(){ map.setLayoutProperty('country-label', 'text-field', ['get', 'name_fr']); }, 3000);
+</script>

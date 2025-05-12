@@ -2,7 +2,8 @@ require "test_helper"
 
 class InterventionsControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @intervention = interventions(:one)
+    @intervention = agent_interventions(:bond_tonte_locaux).intervention
+    sign_in users(:hidalgo)
   end
 
   test "should get index" do
@@ -17,7 +18,26 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   test "should create intervention" do
     assert_difference("Intervention.count") do
-      post interventions_url, params: { intervention: { description: @intervention.description, début: @intervention.début, fin: @intervention.fin, temps_de_pause: @intervention.temps_de_pause, workflow_state: @intervention.workflow_state } }
+      post interventions_url, params: {
+        intervention: {
+          organisation_id: @intervention.organisation_id,
+          début: @intervention.début,
+          fin: @intervention.fin,
+          temps_de_pause: @intervention.temps_de_pause,
+          description: @intervention.description,
+          workflow_state: @intervention.workflow_state,
+          adherent_id: @intervention.adherent_id,
+          temps_total: @intervention.temps_total,
+          commentaires: @intervention.commentaires,
+          note: @intervention.note,
+          team_id: @intervention.team_id,
+          avis: @intervention.avis,
+          repeter: @intervention.repeter,
+          slug: SecureRandom.uuid,
+          début_prévue: @intervention.début_prévue,
+          fin_prévue: @intervention.fin_prévue
+        }
+      }
     end
 
     assert_redirected_to intervention_url(Intervention.last)
@@ -34,7 +54,21 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should update intervention" do
-    patch intervention_url(@intervention), params: { intervention: { description: @intervention.description, début: @intervention.début, fin: @intervention.fin, temps_de_pause: @intervention.temps_de_pause, workflow_state: @intervention.workflow_state } }
+    patch intervention_url(@intervention), params: {
+      intervention: {
+        début: @intervention.début,
+        fin: @intervention.fin,
+        temps_de_pause: @intervention.temps_de_pause,
+        description: @intervention.description,
+        workflow_state: @intervention.workflow_state,
+        temps_total: @intervention.temps_total,
+        commentaires: @intervention.commentaires,
+        note: @intervention.note,
+        avis: @intervention.avis,
+        début_prévue: @intervention.début_prévue,
+        fin_prévue: @intervention.fin_prévue
+      }
+    }
     assert_redirected_to intervention_url(@intervention)
   end
 
@@ -44,5 +78,23 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to interventions_url
+  end
+
+  test "should redirect to root if intervention doesn't exist" do
+    get intervention_url("abcdefg")
+    assert_redirected_to root_path
+  end
+
+  test "should destroy photo with purge" do
+    @intervention.photos.attach(file_fixture("exemple.png"))
+    @intervention.save
+
+    assert_difference("@intervention.photos.count", -1) do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos.first.id
+      }
+    end
+
+    assert_redirected_to @intervention
   end
 end

@@ -6,11 +6,11 @@ class UserPolicy < ApplicationPolicy
   end
 
   def index?
-    user && user.manager?
+    manager
   end
 
   def show?
-    index? && record.organisation == user.organisation
+    index? && organisation
   end
 
   def new?
@@ -31,5 +31,9 @@ class UserPolicy < ApplicationPolicy
 
   def destroy?
     show?
+  end
+
+  def agent_calendrier?
+    index?
   end
 end

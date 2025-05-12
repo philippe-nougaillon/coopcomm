@@ -2,7 +2,8 @@ require "test_helper"
 
 class UsersControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @user = users(:one)
+    @user = users(:bond)
+    sign_in users(:hidalgo)
   end
 
   test "should get index" do
@@ -17,7 +18,14 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   test "should create user" do
     assert_difference("User.count") do
-      post users_url, params: { user: {  } }
+      post users_url, params: {
+        user: {
+          email: "email@example.com",
+          password: "password",
+          rôle: "agent",
+          organisation: organisations(:mairie_paris)
+        }
+      }
     end
 
     assert_redirected_to user_url(User.last)
@@ -34,7 +42,14 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should update user" do
-    patch user_url(@user), params: { user: {  } }
+    patch user_url(@user), params: {
+      user: {
+        email: @user.email,
+        password: "password",
+        rôle: @user.rôle,
+        organisation: @user.organisation
+      }
+    }
     assert_redirected_to user_url(@user)
   end
 
@@ -44,5 +59,10 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to users_url
+  end
+
+  test "should get agent_calendrier" do
+    get agent_calendrier_users_url
+    assert_response :success
   end
 end

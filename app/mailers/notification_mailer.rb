@@ -4,8 +4,8 @@ class NotificationMailer < ApplicationMailer
     @intervention = intervention
 
     mail(to: emails,
-        bcc: 'philippe.nougaillon@gmail.com, pierreemmanuel.dacquet@gmail.com',
-        subject: "[TALEA] Changement de statut").tap do |message|
+        bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu',
+        subject: "[COOPCOM] Changement de statut").tap do |message|
       message.mailgun_options = {
         "tag" => ["changement de statut"]
       }
@@ -16,8 +16,8 @@ class NotificationMailer < ApplicationMailer
     @intervention = intervention
 
     mail(to: emails,
-          bcc: 'philippe.nougaillon@gmail.com, pierreemmanuel.dacquet@gmail.com',
-          subject: "[TALEA] Nouveau commentaire").tap do |message|
+          bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu',
+          subject: "[COOPCOM] Nouveau commentaire").tap do |message|
       message.mailgun_options = {
         "tag" => ["nouveau commentaire"]
       }
@@ -28,22 +28,34 @@ class NotificationMailer < ApplicationMailer
     @intervention = intervention
 
     mail(to: intervention.adherent.email,
-          bcc: 'philippe.nougaillon@gmail.com, pierreemmanuel.dacquet@gmail.com',
-          subject: "[TALEA] Relance. Intervention à valider").tap do |message|
+          bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu',
+          subject: "[COOPCOM] Relance. Intervention à valider").tap do |message|
       message.mailgun_options = {
         "tag" => ["relance"]
       }
     end
   end
 
+  def intervention_pointage(intervention)
+    @intervention = intervention
+
+    mail(to: intervention.adherent.email,
+          bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu',
+          subject: "[COOPCOM] Pointage").tap do |message|
+      message.mailgun_options = {
+        "tag" => ["pointage"]
+      }
+    end
+  end
+
   def welcome(user)
     @user = user
-    mail(to: @user.email, subject: '[TALEA] Bienvenue !')
+    mail(to: @user.email, subject: '[COOPCOM] Bienvenue !')
   end
 
   def new_organisation(organisation)
     @organisation = organisation
-    mail(to: 'philippe.nougaillon@gmail.com, pierreemmanuel.dacquet@gmail.com', subject: '[TALEA] Nouvelle Organisation')
+    mail(to: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu', subject: '[COOPCOM] Nouvelle Organisation')
   end
 
 end

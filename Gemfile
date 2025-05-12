@@ -1,9 +1,9 @@
 source "https://rubygems.org"
 
-ruby "3.3.1"
+ruby "3.4.3"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 7.1.3", ">= 7.1.3.2"
+gem "rails", "~> 8.0"
 
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem "sprockets-rails"
@@ -24,7 +24,7 @@ gem "turbo-rails"
 gem "stimulus-rails"
 
 # Use Tailwind CSS [https://github.com/rails/tailwindcss-rails]
-gem "tailwindcss-rails"
+gem "tailwindcss-rails", "~> 3.3.1"
 
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
@@ -51,6 +51,9 @@ group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ]
   gem 'dotenv'
+  gem 'guard'
+  gem 'guard-minitest'
+  gem 'guard-livereload'
 end
 
 group :development do
@@ -75,7 +78,7 @@ gem "devise", "~> 4.9"
 gem "workflow", "~> 3.0"
 gem "workflow-activerecord", "~> 6.0"
 
-gem "acts-as-taggable-on", "~> 10.0"
+gem "acts-as-taggable-on"
 
 gem "view_component", "~> 3.12"
 
@@ -110,3 +113,22 @@ gem "omniauth", "~> 2.1"
 gem "omniauth-rails_csrf_protection", "~> 1.0"
 
 gem "omniauth-google-oauth2", "~> 1.1"
+gem "friendly_id", "~> 5.5"
+
+gem "skylight"
+
+gem "rqrcode", "~> 2.2"
+
+gem "prawn", "~> 2.5"
+
+gem "prawn-qrcode", "~> 0.5.2"
+
+gem "pg_search", "~> 2.3"
+
+gem "twilio-ruby", "~> 7.4"
+
+gem "discard", "~> 1.4"
+
+gem "rack-cors", "~> 2.0"
+
+gem "simple_calendar", "~> 3.1"

@@ -1,0 +1,45 @@
+<tr id="" class="hover">
+  <td class="text-center">
+    <% if agent.avatar %>
+      <span class="material-symbols-outlined text-success">
+        <%= agent.avatar %>
+      </span>
+    <% end %>
+  </td>
+
+  <td class="text-2xl font-black text-primary">
+    <%= link_to agent.nom_prénom, agent, class: 'hover:underline hover:text-base-content' %>
+  </td>
+
+  <td>
+    <%= agent.service %>
+  </td>
+
+  <% (@date..@date_fin).each do | date | %>
+    <td>
+      <% interventions = agent.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
+
+      <% absent = agent.current_absence(date) %>
+
+        <% interventions = agent.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
+        <% interventions_matin = interventions.where("début_prévue < ?", Time.parse(date.to_s + " 13:00")) %>
+        <% interventions_soir = interventions.where("fin_prévue > ?", Time.parse(date.to_s + " 13:00")) %>
+      
+        <% if interventions_matin.any? || absent %>
+          <span style="background-color: red; padding-left: 15px;" title="<%= interventions_matin.pluck(:description) %>"></span>
+        <% else %>
+          <%= link_to new_intervention_path(agent_ids: agent.id, début_prévue: date, début_prévue_hour: 8, fin_prévue: date, fin_prévue_hour: 13) do %>
+            <span style="background-color: lightgreen; padding-left: 15px;"></span>
+          <% end %>
+        <% end %>
+
+        <% if interventions_soir.any? || absent %>
+          <span style="background-color: red; padding-left: 15px;" title="<%= interventions_soir.pluck(:description) %>"></span>
+        <% else %>
+          <%= link_to new_intervention_path(agent_ids: agent.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 5, fin_prévue: date, fin_prévue_hour: 18) do %>
+            <span style="background-color: lightgreen; padding-left: 15px;"></span>
+          <% end %>
+        <% end %>
+    </td>
+  <% end %>
+</tr>

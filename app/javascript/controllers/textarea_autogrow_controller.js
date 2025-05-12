@@ -7,6 +7,6 @@ application.register('textarea-autogrow', TextareaAutogrow)
 // Connects to data-controller="textarea-autogrow"
 export default class extends Controller {
   connect() {
-    console.log('Timeago controller connected')
+    // console.log('Timeago controller connected')
   }
 }

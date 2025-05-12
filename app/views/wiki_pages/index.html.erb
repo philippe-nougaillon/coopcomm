@@ -1,0 +1,23 @@
+<div class="flex w-full">
+  <%= render "wiki_navbar" %>
+
+  <div class="w-full ml-8 sm:ml-64">
+    <div class="flex flex-wrap justify-between items-center mb-12">
+      <h1 class="text-3xl text-secondary font-bold">
+        <% if !(params[:catégorie].present? || params[:search].present?) %>
+          Bienvenue sur le Wiki COOPCOM !
+        <% elsif params[:catégorie].present? %>
+          <%= params[:catégorie].humanize %>
+        <% end %>
+      </h1>
+      <% if user_signed_in? && current_user.super_admin? %>
+        <%= link_to "Ajouter une Page", new_wiki_page_path, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:!text-white" %>
+        <%= link_to "+", new_wiki_page_path, class: "inline-flex sm:hidden btn btn-primary btn-outline hover:!text-white" %>
+      <% end %>
+    </div>
+    
+    <div id="wiki_pages" class="min-w-full">
+      <%= render @wiki_pages %>
+    </div>
+  </div>
+</div>

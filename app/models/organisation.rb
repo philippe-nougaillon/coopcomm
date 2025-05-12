@@ -4,6 +4,9 @@ class Organisation < ApplicationRecord
   has_many :users
   has_many :interventions
   has_many :mail_logs
+  has_many :absences, through: :users
+  has_many :notifications, through: :users
+  has_many :tools
 
   def numero
     self.nom.split('_').last

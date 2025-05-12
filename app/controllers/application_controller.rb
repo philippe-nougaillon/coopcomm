@@ -5,6 +5,8 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_user!
   before_action :prepare_exception_notifier
 
+  helper_method :sort_column, :sort_direction
+
   private
 
   def prepare_exception_notifier

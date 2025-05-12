@@ -1,9 +1,18 @@
-<h1 class="text-4xl text-primary font-bold mb-4">Mail Logs</h1>
+<div class="flex flex-wrap justify-between items-center">
+  <h1 class="text-3xl sm:text-4xl text-primary font-bold">Notifications</h1>
+  <div>
+    <%= link_to "Actualiser", refresh_mail_logs_path, class: "btn btn-success btn-outline sm:btn-lg rounded hover:!text-white" %>
+    <% if policy(MailLog).index? %>
+      <%= link_to "Activités", admin_audits_path, class: "btn btn-primary btn-outline sm:btn-lg rounded hover:!text-white", title: "Mail Logs (historique des mails envoyés)" %>
+    <% end %>
+  </div>
+</div>
 
-<p class="mb-4">
-  Historique des mails envoyés via 
-  <%= link_to "MailGun", "https://www.mailgun.com/fr/", target: "_blank", class: "text-primary hover:underline" %>,
-  avec Statut et État (OK = acheminé, OUVERT = vu).
+<p class="mb-8">
+  Historique des notifications envoyées via 
+  <%= link_to "MailGun", "https://www.mailgun.com/fr/", target: "_blank", class: "text-primary hover:underline" %>
+  ou WhatsApp (<%= link_to "Twilio", "https://www.twilio.com/fr-fr", target: "_blank", class: "text-primary hover:underline" %>),
+  avec Statut et État (OK = Acheminé, OUVERT = Vu).
 </p>
 
 <%= form_tag request.path, method: :get do %>
@@ -11,27 +20,30 @@
 
     <div class="w-full md:w-6/12 lg:w-3/12 pr-4">
       <%= label_tag :search, "Destinataire" %>
-      <%= select_tag :search, options_for_select(@emails, params[:search]), include_blank: true, onchange:'this.form.submit()', class:"input input-bordered w-full" %>
+      <%= select_tag :search, options_for_select(@emails, params[:search]), include_blank: true, onchange:'this.form.submit()', class:"input input-bordered input-sm w-full" %>
     </div>
 
-    <div class="relative max-w-full">
+    <div class="relative max-w-full pr-4">
       <%= label_tag :search_subject, "Sujet" %>
-      <%= select_tag :search_subject, options_for_select(@mail_logs.pluck(:subject).uniq.sort, params[:search_subject]), include_blank: true, onchange:'this.form.submit()', class:"select select-bordered w-full" %>
+      <%= select_tag :search_subject, options_for_select(@mail_logs.pluck(:subject).uniq.sort, params[:search_subject]), include_blank: true, onchange:'this.form.submit()', class:"select select-bordered select-sm w-full" %>
     </div>
 
-    <div class="sm:w-1/4 pr-4">
-      <%= check_box_tag :ko, 1, params[:ko], class:'checkbox checkbox-primary', onchange:'this.form.submit()' %>
-      <%= label_tag :ko, "Afficher que les échecs (statut = KO) ?" %>
+    <div class="pr-4">
+      <%= check_box_tag :ko, 1, params[:ko], class:'checkbox mr-2', onchange:'this.form.submit()' %>
+      <%= label_tag :ko, "Afficher que les échecs (Statut = KO) ?" %>
     </div>
     
   </div>
 <% end %>
 
-<div class="overflow-x-auto mt-8">
+<div class="divider"></div>
+
+<div class="overflow-x-auto mt-4">
   <table class="table table-sm">
     <thead class="bg-slate-100">
       <tr>
         <th>Il y a</th>
+        <th>Via</th>
         <th>Expéditeur</th>
         <th>Destinataire</th>
         <th>Sujet</th>
@@ -43,16 +55,13 @@
 
     <tbody>
       <% @mail_logs.each_with_index do |mail_log, index| %>
-        <% status_ko = mail_log.error_message || @result_failed["items"].find{|item| item["message"]["headers"]["message-id"] == mail_log.message_id } %>
-        <% if params[:ko].blank? || status_ko %>
-          <%= render partial: "mail_log", locals: {mail_log: mail_log, status_ko: status_ko, index:} %>
-        <% end %>
+        <%= render partial: "mail_log", locals: {mail_log: mail_log, index:} %>
       <% end %>
     </tbody>
 
     <tfoot>
       <tr>
-        <th colspan="7"></th>
+        <th colspan=7></th>
       </tr>
     </tfoot>
   </table>
