@@ -5,12 +5,10 @@ on:
     branches:
       - main
       - staging
-      - CI/CD
   pull_request:
     branches:
       - main
       - staging
-      - CI/CD
 
 jobs:
   test:
