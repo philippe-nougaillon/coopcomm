@@ -14,12 +14,21 @@
  *= require_self
  */
 
+/****** DIVERS *****/
 .select, .input {
   padding-top: 0;
   padding-bottom: 0;
 }
 
-/* ÉTOILES */ 
+.ring{
+  border-radius: .5rem;
+}
+
+/***** END DIVERS *****/
+
+
+
+/***** ÉTOILES *****/
 .mask[type=radio]:checked,
 .mask[type=radio]:checked:focus,
 .mask[type=radio]:checked:hover {
@@ -31,7 +40,7 @@
   background-color: var(--fallback-p, oklch(var(--p) / var(--tw-bg-opacity)));
 }
 
-/* END ÉTOILES */
+/***** END ÉTOILES *****/
 
 /* .btm-nav>:where(.hover-active):hover {
   border-top-width: 2px;
@@ -39,7 +48,7 @@
   background-color: var(--fallback-b1, oklch(var(--b1) / var(--tw-bg-opacity)));
 } */
 
-/* TYPE WRITER */
+/***** TYPE WRITER *****/
 
 .typewriter p {
   width: 0;
@@ -67,10 +76,10 @@
   }
 } */
 
-/* END TYPE WRITER */
+/***** END TYPE WRITER *****/
 
 
-/* BURGER MENU */
+/***** BURGER MENU *****/
 
 #my-drawer {
   display: none;
@@ -142,9 +151,9 @@ label#drawer-label div:nth-child(2) {
   transform: rotateZ(-45deg);
 }
 
-/* END BURGER MENU */
+/***** END BURGER MENU *****/
 
-/* FLIP CARD ANIMATION */
+/***** FLIP CARD ANIMATION *****/
 
 .flip-card {
   background-color: transparent;
@@ -188,9 +197,9 @@ label#drawer-label div:nth-child(2) {
   transform: rotateY(180deg);
 }
 
-/* END FLIP CARD ANIMATION */
+/***** END FLIP CARD ANIMATION *****/
 
-/* SLIM-SELECT INDISPONIBILITÉ */
+/***** SLIM-SELECT INDISPONIBILITÉ *****/
 
 .ss-option.invalid{
   color: grey !important;
@@ -201,4 +210,4 @@ label#drawer-label div:nth-child(2) {
   background-color: red !important;
 }
 
-/* END SLIM-SELECT INDISPONIBILITÉ */
+/***** END SLIM-SELECT INDISPONIBILITÉ *****/
