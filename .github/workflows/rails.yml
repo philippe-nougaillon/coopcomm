@@ -38,7 +38,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.3.1
+          ruby-version: 3.4.3
       
       - name: Install dependencies
         run: |
@@ -54,7 +54,7 @@ jobs:
           PG_USER: postgres
         run: |
           bin/rails db:test:prepare
-          bin/rails test test/models/organisation_test.rb
+          bin/rails test
 
   build:
     runs-on: ubuntu-latest
