@@ -48,6 +48,17 @@ intervention_validé:
   workflow_state: validé
   slug: 3952eed3-432c-48f2-a591-d79f4c408ff5
 
+intervention_terminée:
+  organisation: mairie_paris
+  user_id: <%= ActiveRecord::FixtureSet.identify(:électricité) %>
+  agent_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>
+  adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
+  début: 2024-04-19 8:30:00
+  début: 2024-04-19 12:30:00
+  description: Préparer salle de réception
+  workflow_state: terminé
+  slug: 73ecbeba-7449-4804-8de0-f6ed7ec98a49
+
 intervention_autre_agent:
   organisation: mairie_paris
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
@@ -86,7 +97,7 @@ nettoyage_port:
   fin: 2024-04-19 17:30:00
   temps_de_pause: 1
   description: Nettoyage Marseille
-  workflow_state: Validé
+  workflow_state: validé
   slug: a3c694ca-a6bc-49f5-b273-befe366ee48e
 
 # Organisation sans manager

@@ -75,7 +75,61 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     assert_text "Intervention refusée"
   end
 
-  # test "Les filtres fonctionnent dans la liste des interventions" do
+  test "Rechercher dans les interventions" do
+    # Recherche sur les descriptions
+    fill_in "Rechercher", with: "asser les feui"
+    page.driver.browser.switch_to.active_element.send_keys(:enter)
+    assert_text "Affichage de 1 élément"
+    # Recherche sur les commentaires
+    fill_in "Rechercher", with: "tention"
+    page.driver.browser.switch_to.active_element.send_keys(:enter)
+    assert_text "Affichage de 1 élément"
+    # Mauvaise recherche
+    fill_in "Rechercher", with: "qzmeoifqze"
+    page.driver.browser.switch_to.active_element.send_keys(:enter)
+    assert_text "Aucun élément trouvé"
+  end
+
+  test "Filter les interventions par date" do
+    fill_in "Du", with: Date.today.strftime("%m-%d-%Y")
+    fill_in "Au", with: (Date.today + 30).strftime("%m-%d-%Y")
+    sleep(1)
+    page.driver.browser.switch_to.active_element.send_keys(:enter)
+    assert_text "Affichage de 1 élément"
+    fill_in "Au", with: (Date.today + 7).strftime("%m-%d-%Y")
+    sleep(1)
+    page.driver.browser.switch_to.active_element.send_keys(:enter)
+    assert_text "Aucun élément trouvé"
+  end
+
+  # Il faut mettre un placeholder dans le slimselect
+  # test "Filter les interventions par adhérent" do
+  #   adhérent = users(:weil)
+  #   adhérent_sans_intervention = users(:adhérent_sans_intervention)
+  #   select adhérent.nom_prénom, from: "Adhérent"
+  #   assert_text "Affichage de 1 élément"
+  #   select adhérent_sans_intervention.nom_prénom, from: "Adhérent"
+  #   assert_text "Aucun élément trouvé"
+  # end
+
+  test "Filter les interventions par statut" do
+    select 'Nouveau', from: "Statut"
+    assert_text "Affichage de 4 éléments"
+    select 'Refusé', from: "Statut"
+    assert_text "Affichage de 1 élément"
+  end
+
+  # # Fonctionnalité enlevée
+  # test "Filter les interventions à venir / toutes" do
+  #   assert_text "Affichage de 4 éléments"
+  #   find("[data-testid=\"filtres_toutes\"]").click
+  #   assert_text "Affichage de 5 éléments"
+  # end
+
+  # # TODO: à faire
+  # test "Filter les interventions sur les tags" do
+  #   assert_text "Affichage de 4 éléments"
+  #   assert_text "Affichage de 1 élément"
   # end
 
   # test "Le temps total d'une intervention est correctement calculé" do
