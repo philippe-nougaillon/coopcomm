@@ -50,8 +50,6 @@ intervention_validé:
 
 intervention_terminée:
   organisation: mairie_paris
-  user_id: <%= ActiveRecord::FixtureSet.identify(:électricité) %>
-  agent_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
   début: 2024-04-19 8:30:00
   début: 2024-04-19 12:30:00
