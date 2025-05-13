@@ -7,7 +7,7 @@
     style: 'mapbox://styles/mapbox/streets-v11'
   });
   <% @tools.includes(:interventions).each do |tool| %>
-    <% adhérent = tool.intervention_at(params[:quand]).adherent %>
+    <% adhérent = tool.intervention_at(params[:date]).adherent %>
     var marker = new mapboxgl.Marker({ color: "#FF0000"})
       .setLngLat(<%= adhérent.lng_lat %>)
       .setPopup(new mapboxgl.Popup({ offset: 25 }) // add popups
