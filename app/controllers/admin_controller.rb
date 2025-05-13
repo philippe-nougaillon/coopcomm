@@ -63,19 +63,24 @@ class AdminController < ApplicationController
   end
 
   def send_notification
-    notification = Notification.new(params.permit(:user_id))
-    notification.message = "De #{current_user.nom_prénom} : " + params[:message]
 
-    self_notification = Notification.new
-    self_notification.user_id = current_user.id
-    self_notification.message = "À #{User.find(params[:user_id]).nom} : " + params[:message]
-
-    if notification.save && self_notification.save
-      current_user.update!(notifications_last_seen_at: DateTime.now)
-      render json: { success: true, message: "Notifications envoyées avec succès" }, status: :ok
+    if params[:message].blank?
+      render json: { success: false, errors: "Le message ne peut pas être vide ou contenir uniquement des espaces." }, status: :ok
     else
-      errors = notification.errors.full_messages + self_notification.errors.full_messages
-      render json: { success: false, errors: errors }, status: :unprocessable_entity
+      notification = Notification.new(params.permit(:user_id))
+      notification.message = "De #{current_user.nom_prénom} : " + params[:message]
+
+      self_notification = Notification.new
+      self_notification.user_id = current_user.id
+      self_notification.message = "À #{User.find(params[:user_id]).nom} : " + params[:message]
+
+      if notification.save && self_notification.save
+        current_user.update!(notifications_last_seen_at: DateTime.now)
+        render json: { success: true, message: "Notifications envoyées avec succès" }, status: :ok
+      else
+        errors = notification.errors.full_messages + self_notification.errors.full_messages
+        render json: { success: false, errors: errors }, status: :unprocessable_entity
+      end
     end
   end
 
