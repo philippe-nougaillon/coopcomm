@@ -7,9 +7,9 @@
 
   <%= form_tag request.path, method: :get, class: 'mt-4 ring ring-base-200' do %>
     <details data-testid="filtres_interventions" class="collapse collapse-arrow">
-      <summary class="collapse-title text-lg sm:text-2xl text-secondary">Filtres</summary>
+      <summary class="collapse-title text-lg sm:text-xl text-secondary">Filtrer</summary>
       <div class="collapse-content">
-        <div class="flex flex-wrap mt-8">
+        <div class="flex flex-wrap">
           <div class="flex gap-4 w-full min-w-fit lg:w-4/12 pr-4">
             <div class="w-full">
               <%= label_tag :search, "Rechercher" %>
@@ -110,11 +110,13 @@
   </div>
 
   <% if @interventions.any? %>
+    <!--
     <p class="text-sm mt-4">
       Nombre d'interventions par statut : <%= JSON.pretty_generate(Intervention.workflow_states_count(@interventions)) %>
       <br><br>
-      <%= link_to "Exporter les interventions en XLS", url_for(params.permit!.merge(format: :xls)), class: "text-sm btn btn-sm btn-outline btn-success hover:!text-white" %>
     </p>
+    -->
+    <%= link_to "Exporter les interventions en XLS", url_for(params.permit!.merge(format: :xls)), class: "text-sm btn btn-sm btn-outline btn-success hover:!text-white" %>
   <% end %>
 
 </div>

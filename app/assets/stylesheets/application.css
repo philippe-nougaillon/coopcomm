@@ -24,6 +24,10 @@
   border-radius: .5rem;
 }
 
+.btn[disabled]{
+  background-color: white;
+}
+
 /***** END DIVERS *****/
 
 
