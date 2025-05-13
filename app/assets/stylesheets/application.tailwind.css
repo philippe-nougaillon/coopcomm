@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer components {
-  input[required] {
+  input[required], select[required] {
     @apply border-red-600;
   }
 }
