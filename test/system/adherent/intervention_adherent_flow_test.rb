@@ -20,7 +20,8 @@ class InterventionAdherentFlowTest < ApplicationSystemTestCase
 
   test "Créer intervention" do
 
-    click_ajout_intervention_selon_taille_ecran
+    # Pour cliquer sur le bouton d'ajout d'une intervention en fonction du format de l'écran
+    click_sur_boutton_ajouter("intervention")
 
     fill_in "Description", with: "Tailler les arbres"
     # find('div.ss-placeholder', text: "Choisissez un ou plusieurs mots clés").click

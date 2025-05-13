@@ -2,7 +2,6 @@ require "application_system_test_case"
 
 class InterventionManagerFlowTest < ApplicationSystemTestCase
 
-  # TODO: Rendre dynamique les assert_text
   
   setup do
     @manager = users(:hidalgo)
@@ -16,17 +15,7 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
   test "Créer intervention" do
 
     # Pour cliquer sur le bouton d'ajout d'une intervention en fonction du format de l'écran
-    id_boutton_ajout_intervention_pc = '[data-test-id="ajouter_intervention_pc"]'
-    id_boutton_ajout_intervention_mobile = '[data-test-id="ajouter_intervention_mobile"]'
-
-    taille_pc = ApplicationSystemTestCase.taille_pc
-    taille_tel = ApplicationSystemTestCase.taille_tel
-
-    if Capybara.current_session.current_window.size == taille_pc
-      find(id_boutton_ajout_intervention_pc).click
-    elsif Capybara.current_session.current_window.size == taille_tel
-      find(id_boutton_ajout_intervention_mobile).click
-    end
+    click_sur_boutton_ajouter("intervention")
 
     fill_in "Description", with: "Tailler les arbres"
 
@@ -92,6 +81,7 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
 
   # !!! Tests sur les filtres obsolètes !!!
 
+  # TODO: Rendre dynamique les assert_text
   # test "Rechercher dans les interventions" do
   #   # Recherche sur les descriptions
   #   fill_in "Rechercher", with: "asser les feui"

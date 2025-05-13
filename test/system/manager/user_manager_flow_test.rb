@@ -10,7 +10,7 @@ class UserManagerFlowTest < ApplicationSystemTestCase
   test "créer un utilisateur" do
     click_on "Liste des utilisateurs"
     sleep(1)
-    click_on "Ajouter un Utilisateur"
+    click_sur_boutton_ajouter("utilisateur")
     sleep(1)
     fill_in "Nom", with: "Thomas"
     fill_in "Prénom", with: "Didier"

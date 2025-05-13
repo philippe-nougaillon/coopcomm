@@ -12,7 +12,8 @@ class ToolsTest < ApplicationSystemTestCase
 
   test "Créer un outil" do
     visit tools_url
-    click_on "ajouter_un_outil"
+
+    click_sur_boutton_ajouter("outil")
 
     fill_in "Nom", with: "Tondeuse à gazon"
     fill_in "Description", with: "Tondeuse professionnelle acier inox Marina Systems MX57SH3V moteur Honda GXV160"
