@@ -18,7 +18,7 @@ class DocumentsTest < ApplicationSystemTestCase
     select("validé", from: "tool_documents_attributes_1_workflow_state")
 
     click_on "enregistrer_tool"
-
+    sleep(1)
     assert_text "Outil modifié avec succès"
   end
 
