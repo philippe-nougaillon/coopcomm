@@ -4,6 +4,8 @@ class User < ApplicationRecord
 
   audited except: :notifications_last_seen_at
 
+  validates :nom, :prénom, :email, presence: true
+
 
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :rememberable, :timeoutable 

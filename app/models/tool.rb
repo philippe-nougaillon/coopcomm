@@ -13,6 +13,7 @@ class Tool < ApplicationRecord
                                 allow_destroy:true,
                                 reject_if: lambda {|attributes| attributes['fichier'].blank?}
 
+  validates :name, presence: true
   validates_uniqueness_of :name, scope: :organisation_id
   
   scope :ordered, -> { order(:name, :description) }
@@ -22,22 +23,22 @@ class Tool < ApplicationRecord
   end
   
   def disponible?(quand)
-    self.interventions.where(":quand BETWEEN interventions.début AND interventions.fin", quand:).empty?
+    self.interventions.where(":quand BETWEEN interventions.début_prévue AND interventions.fin_prévue", quand:).empty?
   end
 
   def current_intervention
-    self.interventions.where("NOW() BETWEEN interventions.début AND interventions.fin").first
+    self.interventions.where("NOW() BETWEEN interventions.début_prévue AND interventions.fin_prévue").first
   end
 
   def self.indisponibles_ids(organisation_id, quand)
     Intervention.joins(:tools)
                 .where(organisation_id:)
-                .where(":quand BETWEEN interventions.début AND interventions.fin", quand:)
+                .where(":quand BETWEEN interventions.début_prévue AND interventions.fin_prévue", quand:)
                 .pluck('tools.id')
   end
 
   def intervention_at(quand)
-    self.interventions.where(":quand BETWEEN interventions.début AND interventions.fin", quand:).first
+    self.interventions.where(":quand BETWEEN interventions.début_prévue AND interventions.fin_prévue", quand:).first
   end
 
   private
