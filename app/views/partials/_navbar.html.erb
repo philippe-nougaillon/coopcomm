@@ -34,7 +34,7 @@
         <%= link_to admin_messagerie_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'active !text-primary !bg-base-100 border-b-2' if params[:action] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
           <% if current_user.new_notifications? %>
             <span class="material-symbols-outlined text-error">
-              notifications_unread
+              chat
             </span>
           <% else %>
             <span class="material-symbols-outlined text-secondary <%= '!text-primary' if params[:action] == 'messagerie' %>">
@@ -46,7 +46,7 @@
       <% if policy(:pages).assistant? %>
         <li class="w-16 flex items-center">
           <%= link_to assistant_path, class: "px-6 h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'active !text-primary !bg-base-100 border-b-2' if params[:action] == 'assistant'}", title: 'Assistant (IA)' do %>
-            <span class="material-symbols-outlined text-secondary <%= '!text-primary' if params[:action] == 'assistant' %>">
+            <span class="material-symbols-outlined">
               smart_toy
             </span>
           <% end %>
@@ -144,18 +144,20 @@
   <%= link_to admin_messagerie_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
     <% if current_user.new_notifications? %>
       <span class="material-symbols-outlined text-error">
-        notifications_unread
+        chat
       </span>
     <% else %>
       <span class="material-symbols-outlined text-secondary <%= '!text-primary' if params[:action] == 'messagerie' %>">
-        notifications
+        chat
       </span>
     <% end %>
   <% end %>
 
   <% if policy(:pages).assistant? %>
     <%= link_to assistant_path, class: "hidden sm:flex text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'assistant'}", title: 'Assistant (IA)' do %>
-      IA
+      <span class="material-symbols-outlined">
+        smart_toy
+      </span>
     <% end %>
   <% end %>
 
