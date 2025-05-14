@@ -23,17 +23,22 @@
     <%= form.text_field :prénom, class: 'input input-bordered input-sm w-full', required: true %>
   </div>
 
-  <div data-controller="toggle-agent-service" class="flex flex-wrap md:flex-nowrap gap-4 w-full">
+  <div data-controller="toggle-role-info" class="flex flex-wrap md:flex-nowrap gap-4 w-full">
     <div>
       <%= form.label :rôle, "Rôle" %>
-      <span data-action="change->toggle-agent-service#change">
-        <%= form.select :rôle, options_for_select(User.rôles.keys, @user.rôle), {}, class: 'select select-bordered select-sm w-full', data: { 'toggle-agent-service-target': 'role' } %>
+      <span data-action="change->toggle-role-info#change">
+        <%= form.select :rôle, options_for_select(User.rôles.keys, @user.rôle), {}, class: 'select select-bordered select-sm w-full', data: { 'toggle-role-info-target': 'role' } %>
       </span>
     </div>
 
-    <div data-toggle-agent-service-target='service' class="flex-1">
+    <div data-toggle-role-info-target='service' class="flex-1">
       <%= form.label :service, "Service" %>
       <%= form.select :service, options_for_select(User.services.keys, @user.service), {include_blank: true}, class: 'select select-bordered select-sm w-full' %>
+    </div>
+
+    <div data-toggle-role-info-target="localisation" class="flex-1">
+      <%= form.label :localisation, "Localisation" %>
+      <%= form.text_field :localisation, class: 'input input-bordered select-sm w-full' %>
     </div>
   </div>
 

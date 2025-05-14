@@ -34,9 +34,9 @@ class UsersController < ApplicationController
   def show
     @absences = @user.absences.ordered
     @audits = @user.own_and_associated_audits.reorder(id: :desc)
-    if @user.memo && @user.memo.include?('[')
-      @lng = @user.memo.tr('[] ', '').split(',').last
-      @lat = @user.memo.tr('[] ', '').split(',').first
+    if @user.localisation
+      @lng = @user.localisation.split(',').last
+      @lat = @user.localisation.split(',').first
     end
     @pagy, @audits = pagy(@audits, items: 10)
   end
@@ -127,7 +127,7 @@ class UsersController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def user_params
-      params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :rôle, :service, :memo, absences_attributes: [:id, :_destroy, :du, :au, :motif])
+      params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :rôle, :service, :memo, :localisation, absences_attributes: [:id, :_destroy, :du, :au, :motif])
     end
 
     def is_user_authorized

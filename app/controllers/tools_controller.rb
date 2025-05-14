@@ -29,11 +29,9 @@ class ToolsController < ApplicationController
       @tools = @tools.where(id: Tool.indisponibles_ids(current_user.organisation_id, params[:date]))
       @lng = []
       @lat = []
-      current_user.organisation.users.where.not(memo: nil).pluck(:memo).uniq.each do |memo|
-        if memo.include?('[')
-          @lng << memo.tr('[]', '').split(',').last
-          @lat << memo.tr('[]', '').split(',').first
-        end
+      current_user.organisation.users.where.not(memo: nil).pluck(:localisation).compact.each do |localisation|
+        @lng << localisation.split(',').last
+        @lat << localisation.split(',').first
       end
     end
     @tools = @tools.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
