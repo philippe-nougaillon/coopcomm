@@ -25,7 +25,7 @@ class User < ApplicationRecord
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
   has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention', dependent: :destroy
   has_many :interventions, through: :agent_interventions
-  has_many :notifications, dependent: :destroy
+  has_many :notifications, dependent: :destroy, foreign_key: :to_id, class_name: "Notification"
   has_many :absences, dependent: :destroy
   accepts_nested_attributes_for :absences, 
                               allow_destroy:true, 

@@ -22,7 +22,7 @@ class AdminPolicy < ApplicationPolicy
   end
 
   def send_notification?
-    user && user.manager?
+    user
   end
 
   def stats?

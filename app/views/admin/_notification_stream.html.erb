@@ -1,8 +1,11 @@
 <div id="<%= dom_id notification %>" class="mt-2">
-  <p class="font-black text-error text-xl">
+  <p>
+    <%= User.find(notification.from_id).nom_prenom_role %>
+    <small>
+      <i>il y a <%= time_ago_in_words notification.created_at %></i>
+    </small>
+  </p>
+  <p class="font-black text-error">
     <%= notification.message %>
   </p>
-  <small>
-    <i>il y a <%= time_ago_in_words notification.created_at %></i>
-  </small>
 </div>

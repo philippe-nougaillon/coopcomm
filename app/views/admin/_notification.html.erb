@@ -1,8 +1,18 @@
 <div id="<%= dom_id notification %>" class="mt-2">
-  <p class="<%= "font-black text-error text-xl" if @new_notification_ids.include?(notification.id) %>">
+  <span><%# @new_notification_ids.include?(notification.id) %></span>
+  <p class="<%# "font-black text-error text-xl" if @new_notification_ids.include?(notification.id) %>">
+    <% if current_user.id == notification.from_id
+      user = User.find(notification.to_id)
+    elsif current_user.id == notification.to_id
+      user = User.find(notification.from_id)
+    end
+    %>
+    <%= user.nom_prenom_role %> 
+    <small>
+      <i>il y a <%= time_ago_in_words notification.created_at %></i>
+    </small>
+  </p>
+  <p class=" <%= "font-black" if @notifications.first.id == notification.id %>">
     <%= notification.message %>
   </p>
-  <small>
-    <i>il y a <%= time_ago_in_words notification.created_at %></i>
-  </small>
 </div>
