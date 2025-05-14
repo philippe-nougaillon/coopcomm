@@ -5,7 +5,11 @@ class User < ApplicationRecord
   audited except: :notifications_last_seen_at
 
   validates :nom, :prénom, :email, presence: true
-
+  validates :localisation, presence: true, if: -> { rôle == "adhérent" }
+  validates :localisation, format: {
+    with: /\A\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*\z/,
+    message: "doit être dans ce format : 123.123, 432.120398"
+  }, allow_blank: true
 
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :rememberable, :timeoutable 
@@ -155,9 +159,7 @@ class User < ApplicationRecord
 
   def lng_lat
     # Inverse les variables pour correspondre aux valeurs de google
-    if self.memo
-      self.memo.gsub(/\[(.*?), (.*?)\]/) { "[#{$2}, #{$1}]" }
-    end
+    self.localisation.gsub(/(.*?), (.*)/) { "[#{$2}, #{$1}]" }
   end
 
   private

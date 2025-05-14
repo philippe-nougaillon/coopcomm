@@ -27,11 +27,11 @@ class ToolsController < ApplicationController
       @tools = @tools.where(id: Tool.indisponibles_ids(current_user.organisation_id, params[:date]))
     when 'indisponible_carte'
       @tools = @tools.where(id: Tool.indisponibles_ids(current_user.organisation_id, params[:date]))
-      @lng = []
-      @lat = []
-      current_user.organisation.users.where.not(memo: nil).pluck(:localisation).compact.each do |localisation|
-        @lng << localisation.split(',').last
-        @lat << localisation.split(',').first
+      @lng_list = []
+      @lat_list = []
+      current_user.organisation.users.adhérent.pluck(:localisation).each do |localisation|
+        @lng_list << localisation.split(',').last
+        @lat_list << localisation.split(',').first
       end
     end
     @tools = @tools.reorder(Arel.sql("#{sort_column} #{sort_direction}"))

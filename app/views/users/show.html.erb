@@ -69,7 +69,7 @@
     <%= link_to "Retour", request.referrer, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
   </div>
 
-  <% if @user.adhérent? && @user.lng_lat %>
+  <% if @user.adhérent? && @user.localisation %>
     <div id="map" class="my-8" style="height: 200px;"></div>
   <% end %>
 
@@ -117,26 +117,28 @@
   </div>
 </div>
 
-<script>
-  mapboxgl.accessToken = '<%= ENV['MAPBOX_TOKEN'] %>';
+<% if @user.adhérent? && @user.localisation %>
+  <script>
+    mapboxgl.accessToken = '<%= ENV['MAPBOX_TOKEN'] %>';
 
-  var map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v11',
-  });
+    var map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v11',
+    });
 
-  var marker = new mapboxgl.Marker({ color: "#FF0000" })
-    .setLngLat(<%= @user.lng_lat %>)
-    .setPopup(new mapboxgl.Popup({ offset: 25 }))
-    .addTo(map);
+    var marker = new mapboxgl.Marker({ color: "#FF0000" })
+      .setLngLat(<%= @user.lng_lat %>)
+      .setPopup(new mapboxgl.Popup({ offset: 25 }))
+      .addTo(map);
 
 
-  map.fitBounds([
-    [<%= @lng %> - 0.05, <%= @lat %> - 0.05],
-    [<%= @lng %> + 0.05, <%= @lat %> + 0.05]
-  ]);
-  map.addControl(new mapboxgl.FullscreenControl());
-  map.addControl(new mapboxgl.NavigationControl());
-  
-  setTimeout(function(){ map.setLayoutProperty('country-label', 'text-field', ['get', 'name_fr']); }, 3000);
-</script>
+    map.fitBounds([
+      [<%= @lng %> - 0.05, <%= @lat %> - 0.05],
+      [<%= @lng %> + 0.05, <%= @lat %> + 0.05]
+    ]);
+    map.addControl(new mapboxgl.FullscreenControl());
+    map.addControl(new mapboxgl.NavigationControl());
+    
+    setTimeout(function(){ map.setLayoutProperty('country-label', 'text-field', ['get', 'name_fr']); }, 3000);
+  </script>
+<% end %>
