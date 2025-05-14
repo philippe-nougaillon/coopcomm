@@ -4,13 +4,13 @@
       <%= user.avatar %>
     </span>
   </td>
-  <td class="text-xl sm:text-2xl font-black text-primary">
+  <td class="text-lg sm:text-2xl text-primary">
     <%= link_to user.nom_prénom, user, class: 'hover:underline hover:text-base-content' %>
   </td>
   <td>
     <% if user.agent? && user.absent? %>
-      <span class="material-symbols-outlined text-error cursor-help" title="Du <%= l user.current_absence.du %> au <%= l user.current_absence.au %>, motif : <%= user.current_absence.motif %>">
-        check_circle
+      <span class="material-symbols-outlined cursor-help" title="Absent du <%= l user.current_absence.du %> au <%= l user.current_absence.au %>, motif : <%= user.current_absence.motif %>">
+        person_alert
       </span>
     <% end %>
   </td>
