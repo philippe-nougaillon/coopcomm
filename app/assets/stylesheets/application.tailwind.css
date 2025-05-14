@@ -4,9 +4,9 @@
 
 @layer components {
   input[required], select[required] {
-    @apply border-red-600;
+    @apply border-red-400;
     &:valid{
-      @apply border-green-600;
+      @apply border-green-400;
     }
   }
 }
