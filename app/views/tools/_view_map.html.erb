@@ -7,12 +7,13 @@
     style: 'mapbox://styles/mapbox/streets-v11'
   });
   <% @tools.includes(:interventions).each do |tool| %>
-    <% adhérent = tool.intervention_at(params[:date]).adherent %>
+    <% intervention = tool.intervention_at(params[:date]) %>
+    <% adhérent = intervention.adherent %>
     <% if adhérent %>
       var marker = new mapboxgl.Marker({ color: "#FF0000"})
         .setLngLat(<%= adhérent.lng_lat %>)
         .setPopup(new mapboxgl.Popup({ offset: 25 }) // add popups
-        .setHTML("<a id='pin' href='#<%= tool.slug %>'><p class='font-black text-center text-xl'><%= tool.name %></p><p class='text-lg'><%= tool.description %></p><hr><p class='text-lg'><%= adhérent.nom_prénom %></p></a>"))
+        .setHTML("<a id='pin' href='<%= tool_path(tool) %>'><p class='font-black text-center text-xl'><%= tool.name %></p><p class='text-lg'><%= tool.description %></p><hr><p class='text-lg'><%= adhérent.nom_prénom %><br><br><%= intervention.description %></p></a>"))
         .addTo(map);
     <% end %>
   <% end %>
