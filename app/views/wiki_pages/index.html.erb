@@ -5,7 +5,7 @@
     <div class="flex flex-wrap justify-between items-center mb-12">
       <h1 class="text-3xl text-secondary font-bold">
         <% if !(params[:catégorie].present? || params[:search].present?) %>
-          Bienvenue sur le Wiki COOPCOM !
+          Bienvenue sur le Wiki CoopCom !
         <% elsif params[:catégorie].present? %>
           <%= params[:catégorie].humanize %>
         <% end %>
