@@ -44,8 +44,8 @@
         <% end %>
       </li>
       <% if policy(:pages).assistant? %>
-        <li class="w-16 flex items-center">
-          <%= link_to assistant_path, class: "px-6 h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'active !text-primary !bg-base-100 border-b-2' if params[:action] == 'assistant'}", title: 'Assistant (IA)' do %>
+        <li>
+          <%= link_to assistant_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'active !text-primary !bg-base-100 border-b-2' if params[:action] == 'assistant'}", title: 'Assistant (IA)' do %>
             <span class="material-symbols-outlined">
               smart_toy
             </span>
