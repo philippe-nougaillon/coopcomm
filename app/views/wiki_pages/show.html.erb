@@ -3,6 +3,11 @@
   <div class="ml-8 sm:ml-64">
     <%= render @wiki_page %>
 
+    <p class="mt-4">
+      <i>Publiée le <%= l(@wiki_page.created_at) %></i>
+      <i>(Modifiée il y a <%= time_ago_in_words @wiki_page.updated_at %>)</i>
+    </p>
+
     <% if user_signed_in? && current_user.super_admin? %>
       <%= link_to "Modifier", edit_wiki_page_path(@wiki_page), class: "mt-2 rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
       <div class="inline-block ml-2">
@@ -13,6 +18,6 @@
         <% end %>
       </div>
     <% end %>
-    <%= link_to "Retour", wiki_pages_path(catégorie: params[:catégorie]), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium mt-4" %>
+
   </div>
 </div>

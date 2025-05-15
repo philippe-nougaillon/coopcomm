@@ -206,10 +206,14 @@
       <li class="text-2xl my-4">
         Blog
       </li>
-      <ul class="list-disc list-inside text-xl ml-8 my-4">
+      <ul class="list-none list-inside text-xl ml-8 my-4">
         <% @wiki_pages.blog.where(publiée: true).order(:poids).each do |wiki_page| %>
           <li>
             <%= link_to wiki_page.titre, wiki_page, class: "text-primary text-2xl font-black hover:underline" %>
+            <small class="ml-4">
+              <i>Publiée le <%= l(wiki_page.created_at) %></i>
+              <i>(Modifiée il y a <%= time_ago_in_words wiki_page.updated_at %>)</i>
+            </small>
           </li>
         <% end %>
       </ul>
@@ -237,7 +241,7 @@
     </ul>
 
     <p class="mt-12">
-      <%= link_to 'Consultez notre wiki', wiki_pages_path, class: 'text-xl text-primary hover:underline' %>
+      <%= link_to 'Consultez notre wiki', wiki_pages_path, class: 'btn btn-outline lg:btn-lg lg:btn-wide btn-primary hover:!text-white' %>
     </p>
   </div>
 
