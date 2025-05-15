@@ -30,7 +30,7 @@ class PagesController < ApplicationController
   end
 
   def welcome
-    @wiki_pages = WikiPage.all
+    @wiki_pages = WikiPage.where(publiée: true)
   end
 
   def dashboard
