@@ -41,7 +41,7 @@
           <span class="bg-red-300" style="padding-left: 15px;" title="<%= interventions_matin.pluck(:description) %>"></span>
         <% else %>
           <%= link_to new_intervention_path(tool_ids: tool.id, début_prévue: date, début_prévue_hour: 8, fin_prévue: date, fin_prévue_hour: 13) do %>
-            <span class="bg-green-300 hover:bg-blue-500" style="padding-left: 15px;" title="Ajouter un outil"></span>
+            <span class="bg-green-300 hover:bg-blue-500" style="padding-left: 15px;" title="Créer une intervention pour réserver cet outil"></span>
           <% end %>
         <% end %>
 
@@ -49,7 +49,7 @@
           <span class="bg-red-300" style="padding-left: 15px; margin-left: 5px;" title="<%= interventions_soir.pluck(:description) %>"></span>
         <% else %>
           <%= link_to new_intervention_path(tool_ids: tool.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 5, fin_prévue: date, fin_prévue_hour: 18) do %>
-            <span class="bg-green-300 hover:bg-blue-500" style="padding-left: 15px; margin-left: 5px;" title="Ajouter un outil"></span>
+            <span class="bg-green-300 hover:bg-blue-500" style="padding-left: 15px; margin-left: 5px;" title="Créer une intervention pour réserver cet outil"></span>
           <% end %>
         <% end %>
       </td>
