@@ -23,7 +23,7 @@ class WikiPagesController < ApplicationController
     unless user_signed_in? && current_user.super_admin?
       @wiki_pages = @wiki_pages.where(publiée: true)
     end
-    @wiki_pages.order(poids: :desc)
+    @wiki_pages = @wiki_pages.order(:poids)
   end
 
   # GET /wiki_pages/1 or /wiki_pages/1.json
