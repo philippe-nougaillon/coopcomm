@@ -34,7 +34,7 @@
           </div>
 
           <!-- Inversement pour que début/fin soient ensemble sur mobile et sur ordi -->
-          <div class="flex sm:flex-row-reverse items-end gap-4 w-full min-w-fit lg:w-4/12 pr-4">
+          <div class="flex lg:flex-row-reverse items-end gap-4 w-full min-w-fit lg:w-4/12 pr-4">
             <div class="flex-1 flex w-full min-w-fit lg:w-4/12 gap-2 mb-1">
               <%= check_box_tag :archives, 1, params[:archives], class:'checkbox', onchange:'this.form.submit()' %>
               <%= label_tag :archives, "Archivées ?", class: 'cursor-pointer' %>
