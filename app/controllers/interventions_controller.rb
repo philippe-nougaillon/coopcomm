@@ -269,32 +269,39 @@ class InterventionsController < ApplicationController
 
   def pointer
     # Prendre l'intervention la plus récente
-    current_intervention = Intervention.where(template_slug: @intervention.slug).find_by("DATE(début) = ?", Date.today)
 
-    # Mettre à jour l'intervention ou créer une nouvelle
-    if current_intervention
-      unless current_intervention.fin
-        current_intervention.fin = DateTime.now
-        current_intervention.temps_total = current_intervention.calc_temps_total
-        current_intervention.workflow_state = "terminé"
-        current_intervention.save
-        flash[:notice] = "Fin de journée enregistrée"
+    if @intervention.repeter?
+      current_intervention = Intervention.where(template_slug: @intervention.slug).find_by("DATE(début) = ?", Date.today)
+  
+      # Mettre à jour l'intervention ou créer une nouvelle
+      if current_intervention
+        unless current_intervention.fin
+          current_intervention.fin = DateTime.now
+          current_intervention.temps_total = current_intervention.calc_temps_total
+          current_intervention.workflow_state = "terminé"
+          current_intervention.save
+          flash[:notice] = "Fin de journée enregistrée"
+        else
+          flash[:alert] = "Fin de journée déjà enregistrée !"
+        end
       else
-        flash[:alert] = "Fin de journée déjà enregistrée !"
+        current_intervention = @intervention.create_next_intervention
+        flash[:notice] = "Début de journée enregistrée"
       end
+      unless Rails.env.development?
+        Events.instance.publish('intervention.pointage', payload: {intervention_id: current_intervention.id})
+      end
+      
+      redirect_to pointage_statut_intervention_path(current_intervention)
     else
-      current_intervention = @intervention.create_next_intervention
-      flash[:notice] = "Début de journée enregistrée"
+      redirect_to @intervention, alert: "Cette intervention n'est pas un modèle de pointage"
     end
-
-    unless Rails.env.development?
-      Events.instance.publish('intervention.pointage', payload: {intervention_id: current_intervention.id})
-    end
-    
-    redirect_to pointage_statut_intervention_path(current_intervention)
   end
 
   def pointage_statut
+    if @intervention.repeter
+      redirect_to pointage_statut_intervention_path(Intervention.find_by(template_slug: @intervention.slug))
+    end
   end
 
   # Récupère les agents en conflit avec les dates passées dans l'URL

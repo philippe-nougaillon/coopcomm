@@ -20,6 +20,10 @@ bond_intervention_autre_adhérent:
   agent: bond
   intervention: intervention_autre_adhérent
 
+bond_intervention_a_repeter:
+  agent: bond
+  intervention: intervention_a_repeter
+
 agent_marseille_nettoyage_port:
   agent: agent_marseille
   intervention: nettoyage_port

@@ -97,4 +97,39 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to @intervention
   end
+
+  test "pointer intervention repete doit créer une intervention" do
+    intervention = interventions(:intervention_a_repeter)
+    
+    assert_difference("Intervention.count", 1) do
+      get pointer_intervention_url(intervention)
+    end
+  end
+
+  test "pointer intervention repete doit mettre fin à une intervention" do
+    intervention = interventions(:intervention_a_repeter)
+    
+    # Pointage
+    get pointer_intervention_url(intervention)
+    
+    intervention_créée = Intervention.find_by(template_slug: intervention.slug)
+    
+    assert_nil intervention_créée.fin
+
+    # Repointage
+    get pointer_intervention_url(intervention)
+
+    intervention_créée.reload
+    assert_not_nil intervention_créée
+  end
+
+  test "pointer intervention pas repete ne doit pas créer une intervention" do
+    intervention = interventions(:intervention_a_repeter)
+    intervention.repeter = false
+    intervention.save
+
+    assert_no_difference("Intervention.count") do
+      get pointer_intervention_url(intervention)
+    end
+  end
 end
