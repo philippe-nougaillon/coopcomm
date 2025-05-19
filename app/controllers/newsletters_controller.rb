@@ -25,14 +25,23 @@ class NewslettersController < ApplicationController
   # POST /newsletters or /newsletters.json
   def create
     @newsletter = Newsletter.new(newsletter_params)
-
-    respond_to do |format|
+    if verify_recaptcha(model: @newsletter)
       if @newsletter.save
-        format.html { redirect_to @newsletter, notice: "Vous êtes bien inscrit à la newsletter." }
-        format.json { render :show, status: :created, location: @newsletter }
+        respond_to do |format|
+          format.html { redirect_to root_path, notice: "Inscription réussie" }
+          format.turbo_stream { redirect_to root_path, notice: "Inscription réussie" }
+        end
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @newsletter.errors, status: :unprocessable_entity }
+        respond_to do |format|
+          format.html { render :new, status: :unprocessable_entity }
+          format.turbo_stream { redirect_to root_path, alert: "Inscription non valide" }
+        end
+      end
+    else
+      flash[:alert] = "Problème avec reCAPTCHA, merci de réessayer"
+      respond_to do |format|
+        format.html { redirect_to root_path }
+        format.turbo_stream { redirect_to root_path }
       end
     end
   end

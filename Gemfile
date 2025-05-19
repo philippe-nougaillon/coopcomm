@@ -132,3 +132,5 @@ gem "discard", "~> 1.4"
 gem "rack-cors", "~> 2.0"
 
 gem "simple_calendar", "~> 3.1"
+
+gem "recaptcha", "~> 5.19"
