@@ -26,11 +26,6 @@ class Tool < ApplicationRecord
     self.interventions.where(":quand BETWEEN interventions.début_prévue AND interventions.fin_prévue", quand:).empty?
   end
 
-  # Je crois que c'est inutilisé
-  def current_intervention
-    self.interventions.where("NOW() BETWEEN interventions.début_prévue AND interventions.fin_prévue").first
-  end
-
   def self.indisponibles_ids(organisation_id, quand)
     quand = Time.zone.parse(quand)
     Intervention.joins(:tools)
