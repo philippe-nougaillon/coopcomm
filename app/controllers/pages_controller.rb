@@ -31,6 +31,7 @@ class PagesController < ApplicationController
 
   def welcome
     @wiki_pages = WikiPage.where(publiée: true)
+    @newsletter = Newsletter.new
   end
 
   def dashboard

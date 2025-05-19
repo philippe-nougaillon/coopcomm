@@ -69,7 +69,7 @@ class User < ApplicationRecord
   end
 
   def super_admin?
-    %w[philippe.nougaillon@aikku.eu pierre-emmanuel.dacquet@aikku.eu sebastien.pourchaire@aikku.eu p-edacquet@hotmail.fr].include?(self.email)
+    %w[philippe.nougaillon@aikku.eu pierre-emmanuel.dacquet@aikku.eu sebastien.pourchaire@aikku.eu p-edacquet@hotmail.fr coopcom.manageur.toi@gmail.com].include?(self.email)
   end
 
   def moyenne

@@ -1,0 +1,9 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+bond:
+  email: james.bond@gmail.commmmmm
+  slug: 8fa55cce-5cc3-4d5e-8dbb-6c824afabe1e
+
+weil:
+  email: weil@gmail.commmmmm
+  slug: <%= SecureRandom.uuid %>
