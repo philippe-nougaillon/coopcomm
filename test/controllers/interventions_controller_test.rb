@@ -99,7 +99,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "pointer intervention repete doit créer une intervention" do
-    intervention = interventions(:intervention_a_repeter)
+    intervention = interventions(:intervention_repete)
     
     assert_difference("Intervention.count", 1) do
       get pointer_intervention_url(intervention)
@@ -107,7 +107,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "pointer intervention repete doit mettre fin à une intervention" do
-    intervention = interventions(:intervention_a_repeter)
+    intervention = interventions(:intervention_repete)
     
     # Pointage
     get pointer_intervention_url(intervention)
@@ -124,7 +124,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "pointer intervention pas repete ne doit pas créer une intervention" do
-    intervention = interventions(:intervention_a_repeter)
+    intervention = interventions(:intervention_repete)
     intervention.repeter = false
     intervention.save
 
