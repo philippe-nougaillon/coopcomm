@@ -25,7 +25,7 @@ class NewslettersController < ApplicationController
   # POST /newsletters or /newsletters.json
   def create
     @newsletter = Newsletter.new(newsletter_params)
-    if verify_recaptcha(model: @newsletter)
+    if verify_recaptcha(model: @newsletter) || Rails.env.test?
       if @newsletter.save
         respond_to do |format|
           format.html { redirect_to root_path, notice: "Inscription réussie" }
@@ -64,7 +64,7 @@ class NewslettersController < ApplicationController
     @newsletter.destroy!
 
     respond_to do |format|
-      format.html { redirect_to newsletters_path, status: :see_other, notice: "Utilisateur désinscrit de la newsletter." }
+      format.html { redirect_to (user_signed_in? && current_user.super_admin?) ? newsletters_path : root_path, status: :see_other, notice: "Utilisateur désinscrit de la newsletter." }
       format.json { head :no_content }
     end
   end

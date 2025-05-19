@@ -3,10 +3,10 @@ require "test_helper"
 class NewslettersControllerTest < ActionDispatch::IntegrationTest
   setup do
     @newsletter = newsletters(:bond)
-    sign_in users(:philippe_super_admin)
   end
 
   test "should get index" do
+    sign_in users(:philippe_super_admin)
     get newsletters_url
     assert_response :success
   end
@@ -21,7 +21,7 @@ class NewslettersControllerTest < ActionDispatch::IntegrationTest
       post newsletters_url, params: { newsletter: { email: @newsletter.email } }
     end
 
-    assert_redirected_to newsletter_url(Newsletter.last)
+    assert_redirected_to root_path
   end
 
   # test "should show newsletter" do
@@ -39,11 +39,20 @@ class NewslettersControllerTest < ActionDispatch::IntegrationTest
   #   assert_redirected_to newsletter_url(@newsletter)
   # end
 
-  test "should destroy newsletter" do
+  test "should destroy newsletter as super_admin" do
+    sign_in users(:philippe_super_admin)
     assert_difference("Newsletter.count", -1) do
       delete newsletter_url(@newsletter)
     end
 
     assert_redirected_to newsletters_url
+  end
+
+  test "should destroy newsletter from unsubscribe link" do
+    assert_difference("Newsletter.count", -1) do
+      delete newsletter_url(@newsletter)
+    end
+
+    assert_redirected_to root_url
   end
 end
