@@ -40,21 +40,21 @@ class NewslettersController < ApplicationController
       if @newsletter.save
         flash[:notice] = "Inscription réussie"
         respond_to do |format|
-          format.html { redirect_to root_path }
-          format.turbo_stream { redirect_to root_path }
+          format.html { redirect_to welcome_path }
+          format.turbo_stream { redirect_to welcome_path }
         end
       else
         flash[:alert] = "Inscription non valide, le mail est déjà inscrit"
         respond_to do |format|
-          format.html { redirect_to root_path }
-          format.turbo_stream { redirect_to root_path }
+          format.html { redirect_to welcome_path }
+          format.turbo_stream { redirect_to welcome_path }
         end
       end
     else
       flash[:alert] = "Problème avec reCAPTCHA, merci de réessayer"
       respond_to do |format|
-        format.html { redirect_to root_path }
-        format.turbo_stream { redirect_to root_path }
+        format.html { redirect_to welcome_path }
+        format.turbo_stream { redirect_to welcome_path }
       end
     end
   end
@@ -80,6 +80,12 @@ class NewslettersController < ApplicationController
       format.html { redirect_to (user_signed_in? && current_user.super_admin?) ? newsletters_path : root_path, status: :see_other, notice: "Utilisateur désinscrit de la newsletter." }
       format.json { head :no_content }
     end
+  end
+
+  def send_email_newsletter(email)
+    @result = "Vous êtes bien inscrit"
+
+    render partial: "pages/result_newsletter", locals: { result: @result }
   end
 
   private

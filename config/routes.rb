@@ -77,7 +77,11 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :newsletters, only: %i[index create destroy]
+  resources :newsletters, only: %i[index create destroy] do
+    collection do
+      get :send_email_newsletter
+    end
+  end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
