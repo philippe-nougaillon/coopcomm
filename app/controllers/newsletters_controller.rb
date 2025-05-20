@@ -38,14 +38,16 @@ class NewslettersController < ApplicationController
     @newsletter = Newsletter.new(newsletter_params)
     if verify_recaptcha(model: @newsletter) || Rails.env.test?
       if @newsletter.save
+        flash[:notice] = "Inscription réussie"
         respond_to do |format|
-          format.html { redirect_to root_path, notice: "Inscription réussie" }
-          format.turbo_stream { redirect_to root_path, notice: "Inscription réussie" }
+          format.html { redirect_to root_path }
+          format.turbo_stream { redirect_to root_path }
         end
       else
+        flash[:alert] = "Inscription non valide, le mail est déjà inscrit"
         respond_to do |format|
-          format.html { redirect_to root_path, alert: "Inscription non valide, le mail est déjà inscrit" }
-          format.turbo_stream { redirect_to root_path, alert: "Inscription non valide, le mail est déjà inscrit" }
+          format.html { redirect_to root_path }
+          format.turbo_stream { redirect_to root_path }
         end
       end
     else

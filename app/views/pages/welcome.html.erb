@@ -262,7 +262,7 @@
         <div class="inline">
           <span>Inscrivez-vous à la newsletter pour être au courant des dernières nouveautés</span>
           <br>
-          <%= form_with(model: @newsletter, html: { autocomplete: "off", class: 'ml-8' }) do |form| %>
+          <%= form_with(model: @newsletter, id: "nouvelle_newsletter", html: { autocomplete: "off", class: 'ml-8', onsubmit: "return verifyAlreadySubmitted()" }) do |form| %>
             <%= recaptcha_tags unless Rails.env.test? %>
             <div class="join" data-turbo="false">
               <%= form.email_field :email, class: 'input input-bordered w-full join-item', required: true, placeholder: "Email" %>
@@ -276,7 +276,21 @@
       </li>
     </ul>
 
+    <script>
+        <% if flash[:alert] %>
+        form = document.getElementById("nouvelle_newsletter");
+        form.scrollIntoView({ behavior: "smooth" });
+        <% end %>
 
+        function verifyAlreadySubmitted() {
+            <% if flash[:notice] %>
+            alert("Vous ne pouvez pas vous inscrire plusieurs fois !")
+            return false
+            <% else %>
+            return true
+            <% end %>
+        }
+    </script>
   </div>
 
   <div class="min-h-screen mt-24">
