@@ -44,8 +44,8 @@ class NewslettersController < ApplicationController
         end
       else
         respond_to do |format|
-          format.html { render :new, status: :unprocessable_entity }
-          format.turbo_stream { redirect_to root_path, alert: "Inscription non valide" }
+          format.html { redirect_to root_path, alert: "Inscription non valide, le mail est déjà inscrit" }
+          format.turbo_stream { redirect_to root_path, alert: "Inscription non valide, le mail est déjà inscrit" }
         end
       end
     else
@@ -83,7 +83,7 @@ class NewslettersController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_newsletter
-      @newsletter = Newsletter.find(params.expect(:id))
+      @newsletter = Newsletter.find_by(slug: params[:id])
     end
 
     # Only allow a list of trusted parameters through.

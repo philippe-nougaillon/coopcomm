@@ -18,7 +18,7 @@ class NewslettersControllerTest < ActionDispatch::IntegrationTest
 
   test "should create newsletter" do
     assert_difference("Newsletter.count") do
-      post newsletters_url, params: { newsletter: { email: @newsletter.email } }
+      post newsletters_url, params: { newsletter: { email: @newsletter.email + "m" } }
     end
 
     assert_redirected_to root_path
