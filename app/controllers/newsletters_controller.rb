@@ -7,6 +7,17 @@ class NewslettersController < ApplicationController
   # GET /newsletters or /newsletters.json
   def index
     @newsletters = Newsletter.all
+
+    respond_to do |format|
+      format.html do
+        @newsletters
+      end
+
+      format.xls do
+        xls_file = NewslettersToXls.new(@newsletters).call
+        send_data xls_file, filename: "Newsletters_#{DateTime.now}.xls"
+      end
+    end
   end
 
   # # GET /newsletters/1 or /newsletters/1.json

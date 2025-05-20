@@ -3,6 +3,8 @@
     <h1 class="text-2xl sm:text-4xl text-primary font-bold">Newsletters</h1>
   </div>
 
+  <div class="divider"></div>
+
   <div class="overflow-x-auto">
     <table class="table table-sm">
       <thead class="bg-slate-100">
@@ -18,4 +20,7 @@
     </table>
   </div>
 
+  <% if @newsletters.any? %>
+    <%= link_to "Exporter les newsletters en XLS", url_for(params.permit!.merge(format: :xls)), class: "text-sm btn btn-sm btn-outline btn-success hover:!text-white mt-4" %>
+  <% end %>
 </div>
