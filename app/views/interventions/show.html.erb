@@ -176,13 +176,11 @@
         <div class="w-72 mr-4">
           <% if @intervention.validé? || @intervention.refusé? %>
             <div>
+              <strong class="block text-slate-400 mb-1">Évaluation</strong>
               <div class="rating">
-                <p class="my-2">
-                  <strong class="block text-slate-400 mb-1">Évaluation</strong>
-                  <% 5.times do |index| %>
-                    <input type="radio" name="rating-<%= @intervention.id %>" class="mask mask-star bg-primary cursor-text" <%= "checked" if @intervention.note == index + 1 %> disabled/>
-                  <% end %>
-                </p>
+                <% 5.times do |index| %>
+                  <input type="radio" name="rating-<%= @intervention.id %>" class="mask mask-star bg-primary cursor-text" <%= 'aria-current=true' if @intervention.note == index + 1 %> disabled/>
+                <% end %>
               </div>
 
               <p class="my-2">
