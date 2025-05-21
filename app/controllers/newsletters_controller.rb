@@ -88,17 +88,15 @@ class NewslettersController < ApplicationController
 
     if email
       newsletter = Newsletter.new(email: email)
-      if verify_recaptcha(model: newsletter) || Rails.env.test?
-        if newsletter.save
-          result = "Inscription réussie"
-          valid = true
-        elsif Newsletter.find_by(email: email)
-          result = "Inscription non valide, le mail est déjà inscrit"
-          valid = false
-        end
-        
-        render partial: "pages/result_newsletter", locals: { result: result, valid: valid }
+      if newsletter.save
+        result = "Inscription réussie"
+        valid = true
+      elsif Newsletter.find_by(email: email)
+        result = "Inscription non valide, le mail est déjà inscrit"
+        valid = false
       end
+      
+      render partial: "pages/result_newsletter", locals: { result: result, valid: valid }
     end
 
   end

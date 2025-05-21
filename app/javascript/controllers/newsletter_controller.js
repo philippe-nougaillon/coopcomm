@@ -5,10 +5,6 @@ export default class extends Controller {
 
   static targets = ['result', 'email']
 
-  connect(){
-    console.log("test")
-  }
-
   print_result() {
     const email = this.emailTarget
 
