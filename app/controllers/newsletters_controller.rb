@@ -36,7 +36,7 @@ class NewslettersController < ApplicationController
   # POST /newsletters or /newsletters.json
   def create
     @newsletter = Newsletter.new(newsletter_params)
-    if verify_recaptcha(model: @newsletter) || Rails.env.test? || true
+    if verify_recaptcha(model: @newsletter) || Rails.env.test?
       if @newsletter.save
         flash[:notice] = "Inscription réussie"
         respond_to do |format|
@@ -88,15 +88,17 @@ class NewslettersController < ApplicationController
 
     if email
       newsletter = Newsletter.new(email: email)
-      if newsletter.save
-        result = "Inscription réussie"
-        valid = true
-      elsif Newsletter.find_by(email: email)
-        result = "Inscription non valide, le mail est déjà inscrit"
-        valid = false
+      if verify_recaptcha(model: newsletter) || Rails.env.test?
+        if newsletter.save
+          result = "Inscription réussie"
+          valid = true
+        elsif Newsletter.find_by(email: email)
+          result = "Inscription non valide, le mail est déjà inscrit"
+          valid = false
+        end
+        
+        render partial: "pages/result_newsletter", locals: { result: result, valid: valid }
       end
-      
-      render partial: "pages/result_newsletter", locals: { result: result, valid: valid }
     end
 
   end

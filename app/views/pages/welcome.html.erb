@@ -264,7 +264,7 @@
           <br>
           <!--<div id="nouvelle_newsletter" data-controller="newsletter">-->
           <%= form_with(model: @newsletter, id: "nouvelle_newsletter", html: { autocomplete: "off", class: 'ml-8', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
-            <%# recaptcha_tags unless Rails.env.test? %>
+            <%= recaptcha_tags unless Rails.env.test? %>
             <div class="join" data-turbo="false">
               <%= form.email_field :email, 'data-newsletter-target': 'email', class: 'input input-bordered w-full join-item', required: true, placeholder: "Email" %>
               <%= form.submit "S'inscrire", 'data-action': 'click->newsletter#print_result', class: "btn join-item rounded-r-full" %>
