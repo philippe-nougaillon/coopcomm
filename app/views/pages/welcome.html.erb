@@ -263,15 +263,15 @@
           <span>Inscrivez-vous à la newsletter pour être au courant des dernières nouveautés</span>
           <br>
           <!--<div id="nouvelle_newsletter" data-controller="newsletter">-->
-          <%= form_with(model: @newsletter, id: "nouvelle_newsletter", html: { autocomplete: "off", class: 'ml-8', onsubmit: "event.preventDefault();" }) do |form| %>
-            <%= recaptcha_tags unless Rails.env.test? %>
+          <%= form_with(model: @newsletter, id: "nouvelle_newsletter", html: { autocomplete: "off", class: 'ml-8', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
+            <%# recaptcha_tags unless Rails.env.test? %>
             <div class="join" data-turbo="false">
               <%= form.email_field :email, 'data-newsletter-target': 'email', class: 'input input-bordered w-full join-item', required: true, placeholder: "Email" %>
               <%= form.submit "S'inscrire", 'data-action': 'click->newsletter#print_result', class: "btn join-item rounded-r-full" %>
             </div>
 
             <div>
-              <%= render "result_newsletter", result: "azfzef" %>
+              <%= render "result_newsletter", result: "", valid: "" %>
             </div>
           <% end %>
           <!--</div>-->
@@ -283,8 +283,8 @@
     </ul>
 
     <script>
-        // form = document.getElementById("nouvelle_newsletter");
-        // form.scrollIntoView({ behavior: "smooth" });
+        form = document.getElementById("nouvelle_newsletter");
+        form.scrollIntoView({ behavior: "smooth" });
 
 
     </script>

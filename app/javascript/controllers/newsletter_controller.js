@@ -5,11 +5,17 @@ export default class extends Controller {
 
   static targets = ['result', 'email']
 
-  print_result() {
-    const email = this.emailTarget.value
+  connect(){
+    console.log("test")
+  }
 
-    if(email){
-      this.resultTarget.src = `/newsletter/send_email_newsletter?email=${email}`;
+  print_result() {
+    const email = this.emailTarget
+
+    if (email.checkValidity()) {
+      this.resultTarget.src = `/newsletters/send_email_newsletter?email=${email.value}`;
+      email.value = ""
+      email.closest("form").setAttribute("novalidate", true)
     }
   }
 

@@ -16,4 +16,8 @@ class NewsletterPolicy < ApplicationPolicy
   def destroy?
     true
   end
+
+  def send_email_newsletter?
+    true
+  end
 end
