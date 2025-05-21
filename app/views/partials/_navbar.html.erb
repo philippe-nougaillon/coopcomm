@@ -1,12 +1,12 @@
-<div class="hidden lg:navbar bg-base-100 shadow-sm !py-0 !pr-0 fixed top-0 z-10">
-  <div class="flex-1">
+<div class="hidden lg:navbar bg-base-100 shadow-sm py-0! pr-0! fixed top-0 z-10">
+  <div class="flex items-center flex-1">
     <%= image_tag "aikku.png", class:"h-6 pr-1" %>
-    <%= link_to "CoopCom", root_path, class:"text-xl font-black text-shadow-lg" %>
+    <%= link_to "CoopCom", root_path, class:"text-xl font-black" %>
   </div>
   <div class="flex-none">
-    <ul class="menu menu-horizontal flex-1 items-center !py-0 px-0">
+    <ul class="menu w-full menu-horizontal flex-1 items-center py-0! px-0">
       <li>
-        <%= link_to interventions_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'active !text-primary !bg-base-100 border-b-2' if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
+        <%= link_to interventions_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
           <span class="material-symbols-outlined">
             home
           </span>
@@ -14,7 +14,7 @@
       </li>
       <% if policy(Tool).index? %>
         <li>
-          <%= link_to tools_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'active !text-primary !bg-base-100 border-b-2' if params[:controller] == 'tools'}", title: "Liste des outils" do %>
+          <%= link_to tools_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'tools'}", title: "Liste des outils" do %>
             <span class="material-symbols-outlined">
               construction
             </span>
@@ -23,7 +23,7 @@
       <% end %>
       <% if policy(User).agent_calendrier? %>
         <li>
-          <%= link_to agent_calendrier_users_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'active !text-primary !bg-base-100 border-b-2' if params[:action] == 'agent_calendrier'}", title: "Voir la disponibilité des agents" do %>
+          <%= link_to agent_calendrier_users_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:action] == 'agent_calendrier'}", title: "Voir la disponibilité des agents" do %>
             <span class="material-symbols-outlined">
               person_apron
             </span>
@@ -31,13 +31,13 @@
         </li>
       <% end %>
       <li>
-        <%= link_to admin_messagerie_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'active !text-primary !bg-base-100 border-b-2' if params[:action] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
+        <%= link_to admin_messagerie_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:action] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
           <% if current_user.new_notifications? %>
             <span class="material-symbols-outlined text-error">
               chat
             </span>
           <% else %>
-            <span class="material-symbols-outlined text-secondary <%= '!text-primary' if params[:action] == 'messagerie' %>">
+            <span class="material-symbols-outlined text-secondary <%= 'text-primary!' if params[:action] == 'messagerie' %>">
               chat
             </span>
           <% end %>
@@ -45,7 +45,7 @@
       </li>
       <% if policy(:pages).assistant? %>
         <li>
-          <%= link_to assistant_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'active !text-primary !bg-base-100 border-b-2' if params[:action] == 'assistant'}", title: 'Assistant (IA)' do %>
+          <%= link_to assistant_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:action] == 'assistant'}", title: 'Assistant (IA)' do %>
             <span class="material-symbols-outlined">
               smart_toy
             </span>
@@ -55,7 +55,7 @@
       <!--
       <% if policy(MailLog).index? %>
         <li>
-          <%= link_to notifications_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'active !text-primary !bg-base-100 border-b-2' if params[:controller] == 'mail_logs'}", title: "Mail Logs (historique des mails envoyés)" do %>
+          <%= link_to notifications_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'mail_logs'}", title: "Mail Logs (historique des mails envoyés)" do %>
             <span class="material-symbols-outlined">
               mark_email_read
             </span>
@@ -65,7 +65,7 @@
       -->
       <% if policy(:admin).audits? %>
         <li>
-          <%= link_to admin_audits_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'active !text-primary !bg-base-100 border-b-2' if (params[:action] == 'audits') || (params[:controller] == 'mail_logs') }", title: 'Activité (historique des modifications)', 'data-testid': "audit_trail" do %>
+          <%= link_to admin_audits_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if (params[:action] == 'audits') || (params[:controller] == 'mail_logs') }", title: 'Activité (historique des modifications)', 'data-testid': "audit_trail" do %>
             <span class="material-symbols-outlined">
               history
             </span>
@@ -74,7 +74,7 @@
       <% end %>
       <% if policy(:pages).dashboard? %>
         <li>
-          <%= link_to dashboard_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'active !text-primary !bg-base-100 border-b-2' if params[:action] == 'dashboard'}", title: "Tableau de bord", 'data-turbo': false do %>
+          <%= link_to dashboard_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:action] == 'dashboard'}", title: "Tableau de bord", 'data-turbo': false do %>
             <span class="material-symbols-outlined">
               grid_view
             </span>
@@ -82,7 +82,7 @@
         </li>
       <% end %>
       <li>
-        <%= link_to wiki_pages_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'active !text-primary !bg-base-100 border-b-2' if params[:controller] == 'wiki_pages'}", title: "Wiki" do %>
+        <%= link_to wiki_pages_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'wiki_pages'}", title: "Wiki" do %>
           <span class="material-symbols-outlined">
             menu_book
           </span>
@@ -90,7 +90,7 @@
       </li>
       <% if policy(User).index? %>
         <li>
-          <%= link_to users_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'active !text-primary !bg-base-100 border-b-2' if params[:controller] == 'users' && params[:action] != 'agent_calendrier'}", title: "Liste des utilisateurs" do %>
+          <%= link_to users_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'users' && params[:action] != 'agent_calendrier'}", title: "Liste des utilisateurs" do %>
             <span class="material-symbols-outlined">
               group
             </span>
@@ -98,7 +98,7 @@
         </li>
       <% end %>
       <li>
-        <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?" }, title: "Fermer la session de #{current_user.email} (#{current_user.rôle})", class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 hover:!border-primary" do %>
+        <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?" }, title: "Fermer la session de #{current_user.email} (#{current_user.rôle})", class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 hover:border-primary!" do %>
           <span class="material-symbols-outlined">
             logout
           </span>
@@ -117,15 +117,15 @@
 
 
 
-<div class="btm-nav lg:hidden z-10 shadow-2xl">
-  <%= link_to interventions_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
+<div class="dock lg:hidden z-10 shadow-2xl">
+  <%= link_to interventions_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
     <span class="material-symbols-outlined">
       home
     </span>
   <% end %>
 
   <% if policy(Tool).index? %>
-    <%= link_to tools_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'tools'}", title: "Liste des outils" do %>
+    <%= link_to tools_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:controller] == 'tools'}", title: "Liste des outils" do %>
       <span class="material-symbols-outlined">
         construction
       </span>
@@ -133,7 +133,7 @@
   <% end %>
 
   <% if policy(User).agent_calendrier? %>
-    <%= link_to agent_calendrier_users_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'agent_calendrier'}", title: "Voir la disponibilité des agents" do %>
+    <%= link_to agent_calendrier_users_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:action] == 'agent_calendrier'}", title: "Voir la disponibilité des agents" do %>
       <span class="material-symbols-outlined">
         person_apron
       </span>
@@ -141,20 +141,20 @@
   <% end %>
 
 
-  <%= link_to admin_messagerie_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
+  <%= link_to admin_messagerie_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:action] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
     <% if current_user.new_notifications? %>
       <span class="material-symbols-outlined text-error">
         chat
       </span>
     <% else %>
-      <span class="material-symbols-outlined text-secondary <%= '!text-primary' if params[:action] == 'messagerie' %>">
+      <span class="material-symbols-outlined text-secondary <%= 'text-primary!' if params[:action] == 'messagerie' %>">
         chat
       </span>
     <% end %>
   <% end %>
 
   <% if policy(:pages).assistant? %>
-    <%= link_to assistant_path, class: "hidden sm:flex text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'assistant'}", title: 'Assistant (IA)' do %>
+    <%= link_to assistant_path, class: "hidden sm:flex text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:action] == 'assistant'}", title: 'Assistant (IA)' do %>
       <span class="material-symbols-outlined">
         smart_toy
       </span>
@@ -163,7 +163,7 @@
 
   <!--
   <% if policy(MailLog).index? %>
-    <%= link_to notifications_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'mail_logs'}", title: "Mail Logs (historique des mails envoyés)" do %>
+    <%= link_to notifications_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:controller] == 'mail_logs'}", title: "Mail Logs (historique des mails envoyés)" do %>
       <span class="material-symbols-outlined">
         mark_email_read
       </span>
@@ -172,7 +172,7 @@
   -->
 
   <% if policy(:admin).audits? %>
-    <%= link_to admin_audits_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if (params[:action] == 'audits') || (params[:controller] == 'mail_logs') }", title: 'Activité (historique des modifications)', 'data-testid': "audit_trail" do %>
+    <%= link_to admin_audits_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if (params[:action] == 'audits') || (params[:controller] == 'mail_logs') }", title: 'Activité (historique des modifications)', 'data-testid': "audit_trail" do %>
       <span class="material-symbols-outlined">
         history
       </span>
@@ -180,7 +180,7 @@
   <% end %>
 
   <% if policy(:pages).dashboard? %>
-    <%= link_to dashboard_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:action] == 'dashboard'}", title: "Tableau de bord", 'data-turbo': false do %>
+    <%= link_to dashboard_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:action] == 'dashboard'}", title: "Tableau de bord", 'data-turbo': false do %>
       <span class="material-symbols-outlined">
         grid_view
       </span>
@@ -188,7 +188,7 @@
   <% end %>
 
   <% if policy(User).index? %>
-    <%= link_to users_path, class: "text-secondary hover-active hover:shadow #{'active shadow !text-primary' if params[:controller] == 'users' && params[:action] != 'agent_calendrier'}", title: "Liste des utilisateurs" do %>
+    <%= link_to users_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:controller] == 'users' && params[:action] != 'agent_calendrier'}", title: "Liste des utilisateurs" do %>
       <span class="material-symbols-outlined">
         group
       </span>

@@ -11,8 +11,8 @@
         <% end %>
       </h1>
       <% if user_signed_in? && current_user.super_admin? %>
-        <%= link_to "Ajouter une Page", new_wiki_page_path, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:!text-white" %>
-        <%= link_to "+", new_wiki_page_path, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:!text-white" %>
+        <%= link_to "Ajouter une Page", new_wiki_page_path, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
+        <%= link_to "+", new_wiki_page_path, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
       <% end %>
     </div>
     

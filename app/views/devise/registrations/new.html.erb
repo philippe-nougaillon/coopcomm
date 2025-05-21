@@ -9,7 +9,7 @@
 
       <div class="field">
         <%= f.label :email %><br />
-        <%= f.email_field :email, autofocus: true, autocomplete: "email", class:'input input-sm input-bordered w-full', required: true %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class:'input input-sm w-full', required: true %>
       </div>
 
       <div class="field my-4">
@@ -17,16 +17,16 @@
         <% if @minimum_password_length %>
         <em>(<%= @minimum_password_length %> caractères minimum)</em>
         <% end %><br />
-        <%= f.password_field :password, autocomplete: "new-password", class:'input input-sm input-bordered w-full', required: true %>
+        <%= f.password_field :password, autocomplete: "new-password", class:'input input-sm w-full', required: true %>
       </div>
 
       <div class="field my-4">
         <%= f.label :password_confirmation %><br />
-        <%= f.password_field :password_confirmation, autocomplete: "new-password", class:'input input-sm input-bordered w-full', required: true %>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password", class:'input input-sm w-full', required: true %>
       </div>
 
       <div class="actions">
-        <%= f.submit "S'inscrire", class: 'btn btn-outline btn-success lg:btn-lg rounded hover:!text-white w-full mt-4 mb-8' %>
+        <%= f.submit "S'inscrire", class: 'btn btn-outline btn-success lg:btn-lg rounded hover:text-white! w-full mt-4 mb-8' %>
       </div>
     <% end %>
     <%= render "devise/shared/links" %>

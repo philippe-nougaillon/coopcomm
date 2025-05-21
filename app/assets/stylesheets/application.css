@@ -33,6 +33,7 @@
 
 
 /***** ÉTOILES *****/
+/* 
 .mask[type=radio]:checked,
 .mask[type=radio]:checked:focus,
 .mask[type=radio]:checked:hover {
@@ -41,12 +42,13 @@
   /* Jaune */
   /* background-color: rgb(250 204 21 / var(--tw-bg-opacity)); */
   /* Primary */
-  background-color: var(--fallback-p, oklch(var(--p) / var(--tw-bg-opacity)));
+  /* background-color: var(--fallback-p, oklch(var(--p) / var(--tw-bg-opacity)));
 }
+*/
 
 /***** END ÉTOILES *****/
 
-/* .btm-nav>:where(.hover-active):hover {
+/* .dock>:where(.hover-active):hover {
   border-top-width: 2px;
   --tw-bg-opacity: 1;
   background-color: var(--fallback-b1, oklch(var(--b1) / var(--tw-bg-opacity)));

@@ -176,13 +176,11 @@
         <div class="w-72 mr-4">
           <% if @intervention.validé? || @intervention.refusé? %>
             <div>
+              <strong class="block text-slate-400 mb-1">Évaluation</strong>
               <div class="rating">
-                <p class="my-2">
-                  <strong class="block text-slate-400 mb-1">Évaluation</strong>
-                  <% 5.times do |index| %>
-                    <input type="radio" name="rating-<%= @intervention.id %>" class="mask mask-star bg-primary cursor-text" <%= "checked" if @intervention.note == index + 1 %> disabled/>
-                  <% end %>
-                </p>
+                <% 5.times do |index| %>
+                  <input type="radio" name="rating-<%= @intervention.id %>" class="mask mask-star bg-primary cursor-text" <%= 'aria-current=true' if @intervention.note == index + 1 %> disabled/>
+                <% end %>
               </div>
 
               <p class="my-2">
@@ -194,9 +192,9 @@
             <div class="my-2">
               <strong class="block text-slate-400 mb-1">Actions</strong>
               <p class="flex gap-2">
-                <%= link_to 'Terminer', terminer_intervention_path(@intervention), class: 'btn btn-primary btn-outline btn-sm sm:btn-md hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !@intervention.can_terminer? %>
-                <%= link_to 'Valider', valider_intervention_path(@intervention), class: 'btn btn-success btn-outline btn-sm sm:btn-md hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !@intervention.can_valider?  %>
-                <%= link_to 'Refuser', refuser_intervention_path(@intervention), class: 'btn btn-error btn-outline btn-sm sm:btn-md hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !@intervention.can_refuser? %>
+                <%= link_to 'Terminer', terminer_intervention_path(@intervention), class: 'btn btn-primary btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !@intervention.can_terminer? %>
+                <%= link_to 'Valider', valider_intervention_path(@intervention), class: 'btn btn-success btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !@intervention.can_valider?  %>
+                <%= link_to 'Refuser', refuser_intervention_path(@intervention), class: 'btn btn-error btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !@intervention.can_refuser? %>
               <p>
             </div>
           <% end %>
