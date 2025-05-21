@@ -6,6 +6,14 @@
 @plugin '@tailwindcss/aspect-ratio';
 @plugin '@tailwindcss/typography';
 @plugin '@tailwindcss/container-queries';
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark, cupcake, corporate;
+}
+@source "../../../public/*.html";
+@source "../../../app/helpers/**/*.rb";
+@source "../../../app/javascript/**/*.js";
+@source "../../../app/views/**/*";
+
 
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
