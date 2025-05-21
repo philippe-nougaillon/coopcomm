@@ -1,7 +1,7 @@
 class NewslettersController < ApplicationController
   before_action :set_newsletter, only: %i[ destroy ]
   before_action :is_user_authorized
-  skip_before_action :authenticate_user!, only: %i[ create destroy ]
+  skip_before_action :authenticate_user!, only: %i[ create destroy send_email_newsletter ]
 
 
   # GET /newsletters or /newsletters.json
