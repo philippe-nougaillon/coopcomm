@@ -155,8 +155,6 @@ class Intervention < ApplicationRecord
   def self.get_unavailable_agents_with_absences(agent_ids, début_prévue, fin_prévue)
     conflicting_agents = []
 
-    #TODO: Chercher les agents dont leurs absences sont en chevauchement avec les dates
-
     agent_ids.each do |agent_id|
       conflicting_agents += User
         .find(agent_id)

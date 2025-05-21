@@ -8,10 +8,11 @@ class NewslettersToXls < ApplicationService
   end
 
   def call
+    
     Spreadsheet.client_encoding = 'UTF-8'
   
     book = Spreadsheet::Workbook.new
-    sheet = book.create_worksheet name: @newsletters.name
+    sheet = book.create_worksheet name: "Liste des newsletters"
     bold = Spreadsheet::Format.new :weight => :bold, :size => 11
 
     headers = %w{Email Créé_le slug}
