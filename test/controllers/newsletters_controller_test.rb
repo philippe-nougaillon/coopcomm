@@ -21,7 +21,7 @@ class NewslettersControllerTest < ActionDispatch::IntegrationTest
       post newsletters_url, params: { newsletter: { email: @newsletter.email + "m" } }
     end
 
-    assert_redirected_to root_path
+    assert_redirected_to welcome_path
   end
 
   # test "should show newsletter" do
