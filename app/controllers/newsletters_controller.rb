@@ -36,22 +36,14 @@ class NewslettersController < ApplicationController
   # POST /newsletters or /newsletters.json
   def create
     @newsletter = Newsletter.new(newsletter_params)
-    if verify_recaptcha(model: @newsletter) || Rails.env.test?
-      if @newsletter.save
-        flash[:notice] = "Inscription réussie"
-        respond_to do |format|
-          format.html { redirect_to welcome_path }
-          format.turbo_stream { redirect_to welcome_path }
-        end
-      else
-        flash[:alert] = "Inscription non valide, le mail est déjà inscrit"
-        respond_to do |format|
-          format.html { redirect_to welcome_path }
-          format.turbo_stream { redirect_to welcome_path }
-        end
+    if @newsletter.save
+      flash[:notice] = "Inscription réussie"
+      respond_to do |format|
+        format.html { redirect_to welcome_path }
+        format.turbo_stream { redirect_to welcome_path }
       end
     else
-      flash[:alert] = "Problème avec reCAPTCHA, merci de réessayer"
+      flash[:alert] = "Inscription non valide, le mail est déjà inscrit"
       respond_to do |format|
         format.html { redirect_to welcome_path }
         format.turbo_stream { redirect_to welcome_path }
@@ -91,7 +83,7 @@ class NewslettersController < ApplicationController
       if newsletter.save
         result = "Inscription réussie"
         valid = true
-      elsif Newsletter.find_by(email: email)
+      else
         result = "Inscription non valide, le mail est déjà inscrit"
         valid = false
       end
