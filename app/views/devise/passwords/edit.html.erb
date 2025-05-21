@@ -10,7 +10,7 @@
 
       <div class="field">
         <%= f.label :password, "Nouveau mot de passe" %><br />
-        <%= f.password_field :password, autofocus: true, autocomplete: "new-password", class:'input input-sm input-bordered w-full', required: true %>
+        <%= f.password_field :password, autofocus: true, autocomplete: "new-password", class:'input input-sm w-full', required: true %>
         <% if @minimum_password_length %>
           <div class="label">
             <span class="label-text-alt">(<%= @minimum_password_length %> caractères minimum)</span>
@@ -20,7 +20,7 @@
 
       <div class="field">
         <%= f.label :password_confirmation, "Confirmation mot de passe" %><br />
-        <%= f.password_field :password_confirmation, autocomplete: "new-password", class:'input input-sm input-bordered w-full', required: true %>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password", class:'input input-sm w-full', required: true %>
       </div>
 
       <div class="actions">

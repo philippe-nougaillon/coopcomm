@@ -20,12 +20,12 @@
 
     <div class="w-full md:w-6/12 lg:w-3/12 pr-4">
       <%= label_tag :search, "Destinataire" %>
-      <%= select_tag :search, options_for_select(@emails, params[:search]), include_blank: true, onchange:'this.form.submit()', class:"input input-bordered input-sm w-full" %>
+      <%= select_tag :search, options_for_select(@emails, params[:search]), include_blank: true, onchange:'this.form.submit()', class:"input input-sm w-full" %>
     </div>
 
     <div class="relative max-w-full pr-4">
       <%= label_tag :search_subject, "Sujet" %>
-      <%= select_tag :search_subject, options_for_select(@mail_logs.pluck(:subject).uniq.sort, params[:search_subject]), include_blank: true, onchange:'this.form.submit()', class:"select select-bordered select-sm w-full" %>
+      <%= select_tag :search_subject, options_for_select(@mail_logs.pluck(:subject).uniq.sort, params[:search_subject]), include_blank: true, onchange:'this.form.submit()', class:"select select-sm w-full" %>
     </div>
 
     <div class="pr-4">

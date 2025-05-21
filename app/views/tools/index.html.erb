@@ -11,12 +11,12 @@
     <div class="flex flex-wrap items-start w-full gap-4 mt-8">
       <div class="w-full md:w-fit">
         <%= label_tag :search, "Rechercher" %>
-        <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-bordered input-sm w-full', placeholder: 'Nom / Description' %>
+        <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full', placeholder: 'Nom / Description' %>
       </div>
 
       <div class="w-full md:w-fit">
         <%= label_tag :date %>
-        <%= datetime_field_tag :date, params[:date], include_blank:true, onchange:'this.form.submit()', class: 'input input-bordered input-sm w-full' %>
+        <%= datetime_field_tag :date, params[:date], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full' %>
       </div>
 
       <div class="min-w-full md:min-w-36">
