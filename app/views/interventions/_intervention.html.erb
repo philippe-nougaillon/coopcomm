@@ -148,10 +148,10 @@
             <div>
               <% if intervention.photos.count > 1 %>
                 <button onclick="my_modal_<%= intervention.id %>.showModal()">
-                  <div class="stack w-36">
+                  <div class="stack w-36 h-36">
                     <% intervention.photos.limit(3).each do |photo| %>
                       <div class="avatar">
-                        <div class="w-36 rounded">
+                        <div class="rounded">
                           <%= image_tag photo, loading: 'lazy' %>
                         </div>
                       </div>
