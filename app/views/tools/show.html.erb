@@ -73,7 +73,7 @@
 
   <h2 class="flex items-center text-2xl text-secondary mt-8 mb-4 gap-2">
     Utilisations
-    <%= link_to '+', new_intervention_path(tool_ids: @tool.id), class: 'btn btn-sm btn-outline btn-success hover:!text-white' %>
+    <%= link_to '+', new_intervention_path(tool_ids: @tool.id), class: 'btn btn-sm btn-outline btn-success hover:text-white!' %>
   </h2>
 
   <%= form_tag tool_path(@tool), method: :get, class:'mb-2' do %>

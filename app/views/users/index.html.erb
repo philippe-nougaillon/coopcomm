@@ -1,8 +1,8 @@
 <div class="w-full mb-24">
   <div class="flex flex-wrap justify-between items-center">
     <h1 class="text-2xl sm:text-4xl text-primary font-bold">Utilisateurs</h1>
-    <%= link_to "Ajouter un Utilisateur", admin_create_new_user_path, data: { 'testid': "ajouter_utilisateur_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:!text-white" %>
-    <%= link_to "+", admin_create_new_user_path, data: { 'testid': "ajouter_utilisateur_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:!text-white" %>
+    <%= link_to "Ajouter un Utilisateur", admin_create_new_user_path, data: { 'testid': "ajouter_utilisateur_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
+    <%= link_to "+", admin_create_new_user_path, data: { 'testid': "ajouter_utilisateur_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
   </div>
 
   <%= form_tag request.path, method: :get do %>

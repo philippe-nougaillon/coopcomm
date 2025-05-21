@@ -8,9 +8,9 @@
 
   <% if policy(:admin).send_notification? %>
     <%= form_tag({action: "send_notification", method: :post}, class:'fixed bottom-4 flex items-end flex-wrap gap-2 mt-12 rounded w-screen left-1/2 -translate-x-1/2 py-2 px-4 mb-16 lg:mb-0 lg:pb-0') do %>
-      <%= select_tag :to_id, options_from_collection_for_select(@users, :id, :nom_prenom_role, params[:to_id]), class: "select select-sm lg:select-md select-bordered w-full sm:w-min !border-base-300", onchange: "this.form.submit()" %>
+      <%= select_tag :to_id, options_from_collection_for_select(@users, :id, :nom_prenom_role, params[:to_id]), class: "select select-sm lg:select-md select-bordered w-full sm:w-min border-base-300!", onchange: "this.form.submit()" %>
       <div class="join flex-1">
-        <%= text_field_tag :message, params[:message],{ class: "input input-bordered input-sm lg:input-md flex-1 join-item !border-base-300", include_blank:true, placeholder: "Entrez votre message"} %>
+        <%= text_field_tag :message, params[:message],{ class: "input input-bordered input-sm lg:input-md flex-1 join-item border-base-300!", include_blank:true, placeholder: "Entrez votre message"} %>
         <%= button_tag type: :submit, name: "submit_message", class: 'btn btn-sm lg:btn-md btn-outline border-base-300 join-item' do %>
           <span class="hidden lg:block">Envoyer</span>
           <span class="material-symbols-outlined">

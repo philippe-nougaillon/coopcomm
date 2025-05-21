@@ -1,9 +1,9 @@
 <div class="flex flex-wrap justify-between items-center">
   <h1 class="text-2xl sm:text-4xl text-primary font-bold">Notifications</h1>
   <div>
-    <%= link_to "Actualiser", refresh_mail_logs_path, class: "btn btn-success btn-outline sm:btn-lg rounded hover:!text-white" %>
+    <%= link_to "Actualiser", refresh_mail_logs_path, class: "btn btn-success btn-outline sm:btn-lg rounded hover:text-white!" %>
     <% if policy(MailLog).index? %>
-      <%= link_to "Activités", admin_audits_path, class: "btn btn-primary btn-outline sm:btn-lg rounded hover:!text-white", title: "Mail Logs (historique des mails envoyés)" %>
+      <%= link_to "Activités", admin_audits_path, class: "btn btn-primary btn-outline sm:btn-lg rounded hover:text-white!", title: "Mail Logs (historique des mails envoyés)" %>
     <% end %>
   </div>
 </div>
