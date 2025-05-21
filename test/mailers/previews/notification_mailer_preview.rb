@@ -21,4 +21,8 @@ class NotificationMailerPreview < ActionMailer::Preview
     NotificationMailer.intervention_pointage(Intervention.last)
   end
 
+  def confirm_email_newsletter
+    NotificationMailer.confirm_email_newsletter(User.last.email)
+  end
+
 end

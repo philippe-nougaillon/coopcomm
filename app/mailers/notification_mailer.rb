@@ -58,4 +58,9 @@ class NotificationMailer < ApplicationMailer
     mail(to: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu', subject: '[COOPCOM] Nouvelle Organisation')
   end
 
+  def confirm_email_newsletter(email)
+    mail(to: email,
+          bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu, alexandre.meunier@aikku.eu',
+          subject: '[COOPCOM] Confirmation de l\'inscription pour la newsletter')
+  end
 end

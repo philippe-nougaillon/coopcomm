@@ -57,4 +57,9 @@ class EmailSubscription
     NewOrganisationNotificationJob.perform_later(user.organisation)
   end
 
+  def on_create_newsletter(event)
+    email = Newsletter.find(event[:payload][:newsletter_id]).email
+    NotifConfirmEmailNewsletterJob.perform_later(email)
+  end
+
 end

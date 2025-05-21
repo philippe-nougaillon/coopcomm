@@ -83,6 +83,9 @@ class NewslettersController < ApplicationController
       if newsletter.save
         result = "Inscription réussie"
         valid = true
+        unless Rails.env.development?
+          Events.instance.publish('create.newsletter', payload: {newsletter_id: newsletter.id})
+        end
       else
         result = "Inscription non valide, le mail est déjà inscrit"
         valid = false
