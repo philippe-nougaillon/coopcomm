@@ -7,7 +7,7 @@
 
     <div class="lg:flex lg:flex-wrap">
       <div class="flex-1">
-        <h2 class="text-3xl lg:text-4xl font-black mb-6 lg:mb-12">
+        <h2 class="text-3xl lg:text-4xl text-secondary font-black mb-6 lg:mb-12">
           <span class="underline">P</span>lateforme de mutualisation
           <br> 
           de services communs
@@ -32,7 +32,7 @@
   </div>
 
   <div id="more" class="mt-12" style="scroll-snap-align: start;">
-    <h2 class="text-3xl lg:text-4xl text-primary font-black">
+    <h2 class="text-3xl lg:text-4xl text-success">
       Les bénéfices de la plateforme CoopCom
     </h2>
     <div class="divider mb-12"></div>
@@ -187,7 +187,7 @@
   </div>
 
   <div class="mt-12">
-    <h2 class="text-3xl lg:text-4xl text-primary font-black">
+    <h2 class="text-3xl lg:text-4xl text-success">
       Tutoriel vidéo
     </h2>
     <div class="divider mb-12"></div>
@@ -197,8 +197,8 @@
   </div>
 
   <div class="mt-24">
-    <h2 class="text-3xl lg:text-4xl text-primary font-black">
-      Wiki
+    <h2 class="text-3xl lg:text-4xl text-success">
+      En savoir plus
     </h2>
     <div class="divider mb-12"></div>
 
@@ -209,7 +209,7 @@
       <ul class="list-none list-inside text-xl ml-8 my-4">
         <% @wiki_pages.blog.where(publiée: true).order(:poids).each do |wiki_page| %>
           <li>
-            <%= link_to wiki_page.titre, wiki_page, class: "text-primary text-2xl font-black hover:underline" %>
+            <%= link_to wiki_page.titre, wiki_page, class: "text-primary text-2xl hover:underline" %>
             <small class="ml-4">
               <i>Publiée le <%= l(wiki_page.created_at) %></i>
               <i>(Modifiée il y a <%= time_ago_in_words wiki_page.updated_at %>)</i>
@@ -223,7 +223,7 @@
       <ul class="list-none list-inside text-xl ml-8 my-4">
         <% @wiki_pages.guide.where(publiée: true).order(:poids).each do |wiki_page| %>
           <li>
-            <%= link_to wiki_page.titre, wiki_page, class: "text-primary text-2xl font-black hover:underline" %>
+            <%= link_to wiki_page.titre, wiki_page, class: "text-primary text-2xl hover:underline" %>
           </li>
         <% end %>
       </ul>
@@ -233,7 +233,7 @@
       <ul class="list-none list-inside text-xl ml-8 my-4">
         <% @wiki_pages.fiches.where(publiée: true).order(:poids).each do |wiki_page| %>
           <li>
-            <%= link_to wiki_page.titre, wiki_page, class: "text-primary text-2xl font-black hover:underline" %>
+            <%= link_to wiki_page.titre, wiki_page, class: "text-primary text-2xl hover:underline" %>
           </li>
         <% end %>
       </ul>
@@ -246,41 +246,7 @@
   </div>
 
   <div class="mt-24">
-    <h2 class="text-3xl lg:text-4xl text-primary font-black">
-      En savoir plus
-    </h2>
-    <div class="divider mb-12"></div>
-
-    <ul class="list-disc list-inside">
-      <li class="text-2xl my-4">
-        <%= link_to 'Nous contacter', 'https://www.aikku.eu/fr/contact?objet=COOPCOM', target: '_blank', class: 'text-primary hover:underline' %>
-      </li>
-      <li class="text-2xl my-4">
-        <%= link_to 'Mentions légales', mentions_legales_path, class: 'text-primary hover:underline' %>
-      </li>
-      <li class="text-2xl my-4">
-        <div class="inline">
-          <span>Inscrivez-vous à la newsletter pour être au courant des dernières nouveautés</span>
-          <%= form_with(model: @newsletter, id: "nouvelle_newsletter", method: "post", html: { autocomplete: "off", class: 'ml-8 mt-4', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
-            <div class="join" data-turbo="false">
-              <%= form.email_field :email, 'data-newsletter-target': 'email', class: 'input join-item w-full input-lg', required: true, placeholder: "Email" %>
-              <%= form.submit "Je m'inscris", 'data-action': 'click->newsletter#print_result', class: "btn join-item rounded-r-full btn-lg" %>
-            </div>
-
-            <div>
-              <%= render "result_newsletter" %>
-            </div>
-          <% end %>
-        </div>
-      </li>
-      <li class="text-2xl my-4">
-        ...      
-      </li>
-    </ul>
-  </div>
-
-  <div class="min-h-screen mt-24">
-    <h2 class="text-3xl lg:text-4xl text-primary font-black">
+    <h2 class="text-3xl lg:text-4xl text-success">
       Témoignages de nos clients
     </h2>
     <div class="divider mb-12"></div>
@@ -316,6 +282,36 @@
       <div class="chat-bubble text-primary">Not leave it in Darkness</div>
     </div>
   </div>
+
+  <div class="my-24">
+
+    <h2 class="text-3xl lg:text-4xl text-success">
+      Suivez nos actualités
+    </h2>
+
+    <div class="divider mb-12"></div>
+
+    <ul class="list-disc list-inside">
+      <li class="text-2xl my-4">
+        <div class="inline">
+          <span>Inscrivez-vous à la newsletter pour être au courant des dernières nouveautés</span>
+          <%= form_with(model: @newsletter, id: "nouvelle_newsletter", method: "post", html: { autocomplete: "off", class: 'ml-8 mt-4', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
+            <div class="join" data-turbo="false">
+              <%= form.email_field :email, 'data-newsletter-target': 'email', class: 'input join-item w-lg input-lg', required: true, placeholder: "Email" %>
+              <%= form.submit "Je m'inscris", 'data-action': 'click->newsletter#print_result', class: "btn join-item rounded-r-full btn-lg" %>
+            </div>
+
+            <div>
+              <%= render "result_newsletter" %>
+            </div>
+          <% end %>
+        </div>
+      </li>
+    </ul>
+  </div>
+
 </div>
+
+
 
 <%= render partial: 'partials/footer' %>
