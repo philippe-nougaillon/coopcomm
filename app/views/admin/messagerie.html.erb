@@ -1,6 +1,8 @@
 <div class="w-full h-screen mx-auto" style="overflow: hidden;">
-  <h1 class="text-primary text-2xl mb-4">Messagerie de <%= current_user.nom_prénom %></h1>
-  
+  <div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
+    <h1 class="text-2xl sm:text-4xl text-primary font-bold">Messagerie de <%= current_user.nom_prénom %></h1>
+  </div>
+
   <div id="notifications" class="min-w-full overflow-y-auto flex flex-col-reverse">
     <%= turbo_stream_from "notifications_#{current_user.id}" %>
     <%= render partial: "admin/notification", collection: @notifications %>

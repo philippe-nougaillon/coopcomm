@@ -2,8 +2,8 @@
   <%= render "wiki_navbar" %>
 
   <div class="w-full ml-8 sm:ml-64">
-    <div class="flex flex-wrap justify-between items-center mb-12">
-      <h1 class="text-3xl text-secondary font-bold">
+    <div class="flex flex-wrap justify-between items-center mb-12 h12 sm:h-16">
+      <h1 class="text-2xl sm:text-4xl text-primary font-bold">
         <% if !(params[:catégorie].present? || params[:search].present?) %>
           Bienvenue sur le Wiki CoopCom !
         <% elsif params[:catégorie].present? %>
