@@ -9,15 +9,11 @@ class NewsletterPolicy < ApplicationPolicy
     user && user.super_admin?
   end
 
-  def create?
+  def new?
     true
   end
 
   def destroy?
-    true
-  end
-
-  def send_email_newsletter?
     true
   end
 end

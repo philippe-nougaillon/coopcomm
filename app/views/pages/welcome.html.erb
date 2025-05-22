@@ -261,15 +261,14 @@
       <li class="text-2xl my-4">
         <div class="inline">
           <span>Inscrivez-vous à la newsletter pour être au courant des dernières nouveautés</span>
-          <br>
-          <%= form_with(model: @newsletter, id: "nouvelle_newsletter", html: { autocomplete: "off", class: 'ml-8', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
+          <%= form_with(model: @newsletter, id: "nouvelle_newsletter", method: "post", html: { autocomplete: "off", class: 'ml-8 mt-4', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
             <div class="join" data-turbo="false">
-              <%= form.email_field :email, 'data-newsletter-target': 'email', class: 'input w-full join-item', required: true, placeholder: "Email" %>
-              <%= form.submit "S'inscrire", 'data-action': 'click->newsletter#print_result', class: "btn join-item rounded-r-full" %>
+              <%= form.email_field :email, 'data-newsletter-target': 'email', class: 'input join-item w-full input-lg', required: true, placeholder: "Email" %>
+              <%= form.submit "Je m'inscris", 'data-action': 'click->newsletter#print_result', class: "btn join-item rounded-r-full btn-lg" %>
             </div>
 
             <div>
-              <%= render "result_newsletter", result: "", valid: "" %>
+              <%= render "result_newsletter" %>
             </div>
           <% end %>
         </div>

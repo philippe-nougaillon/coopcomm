@@ -9,9 +9,7 @@ export default class extends Controller {
     const email = this.emailTarget
 
     if (email.checkValidity()) {
-      this.resultTarget.src = `/newsletters/send_email_newsletter?email=${email.value}`;
-      email.value = ""
-      email.closest("form").setAttribute("novalidate", true)
+      this.resultTarget.src = `/newsletters/new?email=${email.value}`;
     }
   }
 

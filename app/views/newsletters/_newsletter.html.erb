@@ -1,9 +1,9 @@
 <tr id="<%= dom_id newsletter %>" class="hover:bg-base-300">
   <td>
-    <%= newsletter.email %>
+    <%= time_ago_in_words newsletter.created_at %>
   </td>
   <td>
-    <%= l(newsletter.created_at, format: :long) %>
+    <%= newsletter.email %>
   </td>
 
   <td>
