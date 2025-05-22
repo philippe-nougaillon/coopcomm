@@ -85,7 +85,7 @@ class NewslettersController < ApplicationController
           Events.instance.publish('create.newsletter', payload: {newsletter_id: newsletter.id})
         end
       else
-        result = "Il existe déjà une inscription pour ce mail."
+        result = "Oups ! Il existe déjà une inscription pour cette adresse mail..."
       end
       
       render partial: "pages/result_newsletter", locals: { result: result, valid: valid }
