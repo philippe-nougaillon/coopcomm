@@ -193,7 +193,10 @@
     </h2>
     <div class="divider mb-12"></div>
     <div class="mockup-window bg-base-300 border">
-      <div class="bg-base-200 flex justify-center px-4 py-64">En cours de tournage ! <br> (On est toujours en attente de la réponse de Spielberg ...)</div>
+      <div class="bg-base-200 flex justify-center flex-col px-4 py-64">
+        <b class="mb-4">En cours de tournage !</b>
+        (Nous sommes toujours en attente de la réponse de Georges Lucas...)
+      </div>
     </div>
   </div>
 
@@ -203,8 +206,8 @@
     </h2>
     <div class="divider mb-12"></div>
 
-    <ul class="list-disc list-inside">
-      <li class="text-2xl my-4">
+    <ul>
+      <li class="text-2xl my-4 font-black">
         Blog
       </li>
       <ul class="list-none list-inside text-xl ml-8 my-4">
@@ -218,7 +221,7 @@
           </li>
         <% end %>
       </ul>
-      <li class="text-2xl my-4">
+      <li class="text-2xl my-4 font-black mt-20">
         Guides
       </li>
       <ul class="list-none list-inside text-xl ml-8 my-4">
@@ -228,7 +231,7 @@
           </li>
         <% end %>
       </ul>
-      <li class="text-2xl my-4">
+      <li class="text-2xl my-4 font-black mt-20">
         Fiches mémo
       </li>
       <ul class="list-none list-inside text-xl ml-8 my-4">
@@ -245,10 +248,10 @@
       <%= link_to 'Consultez notre wiki', wiki_pages_path, class: 'btn btn-outline lg:btn-lg lg:btn-wide btn-primary hover:text-white!' %>
     </p>
   </div>
-
+ <!--
   <div class="mt-24">
     <h2 class="text-3xl lg:text-4xl text-success">
-      Témoignages de nos clients
+      Témoignages clients
     </h2>
     <div class="divider mb-12"></div>
 
@@ -284,6 +287,7 @@
     </div>
   </div>
 
+-->
   <div class="my-24">
 
     <h2 class="text-3xl lg:text-4xl text-success">
@@ -291,28 +295,21 @@
     </h2>
 
     <div class="divider mb-12"></div>
-
-    <ul class="list-disc list-inside">
-      <li class="text-2xl my-4">
-        <div class="inline">
-          <span>Inscrivez-vous à la newsletter pour être au courant des dernières nouveautés</span>
-          <%= form_with(model: @newsletter, id: "nouvelle_newsletter", method: "post", html: { autocomplete: "off", class: 'ml-8 mt-4', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
-            <div class="join" data-turbo="false">
-              <%= form.email_field :email, 'data-newsletter-target': 'email', class: 'input join-item w-lg input-lg', required: true, placeholder: "Email" %>
-              <%= form.submit "Je m'inscris", 'data-action': 'click->newsletter#print_result', class: "btn join-item rounded-r-full btn-lg" %>
-            </div>
-
-            <div>
-              <%= render "result_newsletter" %>
-            </div>
-          <% end %>
+    <div class="w-full text-2xl my-4">
+      <p>Inscrivez-vous à la newsletter pour être au courant des dernières nouveautés</p>
+      <%= form_with(model: @newsletter, id: "nouvelle_newsletter", method: "post", html: { autocomplete: "off", class: 'mt-4 w-full', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
+        <div class="md:join w-full" data-turbo="false">
+          <%= form.email_field :email, 'data-newsletter-target': 'email', class: 'input input-lg md:join-item w-full max-w-lg mb-4 md:mb-0', required: true, placeholder: "Email" %>
+          <%= form.submit "Je m'inscris", 'data-action': 'click->newsletter#print_result', class: "btn btn-lg md:join-item md:rounded-r-full mx-auto" %>
         </div>
-      </li>
-    </ul>
+
+        <div>
+          <%= render "result_newsletter" %>
+        </div>
+      <% end %>
+    </div>
   </div>
 
 </div>
 
 
-
-<%= render partial: 'partials/footer' %>
