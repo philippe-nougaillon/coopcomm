@@ -1,10 +1,12 @@
 <footer class="-mx-8 -mb-24">
-  <div class="footer md:footer-horizontal p-10 bg-base-300 text-base-content text-base">
+  <div class="footer md:footer-horizontal p-10 bg-base-300 text-base-content text-base flex items-center justify-between">
     <div>
       <span class="text-3xl font-black text-purple-800"><%= @sitename %></span>
 
       <p class="opacity-50 mt-4">
-        <b class="text-primary text-lg">AIKKU (SAS)</b>
+        <span class="text-primary text-lg font-black">
+          <%= link_to 'AÏKKU (SAS)', 'https://www.aikku.eu/fr' %>
+        </span>
         <br>  
         Tour Ariane - La Défense 
         <br>
@@ -19,6 +21,9 @@
     </div>
     <div>
       <%= link_to 'Nous contacter', 'https://www.aikku.eu/fr/contact?objet=COOPCOM', target: '_blank', class: 'btn btn-success hover:underline btn-outline btn-lg mt-8' %>
+    </div>
+    <div>
+      <%= image_tag 'aikku.png', class: "h-24 w-auto", alt: "Logo Aikku SAS" %>
     </div>
   </div>
   <div class="footer md:footer-horizontal px-10 py-6 border-t bg-base-content text-neutral-content border-base-300">
