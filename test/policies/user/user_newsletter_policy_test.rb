@@ -14,7 +14,7 @@ class UserNewsletterPolicyTest < ActionDispatch::IntegrationTest
   # Il peut créer ou supprimer car n'importe qui peut s'abonner et se désabonner, le slug est présent pour la sécurité
 
   test "accès autorisé pour un utilisateur avec la création d'une newsletter" do
-    assert @policy.create?
+    assert @policy.new?
   end
 
   test "accès autorisé pour un utilisateur avec la suppression d'une newsletter" do
