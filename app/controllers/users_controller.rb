@@ -27,7 +27,16 @@ class UsersController < ApplicationController
       @users = @users.where(id: user_ids)
     end
 
-    @pagy, @users = pagy(@users, items: 15)
+    respond_to do |format|
+      format.html do
+        @pagy, @users = pagy(@users, items: 15)
+      end
+
+      format.xls do
+        xls_file = AgentsToXls.new(@users.agent).call
+        send_data xls_file, filename: "Agents_#{DateTime.now}.xls"
+      end
+    end
   end
 
   # GET /users/1 or /users/1.json

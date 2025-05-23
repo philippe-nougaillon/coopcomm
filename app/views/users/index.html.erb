@@ -64,4 +64,8 @@
     <%== pagy_nav(@pagy) %>
   </div>
 
+  <% if @users.agent.any? %>
+    <%= link_to "Exporter les agents en XLS", url_for(params.permit!.merge(format: :xls)), class: "text-sm btn btn-sm btn-outline btn-success hover:text-white! mt-4" %>
+  <% end %>
+
 </div>
