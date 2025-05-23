@@ -134,3 +134,5 @@ gem "rack-cors", "~> 2.0"
 gem "simple_calendar", "~> 3.1"
 
 gem "recaptcha", "~> 5.19"
+
+gem "sitemap_generator", "~> 6.3"
