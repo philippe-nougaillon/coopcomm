@@ -11,6 +11,15 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "should get index with export xls" do
+    get users_url,  params: {
+      format: :xls
+    }
+
+    assert_response :success
+    assert_equal "application/xls", response.content_type
+  end
+
   test "should get new" do
     get new_user_url
     assert_response :success

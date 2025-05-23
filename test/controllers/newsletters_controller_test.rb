@@ -11,6 +11,16 @@ class NewslettersControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "should get index with export xls" do
+    sign_in users(:philippe_super_admin)
+    get users_url,  params: {
+      format: :xls
+    }
+
+    assert_response :success
+    assert_equal "application/xls", response.content_type
+  end
+
   # test "should get new" do
   #   get new_newsletter_url
   #   assert_response :success
