@@ -136,3 +136,5 @@ gem "simple_calendar", "~> 3.1"
 gem "recaptcha", "~> 5.19"
 
 gem "sitemap_generator", "~> 6.3"
+
+gem "meta-tags", "~> 2.22"
