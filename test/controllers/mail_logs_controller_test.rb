@@ -2,13 +2,15 @@ require "test_helper"
 
 class MailLogsControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @mail_log = mail_logs(:one)
+    @mail_log = mail_logs(:mail_log)
+    puts @mail_log.inspect
+    sign_in users(:hidalgo)
   end
 
-  # test "should get index" do
-  #   get mail_logs_url
-  #   assert_response :success
-  # end
+  test "should get index" do
+    get mail_logs_url
+    assert_response :success
+  end
 
   # test "should get new" do
   #   get new_mail_log_url
@@ -23,10 +25,10 @@ class MailLogsControllerTest < ActionDispatch::IntegrationTest
   #   assert_redirected_to mail_log_url(MailLog.last)
   # end
 
-  # test "should show mail_log" do
-  #   get mail_log_url(@mail_log)
-  #   assert_response :success
-  # end
+  test "should show mail_log" do
+    get mail_log_url(@mail_log)
+    assert_response :success
+  end
 
   # test "should get edit" do
   #   get edit_mail_log_url(@mail_log)
@@ -45,4 +47,12 @@ class MailLogsControllerTest < ActionDispatch::IntegrationTest
 
   #   assert_redirected_to mail_logs_url
   # end
+
+  test "should refresh mail_log" do
+    ENV["MAILGUN_API_KEY"] = "abcd1234"
+    ENV["MAILGUN_DOMAIN"] = "example.com"
+
+    get notifications_url
+    assert_response :success
+  end
 end
