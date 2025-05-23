@@ -1,5 +1,4 @@
-class AgentsToXls < ApplicationService
-  require 'spreadsheet'
+class AgentsToXls < ExportToXls
   attr_reader :users
   private :users
 
@@ -9,21 +8,9 @@ class AgentsToXls < ApplicationService
 
   def call
 
-    Spreadsheet.client_encoding = 'UTF-8'
-
-    book = Spreadsheet::Workbook.new
-    sheet = book.create_worksheet name: "Liste des agents"
-    bold = Spreadsheet::Format.new :weight => :bold, :size => 11
-
     headers = %w{Nom Prénom Email Service Nb_d'interventions Temps_total Nb_de_jours_d'absences }
 
-    # Il faudrait son nom prénom email service, toutes les interventions qu'il a fait (base toi sur le champ fin),
-    # de temps passé au total dans les interventions, et combien de jours d'absences il a eu.
-
-    sheet.row(0).concat headers
-    sheet.row(0).default_format = bold
-
-    index = 1
+    data = []
 
     @agents.each do |agent|
       interventions = agent.interventions
@@ -35,7 +22,7 @@ class AgentsToXls < ApplicationService
 
       nb_jours_absences = agent.absences.count
 
-      fields_to_export = [
+      data << [
         agent.nom,
         agent.prénom,
         agent.email,
@@ -44,13 +31,13 @@ class AgentsToXls < ApplicationService
         temps_total,
         nb_jours_absences
       ]
-      sheet.row(index).replace fields_to_export
-      index += 1
     end
 
-    file_contents = StringIO.new
-    book.write file_contents # => Now file_contents contains the rendered file output
-    return file_contents.string.force_encoding('binary')
+    ExportToXls.new
+               .add_worksheet("Liste des agents")
+               .add_headers(headers)
+               .setup_data(data)
+               .build_file
 
   end
 
