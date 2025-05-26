@@ -13,6 +13,8 @@
         </span>
       <% end %>
     </h1>
+
+    <%= link_to 'Ajouter une intervention', new_intervention_path(tool_ids: @tool.id), class: 'btn btn-lg btn-outline btn-success hover:text-white!' %>
   </div>
 
   <div class="flex flex-wrap gap-4">
@@ -71,21 +73,19 @@
     <%= link_to "Retour", tools_path, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
   </div>
 
-  <h2 class="flex items-center text-2xl text-secondary mt-8 mb-4 gap-2">
-    Utilisations
-    <%= link_to '+', new_intervention_path(tool_ids: @tool.id), class: 'btn btn-sm btn-outline btn-success hover:text-white!' %>
+  <h2 class="text-2xl text-secondary mt-8">
+    Disponibilités
   </h2>
 
-  <%= form_tag tool_path(@tool), method: :get, class:'mb-2' do %>
+  <%= form_tag tool_path(@tool), method: :get, class:'mb-2 mt-4' do %>
     <div class="flex gap-2">
-      <span>Vue :</span>
-      <label class="cursor-pointer flex items-center gap-1">
-        <%= radio_button_tag :vue, 'liste', params[:vue] == 'liste', { id: 'vue_liste', class: 'radio radio-accent radio-sm', onchange: "this.form.submit();" } %>
-        Liste
-      </label>
       <label class="cursor-pointer flex items-center gap-1">
         <%= radio_button_tag :vue, 'calendrier', params[:vue] == 'calendrier', { id: 'vue_calendrier', class: 'radio radio-accent radio-sm', onchange: "this.form.submit();" } %>
         Calendrier
+      </label>
+      <label class="cursor-pointer flex items-center gap-1">
+        <%= radio_button_tag :vue, 'liste', params[:vue] == 'liste', { id: 'vue_liste', class: 'radio radio-accent radio-sm', onchange: "this.form.submit();" } %>
+        Liste
       </label>
     </div>
   <% end %>
@@ -122,7 +122,7 @@
       </div>
     <% end %>
   <% when 'liste' %>
-    <div class="overflow-x-auto mt-4">
+    <div class="overflow-x-auto mt-8">
       <table class="table table-sm">
         <thead class="bg-slate-100">
           <tr>

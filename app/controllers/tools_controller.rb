@@ -40,7 +40,7 @@ class ToolsController < ApplicationController
 
   # GET /tools/1 or /tools/1.json
   def show
-    params[:vue] ||= 'liste'
+    params[:vue] ||= 'calendrier'
   end
 
   # GET /tools/new
