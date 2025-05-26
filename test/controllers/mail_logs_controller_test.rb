@@ -3,7 +3,6 @@ require "test_helper"
 class MailLogsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @mail_log = mail_logs(:mail_log)
-    puts @mail_log.inspect
     sign_in users(:hidalgo)
   end
 

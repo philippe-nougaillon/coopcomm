@@ -3,13 +3,13 @@ class ExportToXls < ApplicationService
 
   def initialize
     Spreadsheet.client_encoding = 'UTF-8'
-
     @book = Spreadsheet::Workbook.new
     @bold = Spreadsheet::Format.new :weight => :bold, :size => 11
   end
 
   def add_worksheet(name)
     @sheet = @book.create_worksheet name: name
+    @sheet.row(0).default_format = @bold
     self
   end
 
@@ -29,8 +29,6 @@ class ExportToXls < ApplicationService
   end
 
   def build_file
-    @sheet.row(0).default_format = @bold
-
     file_contents = StringIO.new
     @book.write file_contents # => Now file_contents contains the rendered file output
     return file_contents.string.force_encoding('binary')

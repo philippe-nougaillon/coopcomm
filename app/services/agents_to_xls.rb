@@ -20,7 +20,10 @@ class AgentsToXls < ExportToXls
         temps_total += intervention.calc_temps_total
       end
 
-      nb_jours_absences = agent.absences.count
+      nb_jours_absences = 0
+      agent.absences.each do |absence|
+        nb_jours_absences += absence.nb_jours
+      end
 
       data << [
         agent.nom,
@@ -34,10 +37,10 @@ class AgentsToXls < ExportToXls
     end
 
     ExportToXls.new
-               .add_worksheet("Liste des agents")
-               .add_headers(headers)
-               .setup_data(data)
-               .build_file
+              .add_worksheet("Liste des agents")
+              .add_headers(headers)
+              .setup_data(data)
+              .build_file
 
   end
 
