@@ -15,8 +15,7 @@ class SupportMailbox < ApplicationMailbox
         organisation = Organisation.find(organisation_id)
         # puts "organisation : #{organisation.inspect}"
         intervention = organisation.interventions.new( 
-                        adherent_id: user.id, 
-                        user_id: user.id,
+                        adherent_id: user.id,
                         description: "[MAIL] #{mail.subject}", 
                         commentaires: "De #{mail.from_address} : #{mail.body}"
                       )
