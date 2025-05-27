@@ -157,7 +157,7 @@
           <b>Messagerie instantanée</b>
         </p>
         <p>
-          Un espace de communication instantanée permet aux managers de discuter directement avec les agents.
+          Un espace de communication instantanée permet aux managers de discuter directement avec les agents. Un système de modération du vocabulaire inapproprié veillera à la bonne qualité des discussions.
         </p>
       </div>
 
@@ -296,7 +296,7 @@
 
     <div class="divider mb-12"></div>
     <div class="w-full text-2xl my-4">
-      <p>Inscrivez-vous à la newsletter pour être au courant des dernières nouveautés</p>
+      <p>Inscrivez-vous à la newsletter pour être informé des dernières nouveautés</p>
       <%= form_with(model: @newsletter, id: "nouvelle_newsletter", method: "post", html: { autocomplete: "off", class: 'mt-4 w-full', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
         <div class="md:join w-full" data-turbo="false">
           <%= form.email_field :email, 'data-newsletter-target': 'email', class: 'input input-lg md:join-item w-full max-w-lg mb-4 md:mb-0', required: true, placeholder: "Email" %>
