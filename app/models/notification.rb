@@ -11,7 +11,7 @@ class Notification < ApplicationRecord
 
   def message_modere
     bad_words = %w[
-      connardouille connard connasse con enfoirée enfoiré
+      connard connasse con enfoirée enfoiré putain merde couille
       salope pute enculée enculé bâtarde bâtard
       trouducul trouduc merde chiant chieuse
       abrutie abruti débile crétine crétin
