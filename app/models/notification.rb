@@ -9,7 +9,7 @@ class Notification < ApplicationRecord
                                                 locals: { notification: self },
                                                 target: "notifications" }
 
-  def message_modere
+  def self.bad_words_regex
     bad_words = %w[
       connard connasse con enfoirée enfoiré putain merde couille
       salope pute enculée enculé bâtarde bâtard
@@ -20,8 +20,15 @@ class Notification < ApplicationRecord
       bouffonne bouffon baltringue fumier ordure foutre
     ]
 
-    regex = /#{bad_words.join("|")}/i
+    /#{bad_words.join("|")}/i
+  end
 
-    self.message.gsub(regex,'***')
+  def moderation
+    self.message.gsub(Notification.bad_words_regex,'🌼🌼🌼')
+
+  end
+
+  def nb_bad_words
+    self.message.scan(Notification.bad_words_regex).size
   end
 end

@@ -162,6 +162,14 @@ class User < ApplicationRecord
     self.localisation.gsub(/(.*?), (.*)/) { "[#{$2}, #{$1}]" }
   end
 
+  def nb_bad_words
+    nb_bad_words = 0
+    Notification.where(from_id: self.id).each do |notification|
+      nb_bad_words += notification.nb_bad_words
+    end
+    nb_bad_words
+  end
+
   private
 
   def slug_candidates

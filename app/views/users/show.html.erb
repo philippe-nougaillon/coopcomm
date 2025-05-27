@@ -26,6 +26,13 @@
           <%= @user.memo %>
         </p>
       <% end %>
+
+      <% if current_user.manager? %>
+        <p class="mb-4">
+          <strong class="block text-slate-400 mb-1">Nombre de censures</strong>
+          <%= @user.nb_bad_words %>
+        </p>
+      <% end %>
     </div>
 
 
