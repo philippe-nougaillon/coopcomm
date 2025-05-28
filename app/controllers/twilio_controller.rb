@@ -22,9 +22,17 @@ class TwilioController < ApplicationController
 
     puts "Réponse de #{sender}: #{message}"
 
-    if User.find_by(téléphone: sender.gsub("whatsapp:", ""))
+    if user = User.find_by(téléphone: sender.gsub("whatsapp:", ""))
       puts "Réponse twilio envoyé"
-      render xml: Twilio::TwiML::MessagingResponse.new.message(body: "Merci pour ta réponse ! L'intervention se nomme bien #{message}").to_s
+
+      intervention = Intervention.new(description: message, organisation_id: user.organisation_id)
+
+      if intervention.save
+        render xml: Twilio::TwiML::MessagingResponse.new.message(body: "Merci pour ta réponse ! L'intervention se nomme bien #{message} avec l'id #{intervention.slug}").to_s
+      else
+        render xml: Twilio::TwiML::MessagingResponse.new.message(body: "L'intervention n'a pas pu être créée : #{intervention.errors.full_messages}").to_s
+      end
+
     end
 
   end
