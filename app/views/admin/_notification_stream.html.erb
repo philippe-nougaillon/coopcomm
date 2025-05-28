@@ -1,6 +1,6 @@
 <div id="<%= dom_id notification %>" class="mt-2">
   <p>
-    <%= User.find(notification.from_id).nom_prenom_role %>
+    <%= User.find_by(id: notification.from_id)&.nom_prenom_role || "Serveur" %>
     <small>
       <i>il y a <%= time_ago_in_words notification.created_at %></i>
     </small>
