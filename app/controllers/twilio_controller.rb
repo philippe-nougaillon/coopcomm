@@ -22,7 +22,7 @@ class TwilioController < ApplicationController
 
     puts "Réponse de #{sender}: #{message}"
 
-    if User.find_by(téléphone: sender)
+    if User.find_by(téléphone: sender.gsub("whatsapp:", ""))
       puts "Réponse twilio envoyé"
       render xml: Twilio::TwiML::MessagingResponse.new.message(body: "Merci pour ta réponse ! L'intervention se nomme bien #{message}").to_s
     end
