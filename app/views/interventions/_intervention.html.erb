@@ -140,7 +140,7 @@
           <div>
             <p class="my-2">
               <strong class="block text-slate-400 mb-1">Commentaires</strong>
-              <%= intervention.commentaires %>
+              <%= truncate(intervention.commentaires, length: 100) %>
             </p>
           </div>
 
