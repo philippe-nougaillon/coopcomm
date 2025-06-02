@@ -45,7 +45,7 @@ class TwilioController < ApplicationController
       client.messages.create(
         from: "whatsapp:#{ENV["TWILIO_PHONE_NUMBER"]}",
         to: "whatsapp:#{ENV["TWILIO_PERSONAL_NUMBER"]}",
-        content_sid: 'HX1fd1680c80e842aff7e88e668744034a'
+        content_sid: ENV["CONTENT_SID"]
       )
     end
 end
