@@ -29,7 +29,7 @@ class TwilioController < ApplicationController
         send_message
         puts "Message envoyé"
       else
-        render xml: Twilio::TwiML::MessagingResponse.new.message(body: "Merci pour votre réponse ! Vous avez choisi : #{message}").to_s
+        render xml: Twilio::TwiML::MessagingResponse.new.message(body: "Derien ! Vous avez choisi : #{message}").to_s
         puts "Réponse twilio envoyé"
       end
     end
@@ -45,7 +45,7 @@ class TwilioController < ApplicationController
       client.messages.create(
         from: "whatsapp:#{ENV["TWILIO_PHONE_NUMBER"]}",
         to: "whatsapp:#{ENV["TWILIO_PERSONAL_NUMBER"]}",
-        content_sid: 'HX6d81eb2d30ad61cb0ef90c8fedf20687'
+        content_sid: 'HX1fd1680c80e842aff7e88e668744034a'
       )
     end
 end
