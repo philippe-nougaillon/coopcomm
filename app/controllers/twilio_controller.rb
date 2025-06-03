@@ -2,7 +2,7 @@ class TwilioController < ApplicationController
   skip_before_action :verify_authenticity_token # nécessaire pour les webhooks externes
   skip_before_action :authenticate_user!, only: %i[ whatsapp_reply ]
 
-  def choisir_nom_intervention
+  def send_options
     account_sid = ENV["TWILIO_ACCOUNT_SID"]
     auth_token = ENV["TWILIO_AUTH_TOKEN"]
     client = Twilio::REST::Client.new(account_sid, auth_token)
@@ -23,16 +23,17 @@ class TwilioController < ApplicationController
 
     puts "Réponse de #{sender}: #{message}"
 
-    if user = User.where(rôle: [0,2]).find_by(téléphone: sender.gsub("whatsapp:", ""))
-
-      if message == "intervention"
-        send_message
-        puts "Message envoyé"
-      else
-        render xml: Twilio::TwiML::MessagingResponse.new.message(body: "Derien ! Vous avez choisi : #{message}").to_s
-        puts "Réponse twilio envoyé"
-      end
+    if message == "intervention"
+      send_message
+      puts "Message envoyé"
+    else
+      render xml: Twilio::TwiML::MessagingResponse.new.message(body: "Merci pour votre réponse ! Vous avez choisi : #{message}").to_s
+      puts "Réponse twilio envoyé"
     end
+  end
+
+  def get_request
+    puts params
   end
 
   private
