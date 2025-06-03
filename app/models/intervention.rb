@@ -350,6 +350,20 @@ class Intervention < ApplicationRecord
     Time.at(self.fin - self.début).utc.strftime("%Hh %Mmin")
   end
 
+  def self.dernière_en_cours(interventions)
+    now = DateTime.current
+
+    interventions.where(
+      "(début_prévue IS NOT NULL OR fin_prévue IS NOT NULL) AND
+       (
+         (début_prévue IS NULL AND fin_prévue >= :now) OR
+         (fin_prévue IS NULL AND début_prévue <= :now) OR
+         (début_prévue <= :now AND fin_prévue >= :now)
+       )",
+      now: now
+    ).last
+  end
+
   private
 
   def slug_candidates

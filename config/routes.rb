@@ -87,8 +87,8 @@ Rails.application.routes.draw do
   get "/manifest.json" => "service_worker#manifest"
 
   post '/twilio/whatsapp_reply', to: 'twilio#whatsapp_reply'
-  get '/twilio/send_options', to: 'twilio#send_options'
   get '/twilio/get_request', to: 'twilio#get_request'
+  post '/twilio/get_request', to: 'twilio#get_request'
 
   # Defines the root path route ("/")
   root "interventions#index"

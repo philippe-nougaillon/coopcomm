@@ -170,6 +170,14 @@ class User < ApplicationRecord
     nb_bad_words
   end
 
+  def self.find_by_whatsapp_phone(phone)
+    User.find_by(téléphone: phone.gsub("whatsapp:", ''))
+  end
+
+  def intervention_en_cours
+    Intervention.dernière_en_cours(self.interventions)
+  end
+
   private
 
   def slug_candidates
