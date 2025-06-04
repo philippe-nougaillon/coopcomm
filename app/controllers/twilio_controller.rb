@@ -8,11 +8,9 @@ class TwilioController < ApplicationController
 
     puts "Réponse de #{sender}: #{message}"
 
-    # Chercher la dernière intervention de l'agent avec le numéro
-
     agent = User.find_by_whatsapp_phone(sender)
 
-    if (last_intervention_today = agent.intervention_en_cours)
+    if (agent && last_intervention_today = agent.intervention_en_cours)
       puts last_intervention_today.inspect
       if last_intervention_today.can_terminer?
         last_intervention_today.terminer!
@@ -25,13 +23,6 @@ class TwilioController < ApplicationController
     end
     puts "Réponse twilio envoyé"
 
-    # if message == "intervention"
-    #   send_options
-    #   puts "Message envoyé"
-    # else
-    #   render xml: Twilio::TwiML::MessagingResponse.new.message(body: "Merci pour votre réponse ! Vous avez choisi : #{message}").to_s
-    #   puts "Réponse twilio envoyé"
-    # end
   end
 
   def get_request
