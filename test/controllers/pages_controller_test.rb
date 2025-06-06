@@ -2,6 +2,18 @@ require "test_helper"
 
 class PagesControllerTest < ActionDispatch::IntegrationTest
 
+  test "doit afficher la page welcome" do
+    get welcome_url
+    assert_response :success
+  end
+
+  test "doit afficher la page welcome en étant connecté" do
+    sign_in users(:hidalgo)
+
+    get welcome_url
+    assert_response :success
+  end
+
   test "doit afficher le dashboard en tant qu'administrateur" do
     sign_in users(:hidalgo)
 
