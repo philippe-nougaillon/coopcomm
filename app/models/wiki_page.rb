@@ -23,7 +23,7 @@ class WikiPage < ApplicationRecord
   enum :catégorie, {
     blog: 0,
     guide: 1,
-    fiches: 2
+    # fiches: 2
   }
 
   default_scope -> { kept } # Sans les discarded

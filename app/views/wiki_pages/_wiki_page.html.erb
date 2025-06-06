@@ -8,7 +8,7 @@
       <%= wiki_page.contenu %>
     </p>
   <% else %>
-    <div class="max-h-24 overflow-y-hidden"><%= wiki_page.contenu %></div>
+    <div class="max-h-24 overflow-y-hidden"><%= wiki_page.contenu %>...</div>
     <br>
     <%= link_to 'Lire l\'article', wiki_page, class: 'rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium' %>
     <% if wiki_page.document.attached? %>

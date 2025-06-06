@@ -8,6 +8,8 @@
           Bienvenue sur le Wiki CoopCom !
         <% elsif params[:catégorie].present? %>
           <%= params[:catégorie].humanize %>
+        <% elsif params[:search].present? %>
+          <%= @wiki_pages.size == 0 ? 'Pas de résultat trouvé' : "#{@wiki_pages.size} page(s) trouvée(s)" %>
         <% end %>
       </h1>
       <% if user_signed_in? && current_user.super_admin? %>
