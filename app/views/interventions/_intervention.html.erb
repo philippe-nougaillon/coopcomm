@@ -3,7 +3,7 @@
     <div class="flex flex-col sm:flex-row justify-between">
       <div>
         <small>
-          <i class="<%= 'text-error animate-pulse' if defined?(from_turbo_stream) %>">
+          <i class="<%= 'text-error animate-pulse font-black' if defined?(from_turbo_stream) %>">
             il y a <%= time_ago_in_words intervention.updated_at %>
           </i>
         </small>

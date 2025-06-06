@@ -9,7 +9,7 @@ class TwilioController < ApplicationController
     puts "Réponse de #{sender}: #{message}"
 
     if agent = User.agent.find_by_whatsapp_phone(sender)
-      if intervention = Intervention.create!(description: "[WhatsApp] #{l(DateTime.now, format: :long)}", organisation_id: agent.organisation_id, commentaires: message)
+      if intervention = Intervention.create!(description: "[WhatsApp] #{l(DateTime.now, format: :long)} #{sender.gsub("whatsapp:", '')}", organisation_id: agent.organisation_id, commentaires: message)
         # Pas de test de chevauchement d'intervention puisqu'il n'y a aucune date dans ce qu'il y a envoyé
         intervention.agent_interventions.create(agent:)
         render xml: Twilio::TwiML::MessagingResponse.new.message(body: "Intervention créée avec succès.").to_s
