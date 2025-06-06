@@ -231,17 +231,17 @@
           </li>
         <% end %>
       </ul>
-      <li class="text-2xl my-4 font-black mt-20">
-        Fiches mémo
-      </li>
-      <ul class="list-none list-inside text-xl ml-8 my-4">
-        <% @wiki_pages.fiches.where(publiée: true).order(:poids).each do |wiki_page| %>
-          <li>
-            <%= link_to wiki_page.titre, wiki_page, class: "text-primary text-2xl hover:underline" %>
-          </li>
-        <% end %>
-      </ul>
-      </li>
+<!--      <li class="text-2xl my-4 font-black mt-20">-->
+<!--        Fiches mémo-->
+<!--      </li>-->
+<!--      <ul class="list-none list-inside text-xl ml-8 my-4">-->
+        <%# @wiki_pages.fiches.where(publiée: true).order(:poids).each do |wiki_page| %>
+<!--          <li>-->
+            <%#= link_to wiki_page.titre, wiki_page, class: "text-primary text-2xl hover:underline" %>
+<!--          </li>-->
+        <%# end %>
+<!--      </ul>-->
+<!--      </li>-->
     </ul>
 
     <p class="mt-12">
