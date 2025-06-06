@@ -8,15 +8,15 @@
       <li>
         <%= link_to interventions_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
           <span class="material-symbols-outlined">
-            home
+            construction
           </span>
         <% end %>
       </li>
       <% if policy(Tool).index? %>
         <li>
-          <%= link_to tools_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'tools'}", title: "Liste des outils" do %>
+          <%= link_to tools_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'tools'}", title: "Liste du matériel" do %>
             <span class="material-symbols-outlined">
-              construction
+              garden_cart
             </span>
           <% end %>
         </li>
