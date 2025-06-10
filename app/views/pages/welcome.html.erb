@@ -215,8 +215,8 @@
           <li>
             <%= link_to wiki_page.titre, wiki_page, class: "text-primary text-2xl hover:underline" %>
             <small class="ml-4">
-              <i>Publiée le <%= l(wiki_page.created_at) %></i>
-              <i>(Modifiée il y a <%= time_ago_in_words wiki_page.updated_at %>)</i>
+              <i>Publié le <%= l(wiki_page.created_at, format: :long) %></i>
+              <i>(Modifié il y a <%= time_ago_in_words wiki_page.updated_at %>)</i>
             </small>
           </li>
         <% end %>
@@ -245,7 +245,7 @@
     </ul>
 
     <p class="mt-12">
-      <%= link_to 'Consultez notre wiki', wiki_pages_path, class: 'btn btn-outline lg:btn-lg lg:btn-wide btn-primary hover:text-white!' %>
+      <%= link_to 'En savoir plus (Consultez notre Wiki)', wiki_pages_path, class: 'btn lg:btn-lg btn-primary hover:text-white!' %>
     </p>
   </div>
  <!--
@@ -307,6 +307,22 @@
           <%= render "result_newsletter" %>
         </div>
       <% end %>
+    </div>
+  </div>
+
+  <div class="my-24">
+
+    <h2 class="text-3xl lg:text-4xl text-success">
+      Conception et développement
+    </h2>
+
+    <div class="divider mb-12"></div>
+    <div class="w-full text-2xl my-4">
+      <p>
+        Cette application Web a été conçue et développée, en Ruby on Rails, par nos soins.
+        <br>
+        Le code source est édité sous licence Open Source (GLP GNU v3).
+      </p>
     </div>
   </div>
 
