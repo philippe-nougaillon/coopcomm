@@ -49,12 +49,12 @@
     <table class="table table-sm">
       <thead class="bg-slate-100">
         <tr>
-          <th>Date</th>
-          <th>Utilisateur</th>
-          <th>Type</th>
-          <th>Id</th>
-          <th>Action</th>
-          <th>Modifications</th>
+          <th><%= sort_link 'audits.created_at', 'Date' %></th>
+          <th><%= sort_link 'audits.user_id', 'Utilisateur' %></th>
+          <th><%= sort_link 'audits.auditable_type', 'Type' %></th>
+          <th><%= sort_link 'audits.auditable_id', 'Id' %></th>
+          <th><%= sort_link 'audits.action', 'Action' %></th>
+          <th><%= sort_link 'audits.audited_changes', 'Modifications' %></th>
         </tr>
       </thead>
 

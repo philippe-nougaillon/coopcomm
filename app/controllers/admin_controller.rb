@@ -32,6 +32,7 @@ class AdminController < ApplicationController
       @audits = @audits.where(action: params[:action_name])
     end
 
+    @audits = @audits.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
     @pagy, @audits = pagy(@audits, items: 20)
   end
 
@@ -94,4 +95,17 @@ class AdminController < ApplicationController
   def is_user_authorized
     authorize :admin
   end
+
+  def sortable_columns
+    ['audits.created_at', 'audits.user_id', 'audits.auditable_type', 'audits.auditable_id', 'audits.action', 'audits.audited_changes']
+  end
+
+  def sort_column
+    sortable_columns.include?(params[:column]) ? params[:column] : "audits.id"
+  end
+
+  def sort_direction
+    %w[asc desc].include?(params[:direction]) ? params[:direction] : "asc"
+  end
+
 end
