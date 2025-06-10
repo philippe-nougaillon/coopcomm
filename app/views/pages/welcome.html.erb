@@ -215,8 +215,8 @@
           <li>
             <%= link_to wiki_page.titre, wiki_page, class: "text-primary text-2xl hover:underline" %>
             <small class="ml-4">
-              <i>Publiée le <%= l(wiki_page.created_at) %></i>
-              <i>(Modifiée il y a <%= time_ago_in_words wiki_page.updated_at %>)</i>
+              <i>Publié le <%= l(wiki_page.created_at, format: :long) %></i>
+              <i>(Modifié il y a <%= time_ago_in_words wiki_page.updated_at %>)</i>
             </small>
           </li>
         <% end %>
