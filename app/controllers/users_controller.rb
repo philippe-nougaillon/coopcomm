@@ -29,6 +29,7 @@ class UsersController < ApplicationController
 
     respond_to do |format|
       format.html do
+        @users = @users.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
         @pagy, @users = pagy(@users, items: 15)
       end
 
@@ -144,7 +145,7 @@ class UsersController < ApplicationController
     end
 
     def sortable_columns
-      ['users.nom', 'users.service']
+      ['users.nom', 'users.rôle', 'users.service', 'users.email', 'users.localisation', 'users.memo']
     end
 
     def sort_column
