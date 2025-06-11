@@ -6,6 +6,11 @@
       </span>
     <% end %>
   </td>
+  <td>
+    <% if tool.photo.present? %>
+      <img src="<%= url_for(tool.photo) %>" class="h-10">  
+    <% end %>
+  </td>
   <td class="text-lg sm:text-2xl text-primary">
     <%= link_to tool.name.humanize, tool, class: 'text-primary hover:underline', title: (tool.description.blank? ? 'Aucune description' : tool.description) %>
   </td>

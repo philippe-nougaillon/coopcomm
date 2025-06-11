@@ -1,5 +1,5 @@
 <div class="mx-auto lg:w-2/3 w-full">
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
+  <div class="flex flex-wrap items-start justify-between items-center min-h-12 sm:min-h-16">
     <h1 class="text-2xl sm:text-4xl text-primary font-bold">
       <% if @tool.icon_name.present? %>
         <span class="material-symbols-outlined text-primary">
@@ -13,6 +13,10 @@
         </span>
       <% end %>
     </h1>
+
+    <% if @tool.photo.present? %>
+      <img src="<%= url_for(@tool.photo) %>" class="h-60">  
+    <% end %>
 
     <%= link_to 'Ajouter une intervention', new_intervention_path(tool_ids: @tool.id), class: 'btn btn-lg btn-outline btn-success hover:text-white!' %>
   </div>
