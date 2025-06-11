@@ -1,0 +1,7 @@
+fr:
+  pages:
+    welcome:
+      title: 'Accueil'
+  wiki_pages:
+    index:
+      title: 'Wiki'

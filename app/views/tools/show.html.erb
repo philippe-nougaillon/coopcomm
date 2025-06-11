@@ -6,7 +6,7 @@
           <%= @tool.icon_name %>
         </span>
       <% end %>
-      <%= @tool.name %>
+      <%= page_title!(@tool.name) %>
       <% if @tool.disponible?(DateTime.now) %>
         <span class="material-symbols-outlined text-success">
           check_circle

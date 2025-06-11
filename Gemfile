@@ -138,3 +138,5 @@ gem "recaptcha", "~> 5.19"
 gem "sitemap_generator", "~> 6.3"
 
 gem "meta-tags", "~> 2.22"
+
+gem "page_title_helper", "~> 9.1"
