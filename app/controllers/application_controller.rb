@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   include Pagy::Backend
+  include DefaultRateLimits
   include Pundit::Authorization
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
   before_action :authenticate_user!
