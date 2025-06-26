@@ -35,10 +35,7 @@ class Intervention < ApplicationRecord
 
   scope :ordered, -> { order(updated_at: :desc) }
 
-  after_create_commit -> { broadcast_prepend_to "interventions_#{self.organisation.id}", 
-                                              partial: "interventions/intervention", 
-                                              locals: { intervention: self, from_turbo_stream: true }, 
-                                              target: "interventions" }
+  after_create_commit :broadcast_to_authorized_viewers
 
   # WORKFLOW
   NOUVEAU   = 'nouveau'
@@ -377,6 +374,29 @@ class Intervention < ApplicationRecord
     hour = send("#{field}_hour").presence || datetime.hour
     minute = send("#{field}_minute").presence || datetime.min
     send("#{field}=", datetime.change(hour: hour.to_i, min: minute.to_i))
+  end
+
+  def broadcast_to_authorized_viewers
+    broadcast_prepend_to "interventions_organisation_#{organisation.id}",
+                          partial: "interventions/intervention",
+                          locals: { intervention: self, from_turbo_stream: true },
+                          target: "interventions"
+    
+  
+    authorized_users_ids.each do |user_id|
+      broadcast_prepend_to "interventions_user_#{user_id}",
+                            partial: "interventions/intervention",
+                            locals: { intervention: self, from_turbo_stream: true },
+                            target: "interventions"
+      
+    end
+  end
+
+  def authorized_users_ids
+    user_ids = self.agents.pluck(:id)
+    user_ids << self.team.try(:id)
+    user_ids.compact!
+    user_ids
   end
 
 end
