@@ -1,3 +1,13 @@
+require 'simplecov'
+SimpleCov.start 'rails' do
+  add_group 'Components', 'app/components'
+  add_group 'Mailboxes', 'app/mailboxes'
+  add_group 'Policies', 'app/policies'
+  add_group 'PDFs', 'app/pdfs'
+  add_group 'Services', 'app/services'
+  add_group 'Subscriptions', 'app/subscriptions'
+end
+
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
@@ -10,7 +20,7 @@ module ActiveSupport
     include Devise::Test::IntegrationHelpers
 
     # Run tests in parallel with specified workers
-    parallelize(workers: :number_of_processors)
+    # parallelize(workers: :number_of_processors)
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all

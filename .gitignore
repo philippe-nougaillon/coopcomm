@@ -40,3 +40,4 @@
 /.idea/*
 
 dump.rdb
+coverage
