@@ -100,7 +100,11 @@
   <hr class="mt-8">
 
   <div id="interventions" class="min-w-full">
-    <%= turbo_stream_from "interventions_#{current_user.organisation.id}" %>
+    <% if ["agent", "équipe"].include?(current_user.rôle) %>
+      <%= turbo_stream_from "interventions_user_#{current_user.id}" %>
+    <% else %>
+      <%= turbo_stream_from "interventions_organisation_#{current_user.organisation.id}" %>
+    <% end %>
     <%= render @interventions %>
   </div>
 
