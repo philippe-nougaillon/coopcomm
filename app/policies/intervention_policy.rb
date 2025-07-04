@@ -64,4 +64,8 @@ class InterventionPolicy < ApplicationPolicy
   def get_unavailable_elements?
     index?
   end
+  
+  def carte_interventions?
+    index?
+  end
 end

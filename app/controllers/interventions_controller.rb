@@ -341,6 +341,12 @@ class InterventionsController < ApplicationController
     render json: json, status: :ok
   end
 
+  def carte_interventions
+    adherents = current_user.organisation.users.adhérent
+
+    @adherents_localisations_to_marker = adherents.map{ |adherent| { position: adherent.lat_lng_object, title: adherent.nom_prénom } }
+  end
+
   private
 
     def send_workflow_changed_notification
