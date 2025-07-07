@@ -342,9 +342,28 @@ class InterventionsController < ApplicationController
   end
 
   def carte_interventions
-    adherents = current_user.organisation.users.adhérent
+    @interventions = Intervention.by_role_for(current_user)
+    @interventions_localisations_to_marker = Hash.new
 
-    @adherents_localisations_to_marker = adherents.map{ |adherent| { position: adherent.lat_lng_object, title: adherent.nom_prénom } }
+    if params[:date].blank?
+      params[:date] = DateTime.now
+    end
+
+    time_zone_date = Time.zone.parse(params[:date].to_s)
+      
+    @interventions = @interventions.where(
+      "début <= ? AND fin >= ?", time_zone_date, time_zone_date
+    )
+
+    if @interventions.any?
+      @interventions_localisations_to_marker = @interventions.map{ 
+        |intervention| 
+        { 
+          position: intervention.adherent.lat_lng_object, 
+          title: "#{intervention.agents.any? ? intervention.agents.first.nom_prénom + ", " : ""}#{intervention.description}, #{intervention.début}/#{intervention.fin}" 
+        } 
+      }
+    end
   end
 
   private

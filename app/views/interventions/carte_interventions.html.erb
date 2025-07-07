@@ -1,12 +1,26 @@
 <div class="w-full">
     <div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
-        <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Carte des interventions') %></h1>
+        <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!("Carte des interventions du #{l(DateTime.parse(params[:date]), format: :long)}") %></h1>
     </div>
 </div>
+
+<%= form_tag request.path, method: :get do %>
+    <div class="flex flex-wrap items-start w-full gap-4 mt-8">
+
+        <div class="w-full md:w-fit">
+        <%= label_tag :date %>
+        <%= datetime_field_tag :date, params[:date], onchange:'this.form.submit()', class: 'input input-sm w-full' %>
+        </div>
+    </div>
+<% end %>
 
 <div class="divider"></div>
 
 <div id="map" class="w-full h-150"></div>
+
+<p class="mt-4"><%= @interventions.size %> intervention(s) trouvée(s)</p>
+
+<%= render @interventions %>
 
 <script src="https://maps.googleapis.com/maps/api/js?key=<%= ENV["GOOGLE_MAPS_API_KEY"] %>&loading=async&callback=initMap"></script>
 
@@ -24,8 +38,13 @@
             mapId: "549c4681c953f814fa1cd142",
         });
 
-        <% @adherents_localisations_to_marker.each do |to_marker| %>
-        addMarker( <%= to_marker[:position] %>, "<%= to_marker[:title] %>")
+        initMarkers();
+    }
+
+    function initMarkers() {
+        
+        <% @interventions_localisations_to_marker.each do |to_marker| %>
+            addMarker( <%= to_marker[:position] %>, "<%= to_marker[:title] %>")
         <% end %>
     }
 
@@ -34,6 +53,6 @@
             map,
             position: position,
             title: title
-            });
+        });
     }
 </script>
