@@ -343,18 +343,75 @@ class InterventionsController < ApplicationController
 
   def carte_interventions
     @interventions = Intervention.by_role_for(current_user)
-    @interventions_localisations_to_marker = Hash.new
+    
+    if params[:workflow_state].present?
+      @interventions = @interventions.where("interventions.workflow_state = ?", params[:workflow_state].to_s.downcase)
+    end
 
+    organisation_members = current_user.organisation.users
+    if current_user.manager?
+      @adhérents = organisation_members.adhérent.order(:nom)
+      @services = User.services.sort
+      @teams = organisation_members.équipe
+      @grouped_agents = User.grouped_agents(organisation_members)
+    elsif current_user.adhérent?
+      @adhérents = organisation_members.adhérent.order(:nom)
+      @services = User.services
+      @grouped_agents = User.grouped_agents(organisation_members)
+    elsif current_user.équipe?
+      @services = User.services
+      @grouped_agents = User.grouped_agents(organisation_members)
+    elsif current_user.agent?
+      @adhérents = organisation_members.adhérent.order(:nom)
+    end
+
+    @tools = current_user.organisation.tools.ordered
+    @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
+
+    if params[:search].present?
+      @interventions = @interventions.where("description ILIKE :search OR commentaires ILIKE :search", {search: "%#{params[:search]}%"})
+    end
+
+    if params[:adherent_id].present?
+      @interventions = @interventions.where(adherent_id: params[:adherent_id])
+    end
+
+    if params[:team_id].present?
+      @interventions = @interventions.where(team_id: params[:team_id])
+    end
+
+    if params[:service].present?
+      @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {service: params[:service]})
+    end
+
+    if params[:agent_ids].present?
+      @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {id: params[:agent_ids]})
+    end
+
+    if params[:tool_ids].present?
+      @interventions = @interventions.joins(:tool_interventions).where(tool_interventions: {tool_id: params[:tool_ids]})
+    end
+
+    if params[:tags].present?
+      @interventions = @interventions.tagged_with(params[:tags].reject(&:blank?))
+      session[:tags] = params[:tags]
+    else
+      session[:tags] = params[:tags] = []
+    end
+  
     if params[:date].blank?
       params[:date] = DateTime.now
     end
-
-    time_zone_date = Time.zone.parse(params[:date].to_s)
-      
+    # Conversion nécessaire pour le repasser dans la vue dans la fonction l()
+    @date_to_string = params[:date].to_s
+    
+    time_zone_date = Time.zone.parse(@date_to_string)
+  
     @interventions = @interventions.where(
       "début <= ? AND fin >= ?", time_zone_date, time_zone_date
     )
-
+    
+    @interventions_localisations_to_marker = Hash.new
     if @interventions.any?
       @interventions_localisations_to_marker = @interventions.map{ 
         |intervention| 
