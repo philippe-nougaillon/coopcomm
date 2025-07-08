@@ -342,11 +342,23 @@ class InterventionsController < ApplicationController
   end
 
   def carte_interventions
-    @interventions = Intervention.by_role_for(current_user)
-    
-    if params[:workflow_state].present?
-      @interventions = @interventions.where("interventions.workflow_state = ?", params[:workflow_state].to_s.downcase)
+
+    if current_user.adhérent?
+      @interventions = current_user.organisation.interventions.ordered
+    else
+      @interventions = Intervention.by_role_for(current_user)
     end
+
+    if params[:date].blank?
+      params[:date] = DateTime.now
+    end
+    # Conversion nécessaire pour le repasser dans la vue dans la fonction l()
+    @date_to_string = params[:date].to_s
+    time_zone_date = Time.zone.parse(@date_to_string)
+
+    @interventions = @interventions.where(
+      "début <= ? AND fin >= ?", time_zone_date, time_zone_date
+    )
 
     organisation_members = current_user.organisation.users
     if current_user.manager?
@@ -365,8 +377,19 @@ class InterventionsController < ApplicationController
       @adhérents = organisation_members.adhérent.order(:nom)
     end
 
+    # Faire en sorte quand adhérent, chercher les interventions avec l'outil en params. Sauf que avant, si adhérent, alors chercher toutes les interventions de l'organisation
+
+    if params[:tool_ids].present?
+      @interventions = @interventions.joins(:tool_interventions).where(tool_interventions: {tool_id: params[:tool_ids]})
+    end
+
     @tools = current_user.organisation.tools.ordered
     @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
+
+
+    if params[:workflow_state].present?
+      @interventions = @interventions.where("interventions.workflow_state = ?", params[:workflow_state].to_s.downcase)
+    end
 
     if params[:search].present?
       @interventions = @interventions.where("description ILIKE :search OR commentaires ILIKE :search", {search: "%#{params[:search]}%"})
@@ -388,38 +411,31 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {id: params[:agent_ids]})
     end
 
-    if params[:tool_ids].present?
-      @interventions = @interventions.joins(:tool_interventions).where(tool_interventions: {tool_id: params[:tool_ids]})
-    end
-
     if params[:tags].present?
       @interventions = @interventions.tagged_with(params[:tags].reject(&:blank?))
       session[:tags] = params[:tags]
     else
       session[:tags] = params[:tags] = []
     end
-  
-    if params[:date].blank?
-      params[:date] = DateTime.now
-    end
-    # Conversion nécessaire pour le repasser dans la vue dans la fonction l()
-    @date_to_string = params[:date].to_s
-    
-    time_zone_date = Time.zone.parse(@date_to_string)
-  
-    @interventions = @interventions.where(
-      "début <= ? AND fin >= ?", time_zone_date, time_zone_date
-    )
     
     @interventions_localisations_to_marker = Hash.new
     if @interventions.any?
-      @interventions_localisations_to_marker = @interventions.map{ 
-        |intervention| 
+
+      # Groupage des interventions en fonction des adhérents pour n'avoir qu'un marker par adhérent
+      interventions_par_adherent = @interventions.group_by(&:adherent_id)
+
+      @interventions_localisations_to_marker = interventions_par_adherent.map{
+        |adherent_id, interventions|
+        adherent = User.find(adherent_id)
         { 
-          position: intervention.adherent.lat_lng_object, 
-          title: "#{intervention.agents.any? ? intervention.agents.first.nom_prénom + ", " : ""}#{intervention.description}, #{intervention.début}/#{intervention.fin}",
-          adherent_slug: current_user.slug,
-        } 
+          position: adherent.lat_lng_object,
+          title: interventions.map {
+            |intervention|
+            agent_name = intervention.agents.any? ? "#{intervention.agents.first.nom_prénom}, " : ""
+            "#{agent_name}#{intervention.description}, #{intervention.début}/#{intervention.fin}"
+          }.join(" | "),
+          adherent_slug: adherent.slug,
+        }
       }
     end
   end
