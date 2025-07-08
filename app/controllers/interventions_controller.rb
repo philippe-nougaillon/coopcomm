@@ -417,7 +417,8 @@ class InterventionsController < ApplicationController
         |intervention| 
         { 
           position: intervention.adherent.lat_lng_object, 
-          title: "#{intervention.agents.any? ? intervention.agents.first.nom_prénom + ", " : ""}#{intervention.description}, #{intervention.début}/#{intervention.fin}" 
+          title: "#{intervention.agents.any? ? intervention.agents.first.nom_prénom + ", " : ""}#{intervention.description}, #{intervention.début}/#{intervention.fin}",
+          adherent_slug: current_user.slug,
         } 
       }
     end

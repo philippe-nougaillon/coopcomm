@@ -99,20 +99,47 @@
     let center =  { lat: 48.89084994828303, lng: 2.2416654776359355 };
 
     async function initMap() {
-        await google.maps.importLibrary("maps");
-        await google.maps.importLibrary("marker");
 
+        // Initialisation des bibliothèques nécessaires
+        const { Map } = await google.maps.importLibrary("maps");
+        const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary(
+          "marker",
+        );
+
+        // Initialisation de la map
         map = new google.maps.Map(document.getElementById("map"), {
             center,
             zoom: 8,
             mapId: "549c4681c953f814fa1cd142",
         });
 
-        initMarkers();
+        // Initialisation des markers
+        <% @interventions_localisations_to_marker.each do |to_marker| %>
+            <% if current_user.adhérent? && current_user.slug == to_marker[:adherent_slug] %>
+                // Ajout du marker pour l'adhérent courant
+                const pinHost = new PinElement({
+                    scale: 1.5,
+                    glyphColor: "white",
+                });
+                new google.maps.marker.AdvancedMarkerElement({
+                    map,
+                    position: <%= to_marker[:position] %>,
+                    title: "<%= to_marker[:title] %>",
+                    content: pinHost.element
+                });
+            <% else %>
+                // Ajout du marker d'une intervention
+                new google.maps.marker.AdvancedMarkerElement({
+                    map,
+                    position: <%= to_marker[:position] %>,
+                    title: "<%= to_marker[:title] %>"
+                });
+            <% end %>
+        <% end %>
     }
 
     function initMarkers() {
-        
+
         <% @interventions_localisations_to_marker.each do |to_marker| %>
             addMarker( <%= to_marker[:position] %>, "<%= to_marker[:title] %>")
         <% end %>
