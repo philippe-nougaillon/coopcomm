@@ -419,6 +419,9 @@ class InterventionsController < ApplicationController
     end
     
     @interventions_localisations_to_marker = Hash.new
+    # Centre de la carte par défaut
+    @map_center = { lat: 48.89084994828303, lng: 2.2416654776359355 }
+
     if @interventions.any?
 
       # Groupage des interventions en fonction des adhérents pour n'avoir qu'un marker par adhérent
@@ -437,12 +440,25 @@ class InterventionsController < ApplicationController
           adherent_slug: adherent.slug,
         }
       }
+
+      @map_center = calculate_map_center(@interventions_localisations_to_marker)
     end
+
   end
 
   private
 
-    def send_workflow_changed_notification
+  def calculate_map_center(interventions_localisations)
+    coordonnees = interventions_localisations.pluck(:position)
+    lats = coordonnees.pluck(:lat)
+    lngs = coordonnees.pluck(:lng)
+    return {
+      lat: (lats.min + lats.max) / 2,
+      lng: (lngs.min + lngs.max) / 2
+    }
+  end
+
+  def send_workflow_changed_notification
       unless Rails.env.development? 
         Events.instance.publish('intervention.workflow_changed', payload: {intervention_id: @intervention.id})
       end

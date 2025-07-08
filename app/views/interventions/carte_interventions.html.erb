@@ -96,7 +96,7 @@
 
 <script>
     let map;
-    let center =  { lat: 48.89084994828303, lng: 2.2416654776359355 };
+    let center = <%= @map_center %>;
 
     async function initMap() {
 
@@ -109,7 +109,7 @@
         // Initialisation de la map
         map = new google.maps.Map(document.getElementById("map"), {
             center,
-            zoom: 8,
+            zoom: 11,
             mapId: "549c4681c953f814fa1cd142",
         });
 
