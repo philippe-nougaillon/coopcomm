@@ -94,38 +94,44 @@
             mapId: "549c4681c953f814fa1cd142",
         });
 
+        <% if current_user.adhérent? %>
+            // Ajout du marker pour l'adhérent courant
+            const pinHost = new PinElement({
+                scale: 1.5,
+                glyphColor: "white",
+            });
+            new google.maps.marker.AdvancedMarkerElement({
+                map,
+                position: <%= current_user.localisation_to_lat_lng_object %>,
+                title: "<%= current_user.nom_prénom %>",
+                content: pinHost.element
+            });
+        <% end %>
+
         // Initialisation des markers
+
         <% @interventions_localisations_to_marker.each do |to_marker| %>
-            <% if current_user.adhérent? && current_user.slug == to_marker[:adherent_slug] %>
-                // Ajout du marker pour l'adhérent courant
-                const pinHost = new PinElement({
-                    scale: 1.5,
-                    glyphColor: "white",
-                });
-                new google.maps.marker.AdvancedMarkerElement({
-                    map,
-                    position: <%= to_marker[:position] %>,
-                    title: "<%= to_marker[:title] %>",
-                    content: pinHost.element
-                });
-            <% else %>
-                // Ajout du marker d'une intervention
-                new google.maps.marker.AdvancedMarkerElement({
-                    map,
-                    position: <%= to_marker[:position] %>,
-                    title: "<%= to_marker[:title] %>"
-                });
-            <% end %>
+            // Ajout du marker d'une intervention
+            var pinIntervention = new PinElement({
+                background: "orange",
+            });
+            new google.maps.marker.AdvancedMarkerElement({
+                map,
+                position: <%= to_marker[:position] %>,
+                title: "<%= to_marker[:title] %>",
+                content: pinIntervention.element
+            });
         <% end %>
     }
 
+    // Inutilisée
     function initMarkers() {
-
         <% @interventions_localisations_to_marker.each do |to_marker| %>
             addMarker( <%= to_marker[:position] %>, "<%= to_marker[:title] %>")
         <% end %>
     }
 
+    // Inutilisée
     async function addMarker(position, title = "") {
         const marker = new google.maps.marker.AdvancedMarkerElement({
             map,

@@ -163,7 +163,8 @@ class User < ApplicationRecord
     self.localisation.gsub(/(.*?), (.*)/) { "[#{$2}, #{$1}]" }
   end
 
-  def lat_lng_object
+  def localisation_to_lat_lng_object
+    # Sépare et nettoie la chaine localisation en latitude, longitude pour créer un objet contenant les coordonnées.
     lat, lng = self.localisation.split(',').map(&:strip).map(&:to_f)
     { lat: lat, lng: lng }
   end

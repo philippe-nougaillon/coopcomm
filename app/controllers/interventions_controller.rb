@@ -431,13 +431,12 @@ class InterventionsController < ApplicationController
         |adherent_id, interventions|
         adherent = User.find(adherent_id)
         { 
-          position: adherent.lat_lng_object,
+          position: adherent.localisation_to_lat_lng_object,
           title: interventions.map {
             |intervention|
             agent_name = intervention.agents.any? ? "#{intervention.agents.first.nom_prénom}, " : ""
             "#{agent_name}#{intervention.description}, #{intervention.début}/#{intervention.fin}"
           }.join(" | "),
-          adherent_slug: adherent.slug,
         }
       }
 
