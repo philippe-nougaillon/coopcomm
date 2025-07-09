@@ -69,6 +69,12 @@
 
 <div id="map" class="w-full h-150"></div>
 
+<p class="mt-4 mb-2"><%= @routes_info.size %> trajet(s) trouvé(s)</p>
+
+<% @routes_info.each do |route| %>
+    <p><%= route %></p>
+<% end %>
+
 <p class="mt-4"><%= @interventions.size %> intervention(s) trouvée(s)</p>
 
 <%= render @interventions %>
@@ -139,6 +145,15 @@
             title: title
         });
     }
+</script>
+
+<script>
+    <% if @error_message.present? %>
+        console.error("<%= j @error_message %>");
+    <% else %>
+        const route = <%= raw(@routes_info.to_json) %>;
+        console.log("Route:", route);
+    <% end %>
 </script>
 
 <script>
