@@ -2,17 +2,24 @@
 
 @import '../../assets/stylesheets/actiontext.css' layer(utilities);
 
+@source "../../../public/*.html";
+@source "../../../app/helpers/**/*.rb";
+@source "../../../app/javascript/**/*.js";
+@source "../../../app/views/**/*";
+
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/aspect-ratio';
 @plugin '@tailwindcss/typography';
 @plugin '@tailwindcss/container-queries';
-@plugin "daisyui" {
-  themes: corporate --default;
+@plugin "./daisyui.js"{
+  themes: corporate;
 }
-@plugin "daisyui/theme" {
+@plugin "./daisyui-theme.js" {
   name: "aikku";
   default: true;
   --color-base-100: #FAFAFA;
+  --color-base-200: #E8E8E8;
+  --color-base-300: #D1D1D1;
   --color-primary: #50B9DF;
   --color-secondary: #6A219C;
   --color-base-content: #1E1B18;
@@ -21,10 +28,6 @@
   --radius-box: 2rem;
   --depth: 1;
 }
-@source "../../../public/*.html";
-@source "../../../app/helpers/**/*.rb";
-@source "../../../app/javascript/**/*.js";
-@source "../../../app/views/**/*";
 
 
 /*
