@@ -1,0 +1,25 @@
+<li>
+  <%= link_to "Notre solution", solution_path, class: "text-lg flex items-center hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:action] == 'solution'}" %>
+</li>
+<li>
+  <details>
+    <summary class="text-lg">Ressources</summary>
+    <ul class="p-2 w-max">
+      <li><a>Ressource 1</a></li>
+      <li><a>Ressource 2</a></li>
+    </ul>
+  </details>
+</li>
+<li class="text-lg">
+  <details>
+    <summary class="text-lg">À propos</summary>
+    <ul class="p-2 w-max">
+      <li><a>Qu'est-ce que CoopComm ?</a></li>
+      <li><a>Qui sommes-nous ?</a></li>
+      <li><a>Nos ambitions</a></li>
+    </ul>
+  </details>
+</li>
+<li>
+  <%= link_to "Nos tarifs", tarifs_path, class: "text-lg flex items-center hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:action] == 'tarifs'}" %>
+</li>

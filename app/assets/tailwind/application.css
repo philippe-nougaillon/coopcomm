@@ -7,7 +7,19 @@
 @plugin '@tailwindcss/typography';
 @plugin '@tailwindcss/container-queries';
 @plugin "daisyui" {
-  themes: light --default, dark --prefersdark, cupcake, corporate;
+  themes: corporate --default;
+}
+@plugin "daisyui/theme" {
+  name: "aikku";
+  default: true;
+  --color-base-100: #FAFAFA;
+  --color-primary: #50B9DF;
+  --color-secondary: #6A219C;
+  --color-base-content: #1E1B18;
+  --radius-field: 0.75rem;
+  --radius-selector: 2rem;
+  --radius-box: 2rem;
+  --depth: 1;
 }
 @source "../../../public/*.html";
 @source "../../../app/helpers/**/*.rb";
