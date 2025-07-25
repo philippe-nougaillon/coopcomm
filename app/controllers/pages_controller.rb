@@ -1,6 +1,6 @@
 class PagesController < ApplicationController
-  before_action :is_user_authorized, except: %i[welcome mentions_legales]
-  skip_before_action :authenticate_user!, only: %i[welcome mentions_legales]
+  before_action :is_user_authorized, except: %i[welcome mentions_legales solution tarifs contact]
+  skip_before_action :authenticate_user!, only: %i[welcome mentions_legales solution tarifs contact]
 
   def assistant
 
@@ -223,6 +223,15 @@ class PagesController < ApplicationController
 
       @temps_total_par_service = current_user.interventions_adherent.joins(agent_interventions: :agent).group("users.service").sum(:temps_total)
     end
+  end
+
+  def solution
+  end
+
+  def tarifs
+  end
+
+  def contact
   end
 
   private

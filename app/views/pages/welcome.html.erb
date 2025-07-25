@@ -1,39 +1,243 @@
-<div class="lg:px-8">
-  <div class="flex flex-col justify-between">
-    <h1 class="text-4xl lg:text-5xl font-black text-primary mb-4 lg:mb-8">
-      <%= image_tag "CoopComm.png", class: "h-16" %>
-      <div class="divider"></div>
-    </h1>
+<div data-theme="aikku" class="lg:px-8">
+  <section class="lg:flex lg:justify-between lg:flex-wrap mb-24 lg:mb-12">
+    <div class="flex-1 my-auto px-4 lg:px-12">
+      <h1 class="text-3xl lg:text-4xl font-black mb-6 lg:mb-12 mt-24 lg:mt-12">
+        Mutualisez mieux,
+        <br>
+        <span class="text-gradient">dépensez moins !</span>
+      </h1>
 
-    <div class="lg:flex lg:flex-wrap">
-      <div class="flex-1">
-        <h2 class="text-3xl lg:text-4xl text-secondary font-black mb-6 lg:mb-12">
-          <span class="underline">P</span>lateforme de mutualisation
-          <br> 
-          de services communs
-        </h2>
+      <p class="text-xl lg:text-2xl mb-6 lg:mb-12">
+        CoopComm accompagne les communautés de communes dans la mutualisation de leurs ressources humaines, techniques et logistiques.
+      </p>
 
-        <h3 class="text-2xl lg:text-3xl text-secondary mb-6 lg:mb-12">
-          Gérez facilement la coopération et la mutualisation
-          <br>
-          des services et ressources de votre intercommunalité (EPCI)
-        </h3>
-
-        <div class="mt-8 flex flex-wrap gap-4 text-xl font-black mb-4 lg:mb-12">
-          <%# link_to "En savoir plus", url_for(anchor: 'more'), class: 'btn lg:btn-lg lg:btn-wide btn-primary text-white' %>
-          <%# link_to "S'inscrire", '/users/sign_up', class: 'btn btn-outline lg:btn-lg btn-success hover:text-white!' %>
-          <%= link_to "Se connecter", '/users/sign_in', class: 'btn btn-outline lg:btn-lg lg:btn-wide btn-primary hover:text-white!' %>
-        </div>
-      </div>
-      <div class="hidden lg:block w-36 lg:w-64 hover:animate-pulse">
-        <%= image_tag 'Cooperation.svg', class: 'opacity-15' %>
+      <div class="mt-8 flex flex-wrap gap-4 text-xl font-black">
+        <%= link_to "Réserver une démo ➔", "https://www.aikku.eu/fr/contact?objet=COOPCOMM", class: 'btn lg:btn-lg lg:btn-wide btn-secondary hover:text-white!' %>
       </div>
     </div>
-  </div>
+    <div class="flex-1 hidden lg:flex lg:justify-center">
+      <%= image_tag 'Imac and iphone.png', width: 500 %>
+    </div>
+  </section>
 
-  <div id="more" class="mt-12" style="scroll-snap-align: start;">
-    <h2 class="text-3xl lg:text-4xl text-success">
-      Les bénéfices de la plateforme CoopComm
+  <section class="bg-gray-200 pt-12 pb-24 -mx-4 lg:-mx-16">
+    <div class="text-center mb-24">
+      <h2 class="text-2xl lg:text-3xl font-medium mb-2">
+        Pourquoi choisir
+        <span class="text-gradient">CoopComm</span>
+        ?
+      </h2>
+      <h3>
+        Une solution complète pour optimiser la gestion de votre intercommunalité
+      </h3>
+    </div>
+
+    <div class="flex flex-wrap gap-16 px-4 lg:px-12">
+      <div class="flex-1 bg-base-100 text-center py-12 px-8 shadow rounded-xl">
+        <span class="material-symbols-outlined text-primary-content bg-primary p-3 rounded-full mb-8">
+          trending_down
+        </span>
+        <h4 class="text-xl font-semibold mb-2">Réduction des coûts</h4>
+        <p>
+          Diminuez vos dépenses de fonctionnement grâce à la mutualisation intelligente des ressources.
+        </p>
+      </div>
+      <div class="flex-1 bg-base-100 text-center py-12 px-8 shadow rounded-xl">
+        <span class="material-symbols-outlined text-primary-content bg-primary p-3 rounded-full mb-8">
+          group
+        </span>
+        <h4 class="text-xl font-semibold mb-2">Optimisation RH</h4>
+        <p>
+          Maximisez l'efficacité de vos équipes en partageant les compétences entre communes.
+        </p>
+      </div>
+      <div class="flex-1 bg-base-100 text-center py-12 px-8 shadow rounded-xl">
+        <span class="material-symbols-outlined text-primary-content bg-primary p-3 rounded-full mb-8">
+          beenhere
+        </span>
+        <h4 class="text-xl font-semibold mb-2">Conformité garantie</h4>
+        <p>
+          Respectez toutes les réglementations avec notre solution hébergée en France.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-12 pb-24 lg:px-16">
+    <div class="text-center lg:px-96 mb-12">
+      <h2 class="text-2xl lg:text-3xl font-medium mb-2">
+        Des fonctionnalités pensées pour votre quotidien intercommunal
+      </h2>
+      <h3>
+        De la coordination des agents à la gestion du matériel en passant par la
+        traçabilité des interventions, CoopComm centralise vos opérations
+        dans une interface intuitive et sécurisée. Voici comment.
+      </h3>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="flex-1 bg-gray-200 px-4 pt-4 pb-8">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            shopping_cart
+          </span>
+          Gestion des actifs
+        </h4>
+        <p class="text-primary font-black">
+          Suivez et localisez vos équipements en temps réel
+        </p>
+        <p>
+          Optimisez l'utilisation du matériel mutualisé grâce à un inventaire dynamique, une traçabilité des prêts, et un carte interactive. Fini les pertes et les doublons entre communes.
+        </p>
+      </div>
+
+      <div class="flex-1 bg-gray-200 px-4 pt-4 pb-8">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            construction
+          </span>
+          Gestion des interventions
+        </h4>
+        <p class="text-primary font-black">
+          De la demande à la validation, tout est traçé
+        </p>
+        <p>
+          Les adhérents émettent une demande. Les équipes planifient, réalisent, et clôturent l'intervention. L'adhérent est notifié, valide ou refuse, évalue et commente. Simple, structuré, transparent.
+        </p>
+      </div>
+
+      <div class="flex-1 bg-gray-200 px-4 pt-4 pb-8">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            groups
+          </span>
+          Gestion des Agents, Équipes et Managers
+        </h4>
+        <p class="text-primary font-black">
+          Chaque acteur a une vue adaptée à son rôle
+        </p>
+        <p>
+          Agents, managers, responsables techniques... chacun accède aux données pertinentes, ni plus ni moins. Une interface claire pour tous, sans complexité inutile.
+        </p>
+      </div>
+
+      <div class="flex-1 bg-gray-200 px-4 pt-4 pb-8">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            qr_code_2
+          </span>
+          Pointage par QR Code
+        </h4>
+        <p class="text-primary font-black">
+          Démarrez et terminez vos missions en 1 scan
+        </p>
+        <p>
+          Pour les interventions récurrentes, imprimez un QR Code. L'agent le flashe pour débuter et conclure. L'adhérent est informé automatiquement. Gain de temps, preuve d'action, zéro friction.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-4 mt-12">
+      <%= link_to "Découvrir toutes les fonctionnalités", root_path(anchor: "more"), class: "btn btn-primary" %>
+      <%= link_to "Réserver une démo ➔", "https://www.aikku.eu/fr/contact?objet=COOPCOMM", class: "btn btn-secondary" %>
+    </div>
+  </section>
+
+  <section class="pt-12 pb-24">
+    <div class="text-center lg:px-96 mb-12">
+      <h2 class="text-2xl lg:text-3xl font-medium mb-2">
+        Comment fonctionne <span class="text-gradient">CoopComm</span> ?
+      </h2>
+      <h3>
+        Du besoin exprimé à la traçabilité complète, CoopComm structure chaque étape de la mutualisation entre communes.
+        <br>
+        Simple, fluide et sans perte d'information.
+      </h3>
+    </div>
+
+    <ul class="steps steps-thin steps-vertical mx-auto w-full">
+      <div class="flex step-secondary">
+        <div class="flex-1 self-center lg:pl-8 pr-8 h-min flex lg:justify-end">
+          <p class="text-center font-semibold w-24 lg:w-80 mr-14 py-4 border-2 rounded-lg shadow-sm">
+            1. L'adhérent émet une demande
+          </p>
+        </div>
+        <li data-content="" class="-ml-40 lg:-ml-20 flex-1 step step-start step-secondary content-start">
+          <div class="border-2 rounded-lg shadow-sm pt-4 px-4 lg:px-8 pb-8 text-start max-w-96">
+            <p class="text-primary font-semibold mb-2">BESOIN LOCAL, ACTION PARTAGÉE.</p>
+            <p>
+              Un élu, une direction ou un service saisit une demande (ex: espace vert, secrétariat, entretien...). L'intervention est automatiquement transmise à l'intercommunalité.
+            </p>
+          </div>
+        </li>
+      </div>
+      <div class="flex step-secondary">
+        <div class="flex-1 self-center lg:pl-8 pr-8 h-min flex lg:justify-end">
+          <p class="text-center font-semibold w-24 lg:w-80 mr-14 py-4 border-2 rounded-lg shadow-sm">
+            2. L'équipe planifie
+          </p>
+        </div>
+        <li data-content="" class="-ml-40 lg:-ml-20 flex-1 step step-secondary">
+          <div class="border-2 rounded-lg shadow-sm pt-4 px-4 lg:px-8 pb-8 text-start max-w-96">
+            <p class="text-primary font-semibold mb-2">ORGANISATION FLUIDE.</p>
+            <p>
+              Le manager planifie l'intervention, l'associe à un agent et à une date, et envoie la mission via la plateforme.
+            </p>
+          </div>
+        </li>
+      </div>
+      <div class="flex step-secondary">
+        <div class="flex-1 self-center lg:pl-8 pr-8 h-min flex lg:justify-end">
+          <p class="text-center font-semibold w-24 lg:w-80 mr-14 py-4 border-2 rounded-lg shadow-sm">
+            3. L'agent intervient
+          </p>
+        </div>
+        <li data-content="" class="-ml-40 lg:-ml-20 flex-1 step step-secondary">
+          <div class="border-2 rounded-lg shadow-sm pt-4 px-4 lg:px-8 pb-8 text-start max-w-96">
+            <p class="text-primary font-semibold mb-2">ACTION TERRAIN.</p>
+            <p>
+              L'agent consulte la mission, intervient sur site, ajoute si besoin des précisions ou des photos de son rapport numérique.
+            </p>
+          </div>
+        </li>
+      </div>
+      <div class="flex step-secondary">
+        <div class="flex-1 self-center lg:pl-8 pr-8 h-min flex lg:justify-end">
+          <p class="text-center font-semibold w-24 lg:w-80 mr-14 py-4 border-2 rounded-lg shadow-sm">
+            4. L'agent valide
+          </p>
+        </div>
+        <li data-content="" class="-ml-40 lg:-ml-20 flex-1 step step-secondary">
+          <div class="border-2 rounded-lg shadow-sm pt-4 px-4 lg:px-8 pb-8 text-start max-w-96">
+            <p class="text-primary font-semibold mb-2">FIN DE MISSION.</p>
+            <p>
+              L'agent clôture l'intervention via l'action "Terminer". L'adhérent reçoit automatiquement une notification avec tous les éléments de suivi.
+            </p>
+          </div>
+        </li>
+      </div>
+      <div class="flex step-secondary">
+        <div class="flex-1 self-center lg:pl-8 pr-8 h-min flex lg:justify-end">
+          <p class="text-center font-semibold w-24 lg:w-80 mr-14 py-4 border-2 rounded-lg shadow-sm">
+            5. Les données sont tracées
+          </p>
+        </div>
+        <li data-content="" class="-ml-40 lg:-ml-20 flex-1 step step-secondary">
+          <div class="border-2 rounded-lg shadow-sm pt-4 px-4 lg:px-8 pb-8 text-start max-w-96">
+            <p class="text-primary font-semibold mb-2">PILOTAGE EN TEMPS RÉEL.</p>
+            <p>
+              Chaque action est enregistrée : temps passé, notes, commentaires, matériels utilisés... CoopComm consolide ces données pour un pilotage efficace.
+            </p>
+          </div>
+        </li>
+      </div>
+    </ul>
+  </section>
+
+  <div id="more" class="mb-24"></div>
+  <div class="mt-12" style="scroll-snap-align: start;">
+    <h2 class="text-2xl lg:text-3xl text-base-content">
+      Les fonctionnalités de la plateforme CoopComm
     </h2>
     <div class="divider mb-12"></div>
     
@@ -43,7 +247,7 @@
         <span class="material-symbols-outlined text-primary">
           garden_cart
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Gestion des Actifs</b>
         </p>
         <p>
@@ -55,7 +259,7 @@
         <span class="material-symbols-outlined text-primary">
           construction
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Gestion des Interventions</b>
         </p>
         <p>
@@ -67,7 +271,7 @@
         <span class="material-symbols-outlined text-primary">
           location_city
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Gestion des Adhérents</b>
         </p>
         <p>
@@ -79,7 +283,7 @@
         <span class="material-symbols-outlined text-primary">
           engineeringgroupperson
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Gestion des Agents, Équipes et Managers</b>
         </p>
         <p>
@@ -91,7 +295,7 @@
         <span class="material-symbols-outlined text-primary">
           beach_access
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Gestion des Absences</b>
         </p>
         <p>
@@ -103,7 +307,7 @@
         <span class="material-symbols-outlined text-primary">
           speedmonitoring
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Maîtrise budgétaire</b>
         </p>
         <p>
@@ -115,7 +319,7 @@
         <span class="material-symbols-outlined text-primary">
           cloud_circle
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Une information claire et partagée</b>
         </p>
         <p>
@@ -128,7 +332,7 @@
         <span class="material-symbols-outlined text-primary">
           smartphonecomputertablet
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Une référence unique sur tous supports</b>
         </p>
         <p>
@@ -140,7 +344,7 @@
         <span class="material-symbols-outlined text-primary">
           steppersdouble_arrow
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Workflow</b>
         </p>
         <p>
@@ -152,7 +356,7 @@
         <span class="material-symbols-outlined text-primary">
           barcode_readerqr_code_2
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Pointage par QR Code</b>
         </p>
         <p>
@@ -165,7 +369,7 @@
         <span class="material-symbols-outlined text-primary">
           forum
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Messagerie instantanée</b>
         </p>
         <p>
@@ -177,7 +381,7 @@
         <span class="material-symbols-outlined text-primary">
           notificationsmobile_chat
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Notifications et alertes</b>
         </p>
         <p>
@@ -189,7 +393,7 @@
         <span class="material-symbols-outlined text-primary">
           smart_toy
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Prévision d'interventions (IA) <span class="badge badge-primary badge-xs">NOUVEAUTÉ</span></b>
         </p>
         <p>
@@ -200,7 +404,7 @@
   </div>
 
   <div class="mt-12">
-    <h2 class="text-3xl lg:text-4xl text-success">
+    <h2 class="text-2xl lg:text-3xl text-base-content">
       Exemples en image
     </h2>
     <div class="divider mb-12"></div>
@@ -283,7 +487,7 @@
   </div>
 
   <div class="mt-12">
-    <h2 class="text-3xl lg:text-4xl text-success">
+    <h2 class="text-2xl lg:text-3xl text-base-content">
       En savoir plus
     </h2>
     <div class="divider mb-12"></div>
@@ -297,8 +501,7 @@
           <li>
             <%= link_to wiki_page.titre, wiki_page, class: "text-primary text-2xl hover:underline" %>
             <small class="ml-4">
-              <i>Publié le <%= l(wiki_page.created_at, format: :long) %></i>
-              <i>(Modifié il y a <%= time_ago_in_words wiki_page.updated_at %>)</i>
+              <i>(<%= l(wiki_page.created_at.to_date, format: :long) %>)</i>
             </small>
           </li>
         <% end %>
@@ -332,7 +535,7 @@
   </div>
  <!--
   <div class="mt-24">
-    <h2 class="text-3xl lg:text-4xl text-success">
+    <h2 class="text-2xl lg:text-3xl text-base-content">
       Témoignages clients
     </h2>
     <div class="divider mb-12"></div>
@@ -372,12 +575,12 @@
 -->
   <div class="my-24">
 
-    <h2 class="text-3xl lg:text-4xl text-success">
+    <h2 class="text-2xl lg:text-3xl text-base-content">
       Conception et développement
     </h2>
 
     <div class="divider mb-12"></div>
-    <div class="w-full text-2xl my-4">
+    <div class="w-full my-4">
       <p>
         Cette application Web a été conçue et développée, en Ruby on Rails, par nos soins.
         <br>
@@ -388,7 +591,7 @@
 
   <div class="my-24">
 
-    <h2 class="text-3xl lg:text-4xl text-success">
+    <h2 class="text-2xl lg:text-3xl text-base-content">
       Notre newsletter
     </h2>
 
@@ -405,6 +608,18 @@
           <%= render "result_newsletter" %>
         </div>
       <% end %>
+    </div>
+  </div>
+
+  <div class="my-24">
+
+    <h2 class="text-2xl lg:text-3xl text-base-content">
+      Vous souhaitez découvrir la plateforme CoopComm ?
+    </h2>
+
+    <div class="divider mb-12"></div>
+    <div class="w-full text-2xl my-4">
+      <%= link_to "Réservez une démo personnalisée avec l'un de nos experts ➔", "https://www.aikku.eu/fr/contact?objet=COOPCOMM", class: 'btn lg:btn-lg btn-secondary hover:text-white! ' %>
     </div>
   </div>
 

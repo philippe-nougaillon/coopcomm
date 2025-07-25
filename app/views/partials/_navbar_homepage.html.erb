@@ -1,0 +1,34 @@
+<div data-theme="aikku" class="navbar bg-base-100 fixed top-0 z-10">
+  <div class="navbar-start flex items-center flex-1">
+    <%= link_to root_path, class: 'mr-12' do %>
+      <%= image_tag "CoopComm.png", class: "h-8 pr-1 ml-6" %>
+    <% end %>
+    <ul class="hidden lg:flex menu w-full menu-horizontal flex-1 items-center gap-4 pr-12">
+      <%= render 'partials/navbar_homepage_items' %>
+    </ul>
+  </div>
+  <div class="flex-none">
+    <ul class="hidden lg:flex menu w-full menu-horizontal flex-1 items-center gap-4 pr-12">
+      <li>
+        <%= link_to "Se connecter", '/users/sign_in', class: "btn btn-primary" %>
+      </li>
+      <li>
+        <%= link_to "Demander une démo ➔", "https://www.aikku.eu/fr/contact?objet=COOPCOMM", class: "btn btn-secondary" %>
+      </li>
+    </ul>
+    <div class="dropdown dropdown-end">
+      <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" /> </svg>
+      </div>
+      <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
+        <%= render 'partials/navbar_homepage_items' %>
+        <li>
+          <%= link_to "Se connecter", '/users/sign_in', class: "btn btn-primary my-2" %>
+        </li>
+        <li>
+          <%= link_to "Demander une démo ➔", "https://www.aikku.eu/fr/contact?objet=COOPCOMM", class: "btn btn-secondary mb-2" %>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
