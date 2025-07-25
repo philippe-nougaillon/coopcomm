@@ -13,7 +13,7 @@
         <%= link_to "Se connecter", '/users/sign_in', class: "btn btn-primary" %>
       </li>
       <li>
-        <%= link_to "Demander une démo ➔", contact_path, class: "btn btn-secondary" %>
+        <%= link_to "Demander une démo ➔", "https://www.aikku.eu/fr/contact?objet=COOPCOMM", class: "btn btn-secondary" %>
       </li>
     </ul>
     <div class="dropdown dropdown-end">
@@ -22,6 +22,12 @@
       </div>
       <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
         <%= render 'partials/navbar_homepage_items' %>
+        <li>
+          <%= link_to "Se connecter", '/users/sign_in', class: "btn btn-primary my-2" %>
+        </li>
+        <li>
+          <%= link_to "Demander une démo ➔", "https://www.aikku.eu/fr/contact?objet=COOPCOMM", class: "btn btn-secondary mb-2" %>
+        </li>
       </ul>
     </div>
   </div>

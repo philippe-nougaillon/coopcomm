@@ -1,5 +1,5 @@
 <div data-theme="aikku" class="lg:px-8">
-  <section class="lg:flex lg:flex-wrap mb-24 lg:mb-12">
+  <section class="lg:flex lg:justify-between lg:flex-wrap mb-24 lg:mb-12">
     <div class="flex-1 my-auto px-4 lg:px-12">
       <h1 class="text-3xl lg:text-4xl font-black mb-6 lg:mb-12 mt-24 lg:mt-12">
         Mutualisez mieux,
@@ -12,11 +12,11 @@
       </p>
 
       <div class="mt-8 flex flex-wrap gap-4 text-xl font-black">
-        <%= link_to "Réserver une démo ➔", contact_path, class: 'btn lg:btn-lg lg:btn-wide btn-secondary hover:text-white!' %>
+        <%= link_to "Réserver une démo ➔", "https://www.aikku.eu/fr/contact?objet=COOPCOMM", class: 'btn lg:btn-lg lg:btn-wide btn-secondary hover:text-white!' %>
       </div>
     </div>
-    <div class="flex-1 hidden lg:block w-36 lg:w-64">
-      <%= image_tag 'coopcomm_formats.png' %>
+    <div class="flex-1 hidden lg:flex lg:justify-center">
+      <%= image_tag 'Imac and iphone.png', width: 500 %>
     </div>
   </section>
 
@@ -77,9 +77,13 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div class="flex-1 bg-gray-200 px-4 pt-4 pb-8">
-        <%= image_tag 'coopcomm_formats.png', width: '600', class: 'mb-6 lg:mb-12' %>
-        <h4 class="text-xl font-semibold mb-4">Gestion des actifs</h4>
-        <p class="text-primary">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            shopping_cart
+          </span>
+          Gestion des actifs
+        </h4>
+        <p class="text-primary font-black">
           Suivez et localisez vos équipements en temps réel
         </p>
         <p>
@@ -88,9 +92,13 @@
       </div>
 
       <div class="flex-1 bg-gray-200 px-4 pt-4 pb-8">
-        <%= image_tag 'coopcomm_formats.png', width: '600', class: 'mb-6 lg:mb-12' %>
-        <h4 class="text-xl font-semibold mb-4">Gestion des interventions</h4>
-        <p class="text-primary">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            construction
+          </span>
+          Gestion des interventions
+        </h4>
+        <p class="text-primary font-black">
           De la demande à la validation, tout est traçé
         </p>
         <p>
@@ -99,9 +107,13 @@
       </div>
 
       <div class="flex-1 bg-gray-200 px-4 pt-4 pb-8">
-        <%= image_tag 'coopcomm_formats.png', width: '600', class: 'mb-6 lg:mb-12' %>
-        <h4 class="text-xl font-semibold mb-4">Gestion des Agents, Équipes et Managers</h4>
-        <p class="text-primary">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            groups
+          </span>
+          Gestion des Agents, Équipes et Managers
+        </h4>
+        <p class="text-primary font-black">
           Chaque acteur a une vue adaptée à son rôle
         </p>
         <p>
@@ -110,9 +122,13 @@
       </div>
 
       <div class="flex-1 bg-gray-200 px-4 pt-4 pb-8">
-        <%= image_tag 'coopcomm_formats.png', width: '600', class: 'mb-6 lg:mb-12' %>
-        <h4 class="text-xl font-semibold mb-4">Pointage par QR Code</h4>
-        <p class="text-primary">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            qr_code_2
+          </span>
+          Pointage par QR Code
+        </h4>
+        <p class="text-primary font-black">
           Démarrez et terminez vos missions en 1 scan
         </p>
         <p>
@@ -122,8 +138,8 @@
     </div>
 
     <div class="flex flex-wrap gap-4 mt-12">
-      <%= link_to "Découvrir toutes les fonctionnalités", solution_path, class: "btn btn-primary" %>
-      <%= link_to "Réserver une démo ➔", contact_path, class: "btn btn-secondary" %>
+      <%= link_to "Découvrir toutes les fonctionnalités", root_path(anchor: "more"), class: "btn btn-primary" %>
+      <%= link_to "Réserver une démo ➔", "https://www.aikku.eu/fr/contact?objet=COOPCOMM", class: "btn btn-secondary" %>
     </div>
   </section>
 
@@ -218,9 +234,10 @@
     </ul>
   </section>
 
-  <div id="more" class="mt-12" style="scroll-snap-align: start;">
-    <h2 class="text-3xl lg:text-4xl text-base-content">
-      Les bénéfices de la plateforme CoopComm
+  <div id="more" class="mb-24"></div>
+  <div class="mt-12" style="scroll-snap-align: start;">
+    <h2 class="text-2xl lg:text-3xl text-base-content">
+      Les fonctionnalités de la plateforme CoopComm
     </h2>
     <div class="divider mb-12"></div>
     
@@ -230,7 +247,7 @@
         <span class="material-symbols-outlined text-primary">
           garden_cart
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Gestion des Actifs</b>
         </p>
         <p>
@@ -242,7 +259,7 @@
         <span class="material-symbols-outlined text-primary">
           construction
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Gestion des Interventions</b>
         </p>
         <p>
@@ -254,7 +271,7 @@
         <span class="material-symbols-outlined text-primary">
           location_city
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Gestion des Adhérents</b>
         </p>
         <p>
@@ -266,7 +283,7 @@
         <span class="material-symbols-outlined text-primary">
           engineeringgroupperson
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Gestion des Agents, Équipes et Managers</b>
         </p>
         <p>
@@ -278,7 +295,7 @@
         <span class="material-symbols-outlined text-primary">
           beach_access
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Gestion des Absences</b>
         </p>
         <p>
@@ -290,7 +307,7 @@
         <span class="material-symbols-outlined text-primary">
           speedmonitoring
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Maîtrise budgétaire</b>
         </p>
         <p>
@@ -302,7 +319,7 @@
         <span class="material-symbols-outlined text-primary">
           cloud_circle
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Une information claire et partagée</b>
         </p>
         <p>
@@ -315,7 +332,7 @@
         <span class="material-symbols-outlined text-primary">
           smartphonecomputertablet
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Une référence unique sur tous supports</b>
         </p>
         <p>
@@ -327,7 +344,7 @@
         <span class="material-symbols-outlined text-primary">
           steppersdouble_arrow
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Workflow</b>
         </p>
         <p>
@@ -339,7 +356,7 @@
         <span class="material-symbols-outlined text-primary">
           barcode_readerqr_code_2
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Pointage par QR Code</b>
         </p>
         <p>
@@ -352,7 +369,7 @@
         <span class="material-symbols-outlined text-primary">
           forum
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Messagerie instantanée</b>
         </p>
         <p>
@@ -364,7 +381,7 @@
         <span class="material-symbols-outlined text-primary">
           notificationsmobile_chat
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Notifications et alertes</b>
         </p>
         <p>
@@ -376,7 +393,7 @@
         <span class="material-symbols-outlined text-primary">
           smart_toy
         </span>
-        <p class="text-lg lg:text-2xl py-2 lg:py-3">
+        <p class="font-semibold lg:text-lg py-2 lg:py-3">
           <b>Prévision d'interventions (IA) <span class="badge badge-primary badge-xs">NOUVEAUTÉ</span></b>
         </p>
         <p>
@@ -387,7 +404,7 @@
   </div>
 
   <div class="mt-12">
-    <h2 class="text-3xl lg:text-4xl text-base-content">
+    <h2 class="text-2xl lg:text-3xl text-base-content">
       Exemples en image
     </h2>
     <div class="divider mb-12"></div>
@@ -470,7 +487,7 @@
   </div>
 
   <div class="mt-12">
-    <h2 class="text-3xl lg:text-4xl text-base-content">
+    <h2 class="text-2xl lg:text-3xl text-base-content">
       En savoir plus
     </h2>
     <div class="divider mb-12"></div>
@@ -484,8 +501,7 @@
           <li>
             <%= link_to wiki_page.titre, wiki_page, class: "text-primary text-2xl hover:underline" %>
             <small class="ml-4">
-              <i>Publié le <%= l(wiki_page.created_at, format: :long) %></i>
-              <i>(Modifié il y a <%= time_ago_in_words wiki_page.updated_at %>)</i>
+              <i>(<%= l(wiki_page.created_at.to_date, format: :long) %>)</i>
             </small>
           </li>
         <% end %>
@@ -519,7 +535,7 @@
   </div>
  <!--
   <div class="mt-24">
-    <h2 class="text-3xl lg:text-4xl text-base-content">
+    <h2 class="text-2xl lg:text-3xl text-base-content">
       Témoignages clients
     </h2>
     <div class="divider mb-12"></div>
@@ -559,12 +575,12 @@
 -->
   <div class="my-24">
 
-    <h2 class="text-3xl lg:text-4xl text-base-content">
+    <h2 class="text-2xl lg:text-3xl text-base-content">
       Conception et développement
     </h2>
 
     <div class="divider mb-12"></div>
-    <div class="w-full text-2xl my-4">
+    <div class="w-full my-4">
       <p>
         Cette application Web a été conçue et développée, en Ruby on Rails, par nos soins.
         <br>
@@ -575,7 +591,7 @@
 
   <div class="my-24">
 
-    <h2 class="text-3xl lg:text-4xl text-base-content">
+    <h2 class="text-2xl lg:text-3xl text-base-content">
       Notre newsletter
     </h2>
 
@@ -592,6 +608,18 @@
           <%= render "result_newsletter" %>
         </div>
       <% end %>
+    </div>
+  </div>
+
+  <div class="my-24">
+
+    <h2 class="text-2xl lg:text-3xl text-base-content">
+      Vous souhaitez découvrir la plateforme CoopComm ?
+    </h2>
+
+    <div class="divider mb-12"></div>
+    <div class="w-full text-2xl my-4">
+      <%= link_to "Réservez une démo personnalisée avec l'un de nos experts ➔", "https://www.aikku.eu/fr/contact?objet=COOPCOMM", class: 'btn lg:btn-lg btn-secondary hover:text-white! ' %>
     </div>
   </div>
 
