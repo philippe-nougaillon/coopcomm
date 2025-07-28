@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr" data-theme="corporate">
   <head>
+    <%= render "partials/gtag" %>
     <title><%= page_title %></title>
+    
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= display_meta_tags author: "AIKKU SAS" %>
     <%= display_meta_tags description: "Plateforme de mutualisation de services communs. Gérez facilement la coopération et la mutualisation des services et ressources de votre intercommunalité (EPCI). Suivi des prêts de matériels : Gestion De Matériel — Traçabilité de votre inventaire" %>
@@ -29,6 +31,11 @@
   </head>
 
   <body class="bg-slate-50">
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MJ8L8TV4"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
     <% if user_signed_in? %>
       <%= render 'partials/navbar' %>
     <% else %>
