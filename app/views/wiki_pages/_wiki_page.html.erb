@@ -22,7 +22,7 @@
   <% else %>
     <div class="max-h-24 overflow-y-hidden"><%= wiki_page.contenu %>...</div>
     <br>
-    <%= link_to 'Lire l\'article', wiki_page, class: 'rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium' %>
+    <%= link_to 'Lire l\'article', wiki_page, class: 'btn' %>
     <% if wiki_page.document.attached? %>
       <% if wiki_page.document.representable? %>
         <%= link_to 'Voir le document', wiki_page.document, class: "btn btn-primary" %>

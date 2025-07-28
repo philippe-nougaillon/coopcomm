@@ -9,12 +9,20 @@
     </p>
 
     <% if user_signed_in? && current_user.super_admin? %>
-      <%= link_to "Modifier", edit_wiki_page_path(@wiki_page), class: "mt-2 rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
+      <%= link_to "Modifier", edit_wiki_page_path(@wiki_page), class: "mt-2 btn" %>
       <div class="inline-block ml-2">
         <% if policy(@wiki_page).destroy? %>
-          <%= button_to "[X]", wiki_page_path(@wiki_page), method: :delete, form: { data: {'turbo-confirm': "Êtes-vous bien certain.e de vouloir supprimer définitivement cette page ?"} }, class: "mt-2 rounded-lg py-3 px-5 bg-gray-100 font-medium" %>
+          <%= button_to wiki_page_path(@wiki_page), method: :delete, form: { data: {'turbo-confirm': "Êtes-vous bien certain.e de vouloir supprimer définitivement cette page ?"} }, class: "mt-2 btn" do %>
+            <span class="material-symbols-outlined">
+              delete
+            </span>
+          <% end %>
         <% else %>
-          <div title="Suppression impossible : Vous n'êtes pas l'auteur de cette page wiki" class="mt-2 rounded-lg py-3 px-5 bg-gray-200 font-medium">[X]</div>
+          <div title="Suppression impossible : Vous n'êtes pas l'auteur de cette page wiki" class="mt-2 btn btn-ghost cursor-not-allowed">
+            <span class="material-symbols-outlined text-gray-500">
+              delete
+            </span>
+          </div>
         <% end %>
       </div>
     <% end %>

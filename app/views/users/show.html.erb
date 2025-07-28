@@ -67,13 +67,13 @@
   </div>
 
   <div class="flex flex-wrap gap-2 mt-2">
-    <%= link_to "Modifier", edit_user_path(@user), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
-    <%= button_to user_path(@user), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet utilisateur ?" }, class: "rounded-lg py-3 px-5 bg-gray-100 font-medium", 'data-testid': "Supprimer l'utilisateur" do %>
+    <%= link_to "Modifier", edit_user_path(@user), class: "btn" %>
+    <%= button_to user_path(@user), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet utilisateur ?" }, class: "btn", 'data-testid': "Supprimer l'utilisateur" do %>
       <span class="material-symbols-outlined">
         delete
       </span>
     <% end %>
-    <%= link_to "Retour", request.referrer, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
+    <%= link_to "Retour", request.referrer, class: "btn" %>
   </div>
 
   <% if @user.adhérent? && @user.localisation %>
