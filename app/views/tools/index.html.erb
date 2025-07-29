@@ -1,5 +1,5 @@
 <div class="w-full mb-24">
-  <div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
+  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
     <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Matériels / Machines') %></h1>
     <% if policy(Tool).new? %>
       <%= link_to "Ajouter un Matériel", new_tool_path, data: { 'testid': "ajouter_outil_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
