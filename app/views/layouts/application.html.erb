@@ -36,7 +36,7 @@
     <% else %>
       <%= render 'partials/navbar_homepage' %>
     <% end %>
-    <main class="min-h-screen mx-auto py-4 md:pt-8 px-4 2xl:px-8 pb-24 lg:pt-20">
+    <main class="min-h-screen mx-auto px-4 2xl:px-8 py-4 pb-24 <%= user_signed_in? ? 'md:pt-8 lg:pt-20' : 'pt-16 lg:pt-24' %>">
       <%= render 'partials/notification' %>
       <%= yield %>
     </main>
