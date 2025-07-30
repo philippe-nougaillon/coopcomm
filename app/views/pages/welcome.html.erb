@@ -424,13 +424,13 @@
 
   <div class="mt-12">
     <h2 class="text-2xl lg:text-3xl font-medium text-center mb-12">
-      Aperçus de la plateforme
+      CoopComm en images
     </h2>
     <div class="flex w-full  items-center justify-center">
       <div class="carousel min-w-16 sm:w-3/4 mx-auto shadow-lg" data-turbo="false">
         <div id="slide1" class="carousel-item relative w-full flex flex-col">
           <div>
-            <%= image_tag "carousel/dashboard.png", title: "CoopComm test", class: "object-contain w-full h-full" %>
+            <%= image_tag "carousel/dashboard.png", title: "Dashboard", class: "object-contain w-full h-full" %>
             <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
               <a href="#slide3" class="btn btn-circle">❮</a>
               <a href="#slide2" class="btn btn-circle">❯</a>
@@ -438,16 +438,23 @@
           </div>
         </div>
         <div id="slide2" class="carousel-item relative w-full flex justify-center">
-          <%= image_tag "carousel/index.png", title: "CoopComm test", class: "object-contain w-full h-full" %>
+          <%= image_tag "carousel/index.png", title: "Liste des interventions", class: "object-contain w-full h-full" %>
           <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
             <a href="#slide1" class="btn btn-circle">❮</a>
             <a href="#slide3" class="btn btn-circle">❯</a>
           </div>
         </div>
         <div id="slide3" class="carousel-item relative w-full flex justify-center">
-          <%= image_tag "carousel/tools.png", title: "CoopComm test", class: "object-contain w-full h-full" %>
+          <%= image_tag "carousel/carte.png", title: "Localisation des interventions", class: "object-contain w-full h-full" %>
           <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
             <a href="#slide2" class="btn btn-circle">❮</a>
+            <a href="#slide4" class="btn btn-circle">❯</a>
+          </div>
+        </div>
+        <div id="slide4" class="carousel-item relative w-full flex justify-center">
+          <%= image_tag "carousel/tools.png", title: "Liste du matériel", class: "object-contain w-full h-full" %>
+          <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
+            <a href="#slide3" class="btn btn-circle">❮</a>
             <a href="#slide1" class="btn btn-circle">❯</a>
           </div>
         </div>

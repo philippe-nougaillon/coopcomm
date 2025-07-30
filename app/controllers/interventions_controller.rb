@@ -444,6 +444,7 @@ class InterventionsController < ApplicationController
         request = ApiGoogleMaps.new
         localisation_current_adhérent = current_user.localisation_to_lat_lng_object
       
+        @errors = []
         @interventions_localisations_to_marker.each do 
           |intervention, index|
           if intervention[:position] == localisation_current_adhérent
