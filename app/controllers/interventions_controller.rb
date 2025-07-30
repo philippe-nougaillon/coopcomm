@@ -343,12 +343,15 @@ class InterventionsController < ApplicationController
 
   def carte_interventions
 
-    # Si c'es un adhérent, on va chercher toutes les interventions du jour, sans distinction du rôle pour pouvoir trier par outils après.
+    # Si c'est un adhérent, on va chercher toutes les interventions du jour, sans distinction du rôle pour pouvoir trier par outils après.
     if current_user.adhérent?
       @interventions = current_user.organisation.interventions.ordered
     else
       @interventions = Intervention.by_role_for(current_user)
     end
+
+    # Pour que la carte ne plante pas (il faut une position d'un adhérent)
+    @interventions = @interventions.where.not(adherent_id: nil)
 
     if params[:date].blank?
       params[:date] = DateTime.now
