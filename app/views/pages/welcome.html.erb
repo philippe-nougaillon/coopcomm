@@ -176,7 +176,7 @@
           <div class="border-2 rounded-lg shadow-sm pt-4 px-4 lg:px-8 pb-8 text-start max-w-96">
             <p class="text-primary font-semibold mb-2">ORGANISATION FLUIDE</p>
             <p>
-              Le manager planifie l'intervention, l'associe à un agent et à une date, et envoie la mission via la plateforme.
+              Le manager planifie l'intervention, l'associe à un agent, à une date, et à un matériel.
             </p>
           </div>
         </li>
@@ -191,7 +191,7 @@
           <div class="border-2 rounded-lg shadow-sm pt-4 px-4 lg:px-8 pb-8 text-start max-w-96">
             <p class="text-primary font-semibold mb-2">ACTION TERRAIN</p>
             <p>
-              L'agent consulte la mission, intervient sur site, ajoute si besoin des précisions ou des photos de son rapport numérique.
+              L'agent consulte la mission, intervient sur site, ajoute si besoin des précisions ou des photos dans son rapport numérique.
             </p>
           </div>
         </li>
@@ -199,14 +199,14 @@
       <div class="flex step-secondary">
         <div class="flex-1 self-center lg:pl-8 pr-8 h-min flex lg:justify-end">
           <p class="text-center font-semibold w-24 lg:w-80 mr-14 py-4 border-2 rounded-lg shadow-sm">
-            4. L'agent valide
+            4. L'adhérent valide
           </p>
         </div>
         <li data-content="" class="-ml-40 lg:-ml-20 flex-1 step step-secondary">
           <div class="border-2 rounded-lg shadow-sm pt-4 px-4 lg:px-8 pb-8 text-start max-w-96">
             <p class="text-primary font-semibold mb-2">FIN DE MISSION</p>
             <p>
-              L'agent clôture l'intervention via l'action "Terminer". L'adhérent reçoit automatiquement une notification avec tous les éléments de suivi.
+              L'agent clôture l'intervention via l'action "Terminer". L'adhérent reçoit automatiquement une notification avec tous les éléments de suivi pour valider ou refuser l'intervention.
             </p>
           </div>
         </li>
@@ -221,7 +221,7 @@
           <div class="border-2 rounded-lg shadow-sm pt-4 px-4 lg:px-8 pb-8 text-start max-w-96">
             <p class="text-primary font-semibold mb-2">PILOTAGE EN TEMPS RÉEL</p>
             <p>
-              Chaque action est enregistrée : temps passé, notes, commentaires, matériels utilisés... CoopComm consolide ces données pour un pilotage efficace.
+              Chaque action est auditée. Les détails des interventions (temps passé évalution, matériels utilisés...) sont consolidés dans la base de données. CoopComm consolide ces données pour un pilotage efficace.
             </p>
           </div>
         </li>
@@ -255,10 +255,10 @@
           <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
             construction
           </span>
-          Gestion Interventions
+          Interventions
         </h4>
         <p>
-          Une <b>demande d'intervention</b> est émise par l'adhérent à destination d'une équipe (espace vert, secrétariat, petite-enfance, etc...). L'équipe va ensuite <b>planifier</b> l'intervention en lui attribuant une date et un agent. Une fois l'intervention terminée, l'agent change l'état par l'action 'Terminer', ce qui provoque l'envoi d'une notification à destination de l'adhérent demander, qui devra la valider ou la refuser, et lui attribuer une note et donner son avis.
+          Une <b>demande d'intervention</b> est émise par l'adhérent à destination d'une équipe (espace vert, secrétariat, petite-enfance, etc...). L'équipe va ensuite <b>planifier</b> l'intervention en lui attribuant une date et un agent. Une fois l'intervention terminée, l'adhérent devra la valider ou la refuser, et lui attribuer une note et donner son avis.
         </p>
       </div>
 
@@ -267,7 +267,7 @@
           <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
             engineeringgroupperson
           </span>
-          Gestion Agents, Équipes et Managers
+          Agents, Équipes et Managers
         </h4>
         <p>
           Les agents et équipes ont un accès à la plateforme limité aux données relatives à leurs interventions. Quant aux managers, ils disposent d'un accès complet aux données de leur organisation.
@@ -279,7 +279,7 @@
           <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
             location_city
           </span>
-          Gestion Adhérents
+          Adhérents
         </h4>
         <p>
           Les adhérents ont un accès à la plateforme limité aux données relatives à leurs demande d'interventions.
@@ -355,7 +355,7 @@
           Pointage par QR Code
         </h4>
         <p>
-          Pour les interventions récurrentes, il suffit de créer une intervention modèle et d'imprimer son QR Code, qui pourra être ensuite flashé afin de signifier le début de l'intervention.
+          Pour les <b>interventions récurrentes</b>, il suffit de créer une intervention modèle et d'imprimer son QR Code, qui pourra être ensuite flashé afin de signifier le début de l'intervention.
           L'adhérent en sera automatiquement notifié. Une seconde utilisation du QR Code marquera la fin de l'intervention.
         </p>
       </div>
@@ -368,7 +368,7 @@
           Messagerie instantanée
         </h4>
         <p>
-          Un espace de communication instantanée permet aux managers de discuter directement avec les agents. Un système de modération du vocabulaire inapproprié veillera à la bonne qualité des discussions.
+          Un <b>espace de communication</b> instantanée permet aux managers de discuter directement avec les agents. Un <b>système de modération</b> du vocabulaire inapproprié veillera à la bonne qualité des discussions.
         </p>
       </div>
 
@@ -380,7 +380,7 @@
           Notifications et alertes
         </h4>
         <p>
-          Certains changements d'état provoquent l'envoi d'email ou de message WhatsApp afin d'en informer toutes les parties prenantes.
+          Certains changements d'état provoquent l'envoi d'email ou de message <b>WhatsApp</b> afin d'en informer toutes les parties prenantes.
         </p>
       </div>
 
@@ -593,21 +593,6 @@
   </div>
 
 -->
-  <div class="my-24">
-
-    <h2 class="text-2xl lg:text-3xl font-medium text-base-content">
-      Conception et développement
-    </h2>
-
-    <div class="divider mb-12"></div>
-    <div class="w-full my-4">
-      <p>
-        Cette application Web a été conçue et développée, en Ruby on Rails, par nos soins.
-        <br>
-        Le code source est édité sous licence Open Source (GLP GNU v3).
-      </p>
-    </div>
-  </div>
 
   <div class="my-24">
 
