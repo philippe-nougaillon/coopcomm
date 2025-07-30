@@ -163,6 +163,12 @@ class User < ApplicationRecord
     self.localisation.gsub(/(.*?), (.*)/) { "[#{$2}, #{$1}]" }
   end
 
+  def localisation_to_lat_lng_object
+    # Sépare et nettoie la chaine localisation en latitude, longitude pour créer un objet contenant les coordonnées.
+    lat, lng = self.localisation.split(',').map(&:strip).map(&:to_f)
+    { lat: lat, lng: lng }
+  end
+
   def nb_bad_words
     nb_bad_words = 0
     Notification.where(from_id: self.id).each do |notification|
