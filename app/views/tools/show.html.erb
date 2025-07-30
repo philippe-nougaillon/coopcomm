@@ -1,5 +1,5 @@
 <div class="mx-auto lg:w-2/3 w-full">
-  <div class="flex flex-wrap items-start justify-between items-center min-h-12 sm:min-h-16">
+  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
     <h1 class="text-2xl sm:text-4xl text-primary font-bold">
       <% if @tool.icon_name.present? %>
         <span class="material-symbols-outlined text-primary">
@@ -68,13 +68,21 @@
 
 
   <div class="flex flex-wrap gap-2 mt-8">
-    <%= link_to "Modifier", edit_tool_path(@tool), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
-    <%= button_to tool_path(@tool), method: :delete, id: "supprimer_outil", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, class: "rounded-lg py-3 px-5 bg-gray-100 font-medium", 'data-testid': "Supprimer l'outil", disabled: @tool.interventions.any? do %>
-      <span class="material-symbols-outlined">
-        delete
-      </span>
+    <%= link_to "Modifier", edit_tool_path(@tool), class: "btn" %>
+    <% if @tool.interventions.any? %>
+      <div class="btn btn-ghost cursor-not-allowed" title="Suppression impossible, l'outil est utilisé dans des interventions">
+        <span class="material-symbols-outlined text-gray-500">
+          delete
+        </span>
+      </div>
+    <% else %>
+      <%= button_to tool_path(@tool), method: :delete, id: "supprimer_outil", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, class: "btn", 'data-testid': "Supprimer l'outil" do %>
+        <span class="material-symbols-outlined">
+          delete
+        </span>
+      <% end %>
     <% end %>
-    <%= link_to "Retour", tools_path, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
+    <%= link_to "Retour", tools_path, class: "btn" %>
   </div>
 
   <h2 class="text-2xl text-secondary mt-8">

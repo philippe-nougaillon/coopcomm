@@ -1,5 +1,5 @@
 <div class="mx-auto w-full max-w-md">
-  <div class="flex flex-wrap justify-between items-center h-12 sm:h-16 mb-4">
+  <div class="flex flex-wrap justify-between items-center min-h12 sm:min-h-16 mb-4">
     <h1 class="text-primary font-bold text-4xl">
       <%= page_title!('Modifier cet utilisateur') %>
     </h1>
@@ -8,7 +8,7 @@
   <%= render "form", user: @user %>
 
   <div class="flex flex-wrap gap-2 mt-2">
-    <%= link_to "Voir", @user, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
-    <%= link_to "Annuler", users_path, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
+    <%= link_to "Voir", @user, class: "btn" %>
+    <%= link_to "Annuler", users_path, class: "btn" %>
   </div>
 </div>

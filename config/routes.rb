@@ -69,6 +69,9 @@ Rails.application.routes.draw do
     get :assistant, to: 'pages#assistant', as: :assistant
     get :mentions_legales, to: 'pages#mentions_legales', as: :mentions_legales
     get :dashboard, to: 'pages#dashboard', as: :dashboard
+    get :solution, to: 'pages#solution', as: :solution
+    get :tarifs, to: 'pages#tarifs', as: :tarifs
+    get :contact, to: 'pages#contact', as: :contact
   end
 
   resources :documents, only: %i[] do

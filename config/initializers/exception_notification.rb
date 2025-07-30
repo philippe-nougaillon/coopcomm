@@ -20,8 +20,8 @@ ExceptionNotification.configure do |config|
 
   # Email notifier sends notifications by email.
   config.add_notifier :email, {
-    email_prefix: '[COOPCOM ERROR] ',
-    sender_address: %{"COOPCOM Notifier" <contact@philnoug.com>},
+    email_prefix: '[COOPCOMM ERROR] ',
+    sender_address: %{"COOPCOMM Notifier" <contact@philnoug.com>},
     exception_recipients: %w{philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, alexandre.meunier@aikku.eu}
   }
 

@@ -1,5 +1,5 @@
 <div class="mx-auto w-full max-w-md">
-  <div class="flex flex-wrap justify-between items-center h-12 sm:h-16 mb-4">
+  <div class="flex flex-wrap justify-between items-center min-h12 sm:min-h-16 mb-4">
     <h1 class="text-primary font-bold text-4xl"><%= page_title!('Nouvel utilisateur') %></h1>
   </div>
 
@@ -73,9 +73,9 @@
       <%= form.text_area :memo, class: 'textarea w-full' %>
     </div>
 
-    <div class="inline">
-      <%= form.submit "Créer un utilisateur", id:"créer_utilisateur", class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer mt-4" %>
-      <%= link_to "Annuler", users_path, class: "md:ml-2 rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium mt-4" %>
+    <div class="inline mt-4">
+      <%= form.submit "Créer un utilisateur", id:"créer_utilisateur", class: "btn btn-primary" %>
+      <%= link_to "Annuler", users_path, class: "btn md:ml-2" %>
     </div>
   <% end %>
 </div>
