@@ -1,3 +1,12 @@
+GIT
+  remote: https://github.com/kmcphillips/exception_notification.git
+  revision: 4787f7c5f502f3f8299f344e470e491c7d813b32
+  branch: main
+  specs:
+    exception_notification (5.0.1)
+      actionmailer (>= 7.1, < 9)
+      activesupport (>= 7.1, < 9)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -154,9 +163,6 @@ GEM
       tzinfo
     event_stream_parser (1.0.0)
     eventmachine (1.2.7)
-    exception_notification (4.6.0)
-      actionmailer (>= 5.2, < 9)
-      activesupport (>= 5.2, < 9)
     faraday (2.13.1)
       faraday-net_http (>= 2.0, < 3.5)
       json
@@ -548,7 +554,7 @@ DEPENDENCIES
   discard (~> 1.4)
   dotenv
   dry-events (~> 1.0)
-  exception_notification (~> 4.5)
+  exception_notification!
   friendly_id (~> 5.5)
   guard
   guard-livereload

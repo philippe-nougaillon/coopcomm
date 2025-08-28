@@ -87,7 +87,7 @@ gem "audited", "~> 5.6"
 
 gem "mailgun-ruby", "~> 1.2"
 
-gem "exception_notification", "~> 4.5"
+gem 'exception_notification', github: "kmcphillips/exception_notification", branch: "main"
 
 gem "spreadsheet", "~> 1.3"
 
