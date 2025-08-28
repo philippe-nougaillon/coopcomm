@@ -234,6 +234,17 @@ class PagesController < ApplicationController
   def contact
   end
 
+  def home
+    hour = Time.now.hour
+    if hour < 7 || hour > 19
+      base_hour = 22
+    else
+      base_hour = ((hour / 2) * 2).clamp(8, 18)
+    end
+    @banner_image_name = "banner/banner_#{base_hour}h"
+    @banner_background_color = base_hour == 22 ? '#2e3d58' : '#769368'
+  end
+
   private
 
   def is_user_authorized

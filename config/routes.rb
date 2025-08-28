@@ -72,6 +72,7 @@ Rails.application.routes.draw do
     get :solution, to: 'pages#solution', as: :solution
     get :tarifs, to: 'pages#tarifs', as: :tarifs
     get :contact, to: 'pages#contact', as: :contact
+    get :home, to: 'pages#home', as: :home
   end
 
   resources :documents, only: %i[] do
