@@ -243,6 +243,9 @@ class PagesController < ApplicationController
     end
     @banner_image_name = "banner/banner_#{base_hour}h"
     @banner_background_color = base_hour == 22 ? '#2e3d58' : '#769368'
+
+    @interventions = Intervention.by_role_for(current_user).first(2)
+    @notifications = current_user.notifications.first(3)
   end
 
   private

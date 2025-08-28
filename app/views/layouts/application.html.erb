@@ -36,9 +36,16 @@
     <% else %>
       <%= render 'partials/navbar_homepage' %>
     <% end %>
-    <main class="min-h-screen mx-auto px-4 2xl:px-8 py-4 pb-24 <%= user_signed_in? ? 'md:pt-8 lg:pt-20' : 'pt-16 lg:pt-24' %>">
+    <main>
       <%= render 'partials/notification' %>
-      <%= yield %>
+      <% if params[:action] == 'home' %>
+        <div class="w-full mt-16" style="background-color: <%= @banner_background_color %>">
+          <%= image_tag @banner_image_name, class: "w-full h-36 object-none mb-6" %>
+        </div>
+      <% end %>
+      <div class="min-h-screen mx-auto px-4 2xl:px-8 py-4 pb-24 <%= user_signed_in? ? 'md:pt-8 lg:pt-20' : 'pt-16 lg:pt-24' %>">
+        <%= yield %>
+      </div>
     </main>
 
     <%= render 'partials/slim_select' %>

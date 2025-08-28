@@ -5,6 +5,13 @@
   <div class="flex-none">
     <ul class="menu w-full menu-horizontal flex-1 items-center py-0! px-0">
       <li>
+        <%= link_to home_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
+          <span class="material-symbols-outlined">
+            home
+          </span>
+        <% end %>
+      </li>
+      <li>
         <%= link_to interventions_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
           <span class="material-symbols-outlined">
             construction

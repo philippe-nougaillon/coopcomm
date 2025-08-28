@@ -1,7 +1,4 @@
-<div class="w-full" style="background-color: <%= @banner_background_color %>">
-  <%= image_tag @banner_image_name, class: "w-full h-36 object-none mb-12 -mt-4" %>
-</div>
-<div class="flex flex-wrap gap-8 lg:px-48">
+<div class="flex flex-wrap items-end gap-8 lg:px-48 -mt-20">
   <div class="flex-8 w-full">
     <h1 class="text-3xl font-black mb-10">
       <%= page_title!("Bonjour") %>,
@@ -9,26 +6,59 @@
     </h1>
   </div>
   <div class="flex-5 w-max">
-    <h2 class="text-lg mb-10">Nous sommes le <%= l(Date.today+4.months, format: :custom) %></h2>
+    <h2 class="text-lg mb-10">Nous sommes le <%= l(Date.today, format: :custom) %></h2>
   </div>
 </div>
 <div class="flex flex-wrap gap-8 lg:px-48">
   <div class="flex-8 w-full">
     <div class="border shadow-sm p-4 rounded-2xl mb-8">
-      <h2 class="font-black text-lg mb-8">En attente de votre action</h2>
-      <div class="px-2">
-        zoeif
+      <h2 class="font-black text-lg mb-6">Actions en attente</h2>
+      <div class="flex flex-col gap-6">
+        <% @interventions.each do |intervention| %>
+          <div class="flex items-center gap-4 px-2">
+            <span class="material-symbols-outlined text-secondary">
+              construction
+            </span>
+            <div class="flex flex-col gap-1">
+              <b><%= intervention.description %></b>
+              <%= time_ago_in_words(intervention.updated_at)%>
+              <div class="flex gap-2">
+                <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'hover:text-primary hover:underline', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? %>
+                <%= link_to 'Valider', valider_intervention_path(intervention), class: 'hover:text-success hover:underline', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
+                <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'hover:text-error hover:underline', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+        <%= link_to 'Voir toutes actions en attente', interventions_path, class: 'text-primary' %>
       </div>
     </div>
     <div class="border shadow-sm p-4 rounded-2xl">
-      <h2 class="font-black text-lg mb-8">Votre équipe</h2>
-      <div class="border px-2 py-4">zoeif</div>
+      <h2 class="font-black text-lg mb-8">Messages de votre équipe</h2>
+      <% @notifications.each do |notification| %>
+        <% user = User.find(notification.from_id) %>
+        <div class="flex items-center gap-4 border px-4 py-4">
+          <span class="material-symbols-outlined text-primary">
+            chat
+          </span>
+          <div>
+            <b><%= notification.moderation %></b>
+            <div>
+              <small>
+                il y a <%= time_ago_in_words notification.created_at %>
+              </small>
+              -
+              <%= user.nom_prenom_role %> 
+            </div>
+          </div>
+        </div>
+      <% end %>
     </div>
   </div>
   <div class="flex-5 w-full">
 
-    <div class="border shadow-sm p-4 rounded-2xl mb-8 ">
-      <h2 class="font-black text-lg mb-8">Actions rapides</h2>
+    <div class="border shadow-sm p-4 pb-10 rounded-2xl">
+      <h2 class="font-black text-lg mb-6">Actions rapides</h2>
       <div class="flex flex-col gap-4">
         <%= link_to 'Créer une Intervention', new_intervention_path, class: 'btn btn-outline rounded-full w-fit px-6' %>
         <%= link_to 'Ajouter un nouveau Matériel', new_tool_path, class: 'btn btn-outline rounded-full w-fit px-6' %>
