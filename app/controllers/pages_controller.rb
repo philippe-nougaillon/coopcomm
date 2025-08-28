@@ -241,7 +241,7 @@ class PagesController < ApplicationController
     else
       base_hour = ((hour / 2) * 2).clamp(8, 18)
     end
-    @banner_image_name = "banner/banner_#{base_hour}h"
+    @banner_image_name = "banner/banner_#{base_hour}h.png"
     @banner_background_color = base_hour == 22 ? '#2e3d58' : '#769368'
 
     @interventions = Intervention.by_role_for(current_user).first(2)
