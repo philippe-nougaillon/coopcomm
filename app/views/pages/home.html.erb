@@ -25,22 +25,9 @@
     <div class="border shadow-sm p-4 rounded-2xl">
       <h2 class="font-black text-lg mb-8">Messages de votre équipe</h2>
       <% @notifications.each do |notification| %>
-        <% user = User.find(notification.from_id) %>
-        <div class="flex items-center gap-4 border px-4 py-4">
-          <span class="material-symbols-outlined text-primary">
-            chat
-          </span>
-          <div>
-            <b><%= notification.moderation %></b>
-            <div>
-              <small>
-                il y a <%= time_ago_in_words notification.created_at %>
-              </small>
-              -
-              <%= user.nom_prenom_role %> 
-            </div>
-          </div>
-        </div>
+        <% cache notification do %>
+          <%= render partial: 'notification', locals: {notification: }%>
+        <% end %>
       <% end %>
     </div>
   </div>

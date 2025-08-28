@@ -141,3 +141,5 @@ gem "sitemap_generator", "~> 6.3"
 gem "meta-tags", "~> 2.22"
 
 gem "page_title_helper", "~> 9.1"
+
+gem "solid_cache", "~> 1.0"
