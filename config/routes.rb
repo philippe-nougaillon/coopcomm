@@ -10,7 +10,7 @@ Rails.application.routes.draw do
 
   devise_scope :user do
     authenticated :user do
-      root 'interventions#index', as: :authenticated_root
+      root 'pages#home', as: :authenticated_root
     end
 
     unauthenticated do
@@ -95,6 +95,5 @@ Rails.application.routes.draw do
   get '/twilio/get_request', to: 'twilio#get_request'
   post '/twilio/get_request', to: 'twilio#get_request'
 
-  # Defines the root path route ("/")
-  root "interventions#index"
+  root "pages#home"
 end
