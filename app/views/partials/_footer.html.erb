@@ -19,6 +19,18 @@
         R.C.S : Nanterre (92)
       </p>
     </div>
+    <div class="text-2xl mt-8">
+      <%= form_with(model: @newsletter, id: "nouvelle_newsletter", method: "post", html: { autocomplete: "off", class: 'w-full flex justify-center', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
+        <div class="md:join" data-turbo="false">
+          <%= form.email_field :email, 'data-newsletter-target': 'email', class: 'input input-lg md:join-item w-full mb-4 md:mb-0 rounded-l-full', required: true, placeholder: "Entrez votre adresse email" %>
+          <%= form.submit "S'inscrire à la newsletter", 'data-action': 'click->newsletter#print_result', class: "btn btn-lg md:join-item md:rounded-r-full mx-auto" %>
+        </div>
+
+        <div>
+          <%= render "result_newsletter" %>
+        </div>
+      <% end %>
+    </div>
     <div>
       <%= image_tag 'New_logo.png', class: "h-24 w-auto", alt: "Logo Aikku SAS" %>
     </div>

@@ -23,10 +23,9 @@
   --color-primary: #50B9DF;
   --color-secondary: #6A219C;
   --color-base-content: #1E1B18;
-  --radius-field: 0.75rem;
+  --radius-field: 2rem;
   --radius-selector: 2rem;
   --radius-box: 2rem;
-  --depth: 1;
 }
 
 
