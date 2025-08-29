@@ -20,10 +20,10 @@
       </p>
     </div>
     <div class="text-2xl mt-8">
-      <%= form_with(model: @newsletter, id: "nouvelle_newsletter", method: "post", html: { autocomplete: "off", class: 'w-full flex justify-center', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
+      <%= form_with(model: @newsletter, id: "nouvelle_newsletter", method: "post", html: { autocomplete: "off", class: 'w-full flex flex-col justify-center', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
         <div class="md:join" data-turbo="false">
-          <%= form.email_field :email, 'data-newsletter-target': 'email', class: 'input input-lg md:join-item w-full mb-4 md:mb-0 rounded-l-full', required: true, placeholder: "Entrez votre adresse email" %>
-          <%= form.submit "S'inscrire à la newsletter", 'data-action': 'click->newsletter#print_result', class: "btn btn-lg md:join-item md:rounded-r-full mx-auto" %>
+          <%= form.email_field :email, 'data-newsletter-target': 'email', class: 'input input-lg md:join-item w-full mb-4 md:mb-0 rounded-full md:rounded-r-none', required: true, placeholder: "Entrez votre adresse email" %>
+          <%= form.submit "S'inscrire à la newsletter", 'data-action': 'click->newsletter#print_result', class: "btn btn-lg md:join-item rounded-full md:rounded-l-none mx-auto px-8 font-normal" %>
         </div>
 
         <div>

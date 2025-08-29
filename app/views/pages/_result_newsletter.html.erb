@@ -1,7 +1,7 @@
 <%= turbo_frame_tag "result_newsletter", data: { newsletter_target: "result" } do %>
   <% color = defined?(valid) && valid ? "green" : "red" %>
 
-  <p class="inline-block rounded p-3 mt-1 bg-<%= color %>-100" style="color: <%= color %>">
+  <p class="text-base inline-block rounded p-3 mt-1 bg-<%= color %>-100" style="color: <%= color %>">
     <%= result if defined?(result) %>
   </p>
 <% end %>
