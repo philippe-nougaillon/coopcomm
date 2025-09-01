@@ -47,6 +47,10 @@ gem "bootsnap", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+group :development, :production do
+  gem 'exception_notification', github: "kmcphillips/exception_notification", branch: "main"
+end
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ]
@@ -86,8 +90,6 @@ gem "view_component", "~> 3.12"
 gem "audited", "~> 5.6"
 
 gem "mailgun-ruby", "~> 1.2"
-
-gem 'exception_notification', github: "kmcphillips/exception_notification", branch: "main"
 
 gem "spreadsheet", "~> 1.3"
 
