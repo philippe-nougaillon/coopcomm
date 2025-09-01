@@ -91,7 +91,7 @@ class UsersController < ApplicationController
 
   # DELETE /users/1 or /users/1.json
   def destroy
-    @user.destroy!
+    @user.discard
 
     respond_to do |format|
       format.html { redirect_to users_url, notice: "Utilisateur supprimé avec succès." }

@@ -9,7 +9,7 @@
         il y a <%= time_ago_in_words notification.created_at %>
       </small>
       -
-      <%= User.find(notification.from_id).nom_prenom_role %> 
+      <%= User.with_discarded.find_by(notification.from_id)&.nom_prenom_role || "Message automatique" %>
     </div>
   </div>
 </div>

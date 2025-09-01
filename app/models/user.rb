@@ -2,6 +2,8 @@ class User < ApplicationRecord
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
 
+  include Discard::Model
+
   audited except: :notifications_last_seen_at
 
   validates :nom, :prénom, :email, presence: true
@@ -51,6 +53,7 @@ class User < ApplicationRecord
     Ménage: 5
   }
 
+  default_scope -> { kept }
   scope :ordered, -> { order(:nom) }
 
   def self.grouped_agents(users)
