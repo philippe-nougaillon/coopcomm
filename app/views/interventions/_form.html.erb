@@ -122,7 +122,7 @@
                             %>
         </div>
         <div class="w-full sm:flex-1", data-verification-disponibilites-target = "formTools" >
-          <%= form.label :tool_ids, "Outils" %>
+          <%= form.label :tool_ids, "Matériel(s)" %>
           <%= form.select :tool_ids, 
             options_from_collection_for_select(@tools, 'id', 'name', intervention.tool_ids.presence || params[:tool_ids]), 
             {}, 
