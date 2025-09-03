@@ -22,7 +22,22 @@
     <div class="text-2xl mt-8">
       <%= form_with(model: @newsletter, id: "nouvelle_newsletter", method: "post", html: { autocomplete: "off", class: 'w-full flex flex-col justify-center', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
         <div class="md:join" data-turbo="false">
-          <%= form.email_field :email, 'data-newsletter-target': 'email', class: 'input input-lg md:join-item w-full mb-4 md:mb-0 rounded-full md:rounded-r-none', required: true, placeholder: "Entrez votre adresse email" %>
+          <label name="newsletter[email]" id="newsletter_email" class="input input-lg md:join-item w-full mb-4 md:mb-0 rounded-full md:rounded-r-none focus:border-none">
+            <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <g
+                stroke-linejoin="round"
+                stroke-linecap="round"
+                stroke-width="2.5"
+                fill="none"
+                stroke="currentColor"
+              >
+                <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+              </g>
+            </svg>
+            <input type="email" placeholder="Entrez votre adresse email" data-newsletter-target="email" required />
+          </label>
+
           <%= form.submit "S'inscrire à la newsletter", 'data-action': 'click->newsletter#print_result', class: "btn btn-lg md:join-item rounded-full md:rounded-l-none mx-auto px-8 font-normal" %>
         </div>
 
