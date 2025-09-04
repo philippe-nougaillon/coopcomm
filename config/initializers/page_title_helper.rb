@@ -1,1 +1,1 @@
-PageTitleHelper.options[:app] = 'Aikku Coopcomm v3'
+PageTitleHelper.options[:app] = 'CoopComm. v3'

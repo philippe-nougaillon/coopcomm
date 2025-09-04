@@ -1,4 +1,4 @@
-<footer class="-mb-24 border-t">
+<footer data-theme="aikku" class="-mb-24 border-t">
   <div class="flex flex-wrap items-center justify-between p-4 md:p-10 text-base-content gap-8">
     <div>
       <p class="opacity-50 mt-4">
@@ -14,15 +14,13 @@
         <br>
         FRANCE
         <br><br>
-        SIREN : 934 780 735
-        <br>
-        R.C.S : Nanterre (92)
+        SIREN : 934 780 735 R.C.S Nanterre (92)
       </p>
     </div>
     <div class="text-2xl mt-8">
       <%= form_with(model: @newsletter, id: "nouvelle_newsletter", method: "post", html: { autocomplete: "off", class: 'w-full flex flex-col justify-center', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
         <div class="md:join" data-turbo="false">
-          <label name="newsletter[email]" id="newsletter_email" class="input input-lg md:join-item w-full mb-4 md:mb-0 rounded-full md:rounded-r-none focus:border-none">
+          <label name="newsletter[email]" id="newsletter_email" class="input input-lg input-secondary md:join-item w-full mb-4 md:mb-0 rounded-full md:rounded-r-none focus:border-none">
             <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
               <g
                 stroke-linejoin="round"
@@ -38,7 +36,7 @@
             <input type="email" placeholder="Entrez votre adresse email" data-newsletter-target="email" required />
           </label>
 
-          <%= form.submit "S'inscrire à la newsletter", 'data-action': 'click->newsletter#print_result', class: "btn btn-lg md:join-item rounded-full md:rounded-l-none mx-auto px-8 font-normal" %>
+          <%= form.submit "S'inscrire à la newsletter", 'data-action': 'click->newsletter#print_result', class: "btn btn-lg btn-primary md:join-item rounded-full md:rounded-l-none mx-auto px-8 font-normal" %>
         </div>
 
         <div>
@@ -47,7 +45,9 @@
       <% end %>
     </div>
     <div>
-      <%= image_tag 'New_logo.png', class: "h-24 w-auto", alt: "Logo Aikku SAS" %>
+      <%= link_to "https://www.aikku.eu/fr" do %>
+        <%= image_tag 'New_logo.png', class: "h-24 w-auto", alt: "Logo Aikku SAS" %>
+      <% end %>
     </div>
   </div>
   <div class="footer md:footer-horizontal px-10 py-6 border-t bg-base-content text-neutral-content border-base-300">
@@ -68,7 +68,7 @@
         </span>
         <span>LinkedIn</span>
       <% end %>
-      <%= link_to "https://www.aikku.eu", target: "_blank", class: 'flex items-center gap-2' do %>
+      <%= link_to "https://www.aikku.eu/fr", target: "_blank", class: 'flex items-center gap-2' do %>
         <span class="material-symbols-outlined">
           open_in_new
         </span>
