@@ -1,4 +1,4 @@
-<%= form_with(model: user, class: "contents", html: { class: 'flex flex-col gap-2' }, data: { controller: 'nested-form', nested_form_wrapper_selector_value: '.nested-form-wrapper' }) do |form| %>
+<%= form_with(model: user, class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-2' }) do |form| %>
   <% if user.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
       <h2 class="font-black!">
@@ -23,22 +23,23 @@
     <%= form.text_field :prénom, class: 'input input-sm w-full', required: true %>
   </div>
 
-  <div data-controller="toggle-role-info" class="flex flex-wrap md:flex-nowrap gap-4 w-full">
+  <div data-controller="toggle-role-info" class="flex flex-wrap md:flex-nowrap gap-2 w-full">
     <div>
       <%= form.label :rôle, "Rôle" %>
       <span data-action="change->toggle-role-info#change">
-        <%= form.select :rôle, options_for_select(User.rôles.keys, @user.rôle), {}, class: 'select select-sm w-full', data: { 'toggle-role-info-target': 'role' } %>
+        <%= form.select :rôle, options_for_select(User.rôles.keys, user.rôle), {}, class: 'select select-sm w-full', data: { 'toggle-role-info-target': 'role' } %>
       </span>
     </div>
 
     <div data-toggle-role-info-target='service' class="flex-1">
       <%= form.label :service, "Service" %>
-      <%= form.select :service, options_for_select(User.services.keys, @user.service), {include_blank: true}, class: 'select select-sm w-full' %>
+      <%= form.select :service, options_for_select(User.services.keys, user.service), {include_blank: true}, class: 'select select-sm w-full' %>
     </div>
 
     <div data-toggle-role-info-target="localisation" class="flex-1">
+      <%# ATTENTION : si on change le nombre d'éléments dans la div avec la target localisation, il faut adapter le stimulus en conséquence. Sinon le required du champ localisation sera présent quel que soit le rôle attribué %>
       <%= form.label :localisation, "Localisation" %>
-      <%= form.text_field :localisation, class: 'input select-sm w-full', placeholder: 'Tel que copié de Google Maps' %>
+      <%= form.text_field :localisation, class: 'input select-sm w-full', placeholder: 'Tel que copié de Google Maps', required: true %>
     </div>
   </div>
 
@@ -55,13 +56,18 @@
   <% if user.new_record? %>
     <div class="w-full">
       <%= form.label :password, style: "display: block" %>
-      <%= form.password_field :password, class: 'input input-sm w-full' %>
+      <%= form.password_field :password, class: 'input input-sm w-full', required: true %>
     </div>
     <div class="w-full">
       <%= form.label :password_confirmation, style: "display: block" %>
-      <%= form.password_field :password_confirmation, class: 'input input-sm w-full' %>
+      <%= form.password_field :password_confirmation, class: 'input input-sm w-full', required: true %>
     </div>
   <% end %>
+
+  <div class="w-full">
+    <%= form.label :téléphone, "Téléphone", style: "display: block" %>
+    <%= form.text_field :téléphone, class: 'input input-sm w-full' %>
+  </div>
 
   <div class="w-full">
     <%= form.label :memo, "Mémo", style: "display: block" %>
