@@ -6,14 +6,6 @@ class User < ApplicationRecord
 
   audited except: :notifications_last_seen_at
 
-  validates :nom, :prénom, :email, presence: true
-  validates_uniqueness_of :email
-  validates :localisation, presence: true, if: -> { rôle == "adhérent" }
-  validates :localisation, format: {
-    with: /\A\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*\z/,
-    message: "doit être dans ce format : 123.123, 432.120398"
-  }, allow_blank: true
-
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :rememberable, :timeoutable 
   devise :database_authenticatable,
@@ -52,6 +44,14 @@ class User < ApplicationRecord
     Périscolaire: 4,
     Ménage: 5
   }
+
+  validates :nom, :prénom, :email, presence: true
+  validates_uniqueness_of :email
+  validates :localisation, presence: true, if: -> { rôle == "adhérent" }
+  validates :localisation, format: {
+    with: /\A\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*\z/,
+    message: "doit être dans ce format : 123.123, 432.120398"
+  }, allow_blank: true
 
   default_scope -> { kept }
   scope :ordered, -> { order(:nom) }
