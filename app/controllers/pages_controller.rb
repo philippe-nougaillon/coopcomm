@@ -236,13 +236,15 @@ class PagesController < ApplicationController
 
   def home
     hour = Time.now.hour
+
     if hour < 7 || hour > 19
-      base_hour = 22
+      base_hour = 20
     else
       base_hour = ((hour / 2) * 2).clamp(8, 18)
     end
+
     @banner_image_name = "banner/banner_#{base_hour}h.png"
-    @banner_background_color = base_hour == 22 ? '#2e3d58' : '#769368'
+    @banner_background_color = BACKGROUND_COLORS[base_hour]
 
     @interventions = Intervention.by_role_for(current_user).first(2)
     @notifications = current_user.notifications.first(3)

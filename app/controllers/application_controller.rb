@@ -9,6 +9,16 @@ class ApplicationController < ActionController::Base
 
   helper_method :sort_column, :sort_direction
 
+  BACKGROUND_COLORS = {
+    8  => "#c7c375",
+    10 => "#d7d385",
+    12 => "#fbf098",
+    14 => "#a1ab6f",
+    16 => "#eca95c",
+    18 => "#b7726c",
+    20 => '#2e3d58'
+  }
+
   private
 
   def prepare_exception_notifier
