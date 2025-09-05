@@ -4,6 +4,21 @@
       <%= user.avatar %>
     </span>
   </td>
+  <td>
+    <% if user.profile_picture.attached? %>
+      <div class="avatar">
+        <div class="w-8 rounded-full">
+          <%= image_tag(user.profile_picture) %>
+        </div>
+      </div>
+    <% else %>
+      <div class="avatar avatar-placeholder">
+        <div class="bg-neutral text-neutral-content w-8 rounded-full">
+          <span class="text-xs"><%= user.initiales %></span>
+        </div>
+      </div>
+    <% end %>
+  </td>
   <td class="text-lg sm:text-2xl text-primary">
     <%= link_to user.nom_prénom, user, class: 'hover:underline hover:text-base-content' %>
   </td>

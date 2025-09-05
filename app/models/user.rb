@@ -16,6 +16,8 @@ class User < ApplicationRecord
         #  :omniauthable,
         #  omniauth_providers: [:google_oauth2]
 
+  has_one_attached :profile_picture
+
   belongs_to :organisation, optional: true
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
   has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention', dependent: :destroy
@@ -70,6 +72,10 @@ class User < ApplicationRecord
 
   def nom_prenom_role
     "#{self.nom_prénom} (#{self.rôle.upcase})"
+  end
+
+  def initiales
+    "#{self.nom.first.upcase}#{self.prénom.first.upcase}"
   end
 
   def super_admin?
