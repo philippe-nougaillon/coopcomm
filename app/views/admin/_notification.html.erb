@@ -1,18 +1,31 @@
 <% message_out = (current_user.id == notification.from_id) %>
+<% user = User.find(message_out ? notification.to_id : notification.from_id) %>
 <div id="<%= dom_id notification %>" class="chat <%= message_out ? 'chat-end' : 'chat-start' %> mt-2">
   <div class="chat-bubble <%= message_out ? 'chat-bubble-primary' : 'chat-bubble-accent' %> ">
     <span><%# @new_notification_ids.include?(notification.id) %></span>
-    <p>
-      <% if message_out
-        user = User.find(notification.to_id)
-      else
-        user = User.find(notification.from_id)
-      end %>
-      <%= user.nom_prenom_role %> 
-    </p>
-    <small>
-      <i>il y a <%= time_ago_in_words notification.created_at %></i>
-    </small>
+    <div class="flex items-center gap-2">
+      <% if user.profile_picture.attached? %>
+        <div class="avatar">
+          <div class="w-8 rounded-full">
+            <%= image_tag(user.profile_picture) %>
+          </div>
+        </div>
+      <% else %>
+        <div class="avatar avatar-placeholder">
+          <div class="bg-neutral text-neutral-content w-8 rounded-full">
+            <span class="text-xs"><%= user.initiales %></span>
+          </div>
+        </div>
+      <% end %>
+      <div>
+        <p>
+          <%= user.nom_prenom_role %> 
+        </p>
+        <small>
+          <i>il y a <%= time_ago_in_words notification.created_at %></i>
+        </small>
+      </div>
+    </div>
     <p class="mt-4 text-xl font-black">
       <%= notification.moderation %>
     </p>
