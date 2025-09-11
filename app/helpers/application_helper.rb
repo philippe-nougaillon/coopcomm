@@ -76,16 +76,12 @@ module ApplicationHelper
   end
 
   def audited_view_path(audit)
-    case audit.auditable_type
-    when "Intervention"
-      if Intervention.exists?(audit.auditable_id)
-        intervention_path(audit.auditable_id)
-      end
-    when "User"
-      if User.exists?(audit.auditable_id)
-        user_path(audit.auditable_id)
-      end
-    end
+    return if audit.auditable_type.blank? || !["Intervention", "Tool", "User", "WikiPage"].include?(audit.auditable_type) || audit.auditable_id.blank?
+
+    model = audit.auditable_type.constantize
+    record = model.find_by(id: audit.auditable_id)
+
+    record ? polymorphic_path(record) : nil
   end
 
   def sort_link(column, title = nil)
