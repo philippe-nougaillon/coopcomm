@@ -9,7 +9,7 @@
         <th><%= sort_link 'tools.marque', 'Marque' %></th>
         <% if params[:vue] == 'calendrier' %>
           <% (@date..@date_fin).each do |date| %>
-            <th class="h-12 px-2 py-6">
+            <th class="text-center <%= 'bg-yellow-100' if date == Date.today %>">
               <%= l(date, format: :calendar).humanize %>
             </th>
           <% end %>

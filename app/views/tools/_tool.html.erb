@@ -37,7 +37,7 @@
     </td>
   <% when 'calendrier' %>
     <% (@date..@date_fin).each do | date | %>
-      <td>
+      <td class="text-center <%= 'bg-yellow-100' if date == Date.today %>">
         <% interventions = tool.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
         <% interventions_matin = interventions.where("début_prévue < ?", Time.parse(date.to_s + " 13:00")) %>
         <% interventions_soir = interventions.where("fin_prévue > ?", Time.parse(date.to_s + " 13:00")) %>
