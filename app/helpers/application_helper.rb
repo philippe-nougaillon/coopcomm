@@ -95,7 +95,7 @@ module ApplicationHelper
     icon = column == sort_column ? icon : nil
     link_title = sort_direction == "asc" ? "Tri croissant" : "Tri décroissant"
 
-    link_to "<span>#{h title}</span><span class='material-symbols-outlined text-primary'>#{icon}</span>".html_safe, url_for(request.parameters.merge(column: column, direction: direction)), class: 'flex items-center'
+    link_to "<span>#{h title}</span><span class='material-symbols-outlined text-primary'>#{icon}</span>".html_safe, url_for(request.parameters.merge(column: column, direction: direction)), class: 'flex items-center', 'data-turbo': false
   end
 
 end
