@@ -39,7 +39,7 @@
     <main>
       <%= render 'partials/notification' %>
       <% if params[:action] == 'home' %>
-        <div class="w-full mt-16" style="background-color: <%= @banner_background_color %>">
+        <div class="w-full lg:mt-16" style="background-color: <%= @banner_background_color %>">
           <%= image_tag @banner_image_name, class: "w-full h-36 object-none mb-6" %>
         </div>
       <% end %>
