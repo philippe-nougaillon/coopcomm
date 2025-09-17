@@ -90,21 +90,23 @@ class InterventionsController < ApplicationController
 
   # GET /interventions/1 or /interventions/1.json
   def show
-    respond_to do |format|
-      format.html do
-        @audits = @intervention.audits.includes(:user).reorder(id: :desc)
-        @pagy, @audits = pagy(@audits, items: 10)
-      end
+    if stale?(@intervention)
+      respond_to do |format|
+        format.html do
+          @audits = @intervention.audits.includes(:user).reorder(id: :desc)
+          @pagy, @audits = pagy(@audits, items: 10)
+        end
 
-      format.pdf do
-        filename = "QRCode_Pointeuse_#{@intervention.description}"
-        pdf = InterventionPdf.new
-        pdf.pointeuse_qrcode(@intervention)
+        format.pdf do
+          filename = "QRCode_Pointeuse_#{@intervention.description}"
+          pdf = InterventionPdf.new
+          pdf.pointeuse_qrcode(@intervention)
 
-        send_data pdf.render,
-            filename: filename.concat('.pdf'),
-            type: 'application/pdf',
-            disposition: 'inline'
+          send_data pdf.render,
+              filename: filename.concat('.pdf'),
+              type: 'application/pdf',
+              disposition: 'inline'
+        end
       end
     end
   end
