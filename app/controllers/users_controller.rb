@@ -42,13 +42,15 @@ class UsersController < ApplicationController
 
   # GET /users/1 or /users/1.json
   def show
-    @absences = @user.absences.ordered
-    @audits = @user.own_and_associated_audits.reorder(id: :desc)
-    if @user.localisation
-      @lng = @user.localisation.split(',').last
-      @lat = @user.localisation.split(',').first
+    if stale?(@user)
+      @absences = @user.absences.ordered
+      @audits = @user.own_and_associated_audits.reorder(id: :desc)
+      if @user.localisation
+        @lng = @user.localisation.split(',').last
+        @lat = @user.localisation.split(',').first
+      end
+      @pagy, @audits = pagy(@audits, items: 10)
     end
-    @pagy, @audits = pagy(@audits, items: 10)
   end
 
   # GET /users/new
