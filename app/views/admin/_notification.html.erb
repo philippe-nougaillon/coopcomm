@@ -1,7 +1,7 @@
 <% message_out = (current_user.id == notification.from_id) %>
 <% user = User.find(message_out ? notification.to_id : notification.from_id) %>
 <div id="<%= dom_id notification %>" class="chat <%= message_out ? 'chat-end' : 'chat-start' %> mt-2">
-  <div class="chat-bubble <%= message_out ? 'chat-bubble-primary' : 'chat-bubble-accent' %> ">
+  <div class="chat-bubble <%= message_out ? '' : 'chat-bubble-info' %> ">
     <span><%# @new_notification_ids.include?(notification.id) %></span>
     <div class="flex items-center gap-2">
       <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>

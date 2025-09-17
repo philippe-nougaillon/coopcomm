@@ -35,7 +35,7 @@ class ToolsController < ApplicationController
       end
     end
     @tools = @tools.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
-    @pagy, @tools = pagy(@tools, items: 15)
+    @pagy, @tools = pagy(@tools, items: 10)
   end
 
   # GET /tools/1 or /tools/1.json

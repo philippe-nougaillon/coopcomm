@@ -128,7 +128,7 @@ class UsersController < ApplicationController
     @date_fin = @date + 10.day
 
     @agents = @agents.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
-    @pagy, @agents = pagy(@agents, items: 15)
+    @pagy, @agents = pagy(@agents, items: 10)
   end
 
   private

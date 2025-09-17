@@ -31,7 +31,7 @@
         <li>
           <%= link_to agent_calendrier_users_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:action] == 'agent_calendrier'}", title: "Voir la disponibilité des agents" do %>
             <span class="material-symbols-outlined">
-              person_apron
+              event_available
             </span>
           <% end %>
         </li>
@@ -144,7 +144,7 @@
   <% if policy(User).agent_calendrier? %>
     <%= link_to agent_calendrier_users_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:action] == 'agent_calendrier'}", title: "Voir la disponibilité des agents" do %>
       <span class="material-symbols-outlined">
-        person_apron
+        event_available
       </span>
     <% end %>
   <% end %>

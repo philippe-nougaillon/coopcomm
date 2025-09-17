@@ -1,16 +1,8 @@
 <tr id="" class="hover:bg-base-300">
-  <td class="text-center">
-    <% if agent.avatar %>
-      <span class="material-symbols-outlined text-success">
-        <%= agent.avatar %>
-      </span>
-    <% end %>
-  </td>
-
   <td>
     <%= render partial: 'partials/user_profile_picture', locals: {user: agent} %>
   </td>
-  <td class="text-lg sm:text-2xl text-primary">
+  <td class="text-lg sm:text-xl text-primary">
     <%= link_to agent, class: 'hover:underline hover:text-base-content' do %>
       <%= agent.nom_prénom %>
     <% end %>
