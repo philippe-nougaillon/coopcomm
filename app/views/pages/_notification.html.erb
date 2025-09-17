@@ -2,19 +2,7 @@
 <div class="flex items-center gap-4 border px-4 py-4">
   <div class="w-8">
     <% if user %>
-      <% if user.profile_picture.attached? %>
-        <div class="avatar">
-          <div class="w-8 rounded-full">
-            <%= image_tag(user.profile_picture) %>
-          </div>
-        </div>
-      <% else %>
-        <div class="avatar avatar-placeholder">
-          <div class="bg-neutral text-neutral-content w-8 rounded-full">
-            <span class="text-xs"><%= user.initiales %></span>
-          </div>
-        </div>
-      <% end %>
+      <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
     <% else %>
       <span class="material-symbols-outlined text-primary">
         chat

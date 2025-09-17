@@ -38,14 +38,12 @@
       <thead class="bg-slate-100">
         <tr>
           <th></th>
-          <th></th>
-          <th><%= sort_link 'users.nom', 'Nom Prénom ?' %></th>
-          <th>Absent ?</th>
-          <th><%= sort_link 'users.rôle', 'Rôle' %></th>
+          <th><%= sort_link 'users.nom', 'Nom' %></th>
+          <th colspan=2><%= sort_link 'users.rôle', 'Rôle' %></th>
           <th><%= sort_link 'users.service', 'Service' %></th>
           <th><%= sort_link 'users.email', 'Email' %></th>
+          <th>Absent ?</th>
           <th>Évaluation</th>
-          <th>Localisation</th>
           <th>Mémo</th>
         </tr>
       </thead>

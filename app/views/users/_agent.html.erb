@@ -7,8 +7,13 @@
     <% end %>
   </td>
 
+  <td>
+    <%= render partial: 'partials/user_profile_picture', locals: {user: agent} %>
+  </td>
   <td class="text-lg sm:text-2xl text-primary">
-    <%= link_to agent.nom_prénom, agent, class: 'hover:underline hover:text-base-content' %>
+    <%= link_to agent, class: 'hover:underline hover:text-base-content' do %>
+      <%= agent.nom_prénom %>
+    <% end %>
   </td>
 
   <td>

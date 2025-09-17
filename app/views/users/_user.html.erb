@@ -1,33 +1,14 @@
 <tr id="<%= dom_id user %>" class="hover:bg-base-300">
+  <td>
+    <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
+  </td>
+  <td class="text-lg sm:text-xl text-primary">
+    <%= link_to user.nom_prénom, user, class: 'hover:underline hover:text-base-content' %>
+  </td>
   <td class="text-center">
     <span class="material-symbols-outlined text-success">
       <%= user.avatar %>
     </span>
-  </td>
-  <td>
-    <% if user.profile_picture.attached? %>
-      <div class="avatar">
-        <div class="w-8 rounded-full">
-          <%= image_tag(user.profile_picture) %>
-        </div>
-      </div>
-    <% else %>
-      <div class="avatar avatar-placeholder">
-        <div class="bg-neutral text-neutral-content w-8 rounded-full">
-          <span class="text-xs"><%= user.initiales %></span>
-        </div>
-      </div>
-    <% end %>
-  </td>
-  <td class="text-lg sm:text-2xl text-primary">
-    <%= link_to user.nom_prénom, user, class: 'hover:underline hover:text-base-content' %>
-  </td>
-  <td>
-    <% if user.agent? && user.absent? %>
-      <span class="material-symbols-outlined cursor-help" title="Absent du <%= l user.current_absence.du %> au <%= l user.current_absence.au %>, motif : <%= user.current_absence.motif %>">
-        person_alert
-      </span>
-    <% end %>
   </td>
   <td class="text-success font-black">
     <%= user.rôle.upcase %>
@@ -35,12 +16,16 @@
   <td><%= user.service.try(:capitalize) %></td>
   <td><%= user.email %></td>
   <td>
-    <% if user.agent? %>
-      <%= "#{ number_with_precision(user.moyenne, precision: 2, strip_insignificant_zeros: true) } / 5" if user.moyenne %>
+    <% if user.agent? && user.absent? %>
+      <span class="material-symbols-outlined cursor-help" title="Absent du <%= l user.current_absence.du %> au <%= l user.current_absence.au %>, motif : <%= user.current_absence.motif %>">
+        person_alert
+      </span>
     <% end %>
   </td>
   <td>
-    <%= user.localisation %>
+    <% if user.agent? %>
+      <%= "#{ number_with_precision(user.moyenne, precision: 2, strip_insignificant_zeros: true) } / 5" if user.moyenne %>
+    <% end %>
   </td>
   <td><%= truncate(user.memo, length: 20) %></td>
 </tr>
