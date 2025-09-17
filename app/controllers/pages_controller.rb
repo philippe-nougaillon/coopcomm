@@ -247,7 +247,7 @@ class PagesController < ApplicationController
     @banner_background_color = BACKGROUND_COLORS[base_hour]
 
     @interventions = Intervention.by_role_for(current_user).first(2)
-    @notifications = current_user.notifications.first(3)
+    @notifications = current_user.notifications.ordered.first(3)
   end
 
   private
