@@ -1,31 +1,33 @@
-<tr id="<%= dom_id user %>" class="hover:bg-base-300">
-  <td>
-    <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
-  </td>
-  <td class="text-lg sm:text-xl text-primary">
-    <%= link_to user.nom_prénom, user, class: 'hover:underline hover:text-base-content' %>
-  </td>
-  <td class="text-center">
-    <span class="material-symbols-outlined text-success">
-      <%= user.avatar %>
-    </span>
-  </td>
-  <td class="text-success font-black">
-    <%= user.rôle.upcase %>
-  </td>
-  <td><%= user.service.try(:capitalize) %></td>
-  <td><%= user.email %></td>
-  <td>
-    <% if user.agent? && user.absent? %>
-      <span class="material-symbols-outlined cursor-help" title="Absent du <%= l user.current_absence.du %> au <%= l user.current_absence.au %>, motif : <%= user.current_absence.motif %>">
-        person_alert
+<% cache user do %>
+  <tr id="<%= dom_id user %>" class="hover:bg-base-300">
+    <td>
+      <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
+    </td>
+    <td class="text-lg sm:text-xl text-primary">
+      <%= link_to user.nom_prénom, user, class: 'hover:underline hover:text-base-content' %>
+    </td>
+    <td class="text-center">
+      <span class="material-symbols-outlined text-success">
+        <%= user.avatar %>
       </span>
-    <% end %>
-  </td>
-  <td>
-    <% if user.agent? %>
-      <%= "#{ number_with_precision(user.moyenne, precision: 2, strip_insignificant_zeros: true) } / 5" if user.moyenne %>
-    <% end %>
-  </td>
-  <td><%= truncate(user.memo, length: 20) %></td>
-</tr>
+    </td>
+    <td class="text-success font-black">
+      <%= user.rôle.upcase %>
+    </td>
+    <td><%= user.service.try(:capitalize) %></td>
+    <td><%= user.email %></td>
+    <td>
+      <% if user.agent? && user.absent? %>
+        <span class="material-symbols-outlined cursor-help" title="Absent du <%= l user.current_absence.du %> au <%= l user.current_absence.au %>, motif : <%= user.current_absence.motif %>">
+          person_alert
+        </span>
+      <% end %>
+    </td>
+    <td>
+      <% if user.agent? %>
+        <%= "#{ number_with_precision(user.moyenne, precision: 2, strip_insignificant_zeros: true) } / 5" if user.moyenne %>
+      <% end %>
+    </td>
+    <td><%= truncate(user.memo, length: 20) %></td>
+  </tr>
+<% end %>
