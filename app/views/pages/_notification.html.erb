@@ -1,7 +1,26 @@
+<% user = User.with_discarded.find_by(id: notification.from_id) %>
 <div class="flex items-center gap-4 border px-4 py-4">
-  <span class="material-symbols-outlined text-primary">
-    chat
-  </span>
+  <div class="w-8">
+    <% if user %>
+      <% if user.profile_picture.attached? %>
+        <div class="avatar">
+          <div class="w-8 rounded-full">
+            <%= image_tag(user.profile_picture) %>
+          </div>
+        </div>
+      <% else %>
+        <div class="avatar avatar-placeholder">
+          <div class="bg-neutral text-neutral-content w-8 rounded-full">
+            <span class="text-xs"><%= user.initiales %></span>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <span class="material-symbols-outlined text-primary">
+        chat
+      </span>
+    <% end %>
+  </div>
   <div>
     <b><%= notification.moderation %></b>
     <div>
@@ -9,7 +28,7 @@
         il y a <%= time_ago_in_words notification.created_at %>
       </small>
       -
-      <%= User.with_discarded.find_by(id: notification.from_id)&.nom_prenom_role || "Message automatique" %>
+      <%= user&.nom_prenom_role || "Message automatique" %>
     </div>
   </div>
 </div>
