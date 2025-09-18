@@ -42,18 +42,22 @@
   </div>
 
   <div class="flex flex-wrap gap-2 mt-8">
-    <%= link_to "Modifier", edit_tool_path(@tool), class: "btn" %>
-    <% if @tool.interventions.any? %>
-      <div class="btn cursor-not-allowed" title="Suppression impossible, l'outil est utilisé dans des interventions">
-        <span class="material-symbols-outlined text-gray-500">
-          delete
-        </span>
-      </div>
-    <% else %>
-      <%= button_to tool_path(@tool), method: :delete, id: "supprimer_outil", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, class: "btn", 'data-testid': "Supprimer l'outil" do %>
-        <span class="material-symbols-outlined">
-          delete
-        </span>
+    <% if policy(@tool).edit? %>
+      <%= link_to "Modifier", edit_tool_path(@tool), class: "btn" %>
+    <% end %>
+    <% if policy(@tool).destroy? %>
+      <% if @tool.interventions.any? %>
+        <div class="btn cursor-not-allowed" title="Suppression impossible, l'outil est utilisé dans des interventions">
+          <span class="material-symbols-outlined text-gray-500">
+            delete
+          </span>
+        </div>
+      <% else %>
+        <%= button_to tool_path(@tool), method: :delete, id: "supprimer_outil", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, class: "btn", 'data-testid': "Supprimer l'outil" do %>
+          <span class="material-symbols-outlined">
+            delete
+          </span>
+        <% end %>
       <% end %>
     <% end %>
     <%= link_to "Retour", tools_path, class: "btn" %>
