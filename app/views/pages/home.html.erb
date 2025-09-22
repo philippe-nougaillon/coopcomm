@@ -10,7 +10,7 @@
   </div>
 </div>
 <div class="flex flex-wrap gap-8 lg:px-48">
-  <div class="flex-8 w-full">
+  <div class="flex-1 sm:flex-8 w-full">
     <div class="border shadow-sm p-4 rounded-2xl mb-8">
       <h2 class="font-black text-lg mb-6">Actions en attente</h2>
       <div class="flex flex-col gap-6">
@@ -31,19 +31,19 @@
       <% end %>
     </div>
   </div>
-  <div class="flex-5 w-full">
+  <div class="flex-1 sm:flex-5 w-full">
 
     <div class="border shadow-sm p-4 pb-10 rounded-2xl">
       <h2 class="font-black text-lg mb-6">Actions rapides</h2>
       <div class="flex flex-col gap-4">
-        <%= link_to 'Créer une Intervention', new_intervention_path, class: 'btn btn-outline rounded-full w-fit px-6' %>
+        <%= link_to 'Créer une Intervention', new_intervention_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
         <% if current_user.manager? %>
-          <%= link_to 'Ajouter un nouveau Matériel', new_tool_path, class: 'btn btn-outline rounded-full w-fit px-6' %>
-          <%= link_to 'Ajouter un nouvel Utilisateur', new_user_path, class: 'btn btn-outline rounded-full w-fit px-6' %>
+          <%= link_to 'Ajouter un nouveau Matériel', new_tool_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
+          <%= link_to 'Ajouter un nouvel Utilisateur', new_user_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
         <% elsif current_user.adhérent? %>
-          <%= link_to 'Voir le tableau de bord', dashboard_path, class: 'btn btn-outline rounded-full w-fit px-6' %>
+          <%= link_to 'Voir le tableau de bord', dashboard_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
         <% end %>
-        <%= link_to 'Lancer une discussion', admin_messagerie_path, class: 'btn btn-outline rounded-full w-fit px-6' %>
+        <%= link_to 'Lancer une discussion', admin_messagerie_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
       </div>
     </div>
 

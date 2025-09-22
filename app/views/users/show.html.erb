@@ -78,7 +78,7 @@
         delete
       </span>
     <% end %>
-    <%= link_to "Retour", request.referrer, class: "btn" %>
+    <%= link_to "Retour", users_path, class: "btn" %>
   </div>
 
   <% if @user.adhérent? && @user.localisation %>
