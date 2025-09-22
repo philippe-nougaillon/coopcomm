@@ -126,17 +126,22 @@
 
 
 
-<div class="dock lg:hidden z-10 shadow-2xl">
+<div class="dock lg:hidden z-10 shadow-2xl h-20">
+  <%= link_to home_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:action] == 'home'}", title: "Page d'accueil" do %>
+    <span class="material-symbols-outlined">
+      cottage
+    </span>
+  <% end %>
   <%= link_to interventions_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
     <span class="material-symbols-outlined">
-      home
+      construction
     </span>
   <% end %>
 
   <% if policy(Tool).index? %>
     <%= link_to tools_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:controller] == 'tools'}", title: "Liste des outils" do %>
       <span class="material-symbols-outlined">
-        construction
+        front_loader
       </span>
     <% end %>
   <% end %>
@@ -204,7 +209,7 @@
     <% end %>
   <% end %>
 
-  <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?", testid: "fermer_session" }, title: "Fermer la session de #{current_user.email} (#{current_user.rôle})", class: "#{'hidden sm:flex' if current_user.manager?} text-secondary hover-active hover:shadow" do %>
+  <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?", testid: "fermer_session" }, title: "Fermer la session de #{current_user.email} (#{current_user.rôle})", class: "text-secondary hover-active hover:shadow" do %>
     <span class="material-symbols-outlined">
       logout
     </span>
