@@ -33,7 +33,7 @@
 
     <div data-toggle-role-info-target='service' class="flex-1">
       <%= form.label :service, "Service" %>
-      <%= form.select :service, options_for_select(User.services.keys, user.service), {include_blank: true}, class: 'select select-sm w-full' %>
+      <%= form.select :service, options_for_select(User.services.keys, user.service), {include_blank: true}, class: 'select select-sm w-full', required: true %>
     </div>
 
     <div data-toggle-role-info-target="localisation" class="flex-1">
