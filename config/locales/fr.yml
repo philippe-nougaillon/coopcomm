@@ -224,4 +224,5 @@ fr:
       default: "%d %B %Y %Hh %Mmin %Ss"
       long: "%A %d %B %Y %Hh%M"
       short: "%d %b %Hh%M"
+      custom: "%d %b %Y %Hh%M"
     pm: pm

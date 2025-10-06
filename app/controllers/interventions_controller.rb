@@ -7,6 +7,9 @@ class InterventionsController < ApplicationController
 
   # GET /interventions or /interventions.json
   def index
+    session[:vue] ||= 'normal'
+    params[:vue] ||= session[:vue]
+
     @interventions = Intervention.by_role_for(current_user)
     if params[:archives].present?
       @interventions = @interventions.where(workflow_state: 'archivé')
@@ -75,6 +78,13 @@ class InterventionsController < ApplicationController
     else
       session[:tags] = params[:tags] = []
     end
+
+
+    if params[:vue] == 'compact'
+      @interventions = @interventions.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
+    end
+
+    session[:vue] = params[:vue]
 
     respond_to do |format|
       format.html do
@@ -580,5 +590,17 @@ class InterventionsController < ApplicationController
         @intervention.workflow_state = 'attente'
       end
     end
+
+  def sortable_columns
+    ['interventions.description', 'interventions.commentaires', 'interventions.début_prévue', 'interventions.fin_prévue', 'interventions.temps_total', 'interventions.updated_at', 'interventions.workflow_state']
+  end
+
+  def sort_column
+    sortable_columns.include?(params[:column]) ? params[:column] : "interventions.updated_at"
+  end
+
+  def sort_direction
+    %w[asc desc].include?(params[:direction]) ? params[:direction] : "desc"
+  end
 
 end

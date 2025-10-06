@@ -83,8 +83,29 @@
           <%= select_tag :tool_ids, options_from_collection_for_select(@tools, 'id', 'name', params[:tool_ids]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()', multiple: true %>
         </div>
         <div class="flex-1">
+          <div class="w-full sm:w-fit">
+            <%= label_tag :vue %>
+            <br>
+            <div class="join">
+              <label class="btn btn-primary btn-outline btn-sm join-item <%= 'btn-active text-white!' if params[:vue] == 'normal' %>" for="btnradio1" title="Mode normal">
+                <span class="material-symbols-outlined">
+                  density_small
+                </span>
+              </label>
+              <%= radio_button_tag :vue, "normal", (params[:vue] == 'normal'), name: 'vue', id: 'btnradio1', autocomplete: 'off', onchange: 'this.form.submit()', class: 'hidden' %>
+
+              <%= radio_button_tag :vue, 'compact', (params[:vue] == 'compact'), name: 'vue', id: 'btnradio2', autocomplete: 'off', onchange: 'this.form.submit()', class: 'hidden' %>
+              <label class="btn btn-primary btn-outline btn-sm join-item <%= 'btn-active text-white!' if params[:vue] == 'compact' %>" for="btnradio2" title="Mode compact">
+                <span class="material-symbols-outlined">
+                  compress
+                </span>
+              </label>
+            </div>
+          </div>
         </div>
       </div>
+
+
 
       <div class="flex flex-wrap gap-1 w-full mt-4">
         <%= render TagCloudComponent.new(tags: @tags) %>
@@ -100,7 +121,12 @@
     <% else %>
       <%= turbo_stream_from "interventions_organisation_#{current_user.organisation.id}" %>
     <% end %>
-    <%= render @interventions %>
+
+    <% if params[:vue] == 'normal' %>
+      <%= render @interventions %>
+    <% else %>
+      <%= render partial: 'view_compact' %>
+    <% end %>
   </div>
 
   <div class="my-6">
