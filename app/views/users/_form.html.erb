@@ -51,7 +51,7 @@
 
     <div class="w-full">
       <%= form.label :profile_picture, "Photo de profil", style: "display: block" %>
-      <%= form.file_field :profile_picture, class: 'file-input file-input-sm w-full' %>
+      <%= form.file_field :profile_picture, accept: 'image/png,image/jpeg,image/avif,image/webp', class: 'file-input file-input-sm w-full' %>
     </div>
   </div>
 
