@@ -96,7 +96,7 @@
       </li>
       <% if policy(User).index? %>
         <li>
-          <%= link_to users_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'users' && params[:action] != 'agent_calendrier'}", title: "Liste des utilisateurs" do %>
+          <%= link_to users_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if (params[:controller] == 'users' && params[:action] != 'agent_calendrier') || params[:action] == 'create_new_user'}", title: "Liste des utilisateurs" do %>
             <span class="material-symbols-outlined">
               group
             </span>
@@ -202,7 +202,7 @@
   <% end %>
 
   <% if policy(User).index? %>
-    <%= link_to users_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:controller] == 'users' && params[:action] != 'agent_calendrier'}", title: "Liste des utilisateurs" do %>
+    <%= link_to users_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if (params[:controller] == 'users' && params[:action] != 'agent_calendrier') || params[:action] == 'create_new_user'}", title: "Liste des utilisateurs" do %>
       <span class="material-symbols-outlined">
         group
       </span>
