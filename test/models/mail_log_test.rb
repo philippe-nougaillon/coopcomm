@@ -1,7 +1,5 @@
 require "test_helper"
 
 class MailLogTest < ActiveSupport::TestCase
-  # test "the truth" do
-  #   assert true
-  # end
+  # Pas de tests à faire pour l'instant
 end
