@@ -91,6 +91,8 @@ class User < ApplicationRecord
       rating_per_star[i] = self.interventions.where(note: i, repeter: false).count
       sum += rating_per_star[i]
     end
+    # Si sum est à 0, sum devient 1 pour éviter une division par 0
+    sum = sum == 0 ? 1 : sum
     return (rating_per_star[rating].to_f / sum) * 100
   end
 
