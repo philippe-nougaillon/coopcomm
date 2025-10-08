@@ -81,7 +81,13 @@ class WikiPagesController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_wiki_page
-      @wiki_page = WikiPage.friendly.find(params[:id])
+      begin
+        @wiki_page = WikiPage.friendly.find(params[:id])
+      rescue
+        if @wiki_page.nil?
+          redirect_to root_path, alert: "Page wiki introuvable"
+        end
+      end
     end
 
     # Only allow a list of trusted parameters through.

@@ -1,79 +1,84 @@
-<div class="mx-auto lg:w-2/3 w-full">
-  <div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
-    <h1 class="text-2xl sm:text-4xl text-primary font-bold">
-      <%= page_title!(@user.nom_prénom) %>
-    </h1>
-  </div>
+<div class="mx-auto lg:w-2/3 w-full mt-8">
+  <% page_title!(@user.nom_prénom) %>
 
   <div class="flex flex-wrap justify-between gap-24">
-    <div>
-      <span class="material-symbols-outlined text-success">
-        <%= @user.avatar %>
-      </span>
-
-      <span class="text-success text-xl">
-        <%= @user.rôle.upcase %> 
-        <%= @user.service.try(:humanize) %> 
-      </span>
-
-      <p class="mb-4">
-        <b><%= @user.email %></b>
-      </p>
-
-      <% if @user.memo %>
-        <p class="mb-4">
-          <strong class="block text-slate-400 mb-1">Mémo</strong>
-          <%= @user.memo %>
+    <div class="flex-1 flex shadow rounded-lg">
+      <div class="flex flex-col items-center bg-indigo-100 w-48 py-8 rounded-l-lg">
+        <div class="avatar avatar-placeholder rounded-full">
+          <div class="w-24 bg-gray-100 rounded-full">
+            <% if @user.profile_picture.attached? %>
+              <%= image_tag(@user.profile_picture) %>
+            <% end %>
+          </div>
+        </div>
+        <p class="text-primary text-center text-lg font-bold mt-4">
+          <%= @user.nom_prénom %>
         </p>
-      <% end %>
-
-      <% if current_user.manager? %>
+        <span class="text-success text-center mt-4">
+          <%= @user.rôle.upcase %> 
+          <%= @user.service.try(:humanize) %> 
+        </span>
+      </div>
+      <div class="rounded-r-lg px-6 py-10">
         <p class="mb-4">
-          <strong class="block text-slate-400 mb-1">Nombre de censures</strong>
-          <%= @user.nb_bad_words %>
+          <strong class="block text-slate-400">Email</strong>
+          <%= @user.email %>
         </p>
+        <p class="mb-4">
+          <strong class="block text-slate-400">Téléphone</strong>
+          <%= @user.téléphone %>
+        </p>
+
+        <% if @user.memo %>
+          <p class="mt-4">
+            <strong class="block text-slate-400 mb-1">Mémo</strong>
+            <%= @user.memo %>
+          </p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="flex-1">
+      <% if @user.agent? %>
+        <div class="flex-1 mt-10">
+          <strong class="block text-slate-400 mb-1">Évaluation</strong>
+          <div class="flex justify-between w-32">
+            <% if @user.moyenne %>
+              <b>
+                <%= number_with_precision(@user.moyenne, precision: 2, strip_insignificant_zeros: true) %>
+                / 5
+              </b>
+            <% end %>
+            <%= pluralize(@user.total_rating, 'note') %>
+          </div>
+          <div class="flex flex-col-reverse">
+            <% (1..5).each do |i| %>
+              <div class="flex items-center">
+                <div class="flex w-36">
+                  <% i.times do %>
+                    <span class="material-symbols-outlined text-slate-400">
+                      star
+                    </span>
+                  <% end %>
+                </div>
+                <progress class="progress progress-primary w-56" value="<%= @user.star_count(i) %>" max="100"></progress>
+              </div>
+            <% end %>
+          </div>
+        </div>
       <% end %>
     </div>
 
-
-    <% if @user.agent? %>
-      <div>
-        <strong class="block text-slate-400 mb-1">Évaluation</strong>
-        <div class="flex justify-between w-32">
-          <% if @user.moyenne %>
-            <b>
-              <%= number_with_precision(@user.moyenne, precision: 2, strip_insignificant_zeros: true) %>
-              / 5
-            </b>
-          <% end %>
-          <%= pluralize(@user.total_rating, 'note') %>
-        </div>
-        <div class="flex flex-col-reverse">
-          <% (1..5).each do |i| %>
-            <div class="flex items-center">
-              <div class="flex w-36">
-                <% i.times do %>
-                  <span class="material-symbols-outlined text-primary">
-                    star
-                  </span>                
-                <% end %>
-              </div>
-              <progress class="progress progress-primary w-56" value="<%= @user.star_count(i) %>" max="100"></progress>
-            </div>
-          <% end %>
-        </div>
-      </div>
-    <% end %>
   </div>
 
-  <div class="flex flex-wrap gap-2 mt-2">
-    <%= link_to "Modifier", edit_user_path(@user), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
-    <%= button_to user_path(@user), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet utilisateur ?" }, class: "rounded-lg py-3 px-5 bg-gray-100 font-medium", 'data-testid': "Supprimer l'utilisateur" do %>
+  <div class="flex flex-wrap gap-2 mt-8">
+    <%= link_to "Modifier", edit_user_path(@user), class: "btn" %>
+    <%= button_to user_path(@user), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet utilisateur ?" }, class: "btn", 'data-testid': "Supprimer l'utilisateur" do %>
       <span class="material-symbols-outlined">
         delete
       </span>
     <% end %>
-    <%= link_to "Retour", request.referrer, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
+    <%= link_to "Retour", users_path, class: "btn" %>
   </div>
 
   <% if @user.adhérent? && @user.localisation %>

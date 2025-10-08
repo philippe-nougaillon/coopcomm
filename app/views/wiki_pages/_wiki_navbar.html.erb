@@ -11,9 +11,9 @@
   </div>
   <div class="drawer-side">
     <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-    <nav class="min-h-screen h-96 bg-base-100 shadow w-64 fixed top-0 -ml-4 overflow-y-auto flex flex-col justify-between">
+    <nav class="min-h-screen h-96 bg-base-100 shadow w-64 fixed top-0 -ml-4 2xl:-ml-8 overflow-y-auto flex flex-col justify-between">
       <div>
-        <div style="height: 60px"></div>
+        <div class="h-16 <%= 'lg:h-24' unless user_signed_in? %>"></div>
         <%= form_tag request.path, method: :get do %>
           <label class="input flex items-center py-2 px-0 border-x-0 rounded-none outline-0! hover:bg-base-200 active:bg-slate-200">
             <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', placeholder: 'Rechercher', class: 'w-24 border-none grow focus:ring-0 ml-2' %>

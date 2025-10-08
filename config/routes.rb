@@ -10,7 +10,7 @@ Rails.application.routes.draw do
 
   devise_scope :user do
     authenticated :user do
-      root 'interventions#index', as: :authenticated_root
+      root 'pages#home', as: :authenticated_root
     end
 
     unauthenticated do
@@ -51,6 +51,7 @@ Rails.application.routes.draw do
 
     collection do
       get :get_unavailable_elements
+      get :carte_interventions
     end
   end
 
@@ -68,6 +69,10 @@ Rails.application.routes.draw do
     get :assistant, to: 'pages#assistant', as: :assistant
     get :mentions_legales, to: 'pages#mentions_legales', as: :mentions_legales
     get :dashboard, to: 'pages#dashboard', as: :dashboard
+    get :solution, to: 'pages#solution', as: :solution
+    get :tarifs, to: 'pages#tarifs', as: :tarifs
+    get :contact, to: 'pages#contact', as: :contact
+    get :home, to: 'pages#home', as: :home
   end
 
   resources :documents, only: %i[] do
@@ -90,6 +95,5 @@ Rails.application.routes.draw do
   get '/twilio/get_request', to: 'twilio#get_request'
   post '/twilio/get_request', to: 'twilio#get_request'
 
-  # Defines the root path route ("/")
-  root "interventions#index"
+  root "pages#home"
 end

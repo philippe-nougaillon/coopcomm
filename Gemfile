@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-ruby "3.4.4"
+ruby "3.4.5"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.0"
@@ -87,7 +87,7 @@ gem "audited", "~> 5.6"
 
 gem "mailgun-ruby", "~> 1.2"
 
-gem "exception_notification", "~> 4.5"
+gem 'exception_notification', github: "kmcphillips/exception_notification", branch: "main"
 
 gem "spreadsheet", "~> 1.3"
 
@@ -141,3 +141,5 @@ gem "sitemap_generator", "~> 6.3"
 gem "meta-tags", "~> 2.22"
 
 gem "page_title_helper", "~> 9.1"
+
+gem "solid_cache", "~> 1.0"

@@ -1,6 +1,6 @@
 class PagesController < ApplicationController
-  before_action :is_user_authorized, except: %i[welcome mentions_legales]
-  skip_before_action :authenticate_user!, only: %i[welcome mentions_legales]
+  before_action :is_user_authorized, except: %i[welcome mentions_legales solution tarifs contact]
+  skip_before_action :authenticate_user!, only: %i[welcome mentions_legales solution tarifs contact]
 
   def assistant
 
@@ -223,6 +223,31 @@ class PagesController < ApplicationController
 
       @temps_total_par_service = current_user.interventions_adherent.joins(agent_interventions: :agent).group("users.service").sum(:temps_total)
     end
+  end
+
+  def solution
+  end
+
+  def tarifs
+  end
+
+  def contact
+  end
+
+  def home
+    hour = Time.now.hour
+
+    if hour < 7 || hour > 19
+      base_hour = 20
+    else
+      base_hour = ((hour / 2) * 2).clamp(8, 18)
+    end
+
+    @banner_image_name = "banner/banner_#{base_hour}h.png"
+    @banner_background_color = BACKGROUND_COLORS[base_hour]
+
+    @interventions = Intervention.by_role_for(current_user).first(2)
+    @notifications = current_user.notifications.ordered.first(3)
   end
 
   private

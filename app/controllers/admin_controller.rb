@@ -3,12 +3,11 @@ class AdminController < ApplicationController
 
   def audits
     if current_user.manager?
-      @organisation_audits = Audited::Audit.where(user_id: current_user.organisation.users.pluck(:id))
+      @audits = Audited::Audit.where(user_id: current_user.organisation.users.pluck(:id))
     else
-      @organisation_audits = Audited::Audit.where(user_id: current_user.id)
+      @audits = Audited::Audit.where(user_id: current_user.id)
     end
-    @audits = @organisation_audits.order("id DESC")
-    @types  = @organisation_audits.pluck(:auditable_type).uniq.sort
+    @types  = @audits.pluck(:auditable_type).uniq.sort
     @actions= %w[update create destroy]
     @users = current_user.organisation.users.ordered 
 
@@ -33,7 +32,7 @@ class AdminController < ApplicationController
     end
 
     @audits = @audits.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
-    @pagy, @audits = pagy(@audits, items: 20)
+    @pagy, @audits = pagy(@audits, items: 10)
   end
 
   def create_new_user
@@ -105,7 +104,7 @@ class AdminController < ApplicationController
   end
 
   def sort_direction
-    %w[asc desc].include?(params[:direction]) ? params[:direction] : "asc"
+    %w[asc desc].include?(params[:direction]) ? params[:direction] : "desc"
   end
 
 end

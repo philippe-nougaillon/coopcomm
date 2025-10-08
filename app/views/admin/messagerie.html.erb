@@ -1,19 +1,19 @@
-<div class="w-full h-screen mx-auto" style="overflow: hidden;">
-  <div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
-    <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Messagerie') %> de <%= current_user.nom_prénom %></h1>
+<div class="w-full mx-auto">
+  <div class="-mt-4 pt-8 pb-4 lg:pb-8 fixed z-100 bg-slate-50 flex flex-wrap justify-between items-center min-h-12 sm:min-h-16 w-full">
+    <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Votre Messagerie') %></h1>
   </div>
 
-  <div id="notifications" class="min-w-full overflow-y-auto flex flex-col-reverse">
+  <div id="notifications" class="min-w-full flex flex-col-reverse lg:px-12 pt-24 mb-16">
     <%= turbo_stream_from "notifications_#{current_user.id}" %>
     <%= render partial: "admin/notification", collection: @notifications %>
   </div>
 
   <% if policy(:admin).send_notification? %>
-    <%= form_tag({action: "send_notification", method: :post}, class:'fixed bottom-4 flex items-end flex-wrap gap-2 mt-12 rounded w-screen left-1/2 -translate-x-1/2 py-2 px-4 mb-16 lg:mb-0 lg:pb-0') do %>
-      <%= select_tag :to_id, options_from_collection_for_select(@users, :id, :nom_prenom_role, params[:to_id]), class: "select select-sm lg:select-md w-full sm:w-min border-base-300!", onchange: "this.form.submit()" %>
+    <%= form_tag({action: "send_notification", method: :post}, class:'fixed bottom-4 flex items-end flex-wrap gap-2 bg-white rounded w-screen left-1/2 -translate-x-1/2 py-2 px-4 mt-12 mb-11.5 lg:-mb-4 lg:pb-1') do %>
+      <%= select_tag :to_id, options_from_collection_for_select(@users, :id, :nom_prenom_role, params[:to_id]), class: "select select-sm lg:select-lg w-full sm:w-min border-base-300!", onchange: "this.form.submit()" %>
       <div class="join flex-1">
-        <%= text_field_tag :message, params[:message],{ class: "input input-sm lg:input-md flex-1 join-item border-base-300!", include_blank:true, placeholder: "Entrez votre message", autofocus: true, required: true} %>
-        <%= button_tag type: :submit, name: "submit_message", class: 'btn btn-sm lg:btn-md btn-outline border-base-300 join-item' do %>
+        <%= text_field_tag :message, params[:message],{ class: "input input-sm lg:input-lg flex-1 join-item border-base-300!", include_blank:true, placeholder: "Entrez votre message", autofocus: true, required: true} %>
+        <%= button_tag type: :submit, name: "submit_message", class: 'btn btn-sm lg:btn-lg btn-outline border-base-300 join-item' do %>
           <span class="hidden lg:block">Envoyer</span>
           <span class="material-symbols-outlined">
             send

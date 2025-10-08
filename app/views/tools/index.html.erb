@@ -1,5 +1,5 @@
 <div class="w-full mb-24">
-  <div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
+  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
     <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Matériels / Machines') %></h1>
     <% if policy(Tool).new? %>
       <%= link_to "Ajouter un Matériel", new_tool_path, data: { 'testid': "ajouter_outil_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
@@ -28,12 +28,12 @@
         <%= label_tag :vue %>
         <br>
         <div class="join">
-          <%= radio_button_tag :vue, "calendrier", (params[:vue] == 'calendrier'), name: 'vue', id: 'btnradio1', autocomplete: 'off', onchange: 'this.form.submit()', class: 'hidden' %>
           <label class="btn btn-primary btn-outline btn-sm join-item <%= 'btn-active text-white!' if params[:vue] == 'calendrier' %>" for="btnradio1" title="Mode calendrier">
             <span class="material-symbols-outlined">
               calendar_month
             </span>
           </label>
+          <%= radio_button_tag :vue, "calendrier", (params[:vue] == 'calendrier'), name: 'vue', id: 'btnradio1', autocomplete: 'off', onchange: 'this.form.submit()', class: 'hidden' %>
 
           <%= radio_button_tag :vue, 'indisponible_carte', (params[:vue] == 'indisponible_carte'), name: 'vue', id: 'btnradio2', autocomplete: 'off', onchange: 'this.form.submit()', class: 'hidden' %>
           <label class="btn btn-primary btn-outline btn-sm join-item <%= 'btn-active text-white!' if params[:vue] == 'indisponible_carte' %>" for="btnradio2" title="Mode carte">

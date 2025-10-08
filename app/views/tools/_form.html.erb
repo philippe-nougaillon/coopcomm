@@ -40,7 +40,7 @@
 
   <div class="w-full">
     <%= form.label :photo %>
-    <%= form.file_field :photo, accept: 'image/png,image/jpeg,.pdf', class: 'file-input file-input-sm w-full' %>
+    <%= form.file_field :photo, accept: 'image/png,image/jpeg,.pdf,image/avif,image/webp', class: 'file-input file-input-sm w-full' %>
   </div>
 
   <h3 class="text-xl text-slate-400 mt-4">Documents</h3>
@@ -50,7 +50,7 @@
         <%= document_fields.hidden_field :category, value: category %>
         <div class="w-full">
           <%= document_fields.label :fichier, category.tr('_',' ').humanize %>
-          <%= document_fields.file_field :fichier, accept: 'image/png,image/jpeg,.pdf', class: 'file-input file-file-input-sm w-full' %>
+          <%= document_fields.file_field :fichier, accept: 'image/png,image/jpeg,.pdf,image/avif,image/webp', class: 'file-input file-file-input-sm w-full' %>
         </div>
         <div class="flex w-full justify-between mt-4">
           <div class="sm:w-fit">
@@ -65,5 +65,5 @@
     <% end %>
   <% end %>
 
-  <%= form.submit "Enregistrer", id: "enregistrer_tool", class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer mt-4" %>
+  <%= form.submit "Enregistrer", id: "enregistrer_tool", class: "btn btn-primary mt-4" %>
 <% end %>

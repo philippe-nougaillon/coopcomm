@@ -1,81 +1,9 @@
 <div class="mx-auto w-full max-w-md">
-  <div class="flex flex-wrap justify-between items-center h-12 sm:h-16 mb-4">
+  <div class="flex flex-wrap justify-between items-center min-h12 sm:min-h-16 mb-4">
     <h1 class="text-primary font-bold text-4xl"><%= page_title!('Nouvel utilisateur') %></h1>
   </div>
 
-  <%= form_with(model: @user, class: "contents", url: "create_new_user_do", html: { autocomplete: "off", class: 'flex flex-col gap-2' }) do |form| %>
-    <% if @user.errors.any? %>
-      <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
-        <h2 class="font-black!">
-          <%= pluralize(@user.errors.count, "erreur") %> empêche(nt) cet utilisateur d'être sauvegardé :
-        </h2>
+  <%= render "/users/form", user: @user %>
 
-        <ul class="list-disc list-inside">
-          <% @user.errors.each do |error| %>
-            <li><%= error.full_message %></li>
-          <% end %>
-        </ul>
-      </div>
-    <% end %>
-
-    <div class="w-full">
-      <%= form.label :nom, style: "display: block" %>
-      <%= form.text_field :nom, class: 'input input-sm w-full', required: true %>
-    </div>
-
-    <div class="w-full">
-      <%= form.label :prénom, style: "display: block" %>
-      <%= form.text_field :prénom, class: 'input input-sm w-full', required: true %>
-    </div>
-
-    <div data-controller="toggle-role-info" class="flex flex-wrap md:flex-nowrap gap-2 w-full">
-      <div>
-        <%= form.label :rôle, "Rôle" %>
-        <span data-action="change->toggle-role-info#change">
-          <%= form.select :rôle, options_for_select(User.rôles.keys, @user.rôle), {}, class: 'select select-sm w-full', data: { 'toggle-role-info-target': 'role' } %>
-        </span>
-      </div>
-
-      <div data-toggle-role-info-target='service' class="flex-1">
-        <%= form.label :service, "Service" %>
-        <%= form.select :service, options_for_select(User.services.keys, @user.service), {include_blank: true}, class: 'select select-sm w-full' %>
-      </div>
-
-      <div data-toggle-role-info-target="localisation" class="flex-1">
-        <%= form.label :localisation, "Localisation" %>
-        <%= form.text_field :localisation, class: 'input select-sm w-full' %>
-      </div>
-    </div>
-
-    <div class="w-full">
-      <%= form.label :email, style: "display: block" %>
-      <%= form.email_field :email, class: 'input input-sm w-full', required: true %>
-    </div>
-
-    <div class="flex flex-wrap md:flex-nowrap gap-2 w-full">
-      <div class="w-full">
-        <%= form.label :password, style: "display: block" %>
-        <%= form.password_field :password, class: 'input input-sm w-full', required: true %>
-      </div>
-      <div class="w-full">
-        <%= form.label :password_confirmation, style: "display: block" %>
-        <%= form.password_field :password_confirmation, class: 'input input-sm w-full', required: true %>
-      </div>
-    </div>
-
-    <div class="w-full">
-      <%= form.label :téléphone, "Téléphone", style: "display: block" %>
-      <%= form.text_field :téléphone, class: 'input input-sm w-full' %>
-    </div>
-
-    <div class="w-full">
-      <%= form.label :memo, "Mémo", style: "display: block" %>
-      <%= form.text_area :memo, class: 'textarea w-full' %>
-    </div>
-
-    <div class="inline">
-      <%= form.submit "Créer un utilisateur", id:"créer_utilisateur", class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer mt-4" %>
-      <%= link_to "Annuler", users_path, class: "md:ml-2 rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium mt-4" %>
-    </div>
-  <% end %>
+  <%= link_to "Annuler", users_path, class: "btn mt-4" %>
 </div>

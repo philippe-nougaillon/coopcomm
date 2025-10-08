@@ -3,11 +3,10 @@
     <div id="<%= dom_id @intervention %>" class="overflow-x-auto">
       <div class="flex flex-col sm:flex-row justify-between">
         <div>
-          <small>
-            <i>il y a <%= time_ago_in_words @intervention.updated_at %></i>
-          </small>
-
           <p class="text-3xl text-<%= @intervention.style.split.first.split('-').last %> font-black">
+            <span class="badge badge-lg text-nowrap font-bold <%= @intervention.style %>">
+              <%= @intervention.workflow_state.humanize %>
+            </span>
             <% if @intervention.repeter %>
               <span class="material-symbols-outlined text-black" title="Modèle pour le pointage">
                 event_repeat
@@ -19,6 +18,9 @@
             <% end %>
             <%= page_title!(@intervention.description.humanize) %>
           </p>
+          <small>
+            <i>il y a <%= time_ago_in_words @intervention.updated_at %></i>
+          </small>
 
           <p class="my-2">
             <% @intervention.tags.each do |tag| %>
@@ -29,36 +31,27 @@
 
         <div class="flex flex-wrap gap-2 mt-4 h-fit">
           <% if @intervention.repeter %>
-            <%= link_to intervention_path(format: :pdf), class: "rounded-lg py-3 px-8 bg-accent inline-block font-medium h-12", title: "Voir le QRCode de pointage" do %>
+            <%= link_to intervention_path(format: :pdf), class: "btn btn-warning", title: "Voir le QRCode de pointage" do %>
               <span class="material-symbols-outlined">
                 qr_code_2
               </span>
             <% end %>
           <% end %>
-          <%= link_to "Modifier", edit_intervention_path(@intervention), class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer h-12" %>
+          <%= link_to "Modifier", edit_intervention_path(@intervention), class: "btn btn-primary" %>
           <% if policy(@intervention).destroy? %>
-            <%= button_to intervention_path(@intervention), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette intervention ?" }, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium h-12", 'data-testid': "Supprimer l'intervention" do %>
+            <%= button_to intervention_path(@intervention), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette intervention ?" }, class: "btn", 'data-testid': "Supprimer l'intervention" do %>
               <span class="material-symbols-outlined">
                 delete
               </span>
             <% end %>
           <% end %>
-          <%= link_to "Retour", interventions_path, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium h-12" %>
+          <%= link_to "Retour", interventions_path, class: "btn" %>
         </div>
       </div>
 
       <div class="sm:flex sm:gap-4 overflow-x-auto mt-4">
         <div class="sm:flex sm:gap-4 flex-1">
           <div class="sm:flex gap-8">
-            <div>
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Statut</strong>
-                <span class="badge badge-lg text-nowrap font-bold <%= @intervention.style %>">
-                  <%= @intervention.workflow_state.humanize %>
-                </span>
-              </p>
-            </div>
-              
             <div>
               <p class="my-2">
                 <strong class="block text-slate-400 mb-1">Adhérent</strong>
@@ -81,21 +74,6 @@
                   <p class="my-2">
                     <strong class="block text-slate-400 mb-1">Agent#<%= index + 1 %></strong>
                     <b><%= agent.nom_prénom %></b>
-                  </p>
-                <% end %>
-              <% end %>
-            </div>
-
-            <div>
-              <% if !@intervention.tools.any? %>
-                <p class="my-2">
-                  <strong class="block text-slate-400 mb-1">Outil</strong>
-                </p>
-              <% else %>
-                <% @intervention.tools.each_with_index do |tool, index| %>
-                  <p class="my-2">
-                    <strong class="block text-slate-400 mb-1">Outil#<%= index + 1 %></strong>
-                    <b><%= tool.name %></b>
                   </p>
                 <% end %>
               <% end %>
@@ -136,6 +114,21 @@
                 <%= l(@intervention.fin_prévue, format: :long) if @intervention.fin_prévue %>
               </p>
             </div>
+          </div>
+
+          <div>
+            <% if !@intervention.tools.any? %>
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Matériel</strong>
+              </p>
+            <% else %>
+              <% @intervention.tools.each_with_index do |tool, index| %>
+                <p class="my-2">
+                  <strong class="block text-slate-400 mb-1">Matériel#<%= index + 1 %></strong>
+                  <b><%= tool.name %></b>
+                </p>
+              <% end %>
+            <% end %>
           </div>
 
           <div class="hidden sm:flex gap-8">

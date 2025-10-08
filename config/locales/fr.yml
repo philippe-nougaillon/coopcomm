@@ -44,6 +44,7 @@ fr:
       long: "%-d %B %Y"
       short: "%-d %b"
       calendar: "%a %d"
+      custom: "%A %-d %B %Y"
     month_names:
     -
     - janvier
@@ -223,4 +224,5 @@ fr:
       default: "%d %B %Y %Hh %Mmin %Ss"
       long: "%A %d %B %Y %Hh%M"
       short: "%d %b %Hh%M"
+      custom: "%d %b %Y %Hh%M"
     pm: pm

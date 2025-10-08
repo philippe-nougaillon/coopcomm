@@ -2,15 +2,9 @@ class User < ApplicationRecord
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
 
-  audited except: :notifications_last_seen_at
+  include Discard::Model
 
-  validates :nom, :prénom, :email, presence: true
-  validates_uniqueness_of :email
-  validates :localisation, presence: true, if: -> { rôle == "adhérent" }
-  validates :localisation, format: {
-    with: /\A\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*\z/,
-    message: "doit être dans ce format : 123.123, 432.120398"
-  }, allow_blank: true
+  audited except: :notifications_last_seen_at
 
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :rememberable, :timeoutable 
@@ -21,6 +15,8 @@ class User < ApplicationRecord
         #  :registerable,
         #  :omniauthable,
         #  omniauth_providers: [:google_oauth2]
+
+  has_one_attached :profile_picture
 
   belongs_to :organisation, optional: true
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
@@ -51,6 +47,15 @@ class User < ApplicationRecord
     Ménage: 5
   }
 
+  validates :nom, :prénom, :email, presence: true
+  validates_uniqueness_of :email
+  validates :localisation, presence: true, if: -> { rôle == "adhérent" }
+  validates :localisation, format: {
+    with: /\A\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*\z/,
+    message: "doit être dans ce format : 123.123, 432.120398"
+  }, allow_blank: true
+
+  default_scope -> { kept }
   scope :ordered, -> { order(:nom) }
 
   def self.grouped_agents(users)
@@ -67,6 +72,10 @@ class User < ApplicationRecord
 
   def nom_prenom_role
     "#{self.nom_prénom} (#{self.rôle.upcase})"
+  end
+
+  def initiales
+    "#{self.nom.first.upcase}#{self.prénom.first.upcase}"
   end
 
   def super_admin?
@@ -163,6 +172,12 @@ class User < ApplicationRecord
   def lng_lat
     # Inverse les variables pour correspondre aux valeurs de google
     self.localisation.gsub(/(.*?), (.*)/) { "[#{$2}, #{$1}]" }
+  end
+
+  def localisation_to_lat_lng_object
+    # Sépare et nettoie la chaine localisation en latitude, longitude pour créer un objet contenant les coordonnées.
+    lat, lng = self.localisation.split(',').map(&:strip).map(&:to_f)
+    { lat: lat, lng: lng }
   end
 
   def nb_bad_words

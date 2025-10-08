@@ -3,7 +3,7 @@
     <thead class="bg-slate-100">
     <tr>
       <th></th>
-      <th><%= sort_link 'users.nom', 'Nom Prénom' %></th>
+      <th><%= sort_link 'users.nom', 'Nom' %></th>
       <th><%= sort_link 'users.service', 'Service' %></th>
       <% if params[:vue] == 'calendrier' %>
         <% (@date..@date_fin).each do |date| %>
