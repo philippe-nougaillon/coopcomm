@@ -39,7 +39,7 @@
           <td><%= intervention.adherent.try(:nom_prénom) %></td>
           <td><%= intervention.team.try(:nom_prénom) %></td>
           <td>
-            <%= l(intervention.début_prévue, format: :custom) %> <br> <%= l(intervention.fin_prévue, format: :custom) %>
+            <%= l(intervention.début_prévue, format: :custom) if intervention.début_prévue  %> <br> <%= l(intervention.fin_prévue, format: :custom)  if intervention.fin_prévue %>
           </td>
           <td><%= intervention.temps_total %> h</td>
           <td>
