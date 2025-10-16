@@ -83,6 +83,7 @@
 
   <% if @user.adhérent? && @user.localisation %>
     <div id="map" class="my-8" style="height: 200px;"></div>
+    <%= render 'users/map_script' %>
   <% end %>
 
   <% if @user.agent? %>
@@ -128,29 +129,3 @@
     <%== pagy_nav(@pagy) %>
   </div>
 </div>
-
-<% if @user.adhérent? && @user.localisation %>
-  <script>
-    mapboxgl.accessToken = '<%= ENV['MAPBOX_TOKEN'] %>';
-
-    var map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v11',
-    });
-
-    var marker = new mapboxgl.Marker({ color: "#FF0000" })
-      .setLngLat(<%= @user.lng_lat %>)
-      .setPopup(new mapboxgl.Popup({ offset: 25 }))
-      .addTo(map);
-
-
-    map.fitBounds([
-      [<%= @lng %> - 0.05, <%= @lat %> - 0.05],
-      [<%= @lng %> + 0.05, <%= @lat %> + 0.05]
-    ]);
-    map.addControl(new mapboxgl.FullscreenControl());
-    map.addControl(new mapboxgl.NavigationControl());
-    
-    setTimeout(function(){ map.setLayoutProperty('country-label', 'text-field', ['get', 'name_fr']); }, 3000);
-  </script>
-<% end %>
