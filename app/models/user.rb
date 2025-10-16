@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  devise :two_factor_authenticatable
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
 
@@ -8,8 +9,7 @@ class User < ApplicationRecord
 
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :rememberable, :timeoutable 
-  devise :database_authenticatable,
-         :recoverable,
+  devise :recoverable,
          :validatable,
          :trackable,
          :lockable

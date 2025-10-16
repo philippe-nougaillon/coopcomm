@@ -6,6 +6,7 @@ class ApplicationController < ActionController::Base
   rescue_from Pagy::OverflowError, with: :pagy_wrong_page
   before_action :authenticate_user!
   before_action :prepare_exception_notifier
+  before_action :configure_permitted_parameters, if: :devise_controller?
 
   helper_method :sort_column, :sort_direction
 
@@ -34,5 +35,11 @@ class ApplicationController < ActionController::Base
 
   def pagy_wrong_page
     redirect_to(request.referrer || request.path || root_path)
+  end
+
+  protected
+
+  def configure_permitted_parameters
+    devise_parameter_sanitizer.permit(:sign_in, keys: [:otp_attempt])
   end
 end

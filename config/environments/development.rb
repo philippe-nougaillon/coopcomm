@@ -87,5 +87,11 @@ config.active_job.queue_adapter = :solid_queue
   config.action_mailer.default_url_options = { host: 'localhost', protocol: 'http', port: 3000 }
   config.default_url_options = { host: 'localhost', port: 3000, protocol: 'http' }
 
+  # Copy the generate key set and set them as environment variables
+
+  config.active_record.encryption.primary_key = ENV['ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY']
+  config.active_record.encryption.deterministic_key = ENV['ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY']
+  config.active_record.encryption.key_derivation_salt = ENV['ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT']
+
   config.hosts << /[a-z0-9-]+\.ngrok(-free)?\.app/
 end

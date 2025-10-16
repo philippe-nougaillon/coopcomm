@@ -143,6 +143,11 @@ GEM
       railties (>= 4.1.0)
       responders
       warden (~> 1.2.3)
+    devise-two-factor (6.1.0)
+      activesupport (>= 7.0, < 8.1)
+      devise (~> 4.0)
+      railties (>= 7.0, < 8.1)
+      rotp (~> 6.0)
     discard (1.4.0)
       activerecord (>= 4.2, < 9.0)
     docile (1.4.1)
@@ -432,6 +437,7 @@ GEM
       actionpack (>= 5.2)
       railties (>= 5.2)
     rexml (3.4.4)
+    rotp (6.3.0)
     rqrcode (2.2.0)
       chunky_png (~> 1.0)
       rqrcode_core (~> 1.0)
@@ -567,6 +573,7 @@ DEPENDENCIES
   csv (~> 3.3)
   debug
   devise (~> 4.9)
+  devise-two-factor (~> 6.1)
   discard (~> 1.4)
   dotenv
   dry-events (~> 1.0)
