@@ -36,4 +36,12 @@ class UserPolicy < ApplicationPolicy
   def agent_calendrier?
     index?
   end
+
+  def enable_otp?
+    index?
+  end
+
+  def disable_otp?
+    index?
+  end
 end

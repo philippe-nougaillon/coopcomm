@@ -21,6 +21,8 @@ Rails.application.routes.draw do
   resources :users do
     collection do
       get :agent_calendrier
+      post :enable_otp
+      post :disable_otp
     end
   end
 

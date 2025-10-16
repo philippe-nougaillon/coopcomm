@@ -70,7 +70,21 @@
     </div>
 
   </div>
-
+  
+  <div class="mt-8">
+    <% if !current_user.otp_required_for_login %>
+      <%= button_to "Enable 2FA", enable_otp_users_path, class: "btn" %>
+    <% else %>
+      <%= button_to "Disable 2FA", disable_otp_users_path, class: "btn"  %>
+      <br>
+      <% totp_uri = current_user.otp_provisioning_uri(current_user.email, issuer: "CoopComm") %>
+      TOTP: <%= totp_uri %>
+      <br>
+      <%= raw RQRCode::QRCode.new(totp_uri).as_svg(module_size: 3) %>
+      <br>
+    <% end %>
+  </div>
+  
   <div class="flex flex-wrap gap-2 mt-8">
     <%= link_to "Modifier", edit_user_path(@user), class: "btn" %>
     <%= button_to user_path(@user), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet utilisateur ?" }, class: "btn", 'data-testid': "Supprimer l'utilisateur" do %>

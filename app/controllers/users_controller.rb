@@ -131,6 +131,19 @@ class UsersController < ApplicationController
     @pagy, @agents = pagy(@agents, items: 10)
   end
 
+  def disable_otp
+    current_user.otp_required_for_login = false
+    current_user.save!
+    redirect_to users_path(current_user)
+  end
+
+  def enable_otp
+    current_user.otp_secret = User.generate_otp_secret
+    current_user.otp_required_for_login = true
+    current_user.save!
+    redirect_to users_path(current_user)
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_user
