@@ -19,10 +19,8 @@
         </div>
       <% end %>
 
-      <% if true %>
-        <%= f.label :otp_attempt %><br />
-        <%= f.text_field :otp_attempt, class:'input input-sm w-full', required: true %>
-      <% end %>
+      <%= f.label :otp_attempt, "Code de vérification" %><br />
+      <%= f.text_field :otp_attempt, class:'input input-sm w-full' %>
 
       <div class="actions">
         <%= f.submit "Se connecter", class: 'btn btn-outline lg:btn-lg rounded btn-primary hover:text-white! w-full my-4'%>

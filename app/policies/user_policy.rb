@@ -44,4 +44,9 @@ class UserPolicy < ApplicationPolicy
   def disable_otp?
     index?
   end
+
+  def enable_otp_do?
+    index?
+  end
+
 end

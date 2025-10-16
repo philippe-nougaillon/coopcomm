@@ -1,0 +1,14 @@
+
+<div>
+    <% totp_uri = current_user.otp_provisioning_uri(current_user.email, issuer: "CoopComm") %>
+    <p>Veuillez scanner ce QRCode avec l'application mobile Google Autenticator :</p>
+    <%= raw RQRCode::QRCode.new(totp_uri).as_svg(module_size: 3) %>
+    <br>
+    
+    <p>Veuillez saisir le code de vérification sur l'application:</p>
+    <%= form_with url: enable_otp_do_users_path, method: :post do |f| %>
+        <%= f.text_field :otp_attempt, class: 'input input-sm', required: true %>
+        <%= f.submit "Valider", class: "btn" %>
+    <% end %>
+    <%= link_to "Retour", users_path, class: "btn" %>
+</div>
