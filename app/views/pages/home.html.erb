@@ -33,7 +33,7 @@
   </div>
   <div class="flex-1 sm:flex-5 w-full">
 
-    <div class="border shadow-sm p-4 pb-10 rounded-2xl">
+    <div class="border shadow-sm p-4 pb-10 rounded-2xl mb-8">
       <h2 class="font-black text-lg mb-6">Actions rapides</h2>
       <div class="flex flex-col gap-4">
         <%= link_to 'Créer une Intervention', new_intervention_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
@@ -44,6 +44,13 @@
           <%= link_to 'Voir le tableau de bord', dashboard_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
         <% end %>
         <%= link_to 'Lancer une discussion', admin_messagerie_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
+      </div>
+    </div>
+
+    <div class="border shadow-sm p-4 pb-10 rounded-2xl">
+      <h2 class="font-black text-lg mb-6">Météo du <%= l(DateTime.now, format: :long) %></h2>
+      <div>
+        <p>Il fait actuellement <%= @forecast["temp2m"] %>°C, avec un taux d'humidité de <%= @forecast["rh2m"] %>%, un vent à <%= @forecast["wind10m"] %> et l'état du ciel est <%= Meteo.WEATHER[@forecast["weather"]] %>, à <%= @forecast["datetime"].to_time.strftime("%H:%M") %>, à <%= @forecast["insee"]%></p>
       </div>
     </div>
 
