@@ -249,7 +249,8 @@ class PagesController < ApplicationController
     @interventions = Intervention.by_role_for(current_user).first(2)
     @notifications = current_user.notifications.ordered.first(3)
 
-    @forecast = Meteo.new.call.first
+    # @forecast = Meteo.new.call.first
+    @forecast = {"temp2m" => 10, "rh2m" => 80, "datetime"=> Time.now, "insee"=> 54518, "weather" => 210, "wind10m" => 40}
   end
 
   private
