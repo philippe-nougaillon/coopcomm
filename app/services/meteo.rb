@@ -1,27 +1,40 @@
 class Meteo < ApplicationService
 
-  def call
-    # temp2m = température, rh2m = humidité, wind10m = vent, weather = état du ciel
-    
-    ville = "54518" # Code commune de Thiaucourt-Regniéville
-    ville = URI.encode_www_form_component(ville) # Pour accepter les accents
-
-    # Pour chercher une ville, ne renvoie rien si pas trouvé ou Rennes par défau
-    #url = "https://api.meteo-concept.com/api/location/cities?token=#{ENV['METEO_API_KEY']}&search=#{URI.encode_www_form_component("Thiaucourt-Regniéville")}"
-    
-    # Pour chercher le temps des 12 prochaines heures (part tranche de 3 heure, donc 4 prévisions)
-    url = "https://api.meteo-concept.com/api/forecast/nextHours?insee=#{ville}"
-    
+  def prepare_request(url)
     url = URI(url)
     @http = Net::HTTP.new(url.host, url.port)
     @http.use_ssl = true
-    
+
     @request = Net::HTTP::Get.new(url)
     @request["accept"] = 'application/json'
     @request["content-type"] = 'application/json'
     @request["authorization"] = "Bearer #{ENV['METEO_API_KEY']}"
+  end
 
-    response = JSON.parse(@http.request(@request).read_body)
+  def build_url(hash, ville)
+    ville = URI.encode_www_form_component(ville) # Pour accepter les accents
+    "https://api.meteo-concept.com/api/#{hash}#{ville}"
+  end
+
+  def get_response
+    JSON.parse(@http.request(@request).read_body)
+  end
+
+  def call
+    # temp2m = température, rh2m = humidité, wind10m = vent, weather = état du ciel
+    
+    insee = "54518" # Code commune 54518 = Thiaucourt-Regniéville
+    ville = "Thiaucourt-Regniéville"
+
+    # Pour chercher une ville, ne renvoie rien si pas trouvé ou Rennes par défaut
+    # url = build_url("location/cities?search=", ville)
+
+    # Pour chercher le temps des 12 prochaines heures (part tranche de 3 heure, donc 4 prévisions)
+    url = build_url("forecast/nextHours?insee=", insee)
+    
+    prepare_request(url)
+
+    response = get_response
     
     response["forecast"]
 
@@ -118,5 +131,52 @@ class Meteo < ApplicationService
       232 => "Pluie et neige mêlées",
       235 => "Averses de grêle",
     }
+  end
+
+  # Recherche de l'icon correspondant à la météo en fonction du code weather
+  def self.get_icon_meteo(weather_code)
+    'meteo/animated/' +
+    case weather_code
+    when 0 # Soleil
+      'day.svg'
+    when 1..2 # Peu nuageux
+      'cloudy-day-3.svg'
+    when 3..7 # Nuageux et brouillard
+      'cloudy.svg'
+    when 10 # Pluie faible
+      'rainy-4.svg'
+    when 11 # Pluie modérée
+      'rainy-5.svg'
+    when 12 # Pluie forte
+      'rainy-6.svg'
+    when 20 # Neige faible
+      'snowy-4.svg'
+    when 21 # Neige modérée
+      'snowy-5.svg'
+    when 22, 235 # Neige forte ou Averses de grêle
+      'snowy-6.svg'
+    when 40..48 # Averse de pluie (faible ou forte)
+      'rainy-6.svg'
+    when 60..68 # Averse de neige (faible ou forte)
+      'snowy-6.svg'
+    when 101..142 # Orage
+      'thunder.svg'
+    when 210 # Pluie faible intermittente
+      'rainy-1.svg'
+    when 211 # Pluie modérée intermittente
+      'rainy-2.svg'
+    when 212 # Pluie forte intermittente
+      'rainy-3.svg'
+    when 220 # Pluie faible intermittente
+      'snowy-1.svg'
+    when 221 # Pluie modérée intermittente
+      'snowy-2.svg'
+    when 222 # Pluie forte intermittente
+      'snowy-3.svg'
+    when 230..232
+      'rainy-7.svg'
+    else
+      'day.svg'
+    end
   end
 end
