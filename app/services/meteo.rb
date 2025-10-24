@@ -1,4 +1,22 @@
 class Meteo < ApplicationService
+  include Singleton
+
+  def initialize
+    # temp2m = température, rh2m = humidité, wind10m = vent, weather = état du ciel
+
+    insee = "54518" # Code commune 54518 = Thiaucourt-Regniéville
+    ville = "Thiaucourt-Regniéville"
+
+    # Pour chercher une ville, ne renvoie rien si pas trouvé ou Rennes par défaut
+    # url = build_url("location/cities?search=", ville)
+
+    # Pour chercher le temps des 12 prochaines heures (part tranche de 3 heure, donc 4 prévisions)
+    url = build_url("forecast/nextHours?insee=", insee)
+
+    prepare_request(url)
+
+    @response = get_response
+  end
 
   def prepare_request(url)
     url = URI(url)
@@ -21,23 +39,7 @@ class Meteo < ApplicationService
   end
 
   def call
-    # temp2m = température, rh2m = humidité, wind10m = vent, weather = état du ciel
-    
-    insee = "54518" # Code commune 54518 = Thiaucourt-Regniéville
-    ville = "Thiaucourt-Regniéville"
-
-    # Pour chercher une ville, ne renvoie rien si pas trouvé ou Rennes par défaut
-    # url = build_url("location/cities?search=", ville)
-
-    # Pour chercher le temps des 12 prochaines heures (part tranche de 3 heure, donc 4 prévisions)
-    url = build_url("forecast/nextHours?insee=", insee)
-    
-    prepare_request(url)
-
-    response = get_response
-    
-    response["forecast"]
-
+    @response
   end
 
   def self.WEATHER 
