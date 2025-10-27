@@ -2,29 +2,20 @@ class Meteo < ApplicationService
   include Singleton
 
   def initialize
-    # temp2m = température, rh2m = humidité, wind10m = vent, weather = état du ciel
-    
     puts "Création du service Meteo"
+
+    # Définition des données principalement utilisées par l'API de Meteo Concept :
+    # - temp2m = température
+    # - rh2m = humidité
+    # - wind10m = vent
+    # - weather = état du ciel (nuageux, pluie, orages, ...)
 
     @insee = "54518" # Code commune 54518 = Thiaucourt-Regniéville
     @ville = "Thiaucourt-Regniéville"
 
-    # Pour chercher une ville, ne renvoie rien si pas trouvé ou Rennes par défaut
-    # url = build_url("location/cities?search=", ville)
-
-    # Pour chercher le temps des 12 prochaines heures (part tranche de 3 heure, donc 4 prévisions)
-    url = build_url("forecast/nextHours?insee=", @insee)
-
-    prepare_request(url)
-
-    @nexthours_response = get_response
-
-    # Pour chercher le temps des 14 prochains jours, avec quartiers de jour (Nuit, matin, après-midi, soir)
-    url = build_url("forecast/daily/periods?insee=", @insee)
-
-    prepare_request(url)
-
-    @daily_periods_response = get_response
+    # Appel des setters pour pouvoir charger uniquement la réponse que l'on veut. 
+    set_nexthours_response
+    set_daily_periods_response
   end
 
   def prepare_request(url)
@@ -47,19 +38,40 @@ class Meteo < ApplicationService
     JSON.parse(@http.request(@request).read_body)
   end
 
-  def get_meteo_for_14_days
+
+  # Pour chercher le temps des 14 prochains jours, avec quartiers de jour (Nuit, matin, après-midi, soir)
+  def get_by_daily_periods
     @scope_response = @daily_periods_response
     
     self
   end
 
-  def get_meteo_by_days
+  def set_daily_periods_response
+    url = build_url("forecast/daily/periods?insee=", @insee)
+
+    prepare_request(url)
+
+    @daily_periods_response = get_response
+  end
+  
+  # Pour chercher le temps des 12 prochaines heures (part tranche de 3 heure, donc 4 prévisions)
+  def get_by_nextHours
     @scope_response = @nexthours_response
     
     self
   end
 
+  def set_nexthours_response
+    url = build_url("forecast/nextHours?insee=", @insee)
+
+    prepare_request(url)
+
+    @nexthours_response = get_response
+  end
+
+  
   def call
+    # Appel du scope de la réponse (modifié par un getter)
     @scope_response
   end
 
