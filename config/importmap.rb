@@ -13,3 +13,4 @@ pin "stimulus-textarea-autogrow" # @4.1.0
 pin "@stimulus-components/rails-nested-form", to: "@stimulus-components--rails-nested-form.js" # @5.0.0
 pin "trix"
 pin "@rails/actiontext", to: "actiontext.esm.js"
+pin "@rails/ujs", to: "@rails--ujs.js" # @7.1.3
