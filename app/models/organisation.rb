@@ -7,6 +7,7 @@ class Organisation < ApplicationRecord
   has_many :absences, through: :users
   has_many :notifications, through: :users
   has_many :tools
+  has_many :mouvements, through: :tools
 
   def numero
     self.nom.split('_').last
