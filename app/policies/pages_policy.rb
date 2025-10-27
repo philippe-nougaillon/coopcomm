@@ -16,4 +16,9 @@ class PagesPolicy < ApplicationPolicy
   def home?
     user
   end
+
+
+  def meteo?
+    home?
+  end
 end

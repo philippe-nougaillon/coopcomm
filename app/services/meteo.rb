@@ -3,19 +3,28 @@ class Meteo < ApplicationService
 
   def initialize
     # temp2m = température, rh2m = humidité, wind10m = vent, weather = état du ciel
+    
+    puts "Création du service Meteo"
 
-    insee = "54518" # Code commune 54518 = Thiaucourt-Regniéville
-    ville = "Thiaucourt-Regniéville"
+    @insee = "54518" # Code commune 54518 = Thiaucourt-Regniéville
+    @ville = "Thiaucourt-Regniéville"
 
     # Pour chercher une ville, ne renvoie rien si pas trouvé ou Rennes par défaut
     # url = build_url("location/cities?search=", ville)
 
     # Pour chercher le temps des 12 prochaines heures (part tranche de 3 heure, donc 4 prévisions)
-    url = build_url("forecast/nextHours?insee=", insee)
+    url = build_url("forecast/nextHours?insee=", @insee)
 
     prepare_request(url)
 
-    @response = get_response
+    @nexthours_response = get_response
+
+    # Pour chercher le temps des 14 prochains jours, avec quartiers de jour (Nuit, matin, après-midi, soir)
+    url = build_url("forecast/daily/periods?insee=", @insee)
+
+    prepare_request(url)
+
+    @daily_periods_response = get_response
   end
 
   def prepare_request(url)
@@ -38,8 +47,20 @@ class Meteo < ApplicationService
     JSON.parse(@http.request(@request).read_body)
   end
 
+  def get_meteo_for_14_days
+    @scope_response = @daily_periods_response
+    
+    self
+  end
+
+  def get_meteo_by_days
+    @scope_response = @nexthours_response
+    
+    self
+  end
+
   def call
-    @response
+    @scope_response
   end
 
   def self.WEATHER 
