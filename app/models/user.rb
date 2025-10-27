@@ -48,7 +48,7 @@ class User < ApplicationRecord
     Ménage: 5
   }
 
-  validates :nom, :prénom, :email, presence: true
+  validates :nom, :email, presence: true
   validates_uniqueness_of :email
   validates :localisation, presence: true, if: -> { rôle == "adhérent" }
   validates :localisation, format: {
