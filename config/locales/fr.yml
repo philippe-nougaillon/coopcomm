@@ -45,6 +45,7 @@ fr:
       short: "%-d %b"
       calendar: "%a %d"
       custom: "%A %-d %B %Y"
+      day: "%A %d %B"
     month_names:
     -
     - janvier
