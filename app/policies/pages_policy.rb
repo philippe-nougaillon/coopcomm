@@ -17,8 +17,11 @@ class PagesPolicy < ApplicationPolicy
     user
   end
 
-
   def meteo?
+    home?
+  end
+
+  def meteo_by_day?
     home?
   end
 end

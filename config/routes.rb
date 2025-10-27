@@ -74,6 +74,7 @@ Rails.application.routes.draw do
     get :contact, to: 'pages#contact', as: :contact
     get :home, to: 'pages#home', as: :home
     get :meteo, to: 'pages#meteo', as: :meteo
+    get :meteo_by_day
   end
 
   resources :documents, only: %i[] do

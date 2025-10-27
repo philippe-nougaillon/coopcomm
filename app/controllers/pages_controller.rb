@@ -1,6 +1,6 @@
 class PagesController < ApplicationController
-  before_action :is_user_authorized, except: %i[welcome mentions_legales solution tarifs contact]
-  skip_before_action :authenticate_user!, only: %i[welcome mentions_legales solution tarifs contact]
+  before_action :is_user_authorized, except: %i[welcome mentions_legales solution tarifs contact meteo_by_day]
+  skip_before_action :authenticate_user!, only: %i[welcome mentions_legales solution tarifs contact meteo_by_day]
 
   def assistant
 
@@ -260,6 +260,10 @@ class PagesController < ApplicationController
   def meteo
     @forecasts = Meteo.instance.get_by_daily_periods.call
     @city = @forecasts["city"]["name"]
+  end
+
+  def meteo_by_day
+    render json: { forecast: "Oksdffsd"}
   end
 
   private
