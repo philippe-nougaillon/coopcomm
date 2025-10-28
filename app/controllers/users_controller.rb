@@ -145,15 +145,16 @@ class UsersController < ApplicationController
   end
 
   def qrcode_otp
+    # Création du code secret de génération
     current_user.otp_secret = User.generate_otp_secret
     current_user.save!
   end
 
   def mail_otp
+    # Création du code secret de génération
     current_user.otp_secret = User.generate_otp_secret
-    current_user.save!
-
-    # Envoyer le otp par mail
+    current_user.save
+    UserMailer.mail_otp(current_user).deliver_now
   end
 
   # def disable_otp
