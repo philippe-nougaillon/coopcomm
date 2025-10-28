@@ -249,7 +249,7 @@ class PagesController < ApplicationController
     @interventions = Intervention.by_role_for(current_user).first(2)
     @notifications = current_user.notifications.ordered.first(3)
 
-    forecasts = Meteo.new.get_by_nextHours.call
+    forecasts = Meteo.instance.get_by_nextHours.call
     #@forecast = {"temp2m" => 10, "rh2m" => 80, "datetime"=> Time.now, "insee"=> 54518, "weather" => 210, "wind10m" => 40}
 
     @city = forecasts["city"]["name"]
@@ -258,18 +258,16 @@ class PagesController < ApplicationController
   end
 
   def meteo
-    @forecasts = Meteo.new.get_by_daily_periods.call
+    @forecasts = Meteo.instance.get_by_daily_periods.call
     @city = @forecasts["city"]["name"]
   end
 
   def meteo_by_day
-    meteo = Meteo.new
+    meteo = Meteo.instance
     forecasts = meteo.get_by_daily(params[:day]).call
-
     # Change le code de weather par son texte
-    forecasts["weather"] = meteo.WEATHER[forecasts["weather"]]
 
-    render json: forecasts
+    render json: { forecast: forecasts, weather: Meteo.WEATHER[forecasts["weather"]] }
   end
 
   private

@@ -35,9 +35,9 @@ export default class extends Controller {
       url: "/meteo_by_day.json",
       data: "day=" + diffDays,
       success: (response) => {
-        const forecast = response
+        const forecast = response["forecast"]
         console.log(forecast)
-        this.prévisionMétéoTarget.textContent = forecast["weather"] + " avec " + forecast["temp2m"] + "°C"
+        this.prévisionMétéoTarget.textContent = response["weather"] + " avec " + forecast["temp2m"] + "°C"
       },
       error: (err) => {
       }

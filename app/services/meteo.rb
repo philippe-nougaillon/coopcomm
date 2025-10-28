@@ -1,4 +1,5 @@
 class Meteo < ApplicationService
+  include Singleton
 
   def initialize
     puts "Création du service Meteo"
@@ -69,18 +70,6 @@ class Meteo < ApplicationService
   end
 
   def get_by_daily(day)
-    # url = build_url("forecast/daily/#{day}?insee=", @insee)
-    # prepare_request(url)
-    # @scope_response = get_response
-
-    # response = @daily_periods_response
-    # puts "response 1"
-    # puts response
-    # response["forecast"] = @daily_periods_response["forecast"][day.to_i][2]
-    #
-    # puts "response 2"
-    # puts response
-
     @scope_response = @daily_periods_response["forecast"][day.to_i][2]
 
     self
@@ -91,7 +80,7 @@ class Meteo < ApplicationService
     @scope_response
   end
 
-  def WEATHER
+  def self.WEATHER
     {
       0 => "Soleil",
       1 => "Peu nuageux",
