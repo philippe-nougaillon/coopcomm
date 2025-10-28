@@ -1,0 +1,21 @@
+<div class="w-full mb-6">
+  <div class="flex flex-wrap justify-between items-center">
+    <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Activation de la double authentification par QR Code') %></h1>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div>
+    <% totp_uri = current_user.otp_provisioning_uri(current_user.email, issuer: "IAE-Planning") %>
+    <p class="mb-8">Veuillez scanner ce QRCode avec votre <b>application mobile d'authentification</b> comme <%= link_to 'Google Authenticator', "https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&hl=fr", class: 'text-primary hover:underline' %></p>
+    <%= raw RQRCode::QRCode.new(totp_uri).as_svg(module_size: 4) %>
+    <br>
+    
+    <p>Code de vérification obtenu</p>
+    <%= form_with url: enable_otp_users_path, method: :post, class: "flex flex-col w-min gap-4" do |f| %>
+        <%= f.text_field :otp_attempt, class: 'input input-bordered input-sm', required: true, autofocus: true %>
+        <%= hidden_field_tag :method, "app" %>
+        <%= f.submit "Activer la double authentification", class: "btn btn-success btn-outline hover:!text-white mt-2" %>
+    <% end %>
+</div>

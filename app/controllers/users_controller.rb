@@ -131,13 +131,7 @@ class UsersController < ApplicationController
     @pagy, @agents = pagy(@agents, items: 10)
   end
 
-  def disable_otp
-    current_user.otp_required_for_login = false
-    current_user.save!
-    redirect_to user_path(current_user), notice: "Double authentification désactivée avec succès !"
-  end
-
-  def enable_otp_do
+  def enable_otp
     # Si code de vérification est correct, activer 2FA
     # Sinon redemander le code
     if current_user.validate_and_consume_otp!(params[:otp_attempt])
@@ -145,15 +139,28 @@ class UsersController < ApplicationController
       current_user.save!
       redirect_to user_path(current_user), notice: "Double authentification activée avec succès !"
     else
-      redirect_to qrcode_otp_users_path(current_user), alert: "Code de vérification incorrect, veuillez réessayer !"
+      redirect_to enable_otp_users_path(current_user), alert: "Code de vérification incorrect, veuillez réessayer !"
     end
-    
+
   end
 
-  def enable_otp
-      current_user.otp_secret = User.generate_otp_secret
-      current_user.save!
+  def qrcode_otp
+    current_user.otp_secret = User.generate_otp_secret
+    current_user.save!
   end
+
+  def mail_otp
+    current_user.otp_secret = User.generate_otp_secret
+    current_user.save!
+
+    # Envoyer le otp par mail
+  end
+
+  # def disable_otp
+  #   current_user.otp_required_for_login = false
+  #   current_user.save!
+  #   redirect_to user_path(current_user), notice: "Double authentification désactivée avec succès !"
+  # end
 
   private
     # Use callbacks to share common setup or constraints between actions.

@@ -42,11 +42,15 @@ class UserPolicy < ApplicationPolicy
   end
 
   def disable_otp?
-    index?
+    enable_otp?
   end
 
-  def enable_otp_do?
-    index?
+  def qrcode_otp?
+    enable_otp?
+  end
+
+  def mail_otp?
+    enable_otp?
   end
 
 end
