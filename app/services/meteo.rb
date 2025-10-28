@@ -1,5 +1,4 @@
 class Meteo < ApplicationService
-  include Singleton
 
   def initialize
     puts "Création du service Meteo"
@@ -39,7 +38,7 @@ class Meteo < ApplicationService
   end
 
 
-  # Pour chercher le temps des 14 prochains jours, avec quartiers de jour (Nuit, matin, après-midi, soir)
+  # Pour chercher la météo des 14 prochains jours, avec quartiers de jour (Nuit, matin, après-midi, soir)
   def get_by_daily_periods
     @scope_response = @daily_periods_response
     
@@ -54,7 +53,7 @@ class Meteo < ApplicationService
     @daily_periods_response = get_response
   end
   
-  # Pour chercher le temps des 12 prochaines heures (part tranche de 3 heure, donc 4 prévisions)
+  # Pour chercher la météo des 12 prochaines heures (part tranche de 3 heure, donc 4 prévisions)
   def get_by_nextHours
     @scope_response = @nexthours_response
     
@@ -69,13 +68,30 @@ class Meteo < ApplicationService
     @nexthours_response = get_response
   end
 
+  def get_by_daily(day)
+    # url = build_url("forecast/daily/#{day}?insee=", @insee)
+    # prepare_request(url)
+    # @scope_response = get_response
+
+    # response = @daily_periods_response
+    # puts "response 1"
+    # puts response
+    # response["forecast"] = @daily_periods_response["forecast"][day.to_i][2]
+    #
+    # puts "response 2"
+    # puts response
+
+    @scope_response = @daily_periods_response["forecast"][day.to_i][2]
+
+    self
+  end
   
   def call
     # Appel du scope de la réponse (modifié par un getter)
     @scope_response
   end
 
-  def self.WEATHER 
+  def WEATHER
     {
       0 => "Soleil",
       1 => "Peu nuageux",

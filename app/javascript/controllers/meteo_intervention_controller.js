@@ -1,4 +1,4 @@
-import { Controller } from "@hotwired/stimulus"
+import {Controller} from "@hotwired/stimulus"
 import Rails from "@rails/ujs";
 
 // Connects to data-controller="meteo-intervention"
@@ -11,20 +11,49 @@ export default class extends Controller {
 
     let meteo_text = "météo"
 
-    this.fetch_meteo_by_day()
+    this.get_meteo_by_daily()
   }
 
-  fetch_meteo_by_day() {
+  get_meteo_by_daily() {
+
+    let days = this.debut_prevueTarget.value
+
+    if (!days) return; // si rien n’est choisi, on quitte
+
+    let diffDays = this.nombres_jours(days)
+
+    if(diffDays < 0 || diffDays > 13){
+      this.prévisionMétéoTarget.textContent = "Prévision uniquement dans les 14 prochains jours"
+    }else{
+      this.fetch_meteo_by_daily(diffDays)
+    }
+  }
+
+  fetch_meteo_by_daily(diffDays) {
     Rails.ajax({
       type: "GET",
       url: "/meteo_by_day.json",
+      data: "day=" + diffDays,
       success: (response) => {
-        console.log(response)
-        this.prévisionMétéoTarget.textContent = response.forecast
+        const forecast = response
+        console.log(forecast)
+        this.prévisionMétéoTarget.textContent = forecast["weather"] + " avec " + forecast["temp2m"] + "°C"
       },
       error: (err) => {
-        this.prévisionMétéoTarget.textContent = err
       }
     })
+  }
+
+  nombres_jours(inputValue){
+    // Convertit la valeur en objet Date
+    const selectedDate = new Date(inputValue);
+
+    // Récupère la date actuelle (sans l’heure)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Calcule la différence en millisecondes, puis en jours
+    const diffTime = selectedDate - today;
+    return Math.round(diffTime / (1000 * 60 * 60 * 24));
   }
 }
