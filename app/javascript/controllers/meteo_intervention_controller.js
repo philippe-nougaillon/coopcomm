@@ -7,10 +7,13 @@ export default class extends Controller {
   // Si début prévue a quelque chose, demander la météo pour ce datetime
   static targets = ["debut_prevue", "debut_prevue_hour", "prévisionMétéo"]
 
+  connect() {
+    if(this.debut_prevueTarget.value){
+      this.afficher_meteo()
+    }
+  }
+
   afficher_meteo() {
-
-    let meteo_text = "météo"
-
     this.get_meteo_by_daily()
   }
 
@@ -18,11 +21,9 @@ export default class extends Controller {
 
     let days = this.debut_prevueTarget.value
 
-    if (!days) return; // si rien n’est choisi, on quitte
-
     let diffDays = this.nombres_jours(days)
 
-    if(diffDays < 0 || diffDays > 13){
+    if(diffDays < 0 || diffDays > 13 || isNaN(diffDays)){
       this.prévisionMétéoTarget.textContent = "Prévision uniquement dans les 14 prochains jours"
     }else{
       this.fetch_meteo_by_daily(diffDays)
