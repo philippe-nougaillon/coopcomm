@@ -5,6 +5,22 @@ class MouvementsController < ApplicationController
   # GET /mouvements or /mouvements.json
   def index
     @mouvements = current_user.organisation.mouvements
+    @tools = current_user.organisation.tools.ordered
+    @états = Mouvement.états.keys
+
+    if params[:tool_ids].present?
+      @mouvements = @mouvements.where(tool_id: params[:tool_ids])
+    end
+
+    if params[:date].present?
+      @mouvements = @mouvements.where("DATE(mouvements.updated_at) = ?", params[:date])
+    end
+
+    if params[:etats].present?
+      @mouvements = @mouvements.where(état: params[:etats])
+    end
+    @mouvements = @mouvements.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
+    @pagy, @mouvements = pagy(@mouvements, items: 10)
   end
 
   # GET /mouvements/1 or /mouvements/1.json
@@ -74,5 +90,17 @@ class MouvementsController < ApplicationController
 
     def is_user_authorized
       authorize @mouvement ? @mouvement : Mouvement
+    end
+
+    def sortable_columns
+      ['mouvements.updated_at', 'tools.name', 'mouvements.état']
+    end
+
+    def sort_column
+      sortable_columns.include?(params[:column]) ? params[:column] : "mouvements.updated_at"
+    end
+
+    def sort_direction
+      %w[asc desc].include?(params[:direction]) ? params[:direction] : "desc"
     end
 end

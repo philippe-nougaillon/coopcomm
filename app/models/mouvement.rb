@@ -11,6 +11,21 @@ class Mouvement < ApplicationRecord
     out: 3
   }
 
+  def style
+    case self.état
+    when 'début'
+      'primary'
+    when 'fin'
+      'secondary'
+    when 'in'
+      'success'
+    when 'out'
+      'error'
+    else
+      'warning'
+    end
+  end
+
   private
 
   def slug_candidates
