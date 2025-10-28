@@ -252,14 +252,14 @@ class PagesController < ApplicationController
     forecasts = Meteo.instance.get_by_nextHours.call
     #@forecast = {"temp2m" => 10, "rh2m" => 80, "datetime"=> Time.now, "insee"=> 54518, "weather" => 210, "wind10m" => 40}
 
-    @city = forecasts["city"]["name"]
-    @forecast = forecasts["forecast"].first
-    @last_forecast = forecasts["forecast"].last
+    @city = forecasts["city"]&["name"]
+    @forecast = forecasts["forecast"]&.first
+    @last_forecast = forecasts["forecast"]&.last
   end
 
   def meteo
     @forecasts = Meteo.instance.get_by_daily_periods.call
-    @city = @forecasts["city"]["name"]
+    @city = @forecasts["city"]&["name"]
   end
 
   def meteo_by_day

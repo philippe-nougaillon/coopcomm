@@ -41,6 +41,7 @@ export default class extends Controller {
         this.prévisionMétéoTarget.textContent = response["weather"] + " avec " + forecast["temp2m"] + "°C"
       },
       error: (err) => {
+        this.prévisionMétéoTarget.textContent = "Météo indisponible"
       }
     })
   }
