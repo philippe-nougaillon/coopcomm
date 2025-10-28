@@ -1,16 +1,16 @@
-<div class="w-64 flex flex-col justify-around items-center text-center card shadow bg-base-100 p-6">
+<div class="w-96 flex flex-col justify-around items-center text-center card shadow bg-base-100 p-6">
     <div class="text-md font-bold flex flex-col text-gray-900">
         <span class="uppercase"><%= l(forecast["datetime"].to_date, format: :day) %></span>
-        <span class="font-normal text-gray-700 text-sm">à <%= forecast["datetime"].to_time.strftime("%H:%M") %></span>
+        <span class="font-normal text-gray-700 text-sm"><%= forecast["datetime"].to_time.strftime("%H:%M") %></span>
     </div>
     <%= image_tag Meteo.get_icon_meteo(forecast["weather"]), size: 120 %>
     <p class="text-gray-700 mb-2"><%= Meteo.WEATHER[forecast["weather"]] %></p>
-    <div class="text-3xl font-bold text-gray-900 mb-6">
+    <div class="text-3xl text-gray-900 mb-6">
         <p><%= forecast["temp2m"] %>ºC</p>
     </div>
-    <div class="flex items-center text-gray-700 px-2 gap-1">
-        <%= image_tag "meteo/wind.svg", size: 10 %>
+    <div class="flex items-center text-gray-700 gap-2">
+        <%= image_tag "meteo/wind.svg", size: 10, style: "rotate: #{forecast["dirwind10m"]}deg" %>
         <p><%= forecast["wind10m"] %> km/h</p>
     </div>
-    <%= link_to "Créer une intervention", new_intervention_path(début_prévue: forecast["datetime"].to_date, fin_prévue: forecast["datetime"].to_date), class: "btn btn-primary btn-outline rounded-full w-fit whitespace-nowrap px-6 mt-2" %>
+    <%= link_to "Créer une intervention", new_intervention_path(début_prévue: forecast["datetime"].to_date, fin_prévue: forecast["datetime"].to_date), class: "btn btn-primary btn-outline btn-sm  w-fit whitespace-nowrap px-6 mt-6" %>
 </div>
