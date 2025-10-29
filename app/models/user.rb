@@ -48,6 +48,8 @@ class User < ApplicationRecord
     Ménage: 5
   }
 
+  enum :otp_method, {email: 0, app: 1}
+
   validates :nom, :prénom, :email, presence: true
   validates_uniqueness_of :email
   validates :localisation, presence: true, if: -> { rôle == "adhérent" }
