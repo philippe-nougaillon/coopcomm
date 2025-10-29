@@ -249,17 +249,21 @@ class PagesController < ApplicationController
     @interventions = Intervention.by_role_for(current_user).first(2)
     @notifications = current_user.notifications.ordered.first(3)
 
-    forecasts = Meteo.instance.get_by_nextHours.call
+    @forecasts = Meteo.instance.get_by_nextHours.call
     #@forecast = {"temp2m" => 10, "rh2m" => 80, "datetime"=> Time.now, "insee"=> 54518, "weather" => 210, "wind10m" => 40}
 
-    @city = forecasts["city"]&["name"]
-    @forecast = forecasts["forecast"]&.first
-    @last_forecast = forecasts["forecast"]&.last
+    if @forecasts.present?
+      @city = @forecasts["city"]["name"]
+      @forecast = @forecasts["forecast"].first
+      @last_forecast = @forecasts["forecast"].last
+    end
   end
 
   def meteo
     @forecasts = Meteo.instance.get_by_daily_periods.call
-    @city = @forecasts["city"]&["name"]
+    if @forecasts.present?
+      @city = @forecasts["city"]["name"]
+    end
   end
 
   def meteo_by_day
