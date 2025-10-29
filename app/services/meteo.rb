@@ -69,6 +69,7 @@ class Meteo < ApplicationService
     @nexthours_response = get_response
   end
 
+  # Pour chercher la météo sur un jour précis (2 désigne l'après-midi)
   def get_by_daily(day)
     @scope_response = @daily_periods_response["forecast"][day.to_i][2]
 
