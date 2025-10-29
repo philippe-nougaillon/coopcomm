@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_27_145958) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_29_082445) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -161,6 +161,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_27_145958) do
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "intervention_id"
+    t.index ["intervention_id"], name: "index_mouvements_on_intervention_id"
     t.index ["tool_id"], name: "index_mouvements_on_tool_id"
   end
 
@@ -418,6 +420,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_27_145958) do
   add_foreign_key "interventions", "organisations"
   add_foreign_key "interventions", "users", column: "team_id"
   add_foreign_key "mail_logs", "organisations"
+  add_foreign_key "mouvements", "interventions"
   add_foreign_key "mouvements", "tools"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

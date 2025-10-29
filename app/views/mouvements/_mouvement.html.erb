@@ -3,6 +3,12 @@
   <% if params[:controller] != 'tools' %>
     <td><%= link_to mouvement.tool.name, mouvement.tool, class: 'hover:underline' %></td>
   <% end %>
-  <td></td>
+  <td>
+    <% if mouvement.intervention %>
+      <b><%= mouvement.intervention.description %></b>
+      <br>
+      <%= l mouvement.intervention.début, format: :long %> - <%= mouvement.intervention.fin.strftime("%H:%M") %> 
+    <% end %>
+  </td>
   <td><%= time_ago_in_words(mouvement.updated_at) %></td>
 </tr>
