@@ -10,6 +10,8 @@
 <% if @response %>
     <% @response["routes"].each do |route| %>
         <%= route["polyline"]["encodedPolyline"] %>
+        <br><br>
+        <%= route["travelAdvisory"]["fuelConsumptionMicroliters"] %>
     <% end %>
 <% end %>
 
@@ -97,7 +99,7 @@
     async function initMap() {
 
         // Initialisation des bibliothèques nécessaires
-        const { Map } = await google.maps.importLibrary("maps");
+        // const { Map } = await google.maps.importLibrary("maps");
         const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary(
           "marker",
         );
@@ -108,20 +110,6 @@
             zoom: 11,
             mapId: "549c4681c953f814fa1cd142",
         });
-
-        <% if current_user.adhérent? %>
-            // Ajout du marker pour l'adhérent courant
-            const pinHost = new PinElement({
-                scale: 1.5,
-                glyphColor: "white",
-            });
-            new google.maps.marker.AdvancedMarkerElement({
-                map,
-                position: <%= current_user.localisation_to_lat_lng_object %>,
-                title: "<%= current_user.nom_prénom %>",
-                content: pinHost.element
-            });
-        <% end %>
 
         // Initialisation des markers
 
@@ -140,12 +128,6 @@
 
         <% if @response %>
             // Initialisation des routes
-            const flightPlanCoordinates = [
-                { lat: 37.772, lng: -122.214 },
-                { lat: 21.291, lng: -157.821 },
-                { lat: -18.142, lng: 178.431 },
-                { lat: -27.467, lng: 153.027 },
-            ];
             <% @response["routes"].each do |route| %>
                 let decodedPath = google.maps.geometry.encoding.decodePath(
                     "<%= j route["polyline"]["encodedPolyline"] %>"
@@ -154,9 +136,9 @@
                 let flightPath = new google.maps.Polyline({
                     path: decodedPath,
                     geodesic: true,
-                    strokeColor: "#FF0000",
+                    strokeColor: "#0f53ff",
                     strokeOpacity: 1.0,
-                    strokeWeight: 2,
+                    strokeWeight: 5,
                 });
 
                 flightPath.setMap(map);

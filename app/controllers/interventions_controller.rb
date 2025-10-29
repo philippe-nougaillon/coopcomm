@@ -606,7 +606,7 @@ class InterventionsController < ApplicationController
 
       @map_center = calculate_map_center(@interventions_localisations_to_marker)
 
-            # Si l'utilisateur courant est un adhérent, calculer les trajets entre lui et les autres interventions trouvées. Pour l'instant en stand-by tant que l'on a pas de réels besoins client.
+      # Si l'utilisateur courant est un adhérent, calculer les trajets entre lui et les autres interventions trouvées. Pour l'instant en stand-by tant que l'on a pas de réels besoins client.
       if current_user.adhérent?
         request = ApiGoogleMaps.new
         localisation_current_adhérent = current_user.localisation_to_lat_lng_object
@@ -638,6 +638,9 @@ class InterventionsController < ApplicationController
               }
             },
             travelMode: "DRIVE",
+            extraComputations: "FUEL_CONSUMPTION",
+            routingPreference: "TRAFFIC_AWARE_OPTIMAL",
+            requestedReferenceRoutes: ["FUEL_EFFICIENT"]
           }
       
           request.prepare_body_request(body)
@@ -647,7 +650,16 @@ class InterventionsController < ApplicationController
           if response["error"]
             @errors << { position: intervention[:position], message: response["error"]["message"] }
           else
-            @routes_info << "Adhérent slug = #{intervention[:adherent_slug]}, Distance = #{response["routes"].first["distanceMeters"].to_f/1000} km , Durée = #{response["routes"].first["duration"].to_f/60} min; "
+            route = response["routes"].first
+
+            # 💡 Consommation de carburant
+            fuel_microliters = route.dig("travelAdvisory", "fuelConsumptionMicroliters")
+            fuel_liters = fuel_microliters.to_f / 1_000_000 if fuel_microliters
+
+            # 💨 Conversion en CO₂ (essence : 2.31 kg CO₂ / litre)
+            co2_kg = fuel_liters ? (fuel_liters * 2.31) : nil
+
+            @routes_info << "Adhérent slug = #{intervention[:adherent_slug]}, Distance = #{response["routes"].first["distanceMeters"].to_f/1000} km , Durée = #{response["routes"].first["duration"].to_f/60} min, LitreEssence = #{response["routes"].first["travelAdvisory"]["fuelConsumptionMicroliters"]}, CO2 = #{co2_kg}kg "
             @response = response
           end
         end
