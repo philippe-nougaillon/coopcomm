@@ -13,7 +13,7 @@ class ApiGoogleMaps < ApplicationService
     @request["accept"] = 'application/json'
     @request["content-type"] = 'application/json'
     @request["X-Goog-Api-Key"] = "#{ENV['GOOGLE_MAPS_API_KEY']}"
-    @request["X-Goog-FieldMask"] = "routes.duration,routes.distanceMeters"
+    @request["X-Goog-FieldMask"] = "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline"
   end
 
   def get_response

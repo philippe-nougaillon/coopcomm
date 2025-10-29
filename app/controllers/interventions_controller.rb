@@ -374,10 +374,14 @@ class InterventionsController < ApplicationController
     # Besoin de parser avec le timezone pour éviter des décalages horaires
     time_zone_date = Time.zone.parse(@date_to_string)
 
-    # Recherche de toutes les interventions qui se passent dans la date
+    # # Recherche de toutes les interventions qui se passent dans la date
     @interventions = @interventions.where(
       "début <= ? AND fin >= ?", time_zone_date, time_zone_date
     )
+
+    # Changé pour l'instant pour tester les routes entre deux interventions parce que ça n'a pas de sens de relier deux interventions qui ont lieu en même temps/
+    # Commenter cette ligne et décommenter celle du dessus pour revenir à la méthode initiale
+    @interventions = @interventions.where("DATE(début) = ?", time_zone_date.to_date)
 
     # Création des variables utilisés par les selecteurs
     organisation_members = current_user.organisation.users
@@ -495,6 +499,156 @@ class InterventionsController < ApplicationController
             @errors << { position: intervention[:position], message: response["error"]["message"] }
           else
             @routes_info << "Adhérent slug = #{intervention[:adherent_slug]}, Distance = #{response["routes"].first["distanceMeters"].to_f/1000} km , Durée = #{response["routes"].first["duration"].to_f/60} min; "
+          end
+        end
+      end
+    end
+  end
+
+  def route_interventions
+
+    # Si c'est un adhérent, on va chercher toutes les interventions du jour, sans distinction du rôle pour pouvoir trier par outils après.
+    if current_user.adhérent?
+      @interventions = current_user.organisation.interventions.ordered
+    else
+      @interventions = Intervention.by_role_for(current_user)
+    end
+
+    # Pour que la carte ne plante pas (il faut une position d'un adhérent)
+    @interventions = @interventions.where.not(adherent_id: nil)
+
+    if params[:date].blank?
+      params[:date] = DateTime.now
+    end
+    # Conversion nécessaire pour le repasser dans la vue dans la fonction l(). On passe de DateTime à un string
+    @date_to_string = params[:date].to_s
+
+    # Besoin de parser avec le timezone pour éviter des décalages horaires
+    time_zone_date = Time.zone.parse(@date_to_string)
+
+
+    @interventions = @interventions.where("DATE(début) = ?", time_zone_date.to_date)
+
+    # Création des variables utilisés par les selecteurs
+    organisation_members = current_user.organisation.users
+    if current_user.manager?
+      @adhérents = organisation_members.adhérent.order(:nom)
+      @services = User.services.sort
+      @teams = organisation_members.équipe
+      @grouped_agents = User.grouped_agents(organisation_members)
+    elsif current_user.adhérent?
+      @adhérents = organisation_members.adhérent.order(:nom)
+      @services = User.services
+      @grouped_agents = User.grouped_agents(organisation_members)
+    elsif current_user.équipe?
+      @services = User.services
+      @grouped_agents = User.grouped_agents(organisation_members)
+    elsif current_user.agent?
+      @adhérents = organisation_members.adhérent.order(:nom)
+    end
+    @tools = current_user.organisation.tools.ordered
+    @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
+
+
+    # Filtrage des interventions en fonction des paramètres
+
+    if params[:tool_ids].present?
+      @interventions = @interventions.joins(:tool_interventions).where(tool_interventions: {tool_id: params[:tool_ids]})
+    end
+
+    if params[:workflow_state].present?
+      @interventions = @interventions.where("interventions.workflow_state = ?", params[:workflow_state].to_s.downcase)
+    end
+
+    if params[:search].present?
+      @interventions = @interventions.where("description ILIKE :search OR commentaires ILIKE :search", {search: "%#{params[:search]}%"})
+    end
+
+    if params[:adherent_id].present?
+      @interventions = @interventions.where(adherent_id: params[:adherent_id])
+    end
+
+    if params[:team_id].present?
+      @interventions = @interventions.where(team_id: params[:team_id])
+    end
+
+    if params[:service].present?
+      @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {service: params[:service]})
+    end
+
+    if params[:agent_ids].present?
+      @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {id: params[:agent_ids]})
+    end
+
+    if params[:tags].present?
+      @interventions = @interventions.tagged_with(params[:tags].reject(&:blank?))
+      session[:tags] = params[:tags]
+    else
+      session[:tags] = params[:tags] = []
+    end
+    
+    # Centre de la carte en fonction de l'adhérent ou d'un localisation par défaut, ici La Défense.
+    @map_center = current_user.adhérent? ? current_user.localisation_to_lat_lng_object : { lat: 48.89084994828303, lng: 2.2416654776359355 }
+
+    # Initialisation des variables utilisées dans la vue
+    @interventions_localisations_to_marker = Hash.new
+    @routes_info = []
+    @error_message = []
+
+    @interventions = @interventions.last(2)
+
+    if @interventions.any?
+      # Groupage des interventions en fonction des adhérents pour n'avoir qu'un marker par adhérent
+      interventions_par_adherent = @interventions.group_by(&:adherent_id)
+
+      # Variable contenant toutes les informations pour les markers
+      @interventions_localisations_to_marker = get_interventions_localisations_to_marker(interventions_par_adherent)
+
+      @map_center = calculate_map_center(@interventions_localisations_to_marker)
+
+            # Si l'utilisateur courant est un adhérent, calculer les trajets entre lui et les autres interventions trouvées. Pour l'instant en stand-by tant que l'on a pas de réels besoins client.
+      if current_user.adhérent?
+        request = ApiGoogleMaps.new
+        localisation_current_adhérent = current_user.localisation_to_lat_lng_object
+      
+        @errors = []
+        @interventions_localisations_to_marker.each do 
+          |intervention, index|
+          if intervention[:position] == localisation_current_adhérent
+            next
+          end
+          destination_lat = intervention[:position][:lat]
+          destination_lng = intervention[:position][:lng]
+      
+          body = {
+            origin: {
+              location: {
+                latLng: {
+                  latitude: localisation_current_adhérent[:lat],
+                  longitude: localisation_current_adhérent[:lng]
+                }
+              }
+            },
+            destination: {
+              location: {
+                latLng: {
+                  latitude: destination_lat,
+                  longitude: destination_lng
+                }
+              }
+            },
+            travelMode: "DRIVE",
+          }
+      
+          request.prepare_body_request(body)
+          response = request.get_response
+          @response = nil
+      
+          if response["error"]
+            @errors << { position: intervention[:position], message: response["error"]["message"] }
+          else
+            @routes_info << "Adhérent slug = #{intervention[:adherent_slug]}, Distance = #{response["routes"].first["distanceMeters"].to_f/1000} km , Durée = #{response["routes"].first["duration"].to_f/60} min; "
+            @response = response
           end
         end
       end
