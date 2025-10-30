@@ -1,13 +1,13 @@
 <tr class="hover:bg-base-300">
-  <td><p class="font-bold badge badge-<%= mouvement.style %>"><%= mouvement.état.humanize %></p></td>
   <% if params[:controller] != 'tools' %>
-    <td><%= link_to mouvement.tool.name, mouvement.tool, class: 'hover:underline' %></td>
+    <td><b><%= link_to mouvement.tool.name, mouvement.tool, class: 'hover:underline' %></b></td>
   <% end %>
+  <td><p class="font-bold badge badge-sm badge-<%= mouvement.style %>"><%= mouvement.état.humanize %></p></td>
   <td>
     <% if mouvement.intervention %>
-      <b><%= mouvement.intervention.description %></b>
+      <b><%= l mouvement.intervention.début, format: :long %> - <%= mouvement.intervention.fin.strftime("%H:%M") %></b>
       <br>
-      <%= l mouvement.intervention.début, format: :long %> - <%= mouvement.intervention.fin.strftime("%H:%M") %> 
+      <%= mouvement.intervention.description %>
     <% end %>
   </td>
   <td><%= time_ago_in_words(mouvement.updated_at) %></td>
