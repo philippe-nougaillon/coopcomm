@@ -24,7 +24,7 @@ export default class extends Controller {
     let diffDays = this.nombres_jours(days)
 
     if(diffDays < 0 || diffDays > 13 || isNaN(diffDays)){
-      this.prévisionMétéoTarget.textContent = "Prévision uniquement dans les 14 prochains jours"
+      this.prévisionMétéoTarget.value = "Prévision uniquement dans les 14 prochains jours"
     }else{
       this.fetch_meteo_by_daily(diffDays)
     }
@@ -38,10 +38,10 @@ export default class extends Controller {
       success: (response) => {
         const forecast = response["forecast"]
         console.log(forecast)
-        this.prévisionMétéoTarget.textContent = response["weather"] + " avec " + forecast["temp2m"] + "°C"
+        this.prévisionMétéoTarget.value = response["weather"] + " | Température : " + forecast["temp2m"] + "°C | Probabilité de pluie : " + forecast["probarain"] + "% | Vent : " + forecast["wind10m"] + " km/h"
       },
       error: (err) => {
-        this.prévisionMétéoTarget.textContent = "Météo indisponible"
+        this.prévisionMétéoTarget.value = "Météo indisponible"
       }
     })
   }

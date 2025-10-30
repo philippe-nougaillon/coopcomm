@@ -98,9 +98,11 @@
         </div>
 
         <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
-          <div>
-            <p>Prévision météo</p>
-            <p data-meteo-intervention-target="prévisionMétéo"></p>
+          <div class="w-full min-w-fit flex-1">
+            <%= form.label :meteo, "Prévision météo" %>
+            <%= form.text_field :meteo, class: "input input-sm w-full ", 'data-meteo-intervention-target': "prévisionMétéo" %>
+          </div>
+          <div class="w-full min-w-fit flex-1">
           </div>
         </div>
       </div>
@@ -214,7 +216,7 @@
     <% end %>
 
     <div class="my-5">
-      <%= form.label :photos %>
+      <%= form.label :photos, "Photos :" %>
       <%= form.file_field :photos, multiple: true, accept: 'image/png,image/gif,image/jpeg,image/avif,image/webp', class: 'file-input file-input-sm w-full max-w-md' %>
     </div>
 
