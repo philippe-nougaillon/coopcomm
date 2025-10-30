@@ -1,4 +1,4 @@
-<div onclick="modal_<%= forecast_counter %>.showModal()" class="w-96 flex flex-col justify-around items-center text-center card shadow bg-base-100 p-6 hover:cursor-pointer" title="Voir plus d'informations sur la météo pour le <%= l(forecast["datetime"].to_date, format: :day) %>">
+<div onclick="modal_<%= forecast_counter %>.showModal()" class="w-96 flex flex-col justify-around items-center text-center card shadow bg-base-100 p-6 hover:cursor-pointer" title="Voir plus d'informations sur la météo du <%= l(forecast["datetime"].to_date, format: :day) %>">
     <div class="text-md font-bold flex flex-col text-gray-900">
         <span class="uppercase"><%= l(forecast["datetime"].to_date, format: :day) %></span>
         <span class="font-normal text-gray-700 text-sm"><%= forecast["datetime"].to_time.strftime("%H:%M") %></span>
@@ -20,13 +20,13 @@
 </div>
 
 <dialog id="modal_<%= forecast_counter %>" class="modal">
-    <div class="modal-box">
+    <div class="modal-box max-w-1/2">
         <form method="dialog">
             <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
         </form>
-        <div class="w-full text-center">
-            <h3 class="text-lg font-bold text-center uppercase"><%=l forecast["datetime"].to_date, format: :day %></h3>
-            <span class="font-normal text-gray-700 text-sm"><%= forecast["datetime"].to_time.strftime("%H:%M") %></span>
+        <div class="w-full text-center mb-4">
+            <h1 class="text-3xl font-bold text-center uppercase"><%=l forecast["datetime"].to_date, format: :day %></h1>
+            <span class="font-normal text-gray-700 text-md"><%= forecast["datetime"].to_time.strftime("%H:%M") %></span>
         </div>
         <div class="flex flex-col gap-4 pb-4 -mt-4">
             <div class="flex items-center justify-center">
@@ -38,7 +38,7 @@
                     <p class="text-3xl text-gray-900 mb-2"><%= forecast["temp2m"] %>ºC</p>
                     <div class="flex items-center text-gray-700 gap-2">
                         <%= image_tag "meteo/wind.svg", size: 10, style: "rotate: #{forecast["dirwind10m"]}deg" %>
-                        <p><%= forecast["wind10m"] %> km/h</p>
+                        <p class="font-bold"><%= forecast["wind10m"] %> km/h</p>
                     </div>
                 </div>
             </div>
@@ -46,55 +46,55 @@
             <div class="flex flex-wrap md:flex-nowrap gap-4">
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Cumul de pluie sur la journée</p>
-                    <p><%= forecast["rr10"] %> mm</p>
+                    <p class="font-bold"><%= forecast["rr10"] %> mm</p>
                 </div>
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Cumul de pluie maximal sur la journée</p>
-                    <p><%= forecast["rr1"] %> mm</p>
+                    <p class="font-bold"><%= forecast["rr1"] %> mm</p>
                 </div>
             </div>
 
             <div class="flex flex-wrap md:flex-nowrap gap-4">
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Probabilité de pluie</p>
-                    <p><%= forecast["probarain"] %>%</p>
+                    <p class="font-bold"><%= forecast["probarain"] %>%</p>
                 </div>
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Probabilité de gel</p>
-                    <p><%= forecast["probafrost"] %>%</p>
+                    <p class="font-bold"><%= forecast["probafrost"] %>%</p>
                 </div>
             </div>
             
             <div class="flex flex-wrap md:flex-nowrap gap-4">
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Probabilité de brouillard</p>
-                    <p><%= forecast["probafog"] %>%</p>
+                    <p class="font-bold"><%= forecast["probafog"] %>%</p>
                 </div>
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Rafale de vent potentielle sous orage ou grain</p>
-                    <p><%= forecast["gustx"] %> km/h</p>
+                    <p class="font-bold"><%= forecast["gustx"] %> km/h</p>
                 </div>
             </div>
 
             <div class="flex flex-wrap md:flex-nowrap gap-4">
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Vent moyen à 10 mètres de hauteur</p>
-                    <p><%= forecast["wind10m"] %> km/h</p>
+                    <p class="font-bold"><%= forecast["wind10m"] %> km/h</p>
                 </div>
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Rafales de vent à 10 mètres de hauteur</p>
-                    <p><%= forecast["gust10m"] %> km/h</p>
+                    <p class="font-bold"><%= forecast["gust10m"] %> km/h</p>
                 </div>
             </div>
 
             <div class="flex flex-wrap md:flex-nowrap gap-4">
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Probabilité de vent > 70 km/h</p>
-                    <p><%= forecast["probawind70"] %>%</p>
+                    <p class="font-bold"><%= forecast["probawind70"] %>%</p>
                 </div>
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Probabilité de vent > 100 km/h</p>
-                    <p><%= forecast["probawind100"] %>%</p>
+                    <p class="font-bold"><%= forecast["probawind100"] %>%</p>
                 </div>
 
             </div>
