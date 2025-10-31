@@ -659,7 +659,7 @@ class InterventionsController < ApplicationController
             # 💨 Conversion en CO₂ (essence : 2.31 kg CO₂ / litre)
             co2_kg = fuel_liters ? (fuel_liters * 2.31) : nil
 
-            @routes_info << "Adhérent slug = #{intervention[:adherent_slug]}, Distance = #{response["routes"].first["distanceMeters"].to_f/1000} km , Durée = #{response["routes"].first["duration"].to_f/60} min, LitreEssence = #{response["routes"].first["travelAdvisory"]["fuelConsumptionMicroliters"]}, CO2 = #{co2_kg}kg "
+            @routes_info << "Adhérent slug = #{intervention[:adherent_slug]}, Distance = #{(response["routes"].first["distanceMeters"].to_f/1000).round(2)} km , Durée = #{(response["routes"].first["duration"].to_f/60).round(2)} min, MicroLitreEssence = #{(response["routes"].first["travelAdvisory"]["fuelConsumptionMicroliters"]).to_f.round(2)}, CO2 = #{co2_kg.round(2)}kg "
             @response = response
           end
         end
