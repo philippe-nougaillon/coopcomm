@@ -101,6 +101,61 @@ class InterventionsController < ApplicationController
   # GET /interventions/1 or /interventions/1.json
   def show
     if stale?(@intervention)
+
+      # Pour la map avec la route entre l'intervention courant et thiaucourt
+      unless @intervention.adherent&.localisation.blank?
+        request = ApiGoogleMaps.new
+
+        # Prendre la route de thiaucourt vers l'adhérent courant
+        localisation_thiaucourt = { lat: 48.95380869155297, lng: 5.865438709177733 }
+        @map_center = localisation_thiaucourt
+
+        # Prendre l'adhérent de l'intervention
+        @localisation_arrivee = @intervention.adherent.localisation_to_lat_lng_object
+
+        body = {
+          origin: {
+            location: {
+              latLng: {
+                latitude: localisation_thiaucourt[:lat],
+                longitude: localisation_thiaucourt[:lng]
+              }
+            }
+          },
+          destination: {
+            location: {
+              latLng: {
+                latitude: @localisation_arrivee[:lat],
+                longitude: @localisation_arrivee[:lng]
+              }
+            }
+          },
+          travelMode: "DRIVE",
+          extraComputations: "FUEL_CONSUMPTION",
+          routingPreference: "TRAFFIC_AWARE_OPTIMAL",
+          requestedReferenceRoutes: ["FUEL_EFFICIENT"]
+        }
+
+        request.prepare_body_request(body)
+        response = request.get_response
+
+        if response["error"]
+            @errors << { position: intervention[:position], message: response["error"]["message"] }
+        else
+          route = response["routes"].first
+
+          # 💡 Consommation de carburant
+          fuel_microliters = route.dig("travelAdvisory", "fuelConsumptionMicroliters")
+          fuel_liters = fuel_microliters.to_f / 1_000_000 if fuel_microliters
+
+          # 💨 Conversion en CO₂ (essence : 2.31 kg CO₂ / litre)
+          co2_kg = fuel_liters ? (fuel_liters * 2.31) : nil
+
+          @routes_info = "Distance = #{(response["routes"].first["distanceMeters"].to_f/1000).round(2)} km, Durée = #{(response["routes"].first["duration"].to_f/60).round(2)} min, Essence = #{((response["routes"].first["travelAdvisory"]["fuelConsumptionMicroliters"]).to_f/1000000).round(2)} L, CO2 = #{co2_kg.round(2)} kg "
+          @response = response
+        end
+      end
+
       respond_to do |format|
         format.html do
           @audits = @intervention.audits.includes(:user).reorder(id: :desc)
@@ -610,59 +665,65 @@ class InterventionsController < ApplicationController
       if current_user.adhérent?
         request = ApiGoogleMaps.new
         localisation_current_adhérent = current_user.localisation_to_lat_lng_object
-      
+
+        # Prendre la route de thiaucourt vers l'adhérent courant
+
         @errors = []
-        @interventions_localisations_to_marker.each do 
-          |intervention, index|
-          if intervention[:position] == localisation_current_adhérent
-            next
-          end
-          destination_lat = intervention[:position][:lat]
-          destination_lng = intervention[:position][:lng]
-      
-          body = {
-            origin: {
-              location: {
-                latLng: {
-                  latitude: localisation_current_adhérent[:lat],
-                  longitude: localisation_current_adhérent[:lng]
-                }
-              }
-            },
-            destination: {
-              location: {
-                latLng: {
-                  latitude: destination_lat,
-                  longitude: destination_lng
-                }
-              }
-            },
-            travelMode: "DRIVE",
-            extraComputations: "FUEL_CONSUMPTION",
-            routingPreference: "TRAFFIC_AWARE_OPTIMAL",
-            requestedReferenceRoutes: ["FUEL_EFFICIENT"]
-          }
-      
-          request.prepare_body_request(body)
-          response = request.get_response
-          @response = nil
-      
-          if response["error"]
-            @errors << { position: intervention[:position], message: response["error"]["message"] }
-          else
-            route = response["routes"].first
 
-            # 💡 Consommation de carburant
-            fuel_microliters = route.dig("travelAdvisory", "fuelConsumptionMicroliters")
-            fuel_liters = fuel_microliters.to_f / 1_000_000 if fuel_microliters
+        @interventions_localisations_to_marker
+        @interventions_localisations_to_marker
 
-            # 💨 Conversion en CO₂ (essence : 2.31 kg CO₂ / litre)
-            co2_kg = fuel_liters ? (fuel_liters * 2.31) : nil
-
-            @routes_info << "Adhérent slug = #{intervention[:adherent_slug]}, Distance = #{(response["routes"].first["distanceMeters"].to_f/1000).round(2)} km , Durée = #{(response["routes"].first["duration"].to_f/60).round(2)} min, MicroLitreEssence = #{(response["routes"].first["travelAdvisory"]["fuelConsumptionMicroliters"]).to_f.round(2)}, CO2 = #{co2_kg.round(2)}kg "
-            @response = response
-          end
-        end
+        # @interventions_localisations_to_marker.each do
+        #   |intervention, index|
+        #   if intervention[:position] == localisation_current_adhérent
+        #     next
+        #   end
+        #   destination_lat = intervention[:position][:lat]
+        #   destination_lng = intervention[:position][:lng]
+        #
+        #   body = {
+        #     origin: {
+        #       location: {
+        #         latLng: {
+        #           latitude: localisation_current_adhérent[:lat],
+        #           longitude: localisation_current_adhérent[:lng]
+        #         }
+        #       }
+        #     },
+        #     destination: {
+        #       location: {
+        #         latLng: {
+        #           latitude: destination_lat,
+        #           longitude: destination_lng
+        #         }
+        #       }
+        #     },
+        #     travelMode: "DRIVE",
+        #     extraComputations: "FUEL_CONSUMPTION",
+        #     routingPreference: "TRAFFIC_AWARE_OPTIMAL",
+        #     requestedReferenceRoutes: ["FUEL_EFFICIENT"]
+        #   }
+        #
+        #   request.prepare_body_request(body)
+        #   response = request.get_response
+        #   @response = nil
+        #
+        #   if response["error"]
+        #     @errors << { position: intervention[:position], message: response["error"]["message"] }
+        #   else
+        #     route = response["routes"].first
+        #
+        #     # 💡 Consommation de carburant
+        #     fuel_microliters = route.dig("travelAdvisory", "fuelConsumptionMicroliters")
+        #     fuel_liters = fuel_microliters.to_f / 1_000_000 if fuel_microliters
+        #
+        #     # 💨 Conversion en CO₂ (essence : 2.31 kg CO₂ / litre)
+        #     co2_kg = fuel_liters ? (fuel_liters * 2.31) : nil
+        #
+        #     @routes_info << "Adhérent slug = #{intervention[:adherent_slug]}, Distance = #{(response["routes"].first["distanceMeters"].to_f/1000).round(2)} km , Durée = #{(response["routes"].first["duration"].to_f/60).round(2)} min, MicroLitreEssence = #{(response["routes"].first["travelAdvisory"]["fuelConsumptionMicroliters"]).to_f.round(2)}, CO2 = #{co2_kg.round(2)}kg "
+        #     @response = response
+        #   end
+        # end
       end
     end
   end
