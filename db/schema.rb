@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_08_131858) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_05_134509) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -155,6 +155,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_08_131858) do
     t.index ["organisation_id"], name: "index_mail_logs_on_organisation_id"
   end
 
+  create_table "mouvements", force: :cascade do |t|
+    t.bigint "tool_id", null: false
+    t.integer "état"
+    t.string "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "intervention_id"
+    t.index ["intervention_id"], name: "index_mouvements_on_intervention_id"
+    t.index ["tool_id"], name: "index_mouvements_on_tool_id"
+  end
+
   create_table "newsletters", force: :cascade do |t|
     t.string "email"
     t.string "slug"
@@ -176,6 +187,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_08_131858) do
     t.string "nom"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "solid_cable_messages", force: :cascade do |t|
+    t.binary "channel", null: false
+    t.binary "payload", null: false
+    t.datetime "created_at", null: false
+    t.bigint "channel_hash", null: false
+    t.index ["channel"], name: "index_solid_cable_messages_on_channel"
+    t.index ["channel_hash"], name: "index_solid_cable_messages_on_channel_hash"
+    t.index ["created_at"], name: "index_solid_cable_messages_on_created_at"
   end
 
   create_table "solid_cache_entries", force: :cascade do |t|
@@ -376,6 +397,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_08_131858) do
     t.integer "failed_attempts", default: 0, null: false
     t.datetime "locked_at"
     t.string "unlock_token"
+    t.string "unique_session_id"
     t.index ["discarded_at"], name: "index_users_on_discarded_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["organisation_id"], name: "index_users_on_organisation_id"
@@ -408,6 +430,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_08_131858) do
   add_foreign_key "interventions", "organisations"
   add_foreign_key "interventions", "users", column: "team_id"
   add_foreign_key "mail_logs", "organisations"
+  add_foreign_key "mouvements", "interventions"
+  add_foreign_key "mouvements", "tools"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
