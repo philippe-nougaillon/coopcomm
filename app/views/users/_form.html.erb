@@ -22,6 +22,11 @@
         </span>
       </div>
 
+      <div data-toggle-role-info-target='couleur' class="flex-1">
+        <%= form.label :color, "Couleur" %>
+        <%= form.color_field :color, class: 'input input-bordered input-sm w-full' %>
+      </div>
+
       <div data-toggle-role-info-target='service' class="flex-1">
         <%= form.label :service, "Service" %>
         <%= form.select :service, options_for_select(User.services.keys, user.service), {include_blank: true}, class: 'select select-sm w-full', required: true %>

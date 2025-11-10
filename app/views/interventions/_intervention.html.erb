@@ -55,11 +55,10 @@
               <strong class="block text-slate-400 mb-1">Adhérent</strong>
               <b><%= intervention.adherent.try(:nom_prénom) %></b>
             </p>
-            <p class="my-2">
+            <p class="my-2 pl-2" <%= "style=\"border-left: .3rem solid #{intervention.team.color};\"".html_safe if intervention.team&.color %>>
               <strong class="block text-slate-400 mb-1">Équipe</strong>
               <b><%= intervention.team.try(:nom_prénom) %></b>
             </p>
-
           </div>
 
           <div>

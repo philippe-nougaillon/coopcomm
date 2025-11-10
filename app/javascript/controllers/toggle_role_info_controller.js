@@ -2,11 +2,12 @@ import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="toggle-agent-service"
 export default class extends Controller {
-  static targets = ['role', 'service', 'localisation', 'prenom']
+  static targets = ['role', 'service', 'localisation', 'prenom', 'couleur']
 
   initialize() {
     this.serviceTarget.style.display = 'none';
     this.localisationTarget.style.display = 'none';
+    this.couleurTarget.style.display = 'none';
     this.change();
   }
 
@@ -26,6 +27,7 @@ export default class extends Controller {
       this.localisationTarget.children[1].required = false;
       this.prenomTarget.style.display = 'block';
       this.prenomTarget.children[1].required = true;
+      this.couleurTarget.style.display = 'none';
     } else if (role.value == 'adhérent') {
       this.serviceTarget.style.display = 'none';
       this.serviceTarget.children[1].selectedIndex = 0;
@@ -35,6 +37,7 @@ export default class extends Controller {
       this.prenomTarget.style.display = 'none';
       this.prenomTarget.children[1].required = false;
       this.prenomTarget.children[1].value = '';
+      this.couleurTarget.style.display = 'none';
     } else if (role.value == 'manager') {
       this.serviceTarget.style.display = 'none';
       this.serviceTarget.children[1].selectedIndex = 0;
@@ -45,6 +48,7 @@ export default class extends Controller {
       this.localisationTarget.children[1].required = false;
       this.prenomTarget.style.display = 'block';
       this.prenomTarget.children[1].required = true;
+      this.couleurTarget.style.display = 'none';
     } else if (role.value == 'équipe') {
       this.serviceTarget.style.display = 'none';
       this.serviceTarget.children[1].selectedIndex = 0;
@@ -56,6 +60,7 @@ export default class extends Controller {
       this.prenomTarget.style.display = 'none';
       this.prenomTarget.children[1].required = false;
       this.prenomTarget.children[1].value = '';
+      this.couleurTarget.style.display = 'block';
     } else {
       this.serviceTarget.style.display = 'none';
       this.serviceTarget.children[1].selectedIndex = 0;
@@ -66,6 +71,7 @@ export default class extends Controller {
       this.localisationTarget.children[1].required = false;
       this.prenomTarget.style.display = 'block';
       this.prenomTarget.children[1].required = true;
+      this.couleurTarget.style.display = 'none';
     }
   }
 }
