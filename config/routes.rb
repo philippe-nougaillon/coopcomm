@@ -24,7 +24,7 @@ Rails.application.routes.draw do
       get :qrcode_otp
       get :mail_otp
       post :enable_otp
-      # post :disable_otp
+      post :disable_otp
       post :send_otp
     end
   end

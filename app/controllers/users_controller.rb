@@ -160,11 +160,11 @@ class UsersController < ApplicationController
     UserMailer.mail_otp(current_user).deliver_now
   end
 
-  # def disable_otp
-  #   current_user.otp_required_for_login = false
-  #   current_user.save!
-  #   redirect_to user_path(current_user), notice: "Double authentification désactivée avec succès !"
-  # end
+  def disable_otp
+    current_user.otp_required_for_login = false
+    current_user.save!
+    redirect_to user_path(current_user), notice: "Double authentification désactivée avec succès !"
+  end
 
   def send_otp
     if (user = User.find_by(email: params[:email])) && user.valid_password?(params[:password])
