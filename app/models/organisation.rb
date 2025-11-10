@@ -1,13 +1,14 @@
 class Organisation < ApplicationRecord
   audited
 
-  has_many :users
-  has_many :interventions
-  has_many :mail_logs
-  has_many :absences, through: :users
-  has_many :notifications, through: :users
-  has_many :tools
-  has_many :mouvements, through: :tools
+
+  has_many :users, dependent: :destroy
+  has_many :interventions, dependent: :destroy
+  has_many :mail_logs, dependent: :destroy
+  has_many :absences, through: :users, dependent: :destroy
+  has_many :notifications, through: :users, dependent: :destroy
+  has_many :tools, dependent: :destroy
+  has_many :mouvements, through: :tools, dependent: :destroy
 
   def numero
     self.nom.split('_').last

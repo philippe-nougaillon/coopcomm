@@ -398,7 +398,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_05_134509) do
     t.integer "failed_attempts", default: 0, null: false
     t.datetime "locked_at"
     t.string "unlock_token"
-    t.integer "otp_method"
     t.string "unique_session_id"
     t.index ["discarded_at"], name: "index_users_on_discarded_at"
     t.index ["email"], name: "index_users_on_email", unique: true
