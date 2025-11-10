@@ -68,4 +68,8 @@ class InterventionPolicy < ApplicationPolicy
   def carte_interventions?
     index?
   end
+
+  def route_interventions?
+    index?
+  end
 end

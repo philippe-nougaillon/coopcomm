@@ -52,6 +52,7 @@ Rails.application.routes.draw do
     collection do
       get :get_unavailable_elements
       get :carte_interventions
+      get :route_interventions
     end
   end
 
