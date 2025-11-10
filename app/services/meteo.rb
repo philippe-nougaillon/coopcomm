@@ -10,8 +10,8 @@ class Meteo < ApplicationService
     # - wind10m = vent
     # - weather = état du ciel (nuageux, pluie, orages, ...)
 
-    @insee = "95028" # Code commune
-    @ville = "Attainville" # Commune principale
+    @insee = "95428" # Code commune
+    @ville = "Montmorency" # Commune principale
 
     # Appel des setters pour pouvoir charger uniquement la réponse que l'on veut. 
     set_nexthours_response
