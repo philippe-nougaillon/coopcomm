@@ -254,13 +254,15 @@
               });
 
               <% if @response %>
+                let decodedPath;
+                let flightPath;
                 // Initialisation des routes
                 <% @response["routes"].each do |route| %>
-                  let decodedPath = google.maps.geometry.encoding.decodePath(
+                  decodedPath = google.maps.geometry.encoding.decodePath(
                       "<%= j route["polyline"]["encodedPolyline"] %>"
                   );
 
-                  let flightPath = new google.maps.Polyline({
+                  flightPath = new google.maps.Polyline({
                       path: decodedPath,
                       geodesic: true,
                       strokeColor: "#0f53ff",
