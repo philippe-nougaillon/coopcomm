@@ -52,6 +52,7 @@ Rails.application.routes.draw do
     collection do
       get :get_unavailable_elements
       get :carte_interventions
+      get :route_interventions
     end
   end
 
@@ -73,6 +74,8 @@ Rails.application.routes.draw do
     get :tarifs, to: 'pages#tarifs', as: :tarifs
     get :contact, to: 'pages#contact', as: :contact
     get :home, to: 'pages#home', as: :home
+    get :meteo, to: 'pages#meteo', as: :meteo
+    get :meteo_by_day
   end
 
   resources :documents, only: %i[] do
@@ -96,6 +99,7 @@ Rails.application.routes.draw do
   post '/twilio/whatsapp_reply', to: 'twilio#whatsapp_reply'
   get '/twilio/get_request', to: 'twilio#get_request'
   post '/twilio/get_request', to: 'twilio#get_request'
+
 
   root "pages#home"
 end

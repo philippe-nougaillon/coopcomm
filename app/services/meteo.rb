@@ -1,0 +1,223 @@
+class Meteo < ApplicationService
+  include Singleton
+
+  def initialize
+    puts "Création du service Meteo"
+
+    # Définition des données principalement utilisées par l'API de Meteo Concept :
+    # - temp2m = température
+    # - rh2m = humidité
+    # - wind10m = vent
+    # - weather = état du ciel (nuageux, pluie, orages, ...)
+
+    @insee = "95428" # Code commune
+    @ville = "Montmorency" # Commune principale
+
+    # Appel des setters pour pouvoir charger uniquement la réponse que l'on veut. 
+    set_nexthours_response
+    set_daily_periods_response
+  end
+
+  def prepare_request(url)
+    url = URI(url)
+    @http = Net::HTTP.new(url.host, url.port)
+    @http.use_ssl = true
+
+    @request = Net::HTTP::Get.new(url)
+    @request["accept"] = 'application/json'
+    @request["content-type"] = 'application/json'
+    @request["authorization"] = "Bearer #{ENV['METEO_API_KEY']}"
+  end
+
+  def build_url(hash, ville)
+    ville = URI.encode_www_form_component(ville) # Pour accepter les accents
+    "https://api.meteo-concept.com/api/#{hash}#{ville}"
+  end
+
+  def get_response
+    JSON.parse(@http.request(@request).read_body)
+  end
+
+
+  # Pour chercher la météo des 14 prochains jours, avec quartiers de jour (Nuit, matin, après-midi, soir)
+  def get_by_daily_periods
+    @scope_response = @daily_periods_response
+    
+    self
+  end
+
+  def set_daily_periods_response
+    url = build_url("forecast/daily/periods?insee=", @insee)
+
+    prepare_request(url)
+
+    @daily_periods_response = get_response
+  end
+  
+  # Pour chercher la météo des 12 prochaines heures (part tranche de 3 heure, donc 4 prévisions)
+  def get_by_nextHours
+    @scope_response = @nexthours_response
+    
+    self
+  end
+
+  def set_nexthours_response
+    url = build_url("forecast/nextHours?insee=", @insee)
+
+    prepare_request(url)
+
+    @nexthours_response = get_response
+  end
+
+  # Pour chercher la météo sur un jour précis (2 désigne l'après-midi)
+  def get_by_daily(day)
+    @scope_response = @daily_periods_response["forecast"][day.to_i][2]
+
+    self
+  end
+  
+  def call
+    # Appel du scope de la réponse (modifié par un getter)
+    @scope_response
+  end
+
+  def self.WEATHER
+    {
+      0 => "Soleil",
+      1 => "Peu nuageux",
+      2 => "Ciel voilé",
+      3 => "Nuageux",
+      4 => "Très nuageux",
+      5 => "Couvert",
+      6 => "Brouillard",
+      7 => "Brouillard givrant",
+      10 => "Pluie faible",
+      11 => "Pluie modérée",
+      12 => "Pluie forte",
+      13 => "Pluie faible verglaçante",
+      14 => "Pluie modérée verglaçante",
+      15 => "Pluie forte verglaçante",
+      16 => "Bruine",
+      20 => "Neige faible",
+      21 => "Neige modérée",
+      22 => "Neige forte",
+      30 => "Pluie et neige mêlées faibles",
+      31 => "Pluie et neige mêlées modérées",
+      32 => "Pluie et neige mêlées fortes",
+      40 => "Averses de pluie locales et faibles",
+      41 => "Averses de pluie locales",
+      42 => "Averses locales et fortes",
+      43 => "Averses de pluie faibles",
+      44 => "Averses de pluie",
+      45 => "Averses de pluie fortes",
+      46 => "Averses de pluie faibles et fréquentes",
+      47 => "Averses de pluie fréquentes",
+      48 => "Averses de pluie fortes et fréquentes",
+      60 => "Averses de neige localisées et faibles",
+      61 => "Averses de neige localisées",
+      62 => "Averses de neige localisées et fortes",
+      63 => "Averses de neige faibles",
+      64 => "Averses de neige",
+      65 => "Averses de neige fortes",
+      66 => "Averses de neige faibles et fréquentes",
+      67 => "Averses de neige fréquentes",
+      68 => "Averses de neige fortes et fréquentes",
+      70 => "Averses de pluie et neige mêlées localisées et faibles",
+      71 => "Averses de pluie et neige mêlées localisées",
+      72 => "Averses de pluie et neige mêlées localisées et fortes",
+      73 => "Averses de pluie et neige mêlées faibles",
+      74 => "Averses de pluie et neige mêlées",
+      75 => "Averses de pluie et neige mêlées fortes",
+      76 => "Averses de pluie et neige mêlées faibles et nombreuses",
+      77 => "Averses de pluie et neige mêlées fréquentes",
+      78 => "Averses de pluie et neige mêlées fortes et fréquentes",
+      100 => "Orages faibles et locaux",
+      101 => "Orages locaux",
+      102 => "Orages fort et locaux",
+      103 => "Orages faibles",
+      104 => "Orages",
+      105 => "Orages forts",
+      106 => "Orages faibles et fréquents",
+      107 => "Orages fréquents",
+      108 => "Orages forts et fréquents",
+      120 => "Orages faibles et locaux de neige ou grésil",
+      121 => "Orages locaux de neige ou grésil",
+      122 => "Orages locaux de neige ou grésil",
+      123 => "Orages faibles de neige ou grésil",
+      124 => "Orages de neige ou grésil",
+      125 => "Orages de neige ou grésil",
+      126 => "Orages faibles et fréquents de neige ou grésil",
+      127 => "Orages fréquents de neige ou grésil",
+      128 => "Orages fréquents de neige ou grésil",
+      130 => "Orages faibles et locaux de pluie et neige mêlées ou grésil",
+      131 => "Orages locaux de pluie et neige mêlées ou grésil",
+      132 => "Orages fort et locaux de pluie et neige mêlées ou grésil",
+      133 => "Orages faibles de pluie et neige mêlées ou grésil",
+      134 => "Orages de pluie et neige mêlées ou grésil",
+      135 => "Orages forts de pluie et neige mêlées ou grésil",
+      136 => "Orages faibles et fréquents de pluie et neige mêlées ou grésil",
+      137 => "Orages fréquents de pluie et neige mêlées ou grésil",
+      138 => "Orages forts et fréquents de pluie et neige mêlées ou grésil",
+      140 => "Pluies orageuses",
+      141 => "Pluie et neige mêlées à caractère orageux",
+      142 => "Neige à caractère orageux",
+      210 => "Pluie faible intermittente",
+      211 => "Pluie modérée intermittente",
+      212 => "Pluie forte intermittente",
+      220 => "Neige faible intermittente",
+      221 => "Neige modérée intermittente",
+      222 => "Neige forte intermittente",
+      230 => "Pluie et neige mêlées",
+      231 => "Pluie et neige mêlées",
+      232 => "Pluie et neige mêlées",
+      235 => "Averses de grêle",
+    }
+  end
+
+  # Recherche de l'icon correspondant à la météo en fonction du code weather
+  def self.get_icon_meteo(weather_code)
+    'meteo/animated/' +
+    case weather_code
+    when 0 # Soleil
+      'day.svg'
+    when 1..2 # Peu nuageux
+      'cloudy-day-3.svg'
+    when 3..7 # Nuageux et brouillard
+      'cloudy.svg'
+    when 10 # Pluie faible
+      'rainy-4.svg'
+    when 11 # Pluie modérée
+      'rainy-5.svg'
+    when 12 # Pluie forte
+      'rainy-6.svg'
+    when 20 # Neige faible
+      'snowy-4.svg'
+    when 21 # Neige modérée
+      'snowy-5.svg'
+    when 22, 235 # Neige forte ou Averses de grêle
+      'snowy-6.svg'
+    when 40..48 # Averse de pluie (faible ou forte)
+      'rainy-6.svg'
+    when 60..68 # Averse de neige (faible ou forte)
+      'snowy-6.svg'
+    when 101..142 # Orage
+      'thunder.svg'
+    when 210 # Pluie faible intermittente
+      'rainy-1.svg'
+    when 211 # Pluie modérée intermittente
+      'rainy-2.svg'
+    when 212 # Pluie forte intermittente
+      'rainy-3.svg'
+    when 220 # Pluie faible intermittente
+      'snowy-1.svg'
+    when 221 # Pluie modérée intermittente
+      'snowy-2.svg'
+    when 222 # Pluie forte intermittente
+      'snowy-3.svg'
+    when 230..232
+      'rainy-7.svg'
+    else
+      'day.svg'
+    end
+  end
+end

@@ -1,6 +1,6 @@
 class PagesController < ApplicationController
-  before_action :is_user_authorized, except: %i[welcome mentions_legales solution tarifs contact]
-  skip_before_action :authenticate_user!, only: %i[welcome mentions_legales solution tarifs contact]
+  before_action :is_user_authorized, except: %i[welcome mentions_legales solution tarifs contact meteo_by_day]
+  skip_before_action :authenticate_user!, only: %i[welcome mentions_legales solution tarifs contact meteo_by_day]
 
   def assistant
 
@@ -248,6 +248,30 @@ class PagesController < ApplicationController
 
     @interventions = Intervention.by_role_for(current_user).first(2)
     @notifications = current_user.notifications.ordered.first(3)
+
+    @forecasts = Meteo.instance.get_by_nextHours.call
+    #@forecast = {"temp2m" => 10, "rh2m" => 80, "datetime"=> Time.now, "insee"=> 54518, "weather" => 210, "wind10m" => 40}
+
+    if @forecasts.present?
+      @city = @forecasts["city"]["name"]
+      @forecast = @forecasts["forecast"].first
+      @last_forecast = @forecasts["forecast"].last
+    end
+  end
+
+  def meteo
+    @forecasts = Meteo.instance.get_by_daily_periods.call
+    if @forecasts.present?
+      @city = @forecasts["city"]["name"]
+    end
+  end
+
+  def meteo_by_day
+    meteo = Meteo.instance
+    forecasts = meteo.get_by_daily(params[:day]).call
+    # Change le code de weather par son texte
+
+    render json: { forecast: forecasts, weather: Meteo.WEATHER[forecasts["weather"]] }
   end
 
   private

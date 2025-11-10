@@ -138,6 +138,12 @@
                 <%= @intervention.commentaires %>
               </p>
             </div>
+            <div>
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Météo</strong>
+                <%= @intervention.meteo %>
+              </p>
+            </div>
 
             <% if @intervention.photos.attached? %>
               <div>
@@ -213,6 +219,64 @@
       </dialog>
 
     </div>
+
+    <% if @routes_info %>
+
+      <div id="map" class="w-full h-100"></div>
+
+      <p><%= @routes_info %></p>
+
+      <script src="https://maps.googleapis.com/maps/api/js?key=<%= ENV["GOOGLE_MAPS_API_KEY"] %>&libraries=geometry&callback=initMap" async defer></script>
+
+      <script>
+          async function initMap() {
+
+              // Initialisation des bibliothèques nécessaires
+              const { Map } = await google.maps.importLibrary("maps");
+              const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary(
+                  "marker",
+              );
+
+              // Initialisation de la map
+              map = new google.maps.Map(document.getElementById("map"), {
+                  center : <%= @map_center %>,
+                  zoom: 9,
+                  mapId: "549c4681c953f814fa1cd142",
+              });
+
+              var pinIntervention = new PinElement({
+              });
+              new google.maps.marker.AdvancedMarkerElement({
+                  map,
+                  position: <%= @localisation_arrivee %>,
+                  title: "<%= "Intervention" %>",
+                  content: pinIntervention.element
+              });
+
+              <% if @response %>
+                let decodedPath;
+                let flightPath;
+                // Initialisation des routes
+                <% @response["routes"].each do |route| %>
+                  decodedPath = google.maps.geometry.encoding.decodePath(
+                      "<%= j route["polyline"]["encodedPolyline"] %>"
+                  );
+
+                  flightPath = new google.maps.Polyline({
+                      path: decodedPath,
+                      geodesic: true,
+                      strokeColor: "#0f53ff",
+                      strokeOpacity: 1.0,
+                      strokeWeight: 5,
+                  });
+
+                  flightPath.setMap(map);
+
+                <% end %>
+              <% end %>
+          }
+      </script>
+    <% end %>
 
     <h2 class="text-2xl text-secondary mt-4">Photos</h2>
     <% if @intervention.photos.attached? %>
