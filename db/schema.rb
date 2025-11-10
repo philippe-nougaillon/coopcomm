@@ -134,6 +134,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_05_134509) do
     t.string "template_slug"
     t.datetime "début_prévue"
     t.datetime "fin_prévue"
+    t.string "meteo"
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
     t.index ["organisation_id"], name: "index_interventions_on_organisation_id"
     t.index ["team_id"], name: "index_interventions_on_team_id"
@@ -397,6 +398,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_05_134509) do
     t.integer "failed_attempts", default: 0, null: false
     t.datetime "locked_at"
     t.string "unlock_token"
+    t.integer "otp_method"
     t.string "unique_session_id"
     t.index ["discarded_at"], name: "index_users_on_discarded_at"
     t.index ["email"], name: "index_users_on_email", unique: true

@@ -49,20 +49,26 @@
         </div>
       </div>
 
-      <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8" data-action="change->verification-disponibilites#verificationWithInput">
+      <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8" data-controller="meteo-intervention" data-action="change->verification-disponibilites#verificationWithInput">
         <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
-          <div class="w-full min-w-fit flex-1">
+          <div class="w-full min-w-fit flex-1" data-action='change->meteo-intervention#afficher_meteo'>
             <%= form.label :début_prévue %>
             <div class="flex items-center gap-1">
               <%= form.date_field :début_prévue,
                                   class: "flex-1 input input-sm",
                                   value: (params[:début_prévue].try(:to_date) || @intervention.début_prévue&.to_date),
-                                  'data-verification-disponibilites-target': "debut_prevue" 
+                                  data: {
+                                    'verification-disponibilites-target': "debut_prevue",
+                                    'meteo-intervention-target': "debut_prevue"
+                                  }
+                                  
               %>
               <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, 
                   {selected: params[:début_prévue_hour] || @intervention.début_prévue&.hour }, 
                   class: "select select-sm w-16",
-                  'data-verification-disponibilites-target': "debut_prevue_hour"  %>
+                  'data-verification-disponibilites-target': "debut_prevue_hour",
+                  'meteo-intervention-target': "debut_prevue_hour"
+              %>
               :
               <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
                   {selected: params[:début_prévue_minute] || @intervention.début_prévue&.min }, 
@@ -92,6 +98,12 @@
         </div>
 
         <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
+          <div class="w-full min-w-fit flex-1">
+            <%= form.label :meteo, "Prévision météo" %>
+            <%= form.text_field :meteo, class: "input input-sm w-full ", 'data-meteo-intervention-target': "prévisionMétéo" %>
+          </div>
+          <div class="w-full min-w-fit flex-1">
+          </div>
         </div>
       </div>
     </div>
@@ -204,7 +216,7 @@
     <% end %>
 
     <div class="my-5">
-      <%= form.label :photos %>
+      <%= form.label :photos, "Photos :" %>
       <%= form.file_field :photos, multiple: true, accept: 'image/png,image/gif,image/jpeg,image/avif,image/webp', class: 'file-input file-input-sm w-full max-w-md' %>
     </div>
 
