@@ -143,3 +143,5 @@ gem "page_title_helper", "~> 9.1"
 gem "solid_cache", "~> 1.0"
 
 gem "solid_cable", "~> 3.0"
+
+gem "seed_dump", "~> 3.3"

@@ -401,6 +401,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_10_153509) do
     t.string "unlock_token"
     t.integer "otp_method"
     t.string "color"
+    t.string "unique_session_id"
     t.index ["discarded_at"], name: "index_users_on_discarded_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["organisation_id"], name: "index_users_on_organisation_id"
