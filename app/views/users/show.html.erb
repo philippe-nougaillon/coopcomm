@@ -2,7 +2,7 @@
   <% page_title!(@user.nom_prénom) %>
 
   <div class="flex flex-wrap justify-between gap-24">
-    <div class="flex-1 flex shadow rounded-lg">
+    <div class="flex-1 flex shadow rounded-lg"  <%= "style=\"border-left: .3rem solid #{@user.color};\"".html_safe if @user.color %>>
       <div class="flex flex-col items-center bg-indigo-100 w-48 py-8 rounded-l-lg">
         <div class="avatar avatar-placeholder rounded-full">
           <div class="w-24 bg-gray-100 rounded-full">

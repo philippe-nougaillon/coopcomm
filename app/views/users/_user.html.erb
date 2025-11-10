@@ -5,7 +5,7 @@
 <td class="text-lg sm:text-xl text-primary">
   <%= link_to user.nom_prénom, user, class: 'hover:underline hover:text-base-content' %>
 </td>
-<td class="text-center">
+<td class="text-center" <%= "style=\"border-left: .3rem solid #{user.color};\"".html_safe if user.color %>>
   <span class="material-symbols-outlined text-success">
     <%= user.avatar %>
   </span>
