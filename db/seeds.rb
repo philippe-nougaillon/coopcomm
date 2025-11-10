@@ -1,5 +1,3 @@
-require 'dotenv'
-
 organisation = Organisation.create(nom: "Communauté d'agglomération Plaine Vallée")
 
 User.create!([
@@ -57,11 +55,9 @@ Intervention.create!([
 
 
 # Interventions : workflow, avis, météo, tags
-# Intervention récurrente
 # Abscence
 # Notification
-# AgentIntervention
-# Mouvement
+# Mouvement (pas besoin pour l'instant)
 # Document
 # ? MailLog
 # ? Audit
