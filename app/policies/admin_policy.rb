@@ -26,6 +26,6 @@ class AdminPolicy < ApplicationPolicy
   end
 
   def stats?
-    user && ['pierre-emmanuel.dacquet@aikku.eu', 'philippe.nougaillon@aikku.eu', 'sebastien.pourchaire@aikku.eu'].include?(user.email)
+    user && ENV['SUPER_ADMIN'].to_s.split(',').include?(user.email)
   end
 end

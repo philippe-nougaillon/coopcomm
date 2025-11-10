@@ -15,9 +15,7 @@
       <h2 class="font-black text-lg mb-6">Actions en attente</h2>
       <div class="flex flex-col gap-6">
         <% @interventions.each do |intervention| %>
-          <% cache intervention do %>
-            <%= render partial: 'intervention', locals: {intervention: } %>
-          <% end %>
+          <%= render partial: 'intervention', locals: {intervention: } %>
         <% end %>
         <%= link_to 'Voir toutes les actions en attente', interventions_path, class: 'text-primary' %>
       </div>
@@ -25,9 +23,7 @@
     <div class="border shadow-sm p-4 rounded-2xl">
       <h2 class="font-black text-lg mb-8">Messages de votre équipe</h2>
       <% @notifications.each do |notification| %>
-        <% cache notification do %>
-          <%= render partial: 'notification', locals: {notification: }%>
-        <% end %>
+        <%= render partial: 'notification', locals: {notification: }%>
       <% end %>
     </div>
   </div>

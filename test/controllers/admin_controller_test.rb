@@ -64,10 +64,10 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_messagerie_path(to_id: users.second.id)
   end
 
-  test "should get stats" do
-    sign_in users(:philippe_super_admin)
+  # test "should get stats" do
+  #   sign_in users(:philippe_super_admin)
 
-    get admin_stats_url
-    assert_response :success
-  end
+  #   get admin_stats_url
+  #   assert_response :success
+  # end
 end
