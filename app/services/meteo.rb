@@ -10,8 +10,8 @@ class Meteo < ApplicationService
     # - wind10m = vent
     # - weather = état du ciel (nuageux, pluie, orages, ...)
 
-    @insee = "54518" # Code commune 54518 = Thiaucourt-Regniéville
-    @ville = "Thiaucourt-Regniéville"
+    @insee = "95028" # Code commune
+    @ville = "Attainville" # Commune principale
 
     # Appel des setters pour pouvoir charger uniquement la réponse que l'on veut. 
     set_nexthours_response
