@@ -71,6 +71,15 @@
         </li>
       <% end %>
       -->
+      <% if policy(Mouvement).index? %>
+        <li>
+          <%= link_to mouvements_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'mouvements'}", title: "Voir la disponibilité des agents" do %>
+            <span class="material-symbols-outlined">
+              compare_arrows
+            </span>
+          <% end %>
+        </li>
+      <% end %>
       <% if policy(:admin).audits? %>
         <li>
           <%= link_to admin_audits_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if (params[:action] == 'audits') || (params[:controller] == 'mail_logs') }", title: 'Activité (historique des modifications)', 'data-testid': "audit_trail" do %>

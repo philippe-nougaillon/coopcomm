@@ -168,4 +168,30 @@
       </table>
     </div>
   </div>
+
+  <h2 class="text-2xl text-secondary mt-8 mb-4">
+    Mouvements
+  </h2>
+  <div class="mx-auto w-full">
+    <div class="overflow-x-auto">
+      <table class="table table-xs shadow">
+        <thead class="bg-slate-100">
+          <th>État</th>
+          <th>Intervention</th>
+          <th>MàJ il y a</th>
+        </thead>
+        <tbody>
+          <% if @tool.mouvements.any? %>
+            <%= render @tool.mouvements %>
+          <% else %>
+            <tr>
+              <td colspan=3>
+                <i>Ce matériel n'a pas encore de mouvement</i>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
