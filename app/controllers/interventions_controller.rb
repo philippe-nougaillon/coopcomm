@@ -102,13 +102,13 @@ class InterventionsController < ApplicationController
   def show
     if stale?(@intervention)
 
-      # Pour la map avec la route entre l'intervention courant et thiaucourt
+      # Pour la map avec la route entre l'intervention courant et le siège de la communauté de commune
       unless @intervention.adherent&.localisation.blank?
         request = ApiGoogleMaps.new
 
-        # Prendre la route de thiaucourt vers l'adhérent courant
-        localisation_thiaucourt = { lat: 48.95380869155297, lng: 5.865438709177733 }
-        @map_center = localisation_thiaucourt
+        # Prendre la route du siège de la communauté de commune vers l'adhérent courant
+        localisation_siege = { lat: 48.98952882266384, lng: 2.3207725219533186 }
+        @map_center = localisation_siege
 
         # Prendre l'adhérent de l'intervention
         @localisation_arrivee = @intervention.adherent.localisation_to_lat_lng_object
@@ -117,8 +117,8 @@ class InterventionsController < ApplicationController
           origin: {
             location: {
               latLng: {
-                latitude: localisation_thiaucourt[:lat],
-                longitude: localisation_thiaucourt[:lng]
+                latitude: localisation_siege[:lat],
+                longitude: localisation_siege[:lng]
               }
             }
           },
