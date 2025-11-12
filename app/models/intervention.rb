@@ -366,6 +366,10 @@ class Intervention < ApplicationRecord
     txt += ", Equipe : #{self.team.nom}" if self.team
     txt
   end
+
+  def passed
+    !self.nouveau? || (self.fin && (self.fin < DateTime.now))
+  end
   
   private
 

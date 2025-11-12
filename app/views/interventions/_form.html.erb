@@ -49,7 +49,7 @@
         </div>
       </div>
 
-      <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8" data-controller="meteo-intervention" data-action="change->verification-disponibilites#verificationWithInput">
+      <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8" <%= "data-controller=\"meteo-intervention\" data-action=\"change->verification-disponibilites#verificationWithInput\"".html_safe if !@intervention.passed %>>
         <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
           <div class="w-full min-w-fit flex-1" data-action='change->meteo-intervention#afficher_meteo'>
             <%= form.label :début_prévue %>
@@ -100,7 +100,7 @@
         <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
           <div class="w-full min-w-fit flex-1">
             <%= form.label :meteo, "Prévision météo" %>
-            <%= form.text_field :meteo, class: "input input-sm w-full ", 'data-meteo-intervention-target': "prévisionMétéo" %>
+            <%= form.text_field :meteo, class: "input input-sm w-full ", 'data-meteo-intervention-target': "prévisionMétéo", disabled: @intervention.passed %>
           </div>
           <div class="w-full min-w-fit flex-1">
           </div>
