@@ -20,7 +20,6 @@ export default class extends Controller {
 
     if (role.value == 'agent') {
       this.serviceTarget.style.display = 'block';
-      this.serviceTarget.children[1].selectedIndex = 0;
       this.serviceTarget.children[1].required = true;
       this.localisationTarget.style.display = 'none';
       this.localisationTarget.children[1].value = '';
