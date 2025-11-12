@@ -28,6 +28,7 @@ class Intervention < ApplicationRecord
   before_validation -> { combine_datetime(:fin) }
   before_validation :check_absence
   
+  validate :schedules_must_make_sense
   validate :tools_must_be_available
   validate :agents_must_be_available
 
@@ -369,6 +370,16 @@ class Intervention < ApplicationRecord
 
   def passed
     !self.nouveau? || (self.fin && (self.fin < DateTime.now))
+
+  end
+  
+  def schedules_must_make_sense
+    if self.début_prévue && self.fin_prévue && (self.début_prévue > self.fin_prévue)
+      errors.add(:erreur, ": La fin prévue de l'intervention ne peut pas être avant son commencement")
+    end
+    if self.début && self.fin && (self.début > self.fin)
+      errors.add(:erreur, ": La fin de l'intervention ne peut pas être avant son commencement")
+    end
   end
   
   private
