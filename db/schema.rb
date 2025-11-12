@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_10_153509) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_12_124955) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -136,6 +136,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_10_153509) do
     t.datetime "fin_prévue"
     t.string "meteo"
     t.decimal "co2", default: "0.0"
+    t.string "trajet"
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
     t.index ["organisation_id"], name: "index_interventions_on_organisation_id"
     t.index ["team_id"], name: "index_interventions_on_team_id"
@@ -401,7 +402,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_10_153509) do
     t.string "unlock_token"
     t.integer "otp_method"
     t.string "color"
-    t.string "unique_session_id"
     t.index ["discarded_at"], name: "index_users_on_discarded_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["organisation_id"], name: "index_users_on_organisation_id"

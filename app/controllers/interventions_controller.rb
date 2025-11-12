@@ -104,7 +104,7 @@ class InterventionsController < ApplicationController
     # if stale?(@intervention)
 
       # Pour la map avec la route entre l'intervention courant et le siège de la communauté de commune
-      unless @intervention.adherent&.localisation.blank?
+      unless @intervention.trajet.present? || @intervention.adherent.nil? || @intervention.adherent&.localisation.blank?
         # Prendre l'adhérent de l'intervention
         localisation_destination = @intervention.adherent.localisation_to_lat_lng_object
 
@@ -221,7 +221,11 @@ class InterventionsController < ApplicationController
     if @intervention.valid?
       if @intervention.can_terminer?
         @intervention.terminer!
-        @intervention.trajet += 
+        request = ApiGoogleMaps.new(@intervention.adherent.localisation_to_lat_lng_object)
+        request.call
+        @intervention.trajet = request.routes_info
+        @intervention.save
+
         send_workflow_changed_notification
         send_intervention_termine_notification
         redirect_to @intervention, notice: "Intervention terminée"
