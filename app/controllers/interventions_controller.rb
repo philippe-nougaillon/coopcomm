@@ -104,57 +104,21 @@ class InterventionsController < ApplicationController
     # if stale?(@intervention)
 
       # Pour la map avec la route entre l'intervention courant et le siège de la communauté de commune
-      unless @intervention.adherent&.localisation.blank?
-        request = ApiGoogleMaps.new
-
-        # Prendre la route du siège de la communauté de commune vers l'adhérent courant
-        localisation_siege = { lat: 48.98952882266384, lng: 2.3207725219533186 }
-        @map_center = localisation_siege
-
+      unless @intervention.trajet.present? || @intervention.adherent.nil? || @intervention.adherent&.localisation.blank?
         # Prendre l'adhérent de l'intervention
-        @localisation_arrivee = @intervention.adherent.localisation_to_lat_lng_object
+        localisation_destination = @intervention.adherent.localisation_to_lat_lng_object
 
-        body = {
-          origin: {
-            location: {
-              latLng: {
-                latitude: localisation_siege[:lat],
-                longitude: localisation_siege[:lng]
-              }
-            }
-          },
-          destination: {
-            location: {
-              latLng: {
-                latitude: @localisation_arrivee[:lat],
-                longitude: @localisation_arrivee[:lng]
-              }
-            }
-          },
-          travelMode: "DRIVE",
-          extraComputations: "FUEL_CONSUMPTION",
-          routingPreference: "TRAFFIC_AWARE_OPTIMAL",
-          requestedReferenceRoutes: ["FUEL_EFFICIENT"]
-        }
+        # Création du service avec l'intervention de destination
+        request = ApiGoogleMaps.new(localisation_destination)
 
-        request.prepare_body_request(body)
-        response = request.get_response
+        request.call
 
-        if response["error"]
-            @errors << { position: intervention[:position], message: response["error"]["message"] }
-        else
-          route = response["routes"].first
-
-          # 💡 Consommation de carburant
-          fuel_microliters = route.dig("travelAdvisory", "fuelConsumptionMicroliters")
-          fuel_liters = fuel_microliters.to_f / 1_000_000 if fuel_microliters
-
-          # 💨 Conversion en CO₂ (essence : 2.31 kg CO₂ / litre)
-          co2_kg = fuel_liters ? (fuel_liters * 2.31) : nil
-
-          @routes_info = "Distance = #{(response["routes"].first["distanceMeters"].to_f/1000).to_i} km, Durée = #{(response["routes"].first["duration"].to_f/60).to_i} min, Essence (Diesel) = #{((response["routes"].first["travelAdvisory"]["fuelConsumptionMicroliters"]).to_f/1000000).round(2)} L, CO2 = #{co2_kg.round(2)} kg "
-          @response = response
-        end
+        # Récupération des données via les getters
+        @map_center = request.map_center
+        @localisation_arrivee = localisation_destination
+        @errors = request.errors
+        @routes_info = request.routes_info
+        @response = request.data_response
       end
 
       respond_to do |format|
@@ -257,6 +221,11 @@ class InterventionsController < ApplicationController
     if @intervention.valid?
       if @intervention.can_terminer?
         @intervention.terminer!
+        request = ApiGoogleMaps.new(@intervention.adherent.localisation_to_lat_lng_object)
+        request.call
+        @intervention.trajet = request.routes_info
+        @intervention.save
+
         send_workflow_changed_notification
         send_intervention_termine_notification
         redirect_to @intervention, notice: "Intervention terminée"
