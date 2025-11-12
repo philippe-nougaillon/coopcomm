@@ -42,7 +42,8 @@ class UsersController < ApplicationController
 
   # GET /users/1 or /users/1.json
   def show
-    if stale?(@user)
+    # TODO : Stale à mettre au plus proche du render
+    # if stale?(@user)
       @absences = @user.absences.ordered
       @audits = @user.own_and_associated_audits.reorder(id: :desc)
       if @user.localisation
@@ -50,7 +51,7 @@ class UsersController < ApplicationController
         @lat = @user.localisation.split(',').first
       end
       @pagy, @audits = pagy(@audits, items: 10)
-    end
+    # end
   end
 
   # GET /users/new

@@ -100,7 +100,8 @@ class InterventionsController < ApplicationController
 
   # GET /interventions/1 or /interventions/1.json
   def show
-    if stale?(@intervention)
+    # TODO : Déplacer le stale au plus près du render
+    # if stale?(@intervention)
 
       # Pour la map avec la route entre l'intervention courant et le siège de la communauté de commune
       unless @intervention.adherent&.localisation.blank?
@@ -151,7 +152,7 @@ class InterventionsController < ApplicationController
           # 💨 Conversion en CO₂ (essence : 2.31 kg CO₂ / litre)
           co2_kg = fuel_liters ? (fuel_liters * 2.31) : nil
 
-          @routes_info = "Distance = #{(response["routes"].first["distanceMeters"].to_f/1000).round(2)} km, Durée = #{(response["routes"].first["duration"].to_f/60).round(2)} min, Essence diesel = #{((response["routes"].first["travelAdvisory"]["fuelConsumptionMicroliters"]).to_f/1000000).round(2)} L, CO2 = #{co2_kg.round(2)} kg "
+          @routes_info = "Distance = #{(response["routes"].first["distanceMeters"].to_f/1000).to_i} km, Durée = #{(response["routes"].first["duration"].to_f/60).to_i} min, Essence (Diesel) = #{((response["routes"].first["travelAdvisory"]["fuelConsumptionMicroliters"]).to_f/1000000).round(2)} L, CO2 = #{co2_kg.round(2)} kg "
           @response = response
         end
       end
@@ -173,7 +174,7 @@ class InterventionsController < ApplicationController
               disposition: 'inline'
         end
       end
-    end
+    # end
   end
 
   # GET /interventions/new
