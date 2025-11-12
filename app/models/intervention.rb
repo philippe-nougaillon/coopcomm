@@ -361,6 +361,12 @@ class Intervention < ApplicationRecord
     ).last
   end
 
+  def get_title_for_cases
+    txt = "#{self.description}"
+    txt += ", Equipe : #{self.team.nom}" if self.team
+    txt
+  end
+  
   private
 
   def slug_candidates
