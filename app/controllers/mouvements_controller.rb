@@ -13,7 +13,7 @@ class MouvementsController < ApplicationController
     end
 
     if params[:date].present?
-      @mouvements = @mouvements.where("DATE(mouvements.updated_at) = ?", params[:date])
+      @mouvements = @mouvements.joins(:intervention).where("DATE(interventions.début) = ?", params[:date])
     end
 
     if params[:etats].present?

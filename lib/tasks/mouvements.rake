@@ -11,7 +11,7 @@ namespace :mouvements do
     # Créer les états IN
     Intervention.where(fin: (DateTime.now-1.day..DateTime.now)).each do |intervention|
       intervention.tools.each do |tool|
-        Mouvement.create(tool_id: tool.id, état: 2)
+        Mouvement.create(tool_id: tool.id, intervention_id: intervention.id, état: 2)
       end
     end
   end

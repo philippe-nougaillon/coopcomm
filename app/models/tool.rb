@@ -18,6 +18,8 @@ class Tool < ApplicationRecord
 
   validates :name, presence: true
   validates_uniqueness_of :name, scope: :organisation_id
+
+  after_create :create_mouvement
   
   scope :ordered, -> { order(:name, :description) }
   
@@ -43,6 +45,10 @@ class Tool < ApplicationRecord
   end
 
   private
+
+  def create_mouvement
+    self.mouvements.create(état: 0)
+  end
 
   def slug_candidates
     [SecureRandom.uuid]

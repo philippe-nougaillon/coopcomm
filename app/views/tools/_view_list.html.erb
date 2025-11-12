@@ -7,6 +7,7 @@
         <th><%= sort_link 'tools.name', 'Nom' %></th>
         <th><%= sort_link 'tools.modèle', 'Modèle' %></th>
         <th><%= sort_link 'tools.marque', 'Marque' %></th>
+        <th>État</th>
         <% if params[:vue] == 'calendrier' %>
           <% (@date..@date_fin).each do |date| %>
             <th class="text-center <%= 'bg-yellow-100' if date == Date.today %>">

@@ -21,6 +21,11 @@
   <td>
     <%= tool.marque %>
   </td>
+  <td>
+    <% if tool.mouvements.any? %> 
+      <p class="font-bold badge badge-sm badge-<%= tool.mouvements.last.style %>"><%= tool.mouvements.last.état.humanize %></p>
+    <% end %>
+  </td>
 
   <% case params[:vue]%>
   <% when 'disponible' %>

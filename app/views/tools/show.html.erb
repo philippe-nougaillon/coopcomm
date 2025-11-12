@@ -7,14 +7,20 @@
         </span>
       <% end %>
       <%= page_title!(@tool.name) %>
-      <% if @tool.disponible?(DateTime.now) %>
-        <span class="material-symbols-outlined text-success cursor-help" title="Le matériel est disponible actuellement">
-          check_circle
-        </span>
+      <%# test inutile par la suite, tous les outils devraient avoir un mouvement à leur création %>
+      <% if @tool.mouvements.any? %> 
+        <p class="font-bold badge badge-sm badge-<%= @tool.mouvements.last.style %>"><%= @tool.mouvements.last.état.humanize %></p>
       <% else %>
-        <span class="material-symbols-outlined text-error cursor-help" title="Le matériel n'est pas disponible actuellement">
-          cancel
-        </span>
+        <%# laissé temporairement, devrait être retiré par la suite lorsque tous les outils auront un mouvement à la création %>
+        <% if @tool.disponible?(DateTime.now) %>
+          <span class="material-symbols-outlined text-success cursor-help" title="Le matériel est disponible actuellement">
+            check_circle
+          </span>
+        <% else %>
+          <span class="material-symbols-outlined text-error cursor-help" title="Le matériel n'est pas disponible actuellement">
+            cancel
+          </span>
+        <% end %>
       <% end %>
     </h1>
 
