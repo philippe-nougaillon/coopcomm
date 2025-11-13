@@ -79,18 +79,22 @@ class ApiGoogleMaps < ApplicationService
   def get_trajet_from_response
     route = @response["routes"].first
 
+    distance = ((route["distanceMeters"] * 2).to_f / 1000).to_i
+    duree = ((route["duration"]).to_f * 2 / 60).to_i
+    essence = ((route["travelAdvisory"]["fuelConsumptionMicroliters"]).to_f * 2 / 1000000).round(2)
+    co2 = self.co2_consumption_by_route(route)
+
+    "Distance = #{distance} km, Durée = #{duree} min, Essence (Diesel) = #{essence} L, CO2 = #{co2} kg (Calculs comprenant le trajet aller et le trajet retour)"
+  end
+
+  def co2_consumption_by_route(route)
     # 💡 Consommation de carburant
     fuel_microliters = route.dig("travelAdvisory", "fuelConsumptionMicroliters")
     fuel_liters = fuel_microliters.to_f / 1_000_000 if fuel_microliters
 
     # 💨 Conversion en CO₂ (essence : 2.31 kg CO₂ / litre)
-    co2_kg = fuel_liters ? (fuel_liters * 2.31) : nil
+    co2_kg = fuel_liters ? (fuel_liters * 2.31) : 0.0
 
-    distance = ((route["distanceMeters"] * 2).to_f / 1000).to_i
-    duree = ((route["duration"]).to_f * 2 / 60).to_i
-    essence = ((route["travelAdvisory"]["fuelConsumptionMicroliters"]).to_f * 2 / 1000000).round(2)
-    @co2 = (co2_kg * 2).round(2)
-
-    "Distance = #{distance} km, Durée = #{duree} min, Essence (Diesel) = #{essence} L, CO2 = #{@co2} kg (Calculs comprenant l'aller et le retour)"
+    (co2_kg * 2).round(2)
   end
 end

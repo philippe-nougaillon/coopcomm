@@ -224,6 +224,7 @@ class InterventionsController < ApplicationController
         request = ApiGoogleMaps.new(@intervention.adherent.localisation_to_lat_lng_object)
         request.call
         @intervention.trajet = request.routes_info
+        @intervention.co2 = request.co2_consumption_by_route(request.data_response["routes"][0])
         @intervention.save
 
         send_workflow_changed_notification
