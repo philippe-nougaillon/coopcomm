@@ -103,6 +103,7 @@ gem "aws-sdk-s3", require: false
 gem "langchainrb", "~> 0.13.4"
 
 gem "ruby-openai", "~> 7.1"
+gem "mistral-ai", "~> 1.2"
 
 gem "csv", "~> 3.3"
 gem "tiktoken_ruby", "~> 0.0.9"
@@ -145,3 +146,7 @@ gem "solid_cache", "~> 1.0"
 gem "solid_cable", "~> 3.0"
 
 gem "seed_dump", "~> 3.3"
+
+gem "markdown-rails", "~> 2.2"
+
+gem "redcarpet", "~> 3.6"

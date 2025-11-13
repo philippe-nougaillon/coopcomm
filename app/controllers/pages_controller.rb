@@ -17,8 +17,15 @@ class PagesController < ApplicationController
           description_list << "#{intervention.description.gsub('[mail] ', '')} #{l(intervention.début.to_date)}"
         end
 
-        llm = Langchain::LLM::OpenAI.new(api_key: ENV["OPENAI_API_KEY"])
-        @results = llm.chat(messages: [{role: "user", content: "Génère moi des nouvelles tâches en te basant sur cette liste : #{description_list.join(', ')}"}]).completion
+        # Version OpenAI
+        # llm = Langchain::LLM::OpenAI.new(api_key: ENV["OPENAI_API_KEY"])
+        # @results = llm.chat(messages: [{role: "user", content: "Génère moi des nouvelles tâches en te basant sur cette liste : #{description_list.join(', ')}"}]).completion
+        
+        # Version Mistral
+        llm = Langchain::LLM::MistralAI.new(api_key: ENV["MISTRAL_AI_API_KEY"])
+        @results = llm.chat(messages: [{role: "user", content: "Génère moi des nouvelles tâches en te basant sur cette liste : #{description_list.join(', ')}"}]).chat_completion
+        markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, extensions = {})
+        @results = markdown.render(@results)
       else
         @results = "Oups ! Il n'y a pas encore assez d'interventions passées pour générer une proposition fiable.\n Il en faudrait un minimum de #{ minimum } pour commencer..."
       end
