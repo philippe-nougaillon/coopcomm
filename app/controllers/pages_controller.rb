@@ -124,6 +124,29 @@ class PagesController < ApplicationController
 
       @temps_total_par_service = current_user.organisation.interventions.joins(agent_interventions: :agent).group("users.service").sum(:temps_total)
 
+
+      #
+      # Graphe co2 total par mois
+      #
+
+      # Pour chaque mois, calcule le co2 total
+      co2_total_par_mois = {}
+      current_user.organisation.interventions.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:co2).each do |month, co2|
+        formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
+        co2_total_par_mois[formatted_month] = co2
+      end
+
+      # Pour compléter les mois sans co2 (sinon ils n'apparaissent pas)
+      (start_date.to_date..end_date.to_date)
+        .map(&:beginning_of_month)
+        .uniq
+        .each do |month|
+          formatted_month = month.strftime('%Y-%m')
+          co2_total_par_mois[formatted_month] ||= 0
+      end
+
+      @co2_total_par_mois = co2_total_par_mois.sort.to_h
+
     elsif current_user.adhérent?
       temps_consommable_adhérent_mensuellement = 100
 
@@ -222,6 +245,29 @@ class PagesController < ApplicationController
       # end
 
       @temps_total_par_service = current_user.interventions_adherent.joins(agent_interventions: :agent).group("users.service").sum(:temps_total)
+
+
+      #
+      # Graphe co2 total par mois
+      #
+
+      # Pour chaque mois, calcule le co2 total
+      co2_total_par_mois = {}
+      current_user.interventions_adherent.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:co2).each do |month, co2|
+        formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
+        co2_total_par_mois[formatted_month] = co2
+      end
+
+      # Pour compléter les mois sans co2 (sinon ils n'apparaissent pas)
+      (start_date.to_date..end_date.to_date)
+        .map(&:beginning_of_month)
+        .uniq
+        .each do |month|
+        formatted_month = month.strftime('%Y-%m')
+        co2_total_par_mois[formatted_month] ||= 0
+      end
+
+      @co2_total_par_mois = co2_total_par_mois.sort.to_h
     end
   end
 

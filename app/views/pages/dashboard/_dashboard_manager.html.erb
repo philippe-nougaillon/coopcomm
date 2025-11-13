@@ -21,6 +21,10 @@
       <canvas id="tempsTotalParServiceChart" class="max-h-64 max-w-full" data-turbo="false"></canvas>
     </div>
   </div>
+  <div class="w-full sm:w-1/2 flex flex-col items-center mb-12">
+    <h2 class="text-2xl sm:whitespace-nowrap text-center">CO2 total par mois</h2>
+    <canvas id="co2TotalParMois" class="max-h-64" data-turbo="false"></canvas>
+  </div>
 </div>
 
 <%= render partial:'pages/dashboard/script_dashboard_manager' %>
@@ -37,4 +41,5 @@
 
   afficherTempsTotalParService()
 
+  afficherCo2TotalParMois()
 </script>
