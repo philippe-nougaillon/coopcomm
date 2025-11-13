@@ -3,7 +3,7 @@
     <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Assistant (IA)') %></h1>
   </div>
   <h2 class="text-2xl text-secondary mt-4 mb-8">
-    Bienvenue dans l'assistant (en bêta test), qui propose de nouvelles interventions à planifier
+    Bienvenue dans l'assistant (en bêta test), qui vous suggère de nouvelles interventions à planifier
   </h2>
 
   <% if params[:commit].blank? %>
@@ -12,12 +12,18 @@
     <% end %>
   <% else %>
     <div class="mb-8">
-      <h3 class="text-2xl mb-4">Propositions de l'IA :</h3>
-      <div class="typewriter">
-        <% @results.split("\n").each do |result| %>
-          <p class="text"><%= result %></p>
-        <% end %>
-      </div>
+      <h3 class="text-2xl mb-4">Propositions de l'IA (mistral-medium-2508) :</h3>
+      <% if false %>
+        <%# Version OpenAI %>
+        <div class="typewriter">
+            <% @results.split("\n").each do |result| %>
+              <p class="text"><%= result %></p>
+            <% end %>
+        </div>
+      <% end %>
+
+      <%# Version Mistral %>
+      <%= raw(@results) %>
     </div>
   <% end %>
 </div>
