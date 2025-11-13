@@ -221,10 +221,10 @@
     </div>
 
     <% if @intervention.trajet.present? %>
-      <p class="my-2">
+      <div class="my-2">
         <strong class="block text-slate-400 mb-1">Trajet</strong>
         <p><%= @intervention.trajet %></p>
-      </p>
+      </div>
     <% elsif @intervention.adherent&.localisation %>
 
       <div id="map" class="w-full h-100"></div>

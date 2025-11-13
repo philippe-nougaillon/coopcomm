@@ -86,6 +86,11 @@ class ApiGoogleMaps < ApplicationService
     # 💨 Conversion en CO₂ (essence : 2.31 kg CO₂ / litre)
     co2_kg = fuel_liters ? (fuel_liters * 2.31) : nil
 
-    "Distance = #{(route["distanceMeters"].to_f/1000).to_i} km, Durée = #{(route["duration"].to_f/60).to_i} min, Essence (Diesel) = #{((route["travelAdvisory"]["fuelConsumptionMicroliters"]).to_f/1000000).round(2)} L, CO2 = #{co2_kg.round(2)} kg "
+    distance = ((route["distanceMeters"] * 2).to_f / 1000).to_i
+    duree = ((route["duration"]).to_f * 2 / 60).to_i
+    essence = ((route["travelAdvisory"]["fuelConsumptionMicroliters"]).to_f * 2 / 1000000).round(2)
+    @co2 = (co2_kg * 2).round(2)
+
+    "Distance = #{distance} km, Durée = #{duree} min, Essence (Diesel) = #{essence} L, CO2 = #{@co2} kg (Calculs comprenant l'aller et le retour)"
   end
 end
