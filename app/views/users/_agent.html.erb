@@ -23,18 +23,18 @@
       <% interventions_soir = interventions.where("fin_prévue > ?", Time.parse(date.to_s + " 13:00")) %>
     
       <% if interventions_matin.any? || absent %>
-        <span class="bg-red-300" style="padding-left: 15px;" title="<%= interventions_matin.pluck(:description) || absent.motif.blank? ? 'Absent' : absent.motif %>"></span>
+        <span class="bg-red-300 border-1" style="padding-left: 15px;" title="<%= interventions_matin.pluck(:description) || absent.motif.blank? ? 'Absent' : absent.motif %>"></span>
       <% else %>
         <%= link_to new_intervention_path(agent_ids: agent.id, début_prévue: date, début_prévue_hour: 8, fin_prévue: date, fin_prévue_hour: 13) do %>
-        <span class="bg-green-300 hover:bg-blue-500" style="padding-left: 15px;" title="Créer une intervention pour réserver cet agent"></span>
+        <span class="border-1" style="padding-left: 15px;" title="Créer une intervention pour réserver cet agent"></span>
         <% end %>
       <% end %>
 
       <% if interventions_soir.any? || absent %>
-        <span  class="bg-red-300" style="padding-left: 15px; margin-left: 5px;" title="<%= interventions_soir.pluck(:description) || absent.motif.blank? ? 'Absent' : absent.motif %>"></span>
+        <span  class="bg-red-300 border-1" style="padding-left: 15px; margin-left: 5px;" title="<%= interventions_soir.pluck(:description) || absent.motif.blank? ? 'Absent' : absent.motif %>"></span>
       <% else %>
         <%= link_to new_intervention_path(agent_ids: agent.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 5, fin_prévue: date, fin_prévue_hour: 18) do %>
-          <span class="bg-green-300 hover:bg-blue-500" style="padding-left: 15px; margin-left: 5px;" title="Créer une intervention pour réserver cet agent"></span>
+          <span class="border-1" style="padding-left: 15px; margin-left: 5px;" title="Créer une intervention pour réserver cet agent"></span>
         <% end %>
       <% end %>
     </td>
