@@ -47,7 +47,7 @@ class Tool < ApplicationRecord
   private
 
   def create_mouvement
-    self.mouvements.create(état: 0)
+    self.mouvements.create(état: 0, date: DateTime.now)
   end
 
   def slug_candidates

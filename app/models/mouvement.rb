@@ -8,8 +8,11 @@ class Mouvement < ApplicationRecord
   enum :état, {
     début: 0,
     fin: 1,
-    in: 2,
-    out: 3
+    entrée: 2,
+    sortie: 3,
+    révision: 4,
+    panne: 5,
+    reforme: 6
   }
 
   def style
@@ -18,12 +21,14 @@ class Mouvement < ApplicationRecord
       'primary'
     when 'fin'
       'secondary'
-    when 'in'
+    when 'entrée'
       'success'
-    when 'out'
+    when 'sortie'
       'error'
-    else
+    when 'révision', 'panne'
       'warning'
+    else
+      'info'
     end
   end
 
