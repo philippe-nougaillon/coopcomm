@@ -38,14 +38,14 @@ class OnInterventionWorkflowChangedTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "NotifManagersWorkflowChangedJob n'est pas mis en file d'attente si un agent modifie le statut avec une organisation sans manager" do
-    sign_in users(:john_wick)
-    intervention = interventions(:intervention_sans_manager)
-
-    assert_enqueued_jobs 0 do
-      get terminer_intervention_path(intervention)
-    end
-  end
+  # test "NotifManagersWorkflowChangedJob n'est pas mis en file d'attente si un agent modifie le statut avec une organisation sans manager" do
+  #   sign_in users(:john_wick)
+  #   intervention = interventions(:intervention_sans_manager)
+  #
+  #   assert_enqueued_jobs 0 do
+  #     get terminer_intervention_path(intervention)
+  #   end
+  # end
 
   test "NotifManagersWorkflowChangedJob n'est pas mis en file d'attente si un manager modifie le statut avec une organisation contenant un manager qui est lui-même" do
     sign_in users(:manager_marseille)

@@ -38,11 +38,6 @@ class ApiGoogleMaps < ApplicationService
 
   def get_response
       @response = JSON.parse(@http.request(@request).read_body)
-      
-      puts "Lancement de la requête terminée : "
-      puts @response
-
-      @response
   end
 
   def prepare_body_request(origin, destination)
