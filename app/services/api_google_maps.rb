@@ -79,7 +79,7 @@ class ApiGoogleMaps < ApplicationService
     essence = ((route["travelAdvisory"]["fuelConsumptionMicroliters"]).to_f * 2 / 1000000).round(2)
     co2 = self.co2_consumption_by_route(route)
 
-    "Distance = #{distance} km, Durée = #{duree} min, Essence (Diesel) = #{essence} L, CO2 = #{co2} kg (Calculs comprenant le trajet aller et le trajet retour)"
+    "Distance: #{distance} km, Durée: #{duree} min, Essence: #{essence} L, CO₂: #{co2} kg"
   end
 
   def co2_consumption_by_route(route)

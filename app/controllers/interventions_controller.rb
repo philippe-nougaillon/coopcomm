@@ -105,21 +105,23 @@ class InterventionsController < ApplicationController
 
       unless Rails.env.test?
         # Pour la map avec la route entre l'intervention courant et le siège de la communauté de commune
-        unless @intervention.trajet.present? || @intervention.adherent.nil? || @intervention.adherent&.localisation.blank?
-          # Prendre l'adhérent de l'intervention
-          localisation_destination = @intervention.adherent.localisation_to_lat_lng_object
+        if @intervention.adherent.present? && @intervention.adherent.localisation.present?
+          if @intervention.trajet.blank? || @intervention.nouveau?
+            # Prendre l'adhérent de l'intervention
+            localisation_destination = @intervention.adherent.localisation_to_lat_lng_object
 
-          # Création du service avec l'intervention de destination
-          request = ApiGoogleMaps.new(localisation_destination)
+            # Création du service avec l'intervention de destination
+            request = ApiGoogleMaps.new(localisation_destination)
 
-          request.call
+            request.call
 
-          # Récupération des données via les getters
-          @map_center = request.map_center
-          @localisation_arrivee = localisation_destination
-          @errors = request.errors
-          @routes_info = request.routes_info
-          @response = request.data_response
+            # Récupération des données via les getters
+            @map_center = request.map_center
+            @localisation_arrivee = localisation_destination
+            @errors = request.errors
+            @routes_info = request.routes_info
+            @response = request.data_response
+          end
         end
       end
 
@@ -224,11 +226,13 @@ class InterventionsController < ApplicationController
       if @intervention.can_terminer?
         @intervention.terminer!
         unless Rails.env.test?
-          request = ApiGoogleMaps.new(@intervention.adherent.localisation_to_lat_lng_object)
-          request.call
-          @intervention.trajet = request.routes_info
-          @intervention.co2 = request.co2_consumption_by_route(request.data_response["routes"][0])
-          @intervention.save
+          if @intervention.adherent && @intervention.adherent.localisation.present?
+            request = ApiGoogleMaps.new(@intervention.adherent.localisation_to_lat_lng_object)
+            request.call
+            @intervention.trajet = request.routes_info
+            @intervention.co2 = request.co2_consumption_by_route(request.data_response["routes"][0])
+            @intervention.save
+          end
         end
 
         send_workflow_changed_notification
