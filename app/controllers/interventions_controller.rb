@@ -791,12 +791,12 @@ class InterventionsController < ApplicationController
       end
     end
 
-    # Ajoute ou enlève l'état 'pointage_activé' selon si c'est un modèle de pointage.
+    # Ajoute ou enlève l'état 'pointage activé' selon si c'est un modèle de pointage.
     def check_workflow_pointage_mère
-      if !@intervention.repeter? && @intervention.workflow_state == 'pointage_activé'
+      if !@intervention.repeter? && @intervention.workflow_state == 'pointage activé'
         @intervention.workflow_state = 'nouveau'
-      elsif @intervention.repeter? && @intervention.workflow_state != 'pointage_activé'
-        @intervention.workflow_state = 'pointage_activé'
+      elsif @intervention.repeter? && @intervention.workflow_state != 'pointage activé'
+        @intervention.workflow_state = 'pointage activé'
       end
     end
 
