@@ -9,6 +9,7 @@ class PagesController < ApplicationController
       interventions = current_user.organisation
                                   .interventions
                                   .where.not(début: nil)
+                                  .where(template_slug: nil)
                                   .order(:début)
 
       if interventions.count >= minimum
