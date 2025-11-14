@@ -24,6 +24,11 @@
 
       <%# Version Mistral %>
       <%= raw(@results) %>
+      <% if @is_failed %>
+        <%= form_tag request.path, method: :get, class: 'mb-8' do |f| %>
+          <%= submit_tag "Lancer la génération de propositions", class: 'btn btn-primary btn-outline rounded hover:text-white! md:btn-lg', 'data-turbo': 'false' %>
+        <% end %>
+      <% end %>
     </div>
   <% end %>
 </div>

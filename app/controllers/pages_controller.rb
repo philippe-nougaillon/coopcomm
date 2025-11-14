@@ -22,10 +22,15 @@ class PagesController < ApplicationController
         # @results = llm.chat(messages: [{role: "user", content: "Génère moi des nouvelles tâches en te basant sur cette liste : #{description_list.join(', ')}"}]).completion
         
         # Version Mistral
-        llm = Langchain::LLM::MistralAI.new(api_key: ENV["MISTRAL_AI_API_KEY"])
-        @results = llm.chat(messages: [{role: "user", content: "Génère moi des nouvelles tâches en te basant sur cette liste : #{description_list.join(', ')}"}]).chat_completion
-        markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, extensions = {})
-        @results = markdown.render(@results)
+        begin
+          llm = Langchain::LLM::MistralAI.new(api_key: ENV["MISTRAL_AI_API_KEY"])
+          @results = llm.chat(messages: [{role: "user", content: "Génère moi des nouvelles tâches en te basant sur cette liste : #{description_list.join(', ')}"}]).chat_completion
+          markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, extensions = {})
+          @results = markdown.render(@results)
+        rescue
+          @is_failed = true
+          @results = "Veuillez attendre quelques secondes avant de réessayer"
+        end
       else
         @results = "Oups ! Il n'y a pas encore assez d'interventions passées pour générer une proposition fiable.\n Il en faudrait un minimum de #{ minimum } pour commencer..."
       end
