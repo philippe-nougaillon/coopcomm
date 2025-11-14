@@ -86,7 +86,7 @@ class PagesController < ApplicationController
       end
 
       # Compléter les mois et workflows manquants avec des valeurs par défaut
-      workflows = [Intervention::NOUVEAU, Intervention::ATTENTE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
+      workflows = [Intervention::NOUVEAU, Intervention::POINTAGE_ACTIVE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
 
       (start_date.to_date..end_date.to_date).map { |date| date.beginning_of_month }.uniq.each do |month|
         formatted_month = month.strftime('%Y-%m')
@@ -99,7 +99,7 @@ class PagesController < ApplicationController
       qté_interventions_par_mois_par_état = qté_interventions_par_mois_par_état.sort.to_h # Trier par ordre chronologique
 
       labels = qté_interventions_par_mois_par_état.keys # Les mois comme étiquettes pour l'axe X
-      workflows = [Intervention::NOUVEAU, Intervention::ATTENTE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
+      workflows = [Intervention::NOUVEAU, Intervention::POINTAGE_ACTIVE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
 
       datasets = workflows.map do |workflow|
         {
@@ -107,7 +107,7 @@ class PagesController < ApplicationController
           data: labels.map { |month| qté_interventions_par_mois_par_état[month][workflow] }, # Quantités par mois
           backgroundColor: case workflow
                           when Intervention::NOUVEAU then "rgba(0,181,255,255)" # Info
-                          when Intervention::ATTENTE then "rgba(123,146,178,255)" # Secondary
+                          when Intervention::POINTAGE_ACTIVE then "rgba(123,146,178,255)" # Secondary
                           when Intervention::TERMINE then "rgba(77,110,255,255)" # Primary
                           when Intervention::VALIDE then "rgba(0,169,110,255)" # Success
                           when Intervention::REFUSE then "rgba(255,88,97,255)" # Error
@@ -207,7 +207,7 @@ class PagesController < ApplicationController
       end
 
       # Compléter les mois et workflows manquants avec des valeurs par défaut
-      workflows = [Intervention::NOUVEAU, Intervention::ATTENTE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
+      workflows = [Intervention::NOUVEAU, Intervention::POINTAGE_ACTIVE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
 
       (start_date.to_date..end_date.to_date).map { |date| date.beginning_of_month }.uniq.each do |month|
         formatted_month = month.strftime('%Y-%m')
@@ -220,7 +220,7 @@ class PagesController < ApplicationController
       qté_interventions_par_mois_par_état = qté_interventions_par_mois_par_état.sort.to_h # Trier par ordre chronologique
 
       labels = qté_interventions_par_mois_par_état.keys # Les mois comme étiquettes pour l'axe X
-      workflows = [Intervention::NOUVEAU, Intervention::ATTENTE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
+      workflows = [Intervention::NOUVEAU, Intervention::POINTAGE_ACTIVE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
 
       datasets = workflows.map do |workflow|
         {
@@ -228,7 +228,7 @@ class PagesController < ApplicationController
           data: labels.map { |month| qté_interventions_par_mois_par_état[month][workflow] }, # Quantités par mois
           backgroundColor: case workflow
                           when Intervention::NOUVEAU then "rgba(0,181,255,255)" # Info
-                          when Intervention::ATTENTE then "rgba(123,146,178,255)" # Secondary
+                          when Intervention::POINTAGE_ACTIVE then "rgba(123,146,178,255)" # Secondary
                           when Intervention::TERMINE then "rgba(77,110,255,255)" # Primary
                           when Intervention::VALIDE then "rgba(0,169,110,255)" # Success
                           when Intervention::REFUSE then "rgba(255,88,97,255)" # Error

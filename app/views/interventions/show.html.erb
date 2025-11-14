@@ -228,23 +228,26 @@
                           "<%= j route["polyline"]["encodedPolyline"] %>"
                       );
 
-                      flightPath = new google.maps.Polyline({
-                          path: decodedPath,
-                          geodesic: true,
-                          strokeColor: "#0f53ff",
-                          strokeOpacity: 1.0,
-                          strokeWeight: 5,
-                      });
+                  flightPath = new google.maps.Polyline({
+                      path: decodedPath,
+                      geodesic: true,
+                      strokeColor: "#0f53ff",
+                      strokeOpacity: 0.5,
+                      strokeWeight: 8,
+                  });
 
                       flightPath.setMap(map);
 
-                    <% end %>
-                  <% end %>
-              }
-          </script>
-        <% end %>
-      </div>
+                <% end %>
+              <% end %>
 
+              const trafficLayer = new google.maps.TrafficLayer();
+              trafficLayer.setMap(map);
+
+          }
+      </script>
+    <% end %>
+      </div>
       <div class="flex-1">
         <h2 class="text-2xl text-secondary mt-4">Photos</h2>
         <% if @intervention.photos.attached? %>
@@ -268,6 +271,8 @@
           <p class="mt-4">Aucune photo n'est attachée à cette intervention.</p>
         <% end %>
       </div>
+    </div>
+
     </div>
 
     <% if @intervention.repeter %>

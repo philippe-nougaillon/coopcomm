@@ -20,7 +20,7 @@
 </div>
 
 <dialog id="modal_<%= forecast_counter %>" class="modal">
-    <div class="modal-box max-w-1/2 p-12">
+    <div class="modal-box lg:max-w-1/2 lg:p-12 px-6">
         <form method="dialog">
             <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
         </form>
@@ -46,55 +46,55 @@
             <div class="flex flex-wrap md:flex-nowrap gap-4">
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Cumul de pluie sur la journée</p>
-                    <p class="font-bold"><%= forecast["rr10"] %> mm</p>
+                    <p class="font-bold text-right whitespace-nowrap"><%= forecast["rr10"] %> mm</p>
                 </div>
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Cumul de pluie maximal sur la journée</p>
-                    <p class="font-bold"><%= forecast["rr1"] %> mm</p>
+                    <p class="font-bold text-right whitespace-nowrap"><%= forecast["rr1"] %> mm</p>
                 </div>
             </div>
 
             <div class="flex flex-wrap md:flex-nowrap gap-4">
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Probabilité de pluie</p>
-                    <p class="font-bold"><%= forecast["probarain"] %>%</p>
+                    <p class="font-bold text-right whitespace-nowrap"><%= forecast["probarain"] %>%</p>
                 </div>
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Probabilité de gel</p>
-                    <p class="font-bold"><%= forecast["probafrost"] %>%</p>
+                    <p class="font-bold text-right whitespace-nowrap"><%= forecast["probafrost"] %>%</p>
                 </div>
             </div>
             
             <div class="flex flex-wrap md:flex-nowrap gap-4">
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Probabilité de brouillard</p>
-                    <p class="font-bold"><%= forecast["probafog"] %>%</p>
+                    <p class="font-bold text-right whitespace-nowrap"><%= forecast["probafog"] %>%</p>
                 </div>
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Rafale de vent potentielle sous orage ou grain</p>
-                    <p class="font-bold"><%= forecast["gustx"] %> km/h</p>
+                    <p class="font-bold text-right whitespace-nowrap"><%= forecast["gustx"] %> km/h</p>
                 </div>
             </div>
 
             <div class="flex flex-wrap md:flex-nowrap gap-4">
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Vent moyen à 10 mètres de hauteur</p>
-                    <p class="font-bold"><%= forecast["wind10m"] %> km/h</p>
+                    <p class="font-bold text-right whitespace-nowrap"><%= forecast["wind10m"] %> km/h</p>
                 </div>
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Rafales de vent à 10 mètres de hauteur</p>
-                    <p class="font-bold"><%= forecast["gust10m"] %> km/h</p>
+                    <p class="font-bold text-right whitespace-nowrap"><%= forecast["gust10m"] %> km/h</p>
                 </div>
             </div>
 
             <div class="flex flex-wrap md:flex-nowrap gap-4">
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Probabilité de vent > 70 km/h</p>
-                    <p class="font-bold"><%= forecast["probawind70"] %>%</p>
+                    <p class="font-bold text-right whitespace-nowrap"><%= forecast["probawind70"] %>%</p>
                 </div>
                 <div class="flex justify-between w-full border-b gap-4">
                     <p>Probabilité de vent > 100 km/h</p>
-                    <p class="font-bold"><%= forecast["probawind100"] %>%</p>
+                    <p class="font-bold text-right whitespace-nowrap"><%= forecast["probawind100"] %>%</p>
                 </div>
 
             </div>
