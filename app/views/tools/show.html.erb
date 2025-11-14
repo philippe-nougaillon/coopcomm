@@ -1,50 +1,42 @@
 <div class="mx-auto lg:w-2/3 w-full">
   <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
     <h1 class="text-2xl sm:text-4xl text-primary font-bold">
-      <% if @tool.icon_name.present? %>
-        <span class="material-symbols-outlined text-primary">
-          <%= @tool.icon_name %>
-        </span>
-      <% end %>
       <%= page_title!(@tool.name) %>
-      <%# test inutile par la suite, tous les outils devraient avoir un mouvement à leur création %>
-      <% if @tool.mouvements.any? %> 
-        <p class="font-bold badge badge-sm badge-<%= @tool.mouvements.last.style %>"><%= @tool.mouvements.last.état.humanize %></p>
-      <% else %>
-        <%# laissé temporairement, devrait être retiré par la suite lorsque tous les outils auront un mouvement à la création %>
-        <% if @tool.disponible?(DateTime.now) %>
-          <span class="material-symbols-outlined text-success cursor-help" title="Le matériel est disponible actuellement">
-            check_circle
-          </span>
-        <% else %>
-          <span class="material-symbols-outlined text-error cursor-help" title="Le matériel n'est pas disponible actuellement">
-            cancel
-          </span>
-        <% end %>
-      <% end %>
     </h1>
 
     <%= link_to "Ajouter une intervention avec ce matériel", new_intervention_path(tool_ids: @tool.id), class: 'btn btn-lg btn-outline btn-success hover:text-white!' %>
   </div>
 
-  <div class="flex flex-wrap gap-4">
-    <p class="my-2">
-      <strong class="block text-slate-400 mb-1">Modèle</strong>
-      <b><%= @tool.modèle %></b>
-    </p>
-    <p class="my-2">
-      <strong class="block text-slate-400 mb-1">Marque</strong>
-      <b><%= @tool.marque %></b>
-    </p>
-    <p class="my-2">
-      <strong class="block text-slate-400 mb-1">Description</strong>
-      <b><%= @tool.description %></b>
-    </p>
-
+  <div class="flex flex-wrap gap-8 mt-8">
     <% if @tool.photo.present? %>
       <img src="<%= url_for(@tool.photo) %>" class="h-60">  
+    <% elsif @tool.icon_name.present? %>
+      <span class="material-symbols-outlined text-warning !text-6xl">
+        <%= @tool.icon_name %>
+      </span>
     <% end %>
-  
+    <div class="flex flex-col flex-wrap">
+      <p class="my-2">
+        <strong class="block text-slate-400">État</strong>
+        <% if @tool.mouvements.any? %>
+          <p class="font-bold badge badge-sm badge-<%= @tool.mouvements.last.style %>">
+            <%= @tool.mouvements.last.état.humanize %>
+          </p>
+        <% end %>
+      </p>
+      <p class="my-2">
+        <strong class="block text-slate-400 mb-1">Modèle</strong>
+        <b><%= @tool.modèle %></b>
+      </p>
+      <p class="my-2">
+        <strong class="block text-slate-400 mb-1">Marque</strong>
+        <b><%= @tool.marque %></b>
+      </p>
+      <p class="my-2">
+        <strong class="block text-slate-400 mb-1">Description</strong>
+        <b><%= @tool.description %></b>
+      </p>
+    </div>
   </div>
 
   <div class="flex flex-wrap gap-2 mt-8">
@@ -69,7 +61,7 @@
     <%= link_to "Retour", tools_path, class: "btn" %>
   </div>
 
-  <h2 class="text-2xl text-secondary mt-8">
+  <h2 class="text-2xl text-secondary mt-12">
     Disponibilités
   </h2>
 

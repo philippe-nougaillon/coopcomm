@@ -77,14 +77,14 @@
         </div>
       <% end %>
 
-      <div class="flex flex-wrap gap-4 w-full min-w-fit lg:w-4/12 pr-4">
+      <div class="flex flex-wrap gap-4 w-full min-w-fit lg:w-4/12 pr-4 items-end">
         <div class="flex-1">
           <%= label_tag :tool_ids, "Matériel(s)" %>
           <%= select_tag :tool_ids, options_from_collection_for_select(@tools, 'id', 'name', params[:tool_ids]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()', multiple: true %>
         </div>
         <div class="flex-1">
           <div class="w-full sm:w-fit">
-            <%= label_tag :vue %>
+            <%= label_tag :vue, 'Mode' %>
             <br>
             <div class="join">
               <label class="btn btn-primary btn-outline btn-sm join-item <%= 'btn-active text-white!' if params[:vue] == 'normal' %>" for="btnradio1" title="Mode normal">

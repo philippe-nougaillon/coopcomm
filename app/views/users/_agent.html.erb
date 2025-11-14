@@ -13,7 +13,7 @@
   </td>
 
   <% (@date..@date_fin).each do | date | %>
-    <td class="text-center <%= 'bg-yellow-100' if date == Date.today %>">
+    <td class="text-center <%= 'bg-yellow-50' if date == Date.today %>">
       <% interventions = agent.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
 
       <% absent = agent.current_absence(date) %>
