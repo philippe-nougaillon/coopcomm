@@ -51,9 +51,9 @@
             <div class="text-md font-bold text-gray-900">
               <span class="font-normal text-gray-700 text-sm"><%= @forecast["datetime"].to_time.strftime("%H:%M") %></span>
             </div>
-            <%= image_tag Meteo.get_icon_meteo(@forecast["weather"]), size: 120 %>
+            <%= image_tag Meteo.get_icon_meteo(@forecast["weather"]), size: 100 %>
             <p class="text-gray-700 mb-2"><%= Meteo.WEATHER[@forecast["weather"]] %></p>
-            <div class="text-3xl text-gray-900 mb-3">
+            <div class="text-xl text-gray-900">
               <p><%= @forecast["temp2m"] %>ºC</p>
             </div>
             <div class="flex justify-between w-full">
@@ -71,9 +71,9 @@
             <div class="text-md font-bold text-gray-900">
               <span class="font-normal text-gray-700 text-sm"><%= @last_forecast["datetime"].to_time.strftime("%H:%M") %></span>
             </div>
-            <%= image_tag Meteo.get_icon_meteo(@last_forecast["weather"]), size: 120 %>
+            <%= image_tag Meteo.get_icon_meteo(@last_forecast["weather"]), size: 100 %>
             <p class="text-gray-700 mb-2"><%= Meteo.WEATHER[@last_forecast["weather"]] %></p>
-            <div class="text-3xl text-gray-900 mb-3">
+            <div class="text-xl text-gray-900">
               <p><%= @last_forecast["temp2m"] %>ºC</p>
             </div>
             <div class="flex justify-between w-full">
