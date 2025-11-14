@@ -40,7 +40,7 @@ class Intervention < ApplicationRecord
 
   # WORKFLOW
   NOUVEAU   = 'nouveau'
-  POINTAGE_ACTIVE   = 'pointage_activé'
+  POINTAGE_ACTIVE   = 'pointage activé'
   # ACCEPTE   = 'accepté'
   # EN_COURS  = 'en cours'
   TERMINE   = 'terminé'

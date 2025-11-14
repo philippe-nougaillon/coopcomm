@@ -87,7 +87,7 @@
 
               <p class="my-2">
                 <strong class="block text-slate-400 mb-1">Fin</strong>
-                <%= l(@intervention.fin, format: :long) if @intervention.fin%>
+                <%= l(@intervention.fin, format: :long) if @intervention.fin %>
               </p>
             </div>
 
@@ -145,30 +145,6 @@
               </p>
             </div>
 
-            <% if @intervention.photos.attached? %>
-              <div>
-                <% if @intervention.photos.count > 1 %>
-                  <button onclick="my_modal_<%= @intervention.id %>.showModal()">
-                    <div class="stack w-36">
-                      <% @intervention.photos.limit(3).each do |photo| %>
-                        <div class="avatar">
-                          <div class="w-36 rounded">
-                            <%= image_tag photo, loading: 'lazy' %>
-                          </div>
-                        </div>
-                      <% end %>
-                    </div>
-                  </button>
-                <% else %>
-                  <div class="avatar">
-                    <div class="w-36 rounded">
-                      <%= link_to image_tag(@intervention.photos.last, loading: 'lazy'), @intervention.photos.last, target: "_blank" %>
-                    </div>
-                  </div>
-                <% end %>
-              </div>
-            <% end %>
-
           </div>
         </div>
 
@@ -201,71 +177,56 @@
         </div>
       </div>
 
-      <dialog id="my_modal_<%= @intervention.id %>" class="modal w-full mx-auto my-auto mx-24">
-        <div class="flex justify-end">
-          <button onclick="my_modal_<%= @intervention.id %>.close()">
-            <span class="material-symbols-outlined text-5xl text-white font-black">
-              cancel
-            </span>      
-          </button>
-        </div>
-        <div class="carousel">
-          <% @intervention.photos.each do |photo| %>
-            <div class="carousel-item">
-              <%= image_tag(photo, class: "h-96", loading: 'lazy') %>
-            </div>
-          <% end %>
-        </div>
-      </dialog>
-
     </div>
 
-    <% if @intervention.trajet.present? && !@intervention.nouveau? %>
-      <div class="my-2">
-        <h2 class="text-2xl text-secondary mt-4">Trajet (AR)</h2>
-        <p><%= @intervention.trajet %></p>
-      </div>
-    <% elsif @intervention.adherent&.localisation && @intervention.nouveau? %>
+    <div class="flex flex-wrap gap-12 mt-6">
+      <div class="flex-1">
+        <% if @intervention.trajet.present? && !@intervention.nouveau? %>
+          <div class="my-2">
+            <h2 class="text-2xl text-secondary mt-4">Trajet (AR)</h2>
+            <p><%= @intervention.trajet %></p>
+          </div>
+        <% elsif @intervention.adherent&.localisation && @intervention.nouveau? %>
 
-      <div id="map" class="w-full h-100"></div>
+          <div id="map" class="w-full h-100"></div>
 
-      <p><%= @routes_info %></p>
+          <p><%= @routes_info %></p>
 
-      <script src="https://maps.googleapis.com/maps/api/js?key=<%= ENV["GOOGLE_MAPS_API_KEY"] %>&libraries=geometry&callback=initMap" async defer></script>
+          <script src="https://maps.googleapis.com/maps/api/js?key=<%= ENV["GOOGLE_MAPS_API_KEY"] %>&libraries=geometry&callback=initMap" async defer></script>
 
-      <script>
-          async function initMap() {
+          <script>
+              async function initMap() {
 
-              // Initialisation des bibliothèques nécessaires
-              const { Map } = await google.maps.importLibrary("maps");
-              const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary(
-                  "marker",
-              );
-
-              // Initialisation de la map
-              map = new google.maps.Map(document.getElementById("map"), {
-                  center : <%= @map_center %>,
-                  zoom: 11,
-                  mapId: "549c4681c953f814fa1cd142",
-              });
-
-              var pinIntervention = new PinElement({
-              });
-              new google.maps.marker.AdvancedMarkerElement({
-                  map,
-                  position: <%= @localisation_arrivee %>,
-                  title: "<%= "Intervention" %>",
-                  content: pinIntervention.element
-              });
-
-              <% if @response %>
-                let decodedPath;
-                let flightPath;
-                // Initialisation des routes
-                <% @response["routes"].each do |route| %>
-                  decodedPath = google.maps.geometry.encoding.decodePath(
-                      "<%= j route["polyline"]["encodedPolyline"] %>"
+                  // Initialisation des bibliothèques nécessaires
+                  const { Map } = await google.maps.importLibrary("maps");
+                  const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary(
+                      "marker",
                   );
+
+                  // Initialisation de la map
+                  map = new google.maps.Map(document.getElementById("map"), {
+                      center : <%= @map_center %>,
+                      zoom: 11,
+                      mapId: "549c4681c953f814fa1cd142",
+                  });
+
+                  var pinIntervention = new PinElement({
+                  });
+                  new google.maps.marker.AdvancedMarkerElement({
+                      map,
+                      position: <%= @localisation_arrivee %>,
+                      title: "<%= "Intervention" %>",
+                      content: pinIntervention.element
+                  });
+
+                  <% if @response %>
+                    let decodedPath;
+                    let flightPath;
+                    // Initialisation des routes
+                    <% @response["routes"].each do |route| %>
+                      decodedPath = google.maps.geometry.encoding.decodePath(
+                          "<%= j route["polyline"]["encodedPolyline"] %>"
+                      );
 
                   flightPath = new google.maps.Polyline({
                       path: decodedPath,
@@ -275,7 +236,7 @@
                       strokeWeight: 8,
                   });
 
-                  flightPath.setMap(map);
+                      flightPath.setMap(map);
 
                 <% end %>
               <% end %>
@@ -287,27 +248,30 @@
       </script>
     <% end %>
 
-    <h2 class="text-2xl text-secondary mt-4">Photos</h2>
-    <% if @intervention.photos.attached? %>
-      <div class="flex flex-wrap gap-8 mt-4">
-        <% @intervention.photos.each do |photo| %>
-          <div class="flex items-end gap-2">
-            <div class="avatar">
-              <div class="w-16 rounded hover:shadow-xl">
-                <%= link_to image_tag(photo, loading: 'lazy'), photo, target: "_blank"  %>
+      <div class="flex-1">
+        <h2 class="text-2xl text-secondary mt-4">Photos</h2>
+        <% if @intervention.photos.attached? %>
+          <div class="flex flex-wrap gap-8 mt-4">
+            <% @intervention.photos.each do |photo| %>
+              <div class="flex items-end gap-2">
+                <div class="avatar">
+                  <div class="w-16 rounded hover:shadow-sm">
+                    <%= link_to image_tag(photo, loading: 'lazy'), photo, target: "_blank"  %>
+                  </div>
+                </div>
+                <%= button_to purge_intervention_path(photo_id: photo.id), method: :delete, form: { data: {'turbo-confirm': "Êtes-vous bien certain.e de vouloir supprimer définitivement cette photo ?"} }, class: 'text-base-300 hover:text-error' do %>
+                  <span class="material-symbols-outlined">
+                    delete
+                  </span>
+                <% end %>
               </div>
-            </div>
-            <%= button_to purge_intervention_path(photo_id: photo.id), method: :delete, form: { data: {'turbo-confirm': "Êtes-vous bien certain.e de vouloir supprimer définitivement cette photo ?"} }, class: 'text-base-300 hover:text-error' do %>
-              <span class="material-symbols-outlined">
-                delete
-              </span>
             <% end %>
           </div>
+        <% else %>
+          <p class="mt-4">Aucune photo n'est attachée à cette intervention.</p>
         <% end %>
       </div>
-    <% else %>
-      <p class="mt-4">Aucune photo n'est attachée à cette intervention.</p>
-    <% end %>
+    </div>
 
     <% if @intervention.repeter %>
       <h2 class="text-2xl text-secondary mt-8">Pointages</h2>
