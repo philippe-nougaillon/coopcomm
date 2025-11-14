@@ -40,7 +40,7 @@ class Intervention < ApplicationRecord
 
   # WORKFLOW
   NOUVEAU   = 'nouveau'
-  ATTENTE   = 'attente'
+  POINTAGE_ACTIVE   = 'pointage_activé'
   # ACCEPTE   = 'accepté'
   # EN_COURS  = 'en cours'
   TERMINE   = 'terminé'
@@ -53,7 +53,7 @@ class Intervention < ApplicationRecord
       # event :accepter, transitions_to: ACCEPTE
       event :terminer, transitions_to: TERMINE
     end
-    state ATTENTE,  meta: {style: 'badge-warning text-white'}
+    state POINTAGE_ACTIVE,  meta: {style: 'badge-warning text-white'}
 
     # state ACCEPTE, meta: {style: 'badge-primary text-white'} do
     #   event :en_cours, transitions_to: EN_COURS

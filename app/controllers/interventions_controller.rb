@@ -19,6 +19,9 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.where.not(workflow_state: 'archivé')
     end
 
+    # Enelever les interventions filles
+    @interventions = @interventions.where(template_slug: nil)
+
     organisation_members = current_user.organisation.users
     if current_user.manager?
       @adhérents = organisation_members.adhérent.order(:nom)
@@ -788,12 +791,12 @@ class InterventionsController < ApplicationController
       end
     end
 
-    # Ajoute ou enlève l'état 'attente' selon si c'est un modèle de pointage.
+    # Ajoute ou enlève l'état 'pointage_activé' selon si c'est un modèle de pointage.
     def check_workflow_pointage_mère
-      if !@intervention.repeter? && @intervention.workflow_state == 'attente'
+      if !@intervention.repeter? && @intervention.workflow_state == 'pointage_activé'
         @intervention.workflow_state = 'nouveau'
-      elsif @intervention.repeter? && @intervention.workflow_state != 'attente'
-        @intervention.workflow_state = 'attente'
+      elsif @intervention.repeter? && @intervention.workflow_state != 'pointage_activé'
+        @intervention.workflow_state = 'pointage_activé'
       end
     end
 

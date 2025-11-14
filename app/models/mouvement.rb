@@ -8,13 +8,12 @@ class Mouvement < ApplicationRecord
   scope :ordered, -> { order(date: :desc) }
 
   enum :état, {
-    début: 0,
-    fin: 1,
+    achat: 0,
+    réforme: 1,
     entrée: 2,
     sortie: 3,
     révision: 4,
-    panne: 5,
-    reforme: 6
+    panne: 5
   }
 
   def style
