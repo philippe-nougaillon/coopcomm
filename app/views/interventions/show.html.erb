@@ -241,13 +241,14 @@
                 <% end %>
               <% end %>
 
-              const trafficLayer = new google.maps.TrafficLayer();
+              const {trafficLayer} = new google.maps.importLibrary("trafficlayer");
 
               trafficLayer.setMap(map);
+
           }
       </script>
     <% end %>
-
+      </div>
       <div class="flex-1">
         <h2 class="text-2xl text-secondary mt-4">Photos</h2>
         <% if @intervention.photos.attached? %>
@@ -271,6 +272,8 @@
           <p class="mt-4">Aucune photo n'est attachée à cette intervention.</p>
         <% end %>
       </div>
+    </div>
+
     </div>
 
     <% if @intervention.repeter %>
