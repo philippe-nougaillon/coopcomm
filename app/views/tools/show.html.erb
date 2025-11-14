@@ -101,18 +101,18 @@
       
       <div class="text-center gap-4">
         <% if interventions_matin.any? %>
-          <span class="mr-1 bg-red-300" style="padding-left: 15px" title="<%= interventions_matin.pluck(:description) %>"></span>
+          <span class="mr-1 border-1" style="padding-left: 15px; background-color: <%= interventions_matin.first.team ? "#{interventions_matin.first.team.color}" : "red" %>" title="<%= interventions_matin.pluck(:description) %>"></span>
         <% else %>
           <%= link_to new_intervention_path(tool_ids: @tool.id, début_prévue: date, début_prévue_hour: 8, fin_prévue: date, fin_prévue_hour: 13), title: "Créer une intervention le #{date.day} au matin" do %>
-            <span class="mr-1 bg-green-300" style="padding-left: 15px;"></span>
+            <span class="mr-1 border-1 hover:bg-green-500" style="padding-left: 15px;"></span>
           <% end %>
         <% end %>
 
         <% if interventions_soir.any? %>
-          <span class="bg-red-300" style="padding-left: 15px" title="<%= interventions_soir.pluck(:description) %>"></span>
+          <span class="border-1" style="padding-left: 15px; background-color: <%= interventions_soir.first.team ? "#{interventions_soir.first.team.color}" : "red" %>" title="<%= interventions_soir.pluck(:description) %>"></span>
         <% else %>
           <%= link_to new_intervention_path(tool_ids: @tool.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 5, fin_prévue: date, fin_prévue_hour: 18), title: "Créer une intervention le #{date.day} après-midi" do %>
-            <span class="bg-green-300" style="padding-left: 15px;"></span>
+            <span class="border-1 hover:bg-green-500" style="padding-left: 15px;"></span>
           <% end %>
         <% end %>
       </div>
