@@ -110,7 +110,7 @@ class ToolsController < ApplicationController
     end
 
     def sortable_columns
-      ['tools.name', 'tools.modèle', 'tools.marque', 'tools.icon_name']
+      ['tools.name', 'tools.modèle', 'tools.marque', 'tools.icon_name', 'mouvements.état']
     end
 
     def sort_column
