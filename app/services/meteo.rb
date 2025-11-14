@@ -175,49 +175,109 @@ class Meteo < ApplicationService
   end
 
   # Recherche de l'icon correspondant à la météo en fonction du code weather
-  def self.get_icon_meteo(weather_code)
-    'meteo/animated/' +
-    case weather_code
-    when 0 # Soleil
-      'day.svg'
-    when 1..2 # Peu nuageux
-      'cloudy-day-3.svg'
-    when 3..7 # Nuageux et brouillard
-      'cloudy.svg'
-    when 10 # Pluie faible
-      'rainy-4.svg'
-    when 11 # Pluie modérée
-      'rainy-5.svg'
-    when 12 # Pluie forte
-      'rainy-6.svg'
-    when 20 # Neige faible
-      'snowy-4.svg'
-    when 21 # Neige modérée
-      'snowy-5.svg'
-    when 22, 235 # Neige forte ou Averses de grêle
-      'snowy-6.svg'
-    when 40..48 # Averse de pluie (faible ou forte)
-      'rainy-6.svg'
-    when 60..68 # Averse de neige (faible ou forte)
-      'snowy-6.svg'
-    when 101..142 # Orage
-      'thunder.svg'
-    when 210 # Pluie faible intermittente
-      'rainy-1.svg'
-    when 211 # Pluie modérée intermittente
-      'rainy-2.svg'
-    when 212 # Pluie forte intermittente
-      'rainy-3.svg'
-    when 220 # Pluie faible intermittente
-      'snowy-1.svg'
-    when 221 # Pluie modérée intermittente
-      'snowy-2.svg'
-    when 222 # Pluie forte intermittente
-      'snowy-3.svg'
-    when 230..232
-      'rainy-7.svg'
+  def self.get_icon_meteo(code)
+    # Catégories orage et brouillard (prioritaires)
+    case code
+    when 100..142, 120..142, 130..142 # tout orage
+      return 'meteo/animated/thunder.svg'
+    when 6, 7                         # brouillard simple ou givrant
+      return 'meteo/animated/cloudy.svg'
+    end
+
+    case code
+      # --- Ciel clair / nuages ---
+    when 0
+      'meteo/animated/day.svg'
+    when 1..2
+      'meteo/animated/cloudy-day-3.svg'
+    when 3..5
+      'meteo/animated/cloudy.svg'
+    when 6..7
+      'meteo/animated/cloudy.svg'
+
+      # --- Pluie continue ---
+    when 10  # faible
+      'meteo/animated/rainy-2.svg'
+    when 11  # modérée
+      'meteo/animated/rainy-3.svg'
+    when 12  # forte
+      'meteo/animated/rainy-4.svg'
+    when 13  # pluie faible verglaçante
+      'meteo/animated/rainy-3.svg'
+    when 14  # modérée verglaçante
+      'meteo/animated/rainy-4.svg'
+    when 15  # forte verglaçante
+      'meteo/animated/rainy-5.svg'
+    when 16  # bruine
+      'meteo/animated/rainy-1.svg'
+
+      # --- Neige continue ---
+    when 20  # faible
+      'meteo/animated/snowy-2.svg'
+    when 21  # modérée
+      'meteo/animated/snowy-3.svg'
+    when 22  # forte
+      'meteo/animated/snowy-4.svg'
+
+      # --- Pluie et neige mêlées ---
+    when 30 # faible
+      'meteo/animated/rainy-2.svg'
+    when 31 # modérée
+      'meteo/animated/rainy-3.svg'
+    when 32 # forte
+      'meteo/animated/rainy-4.svg'
+
+      # --- Averses de pluie ---
+    when 40,43,46       # faibles
+      'meteo/animated/rainy-3.svg'
+    when 41,44,47       # normales
+      'meteo/animated/rainy-4.svg'
+    when 42,45,48       # fortes
+      'meteo/animated/rainy-5.svg'
+
+      # --- Averses de neige ---
+    when 60,63,66       # faibles
+      'meteo/animated/snowy-3.svg'
+    when 61,64,67       # normales
+      'meteo/animated/snowy-4.svg'
+    when 62,65,68       # fortes
+      'meteo/animated/snowy-5.svg'
+
+      # --- Averses pluie + neige mêlées ---
+    when 70,73,76       # faibles
+      'meteo/animated/rainy-3.svg'
+    when 71,74,77       # normales
+      'meteo/animated/rainy-4.svg'
+    when 72,75,78       # fortes
+      'meteo/animated/rainy-5.svg'
+
+      # --- Pluie intermittente ---
+    when 210            # faible
+      'meteo/animated/rainy-1.svg'
+    when 211            # modérée
+      'meteo/animated/rainy-2.svg'
+    when 212            # forte
+      'meteo/animated/rainy-3.svg'
+
+      # --- Neige intermittente ---
+    when 220            # faible
+      'meteo/animated/snowy-1.svg'
+    when 221            # modérée
+      'meteo/animated/snowy-2.svg'
+    when 222            # forte
+      'meteo/animated/snowy-3.svg'
+
+      # --- Pluie et neige mêlées intermittentes ---
+    when 230, 231, 232
+      'meteo/animated/rainy-4.svg'
+
+      # --- Grêle ---
+    when 235
+      'meteo/animated/snowy-6.svg'
+
     else
-      'day.svg'
+      'meteo/animated/day.svg'
     end
   end
+
 end
