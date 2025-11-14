@@ -25,7 +25,7 @@
       </div>
 
       <div class="w-full sm:w-fit">
-        <%= label_tag :vue %>
+        <%= label_tag :vue, 'Mode' %>
         <br>
         <div class="join">
           <label class="btn btn-primary btn-outline btn-sm join-item <%= 'btn-active text-white!' if params[:vue] == 'calendrier' %>" for="btnradio1" title="Mode calendrier">
@@ -36,7 +36,7 @@
           <%= radio_button_tag :vue, "calendrier", (params[:vue] == 'calendrier'), name: 'vue', id: 'btnradio1', autocomplete: 'off', onchange: 'this.form.submit()', class: 'hidden' %>
 
           <%= radio_button_tag :vue, 'indisponible_carte', (params[:vue] == 'indisponible_carte'), name: 'vue', id: 'btnradio2', autocomplete: 'off', onchange: 'this.form.submit()', class: 'hidden' %>
-          <label class="btn btn-primary btn-outline btn-sm join-item <%= 'btn-active text-white!' if params[:vue] == 'indisponible_carte' %>" for="btnradio2" title="Mode carte">
+          <label class="btn btn-primary btn-outline btn-sm join-item <%= 'btn-active text-white!' if params[:vue] == 'indisponible_carte' %>" for="btnradio2" title="Mode carte (affiche la position des outils à date)">
             <span class="material-symbols-outlined">
               map
             </span>
