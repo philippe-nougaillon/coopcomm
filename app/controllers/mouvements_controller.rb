@@ -42,7 +42,7 @@ class MouvementsController < ApplicationController
 
     respond_to do |format|
       if @mouvement.save
-        format.html { redirect_to @mouvement, notice: "Mouvement was successfully created." }
+        format.html { redirect_to @mouvement.tool, notice: "Mouvement créé avec succès." }
         format.json { render :show, status: :created, location: @mouvement }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -55,7 +55,7 @@ class MouvementsController < ApplicationController
   def update
     respond_to do |format|
       if @mouvement.update(mouvement_params)
-        format.html { redirect_to @mouvement, notice: "Mouvement was successfully updated.", status: :see_other }
+        format.html { redirect_to @mouvement.tool, notice: "Mouvement modifié avec succès.", status: :see_other }
         format.json { render :show, status: :ok, location: @mouvement }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -69,7 +69,7 @@ class MouvementsController < ApplicationController
     @mouvement.destroy!
 
     respond_to do |format|
-      format.html { redirect_to mouvements_path, notice: "Mouvement was successfully destroyed.", status: :see_other }
+      format.html { redirect_to mouvements_path, notice: "Mouvement supprimé avec succès.", status: :see_other }
       format.json { head :no_content }
     end
   end

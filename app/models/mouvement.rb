@@ -5,6 +5,8 @@ class Mouvement < ApplicationRecord
   belongs_to :tool
   belongs_to :intervention, optional: true
 
+  scope :ordered, -> { order(date: :desc) }
+
   enum :état, {
     début: 0,
     fin: 1,
