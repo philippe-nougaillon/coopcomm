@@ -18,6 +18,9 @@
   <% end %>
 
   <% if params[:terminé].blank? %>
+    <h2 class="text-lg text-secondary font-black">
+      Demande
+    </h2>
     <div class="bg-sky-50 p-4 rounded border border-sky-100">
       <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8 mb-5">
         <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
@@ -110,8 +113,11 @@
       </div>
     </div>
 
+    <h2 class="text-lg text-secondary font-black mt-5">
+      Assignation
+    </h2>
     <div data-controller="calc-temps-passe">
-      <div class="bg-indigo-50 rounded border border-indigo-100 p-4 mt-5 shadow-xs">
+      <div class="bg-indigo-50 rounded border border-indigo-100 p-4 shadow-xs">
         <div class="flex flex-wrap gap-5 sm:gap-8">
           <% if current_user.manager? || current_user.adhérent? %>
             <div class="w-full sm:flex-1">
@@ -142,7 +148,10 @@
         </div>
       </div>
 
-      <div class="rounded border border-grey-100 p-4 mt-5 shadow-xs">
+      <h2 class="text-lg text-secondary font-black mt-5">
+        Intervention
+      </h2>
+      <div class="rounded border border-grey-100 p-4 shadow-xs">
         <div class="flex flex-wrap gap-5 sm:gap-8 items-start">
           <div class="flex flex-col flex-wrap w-full flex-1">
             <div class="flex flex-wrap gap-5 sm:gap-8 flex-1 mb-5">
@@ -235,7 +244,10 @@
   <% end %>
 
   <% if intervention.persisted? && (current_user.adhérent? || current_user.manager?) %>
-    <div class="bg-sky-50 rounded border border-sky-100 p-4 mt-5 shadow-xs">
+    <h2 class="text-lg text-secondary font-black mt-5">
+      Compte-rendu
+    </h2>
+    <div class="bg-sky-50 rounded border border-sky-100 p-4 shadow-xs">
       <% if params[:terminé] %>
         <p class="mb-8">
           Statut :
