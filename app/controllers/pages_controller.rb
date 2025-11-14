@@ -8,14 +8,14 @@ class PagesController < ApplicationController
       minimum = 10
       interventions = current_user.organisation
                                   .interventions
-                                  .where.not(début: nil)
+                                  .where.not(début_prévue: nil)
                                   .where(template_slug: nil)
-                                  .order(:début)
+                                  .order(:début_prévue)
 
       if interventions.count >= minimum
         description_list = []
         interventions.each do |intervention|
-          description_list << "#{intervention.description.gsub('[mail] ', '')} #{l(intervention.début.to_date)}"
+          description_list << "#{intervention.description.gsub('[mail] ', '')} #{l(intervention.début_prévue.to_date)}"
         end
 
         # Version OpenAI
