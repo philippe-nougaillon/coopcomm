@@ -241,8 +241,7 @@
                 <% end %>
               <% end %>
 
-              const {trafficLayer} = new google.maps.importLibrary("trafficlayer");
-
+              const trafficLayer = new google.maps.TrafficLayer();
               trafficLayer.setMap(map);
 
           }
