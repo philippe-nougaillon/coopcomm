@@ -121,6 +121,19 @@ class Intervention < ApplicationRecord
     end
   end
 
+  def self.by_role_for_home(user)
+    case user.rôle
+    when 'manager'
+      user.organisation.interventions.where.not(workflow_state: ["validé", "refusé", "archivé"]).ordered
+    when 'adhérent'
+      user.interventions_adherent.where(workflow_state: ["terminé"]).ordered
+    when 'agent'
+      user.interventions.where(workflow_state: ["nouveau"]).ordered
+    when 'équipe'
+      user.organisation.interventions.where(team_id: user.id, workflow_state: ["nouveau"]).ordered
+    end
+  end
+
   def check_absence
     if self.agents.any?
       absence_ids = self.agents.flat_map do |agent|
