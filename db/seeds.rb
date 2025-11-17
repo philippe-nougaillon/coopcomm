@@ -1,10 +1,9 @@
 organisation = Organisation.create(nom: "Communauté d'agglomération Plaine Vallée")
 
 # --- USERS ---
-User.create!([
-  {nom: "MANAGER", prénom: "Thierry", email: "manager.thierry@coopcomm.fr", organisation_id: organisation.id, rôle: "manager", password: "sdm2025", password_confirmation: "sdm2025", slug: SecureRandom.uuid}
-])
 
+manager_thierry = User.create(nom: "MANAGER", prénom: "Thierry", email: "manager.thierry@coopcomm.fr", organisation_id: organisation.id, rôle: "manager", password: "sdm2025", password_confirmation: "sdm2025", slug: SecureRandom.uuid)
+manager_béatrice = User.create(nom: "MANAGER", prénom: "Béatrice", email: "manager.beatrice@coopcomm.fr", organisation_id: organisation.id, rôle: "manager", password: "sdm2025", password_confirmation: "sdm2025", slug: SecureRandom.uuid)
 adhérent_bouffémont = User.create(nom: "Bouffémont", prénom: "", email: "adherent.bouffémont@coopcomm.fr", organisation_id: organisation.id, rôle: "adhérent", password: "sdm2025", password_confirmation: "sdm2025", localisation: "49.0433021567701, 2.3001033039257464", slug: SecureRandom.uuid)
 adhérent_montmorency = User.create(nom: "Montmorency", prénom: "", email: "adherent.montmorency@coopcomm.fr", organisation_id: organisation.id, rôle: "adhérent", password: "sdm2025", password_confirmation: "sdm2025", localisation: "48.98963358128416, 2.3212285907717924", slug: SecureRandom.uuid)
 adhérent_attainville = User.create(nom: "Attainville", prénom: "", email: "adherent.attainville@coopcomm.fr", organisation_id: organisation.id, rôle: "adhérent", password: "sdm2025", password_confirmation: "sdm2025", localisation: "49.057101562313406, 2.345911077521958", slug: SecureRandom.uuid)
@@ -213,7 +212,7 @@ i7 = Intervention.create!(
   début_prévue: Time.zone.parse("2025-09-13 08:00:00 +0200") + rand(-15..15).minutes,
   fin_prévue: Time.zone.parse("2025-09-13 10:30:00 +0200") + rand(-15..15).minutes,
   temps_de_pause: 0.0,
-  workflow_state: "terminé",
+  workflow_state: "validé",
   adherent_id: adhérent_andilly.id,
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
@@ -263,7 +262,7 @@ i10 = Intervention.create!(
   début_prévue: Time.zone.parse("2025-09-17 09:00:00 +0200") + rand(-15..15).minutes,
   fin_prévue: Time.zone.parse("2025-09-17 12:00:00 +0200") + rand(-15..15).minutes,
   temps_de_pause: 0.5,
-  workflow_state: "validé",
+  workflow_state: "refusé",
   adherent_id: adhérent_bouffémont.id,
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
@@ -281,7 +280,7 @@ i11 = Intervention.create!(
   début_prévue: Time.zone.parse("2025-09-18 08:30:00 +0200") + rand(-15..15).minutes,
   fin_prévue: Time.zone.parse("2025-09-18 11:00:00 +0200") + rand(-15..15).minutes,
   temps_de_pause: 0.0,
-  workflow_state: "terminé",
+  workflow_state: "validé",
   adherent_id: adhérent_andilly.id,
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
@@ -396,7 +395,7 @@ i18 = Intervention.create!(
   début_prévue: Time.zone.parse("2025-09-25 07:30:00 +0200") + rand(-15..15).minutes,
   fin_prévue: Time.zone.parse("2025-09-25 12:00:00 +0200") + rand(-15..15).minutes,
   temps_de_pause: 1.0,
-  workflow_state: "validé",
+  workflow_state: "refusé",
   adherent_id: adhérent_bouffémont.id,
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
@@ -511,7 +510,7 @@ i25 = Intervention.create!(
   début_prévue: Time.zone.parse("2025-10-02 09:00:00 +0200") + rand(-15..15).minutes,
   fin_prévue: Time.zone.parse("2025-10-02 11:30:00 +0200") + rand(-15..15).minutes,
   temps_de_pause: 0.5,
-  workflow_state: "terminé",
+  workflow_state: "refusé",
   adherent_id: adhérent_attainville.id,
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
@@ -645,7 +644,7 @@ i33 = Intervention.create!(
   début_prévue: Time.zone.parse("2025-10-10 09:00:00 +0200") + rand(-15..15).minutes,
   fin_prévue: Time.zone.parse("2025-10-10 12:00:00 +0200") + rand(-15..15).minutes,
   temps_de_pause: 0.5,
-  workflow_state: "terminé",
+  workflow_state: "validé",
   adherent_id: adhérent_attainville.id,
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
@@ -725,7 +724,7 @@ i38 = Intervention.create!(
   fin: "2025-10-15 12:00:00 +0200",
   début_prévue: Time.zone.parse("2025-10-15 09:00:00 +0200") + rand(-15..15).minutes,
   fin_prévue: Time.zone.parse("2025-10-15 12:00:00 +0200") + rand(-15..15).minutes,
-  workflow_state: "terminé",
+  workflow_state: "validé",
   adherent_id: adhérent_bouffémont.id,
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
@@ -872,7 +871,7 @@ i47 = Intervention.create!(
   début_prévue: Time.zone.parse("2025-10-24 09:00:00 +0200") + rand(-15..15).minutes,
   fin_prévue: Time.zone.parse("2025-10-24 12:00:00 +0200") + rand(-15..15).minutes,
   temps_de_pause: 0.5,
-  workflow_state: "terminé",
+  workflow_state: "validé",
   adherent_id: adhérent_attainville.id,
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
@@ -952,7 +951,7 @@ i52 = Intervention.create!(
   fin: "2025-10-29 12:00:00 +0200",
   début_prévue: Time.zone.parse("2025-10-29 09:00:00 +0200") + rand(-15..15).minutes,
   fin_prévue: Time.zone.parse("2025-10-29 12:00:00 +0200") + rand(-15..15).minutes,
-  workflow_state: "terminé",
+  workflow_state: "validé",
   adherent_id: adhérent_bouffémont.id,
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
@@ -1032,7 +1031,7 @@ i57 = Intervention.create!(
   fin: "2025-11-03 12:00:00 +0100",
   début_prévue: Time.zone.parse("2025-11-03 09:00:00 +0100") + rand(-15..15).minutes,
   fin_prévue: Time.zone.parse("2025-11-03 12:00:00 +0100") + rand(-15..15).minutes,
-  workflow_state: "terminé",
+  workflow_state: "validé",
   adherent_id: adhérent_attainville.id,
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
@@ -1096,7 +1095,7 @@ i61 = Intervention.create!(
   fin: "2025-11-07 12:00:00 +0100",
   début_prévue: Time.zone.parse("2025-11-07 09:00:00 +0100") + rand(-15..15).minutes,
   fin_prévue: Time.zone.parse("2025-11-07 12:00:00 +0100") + rand(-15..15).minutes,
-  workflow_state: "terminé",
+  workflow_state: "validé",
   adherent_id: adhérent_attainville.id,
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
@@ -1139,12 +1138,12 @@ ToolIntervention.create!(tool_id: testeur_extincteur.id, intervention_id: i63.id
 # ---------- i64 ----------
 i64 = Intervention.create!(
   description: "Nettoyage vitres école maternelle",
-  début: "2025-11-10 08:30:00 +0100",
-  fin: "2025-11-10 11:30:00 +0100",
+  début: "2025-11-17 08:30:00 +0100",
+  fin: "2025-11-17 11:30:00 +0100",
   début_prévue: Time.zone.parse("2025-11-10 08:30:00 +0100") + rand(-15..15).minutes,
   fin_prévue: Time.zone.parse("2025-11-10 11:30:00 +0100") + rand(-15..15).minutes,
   
-  workflow_state: "validé",
+  workflow_state: "terminé",
   adherent_id: adhérent_andilly.id,
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
@@ -1453,6 +1452,37 @@ i85 = Intervention.create!(
 AgentIntervention.create!(agent_id: agent_securite_philippe.id, intervention_id: i85.id)
 ToolIntervention.create!(tool_id: testeur_extincteur.id, intervention_id: i85.id)
 
+# ---------- Notifications manager ↔ adhérent ----------
+Notification.create!(message: "Bonjour, votre intervention 'Réparation robinet école primaire' est confirmée pour le 3 novembre.", from_id: manager_thierry.id, to_id: adhérent_attainville.id, created_at: i57.début_prévue - 2.days, updated_at: i57.début_prévue - 2.days)
+Notification.create!(message: "Merci pour l'information, je serai présent.", from_id: adhérent_attainville.id, to_id: manager_thierry.id, created_at: i57.début_prévue - 1.day, updated_at: i57.début_prévue - 1.day)
+
+Notification.create!(message: "Votre intervention 'Peinture bancs parc sud' est planifiée pour le 4 novembre.", from_id: manager_béatrice.id, to_id: adhérent_bouffémont.id, created_at: i58.début_prévue - 2.days, updated_at: i58.début_prévue - 2.days)
+Notification.create!(message: "Parfait, merci pour la confirmation.", from_id: adhérent_bouffémont.id, to_id: manager_béatrice.id, created_at: i58.début_prévue - 1.day, updated_at: i58.début_prévue - 1.day)
+
+Notification.create!(message: "Vérification des alarmes incendie prévue le 5 novembre.", from_id: manager_thierry.id, to_id: adhérent_montmorency.id, created_at: i59.début_prévue - 3.days, updated_at: i59.début_prévue - 3.days)
+Notification.create!(message: "C'est noté, merci.", from_id: adhérent_montmorency.id, to_id: manager_thierry.id, created_at: i59.début_prévue - 1.day, updated_at: i59.début_prévue - 1.day)
+
+# ---------- Notifications adhérent ↔ agent ----------
+Notification.create!(message: "Pouvez-vous vérifier le robinet de l'école primaire le 3 novembre ?", from_id: adhérent_attainville.id, to_id: agent_tech_jean.id, created_at: i57.début_prévue - 1.day, updated_at: i57.début_prévue - 1.day)
+Notification.create!(message: "Oui, je serai sur place à 9h.", from_id: agent_tech_jean.id, to_id: adhérent_attainville.id, created_at: i57.fin_prévue + 10.minutes, updated_at: i57.fin_prévue + 10.minutes)
+
+Notification.create!(message: "Merci de peindre les bancs du parc sud le 4 novembre.", from_id: adhérent_bouffémont.id, to_id: agent_peinture_amelie.id, created_at: i58.début_prévue - 2.hours, updated_at: i58.début_prévue - 2.hours)
+Notification.create!(message: "Bien reçu, je commencerai à 8h.", from_id: agent_peinture_amelie.id, to_id: adhérent_bouffémont.id, created_at: i58.fin_prévue + 15.minutes, updated_at: i58.fin_prévue + 15.minutes)
+
+Notification.create!(message: "Vérifiez les extincteurs le 5 novembre.", from_id: adhérent_montmorency.id, to_id: agent_securite_philippe.id, created_at: i59.début_prévue - 3.hours, updated_at: i59.début_prévue - 3.hours)
+Notification.create!(message: "Je m'en occupe dès 9h.", from_id: agent_securite_philippe.id, to_id: adhérent_montmorency.id, created_at: i59.fin_prévue + 5.minutes, updated_at: i59.fin_prévue + 5.minutes)
+
+# ---------- Notifications agent ↔ manager ----------
+Notification.create!(message: "Intervention 'Réparation robinet école primaire' terminée.", from_id: agent_tech_jean.id, to_id: manager_thierry.id, created_at: i57.fin_prévue + 10.minutes, updated_at: i57.fin_prévue + 10.minutes)
+Notification.create!(message: "Merci pour votre retour, intervention validée.", from_id: manager_thierry.id, to_id: agent_tech_jean.id, created_at: i57.fin_prévue + 30.minutes, updated_at: i57.fin_prévue + 30.minutes)
+
+Notification.create!(message: "Intervention peinture parc sud terminée, temps de pause respecté.", from_id: agent_peinture_amelie.id, to_id: manager_béatrice.id, created_at: i58.fin_prévue + 15.minutes, updated_at: i58.fin_prévue + 15.minutes)
+Notification.create!(message: "Parfait, je mets à jour le suivi.", from_id: manager_béatrice.id, to_id: agent_peinture_amelie.id, created_at: i58.fin_prévue + 45.minutes, updated_at: i58.fin_prévue + 45.minutes)
+
+Notification.create!(message: "Vérification extincteurs effectuée, tout est conforme.", from_id: agent_securite_philippe.id, to_id: manager_thierry.id, created_at: i59.fin_prévue + 5.minutes, updated_at: i59.fin_prévue + 5.minutes)
+Notification.create!(message: "Merci pour votre réactivité.", from_id: manager_thierry.id, to_id: agent_securite_philippe.id, created_at: i59.fin_prévue + 25.minutes, updated_at: i59.fin_prévue + 25.minutes)
+
+
 # i1 = Intervention.create(description: "Tonte parc communal - parc République", début: "2025-09-03 08:30:00 +0200", fin: "2025-09-03 11:00:00 +0200", temps_de_pause: 0.5, workflow_state: "validé", adherent_id: adhérent_attainville.id, organisation_id: organisation.id, slug: SecureRandom.uuid)
 # # outils: [tondeuse_gazon, camionnette_benne]
 # AgentIntervention.create!(agent_id: agent_tech_jean.id, intervention_id: i1.id)
@@ -1670,14 +1700,6 @@ ToolIntervention.create!(tool_id: testeur_extincteur.id, intervention_id: i85.id
 # i54 = Intervention.create(description: "Inventaire matériel ménage", début: "2026-01-30 09:00:00 +0100", fin: "2026-01-30 12:00:00 +0100", workflow_state: "nouveau", adherent_id: adhérent_andilly.id, organisation_id: organisation.id, slug: SecureRandom.uuid)
 # AgentIntervention.create!(agent_id: agent_menage_nicole.id, intervention_id: i54.id)
 
-# Interventions : workflow, avis, météo, tags
-# Abscence
-# Notification
-# Mouvement (pas besoin pour l'instant)
-# Document
-# ? MailLog
-# ? Audit
-# ? modification d'interventions
 
 
 Intervention.where.not(début: nil).each do |intervention|
@@ -1694,5 +1716,29 @@ end
 
 # Check disponibilité agents / update champ temps_total
 Intervention.all.each do |i|
-  i.save!
+  i.temps_total = i.calc_temps_total
+  i.save
 end
+
+Intervention.where(workflow_state: ["terminé", "validé", "refusé", "archivé"]).each do |i|
+  i.co2 = case i.adherent_id
+  when adhérent_bouffémont.id
+    3.15 + rand(-0.30..0.30).round(2)
+  when adhérent_montmorency.id
+    0.41 + rand(-0.30..0.30).round(2)
+  when adhérent_attainville.id
+    3.75 + rand(-0.30..0.30).round(2)
+  when adhérent_andilly.id
+    1.35 + rand(-0.30..0.30).round(2)
+  end
+  i.save
+end
+
+# Interventions : avis, météo, tags
+# Notification
+# Document
+# Wiki_page
+# Intervention récurrente
+# ? MailLog
+# ? Audit
+# ? modification d'interventions
