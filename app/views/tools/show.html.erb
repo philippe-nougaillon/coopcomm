@@ -82,7 +82,7 @@
   <% when 'calendrier' %>
     <%= month_calendar do |date| %>
       <div class="flex justify-center">
-        <p class="<%= date == Date.today ? 'bg-info px-2.5 py-1 rounded-full text-white font-black mb-1' : 'mb-2' %>">
+        <p class="px-2.5 py-1 mb-1 <%= date == Date.today ? 'bg-info rounded-full text-white font-black' : '' %>">
           <%= date.day %>
         </p>
       </div>
