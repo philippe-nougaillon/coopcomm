@@ -20,7 +20,105 @@ agent_info_clara = User.create({nom: "Roux", prénom: "Clara", email: "agent.inf
 agent_secretaire_véronique = User.create({nom: "Faure", prénom: "Véronique", email: "agent.secretaire1@coopcomm.fr", organisation_id: organisation.id, rôle: "agent", service: "Secrétariat", password: "sdm2025", password_confirmation: "sdm2025", slug: SecureRandom.uuid})
 agent_compta_sophie = User.create({nom: "Mercier", prénom: "Sophie", email: "agent.compta1@coopcomm.fr", organisation_id: organisation.id, rôle: "agent", service: "Comptabilité", password: "sdm2025", password_confirmation: "sdm2025", slug: SecureRandom.uuid})
 agent_securite_philippe = User.create({nom: "Garnier", prénom: "Philippe", email: "agent.securite1@coopcomm.fr", organisation_id: organisation.id, rôle: "agent", service: "Technique", password: "sdm2025", password_confirmation: "sdm2025", slug: SecureRandom.uuid})
-team_entretien_batiment = User.create({nom: "Equipe Entretien Bâtiment", prénom: "", email: "equipe.entretien@coopcomm.fr", organisation_id: organisation.id, rôle: "équipe", service: "Technique", password: "sdm2025", password_confirmation: "sdm2025", slug: SecureRandom.uuid})
+
+team_entretien_batiment = User.create({nom: "Entretien Bâtiment", prénom: "", email: "equipe.entretien@coopcomm.fr", organisation_id: organisation.id, rôle: "équipe", color: "#1F77B4", password: "sdm2025", password_confirmation: "sdm2025", slug: SecureRandom.uuid})
+team_eclairage = User.create!(nom: "Éclairage", prénom: "", email: "equipe.eclairage@coopcomm.fr", organisation_id: organisation.id, rôle: "équipe", color: "#FF7F0E", password: "sdm2025", password_confirmation: "sdm2025", slug: SecureRandom.uuid)
+team_technique = User.create!(nom: "Technique", prénom: "", email: "equipe.tech@coopcomm.fr", organisation_id: organisation.id, rôle: "équipe",  color: "#2CA02C", password: "sdm2025", password_confirmation: "sdm2025", slug: SecureRandom.uuid)
+team_menage = User.create!(
+  nom: "Ménage",
+  prénom: "",
+  email: "equipe.menage@coopcomm.fr",
+  organisation_id: organisation.id,
+  rôle: "équipe",
+  color: "#9467BD",
+  password: "sdm2025",
+  password_confirmation: "sdm2025",
+  slug: SecureRandom.uuid
+)
+
+team_informatique = User.create!(
+  nom: "Informatique",
+  prénom: "",
+  email: "equipe.informatique@coopcomm.fr",
+  organisation_id: organisation.id,
+  rôle: "équipe",
+  color: "#17BECF",
+  password: "sdm2025",
+  password_confirmation: "sdm2025",
+  slug: SecureRandom.uuid
+)
+
+team_peinture = User.create!(
+  nom: "Peinture",
+  prénom: "",
+  email: "equipe.peinture@coopcomm.fr",
+  organisation_id: organisation.id,
+  rôle: "équipe",
+  color: "#D62728",
+  password: "sdm2025",
+  password_confirmation: "sdm2025",
+  slug: SecureRandom.uuid
+)
+
+team_compta = User.create!(
+  nom: "Comptabilité",
+  prénom: "",
+  email: "equipe.compta@coopcomm.fr",
+  organisation_id: organisation.id,
+  rôle: "équipe",
+  color: "#E377C2",
+  password: "sdm2025",
+  password_confirmation: "sdm2025",
+  slug: SecureRandom.uuid
+)
+
+team_plomberie = User.create!(
+  nom: "Plomberie",
+  prénom: "",
+  email: "equipe.plomberie@coopcomm.fr",
+  organisation_id: organisation.id,
+  rôle: "équipe",
+  color: "#8C564B",
+  password: "sdm2025",
+  password_confirmation: "sdm2025",
+  slug: SecureRandom.uuid
+)
+
+team_metal = User.create!(
+  nom: "Métallerie",
+  prénom: "",
+  email: "equipe.metal@coopcomm.fr",
+  organisation_id: organisation.id,
+  rôle: "équipe",
+  color: "#7F7F7F",
+  password: "sdm2025",
+  password_confirmation: "sdm2025",
+  slug: SecureRandom.uuid
+)
+
+team_securite = User.create!(
+  nom: "Sécurité",
+  prénom: "",
+  email: "equipe.securite@coopcomm.fr",
+  organisation_id: organisation.id,
+  rôle: "équipe",
+  color: "#BCBD22",
+  password: "sdm2025",
+  password_confirmation: "sdm2025",
+  slug: SecureRandom.uuid
+)
+
+team_espaces_verts = User.create!(
+  nom: "Équipe Espaces Verts",
+  prénom: "",
+  email: "equipe.espacesverts@coopcomm.fr",
+  organisation_id: organisation.id,
+  rôle: "équipe",
+  color: "#2CA02C",
+  password: "sdm2025",
+  password_confirmation: "sdm2025",
+  slug: SecureRandom.uuid
+)
 
 Absence.create!([
   { du: Date.new(2025, 9, 10), au: Date.new(2025, 9, 12), motif: "Maladie", user: agent_tech_jean },
@@ -1452,6 +1550,374 @@ i85 = Intervention.create!(
 AgentIntervention.create!(agent_id: agent_securite_philippe.id, intervention_id: i85.id)
 ToolIntervention.create!(tool_id: testeur_extincteur.id, intervention_id: i85.id)
 
+i86 = Intervention.create!(
+  description: "Nettoyage vitres école primaire",
+  début: "2025-11-12 08:30:00 +0100",
+  fin: "2025-11-12 11:30:00 +0100",
+  début_prévue: Time.zone.parse("2025-11-12 08:30:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-12 11:30:00 +0100") + rand(-15..15).minutes,
+  temps_de_pause: 0.5,
+  workflow_state: "validé",
+  adherent_id: adhérent_andilly.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i86.update!(team_id: team_menage.id)
+AgentIntervention.create!(agent_id: agent_menage_nicole.id, intervention_id: i86.id)
+ToolIntervention.create!(tool_id: escabeau.id, intervention_id: i86.id)
+ToolIntervention.create!(tool_id: chiffon_microfibre.id, intervention_id: i86.id)
+
+# ---------- 13 novembre ----------
+i87 = Intervention.create!(
+  description: "Réparation porte école maternelle",
+  début: "2025-11-13 09:00:00 +0100",
+  fin: "2025-11-13 12:00:00 +0100",
+  début_prévue: Time.zone.parse("2025-11-13 09:00:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-13 12:00:00 +0100") + rand(-15..15).minutes,
+  workflow_state: "validé",
+  adherent_id: adhérent_bouffémont.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i87.update!(team_id: team_technique.id)
+AgentIntervention.create!(agent_id: agent_tech_jean.id, intervention_id: i87.id)
+ToolIntervention.create!(tool_id: tournevis.id, intervention_id: i87.id)
+ToolIntervention.create!(tool_id: marteau.id, intervention_id: i87.id)
+
+# ---------- 14 novembre ----------
+i88 = Intervention.create!(
+  description: "Peinture barrières parc central",
+  début: "2025-11-14 08:00:00 +0100",
+  fin: "2025-11-14 11:30:00 +0100",
+  début_prévue: Time.zone.parse("2025-11-14 08:00:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-14 11:30:00 +0100") + rand(-15..15).minutes,
+  temps_de_pause: 1.0,
+  workflow_state: "validé",
+  adherent_id: adhérent_andilly.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i88.update!(team_id: team_peinture.id)
+AgentIntervention.create!(agent_id: agent_peinture_amelie.id, intervention_id: i88.id)
+ToolIntervention.create!(tool_id: pinceau.id, intervention_id: i88.id)
+ToolIntervention.create!(tool_id: peinture_rouge.id, intervention_id: i88.id)
+
+# ---------- 15 novembre ----------
+i89 = Intervention.create!(
+  description: "Vérification extincteurs mairie",
+  début: "2025-11-15 08:00:00 +0100",
+  fin: "2025-11-15 10:30:00 +0100",
+  début_prévue: Time.zone.parse("2025-11-15 08:00:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-15 10:30:00 +0100") + rand(-15..15).minutes,
+  workflow_state: "validé",
+  adherent_id: adhérent_montmorency.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i89.update!(team_id: team_securite.id)
+AgentIntervention.create!(agent_id: agent_securite_philippe.id, intervention_id: i89.id)
+ToolIntervention.create!(tool_id: testeur_extincteur.id, intervention_id: i89.id)
+
+# ---------- 16 novembre ----------
+i90 = Intervention.create!(
+  description: "Tonte pelouse parc sud",
+  début: "2025-11-16 07:30:00 +0100",
+  fin: "2025-11-16 10:00:00 +0100",
+  début_prévue: Time.zone.parse("2025-11-16 07:30:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-16 10:00:00 +0100") + rand(-15..15).minutes,
+  temps_de_pause: 0.5,
+  workflow_state: "terminé",
+  adherent_id: adhérent_attainville.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i90.update!(team_id: team_espaces_verts.id)
+AgentIntervention.create!(agent_id: agent_tech_andré.id, intervention_id: i90.id)
+ToolIntervention.create!(tool_id: tondeuse_gazon.id, intervention_id: i90.id)
+
+# ---------- i86 ----------
+i86 = Intervention.create!(
+  description: "Nettoyage vitres école primaire",
+  début_prévue: Time.zone.parse("2025-11-17 08:00:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-17 12:00:00 +0100") + rand(-15..15).minutes,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_andilly.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i86.update!(team_id: team_menage.id)
+AgentIntervention.create!(agent_id: agent_menage_nicole.id, intervention_id: i86.id)
+ToolIntervention.create!(tool_id: escabeau.id, intervention_id: i86.id)
+ToolIntervention.create!(tool_id: chiffon_microfibre.id, intervention_id: i86.id)
+
+# ---------- i87 ----------
+i87 = Intervention.create!(
+  description: "Réparation portail école primaire",
+  début_prévue: Time.zone.parse("2025-11-18 09:00:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-18 12:00:00 +0100") + rand(-15..15).minutes,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_attainville.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i87.update!(team_id: team_technique.id)
+AgentIntervention.create!(agent_id: agent_tech_jean.id, intervention_id: i87.id)
+ToolIntervention.create!(tool_id: marteau.id, intervention_id: i87.id)
+ToolIntervention.create!(tool_id: clé_molette.id, intervention_id: i87.id)
+
+# ---------- i88 ----------
+i88 = Intervention.create!(
+  description: "Peinture bancs école primaire",
+  début_prévue: Time.zone.parse("2025-11-19 08:30:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-19 11:30:00 +0100") + rand(-15..15).minutes,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_bouffémont.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i88.update!(team_id: team_peinture.id)
+AgentIntervention.create!(agent_id: agent_peinture_amelie.id, intervention_id: i88.id)
+ToolIntervention.create!(tool_id: pinceau.id, intervention_id: i88.id)
+ToolIntervention.create!(tool_id: peinture_rouge.id, intervention_id: i88.id)
+
+# ---------- i89 ----------
+i89 = Intervention.create!(
+  description: "Vérification extincteurs salle polyvalente",
+  début_prévue: Time.zone.parse("2025-11-20 09:00:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-20 10:30:00 +0100") + rand(-15..15).minutes,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_montmorency.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i89.update!(team_id: team_securite.id)
+AgentIntervention.create!(agent_id: agent_securite_philippe.id, intervention_id: i89.id)
+ToolIntervention.create!(tool_id: testeur_extincteur.id, intervention_id: i89.id)
+
+# ---------- i90 ----------
+i90 = Intervention.create!(
+  description: "Nettoyage locaux mairie",
+  début_prévue: Time.zone.parse("2025-11-21 08:00:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-21 12:00:00 +0100") + rand(-15..15).minutes,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_andilly.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i90.update!(team_id: team_menage.id)
+AgentIntervention.create!(agent_id: agent_menage_nicole.id, intervention_id: i90.id)
+ToolIntervention.create!(tool_id: aspirateur_industriel.id, intervention_id: i90.id)
+ToolIntervention.create!(tool_id: seau_serpillere.id, intervention_id: i90.id)
+
+# ---------- 17 novembre ----------
+i91 = Intervention.create!(
+  description: "Réparation bancs parc central",
+  début: "2025-11-17 08:30:00 +0100",
+  fin: "2025-11-17 11:00:00 +0100",
+  début_prévue: Time.zone.parse("2025-11-17 08:30:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-17 11:00:00 +0100") + rand(-15..15).minutes,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_andilly.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i91.update!(team_id: team_technique.id)
+AgentIntervention.create!(agent_id: agent_tech_jean.id, intervention_id: i91.id)
+ToolIntervention.create!(tool_id: marteau.id, intervention_id: i91.id)
+ToolIntervention.create!(tool_id: tournevis.id, intervention_id: i91.id)
+
+# ---------- 18 novembre ----------
+i92 = Intervention.create!(
+  description: "Nettoyage salles mairie",
+  début_prévue: Time.zone.parse("2025-11-18 09:00:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-18 12:30:00 +0100") + rand(-15..15).minutes,
+  temps_de_pause: 0.5,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_bouffémont.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i92.update!(team_id: team_menage.id)
+AgentIntervention.create!(agent_id: agent_menage_nicole.id, intervention_id: i92.id)
+
+# # ---------- 19 novembre ----------
+# i93 = Intervention.create!(
+#   description: "Contrôle éclairage parc sud",
+#   début_prévue: Time.zone.parse("2025-11-19 08:00:00 +0100") + rand(-15..15).minutes,
+#   fin_prévue: Time.zone.parse("2025-11-19 10:00:00 +0100") + rand(-15..15).minutes,
+#   workflow_state: "nouveau",
+#   adherent_id: adhérent_attainville.id,
+#   organisation_id: organisation.id,
+#   slug: SecureRandom.uuid
+# )
+# i93.update!(team_id: team_electricite.id)
+# AgentIntervention.create!(agent_id: agent_elec_marc.id, intervention_id: i93.id)
+# ToolIntervention.create!(tool_id: testeur_lampe.id, intervention_id: i93.id)
+
+# ---------- 20 novembre ----------
+i94 = Intervention.create!(
+  description: "Peinture clôture école maternelle",
+  début_prévue: Time.zone.parse("2025-11-20 07:30:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-20 11:00:00 +0100") + rand(-15..15).minutes,
+  temps_de_pause: 1.0,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_andilly.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i94.update!(team_id: team_peinture.id)
+AgentIntervention.create!(agent_id: agent_peinture_amelie.id, intervention_id: i94.id)
+ToolIntervention.create!(tool_id: pinceau.id, intervention_id: i94.id)
+ToolIntervention.create!(tool_id: peinture_blanc.id, intervention_id: i94.id)
+
+# ---------- 21 novembre ----------
+i95 = Intervention.create!(
+  description: "Réparation robinet mairie",
+  début_prévue: Time.zone.parse("2025-11-21 09:00:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-21 11:30:00 +0100") + rand(-15..15).minutes,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_montmorency.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i95.update!(team_id: team_technique.id)
+AgentIntervention.create!(agent_id: agent_tech_jean.id, intervention_id: i95.id)
+ToolIntervention.create!(tool_id: tournevis.id, intervention_id: i95.id)
+
+# ---------- 22 novembre ----------
+i96 = Intervention.create!(
+  description: "Nettoyage vitres mairie",
+  début_prévue: Time.zone.parse("2025-11-22 08:30:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-22 12:00:00 +0100") + rand(-15..15).minutes,
+  temps_de_pause: 0.5,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_bouffémont.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i96.update!(team_id: team_menage.id)
+AgentIntervention.create!(agent_id: agent_menage_nicole.id, intervention_id: i96.id)
+ToolIntervention.create!(tool_id: chiffon_microfibre.id, intervention_id: i96.id)
+
+# ---------- 23 novembre ----------
+i97 = Intervention.create!(
+  description: "Vérification système chauffage école",
+  début_prévue: Time.zone.parse("2025-11-23 07:30:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-23 10:30:00 +0100") + rand(-15..15).minutes,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_attainville.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i97.update!(team_id: team_technique.id)
+AgentIntervention.create!(agent_id: agent_tech_jean.id, intervention_id: i97.id)
+ToolIntervention.create!(tool_id: tournevis.id, intervention_id: i97.id)
+
+# ---------- 24 novembre ----------
+i98 = Intervention.create!(
+  description: "Tonte pelouse parc nord",
+  début_prévue: Time.zone.parse("2025-11-24 08:00:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-24 10:30:00 +0100") + rand(-15..15).minutes,
+  temps_de_pause: 0.5,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_andilly.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i98.update!(team_id: team_espaces_verts.id)
+AgentIntervention.create!(agent_id: agent_tech_andré.id, intervention_id: i98.id)
+ToolIntervention.create!(tool_id: tondeuse_gazon.id, intervention_id: i98.id)
+
+# ---------- 25 novembre ----------
+i99 = Intervention.create!(
+  description: "Peinture bancs parc sud",
+  début_prévue: Time.zone.parse("2025-11-25 07:30:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-25 10:30:00 +0100") + rand(-15..15).minutes,
+  temps_de_pause: 1.0,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_bouffémont.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i99.update!(team_id: team_peinture.id)
+AgentIntervention.create!(agent_id: agent_peinture_amelie.id, intervention_id: i99.id)
+ToolIntervention.create!(tool_id: pinceau.id, intervention_id: i99.id)
+ToolIntervention.create!(tool_id: peinture_vert.id, intervention_id: i99.id)
+
+# # ---------- 26 novembre ----------
+# i100 = Intervention.create!(
+#   description: "Contrôle éclairage parc central",
+#   début_prévue: Time.zone.parse("2025-11-26 08:00:00 +0100") + rand(-15..15).minutes,
+#   fin_prévue: Time.zone.parse("2025-11-26 10:00:00 +0100") + rand(-15..15).minutes,
+#   workflow_state: "nouveau",
+#   adherent_id: adhérent_attainville.id,
+#   organisation_id: organisation.id,
+#   slug: SecureRandom.uuid
+# )
+# i100.update!(team_id: team_electricite.id)
+# AgentIntervention.create!(agent_id: agent_elec_marc.id, intervention_id: i100.id)
+# ToolIntervention.create!(tool_id: testeur_lampe.id, intervention_id: i100.id)
+
+# ---------- 27 novembre ----------
+i101 = Intervention.create!(
+  description: "Réparation serrure mairie",
+  début_prévue: Time.zone.parse("2025-11-27 09:00:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-27 12:00:00 +0100") + rand(-15..15).minutes,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_montmorency.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i101.update!(team_id: team_technique.id)
+AgentIntervention.create!(agent_id: agent_tech_jean.id, intervention_id: i101.id)
+ToolIntervention.create!(tool_id: tournevis.id, intervention_id: i101.id)
+
+# ---------- 28 novembre ----------
+i102 = Intervention.create!(
+  description: "Nettoyage vitres école primaire",
+  début_prévue: Time.zone.parse("2025-11-28 08:30:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-28 11:30:00 +0100") + rand(-15..15).minutes,
+  temps_de_pause: 0.5,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_andilly.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i102.update!(team_id: team_menage.id)
+AgentIntervention.create!(agent_id: agent_menage_nicole.id, intervention_id: i102.id)
+ToolIntervention.create!(tool_id: chiffon_microfibre.id, intervention_id: i102.id)
+
+# ---------- 29 novembre ----------
+i103 = Intervention.create!(
+  description: "Tonte pelouse parc central",
+  début_prévue: Time.zone.parse("2025-11-29 07:30:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-29 10:30:00 +0100") + rand(-15..15).minutes,
+  temps_de_pause: 0.5,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_attainville.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i103.update!(team_id: team_espaces_verts.id)
+AgentIntervention.create!(agent_id: agent_tech_andré.id, intervention_id: i103.id)
+ToolIntervention.create!(tool_id: tondeuse_gazon.id, intervention_id: i103.id)
+
+# ---------- 30 novembre ----------
+i104 = Intervention.create!(
+  description: "Peinture barrières parc nord",
+  début_prévue: Time.zone.parse("2025-11-30 08:00:00 +0100") + rand(-15..15).minutes,
+  fin_prévue: Time.zone.parse("2025-11-30 11:00:00 +0100") + rand(-15..15).minutes,
+  temps_de_pause: 1.0,
+  workflow_state: "nouveau",
+  adherent_id: adhérent_andilly.id,
+  organisation_id: organisation.id,
+  slug: SecureRandom.uuid
+)
+i104.update!(team_id: team_peinture.id)
+AgentIntervention.create!(agent_id: agent_peinture_amelie.id, intervention_id: i104.id)
+ToolIntervention.create!(tool_id: pinceau.id, intervention_id: i104.id)
+ToolIntervention.create!(tool_id: peinture_rouge.id, intervention_id: i104.id)
+
 # ---------- Notifications manager ↔ adhérent ----------
 Notification.create!(message: "Bonjour, votre intervention 'Réparation robinet école primaire' est confirmée pour le 3 novembre.", from_id: manager_thierry.id, to_id: adhérent_attainville.id, created_at: i57.début_prévue - 2.days, updated_at: i57.début_prévue - 2.days)
 Notification.create!(message: "Merci pour l'information, je serai présent.", from_id: adhérent_attainville.id, to_id: manager_thierry.id, created_at: i57.début_prévue - 1.day, updated_at: i57.début_prévue - 1.day)
@@ -1734,8 +2200,101 @@ Intervention.where(workflow_state: ["terminé", "validé", "refusé", "archivé"
   i.save
 end
 
-# Interventions : avis, météo, tags
-# Notification
+Intervention.where(workflow_state: ["validé", "refusé", "archivé"]).each do |i|
+  i.note = case i.workflow_state
+  when "validé", "archivé"
+    rand(4..5)
+  when "refusé"
+    rand(1..3)
+  end
+  i.save
+end
+
+i1.update!(team_id: team_entretien_batiment.id)
+i2.update!(team_id: team_eclairage.id)
+i3.update!(team_id: team_menage.id)
+i4.update!(team_id: team_informatique.id)
+i6.update!(team_id: team_compta.id)
+i7.update!(team_id: team_plomberie.id)
+i8.update!(team_id: team_peinture.id)
+i9.update!(team_id: team_entretien_batiment.id)
+i10.update!(team_id: team_entretien_batiment.id)
+i11.update!(team_id: team_metal.id)
+i12.update!(team_id: team_peinture.id)
+i13.update!(team_id: team_securite.id)
+i14.update!(team_id: team_menage.id)
+i15.update!(team_id: team_entretien_batiment.id)
+i16.update!(team_id: team_entretien_batiment.id)
+i17.update!(team_id: team_informatique.id)
+i18.update!(team_id: team_menage.id)
+i19.update!(team_id: team_entretien_batiment.id)
+i20.update!(team_id: team_metal.id)
+i26.update!(team_id: team_peinture.id) 
+i27.update!(team_id: team_technique.id)      
+i28.update!(team_id: team_menage.id)    
+i29.update!(team_id: team_technique.id)      
+i30.update!(team_id: team_peinture.id) 
+i31.update!(team_id: team_securite.id)  
+i32.update!(team_id: team_menage.id)    
+i33.update!(team_id: team_technique.id)      
+i34.update!(team_id: team_peinture.id) 
+i35.update!(team_id: team_securite.id)  
+i36.update!(team_id: team_espaces_verts.id) 
+i37.update!(team_id: team_menage.id)    
+i38.update!(team_id: team_technique.id)      
+i39.update!(team_id: team_peinture.id) 
+i40.update!(team_id: team_securite.id)  
+i41.update!(team_id: team_espaces_verts.id) 
+i42.update!(team_id: team_menage.id)    
+i43.update!(team_id: team_technique.id)      
+i44.update!(team_id: team_peinture.id) 
+i45.update!(team_id: team_securite.id)  
+i46.update!(team_id: team_menage.id)    
+i47.update!(team_id: team_technique.id)      
+i48.update!(team_id: team_peinture.id) 
+i49.update!(team_id: team_securite.id)  
+i50.update!(team_id: team_espaces_verts.id)
+i51.update!(team_id: team_menage.id)
+i52.update!(team_id: team_technique.id)
+i53.update!(team_id: team_peinture.id)
+i54.update!(team_id: team_securite.id)
+i55.update!(team_id: team_espaces_verts.id)
+i56.update!(team_id: team_menage.id)
+i57.update!(team_id: team_plomberie.id)
+i58.update!(team_id: team_peinture.id)
+i59.update!(team_id: team_securite.id)
+i60.update!(team_id: team_menage.id)
+i61.update!(team_id: team_technique.id)
+i62.update!(team_id: team_peinture.id)
+i63.update!(team_id: team_securite.id)
+i64.update!(team_id: team_menage.id)
+i65.update!(team_id: team_menage.id)
+i66.update!(team_id: team_eclairage.id)
+i67.update!(team_id: team_peinture.id)
+i68.update!(team_id: team_securite.id)
+i69.update!(team_id: team_menage.id)
+i70.update!(team_id: team_technique.id)
+i71.update!(team_id: team_peinture.id)
+i72.update!(team_id: team_menage.id)
+i73.update!(team_id: team_securite.id)
+i74.update!(team_id: team_peinture.id)
+i75.update!(team_id: team_menage.id)
+i76.update!(team_id: team_technique.id)
+i77.update!(team_id: team_peinture.id)
+i78.update!(team_id: team_menage.id)
+i79.update!(team_id: team_securite.id)
+i80.update!(team_id: team_peinture.id)
+i81.update!(team_id: team_menage.id)
+i82.update!(team_id: team_technique.id)
+i83.update!(team_id: team_peinture.id)
+i84.update!(team_id: team_menage.id)
+i85.update!(team_id: team_securite.id)
+
+# Équipe avec attribution
+# Interventions : météo, tags
+# Images User
+# Images Tools
+# ENVOYER LISTE EMAILS 
 # Document
 # Wiki_page
 # Intervention récurrente
