@@ -56,13 +56,13 @@
       <%= link_to "Mentions Légales", mentions_legales_path, class:'hover:underline' %>
     </span>
     <div class="md:place-self-center md:justify-self-end flex flex-wrap items-center gap-8">
-      <%= link_to 'https://www.aikku.eu/fr/contact', class: 'flex items-center gap-2' do %>
+      <%= mail_to 'contact@coopcomm.fr', class: 'flex items-center gap-2' do %>
         <span class="material-symbols-outlined">
           mail
         </span>
         <span>Nous contacter</span>
       <% end %>
-      <%= link_to "https://www.linkedin.com/company/aikku-sas", target: "_blank", class: 'flex items-center gap-2' do %>
+      <%= link_to "https://www.linkedin.com/showcase/coopcomm", target: "_blank", class: 'flex items-center gap-2' do %>
         <span class="material-symbols-outlined">
           open_in_new
         </span>
