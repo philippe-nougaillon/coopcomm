@@ -113,7 +113,7 @@ Rails.application.configure do
     :api_host => 'api.eu.mailgun.net'  # Uncomment this line for EU region domains
   }
 
-  config.action_mailer.default_url_options = { host: 'demo.coopcomm.fr', protocol: 'https' }
-  config.action_mailer.asset_host = 'https://demo.coopcomm.fr/'
+  config.action_mailer.default_url_options = { host: ENV['HOST_URL'], protocol: 'https' }
+  config.action_mailer.asset_host = "https://#{ENV['HOST_URL']}"
   config.default_url_options = { host: 'demo.coopcomm.fr', protocol: 'https' }
 end
