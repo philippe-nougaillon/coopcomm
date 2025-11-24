@@ -28,7 +28,7 @@ class InterventionPdf
     qrcode_content = "#{pointer_intervention_url(intervention, host: Rails.application.config.default_url_options[:host])}"
     qrcode = RQRCode::QRCode.new(qrcode_content)
 
-    text "WWW.COOPCOM.FR", align: :center, color: "CCCCCC"
+    text "#{Rails.application.config.default_url_options[:host]}".upcase, align: :center, color: "CCCCCC"
     move_down @margin_down * 12
     text "#{intervention.description.upcase}", align: :center, size: 24
     move_down @margin_down
