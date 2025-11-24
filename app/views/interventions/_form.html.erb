@@ -159,7 +159,7 @@
                 <%= form.label :début %>
                 <div class="flex items-center gap-1">
                   <%= form.date_field :début,
-                      class: "input input-sm w-full",
+                      class: "input input-sm flex-1",
                       value: (params[:début].try(:to_date) || @intervention.début&.to_date),
                       data: { 'calc-temps-passe-target': 'debut_date',
                       action: "change->calc-temps-passe#calc" } %>
@@ -181,7 +181,7 @@
                 <%= form.label :fin %>
                 <div class="flex items-center gap-1">
                   <%= form.date_field :fin,
-                      class: "input input-sm w-full",
+                      class: "input input-sm flex-1",
                       value: (params[:fin].try(:to_date) || @intervention.fin&.to_date),
                       data: { 'calc-temps-passe-target': 'fin_date',
                       action: "change->calc-temps-passe#calc" } %>
