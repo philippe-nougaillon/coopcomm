@@ -307,8 +307,10 @@ class PagesController < ApplicationController
 
     @interventions = Intervention.by_role_for_home(current_user).first(2)
     @notifications = current_user.notifications.ordered.first(3)
-
-    @forecasts = Meteo.instance.get_by_nextHours.call
+    
+    serviceMeteo = MeteoConceptConnexion.instance
+    serviceMeteo.get_by_nextHours
+    @forecasts = serviceMeteo.call
     #@forecast = {"temp2m" => 10, "rh2m" => 80, "datetime"=> Time.now, "insee"=> 54518, "weather" => 210, "wind10m" => 40}
 
     if @forecasts.present?
@@ -318,13 +320,17 @@ class PagesController < ApplicationController
     end
   end
 
+  # Page de la liste des météos sur 14 jours
   def meteo
-    @forecasts = Meteo.instance.get_by_daily_periods.call
+    serviceMeteo = MeteoConceptConnexion.instance
+    serviceMeteo.get_by_daily_periods
+    @forecasts = serviceMeteo.call
     if @forecasts.present?
       @city = @forecasts["city"]["name"]
     end
   end
 
+  # Récupère les données de la météo d'un jour, appelé dans la page "meteo"
   def meteo_by_day
     meteo = Meteo.instance
     forecasts = meteo.get_by_daily(params[:day]).call

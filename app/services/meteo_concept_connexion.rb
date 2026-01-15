@@ -1,8 +1,9 @@
-class Meteo < ApplicationService
+class MeteoConceptConnexion < ApplicationService
   include Singleton
 
+  # Appelé par instance uniquement si c'est un nouveau singleton
   def initialize
-    puts "Création du service Meteo"
+    puts "[METEO] Nouvelle instance de MeteoConceptConnexion créée !"
 
     # Définition des données principalement utilisées par l'API de Meteo Concept :
     # - temp2m = température
@@ -13,20 +14,29 @@ class Meteo < ApplicationService
     @insee = "95428" # Code commune
     @ville = "Montmorency" # Commune principale
 
-    # Appel des setters pour pouvoir charger uniquement la réponse que l'on veut. 
-    set_nexthours_response
-    set_daily_periods_response
+    # Appel des setters pour pouvoir charger uniquement la requete que l'on veut. 
+    set_daily_periods_request
+    set_nexthours_request
+
+    @time_last_call_nexthours = nil
+    @time_last_call_daily_periods = nil
+
+    @daily_periods_response = nil
+    @nexthours_response = nil
   end
 
-  def prepare_request(url)
+  def get_request(url)
     url = URI(url)
-    @http = Net::HTTP.new(url.host, url.port)
-    @http.use_ssl = true
+    http = Net::HTTP.new(url.host, url.port)
+    http.use_ssl = true
 
-    @request = Net::HTTP::Get.new(url)
-    @request["accept"] = 'application/json'
-    @request["content-type"] = 'application/json'
-    @request["authorization"] = "Bearer #{ENV['METEO_API_KEY']}"
+    request = Net::HTTP::Get.new(url)
+    request["accept"] = 'application/json'
+    request["content-type"] = 'application/json'
+    request["authorization"] = "Bearer #{ENV['METEO_API_KEY']}"
+
+    # Retourne la requete et le http pour être stocké dans un type de requete (daily_periods_request etnexthours_request) réutilisé à l'appel de la réponse
+    {request: request, http: http}
   end
 
   def build_url(hash, ville)
@@ -35,50 +45,65 @@ class Meteo < ApplicationService
   end
 
   def get_response
-    JSON.parse(@http.request(@request).read_body)
+    JSON.parse(@scope_request[:http].request(@scope_request[:request]).read_body)
   end
-
 
   # Pour chercher la météo des 14 prochains jours, avec quartiers de jour (Nuit, matin, après-midi, soir)
   def get_by_daily_periods
-    @scope_response = @daily_periods_response
-    
-    self
+    @scope_request = @daily_periods_request
   end
 
-  def set_daily_periods_response
+  def set_daily_periods_request
     url = build_url("forecast/daily/periods?insee=", @insee)
 
-    prepare_request(url)
-
-    @daily_periods_response = get_response
+    @daily_periods_request = get_request(url)
+    @daily_periods_request[:nom] = "daily periods"
   end
   
   # Pour chercher la météo des 12 prochaines heures (part tranche de 3 heure, donc 4 prévisions)
   def get_by_nextHours
-    @scope_response = @nexthours_response
-    
-    self
+    @scope_request = @nexthours_request
   end
 
-  def set_nexthours_response
+  def set_nexthours_request
     url = build_url("forecast/nextHours?insee=", @insee)
 
-    prepare_request(url)
-
-    @nexthours_response = get_response
+    @nexthours_request = get_request(url)
+    @nexthours_request[:nom] = "nexthours"
   end
 
-  # Pour chercher la météo sur un jour précis (2 désigne l'après-midi)
-  def get_by_daily(day)
-    @scope_response = @daily_periods_response["forecast"][day.to_i][2]
-
-    self
-  end
+  # Pour chercher la météo sur un jour précis
+  # def get_by_daily(day)
+  #   @scope_response = @daily_periods_response["forecast"][day.to_i][2] # 2 désigne l'après-midi
+  # end
   
   def call
-    # Appel du scope de la réponse (modifié par un getter)
-    @scope_response
+    response = nil
+
+    if @scope_request[:nom] == "nexthours"
+      # Si le temps n'existe pas encore ou que la dernière requête est supérieure à 10 minutes, on refresh la réponse
+      if !@time_last_call_nexthours.present? || ((Time.now - @time_last_call_nexthours) / 60 > 10)
+        @nexthours_response = get_response
+        @time_last_call_nexthours = Time.now
+      end
+      response = @nexthours_response
+    elsif @scope_request[:nom] == "daily periods"
+      if !@time_last_call_daily_periods.present? || ((Time.now - @time_last_call_daily_periods) / 60 > 10)
+        @daily_periods_response = get_response
+        @time_last_call_daily_periods = Time.now
+      end
+      response = @daily_periods_response
+    end
+
+    response
+  end
+
+  def get_time_daily_periods
+    @time_last_call_daily_periods
+  end
+
+  def get_time_nexthours
+    @time_last_call_nexthours
   end
 
   def self.WEATHER
