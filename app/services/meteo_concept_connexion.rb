@@ -5,24 +5,48 @@ class MeteoConceptConnexion < ApplicationService
   def initialize
     puts "[METEO] Nouvelle instance de MeteoConceptConnexion créée !"
 
+    # Valeur par défaut du code commune
+    @insee = "95428" # Code commune de Montmorency
+
+    # Initialisation des réponses
+    @daily_periods_response = nil
+    @nexthours_response = nil
+
+    # Initialisation des temps du dernier appel de la connexion
+    @time_last_call_nexthours = nil
+    @time_last_call_daily_periods = nil
+
+    # Appel des setters pour pouvoir charger uniquement la requete que l'on veut.
+    set_daily_periods_request
+    set_nexthours_request
+
+    # Pense-bête
     # Définition des données principalement utilisées par l'API de Meteo Concept :
     # - temp2m = température
     # - rh2m = humidité
     # - wind10m = vent
     # - weather = état du ciel (nuageux, pluie, orages, ...)
+  end
 
-    @insee = "95428" # Code commune
-    @ville = "Montmorency" # Commune principale
 
-    # Appel des setters pour pouvoir charger uniquement la requete que l'on veut. 
-    set_daily_periods_request
-    set_nexthours_request
+  private
+  def set_daily_periods_request
+    url = build_url("forecast/daily/periods?insee=", @insee)
 
-    @time_last_call_nexthours = nil
-    @time_last_call_daily_periods = nil
+    @daily_periods_request = get_request(url)
+    @daily_periods_request[:nom] = "daily periods"
+  end
 
-    @daily_periods_response = nil
-    @nexthours_response = nil
+  def set_nexthours_request
+    url = build_url("forecast/nextHours?insee=", @insee)
+
+    @nexthours_request = get_request(url)
+    @nexthours_request[:nom] = "nexthours"
+  end
+
+  def build_url(hash, ville)
+    ville = URI.encode_www_form_component(ville) # Pour accepter les accents
+    "https://api.meteo-concept.com/api/#{hash}#{ville}"
   end
 
   def get_request(url)
@@ -35,41 +59,24 @@ class MeteoConceptConnexion < ApplicationService
     request["content-type"] = 'application/json'
     request["authorization"] = "Bearer #{ENV['METEO_API_KEY']}"
 
-    # Retourne la requete et le http pour être stocké dans un type de requete (daily_periods_request etnexthours_request) réutilisé à l'appel de la réponse
+    # Retourne la requete et le http pour être stocké dans un type de requete (daily_periods_request et nexthours_request) réutilisé à l'appel de la réponse
     {request: request, http: http}
   end
 
-  def build_url(hash, ville)
-    ville = URI.encode_www_form_component(ville) # Pour accepter les accents
-    "https://api.meteo-concept.com/api/#{hash}#{ville}"
-  end
 
-  def get_response
-    JSON.parse(@scope_request[:http].request(@scope_request[:request]).read_body)
-  end
-
+  public
   # Pour chercher la météo des 14 prochains jours, avec quartiers de jour (Nuit, matin, après-midi, soir)
   def get_by_daily_periods
     @scope_request = @daily_periods_request
   end
 
-  def set_daily_periods_request
-    url = build_url("forecast/daily/periods?insee=", @insee)
-
-    @daily_periods_request = get_request(url)
-    @daily_periods_request[:nom] = "daily periods"
-  end
-  
   # Pour chercher la météo des 12 prochaines heures (part tranche de 3 heure, donc 4 prévisions)
   def get_by_nextHours
     @scope_request = @nexthours_request
   end
 
-  def set_nexthours_request
-    url = build_url("forecast/nextHours?insee=", @insee)
-
-    @nexthours_request = get_request(url)
-    @nexthours_request[:nom] = "nexthours"
+  def get_response
+    JSON.parse(@scope_request[:http].request(@scope_request[:request]).read_body)
   end
 
   # Pour chercher la météo sur un jour précis
