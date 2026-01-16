@@ -48,50 +48,10 @@
 
     <div class="border shadow-sm p-4 pb-4 rounded-2xl">
       <% if @forecasts %>
-        <h2 class="font-black text-lg">Météo à <%= @city %></h2>
-        <small>Dernière mise à jour : <%= l(MeteoConceptConnexion.instance.get_time_nexthours, format: :long) %></small>
-        <div class="flex justify-center">
-          <div class="w-64 flex flex-col items-center text-center p-6">
-            <div class="text-md font-bold text-gray-900">
-              <span class="font-normal text-gray-700 text-sm"><%= @forecast["datetime"].to_time.strftime("%H:%M") %></span>
-            </div>
-            <%= image_tag MeteoConceptConnexion.get_icon_meteo(@forecast["weather"]), size: 100 %>
-            <p class="text-gray-700 mb-2"><%= MeteoConceptConnexion.WEATHER[@forecast["weather"]] %></p>
-            <div class="text-xl text-gray-900">
-              <p><%= @forecast["temp2m"] %>ºC</p>
-            </div>
-            <div class="flex justify-between w-full">
-              <div class="flex items-center text-gray-700 px-2 gap-1">
-                <%= image_tag "meteo/humidity.svg", size: 10 %>
-                <p><%= @forecast["rh2m"] %>%</p>
-              </div>
-              <div class="flex items-center text-gray-700 px-2 gap-1">
-                <%= image_tag "meteo/wind.svg", size: 10 %>
-                <p><%= @forecast["wind10m"] %> km/h</p>
-              </div>
-            </div>
-          </div>
-          <div class="w-64 flex flex-col items-center text-center p-6">
-            <div class="text-md font-bold text-gray-900">
-              <span class="font-normal text-gray-700 text-sm"><%= @last_forecast["datetime"].to_time.strftime("%H:%M") %></span>
-            </div>
-            <%= image_tag MeteoConceptConnexion.get_icon_meteo(@last_forecast["weather"]), size: 100 %>
-            <p class="text-gray-700 mb-2"><%= MeteoConceptConnexion.WEATHER[@last_forecast["weather"]] %></p>
-            <div class="text-xl text-gray-900">
-              <p><%= @last_forecast["temp2m"] %>ºC</p>
-            </div>
-            <div class="flex justify-between w-full">
-              <div class="flex items-center text-gray-700 px-2 gap-1">
-                <%= image_tag "meteo/humidity.svg", size: 10 %>
-                <p><%= @last_forecast["rh2m"] %>%</p>
-              </div>
-              <div class="flex items-center text-gray-700 px-2 gap-1">
-                <%= image_tag "meteo/wind.svg", size: 10 %>
-                <p><%= @last_forecast["wind10m"] %> km/h</p>
-              </div>
-            </div>
-          </div>
-
+        <h2 class="font-black text-lg">Météo à <%= @forecasts["city"]["name"] %></h2>
+        <small>Dernière mise à jour : <%= l(@forecasts[:fetched_at]) %></small>
+        <div class="flex justify-center gap-8 my-2">
+          <%= render partial: 'pages/meteo', collection: [@forecasts["forecast"].first, @forecasts["forecast"].last], as: :forecast %>
         </div>
         <%= link_to 'Voir la prévision météo sur 14 jours', meteo_path, class: 'text-primary' %>
       <% else %>

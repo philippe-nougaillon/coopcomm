@@ -1,13 +1,13 @@
-<div class="w-full">
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16 mb-4">
-    <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Prévision météo sur 14 jours') %><%= " (#{@city})" if @forecasts.present? %></h1>
-  </div>
-  <small>Dernière mise à jour : <%= l(MeteoConceptConnexion.instance.get_time_daily_periods, format: :long) %></small>
-  <div class="flex flex-wrap justify-start items-stretch gap-4">
-    <% if @forecasts.present? %>
+<% if @forecasts %>
+  <div class="w-full">
+    <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16 mb-4">
+      <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Prévision météo sur 14 jours') %><%= " (#{ @forecasts["city"]["name"] })" %></h1>
+    </div>
+    <small>Dernière mise à jour : <%= l(@forecasts[:fetched_at]) %></small>
+    <div class="flex flex-wrap justify-start items-stretch gap-4">
       <%= render partial: 'pages/meteo', collection: @forecasts["forecast"].map.with_index { |forecast, i| forecast[2] }, as: :forecast %>
-    <% else %>
-      <p>Météo indisponible</p>
-    <% end %>
+    </div>
   </div>
-</div>
+<% else %>
+  <p>Météo indisponible</p>
+<% end %>

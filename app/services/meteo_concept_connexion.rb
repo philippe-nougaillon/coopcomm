@@ -60,7 +60,7 @@ class MeteoConceptConnexion < ApplicationService
     request["authorization"] = "Bearer #{ENV['METEO_API_KEY']}"
 
     # Retourne la requete et le http pour être stocké dans un type de requete (daily_periods_request et nexthours_request) réutilisé à l'appel de la réponse
-    {request: request, http: http}
+    {http: http, request: request}
   end
 
 
@@ -75,8 +75,10 @@ class MeteoConceptConnexion < ApplicationService
     @scope_request = @nexthours_request
   end
 
-  def get_response
-    JSON.parse(@scope_request[:http].request(@scope_request[:request]).read_body)
+  def get_response(request)
+    response = JSON.parse(request[:http].request(request[:request]).read_body)
+    response[:fetched_at] = DateTime.now
+    response
   end
 
   # Pour chercher la météo sur un jour précis

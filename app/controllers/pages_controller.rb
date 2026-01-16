@@ -308,25 +308,21 @@ class PagesController < ApplicationController
     @interventions = Intervention.by_role_for_home(current_user).first(2)
     @notifications = current_user.notifications.ordered.first(3)
     
-    serviceMeteo = MeteoConceptConnexion.instance
-    serviceMeteo.get_by_nextHours
-    @forecasts = serviceMeteo.call
-    #@forecast = {"temp2m" => 10, "rh2m" => 80, "datetime"=> Time.now, "insee"=> 54518, "weather" => 210, "wind10m" => 40}
+    @forecasts = Rails.cache.fetch('12_next_hours_forecast', expires_in: 10.minutes) do
+      logger.debug "[Meteo] Mise en cache de la réponse (météo sur 12 heures)"
 
-    if @forecasts.present?
-      @city = @forecasts["city"]["name"]
-      @forecast = @forecasts["forecast"].first
-      @last_forecast = @forecasts["forecast"].last
+      serviceMeteo = MeteoConceptConnexion.instance
+      serviceMeteo.get_response(serviceMeteo.get_by_nextHours) #TODO: clean servicemeteo
     end
   end
 
   # Page de la liste des météos sur 14 jours
   def meteo
-    serviceMeteo = MeteoConceptConnexion.instance
-    serviceMeteo.get_by_daily_periods
-    @forecasts = serviceMeteo.call
-    if @forecasts.present?
-      @city = @forecasts["city"]["name"]
+    @forecasts = Rails.cache.fetch('weeks_forecast', expires_in: 10.minutes) do
+      logger.debug "[Meteo] Mise en cache de la réponse (météo sur 14 jours)"
+
+      serviceMeteo = MeteoConceptConnexion.instance
+      serviceMeteo.get_response(serviceMeteo.get_by_daily_periods) #TODO: clean servicemeteo
     end
   end
 
