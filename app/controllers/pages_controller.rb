@@ -328,11 +328,9 @@ class PagesController < ApplicationController
 
   # Récupère les données de la météo d'un jour, appelé dans la page "meteo"
   def meteo_by_day
-    meteo = Meteo.instance
-    forecasts = meteo.get_by_daily(params[:day]).call
-    # Change le code de weather par son texte
+    forecasts = MeteoConceptConnexion.instance.get_response_by_daily(params[:day])
 
-    render json: { forecast: forecasts, weather: Meteo.WEATHER[forecasts["weather"]] }
+    render json: { forecast: forecasts, weather: MeteoConceptConnexion.WEATHER[forecasts["weather"]] }
   end
 
   private

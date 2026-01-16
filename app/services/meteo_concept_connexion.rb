@@ -80,9 +80,9 @@ class MeteoConceptConnexion < ApplicationService
   end
 
   # Pour chercher la météo sur un jour précis
-  # def get_by_daily(day)
-  #   @scope_response = @daily_periods_response["forecast"][day.to_i][2] # 2 désigne l'après-midi
-  # end
+  def get_response_by_daily(day)
+    get_response_by_daily_periods["forecast"][day.to_i][2] # 2 désigne l'après-midi
+  end
 
   def self.WEATHER
     {
