@@ -16,7 +16,9 @@
         </div>
     </div>
     <p class="text-gray-700 mb-2"><%= MeteoConceptConnexion.WEATHER[forecast["weather"]] %></p>
-    <%= link_to "Planifier une intervention", new_intervention_path(début_prévue: forecast["datetime"].to_date, fin_prévue: forecast["datetime"].to_date), class: "btn btn-secondary btn-outline btn-xs w-fit whitespace-nowrap px-6 mt-6", onclick: "event.stopPropagation()" %>
+    <% if params[:action] == "meteo" %>
+        <%= link_to "Planifier une intervention", new_intervention_path(début_prévue: forecast["datetime"].to_date, fin_prévue: forecast["datetime"].to_date), class: "btn btn-secondary btn-outline btn-xs w-fit whitespace-nowrap px-6 mt-6", onclick: "event.stopPropagation()" %>
+    <% end %>
 </div>
 
 <dialog id="modal_<%= forecast_counter %>" class="modal">
