@@ -4,7 +4,7 @@ organisation = Organisation.create(nom: "Communauté d'agglomération Plaine Val
 
 manager_thierry = User.create(nom: "MANAGER", prénom: "Thierry", email: "manager.thierry@coopcomm.fr", organisation_id: organisation.id, rôle: "manager", password: "sdm2025", password_confirmation: "sdm2025", slug: SecureRandom.uuid)
 manager_béatrice = User.create(nom: "MANAGER", prénom: "Béatrice", email: "manager.beatrice@coopcomm.fr", organisation_id: organisation.id, rôle: "manager", password: "sdm2025", password_confirmation: "sdm2025", slug: SecureRandom.uuid)
-adhérent_bouffémont = User.create(nom: "Bouffémont", prénom: "", email: "adherent.bouffémont@coopcomm.fr", organisation_id: organisation.id, rôle: "adhérent", password: "sdm2025", password_confirmation: "sdm2025", localisation: "49.0433021567701, 2.3001033039257464", slug: SecureRandom.uuid)
+adhérent_bouffémont = User.create(nom: "Bouffémont", prénom: "", email: "adherent.bouffemont@coopcomm.fr", organisation_id: organisation.id, rôle: "adhérent", password: "sdm2025", password_confirmation: "sdm2025", localisation: "49.0433021567701, 2.3001033039257464", slug: SecureRandom.uuid)
 adhérent_montmorency = User.create(nom: "Montmorency", prénom: "", email: "adherent.montmorency@coopcomm.fr", organisation_id: organisation.id, rôle: "adhérent", password: "sdm2025", password_confirmation: "sdm2025", localisation: "48.98963358128416, 2.3212285907717924", slug: SecureRandom.uuid)
 adhérent_attainville = User.create(nom: "Attainville", prénom: "", email: "adherent.attainville@coopcomm.fr", organisation_id: organisation.id, rôle: "adhérent", password: "sdm2025", password_confirmation: "sdm2025", localisation: "49.057101562313406, 2.345911077521958", slug: SecureRandom.uuid)
 adhérent_andilly = User.create(nom: "Andilly", prénom: "", email: "adherent.andilly@coopcomm.fr", organisation_id: organisation.id, rôle: "adhérent", password: "sdm2025", password_confirmation: "sdm2025", localisation: "49.00496449442205, 2.2991233958758164", slug: SecureRandom.uuid)
@@ -1945,7 +1945,7 @@ Notification.create!(message: "Merci pour votre retour, intervention validée.",
 Notification.create!(message: "Intervention peinture parc sud terminée, temps de pause respecté.", from_id: agent_peinture_amelie.id, to_id: manager_béatrice.id, created_at: i58.fin_prévue + 15.minutes, updated_at: i58.fin_prévue + 15.minutes)
 Notification.create!(message: "Parfait, je mets à jour le suivi.", from_id: manager_béatrice.id, to_id: agent_peinture_amelie.id, created_at: i58.fin_prévue + 45.minutes, updated_at: i58.fin_prévue + 45.minutes)
 
-Notification.create!(message: "Vérification extincteurs effectuée, tout est conforme.", from_id: agent_securite_philippe.id, to_id: manager_thierry.id, created_at: i59.fin_prévue + 5.minutes, updated_at: i59.fin_prévue + 5.minutes)
+Notification.create!(message: "Vérification extincteurs effectuée, tout est en règle.", from_id: agent_securite_philippe.id, to_id: manager_thierry.id, created_at: i59.fin_prévue + 5.minutes, updated_at: i59.fin_prévue + 5.minutes)
 Notification.create!(message: "Merci pour votre réactivité.", from_id: manager_thierry.id, to_id: agent_securite_philippe.id, created_at: i59.fin_prévue + 25.minutes, updated_at: i59.fin_prévue + 25.minutes)
 
 
@@ -2290,7 +2290,6 @@ i83.update!(team_id: team_peinture.id)
 i84.update!(team_id: team_menage.id)
 i85.update!(team_id: team_securite.id)
 
-# Équipe avec attribution
 # Interventions : météo, tags
 # Images User
 # Images Tools
