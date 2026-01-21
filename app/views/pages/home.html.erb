@@ -51,9 +51,10 @@
         <h2 class="font-black text-lg">Météo à <%= @forecasts["city"]["name"] %></h2>
         <small>Dernière mise à jour : <%= l(@forecasts[:fetched_at]) %></small>
         <div class="flex justify-center gap-8 my-2">
-          <%= render partial: 'pages/meteo', collection: [@forecasts["forecast"].first, @forecasts["forecast"].last], as: :forecast %>
+          <%# render partial: 'pages/meteo', collection: [@forecasts["forecast"].first, @forecasts["forecast"].last], as: :forecast %>
+          <%= render partial: 'pages/meteo', collection: [@forecasts["forecast"].first.first, @forecasts["forecast"].first.last], as: :forecast %>
         </div>
-        <%= link_to 'Voir la prévision météo sur 14 jours', meteo_path, class: 'text-primary' %>
+        <%= link_to 'Voir la prévision météo pour les jours à venir', meteo_path, class: 'text-primary' %>
       <% else %>
         <p>Météo indisponible</p>
       <% end %>

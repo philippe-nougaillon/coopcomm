@@ -312,7 +312,8 @@ class PagesController < ApplicationController
     @forecasts = Rails.cache.fetch('12_next_hours_forecast', expires_in: 10.minutes) do
       logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 12 heures"
 
-      MeteoConceptConnexion.instance.get_response_by_nextHours
+      # MeteoConceptConnexion.instance.get_response_by_nextHours
+      MeteoConceptConnexion.instance.get_response_by_daily_periods
     end
   end
 
