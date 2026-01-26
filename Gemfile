@@ -150,3 +150,5 @@ gem "seed_dump", "~> 3.3"
 gem "markdown-rails", "~> 2.2"
 
 gem "redcarpet", "~> 3.6"
+
+gem "fetch-api", "~> 0.6.0"
