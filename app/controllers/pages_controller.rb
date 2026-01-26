@@ -309,7 +309,7 @@ class PagesController < ApplicationController
     @notifications = current_user.notifications.ordered.first(3)
 
     # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh
-    @forecasts = Rails.cache.fetch('daily_forecast', expires_in: 1.minutes) do
+    @forecasts = Rails.cache.fetch('daily_forecast', expires_in: 10.minutes) do
       logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur un jour"
       
       MeteoConceptConnexion.new.call
@@ -319,7 +319,7 @@ class PagesController < ApplicationController
   # Page de la liste des météos sur 14 jours
   def meteo
     # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh
-    @forecasts = Rails.cache.fetch('daily_forecast', expires_in: 1.minutes) do
+    @forecasts = Rails.cache.fetch('daily_forecast', expires_in: 10.minutes) do
       logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours"
       
       MeteoConceptConnexion.new.call
