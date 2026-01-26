@@ -1,88 +1,33 @@
 class MeteoConceptConnexion < ApplicationService
-  include Singleton
 
-  # Appelé par instance uniquement si c'est un nouveau singleton
   def initialize
-    puts "[METEO] Nouvelle instance de MeteoConceptConnexion créée !"
+    # Route par défaut de l'API MeteoConcept
+    api_url = "https://api.meteo-concept.com/api/"
 
     # Valeur par défaut du code commune
-    @insee = "95428" # Code commune de Montmorency
-
-    # Initialisation des réponses
-    @daily_periods_response = nil
-    @nexthours_response = nil
-
-    # Initialisation des temps du dernier appel de la connexion
-    @time_last_call_nexthours = nil
-    @time_last_call_daily_periods = nil
-
+    insee = "95428" # Code commune de Montmorency
+    
     # Appel des setters pour pouvoir charger uniquement la requete que l'on veut.
-    set_daily_periods_request
-    # set_nexthours_request
+    @url = "#{api_url}forecast/daily/periods?insee=#{insee}"
 
-    # Pense-bête
-    # Définition des données principalement utilisées par l'API de Meteo Concept :
-    # - temp2m = température
-    # - rh2m = humidité
-    # - wind10m = vent
-    # - weather = état du ciel (nuageux, pluie, orages, ...)
+    puts "[METEO] Nouvelle instance de MeteoConceptConnexion créée !"
   end
 
+  def call
+    response = Fetch::API.fetch(@url,
+      method: :get,
+      headers: {
+        'authorization' => "Bearer #{ENV['METEO_API_KEY']}",
+      }
+    )
 
-  private
-  def set_daily_periods_request
-    url = build_url("forecast/daily/periods?insee=", @insee)
+    if response.status == 200
+      forecasts = response.json
+      forecasts[:last_fetched_at] = response.headers.get("date")
+    end
 
-    set_request(url)
+    forecasts
   end
-
-  # Plus utilisé
-  # def set_nexthours_request
-  #   url = build_url("forecast/nextHours?insee=", @insee)
-
-  #   @nexthours_request = get_request(url)
-  # end
-
-  def build_url(hash, ville)
-    ville = URI.encode_www_form_component(ville) # Pour accepter les accents
-    "https://api.meteo-concept.com/api/#{hash}#{ville}"
-  end
-
-  def set_request(url)
-    uri = URI(url)
-    @http = Net::HTTP.new(uri.host, uri.port)
-    @http.use_ssl = true
-
-    @request = Net::HTTP::Get.new(uri)
-    @request["accept"] = 'application/json'
-    @request["content-type"] = 'application/json'
-    @request["authorization"] = "Bearer #{ENV['METEO_API_KEY']}"
-  end
-
-
-  public
-  # Pour chercher la météo des 14 prochains jours, avec quartiers de jour (Nuit, matin, après-midi, soir)
-  def get_response_by_daily_periods
-    get_response
-  end
-
-  # Plus utilisé
-  # Pour chercher la météo des 12 prochaines heures (part tranche de 3 heure, donc 4 prévisions)
-  # def get_response_by_nextHours
-  #   get_response(@nexthours_request)
-  # end
-
-  def get_response
-    response = JSON.parse(@http.request(@request).read_body)
-    response[:fetched_at] = DateTime.now
-    response
-  end
-
-  # Plus utilisé
-  # Pour chercher la météo sur un jour précis
-  # def get_response_by_daily(day)
-  #   get_response_by_daily_periods["forecast"][day.to_i][2] # 2 désigne l'après-midi
-  # end
 
   def self.WEATHER
     {

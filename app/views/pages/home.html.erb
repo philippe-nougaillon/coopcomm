@@ -49,7 +49,7 @@
     <div class="border shadow-sm p-4 pb-4 rounded-2xl">
       <% if @forecasts %>
         <h2 class="font-black text-lg">Météo à <%= @forecasts["city"]["name"] %></h2>
-        <small>Dernière mise à jour : <%= l(@forecasts[:last_fetched_at].to_datetime) %></small>
+        <small>Dernière mise à jour : <%= l(Time.zone.parse(@forecasts[:last_fetched_at])) %></small>
         <div class="flex justify-center gap-8 my-2">
           <%= render partial: 'pages/meteo', collection: [@forecasts["forecast"].first.third, @forecasts["forecast"].second.third], as: :forecast %>
         </div>

@@ -309,31 +309,20 @@ class PagesController < ApplicationController
     @notifications = current_user.notifications.ordered.first(3)
 
     # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh
-    @forecasts = Rails.cache.fetch('daily_forecast', expires_in: 10.minutes) do
+    @forecasts = Rails.cache.fetch('daily_forecast', expires_in: 1.minutes) do
       logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur un jour"
       
-      data_response = Fetch::API.fetch("https://api.meteo-concept.com/api/forecast/daily/periods?insee=95428",
-        method: :get,
-        headers: {
-          'authorization' => "Bearer #{ENV['METEO_API_KEY']}"
-        }
-      )
-
-      if data_response.status == 200
-        response = JSON.parse(data_response.body)
-        response[:last_fetched_at] = data_response.headers.get("date")
-      end
-
-      response
+      MeteoConceptConnexion.new.call
     end
   end
 
   # Page de la liste des météos sur 14 jours
   def meteo
     # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh
-    @forecasts = Rails.cache.fetch('weeks_forecast', expires_in: 10.minutes) do
+    @forecasts = Rails.cache.fetch('daily_forecast', expires_in: 1.minutes) do
       logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours"
-      MeteoConceptConnexion.instance.get_response_by_daily_periods
+      
+      MeteoConceptConnexion.new.call
     end
   end
 
