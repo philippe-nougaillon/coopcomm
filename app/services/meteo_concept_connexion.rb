@@ -5,7 +5,7 @@ class MeteoConceptConnexion < ApplicationService
     api_url = "https://api.meteo-concept.com/api/"
 
     # Valeur par défaut du code commune
-    insee = "95428" # Code commune de Montmorency
+    insee = ENV["METEO_INSEE_CODE"]
     
     # Appel des setters pour pouvoir charger uniquement la requete que l'on veut.
     @url = "#{api_url}forecast/daily/periods?insee=#{insee}"
