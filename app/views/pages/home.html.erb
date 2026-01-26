@@ -47,7 +47,7 @@
     </div>
 
     <div class="border shadow-sm p-4 pb-4 rounded-2xl">
-      <% if false %>
+      <% if @forecasts %>
         <h2 class="font-black text-lg">Météo à <%= @forecasts["city"]["name"] %></h2>
         <small>Dernière mise à jour : <%= l(@forecasts[:fetched_at]) %></small>
         <div class="flex justify-center gap-8 my-2">

@@ -308,14 +308,18 @@ class PagesController < ApplicationController
     @interventions = Intervention.by_role_for_home(current_user).first(2)
     @notifications = current_user.notifications.ordered.first(3)
 
-    @forecasts = JSON.parse(Fetch::API.fetch("https://api.meteo-concept.com/api/forecast/daily/periods?insee=95428",
+    response = Fetch::API.fetch("https://api.meteo-concept.com/api/forecast/daily/periods?insee=95428",
       method: :get,
       headers: {
         'authorization' => "Bearer #{ENV['METEO_API_KEY']}"
       }
-    ).body)
+    )
 
-    @forecasts[:fetched_at] = DateTime.now
+    if response.status == 200
+      @forecasts = JSON.parse(response.body)
+      @forecasts[:fetched_at] = DateTime.now
+    end
+
 
     # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh
     # @forecasts = Rails.cache.fetch('weeks_forecast', expires_in: 10.minutes) do
