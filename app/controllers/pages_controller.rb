@@ -1,6 +1,6 @@
 class PagesController < ApplicationController
-  before_action :is_user_authorized, except: %i[welcome mentions_legales solution tarifs contact meteo_by_day]
-  skip_before_action :authenticate_user!, only: %i[welcome mentions_legales solution tarifs contact meteo_by_day]
+  before_action :is_user_authorized, except: %i[welcome mentions_legales solution tarifs contact]
+  skip_before_action :authenticate_user!, only: %i[welcome mentions_legales solution tarifs contact]
 
   def assistant
 
@@ -309,10 +309,8 @@ class PagesController < ApplicationController
     @notifications = current_user.notifications.ordered.first(3)
 
     # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh
-    @forecasts = Rails.cache.fetch('12_next_hours_forecast', expires_in: 10.minutes) do
-      logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 12 heures"
-
-      # MeteoConceptConnexion.instance.get_response_by_nextHours
+    @forecasts = Rails.cache.fetch('weeks_forecast', expires_in: 10.minutes) do
+      logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours"
       MeteoConceptConnexion.instance.get_response_by_daily_periods
     end
   end
@@ -322,17 +320,17 @@ class PagesController < ApplicationController
     # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh
     @forecasts = Rails.cache.fetch('weeks_forecast', expires_in: 10.minutes) do
       logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours"
-
       MeteoConceptConnexion.instance.get_response_by_daily_periods
     end
   end
 
+  # Plus utilisé
   # Récupère les données de la météo d'un jour, appelé dans la page "meteo"
-  def meteo_by_day
-    forecasts = MeteoConceptConnexion.instance.get_response_by_daily(params[:day])
+  # def meteo_by_day
+  #   forecasts = MeteoConceptConnexion.instance.get_response_by_daily(params[:day])
 
-    render json: { forecast: forecasts, weather: MeteoConceptConnexion.WEATHER[forecasts["weather"]] }
-  end
+  #   render json: { forecast: forecasts, weather: MeteoConceptConnexion.WEATHER[forecasts["weather"]] }
+  # end
 
   private
 

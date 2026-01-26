@@ -18,7 +18,7 @@ class MeteoConceptConnexion < ApplicationService
 
     # Appel des setters pour pouvoir charger uniquement la requete que l'on veut.
     set_daily_periods_request
-    set_nexthours_request
+    # set_nexthours_request
 
     # Pense-bête
     # Définition des données principalement utilisées par l'API de Meteo Concept :
@@ -33,56 +33,56 @@ class MeteoConceptConnexion < ApplicationService
   def set_daily_periods_request
     url = build_url("forecast/daily/periods?insee=", @insee)
 
-    @daily_periods_request = get_request(url)
+    set_request(url)
   end
 
-  def set_nexthours_request
-    url = build_url("forecast/nextHours?insee=", @insee)
+  # Plus utilisé
+  # def set_nexthours_request
+  #   url = build_url("forecast/nextHours?insee=", @insee)
 
-    @nexthours_request = get_request(url)
-  end
+  #   @nexthours_request = get_request(url)
+  # end
 
   def build_url(hash, ville)
     ville = URI.encode_www_form_component(ville) # Pour accepter les accents
     "https://api.meteo-concept.com/api/#{hash}#{ville}"
   end
 
-  def get_request(url)
+  def set_request(url)
     uri = URI(url)
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
+    @http = Net::HTTP.new(uri.host, uri.port)
+    @http.use_ssl = true
 
-    request = Net::HTTP::Get.new(uri)
-    request["accept"] = 'application/json'
-    request["content-type"] = 'application/json'
-    request["authorization"] = "Bearer #{ENV['METEO_API_KEY']}"
-
-    # Retourne la requete et le http pour être stocké dans un type de requete (daily_periods_request et nexthours_request) réutilisé à l'appel de la réponse
-    {http: http, request: request}
+    @request = Net::HTTP::Get.new(uri)
+    @request["accept"] = 'application/json'
+    @request["content-type"] = 'application/json'
+    @request["authorization"] = "Bearer #{ENV['METEO_API_KEY']}"
   end
 
 
   public
   # Pour chercher la météo des 14 prochains jours, avec quartiers de jour (Nuit, matin, après-midi, soir)
   def get_response_by_daily_periods
-    get_response(@daily_periods_request)
+    get_response
   end
 
+  # Plus utilisé
   # Pour chercher la météo des 12 prochaines heures (part tranche de 3 heure, donc 4 prévisions)
-  def get_response_by_nextHours
-    get_response(@nexthours_request)
-  end
+  # def get_response_by_nextHours
+  #   get_response(@nexthours_request)
+  # end
 
-  def get_response(request)
-    response = JSON.parse(request[:http].request(request[:request]).read_body)
+  def get_response
+    response = JSON.parse(@http.request(@request).read_body)
     response[:fetched_at] = DateTime.now
     response
   end
 
+  # Plus utilisé
   # Pour chercher la météo sur un jour précis
-  def get_response_by_daily(day)
-    get_response_by_daily_periods["forecast"][day.to_i][2] # 2 désigne l'après-midi
-  end
+  # def get_response_by_daily(day)
+  #   get_response_by_daily_periods["forecast"][day.to_i][2] # 2 désigne l'après-midi
+  # end
 
   def self.WEATHER
     {
