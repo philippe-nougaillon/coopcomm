@@ -6,7 +6,7 @@
     <div class="flex flex-wrap justify-start items-stretch gap-4">
       <%= render partial: 'pages/meteo', collection: @forecasts["forecast"].map.with_index { |forecast, i| forecast[2] }, as: :forecast %>
     </div>
-    <small>Dernière mise à jour : <%= l(@forecasts[:fetched_at]) %></small>
+    <small>Dernière mise à jour : <%= l(@forecasts[:last_fetched_at]) %></small>
   </div>
 <% else %>
   <p>Météo indisponible</p>
