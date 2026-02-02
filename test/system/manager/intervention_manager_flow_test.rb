@@ -2,7 +2,6 @@ require "application_system_test_case"
 
 class InterventionManagerFlowTest < ApplicationSystemTestCase
 
-  # TODO: Rendre dynamique les assert_text
   
   setup do
     @manager = users(:hidalgo)
@@ -14,7 +13,10 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
   end
 
   test "Créer intervention" do
-    click_on "ajouter_une_intervention"
+
+    # Pour cliquer sur le bouton d'ajout d'une intervention en fonction du format de l'écran
+    click_sur_boutton_ajouter("intervention")
+
     fill_in "Description", with: "Tailler les arbres"
 
     # Sélectionner le tag
@@ -77,35 +79,38 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     assert_text "Intervention refusée"
   end
 
-  test "Rechercher dans les interventions" do
-    # Recherche sur les descriptions
-    fill_in "Rechercher", with: "asser les feui"
-    page.driver.browser.switch_to.active_element.send_keys(:enter)
-    # assert_text "Affichage de 1 élément"
-    
-    # Recherche sur les commentaires
-    fill_in "Rechercher", with: "le bord"
-    page.driver.browser.switch_to.active_element.send_keys(:enter)
-    # assert_text "Affichage de 1 élément"
-    
-    # Mauvaise recherche
-    fill_in "Rechercher", with: "qzmeoifqze"
-    page.driver.browser.switch_to.active_element.send_keys(:enter)
-    # assert_text "Aucun élément trouvé"
-  end
+  # !!! Tests sur les filtres obsolètes !!!
 
-  test "Filter les interventions par date" do
-    fill_in "Du", with: Date.today.strftime("%d-%m-%Y")
-    fill_in "Au", with: (Date.today + 30).strftime("%d-%m-%Y")
-    sleep(1)
-    page.driver.browser.switch_to.active_element.send_keys(:enter)
-    # assert_text "Affichage de 1 élément"
-
-    fill_in "Au", with: (Date.today + 7).strftime("%d-%m-%Y")
-    sleep(1)
-    page.driver.browser.switch_to.active_element.send_keys(:enter)
-    # assert_text "Aucun élément trouvé"
-  end
+  # TODO: Rendre dynamique les assert_text
+  # test "Rechercher dans les interventions" do
+  #   # Recherche sur les descriptions
+  #   fill_in "Rechercher", with: "asser les feui"
+  #   page.driver.browser.switch_to.active_element.send_keys(:enter)
+  #   # assert_text "Affichage de 1 élément"
+  #
+  #   # Recherche sur les commentaires
+  #   fill_in "Rechercher", with: "le bord"
+  #   page.driver.browser.switch_to.active_element.send_keys(:enter)
+  #   # assert_text "Affichage de 1 élément"
+  #
+  #   # Mauvaise recherche
+  #   fill_in "Rechercher", with: "qzmeoifqze"
+  #   page.driver.browser.switch_to.active_element.send_keys(:enter)
+  #   # assert_text "Aucun élément trouvé"
+  # end
+  #
+  # test "Filter les interventions par date" do
+  #   fill_in "Du", with: Date.today.strftime("%d-%m-%Y")
+  #   fill_in "Au", with: (Date.today + 30).strftime("%d-%m-%Y")
+  #   sleep(1)
+  #   page.driver.browser.switch_to.active_element.send_keys(:enter)
+  #   # assert_text "Affichage de 1 élément"
+  #
+  #   fill_in "Au", with: (Date.today + 7).strftime("%d-%m-%Y")
+  #   sleep(1)
+  #   page.driver.browser.switch_to.active_element.send_keys(:enter)
+  #   # assert_text "Aucun élément trouvé"
+  # end
 
   # Il faut mettre un placeholder dans le slimselect
   # test "Filter les interventions par adhérent" do
@@ -117,12 +122,12 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
   #   assert_text "Aucun élément trouvé"
   # end
 
-  test "Filter les interventions par statut" do
-    select 'Nouveau', from: "Statut"
-    # assert_text "Affichage de 2 éléments"
-    select 'Validé', from: "Statut"
-    # assert_text "Affichage de 1 élément"
-  end
+  # test "Filter les interventions par statut" do
+  #   select 'Nouveau', from: "Statut"
+  #   # assert_text "Affichage de 2 éléments"
+  #   select 'Validé', from: "Statut"
+  #   # assert_text "Affichage de 1 élément"
+  # end
 
   # # Fonctionnalité enlevée
   # test "Filter les interventions à venir / toutes" do

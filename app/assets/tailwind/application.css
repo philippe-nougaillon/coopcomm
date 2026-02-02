@@ -1,0 +1,57 @@
+@import 'tailwindcss';
+
+@import '../../assets/stylesheets/actiontext.css' layer(utilities);
+
+@source "../../../public/*.html";
+@source "../../../app/helpers/**/*.rb";
+@source "../../../app/javascript/**/*.js";
+@source "../../../app/views/**/*";
+
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/aspect-ratio';
+@plugin '@tailwindcss/typography';
+@plugin '@tailwindcss/container-queries';
+@plugin "./daisyui.js"{
+  themes: corporate;
+}
+@plugin "./daisyui-theme.js" {
+  name: "aikku";
+  default: true;
+  --color-base-100: #FAFAFA;
+  --color-base-200: #E8E8E8;
+  --color-base-300: #D1D1D1;
+  --color-primary: #50B9DF;
+  --color-secondary: #6A219C;
+  --color-base-content: #1E1B18;
+  --radius-field: 2rem;
+  --radius-selector: 2rem;
+  --radius-box: 2rem;
+}
+
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@layer components {
+  input[required], select[required] {
+    @apply border-red-400;
+    &:valid{
+      @apply border-green-400;
+    }
+  }
+}

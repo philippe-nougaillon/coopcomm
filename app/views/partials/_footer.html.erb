@@ -1,10 +1,10 @@
-<footer class="-mx-8 -mb-24">
-  <div class="footer p-10 bg-base-300 text-base-content text-base">
+<footer data-theme="aikku" class="-mb-24 border-t bg-gray-200">
+  <div class="flex flex-wrap items-center justify-between p-4 md:p-10 text-base-content gap-8">
     <div>
-      <span class="text-3xl font-black text-purple-800"><%= @sitename %></span>
-
       <p class="opacity-50 mt-4">
-        <b>AIKKU (SAS)</b>
+        <span class="text-primary text-lg font-black">
+          <%= link_to 'AÏKKU (SAS)', 'https://www.aikku.eu/fr' %>
+        </span>
         <br>  
         Tour Ariane - La Défense 
         <br>
@@ -14,27 +14,65 @@
         <br>
         FRANCE
         <br><br>
-        SIREN : 934 780 735 R.C.S. Nanterre
+        SIREN : 934 780 735 R.C.S Nanterre (92)
       </p>
     </div>
+    <div class="text-2xl mt-8">
+      <%= form_with(model: @newsletter, id: "nouvelle_newsletter", method: "post", html: { autocomplete: "off", class: 'w-full flex flex-col justify-center', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
+        <div class="md:join" data-turbo="false">
+          <label name="newsletter[email]" id="newsletter_email" class="input input-lg input-secondary md:join-item w-full mb-4 md:mb-0 rounded-full md:rounded-r-none focus:ring-0">
+            <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <g
+                stroke-linejoin="round"
+                stroke-linecap="round"
+                stroke-width="2.5"
+                fill="none"
+                stroke="currentColor"
+              >
+                <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+              </g>
+            </svg>
+            <input type="email" placeholder="Entrez votre adresse email" data-newsletter-target="email" required class="focus:ring-0" />
+          </label>
+
+          <%= form.submit "S'inscrire à la newsletter", 'data-action': 'click->newsletter#print_result', class: "btn btn-lg btn-primary md:join-item rounded-full md:rounded-l-none mx-auto px-8 font-normal" %>
+        </div>
+
+        <div>
+          <%= render "result_newsletter" %>
+        </div>
+      <% end %>
+    </div>
+    <div>
+      <%= link_to "https://www.aikku.eu/fr" do %>
+        <%= image_tag 'New_logo.png', class: "h-24 w-auto", alt: "Logo Aikku SAS" %>
+      <% end %>
+    </div>
   </div>
-  <div class="footer px-10 py-6 border-t bg-base-content text-neutral-content border-base-300">
+  <div class="footer md:footer-horizontal px-10 py-6 border-t bg-base-content text-neutral-content border-base-300">
     <span class="inline">
-      Copyright © 2025 <%= @sitename %> - Tous droits réservés -
+      Copyright © AÏKKU SAS 2025 - Tous droits réservés -
       <%= link_to "Mentions Légales", mentions_legales_path, class:'hover:underline' %>
     </span>
-    <div class="md:place-self-center md:justify-self-end flex items-center gap-4">
-      <%= link_to 'https://www.aikku.eu/fr/contact', class: 'flex items-center' do %>
+    <div class="md:place-self-center md:justify-self-end flex flex-wrap items-center gap-8">
+      <%= mail_to 'contact@coopcomm.fr', class: 'flex items-center gap-2' do %>
         <span class="material-symbols-outlined">
           mail
         </span>
-        <span>Mail</span>
+        <span>Nous contacter</span>
       <% end %>
-      <%= link_to "https://www.linkedin.com/company/aikku-sas", target: "_blank", class: 'flex items-center' do %>
+      <%= link_to "https://www.linkedin.com/showcase/coopcomm", target: "_blank", class: 'flex items-center gap-2' do %>
         <span class="material-symbols-outlined">
           open_in_new
         </span>
-        <span>Linkedin</span>
+        <span>LinkedIn</span>
+      <% end %>
+      <%= link_to "https://www.aikku.eu/fr", target: "_blank", class: 'flex items-center gap-2' do %>
+        <span class="material-symbols-outlined">
+          open_in_new
+        </span>
+        <span>www.aikku.eu</span>
       <% end %>
     </div>
   </div>

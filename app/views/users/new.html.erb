@@ -1,7 +1,7 @@
-<div class="mx-auto w-full">
-  <h1 class="text-primary font-bold text-4xl">Nouvel utilisateur</h1>
+<div class="mx-auto w-full max-w-md">
+  <h1 class="text-primary font-bold text-4xl"><%= page_title!('Nouvel utilisateur') %></h1>
 
   <%= render "form", user: @user %>
 
-  <%= link_to "Annuler", users_path, class: "ml-2 rounded-lg py-1 px-2 bg-gray-100 inline-block font-medium" %>
+  <%= link_to "Annuler", users_path, class: "btn" %>
 </div>

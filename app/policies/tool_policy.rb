@@ -22,7 +22,7 @@ class ToolPolicy < ApplicationPolicy
   end
 
   def edit?
-    manager
+    manager && organisation
   end
 
   def update?
@@ -30,6 +30,6 @@ class ToolPolicy < ApplicationPolicy
   end
 
   def destroy?
-    manager
+    manager && organisation
   end
 end

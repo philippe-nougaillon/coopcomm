@@ -27,22 +27,20 @@ class ToolsController < ApplicationController
       @tools = @tools.where(id: Tool.indisponibles_ids(current_user.organisation_id, params[:date]))
     when 'indisponible_carte'
       @tools = @tools.where(id: Tool.indisponibles_ids(current_user.organisation_id, params[:date]))
-      @lng = []
-      @lat = []
-      current_user.organisation.users.where.not(memo: nil).pluck(:memo).uniq.each do |memo|
-        if memo.include?('[')
-          @lng << memo.tr('[]', '').split(',').last
-          @lat << memo.tr('[]', '').split(',').first
-        end
+      @lng_list = []
+      @lat_list = []
+      current_user.organisation.users.adhérent.pluck(:localisation).each do |localisation|
+        @lng_list << localisation.split(',').last
+        @lat_list << localisation.split(',').first
       end
     end
     @tools = @tools.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
-    @pagy, @tools = pagy(@tools, items: 15)
+    @pagy, @tools = pagy(@tools, items: 10)
   end
 
   # GET /tools/1 or /tools/1.json
   def show
-    params[:vue] ||= 'liste'
+    params[:vue] ||= 'calendrier'
   end
 
   # GET /tools/new
@@ -97,11 +95,14 @@ class ToolsController < ApplicationController
     # Use callbacks to share common setup or constraints between actions.
     def set_tool
       @tool = Tool.find_by(slug: params[:id])
+      if @tool.nil?
+        redirect_to root_path, alert: "Matériel introuvable"
+      end
     end
 
     # Only allow a list of trusted parameters through.
     def tool_params
-      params.require(:tool).permit(:name, :description, :icon_name, :modèle, :marque, documents_attributes: [:id, :category, :workflow_state, :fichier])
+      params.require(:tool).permit(:name, :description, :icon_name, :modèle, :marque, :photo, documents_attributes: [:id, :category, :workflow_state, :fichier])
     end
 
     def is_user_authorized
@@ -109,7 +110,7 @@ class ToolsController < ApplicationController
     end
 
     def sortable_columns
-      ['tools.name', 'tools.modèle', 'tools.marque', 'tools.icon_name']
+      ['tools.name', 'tools.modèle', 'tools.marque', 'tools.icon_name', 'mouvements.état']
     end
 
     def sort_column

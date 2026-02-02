@@ -27,18 +27,31 @@ class UsersController < ApplicationController
       @users = @users.where(id: user_ids)
     end
 
-    @pagy, @users = pagy(@users, items: 15)
+    respond_to do |format|
+      format.html do
+        @users = @users.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
+        @pagy, @users = pagy(@users, items: 10)
+      end
+
+      format.xls do
+        xls_file = AgentsToXls.new(@users.agent).call
+        send_data xls_file, filename: "Agents_#{DateTime.now}.xls"
+      end
+    end
   end
 
   # GET /users/1 or /users/1.json
   def show
-    @absences = @user.absences.ordered
-    @audits = @user.own_and_associated_audits.reorder(id: :desc)
-    if @user.memo && @user.memo.include?('[')
-      @lng = @user.memo.tr('[] ', '').split(',').last
-      @lat = @user.memo.tr('[] ', '').split(',').first
-    end
-    @pagy, @audits = pagy(@audits, items: 10)
+    # TODO : Stale à mettre au plus proche du render
+    # if stale?(@user)
+      @absences = @user.absences.ordered
+      @audits = @user.own_and_associated_audits.reorder(id: :desc)
+      if @user.localisation
+        @lng = @user.localisation.split(',').last
+        @lat = @user.localisation.split(',').first
+      end
+      @pagy, @audits = pagy(@audits, items: 10)
+    # end
   end
 
   # GET /users/new
@@ -81,7 +94,7 @@ class UsersController < ApplicationController
 
   # DELETE /users/1 or /users/1.json
   def destroy
-    @user.destroy!
+    @user.discard
 
     respond_to do |format|
       format.html { redirect_to users_url, notice: "Utilisateur supprimé avec succès." }
@@ -116,18 +129,21 @@ class UsersController < ApplicationController
     @date_fin = @date + 10.day
 
     @agents = @agents.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
-    @pagy, @agents = pagy(@agents, items: 15)
+    @pagy, @agents = pagy(@agents, items: 10)
   end
 
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_user
       @user = User.find_by(slug: params[:id])
+      if @user.nil?
+        redirect_to root_path, alert: "Utilisateur introuvable"
+      end
     end
 
     # Only allow a list of trusted parameters through.
     def user_params
-      params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :rôle, :service, :memo, absences_attributes: [:id, :_destroy, :du, :au, :motif])
+      params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :rôle, :service, :memo, :localisation, :profile_picture, :color, absences_attributes: [:id, :_destroy, :du, :au, :motif])
     end
 
     def is_user_authorized
@@ -135,7 +151,7 @@ class UsersController < ApplicationController
     end
 
     def sortable_columns
-      ['users.nom', 'users.service']
+      ['users.nom', 'users.rôle', 'users.service', 'users.email', 'users.localisation', 'users.memo']
     end
 
     def sort_column

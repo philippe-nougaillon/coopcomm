@@ -3,12 +3,11 @@ class AdminController < ApplicationController
 
   def audits
     if current_user.manager?
-      @organisation_audits = Audited::Audit.where(user_id: current_user.organisation.users.pluck(:id))
+      @audits = Audited::Audit.where(user_id: current_user.organisation.users.pluck(:id))
     else
-      @organisation_audits = Audited::Audit.where(user_id: current_user.id)
+      @audits = Audited::Audit.where(user_id: current_user.id)
     end
-    @audits = @organisation_audits.order("id DESC")
-    @types  = @organisation_audits.pluck(:auditable_type).uniq.sort
+    @types  = @audits.pluck(:auditable_type).uniq.sort
     @actions= %w[update create destroy]
     @users = current_user.organisation.users.ordered 
 
@@ -32,7 +31,8 @@ class AdminController < ApplicationController
       @audits = @audits.where(action: params[:action_name])
     end
 
-    @pagy, @audits = pagy(@audits, items: 20)
+    @audits = @audits.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
+    @pagy, @audits = pagy(@audits, items: 10)
   end
 
   def create_new_user
@@ -40,12 +40,12 @@ class AdminController < ApplicationController
   end
 
   def create_new_user_do
-    @user = User.new(params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :rôle, :service))
+    @user = User.new(params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :rôle, :service, :localisation))
     @user.organisation = current_user.organisation
 
     respond_to do |format|
       if @user.save
-        format.html { redirect_to users_url, notice: "Participant créé avec succès." }
+        format.html { redirect_to users_url, notice: "Utilisateur créé avec succès." }
         format.json { render :show, status: :created, location: @user }
       else
         format.html { render :create_new_user, status: :unprocessable_entity }
@@ -55,28 +55,33 @@ class AdminController < ApplicationController
   end
 
   def messagerie
-    @notifications = current_user.notifications.ordered
-    @new_notification_ids = @notifications.where("notifications.created_at > ?", current_user.notifications_last_seen_at).pluck(:id)
-    
-    @users = current_user.organisation.users.where(rôle: ['équipe', 'agent']).ordered
+    #@notifications = current_user.notifications
+
+    # Reverse fait dans la vue messagerie pour avoir le dernier en bas, reverse et last transforment en array
+    @notifications = Notification.where(from_id: current_user.id).or(Notification.where(to_id: current_user.id)).ordered.limit(9)
+    #@new_notification_ids = @notifications.where("notifications.created_at > ?", current_user.notifications_last_seen_at).pluck(:id)
+
+    @users = current_user.organisation.users.where.not(id: current_user.id).ordered
     current_user.update!(notifications_last_seen_at: DateTime.now)
   end
 
   def send_notification
-    notification = Notification.new(params.permit(:user_id))
-    notification.message = "De #{current_user.nom_prénom} : " + params[:message]
 
-    self_notification = Notification.new
-    self_notification.user_id = current_user.id
-    self_notification.message = "À #{User.find(params[:user_id]).nom} : " + params[:message]
+    if params.has_key? "submit_message"
+      notification = Notification.new
+      notification.message = params[:message]
+      notification.from_id = current_user.id
+      notification.to_id = params[:to_id]
 
-    if notification.save && self_notification.save
-      current_user.update!(notifications_last_seen_at: DateTime.now)
-      render json: { success: true, message: "Notifications envoyées avec succès" }, status: :ok
-    else
-      errors = notification.errors.full_messages + self_notification.errors.full_messages
-      render json: { success: false, errors: errors }, status: :unprocessable_entity
-    end
+      if notification.save
+        current_user.update!(notifications_last_seen_at: DateTime.now)
+        #render json: { success: true, message: "Notifications envoyées avec succès" }, status: :ok
+        redirect_to admin_messagerie_path(to_id: notification.to_id)
+      else
+        errors = notification.errors.full_messages
+        render json: { success: false, errors: errors }, status: :unprocessable_entity
+      end
+    end    
   end
 
   def stats
@@ -89,4 +94,17 @@ class AdminController < ApplicationController
   def is_user_authorized
     authorize :admin
   end
+
+  def sortable_columns
+    ['audits.created_at', 'audits.user_id', 'audits.auditable_type', 'audits.auditable_id', 'audits.action', 'audits.audited_changes']
+  end
+
+  def sort_column
+    sortable_columns.include?(params[:column]) ? params[:column] : "audits.id"
+  end
+
+  def sort_direction
+    %w[asc desc].include?(params[:direction]) ? params[:direction] : "desc"
+  end
+
 end

@@ -2,13 +2,14 @@
   <table id="tools" class="table table-sm">
     <thead class="bg-slate-100">
       <tr>
-        <th><%= sort_link 'tools.icon_name', 'Type' %></th>
+        <th></th>
         <th><%= sort_link 'tools.name', 'Nom' %></th>
         <th><%= sort_link 'tools.modèle', 'Modèle' %></th>
         <th><%= sort_link 'tools.marque', 'Marque' %></th>
+        <th><%= sort_link 'mouvements.état', "État" %></th>
         <% if params[:vue] == 'calendrier' %>
           <% (@date..@date_fin).each do |date| %>
-            <th class="-rotate-45 h-12 px-2 py-6">
+            <th class="text-center <%= 'bg-yellow-50 text-primary' if date == Date.today %>">
               <%= l(date, format: :calendar).humanize %>
             </th>
           <% end %>
@@ -20,6 +21,9 @@
     <tbody>
       <%= render @tools %>
     </tbody>
+    <tfoot>
+      <th></th>
+    </tfoot>
   </table>
 </div>
 

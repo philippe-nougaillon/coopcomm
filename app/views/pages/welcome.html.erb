@@ -1,304 +1,447 @@
-<div class="lg:px-8">
-  <div class="flex flex-col justify-between">
-    <h1 class="text-4xl lg:text-5xl font-black text-primary mb-4 lg:mb-8">
-      COO<span class="underline">P</span>COM
-      <div class="divider"></div>
-    </h1>
+<div data-theme="aikku" class="lg:px-8">
+  <section class="lg:flex lg:justify-between lg:flex-wrap mb-24 lg:mb-12">
+    <div class="flex-1 my-auto px-4 lg:px-12">
+      <h1 class="text-3xl lg:text-4xl font-black mb-6 lg:mb-12 mt-24 lg:mt-12">
+        <span class="text-gradient">Mutualisez mieux,</span>
+        <br>
+        dépensez moins !
+      </h1>
 
-    <div class="lg:flex lg:flex-wrap">
-      <div class="flex-1">
-        <h2 class="text-3xl lg:text-4xl font-black mb-6 lg:mb-12">
-          <span class="underline">P</span>lateforme de mutualisation
-          <br> 
-          de services communs
-        </h2>
+      <p class="text-xl lg:text-2xl mb-6 lg:mb-12">
+        CoopComm accompagne les <b>communautés de communes</b> dans la <b>mutualisation</b> de leurs <b>agents, investissements et moyens techniques</b>
+      </p>
 
-        <h3 class="text-2xl lg:text-3xl text-secondary mb-6 lg:mb-12">
-          Gérez facilement la coopération et la mutualisation
-          <br>
-          des services et ressources de votre intercommunalité (EPCI)
-        </h3>
-
-        <div class="mt-8 flex flex-wrap gap-4 text-xl font-black mb-4 lg:mb-12">
-          <%# link_to "En savoir plus", url_for(anchor: 'more'), class: 'btn lg:btn-lg lg:btn-wide btn-primary text-white' %>
-          <%# link_to "S'inscrire", '/users/sign_up', class: 'btn btn-outline lg:btn-lg btn-success hover:!text-white' %>
-          <%= link_to "Se connecter", '/users/sign_in', class: 'btn btn-outline lg:btn-lg lg:btn-wide btn-primary hover:!text-white' %>
-        </div>
-      </div>
-      <div class="w-36 lg:w-64 hover:animate-pulse">
-        <%= image_tag 'Cooperation.svg', class: 'opacity-15' %>
+      <div class="mt-8 flex flex-wrap gap-4 text-xl font-black">
+        <%= link_to "Réserver une démo ➔", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: 'btn lg:btn-lg lg:btn-wide btn-secondary hover:text-white!' %>
       </div>
     </div>
-  </div>
+    <div class="flex-1 hidden lg:flex lg:justify-center">
+      <%= image_tag 'Imac and iphone.png', width: 500 %>
+    </div>
+  </section>
 
-  <div id="more" class="mt-12" style="scroll-snap-align: start;">
-    <h2 class="text-3xl lg:text-4xl text-primary font-black">
-      Les bénéfices de la plateforme COOPCOM
-    </h2>
-    <div class="divider mb-12"></div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 p-4 gap-4">
-      <div class="border border-2 border-slate-300 rounded p-4">
-        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
-          <span class="material-symbols-outlined text-error">
-            communities
+  <section class="bg-gray-200 pt-12 pb-24 px-4">
+    <div class="text-center mb-24">
+      <h2 class="text-2xl lg:text-3xl font-medium mb-2">
+        Pourquoi choisir
+        <span class="text-primary font-bold">Co</span><span class="text-secondary font-bold">op</span><span class="text-primary font-bold">Comm</span><span class="text-secondary font-bold">.</span>
+        ?
+      </h2>
+      <h3>
+        Une solution complète pour optimiser la gestion de votre intercommunalité
+      </h3>
+    </div>
+
+    <div class="flex flex-wrap gap-4 justify-around">
+      <div class="w-xs bg-base-100 text-center py-12 px-8 shadow rounded-xl">
+        <span class="material-symbols-outlined text-primary-content bg-primary p-3 rounded-full mb-8">
+          trending_down
+        </span>
+        <h4 class="text-xl font-semibold mb-2">Réduction des coûts</h4>
+        <p>
+          Diminuez vos dépenses de fonctionnement grâce à la mutualisation intelligente des ressources
+        </p>
+      </div>
+      <div class="w-xs bg-base-100 text-center py-12 px-8 shadow rounded-xl">
+        <span class="material-symbols-outlined text-primary-content bg-primary p-3 rounded-full mb-8">
+          group
+        </span>
+        <h4 class="text-xl font-semibold mb-2">Optimisation RH</h4>
+        <p>
+          Maximisez l'efficacité de vos équipes en partageant les compétences entre communes
+        </p>
+      </div>
+      <div class="w-xs bg-base-100 text-center py-12 px-8 shadow rounded-xl">
+        <span class="material-symbols-outlined text-primary-content bg-primary p-3 rounded-full mb-8">
+          security
+        </span>
+        <h4 class="text-xl font-semibold mb-2">Conformité garantie</h4>
+        <p>
+          Respectez toutes les réglementations avec une solution respectueuse du RGPD
+        </p>
+      </div>
+      <div class="w-xs bg-base-100 text-center py-12 px-8 shadow rounded-xl">
+        <span class="material-symbols-outlined text-primary-content bg-primary p-3 rounded-full mb-8">
+          flag
+        </span>
+        <h4 class="text-xl font-semibold mb-2">Souveraineté numérique</h4>
+        <p>
+          Profitez d’une solution développée, hébergée et maintenue à 100% en France
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-24 pb-24 lg:px-16">
+    <div class="text-center lg:px-48 mb-12">
+      <h2 class="text-2xl lg:text-3xl font-medium mb-8">
+        Des fonctionnalités pensées pour votre quotidien
+      </h2>
+      <h3>
+        De la coordination des agents à la gestion du matériel en passant par la
+        traçabilité des interventions,
+        <span class="text-primary font-bold">Co</span><span class="text-secondary font-bold">op</span><span class="text-primary font-bold">Comm</span><span class="text-secondary font-bold">.</span>
+        centralise vos opérations
+        dans une interface intuitive et sécurisée.
+      </h3>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="flex-1 bg-gray-200 px-4 pt-4 pb-8">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            shopping_cart
           </span>
-          <b>Une information claire et partagée</b> 
+          Gestion des actifs
+        </h4>
+        <p class="text-primary font-black">
+          Suivez et localisez vos équipements en temps réel
         </p>
         <p>
-          Plateforme source unique de référence (SSOT), robuste et fiable.
-          Chaque modification de données est auditable
+          Optimisez l'utilisation du matériel mutualisé grâce à un inventaire dynamique, une traçabilité des prêts, et un carte interactive. Fini les pertes et les doublons entre communes.
         </p>
       </div>
 
-      <div class="border border-2 border-slate-300 rounded p-4">
-        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
-          <span class="material-symbols-outlined text-error">
-            smartphone
+      <div class="flex-1 bg-gray-200 px-4 pt-4 pb-8">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            construction
           </span>
-          <b>Une référence unique sur tous supports</b> 
+          Gestion des interventions
+        </h4>
+        <p class="text-primary font-black">
+          De la demande à la validation, tout est traçé
         </p>
         <p>
-          Design Responsive pour une utilisation sur Smartphone/PC/Tablette
+          Les adhérents émettent une demande. Les équipes planifient, réalisent, et clôturent l'intervention. L'adhérent est notifié. Il valide ou refuse l'intervention, l'évalue et commente si besoin. Simple, structuré, transparent.
         </p>
       </div>
 
-      <div class="border border-2 border-slate-300 rounded p-4">
-        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
-          <span class="material-symbols-outlined text-error">
-            steppers
-          </span>
-          <b>Workflow</b>
-        </p>
-        <p>
-          Chaque intervention passe d'un état à un autre grâce à des actions déterminées à l'avance. Certaines actions provoque l'envoi de notification.
-        </p>
-      </div>
-
-      <div class="border border-2 border-slate-300 rounded p-4">
-        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
-          <span class="material-symbols-outlined text-error">
-            monitoring
-          </span>
-          <b>Maîtrise budgétaire</b>
-        </p>
-        <p>
-          Un tableau de bord de gestion permet aux adhérents et managers de suivre leurs indicateurs clés
-        </p>
-      </div>
-
-      <div class="border border-2 border-slate-300 rounded p-4">
-        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
-          <span class="material-symbols-outlined text-error">
-            engineering
-          </span>
-          <b>Gestion des Interventions</b>
-        </p>
-        <p>
-          Une demande d'intervention est émise par l'adhérent à destination d'une équipe (espace vert, secrétariat, petite-enfance, etc...). L'équipe va ensuite planifier l'intervention en lui attribuant une date et un agent. Une fois l'intervention terminée, l'agent change l'état par l'action 'Terminer', ce qui provoque l'envoi d'une notification à destination de l'adhérent demander, qui devra la valider ou la refuser, et lui attribuer une note et donner son avis
-        </p>
-      </div>
-
-      <div class="border border-2 border-slate-300 rounded p-4">
-        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
-          <span class="material-symbols-outlined text-error">
-            location_city
-          </span>
-          <b>Gestion des Adhérents</b>
-        </p>
-        <p>
-          Les adhérents ont un accès à la plateforme limité aux données relatives à leurs demande d'interventions
-        </p>
-      </div>
-
-      <div class="border border-2 border-slate-300 rounded p-4">
-        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
-          <span class="material-symbols-outlined text-error">
+      <div class="flex-1 bg-gray-200 px-4 pt-4 pb-8">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
             groups
           </span>
-          <b>Gestion des Agents, Equipes, Managers</b>
+          Gestion des Agents, Équipes et Managers
+        </h4>
+        <p class="text-primary font-black">
+          Chaque acteur a une vue adaptée à son rôle
         </p>
         <p>
-          Les agents et équipes ont un accès à la plateforme limité aux données relatives à leurs interventions. Quant aux managers, ils disposent d'un accès complet aux données de leur organisation
+          Agents, managers, responsables techniques... chacun accède aux données pertinentes, ni plus ni moins. Une interface claire pour tous, sans complexité inutile.
         </p>
       </div>
 
-      <div class="border border-2 border-slate-300 rounded p-4">
-        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
-          <span class="material-symbols-outlined text-error">
-            beach_access
-          </span>
-          <b>Gestion des Absences Agents</b>
-        </p>
-        <p>
-          Permet de ne pas planifier ou attribuer une intervention à un agent pour lequel une absence est prévue
-        </p>
-      </div>
-
-      <div class="border border-2 border-slate-300 rounded p-4">
-        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
-          <span class="material-symbols-outlined text-error">
+      <div class="flex-1 bg-gray-200 px-4 pt-4 pb-8">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
             qr_code_2
           </span>
-          <b>Pointage par QR Code</b>
+          Pointage par QR Code
+        </h4>
+        <p class="text-primary font-black">
+          Démarrez et terminez vos missions en 1 scan
         </p>
         <p>
-          Pour les interventions récurrentes, il suffit de créer une intervention modèle et d'imprimer son QR_Code, qui pourra être ensuite flashé afin de signifier le début de l'intervention. 
-          L'adhérent en sera automatiquement notifié. Une seconde utilisation du QR_Code marquera la fin de l'intervention
+          Pour les interventions récurrentes, imprimez un QR Code. L'agent le flashe pour débuter et conclure. L'adhérent est informé automatiquement. Gain de temps, preuve d'action, zéro friction.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-4 mt-12">
+      <%= link_to "Découvrir toutes les fonctionnalités", root_path(anchor: "more"), class: "btn btn-primary" %>
+      <%= link_to "Réserver une démo ➔", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: "btn btn-secondary" %>
+    </div>
+  </section>
+
+  <div id="more" class="mb-24"></div>
+  <div class="mt-12" style="scroll-snap-align: start;">
+    <h2 class="text-2xl lg:text-3xl font-medium text-center mb-12">
+      Les fonctionnalités de la plateforme
+      <span class="text-primary font-bold">Co</span><span class="text-secondary font-bold">op</span><span class="text-primary font-bold">Comm</span><span class="text-secondary font-bold">.</span>
+    </h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 p-4 gap-6">
+
+      <div class="shadow rounded-lg p-8">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            front_loader
+          </span>
+          Gestion des Actifs
+        </h4>
+        <p>
+          Suivi de l'<b>inventaire</b> du matériel et des prêts. Gardez une trace de toutes les utilisations de vos actifs lors d'interventions terrains. <b>Localisez</b> facilement votre matériel grâce à notre carte interactive.
         </p>
       </div>
 
-      <div class="border border-2 border-slate-300 rounded p-4">
-        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
-          <span class="material-symbols-outlined text-error">
-            chat
+      <div class="shadow rounded-lg p-6">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            construction
           </span>
-          <b>Messagerie instantanée</b>
-        </p>
+          Interventions
+        </h4>
         <p>
-          Un espace de communication instantanée permet aux managers de discuter directement avec les agents
+          Une <b>demande d'intervention</b> est émise par l'adhérent à destination d'une équipe (espace vert, secrétariat, petite-enfance, etc...). L'équipe va ensuite <b>planifier</b> l'intervention en lui attribuant une date et un agent. Une fois l'intervention terminée, l'adhérent devra la valider ou la refuser, et lui attribuer une note et donner son avis.
         </p>
       </div>
 
-      <div class="border border-2 border-slate-300 rounded p-4">
-        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
-          <span class="material-symbols-outlined text-error">
-            notifications
+      <div class="shadow rounded-lg p-6">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            group
           </span>
-          <b>Notifications et alertes</b>
-        </p>
+          Agents, Équipes et Managers
+        </h4>
         <p>
-          Certains changements d'état provoque l'envoi d'email ou de message WhatsApp afin d'en informer toutes les parties prenantes
+          Les agents et équipes ont un accès à la plateforme limité aux données relatives à leurs interventions. Quant aux managers, ils disposent d'un accès complet aux données de leur organisation.
         </p>
       </div>
 
-      <div class="border border-2 border-slate-300 rounded p-4">
-        <p class="flex items-center gap-2 text-lg lg:text-2xl pb-6 lg:pb-12">
-          <span class="material-symbols-outlined text-error">
-            network_intelligence
+      <div class="shadow rounded-lg p-6">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            location_city
           </span>
-          <b>IA pour prévision d'interventions</b>
-        </p>
+          Adhérents
+        </h4>
         <p>
-          Sur la base des interventions précédentes, une IA va tenter de proposer des interventions à venir
+          Les adhérents ont un accès à la plateforme limité aux données relatives à leurs demande d'interventions.
+        </p>
+      </div>
+
+      <div class="shadow rounded-lg p-6">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            beach_access
+          </span>
+          Gestion des Absences
+        </h4>
+        <p>
+          Bloque la planification ou l'attribution d'une intervention à un agent pour lequel une absence est prévue.
+        </p>
+      </div>
+
+      <div class="shadow rounded-lg p-6">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            speedmonitoring
+          </span>
+          Maîtrise budgétaire
+        </h4>
+        <p>
+          Un tableau de bord de gestion permet aux adhérents et managers de suivre leurs indicateurs clés.
+        </p>
+      </div>
+
+      <div class="shadow rounded-lg p-6">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            cloud_circle
+          </span>
+          Une information claire et partagée
+        </h4>
+        <p>
+          Plateforme numérique fournissant une source unique de référence (SSOT), robuste et fiable.
+          Chaque modification de données est auditable.
+        </p>
+      </div>
+
+      <div class="shadow rounded-lg p-6">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            smartphonetabletcomputer
+          </span>
+          Une référence unique sur tous supports
+        </h4>
+        <p>
+          Design Responsive pour une utilisation sur Smartphone/PC/Tablette.
+        </p>
+      </div>
+
+      <div class="shadow rounded-lg p-6">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            steppersdouble_arrow
+          </span>
+          Workflow
+        </h4>
+        <p>
+          Chaque intervention passe d'un état à un autre grâce à des actions déterminées à l'avance. Certaines actions provoquent l'envoi de notification.
+        </p>
+      </div>
+
+      <div class="shadow rounded-lg p-6">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            barcode_readerqr_code_2
+          </span>
+          Pointage par QR Code
+        </h4>
+        <p>
+          Pour les <b>interventions récurrentes</b>, il suffit de créer une intervention modèle et d'imprimer son QR Code, qui pourra être ensuite flashé afin de signifier le début de l'intervention.
+          L'adhérent en sera automatiquement notifié. Une seconde utilisation du QR Code marquera la fin de l'intervention.
+        </p>
+      </div>
+
+      <div class="shadow rounded-lg p-6">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            forum
+          </span>
+          Messagerie instantanée
+        </h4>
+        <p>
+          Un <b>espace de communication</b> instantanée permet aux managers de discuter directement avec les agents. Un <b>système de modération</b> du vocabulaire inapproprié veillera à la bonne qualité des discussions.
+        </p>
+      </div>
+
+      <div class="shadow rounded-lg p-6">
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+          notificationsmobile_chat
+        </span>
+          Notifications et alertes
+        </h4>
+        <p>
+          Certains changements d'état provoquent l'envoi d'email ou de message <b>WhatsApp</b> afin d'en informer toutes les parties prenantes.
+        </p>
+      </div>
+
+      <div class="shadow rounded-lg p-6">
+        <span class="badge badge-info badge-sm mb-4">NOUVEAUTÉ</span>
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            smart_toy
+          </span>
+          Prévision d'interventions (IA)
+        </h4>
+        <p>
+          Sur la base des interventions précédentes, une Intelligence Artificielle va proposer des interventions à prévoir.
+        </p>
+      </div>
+      <div class="shadow rounded-lg p-6">
+        <span class="badge badge-info badge-sm mb-4">À VENIR</span>
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            smart_toy
+          </span>
+          Maintenance préventive (IA)
+        </h4>
+        <p>
+          Grâce au machine learning, à l'analyse des données opérationnelles et à la surveillance prédictive de l’état des actifs, les utilisateurs peuvent optimiser la maintenance et réduire les risques de fiabilité des opérations.
+        </p>
+      </div>
+      <div class="shadow rounded-lg p-6">
+        <span class="badge badge-info badge-sm mb-4">À VENIR</span>
+        <h4 class="text-xl font-semibold mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-content bg-primary p-2 rounded-full">
+            smart_toy
+          </span>
+          Maintenance prédictive (IA)
+        </h4>
+        <p>
+          La maintenance prédictive est conçue pour programmer des actions de maintenance corrective avant qu'une panne ne se produise.
         </p>
       </div>
     </div>
   </div>
 
-  <div class="min-h-screen mt-12">
-    <h2 class="text-3xl lg:text-4xl text-primary font-black">
-      Tutoriel vidéo
+  <div class="mt-24">
+    <h2 class="text-2xl lg:text-3xl font-medium text-center mb-12">
+      <span class="text-primary font-bold">Co</span><span class="text-secondary font-bold">op</span><span class="text-primary font-bold">Comm</span><span class="text-secondary font-bold">.</span>
+      en images
     </h2>
-    <div class="divider mb-12"></div>
-    <div class="mockup-window bg-base-300 border">
-      <div class="bg-base-200 flex justify-center px-4 py-64">En cours de tournage !</div>
-    </div>
-  </div>
-
-  <div class="min-h-screen mt-12">
-    <h2 class="text-3xl lg:text-4xl text-primary font-black">
-      Wiki
-    </h2>
-    <div class="divider mb-12"></div>
-
-    <ul class="list-disc list-inside">
-      <li class="text-2xl my-4">
-        Blog
-      </li>
-      <ul class="list-disc list-inside text-xl ml-8 my-4">
-        <% @wiki_pages.blog.where(publiée: true).order(poids: :desc).each do |wiki_page| %>
-          <li>
-            <%= link_to wiki_page.titre, wiki_page, class: "text-primary text-2xl font-black hover:underline" %>
-          </li>
-        <% end %>
-      </ul>
-      <li class="text-2xl my-4">
-        Guides
-      </li>
-      <ul class="list-disc list-inside text-xl ml-8 my-4">
-        <% @wiki_pages.guide.where(publiée: true).order(poids: :desc).each do |wiki_page| %>
-          <li>
-            <%= link_to wiki_page.titre, wiki_page, class: "text-primary hover:underline" %>
-          </li>
-        <% end %>
-      </ul>
-      <li class="text-2xl my-4">
-        Fiches mémo
-      </li>
-      <ul class="list-disc list-inside text-xl ml-8 my-4">
-        <% @wiki_pages.fiches.where(publiée: true).order(poids: :desc).each do |wiki_page| %>
-          <li>
-            <%= link_to wiki_page.titre, wiki_page, class: "text-primary hover:underline" %>
-          </li>
-        <% end %>
-      </ul>
-      </li>
-    </ul>
-
-    <p class="mt-12">
-      <%= link_to 'Consultez notre wiki', wiki_pages_path, class: 'text-xl text-primary hover:underline' %>
-    </p>
-  </div>
-
-  <div class="min-h-screen mt-12">
-    <h2 class="text-3xl lg:text-4xl text-primary font-black">
-      En savoir plus
-    </h2>
-    <div class="divider mb-12"></div>
-
-    <ul class="list-disc list-inside">
-      <li class="text-2xl my-4">
-        <%= link_to 'Nous contacter', 'https://www.aikku.eu/fr/contact?objet=COOPCOM', target: '_blank', class: 'text-primary hover:underline' %>
-      </li>
-      <li class="text-2xl my-4">
-        <%= link_to 'Mentions légales', mentions_legales_path, class: 'text-primary hover:underline' %>
-      </li>
-      <li class="text-2xl my-4">
-        ...      
-      </li>
-    </ul>
-
-
-  </div>
-
-  <div class="min-h-screen mt-12">
-    <h2 class="text-3xl lg:text-4xl text-primary font-black">
-      Témoignages de nos clients
-    </h2>
-    <div class="divider mb-12"></div>
-
-    <div class="chat chat-start">
-      <div class="chat-image avatar">
-        <div class="w-10 rounded-full">
-          <img
-            alt="Tailwind CSS chat bubble component"
-            src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+    <div class="flex w-full bg-gray-200 py-4 items-center justify-center">
+      <div class="carousel min-w-16 sm:w-3/4 mx-auto" data-turbo="false">
+        <div id="slide1" class="carousel-item relative w-full flex flex-col">
+          <div>
+            <%= image_tag "carousel/home.png", title: "Page d'accueil", class: "object-contain w-full h-full" %>
+            <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
+              <a href="#slide6" class="btn btn-secondary btn-outline btn-circle">❮</a>
+              <a href="#slide2" class="btn btn-secondary btn-outline btn-circle">❯</a>
+            </div>
+          </div>
+        </div>
+        <div id="slide2" class="carousel-item relative w-full flex flex-col">
+          <div>
+            <%= image_tag "carousel/new_intervention.png", title: "Localisation des interventions", class: "object-contain w-full h-full" %>
+            <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
+              <a href="#slide1" class="btn btn-secondary btn-outline btn-circle">❮</a>
+              <a href="#slide3" class="btn btn-secondary btn-outline btn-circle">❯</a>
+            </div>
+          </div>
+        </div>
+        <div id="slide3" class="carousel-item relative w-full flex flex-col">
+          <div>
+            <%= image_tag "carousel/interventions.png", title: "Localisation des interventions", class: "object-contain w-full h-full" %>
+            <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
+              <a href="#slide2" class="btn btn-secondary btn-outline btn-circle">❮</a>
+              <a href="#slide4" class="btn btn-secondary btn-outline btn-circle">❯</a>
+            </div>
+          </div>
+        </div>
+        <div id="slide4" class="carousel-item relative w-full flex flex-col">
+          <div>
+            <%= image_tag "carousel/intervention.png", title: "Localisation des interventions", class: "object-contain w-full h-full" %>
+            <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
+              <a href="#slide3" class="btn btn-secondary btn-outline btn-circle">❮</a>
+              <a href="#slide5" class="btn btn-secondary btn-outline btn-circle">❯</a>
+            </div>
+          </div>
+        </div>
+        <div id="slide5" class="carousel-item relative w-full flex justify-center">
+          <%= image_tag "carousel/tools.png", title: "Formulaire de création d'intervention", class: "object-contain w-full h-full" %>
+          <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
+            <a href="#slide4" class="btn btn-secondary btn-outline btn-circle">❮</a>
+            <a href="#slide6" class="btn btn-secondary btn-outline btn-circle">❯</a>
+          </div>
+        </div>
+        <div id="slide6" class="carousel-item relative w-full flex justify-center">
+          <%= image_tag "carousel/dashboard.png", title: "Liste du matériel", class: "object-contain w-full h-full" %>
+          <div class="absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between">
+            <a href="#slide5" class="btn btn-secondary btn-outline btn-circle">❮</a>
+            <a href="#slide1" class="btn btn-secondary btn-outline btn-circle">❯</a>
+          </div>
         </div>
       </div>
-      <div class="chat-bubble text-warning">It was said that you would, destroy the Sith, not join them.</div>
     </div>
-    <div class="chat chat-start">
-      <div class="chat-image avatar">
-        <div class="w-10 rounded-full">
-          <img
-            alt="Tailwind CSS chat bubble component"
-            src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
-        </div>
-      </div>
-      <div class="chat-bubble">It was you who would bring balance to the Force</div>
-    </div>
-    <div class="chat chat-start">
-      <div class="chat-image avatar">
-        <div class="w-10 rounded-full">
-          <img
-            alt="Tailwind CSS chat bubble component"
-            src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
-        </div>
-      </div>
-      <div class="chat-bubble text-primary">Not leave it in Darkness</div>
+
+    <script>
+      // Script pour recentrer le carrousel au centre de la page quand on clique sur une flèche du carrousel (ChatGPT).
+        document.addEventListener("DOMContentLoaded", function () {
+            const carouselLinks = document.querySelectorAll('a[href^="#slide"]');
+
+            carouselLinks.forEach(link => {
+                link.addEventListener("click", function (e) {
+                    e.preventDefault(); // empêche le saut par défaut
+
+                    const targetId = this.getAttribute("href").substring(1); // remove #
+                    const targetElement = document.getElementById(targetId);
+
+                    if (targetElement) {
+                        // Ajoute un petit délai pour laisser le carousel changer de slide si besoin
+                        setTimeout(() => {
+                            targetElement.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center", // centre verticalement
+                            });
+                        }, 100); // léger delay pour assurer que le contenu est affiché
+                    }
+                });
+            });
+        });
+    </script>
+  </div>
+
+  <div class="mt-24">
+    <h2 class="text-2xl lg:text-3xl font-medium text-center mb-12">
+      Vous souhaitez en savoir plus ?
+    </h2>
+    <div class="flex flex-wrap items-center justify-around gap-4">
+      <%= link_to 'Consultez notre Wiki (Blog / FAQ / ...)', wiki_pages_path, class: 'btn lg:btn-lg btn-primary hover:text-white!' %>
+      <%= link_to "Réservez une démo personnalisée", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: 'btn lg:btn-lg btn-secondary hover:text-white!', title: "Réservez une démo personnalisée avec l'un de nos experts" %>
     </div>
   </div>
 </div>
-
-<%= render partial: 'partials/footer' %>

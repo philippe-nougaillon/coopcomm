@@ -311,4 +311,9 @@ Devise.setup do |config|
   # When set to false, does not sign a user in automatically after their password is
   # changed. Defaults to true, so a user is signed in automatically after changing a password.
   # config.sign_in_after_change_password = true
+
+  config.lock_strategy = :failed_attempts
+  config.unlock_keys = :email
+  config.unlock_strategy = :email
+  config.maximum_attempts = 5
 end

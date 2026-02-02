@@ -8,4 +8,8 @@ class Absence < ApplicationRecord
   def en_cours?
     return (self.du..self.au).include?(Date.today)
   end
+
+  def nb_jours
+    (self.au - self.du).to_i + 1
+  end
 end

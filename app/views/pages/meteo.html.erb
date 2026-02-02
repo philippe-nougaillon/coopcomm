@@ -1,0 +1,13 @@
+<% if @forecasts %>
+  <div class="w-full">
+    <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16 mb-4">
+      <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Prévision météo sur 14 jours') %><%= " (#{ @forecasts["city"]["name"] })" %></h1>
+    </div>
+    <div class="flex flex-wrap justify-start items-stretch gap-4">
+      <%= render partial: 'pages/meteo', collection: @forecasts["forecast"].map.with_index { |forecast, i| forecast[2] }, as: :forecast %>
+    </div>
+    <small>Dernière mise à jour : <%= l(Time.zone.parse(@forecasts[:last_fetched_at])) %></small>
+  </div>
+<% else %>
+  <p>Météo indisponible</p>
+<% end %>

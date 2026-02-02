@@ -3,11 +3,10 @@
     <div id="<%= dom_id @intervention %>" class="overflow-x-auto">
       <div class="flex flex-col sm:flex-row justify-between">
         <div>
-          <small>
-            <i>il y a <%= time_ago_in_words @intervention.updated_at %></i>
-          </small>
-
           <p class="text-3xl text-<%= @intervention.style.split.first.split('-').last %> font-black">
+            <span class="badge badge-lg text-nowrap font-bold <%= @intervention.style %>">
+              <%= @intervention.workflow_state.humanize %>
+            </span>
             <% if @intervention.repeter %>
               <span class="material-symbols-outlined text-black" title="Modèle pour le pointage">
                 event_repeat
@@ -17,8 +16,11 @@
                 qr_code_2
               </span>
             <% end %>
-            <%= @intervention.description.humanize %>
+            <%= page_title!(@intervention.description.humanize) %>
           </p>
+          <small>
+            <i>il y a <%= time_ago_in_words @intervention.updated_at %></i>
+          </small>
 
           <p class="my-2">
             <% @intervention.tags.each do |tag| %>
@@ -29,21 +31,21 @@
 
         <div class="flex flex-wrap gap-2 mt-4 h-fit">
           <% if @intervention.repeter %>
-            <%= link_to intervention_path(format: :pdf), class: "rounded-lg py-3 px-8 bg-accent inline-block font-medium h-12", title: "Voir le QRCode de pointage" do %>
+            <%= link_to intervention_path(format: :pdf), class: "btn btn-warning", title: "Voir le QRCode de pointage" do %>
               <span class="material-symbols-outlined">
                 qr_code_2
               </span>
             <% end %>
           <% end %>
-          <%= link_to "Modifier", edit_intervention_path(@intervention), class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer h-12" %>
+          <%= link_to "Modifier", edit_intervention_path(@intervention), class: "btn btn-primary" %>
           <% if policy(@intervention).destroy? %>
-            <%= button_to intervention_path(@intervention), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette intervention ?" }, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium h-12", 'data-testid': "Supprimer l'intervention" do %>
+            <%= button_to intervention_path(@intervention), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette intervention ?" }, class: "btn", 'data-testid': "Supprimer l'intervention" do %>
               <span class="material-symbols-outlined">
                 delete
               </span>
             <% end %>
           <% end %>
-          <%= link_to "Retour", interventions_path, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium h-12" %>
+          <%= link_to "Retour", interventions_path, class: "btn" %>
         </div>
       </div>
 
@@ -52,19 +54,10 @@
           <div class="sm:flex gap-8">
             <div>
               <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Statut</strong>
-                <span class="badge badge-lg text-nowrap font-bold <%= @intervention.style %>">
-                  <%= @intervention.workflow_state.humanize %>
-                </span>
-              </p>
-            </div>
-              
-            <div>
-              <p class="my-2">
                 <strong class="block text-slate-400 mb-1">Adhérent</strong>
                 <b><%= @intervention.adherent.try(:nom_prénom) %></b>
               </p>
-              <p class="my-2">
+              <p class="my-2 pl-2" <%= "style=\"border-left: .3rem solid #{@intervention.team.color};\"".html_safe if @intervention.team&.color %>>
                 <strong class="block text-slate-400 mb-1">Équipe</strong>
                 <b><%= @intervention.team.try(:nom_prénom) %></b>
               </p>
@@ -86,21 +79,6 @@
               <% end %>
             </div>
 
-            <div>
-              <% if !@intervention.tools.any? %>
-                <p class="my-2">
-                  <strong class="block text-slate-400 mb-1">Outil</strong>
-                </p>
-              <% else %>
-                <% @intervention.tools.each_with_index do |tool, index| %>
-                  <p class="my-2">
-                    <strong class="block text-slate-400 mb-1">Outil#<%= index + 1 %></strong>
-                    <b><%= tool.name %></b>
-                  </p>
-                <% end %>
-              <% end %>
-            </div>
-
             <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
               <p class="my-2">
                 <strong class="block text-slate-400 mb-1">Début</strong>
@@ -109,7 +87,7 @@
 
               <p class="my-2">
                 <strong class="block text-slate-400 mb-1">Fin</strong>
-                <%= l(@intervention.fin, format: :long) if @intervention.fin%>
+                <%= l(@intervention.fin, format: :long) if @intervention.fin %>
               </p>
             </div>
 
@@ -138,6 +116,21 @@
             </div>
           </div>
 
+          <div>
+            <% if !@intervention.tools.any? %>
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Matériel</strong>
+              </p>
+            <% else %>
+              <% @intervention.tools.each_with_index do |tool, index| %>
+                <p class="my-2">
+                  <strong class="block text-slate-400 mb-1">Matériel#<%= index + 1 %></strong>
+                  <b><%= tool.name %></b>
+                </p>
+              <% end %>
+            <% end %>
+          </div>
+
           <div class="hidden sm:flex gap-8">
             <div>
               <p class="my-2">
@@ -145,30 +138,12 @@
                 <%= @intervention.commentaires %>
               </p>
             </div>
-
-            <% if @intervention.photos.attached? %>
-              <div>
-                <% if @intervention.photos.count > 1 %>
-                  <button onclick="my_modal_<%= @intervention.id %>.showModal()">
-                    <div class="stack w-36">
-                      <% @intervention.photos.limit(3).each do |photo| %>
-                        <div class="avatar">
-                          <div class="w-36 rounded">
-                            <%= image_tag photo, loading: 'lazy' %>
-                          </div>
-                        </div>
-                      <% end %>
-                    </div>
-                  </button>
-                <% else %>
-                  <div class="avatar">
-                    <div class="w-36 rounded">
-                      <%= link_to image_tag(@intervention.photos.last, loading: 'lazy'), @intervention.photos.last, target: "_blank" %>
-                    </div>
-                  </div>
-                <% end %>
-              </div>
-            <% end %>
+            <div>
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Météo</strong>
+                <%= @intervention.meteo %>
+              </p>
+            </div>
 
           </div>
         </div>
@@ -176,13 +151,11 @@
         <div class="w-72 mr-4">
           <% if @intervention.validé? || @intervention.refusé? %>
             <div>
+              <strong class="block text-slate-400 mb-1">Évaluation</strong>
               <div class="rating">
-                <p class="my-2">
-                  <strong class="block text-slate-400 mb-1">Évaluation</strong>
-                  <% 5.times do |index| %>
-                    <input type="radio" name="rating-<%= @intervention.id %>" class="mask mask-star bg-primary cursor-text" <%= "checked" if @intervention.note == index + 1 %> disabled/>
-                  <% end %>
-                </p>
+                <% 5.times do |index| %>
+                  <input type="radio" name="rating-<%= @intervention.id %>" class="mask mask-star bg-primary cursor-text" <%= 'aria-current=true' if @intervention.note == index + 1 %> disabled/>
+                <% end %>
               </div>
 
               <p class="my-2">
@@ -194,9 +167,9 @@
             <div class="my-2">
               <strong class="block text-slate-400 mb-1">Actions</strong>
               <p class="flex gap-2">
-                <%= link_to 'Terminer', terminer_intervention_path(@intervention), class: 'btn btn-primary btn-outline btn-sm sm:btn-md hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !@intervention.can_terminer? %>
-                <%= link_to 'Valider', valider_intervention_path(@intervention), class: 'btn btn-success btn-outline btn-sm sm:btn-md hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !@intervention.can_valider?  %>
-                <%= link_to 'Refuser', refuser_intervention_path(@intervention), class: 'btn btn-error btn-outline btn-sm sm:btn-md hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !@intervention.can_refuser? %>
+                <%= link_to 'Terminer', terminer_intervention_path(@intervention), class: 'btn btn-primary btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !@intervention.can_terminer? %>
+                <%= link_to 'Valider', valider_intervention_path(@intervention), class: 'btn btn-success btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !@intervention.can_valider?  %>
+                <%= link_to 'Refuser', refuser_intervention_path(@intervention), class: 'btn btn-error btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !@intervention.can_refuser? %>
               <p>
             </div>
           <% end %>
@@ -204,46 +177,103 @@
         </div>
       </div>
 
-      <dialog id="my_modal_<%= @intervention.id %>" class="modal w-full mx-auto my-auto mx-24">
-        <div class="flex justify-end">
-          <button onclick="my_modal_<%= @intervention.id %>.close()">
-            <span class="material-symbols-outlined text-5xl text-white font-black">
-              cancel
-            </span>      
-          </button>
-        </div>
-        <div class="carousel">
-          <% @intervention.photos.each do |photo| %>
-            <div class="carousel-item">
-              <%= image_tag(photo, class: "h-96", loading: 'lazy') %>
-            </div>
-          <% end %>
-        </div>
-      </dialog>
-
     </div>
 
-    <h2 class="text-2xl text-secondary mt-4">Photos</h2>
-    <% if @intervention.photos.attached? %>
-      <div class="flex flex-wrap gap-8 mt-4">
-        <% @intervention.photos.each do |photo| %>
-          <div class="flex items-end gap-2">
-            <div class="avatar">
-              <div class="w-16 rounded hover:shadow-xl">
-                <%= link_to image_tag(photo, loading: 'lazy'), photo, target: "_blank"  %>
+    <div class="flex flex-wrap gap-12 mt-6">
+      <div class="flex-1">
+        <% if @intervention.trajet.present? && !@intervention.nouveau? %>
+          <div class="my-2">
+            <h2 class="text-2xl text-secondary mt-4">Trajet (AR)</h2>
+            <p><%= @intervention.trajet %></p>
+          </div>
+        <% elsif @intervention.adherent&.localisation && @intervention.nouveau? %>
+
+          <div id="map" class="w-full h-100"></div>
+
+          <p><%= @routes_info %></p>
+
+          <script src="https://maps.googleapis.com/maps/api/js?key=<%= ENV["GOOGLE_MAPS_API_KEY"] %>&libraries=geometry&callback=initMap" async defer></script>
+
+          <script>
+              async function initMap() {
+
+                  // Initialisation des bibliothèques nécessaires
+                  const { Map } = await google.maps.importLibrary("maps");
+                  const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary(
+                      "marker",
+                  );
+
+                  // Initialisation de la map
+                  map = new google.maps.Map(document.getElementById("map"), {
+                      center : <%= @map_center %>,
+                      zoom: 11,
+                      mapId: "549c4681c953f814fa1cd142",
+                  });
+
+                  var pinIntervention = new PinElement({
+                  });
+                  new google.maps.marker.AdvancedMarkerElement({
+                      map,
+                      position: <%= @localisation_arrivee %>,
+                      title: "<%= "Intervention" %>",
+                      content: pinIntervention.element
+                  });
+
+                  <% if @response %>
+                    let decodedPath;
+                    let flightPath;
+                    // Initialisation des routes
+                    <% @response["routes"].each do |route| %>
+                      decodedPath = google.maps.geometry.encoding.decodePath(
+                          "<%= j route["polyline"]["encodedPolyline"] %>"
+                      );
+
+                  flightPath = new google.maps.Polyline({
+                      path: decodedPath,
+                      geodesic: true,
+                      strokeColor: "#0f53ff",
+                      strokeOpacity: 0.5,
+                      strokeWeight: 8,
+                  });
+
+                      flightPath.setMap(map);
+
+                <% end %>
+              <% end %>
+
+              const trafficLayer = new google.maps.TrafficLayer();
+              trafficLayer.setMap(map);
+
+          }
+      </script>
+    <% end %>
+      </div>
+      <div class="flex-1">
+        <h2 class="text-2xl text-secondary mt-4">Photos</h2>
+        <% if @intervention.photos.attached? %>
+          <div class="flex flex-wrap gap-8 mt-4">
+            <% @intervention.photos.each do |photo| %>
+              <div class="flex items-end gap-2">
+                <div class="avatar">
+                  <div class="w-16 rounded hover:shadow-sm">
+                    <%= link_to image_tag(photo, loading: 'lazy'), photo, target: "_blank"  %>
+                  </div>
+                </div>
+                <%= button_to purge_intervention_path(photo_id: photo.id), method: :delete, form: { data: {'turbo-confirm': "Êtes-vous bien certain.e de vouloir supprimer définitivement cette photo ?"} }, class: 'text-base-300 hover:text-error' do %>
+                  <span class="material-symbols-outlined">
+                    delete
+                  </span>
+                <% end %>
               </div>
-            </div>
-            <%= button_to purge_intervention_path(photo_id: photo.id), method: :delete, form: { data: {'turbo-confirm': "Êtes-vous bien certain.e de vouloir supprimer définitivement cette photo ?"} }, class: 'text-base-300 hover:text-error' do %>
-              <span class="material-symbols-outlined">
-                delete
-              </span>
             <% end %>
           </div>
+        <% else %>
+          <p class="mt-4">Aucune photo n'est attachée à cette intervention.</p>
         <% end %>
       </div>
-    <% else %>
-      <p class="mt-4">Aucune photo n'est attachée à cette intervention.</p>
-    <% end %>
+    </div>
+
+    </div>
 
     <% if @intervention.repeter %>
       <h2 class="text-2xl text-secondary mt-8">Pointages</h2>

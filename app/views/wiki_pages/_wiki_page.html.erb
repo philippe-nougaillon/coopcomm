@@ -1,6 +1,20 @@
 <div id="<%= dom_id wiki_page %>">
-  <h1 class="text-2xl text-primary font-black mb-4 <%= 'hover:underline' if params[:action] == 'index' %>">
-    <%= link_to_if params[:action] == 'index', wiki_page.titre, wiki_page_path(wiki_page, catégorie: params[:catégorie]) %>
+  <h1 class="text-2xl font-bold flex items-center gap-2 <%= 'hover:underline' if params[:action] == 'index' %>">
+    <!--
+    <span class="material-symbols-outlined">
+      <% icon_name = case wiki_page.catégorie %>
+        <% when 'documentation' then 'description' %>
+        <% when 'guide' then 'help' %>
+        <% when 'fiche' then 'assignment' %>
+      <% end %>
+      <%= icon_name %>
+    </span>
+    -->
+    <% if params[:action] == 'index' %>
+      <%= link_to wiki_page.titre, wiki_page_path(wiki_page, catégorie: params[:catégorie]) %>
+    <% else %>
+      <span class="text-primary text-2xl"><%= page_title!(wiki_page.titre) %></span>
+    <% end %>
   </h1>
 
   <% if action_name == "show" %>
@@ -8,9 +22,9 @@
       <%= wiki_page.contenu %>
     </p>
   <% else %>
-    <div class="max-h-24 overflow-y-hidden"><%= wiki_page.contenu %></div>
+    <div class="max-h-24 overflow-y-hidden"><%= wiki_page.contenu %>...</div>
     <br>
-    <%= link_to 'Lire l\'article', wiki_page, class: 'rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium' %>
+    <%= link_to 'Lire l\'article', wiki_page, class: 'btn' %>
     <% if wiki_page.document.attached? %>
       <% if wiki_page.document.representable? %>
         <%= link_to 'Voir le document', wiki_page.document, class: "btn btn-primary" %>

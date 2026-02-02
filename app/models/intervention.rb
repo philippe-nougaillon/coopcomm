@@ -28,6 +28,7 @@ class Intervention < ApplicationRecord
   before_validation -> { combine_datetime(:fin) }
   before_validation :check_absence
   
+  validate :schedules_must_make_sense
   validate :tools_must_be_available
   validate :agents_must_be_available
 
@@ -35,14 +36,11 @@ class Intervention < ApplicationRecord
 
   scope :ordered, -> { order(updated_at: :desc) }
 
-  after_create_commit -> { broadcast_prepend_to "interventions_#{self.organisation.id}", 
-                                              partial: "interventions/intervention", 
-                                              locals: { intervention: self, from_turbo_stream: true }, 
-                                              target: "interventions" }
+  after_create_commit :broadcast_to_authorized_viewers
 
   # WORKFLOW
   NOUVEAU   = 'nouveau'
-  ATTENTE   = 'attente'
+  POINTAGE_ACTIVE   = 'pointage activé'
   # ACCEPTE   = 'accepté'
   # EN_COURS  = 'en cours'
   TERMINE   = 'terminé'
@@ -55,7 +53,7 @@ class Intervention < ApplicationRecord
       # event :accepter, transitions_to: ACCEPTE
       event :terminer, transitions_to: TERMINE
     end
-    state ATTENTE,  meta: {style: 'badge-warning text-white'}
+    state POINTAGE_ACTIVE,  meta: {style: 'badge-warning text-white'}
 
     # state ACCEPTE, meta: {style: 'badge-primary text-white'} do
     #   event :en_cours, transitions_to: EN_COURS
@@ -123,6 +121,19 @@ class Intervention < ApplicationRecord
     end
   end
 
+  def self.by_role_for_home(user)
+    case user.rôle
+    when 'manager'
+      user.organisation.interventions.where.not(workflow_state: ["validé", "refusé", "archivé"]).ordered
+    when 'adhérent'
+      user.interventions_adherent.where(workflow_state: ["terminé"]).ordered
+    when 'agent'
+      user.interventions.where(workflow_state: ["nouveau"]).ordered
+    when 'équipe'
+      user.organisation.interventions.where(team_id: user.id, workflow_state: ["nouveau"]).ordered
+    end
+  end
+
   def check_absence
     if self.agents.any?
       absence_ids = self.agents.flat_map do |agent|
@@ -154,8 +165,6 @@ class Intervention < ApplicationRecord
 
   def self.get_unavailable_agents_with_absences(agent_ids, début_prévue, fin_prévue)
     conflicting_agents = []
-
-    #TODO: Chercher les agents dont leurs absences sont en chevauchement avec les dates
 
     agent_ids.each do |agent_id|
       conflicting_agents += User
@@ -352,6 +361,40 @@ class Intervention < ApplicationRecord
     Time.at(self.fin - self.début).utc.strftime("%Hh %Mmin")
   end
 
+  def self.dernière_en_cours(interventions)
+    now = DateTime.current
+
+    interventions.where(
+      "(début_prévue IS NOT NULL OR fin_prévue IS NOT NULL) AND
+       (
+         (début_prévue IS NULL AND fin_prévue >= :now) OR
+         (fin_prévue IS NULL AND début_prévue <= :now) OR
+         (début_prévue <= :now AND fin_prévue >= :now)
+       )",
+      now: now
+    ).last
+  end
+
+  def get_title_for_cases
+    txt = "#{self.description}"
+    txt += ", Equipe : #{self.team.nom}" if self.team
+    txt
+  end
+
+  def passed
+    !self.nouveau? || (self.fin && (self.fin < DateTime.now))
+
+  end
+  
+  def schedules_must_make_sense
+    if self.début_prévue && self.fin_prévue && (self.début_prévue > self.fin_prévue)
+      errors.add(:erreur, ": La fin prévue de l'intervention ne peut pas être avant son commencement")
+    end
+    if self.début && self.fin && (self.début > self.fin)
+      errors.add(:erreur, ": La fin de l'intervention ne peut pas être avant son commencement")
+    end
+  end
+  
   private
 
   def slug_candidates
@@ -365,6 +408,29 @@ class Intervention < ApplicationRecord
     hour = send("#{field}_hour").presence || datetime.hour
     minute = send("#{field}_minute").presence || datetime.min
     send("#{field}=", datetime.change(hour: hour.to_i, min: minute.to_i))
+  end
+
+  def broadcast_to_authorized_viewers
+    broadcast_prepend_to "interventions_organisation_#{organisation.id}",
+                          partial: "interventions/intervention",
+                          locals: { intervention: self, from_turbo_stream: true },
+                          target: "interventions"
+    
+  
+    authorized_users_ids.each do |user_id|
+      broadcast_prepend_to "interventions_user_#{user_id}",
+                            partial: "interventions/intervention",
+                            locals: { intervention: self, from_turbo_stream: true },
+                            target: "interventions"
+      
+    end
+  end
+
+  def authorized_users_ids
+    user_ids = self.agents.pluck(:id)
+    user_ids << self.team.try(:id)
+    user_ids.compact!
+    user_ids
   end
 
 end

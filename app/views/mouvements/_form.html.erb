@@ -1,0 +1,31 @@
+<%= form_with(model: mouvement, class: "flex flex-col gap-2") do |form| %>
+  <% if mouvement.errors.any? %>
+    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
+      <h2 class="font-black!">
+        <%= pluralize(mouvement.errors.count, "erreur") %> empêche(nt) ce mouvement d'être sauvegardé :
+      </h2>
+
+      <ul class="list-disc list-inside">
+        <% mouvement.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form.text_field :tool_id, value: params[:tool_id] %>
+
+  <div class="w-full">
+    <%= form.label :état %>
+    <%= form.select :état, options_for_select(Mouvement.états.keys, mouvement.état), {include_blank: true}, class: 'select select-sm w-full', required: true %>
+  </div>
+
+  <div class="w-full">
+    <%= form.label :date %>
+    <%= form.text_field :date, type: "datetime-local", class: 'input input-bordered input-sm w-full', required: true%>
+  </div>
+
+  <div class="inline">
+    <%= form.submit "Enregistrer", class: "btn btn-primary mt-4" %>
+  </div>
+<% end %>

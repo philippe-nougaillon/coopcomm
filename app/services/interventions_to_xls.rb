@@ -1,5 +1,4 @@
 class InterventionsToXls < ApplicationService
-  require 'spreadsheet'
   attr_reader :interventions
   private :interventions
 
@@ -8,21 +7,12 @@ class InterventionsToXls < ApplicationService
   end
 
   def call
-    Spreadsheet.client_encoding = 'UTF-8'
-  
-    book = Spreadsheet::Workbook.new
-    sheet = book.create_worksheet name: @interventions.name
-    bold = Spreadsheet::Format.new :weight => :bold, :size => 11
-
     headers = %w{ID Description Mots_clés Statut Adhérent Équipe Agent_1 Agent_2 Agent_3 Agent_4 Outil_1 Outil_2 Outil_3 Outil_4 Début Fin Pause(h) Temps_passé Commentaires Évaluation Avis Créé_le Modifiée_le}
 
-    sheet.row(0).concat headers
-    sheet.row(0).default_format = bold
-    
-    index = 1
+    data = []
 
     @interventions.each do |intervention|
-      fields_to_export = [
+      data << [
         intervention.id,
         intervention.description,
         intervention.tag_list.join(', '),
@@ -45,16 +35,15 @@ class InterventionsToXls < ApplicationService
         intervention.note,
         intervention.avis,
         I18n.l(intervention.created_at),
-        I18n.l(intervention.updated_at),
+        I18n.l(intervention.updated_at)
       ]
-      sheet.row(index).replace fields_to_export
-      index += 1
     end
 
-    file_contents = StringIO.new
-    book.write file_contents # => Now file_contents contains the rendered file output
-    return file_contents.string.force_encoding('binary')
-
+    ExportToXls.new
+              .add_worksheet("Liste des interventions")
+              .add_headers(headers)
+              .setup_data(data)
+              .build_file
   end
 
 end

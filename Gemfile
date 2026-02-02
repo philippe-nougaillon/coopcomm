@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-ruby "3.4.3"
+ruby "3.4.5"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.0"
@@ -24,13 +24,11 @@ gem "turbo-rails"
 gem "stimulus-rails"
 
 # Use Tailwind CSS [https://github.com/rails/tailwindcss-rails]
-gem "tailwindcss-rails", "~> 3.3.1"
+gem "tailwindcss-rails", "~> 4.1"
 
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 
-# Use Redis adapter to run Action Cable in production
-gem "redis", ">= 4.0.1"
 
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 # gem "kredis"
@@ -71,6 +69,7 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+  gem 'simplecov', require: false
 end
 
 gem "devise", "~> 4.9"
@@ -86,7 +85,7 @@ gem "audited", "~> 5.6"
 
 gem "mailgun-ruby", "~> 1.2"
 
-gem "exception_notification", "~> 4.5"
+gem 'exception_notification', github: "kmcphillips/exception_notification", branch: "main"
 
 gem "spreadsheet", "~> 1.3"
 
@@ -104,6 +103,7 @@ gem "aws-sdk-s3", require: false
 gem "langchainrb", "~> 0.13.4"
 
 gem "ruby-openai", "~> 7.1"
+gem "mistral-ai", "~> 1.2"
 
 gem "csv", "~> 3.3"
 gem "tiktoken_ruby", "~> 0.0.9"
@@ -132,3 +132,23 @@ gem "discard", "~> 1.4"
 gem "rack-cors", "~> 2.0"
 
 gem "simple_calendar", "~> 3.1"
+
+gem "recaptcha", "~> 5.19"
+
+gem "sitemap_generator", "~> 6.3"
+
+gem "meta-tags", "~> 2.22"
+
+gem "page_title_helper", "~> 9.1"
+
+gem "solid_cache", "~> 1.0"
+
+gem "solid_cable", "~> 3.0"
+
+gem "seed_dump", "~> 3.3"
+
+gem "markdown-rails", "~> 2.2"
+
+gem "redcarpet", "~> 3.6"
+
+gem "fetch-api", "~> 0.6.0"

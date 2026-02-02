@@ -153,7 +153,7 @@ export default class extends Controller {
       return await response.json()
     } catch (err) {
       console.error("Erreur réseau :", err)
-      alert("Une erreur réseau est survenue. Veuillez réessayer.")
+      // alert("Une erreur réseau est survenue. Veuillez réessayer.")
     }
   }
 

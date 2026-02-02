@@ -1,31 +1,39 @@
 class SupportMailbox < ApplicationMailbox
 
   def process
-    organisation_id = nil
-    from_email = mail.from_address.to_s.split('<').last.split('>').first
-    # puts "email : #{from_email}"
-    # puts 'avant check adhérent/manager'
-    # Chercher si l'envoyeur est un adhérent ou un manager
-    if user = User.where(rôle: [0,2]).find_by(email: from_email)
-      # puts 'pendant check adhérent/manager'
-      organisation_id = user.organisation_id
-      # puts "organisation_id : #{organisation_id}"
+    Rails.logger.debug "SupportMailbox#process called with: #{mail.from_address&.address}"
 
-      if organisation_id
-        organisation = Organisation.find(organisation_id)
-        # puts "organisation : #{organisation.inspect}"
-        intervention = organisation.interventions.new( 
-                        adherent_id: user.id, 
-                        user_id: user.id,
+    # Chercher si l'envoyeur est un adhérent ou un manager
+    if user = User.where(rôle: [0,2]).find_by(email: mail.from_address&.address)
+
+      if organisation = Organisation.find_by(id: user.organisation_id)
+        organisation.interventions.create( 
+                        adherent_id: (user.id if user.adhérent?),
                         description: "[MAIL] #{mail.subject}", 
-                        commentaires: "De #{mail.from_address} : #{mail.body}"
+                        commentaires: "De #{user.nom_prenom_role} : #{safe_mail_body(mail)}"
                       )
-        # puts "#{intervention.inspect}"
-        # puts "#{intervention.valid?}"
-        intervention.save
-        # puts 'après création intervention'
       end
+
     end
+  end
+
+  private
+
+  def safe_mail_body(mail)
+    body = mail.text_part&.decoded || mail.html_part&.decoded || mail.body.decoded
+  
+    # Si le body est nil ou pas une String, on renvoie une chaîne vide
+    return "" unless body.is_a?(String)
+  
+    # Tente de forcer l'encodage en UTF-8 si ce n’est pas déjà le cas
+    body = body.force_encoding("UTF-8") if body.encoding.name != "UTF-8"
+  
+    # Si l'encodage est foireux, on nettoie à la hache 💥
+    unless body.valid_encoding?
+      body = body.encode("UTF-8", invalid: :replace, undef: :replace, replace: "�")
+    end
+  
+    body
   end
 
 end

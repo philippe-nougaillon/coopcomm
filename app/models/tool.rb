@@ -8,12 +8,18 @@ class Tool < ApplicationRecord
   has_many :tool_interventions, dependent: :destroy
   has_many :interventions, through: :tool_interventions
   has_many :documents, dependent: :destroy
+  has_many :mouvements, dependent: :destroy
   
+  has_one_attached :photo
+
   accepts_nested_attributes_for :documents,
                                 allow_destroy:true,
                                 reject_if: lambda {|attributes| attributes['fichier'].blank?}
 
+  validates :name, presence: true
   validates_uniqueness_of :name, scope: :organisation_id
+
+  after_create :create_mouvement
   
   scope :ordered, -> { order(:name, :description) }
   
@@ -22,25 +28,27 @@ class Tool < ApplicationRecord
   end
   
   def disponible?(quand)
-    self.interventions.where(":quand BETWEEN interventions.début AND interventions.fin", quand:).empty?
-  end
-
-  def current_intervention
-    self.interventions.where("NOW() BETWEEN interventions.début AND interventions.fin").first
+    self.interventions.where(":quand BETWEEN interventions.début_prévue AND interventions.fin_prévue", quand:).empty?
   end
 
   def self.indisponibles_ids(organisation_id, quand)
+    quand = Time.zone.parse(quand)
     Intervention.joins(:tools)
                 .where(organisation_id:)
-                .where(":quand BETWEEN interventions.début AND interventions.fin", quand:)
+                .where(":quand BETWEEN interventions.début_prévue AND interventions.fin_prévue", quand:)
                 .pluck('tools.id')
   end
 
   def intervention_at(quand)
-    self.interventions.where(":quand BETWEEN interventions.début AND interventions.fin", quand:).first
+    quand = Time.zone.parse(quand)
+    self.interventions.where(":quand BETWEEN interventions.début_prévue AND interventions.fin_prévue", quand:).first
   end
 
   private
+
+  def create_mouvement
+    self.mouvements.create(état: 0, date: DateTime.now)
+  end
 
   def slug_candidates
     [SecureRandom.uuid]

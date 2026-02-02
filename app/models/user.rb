@@ -2,24 +2,28 @@ class User < ApplicationRecord
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
 
-  audited except: :notifications_last_seen_at
+  include Discard::Model
 
+  audited except: :notifications_last_seen_at
 
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :rememberable, :timeoutable 
   devise :database_authenticatable,
          :recoverable,
          :validatable,
-         :trackable
+         :trackable,
+         :lockable
         #  :registerable,
         #  :omniauthable,
         #  omniauth_providers: [:google_oauth2]
+
+  has_one_attached :profile_picture
 
   belongs_to :organisation, optional: true
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
   has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention', dependent: :destroy
   has_many :interventions, through: :agent_interventions
-  has_many :notifications, dependent: :destroy
+  has_many :notifications, dependent: :destroy, foreign_key: :to_id, class_name: "Notification"
   has_many :absences, dependent: :destroy
   accepts_nested_attributes_for :absences, 
                               allow_destroy:true, 
@@ -44,6 +48,15 @@ class User < ApplicationRecord
     Ménage: 5
   }
 
+  validates :nom, :email, presence: true
+  validates_uniqueness_of :email
+  validates :localisation, presence: true, if: -> { rôle == "adhérent" }
+  validates :localisation, format: {
+    with: /\A\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*\z/,
+    message: "doit être dans ce format : 123.123, 432.120398"
+  }, allow_blank: true
+
+  default_scope -> { kept }
   scope :ordered, -> { order(:nom) }
 
   def self.grouped_agents(users)
@@ -62,12 +75,16 @@ class User < ApplicationRecord
     "#{self.nom_prénom} (#{self.rôle.upcase})"
   end
 
+  def initiales
+    "#{self.nom.first.upcase}#{self.prénom.first.upcase}"
+  end
+
   def super_admin?
-    %w[philippe.nougaillon@aikku.eu pierre-emmanuel.dacquet@aikku.eu sebastien.pourchaire@aikku.eu p-edacquet@hotmail.fr].include?(self.email)
+    %w[philippe.nougaillon@aikku.eu pierre-emmanuel.dacquet@aikku.eu sebastien.pourchaire@aikku.eu p-edacquet@hotmail.fr alexandre.meunier@aikku.eu].include?(self.email)
   end
 
   def moyenne
-    notes_agents  = self.interventions.where.not(note: 0)
+    notes_agents  = self.interventions.where(repeter: false)
     count = notes_agents.count
 
     unless count.zero?
@@ -81,14 +98,16 @@ class User < ApplicationRecord
     rating_per_star = {}
     sum = 0
     (1..5).each do |i|
-      rating_per_star[i] = self.interventions.where(note: i).count
+      rating_per_star[i] = self.interventions.where(note: i, repeter: false).count
       sum += rating_per_star[i]
     end
+    # Si sum est à 0, sum devient 1 pour éviter une division par 0
+    sum = sum == 0 ? 1 : sum
     return (rating_per_star[rating].to_f / sum) * 100
   end
 
   def total_rating
-    self.interventions.where.not(note: 0).count
+    self.interventions.where(repeter: false).count
   end
 
   def self.from_omniauth(auth)
@@ -153,9 +172,29 @@ class User < ApplicationRecord
 
   def lng_lat
     # Inverse les variables pour correspondre aux valeurs de google
-    if self.memo
-      self.memo.gsub(/\[(.*?), (.*?)\]/) { "[#{$2}, #{$1}]" }
+    self.localisation.gsub(/(.*?), (.*)/) { "[#{$2}, #{$1}]" }
+  end
+
+  def localisation_to_lat_lng_object
+    # Sépare et nettoie la chaine localisation en latitude, longitude pour créer un objet contenant les coordonnées.
+    lat, lng = self.localisation.split(',').map(&:strip).map(&:to_f)
+    { lat: lat, lng: lng }
+  end
+
+  def nb_bad_words
+    nb_bad_words = 0
+    Notification.where(from_id: self.id).each do |notification|
+      nb_bad_words += notification.nb_bad_words
     end
+    nb_bad_words
+  end
+
+  def self.find_by_whatsapp_phone(phone)
+    User.find_by(téléphone: phone.gsub("whatsapp:", ''))
+  end
+
+  def intervention_en_cours
+    Intervention.dernière_en_cours(self.interventions)
   end
 
   private

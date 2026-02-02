@@ -2,16 +2,16 @@
   <%# form.hidden_field :version, value: (Document.where('category = ?', form.object.category).maximum(:version) || 0)+1 %>
   <div class="form-control">
     <%= form.label :category, 'Type' %>
-    <%= form.select :category, ['Carte grise', 'Certificat d\'assurance'], {}, class: 'select select-bordered select-sm w-full' %>
+    <%= form.select :category, ['Carte grise', 'Certificat d\'assurance'], {}, class: 'select select-sm w-full' %>
   </div>
   <div class="w-full">
-      <%= form.file_field :document, accept: 'image/png,image/jpeg,.pdf', class: 'input input-bordered input-sm w-full' %>
+      <%= form.file_field :document, accept: 'image/png,image/jpeg,.pdf,image/avif,image/webp', class: 'file-input file-input-sm w-full' %>
   </div>
   <div class="flex w-full justify-between mb-2">
     <div class="sm:w-fit px-4">
       <div class="w-full">
         <%= form.label :statut %>
-        <%= form.select :workflow_state, Document.workflow_spec.states.keys.to_a, {}, class: 'input input-bordered input-sm w-full' %>
+        <%= form.select :workflow_state, Document.workflow_spec.states.keys.to_a, {}, class: 'input input-sm w-full' %>
       </div>
     </div>
   </div>

@@ -6,4 +6,6 @@ mail_log:
   message_id: 1234
   organisation: mairie_paris
   etat: false
+  channel: 0
+  user_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>
   slug: 0fac8165-f8ef-405e-8058-2c4adf46fa3a

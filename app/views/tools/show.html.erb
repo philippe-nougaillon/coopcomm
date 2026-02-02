@@ -1,91 +1,79 @@
 <div class="mx-auto lg:w-2/3 w-full">
   <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
-    <h1 class="text-3xl sm:text-4xl text-primary font-bold">
-      <% if @tool.icon_name.present? %>
-        <span class="material-symbols-outlined text-primary">
-          <%= @tool.icon_name %>
-        </span>
-      <% end %>
-      <%= @tool.name %>
-      <% if @tool.disponible?(DateTime.now) %>
-        <span class="material-symbols-outlined text-success">
-          check_circle
-        </span>
-      <% end %>
+    <h1 class="text-2xl sm:text-4xl text-primary font-bold">
+      <%= page_title!(@tool.name) %>
     </h1>
+
+    <%= link_to "Ajouter une intervention avec ce matériel", new_intervention_path(tool_ids: @tool.id), class: 'btn btn-sm sm:btn-lg btn-outline btn-success hover:text-white!' %>
   </div>
 
-  <div class="flex flex-wrap gap-4">
-    <p class="my-2">
-      <strong class="block text-slate-400 mb-1">Modèle</strong>
-      <b><%= @tool.modèle %></b>
-    </p>
-    <p class="my-2">
-      <strong class="block text-slate-400 mb-1">Marque</strong>
-      <b><%= @tool.marque %></b>
-    </p>
-    <p class="my-2">
-      <strong class="block text-slate-400 mb-1">Description</strong>
-      <b><%= @tool.description %></b>
-    </p>
-  
-  </div>
-
-  <h2 class="text-2xl text-secondary mt-8 mb-4">
-    Documents
-  </h2>
-  <div class="mx-auto w-full">
-    <div class="overflow-x-auto">
-      <table class="table table-xs shadow">
-        <thead class="bg-slate-100">
-          <th>Type</th>
-          <th>Fichier</th>
-          <th>État</th>
-          <th>Version</th>
-          <th>MàJ il y a</th>
-          <th></th>
-        </thead>
-        <tbody>
-          <% if @tool.documents.any? %>
-            <%= render @tool.documents %>
-          <% else %>
-            <tr>
-              <td colspan=6>
-                <i>L'outil n'a pas encore de document</i>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
+  <div class="flex flex-wrap gap-8 mt-8">
+    <% if @tool.photo.present? %>
+      <img src="<%= url_for(@tool.photo) %>" class="h-60">  
+    <% elsif @tool.icon_name.present? %>
+      <span class="material-symbols-outlined text-warning !text-6xl">
+        <%= @tool.icon_name %>
+      </span>
+    <% end %>
+    <div class="flex flex-col flex-wrap">
+      <p class="my-2">
+        <strong class="block text-slate-400">État</strong>
+        <% if @tool.mouvements.any? %>
+          <p class="font-bold badge badge-sm badge-<%= @tool.mouvements.last.style %> mb-2">
+            <%= @tool.mouvements.last.état.humanize %>
+          </p>
+        <% end %>
+      </p>
+      <p class="my-2">
+        <strong class="block text-slate-400 mb-1">Modèle</strong>
+        <b><%= @tool.modèle %></b>
+      </p>
+      <p class="my-2">
+        <strong class="block text-slate-400 mb-1">Marque</strong>
+        <b><%= @tool.marque %></b>
+      </p>
+      <p class="my-2">
+        <strong class="block text-slate-400 mb-1">Description</strong>
+        <b><%= @tool.description %></b>
+      </p>
     </div>
   </div>
 
-
   <div class="flex flex-wrap gap-2 mt-8">
-    <%= link_to "Modifier", edit_tool_path(@tool), class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
-    <%= button_to tool_path(@tool), method: :delete, id: "supprimer_outil", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, class: "rounded-lg py-3 px-5 bg-gray-100 font-medium", 'data-testid': "Supprimer l'outil", disabled: @tool.interventions.any? do %>
-      <span class="material-symbols-outlined">
-        delete
-      </span>
+    <% if policy(@tool).edit? %>
+      <%= link_to "Modifier", edit_tool_path(@tool), class: "btn" %>
     <% end %>
-    <%= link_to "Retour", tools_path, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
+    <% if policy(@tool).destroy? %>
+      <% if @tool.interventions.any? %>
+        <div class="btn cursor-not-allowed" title="Suppression impossible, l'outil est utilisé dans des interventions">
+          <span class="material-symbols-outlined text-gray-500">
+            delete
+          </span>
+        </div>
+      <% else %>
+        <%= button_to tool_path(@tool), method: :delete, id: "supprimer_outil", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, class: "btn", 'data-testid': "Supprimer l'outil" do %>
+          <span class="material-symbols-outlined">
+            delete
+          </span>
+        <% end %>
+      <% end %>
+    <% end %>
+    <%= link_to "Retour", tools_path, class: "btn" %>
   </div>
 
-  <h2 class="flex items-center text-2xl text-secondary mt-8 mb-4 gap-2">
-    Utilisations
-    <%= link_to '+', new_intervention_path(tool_ids: @tool.id), class: 'btn btn-sm btn-outline btn-success hover:!text-white' %>
+  <h2 class="text-2xl text-secondary mt-12">
+    Disponibilités
   </h2>
 
-  <%= form_tag tool_path(@tool), method: :get, class:'mb-2' do %>
+  <%= form_tag tool_path(@tool), method: :get, class:'mb-2 mt-4' do %>
     <div class="flex gap-2">
-      <span>Vue :</span>
-      <label class="cursor-pointer flex items-center gap-1">
-        <%= radio_button_tag :vue, 'liste', params[:vue] == 'liste', { id: 'vue_liste', class: 'radio radio-accent radio-sm', onchange: "this.form.submit();" } %>
-        Liste
-      </label>
       <label class="cursor-pointer flex items-center gap-1">
         <%= radio_button_tag :vue, 'calendrier', params[:vue] == 'calendrier', { id: 'vue_calendrier', class: 'radio radio-accent radio-sm', onchange: "this.form.submit();" } %>
         Calendrier
+      </label>
+      <label class="cursor-pointer flex items-center gap-1">
+        <%= radio_button_tag :vue, 'liste', params[:vue] == 'liste', { id: 'vue_liste', class: 'radio radio-accent radio-sm', onchange: "this.form.submit();" } %>
+        Liste des interventions
       </label>
     </div>
   <% end %>
@@ -94,7 +82,7 @@
   <% when 'calendrier' %>
     <%= month_calendar do |date| %>
       <div class="flex justify-center">
-        <p class="<%= date == Date.today ? 'badge badge-info' : '' %>">
+        <p class="px-2.5 py-1 mb-1 <%= date == Date.today ? 'bg-info rounded-full text-white font-black' : '' %>">
           <%= date.day %>
         </p>
       </div>
@@ -105,24 +93,36 @@
       
       <div class="text-center">
         <% if interventions_matin.any? %>
-          <span style="background-color: red; padding-left: 15px" title="<%= interventions_matin.pluck(:description) %>"></span>
+          <% if interventions_matin.one? %>
+            <%= link_to edit_intervention_path(interventions_matin.first), style: 'margin-right: 2px;' do %>
+              <span class="border-1" style="padding-left: 15px; background-color: <%= interventions_matin.first.team ? "#{interventions_matin.first.team.color}" : "red" %>" title="<%= interventions_matin.map{|intervention| intervention.get_title_for_cases }.join(" | ") %>"></span>
+            <% end %>
+          <% else %>
+            <span class="border-1" style="padding-left: 15px; margin-right: 2px; background-color: <%= interventions_matin.first.team ? "#{interventions_matin.first.team.color}" : "red" %>" title="<%= interventions_matin.map{|intervention| intervention.get_title_for_cases }.join(" | ") %>"></span>
+          <% end %>
         <% else %>
-          <%= link_to new_intervention_path(tool_ids: @tool.id, début_prévue: date, début_prévue_hour: 8, fin_prévue: date, fin_prévue_hour: 13) do %>
-            <span style="background-color: lightgreen; padding-left: 15px;"></span>
+          <%= link_to new_intervention_path(tool_ids: @tool.id, début_prévue: date, début_prévue_hour: 8, fin_prévue: date, fin_prévue_hour: 13), title: "Créer une intervention le #{date.day} au matin", style: 'margin-right: 2px;' do %>
+            <span class="border-1 hover:bg-green-500" style="padding-left: 15px;"></span>
           <% end %>
         <% end %>
 
         <% if interventions_soir.any? %>
-          <span style="background-color: red; padding-left: 15px" title="<%= interventions_soir.pluck(:description) %>"></span>
+          <% if interventions_soir.one? %>
+            <%= link_to edit_intervention_path(interventions_soir.first), style: 'margin-left: 2px;' do %>
+              <span class="border-1" style="padding-left: 15px; background-color: <%= interventions_soir.first.team ? "#{interventions_soir.first.team.color}" : "red" %>" title="<%= interventions_soir.map{|intervention| intervention.get_title_for_cases }.join(" | ") %>"></span>
+            <% end %>
+          <% else %>
+            <span class="border-1" style="padding-left: 15px; margin-left: 2px; background-color: <%= interventions_soir.first.team ? "#{interventions_soir.first.team.color}" : "red" %>" title="<%= interventions_soir.map{|intervention| intervention.get_title_for_cases }.join(" | ") %>"></span>
+          <% end %>
         <% else %>
-          <%= link_to new_intervention_path(tool_ids: @tool.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 5, fin_prévue: date, fin_prévue_hour: 18) do %>
-            <span style="background-color: lightgreen; padding-left: 15px;"></span>
+          <%= link_to new_intervention_path(tool_ids: @tool.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 5, fin_prévue: date, fin_prévue_hour: 18), title: "Créer une intervention le #{date.day} après-midi", style: 'margin-left: 2px;' do %>
+            <span class="border-1 hover:bg-green-500" style="padding-left: 15px;"></span>
           <% end %>
         <% end %>
       </div>
     <% end %>
   <% when 'liste' %>
-    <div class="overflow-x-auto mt-4">
+    <div class="overflow-x-auto mt-8">
       <table class="table table-sm">
         <thead class="bg-slate-100">
           <tr>
@@ -149,4 +149,62 @@
       </table>
     </div>
   <% end %>
+
+  <h2 class="text-2xl text-secondary mt-8 mb-4">
+    Documents
+  </h2>
+  <div class="mx-auto w-full">
+    <div class="overflow-x-auto">
+      <table class="table table-xs shadow">
+        <thead class="bg-slate-100">
+          <th>Type</th>
+          <th>Fichier</th>
+          <th>État</th>
+          <th>Version</th>
+          <th>MàJ il y a</th>
+          <th></th>
+        </thead>
+        <tbody>
+          <% if @tool.documents.any? %>
+            <%= render @tool.documents %>
+          <% else %>
+            <tr>
+              <td colspan=6>
+                <i>Ce matériel n'a pas encore de document</i>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
+    <h2 class="text-2xl text-secondary">
+      Mouvements
+    </h2>
+    <%= link_to "Ajouter un mouvement", new_mouvement_path(tool_id: @tool.id), class: 'btn btn-sm sm:btn-lg btn-outline btn-success hover:text-white!' %>
+  </div>
+  <div class="mx-auto w-full">
+    <div class="overflow-x-auto">
+      <table class="table table-xs shadow">
+        <thead class="bg-slate-100">
+          <th>État</th>
+          <th>Intervention</th>
+          <th>MàJ il y a</th>
+        </thead>
+        <tbody>
+          <% if @tool.mouvements.any? %>
+            <%= render @tool.mouvements.ordered %>
+          <% else %>
+            <tr>
+              <td colspan=3>
+                <i>Ce matériel n'a pas encore de mouvement</i>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>

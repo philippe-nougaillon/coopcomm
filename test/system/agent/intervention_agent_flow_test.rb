@@ -19,7 +19,10 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
   end
 
   test "Créer intervention" do
-    click_link "ajouter_une_intervention"
+
+    # Pour cliquer sur le bouton d'ajout d'une intervention en fonction du format de l'écran
+    click_sur_boutton_ajouter("intervention")
+    
     fill_in "Description", with: "Tailler les arbres"
     # find('div.ss-placeholder', text: "Choisissez un ou plusieurs mots clés").click
     # page.driver.browser.switch_to.active_element.send_keys('Coupure électricité', :enter, 'Réparation', :enter)

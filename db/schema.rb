@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_09_095223) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_14_132414) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -134,6 +134,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_09_095223) do
     t.string "template_slug"
     t.datetime "début_prévue"
     t.datetime "fin_prévue"
+    t.string "meteo"
+    t.string "trajet"
+    t.decimal "co2", default: "0.0"
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
     t.index ["organisation_id"], name: "index_interventions_on_organisation_id"
     t.index ["team_id"], name: "index_interventions_on_team_id"
@@ -155,18 +158,60 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_09_095223) do
     t.index ["organisation_id"], name: "index_mail_logs_on_organisation_id"
   end
 
-  create_table "notifications", force: :cascade do |t|
-    t.text "message"
-    t.bigint "user_id", null: false
+  create_table "mouvements", force: :cascade do |t|
+    t.bigint "tool_id", null: false
+    t.integer "état"
+    t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_notifications_on_user_id"
+    t.bigint "intervention_id"
+    t.datetime "date"
+    t.index ["intervention_id"], name: "index_mouvements_on_intervention_id"
+    t.index ["tool_id"], name: "index_mouvements_on_tool_id"
+  end
+
+  create_table "newsletters", force: :cascade do |t|
+    t.string "email"
+    t.string "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.text "message"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "from_id"
+    t.bigint "to_id"
+    t.index ["from_id"], name: "index_notifications_on_from_id"
+    t.index ["to_id"], name: "index_notifications_on_to_id"
   end
 
   create_table "organisations", force: :cascade do |t|
     t.string "nom"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "solid_cable_messages", force: :cascade do |t|
+    t.binary "channel", null: false
+    t.binary "payload", null: false
+    t.datetime "created_at", null: false
+    t.bigint "channel_hash", null: false
+    t.index ["channel"], name: "index_solid_cable_messages_on_channel"
+    t.index ["channel_hash"], name: "index_solid_cable_messages_on_channel_hash"
+    t.index ["created_at"], name: "index_solid_cable_messages_on_created_at"
+  end
+
+  create_table "solid_cache_entries", force: :cascade do |t|
+    t.binary "key", null: false
+    t.binary "value", null: false
+    t.datetime "created_at", null: false
+    t.bigint "key_hash", null: false
+    t.integer "byte_size", null: false
+    t.index ["byte_size"], name: "index_solid_cache_entries_on_byte_size"
+    t.index ["key_hash", "byte_size"], name: "index_solid_cache_entries_on_key_hash_and_byte_size"
+    t.index ["key_hash"], name: "index_solid_cache_entries_on_key_hash", unique: true
   end
 
   create_table "solid_queue_blocked_executions", force: :cascade do |t|
@@ -348,9 +393,21 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_09_095223) do
     t.string "slug"
     t.string "téléphone"
     t.string "memo"
+    t.string "localisation"
+    t.datetime "discarded_at"
+    t.integer "failed_attempts", default: 0, null: false
+    t.datetime "locked_at"
+    t.string "unlock_token"
+    t.string "otp_secret"
+    t.integer "consumed_timestep"
+    t.boolean "otp_required_for_login"
+    t.integer "otp_method"
+    t.string "color"
+    t.index ["discarded_at"], name: "index_users_on_discarded_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["organisation_id"], name: "index_users_on_organisation_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
 
   create_table "wiki_pages", force: :cascade do |t|
@@ -378,7 +435,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_09_095223) do
   add_foreign_key "interventions", "organisations"
   add_foreign_key "interventions", "users", column: "team_id"
   add_foreign_key "mail_logs", "organisations"
-  add_foreign_key "notifications", "users"
+  add_foreign_key "mouvements", "interventions"
+  add_foreign_key "mouvements", "tools"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

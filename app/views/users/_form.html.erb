@@ -1,7 +1,7 @@
-<%= form_with(model: user, class: "contents", html: { class: 'flex flex-col gap-2' }, data: { controller: 'nested-form', nested_form_wrapper_selector_value: '.nested-form-wrapper' }) do |form| %>
+<%= form_with(model: user, class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-2' }, data: { controller: 'nested-form', nested_form_wrapper_selector_value: '.nested-form-wrapper' }) do |form| %>
   <% if user.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
-      <h2 class="!font-black">
+      <h2 class="font-black!">
         <%= pluralize(user.errors.count, "erreur") %> empêche(nt) cet utilisateur d'être sauvegardé :
       </h2>
 
@@ -13,60 +13,80 @@
     </div>
   <% end %>
 
-  <div class="w-full">
-    <%= form.label :nom, style: "display: block" %>
-    <%= form.text_field :nom, class: 'input input-bordered input-sm w-full', required: true %>
-  </div>
+  <div data-controller="toggle-role-info">
+    <div class="flex flex-wrap md:flex-nowrap gap-2 w-full mb-2">
+      <div>
+        <%= form.label :rôle, "Rôle" %>
+        <span data-action="change->toggle-role-info#change">
+          <%= form.select :rôle, options_for_select(User.rôles.keys, user.rôle), {}, class: 'select select-sm w-full', data: { 'toggle-role-info-target': 'role' } %>
+        </span>
+      </div>
 
-  <div class="w-full">
-    <%= form.label :prénom, style: "display: block" %>
-    <%= form.text_field :prénom, class: 'input input-bordered input-sm w-full', required: true %>
-  </div>
+      <div data-toggle-role-info-target='couleur' class="flex-1">
+        <%= form.label :color, "Couleur" %>
+        <%= form.color_field :color, class: 'input input-bordered input-sm w-full' %>
+      </div>
 
-  <div data-controller="toggle-agent-service" class="flex flex-wrap md:flex-nowrap gap-4 w-full">
-    <div>
-      <%= form.label :rôle, "Rôle" %>
-      <span data-action="change->toggle-agent-service#change">
-        <%= form.select :rôle, options_for_select(User.rôles.keys, @user.rôle), {}, class: 'select select-bordered select-sm w-full', data: { 'toggle-agent-service-target': 'role' } %>
-      </span>
+      <div data-toggle-role-info-target='service' class="flex-1">
+        <%= form.label :service, "Service" %>
+        <%= form.select :service, options_for_select(User.services.keys, user.service), {include_blank: true}, class: 'select select-sm w-full', required: true %>
+      </div>
+
+      <div data-toggle-role-info-target="localisation" class="flex-1">
+        <%# ATTENTION : si on change le nombre d'éléments dans la div avec la target localisation, il faut adapter le stimulus en conséquence. Sinon le required du champ localisation sera présent quel que soit le rôle attribué %>
+        <%= form.label :localisation, "Localisation" %>
+        <%= form.text_field :localisation, class: 'input select-sm w-full', placeholder: 'Tel que copié de Google Maps', required: true %>
+      </div>
     </div>
 
-    <div data-toggle-agent-service-target='service' class="flex-1">
-      <%= form.label :service, "Service" %>
-      <%= form.select :service, options_for_select(User.services.keys, @user.service), {include_blank: true}, class: 'select select-bordered select-sm w-full' %>
+    <div class="w-full">
+      <%= form.label :nom, style: "display: block" %>
+      <%= form.text_field :nom, class: 'input input-sm w-full' %>
+    </div>
+
+    <div data-toggle-role-info-target='prenom' class="w-full">
+      <%= form.label :prénom, style: "display: block" %>
+      <%= form.text_field :prénom, class: 'input input-sm w-full' %>
     </div>
   </div>
 
-  <div class="w-full">
-    <%= form.label :téléphone, style: "display: block" %>
-    <%= form.text_field :téléphone, class: 'input input-bordered input-sm w-full' %>
+  <div class="flex flex-wrap md:flex-nowrap gap-2 w-full">
+    <div class="w-full">
+      <%= form.label :téléphone, style: "display: block" %>
+      <%= form.text_field :téléphone, class: 'input input-sm w-full' %>
+    </div>
+
+    <div class="w-full">
+      <%= form.label :profile_picture, "Photo de profil", style: "display: block" %>
+      <%= form.file_field :profile_picture, accept: 'image/png,image/jpeg,image/avif,image/webp', class: 'file-input file-input-sm w-full' %>
+    </div>
   </div>
 
   <div class="w-full">
     <%= form.label :email, style: "display: block" %>
-    <%= form.email_field :email, class: 'input input-bordered input-sm w-full', required: true %>
+    <%= form.email_field :email, class: 'input input-sm w-full', required: true %>
   </div>
 
   <% if user.new_record? %>
     <div class="w-full">
       <%= form.label :password, style: "display: block" %>
-      <%= form.password_field :password, class: 'input input-bordered input-sm w-full' %>
+      <%= form.password_field :password, class: 'input input-sm w-full', required: true %>
     </div>
     <div class="w-full">
       <%= form.label :password_confirmation, style: "display: block" %>
-      <%= form.password_field :password_confirmation, class: 'input input-bordered input-sm w-full' %>
+      <%= form.password_field :password_confirmation, class: 'input input-sm w-full', required: true %>
     </div>
   <% end %>
 
   <div class="w-full">
-    <%= form.label :memo, "Mémo (facultatif)", style: "display: block" %>
-    <%= form.text_area :memo, class: 'textarea textarea-bordered w-full' %>
+    <%= form.label :memo, "Mémo", style: "display: block" %>
+    <%= form.text_area :memo, class: 'textarea w-full' %>
   </div>
 
   <% if @user.agent? %>
     <div class="flex mt-4 gap-4 mb-4">
       <h2 class="text-2xl text-secondary">Absences</h2>
-      <button type="button" data-action="nested-form#add" class="btn btn-sm btn-outline btn-success hover:!text-white">+</button>
+      <button type="button" data-action="nested-form#add" class="btn btn-sm btn-outline btn-success hover:text-white!">+</button>
     </div>
 
 
@@ -84,5 +104,5 @@
     <div data-nested-form-target="target"></div>
   <% end %>
 
-  <%= form.submit "Enregistrer", id:"enregistrer_utilisateur", class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer mt-4" %>
+  <%= form.submit "Enregistrer", id:"enregistrer_utilisateur", class: "btn btn-primary mt-4" %>
 <% end %>

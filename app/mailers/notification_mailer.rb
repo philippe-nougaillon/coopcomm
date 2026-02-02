@@ -5,7 +5,7 @@ class NotificationMailer < ApplicationMailer
 
     mail(to: emails,
         bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu',
-        subject: "[COOPCOM] Changement de statut").tap do |message|
+        subject: "[COOPCOMM] Changement de statut").tap do |message|
       message.mailgun_options = {
         "tag" => ["changement de statut"]
       }
@@ -17,7 +17,7 @@ class NotificationMailer < ApplicationMailer
 
     mail(to: emails,
           bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu',
-          subject: "[COOPCOM] Nouveau commentaire").tap do |message|
+          subject: "[COOPCOMM] Nouveau commentaire").tap do |message|
       message.mailgun_options = {
         "tag" => ["nouveau commentaire"]
       }
@@ -29,7 +29,7 @@ class NotificationMailer < ApplicationMailer
 
     mail(to: intervention.adherent.email,
           bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu',
-          subject: "[COOPCOM] Relance. Intervention à valider").tap do |message|
+          subject: "[COOPCOMM] Relance. Intervention à valider").tap do |message|
       message.mailgun_options = {
         "tag" => ["relance"]
       }
@@ -41,7 +41,7 @@ class NotificationMailer < ApplicationMailer
 
     mail(to: intervention.adherent.email,
           bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu',
-          subject: "[COOPCOM] Pointage").tap do |message|
+          subject: "[COOPCOMM] Pointage").tap do |message|
       message.mailgun_options = {
         "tag" => ["pointage"]
       }
@@ -50,12 +50,17 @@ class NotificationMailer < ApplicationMailer
 
   def welcome(user)
     @user = user
-    mail(to: @user.email, subject: '[COOPCOM] Bienvenue !')
+    mail(to: @user.email, subject: '[COOPCOMM] Bienvenue !')
   end
 
   def new_organisation(organisation)
     @organisation = organisation
-    mail(to: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu', subject: '[COOPCOM] Nouvelle Organisation')
+    mail(to: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu', subject: '[COOPCOMM] Nouvelle Organisation')
   end
 
+  def confirm_email_newsletter(email)
+    mail(to: email,
+          bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu, alexandre.meunier@aikku.eu',
+          subject: '[COOPCOMM] Confirmation de l\'inscription pour la newsletter')
+  end
 end

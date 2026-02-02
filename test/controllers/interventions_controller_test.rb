@@ -11,6 +11,15 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "should get index with export xls" do
+    get users_url,  params: {
+      format: :xls
+    }
+
+    assert_response :success
+    assert_equal "application/xls", response.content_type
+  end
+
   test "should get new" do
     get new_intervention_url
     assert_response :success
@@ -96,5 +105,40 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to @intervention
+  end
+
+  test "pointer intervention repete doit créer une intervention" do
+    intervention = interventions(:intervention_repete)
+    
+    assert_difference("Intervention.count", 1) do
+      get pointer_intervention_url(intervention)
+    end
+  end
+
+  test "pointer intervention repete doit mettre fin à une intervention" do
+    intervention = interventions(:intervention_repete)
+    
+    # Pointage
+    get pointer_intervention_url(intervention)
+    
+    intervention_créée = Intervention.find_by(template_slug: intervention.slug)
+    
+    assert_nil intervention_créée.fin
+
+    # Repointage
+    get pointer_intervention_url(intervention)
+
+    intervention_créée.reload
+    assert_not_nil intervention_créée
+  end
+
+  test "pointer intervention pas repete ne doit pas créer une intervention" do
+    intervention = interventions(:intervention_repete)
+    intervention.repeter = false
+    intervention.save
+
+    assert_no_difference("Intervention.count") do
+      get pointer_intervention_url(intervention)
+    end
   end
 end

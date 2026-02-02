@@ -10,8 +10,8 @@ class WikiPagesController < ApplicationController
         @wiki_pages = WikiPage.blog
       when 'guide'
         @wiki_pages = WikiPage.guide
-      when 'fiches'
-        @wiki_pages = WikiPage.fiches
+      # when 'fiches'
+      #   @wiki_pages = WikiPage.fiches
       else
         @wiki_pages = WikiPage.where(épinglée: true)
     end
@@ -23,7 +23,7 @@ class WikiPagesController < ApplicationController
     unless user_signed_in? && current_user.super_admin?
       @wiki_pages = @wiki_pages.where(publiée: true)
     end
-    @wiki_pages.order(poids: :desc)
+    @wiki_pages = @wiki_pages.order(:poids)
   end
 
   # GET /wiki_pages/1 or /wiki_pages/1.json
@@ -81,7 +81,13 @@ class WikiPagesController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_wiki_page
-      @wiki_page = WikiPage.friendly.find(params[:id])
+      begin
+        @wiki_page = WikiPage.friendly.find(params[:id])
+      rescue
+        if @wiki_page.nil?
+          redirect_to root_path, alert: "Page wiki introuvable"
+        end
+      end
     end
 
     # Only allow a list of trusted parameters through.

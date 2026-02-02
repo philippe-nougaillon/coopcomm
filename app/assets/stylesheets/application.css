@@ -15,6 +15,18 @@
  */
 
 /****** DIVERS *****/
+
+/* Font family pour le thème aikku*/
+*[data-theme="aikku"] {
+  font-family: "Inter", serif;
+}
+
+*[data-theme="aikku"]{
+  h1, h2, h3, h4, h5, h6{
+    font-family: "Montserrat", serif;
+  }
+}
+
 .select, .input {
   padding-top: 0;
   padding-bottom: 0;
@@ -24,11 +36,39 @@
   border-radius: .5rem;
 }
 
+.btn[disabled]{
+  background-color: white;
+}
+
 /***** END DIVERS *****/
 
 
+/***** TEXT-GRADIENT *****/
+
+:root {
+  --color_gradient_blue--end: #50B9DF;
+  --color_gradient_purple--end: #6A219C;
+}
+
+.text-gradient {
+  background-image: linear-gradient(to right, var(--color_gradient_blue--end), var(--color_gradient_purple--end)) !important;
+  -webkit-text-fill-color: transparent !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+.text-gradient-reverse {
+  background-image: linear-gradient(to right, var(--color_gradient_purple--end), var(--color_gradient_blue--end)) !important;
+  -webkit-text-fill-color: transparent !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+/***** END TEXT GRADIENT *****/
+
 
 /***** ÉTOILES *****/
+/* 
 .mask[type=radio]:checked,
 .mask[type=radio]:checked:focus,
 .mask[type=radio]:checked:hover {
@@ -37,12 +77,13 @@
   /* Jaune */
   /* background-color: rgb(250 204 21 / var(--tw-bg-opacity)); */
   /* Primary */
-  background-color: var(--fallback-p, oklch(var(--p) / var(--tw-bg-opacity)));
+  /* background-color: var(--fallback-p, oklch(var(--p) / var(--tw-bg-opacity)));
 }
+*/
 
 /***** END ÉTOILES *****/
 
-/* .btm-nav>:where(.hover-active):hover {
+/* .dock>:where(.hover-active):hover {
   border-top-width: 2px;
   --tw-bg-opacity: 1;
   background-color: var(--fallback-b1, oklch(var(--b1) / var(--tw-bg-opacity)));
@@ -211,3 +252,28 @@ label#drawer-label div:nth-child(2) {
 }
 
 /***** END SLIM-SELECT INDISPONIBILITÉ *****/
+
+
+/***** STEP *****/
+
+.steps-thin .step::before{
+  width: 0.1rem;
+}
+
+/* Pour ne pas avoir de trait au dessus du premier step (utile uniquement s'il y a du contenu des deux côtés du step) */
+.step-start::before{
+  display: none;
+}
+
+.steps .step>.step-icon,
+.steps .step:not(:has(.step-icon))::after {
+  border-color: var(--color-secondary);
+  background-color: white;
+}
+
+/* Pour que ne voit pas les traits liants les steps ces derniers */
+.step::before{
+  z-index: 0;
+}
+
+/***** END STEP *****/

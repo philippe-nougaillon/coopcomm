@@ -48,15 +48,6 @@ intervention_validé:
   workflow_state: validé
   slug: 3952eed3-432c-48f2-a591-d79f4c408ff5
 
-intervention_terminée:
-  organisation: mairie_paris
-  adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
-  début: 2024-04-19 8:30:00
-  début: 2024-04-19 12:30:00
-  description: Préparer salle de réception
-  workflow_state: terminé
-  slug: 73ecbeba-7449-4804-8de0-f6ed7ec98a49
-
 intervention_autre_agent:
   organisation: mairie_paris
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
@@ -84,6 +75,14 @@ intervention_paris:
   description: Intervention à paris
   workflow_state: nouveau
   slug: ac7e4c84-1ad4-4703-984d-68c1e7d3ce0e
+
+intervention_repete:
+  organisation: mairie_paris
+  adherent: weil
+  description: Intervention répété
+  repeter: true
+  workflow_state: nouveau
+  slug: 99e2232e-b9f4-4ee6-b043-13ee190fcca6
 
 # Organisation Marseille
 nettoyage_port:

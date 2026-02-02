@@ -1,14 +1,12 @@
-<div id="<%= dom_id intervention %>" tabindex="0" class="overflow-x-auto collapse collapse-arrow <%= 'collapse-open' if !defined?(from_turbo_stream) && intervention.id == @interventions.first.id %>">
-  <div class="collapse-title text-xl font-medium">
+<div id="<%= dom_id intervention %>" class="overflow-x-auto collapse collapse-arrow <%= 'collapse-open' if !defined?(from_turbo_stream) && intervention.id == @interventions.first.id %>">
+  <input type="checkbox" class="h-full"/>
+  <div class="collapse-title lg:text-xl font-medium">
     <div class="flex flex-col sm:flex-row justify-between">
       <div>
-        <small>
-          <i class="<%= 'text-error animate-pulse' if defined?(from_turbo_stream) %>">
-            il y a <%= time_ago_in_words intervention.updated_at %>
-          </i>
-        </small>
-
-        <div class="flex items-center gap-2 text-2xl sm:text-3xl text-<%= intervention.style.split.first.split('-').last %> font-black">
+        <div class="flex items-center gap-2 text-xl sm:text-2xl text-<%= intervention.style.split.first.split('-').last %>">
+          <span class="badge text-nowrap font-bold <%= intervention.style %>">
+            <%= intervention.workflow_state.humanize %>
+          </span>
           <% if intervention.repeter %>
             <span class="material-symbols-outlined text-black" title="Modèle pour le pointage">
               event_repeat
@@ -18,12 +16,17 @@
               qr_code_2
             </span>
           <% end %>
-          <%= link_to intervention.description.humanize, intervention, class: 'hover:underline' %>
+          <%= link_to intervention.description.humanize, intervention, class: 'z-10 hover:underline' %>
         </div>
+        <small>
+          <i class="<%= 'text-error animate-pulse font-black' if defined?(from_turbo_stream) %>">
+            il y a <%= time_ago_in_words intervention.updated_at %>
+          </i>
+        </small>
 
         <p>
           <% intervention.tags.each do |tag| %>
-            <span class="badge badge-primary badge-outline text-white"><%= tag.name.humanize %></span>
+            <span class="badge badge-primary badge-outline badge-xs sm:badge-md text-white"><%= tag.name.humanize %></span>
           <% end %>
         </p>
       </div>
@@ -31,11 +34,10 @@
       <div class="w-72 text-base">
         <% if !(intervention.validé? || intervention.refusé?) %>
           <div class="my-2">
-            <strong class="block text-slate-400 mb-1">Actions</strong>
             <p class="flex gap-2">
-              <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'btn btn-primary btn-outline btn-sm sm:btn-md hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? %>
-              <%= link_to 'Valider', valider_intervention_path(intervention), class: 'btn btn-success btn-outline btn-sm sm:btn-md hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
-              <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'btn btn-error btn-outline btn-sm sm:btn-md hover:!text-white', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
+              <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'z-10 btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? %>
+              <%= link_to 'Valider', valider_intervention_path(intervention), class: 'z-10 btn btn-success btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
+              <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'z-10 btn btn-error btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
             <p>
           </div>
         <% end %>
@@ -50,23 +52,13 @@
         <div class="sm:flex gap-8">
           <div>
             <p class="my-2">
-              <strong class="block text-slate-400 mb-1">Statut</strong>
-              <span class="badge badge-lg text-nowrap font-bold <%= intervention.style %>">
-                <%= intervention.workflow_state.humanize %>
-              </span>
-            </p>
-          </div>
-            
-          <div>
-            <p class="my-2">
               <strong class="block text-slate-400 mb-1">Adhérent</strong>
               <b><%= intervention.adherent.try(:nom_prénom) %></b>
             </p>
-            <p class="my-2">
+            <p class="my-2 <%= "pl-2" if intervention.team&.color %>" <%= "style=\"border-left: .3rem solid #{intervention.team.color};\"".html_safe if intervention.team&.color %>>
               <strong class="block text-slate-400 mb-1">Équipe</strong>
               <b><%= intervention.team.try(:nom_prénom) %></b>
             </p>
-
           </div>
 
           <div>
@@ -80,21 +72,6 @@
                 <strong class="block text-slate-400 mb-1">Agent#<%= index + 1 %></strong>
                 <b><%= agent.nom_prénom %></b>
               </p>
-              <% end %>
-            <% end %>
-          </div>
-
-          <div>
-            <% if !intervention.tools.any? %>
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Outil</strong>
-              </p>
-            <% else %>
-              <% intervention.tools.each_with_index do |tool, index| %>
-                <p class="my-2">
-                  <strong class="block text-slate-400 mb-1">Outil#<%= index + 1 %></strong>
-                  <b><%= tool.name %></b>
-                </p>
               <% end %>
             <% end %>
           </div>
@@ -136,11 +113,26 @@
           </div>
         </div>
 
+        <div>
+          <% if !intervention.tools.any? %>
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Matériel</strong>
+            </p>
+          <% else %>
+            <% intervention.tools.each_with_index do |tool, index| %>
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Matériel#<%= index + 1 %></strong>
+                <b><%= tool.name %></b>
+              </p>
+            <% end %>
+          <% end %>
+        </div>
+
         <div class="hidden sm:flex gap-8">
           <div>
             <p class="my-2">
               <strong class="block text-slate-400 mb-1">Commentaires</strong>
-              <%= intervention.commentaires %>
+              <%= truncate(intervention.commentaires, length: 100) %>
             </p>
           </div>
 
@@ -148,10 +140,10 @@
             <div>
               <% if intervention.photos.count > 1 %>
                 <button onclick="my_modal_<%= intervention.id %>.showModal()">
-                  <div class="stack w-36">
+                  <div class="stack w-36 h-36">
                     <% intervention.photos.limit(3).each do |photo| %>
                       <div class="avatar">
-                        <div class="w-36 rounded">
+                        <div class="rounded">
                           <%= image_tag photo, loading: 'lazy' %>
                         </div>
                       </div>
@@ -174,13 +166,11 @@
       <div class="w-72 mr-4 text-base">
         <% if intervention.validé? || intervention.refusé? %>
           <div>
+            <strong class="block text-slate-400 mb-1">Évaluation</strong>
             <div class="rating">
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Évaluation</strong>
-                <% 5.times do |index| %>
-                  <input type="radio" name="rating-<%= intervention.id %>" class="mask mask-star bg-primary cursor-text" <%= "checked" if intervention.note == index + 1 %> disabled/>
-                <% end %>
-              </p>
+              <% 5.times do |index| %>
+                <input type="radio" name="rating-<%= intervention.id %>" class="mask mask-star bg-primary cursor-text" <%= 'aria-current=true' if intervention.note == index + 1 %> disabled/>
+              <% end %>
             </div>
 
             <p class="my-2">

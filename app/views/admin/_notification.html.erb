@@ -1,8 +1,26 @@
-<div id="<%= dom_id notification %>" class="mt-2">
-  <p class="<%= "font-black text-error text-xl" if @new_notification_ids.include?(notification.id) %>">
-    <%= notification.message %>
-  </p>
-  <small>
-    <i>il y a <%= time_ago_in_words notification.created_at %></i>
-  </small>
+<% message_out = (current_user.id == notification.from_id) %>
+<% user = User.find_by(id: message_out ? notification.to_id : notification.from_id) %>
+<div id="<%= dom_id notification %>" class="chat <%= message_out ? 'chat-end' : 'chat-start' %> mt-2">
+  <div class="chat-bubble <%= message_out ? '' : 'chat-bubble-info' %> ">
+    <% if user %>
+      <span><%# @new_notification_ids.include?(notification.id) %></span>
+      
+      <div class="flex items-center gap-2">
+        <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
+        <div>
+          <p>
+            <%= user.nom_prenom_role %> 
+          </p>
+          <small>
+            <i>il y a <%= time_ago_in_words notification.created_at %></i>
+          </small>
+        </div>
+      </div>
+      <p class="mt-4 text-xl font-black">
+        <%= notification.moderation %>
+      </p>
+    <% else %>
+      utilisateur supprimé
+    <% end %>
+  </div>
 </div>

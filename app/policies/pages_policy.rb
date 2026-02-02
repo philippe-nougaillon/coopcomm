@@ -12,4 +12,16 @@ class PagesPolicy < ApplicationPolicy
   def dashboard?
     user && (user.manager? || user.adhérent? )
   end
+
+  def home?
+    user
+  end
+
+  def meteo?
+    home?
+  end
+
+  # def meteo_by_day?
+  #   home?
+  # end
 end

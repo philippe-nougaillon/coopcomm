@@ -7,17 +7,22 @@
     style: 'mapbox://styles/mapbox/streets-v11'
   });
   <% @tools.includes(:interventions).each do |tool| %>
-    <% adhérent = tool.intervention_at(params[:quand]).adherent %>
-    var marker = new mapboxgl.Marker({ color: "#FF0000"})
-      .setLngLat(<%= adhérent.lng_lat %>)
-      .setPopup(new mapboxgl.Popup({ offset: 25 }) // add popups
-      .setHTML("<a id='pin' href='#<%= tool.slug %>'><p class='font-black text-center text-xl'><%= tool.name %></p><p class='text-lg'><%= tool.description %></p><hr><p class='text-lg'><%= adhérent.nom_prénom %></p></a>"))
-      .addTo(map);
+    <% intervention = tool.intervention_at(params[:date]) %>
+    <% if intervention %>
+      <% adhérent = intervention.adherent %>
+      <% if adhérent %>
+        var marker = new mapboxgl.Marker({ color: "#FF0000"})
+          .setLngLat(<%= adhérent.lng_lat %>)
+          .setPopup(new mapboxgl.Popup({ offset: 25 }) // add popups
+          .setHTML("<a id='pin' href='<%= tool_path(tool) %>'><p class='font-black text-xl'><%= tool.name %></p><p><%= l(intervention.début_prévue, format: :long) %><br><%= tool.description %></p><hr><p class='text-lg'><%= adhérent.nom_prénom %><br><br><%= intervention.description %></p></a>"))
+          .addTo(map);
+      <% end %>
+    <% end %>
   <% end %>
 
   map.fitBounds([
-    [<%= @lng.min %> - 0.1, <%= @lat.min %> - 0.1],
-    [<%= @lng.max %> + 0.1, <%= @lat.max %> + 0.1]
+    [<%= @lng_list.min %> - 0.1, <%= @lat_list.min %> - 0.1],
+    [<%= @lng_list.max %> + 0.1, <%= @lat_list.max %> + 0.1]
   ]);
   map.addControl(new mapboxgl.FullscreenControl());
   map.addControl(new mapboxgl.NavigationControl());

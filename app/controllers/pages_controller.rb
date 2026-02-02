@@ -1,6 +1,6 @@
 class PagesController < ApplicationController
-  before_action :is_user_authorized, except: %i[welcome mentions_legales]
-  skip_before_action :authenticate_user!, only: %i[welcome mentions_legales]
+  before_action :is_user_authorized, except: %i[welcome mentions_legales solution tarifs contact]
+  skip_before_action :authenticate_user!, only: %i[welcome mentions_legales solution tarifs contact]
 
   def assistant
 
@@ -8,17 +8,30 @@ class PagesController < ApplicationController
       minimum = 10
       interventions = current_user.organisation
                                   .interventions
-                                  .where.not(début: nil)
-                                  .order(:début)
+                                  .where.not(début_prévue: nil)
+                                  .where(template_slug: nil)
+                                  .order(:début_prévue)
 
       if interventions.count >= minimum
         description_list = []
         interventions.each do |intervention|
-          description_list << "#{intervention.description.gsub('[mail] ', '')} #{l(intervention.début.to_date)}"
+          description_list << "#{intervention.description.gsub('[mail] ', '')} #{l(intervention.début_prévue.to_date)}"
         end
 
-        llm = Langchain::LLM::OpenAI.new(api_key: ENV["OPENAI_API_KEY"])
-        @results = llm.chat(messages: [{role: "user", content: "Génère moi des nouvelles tâches en te basant sur cette liste : #{description_list.join(', ')}"}]).completion
+        # Version OpenAI
+        # llm = Langchain::LLM::OpenAI.new(api_key: ENV["OPENAI_API_KEY"])
+        # @results = llm.chat(messages: [{role: "user", content: "Génère moi des nouvelles tâches en te basant sur cette liste : #{description_list.join(', ')}"}]).completion
+        
+        # Version Mistral
+        begin
+          llm = Langchain::LLM::MistralAI.new(api_key: ENV["MISTRAL_AI_API_KEY"])
+          @results = llm.chat(messages: [{role: "user", content: "Génère moi des nouvelles tâches en te basant sur cette liste : #{description_list.join(', ')}"}]).chat_completion
+          markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, extensions = {})
+          @results = markdown.render(@results)
+        rescue
+          @is_failed = true
+          @results = "Veuillez attendre quelques secondes avant de réessayer"
+        end
       else
         @results = "Oups ! Il n'y a pas encore assez d'interventions passées pour générer une proposition fiable.\n Il en faudrait un minimum de #{ minimum } pour commencer..."
       end
@@ -30,7 +43,8 @@ class PagesController < ApplicationController
   end
 
   def welcome
-    @wiki_pages = WikiPage.all
+    @wiki_pages = WikiPage.where(publiée: true)
+    @newsletter = Newsletter.new
   end
 
   def dashboard
@@ -72,7 +86,7 @@ class PagesController < ApplicationController
       end
 
       # Compléter les mois et workflows manquants avec des valeurs par défaut
-      workflows = [Intervention::NOUVEAU, Intervention::ATTENTE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
+      workflows = [Intervention::NOUVEAU, Intervention::POINTAGE_ACTIVE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
 
       (start_date.to_date..end_date.to_date).map { |date| date.beginning_of_month }.uniq.each do |month|
         formatted_month = month.strftime('%Y-%m')
@@ -85,7 +99,7 @@ class PagesController < ApplicationController
       qté_interventions_par_mois_par_état = qté_interventions_par_mois_par_état.sort.to_h # Trier par ordre chronologique
 
       labels = qté_interventions_par_mois_par_état.keys # Les mois comme étiquettes pour l'axe X
-      workflows = [Intervention::NOUVEAU, Intervention::ATTENTE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
+      workflows = [Intervention::NOUVEAU, Intervention::POINTAGE_ACTIVE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
 
       datasets = workflows.map do |workflow|
         {
@@ -93,7 +107,7 @@ class PagesController < ApplicationController
           data: labels.map { |month| qté_interventions_par_mois_par_état[month][workflow] }, # Quantités par mois
           backgroundColor: case workflow
                           when Intervention::NOUVEAU then "rgba(0,181,255,255)" # Info
-                          when Intervention::ATTENTE then "rgba(123,146,178,255)" # Secondary
+                          when Intervention::POINTAGE_ACTIVE then "rgba(123,146,178,255)" # Secondary
                           when Intervention::TERMINE then "rgba(77,110,255,255)" # Primary
                           when Intervention::VALIDE then "rgba(0,169,110,255)" # Success
                           when Intervention::REFUSE then "rgba(255,88,97,255)" # Error
@@ -122,6 +136,29 @@ class PagesController < ApplicationController
       # end
 
       @temps_total_par_service = current_user.organisation.interventions.joins(agent_interventions: :agent).group("users.service").sum(:temps_total)
+
+
+      #
+      # Graphe co2 total par mois
+      #
+
+      # Pour chaque mois, calcule le co2 total
+      co2_total_par_mois = {}
+      current_user.organisation.interventions.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:co2).each do |month, co2|
+        formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
+        co2_total_par_mois[formatted_month] = co2
+      end
+
+      # Pour compléter les mois sans co2 (sinon ils n'apparaissent pas)
+      (start_date.to_date..end_date.to_date)
+        .map(&:beginning_of_month)
+        .uniq
+        .each do |month|
+          formatted_month = month.strftime('%Y-%m')
+          co2_total_par_mois[formatted_month] ||= 0
+      end
+
+      @co2_total_par_mois = co2_total_par_mois.sort.to_h
 
     elsif current_user.adhérent?
       temps_consommable_adhérent_mensuellement = 100
@@ -170,7 +207,7 @@ class PagesController < ApplicationController
       end
 
       # Compléter les mois et workflows manquants avec des valeurs par défaut
-      workflows = [Intervention::NOUVEAU, Intervention::ATTENTE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
+      workflows = [Intervention::NOUVEAU, Intervention::POINTAGE_ACTIVE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
 
       (start_date.to_date..end_date.to_date).map { |date| date.beginning_of_month }.uniq.each do |month|
         formatted_month = month.strftime('%Y-%m')
@@ -183,7 +220,7 @@ class PagesController < ApplicationController
       qté_interventions_par_mois_par_état = qté_interventions_par_mois_par_état.sort.to_h # Trier par ordre chronologique
 
       labels = qté_interventions_par_mois_par_état.keys # Les mois comme étiquettes pour l'axe X
-      workflows = [Intervention::NOUVEAU, Intervention::ATTENTE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
+      workflows = [Intervention::NOUVEAU, Intervention::POINTAGE_ACTIVE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
 
       datasets = workflows.map do |workflow|
         {
@@ -191,7 +228,7 @@ class PagesController < ApplicationController
           data: labels.map { |month| qté_interventions_par_mois_par_état[month][workflow] }, # Quantités par mois
           backgroundColor: case workflow
                           when Intervention::NOUVEAU then "rgba(0,181,255,255)" # Info
-                          when Intervention::ATTENTE then "rgba(123,146,178,255)" # Secondary
+                          when Intervention::POINTAGE_ACTIVE then "rgba(123,146,178,255)" # Secondary
                           when Intervention::TERMINE then "rgba(77,110,255,255)" # Primary
                           when Intervention::VALIDE then "rgba(0,169,110,255)" # Success
                           when Intervention::REFUSE then "rgba(255,88,97,255)" # Error
@@ -221,8 +258,81 @@ class PagesController < ApplicationController
       # end
 
       @temps_total_par_service = current_user.interventions_adherent.joins(agent_interventions: :agent).group("users.service").sum(:temps_total)
+
+
+      #
+      # Graphe co2 total par mois
+      #
+
+      # Pour chaque mois, calcule le co2 total
+      co2_total_par_mois = {}
+      current_user.interventions_adherent.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:co2).each do |month, co2|
+        formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
+        co2_total_par_mois[formatted_month] = co2
+      end
+
+      # Pour compléter les mois sans co2 (sinon ils n'apparaissent pas)
+      (start_date.to_date..end_date.to_date)
+        .map(&:beginning_of_month)
+        .uniq
+        .each do |month|
+        formatted_month = month.strftime('%Y-%m')
+        co2_total_par_mois[formatted_month] ||= 0
+      end
+
+      @co2_total_par_mois = co2_total_par_mois.sort.to_h
     end
   end
+
+  def solution
+  end
+
+  def tarifs
+  end
+
+  def contact
+  end
+
+  def home
+    hour = Time.now.hour
+
+    if hour < 7 || hour > 19
+      base_hour = 20
+    else
+      base_hour = ((hour / 2) * 2).clamp(8, 18)
+    end
+
+    @banner_image_name = "banner/banner_#{base_hour}h.png"
+    @banner_background_color = BACKGROUND_COLORS[base_hour]
+
+    @interventions = Intervention.by_role_for_home(current_user).first(2)
+    @notifications = current_user.notifications.ordered.first(3)
+
+    # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh
+    @forecasts = Rails.cache.fetch('daily_forecast', expires_in: 10.minutes) do
+      logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur un jour"
+      
+      MeteoConceptConnexion.new.call
+    end
+  end
+
+  # Page de la liste des météos sur 14 jours
+  def meteo
+    # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh
+    @forecasts = Rails.cache.fetch('daily_forecast', expires_in: 10.minutes) do
+      logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours"
+      
+      MeteoConceptConnexion.new.call
+    end
+  end
+
+  # Plus utilisé
+  # Récupère les données de la météo d'un jour, appelé dans la page "meteo"
+  # def meteo_by_day
+  #   forecasts = MeteoConceptConnexion.instance.get_response_by_daily(params[:day])
+
+  #   render json: { forecast: forecasts, weather: MeteoConceptConnexion.WEATHER[forecasts["weather"]] }
+  # end
 
   private
 

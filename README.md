@@ -1,4 +1,4 @@
-# Aikku COOPCOM
+# Aikku CoopComm
 
 ## Application Web de coopération et de mutualisation de services entre communes
 
@@ -28,7 +28,7 @@ Une référence unique et sur tous les supports (PC/Smartphone)
 + Audit trail des modifications (Activité de la base de données)
 
 
-# Installer Aikku COOPCOM avec Docker
+# Installer Aikku CoopComm avec Docker
 
 ## Créer un nouveau serveur Arch Linux (chez Gandi) et s’y connecter
 $ ssh arch@92.243.26.96
@@ -52,12 +52,12 @@ $ sudo systemctl start docker
 
 $ systemctl status docker
 
-# Installer Aikku COOPCOM depuis les sources
+# Installer Aikku CoopComm depuis les sources
 
 ## Cloner le repo
 $ git clone https://github.com/philippe-nougaillon/coopcom.git
 
-Dans le répertoire de Aikku COOPCOM, copier le fichier dot.env.example en .env
+Dans le répertoire de Aikku CoopComm, copier le fichier dot.env.example en .env
 $ cp dot.env.example .env
 
 ou créer le fichier .env comme suit :
@@ -70,7 +70,7 @@ PGPASSWORD=changeme
 ## Créer le container 
 $ sudo docker-compose build
 
-## Créer la base de données Aikku COOPCOM
+## Créer la base de données Aikku CoopComm
 $ sudo docker-compose run --rm web bin/rails db:setup
 
 ## Créer le premier utilisateur (Administrateur)
@@ -84,7 +84,7 @@ $ sudo docker-compose run --rm web bin/rails c
 ## Démarrer le serveur dans le conteneur
 $ sudo docker-compose up
 
-## Lancer Aikku COOPCOM
+## Lancer Aikku CoopComm
 Ouvrir un navigateur et aller sur http://ip_du_serveur:3000 
 
 Se connecter avec l'utilisateur/adminstrateur nouvellement créé 

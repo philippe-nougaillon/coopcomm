@@ -209,4 +209,33 @@
             new Chart(elementTempsTotalParService, configTempsTotalParService);
         }
     }
+
+    /*
+        CO2 total par mois
+    */
+    function afficherCo2TotalParMois() {
+        var configCO2TotalParMois = {
+            data: {
+                datasets: [{
+                    type: 'bar',
+                    label: "CO2 total (kg)",
+                    backgroundColor: [
+                        'white',
+                    ],
+                    borderColor: [
+                        'rgb(54, 162, 235)',
+                    ],
+                    borderWidth: 1,
+                    data: <%= @co2_total_par_mois.values.to_json.html_safe %>,
+                }],
+                labels: <%= @co2_total_par_mois.keys.to_json.html_safe %>,
+            },
+            options: {}
+        };
+
+        var elementCO2TotalParMois = document.getElementById("co2TotalParMois");
+        if (elementCO2TotalParMois) {
+            new Chart(elementCO2TotalParMois, configCO2TotalParMois);
+        }
+    }
 </script>

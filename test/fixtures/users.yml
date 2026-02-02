@@ -19,6 +19,7 @@ weil:
   prénom: Ariel
   email: ariel.weil@gmail.commmmm
   rôle: adhérent
+  localisation: 48.86393040311279, 2.3619387048797607
   téléphone: 0123456789
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: fba70281-7004-405d-8afa-153355373125
@@ -29,6 +30,7 @@ berthout:
   prénom: Florence
   email: florence.berthout@gmail.commmmm
   rôle: adhérent
+  localisation: 48.84624805423277, 2.3447959433145784
   slug: 193866f0-bff9-4ec8-978c-c2c77b948f32
 
 nettoyage:
@@ -73,6 +75,7 @@ patrick_adherent_paris:
   prénom: Patrick
   email: patrick.bruel@gmail.commmmm
   rôle: adhérent
+  localisation: 48.8411640434812, 2.3890650921762075
   slug: e2845be0-8193-4771-9e99-94b692ad8c5f
 
 user_paris:
@@ -81,6 +84,7 @@ user_paris:
   prénom: name
   email: name.user@gmail.commmmm
   rôle: adhérent
+  localisation: 48.8326149054288, 2.3560047233761985
   slug: 7b53b6a3-cf0a-43ec-bb03-7af8d36781d1
 
 philippe_super_admin:
@@ -98,6 +102,7 @@ adhérent_sans_intervention:
   prénom: Jules
   email: adherent-sans-intervention@gmail.commmmm
   rôle: adhérent
+  localisation: 48.83320364351545, 2.327468354067042
   slug: f0595980-a28d-4424-82db-ee89e6eadc7d
 
 # Organisation marseille
@@ -131,6 +136,7 @@ adherent_marseille:
   prénom: Bernard
   email: bernard.tapie@gmail.commmmm
   rôle: adhérent
+  localisation: 43.29705053368259, 5.379312844397733
   slug: ee438223-a203-43f4-9d97-1654c24d2520
 
 # Organisation sans manager
@@ -150,6 +156,7 @@ george_lucas:
   prénom: George
   email: george.lucas@gmail.commmmmm
   rôle: adhérent
+  localisation: 1, 1
   slug: d2a62448-e26a-4a7b-8c07-81f3815825ac
 
 # Organisation sans intervention
@@ -168,4 +175,5 @@ emmanuel_valls:
   prénom: Emmanuel
   email: valls.emmanuel@gmail.commmmmm
   rôle: adhérent
+  localisation: 1, 1
   slug: 33872d35-052f-427c-9181-e5aff5db1853

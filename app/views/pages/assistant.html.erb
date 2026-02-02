@@ -1,23 +1,34 @@
 <div>
-  <div class="flex flex-wrap justify-between items-center h-12 sm:h-16">
-    <h1 class="text-3xl sm:text-4xl text-primary font-bold">Assistant (IA)</h1>
+  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
+    <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Assistant (IA)') %></h1>
   </div>
   <h2 class="text-2xl text-secondary mt-4 mb-8">
-    Bienvenue dans l'assistant (en bêta test), qui propose de nouvelles interventions à planifier
+    Bienvenue dans l'assistant (en bêta test), qui vous suggère de nouvelles interventions à planifier
   </h2>
 
   <% if params[:commit].blank? %>
     <%= form_tag request.path, method: :get, class: 'mb-8' do |f| %>
-      <%= submit_tag "Lancer la génération de propositions", class: 'btn btn-primary btn-outline rounded hover:!text-white md:btn-lg', 'data-turbo': 'false' %>
+      <%= submit_tag "Lancer la génération de propositions", class: 'btn btn-primary btn-outline rounded hover:text-white! md:btn-lg', 'data-turbo': 'false' %>
     <% end %>
   <% else %>
     <div class="mb-8">
-      <h3 class="text-2xl mb-4">Propositions de l'IA :</h3>
-      <div class="typewriter">
-        <% @results.split("\n").each do |result| %>
-          <p class="text"><%= result %></p>
+      <h3 class="text-2xl mb-4">Propositions de l'IA (mistral-medium-2508) :</h3>
+      <% if false %>
+        <%# Version OpenAI %>
+        <div class="typewriter">
+            <% @results.split("\n").each do |result| %>
+              <p class="text"><%= result %></p>
+            <% end %>
+        </div>
+      <% end %>
+
+      <%# Version Mistral %>
+      <%= raw(@results) %>
+      <% if @is_failed %>
+        <%= form_tag request.path, method: :get, class: 'mb-8' do |f| %>
+          <%= submit_tag "Lancer la génération de propositions", class: 'btn btn-primary btn-outline rounded hover:text-white! md:btn-lg', 'data-turbo': 'false' %>
         <% end %>
-      </div>
+      <% end %>
     </div>
   <% end %>
 </div>

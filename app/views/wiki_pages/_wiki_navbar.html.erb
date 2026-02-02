@@ -11,15 +11,11 @@
   </div>
   <div class="drawer-side">
     <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-    <nav class="min-h-screen h-96 bg-base-100 shadow w-64 fixed top-0 -ml-4 overflow-y-auto flex flex-col justify-between">
+    <nav class="min-h-screen h-96 bg-base-100 shadow w-64 fixed top-0 -ml-4 2xl:-ml-8 overflow-y-auto flex flex-col justify-between">
       <div>
-        <h1 class="text-4xl font-black text-accent text-center mb-12 mx-8 mt-12 <%= (user_signed_in? && current_user.super_admin?) ? 'sm:mt-11' : 'sm:mt-8' %>">
-          <%= link_to wiki_path do %>
-            Wiki
-          <% end %>
-        </h1>
+        <div class="h-16 <%= 'lg:h-24' unless user_signed_in? %>"></div>
         <%= form_tag request.path, method: :get do %>
-          <label class="input input-bordered flex items-center py-2 px-0 border-x-0 rounded-none !outline-0 hover:bg-base-200 active:bg-slate-200">
+          <label class="input flex items-center py-2 px-0 border-x-0 rounded-none outline-0! hover:bg-base-200 active:bg-slate-200">
             <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', placeholder: 'Rechercher', class: 'w-24 border-none grow focus:ring-0 ml-2' %>
             <button type="submit" class="flex items-center cursor-pointer ">
               <span class="material-symbols-outlined p-2">
@@ -31,20 +27,20 @@
         <% WikiPage.catégories.each do |catégorie, id| %>
           <%= link_to wiki_path(catégorie: catégorie) do %>
             <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-slate-100 py-3 pl-8 <%= 'bg-slate-50 hover:bg-base-300' if params[:catégorie] == catégorie %>">
-              <span class="material-symbols-outlined">
-                <% icone_name = case id %>
-                  <% when 0 then 'newspaper' %>
-                  <% when 1 then 'description' %>
-                  <% when 2 then 'assignment' %>
-                <% end %>
-                <%= icone_name %>
-              </span>
+<!--              <span class="material-symbols-outlined">-->
+                <%# icone_name = case id %>
+                  <%# when 0 then 'newspaper' %>
+                  <%# when 1 then 'description' %>
+                  <%# when 2 then 'assignment' %>
+                <%# end %>
+                <%#= icone_name %>
+<!--              </span>-->
               <%= catégorie.humanize %>
             </div>
           <% end %>
         <% end %>
       </div>
-      <%= link_to 'Retour vers COOPCOM', root_path, class: 'mb-8 mx-8 mt-12 text-primary hover:underline' %>
+      <%= link_to 'Retour vers CoopComm', root_path, class: 'mb-8 mx-8 mt-12 text-primary hover:underline' %>
     </nav>
   </div>
 </div>
