@@ -2,32 +2,32 @@ organisation = Organisation.create(nom: "Communauté de Communes Mad et Moselle"
 
 # --- USERS ---
 
-manager_davy = User.create(nom: "Stephan", prénom: "Davy", email: "davy.stephan@coopcomm.fr", organisation_id: organisation.id, rôle: "manager", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid)
-manager_béatrice = User.create(nom: "MANAGER", prénom: "Béatrice", email: "manager.beatrice@coopcomm.fr", organisation_id: organisation.id, rôle: "manager", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid)
-adhérent_thiaucourt = User.create(nom: "Thiaucourt", prénom: "", email: "adherent.thiaucourt@coopcomm.fr", organisation_id: organisation.id, rôle: "adhérent", password: "ccmm2026", password_confirmation: "ccmm2026", localisation: "48.953765163335845, 5.865465939891961", slug: SecureRandom.uuid)
-adhérent_hannonville_suzemont = User.create(nom: "Hannonville-suzémont", prénom: "", email: "adherent.hannonville-suzemont@coopcomm.fr", organisation_id: organisation.id, rôle: "adhérent", password: "ccmm2026", password_confirmation: "ccmm2026", localisation: "49.097010496841484, 5.832588127609773", slug: SecureRandom.uuid)
-adhérent_mandres_aux_quatres_tours = User.create(nom: "Mandres-aux-Quatre-Tours", prénom: "", email: "adherent.mandres-aux-quatre-tours@coopcomm.fr", organisation_id: organisation.id, rôle: "adhérent", password: "ccmm2026", password_confirmation: "ccmm2026", localisation: "48.84110009754971, 5.799786388687978", slug: SecureRandom.uuid)
-adhérent_jouy_aux_arches = User.create(nom: "Jouy-Aux-Arches", prénom: "", email: "adherent.jouy-aux-arches@coopcomm.fr", organisation_id: organisation.id, rôle: "adhérent", password: "ccmm2026", password_confirmation: "ccmm2026", localisation: "49.06175999760361, 6.077612907934834", slug: SecureRandom.uuid)
-agent_tech_jean = User.create({nom: "Martin", prénom: "Jean", email: "agent.technique1@coopcomm.fr", organisation_id: organisation.id, rôle: "agent", service: "Technique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
-agent_tech_andré = User.create({nom: "Bernard", prénom: "André", email: "agent.technique2@coopcomm.fr", organisation_id: organisation.id, rôle: "agent", service: "Technique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
-agent_tech_marie = User.create({nom: "Dubois", prénom: "Marie", email: "agent.technique3@coopcomm.fr", organisation_id: organisation.id, rôle: "agent", service: "Technique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
-agent_menage_nicole = User.create({nom: "Lefebvre", prénom: "Nicole", email: "agent.menage@coopcomm.fr", organisation_id: organisation.id, rôle: "agent", service: "Ménage", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
-agent_plomberie_marc = User.create({nom: "Moreau", prénom: "Marc", email: "agent.plomberie@coopcomm.fr", organisation_id: organisation.id, rôle: "agent", service: "Technique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
-agent_peinture_amelie = User.create({nom: "Simon", prénom: "Amélie", email: "agent.peinture@coopcomm.fr", organisation_id: organisation.id, rôle: "agent", service: "Technique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
-agent_periscolaire_pierre = User.create({nom: "Michel", prénom: "Pierre", email: "agent.perisco1@coopcomm.fr", organisation_id: organisation.id, rôle: "agent", service: "Périscolaire", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
-agent_metal_luc = User.create({nom: "Petit", prénom: "Luc", email: "agent.metal@coopcomm.fr", organisation_id: organisation.id, rôle: "agent", service: "Technique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
-agent_info_clara = User.create({nom: "Roux", prénom: "Clara", email: "agent.info1@coopcomm.fr", organisation_id: organisation.id, rôle: "agent", service: "Informatique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
-agent_secretaire_véronique = User.create({nom: "Faure", prénom: "Véronique", email: "agent.secretaire1@coopcomm.fr", organisation_id: organisation.id, rôle: "agent", service: "Secrétariat", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
-agent_compta_sophie = User.create({nom: "Mercier", prénom: "Sophie", email: "agent.compta1@coopcomm.fr", organisation_id: organisation.id, rôle: "agent", service: "Comptabilité", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
-agent_securite_philippe = User.create({nom: "Garnier", prénom: "Philippe", email: "agent.securite1@coopcomm.fr", organisation_id: organisation.id, rôle: "agent", service: "Technique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
+manager_davy = User.create(nom: "Stephan", prénom: "Davy", email: "davy.stephan@ccmm.fr", organisation_id: organisation.id, rôle: "manager", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid)
+manager_béatrice = User.create(nom: "MANAGER", prénom: "Béatrice", email: "manager.beatrice@ccmm.fr", organisation_id: organisation.id, rôle: "manager", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid)
+adhérent_thiaucourt = User.create(nom: "Thiaucourt", prénom: "", email: "adherent.thiaucourt@ccmm.fr", organisation_id: organisation.id, rôle: "adhérent", password: "ccmm2026", password_confirmation: "ccmm2026", localisation: "48.953765163335845, 5.865465939891961", slug: SecureRandom.uuid)
+adhérent_hannonville_suzemont = User.create(nom: "Hannonville-suzémont", prénom: "", email: "adherent.hannonville-suzemont@ccmm.fr", organisation_id: organisation.id, rôle: "adhérent", password: "ccmm2026", password_confirmation: "ccmm2026", localisation: "49.097010496841484, 5.832588127609773", slug: SecureRandom.uuid)
+adhérent_mandres_aux_quatres_tours = User.create(nom: "Mandres-aux-Quatre-Tours", prénom: "", email: "adherent.mandres-aux-quatre-tours@ccmm.fr", organisation_id: organisation.id, rôle: "adhérent", password: "ccmm2026", password_confirmation: "ccmm2026", localisation: "48.84110009754971, 5.799786388687978", slug: SecureRandom.uuid)
+adhérent_jouy_aux_arches = User.create(nom: "Jouy-Aux-Arches", prénom: "", email: "adherent.jouy-aux-arches@ccmm.fr", organisation_id: organisation.id, rôle: "adhérent", password: "ccmm2026", password_confirmation: "ccmm2026", localisation: "49.06175999760361, 6.077612907934834", slug: SecureRandom.uuid)
+agent_tech_jean = User.create({nom: "Martin", prénom: "Jean", email: "agent.technique1@ccmm.fr", organisation_id: organisation.id, rôle: "agent", service: "Technique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
+agent_tech_andré = User.create({nom: "Bernard", prénom: "André", email: "agent.technique2@ccmm.fr", organisation_id: organisation.id, rôle: "agent", service: "Technique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
+agent_tech_marie = User.create({nom: "Dubois", prénom: "Marie", email: "agent.technique3@ccmm.fr", organisation_id: organisation.id, rôle: "agent", service: "Technique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
+agent_menage_nicole = User.create({nom: "Lefebvre", prénom: "Nicole", email: "agent.menage@ccmm.fr", organisation_id: organisation.id, rôle: "agent", service: "Ménage", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
+agent_plomberie_marc = User.create({nom: "Moreau", prénom: "Marc", email: "agent.plomberie@ccmm.fr", organisation_id: organisation.id, rôle: "agent", service: "Technique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
+agent_peinture_amelie = User.create({nom: "Simon", prénom: "Amélie", email: "agent.peinture@ccmm.fr", organisation_id: organisation.id, rôle: "agent", service: "Technique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
+agent_periscolaire_pierre = User.create({nom: "Michel", prénom: "Pierre", email: "agent.perisco1@ccmm.fr", organisation_id: organisation.id, rôle: "agent", service: "Périscolaire", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
+agent_metal_luc = User.create({nom: "Petit", prénom: "Luc", email: "agent.metal@ccmm.fr", organisation_id: organisation.id, rôle: "agent", service: "Technique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
+agent_info_clara = User.create({nom: "Roux", prénom: "Clara", email: "agent.info1@ccmm.fr", organisation_id: organisation.id, rôle: "agent", service: "Informatique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
+agent_secretaire_véronique = User.create({nom: "Faure", prénom: "Véronique", email: "agent.secretaire1@ccmm.fr", organisation_id: organisation.id, rôle: "agent", service: "Secrétariat", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
+agent_compta_sophie = User.create({nom: "Mercier", prénom: "Sophie", email: "agent.compta1@ccmm.fr", organisation_id: organisation.id, rôle: "agent", service: "Comptabilité", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
+agent_securite_philippe = User.create({nom: "Garnier", prénom: "Philippe", email: "agent.securite1@ccmm.fr", organisation_id: organisation.id, rôle: "agent", service: "Technique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
 
-team_entretien_batiment = User.create({nom: "Entretien Bâtiment", prénom: "", email: "equipe.entretien@coopcomm.fr", organisation_id: organisation.id, rôle: "équipe", color: "#1F77B4", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
-team_eclairage = User.create!(nom: "Éclairage", prénom: "", email: "equipe.eclairage@coopcomm.fr", organisation_id: organisation.id, rôle: "équipe", color: "#FF7F0E", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid)
-team_technique = User.create!(nom: "Technique", prénom: "", email: "equipe.tech@coopcomm.fr", organisation_id: organisation.id, rôle: "équipe",  color: "#2CA02C", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid)
+team_entretien_batiment = User.create({nom: "Entretien Bâtiment", prénom: "", email: "equipe.entretien@ccmm.fr", organisation_id: organisation.id, rôle: "équipe", color: "#1F77B4", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
+team_eclairage = User.create!(nom: "Éclairage", prénom: "", email: "equipe.eclairage@ccmm.fr", organisation_id: organisation.id, rôle: "équipe", color: "#FF7F0E", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid)
+team_technique = User.create!(nom: "Technique", prénom: "", email: "equipe.tech@ccmm.fr", organisation_id: organisation.id, rôle: "équipe",  color: "#2CA02C", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid)
 team_menage = User.create!(
   nom: "Ménage",
   prénom: "",
-  email: "equipe.menage@coopcomm.fr",
+  email: "equipe.menage@ccmm.fr",
   organisation_id: organisation.id,
   rôle: "équipe",
   color: "#9467BD",
@@ -39,7 +39,7 @@ team_menage = User.create!(
 team_informatique = User.create!(
   nom: "Informatique",
   prénom: "",
-  email: "equipe.informatique@coopcomm.fr",
+  email: "equipe.informatique@ccmm.fr",
   organisation_id: organisation.id,
   rôle: "équipe",
   color: "#17BECF",
@@ -51,7 +51,7 @@ team_informatique = User.create!(
 team_peinture = User.create!(
   nom: "Peinture",
   prénom: "",
-  email: "equipe.peinture@coopcomm.fr",
+  email: "equipe.peinture@ccmm.fr",
   organisation_id: organisation.id,
   rôle: "équipe",
   color: "#D62728",
@@ -63,7 +63,7 @@ team_peinture = User.create!(
 team_compta = User.create!(
   nom: "Comptabilité",
   prénom: "",
-  email: "equipe.compta@coopcomm.fr",
+  email: "equipe.compta@ccmm.fr",
   organisation_id: organisation.id,
   rôle: "équipe",
   color: "#E377C2",
@@ -75,7 +75,7 @@ team_compta = User.create!(
 team_plomberie = User.create!(
   nom: "Plomberie",
   prénom: "",
-  email: "equipe.plomberie@coopcomm.fr",
+  email: "equipe.plomberie@ccmm.fr",
   organisation_id: organisation.id,
   rôle: "équipe",
   color: "#8C564B",
@@ -87,7 +87,7 @@ team_plomberie = User.create!(
 team_metal = User.create!(
   nom: "Métallerie",
   prénom: "",
-  email: "equipe.metal@coopcomm.fr",
+  email: "equipe.metal@ccmm.fr",
   organisation_id: organisation.id,
   rôle: "équipe",
   color: "#7F7F7F",
@@ -99,7 +99,7 @@ team_metal = User.create!(
 team_securite = User.create!(
   nom: "Sécurité",
   prénom: "",
-  email: "equipe.securite@coopcomm.fr",
+  email: "equipe.securite@ccmm.fr",
   organisation_id: organisation.id,
   rôle: "équipe",
   color: "#BCBD22",
@@ -111,7 +111,7 @@ team_securite = User.create!(
 team_espaces_verts = User.create!(
   nom: "Équipe Espaces Verts",
   prénom: "",
-  email: "equipe.espacesverts@coopcomm.fr",
+  email: "equipe.espacesverts@ccmm.fr",
   organisation_id: organisation.id,
   rôle: "équipe",
   color: "#2CA02C",
