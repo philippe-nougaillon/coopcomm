@@ -9,7 +9,8 @@ class ApiGoogleMaps < ApplicationService
   
   def call
     # Prendre la route du siège de la communauté de commune vers l'adhérent courant
-    localisation_siege = { lat: 48.98952882266384, lng: 2.3207725219533186 }
+    #TODO : mettre en variable d'environnement, ou ailleurs
+    localisation_siege = { lat: 48.953765163335845, lng: 5.865465939891961 }
     @map_center = localisation_siege
 
     self.prepare_body_request(localisation_siege, @localisation_destination)
