@@ -75,12 +75,18 @@ class ApiGoogleMaps < ApplicationService
   def get_trajet_from_response
     route = @response["routes"].first
 
-    distance = ((route["distanceMeters"] * 2).to_f / 1000).to_i
+    # Pour éviter que ça plante, lorsque le point de départ est le même que le point d'arrivé
+    if route["distanceMeters"]
+      msg_distance = "Distance: #{((route["distanceMeters"] * 2).to_f / 1000).to_i} km" 
+    else
+      msg_distance = "Distance: 0km"
+    end
+
     duree = ((route["duration"]).to_f * 2 / 60).to_i
     essence = ((route["travelAdvisory"]["fuelConsumptionMicroliters"]).to_f * 2 / 1000000).round(2)
     co2 = self.co2_consumption_by_route(route)
 
-    "Distance: #{distance} km, Durée: #{duree} min, Essence: #{essence} L, CO₂: #{co2} kg"
+    "#{msg_distance}, Durée: #{duree} min, Essence: #{essence} L, CO₂: #{co2} kg"
   end
 
   def co2_consumption_by_route(route)
