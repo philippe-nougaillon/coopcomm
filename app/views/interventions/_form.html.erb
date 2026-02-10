@@ -153,11 +153,11 @@
         <div class="flex flex-wrap gap-5 sm:gap-8 items-start">
           <div class="flex flex-col flex-wrap w-full flex-1">
             <div class="flex flex-wrap gap-5 sm:gap-8 flex-1 mb-5">
-              <div class="w-full min-w-fit sm:flex-1">
+              <div class="w-full min-w-fit flex-1">
                 <%= form.label :début %>
                 <div class="flex items-center gap-1">
                   <%= form.date_field :début,
-                      class: "input input-sm flex-1",
+                      class: "input input-sm flex-1 w-full",
                       value: (params[:début].try(:to_date) || @intervention.début&.to_date),
                       data: { 'calc-temps-passe-target': 'debut_date',
                       action: "change->calc-temps-passe#calc" } %>
@@ -175,11 +175,11 @@
                 </div>
               </div>
 
-              <div class="w-full min-w-fit sm:flex-1">
+              <div class="w-full min-w-fit flex-1">
                 <%= form.label :fin %>
                 <div class="flex items-center gap-1">
                   <%= form.date_field :fin,
-                      class: "input input-sm flex-1",
+                      class: "input input-sm flex-1 w-full",
                       value: (params[:fin].try(:to_date) || @intervention.fin&.to_date),
                       data: { 'calc-temps-passe-target': 'fin_date',
                       action: "change->calc-temps-passe#calc" } %>
