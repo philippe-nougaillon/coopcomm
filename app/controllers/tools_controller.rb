@@ -9,6 +9,7 @@ class ToolsController < ApplicationController
     @date = params[:date].to_date
     @tools = current_user.organisation.tools.ordered
     @types = Tool.icons
+    @états = Mouvement.états.keys
 
     if params[:search].present?
       @tools = @tools.where("name ILIKE :search OR description ILIKE :search", {search: "%#{params[:search]}%"})
@@ -16,6 +17,14 @@ class ToolsController < ApplicationController
 
     if params[:type].present?
       @tools = @tools.where(icon_name: params[:type])
+    end
+
+    if params[:etats].present?
+      tool_ids = []
+      @tools.each do |tool|
+        tool_ids << tool.id if tool.mouvements.last.état == params[:etats]
+      end
+      @tools = @tools.where(id: tool_ids)
     end
 
     case params[:vue]

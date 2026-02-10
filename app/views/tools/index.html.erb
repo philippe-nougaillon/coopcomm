@@ -23,6 +23,11 @@
         <%= label_tag :type %>
         <%= select_tag :type, options_for_select(@types, params[:type]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()' %>
       </div>
+
+      <div class="min-w-full md:min-w-36">
+        <%= label_tag :etats, "État" %>
+        <%= select_tag :etats, options_for_select(@états, params[:etats]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()' %>
+      </div>
     </div>
   <% end %>
 
@@ -41,6 +46,15 @@
   // slimselect
   new SlimSelect({
     select: '#type',
+    settings: {
+      searchPlaceholder: 'Recherche',
+      searchText: 'Pas de résultat',
+      searchingText: 'Recherche...',
+      allowDeselect: true,
+    }
+  })
+  new SlimSelect({
+    select: '#etats',
     settings: {
       searchPlaceholder: 'Recherche',
       searchText: 'Pas de résultat',
