@@ -326,13 +326,17 @@ class PagesController < ApplicationController
     end
   end
 
-  # Plus utilisé
   # Récupère les données de la météo d'un jour, appelé dans la page "meteo"
-  # def meteo_by_day
-  #   forecasts = MeteoConceptConnexion.instance.get_response_by_daily(params[:day])
+  def meteo_by_day
+    forecasts = Rails.cache.fetch('weeks_forecast', expires_in: 10.minutes) do
+      logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours"
+      MeteoConceptConnexion.instance.get_response_by_daily_periods
+    end
 
-  #   render json: { forecast: forecasts, weather: MeteoConceptConnexion.WEATHER[forecasts["weather"]] }
-  # end
+    forecast = forecasts["forecast"][params[:day].to_i].third
+
+    render json: { forecast: forecast, weather: MeteoConceptConnexion.WEATHER[forecast["weather"]] }
+  end
 
   private
 
