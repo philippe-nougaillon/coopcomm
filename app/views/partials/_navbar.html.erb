@@ -114,9 +114,6 @@
           <% end %>
         </li>
       <% end %>
-      <li title="<%= current_user.nom_prenom_role %>">
-        <%= render partial: 'partials/user_profile_picture', locals: {user: current_user} %>
-      </li>
       <li>
         <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?" }, title: "Fermer la session de #{current_user.email} (#{current_user.rôle})", class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 hover:border-primary!" do %>
           <span class="material-symbols-outlined">
