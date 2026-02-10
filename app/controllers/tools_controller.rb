@@ -5,7 +5,7 @@ class ToolsController < ApplicationController
   # GET /tools or /tools.json
   def index
     params[:vue] ||= 'calendrier'
-    params[:date] = DateTime.now.strftime("%Y-%m-%dT%H:%M") if params[:date].blank?
+    params[:date] = Date.today if params[:date].blank?
     @date = params[:date].to_date
     @tools = current_user.organisation.tools.ordered
     @types = Tool.icons
