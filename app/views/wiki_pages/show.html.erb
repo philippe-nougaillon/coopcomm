@@ -8,7 +8,7 @@
       <i>(Modifiée il y a <%= time_ago_in_words @wiki_page.updated_at %>)</i>
     </p>
 
-    <% if user_signed_in? && current_user.super_admin? %>
+    <% if policy(@wiki_page).edit? %>
       <%= link_to "Modifier", edit_wiki_page_path(@wiki_page), class: "mt-2 btn" %>
       <div class="inline-block ml-2">
         <% if policy(@wiki_page).destroy? %>

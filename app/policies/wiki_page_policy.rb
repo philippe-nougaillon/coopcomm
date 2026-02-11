@@ -14,7 +14,7 @@ class WikiPagePolicy < ApplicationPolicy
   # end
 
   def new?
-    user && user.super_admin?
+    user && user.manager?
   end
 
   def create?
@@ -22,7 +22,7 @@ class WikiPagePolicy < ApplicationPolicy
   end
 
   def edit?
-    user && user.super_admin?
+    user && user.manager?
   end
 
   def update?

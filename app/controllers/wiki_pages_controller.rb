@@ -20,7 +20,7 @@ class WikiPagesController < ApplicationController
       @wiki_pages = WikiPage.search_titre_and_contenu("%#{ params[:search] }%")
     end
 
-    unless user_signed_in? && current_user.super_admin?
+    unless policy(WikiPage).new?
       @wiki_pages = @wiki_pages.where(publiée: true)
     end
     @wiki_pages = @wiki_pages.order(:poids)
