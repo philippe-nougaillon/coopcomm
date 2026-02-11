@@ -40,7 +40,7 @@ export default class extends Controller {
         this.prévisionMétéoTarget.value = response["weather"] + " | Température : " + forecast["temp2m"] + "°C | Probabilité de pluie : " + forecast["probarain"] + "% | Vent : " + forecast["wind10m"] + " km/h"
       },
       error: (err) => {
-        this.prévisionMétéoTarget.value = "Météo indisponible, en cours d'implémentation." // TODO: Enlever ", en cours d'implémentation" si la requete fonctionne
+        this.prévisionMétéoTarget.value = "Météo indisponible."
       }
     })
   }
