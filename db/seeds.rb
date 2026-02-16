@@ -134,7 +134,7 @@ Absence.create!([
 # --- OUTILS ---
 tondeuse_gazon = Tool.create(name: "Tondeuse à gazon", description: "", icon_name: "agriculture", modèle: "Estate 7122 W", marque: "Stiga", organisation_id: organisation.id, slug: SecureRandom.uuid)
 # brouette = Tool.create(name: "Brouette", description: "polyvalente 100 L / 180 kg galvanisée, roue gonflable", icon_name: "agriculture", modèle: "Estate 7122 W", marque: "Altrad", organisation_id: organisation.id, slug: SecureRandom.uuid)
-camionnette_benne = Tool.create(name: "Camionnette benne", description: "Véhicule utilitaire 3.5t", modèle: "Boxer 3.5", marque: "Peugeot", organisation_id: organisation.id, slug: SecureRandom.uuid)
+camionnette_benne = Tool.create(name: "Camionnette benne", description: "Véhicule utilitaire 3.5t", modèle: "Boxer 3.5", marque: "Peugeot", icon_name: "local_shipping", organisation_id: organisation.id, slug: SecureRandom.uuid)
 taille_haies = Tool.create(name: "Taille-haies électrique", description: "", modèle: "HT 600", marque: "Bosch", organisation_id: organisation.id, slug: SecureRandom.uuid)
 balayeuse = Tool.create(name: "Balayeuse mécanique", description: "", modèle: "SweepPro 200", marque: "Kärcher", organisation_id: organisation.id, slug: SecureRandom.uuid)
 groupe_electrogene = Tool.create(name: "Groupe électrogène", description: "2kW", modèle: "Gen2000", marque: "Honda", organisation_id: organisation.id, slug: SecureRandom.uuid)
@@ -1912,7 +1912,7 @@ ToolIntervention.create!(tool_id: pinceau.id, intervention_id: i104.id)
 ToolIntervention.create!(tool_id: peinture_rouge.id, intervention_id: i104.id)
 
 # ---------- Notifications manager ↔ adhérent ----------
-Notification.create!(message: "Bonjour, votre intervention 'Réparation robinet école primaire' est confirmée pour le 3 février.", from_id: manager_davy.id, to_id: adhérent_mandres_aux_quatres_tours.id, created_at: i57.début_prévue - 2.days, updated_at: i57.début_prévue - 2.days)
+Notification.create!(message: "Bonjour, votre intervention 'Réparation robinet école primaire' est prévue pour le 3 février.", from_id: manager_davy.id, to_id: adhérent_mandres_aux_quatres_tours.id, created_at: i57.début_prévue - 2.days, updated_at: i57.début_prévue - 2.days)
 Notification.create!(message: "Merci pour l'information, je serai présent.", from_id: adhérent_mandres_aux_quatres_tours.id, to_id: manager_davy.id, created_at: i57.début_prévue - 1.day, updated_at: i57.début_prévue - 1.day)
 
 Notification.create!(message: "Votre intervention 'Peinture bancs parc sud' est planifiée pour le 4 février.", from_id: manager_béatrice.id, to_id: adhérent_thiaucourt.id, created_at: i58.début_prévue - 2.days, updated_at: i58.début_prévue - 2.days)
