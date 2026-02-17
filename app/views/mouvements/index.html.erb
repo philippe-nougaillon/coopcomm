@@ -7,11 +7,11 @@
     <div class="flex flex-wrap items-start w-full gap-4 mt-8">
       <div class="w-full md:w-fit">
         <%= label_tag :tool_ids, "Matériel(s)" %>
-        <%= select_tag :tool_ids, options_from_collection_for_select(@tools, 'id', 'name', params[:tool_ids]), include_blank: true, class: 'w-full sm:min-w-96 max-w-screen', onchange: 'this.form.submit()', multiple: true %>
+        <%= select_tag :tool_ids, options_from_collection_for_select(@tools, 'id', 'name', params[:tool_ids]), include_blank: true, class: 'slim-select w-full sm:min-w-96 max-w-screen', onchange: 'this.form.submit()', multiple: true %>
       </div>
       <div class="min-w-full md:min-w-36">
         <%= label_tag :etats, "États" %>
-        <%= select_tag :etats, options_for_select(@états, params[:etats]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()' %>
+        <%= select_tag :etats, options_for_select(@états, params[:etats]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
       </div>
       <div class="w-full md:w-fit">
         <%= label_tag :date, "Date d'intervention" %>
@@ -47,26 +47,3 @@
   </div>
 
 </div>
-
-<script>
-  // slimselect
-  new SlimSelect({
-    select: '#tool_ids',
-    settings: {
-      searchPlaceholder: 'Recherche',
-      searchText: 'Pas de résultat',
-      searchingText: 'Recherche...',
-      placeholderText: '',
-      allowDeselect: true,
-    }
-  })
-  new SlimSelect({
-    select: '#etats',
-    settings: {
-      searchPlaceholder: 'Recherche',
-      searchText: 'Pas de résultat',
-      searchingText: 'Recherche...',
-      allowDeselect: true,
-    }
-  })
-</script>

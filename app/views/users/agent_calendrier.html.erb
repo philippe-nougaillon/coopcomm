@@ -17,7 +17,7 @@
 
       <div class="min-w-full md:min-w-36">
         <%= label_tag :service %>
-        <%= select_tag :service, options_for_select(@services, params[:service]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()' %>
+        <%= select_tag :service, options_for_select(@services, params[:service]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
       </div>
 
       <!--
@@ -36,16 +36,3 @@
   <%= render partial: 'view_list' %>
 
 </div>
-
-<script>
-    // slimselect
-    new SlimSelect({
-        select: '#service',
-        settings: {
-            searchPlaceholder: 'Recherche',
-            searchText: 'Pas de résultat',
-            searchingText: 'Recherche...',
-            allowDeselect: true,
-        }
-    })
-</script>
