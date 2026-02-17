@@ -286,34 +286,3 @@
     <%= link_to "Annuler", (session[:return_to] || interventions_path), class: "btn" %>
   </div>
 <% end %>
-
-<script>
-  // slimselect
-  new SlimSelect({
-    select: '#intervention_tags',
-    settings: {
-      searchPlaceholder: 'Recherche',
-      searchText: 'Pas de résultat',
-      searchingText: 'Recherche...',
-      placeholderText: '',
-      allowDeselect: true,
-    }
-  })
-
-  new SlimSelect({
-    select: '#intervention_tags_manager',
-    settings: {
-      searchPlaceholder: 'Recherche',
-      searchText: 'Pas de résultat',
-      searchingText: 'Recherche...',
-      placeholderText: '',
-      allowDeselect: true,
-      addableText: 'Appuyez sur "Entrer" pour ajouter {value}',
-    },
-    events: {
-      addable: function (value) {
-        return value
-      }
-    }
-  })
-</script>

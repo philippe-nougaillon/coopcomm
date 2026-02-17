@@ -240,20 +240,6 @@ label#drawer-label div:nth-child(2) {
 
 /***** END FLIP CARD ANIMATION *****/
 
-/***** SLIM-SELECT INDISPONIBILITÉ *****/
-
-.ss-option.invalid{
-  color: grey !important;
-}
-.ss-option.invalid.ss-selected,
-.ss-option.invalid:hover {
-  color: white !important;
-  background-color: red !important;
-}
-
-/***** END SLIM-SELECT INDISPONIBILITÉ *****/
-
-
 /***** STEP *****/
 
 .steps-thin .step::before{
@@ -278,35 +264,113 @@ label#drawer-label div:nth-child(2) {
 
 /***** END STEP *****/
 
+/***** SLIM-SELECT  *****/
 
-select.slim-select[required] {
-  display: block !important;
-  position: absolute !important;
 
-  /* 2. On le rend invisible à l'œil, mais présent pour le navigateur */
-  opacity: 0;
+/* 1. Style global (S'applique à la classe .slim-select ET aux IDs spécifiques) */
+select.slim-select,
+#intervention_tags,
+#intervention_tags_manager {
+  /* Reset agressif du style navigateur */
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
 
-  /* 3. On le place au centre du conteneur parent */
-  /* Note : Assure-toi que le parent du select a bien 'position: relative' */
-  bottom: 0;
-  left: 0;
-  height: 100%;
+  /* La Boîte "Miroir" */
+  display: block;
   width: 100%;
-
-  /* 4. On le met en z-index bas pour ne pas bloquer le clic sur le SlimSelect */
-  /* ATTENTION : Si le clic ne passe pas, mets z-index: -1, 
-       mais la bulle risque d'être légèrement décalée selon les navigateurs */
-  z-index: 0;
-  pointer-events: none;
-  /* Laisse passer les clics vers le SlimSelect visuel */
-}
-
-/* Style qui s'applique quand le champ est invalide */
-.ss-main.ss-error-native {
+  height: 32px;
+  padding: 4px 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #4d4d4d;
+  background-color: #ffffff;
+  border: 1px solid #b3b3b3;
+  border-radius: 4px;
   box-shadow: none;
-  border-color: var(--fallback-bc, oklch(var(--bc) / .2)) !important;
-  outline-style: solid;
-  outline-width: 2px;
-  outline-offset: 2px;
-  outline-color: var(--fallback-bc, oklch(var(--bc) / .2));
+  outline: none;
+  cursor: pointer;
+
+  /* La Flèche par défaut (pour les selects simples) */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 10px;
 }
+
+/* 2. CAS MULTIPLE (Agent, Matériel, et vos TAGS) */
+/* S'applique si l'élément a l'attribut 'multiple' */
+select.slim-select[multiple],
+#intervention_tags[multiple],
+#intervention_tags_manager[multiple] {
+  /* Force une hauteur de ligne unique */
+  height: 32px !important;
+  overflow: hidden;
+
+  /* Pas de flèche pour les multiples */
+  background-image: none !important;
+  padding-right: 8px;
+
+  /* TEXTE INVISIBLE : On cache "Comptabilité", "Tag1", etc. */
+  color: transparent !important;
+}
+
+/* 3. Focus (pour tous) */
+select.slim-select:focus,
+#intervention_tags:focus,
+#intervention_tags_manager:focus {
+  border-color: #5897fb;
+}
+
+
+  /* SLIM-SELECT REQUIRED */
+
+  select.slim-select[required] {
+    display: block !important;
+    position: absolute !important;
+
+    /* 2. On le rend invisible à l'œil, mais présent pour le navigateur */
+    opacity: 0;
+
+    /* 3. On le place au centre du conteneur parent */
+    /* Note : Assure-toi que le parent du select a bien 'position: relative' */
+    bottom: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+
+    /* 4. On le met en z-index bas pour ne pas bloquer le clic sur le SlimSelect */
+    /* ATTENTION : Si le clic ne passe pas, mets z-index: -1, 
+        mais la bulle risque d'être légèrement décalée selon les navigateurs */
+    z-index: 0;
+    pointer-events: none;
+    /* Laisse passer les clics vers le SlimSelect visuel */
+  }
+
+  /* Style qui s'applique quand le champ est invalide */
+  .ss-main.ss-error-native {
+    box-shadow: none;
+    border-color: var(--fallback-bc, oklch(var(--bc) / .2)) !important;
+    outline-style: solid;
+    outline-width: 2px;
+    outline-offset: 2px;
+    outline-color: var(--fallback-bc, oklch(var(--bc) / .2));
+  }
+
+  /* END SLIM-SELECT REQUIRED */
+
+  /* SLIM-SELECT INDISPONIBILITÉ */
+
+  .ss-option.invalid {
+    color: grey !important;
+  }
+
+  .ss-option.invalid.ss-selected,
+  .ss-option.invalid:hover {
+    color: white !important;
+    background-color: red !important;
+  }
+
+  /* END SLIM-SELECT INDISPONIBILITÉ */
+
+/***** END SLIM-SELECT  *****/
