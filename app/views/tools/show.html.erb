@@ -183,7 +183,9 @@
     <h2 class="text-2xl text-secondary">
       Mouvements
     </h2>
-    <%= link_to "Ajouter un mouvement", new_mouvement_path(tool_id: @tool.id), class: 'btn btn-sm sm:btn-lg btn-outline btn-success hover:text-white!' %>
+    <% if policy(Mouvement).new? %>
+      <%= link_to "Ajouter un mouvement", new_mouvement_path(tool_id: @tool.id), class: 'btn btn-sm sm:btn-lg btn-outline btn-success hover:text-white!' %>
+    <% end %>
   </div>
   <div class="mx-auto w-full">
     <div class="overflow-x-auto">
