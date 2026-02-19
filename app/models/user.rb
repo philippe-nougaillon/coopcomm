@@ -10,9 +10,10 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :rememberable, :timeoutable 
   devise :database_authenticatable,
          :recoverable,
-         :validatable,
+        #  :validatable,
          :trackable,
-         :lockable
+         :lockable,
+         :secure_validatable
         #  :registerable,
         #  :omniauthable,
         #  omniauth_providers: [:google_oauth2]

@@ -152,3 +152,7 @@ gem "markdown-rails", "~> 2.2"
 gem "redcarpet", "~> 3.6"
 
 gem "fetch-api", "~> 0.6.0"
+
+gem "devise-security", "~> 0.18.0"
+
+gem "email_validator", "~> 2.2"

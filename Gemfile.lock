@@ -143,6 +143,8 @@ GEM
       railties (>= 4.1.0)
       responders
       warden (~> 1.2.3)
+    devise-security (0.18.0)
+      devise (>= 4.3.0)
     discard (1.4.0)
       activerecord (>= 4.2, < 9.0)
     docile (1.4.1)
@@ -158,6 +160,8 @@ GEM
     em-websocket (0.5.3)
       eventmachine (>= 0.12.9)
       http_parser.rb (~> 0)
+    email_validator (2.2.4)
+      activemodel
     erb (6.0.0)
     erubi (1.13.1)
     et-orbi (1.4.0)
@@ -590,9 +594,11 @@ DEPENDENCIES
   csv (~> 3.3)
   debug
   devise (~> 4.9)
+  devise-security (~> 0.18.0)
   discard (~> 1.4)
   dotenv
   dry-events (~> 1.0)
+  email_validator (~> 2.2)
   exception_notification!
   fetch-api (~> 0.6.0)
   friendly_id (~> 5.5)
