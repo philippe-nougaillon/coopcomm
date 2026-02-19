@@ -73,12 +73,14 @@
 
   <div class="flex flex-wrap gap-2 mt-8">
     <%= link_to "Modifier", edit_user_path(@user), class: "btn" %>
-    <%= button_to user_path(@user), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet utilisateur ?" }, class: "btn", 'data-testid': "Supprimer l'utilisateur" do %>
-      <span class="material-symbols-outlined">
-        delete
-      </span>
+    <% if policy(@user).destroy? %>
+      <%= button_to user_path(@user), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet utilisateur ?" }, class: "btn", 'data-testid': "Supprimer l'utilisateur" do %>
+        <span class="material-symbols-outlined">
+          delete
+        </span>
+      <% end %>
+      <%= link_to "Retour", users_path, class: "btn" %>
     <% end %>
-    <%= link_to "Retour", users_path, class: "btn" %>
   </div>
 
   <% if @user.adhérent? && @user.localisation %>

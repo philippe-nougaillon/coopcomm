@@ -83,6 +83,7 @@ class UsersController < ApplicationController
   def update
     respond_to do |format|
       if @user.update(user_params)
+        bypass_sign_in(@user) if @user == current_user
         format.html { redirect_to user_url(@user), notice: "Utilisateur modifié avec succès." }
         format.json { render :show, status: :ok, location: @user }
       else
