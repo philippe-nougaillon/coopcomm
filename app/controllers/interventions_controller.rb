@@ -1,9 +1,9 @@
 class InterventionsController < ApplicationController
   before_action :set_intervention, only: %i[ show edit update destroy terminer valider refuser archiver purge pointer pointage_statut ]
   before_action :set_form_variables, only: %i[ new edit create update ]
-  before_action :is_user_authorized, except: %i[ pointer pointage_statut ]
+  before_action :is_user_authorized
   before_action :store_return_location, only: [:new, :edit]
-  skip_before_action :authenticate_user!, only: %i[ pointer pointage_statut ]
+  skip_before_action :authenticate_user!
 
   # GET /interventions or /interventions.json
   def index

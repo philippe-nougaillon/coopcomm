@@ -72,4 +72,12 @@ class InterventionPolicy < ApplicationPolicy
   def route_interventions?
     index?
   end
+
+  def pointer?
+    user && record.agents.include?(user)
+  end
+
+  def pointage_statut?
+    pointer?
+  end
 end
