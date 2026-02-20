@@ -16,6 +16,7 @@
   <% if params[:tool_id] %>
     <%= form.hidden_field :tool_id, value: params[:tool_id] %>
   <% else %>
+    <%= form.label :tool_id, "Matériel" %>
     <%= form.select :tool_id, options_from_collection_for_select(@tools, :id, :name), {include_blank: true, required: true}, class: "slim-select w-full" %>
   <% end %>
 
