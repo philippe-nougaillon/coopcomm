@@ -1,5 +1,38 @@
 <tr class="hover:bg-base-300 <%= 'text-error font-bold' if absence.en_cours? %>">
-  <td><%= l(absence.du, format: :long) %></td>
-  <td><%= l(absence.au, format: :long) %></td>
+  <td class="text-nowrap">
+    <%= l(absence.du, format: :long) %>
+    <% if absence.matin %>
+      <br>
+      Matin
+    <% elsif absence.après_midi %>
+      <br>
+      Après-midi
+    <% else %>
+      -
+      <%= l(absence.au, format: :long) %>
+    <% end %>
+  </td>
   <td><%= absence.motif %></td>
-</td>
+  <td><%= absence.observation %></td>
+  <td>
+    <% if current_user.manager? %>
+      <button class="btn btn-primary btn-xs" onclick="edit_modal_<%= absence.id %>.showModal()">
+        Modifier
+      </button>
+
+      <dialog id="edit_modal_<%= absence.id %>" class="modal">
+        <div class="modal-box font-normal text-base-content text-left">
+          <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+          </form>
+          
+          <h3 class="font-bold text-lg mb-4">Modifier l'absence</h3>
+          <%= render "absence_form", absence: absence %>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+          <button>Fermer</button>
+        </form>
+      </dialog>
+    <% end %>
+  </td>
+</tr>

@@ -1,18 +1,12 @@
-<div class="nested-form-wrapper flex gap-4 lg:gap-8 w-full mb-4" data-new-record="<%= f.object.new_record? %>">
-  <div class="flex items-center">
-    <%= f.label :du %>
-    <%= f.date_field :du, class: 'input input-sm ml-1', required: true %>
-  </div>
-  <div class="flex items-center">
-    <%= f.label :au %>
-    <%= f.date_field :au, class: 'input input-sm ml-1', required: true %>
-  </div>
-  <div class="flex flex-1 items-center">
-    <%= f.label :motif, class: "" %>
-    <%= f.text_field :motif, class: 'input input-sm flex-1 ml-1' %>
-  </div>
+<% unique_id = absence.id || 'new' %>
+<% is_half_day = absence.matin || absence.après_midi %>
 
-  <button type="button" data-action="nested-form#remove" class="btn btn-outline btn-error btn-sm">X</button>
+<%= form_with(model: @user) do |f| %>
+  <%= f.fields_for :absences, absence do |ff| %>
+    <%= render 'absence_fields', f: ff %>
+  <% end %>
 
-  <%= f.hidden_field :_destroy %>
-</div>
+  <div class="modal-action">
+    <%= f.submit "Enregistrer", class: "btn btn-primary" %>
+  </div>
+<% end %>

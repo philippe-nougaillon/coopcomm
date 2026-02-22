@@ -163,12 +163,35 @@ class User < ApplicationRecord
     return self.notifications.where("notifications.created_at > ?", self.notifications_last_seen_at).any?
   end
 
-  def absent?
-    self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", Date.today).any?
+  def current_absence(date = Date.today, periode = nil)
+    absence = absences.where("du <= :date AND au >= :date", date: date).first
+    
+    # S'il n'y a aucune absence à cette date, on renvoie nil direct
+    return nil unless absence
+
+    # Si on ne demande pas de période précise, on renvoie l'absence trouvée
+    return absence if periode.nil?
+
+    # Si c'est une journée complète (les deux booléens sont à false), 
+    # l'absence est valide peu importe la période demandée
+    journee_entiere = !absence.matin && !absence.après_midi
+    return absence if journee_entiere
+
+    # Si c'est une demi-journée, on vérifie si elle correspond à la demande
+    if periode == :matin && absence.matin
+      return absence
+    elsif periode == :apres_midi && absence.après_midi
+      return absence
+    end
+
+    # Si l'absence ne correspond pas à la période (ex: on demande le matin, 
+    # mais l'absence est posée pour l'après-midi), on renvoie nil
+    nil
   end
 
-  def current_absence(date = Date.today)
-    self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", date).first
+  # La méthode absent? devient ultra minimaliste puisqu'elle se base sur current_absence
+  def absent?(date = Date.today, periode = nil)
+    current_absence(date, periode).present?
   end
 
   def lng_lat

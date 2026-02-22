@@ -89,14 +89,40 @@
   <% end %>
 
   <% if @user.agent? %>
-    <h2 class="text-2xl text-secondary mt-8">Absences</h2>
+    <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
+      <h2 class="text-2xl text-secondary">
+        Absences
+      </h2>
+      <% if current_user.manager? %>
+        <button class="btn btn-sm sm:btn-lg btn-outline btn-success hover:text-white!" onclick="absence_modal.showModal()">
+          Ajouter une absence
+        </button>
+
+        <dialog id="absence_modal" class="modal">
+          <div class="modal-box">
+            <form method="dialog">
+              <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            
+            <h3 class="font-bold text-lg mb-4">Enregistrer une absence</h3>
+            
+            <%= render 'absence_form', absence: Absence.new(user_id: @user.id) %>
+          </div>
+          
+          <form method="dialog" class="modal-backdrop">
+            <button>Fermer</button>
+          </form>
+        </dialog>
+      <% end %>
+    </div>
     <div class="overflow-x-auto mt-4">
       <table class="table table-sm">
         <thead class="bg-slate-100">
           <tr>
-            <th>Du</th>
-            <th>Au</th>
+            <th>Période</th>
             <th>Motif</th>
+            <th>Observation</th>
+            <th></th>
           </tr>
         </thead>
 
@@ -105,6 +131,7 @@
         </tbody>
       </table>
     </div>
+    <%= render "absence_form_script" %>
   <% end %>
 
   <h2 class="text-2xl text-secondary mt-8">Activité</h2>

@@ -10,17 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_14_132414) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_20_084745) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "absences", force: :cascade do |t|
     t.date "du"
     t.date "au"
-    t.string "motif"
+    t.string "observation"
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "motif", default: 0
+    t.boolean "matin", default: false
+    t.boolean "après_midi", default: false
     t.index ["user_id"], name: "index_absences_on_user_id"
   end
 

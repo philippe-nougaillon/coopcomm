@@ -100,17 +100,19 @@
 
 
     <%= form.fields_for :absences do |absence_fields| %>
-      <%= render "absence_form", f: absence_fields %>
+      <%= render "absence_form_nested", f: absence_fields %>
     <% end %>
 
     <template data-nested-form-target="template">
       <%= form.fields_for :absences, Absence.new, child_index: 'NEW_RECORD' do |absence_fields| %>
-        <%= render "absence_form", f: absence_fields %>
+        <%= render "absence_form_nested", f: absence_fields %>
       <% end %>
     </template>
 
     <!-- Inserted elements will be injected before that target. -->
     <div data-nested-form-target="target"></div>
+
+    <%= render "absence_form_script" %>
   <% end %>
 
   <%= form.submit "Enregistrer", id:"enregistrer_utilisateur", class: "btn btn-primary mt-4" %>
