@@ -153,6 +153,16 @@ class InterventionsController < ApplicationController
     @intervention = Intervention.new
     @intervention.adherent_id = current_user.id if current_user.adhérent?
     @intervention.agent_ids = current_user.agent? ? current_user.id : params[:agent_ids]
+
+    # Ajout de la date de fin
+    if current_user.agent?
+      now = DateTime.now()
+      # Le nombre de minute doit être un mutliple de 5, 
+      # Pour cela, on enlève le nombre de minutes modulo 5 (Ex: Si on a 14 minutes -> 14%5 = 4, donc 14-4 = 10)
+      date_fin = now - now.minute.modulo(5).minute
+
+      @intervention.fin = date_fin
+    end
   end
 
   # GET /interventions/1/edit
