@@ -32,7 +32,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
           nom: "Foo",
           prénom: "Bar",
           email: "email@example.com",
-          password: "password",
+          password: "0DcPIZIq0+f5SvCf",
           rôle: "agent",
           organisation: organisations(:mairie_paris)
         }
@@ -56,7 +56,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     patch user_url(@user), params: {
       user: {
         email: @user.email,
-        password: "password",
+        password: "0DcPIZIq0+f5SvCf",
         rôle: @user.rôle,
         organisation: @user.organisation
       }

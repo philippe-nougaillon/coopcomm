@@ -108,6 +108,9 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "pointer intervention repete doit créer une intervention" do
+    # Le sign_in gère tout seul la déconnexion du premier sign_in dans le setup
+    sign_in users(:martin_technique_paris)
+
     intervention = interventions(:intervention_repete)
     
     assert_difference("Intervention.count", 1) do
@@ -116,6 +119,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "pointer intervention repete doit mettre fin à une intervention" do
+    # Le sign_in gère tout seul la déconnexion du premier sign_in dans le setup
+    sign_in users(:martin_technique_paris)
     intervention = interventions(:intervention_repete)
     
     # Pointage

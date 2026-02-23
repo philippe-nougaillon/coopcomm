@@ -23,7 +23,7 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
           nom: "Foo",
           prénom: "Bar",
           email: "email@example.com",
-          password: "password",
+          password: "0DcPIZIq0+f5SvCf",
           rôle: "adhérent",
           téléphone: "0123456789",
           localisation: "123.123,432.120398",
