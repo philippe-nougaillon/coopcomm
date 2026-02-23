@@ -221,6 +221,10 @@ class User < ApplicationRecord
     Intervention.dernière_en_cours(self.interventions)
   end
 
+  def self.xls_headers
+    ['Nom','Prénom','Email','Téléphone','Service','Mot de passe','Mémo']
+  end
+
   private
 
   def slug_candidates

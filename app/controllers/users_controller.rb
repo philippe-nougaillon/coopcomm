@@ -2,6 +2,8 @@ class UsersController < ApplicationController
   before_action :set_user, only: %i[ show edit update destroy ]
   before_action :is_user_authorized
 
+  require 'capture_stdout'
+
   # GET /users or /users.json
   def index
     @services = User.services.sort
@@ -131,6 +133,87 @@ class UsersController < ApplicationController
 
     @agents = @agents.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
     @pagy, @agents = pagy(@agents, items: 10)
+  end
+
+  def import
+  end
+
+  def import_do
+    if params[:upload].present?
+      @stream = capture_stdout do
+        # Enregistre le fichier localement (format = Date + nom du fichier)
+        filename = I18n.l(Time.now, format: :long) + ' - ' + params[:upload].original_filename
+
+        file_with_path = Rails.root.join('public', filename)
+        File.open(file_with_path, 'wb') do |file|
+          file.write(params[:upload].read)
+        end
+
+        @importes = @errors = 0 
+        index = 1
+
+        # IMPORT XLS
+        Spreadsheet.client_encoding = 'UTF-8'
+        book = Spreadsheet.open file_with_path
+        sheet1 = book.worksheet 0
+        headers = User.xls_headers
+
+        sheet1.each 1 do |row|
+          index += 1
+          next unless row[0]
+
+          user = User
+                    .where("lower(email) = ?", 
+                      row[headers.index 'Email']&.strip&.downcase, 
+                    )
+                    .first_or_initialize
+
+                    
+                    new_record = user.new_record?
+                    
+          user.organisation_id = current_user.organisation_id
+          user.nom = row[headers.index 'Nom']&.strip&.upcase
+          user.prénom = row[headers.index 'Prénom']&.strip&.humanize
+          user.email = row[headers.index 'Email']
+          user.téléphone = row[headers.index 'Téléphone']
+          user.password = row[headers.index 'Mot de passe'] if new_record
+          user.rôle = "agent"
+          user.service = row[headers.index 'Service']&.humanize
+          user.memo = row[headers.index 'Mémo']
+
+          # MAJ existant ? si l'id est égal à 0 => c'est une création
+          puts "USER #{new_record ? 'NEW' : 'UPDATE'} => id:#{user.id} changes:#{user.changes}"
+
+          if user.valid? 
+            if params[:save] == 'true'
+              user.save
+              puts "Envoi d'email pas encore fait" if new_record
+            end
+            @importes += 1
+          else
+            puts " || ERREURS: " + user.errors.messages.map{|m| "#{m.first} => #{m.last}"}.join(',')
+            @errors += 1
+          end
+        end
+
+        puts 
+        puts "----------- Les modifications n'ont pas été enregistrées ! ---------------" unless params[:save] == 'true'
+        puts
+
+        puts "=" * 40
+        puts "Lignes importées: #{@importes} | Lignes ignorées: #{@errors}"
+        puts "=" * 40
+
+        if @errors > 0
+          flash[:alert] = @importes == 0 ? "L'importation a échouée" : "L'importation a partiellement échouée"
+        else
+          flash[:notice] = "L'importation a bien été exécutée"
+        end
+      end
+    else
+      flash[:alert] = "Manque le fichier source pour pouvoir lancer l'importation !"
+      redirect_to action: 'import'
+    end 
   end
 
   private

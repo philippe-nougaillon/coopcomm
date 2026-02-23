@@ -36,4 +36,12 @@ class UserPolicy < ApplicationPolicy
   def agent_calendrier?
     index?
   end
+
+  def import?
+    manager
+  end
+
+  def import_do?
+    import?
+  end
 end
