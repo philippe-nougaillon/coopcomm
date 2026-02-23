@@ -180,6 +180,22 @@
     <% end %>
   <% end %>
 
+  <% if policy(Mouvement).index? %>
+    <%= link_to mouvements_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:controller] == 'mouvements'}", title: "Liste des mouvements" do %>
+      <span class="material-symbols-outlined">
+        compare_arrows
+      </span>
+    <% end %>
+  <% end %>
+
+  <% if policy(WikiPage).index? %>
+    <%= link_to wiki_pages_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:controller] == 'wiki_pages'}", title: "Wiki" do %>
+      <span class="material-symbols-outlined">
+        menu_book
+      </span>
+    <% end %>
+  <% end %>
+
   <% if policy(:pages).assistant? %>
     <%= link_to assistant_path, class: "hidden sm:flex text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:action] == 'assistant'}", title: 'Assistant (IA)' do %>
       <span class="material-symbols-outlined">
