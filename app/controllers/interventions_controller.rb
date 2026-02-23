@@ -154,8 +154,8 @@ class InterventionsController < ApplicationController
     @intervention.adherent_id = current_user.id if current_user.adhérent?
     @intervention.agent_ids = current_user.agent? ? current_user.id : params[:agent_ids]
 
-    # Ajout de la date de fin
-    if current_user.agent?
+    # Ajout de la date de fin si c'est un agent et que la date début prévue et fin prévue sont nil
+    if current_user.agent? && (params[:début_prévue].blank? || params[:fin_prévue].blank?)
       now = DateTime.now()
       # Le nombre de minute doit être un mutliple de 5, 
       # Pour cela, on enlève le nombre de minutes modulo 5 (Ex: Si on a 14 minutes -> 14%5 = 4, donc 14-4 = 10)
