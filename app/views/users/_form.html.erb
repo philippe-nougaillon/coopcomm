@@ -92,7 +92,7 @@
     <%= form.text_area :memo, class: 'textarea w-full' %>
   </div>
 
-  <% if @user.agent? && current_user.manager? %>
+  <% if (@user.agent? || @user.manager?) && current_user.manager? %>
     <div class="flex mt-4 gap-4 mb-4">
       <h2 class="text-2xl text-secondary">Absences</h2>
       <button type="button" data-action="nested-form#add" class="btn btn-sm btn-outline btn-success hover:text-white!">+</button>
