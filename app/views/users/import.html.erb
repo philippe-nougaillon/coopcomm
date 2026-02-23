@@ -1,0 +1,35 @@
+<div class="mx-auto w-full">
+  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
+    <h1 class="text-primary font-bold text-3xl sm:text-4xl whitespace-nowrap">
+      <%= page_title!('Import agents') %>
+    </h1>
+  </div>
+
+  <p class="mb-4">Le fichier doit être au format Excel et avoir les champs dans cet ordre : <b><%= User.xls_headers.join(', ') %></b></p>
+
+  <%= form_tag({action: "import_do", method: :post}, multipart: true, id: "import_form") do %>
+    <div>
+      <%= label :upload, "Fichier source" %>
+      <%= file_field_tag 'upload', accept: 'application/vnd.ms-excel', class: 'file-input file-input-bordered file-input-sm', required: true %>
+      <%= render "partials/script_accept_file_type", id_form: "import_form", id_file_input: "upload", file_type_accepted: 'application/vnd.ms-excel', file_type_for_alert: 'XLS' %>
+    </div>
+
+    <div>
+      <b>Enregistrer les changements ?</b>
+      <br>
+      <label class="radio-inline">
+        <%= radio_button_tag :save, true %>
+        Oui
+      </label>
+      <label class="radio-inline">     
+        <%= radio_button_tag :save, false, :checked => true %>
+        Non
+      </label>
+      
+      <br>
+      <i>Choisissez 'Non' pour tester votre import</b></i><br />
+    </div>
+
+    <%= submit_tag "Lancer l'importation", class: "btn btn-primary btn-outline hover:text-white mb-4", 'data-turbo': false %>
+  <% end %>
+</div>

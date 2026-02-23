@@ -21,6 +21,8 @@ Rails.application.routes.draw do
   resources :users do
     collection do
       get :agent_calendrier
+      get :import
+      post :import_do
     end
   end
 
