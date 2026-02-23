@@ -199,30 +199,34 @@
 
               // Initialisation des bibliothèques nécessaires
               const { Map } = await google.maps.importLibrary("maps");
-              const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary(
-                  "marker",
-              );
+              const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
+              const bounds = await new google.maps.LatLngBounds();
+              const trafficLayer = await new google.maps.TrafficLayer();
 
               // Initialisation de la map
               map = new google.maps.Map(document.getElementById("map"), {
-                  center : <%= @map_center %>,
+                  center : <%= @localisation_depart %>,
                   zoom: 11,
                   mapId: "549c4681c953f814fa1cd142",
               });
 
-              var pinIntervention = new PinElement({
-              });
-              new google.maps.marker.AdvancedMarkerElement({
+              // Ajout du marker d'arrivée
+              let marker = new google.maps.marker.AdvancedMarkerElement({
                   map,
                   position: <%= @localisation_arrivee %>,
                   title: "<%= "Intervention" %>",
-                  content: pinIntervention.element
               });
 
+              // Centrage de la map en fonction des points
+              bounds.extend(map.center);
+              bounds.extend(marker.position);
+              map.fitBounds(bounds);
+
+              // Ajout des routes s'il en existe
               <% if @response && @response["routes"] %>
                 let decodedPath;
                 let flightPath;
-                // Initialisation des routes
+
                 <% @response["routes"].each do |route| %>
                   decodedPath = google.maps.geometry.encoding.decodePath(
                       "<%= j route["polyline"]["encodedPolyline"] %>"
@@ -241,7 +245,7 @@
                 <% end %>
               <% end %>
 
-              const trafficLayer = new google.maps.TrafficLayer();
+              // Ajout du traffic de la route
               trafficLayer.setMap(map);
             }
           </script>

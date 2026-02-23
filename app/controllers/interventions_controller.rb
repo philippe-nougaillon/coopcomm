@@ -111,16 +111,16 @@ class InterventionsController < ApplicationController
         if @intervention.adherent.present? && @intervention.adherent.localisation.present?
           if @intervention.trajet.blank? || @intervention.nouveau?
             # Prendre l'adhérent de l'intervention
-            localisation_destination = @intervention.adherent.localisation_to_lat_lng_object
+            localisation_arrivee = @intervention.adherent.localisation_to_lat_lng_object
 
             # Création du service avec l'intervention de destination
-            request = ApiGoogleMaps.new(localisation_destination)
+            request = ApiGoogleMaps.new(localisation_arrivee)
 
             request.call
 
-            # Récupération des données via les getters
-            @map_center = request.map_center
-            @localisation_arrivee = localisation_destination
+            # Récupération des données via les getters du service
+            @localisation_depart = request.localisation_depart
+            @localisation_arrivee = localisation_arrivee
             @errors = request.errors
             @routes_info = request.routes_info
             @response = request.data_response
@@ -729,16 +729,6 @@ class InterventionsController < ApplicationController
         }.join(" | "),
         adherent_slug: User.find(adherent_id).slug
       }
-    }
-  end
-
-  def calculate_map_center(interventions_localisations)
-    coordonnees = interventions_localisations.pluck(:position)
-    lats = coordonnees.pluck(:lat)
-    lngs = coordonnees.pluck(:lng)
-    return {
-      lat: (lats.min + lats.max) / 2,
-      lng: (lngs.min + lngs.max) / 2
     }
   end
 

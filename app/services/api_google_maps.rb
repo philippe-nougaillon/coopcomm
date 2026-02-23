@@ -1,6 +1,6 @@
 class ApiGoogleMaps < ApplicationService
 
-  attr_reader :map_center, :errors, :routes_info, :data_response
+  attr_reader :localisation_depart, :errors, :routes_info, :data_response
 
   def initialize(localisation_destination)
     @localisation_destination = localisation_destination
@@ -11,16 +11,16 @@ class ApiGoogleMaps < ApplicationService
     # Prendre la route du siège de l'organisation vers l'adhérent courant
     lat, lng = ENV["COORD_DEPART"]&.split(',')
     localisation_siege = { lat: lat.to_f, lng: lng.to_f }
-    @map_center = localisation_siege
+    @localisation_depart = localisation_siege
 
     self.prepare_body_request(localisation_siege, @localisation_destination)
     @data_response = self.get_response
 
-    if data_response["error"]
-        @errors = { position: @localisation_destination, message: data_response["error"]["message"] }
+    if @data_response["error"]
+        @errors = { position: @localisation_destination, message: @data_response["error"]["message"] }
     else
         @routes_info = self.get_trajet_from_response
-        @response = data_response
+        @response = @data_response
     end
   end
   
@@ -38,7 +38,7 @@ class ApiGoogleMaps < ApplicationService
   end
 
   def get_response
-      @response = JSON.parse(@http.request(@request).read_body)
+    @response = JSON.parse(@http.request(@request).read_body)
   end
 
   def prepare_body_request(origin, destination)
