@@ -1,15 +1,12 @@
-<% message_out = (current_user.id == notification.from_id) %>
-<% user = User.find_by(id: message_out ? notification.to_id : notification.from_id) %>
-<div id="<%= dom_id notification %>" class="chat <%= message_out ? 'chat-end' : 'chat-start' %> mt-2">
-  <div class="chat-bubble <%= message_out ? '' : 'chat-bubble-info' %> ">
-    <% if user %>
-      <span><%# @new_notification_ids.include?(notification.id) %></span>
-      
+<% sent_by_me = (current_user.id == notification.from_id) %>
+<div id="<%= dom_id notification %>" class="chat <%= sent_by_me ? 'chat-end' : 'chat-start' %> mt-2">
+  <div class="chat-bubble <%= sent_by_me ? '' : 'chat-bubble-info' %> ">
+    <% if notification.from_user %>
       <div class="flex items-center gap-2">
-        <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
+        <%= render partial: 'partials/user_profile_picture', locals: {user: notification.from_user} %>
         <div>
           <p>
-            <%= user.nom_prenom_role %> 
+            <%= notification.from_user.nom_prenom_role %>
           </p>
           <small>
             <i>il y a <%= time_ago_in_words notification.created_at %></i>
