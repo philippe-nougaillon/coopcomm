@@ -222,7 +222,33 @@ class User < ApplicationRecord
   end
 
   def self.xls_headers
-    ['Nom','Prénom','Email','Téléphone','Service','Mot de passe','Mémo']
+    ['Nom','Prénom','Email','Téléphone','Service','Mémo']
+  end
+
+  def self.generate_random_password
+    # 1. Définition des bases en retirant les caractères prêtant à confusion
+    minuscules = ('a'..'z').to_a - ['l']
+    majuscules = ('A'..'Z').to_a - ['O', 'I']
+    chiffres = ('1'..'9').to_a
+    symboles = "!\"\#$%&'()*+,-./:;<=>?@[\\]^_`{|}~".chars
+
+    tous_les_caracteres = minuscules + majuscules + chiffres + symboles
+
+    # 2. Garantie d'avoir au moins un caractère de chaque type
+    mot_de_passe = [
+      minuscules.sample(random: SecureRandom),
+      majuscules.sample(random: SecureRandom),
+      chiffres.sample(random: SecureRandom),
+      symboles.sample(random: SecureRandom)
+    ]
+
+    # 3. Remplissage pour atteindre 12 caractères
+    8.times do
+      mot_de_passe << tous_les_caracteres.sample(random: SecureRandom)
+    end
+
+    # 4. Mélange sécurisé et conversion en chaîne (String)
+    mot_de_passe.shuffle(random: SecureRandom).join
   end
 
   private

@@ -176,7 +176,10 @@ class UsersController < ApplicationController
           user.prénom = row[headers.index 'Prénom']&.strip&.humanize
           user.email = row[headers.index 'Email']
           user.téléphone = row[headers.index 'Téléphone']
-          user.password = row[headers.index 'Mot de passe'] if new_record
+          if new_record
+            password = User.generate_random_password
+            user.password = password 
+          end
           user.rôle = "agent"
           user.service = row[headers.index 'Service']&.humanize
           user.memo = row[headers.index 'Mémo']
@@ -187,7 +190,12 @@ class UsersController < ApplicationController
           if user.valid? 
             if params[:save] == 'true'
               user.save
-              puts "Envoi d'email pas encore fait" if new_record
+              if new_record
+                title = "[CoopComm] Bienvenue (test sans job)!"
+                mailer_response = NotificationMailer.welcome_import(user, title, password).deliver_now
+                MailLog.create(user_id: current_user.id, message_id: mailer_response.message_id, to: user.email, subject: "Nouvel accès import")
+                WelcomeImportNotificationJob.perform_later(user, current_user.id, password)
+              end
             end
             @importes += 1
           else
