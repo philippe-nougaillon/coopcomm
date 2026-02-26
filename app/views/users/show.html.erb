@@ -80,9 +80,9 @@
         </span>
       <% end %>
       <%= link_to "Retour", users_path, class: "btn" %>
-      <% if policy(@user).inviter? %>
-        <%= link_to "Réinviter", inviter_user_path(@user), class: "btn", 'data-turbo': false %>
-      <% end %>
+    <% end %>
+    <% if policy(@user).inviter? %>
+      <%= link_to "Réinviter", inviter_user_path(@user), class: "btn", 'data-turbo': false %>
     <% end %>
   </div>
 
