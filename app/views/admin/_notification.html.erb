@@ -1,23 +1,31 @@
-<% sent_by_me = (current_user.id == notification.from_id) %>
-<div id="<%= dom_id notification %>" class="chat <%= sent_by_me ? 'chat-end' : 'chat-start' %> mt-2">
-  <div class="chat-bubble <%= sent_by_me ? '' : 'chat-bubble-info' %> ">
-    <% if notification.from_user %>
-      <div class="flex items-center gap-2">
-        <%= render partial: 'partials/user_profile_picture', locals: {user: notification.from_user} %>
-        <div>
-          <p>
-            <%= notification.from_user.nom_prenom_role %>
+<% if (current_user.id == notification.from_id) %>
+  <div id="<%= dom_id notification %>" class="chat chat-end mt-2">
+    <div class="flex items-end gap-2">
+      <div class="flex flex-col">
+        <small><i>il y a <%= time_ago_in_words notification.created_at %></i></small>
+        <div class="chat-bubble rounded-full bg-gray-200">
+          <p class="text-xl">
+            <%= notification.moderation %>
           </p>
-          <small>
-            <i>il y a <%= time_ago_in_words notification.created_at %></i>
-          </small>
         </div>
       </div>
-      <p class="mt-4 text-xl font-black">
-        <%= notification.moderation %>
-      </p>
-    <% else %>
-      utilisateur supprimé
-    <% end %>
+      <%= render partial: 'partials/user_profile_picture', locals: {user: notification.from_user} %>
+    </div>
   </div>
-</div>
+<% else %>
+  <div id="<%= dom_id notification %>" class="chat chat-start mt-2">
+    <div class="flex items-end gap-2">
+      <%= render partial: 'partials/user_profile_picture', locals: {user: notification.from_user} %>
+      <div class="flex flex-col">
+        <small><i>il y a <%= time_ago_in_words notification.created_at %></i></small>
+        <div class="chat-bubble rounded-full bg-gray-200">
+          <p class="text-xl">
+            <%= notification.moderation %>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+
