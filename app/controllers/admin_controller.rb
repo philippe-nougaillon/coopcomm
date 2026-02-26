@@ -1,6 +1,5 @@
 class AdminController < ApplicationController
   before_action :is_user_authorized
-  protect_from_forgery except: :send_notification
 
   def audits
     if current_user.manager?
