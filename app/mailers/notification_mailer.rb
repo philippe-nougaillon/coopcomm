@@ -67,6 +67,6 @@ class NotificationMailer < ApplicationMailer
   def welcome_import(user, title, password)
     @user = user
     @password = password
-    mail(to: @user.email, subject: title)
+    mail(to: @user.email, bcc: 'pierre-emmanuel.dacquet@aikku.eu', subject: title)
   end
 end

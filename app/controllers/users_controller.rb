@@ -191,10 +191,11 @@ class UsersController < ApplicationController
             if params[:save] == 'true'
               user.save
               if new_record
-                title = "[CoopComm] Bienvenue (test sans job)!"
-                mailer_response = NotificationMailer.welcome_import(user, title, password).deliver_now
-                MailLog.create(user_id: current_user.id, message_id: mailer_response.message_id, to: user.email, subject: "Nouvel accès import")
-                WelcomeImportNotificationJob.perform_later(user, current_user.id, password)
+                key_len = ActiveSupport::MessageEncryptor.key_len
+                secret_key = Rails.application.key_generator.generate_key('import_password', key_len)
+                encryptor = ActiveSupport::MessageEncryptor.new(secret_key)
+                encrypted_password = encryptor.encrypt_and_sign(password)
+                WelcomeImportNotificationJob.perform_later(user, current_user.id, encrypted_password)
               end
             end
             @importes += 1
