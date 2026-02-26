@@ -81,6 +81,9 @@
       <% end %>
       <%= link_to "Retour", users_path, class: "btn" %>
     <% end %>
+    <% if policy(@user).edit_password? %>
+      <%= link_to "Modifier mot de passe", edit_password_user_path(@user), class: "btn" %>
+    <% end %>
     <% if policy(@user).inviter? %>
       <%= link_to "Réinviter", inviter_user_path(@user), class: "btn", 'data-turbo': false %>
     <% end %>

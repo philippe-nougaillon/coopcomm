@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  before_action :set_user, only: %i[ show edit update destroy inviter ]
+  before_action :set_user, only: %i[ show edit update destroy inviter edit_password update_password ]
   before_action :is_user_authorized
 
   require 'capture_stdout'
@@ -234,6 +234,22 @@ class UsersController < ApplicationController
   def inviter
     @user.invite!(current_user)
     redirect_to user_path(@user), notice: "Utilisateur invité"
+  end
+
+  def edit_password
+  end
+
+  def update_password
+    respond_to do |format|
+      if @user.update(user_params)
+        bypass_sign_in(@user) if @user == current_user
+        format.html { redirect_to user_url(@user), notice: "Mot de passe modifié avec succès." }
+        format.json { render :show, status: :ok, location: @user }
+      else
+        format.html { render :edit_password, status: :unprocessable_entity }
+        format.json { render json: @user.errors, status: :unprocessable_entity }
+      end
+    end
   end
 
   private

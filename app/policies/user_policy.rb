@@ -48,4 +48,12 @@ class UserPolicy < ApplicationPolicy
   def inviter?
     manager && organisation && record != user
   end
+
+  def edit_password?
+    record == user
+  end
+
+  def update_password?
+    edit_password?
+  end
 end
