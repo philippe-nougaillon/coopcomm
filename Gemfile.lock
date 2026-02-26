@@ -146,6 +146,9 @@ GEM
       warden (~> 1.2.3)
     devise-security (0.18.0)
       devise (>= 4.3.0)
+    devise_invitable (2.0.11)
+      actionmailer (>= 5.0)
+      devise (>= 4.6)
     discard (1.4.0)
       activerecord (>= 4.2, < 9.0)
     docile (1.4.1)
@@ -601,6 +604,7 @@ DEPENDENCIES
   debug
   devise (~> 4.9)
   devise-security (~> 0.18.0)
+  devise_invitable (~> 2.0)
   discard (~> 1.4)
   dotenv
   dry-events (~> 1.0)

@@ -44,4 +44,8 @@ class UserPolicy < ApplicationPolicy
   def import_do?
     import?
   end
+
+  def inviter?
+    manager && organisation && record != user
+  end
 end

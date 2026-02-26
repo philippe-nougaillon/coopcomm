@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  before_action :set_user, only: %i[ show edit update destroy ]
+  before_action :set_user, only: %i[ show edit update destroy inviter ]
   before_action :is_user_authorized
 
   require 'capture_stdout'
@@ -69,9 +69,11 @@ class UsersController < ApplicationController
   def create
     @user = User.new(user_params)
     @user.organisation = current_user.organisation
+    @user.password = User.generate_random_password
 
     respond_to do |format|
       if @user.save
+        @user.invite!(current_user)
         format.html { redirect_to user_url(@user), notice: "Utilisateur créé avec succès." }
         format.json { render :show, status: :created, location: @user }
       else
@@ -140,6 +142,7 @@ class UsersController < ApplicationController
 
   def import_do
     if params[:upload].present?
+      @mdp = ""
       @stream = capture_stdout do
         # Enregistre le fichier localement (format = Date + nom du fichier)
         filename = I18n.l(Time.now, format: :long) + ' - ' + params[:upload].original_filename
@@ -179,6 +182,7 @@ class UsersController < ApplicationController
           if new_record
             password = User.generate_random_password
             user.password = password 
+            @mdp << password
           end
           user.rôle = "agent"
           user.service = row[headers.index 'Service']&.humanize
@@ -191,11 +195,13 @@ class UsersController < ApplicationController
             if params[:save] == 'true'
               user.save
               if new_record
-                key_len = ActiveSupport::MessageEncryptor.key_len
-                secret_key = Rails.application.key_generator.generate_key('import_password', key_len)
-                encryptor = ActiveSupport::MessageEncryptor.new(secret_key)
-                encrypted_password = encryptor.encrypt_and_sign(password)
-                WelcomeImportNotificationJob.perform_later(user, current_user.id, encrypted_password)
+                # key_len = ActiveSupport::MessageEncryptor.key_len
+                # secret_key = Rails.application.key_generator.generate_key('import_password', key_len)
+                # encryptor = ActiveSupport::MessageEncryptor.new(secret_key)
+                # encrypted_password = encryptor.encrypt_and_sign(password)
+                # WelcomeImportNotificationJob.perform_later(user, current_user.id, encrypted_password)
+                user.invite!(current_user)
+                
               end
             end
             @importes += 1
@@ -223,6 +229,11 @@ class UsersController < ApplicationController
       flash[:alert] = "Manque le fichier source pour pouvoir lancer l'importation !"
       redirect_to action: 'import'
     end 
+  end
+
+  def inviter
+    @user.invite!(current_user)
+    redirect_to user_path(@user), notice: "Utilisateur invité"
   end
 
   private
