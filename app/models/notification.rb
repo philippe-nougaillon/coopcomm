@@ -6,7 +6,12 @@ class Notification < ApplicationRecord
 
   after_create_commit -> { broadcast_append_to "notifications_to_#{self.to_id}",
                                                 partial: "admin/notification_stream",
-                                                locals: { notification: self },
+                                                locals: { notification: self, my_message: false },
+                                                target: "notifications" }
+
+                                                after_create_commit -> { broadcast_append_to "notifications_from_#{self.from_id}",
+                                                partial: "admin/notification_stream",
+                                                locals: { notification: self, my_message: true },
                                                 target: "notifications" }
 
   def self.bad_words_regex
