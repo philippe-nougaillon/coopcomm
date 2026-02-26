@@ -14,9 +14,10 @@
       <%= render "devise/shared/error_messages", resource: resource %>
       <%= f.hidden_field :invitation_token, readonly: true %>
 
-      <div class="field mb-4">
-        <%= f.label :email, "Adresse email" %><br />
-        <%= f.email_field :email, class: 'input input-sm w-full bg-base-200 text-gray-500', readonly: true, autocomplete: "username" %>
+      <%# Permet au navigateur d'enregistrer le mdp avec l'email %>
+      <div class="sr-only" aria-hidden="true">
+        <%= f.label :email %>
+        <%= f.email_field :email, autocomplete: "username", tabindex: "-1" %>
       </div>
 
       <% if f.object.class.require_password_on_accepting %>
