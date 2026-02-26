@@ -1,5 +1,6 @@
 class AdminController < ApplicationController
   before_action :is_user_authorized
+  protect_from_forgery except: :send_notification
 
   def audits
     if current_user.manager?
@@ -64,29 +65,15 @@ class AdminController < ApplicationController
     @notifications = Notification
                        .where(from_id: current_user.id, to_id: to_user_id)
                        .or(Notification.where(from_id: to_user_id, to_id: current_user.id))
-                       .ordered.limit(9)
+                       .last(10)
 
     # On met à jour la date de la dernière fois qu'on a vu les notifications
     current_user.update!(notifications_last_seen_at: DateTime.now)
   end
 
   def send_notification
-
-    # Créé une notification si l'utiliateur envoie un message, sinon renvoie la messagerie avec le canal qu'il a choisi
-    if params.has_key? "submit_message"
-      notification = Notification.new
-      notification.message = params[:message]
-      notification.from_id = current_user.id
-      notification.to_id = params[:to_id]
-
-      if notification.save
-        redirect_to admin_messagerie_path(to_id: notification.to_id)
-      else
-        errors = notification.errors.full_messages
-        render json: { success: false, errors: errors }, status: :unprocessable_entity
-      end
-    else
-      redirect_to admin_messagerie_path(to_id: params[:to_id])
+    if params[:message].present? && params[:to_id].present?
+      Notification.create!(message: params[:message], from_id: current_user.id, to_id: params[:to_id])
     end
   end
 
