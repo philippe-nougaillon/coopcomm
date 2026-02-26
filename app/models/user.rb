@@ -252,6 +252,29 @@ class User < ApplicationRecord
     mot_de_passe.shuffle(random: SecureRandom).join
   end
 
+  def send_devise_notification(notification, *args)
+    # 1. On prépare l'email (quelle que soit la notification)
+    mail = devise_mailer.send(notification, self, *args)
+    
+    # 2. On l'envoie immédiatement pour récupérer l'objet Mail::Message
+    mailer_response = mail.deliver_now 
+
+    # 3. On détermine qui est à l'origine de l'email
+    # Si c'est une invitation, on prend l'ID de l'inviteur (current_user).
+    # Sinon, on considère que c'est l'utilisateur lui-même (ex: mot de passe oublié).
+    initiator_id = self.try(:invited_by_id) || 0
+
+    # 4. On crée le log pour Mailgun
+    MailLog.create(
+      user_id: initiator_id, 
+      message_id: mailer_response.message_id, 
+      to: self.email, 
+      subject: mailer_response.subject || "Notification CoopComm",
+      organisation_id: self.organisation_id,
+      channel: 0
+    )
+  end
+
   private
 
   def slug_candidates
