@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_26_130700) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_27_105609) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -169,6 +169,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_26_130700) do
     t.datetime "updated_at", null: false
     t.bigint "intervention_id"
     t.datetime "date"
+    t.text "commentaires"
     t.index ["intervention_id"], name: "index_mouvements_on_intervention_id"
     t.index ["tool_id"], name: "index_mouvements_on_tool_id"
   end
@@ -191,6 +192,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_26_130700) do
   end
 
   create_table "organisations", force: :cascade do |t|
+    t.string "nom"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "services", force: :cascade do |t|
     t.string "nom"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
