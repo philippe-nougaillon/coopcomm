@@ -24,7 +24,7 @@
 
         <div class="w-full md:w-fit">
           <%= label_tag :service %>
-          <%= select_tag :service, options_for_select(@services, params[:service]), include_blank: true, class: 'select select-sm w-full', onchange: 'this.form.submit()' %>
+          <%= select_tag :service, options_from_collection_for_select(@services, 'id', 'nom', params[:service]), include_blank: true, class: 'select select-sm w-full', onchange: 'this.form.submit()' %>
         </div>
 
         <div class="flex flex-col gap-2">

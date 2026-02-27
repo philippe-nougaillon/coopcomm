@@ -22,6 +22,8 @@ class User < ApplicationRecord
   has_one_attached :profile_picture
 
   belongs_to :organisation, optional: true
+  belongs_to :service
+
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
   has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention', dependent: :destroy
   has_many :interventions, through: :agent_interventions
@@ -41,14 +43,14 @@ class User < ApplicationRecord
     équipe: 3
   }
 
-  enum :service, {
-    Technique: 0,
-    Comptabilité: 1,
-    Informatique: 2,
-    Secrétariat: 3,
-    Périscolaire: 4,
-    Ménage: 5
-  }
+  # enum :service, {
+  #   Technique: 0,
+  #   Comptabilité: 1,
+  #   Informatique: 2,
+  #   Secrétariat: 3,
+  #   Périscolaire: 4,
+  #   Ménage: 5
+  # }
 
   validates :nom, :email, presence: true
   validates_uniqueness_of :email
@@ -63,7 +65,7 @@ class User < ApplicationRecord
 
   def self.grouped_agents(users)
     h = {}
-    User.services.keys.each do |key|
+    Service.all.pluck(:nom).each do |key|
       h[key.humanize] = users.agent.where(service: key).order(:nom, :prénom).pluck(:nom, :prénom, :id).map { |nom, prénom, id| ["#{nom} #{prénom}", id] }
     end
     return h.sort_by { |k, _| I18n.transliterate(k) }.to_h

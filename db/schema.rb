@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_27_105609) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_27_125305) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -396,7 +396,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_27_105609) do
     t.string "last_sign_in_ip"
     t.string "reset_password_token"
     t.datetime "reset_password_sent_at"
-    t.integer "service"
     t.string "uid"
     t.string "provider"
     t.datetime "notifications_last_seen_at", default: "2024-11-07 09:50:54"
@@ -421,6 +420,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_27_105609) do
     t.string "invited_by_type"
     t.bigint "invited_by_id"
     t.integer "invitations_count", default: 0
+    t.bigint "service_id"
+    t.string "service"
     t.index ["discarded_at"], name: "index_users_on_discarded_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true
@@ -428,6 +429,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_27_105609) do
     t.index ["invited_by_type", "invited_by_id"], name: "index_users_on_invited_by"
     t.index ["organisation_id"], name: "index_users_on_organisation_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["service_id"], name: "index_users_on_service_id"
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
 
@@ -469,5 +471,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_27_105609) do
   add_foreign_key "tool_interventions", "tools"
   add_foreign_key "tools", "organisations"
   add_foreign_key "users", "organisations"
+  add_foreign_key "users", "services"
   add_foreign_key "wiki_pages", "users"
 end

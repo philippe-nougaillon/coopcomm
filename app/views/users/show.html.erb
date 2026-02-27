@@ -35,6 +35,18 @@
             <%= @user.memo %>
           </p>
         <% end %>
+
+        <% if @user.manager? %>
+          <p class="mt-4">
+            <strong class="block text-slate-400 mb-1">Résponsable du service</strong>
+            <%= @user.service.nom %>
+          </p>
+        <% else %>
+          <p class="mt-4">
+            <strong class="block text-slate-400 mb-1">Service</strong>
+            <%= @user.service.nom %>
+          </p>
+        <% end %>
       </div>
     </div>
 

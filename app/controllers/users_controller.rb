@@ -6,7 +6,7 @@ class UsersController < ApplicationController
 
   # GET /users or /users.json
   def index
-    @services = User.services.sort
+    @services = Service.all
     @users = current_user.organisation.users.ordered
 
     if params[:search].present?
@@ -85,6 +85,8 @@ class UsersController < ApplicationController
 
   # PATCH/PUT /users/1 or /users/1.json
   def update
+    @user.service_id = user_params[:service_id]
+
     respond_to do |format|
       if @user.update(user_params)
         bypass_sign_in(@user) if @user == current_user
@@ -112,7 +114,7 @@ class UsersController < ApplicationController
     params[:date] = Date.today if params[:date].blank?
     @date = params[:date].to_date
     @agents = current_user.organisation.users.where(rôle: "agent")
-    @services = User.services.sort
+    @services = Service.all
 
     if params[:search].present?
       @agents = @agents.where("nom ILIKE :search OR prénom ILIKE :search OR email ILIKE :search", {search: "%#{params[:search]}%"})
@@ -263,7 +265,7 @@ class UsersController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def user_params
-      params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :rôle, :service, :memo, :localisation, :profile_picture, :color, absences_attributes: [:id, :du, :au, :motif, :observation, :matin, :après_midi, :_destroy])
+      params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :rôle, :memo, :localisation, :profile_picture, :color, :service_id, absences_attributes: [:id, :du, :au, :motif, :observation, :matin, :après_midi, :_destroy])
     end
 
     def is_user_authorized
