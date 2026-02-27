@@ -5,27 +5,29 @@
     <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Messagerie') %></h1>
   </div>
   
-  <div class="flex flex-row gap-4 w-full">
-    <div class="flex flex-col gap-4 p-2 border">
+  <div class="flex flex-row gap-4 w-full mt-8">
+      <div class="flex flex-col border mx-8 w-1/5">
       <% @users.each do |user| %>
         <%= link_to admin_messagerie_path(to_id: user.id), "data-turbo": false do%>
-          <div class="<%= (user.id == params[:to_id].to_i) ? "bg-gray-200 p-2" : "" %>">
+          <div class="p-2 whitespace-nowrap <%= (user.id == params[:to_id].to_i) ? "bg-gray-200" : "" %>">
             <%= render partial: 'partials/user_profile_picture', locals: {user:} %>
-            <%= user.nom_prenom_role %>
+            <%= truncate(user.nom_prénom, length: 20) %>
           </div>
         <% end %>
       <% end %>
     </div>
 
-    <div class="flex flex-col">
-      <div id="notifications" class="w-full">
-        <%= render partial: "admin/notification", collection: @notifications %>
-      </div>
+    <div class="flex justify-center w-full">
+      <div class="flex flex-col w-3/5">
+        <div id="notifications" class="w-full">
+          <%= render partial: "admin/notification", collection: @notifications %>
+        </div>
 
-      <input class="form-control"
-            name="message" placeholder="Ecrivez votre message"
-            hx-post="/admin/send_notification?to_id=<%= params[:to_id] %>"
-            hx-trigger="keyup[key=='Enter']">
+        <input class="mt-4 w-full rounded-xl p-4"
+              name="message" placeholder="Ecrivez votre message"
+              hx-post="/admin/send_notification?to_id=<%= params[:to_id] %>"
+              hx-trigger="keyup[key=='Enter']">
+      </div>
     </div>
   </div>
 </div>

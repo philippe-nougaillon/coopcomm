@@ -10,7 +10,7 @@
     <% end %>
   </div>
   <div>
-    <b><%= notification.moderation %></b>
+    <b><%= link_to notification.moderation, admin_messagerie_path(to_id: user.id) %></b>
     <div>
       <small>
         il y a <%= time_ago_in_words notification.created_at %>
