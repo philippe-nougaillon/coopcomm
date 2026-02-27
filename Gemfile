@@ -159,3 +159,5 @@ gem "devise-security", "~> 0.18.0"
 gem "email_validator", "~> 2.2"
 
 gem "capture_stdout", "~> 0.0.1"
+
+gem "devise_invitable", "~> 2.0"

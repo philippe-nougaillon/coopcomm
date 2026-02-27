@@ -19,6 +19,11 @@ Rails.application.routes.draw do
   end
 
   resources :users do
+    member do
+      get :inviter
+      get :edit_password
+      patch :update_password
+    end
     collection do
       get :agent_calendrier
       get :import

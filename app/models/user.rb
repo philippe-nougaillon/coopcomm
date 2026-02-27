@@ -13,7 +13,8 @@ class User < ApplicationRecord
         #  :validatable,
          :trackable,
          :lockable,
-         :secure_validatable
+         :secure_validatable,
+         :invitable
         #  :registerable,
         #  :omniauthable,
         #  omniauth_providers: [:google_oauth2]
@@ -222,7 +223,56 @@ class User < ApplicationRecord
   end
 
   def self.xls_headers
-    ['Nom','Prénom','Email','Téléphone','Service','Mot de passe','Mémo']
+    ['Nom','Prénom','Email','Téléphone','Service','Mémo']
+  end
+
+  def self.generate_random_password
+    # 1. Définition des bases en retirant les caractères prêtant à confusion
+    minuscules = ('a'..'z').to_a - ['l']
+    majuscules = ('A'..'Z').to_a - ['O', 'I']
+    chiffres = ('1'..'9').to_a
+    symboles = "!\"\#$%&'()*+,-./:;<=>?@[\\]^_`{|}~".chars
+
+    tous_les_caracteres = minuscules + majuscules + chiffres + symboles
+
+    # 2. Garantie d'avoir au moins un caractère de chaque type
+    mot_de_passe = [
+      minuscules.sample(random: SecureRandom),
+      majuscules.sample(random: SecureRandom),
+      chiffres.sample(random: SecureRandom),
+      symboles.sample(random: SecureRandom)
+    ]
+
+    # 3. Remplissage pour atteindre 12 caractères
+    8.times do
+      mot_de_passe << tous_les_caracteres.sample(random: SecureRandom)
+    end
+
+    # 4. Mélange sécurisé et conversion en chaîne (String)
+    mot_de_passe.shuffle(random: SecureRandom).join
+  end
+
+  def send_devise_notification(notification, *args)
+    # 1. On prépare l'email (quelle que soit la notification)
+    mail = devise_mailer.send(notification, self, *args)
+    
+    # 2. On l'envoie immédiatement pour récupérer l'objet Mail::Message
+    mailer_response = mail.deliver_now 
+
+    # 3. On détermine qui est à l'origine de l'email
+    # Si c'est une invitation, on prend l'ID de l'inviteur (current_user).
+    # Sinon, on considère que c'est l'utilisateur lui-même (ex: mot de passe oublié).
+    initiator_id = self.try(:invited_by_id) || 0
+
+    # 4. On crée le log pour Mailgun
+    MailLog.create(
+      user_id: initiator_id, 
+      message_id: mailer_response.message_id, 
+      to: self.email, 
+      subject: mailer_response.subject || "Notification CoopComm",
+      organisation_id: self.organisation_id,
+      channel: 0
+    )
   end
 
   private

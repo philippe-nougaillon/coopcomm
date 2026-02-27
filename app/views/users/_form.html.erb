@@ -76,17 +76,6 @@
     <%= form.email_field :email, class: 'input input-sm w-full', required: true %>
   </div>
 
-  <% if user.new_record? || @user == current_user %>
-    <div class="w-full">
-      <%= form.label :password, style: "display: block" %>
-      <%= form.password_field :password, class: 'input input-sm w-full', required: true %>
-    </div>
-    <div class="w-full">
-      <%= form.label :password_confirmation, style: "display: block" %>
-      <%= form.password_field :password_confirmation, class: 'input input-sm w-full', required: true %>
-    </div>
-  <% end %>
-
   <div class="w-full">
     <%= form.label :memo, "Mémo", style: "display: block" %>
     <%= form.text_area :memo, class: 'textarea w-full' %>
