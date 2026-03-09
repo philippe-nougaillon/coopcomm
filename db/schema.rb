@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_27_125305) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_09_092842) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -138,8 +138,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_27_125305) do
     t.datetime "début_prévue"
     t.datetime "fin_prévue"
     t.string "meteo"
-    t.string "trajet"
     t.decimal "co2", default: "0.0"
+    t.string "trajet"
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
     t.index ["organisation_id"], name: "index_interventions_on_organisation_id"
     t.index ["team_id"], name: "index_interventions_on_team_id"
@@ -380,6 +380,15 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_27_125305) do
     t.index ["organisation_id"], name: "index_tools_on_organisation_id"
   end
 
+  create_table "user_services", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "service_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["service_id"], name: "index_user_services_on_service_id"
+    t.index ["user_id"], name: "index_user_services_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -403,13 +412,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_27_125305) do
     t.string "téléphone"
     t.string "memo"
     t.string "localisation"
+    t.string "otp_secret"
+    t.integer "consumed_timestep"
+    t.boolean "otp_required_for_login"
     t.datetime "discarded_at"
     t.integer "failed_attempts", default: 0, null: false
     t.datetime "locked_at"
     t.string "unlock_token"
-    t.string "otp_secret"
-    t.integer "consumed_timestep"
-    t.boolean "otp_required_for_login"
     t.integer "otp_method"
     t.string "color"
     t.string "invitation_token"
@@ -420,8 +429,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_27_125305) do
     t.string "invited_by_type"
     t.bigint "invited_by_id"
     t.integer "invitations_count", default: 0
-    t.bigint "service_id"
-    t.string "service"
     t.index ["discarded_at"], name: "index_users_on_discarded_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true
@@ -429,7 +436,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_27_125305) do
     t.index ["invited_by_type", "invited_by_id"], name: "index_users_on_invited_by"
     t.index ["organisation_id"], name: "index_users_on_organisation_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
-    t.index ["service_id"], name: "index_users_on_service_id"
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
   end
 
@@ -470,7 +476,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_27_125305) do
   add_foreign_key "tool_interventions", "interventions"
   add_foreign_key "tool_interventions", "tools"
   add_foreign_key "tools", "organisations"
+  add_foreign_key "user_services", "services"
+  add_foreign_key "user_services", "users"
   add_foreign_key "users", "organisations"
-  add_foreign_key "users", "services"
   add_foreign_key "wiki_pages", "users"
 end

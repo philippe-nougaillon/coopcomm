@@ -22,13 +22,14 @@ class User < ApplicationRecord
   has_one_attached :profile_picture
 
   belongs_to :organisation, optional: true
-  belongs_to :service
 
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
   has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention', dependent: :destroy
   has_many :interventions, through: :agent_interventions
   has_many :notifications, dependent: :destroy, foreign_key: :to_id, class_name: "Notification"
   has_many :absences, dependent: :destroy
+  has_many :user_services, dependent: :destroy
+  has_many :services, through: :user_services
   accepts_nested_attributes_for :absences, 
                               allow_destroy:true, 
                               reject_if: lambda {|attributes| attributes['du'].blank? || attributes['au'].blank? }
