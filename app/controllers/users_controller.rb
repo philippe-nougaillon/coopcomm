@@ -1,13 +1,15 @@
 class UsersController < ApplicationController
   before_action :set_user, only: %i[ show edit update destroy inviter edit_password update_password ]
-  before_action :is_user_authorized
+  # la méthode reactivate a tout de même un authorize
+  before_action :is_user_authorized, except: %i[ reactivate ] 
 
   require 'capture_stdout'
 
   # GET /users or /users.json
   def index
     @services = User.services.sort
-    @users = current_user.organisation.users.ordered
+    @users = params[:discarded].present? ? current_user.organisation.users.unscoped.discarded : current_user.organisation.users
+    @users = @users.ordered
 
     if params[:search].present?
       @users = @users.where("nom ILIKE :search OR prénom ILIKE :search", {search: "%#{params[:search]}%"})
@@ -253,6 +255,18 @@ class UsersController < ApplicationController
       end
     end
   end
+
+  def reactivate
+    @user = User.unscoped.find_by(slug: params[:id])
+    authorize @user
+    
+    if @user.undiscard
+      redirect_to users_path, notice: "Le compte de #{@user.nom_prénom} a été réactivé avec succès."
+    else
+      redirect_to users_path(discarded: true), alert: "Impossible de réactiver ce compte."
+    end
+  end
+
 
   private
     # Use callbacks to share common setup or constraints between actions.

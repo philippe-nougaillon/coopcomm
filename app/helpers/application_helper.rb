@@ -59,6 +59,10 @@ module ApplicationHelper
             pretty_changes << "#{key} #{audit.action == 'create' ? 'initialisé à' : 'était'} '#{rôles[c.last].humanize}'"
           end
         end
+      when 'Discarded at'
+        if audit.action == 'update'
+          pretty_changes << "Utilisateur #{c.last.first.nil? ? 'désactivé' : 'réactivé'}"
+        end
       else
         
         if audit.action == 'update'

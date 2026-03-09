@@ -2,8 +2,19 @@
 <td>
   <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
 </td>
-<td class="text-lg sm:text-xl text-primary">
+<td class="flex items-center gap-2 text-lg sm:text-xl text-primary">
   <%= link_to user.nom_prénom, user, class: 'hover:underline hover:text-base-content' %>
+
+  <% if user.discarded? %>
+    <%= link_to reactivate_user_path(user), 
+                data: { turbo_method: :patch, turbo_confirm: 'Voulez-vous réactiver ce compte ?' },
+                class: "text-success hover:scale-110 transition-transform",
+                title: "Réactiver le compte" do %>
+      <span class="material-symbols-outlined align-middle">
+        undo
+      </span>
+    <% end %>
+  <% end %>
 </td>
 <td class="text-center" <%= "style=\"border-left: .3rem solid #{user.color};\"".html_safe if user.équipe? && user.color %>>
   <span class="material-symbols-outlined text-success">

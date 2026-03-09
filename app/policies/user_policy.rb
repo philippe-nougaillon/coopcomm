@@ -56,4 +56,8 @@ class UserPolicy < ApplicationPolicy
   def update_password?
     edit_password?
   end
+
+  def reactivate?
+    manager && organisation
+  end
 end
