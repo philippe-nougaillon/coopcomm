@@ -72,7 +72,7 @@
 
           <div class="flex-1">
             <%= label_tag :agent_ids, "Agent(s)" %>
-            <%= select_tag :agent_ids, grouped_options_for_select(@grouped_agents, params[:agent_ids]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()', multiple: true %>
+            <%= select_tag :agent_ids, grouped_options_for_select(@grouped_agents, params[:agent_ids]), class: 'slim-select w-full', onchange: 'this.form.submit()', multiple: true %>
           </div>
         </div>
       <% end %>

@@ -24,7 +24,7 @@ class InterventionsController < ApplicationController
 
     @services = current_user.services
 
-    organisation_members = current_user.organisation.users.joins(user_services: :service).where(services: params[:service].presence || @services)
+    organisation_members = current_user.organisation.users.filter_by_service(params[:service].presence || @services)
     if current_user.manager?
       @adhérents = organisation_members.adhérent.order(:nom)
       @teams = organisation_members.équipe

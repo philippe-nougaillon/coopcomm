@@ -67,7 +67,7 @@ class User < ApplicationRecord
   def self.grouped_agents(users)
     h = {}
     Service.all.each do |service|
-      h[service.nom] = users.agent.joins(:user_services).where(user_services: {service: service}).order(:nom, :prénom).pluck(:nom, :prénom, :id).map { |nom, prénom, id| ["#{nom} #{prénom}", id] }
+      h[service.nom] = users.agent.filter_by_service(service).order(:nom, :prénom).pluck(:nom, :prénom, :id).map { |nom, prénom, id| ["#{nom} #{prénom}", id] }
     end
     return h.sort_by { |k, _| I18n.transliterate(k) }.to_h
   end
@@ -276,6 +276,10 @@ class User < ApplicationRecord
       organisation_id: self.organisation_id,
       channel: 0
     )
+  end
+
+  def self.filter_by_service(services)
+    joins(user_services: :service).where(services: services).distinct
   end
 
   private
