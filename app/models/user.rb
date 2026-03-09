@@ -51,6 +51,7 @@ class User < ApplicationRecord
   }
 
   validates :nom, :email, presence: true
+  validates :prénom, :rôle, presence: true, if: -> { rôle == "agent" }
   validates_uniqueness_of :email
   validates :localisation, presence: true, if: -> { rôle == "adhérent" }
   validates :localisation, format: {

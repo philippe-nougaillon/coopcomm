@@ -42,7 +42,7 @@
 
     <div class="w-full">
       <%= form.label :nom, style: "display: block" %>
-      <%= form.text_field :nom, class: 'input input-sm w-full' %>
+      <%= form.text_field :nom, class: 'input input-sm w-full', required: true %>
     </div>
 
     <% if current_user.adhérent? %>

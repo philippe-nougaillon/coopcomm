@@ -188,8 +188,10 @@ class UsersController < ApplicationController
           user.service = row[headers.index 'Service']&.humanize
           user.memo = row[headers.index 'Mémo']
 
+          safe_changes = user.changes.except("encrypted_password", "password")
+          display_changes = new_record ? safe_changes.transform_values(&:last) : safe_changes
           # MAJ existant ? si l'id est égal à 0 => c'est une création
-          puts "USER #{new_record ? 'NEW' : 'UPDATE'} => id:#{user.id} changes:#{user.changes}"
+          puts "#{new_record ? 'NOUVEL' : 'MISE À JOUR'} UTILISATEUR => id: #{user.id || 'N/A'}, changes:#{display_changes}"
 
           if user.valid? 
             if params[:save] == 'true'
