@@ -22,9 +22,9 @@ class InterventionsController < ApplicationController
     # Enelever les interventions filles
     @interventions = @interventions.where(template_slug: nil)
 
-    @services = current_user.services.sort
+    @services = current_user.services
 
-    organisation_members = current_user.organisation.users
+    organisation_members = current_user.organisation.users.joins(user_services: :service).where(services: params[:service].presence || @services)
     if current_user.manager?
       @adhérents = organisation_members.adhérent.order(:nom)
       @teams = organisation_members.équipe
@@ -62,9 +62,7 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.where(team_id: params[:team_id])
     end
 
-    if params[:service].present?
-      @interventions = @interventions.joins(agent_interventions: { agent: { user_services: :service } }).where(services: { id: params[:service] })
-    end
+    @interventions = @interventions.joins(agent_interventions: { agent: { user_services: :service } }).where(services: { id: params[:service].presence || @services })
 
     if params[:agent_ids].present?
       @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {id: params[:agent_ids]})

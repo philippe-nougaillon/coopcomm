@@ -17,9 +17,7 @@ class UsersController < ApplicationController
       @users = @users.where(rôle: params[:rôle])
     end
 
-    if params[:services].present?
-      @users = @users.joins(user_services: :service).where(services: params[:services]).distinct
-    end
+    @users = @users.joins(user_services: :service).where(services: params[:service].presence || @services).distinct
 
     if params[:absent].present?
       user_ids = []
@@ -113,15 +111,13 @@ class UsersController < ApplicationController
     params[:date] = Date.today if params[:date].blank?
     @date = params[:date].to_date
     @agents = current_user.organisation.users.where(rôle: "agent")
-    @services = Service.all
+    @services = current_user.services
 
     if params[:search].present?
       @agents = @agents.where("nom ILIKE :search OR prénom ILIKE :search OR email ILIKE :search", {search: "%#{params[:search]}%"})
     end
 
-    if params[:service].present?
-      @agents = @agents.where(service: params[:service])
-    end
+    @agents = @agents.joins(user_services: :service).where(services: params[:service].presence || @services)
 
     # Le code actuel n'est pas utile. Si besoin on peut le faire sur la période (@date..@date_fin). Le mieux serait p-e de faire des cases grises directement dans le calendrier.
     # if params[:absent].present?
