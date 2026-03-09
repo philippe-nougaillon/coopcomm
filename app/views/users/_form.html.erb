@@ -52,8 +52,8 @@
   </div>
 
   <div class="w-full">
-    <%= form.label :service_id, "Service" %>
-    <%= form.select :service_id, options_from_collection_for_select(Service.all, 'id', 'nom', user.service.id), {include_blank: true}, class: 'select select-sm w-full', required: true %>
+    <%= form.label :service_ids, "Service" %>
+    <%= form.select :service_ids, options_from_collection_for_select(current_user.services, 'id', 'nom', user.services.ids), {include_blank: true}, class: 'slim-select w-full', multiple: true, required: true %>
   </div>
 
   <div class="w-full">

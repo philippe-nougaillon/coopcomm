@@ -13,7 +13,7 @@
 <td class="text-success font-black">
   <%= user.rôle.upcase %>
 </td>
-<td><%= user.service.try(:capitalize) %></td>
+<td><%= user.services.pluck(:nom).join(",") %></td>
 <td><%= user.email %></td>
 <td>
   <% if user.agent? && user.absent? %>

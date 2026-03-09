@@ -6,7 +6,7 @@ class UsersController < ApplicationController
 
   # GET /users or /users.json
   def index
-    @services = Service.all
+    @services = current_user.services
     @users = current_user.organisation.users.ordered
 
     if params[:search].present?
@@ -17,8 +17,8 @@ class UsersController < ApplicationController
       @users = @users.where(rôle: params[:rôle])
     end
 
-    if params[:service].present?
-      @users = @users.where(service: params[:service])
+    if params[:services].present?
+      @users = @users.joins(user_services: :service).where(services: params[:services]).distinct
     end
 
     if params[:absent].present?
@@ -85,7 +85,6 @@ class UsersController < ApplicationController
 
   # PATCH/PUT /users/1 or /users/1.json
   def update
-    @user.service_id = user_params[:service_id]
 
     respond_to do |format|
       if @user.update(user_params)
@@ -265,7 +264,7 @@ class UsersController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def user_params
-      params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :rôle, :memo, :localisation, :profile_picture, :color, :service_id, absences_attributes: [:id, :du, :au, :motif, :observation, :matin, :après_midi, :_destroy])
+      params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :rôle, :memo, :localisation, :profile_picture, :color, absences_attributes: [:id, :du, :au, :motif, :observation, :matin, :après_midi, :_destroy], service_ids: [])
     end
 
     def is_user_authorized

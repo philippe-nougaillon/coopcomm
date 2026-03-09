@@ -16,7 +16,6 @@
         </p>
         <span class="text-success text-center mt-4">
           <%= @user.rôle.upcase %> 
-          <%= @user.service.try(:humanize) %> 
         </span>
       </div>
       <div class="rounded-r-lg px-6 py-10">
@@ -38,13 +37,13 @@
 
         <% if @user.manager? %>
           <p class="mt-4">
-            <strong class="block text-slate-400 mb-1">Résponsable du service</strong>
-            <%= @user.service.nom %>
+            <strong class="block text-slate-400 mb-1">Responsable des services</strong>
+            <%= @user.services.pluck(:nom).join(",") %>
           </p>
         <% else %>
           <p class="mt-4">
-            <strong class="block text-slate-400 mb-1">Service</strong>
-            <%= @user.service.nom %>
+            <strong class="block text-slate-400 mb-1">Services</strong>
+            <%= @user.services.pluck(:nom).join(",") %>
           </p>
         <% end %>
       </div>
