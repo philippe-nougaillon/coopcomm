@@ -10,7 +10,8 @@ class UserPolicy < ApplicationPolicy
   end
 
   def show?
-    (index? && organisation) || record == user
+    # "&" désigne l'intersection entre deux listes
+    (index? && organisation && shared_service) || record == user
   end
 
   def new?
@@ -30,7 +31,7 @@ class UserPolicy < ApplicationPolicy
   end
 
   def destroy?
-    manager && organisation && record != user
+    manager && organisation && record != user && shared_service
   end
 
   def agent_calendrier?
@@ -46,7 +47,7 @@ class UserPolicy < ApplicationPolicy
   end
 
   def inviter?
-    manager && organisation && record != user
+    manager && organisation && record != user && shared_service
   end
 
   def edit_password?
