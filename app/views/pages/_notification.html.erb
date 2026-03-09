@@ -10,13 +10,13 @@
     <% end %>
   </div>
   <div>
-    <b><%= link_to notification.moderation, admin_messagerie_path(to_id: user&.id || notification.from_id) %></b>
+    <b><%= link_to_if user&.id, notification.moderation, admin_messagerie_path(to_id: user&.id) %></b>
     <div>
       <small>
         il y a <%= time_ago_in_words notification.created_at %>
       </small>
       -
-      <%= user&.nom_prenom_role || "Utilisateur supprimé" %>
+      <%= user&.nom_prenom_role || "Message automatique" %>
     </div>
   </div>
 </div>
