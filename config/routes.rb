@@ -23,6 +23,7 @@ Rails.application.routes.draw do
       get :inviter
       get :edit_password
       patch :update_password
+      patch :reactivate
     end
     collection do
       get :agent_calendrier

@@ -1,13 +1,15 @@
 class UsersController < ApplicationController
   before_action :set_user, only: %i[ show edit update destroy inviter edit_password update_password ]
-  before_action :is_user_authorized
+  # la méthode reactivate a tout de même un authorize
+  before_action :is_user_authorized, except: %i[ reactivate ]
 
   require 'capture_stdout'
 
   # GET /users or /users.json
   def index
     @services = current_user.services
-    @users = current_user.organisation.users.ordered
+    @users = params[:discarded].present? ? current_user.organisation.users.unscoped.discarded : current_user.organisation.users
+    @users = @users.ordered
 
     if params[:search].present?
       @users = @users.where("nom ILIKE :search OR prénom ILIKE :search", {search: "%#{params[:search]}%"})
@@ -83,7 +85,6 @@ class UsersController < ApplicationController
 
   # PATCH/PUT /users/1 or /users/1.json
   def update
-
     respond_to do |format|
       if @user.update(user_params)
         bypass_sign_in(@user) if @user == current_user
@@ -111,13 +112,15 @@ class UsersController < ApplicationController
     params[:date] = Date.today if params[:date].blank?
     @date = params[:date].to_date
     @agents = current_user.organisation.users.where(rôle: "agent")
-    @services = current_user.services
+    @services = User.services.sort
 
     if params[:search].present?
       @agents = @agents.where("nom ILIKE :search OR prénom ILIKE :search OR email ILIKE :search", {search: "%#{params[:search]}%"})
     end
 
-    @agents = @agents.filter_by_service(params[:service].presence || @services)
+    if params[:service].present?
+      @agents = @agents.where(service: params[:service])
+    end
 
     # Le code actuel n'est pas utile. Si besoin on peut le faire sur la période (@date..@date_fin). Le mieux serait p-e de faire des cases grises directement dans le calendrier.
     # if params[:absent].present?
@@ -185,8 +188,10 @@ class UsersController < ApplicationController
           user.service = row[headers.index 'Service']&.humanize
           user.memo = row[headers.index 'Mémo']
 
+          safe_changes = user.changes.except("encrypted_password", "password")
+          display_changes = new_record ? safe_changes.transform_values(&:last) : safe_changes
           # MAJ existant ? si l'id est égal à 0 => c'est une création
-          puts "USER #{new_record ? 'NEW' : 'UPDATE'} => id:#{user.id} changes:#{user.changes}"
+          puts "#{new_record ? 'NOUVEL' : 'MISE À JOUR'} UTILISATEUR => id: #{user.id || 'N/A'}, changes:#{display_changes}"
 
           if user.valid? 
             if params[:save] == 'true'
@@ -248,6 +253,18 @@ class UsersController < ApplicationController
       end
     end
   end
+
+  def reactivate
+    @user = User.unscoped.find_by(slug: params[:id])
+    authorize @user
+
+    if @user.undiscard
+      redirect_to users_path, notice: "Le compte de #{@user.nom_prénom} a été réactivé avec succès."
+    else
+      redirect_to users_path(discarded: true), alert: "Impossible de réactiver ce compte."
+    end
+  end
+
 
   private
     # Use callbacks to share common setup or constraints between actions.
