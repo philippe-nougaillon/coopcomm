@@ -57,7 +57,7 @@ class PagesController < ApplicationController
       # Temps total par adhérent
       #
       @temps_total_par_adhérent = {}
-      current_user.organisation.users.adhérent.each do |adhérent|
+      current_user.organisation.users.adhérent.filter_by_service(current_user.services).each do |adhérent|
         @temps_total_par_adhérent[adhérent.nom_prénom] = adhérent.interventions_adherent.sum(:temps_total)
       end
 
@@ -66,7 +66,7 @@ class PagesController < ApplicationController
       #
 
       @temps_total_par_agent = {}
-      current_user.organisation.users.agent.each do |agent|
+      current_user.organisation.users.agent.filter_by_service(current_user.services).each do |agent|
         @temps_total_par_agent[agent.nom_prénom] = 0
         agent.interventions.each do |intervention|
           @temps_total_par_agent[agent.nom_prénom] += intervention.temps_total / intervention.agents.count
@@ -79,7 +79,7 @@ class PagesController < ApplicationController
 
       qté_interventions_par_mois_par_état = {}
 
-      current_user.organisation.interventions.where(début: start_date..end_date).group("DATE_TRUNC('month', début)", :workflow_state).count.each do |(month, state), count|
+      current_user.organisation.interventions.filter_by_service(current_user.services).where(début: start_date..end_date).group("DATE_TRUNC('month', début)", :workflow_state).count.each do |(month, state), count|
         formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
         qté_interventions_par_mois_par_état[formatted_month] ||= {}
         qté_interventions_par_mois_par_état[formatted_month][state] = count
@@ -122,7 +122,7 @@ class PagesController < ApplicationController
       # Graphe qté d'intervention par service
       #
 
-      # @qté_interventions_par_service = current_user.organisation.interventions.joins(agent_interventions: :agent).group('users.service').count
+      @qté_interventions_par_service = current_user.organisation.interventions.filter_by_service(current_user.services).group("services.nom").count
 
 
       #
@@ -135,7 +135,7 @@ class PagesController < ApplicationController
       #   @temps_total_par_service
       # end
 
-      # @temps_total_par_service = current_user.organisation.interventions.joins(agent_interventions: :agent).group("users.service").sum(:temps_total)
+      @temps_total_par_service = current_user.organisation.interventions.filter_by_service(current_user.services).group("services.nom").sum(:temps_total)
 
 
       #
@@ -144,7 +144,7 @@ class PagesController < ApplicationController
 
       # Pour chaque mois, calcule le co2 total
       co2_total_par_mois = {}
-      current_user.organisation.interventions.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:co2).each do |month, co2|
+      current_user.organisation.interventions.filter_by_service(current_user.services).where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:co2).each do |month, co2|
         formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
         co2_total_par_mois[formatted_month] = co2
       end
@@ -161,6 +161,8 @@ class PagesController < ApplicationController
       @co2_total_par_mois = co2_total_par_mois.sort.to_h
 
     elsif current_user.adhérent?
+      user_interventions = current_user.interventions_adherent.filter_by_service(current_user.services)
+
       temps_consommable_adhérent_mensuellement = 100
 
       #
@@ -168,8 +170,8 @@ class PagesController < ApplicationController
       #
 
       @proportion_temps_consommé = {}
-      @proportion_temps_consommé["temps_consommé"] = current_user.interventions_adherent.sum(:temps_total)
-      @proportion_temps_consommé["temps_restant"] = temps_consommable_adhérent_mensuellement - current_user.interventions_adherent.sum(:temps_total)
+      @proportion_temps_consommé["temps_consommé"] = user_interventions.sum(:temps_total)
+      @proportion_temps_consommé["temps_restant"] = temps_consommable_adhérent_mensuellement - user_interventions.sum(:temps_total)
 
 
 
@@ -179,7 +181,7 @@ class PagesController < ApplicationController
 
       @temps_total_par_mois = {}
 
-      current_user.interventions_adherent.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:temps_total).each do |month, total|
+      user_interventions.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:temps_total).each do |month, total|
         formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
         @temps_total_par_mois[formatted_month] = total
       end
@@ -200,7 +202,7 @@ class PagesController < ApplicationController
 
       qté_interventions_par_mois_par_état = {}
 
-      current_user.interventions_adherent.where(début: start_date..end_date).group("DATE_TRUNC('month', début)", :workflow_state).count.each do |(month, state), count|
+      user_interventions.where(début: start_date..end_date).group("DATE_TRUNC('month', début)", :workflow_state).count.each do |(month, state), count|
         formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
         qté_interventions_par_mois_par_état[formatted_month] ||= {}
         qté_interventions_par_mois_par_état[formatted_month][state] = count
@@ -244,7 +246,7 @@ class PagesController < ApplicationController
       # Graphe qté d'intervention par service
       #
 
-      @qté_interventions_par_service = current_user.interventions_adherent.joins(agent_interventions: :agent).group("users.service").count
+      @qté_interventions_par_service = user_interventions.group("services.nom").count
 
 
       #
@@ -257,7 +259,7 @@ class PagesController < ApplicationController
       #   @temps_total_par_service
       # end
 
-      @temps_total_par_service = current_user.interventions_adherent.joins(agent_interventions: :agent).group("users.service").sum(:temps_total)
+      @temps_total_par_service = user_interventions.group("services.nom").sum(:temps_total)
 
 
       #
@@ -266,7 +268,7 @@ class PagesController < ApplicationController
 
       # Pour chaque mois, calcule le co2 total
       co2_total_par_mois = {}
-      current_user.interventions_adherent.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:co2).each do |month, co2|
+      user_interventions.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:co2).each do |month, co2|
         formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
         co2_total_par_mois[formatted_month] = co2
       end

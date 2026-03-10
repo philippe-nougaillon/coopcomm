@@ -123,92 +123,92 @@
     /*
      Quantité intervention par service
     */
-<!--    function afficherQuantitéInterventionParService() {-->
-<!--        var dataQtéInterventionsParService = {-->
-<!--            labels: <%#= @qté_interventions_par_service.keys.to_json.html_safe %>,-->
-<!--            datasets: [-->
-<!--                {-->
-<!--                    label: "Nombre intervention",-->
-<!--                    backgroundColor: [-->
-<!--                        'rgba(153, 101, 255, 0.4)',-->
-<!--                        'rgba(255,159, 64, 0.4)',-->
-<!--                        'rgba(54, 162, 235, 0.4)',-->
-<!--                        'rgba(75, 192, 192, 0.4)',-->
-<!--                        'rgba(255, 205, 86, 0.4)',-->
-<!--                        'rgba(255, 99, 132, 0.4)',-->
-<!--                        'rgba(201, 203, 207, 0.4)',-->
-<!--                    ],-->
-<!--                    borderColor: [-->
-<!--                        'rgb(153, 102, 255)',-->
-<!--                        'rgb(255, 159, 64)',-->
-<!--                        'rgb(54, 162, 235)',-->
-<!--                        'rgb(75, 192, 192)',-->
-<!--                        'rgb(255, 205, 86)',-->
-<!--                        'rgb(255, 99, 132)',-->
-<!--                        'rgb(201, 203, 207)'-->
-<!--                    ],-->
-<!--                    borderWidth: 1,-->
-<!--                    data: <%#= @qté_interventions_par_service.values.to_json.html_safe %>,-->
-<!--                },-->
-<!--            ],-->
-<!--        };-->
+    function afficherQuantitéInterventionParService() {
+        var dataQtéInterventionsParService = {
+            labels: <%= @qté_interventions_par_service.keys.to_json.html_safe %>,
+            datasets: [
+                {
+                    label: "Nombre intervention",
+                    backgroundColor: [
+                        'rgba(153, 101, 255, 0.4)',
+                        'rgba(255,159, 64, 0.4)',
+                        'rgba(54, 162, 235, 0.4)',
+                        'rgba(75, 192, 192, 0.4)',
+                        'rgba(255, 205, 86, 0.4)',
+                        'rgba(255, 99, 132, 0.4)',
+                        'rgba(201, 203, 207, 0.4)',
+                    ],
+                    borderColor: [
+                        'rgb(153, 102, 255)',
+                        'rgb(255, 159, 64)',
+                        'rgb(54, 162, 235)',
+                        'rgb(75, 192, 192)',
+                        'rgb(255, 205, 86)',
+                        'rgb(255, 99, 132)',
+                        'rgb(201, 203, 207)'
+                    ],
+                    borderWidth: 1,
+                    data: <%= @qté_interventions_par_service.values.to_json.html_safe %>,
+                },
+            ],
+        };
 
-<!--        var configQtéInterventionsParService = {-->
-<!--            type: "polarArea",-->
-<!--            data: dataQtéInterventionsParService,-->
-<!--            options: {},-->
-<!--        };-->
+        var configQtéInterventionsParService = {
+            type: "polarArea",
+            data: dataQtéInterventionsParService,
+            options: {},
+        };
 
-<!--        var elementQtéInterventionsParService = document.getElementById("qtéInterventionsParServiceChart");-->
-<!--        if (elementQtéInterventionsParService) {-->
-<!--            new Chart(elementQtéInterventionsParService, configQtéInterventionsParService);-->
-<!--        }-->
-<!--    }-->
+        var elementQtéInterventionsParService = document.getElementById("qtéInterventionsParServiceChart");
+        if (elementQtéInterventionsParService) {
+            new Chart(elementQtéInterventionsParService, configQtéInterventionsParService);
+        }
+    }
 
     /*
       Temps total par service
     */
-<!--    function afficherTempsTotalParService() {-->
-<!--        var dataTempsTotalParService = {-->
-<!--            labels: <%#= @temps_total_par_service.keys.to_json.html_safe %>,-->
-<!--            datasets: [-->
-<!--                {-->
-<!--                    label: "Temps total (h)",-->
-<!--                    backgroundColor: [-->
-<!--                        'rgba(153, 101, 255, 0.4)',-->
-<!--                        'rgba(255,159, 64, 0.4)',-->
-<!--                        'rgba(54, 162, 235, 0.4)',-->
-<!--                        'rgba(75, 192, 192, 0.4)',-->
-<!--                        'rgba(255, 205, 86, 0.4)',-->
-<!--                        'rgba(255, 99, 132, 0.4)',-->
-<!--                        'rgba(201, 203, 207, 0.4)',-->
-<!--                    ],-->
-<!--                    borderColor: [-->
-<!--                        'rgb(153, 102, 255)',-->
-<!--                        'rgb(255, 159, 64)',-->
-<!--                        'rgb(54, 162, 235)',-->
-<!--                        'rgb(75, 192, 192)',-->
-<!--                        'rgb(255, 205, 86)',-->
-<!--                        'rgb(255, 99, 132)',-->
-<!--                        'rgb(201, 203, 207)'-->
-<!--                    ],-->
-<!--                    borderWidth: 1,-->
-<!--                    data: <%#= @temps_total_par_service.values.to_json.html_safe %>,-->
-<!--                },-->
-<!--            ],-->
-<!--        };-->
+    function afficherTempsTotalParService() {
+        var dataTempsTotalParService = {
+            labels: <%= @temps_total_par_service.keys.to_json.html_safe %>,
+            datasets: [
+                {
+                    label: "Temps total (h)",
+                    backgroundColor: [
+                        'rgba(153, 101, 255, 0.4)',
+                        'rgba(255,159, 64, 0.4)',
+                        'rgba(54, 162, 235, 0.4)',
+                        'rgba(75, 192, 192, 0.4)',
+                        'rgba(255, 205, 86, 0.4)',
+                        'rgba(255, 99, 132, 0.4)',
+                        'rgba(201, 203, 207, 0.4)',
+                    ],
+                    borderColor: [
+                        'rgb(153, 102, 255)',
+                        'rgb(255, 159, 64)',
+                        'rgb(54, 162, 235)',
+                        'rgb(75, 192, 192)',
+                        'rgb(255, 205, 86)',
+                        'rgb(255, 99, 132)',
+                        'rgb(201, 203, 207)'
+                    ],
+                    borderWidth: 1,
+                    data: <%= @temps_total_par_service.values.to_json.html_safe %>,
+                },
+            ],
+        };
 
-<!--        var configTempsTotalParService = {-->
-<!--            type: "polarArea",-->
-<!--            data: dataTempsTotalParService,-->
-<!--            options: {},-->
-<!--        };-->
+        var configTempsTotalParService = {
+            type: "polarArea",
+            data: dataTempsTotalParService,
+            options: {},
+        };
 
-<!--        var elementTempsTotalParService = document.getElementById("tempsTotalParServiceChart");-->
-<!--        if (elementTempsTotalParService) {-->
-<!--            new Chart(elementTempsTotalParService, configTempsTotalParService);-->
-<!--        }-->
-<!--    }-->
+        var elementTempsTotalParService = document.getElementById("tempsTotalParServiceChart");
+        if (elementTempsTotalParService) {
+            new Chart(elementTempsTotalParService, configTempsTotalParService);
+        }
+    }
 
     /*
         CO2 total par mois
