@@ -25,12 +25,11 @@ class Notification < ApplicationRecord
       bouffonne bouffon baltringue fumier ordure foutre
     ]
 
-    /#{bad_words.join("|")}/i
+    /\b(#{bad_words.join("|")})\b/i
   end
 
   def moderation
     self.message.gsub(Notification.bad_words_regex,'🌼🌼🌼')
-
   end
 
   def nb_bad_words
