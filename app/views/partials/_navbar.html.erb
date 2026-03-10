@@ -238,6 +238,10 @@
     <% end %>
   <% end %>
 
+  <%= link_to user_path(current_user), class: "bg-transparent" do %>
+    <%= render partial: 'partials/user_profile_picture', locals: {user: current_user} %>
+  <% end %>
+
   <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?", testid: "fermer_session" }, title: "Fermer la session de #{current_user.email} (#{current_user.rôle})", class: "text-secondary hover-active hover:shadow" do %>
     <span class="material-symbols-outlined">
       logout
