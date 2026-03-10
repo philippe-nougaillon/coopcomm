@@ -10,7 +10,6 @@ class UserPolicy < ApplicationPolicy
   end
 
   def show?
-    # "&" désigne l'intersection entre deux listes
     (index? && organisation && shared_service) || record == user
   end
 
@@ -59,6 +58,6 @@ class UserPolicy < ApplicationPolicy
   end
 
   def reactivate?
-    manager && organisation
+    manager && organisation && shared_service
   end
 end

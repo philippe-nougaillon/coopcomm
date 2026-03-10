@@ -2,7 +2,8 @@ require "test_helper"
 
 class ServicesControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @service = services(:one)
+    @service = services(:comptabilite)
+    sign_in users(:hidalgo)
   end
 
   test "should get index" do

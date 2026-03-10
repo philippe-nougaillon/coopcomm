@@ -1,7 +1,19 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  nom: MyString
+comptabilite:
+  nom: Comptabilité
 
-two:
-  nom: MyString
+informatique:
+  nom: Informatique
+
+technique:
+  nom: Technique
+
+secretariat:
+  nom: Secrétariat
+
+periscolaire:
+  nom: Périscolaire
+
+menage:
+  nom: Ménage
