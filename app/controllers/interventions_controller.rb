@@ -24,6 +24,8 @@ class InterventionsController < ApplicationController
 
     @services = current_user.services
 
+    @interventions = @interventions.filter_by_service(params[:service].presence || @services )
+
     organisation_members = current_user.organisation.users.filter_by_service(params[:service].presence || @services)
     if current_user.manager?
       @adhérents = organisation_members.adhérent.order(:nom)
@@ -61,8 +63,6 @@ class InterventionsController < ApplicationController
     if params[:team_id].present?
       @interventions = @interventions.where(team_id: params[:team_id])
     end
-
-    @interventions = @interventions.joins(agent_interventions: { agent: { user_services: :service } }).where(services: { id: params[:service].presence || @services })
 
     if params[:agent_ids].present?
       @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {id: params[:agent_ids]})
