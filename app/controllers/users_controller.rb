@@ -2,6 +2,7 @@ class UsersController < ApplicationController
   before_action :set_user, only: %i[ show edit update destroy inviter edit_password update_password ]
   # la méthode reactivate a tout de même un authorize
   before_action :is_user_authorized, except: %i[ reactivate ] 
+  before_action :set_organisation_user_tags, only: [:new, :create, :edit, :update]
 
   require 'capture_stdout'
 
@@ -279,7 +280,7 @@ class UsersController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def user_params
-      params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :rôle, :service, :memo, :localisation, :profile_picture, :color, absences_attributes: [:id, :du, :au, :motif, :observation, :matin, :après_midi, :_destroy])
+      params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :rôle, :service, :memo, :localisation, :profile_picture, :color, tag_list: [], absences_attributes: [:id, :du, :au, :motif, :observation, :matin, :après_midi, :_destroy])
     end
 
     def is_user_authorized

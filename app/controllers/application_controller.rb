@@ -38,4 +38,10 @@ class ApplicationController < ActionController::Base
   def pagy_wrong_page
     redirect_to(request.referrer || request.path || root_path)
   end
+
+  def set_organisation_user_tags
+    if current_user&.organisation
+      @users_tags = current_user.organisation.users.tag_counts_on(:tags).order(:name)
+    end
+  end
 end

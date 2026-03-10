@@ -27,7 +27,7 @@
 
     // --- A. Gestion des Exceptions (IDs spécifiques) ---
     
-    // Exception 1 : #intervention_tags
+    // Exception 1 : #intervention_tags (Classique)
     const tagsEl = document.querySelector('#intervention_tags');
     if (tagsEl) {
       const instance = new SlimSelect({
@@ -37,28 +37,36 @@
       window.ssInstances.push(instance);
     }
 
-    // Exception 2 : #intervention_tags_manager
-    const managerEl = document.querySelector('#intervention_tags_manager');
-    if (managerEl) {
-      const instance = new SlimSelect({
-        select: managerEl,
-        settings: {
-          ...commonSettings,
-          addableText: 'Appuyez sur "Entrer" pour ajouter {value}',
-        },
-        events: {
-          addable: function (value) { return value; }
-        }
-      });
-      window.ssInstances.push(instance);
-    }
+    // Exception 2 : Sélecteurs avec création de tags à la volée (Addable)
+    // On regroupe intervention_tags_manager ET user_tag_list ici
+    const addableSelectors = ['#intervention_tags_manager', '#user_tag_list'];
+    
+    addableSelectors.forEach((selectorId) => {
+      const el = document.querySelector(selectorId);
+      if (el) {
+        const instance = new SlimSelect({
+          select: el,
+          settings: {
+            ...commonSettings,
+            addableText: 'Appuyez sur "Entrer" pour ajouter {value}',
+          },
+          events: {
+            addable: function (value) { return value; }
+          }
+        });
+        window.ssInstances.push(instance);
+      }
+    });
 
     // --- B. Gestion Globale (.slim-select) ---
     const genericSelects = document.querySelectorAll('.slim-select');
     
     genericSelects.forEach((selectElement) => {
       // IMPORTANT : On saute les IDs qu'on vient de traiter juste au-dessus
-      if (selectElement.id === 'intervention_tags' || selectElement.id === 'intervention_tags_manager') {
+      // Ajout de user_tag_list dans l'exclusion
+      if (selectElement.id === 'intervention_tags' || 
+          selectElement.id === 'intervention_tags_manager' || 
+          selectElement.id === 'user_tag_list') {
         return; 
       }
 

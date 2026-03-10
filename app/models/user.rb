@@ -4,6 +4,8 @@ class User < ApplicationRecord
 
   include Discard::Model
 
+  acts_as_taggable_on :tags
+
   audited except: :notifications_last_seen_at
 
   # Include default devise modules. Others available are:

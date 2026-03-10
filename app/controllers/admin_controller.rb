@@ -1,5 +1,6 @@
 class AdminController < ApplicationController
   before_action :is_user_authorized
+  before_action :set_organisation_user_tags, only: [:create_new_user, :create_new_user_do]
 
   def audits
     if current_user.manager?

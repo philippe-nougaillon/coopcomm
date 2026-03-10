@@ -4,6 +4,7 @@ class InterventionsController < ApplicationController
   before_action :is_user_authorized
   before_action :store_return_location, only: [:new, :edit]
   skip_before_action :authenticate_user!
+  before_action :set_organisation_user_tags, only: [:index]
 
   # GET /interventions or /interventions.json
   def index
@@ -61,6 +62,18 @@ class InterventionsController < ApplicationController
 
     if params[:team_id].present?
       @interventions = @interventions.where(team_id: params[:team_id])
+    end
+
+    if params[:equipe].present?
+      # On nettoie le tableau pour enlever l'élément vide ("") envoyé par le formulaire
+      tags = params[:equipe].reject(&:blank?)
+      
+      if tags.any?
+        adherent_ids = User.tagged_with(tags, any: true).pluck(:id)
+
+        # Étape B : On filtre directement sur la clé étrangère de l'intervention
+        @interventions = @interventions.where(adherent_id: adherent_ids)
+      end
     end
 
     if params[:service].present?

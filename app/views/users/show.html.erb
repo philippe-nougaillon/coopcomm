@@ -18,6 +18,9 @@
           <%= @user.rôle.upcase %> 
           <%= @user.service.try(:humanize) %> 
         </span>
+        <p>
+          <%= @user.tag_list %>
+        </p>
       </div>
       <div class="rounded-r-lg px-6 py-10">
         <p class="mb-4">

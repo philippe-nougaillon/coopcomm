@@ -119,13 +119,6 @@
     <div data-controller="calc-temps-passe">
       <div class="bg-indigo-50 rounded border border-indigo-100 p-4 shadow-xs">
         <div class="flex flex-wrap gap-5 sm:gap-8">
-          <% if current_user.manager? || current_user.adhérent? %>
-            <div class="w-full sm:flex-1">
-              <%= form.label :team_id, "Équipe" %>
-              <%= form.select :team_id, options_from_collection_for_select(@équipes, 'id', 'nom_prénom', intervention.team_id), {include_blank: true}, class: "slim-select w-full" %>
-            </div>
-          <% end %>
-
           <div class="w-full sm:flex-1", data-verification-disponibilites-target = "formAgents" >
             <%= form.label :agent_ids, "Agents" %>
             <%= form.select :agent_ids, grouped_options_for_select(@grouped_agents, intervention.agent_ids),

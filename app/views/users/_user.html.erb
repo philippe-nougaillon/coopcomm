@@ -25,6 +25,7 @@
   <%= user.rôle.upcase %>
 </td>
 <td><%= user.service.try(:capitalize) %></td>
+<td><%= user.tag_list %></td>
 <td><%= user.email %></td>
 <td>
   <% if user.agent? && user.absent? %>
@@ -38,5 +39,4 @@
     <%= "#{ number_with_precision(user.moyenne, precision: 2, strip_insignificant_zeros: true) } / 5" if user.moyenne %>
   <% end %>
 </td>
-<td><%= truncate(user.memo, length: 20) %></td>
 </tr>

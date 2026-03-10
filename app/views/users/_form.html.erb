@@ -45,6 +45,11 @@
       <%= form.text_field :nom, class: 'input input-sm w-full', required: true %>
     </div>
 
+    <div class="w-full sm:flex-1">
+      <%= form.label :tag_list, "Équipe", style: "display: block" %>
+      <%= form.select :tag_list, options_from_collection_for_select(@users_tags, :name, :name, user.tags.map(&:name)), multiple: true, class: 'slim-select w-full' %>
+    </div>
+
     <% if current_user.adhérent? %>
       <div data-toggle-role-info-target="localisation" class="flex-1">
         <%# ATTENTION : si on change le nombre d'éléments dans la div avec la target localisation, il faut adapter le stimulus en conséquence. Sinon le required du champ localisation sera présent quel que soit le rôle attribué %>

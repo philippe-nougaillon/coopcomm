@@ -11,7 +11,7 @@ class Intervention < ApplicationRecord
   attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute, :début_hour, :début_minute, :fin_hour, :fin_minute
 
   belongs_to :organisation
-  belongs_to :team, class_name: :User, foreign_key: :team_id, optional: true
+  belongs_to :team, class_name: :User, foreign_key: :team_id, optional: true # Not used anymore 
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
   has_many :agent_interventions, dependent: :destroy
   has_many :agents, through: :agent_interventions, class_name: 'User'

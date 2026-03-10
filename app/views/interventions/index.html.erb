@@ -53,8 +53,8 @@
 
           <% if current_user.manager? %>
             <div class="flex-1">
-              <%= label_tag :team_id, "Équipe" %>
-              <%= select_tag :team_id, options_from_collection_for_select(@teams, 'id', 'nom_prénom', params[:team_id]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
+              <%= label_tag :equipe, "Équipe" %>
+              <%= select_tag :equipe, options_from_collection_for_select(@users_tags, 'name', 'name', params[:equipe]), include_blank: true, multiple: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
             </div>
           <% end %>
 
