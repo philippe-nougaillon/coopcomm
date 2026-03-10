@@ -179,7 +179,7 @@ class UsersController < ApplicationController
             @mdp << password
           end
           user.rôle = "agent"
-          user.service = row[headers.index 'Service']&.humanize
+          user.services << Service.find_by(nom: row[headers.index 'Service']&.humanize)
           user.memo = row[headers.index 'Mémo']
 
           safe_changes = user.changes.except("encrypted_password", "password")
