@@ -9,7 +9,7 @@
   </td>
 
   <td>
-    <%= agent.services.pluck(:nom).join(",") %>
+    <%= agent.services.pluck(:nom).join(", ") %>
   </td>
 
   <% (@date..@date_fin).each do | date | %>

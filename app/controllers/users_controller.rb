@@ -9,7 +9,7 @@ class UsersController < ApplicationController
   def index
     @services = current_user.services
     @users = params[:discarded].present? ? current_user.organisation.users.unscoped.discarded : current_user.organisation.users
-    @users = @users.ordered
+    @users = @users.filter_by_service(params[:services].presence || @services).ordered
 
     if params[:search].present?
       @users = @users.where("nom ILIKE :search OR prénom ILIKE :search", {search: "%#{params[:search]}%"})
@@ -18,8 +18,6 @@ class UsersController < ApplicationController
     if params[:rôle].present?
       @users = @users.where(rôle: params[:rôle])
     end
-
-    @users = @users.filter_by_service(params[:service].presence || @services)
 
     if params[:absent].present?
       user_ids = []
@@ -111,15 +109,11 @@ class UsersController < ApplicationController
     params[:vue] ||= 'calendrier'
     params[:date] = Date.today if params[:date].blank?
     @date = params[:date].to_date
-    @agents = current_user.organisation.users.where(rôle: "agent")
-    @services = User.services.sort
+    @services = current_user.services
+    @agents = current_user.organisation.users.filter_by_service(params[:service].presence || @services).where(rôle: "agent")
 
     if params[:search].present?
       @agents = @agents.where("nom ILIKE :search OR prénom ILIKE :search OR email ILIKE :search", {search: "%#{params[:search]}%"})
-    end
-
-    if params[:service].present?
-      @agents = @agents.where(service: params[:service])
     end
 
     # Le code actuel n'est pas utile. Si besoin on peut le faire sur la période (@date..@date_fin). Le mieux serait p-e de faire des cases grises directement dans le calendrier.
