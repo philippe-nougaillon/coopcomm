@@ -56,7 +56,7 @@ class AdminController < ApplicationController
 
   def messagerie
     # On récupère les utilisateurs avec qui on peut envoyer des messages
-    @users = current_user.organisation.users.where.not(id: current_user.id).ordered
+    @users = current_user.organisation.users.filter_by_service(current_user.services).where.not(id: current_user.id).ordered
 
     to_user_id = params[:to_id] || @users.first.id
 
