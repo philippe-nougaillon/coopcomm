@@ -383,7 +383,6 @@ class Intervention < ApplicationRecord
 
   def passed
     !self.nouveau? || (self.fin && (self.fin < DateTime.now))
-
   end
   
   def schedules_must_make_sense
@@ -396,7 +395,11 @@ class Intervention < ApplicationRecord
   end
 
   def self.filter_by_service(services)
-    joins(agent_interventions: { agent: { user_services: :service } }).where(services: {id: services})
+    self
+      .joins(agent_interventions: {
+        agent: { user_services: :service }
+      })
+      .where(services: { id: services })
   end
   
   private

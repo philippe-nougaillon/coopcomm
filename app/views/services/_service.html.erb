@@ -2,4 +2,10 @@
   <td class="text-lg sm:text-2xl text-primary">
     <%= link_to service.nom, service, class: 'text-primary hover:underline' %>
   </td>
+  <td class="text-sm">
+    <%= service.users.map{|user| user.nom_prénom}.join(', ') %>
+  </td>
+  <td class="text-sm">
+    <%= service.users.count %>
+  </td>
 </tr>

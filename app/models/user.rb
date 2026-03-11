@@ -282,7 +282,10 @@ class User < ApplicationRecord
   end
 
   def self.filter_by_service(services)
-    joins(user_services: :service).where(services: services).distinct
+    self
+      .joins(user_services: :service)
+      .where(services: services)
+      .distinct
   end
 
   def manager_or_admin?
