@@ -116,8 +116,6 @@ class Intervention < ApplicationRecord
       user.interventions_adherent.ordered
     when 'agent'
       user.interventions.ordered
-    when 'équipe'
-      user.organisation.interventions.where(team_id: user.id)
     end
   end
 
@@ -129,8 +127,6 @@ class Intervention < ApplicationRecord
       user.interventions_adherent.where(workflow_state: ["terminé"]).ordered
     when 'agent'
       user.interventions.where(workflow_state: ["nouveau"]).ordered
-    when 'équipe'
-      user.organisation.interventions.where(team_id: user.id, workflow_state: ["nouveau"]).ordered
     end
   end
 
@@ -393,6 +389,10 @@ class Intervention < ApplicationRecord
     if self.début && self.fin && (self.début > self.fin)
       errors.add(:erreur, ": La fin de l'intervention ne peut pas être avant son commencement")
     end
+  end
+
+  def self.filter_by_service(services)
+    joins(agent_interventions: { agent: { user_services: :service } }).where(services: {id: services})
   end
   
   private

@@ -1,0 +1,21 @@
+<div class="mx-auto lg:w-2/3 w-full">
+  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
+    <h1 class="text-2xl sm:text-4xl text-primary font-bold">
+      <%= page_title!(@service.nom) %>
+    </h1>
+  </div>
+
+  <div class="flex flex-wrap gap-2 mt-8">
+    <% if policy(@service).edit? %>
+      <%= link_to "Modifier", edit_service_path(@service), class: "btn" %>
+    <% end %>
+    <% if policy(@service).destroy? %>
+      <%= button_to service_path(@service), method: :delete, id: "supprimer_service", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer ce service ?" }, class: "btn", 'data-testid': "Supprimer le service" do %>
+          <span class="material-symbols-outlined">
+            delete
+          </span>
+      <% end %>
+    <% end %>
+    <%= link_to "Retour", services_path, class: "btn" %>
+  </div>
+</div>

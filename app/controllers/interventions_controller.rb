@@ -23,18 +23,16 @@ class InterventionsController < ApplicationController
     # Enelever les interventions filles
     @interventions = @interventions.where(template_slug: nil)
 
-    organisation_members = current_user.organisation.users
+    @services = current_user.services
+
+    @interventions = @interventions.filter_by_service(params[:service].presence || @services )
+
+    organisation_members = current_user.organisation.users.filter_by_service(params[:service].presence || @services)
     if current_user.manager?
       @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services.sort
-      @teams = organisation_members.équipe
       @grouped_agents = User.grouped_agents(organisation_members)
     elsif current_user.adhérent?
       @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.équipe?
-      @services = User.services
       @grouped_agents = User.grouped_agents(organisation_members)
     elsif current_user.agent?
       @adhérents = organisation_members.adhérent.order(:nom)
@@ -74,10 +72,6 @@ class InterventionsController < ApplicationController
         # Étape B : On filtre directement sur la clé étrangère de l'intervention
         @interventions = @interventions.where(adherent_id: adherent_ids)
       end
-    end
-
-    if params[:service].present?
-      @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {service: params[:service]})
     end
 
     if params[:agent_ids].present?
@@ -187,10 +181,6 @@ class InterventionsController < ApplicationController
     @intervention = Intervention.new(intervention_params)
     @intervention.organisation = current_user.organisation
     update_tag_list
-
-    if current_user.équipe?
-      @intervention.team_id = current_user.id
-    end
 
     check_workflow_pointage_mère
 
@@ -448,13 +438,9 @@ class InterventionsController < ApplicationController
     if current_user.manager?
       @adhérents = organisation_members.adhérent.order(:nom)
       @services = User.services.sort
-      @teams = organisation_members.équipe
       @grouped_agents = User.grouped_agents(organisation_members)
     elsif current_user.adhérent?
       @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.équipe?
       @services = User.services
       @grouped_agents = User.grouped_agents(organisation_members)
     elsif current_user.agent?
@@ -594,13 +580,9 @@ class InterventionsController < ApplicationController
     if current_user.manager?
       @adhérents = organisation_members.adhérent.order(:nom)
       @services = User.services.sort
-      @teams = organisation_members.équipe
       @grouped_agents = User.grouped_agents(organisation_members)
     elsif current_user.adhérent?
       @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.équipe?
       @services = User.services
       @grouped_agents = User.grouped_agents(organisation_members)
     elsif current_user.agent?
@@ -778,7 +760,6 @@ class InterventionsController < ApplicationController
     def set_form_variables
       @tags = current_user.organisation.interventions.tag_counts_on(:tags).order(:name)
       @organisation_members = current_user.organisation.users
-      @équipes = @organisation_members.équipe
       @grouped_agents = User.grouped_agents(@organisation_members)
       @tools = current_user.organisation.tools.ordered
     end

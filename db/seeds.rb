@@ -21,105 +21,6 @@ agent_secretaire_véronique = User.create({nom: "Faure", prénom: "Véronique", 
 agent_compta_sophie = User.create({nom: "Mercier", prénom: "Sophie", email: "agent.compta1@ccmm.fr", organisation_id: organisation.id, rôle: "agent", service: "Comptabilité", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
 agent_securite_philippe = User.create({nom: "Garnier", prénom: "Philippe", email: "agent.securite1@ccmm.fr", organisation_id: organisation.id, rôle: "agent", service: "Technique", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
 
-team_entretien_batiment = User.create({nom: "Entretien Bâtiment", prénom: "", email: "equipe.entretien@ccmm.fr", organisation_id: organisation.id, rôle: "équipe", color: "#1F77B4", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid})
-team_eclairage = User.create!(nom: "Éclairage", prénom: "", email: "equipe.eclairage@ccmm.fr", organisation_id: organisation.id, rôle: "équipe", color: "#FF7F0E", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid)
-team_technique = User.create!(nom: "Technique", prénom: "", email: "equipe.tech@ccmm.fr", organisation_id: organisation.id, rôle: "équipe",  color: "#2CA02C", password: "ccmm2026", password_confirmation: "ccmm2026", slug: SecureRandom.uuid)
-team_menage = User.create!(
-  nom: "Ménage",
-  prénom: "",
-  email: "equipe.menage@ccmm.fr",
-  organisation_id: organisation.id,
-  rôle: "équipe",
-  color: "#9467BD",
-  password: "ccmm2026",
-  password_confirmation: "ccmm2026",
-  slug: SecureRandom.uuid
-)
-
-team_informatique = User.create!(
-  nom: "Informatique",
-  prénom: "",
-  email: "equipe.informatique@ccmm.fr",
-  organisation_id: organisation.id,
-  rôle: "équipe",
-  color: "#17BECF",
-  password: "ccmm2026",
-  password_confirmation: "ccmm2026",
-  slug: SecureRandom.uuid
-)
-
-team_peinture = User.create!(
-  nom: "Peinture",
-  prénom: "",
-  email: "equipe.peinture@ccmm.fr",
-  organisation_id: organisation.id,
-  rôle: "équipe",
-  color: "#D62728",
-  password: "ccmm2026",
-  password_confirmation: "ccmm2026",
-  slug: SecureRandom.uuid
-)
-
-team_compta = User.create!(
-  nom: "Comptabilité",
-  prénom: "",
-  email: "equipe.compta@ccmm.fr",
-  organisation_id: organisation.id,
-  rôle: "équipe",
-  color: "#E377C2",
-  password: "ccmm2026",
-  password_confirmation: "ccmm2026",
-  slug: SecureRandom.uuid
-)
-
-team_plomberie = User.create!(
-  nom: "Plomberie",
-  prénom: "",
-  email: "equipe.plomberie@ccmm.fr",
-  organisation_id: organisation.id,
-  rôle: "équipe",
-  color: "#8C564B",
-  password: "ccmm2026",
-  password_confirmation: "ccmm2026",
-  slug: SecureRandom.uuid
-)
-
-team_metal = User.create!(
-  nom: "Métallerie",
-  prénom: "",
-  email: "equipe.metal@ccmm.fr",
-  organisation_id: organisation.id,
-  rôle: "équipe",
-  color: "#7F7F7F",
-  password: "ccmm2026",
-  password_confirmation: "ccmm2026",
-  slug: SecureRandom.uuid
-)
-
-team_securite = User.create!(
-  nom: "Sécurité",
-  prénom: "",
-  email: "equipe.securite@ccmm.fr",
-  organisation_id: organisation.id,
-  rôle: "équipe",
-  color: "#BCBD22",
-  password: "ccmm2026",
-  password_confirmation: "ccmm2026",
-  slug: SecureRandom.uuid
-)
-
-team_espaces_verts = User.create!(
-  nom: "Équipe Espaces Verts",
-  prénom: "",
-  email: "equipe.espacesverts@ccmm.fr",
-  organisation_id: organisation.id,
-  rôle: "équipe",
-  color: "#2CA02C",
-  password: "ccmm2026",
-  password_confirmation: "ccmm2026",
-  slug: SecureRandom.uuid
-)
-
 Absence.create!([
   { du: Date.new(2025, 12, 10), au: Date.new(2025, 12, 12), motif: "Maladie", user: agent_tech_jean },
   { du: Date.new(2026, 1, 20), au: Date.new(2026, 1, 31), motif: "Vacances Hiver", user: agent_tech_andré },
@@ -1555,7 +1456,6 @@ i86 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i86.update!(team_id: team_menage.id)
 AgentIntervention.create!(agent_id: agent_menage_nicole.id, intervention_id: i86.id)
 ToolIntervention.create!(tool_id: escabeau.id, intervention_id: i86.id)
 ToolIntervention.create!(tool_id: chiffon_microfibre.id, intervention_id: i86.id)
@@ -1572,7 +1472,6 @@ i87 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i87.update!(team_id: team_technique.id)
 AgentIntervention.create!(agent_id: agent_tech_jean.id, intervention_id: i87.id)
 ToolIntervention.create!(tool_id: tournevis.id, intervention_id: i87.id)
 ToolIntervention.create!(tool_id: marteau.id, intervention_id: i87.id)
@@ -1590,7 +1489,6 @@ i88 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i88.update!(team_id: team_peinture.id)
 AgentIntervention.create!(agent_id: agent_peinture_amelie.id, intervention_id: i88.id)
 ToolIntervention.create!(tool_id: pinceau.id, intervention_id: i88.id)
 ToolIntervention.create!(tool_id: peinture_rouge.id, intervention_id: i88.id)
@@ -1607,7 +1505,6 @@ i89 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i89.update!(team_id: team_securite.id)
 AgentIntervention.create!(agent_id: agent_securite_philippe.id, intervention_id: i89.id)
 ToolIntervention.create!(tool_id: testeur_extincteur.id, intervention_id: i89.id)
 
@@ -1624,7 +1521,6 @@ i90 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i90.update!(team_id: team_espaces_verts.id)
 AgentIntervention.create!(agent_id: agent_tech_andré.id, intervention_id: i90.id)
 ToolIntervention.create!(tool_id: tondeuse_gazon.id, intervention_id: i90.id)
 
@@ -1638,7 +1534,6 @@ i86 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i86.update!(team_id: team_menage.id)
 AgentIntervention.create!(agent_id: agent_menage_nicole.id, intervention_id: i86.id)
 ToolIntervention.create!(tool_id: escabeau.id, intervention_id: i86.id)
 ToolIntervention.create!(tool_id: chiffon_microfibre.id, intervention_id: i86.id)
@@ -1653,7 +1548,6 @@ i87 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i87.update!(team_id: team_technique.id)
 AgentIntervention.create!(agent_id: agent_tech_jean.id, intervention_id: i87.id)
 ToolIntervention.create!(tool_id: marteau.id, intervention_id: i87.id)
 ToolIntervention.create!(tool_id: clé_molette.id, intervention_id: i87.id)
@@ -1668,7 +1562,6 @@ i88 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i88.update!(team_id: team_peinture.id)
 AgentIntervention.create!(agent_id: agent_peinture_amelie.id, intervention_id: i88.id)
 ToolIntervention.create!(tool_id: pinceau.id, intervention_id: i88.id)
 ToolIntervention.create!(tool_id: peinture_rouge.id, intervention_id: i88.id)
@@ -1683,7 +1576,6 @@ i89 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i89.update!(team_id: team_securite.id)
 AgentIntervention.create!(agent_id: agent_securite_philippe.id, intervention_id: i89.id)
 ToolIntervention.create!(tool_id: testeur_extincteur.id, intervention_id: i89.id)
 
@@ -1697,7 +1589,6 @@ i90 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i90.update!(team_id: team_menage.id)
 AgentIntervention.create!(agent_id: agent_menage_nicole.id, intervention_id: i90.id)
 ToolIntervention.create!(tool_id: aspirateur_industriel.id, intervention_id: i90.id)
 ToolIntervention.create!(tool_id: seau_serpillere.id, intervention_id: i90.id)
@@ -1714,7 +1605,6 @@ i91 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i91.update!(team_id: team_technique.id)
 AgentIntervention.create!(agent_id: agent_tech_jean.id, intervention_id: i91.id)
 ToolIntervention.create!(tool_id: marteau.id, intervention_id: i91.id)
 ToolIntervention.create!(tool_id: tournevis.id, intervention_id: i91.id)
@@ -1730,7 +1620,6 @@ i92 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i92.update!(team_id: team_menage.id)
 AgentIntervention.create!(agent_id: agent_menage_nicole.id, intervention_id: i92.id)
 
 # # ---------- 19 février ----------
@@ -1743,7 +1632,6 @@ AgentIntervention.create!(agent_id: agent_menage_nicole.id, intervention_id: i92
 #   organisation_id: organisation.id,
 #   slug: SecureRandom.uuid
 # )
-# i93.update!(team_id: team_electricite.id)
 # AgentIntervention.create!(agent_id: agent_elec_marc.id, intervention_id: i93.id)
 # ToolIntervention.create!(tool_id: testeur_lampe.id, intervention_id: i93.id)
 
@@ -1758,7 +1646,6 @@ i94 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i94.update!(team_id: team_peinture.id)
 AgentIntervention.create!(agent_id: agent_peinture_amelie.id, intervention_id: i94.id)
 ToolIntervention.create!(tool_id: pinceau.id, intervention_id: i94.id)
 ToolIntervention.create!(tool_id: peinture_blanc.id, intervention_id: i94.id)
@@ -1773,7 +1660,6 @@ i95 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i95.update!(team_id: team_technique.id)
 AgentIntervention.create!(agent_id: agent_tech_jean.id, intervention_id: i95.id)
 ToolIntervention.create!(tool_id: tournevis.id, intervention_id: i95.id)
 
@@ -1788,7 +1674,6 @@ i96 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i96.update!(team_id: team_menage.id)
 AgentIntervention.create!(agent_id: agent_menage_nicole.id, intervention_id: i96.id)
 ToolIntervention.create!(tool_id: chiffon_microfibre.id, intervention_id: i96.id)
 
@@ -1802,7 +1687,6 @@ i97 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i97.update!(team_id: team_technique.id)
 AgentIntervention.create!(agent_id: agent_tech_jean.id, intervention_id: i97.id)
 ToolIntervention.create!(tool_id: tournevis.id, intervention_id: i97.id)
 
@@ -1817,7 +1701,6 @@ i98 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i98.update!(team_id: team_espaces_verts.id)
 AgentIntervention.create!(agent_id: agent_tech_andré.id, intervention_id: i98.id)
 ToolIntervention.create!(tool_id: tondeuse_gazon.id, intervention_id: i98.id)
 
@@ -1832,7 +1715,6 @@ i99 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i99.update!(team_id: team_peinture.id)
 AgentIntervention.create!(agent_id: agent_peinture_amelie.id, intervention_id: i99.id)
 ToolIntervention.create!(tool_id: pinceau.id, intervention_id: i99.id)
 ToolIntervention.create!(tool_id: peinture_vert.id, intervention_id: i99.id)
@@ -1847,7 +1729,6 @@ ToolIntervention.create!(tool_id: peinture_vert.id, intervention_id: i99.id)
 #   organisation_id: organisation.id,
 #   slug: SecureRandom.uuid
 # )
-# i100.update!(team_id: team_electricite.id)
 # AgentIntervention.create!(agent_id: agent_elec_marc.id, intervention_id: i100.id)
 # ToolIntervention.create!(tool_id: testeur_lampe.id, intervention_id: i100.id)
 
@@ -1861,7 +1742,6 @@ i101 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i101.update!(team_id: team_technique.id)
 AgentIntervention.create!(agent_id: agent_tech_jean.id, intervention_id: i101.id)
 ToolIntervention.create!(tool_id: tournevis.id, intervention_id: i101.id)
 
@@ -1876,7 +1756,6 @@ i102 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i102.update!(team_id: team_menage.id)
 AgentIntervention.create!(agent_id: agent_menage_nicole.id, intervention_id: i102.id)
 ToolIntervention.create!(tool_id: chiffon_microfibre.id, intervention_id: i102.id)
 
@@ -1891,7 +1770,6 @@ i103 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i103.update!(team_id: team_espaces_verts.id)
 AgentIntervention.create!(agent_id: agent_tech_andré.id, intervention_id: i103.id)
 ToolIntervention.create!(tool_id: tondeuse_gazon.id, intervention_id: i103.id)
 
@@ -1906,7 +1784,6 @@ i104 = Intervention.create!(
   organisation_id: organisation.id,
   slug: SecureRandom.uuid
 )
-i104.update!(team_id: team_peinture.id)
 AgentIntervention.create!(agent_id: agent_peinture_amelie.id, intervention_id: i104.id)
 ToolIntervention.create!(tool_id: pinceau.id, intervention_id: i104.id)
 ToolIntervention.create!(tool_id: peinture_rouge.id, intervention_id: i104.id)
@@ -1984,85 +1861,6 @@ Intervention.where(workflow_state: ["validé", "refusé", "archivé"]).each do |
   i.save
 end
 
-i1.update!(team_id: team_entretien_batiment.id)
-i2.update!(team_id: team_eclairage.id)
-i3.update!(team_id: team_menage.id)
-i4.update!(team_id: team_informatique.id)
-i6.update!(team_id: team_compta.id)
-i7.update!(team_id: team_plomberie.id)
-i8.update!(team_id: team_peinture.id)
-i9.update!(team_id: team_entretien_batiment.id)
-i10.update!(team_id: team_entretien_batiment.id)
-i11.update!(team_id: team_metal.id)
-i12.update!(team_id: team_peinture.id)
-i13.update!(team_id: team_securite.id)
-i14.update!(team_id: team_menage.id)
-i15.update!(team_id: team_entretien_batiment.id)
-i16.update!(team_id: team_entretien_batiment.id)
-i17.update!(team_id: team_informatique.id)
-i18.update!(team_id: team_menage.id)
-i19.update!(team_id: team_entretien_batiment.id)
-i20.update!(team_id: team_metal.id)
-i26.update!(team_id: team_peinture.id) 
-i27.update!(team_id: team_technique.id)       
-i28.update!(team_id: team_menage.id)    
-i29.update!(team_id: team_technique.id)       
-i30.update!(team_id: team_peinture.id) 
-i31.update!(team_id: team_securite.id)  
-i32.update!(team_id: team_menage.id)    
-i33.update!(team_id: team_technique.id)       
-i34.update!(team_id: team_peinture.id) 
-i35.update!(team_id: team_securite.id)  
-i36.update!(team_id: team_espaces_verts.id) 
-i37.update!(team_id: team_menage.id)    
-i38.update!(team_id: team_technique.id)       
-i39.update!(team_id: team_peinture.id) 
-i40.update!(team_id: team_securite.id)  
-i41.update!(team_id: team_espaces_verts.id) 
-i42.update!(team_id: team_menage.id)    
-i43.update!(team_id: team_technique.id)       
-i44.update!(team_id: team_peinture.id) 
-i45.update!(team_id: team_securite.id)  
-i46.update!(team_id: team_menage.id)    
-i47.update!(team_id: team_technique.id)       
-i48.update!(team_id: team_peinture.id) 
-i49.update!(team_id: team_securite.id)  
-i50.update!(team_id: team_espaces_verts.id)
-i51.update!(team_id: team_menage.id)
-i52.update!(team_id: team_technique.id)
-i53.update!(team_id: team_peinture.id)
-i54.update!(team_id: team_securite.id)
-i55.update!(team_id: team_espaces_verts.id)
-i56.update!(team_id: team_menage.id)
-i57.update!(team_id: team_plomberie.id)
-i58.update!(team_id: team_peinture.id)
-i59.update!(team_id: team_securite.id)
-i60.update!(team_id: team_menage.id)
-i61.update!(team_id: team_technique.id)
-i62.update!(team_id: team_peinture.id)
-i63.update!(team_id: team_securite.id)
-i64.update!(team_id: team_menage.id)
-i65.update!(team_id: team_menage.id)
-i66.update!(team_id: team_eclairage.id)
-i67.update!(team_id: team_peinture.id)
-i68.update!(team_id: team_securite.id)
-i69.update!(team_id: team_menage.id)
-i70.update!(team_id: team_technique.id)
-i71.update!(team_id: team_peinture.id)
-i72.update!(team_id: team_menage.id)
-i73.update!(team_id: team_securite.id)
-i74.update!(team_id: team_peinture.id)
-i75.update!(team_id: team_menage.id)
-i76.update!(team_id: team_technique.id)
-i77.update!(team_id: team_peinture.id)
-i78.update!(team_id: team_menage.id)
-i79.update!(team_id: team_securite.id)
-i80.update!(team_id: team_peinture.id)
-i81.update!(team_id: team_menage.id)
-i82.update!(team_id: team_technique.id)
-i83.update!(team_id: team_peinture.id)
-i84.update!(team_id: team_menage.id)
-i85.update!(team_id: team_securite.id)
 
 
 

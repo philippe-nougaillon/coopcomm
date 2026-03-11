@@ -1,0 +1,22 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+# Erreur de clé étrangère pour les services
+bond_comptabilite:
+  user: bond
+  service: comptabilite
+
+martin_technique:
+  user: martin_technique_paris
+  service: technique
+
+john_wick_comptabilite:
+  user: john_wick
+  service: comptabilite
+
+hidalgo_comptabilite:
+  user: hidalgo
+  service: comptabilite
+
+weil_informatique:
+  user: weil
+  service: informatique

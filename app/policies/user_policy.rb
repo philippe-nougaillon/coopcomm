@@ -10,7 +10,7 @@ class UserPolicy < ApplicationPolicy
   end
 
   def show?
-    (index? && organisation) || record == user
+    (index? && organisation && shared_service) || record == user
   end
 
   def new?
@@ -30,7 +30,7 @@ class UserPolicy < ApplicationPolicy
   end
 
   def destroy?
-    manager && organisation && record != user
+    manager && organisation && record != user && shared_service
   end
 
   def agent_calendrier?
@@ -46,7 +46,7 @@ class UserPolicy < ApplicationPolicy
   end
 
   def inviter?
-    manager && organisation && record != user
+    manager && organisation && record != user && shared_service
   end
 
   def edit_password?
@@ -58,6 +58,6 @@ class UserPolicy < ApplicationPolicy
   end
 
   def reactivate?
-    manager && organisation
+    manager && organisation && shared_service
   end
 end

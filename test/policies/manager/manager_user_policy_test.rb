@@ -4,48 +4,62 @@ class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
   def setup
     manager_paris = users(:hidalgo)
     
-    user_paris = users(:user_paris)
+    user_paris = users(:bond)
+    user_paris_service_different = users(:martin_technique_paris)
 
     @policy = UserPolicy.new(manager_paris, user_paris)
+    @policy_service_different = UserPolicy.new(manager_paris, user_paris_service_different)
   end
 
   # Index
-  test "accès manager user index autorisé" do
+  test "accès autorisé pour un manager sur la page index des users" do
     assert @policy.index?
   end
 
   # Show
-  test "accès manager user show autorisé" do
+  test "accès autorisé pour un manager sur la page show d'un user" do
     assert @policy.show?
   end
 
+  test "accès interdit pour un manager sur la page show d'un user sans aucun service en commun avec le manager" do
+    refute @policy_service_different.show?
+  end
+
   # New
-  test "accès manager user new autorisé" do
+  test "accès autorisé pour un manager sur la page new d'un user" do
     assert @policy.new?
   end
 
   # Create
-  test "accès manager user create autorisé" do
+  test "accès autorisé pour un manager sur la page create d'un user" do
     assert @policy.create?
   end
 
   # Edit
-  test "accès manager user edit autorisé" do
+  test "accès autorisé pour un manager sur la page edit d'un user" do
     assert @policy.edit?
   end
 
   # Update
-  test "accès manager user update autorisé" do
+  test "accès autorisé pour un manager sur la page update d'un user" do
     assert @policy.update?
   end
 
+  test "accès interdit pour un manager sur la page update d'un user sans aucun service en commun avec le manager" do
+    refute @policy_service_different.update?
+  end
+
   # Destroy
-  test "accès manager user destroy autorisé" do
+  test "accès autorisé pour un manager sur la page destroy d'un user" do
     assert @policy.destroy?
   end
 
+  test "accès interdit pour un manager sur la page destroy d'un user sans aucun service en commun avec le manager" do
+    refute @policy_service_different.destroy?
+  end
+
   # agent calendrier
-  test "accès manager user agent calendrier autorisé" do
+  test "accès autorisé pour un manager sur la page agent_calendrier" do
     assert @policy.agent_calendrier?
   end
 end

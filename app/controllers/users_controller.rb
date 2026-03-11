@@ -8,9 +8,9 @@ class UsersController < ApplicationController
 
   # GET /users or /users.json
   def index
-    @services = User.services.sort
+    @services = current_user.services
     @users = params[:discarded].present? ? current_user.organisation.users.unscoped.discarded : current_user.organisation.users
-    @users = @users.ordered
+    @users = @users.filter_by_service(params[:services].presence || @services).ordered
 
     if params[:search].present?
       @users = @users.where("nom ILIKE :search OR prénom ILIKE :search", {search: "%#{params[:search]}%"})
@@ -18,10 +18,6 @@ class UsersController < ApplicationController
 
     if params[:rôle].present?
       @users = @users.where(rôle: params[:rôle])
-    end
-
-    if params[:service].present?
-      @users = @users.where(service: params[:service])
     end
 
     if params[:absent].present?
@@ -114,15 +110,11 @@ class UsersController < ApplicationController
     params[:vue] ||= 'calendrier'
     params[:date] = Date.today if params[:date].blank?
     @date = params[:date].to_date
-    @agents = current_user.organisation.users.where(rôle: "agent")
-    @services = User.services.sort
+    @services = current_user.services
+    @agents = current_user.organisation.users.filter_by_service(params[:service].presence || @services).where(rôle: "agent")
 
     if params[:search].present?
       @agents = @agents.where("nom ILIKE :search OR prénom ILIKE :search OR email ILIKE :search", {search: "%#{params[:search]}%"})
-    end
-
-    if params[:service].present?
-      @agents = @agents.where(service: params[:service])
     end
 
     # Le code actuel n'est pas utile. Si besoin on peut le faire sur la période (@date..@date_fin). Le mieux serait p-e de faire des cases grises directement dans le calendrier.
@@ -188,7 +180,7 @@ class UsersController < ApplicationController
             @mdp << password
           end
           user.rôle = "agent"
-          user.service = row[headers.index 'Service']&.humanize
+          user.services << Service.find_by(nom: row[headers.index 'Service']&.humanize)
           user.memo = row[headers.index 'Mémo']
 
           safe_changes = user.changes.except("encrypted_password", "password")
@@ -260,7 +252,7 @@ class UsersController < ApplicationController
   def reactivate
     @user = User.unscoped.find_by(slug: params[:id])
     authorize @user
-    
+
     if @user.undiscard
       redirect_to users_path, notice: "Le compte de #{@user.nom_prénom} a été réactivé avec succès."
     else
@@ -280,7 +272,7 @@ class UsersController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def user_params
-      params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :rôle, :service, :memo, :localisation, :profile_picture, :color, tag_list: [], absences_attributes: [:id, :du, :au, :motif, :observation, :matin, :après_midi, :_destroy])
+      params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :rôle, :memo, :localisation, :profile_picture, :color, tag_list: [], absences_attributes: [:id, :du, :au, :motif, :observation, :matin, :après_midi, :_destroy], service_ids: [])
     end
 
     def is_user_authorized

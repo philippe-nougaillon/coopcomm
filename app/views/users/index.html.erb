@@ -23,8 +23,8 @@
         </div>
 
         <div class="w-full md:w-fit">
-          <%= label_tag :service %>
-          <%= select_tag :service, options_for_select(@services, params[:service]), include_blank: true, class: 'select select-sm w-full', onchange: 'this.form.submit()' %>
+          <%= label_tag :services %>
+          <%= select_tag :services, options_from_collection_for_select(@services, 'id', 'nom', params[:services]), include_blank: true, class: 'slim-select w-full', multiple: true, onchange: 'this.form.submit()' %>
         </div>
 
         <div class="flex flex-col gap-2">
@@ -49,7 +49,7 @@
           <th></th>
           <th><%= sort_link 'users.nom', 'Nom' %></th>
           <th colspan=2><%= sort_link 'users.rôle', 'Rôle' %></th>
-          <th><%= sort_link 'users.service', 'Service' %></th>
+          <th>Service</th>
           <th>Équipe</th>
           <th><%= sort_link 'users.email', 'Email' %></th>
           <th>Absent ?</th>

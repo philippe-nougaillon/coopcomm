@@ -2,7 +2,7 @@
   <% page_title!(@user.nom_prénom) %>
 
   <div class="flex flex-wrap justify-between gap-24">
-    <div class="flex-1 flex shadow rounded-lg"  <%= "style=\"border-left: .3rem solid #{@user.color};\"".html_safe if @user.équipe? && @user.color %>>
+    <div class="flex-1 flex shadow rounded-lg">
       <div class="flex flex-col items-center bg-indigo-100 w-48 py-8 rounded-l-lg">
         <div class="avatar avatar-placeholder rounded-full">
           <div class="w-24 bg-gray-100 rounded-full">
@@ -16,7 +16,6 @@
         </p>
         <span class="text-success text-center mt-4">
           <%= @user.rôle.upcase %> 
-          <%= @user.service.try(:humanize) %> 
         </span>
         <p>
           <%= @user.tag_list %>
@@ -36,6 +35,18 @@
           <p class="mt-4">
             <strong class="block text-slate-400 mb-1">Mémo</strong>
             <%= @user.memo %>
+          </p>
+        <% end %>
+
+        <% if @user.manager? %>
+          <p class="mt-4">
+            <strong class="block text-slate-400 mb-1">Responsable des services</strong>
+            <%= @user.services.pluck(:nom).join(", ") %>
+          </p>
+        <% else %>
+          <p class="mt-4">
+            <strong class="block text-slate-400 mb-1">Services</strong>
+            <%= @user.services.pluck(:nom).join(", ") %>
           </p>
         <% end %>
       </div>
