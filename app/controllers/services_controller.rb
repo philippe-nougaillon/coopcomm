@@ -28,15 +28,17 @@ class ServicesController < ApplicationController
 
   # POST /services or /services.json
   def create
-    @service = Service.new(service_params)
+    service = Service.new(service_params)
 
     respond_to do |format|
-      if @service.save
-        format.html { redirect_to @service, notice: "Service was successfully created." }
-        format.json { render :show, status: :created, location: @service }
+      if service.save
+        # Attribution du nouveau service à l'utilisateur courant pour qu'il ait accès.
+        current_user.services << service
+        format.html { redirect_to service, notice: "Service créé avec succès." }
+        format.json { render :show, status: :created, location: service }
       else
         format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @service.errors, status: :unprocessable_entity }
+        format.json { render json: service.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -45,7 +47,7 @@ class ServicesController < ApplicationController
   def update
     respond_to do |format|
       if @service.update(service_params)
-        format.html { redirect_to @service, notice: "Service was successfully updated.", status: :see_other }
+        format.html { redirect_to @service, notice: "Service modifié avec succès.", status: :see_other }
         format.json { render :show, status: :ok, location: @service }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -59,7 +61,7 @@ class ServicesController < ApplicationController
     @service.destroy!
 
     respond_to do |format|
-      format.html { redirect_to services_path, notice: "Service was successfully destroyed.", status: :see_other }
+      format.html { redirect_to services_path, notice: "Service supprimé avec succès.", status: :see_other }
       format.json { head :no_content }
     end
   end
