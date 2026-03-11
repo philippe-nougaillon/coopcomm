@@ -434,7 +434,7 @@ class InterventionsController < ApplicationController
     @interventions = @interventions.where("DATE(début) = ?", time_zone_date.to_date)
 
     # Création des variables utilisés par les selecteurs
-    organisation_members = current_user.organisation.users
+    organisation_members = current_user.organisation.users.filter_by_service(current_user.services)
     if current_user.manager?
       @adhérents = organisation_members.adhérent.order(:nom)
       @services = User.services.sort
@@ -576,7 +576,7 @@ class InterventionsController < ApplicationController
     @interventions = @interventions.where("DATE(début) = ?", time_zone_date.to_date)
 
     # Création des variables utilisés par les selecteurs
-    organisation_members = current_user.organisation.users
+    organisation_members = current_user.organisation.users.filter_by_service(current_user.services)
     if current_user.manager?
       @adhérents = organisation_members.adhérent.order(:nom)
       @services = User.services.sort
@@ -759,7 +759,7 @@ class InterventionsController < ApplicationController
 
     def set_form_variables
       @tags = current_user.organisation.interventions.tag_counts_on(:tags).order(:name)
-      @organisation_members = current_user.organisation.users
+      @organisation_members = current_user.organisation.users.filter_by_service(current_user.services)
       @grouped_agents = User.grouped_agents(@organisation_members)
       @tools = current_user.organisation.tools.ordered
     end
