@@ -180,30 +180,66 @@ class UsersController < ApplicationController
             @mdp << password
           end
           user.rôle = "agent"
-          user.services << Service.find_by(nom: row[headers.index 'Service']&.humanize)
+          service = Service.find_by(nom: row[headers.index 'Service']&.humanize)
+
+          if service
+            already_linked = user.user_services.any? { |us| us.service_id == service.id && !us.marked_for_destruction? }
+            unless already_linked
+              user.user_services.build(service: service)
+            end
+          end
+
           user.memo = row[headers.index 'Mémo']
 
-          safe_changes = user.changes.except("encrypted_password", "password")
-          display_changes = new_record ? safe_changes.transform_values(&:last) : safe_changes
-          # MAJ existant ? si l'id est égal à 0 => c'est une création
-          puts "#{new_record ? 'NOUVEL' : 'MISE À JOUR'} UTILISATEUR => id: #{user.id || 'N/A'}, changes:#{display_changes}"
+          user.valid?
 
-          if user.valid? 
+          # À faire après user.valid?, sinon l'erreur sera supprimé
+          unless service
+            user.errors.add(:services, "introuvable dans la base de données")
+          end
+
+          safe_changes = user.changes.except("encrypted_password", "password", "slug", "organisation_id")
+          display_changes = new_record ? safe_changes.transform_values(&:last) : safe_changes.dup
+
+          # On détecte si les services ont changé en mémoire
+          # (S'il y a une nouvelle relation non sauvegardée, ou une relation marquée pour destruction)
+          services_changed = user.user_services.any? { |us| us.new_record? || us.marked_for_destruction? }
+
+          # On n'ajoute la clé "services" que s'il y a eu un changement ou si c'est un nouvel utilisateur
+          if new_record || services_changed
+            nouveaux_services = user.user_services.reject(&:marked_for_destruction?).filter_map { |us| us.service&.nom }.join(', ')
+            nouveaux_services = "Aucun" if nouveaux_services.blank?
+
+            if new_record
+              display_changes["service"] = nouveaux_services
+            else
+              # Si c'est une MAJ, on récupère l'ancien état pour imiter le format [Avant, Après] de Rails
+              anciens_services = user.user_services.select(&:persisted?).filter_map { |us| us.service&.nom }.join(', ')
+              anciens_services = "Aucun" if anciens_services.blank?
+              
+              display_changes["service"] = [anciens_services, nouveaux_services]
+            end
+          end
+
+          formatted_changes = display_changes.symbolize_keys
+
+          if formatted_changes.any?
+            puts "#{new_record ? 'NOUVEL' : 'MISE À JOUR'} UTILISATEUR => id: #{user.id || 'N/A'}, changes: #{formatted_changes.inspect}"
+          else
+            puts "UTILISATEUR INCHANGÉ => id: #{user.id}"
+          end
+
+          if user.errors.empty? 
             if params[:save] == 'true'
-              user.save
+              user.save 
+              
               if new_record
-                # key_len = ActiveSupport::MessageEncryptor.key_len
-                # secret_key = Rails.application.key_generator.generate_key('import_password', key_len)
-                # encryptor = ActiveSupport::MessageEncryptor.new(secret_key)
-                # encrypted_password = encryptor.encrypt_and_sign(password)
-                # WelcomeImportNotificationJob.perform_later(user, current_user.id, encrypted_password)
                 user.invite!(current_user)
-                
               end
             end
             @importes += 1
           else
-            puts " || ERREURS: " + user.errors.messages.map{|m| "#{m.first} => #{m.last}"}.join(',')
+            puts " || ERREURS: " + user.errors.messages.map { |m| "#{m.first} => #{m.last}" }.join(', ')
             @errors += 1
           end
         end
