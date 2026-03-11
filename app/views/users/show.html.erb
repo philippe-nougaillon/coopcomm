@@ -38,7 +38,7 @@
           </p>
         <% end %>
 
-        <% if @user.manager? %>
+        <% if @user.manager_or_admin? %>
           <p class="mt-4">
             <strong class="block text-slate-400 mb-1">Responsable des services</strong>
             <%= @user.services.pluck(:nom).join(", ") %>
@@ -108,12 +108,12 @@
     <%= render 'users/map_script' %>
   <% end %>
 
-  <% if @user.agent? || @user.manager? %>
+  <% if @user.agent? || @user.manager_or_admin? %>
     <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
       <h2 class="text-2xl text-secondary">
         Absences
       </h2>
-      <% if current_user.manager? %>
+      <% if current_user.manager_or_admin? %>
         <button class="btn btn-sm sm:btn-lg btn-outline btn-success hover:text-white!" onclick="absence_modal.showModal()">
           Ajouter une absence
         </button>

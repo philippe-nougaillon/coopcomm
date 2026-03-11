@@ -35,7 +35,7 @@
             <%= form.label :adherent_id, "Adhérent" %>
             <%= form.select :adherent_id, options_from_collection_for_select(@organisation_members.adhérent, :id, :nom_prénom, intervention.adherent_id), {include_blank: true}, class: "slim-select w-full" %>
           </div>
-          <% if current_user.manager? %>
+          <% if current_user.manager_or_admin? %>
             <div class="w-full sm:flex-1">
               <%= form.label :tags_manager, "Mots clés", style: "display: block" %>
               <%= form.select :tags_manager, options_from_collection_for_select(@tags, :name, :name, intervention.tags.map(&:name)), multiple: true, class: 'w-full' %>
@@ -47,7 +47,7 @@
             </div>
           <% end %>
 
-          <% if current_user.manager? || current_user.adhérent? %>
+          <% if current_user.manager_or_admin? || current_user.adhérent? %>
             <div class="flex gap-1 items-center mt-4" title="Cocher pour activer le pointage ?">
               <%= form.check_box :repeter, class: 'checkbox checkbox-sm checkbox-secondary' %>
               <%= form.label :repeter, "Modèle pour le pointage ?" %>
@@ -236,7 +236,7 @@
     </div>
   <% end %>
 
-  <% if intervention.persisted? && (current_user.adhérent? || current_user.manager?) %>
+  <% if intervention.persisted? && (current_user.adhérent? || current_user.manager_or_admin?) %>
     <h2 class="text-lg text-secondary font-black mt-5">
       Compte-rendu
     </h2>

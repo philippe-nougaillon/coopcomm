@@ -4,7 +4,7 @@
   <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Tableau de bord - ' + current_user.rôle.humanize) %></h1>
 </div>
 
-<% if current_user.manager? %>
+<% if current_user.manager_or_admin? %>
   <%= render partial:'pages/dashboard/dashboard_manager' %>
 <% elsif current_user.adhérent? %>
   <%= render partial:'pages/dashboard/dashboard_adhérent' %>

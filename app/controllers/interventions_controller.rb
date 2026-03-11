@@ -20,7 +20,7 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.where.not(workflow_state: 'archivé')
     end
 
-    # Enelever les interventions filles
+    # Enlever les interventions filles
     @interventions = @interventions.where(template_slug: nil)
 
     @services = current_user.services
@@ -28,7 +28,7 @@ class InterventionsController < ApplicationController
     @interventions = @interventions.filter_by_service(params[:service].presence || @services )
 
     organisation_members = current_user.organisation.users.filter_by_service(params[:service].presence || @services)
-    if current_user.manager?
+    if current_user.manager_or_admin?
       @adhérents = organisation_members.adhérent.order(:nom)
       @grouped_agents = User.grouped_agents(organisation_members)
     elsif current_user.adhérent?
@@ -435,7 +435,7 @@ class InterventionsController < ApplicationController
 
     # Création des variables utilisés par les selecteurs
     organisation_members = current_user.organisation.users.filter_by_service(current_user.services)
-    if current_user.manager?
+    if current_user.manager_or_admin?
       @adhérents = organisation_members.adhérent.order(:nom)
       @services = User.services.sort
       @grouped_agents = User.grouped_agents(organisation_members)
@@ -577,7 +577,7 @@ class InterventionsController < ApplicationController
 
     # Création des variables utilisés par les selecteurs
     organisation_members = current_user.organisation.users.filter_by_service(current_user.services)
-    if current_user.manager?
+    if current_user.manager_or_admin?
       @adhérents = organisation_members.adhérent.order(:nom)
       @services = User.services.sort
       @grouped_agents = User.grouped_agents(organisation_members)

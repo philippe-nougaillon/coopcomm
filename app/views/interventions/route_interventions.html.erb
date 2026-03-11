@@ -41,21 +41,21 @@
 
         <div class="flex flex-wrap w-full items-end mt-4">
           <div class="flex flex-wrap gap-4 w-full min-w-fit lg:w-4/12 pr-4">
-            <% if current_user.manager? || current_user.agent? %>
+            <% if current_user.manager_or_admin? || current_user.agent? %>
                 <div class="min-w-full md:min-w-36">
                     <%= label_tag :adherent_id, "Adhérent" %>
                     <%= select_tag :adherent_id, options_from_collection_for_select(@adhérents, :id, :nom_prénom, params[:adherent_id]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
                 </div>
             <% end %>
 
-            <% if current_user.manager? || current_user.adhérent? %>
+            <% if current_user.manager_or_admin? || current_user.adhérent? %>
                 <div class="min-w-full md:min-w-36">
                 <%= label_tag :service %>
                 <%= select_tag :service, options_for_select(@services, params[:service]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
                 </div>
             <% end %>
 
-            <% if current_user.manager? %>
+            <% if current_user.manager_or_admin? %>
                 <div class="min-w-full md:min-w-36">
                     <%= label_tag :agent_ids, "Agent(s)" %>
                     <%= select_tag :agent_ids, grouped_options_for_select(@grouped_agents, params[:agent_ids]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()', multiple: true %>

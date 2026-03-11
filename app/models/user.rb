@@ -135,7 +135,7 @@ class User < ApplicationRecord
         # user.skip_confirmation!
 
         user.organisation = Organisation.create(nom: "Organisation_#{SecureRandom.hex(5)}")
-        user.rôle = "manager"
+        user.rôle = "administrateur"
         
         user.save
 
@@ -161,6 +161,8 @@ class User < ApplicationRecord
       'person'
     when 'adhérent'
       'corporate_fare'
+    when 'administrateur'
+      'supervisor_account'
     end
   end
 

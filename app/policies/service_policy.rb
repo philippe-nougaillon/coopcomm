@@ -5,12 +5,13 @@ class ServicePolicy < ApplicationPolicy
     end
   end
 
+  # Pas besoin de vérifier si le service appartient à l'administrateur, comme il a tous les services
   def index?
     administrateur?
   end
 
   def show?
-    index? && shared_service([record])
+    index?
   end
 
   def new?
@@ -22,7 +23,7 @@ class ServicePolicy < ApplicationPolicy
   end
 
   def edit?
-    administrateur? && shared_service([record])
+    administrateur?
   end
 
   def update?
@@ -30,6 +31,6 @@ class ServicePolicy < ApplicationPolicy
   end
 
   def destroy?
-    administrateur? && shared_service([record])
+    administrateur?
   end
 end

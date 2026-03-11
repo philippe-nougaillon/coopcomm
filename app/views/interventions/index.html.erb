@@ -44,7 +44,7 @@
 
     </div>
     <div class="flex flex-wrap w-full items-end mt-2">
-      <% if current_user.manager? || current_user.agent? %>
+      <% if current_user.manager_or_admin? || current_user.agent? %>
         <div class="flex flex-wrap gap-4 w-full min-w-fit lg:w-4/12 lg:pr-4">
           <div class="flex-1">
             <%= label_tag :adherent_id, "Adhérent" %>
@@ -53,9 +53,9 @@
         </div>
       <% end %>
 
-      <% if current_user.manager? || current_user.adhérent? %>
+      <% if current_user.manager_or_admin? || current_user.adhérent? %>
         <div class="flex flex-wrap gap-4 w-full min-w-fit lg:w-4/12 lg:pr-4">
-          <% if current_user.manager? || current_user.adhérent? %>
+          <% if current_user.manager_or_admin? || current_user.adhérent? %>
             <div class="flex-1">
               <%= label_tag :service %>
               <%= select_tag :service, options_from_collection_for_select(@services, 'id', 'nom', params[:service]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
