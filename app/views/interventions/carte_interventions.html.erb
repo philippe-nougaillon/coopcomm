@@ -35,27 +35,20 @@
                     <%= label_tag :adherent_id, "Adhérent" %>
                     <%= select_tag :adherent_id, options_from_collection_for_select(@adhérents, :id, :nom_prénom, params[:adherent_id]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
                 </div>
-
-                <% if current_user.manager? %>
-                    <div class="min-w-full md:min-w-36">
-                    <%= label_tag :team_id, "Équipe" %>
-                    <%= select_tag :team_id, options_from_collection_for_select(@teams, 'id', 'nom_prénom', params[:team_id]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
-                    </div>
-                <% end %>
             <% end %>
 
-            <% if current_user.manager? || current_user.équipe? %>
-                <% if current_user.manager? || current_user.adhérent? %>
-                    <div class="min-w-full md:min-w-36">
+            <% if current_user.manager? || current_user.adhérent?  %>
+                <div class="min-w-full md:min-w-36">
                     <%= label_tag :service %>
                     <%= select_tag :service, options_for_select(@services, params[:service]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
+                </div>
+
+                <% if current_user.manager?%>
+                    <div class="min-w-full md:min-w-36">
+                        <%= label_tag :agent_ids, "Agent(s)" %>
+                        <%= select_tag :agent_ids, grouped_options_for_select(@grouped_agents, params[:agent_ids]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()', multiple: true %>
                     </div>
                 <% end %>
-
-                <div class="min-w-full md:min-w-36">
-                    <%= label_tag :agent_ids, "Agent(s)" %>
-                    <%= select_tag :agent_ids, grouped_options_for_select(@grouped_agents, params[:agent_ids]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()', multiple: true %>
-                </div>
             <% end %>
 
             <div class="flex flex-wrap gap-1 w-full">

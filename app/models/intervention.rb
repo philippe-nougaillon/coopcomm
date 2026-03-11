@@ -116,8 +116,6 @@ class Intervention < ApplicationRecord
       user.interventions_adherent.ordered
     when 'agent'
       user.interventions.ordered
-    when 'équipe'
-      user.organisation.interventions.where(team_id: user.id)
     end
   end
 
@@ -129,8 +127,6 @@ class Intervention < ApplicationRecord
       user.interventions_adherent.where(workflow_state: ["terminé"]).ordered
     when 'agent'
       user.interventions.where(workflow_state: ["nouveau"]).ordered
-    when 'équipe'
-      user.organisation.interventions.where(team_id: user.id, workflow_state: ["nouveau"]).ordered
     end
   end
 

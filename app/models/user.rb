@@ -43,7 +43,7 @@ class User < ApplicationRecord
     adhérent: 0,
     agent: 1,
     manager: 2,
-    équipe: 3
+    administrateur: 3
   }
 
   # enum :service, {
@@ -159,8 +159,6 @@ class User < ApplicationRecord
       'manage_accounts'
     when 'agent'
       'person'
-    when "équipe"
-      'group'
     when 'adhérent'
       'corporate_fare'
     end

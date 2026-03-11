@@ -38,7 +38,7 @@ nettoyage:
   nom: Team
   prénom: Nettoyage
   email: nettoyage@gmail.commmmm
-  rôle: équipe
+  rôle: agent
   slug: 352adeba-4906-44c5-bc28-22339a6f17fe
 
 
@@ -47,7 +47,7 @@ nettoyage:
   nom: Team
   prénom: Électricité
   email: electricite@gmail.commmmm
-  rôle: équipe
+  rôle: agent
   slug: c379cf52-5e54-4852-bd7a-dc9cfdc70392
 
 bond:
@@ -117,7 +117,7 @@ nettoyeur_marseille:
   nom: Team
   prénom: Nettoyage Marseille
   email: nettoyage_marseille@gmail.commmmm
-  rôle: équipe
+  rôle: agent
   slug: 3bd58e3a-508a-4f8e-bef7-c0f5741363b5
 
 agent_marseille:
@@ -125,7 +125,7 @@ agent_marseille:
   nom: Dupont
   prénom: René
   email: rene.dupont@gmail.commmmm
-  rôle: équipe
+  rôle: agent
   slug: 96a436c3-1b9c-457a-aeb0-60ca4e53b8f0
 
 adherent_marseille:

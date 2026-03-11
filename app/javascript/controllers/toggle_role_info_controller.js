@@ -39,15 +39,6 @@ export default class extends Controller {
       this.prenomTarget.style.display = 'block';
       this.prenomTarget.children[1].required = true;
       this.couleurTarget.style.display = 'none';
-    } else if (role.value == 'équipe') {
-      // console.log(this.serviceTarget.children[1].selectedIndex)
-      this.localisationTarget.style.display = 'none';
-      this.localisationTarget.children[1].value = '';
-      this.localisationTarget.children[1].required = false;
-      this.prenomTarget.style.display = 'none';
-      this.prenomTarget.children[1].required = false;
-      this.prenomTarget.children[1].value = '';
-      this.couleurTarget.style.display = 'block';
     } else {
       // console.log(this.serviceTarget.children[1].selectedIndex)
       this.localisationTarget.style.display = 'none';
