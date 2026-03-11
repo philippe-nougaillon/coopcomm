@@ -148,7 +148,7 @@
 
 
 
-<div class="dock lg:hidden z-100 shadow-2xl h-20 overflow-x-auto flex-nowrap justify-start px-2 gap-2">
+<div class="dock lg:hidden z-100 shadow-2xl h-20 overflow-x-auto overflow-y-hidden flex-nowrap justify-start px-2 gap-2" style="scrollbar-width: none;">
   <%= link_to home_path, class: "flex-none w-12 text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:action] == 'home'}", title: "Page d'accueil" do %>
     <span class="material-symbols-outlined text-2xl">
       cottage
