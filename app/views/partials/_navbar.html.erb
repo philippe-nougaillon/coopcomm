@@ -80,6 +80,15 @@
           <% end %>
         </li>
       <% end %>
+      <% if policy(Service).index? %>
+        <li>
+          <%= link_to services_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if (params[:controller] == 'services') }", title: 'Liste des services' do %>
+            <span class="material-symbols-outlined">
+              settings
+            </span>
+          <% end %>
+        </li>
+      <% end %>
       <% if policy(:admin).audits? %>
         <li>
           <%= link_to admin_audits_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if (params[:action] == 'audits') || (params[:controller] == 'mail_logs') }", title: 'Activité (historique des modifications)', 'data-testid': "audit_trail" do %>

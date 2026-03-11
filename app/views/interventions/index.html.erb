@@ -66,13 +66,13 @@
           <% if current_user.manager? || current_user.adhérent? %>
             <div class="flex-1">
               <%= label_tag :service %>
-              <%= select_tag :service, options_for_select(@services, params[:service]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
+              <%= select_tag :service, options_from_collection_for_select(@services, 'id', 'nom', params[:service]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
             </div>
           <% end %>
 
           <div class="flex-1">
             <%= label_tag :agent_ids, "Agent(s)" %>
-            <%= select_tag :agent_ids, grouped_options_for_select(@grouped_agents, params[:agent_ids]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()', multiple: true %>
+            <%= select_tag :agent_ids, grouped_options_for_select(@grouped_agents, params[:agent_ids]), class: 'slim-select w-full', onchange: 'this.form.submit()', multiple: true %>
           </div>
         </div>
       <% end %>

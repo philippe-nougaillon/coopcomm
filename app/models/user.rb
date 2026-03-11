@@ -24,11 +24,14 @@ class User < ApplicationRecord
   has_one_attached :profile_picture
 
   belongs_to :organisation, optional: true
+
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
   has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention', dependent: :destroy
   has_many :interventions, through: :agent_interventions
   has_many :notifications, dependent: :destroy, foreign_key: :to_id, class_name: "Notification"
   has_many :absences, dependent: :destroy
+  has_many :user_services, dependent: :destroy
+  has_many :services, through: :user_services
   accepts_nested_attributes_for :absences, 
                               allow_destroy:true, 
                               reject_if: lambda {|attributes| attributes['du'].blank? || attributes['au'].blank? }
@@ -43,14 +46,14 @@ class User < ApplicationRecord
     équipe: 3
   }
 
-  enum :service, {
-    Technique: 0,
-    Comptabilité: 1,
-    Informatique: 2,
-    Secrétariat: 3,
-    Périscolaire: 4,
-    Ménage: 5
-  }
+  # enum :service, {
+  #   Technique: 0,
+  #   Comptabilité: 1,
+  #   Informatique: 2,
+  #   Secrétariat: 3,
+  #   Périscolaire: 4,
+  #   Ménage: 5
+  # }
 
   validates :nom, :email, presence: true
   validates :prénom, :rôle, presence: true, if: -> { rôle == "agent" }
@@ -66,8 +69,8 @@ class User < ApplicationRecord
 
   def self.grouped_agents(users)
     h = {}
-    User.services.keys.each do |key|
-      h[key.humanize] = users.agent.where(service: key).order(:nom, :prénom).pluck(:nom, :prénom, :id).map { |nom, prénom, id| ["#{nom} #{prénom}", id] }
+    Service.all.each do |service|
+      h[service.nom] = users.agent.filter_by_service(service).order(:nom, :prénom).pluck(:nom, :prénom, :id).map { |nom, prénom, id| ["#{nom} #{prénom}", id] }
     end
     return h.sort_by { |k, _| I18n.transliterate(k) }.to_h
   end
@@ -276,6 +279,10 @@ class User < ApplicationRecord
       organisation_id: self.organisation_id,
       channel: 0
     )
+  end
+
+  def self.filter_by_service(services)
+    joins(user_services: :service).where(services: services).distinct
   end
 
   private

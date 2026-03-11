@@ -394,6 +394,10 @@ class Intervention < ApplicationRecord
       errors.add(:erreur, ": La fin de l'intervention ne peut pas être avant son commencement")
     end
   end
+
+  def self.filter_by_service(services)
+    joins(agent_interventions: { agent: { user_services: :service } }).where(services: {id: services})
+  end
   
   private
 

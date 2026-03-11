@@ -56,7 +56,6 @@ bond:
   prénom: James
   email: james.bond@gmail.commmmm
   rôle: agent
-  service: Comptabilité
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 17ede8b7-ff8f-4a48-966e-4ef3186cae7d
 
@@ -66,7 +65,6 @@ martin_technique_paris:
   prénom: Michel
   email: michel.martin@gmail.commmmm
   rôle: agent
-  service: Technique
   slug: 7133b68a-1386-4f68-9243-10a8a4241191
 
 patrick_adherent_paris:
@@ -147,7 +145,6 @@ john_wick:
   prénom: john
   email: john.wick@gmail.commmmmm
   rôle: agent
-  service: Comptabilité
   slug: 02cea440-2f32-4f63-9614-df94069a6bca
 
 george_lucas:

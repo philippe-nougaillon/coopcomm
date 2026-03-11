@@ -24,7 +24,7 @@
 <td class="text-success font-black">
   <%= user.rôle.upcase %>
 </td>
-<td><%= user.service.try(:capitalize) %></td>
+<td><%= user.services.pluck(:nom).join(", ") %></td>
 <td><%= user.tag_list %></td>
 <td><%= user.email %></td>
 <td>

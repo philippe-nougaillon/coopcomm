@@ -44,6 +44,11 @@ class ApplicationPolicy
     user && user.manager?
   end
 
+  def shared_service(record_services = record.services)
+    # "&" désigne l'intersection entre deux listes
+    (record_services & user.services).any?
+  end
+
   class Scope
     def initialize(user, scope)
       @user = user

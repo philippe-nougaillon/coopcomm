@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+comptabilite:
+  nom: Comptabilité
+
+informatique:
+  nom: Informatique
+
+technique:
+  nom: Technique
+
+secretariat:
+  nom: Secrétariat
+
+periscolaire:
+  nom: Périscolaire
+
+menage:
+  nom: Ménage

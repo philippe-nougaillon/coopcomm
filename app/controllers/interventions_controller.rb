@@ -23,18 +23,19 @@ class InterventionsController < ApplicationController
     # Enelever les interventions filles
     @interventions = @interventions.where(template_slug: nil)
 
-    organisation_members = current_user.organisation.users
+    @services = current_user.services
+
+    @interventions = @interventions.filter_by_service(params[:service].presence || @services )
+
+    organisation_members = current_user.organisation.users.filter_by_service(params[:service].presence || @services)
     if current_user.manager?
       @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services.sort
       @teams = organisation_members.équipe
       @grouped_agents = User.grouped_agents(organisation_members)
     elsif current_user.adhérent?
       @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services
       @grouped_agents = User.grouped_agents(organisation_members)
     elsif current_user.équipe?
-      @services = User.services
       @grouped_agents = User.grouped_agents(organisation_members)
     elsif current_user.agent?
       @adhérents = organisation_members.adhérent.order(:nom)
@@ -74,10 +75,6 @@ class InterventionsController < ApplicationController
         # Étape B : On filtre directement sur la clé étrangère de l'intervention
         @interventions = @interventions.where(adherent_id: adherent_ids)
       end
-    end
-
-    if params[:service].present?
-      @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {service: params[:service]})
     end
 
     if params[:agent_ids].present?
