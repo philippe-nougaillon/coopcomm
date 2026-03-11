@@ -63,6 +63,7 @@ class User < ApplicationRecord
     with: /\A\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*\z/,
     message: "doit être dans ce format : 123.123, 432.120398"
   }, allow_blank: true
+  validate :must_have_at_least_one_service, if: -> { rôle == "agent" }
 
   default_scope -> { kept }
   scope :ordered, -> { order(:nom) }
@@ -287,6 +288,14 @@ class User < ApplicationRecord
 
   def slug_candidates
     [SecureRandom.uuid]
+  end
+
+  def must_have_at_least_one_service
+    # On rejette les services qui sont sur le point d'être détruits en mémoire
+    # pour s'assurer qu'il en restera bien au moins un après la sauvegarde.
+    if user_services.reject(&:marked_for_destruction?).empty?
+      errors.add(:services, "doit comporter au moins un service")
+    end
   end
 
 end
