@@ -40,6 +40,10 @@ class ManagerServicePolicyTest < ActionDispatch::IntegrationTest
     assert @policy.edit?
   end
 
+  test "accès interdit pour un manager sur la page edit d'un service qui ne lui appartient pas" do
+    refute @policy_service_different.edit?
+  end
+
   # Update
   test "accès autorisé pour un manager sur la page update d'un service" do
     assert @policy.update?

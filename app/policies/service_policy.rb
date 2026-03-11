@@ -6,15 +6,15 @@ class ServicePolicy < ApplicationPolicy
   end
 
   def index?
-    manager && shared_service([record])
+    manager
   end
 
   def show?
-    index?
+    index? && shared_service([record])
   end
 
   def new?
-    manager && shared_service([record])
+    manager
   end
 
   def create?
