@@ -116,6 +116,8 @@ class Intervention < ApplicationRecord
       user.interventions_adherent.ordered
     when 'agent'
       user.interventions.ordered
+    when 'administrateur'
+      user.organisation.interventions.ordered
     end
   end
 
@@ -127,6 +129,8 @@ class Intervention < ApplicationRecord
       user.interventions_adherent.where(workflow_state: ["terminé"]).ordered
     when 'agent'
       user.interventions.where(workflow_state: ["nouveau"]).ordered
+    when 'administrateur'
+      user.organisation.interventions.where.not(workflow_state: ["validé", "refusé", "archivé"]).ordered
     end
   end
 

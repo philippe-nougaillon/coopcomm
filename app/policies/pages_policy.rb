@@ -6,11 +6,11 @@ class PagesPolicy < ApplicationPolicy
   end
 
   def assistant?
-    manager
+    manager_or_admin?
   end
 
   def dashboard?
-    user && (user.manager? || user.adhérent? )
+    user && (manager_or_admin? || user.adhérent? )
   end
 
   def home?

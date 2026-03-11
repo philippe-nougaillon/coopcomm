@@ -1,5 +1,6 @@
 class ServicesController < ApplicationController
   before_action :set_service, only: %i[ show edit update destroy ]
+  before_action :is_user_authorized
 
   # GET /services or /services.json
   def index
@@ -75,6 +76,10 @@ class ServicesController < ApplicationController
     # Only allow a list of trusted parameters through.
     def service_params
       params.expect(service: [ :nom ])
+    end
+
+    def is_user_authorized
+      authorize @service ? @service : Service
     end
 
     def sortable_columns

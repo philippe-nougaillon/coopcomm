@@ -43,7 +43,7 @@ class User < ApplicationRecord
     adhérent: 0,
     agent: 1,
     manager: 2,
-    équipe: 3
+    administrateur: 3
   }
 
   # enum :service, {
@@ -281,6 +281,10 @@ class User < ApplicationRecord
 
   def self.filter_by_service(services)
     joins(user_services: :service).where(services: services).distinct
+  end
+
+  def manager_or_admin?
+    self.manager? || self.administrateur?
   end
 
   private

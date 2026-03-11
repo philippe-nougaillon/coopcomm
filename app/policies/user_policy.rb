@@ -6,11 +6,11 @@ class UserPolicy < ApplicationPolicy
   end
 
   def index?
-    manager
+    manager_or_admin?
   end
 
   def show?
-    (index? && organisation && shared_service) || record == user
+    (index? && organisation? && shared_service) || record == user
   end
 
   def new?
@@ -30,7 +30,7 @@ class UserPolicy < ApplicationPolicy
   end
 
   def destroy?
-    manager && organisation && record != user && shared_service
+    manager_or_admin? && organisation? && record != user && shared_service
   end
 
   def agent_calendrier?
@@ -38,7 +38,7 @@ class UserPolicy < ApplicationPolicy
   end
 
   def import?
-    manager
+    manager_or_admin?
   end
 
   def import_do?
@@ -46,7 +46,7 @@ class UserPolicy < ApplicationPolicy
   end
 
   def inviter?
-    manager && organisation && record != user && shared_service
+    manager_or_admin? && organisation? && record != user && shared_service
   end
 
   def edit_password?
@@ -58,6 +58,6 @@ class UserPolicy < ApplicationPolicy
   end
 
   def reactivate?
-    manager && organisation && shared_service
+    manager_or_admin? && organisation? && shared_service
   end
 end
