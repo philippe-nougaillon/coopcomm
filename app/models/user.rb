@@ -43,7 +43,7 @@ class User < ApplicationRecord
     adhérent: 0,
     agent: 1,
     manager: 2,
-    administrateur: 3
+    équipe: 3
   }
 
   # enum :service, {
