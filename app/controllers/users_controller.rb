@@ -13,7 +13,7 @@ class UsersController < ApplicationController
     @users = @users.filter_by_service(params[:services].presence || @services).ordered
 
     if params[:search].present?
-      @users = @users.where("nom ILIKE :search OR prénom ILIKE :search", {search: "%#{params[:search]}%"})
+      @users = @users.where("users.nom ILIKE :search OR users.prénom ILIKE :search", {search: "%#{params[:search]}%"})
     end
 
     if params[:rôle].present?
