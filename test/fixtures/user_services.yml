@@ -1,8 +1,8 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-bond_comptabilite:
+bond_informatique:
   user: bond
-  service: informatique
+  service: service_paris
 
 martin_technique:
   user: martin_technique_paris
