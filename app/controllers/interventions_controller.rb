@@ -28,14 +28,9 @@ class InterventionsController < ApplicationController
     @interventions = @interventions.filter_by_service(params[:service].presence || @services )
 
     organisation_members = current_user.organisation.users.filter_by_service(params[:service].presence || @services)
-    if current_user.manager_or_admin?
-      @adhérents = organisation_members.adhérent.order(:nom)
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.adhérent?
-      @adhérents = organisation_members.adhérent.order(:nom)
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.agent?
-      @adhérents = organisation_members.adhérent.order(:nom)
+    @adhérents = organisation_members.adhérent.order(:nom)
+    if current_user.manager_or_admin? || current_user.adhérent?
+      @grouped_agents = User.grouped_agents(current_user)
     end
     @tools = current_user.organisation.tools.ordered
     @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
@@ -435,16 +430,10 @@ class InterventionsController < ApplicationController
 
     # Création des variables utilisés par les selecteurs
     organisation_members = current_user.organisation.users.filter_by_service(current_user.services)
-    if current_user.manager_or_admin?
-      @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services.sort
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.adhérent?
-      @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.agent?
-      @adhérents = organisation_members.adhérent.order(:nom)
+    @adhérents = organisation_members.adhérent.order(:nom)
+    if current_user.manager_or_admin? || current_user.adhérent?
+      @services = current_user.services.sort
+      @grouped_agents = User.grouped_agents(current_user)
     end
     @tools = current_user.organisation.tools.ordered
     @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
@@ -577,16 +566,10 @@ class InterventionsController < ApplicationController
 
     # Création des variables utilisés par les selecteurs
     organisation_members = current_user.organisation.users.filter_by_service(current_user.services)
-    if current_user.manager_or_admin?
-      @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services.sort
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.adhérent?
-      @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.agent?
-      @adhérents = organisation_members.adhérent.order(:nom)
+    @adhérents = organisation_members.adhérent.order(:nom)
+    if current_user.manager_or_admin? || current_user.adhérent?
+      @services = current_user.services.sort
+      @grouped_agents = User.grouped_agents(current_user)
     end
     @tools = current_user.organisation.tools.ordered
     @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
@@ -759,8 +742,8 @@ class InterventionsController < ApplicationController
 
     def set_form_variables
       @tags = current_user.organisation.interventions.tag_counts_on(:tags).order(:name)
-      @organisation_members = current_user.organisation.users.filter_by_service(current_user.services)
-      @grouped_agents = User.grouped_agents(@organisation_members)
+      @adhérents = current_user.organisation.users.filter_by_service(current_user.services).adhérent.order(:nom)
+      @grouped_agents = User.grouped_agents(current_user.organisation.users.filter_by_service(current_user.services))
       @tools = current_user.organisation.tools.ordered
     end
 
