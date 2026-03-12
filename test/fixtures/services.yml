@@ -2,18 +2,40 @@
 
 comptabilite:
   nom: Comptabilité
+  organisation: mairie_paris
+  slug: <%= SecureRandom.uuid %>
 
 informatique:
   nom: Informatique
+  organisation: mairie_paris
+  slug: <%= SecureRandom.uuid %>
 
 technique:
   nom: Technique
+  organisation: mairie_paris
+  slug: <%= SecureRandom.uuid %>
 
 secretariat:
   nom: Secrétariat
+  organisation: mairie_paris
+  slug: <%= SecureRandom.uuid %>
 
 periscolaire:
   nom: Périscolaire
+  organisation: mairie_paris
+  slug: <%= SecureRandom.uuid %>
 
 menage:
   nom: Ménage
+  organisation: mairie_paris
+  slug: <%= SecureRandom.uuid %>
+
+service_paris:
+  nom: Service_Paris
+  organisation: mairie_paris
+  slug: <%= SecureRandom.uuid %>
+
+service_marseille:
+  nom: Service_Marseille
+  organisation: mairie_marseille
+  slug: <%= SecureRandom.uuid %>

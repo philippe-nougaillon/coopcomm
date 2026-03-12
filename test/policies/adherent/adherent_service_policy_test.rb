@@ -4,8 +4,8 @@ class AdherentServicePolicyTest < ActionDispatch::IntegrationTest
   def setup
     adherent = users(:weil)
 
-    service = services(:informatique)
-    service_different = services(:technique)
+    service = services(:service_paris)
+    service_different = services(:service_marseille)
 
     @policy = ServicePolicy.new(adherent, service)
     @policy_service_different = ServicePolicy.new(adherent, service_different)

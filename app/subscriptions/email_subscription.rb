@@ -4,7 +4,7 @@ class EmailSubscription
   def on_intervention_workflow_changed(event)
     intervention = Intervention.find(event[:payload][:intervention_id])
     user_id = intervention.audits.last.user_id
-    manager_ids = intervention.organisation.users.where.not(id: user_id).manager_or_admin?.pluck(:id)
+    manager_ids = intervention.organisation.users.where.not(id: user_id).manager.pluck(:id)
     if manager_ids.any?
       NotifManagersWorkflowChangedJob.perform_later(intervention, manager_ids, user_id)
     end

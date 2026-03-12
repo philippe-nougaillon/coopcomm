@@ -4,8 +4,8 @@ class AgentServicePolicyTest < ActionDispatch::IntegrationTest
   def setup
     agent = users(:bond)
 
-    service = services(:comptabilite)
-    service_different = services(:technique)
+    service = services(:service_paris)
+    service_different = services(:service_marseille)
 
     @policy = ServicePolicy.new(agent, service)
     @policy_service_different = ServicePolicy.new(agent, service_different)

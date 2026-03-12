@@ -17,3 +17,9 @@ fiche:
   publiée: false
   user: hidalgo
   poids: 7
+
+blog_only_admin:
+  titre: blog
+  publiée: true
+  user: administrateur_paris
+  poids: 4
