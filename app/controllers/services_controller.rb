@@ -30,6 +30,7 @@ class ServicesController < ApplicationController
   # POST /services or /services.json
   def create
     @service = Service.new(service_params)
+    @service.organisation = current_user.organisation
 
     respond_to do |format|
       if @service.save
