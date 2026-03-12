@@ -214,7 +214,7 @@ class Intervention < ApplicationRecord
 
       if conflicting_interventions.exists?
         messages = conflicting_interventions.map do |conflict|
-          " #{agent.nom} déjà utilisé pour l’intervention « #{conflict.description} » du #{conflict.début_prévue&.strftime('%d/%m/%Y %H:%M')} au #{conflict.fin_prévue&.strftime('%d/%m/%Y %H:%M')}"
+          " #{agent.nom} déjà sur l’intervention « #{conflict.description} » du #{conflict.début_prévue&.strftime('%d/%m/%Y %H:%M')} au #{conflict.fin_prévue&.strftime('%d/%m/%Y %H:%M')}"
         end
         errors.add("", "Conflit(s) détecté(s) sur un agent :#{messages.to_sentence}")
       end
