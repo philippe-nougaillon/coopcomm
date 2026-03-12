@@ -29,17 +29,17 @@ class ServicesController < ApplicationController
 
   # POST /services or /services.json
   def create
-    service = Service.new(service_params)
+    @service = Service.new(service_params)
 
     respond_to do |format|
-      if service.save
+      if @service.save
         # Attribution du nouveau service à l'utilisateur courant pour qu'il ait accès.
-        current_user.services << service
-        format.html { redirect_to service, notice: "Service créé avec succès." }
-        format.json { render :show, status: :created, location: service }
+        current_user.services << @service
+        format.html { redirect_to @service, notice: "Service créé avec succès." }
+        format.json { render :show, status: :created, location: @service }
       else
         format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: service.errors, status: :unprocessable_entity }
+        format.json { render json: @service.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -70,12 +70,15 @@ class ServicesController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_service
-      @service = Service.find(params.expect(:id))
+      @service = Service.find_by(slug: params.expect(:id))
+      if @service.nil?
+        redirect_to root_path, alert: "Service introuvable"
+      end
     end
 
     # Only allow a list of trusted parameters through.
     def service_params
-      params.expect(service: [ :nom ])
+      params.expect(service: [ :nom, :organisation_id, :slug ])
     end
 
     def is_user_authorized
