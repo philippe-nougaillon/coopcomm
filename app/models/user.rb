@@ -70,8 +70,8 @@ class User < ApplicationRecord
 
   def self.grouped_agents(users)
     h = {}
-    Service.all.each do |service|
-      h[service.nom] = users.agent.order(:nom, :prénom).pluck(:nom, :prénom, :id).map { |nom, prénom, id| ["#{nom} #{prénom}", id] }
+    Service.order(:nom).each do |service|
+      h[service.nom] = users.agent.where(id: service.user_ids).order(:nom, :prénom).pluck(:nom, :prénom, :id).map { |nom, prénom, id| ["#{nom} #{prénom}", id] }
     end
     return h.sort_by { |k, _| I18n.transliterate(k) }.to_h
   end
