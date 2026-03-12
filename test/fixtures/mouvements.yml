@@ -1,11 +1,8 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-# one:
-#   tool: one
-#   état: 1
-#   slug: MyString
-
-# two:
-#   tool: two
-#   état: 1
-#   slug: MyString
+mouvement_tondeuse:
+  tool: tondeuse
+  état: 1
+  slug: mouvement_tondeuse
+  intervention: tonte_locaux
+  date: <%= DateTime.now %>
