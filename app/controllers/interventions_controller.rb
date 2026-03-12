@@ -154,7 +154,13 @@ class InterventionsController < ApplicationController
   def new
     @intervention = Intervention.new
     @intervention.adherent_id = current_user.id if current_user.adhérent?
-    @intervention.agent_ids = current_user.agent? ? current_user.id : params[:agent_ids]
+
+    if current_user.agent?
+      @intervention.agent_ids = current_user.id
+    else
+      # Si on passe par le planning des agents
+      @intervention.agent_ids = params[:agent_id]
+    end
 
     # Ajout de la date de fin si c'est un agent et que la date début prévue et fin prévue sont nil
     if current_user.agent? && (params[:début_prévue].blank? || params[:fin_prévue].blank?)

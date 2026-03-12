@@ -26,7 +26,7 @@
       <% if interventions_matin.any? || absence_matin %>
         <span class="bg-red-300 border-1" style="padding-left: 15px;" title="<%= absence_matin&.motif || interventions_matin.pluck(:description) %>"></span>
       <% else %>
-        <%= link_to new_intervention_path(agent_ids: agent.id, début_prévue: date, début_prévue_hour: 8, fin_prévue: date, fin_prévue_hour: 13) do %>
+        <%= link_to new_intervention_path(agent_id: agent.id, début_prévue: date, début_prévue_hour: 8, fin_prévue: date, fin_prévue_hour: 13) do %>
         <span class="border-1 hover:bg-green-500" style="padding-left: 15px;" title="Créer une intervention pour réserver cet agent"></span>
         <% end %>
       <% end %>
@@ -34,7 +34,7 @@
       <% if interventions_soir.any? || absence_soir %>
         <span  class="bg-red-300 border-1" style="padding-left: 15px; margin-left: 5px;" title="<%= absence_soir&.motif || interventions_soir.pluck(:description) %>"></span>
       <% else %>
-        <%= link_to new_intervention_path(agent_ids: agent.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 5, fin_prévue: date, fin_prévue_hour: 18) do %>
+        <%= link_to new_intervention_path(agent_id: agent.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 5, fin_prévue: date, fin_prévue_hour: 18) do %>
           <span class="border-1 hover:bg-green-500" style="padding-left: 15px; margin-left: 5px;" title="Créer une intervention pour réserver cet agent"></span>
         <% end %>
       <% end %>
