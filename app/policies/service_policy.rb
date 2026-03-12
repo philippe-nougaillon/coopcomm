@@ -5,13 +5,12 @@ class ServicePolicy < ApplicationPolicy
     end
   end
 
-  # Pas besoin de vérifier si le service appartient à l'administrateur, comme il a tous les services
   def index?
     administrateur?
   end
 
   def show?
-    index?
+    index? && organisation?
   end
 
   def new?
@@ -23,7 +22,7 @@ class ServicePolicy < ApplicationPolicy
   end
 
   def edit?
-    administrateur?
+    administrateur? && organisation?
   end
 
   def update?
@@ -31,6 +30,6 @@ class ServicePolicy < ApplicationPolicy
   end
 
   def destroy?
-    administrateur?
+    administrateur? && organisation?
   end
 end

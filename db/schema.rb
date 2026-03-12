@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_11_093027) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_12_082450) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -169,7 +169,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_11_093027) do
     t.datetime "updated_at", null: false
     t.bigint "intervention_id"
     t.datetime "date"
-    t.text "commentaires"
     t.index ["intervention_id"], name: "index_mouvements_on_intervention_id"
     t.index ["tool_id"], name: "index_mouvements_on_tool_id"
   end
@@ -201,6 +200,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_11_093027) do
     t.string "nom"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "organisation_id", null: false
+    t.index ["organisation_id"], name: "index_services_on_organisation_id"
   end
 
   create_table "solid_cable_messages", force: :cascade do |t|
@@ -466,6 +467,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_11_093027) do
   add_foreign_key "mail_logs", "organisations"
   add_foreign_key "mouvements", "interventions"
   add_foreign_key "mouvements", "tools"
+  add_foreign_key "services", "organisations"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
