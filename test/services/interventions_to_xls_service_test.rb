@@ -11,14 +11,14 @@ class InterventionsToXlsServiceTest < ActionDispatch::IntegrationTest
     assert_equal @service.instance_variable_get(:@interventions), @interventions
   end
 
-  test "retourne un fichier xsl" do
+  test "retourne un fichier xls" do
     result = @service.call
     assert result.is_a?(String)
     assert_not_nil result
     assert_not result.empty?
   end
 
-  test "retourne un fichier xsl contenant aucune interventions" do
+  test "retourne un fichier xls contenant aucune interventions" do
     result = InterventionsToXls.new(Intervention.where(id: nil)).call
 
     book = Spreadsheet.open(StringIO.new(result))
@@ -26,7 +26,7 @@ class InterventionsToXlsServiceTest < ActionDispatch::IntegrationTest
     assert_equal 1, sheet.rows.count  # +1 pour la ligne d'en-tête
   end
 
-  test "retourne un fichier xsl contenant des interventions" do
+  test "retourne un fichier xls contenant des interventions" do
     result = @service.call
     book = Spreadsheet.open(StringIO.new(result))
     sheet = book.worksheet(0)

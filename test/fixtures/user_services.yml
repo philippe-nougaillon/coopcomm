@@ -35,3 +35,19 @@ administrateur_paris_technique:
 administrateur_paris_technique:
   user: administrateur_paris
   service: technique
+
+nettoyage_technique:
+  user: nettoyage
+  service: technique
+
+électricité_technique:
+  user: électricité
+  service: technique
+
+nettoyeur_marseille_service_marseille:
+  user: nettoyeur_marseille
+  service: service_marseille
+
+agent_marseille_service_marseille:
+  user: agent_marseille
+  service: service_marseille
