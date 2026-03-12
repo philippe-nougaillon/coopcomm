@@ -238,7 +238,7 @@ class User < ApplicationRecord
     minuscules = ('a'..'z').to_a - ['l']
     majuscules = ('A'..'Z').to_a - ['O', 'I']
     chiffres = ('1'..'9').to_a
-    symboles = "!\"\#$%&'()*+,-./:;<=>?@[\\]^_`{|}~".chars
+    symboles = "!@#$%&*-+=?".chars
 
     tous_les_caracteres = minuscules + majuscules + chiffres + symboles
 
