@@ -4,21 +4,21 @@ class ManagerServicePolicyTest < ActionDispatch::IntegrationTest
   def setup
     manager = users(:hidalgo)
 
-    service = services(:comptabilite)
-    service_different = services(:technique)
+    service = services(:service_paris)
+    service_different = services(:service_marseille)
 
     @policy = ServicePolicy.new(manager, service)
     @policy_service_different = ServicePolicy.new(manager, service_different)
   end
 
   # Index
-  test "accès autorisé pour un manager sur la page index des services" do
-    assert @policy.index?
+  test "accès interdit pour un manager sur la page index des services" do
+    refute @policy.index?
   end
 
   # Show
-  test "accès autorisé pour un manager sur la page show d'un service" do
-    assert @policy.show?
+  test "accès interdit pour un manager sur la page show d'un service" do
+    refute @policy.show?
   end
 
   test "accès interdit pour un manager sur la page show d'un service qui ne lui appartient pas" do
@@ -26,18 +26,18 @@ class ManagerServicePolicyTest < ActionDispatch::IntegrationTest
   end
 
   # New
-  test "accès autorisé pour un manager sur la page new d'un service" do
-    assert @policy.new?
+  test "accès interdit pour un manager sur la page new d'un service" do
+    refute @policy.new?
   end
 
   # Create
-  test "accès autorisé pour un manager sur la page create d'un service" do
-    assert @policy.create?
+  test "accès interdit pour un manager sur la page create d'un service" do
+    refute @policy.create?
   end
 
   # Edit
-  test "accès autorisé pour un manager sur la page edit d'un service" do
-    assert @policy.edit?
+  test "accès interdit pour un manager sur la page edit d'un service" do
+    refute @policy.edit?
   end
 
   test "accès interdit pour un manager sur la page edit d'un service qui ne lui appartient pas" do
@@ -45,8 +45,8 @@ class ManagerServicePolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Update
-  test "accès autorisé pour un manager sur la page update d'un service" do
-    assert @policy.update?
+  test "accès interdit pour un manager sur la page update d'un service" do
+    refute @policy.update?
   end
 
   test "accès interdit pour un manager sur la page update d'un service qui ne lui appartient pas" do
@@ -54,8 +54,8 @@ class ManagerServicePolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Destroy
-  test "accès autorisé pour un manager sur la page destroy d'un service" do
-    assert @policy.destroy?
+  test "accès interdit pour un manager sur la page destroy d'un service" do
+    refute @policy.destroy?
   end
 
   test "accès interdit pour un manager sur la page destroy d'un service qui ne lui appartient pas" do

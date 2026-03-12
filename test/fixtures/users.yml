@@ -4,6 +4,16 @@
 # model remove the "{}" from the fixture names and add the columns immediately
 # below each fixture, per the syntax in the comments below
 #
+
+administrateur_paris:
+  organisation: mairie_paris
+  nom: Administrateur
+  prénom: Paris
+  email: administrateur_paris@aikku.eu
+  rôle: administrateur
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
+  slug: <%= SecureRandom.uuid %>
+
 hidalgo:
   organisation: mairie_paris
   nom: Hidalgo

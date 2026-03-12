@@ -34,7 +34,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
           email: "email@example.com",
           password: "0DcPIZIq0+f5SvCf",
           rôle: "agent",
-          organisation: organisations(:mairie_paris)
+          organisation: organisations(:mairie_paris),
+          services_ids: [services(:service_paris).id]
         }
       }
     end
