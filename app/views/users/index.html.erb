@@ -10,33 +10,33 @@
   </div>
 
   <%= form_tag request.path, method: :get do %>
-    <div class="flex flex-wrap items-end gap-4 mt-8">
-      <div class="w-full md:w-fit">
+    <div class="flex flex-wrap items-end gap-4 mt-8 w-full">
+      
+      <div class="w-full md:w-auto md:min-w-48">
         <%= label_tag :search, "Rechercher" %>
         <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full', placeholder: 'Nom / Prénom' %>
       </div>
 
-      <div class="flex items-end gap-4 w-fit">
-        <div class="w-full md:min-w-36">
-          <%= label_tag :rôle %>
-          <%= select_tag :rôle, options_for_select(User.rôles.sort_by { |k, _| I18n.transliterate(k) }, params[:rôle]), include_blank:true, class: 'select select-sm w-full', onchange: 'this.form.submit()' %>    
-        </div>
-
-        <div class="w-full md:min-w-36">
-          <%= label_tag :services %>
-          <%= select_tag :services, options_from_collection_for_select(@services, 'id', 'nom', params[:services]), include_blank: true, class: 'slim-select w-full', multiple: true, onchange: 'this.form.submit()' %>
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <%= label_tag :absent, "Absents ?", class: 'whitespace-nowrap cursor-pointer' %>
-          <%= check_box_tag :absent, 1, params[:absent], class:'checkbox mr-2', onchange:'this.form.submit()' %>
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <%= label_tag :discarded, "Désactivés ?", class: 'whitespace-nowrap cursor-pointer' %>
-          <%= check_box_tag :discarded, 1, params[:discarded], class:'checkbox mr-2', onchange: 'this.form.submit()' %>
-        </div>
+      <div class="w-full md:w-auto md:min-w-36">
+        <%= label_tag :rôle %>
+        <%= select_tag :rôle, options_for_select(User.rôles.sort_by { |k, _| I18n.transliterate(k) }, params[:rôle]), include_blank:true, class: 'select select-sm w-full', onchange: 'this.form.submit()' %>    
       </div>
+
+      <div class="w-full md:w-auto md:min-w-36">
+        <%= label_tag :services %>
+        <%= select_tag :services, options_from_collection_for_select(@services, 'id', 'nom', params[:services]), include_blank: true, class: 'slim-select w-full', multiple: true, onchange: 'this.form.submit()' %>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <%= label_tag :absent, "Absents ?", class: 'whitespace-nowrap cursor-pointer' %>
+        <%= check_box_tag :absent, 1, params[:absent], class:'checkbox mr-2', onchange:'this.form.submit()' %>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <%= label_tag :discarded, "Désactivés ?", class: 'whitespace-nowrap cursor-pointer' %>
+        <%= check_box_tag :discarded, 1, params[:discarded], class:'checkbox mr-2', onchange: 'this.form.submit()' %>
+      </div>
+
     </div>
   <% end %>
 
