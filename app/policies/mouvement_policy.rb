@@ -6,7 +6,7 @@ class MouvementPolicy < ApplicationPolicy
   end
 
   def index?
-    user
+    manager_or_admin?
   end
 
   def show?
