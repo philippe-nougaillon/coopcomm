@@ -16,13 +16,13 @@
         <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full', placeholder: 'Nom / Prénom' %>
       </div>
 
-      <div class="flex items-end gap-4">
-        <div class="w-full md:w-fit">
+      <div class="flex items-end gap-4 w-fit">
+        <div class="w-full md:min-w-36">
           <%= label_tag :rôle %>
           <%= select_tag :rôle, options_for_select(User.rôles.sort_by { |k, _| I18n.transliterate(k) }, params[:rôle]), include_blank:true, class: 'select select-sm w-full', onchange: 'this.form.submit()' %>    
         </div>
 
-        <div class="w-full md:w-fit">
+        <div class="w-full md:min-w-36">
           <%= label_tag :services %>
           <%= select_tag :services, options_from_collection_for_select(@services, 'id', 'nom', params[:services]), include_blank: true, class: 'slim-select w-full', multiple: true, onchange: 'this.form.submit()' %>
         </div>
