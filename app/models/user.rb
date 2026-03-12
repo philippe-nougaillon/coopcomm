@@ -68,10 +68,10 @@ class User < ApplicationRecord
   default_scope -> { kept }
   scope :ordered, -> { order(:nom) }
 
-  def self.grouped_agents(users)
+  def self.grouped_agents(user)
     h = {}
-    Service.order(:nom).each do |service|
-      h[service.nom] = users.agent.where(id: service.user_ids).order(:nom, :prénom).pluck(:nom, :prénom, :id).map { |nom, prénom, id| ["#{nom} #{prénom}", id] }
+    user.services.order(:nom).each do |service|
+      h[service.nom] = service.users.intervenants.where(id: service.user_ids).order(:nom, :prénom).pluck(:nom, :prénom, :id).map { |nom, prénom, id| ["#{nom} #{prénom}", id] }
     end
     return h.sort_by { |k, _| I18n.transliterate(k) }.to_h
   end
@@ -291,6 +291,10 @@ class User < ApplicationRecord
 
   def manager_or_admin?
     self.manager? || self.administrateur?
+  end
+
+  def self.intervenants
+    self.where(rôle: ["agent", "manager", "administrateur"])
   end
 
   private

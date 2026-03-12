@@ -749,7 +749,7 @@ class InterventionsController < ApplicationController
     def set_form_variables
       @tags = current_user.organisation.interventions.tag_counts_on(:tags).order(:name)
       @adhérents = current_user.organisation.users.filter_by_service(current_user.services).adhérent.order(:nom)
-      @grouped_agents = User.grouped_agents(current_user.organisation.users.filter_by_service(current_user.services))
+      @grouped_agents = User.grouped_agents(current_user)
       @tools = current_user.organisation.tools.ordered
     end
 
