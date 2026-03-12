@@ -1,4 +1,7 @@
 class Service < ApplicationRecord
+  extend FriendlyId
+  friendly_id :slug_candidates, use: :slugged
+
   belongs_to :organisation
 
   has_many :user_services, dependent: :destroy
@@ -8,4 +11,9 @@ class Service < ApplicationRecord
 
   normalizes :nom, with: -> nom { nom.humanize.strip }
 
+  private
+
+  def slug_candidates
+    [SecureRandom.uuid]
+  end
 end

@@ -1,0 +1,9 @@
+class AddSlugToService < ActiveRecord::Migration[8.0]
+  def change
+    add_column :services, :slug, :string
+
+    Service.all.each do |service|
+      service.save
+    end
+  end
+end
