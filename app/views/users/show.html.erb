@@ -103,11 +103,6 @@
     <% end %>
   </div>
 
-  <% if @user.adhérent? && @user.localisation %>
-    <div id="map" class="my-8" style="height: 200px;"></div>
-    <%= render 'users/map_script' %>
-  <% end %>
-
   <% if @user.agent? || @user.manager_or_admin? %>
     <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
       <h2 class="text-2xl text-secondary">
