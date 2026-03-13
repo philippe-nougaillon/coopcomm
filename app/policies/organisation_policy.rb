@@ -5,15 +5,18 @@ class OrganisationPolicy < ApplicationPolicy
     end
   end
 
-  def show?
-    manager_or_admin? && record == user.organisation
-  end
+  # Désactivé
+  # def show?
+  #   manager_or_admin? && record == user.organisation
+  # end
 
-  def edit?
-    show?
-  end
+  # Désactivé
+  # def edit?
+  #   show?
+  # end
 
-  def update?
-    edit?
-  end
+  # Désactivé
+  # def update?
+  #   edit?
+  # end
 end
