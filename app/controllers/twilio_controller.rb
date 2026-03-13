@@ -6,9 +6,9 @@ class TwilioController < ApplicationController
     sender = params['From']
     message = params['Body']
 
-    puts "Réponse de #{sender}: #{message}"
+    agent = User.agent.find_by_whatsapp_phone(sender) if sender.present?
 
-    if agent = User.agent.find_by_whatsapp_phone(sender)
+    if sender.present? && message.present? && agent
       if intervention = Intervention.create!(description: "[WhatsApp] #{l(DateTime.now, format: :long)} #{sender.gsub("whatsapp:", '')}", organisation_id: agent.organisation_id, commentaires: message)
         # Pas de test de chevauchement d'intervention puisqu'il n'y a aucune date dans ce qu'il y a envoyé
         intervention.agent_interventions.create(agent:)
@@ -19,9 +19,6 @@ class TwilioController < ApplicationController
     else
       render xml: Twilio::TwiML::MessagingResponse.new.message(body: "Votre numéro de téléphone n'est associé à aucun agent. Veuillez contacter un manageur.").to_s
     end
-      
-    
-
   end
 
   def get_request
