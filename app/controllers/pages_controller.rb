@@ -295,7 +295,7 @@ class PagesController < ApplicationController
         else
           xls_file = DashboardAdherentToXls.new(@proportion_temps_consommé, @temps_total_par_mois, @data_workflow_chart, @qté_interventions_par_service, @temps_total_par_service, @co2_total_par_mois).call
         end
-        send_data xls_file, filename: "Dashboard_#{DateTime.now}.xls"
+        send_data xls_file, filename: "Dashboard_#{l Date.today}.xls"
       end
     end
   end

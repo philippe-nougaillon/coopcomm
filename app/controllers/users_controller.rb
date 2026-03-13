@@ -36,7 +36,7 @@ class UsersController < ApplicationController
 
       format.xls do
         xls_file = AgentsToXls.new(@users.agent).call
-        send_data xls_file, filename: "Agents_#{DateTime.now}.xls"
+        send_data xls_file, filename: "Agents_#{l Date.today}.xls"
       end
     end
   end

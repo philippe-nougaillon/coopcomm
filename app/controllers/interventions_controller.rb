@@ -98,7 +98,7 @@ class InterventionsController < ApplicationController
 
       format.xls do
         xls_file = InterventionsToXls.new(@interventions).call
-        send_data xls_file, filename: "Interventions_#{DateTime.now}.xls"
+        send_data xls_file, filename: "Interventions_#{l Date.today}.xls"
       end
     end
   end
