@@ -118,12 +118,11 @@
           Ajouter une absence
         </button>
 
-        <dialog id="absence_modal" class="modal">
+        <dialog id="absence_modal" class="modal" <%= 'open' if @user.errors.any? %>>
           <div class="modal-box">
             <form method="dialog">
               <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
             </form>
-            
             <h3 class="font-bold text-lg mb-4">Enregistrer une absence</h3>
             
             <%= render 'absence_form', absence: Absence.new(user_id: @user.id) %>

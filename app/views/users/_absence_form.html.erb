@@ -1,7 +1,21 @@
 <% unique_id = absence.id || 'new' %>
 <% is_half_day = absence.matin || absence.après_midi %>
 
-<%= form_with(model: @user) do |f| %>
+<%= form_with(model: @user, id: "absence_form") do |f| %>
+  
+  <% if absence.errors.any? %>
+    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
+      <h2 class="font-black!">
+        <%= pluralize(absence.errors.count, "erreur") %> empêche(nt) cette absence d'être sauvegardée :
+      </h2>
+
+      <ul class="list-disc list-inside">
+        <% absence.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
   <%= f.fields_for :absences, absence do |ff| %>
     <%= render 'absence_fields', f: ff %>
   <% end %>
