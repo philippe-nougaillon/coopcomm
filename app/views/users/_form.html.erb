@@ -78,27 +78,31 @@
     <%= form.text_area :memo, class: 'textarea w-full' %>
   </div>
 
-  <% if @user.agent? || @user.manager_or_admin? %>
-    <div class="flex mt-4 gap-4 mb-4">
-      <h2 class="text-2xl text-secondary">Absences</h2>
-      <button type="button" data-action="nested-form#add" class="btn btn-sm btn-outline btn-success hover:text-white!">+</button>
-    </div>
+  <% if false %>
+  <!--
+    <% if @user.agent? || @user.manager_or_admin? %>
+      <div class="flex mt-4 gap-4 mb-4">
+        <h2 class="text-2xl text-secondary">Absences</h2>
+        <button type="button" data-action="nested-form#add" class="btn btn-sm btn-outline btn-success hover:text-white!">+</button>
+      </div>
 
 
-    <%= form.fields_for :absences do |absence_fields| %>
-      <%= render "absence_form_nested", f: absence_fields %>
-    <% end %>
-
-    <template data-nested-form-target="template">
-      <%= form.fields_for :absences, Absence.new, child_index: 'NEW_RECORD' do |absence_fields| %>
+      <%# TODO : Ajouter les erreurs des absences si on réactive cette partie du formulaire%>
+      <%= form.fields_for :absences do |absence_fields| %>
         <%= render "absence_form_nested", f: absence_fields %>
       <% end %>
-    </template>
 
-    <!-- Inserted elements will be injected before that target. -->
-    <div data-nested-form-target="target"></div>
+      <template data-nested-form-target="template">
+        <%= form.fields_for :absences, Absence.new, child_index: 'NEW_RECORD' do |absence_fields| %>
+          <%= render "absence_form_nested", f: absence_fields %>
+        <% end %>
+      </template>
 
-    <%= render "absence_form_script" %>
+      <div data-nested-form-target="target"></div>
+
+      <%= render "absence_form_script" %>
+    <% end %>
+  -->
   <% end %>
 
   <%= form.submit "Enregistrer", id:"enregistrer_utilisateur", class: "btn btn-primary mt-4" %>
