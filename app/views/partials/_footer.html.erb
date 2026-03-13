@@ -1,79 +1,53 @@
-<footer data-theme="aikku" class="-mb-24 border-t bg-gray-200">
-  <div class="flex flex-wrap items-center justify-between p-4 md:p-10 text-base-content gap-8">
-    <div>
-      <p class="opacity-50 mt-4">
-        <span class="text-primary text-lg font-black">
-          <%= link_to 'AÏKKU (SAS)', 'https://www.aikku.eu/fr' %>
-        </span>
-        <br>  
-        Tour Ariane - La Défense 
-        <br>
-        5, Place de la Pyramide
-        <br>
-        92800 PUTEAUX
-        <br>
-        FRANCE
-        <br><br>
-        SIREN : 934 780 735 R.C.S Nanterre (92)
+<footer class="bg-[#E5EFF9] lg:bg-[#E5EFF9] shadow-lg px-6 py-4">
+  <div class="flex flex-col md:flex-row p-8 justify-between text-center items-start gap-8">
+    <div class="flex flex-col text-center md:text-left">
+      <p class="text-sm font-black mb-4">NOUS CONTACTER</p>
+
+      <a href="#" class="mb-2 hover:text-[#50b9df]">Mail</a>
+      <a href="#" class="mb-2 hover:text-[#50b9df]">Linkedin</a>
+      <a href="#" class="mb-2 hover:text-[#50b9df]">www.aikku.eu</a>
+    </div>
+
+    <div class="flex flex-col text-center md:text-left">
+      <p class="text-sm font-black mb-4">BESOIN D'AIDE</p>
+
+      <a href="#" class="mb-2 hover:text-[#50b9df]">FAQ</a>
+      <a href="#" class="mb-2 hover:text-[#50b9df]">Blog</a>
+    </div>
+
+    <div class="flex flex-col text-center md:text-left">
+      <p class="text-sm font-black mb-4">CONDITIONS</p>
+
+      <a href="#" class="mb-2 hover:text-[#50b9df]">Mentions légales</a>
+      <a href="#" class="mb-2 hover:text-[#50b9df]"
+        >Protection des Données</a
+      >
+      <a href="#" class="mb-2 hover:text-[#50b9df]">Préférences Cookies</a>
+    </div>
+
+    <div class="flex flex-col max-w-xs">
+      <p class="mb-2 text-sm">
+        <b>S'inscrire à la Newsletter</b> pour recevoir les dernières
+        actualités
       </p>
-    </div>
-    <div class="text-2xl mt-8">
-      <%= form_with(model: @newsletter, id: "nouvelle_newsletter", method: "post", html: { autocomplete: "off", class: 'w-full flex flex-col justify-center', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
-        <div class="md:join" data-turbo="false">
-          <label name="newsletter[email]" id="newsletter_email" class="input input-lg input-secondary md:join-item w-full mb-4 md:mb-0 rounded-full md:rounded-r-none focus:ring-0">
-            <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <g
-                stroke-linejoin="round"
-                stroke-linecap="round"
-                stroke-width="2.5"
-                fill="none"
-                stroke="currentColor"
-              >
-                <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-              </g>
-            </svg>
-            <input type="email" placeholder="Entrez votre adresse email" data-newsletter-target="email" required class="focus:ring-0" />
-          </label>
 
-          <%= form.submit "S'inscrire à la newsletter", 'data-action': 'click->newsletter#print_result', class: "btn btn-lg btn-primary md:join-item rounded-full md:rounded-l-none mx-auto px-8 font-normal" %>
-        </div>
+      <input
+        type="email"
+        placeholder="Entrez votre adresse email"
+        class="border border-gray-300 rounded-md py-2 px-4 mb-2"
+      />
 
-        <div>
-          <%= render "result_newsletter" %>
-        </div>
-      <% end %>
-    </div>
-    <div>
-      <%= link_to "https://www.aikku.eu/fr" do %>
-        <%= image_tag 'New_logo.png', class: "h-24 w-auto", alt: "Logo Aikku SAS" %>
-      <% end %>
+      <button class="bg-black text-white rounded-md py-2 hover:bg-gray-800">
+        JE M'INSCRIS
+      </button>
     </div>
   </div>
-  <div class="footer md:footer-horizontal px-10 py-6 border-t bg-base-content text-neutral-content border-base-300">
-    <span class="inline">
-      Copyright © AÏKKU SAS 2025 - Tous droits réservés -
-      <%= link_to "Mentions Légales", mentions_legales_path, class:'hover:underline' %>
-    </span>
-    <div class="md:place-self-center md:justify-self-end flex flex-wrap items-center gap-8">
-      <%= mail_to 'contact@coopcomm.fr', class: 'flex items-center gap-2' do %>
-        <span class="material-symbols-outlined">
-          mail
-        </span>
-        <span>Nous contacter</span>
-      <% end %>
-      <%= link_to "https://www.linkedin.com/showcase/coopcomm", target: "_blank", class: 'flex items-center gap-2' do %>
-        <span class="material-symbols-outlined">
-          open_in_new
-        </span>
-        <span>LinkedIn</span>
-      <% end %>
-      <%= link_to "https://www.aikku.eu/fr", target: "_blank", class: 'flex items-center gap-2' do %>
-        <span class="material-symbols-outlined">
-          open_in_new
-        </span>
-        <span>www.aikku.eu</span>
-      <% end %>
-    </div>
+
+  <div
+    class="flex flex-col md:flex-row text-sm justify-between gap-4 p-8 border-t border-gray-300 text-center md:text-left"
+  >
+    <p>© 2026 AÏKKU SAS. Tous droits réservés.</p>
+    <p>AÏKKU SAS, 5 Place de la Pyramide, 92800 PUTEAUX</p>
+    <p>SIREN : 934 780 735 R.C.S Nanterre</p>
   </div>
 </footer>

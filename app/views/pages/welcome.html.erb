@@ -1,73 +1,173 @@
-<div data-theme="aikku" class="lg:px-8">
-  <section class="lg:flex lg:justify-between lg:flex-wrap mb-24 lg:mb-12">
-    <div class="flex-1 my-auto px-4 lg:px-12">
-      <h1 class="text-3xl lg:text-4xl font-black mb-6 lg:mb-12 mt-24 lg:mt-12">
-        <span class="text-gradient">Mutualisez mieux,</span>
-        <br>
-        dépensez moins !
-      </h1>
+<div data-theme="aikku" class="lg:px-8" style="font-family: Noto Sans Japanese, sans-serif !important;">
+  <!--premier section hero-->
+  <section
+    class="min-h-[70vh] lg:min-h-[85vh] flex items-center px-6 lg:px-16 py-16"
+    style="
+      background: radial-gradient(
+        ellipse 80% 80% at 70% 50%,
+        #ddeeff 0%,
+        #eef4fb 40%,
+        transparent 100%
+      );
+    "
+  >
+    <div
+      class="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12"
+    >
+      <!--texte-->
+      <div class="flex-1 max-w-xl">
+        <h1 class="font-title text-4xl lg:text-5xl font-bold mb-6">
+          <span
+            class="bg-clip-text text-transparent"
+            style="
+              background-image: linear-gradient(
+                to right,
+                #47b5db,
+                #bc437e,
+                #8043ad
+              );
+            "
+          >
+            Mutualisez mieux,
+          </span>
+          <br />
+          dépensez moins !
+        </h1>
 
-      <p class="text-xl lg:text-2xl mb-6 lg:mb-12">
-        CoopComm accompagne les <b>communautés de communes</b> dans la <b>mutualisation</b> de leurs <b>agents, investissements et moyens techniques</b>
-      </p>
+        <p class="text-lg lg:text-xl mb-8 text-black">
+          CoopComm accompagne les
+          <b>communautés de communes</b> dans la <b>mutualisation</b> de
+          leurs
+          <b>agents, investissements et moyens techniques</b>
+        </p>
 
-      <div class="mt-8 flex flex-wrap gap-4 text-xl font-black">
-        <%= link_to "Réserver une démo ➔", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: 'btn lg:btn-lg lg:btn-wide btn-secondary hover:text-white!' %>
+        <a
+          href="https://calendar.app.google/a52LSSCoXsdwz7A2A"
+          class="inline-block bg-[#db2767] px-8 py-3 rounded-full text-white text-base font-semibold hover:bg-[#c51f5b] transition shadow-md"
+        >
+          Réserver une démo
+        </a>
       </div>
-    </div>
-    <div class="flex-1 hidden lg:flex lg:justify-center">
-      <%= image_tag 'Imac and iphone.png', width: 500 %>
+
+      <!--imagenes-->
+      <div
+        class="flex-1 relative hidden lg:flex justify-center items-center min-h-[420px]"
+      >
+        <img
+          src="slide1.png"
+          alt="CoopComm interface"
+          class="absolute top-0 left-0 w-[60%] rounded-xl shadow-2xl border border-gray-200 bg-white"
+        />
+        <img
+          src="slide6.png"
+          alt="CoopComm tableau de bord"
+          class="absolute bottom-0 right-0 w-[60%] rounded-xl shadow-2xl border border-gray-200 bg-white"
+        />
+      </div>
     </div>
   </section>
 
-  <section class="bg-gray-200 pt-12 pb-24 px-4">
-    <div class="text-center mb-24">
-      <h2 class="text-2xl lg:text-3xl font-medium mb-2">
-        Pourquoi choisir
-        <span class="text-primary font-bold">Co</span><span class="text-secondary font-bold">op</span><span class="text-primary font-bold">Comm</span><span class="text-secondary font-bold">.</span>
-        ?
-      </h2>
-      <h3>
-        Une solution complète pour optimiser la gestion de votre intercommunalité
-      </h3>
-    </div>
+  <section class="bg-[#F4EFE6] m-6 lg:m-20 rounded-xl p-8">
+    <div class="flex flex-col lg:flex-row gap-16">
+      <div class="max-w-lg">
+        <h2 class="text-lg lg:text-3xl font-medium mb-4">
+          Pourquoi choisir
+          <span class="text-[#47b5db] font-bold">Co</span
+          ><span class="text-[#691E9A] font-bold">op</span
+          ><span class="text-[#47b5db] font-bold">Comm</span
+          ><span class="text-[#691E9A] font-bold">.</span> ?
+        </h2>
 
-    <div class="flex flex-wrap gap-4 justify-around">
-      <div class="w-xs bg-base-100 text-center py-12 px-8 shadow rounded-xl">
-        <span class="material-symbols-outlined text-primary-content bg-primary p-3 rounded-full mb-8">
-          trending_down
-        </span>
-        <h4 class="text-xl font-semibold mb-2">Réduction des coûts</h4>
-        <p>
-          Diminuez vos dépenses de fonctionnement grâce à la mutualisation intelligente des ressources
-        </p>
+        <h3 class="text-black text-lg">
+          Une solution complète pour optimiser la gestion de votre
+          intercommunalité
+        </h3>
       </div>
-      <div class="w-xs bg-base-100 text-center py-12 px-8 shadow rounded-xl">
-        <span class="material-symbols-outlined text-primary-content bg-primary p-3 rounded-full mb-8">
-          group
-        </span>
-        <h4 class="text-xl font-semibold mb-2">Optimisation RH</h4>
-        <p>
-          Maximisez l'efficacité de vos équipes en partageant les compétences entre communes
-        </p>
-      </div>
-      <div class="w-xs bg-base-100 text-center py-12 px-8 shadow rounded-xl">
-        <span class="material-symbols-outlined text-primary-content bg-primary p-3 rounded-full mb-8">
-          security
-        </span>
-        <h4 class="text-xl font-semibold mb-2">Conformité garantie</h4>
-        <p>
-          Respectez toutes les réglementations avec une solution respectueuse du RGPD
-        </p>
-      </div>
-      <div class="w-xs bg-base-100 text-center py-12 px-8 shadow rounded-xl">
-        <span class="material-symbols-outlined text-primary-content bg-primary p-3 rounded-full mb-8">
-          flag
-        </span>
-        <h4 class="text-xl font-semibold mb-2">Souveraineté numérique</h4>
-        <p>
-          Profitez d’une solution développée, hébergée et maintenue à 100% en France
-        </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div>
+          <h4 class="flex items-center gap-2 text-xl font-semibold mb-2">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="w-5 h-5 text-black"
+            >
+              <path d="M21.801 10A10 10 0 1 1 17 3.335" />
+              <path d="m9 11 3 3L22 4" />
+            </svg>
+            Réduction des coûts
+          </h4>
+
+          <p class="text-black">
+            Diminuez vos dépenses de fonctionnement grâce à la mutualisation
+            intelligente des ressources.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="flex items-center gap-2 text-xl font-semibold mb-2">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="w-5 h-5 text-black"
+            >
+              <path d="M21.801 10A10 10 0 1 1 17 3.335" />
+              <path d="m9 11 3 3L22 4" />
+            </svg>
+            Optimisation RH
+          </h4>
+
+          <p class="text-black">
+            Maximisez l'efficacité de vos équipes en partageant les
+            compétences entre communes.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="flex items-center gap-2 text-xl font-semibold mb-2">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="w-5 h-5 text-black"
+            >
+              <path d="M21.801 10A10 10 0 1 1 17 3.335" />
+              <path d="m9 11 3 3L22 4" />
+            </svg>
+            Conformité garantie
+          </h4>
+
+          <p class="text-black">
+            Respectez toutes les réglementations avec une solution conforme
+            au RGPD.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="flex items-center gap-2 text-xl font-semibold mb-2">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="w-5 h-5 text-black"
+            >
+              <path d="M21.801 10A10 10 0 1 1 17 3.335" />
+              <path d="m9 11 3 3L22 4" />
+            </svg>
+            Souveraineté numérique
+          </h4>
+
+          <p class="text-black">
+            Profitez d'une solution développée, hébergée et maintenue à 100
+            % en France.
+          </p>
+        </div>
       </div>
     </div>
   </section>
