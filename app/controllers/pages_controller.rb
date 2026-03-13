@@ -291,7 +291,7 @@ class PagesController < ApplicationController
 
       format.xls do
         if current_user.manager_or_admin?
-          xls_file = DashboardManagerToXls.new(@temps_total_par_adhérent, @temps_total_par_agent, @qté_interventions_par_service, @temps_total_par_service, @co2_total_par_mois).call
+          xls_file = DashboardManagerToXls.new(@temps_total_par_adhérent, @temps_total_par_agent, @data_workflow_chart, @qté_interventions_par_service, @temps_total_par_service, @co2_total_par_mois).call
         else
           xls_file = DashboardAdherentToXls.new(@proportion_temps_consommé, @temps_total_par_mois, @data_workflow_chart, @qté_interventions_par_service, @temps_total_par_service, @co2_total_par_mois).call
         end
