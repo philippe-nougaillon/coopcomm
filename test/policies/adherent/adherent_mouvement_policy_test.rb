@@ -14,6 +14,11 @@ class AdherentMouvementPolicyTest < ActionDispatch::IntegrationTest
     refute @policy.index?
   end
 
+  # show
+  test "accès interdit pour un adherent sur la page show d'un mouvement" do
+    refute @policy.show?
+  end
+
   # New
   test "accès interdit pour un adherent sur la page new d'un mouvement" do
     refute @policy.new?
@@ -32,5 +37,10 @@ class AdherentMouvementPolicyTest < ActionDispatch::IntegrationTest
   # Update
   test "accès interdit pour un adherent sur la page update d'un mouvement" do
     refute @policy.update?
+  end
+
+  # destroy
+  test "accès interdit pour un adherent sur la page destroy d'un mouvement" do
+    refute @policy.destroy?
   end
 end

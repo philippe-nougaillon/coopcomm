@@ -2,7 +2,7 @@ require "test_helper"
 
 class InterventionsControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @intervention = agent_interventions(:bond_tonte_locaux).intervention
+    @intervention = interventions(:tonte_locaux)
     sign_in users(:hidalgo)
   end
 
@@ -81,12 +81,20 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to intervention_url(@intervention)
   end
 
-  test "should destroy intervention" do
+  test "should destroy intervention without mouvements" do
     assert_difference("Intervention.count", -1) do
-      delete intervention_url(@intervention)
+      delete intervention_url(interventions(:nouvelle_intervention))
     end
 
     assert_redirected_to interventions_url
+  end
+
+  test "must not destroy intervention with mouvements" do
+    assert_no_difference("Intervention.count") do
+      delete intervention_url(@intervention)
+    end
+
+    assert_response :see_other # Redirection après erreur
   end
 
   test "should redirect to root if intervention doesn't exist" do
