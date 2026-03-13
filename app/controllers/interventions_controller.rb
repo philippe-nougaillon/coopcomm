@@ -91,6 +91,7 @@ class InterventionsController < ApplicationController
 
     session[:vue] = params[:vue]
 
+    @interventions = @interventions.distinct
     respond_to do |format|
       format.html do
         @pagy, @interventions = pagy(@interventions.includes(:tags, :team, :agents, :adherent).with_attached_photos)
