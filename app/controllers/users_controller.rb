@@ -122,7 +122,7 @@ class UsersController < ApplicationController
     @agents = current_user.organisation.users.filter_by_service(params[:service].presence || @services).where(rôle: "agent")
 
     if params[:search].present?
-      @agents = @agents.where("nom ILIKE :search OR prénom ILIKE :search OR email ILIKE :search", {search: "%#{params[:search]}%"})
+      @agents = @agents.where("users.nom ILIKE :search OR users.prénom ILIKE :search OR users.email ILIKE :search", {search: "%#{params[:search]}%"})
     end
 
     # Le code actuel n'est pas utile. Si besoin on peut le faire sur la période (@date..@date_fin). Le mieux serait p-e de faire des cases grises directement dans le calendrier.
