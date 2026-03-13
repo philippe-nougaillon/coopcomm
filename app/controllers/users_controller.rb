@@ -91,17 +91,27 @@ class UsersController < ApplicationController
         format.json { render :show, status: :ok, location: @user }
       else
         format.html { render :edit, status: :unprocessable_entity }
+        
         format.turbo_stream do
-          absence_en_erreur = @user.absences.to_a.find(&:new_record?) || @user.absences.last
-          render turbo_stream: turbo_stream.replace(
-            "absence_form", 
-            partial: "absence_form", 
-            locals: { 
-              user: @user,
-              absence: absence_en_erreur 
-            }
-          )
+          if params[:from_absence_modal]
+            absence_en_erreur = @user.absences.to_a.find(&:new_record?) || @user.absences.last
+            render turbo_stream: turbo_stream.replace(
+              "absence_form", 
+              partial: "absence_form", 
+              locals: { 
+                user: @user,
+                absence: absence_en_erreur 
+              }
+            )
+          else
+            render turbo_stream: turbo_stream.replace(
+              @user,
+              partial: "users/form", # J'ai mis 'users/form' par précaution, adapte si besoin
+              locals: { user: @user }
+            )
+          end
         end
+        
         format.json { render json: @user.errors, status: :unprocessable_entity }
       end
     end
