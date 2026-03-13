@@ -12,6 +12,8 @@ class Absence < ApplicationRecord
     congé_sans_solde: 3
   }
 
+  # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
+  after_create_commit :send_manager_notification
 
   def en_cours?
     return (self.du..self.au).include?(Date.today)
@@ -19,5 +21,9 @@ class Absence < ApplicationRecord
 
   def nb_jours
     (self.au - self.du).to_i + 1
+  end
+
+  def send_manager_notification
+    NotifManagersNewAbsenceJob.perform_later(self)
   end
 end
