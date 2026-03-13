@@ -44,6 +44,10 @@ nettoyage_technique:
   user: électricité
   service: technique
 
+agent_whatsapp_service_paris:
+  user: agent_whatsapp
+  service: service_paris
+
 nettoyeur_marseille_service_marseille:
   user: nettoyeur_marseille
   service: service_marseille

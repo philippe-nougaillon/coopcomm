@@ -113,6 +113,15 @@ adhérent_sans_intervention:
   localisation: 48.83320364351545, 2.327468354067042
   slug: f0595980-a28d-4424-82db-ee89e6eadc7d
 
+agent_whatsapp:
+  organisation: mairie_paris
+  nom: Poireau
+  prénom: Hercule
+  email: agent_whatsapp@aikku.eu
+  rôle: agent
+  téléphone: +330606060606
+  slug: f0595980-a28d-4424-82db-ee89e6eadc7e
+
 # Organisation marseille
 manager_marseille:
   organisation: mairie_marseille
