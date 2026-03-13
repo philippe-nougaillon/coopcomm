@@ -69,10 +69,38 @@ class User < ApplicationRecord
   scope :ordered, -> { order(:nom) }
 
   def self.grouped_agents(user)
-    h = {}
-    user.services.order(:nom).each do |service|
-      h[service.nom] = service.users.intervenants.where(id: service.user_ids).order(:nom, :prénom).pluck(:nom, :prénom, :id).map { |nom, prénom, id| ["#{nom} #{prénom}", id] }
+    # 1. On stocke les IDs des services de l'utilisateur courant pour filtrer
+    user_service_ids = user.service_ids
+
+    # 2. On récupère les agents uniques qui appartiennent à au moins un de ces services
+    # Le .includes(:services) est crucial ici pour éviter le problème des requêtes N+1
+    agents = User.intervenants
+                 .joins(:services)
+                 .where(services: { id: user_service_ids })
+                 .distinct
+                 .includes(:services)
+
+    # 3. On initialise un Hash qui créera un tableau vide automatiquement pour toute nouvelle clé
+    h = Hash.new { |hash, key| hash[key] = [] }
+
+    # 4. On trie les agents et on construit nos groupes
+    agents.sort_by { |a| [a.nom.to_s, a.prénom.to_s] }.each do |agent|
+      # On ne garde que les services de l'agent qui sont en commun avec l'utilisateur courant
+      # (Optionnel : si tu veux afficher TOUS les services de l'agent, enlève le .select)
+      services_communs = agent.services.select { |s| user_service_ids.include?(s.id) }
+      
+      # On trie les noms pour garantir que "Ménage - Technique" et "Technique - Ménage" 
+      # aillent dans le même groupe, puis on les assemble.
+      nom_groupe = services_communs.map(&:nom).sort.join(" - ")
+      
+      # Sécurité au cas où
+      nom_groupe = "Sans service" if nom_groupe.blank?
+
+      # On ajoute l'agent dans le groupe correspondant
+      h[nom_groupe] << ["#{agent.nom} #{agent.prénom}", agent.id]
     end
+
+    # 5. On retourne le Hash trié alphabétiquement par le nom du groupe
     return h.sort_by { |k, _| I18n.transliterate(k) }.to_h
   end
 
