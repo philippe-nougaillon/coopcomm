@@ -19,8 +19,7 @@
         <%= link_to intervention.description.humanize, intervention, class: 'z-10 hover:underline' %>
     </div>
     </td>
-    <td><%= intervention.adherent.try(:nom_prénom) %></td>
-    <td <%= "style=\"border-left: .3rem solid #{intervention.team.color};\"".html_safe if intervention.team&.color %>><%= intervention.team.try(:nom_prénom) %></td>
+    <td><%= intervention.adherent&.nom_prénom %></td>
     <td>
     <%= l(intervention.début_prévue, format: :custom) if intervention.début_prévue  %> <br> <%= l(intervention.fin_prévue, format: :custom)  if intervention.fin_prévue %>
     </td>
