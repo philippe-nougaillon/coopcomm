@@ -14,6 +14,11 @@ class ManagerMouvementPolicyTest < ActionDispatch::IntegrationTest
     assert @policy.index?
   end
 
+  # show
+  test "accès impossible pour un administrateur sur la page show d'un mouvement" do
+    refute @policy.show?
+  end
+
   # New
   test "accès autorisé pour un manager sur la page new d'un mouvement" do
     assert @policy.new?
@@ -25,12 +30,17 @@ class ManagerMouvementPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Edit
-  test "accès autorisé pour un manager sur la page edit d'un mouvement" do
-    assert @policy.edit?
+  test "accès impossible pour un manager sur la page edit d'un mouvement" do
+    refute @policy.edit?
   end
 
   # Update
-  test "accès autorisé pour un manager sur la page update d'un mouvement" do
-    assert @policy.update?
+  test "accès impossible pour un manager sur la page update d'un mouvement" do
+    refute @policy.update?
+  end
+
+  # destroy
+  test "accès impossible pour un manager sur la page destroy d'un mouvement" do
+    refute @policy.destroy?
   end
 end

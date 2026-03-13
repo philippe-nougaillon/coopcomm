@@ -9,8 +9,9 @@ class MouvementPolicy < ApplicationPolicy
     manager_or_admin?
   end
 
+  # Page désactivé
   def show?
-    index? && organisation?
+    false
   end
 
   def new?
@@ -21,15 +22,18 @@ class MouvementPolicy < ApplicationPolicy
     new?
   end
 
+  # Page désactivé
   def edit?
-    manager_or_admin? && organisation?
+    false
   end
 
+  # Page désactivé
   def update?
     edit?
   end
 
+  # Page désactivé
   def destroy?
-    manager_or_admin? && organisation?
+    false
   end
 end

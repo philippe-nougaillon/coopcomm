@@ -218,11 +218,15 @@ class InterventionsController < ApplicationController
 
   # DELETE /interventions/1 or /interventions/1.json
   def destroy
-    @intervention.destroy!
-
     respond_to do |format|
-      format.html { redirect_to interventions_url, notice: "Intervention supprimée avec succès." }
-      format.json { head :no_content }
+      if @intervention.destroy
+        format.html { redirect_to interventions_url, notice: "Intervention supprimée avec succès." }
+        format.json { head :no_content }
+      else
+        # Nécessaire s'il y a des erreurs
+        flash[:alert] = "L'intervention ne peut pas être supprimée : #{@intervention.errors.full_messages.join(', ')}"
+        format.html { redirect_to @intervention, status: :see_other } # see_other = erreur 303 = Redirection après échec de suppression 
+      end
     end
   end
 

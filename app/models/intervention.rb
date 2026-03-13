@@ -9,6 +9,8 @@ class Intervention < ApplicationRecord
   audited
 
   attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute, :début_hour, :début_minute, :fin_hour, :fin_minute
+  
+  before_destroy :must_not_have_any_mouvements
 
   belongs_to :organisation
   belongs_to :team, class_name: :User, foreign_key: :team_id, optional: true # Not used anymore 
@@ -17,6 +19,7 @@ class Intervention < ApplicationRecord
   has_many :agents, through: :agent_interventions, class_name: 'User'
   has_many :tool_interventions, dependent: :destroy
   has_many :tools, through: :tool_interventions
+  has_many :mouvements, through: :tools
 
   has_many_attached :photos
 
@@ -440,4 +443,10 @@ class Intervention < ApplicationRecord
     user_ids
   end
 
+  def must_not_have_any_mouvements
+    if self.mouvements.any?
+      self.errors.add(:base, "Il reste des mouvements liés.")
+      throw(:abort)
+    end
+  end
 end
