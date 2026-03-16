@@ -42,9 +42,6 @@ class Intervention < ApplicationRecord
   scope :ordered, -> { order(updated_at: :desc) }
 
   after_create_commit :broadcast_to_authorized_viewers
-  
-  # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
-  after_create_commit :send_manager_notification
 
   # WORKFLOW
   NOUVEAU   = 'nouveau'
