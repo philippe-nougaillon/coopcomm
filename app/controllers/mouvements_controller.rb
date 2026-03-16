@@ -46,6 +46,7 @@ class MouvementsController < ApplicationController
         format.html { redirect_to @mouvement.tool, notice: "Mouvement créé avec succès." }
         format.json { render :show, status: :created, location: @mouvement }
       else
+        @tools = current_user.organisation.tools.ordered
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @mouvement.errors, status: :unprocessable_entity }
       end

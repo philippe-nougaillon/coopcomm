@@ -5,9 +5,11 @@ class Intervention < ApplicationRecord
   include WorkflowActiverecord
 
   acts_as_taggable_on :tags
-
+  
   audited
-
+  
+  # Autorise Rails à lire et écrire ces champs virtuels pour le formulaire
+  attr_accessor :tags_manager
   attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute, :début_hour, :début_minute, :fin_hour, :fin_minute
   
   before_destroy :must_not_have_any_mouvements
