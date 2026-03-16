@@ -6,11 +6,13 @@ class UserInterventionPolicyTest < ActionDispatch::IntegrationTest
   end
 
   test "should get pointer" do
+    sign_in users(:martin_technique_paris)
     get pointer_intervention_url(@intervention_mère)
     assert_redirected_to pointage_statut_intervention_path(Intervention.last)
   end
   
   test "should get pointage statut" do
+    sign_in users(:martin_technique_paris)
     # Pointage de l'intervention mère
     get pointer_intervention_url(@intervention_mère)
     

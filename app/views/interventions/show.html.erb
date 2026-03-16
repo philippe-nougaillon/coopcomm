@@ -39,11 +39,13 @@
           <% end %>
           <%= link_to "Modifier", edit_intervention_path(@intervention), class: "btn btn-primary" %>
           <% if policy(@intervention).destroy? %>
-            <%= button_to intervention_path(@intervention), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette intervention ?" }, class: "btn", 'data-testid': "Supprimer l'intervention" do %>
-              <span class="material-symbols-outlined">
-                delete
+            <span title="<%= "Impossible de supprimer l'intervention car il y a des mouvements rattachés" if @intervention.mouvements.any? %>">
+              <%= button_to intervention_path(@intervention), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette intervention ?" }, class: "btn", disabled: @intervention.mouvements.any? , 'data-testid': "Supprimer l'intervention" do %>
+                <span class="material-symbols-outlined">
+                  delete
+                </span>
+              <% end %>
               </span>
-            <% end %>
           <% end %>
           <%= link_to "Retour", interventions_path, class: "btn" %>
         </div>
@@ -57,11 +59,6 @@
                 <strong class="block text-slate-400 mb-1">Adhérent</strong>
                 <b><%= @intervention.adherent.try(:nom_prénom) %></b>
               </p>
-              <p class="my-2 pl-2" <%= "style=\"border-left: .3rem solid #{@intervention.team.color};\"".html_safe if @intervention.team&.color %>>
-                <strong class="block text-slate-400 mb-1">Équipe</strong>
-                <b><%= @intervention.team.try(:nom_prénom) %></b>
-              </p>
-
             </div>
 
             <div>
@@ -163,7 +160,7 @@
                 <%= @intervention.avis %>
               </p>
             </div>
-          <% elsif current_user.manager? || current_user.adhérent? %>
+          <% elsif current_user.manager_or_admin? || current_user.adhérent? %>
             <div class="my-2">
               <strong class="block text-slate-400 mb-1">Actions</strong>
               <p class="flex gap-2">
@@ -188,45 +185,49 @@
           </div>
         <% elsif @intervention.adherent&.localisation && @intervention.nouveau? %>
 
-          <div id="map" class="w-full h-100"></div>
+          <div id="map" class="w-full min-w-sm h-100"></div>
 
           <p><%= @routes_info %></p>
 
           <script src="https://maps.googleapis.com/maps/api/js?key=<%= ENV["GOOGLE_MAPS_API_KEY"] %>&libraries=geometry&callback=initMap" async defer></script>
 
           <script>
-              async function initMap() {
+            async function initMap() {
 
-                  // Initialisation des bibliothèques nécessaires
-                  const { Map } = await google.maps.importLibrary("maps");
-                  const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary(
-                      "marker",
+              // Initialisation des bibliothèques nécessaires
+              const { Map } = await google.maps.importLibrary("maps");
+              const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
+              const bounds = await new google.maps.LatLngBounds();
+              const trafficLayer = await new google.maps.TrafficLayer();
+
+              // Initialisation de la map
+              map = new google.maps.Map(document.getElementById("map"), {
+                  center : <%= @localisation_depart %>,
+                  zoom: 11,
+                  mapId: "549c4681c953f814fa1cd142",
+              });
+
+              // Ajout du marker d'arrivée
+              let marker = new google.maps.marker.AdvancedMarkerElement({
+                  map,
+                  position: <%= @localisation_arrivee %>,
+                  title: "<%= "Intervention" %>",
+              });
+
+              // Centrage de la map en fonction des points
+              bounds.extend(map.center);
+              bounds.extend(marker.position);
+              map.fitBounds(bounds);
+
+              // Ajout des routes s'il en existe
+              <% if @response && @response["routes"] %>
+                let decodedPath;
+                let flightPath;
+
+                <% @response["routes"].each do |route| %>
+                  decodedPath = google.maps.geometry.encoding.decodePath(
+                      "<%= j route["polyline"]["encodedPolyline"] %>"
                   );
-
-                  // Initialisation de la map
-                  map = new google.maps.Map(document.getElementById("map"), {
-                      center : <%= @map_center %>,
-                      zoom: 11,
-                      mapId: "549c4681c953f814fa1cd142",
-                  });
-
-                  var pinIntervention = new PinElement({
-                  });
-                  new google.maps.marker.AdvancedMarkerElement({
-                      map,
-                      position: <%= @localisation_arrivee %>,
-                      title: "<%= "Intervention" %>",
-                      content: pinIntervention.element
-                  });
-
-                  <% if @response %>
-                    let decodedPath;
-                    let flightPath;
-                    // Initialisation des routes
-                    <% @response["routes"].each do |route| %>
-                      decodedPath = google.maps.geometry.encoding.decodePath(
-                          "<%= j route["polyline"]["encodedPolyline"] %>"
-                      );
 
                   flightPath = new google.maps.Polyline({
                       path: decodedPath,
@@ -236,17 +237,16 @@
                       strokeWeight: 8,
                   });
 
-                      flightPath.setMap(map);
+                  flightPath.setMap(map);
 
                 <% end %>
               <% end %>
 
-              const trafficLayer = new google.maps.TrafficLayer();
+              // Ajout du traffic de la route
               trafficLayer.setMap(map);
-
-          }
-      </script>
-    <% end %>
+            }
+          </script>
+        <% end %>
       </div>
       <div class="flex-1">
         <h2 class="text-2xl text-secondary mt-4">Photos</h2>

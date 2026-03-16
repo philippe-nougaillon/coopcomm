@@ -10,7 +10,9 @@ class AgentSupportMailboxTest < ActionMailbox::TestCase
         to: "support@mg.coopcom.fr",
         from: user.email,
         subject: subject,
-        body: body)
+        body: body,
+        charset: "UTF-8"
+      )
     end
   end
 end

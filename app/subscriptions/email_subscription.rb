@@ -14,7 +14,7 @@ class EmailSubscription
   def on_intervention_done(event)
     intervention = Intervention.find(event[:payload][:intervention_id])
     user = User.find(intervention.audits.last.user_id)
-    if (user.équipe? || user.agent?) && intervention.adherent
+    if (user.agent?) && intervention.adherent
       if adherent = User.find_by(id: intervention.adherent_id)
         NotifAdherentInterventionTermineeJob.perform_later(intervention, adherent, user.id)
       end

@@ -36,12 +36,21 @@ class ApplicationPolicy
     false
   end
 
-  def organisation
+  def organisation?
     user && record.organisation == user.organisation
   end
 
-  def manager
-    user && user.manager?
+  def administrateur?
+    user && user.administrateur?
+  end
+
+  def manager_or_admin?
+    user && user.manager_or_admin?
+  end
+
+  def shared_service(record_services = record.services)
+    # "&" désigne l'intersection entre deux listes
+    (record_services & user.services).any?
   end
 
   class Scope

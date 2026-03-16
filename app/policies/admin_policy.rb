@@ -6,11 +6,11 @@ class AdminPolicy < ApplicationPolicy
   end
 
   def audits?
-    user && user.manager?
+    manager_or_admin?
   end
 
   def create_new_user?
-    user && user.manager?
+    manager_or_admin?
   end
 
   def create_new_user_do?

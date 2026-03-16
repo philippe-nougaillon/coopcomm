@@ -1,9 +1,10 @@
 class InterventionsController < ApplicationController
   before_action :set_intervention, only: %i[ show edit update destroy terminer valider refuser archiver purge pointer pointage_statut ]
   before_action :set_form_variables, only: %i[ new edit create update ]
-  before_action :is_user_authorized, except: %i[ pointer pointage_statut ]
+  before_action :is_user_authorized
   before_action :store_return_location, only: [:new, :edit]
-  skip_before_action :authenticate_user!, only: %i[ pointer pointage_statut ]
+  skip_before_action :authenticate_user!
+  before_action :set_organisation_user_tags, only: [:index]
 
   # GET /interventions or /interventions.json
   def index
@@ -19,24 +20,17 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.where.not(workflow_state: 'archivé')
     end
 
-    # Enelever les interventions filles
+    # Enlever les interventions filles
     @interventions = @interventions.where(template_slug: nil)
 
-    organisation_members = current_user.organisation.users
-    if current_user.manager?
-      @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services.sort
-      @teams = organisation_members.équipe
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.adhérent?
-      @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.équipe?
-      @services = User.services
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.agent?
-      @adhérents = organisation_members.adhérent.order(:nom)
+    @services = current_user.services
+
+    @interventions = @interventions.filter_by_service(params[:service].presence || @services )
+
+    organisation_members = current_user.organisation.users.filter_by_service(params[:service].presence || @services)
+    @adhérents = organisation_members.adhérent.order(:nom)
+    if current_user.manager_or_admin? || current_user.adhérent?
+      @grouped_agents = User.grouped_agents(current_user)
     end
     @tools = current_user.organisation.tools.ordered
     @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
@@ -63,8 +57,16 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.where(team_id: params[:team_id])
     end
 
-    if params[:service].present?
-      @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {service: params[:service]})
+    if params[:equipe].present?
+      # On nettoie le tableau pour enlever l'élément vide ("") envoyé par le formulaire
+      tags = params[:equipe].reject(&:blank?)
+      
+      if tags.any?
+        adherent_ids = User.tagged_with(tags, any: true).pluck(:id)
+
+        # Étape B : On filtre directement sur la clé étrangère de l'intervention
+        @interventions = @interventions.where(adherent_id: adherent_ids)
+      end
     end
 
     if params[:agent_ids].present?
@@ -89,6 +91,7 @@ class InterventionsController < ApplicationController
 
     session[:vue] = params[:vue]
 
+    @interventions = @interventions.distinct
     respond_to do |format|
       format.html do
         @pagy, @interventions = pagy(@interventions.includes(:tags, :team, :agents, :adherent).with_attached_photos)
@@ -96,7 +99,7 @@ class InterventionsController < ApplicationController
 
       format.xls do
         xls_file = InterventionsToXls.new(@interventions).call
-        send_data xls_file, filename: "Interventions_#{DateTime.now}.xls"
+        send_data xls_file, filename: "Interventions_#{l Date.today}.xls"
       end
     end
   end
@@ -111,16 +114,16 @@ class InterventionsController < ApplicationController
         if @intervention.adherent.present? && @intervention.adherent.localisation.present?
           if @intervention.trajet.blank? || @intervention.nouveau?
             # Prendre l'adhérent de l'intervention
-            localisation_destination = @intervention.adherent.localisation_to_lat_lng_object
+            localisation_arrivee = @intervention.adherent.localisation_to_lat_lng_object
 
             # Création du service avec l'intervention de destination
-            request = ApiGoogleMaps.new(localisation_destination)
+            request = ApiGoogleMaps.new(localisation_arrivee)
 
             request.call
 
-            # Récupération des données via les getters
-            @map_center = request.map_center
-            @localisation_arrivee = localisation_destination
+            # Récupération des données via les getters du service
+            @localisation_depart = request.localisation_depart
+            @localisation_arrivee = localisation_arrivee
             @errors = request.errors
             @routes_info = request.routes_info
             @response = request.data_response
@@ -152,7 +155,23 @@ class InterventionsController < ApplicationController
   def new
     @intervention = Intervention.new
     @intervention.adherent_id = current_user.id if current_user.adhérent?
-    @intervention.agent_ids = current_user.agent? ? current_user.id : params[:agent_ids]
+
+    if current_user.agent?
+      @intervention.agent_ids = current_user.id
+    else
+      # Si on passe par le planning des agents
+      @intervention.agent_ids = params[:agent_id]
+    end
+
+    # Ajout de la date de fin si c'est un agent et que la date début prévue et fin prévue sont nil
+    if current_user.agent? && (params[:début_prévue].blank? || params[:fin_prévue].blank?)
+      now = DateTime.now()
+      # Le nombre de minute doit être un mutliple de 5, 
+      # Pour cela, on enlève le nombre de minutes modulo 5 (Ex: Si on a 14 minutes -> 14%5 = 4, donc 14-4 = 10)
+      date_fin = now - now.minute.modulo(5).minute
+
+      @intervention.fin = date_fin
+    end
   end
 
   # GET /interventions/1/edit
@@ -164,10 +183,6 @@ class InterventionsController < ApplicationController
     @intervention = Intervention.new(intervention_params)
     @intervention.organisation = current_user.organisation
     update_tag_list
-
-    if current_user.équipe?
-      @intervention.team_id = current_user.id
-    end
 
     check_workflow_pointage_mère
 
@@ -204,11 +219,15 @@ class InterventionsController < ApplicationController
 
   # DELETE /interventions/1 or /interventions/1.json
   def destroy
-    @intervention.destroy!
-
     respond_to do |format|
-      format.html { redirect_to interventions_url, notice: "Intervention supprimée avec succès." }
-      format.json { head :no_content }
+      if @intervention.destroy
+        format.html { redirect_to interventions_url, notice: "Intervention supprimée avec succès." }
+        format.json { head :no_content }
+      else
+        # Nécessaire s'il y a des erreurs
+        flash[:alert] = "L'intervention ne peut pas être supprimée : #{@intervention.errors.full_messages.join(', ')}"
+        format.html { redirect_to @intervention, status: :see_other } # see_other = erreur 303 = Redirection après échec de suppression 
+      end
     end
   end
 
@@ -421,21 +440,11 @@ class InterventionsController < ApplicationController
     @interventions = @interventions.where("DATE(début) = ?", time_zone_date.to_date)
 
     # Création des variables utilisés par les selecteurs
-    organisation_members = current_user.organisation.users
-    if current_user.manager?
-      @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services.sort
-      @teams = organisation_members.équipe
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.adhérent?
-      @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.équipe?
-      @services = User.services
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.agent?
-      @adhérents = organisation_members.adhérent.order(:nom)
+    organisation_members = current_user.organisation.users.filter_by_service(current_user.services)
+    @adhérents = organisation_members.adhérent.order(:nom)
+    if current_user.manager_or_admin? || current_user.adhérent?
+      @services = current_user.services.sort
+      @grouped_agents = User.grouped_agents(current_user)
     end
     @tools = current_user.organisation.tools.ordered
     @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
@@ -567,21 +576,11 @@ class InterventionsController < ApplicationController
     @interventions = @interventions.where("DATE(début) = ?", time_zone_date.to_date)
 
     # Création des variables utilisés par les selecteurs
-    organisation_members = current_user.organisation.users
-    if current_user.manager?
-      @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services.sort
-      @teams = organisation_members.équipe
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.adhérent?
-      @adhérents = organisation_members.adhérent.order(:nom)
-      @services = User.services
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.équipe?
-      @services = User.services
-      @grouped_agents = User.grouped_agents(organisation_members)
-    elsif current_user.agent?
-      @adhérents = organisation_members.adhérent.order(:nom)
+    organisation_members = current_user.organisation.users.filter_by_service(current_user.services)
+    @adhérents = organisation_members.adhérent.order(:nom)
+    if current_user.manager_or_admin? || current_user.adhérent?
+      @services = current_user.services.sort
+      @grouped_agents = User.grouped_agents(current_user)
     end
     @tools = current_user.organisation.tools.ordered
     @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
@@ -732,16 +731,6 @@ class InterventionsController < ApplicationController
     }
   end
 
-  def calculate_map_center(interventions_localisations)
-    coordonnees = interventions_localisations.pluck(:position)
-    lats = coordonnees.pluck(:lat)
-    lngs = coordonnees.pluck(:lng)
-    return {
-      lat: (lats.min + lats.max) / 2,
-      lng: (lngs.min + lngs.max) / 2
-    }
-  end
-
   def send_workflow_changed_notification
       unless Rails.env.development? 
         Events.instance.publish('intervention.workflow_changed', payload: {intervention_id: @intervention.id})
@@ -764,9 +753,8 @@ class InterventionsController < ApplicationController
 
     def set_form_variables
       @tags = current_user.organisation.interventions.tag_counts_on(:tags).order(:name)
-      @organisation_members = current_user.organisation.users
-      @équipes = @organisation_members.équipe
-      @grouped_agents = User.grouped_agents(@organisation_members)
+      @adhérents = current_user.organisation.users.filter_by_service(current_user.services).adhérent.order(:nom)
+      @grouped_agents = User.grouped_agents(current_user)
       @tools = current_user.organisation.tools.ordered
     end
 

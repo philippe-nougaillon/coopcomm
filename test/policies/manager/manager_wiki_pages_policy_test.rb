@@ -10,27 +10,27 @@ class ManagerWikiPagesPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # New
-  test "accès interdit pour un manager pour un new de wiki pages" do
-    refute @policy.new?
+  test "accès autorisé pour un manager pour un new de wiki pages" do
+    assert @policy.new?
   end
 
   # Create
-  test "accès interdit pour un manager pour un create de wiki pages" do
-    refute @policy.create?
+  test "accès autorisé pour un manager pour un create de wiki pages" do
+    assert @policy.create?
   end
 
   # Edit
-  test "accès interdit pour un manager pour un edit de wiki pages" do
-    refute @policy.edit?
+  test "accès autorisé pour un manager pour un edit de wiki pages" do
+    assert @policy.edit?
   end
 
   # Update
-  test "accès interdit pour un manager pour un update de wiki pages" do
-    refute @policy.update?
+  test "accès autorisé pour un manager pour un update de wiki pages" do
+    assert @policy.update?
   end
 
   # Destroy
-  test "accès interdit pour un manager pour un destroy de wiki pages" do
-    refute @policy.destroy?
+  test "accès autorisé pour un manager pour un destroy de wiki pages" do
+    assert @policy.destroy?
   end
 end

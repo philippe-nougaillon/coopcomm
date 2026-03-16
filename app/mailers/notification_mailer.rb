@@ -63,4 +63,15 @@ class NotificationMailer < ApplicationMailer
           bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu, alexandre.meunier@aikku.eu',
           subject: '[COOPCOMM] Confirmation de l\'inscription pour la newsletter')
   end
+
+  def welcome_import(user, title, password)
+    @user = user
+    @password = password
+    mail(to: @user.email, subject: title)
+  end
+
+  def new_absence(absence, user_email)
+    @absence = absence
+    mail(to: user_email, subject: '[COOPCOMM] Nouvelle absence')
+  end
 end

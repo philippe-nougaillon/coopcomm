@@ -1,12 +1,17 @@
 class Notification < ApplicationRecord
-  belongs_to :user, foreign_key: :from_id
-  belongs_to :user, foreign_key: :to_id
+  belongs_to :from_user, class_name: "User", foreign_key: :from_id
+  belongs_to :to_user, class_name: "User", foreign_key: :to_id
 
   scope :ordered, -> { order(created_at: :desc) }
 
-  after_create_commit -> { broadcast_prepend_to "notifications_#{self.to_id}",
+  after_create_commit -> { broadcast_append_to "notifications_to_#{self.to_id}",
                                                 partial: "admin/notification_stream",
-                                                locals: { notification: self },
+                                                locals: { notification: self, my_message: false },
+                                                target: "notifications" }
+
+                                                after_create_commit -> { broadcast_append_to "notifications_from_#{self.from_id}",
+                                                partial: "admin/notification_stream",
+                                                locals: { notification: self, my_message: true },
                                                 target: "notifications" }
 
   def self.bad_words_regex
@@ -20,12 +25,11 @@ class Notification < ApplicationRecord
       bouffonne bouffon baltringue fumier ordure foutre
     ]
 
-    /#{bad_words.join("|")}/i
+    /\b(#{bad_words.join("|")})\b/i
   end
 
   def moderation
     self.message.gsub(Notification.bad_words_regex,'🌼🌼🌼')
-
   end
 
   def nb_bad_words

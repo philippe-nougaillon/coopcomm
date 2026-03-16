@@ -107,7 +107,8 @@ class AbsenceTest < ActiveSupport::TestCase
     Absence.create!(
       du: "2025-04-08 9:00",
       au: "2025-04-08 12:00",
-      motif: "Arrêt maladie",
+      motif: 0,
+      observation: "Vacances",
       user: @agent
     )
   end

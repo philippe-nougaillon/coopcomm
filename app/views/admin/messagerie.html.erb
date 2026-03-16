@@ -1,25 +1,58 @@
-<div class="w-full mx-auto">
-  <div class="-mt-4 pt-8 pb-4 lg:pb-8 fixed z-100 bg-slate-50 flex flex-wrap justify-between items-center min-h-12 sm:min-h-16 w-full">
-    <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Votre Messagerie') %></h1>
+<% content_for :full_width, true %>
+
+<%= turbo_stream_from "notifications_to_#{current_user.id}" %>
+<%= turbo_stream_from "notifications_from_#{current_user.id}" %>
+
+<div class="drawer lg:drawer-open w-full mx-auto">
+  <input id="messagerie-drawer" type="checkbox" class="drawer-toggle" />
+
+  <div class="drawer-content flex flex-col px-4 2xl:px-8 py-4 pb-24 md:pt-8 lg:pt-20">
+    
+    <div class="-mt-4 pt-8 pb-4 lg:pb-8 z-10 bg-slate-50 flex gap-4 items-center min-h-12 sm:min-h-16 w-full">      
+      <label for="messagerie-drawer" class="btn btn-square btn-ghost lg:hidden drawer-button cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </label>
+
+      <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Messagerie') %></h1>
+    </div>
+    
+    <div class="flex justify-center w-full mt-4 lg:mt-8">
+      <div class="flex flex-col w-full lg:w-3/5">
+        <div id="notifications" class="w-full">
+          <%= render partial: "admin/notification", collection: @notifications %>
+        </div>
+
+        <input class="mt-4 w-full rounded-xl p-4 border"
+              name="message" placeholder="Ecrivez votre message"
+              hx-post="/admin/send_notification?to_id=<%= params[:to_id] %>"
+              hx-trigger="keyup[key=='Enter']">
+      </div>
+    </div>
   </div>
 
-  <div id="notifications" class="min-w-full flex flex-col-reverse lg:px-12 pt-24 mb-16">
-    <%= turbo_stream_from "notifications_#{current_user.id}" %>
-    <%= render partial: "admin/notification", collection: @notifications %>
-  </div>
+  <div class="drawer-side z-100">
+    <label for="messagerie-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+    
+    <div class="bg-base-100 min-h-screen w-72 lg:w-fit flex flex-col border-r overflow-y-auto pt-4 lg:pt-20">
+      
+      <div class="p-4 border-b lg:hidden">
+        <h2 class="text-xl font-bold text-primary">Utilisateurs</h2>
+      </div>
 
-  <% if policy(:admin).send_notification? %>
-    <%= form_tag({action: "send_notification", method: :post}, class:'fixed bottom-4 flex items-end flex-wrap gap-2 bg-white rounded w-screen left-1/2 -translate-x-1/2 py-2 px-4 mt-12 mb-11.5 lg:-mb-4 lg:pb-1') do %>
-      <%= select_tag :to_id, options_from_collection_for_select(@users, :id, :nom_prenom_role, params[:to_id]), class: "select select-sm lg:select-lg w-full sm:w-min border-base-300!", onchange: "this.form.submit()" %>
-      <div class="join flex-1">
-        <%= text_field_tag :message, params[:message],{ class: "input input-sm lg:input-lg flex-1 join-item border-base-300!", include_blank:true, placeholder: "Entrez votre message", autofocus: true, required: true} %>
-        <%= button_tag type: :submit, name: "submit_message", class: 'btn btn-sm lg:btn-lg btn-outline border-base-300 join-item' do %>
-          <span class="hidden lg:block">Envoyer</span>
-          <span class="material-symbols-outlined">
-            send
-          </span>
+      <div class="flex flex-col py-2">
+        <% @users.each do |user| %>
+          <%= link_to admin_messagerie_path(to_id: user.id), "data-turbo": false do %>
+            <div class="p-3 whitespace-nowrap hover:bg-slate-100 transition-colors <%= (user.id == params[:to_id].to_i) ? "bg-gray-200 font-semibold" : "" %>">
+              <div class="flex items-center gap-3">
+                <%= render partial: 'partials/user_profile_picture', locals: {user:} %>
+                <span><%= truncate(user.nom_prénom, length: 20) %></span>
+              </div>
+            </div>
+          <% end %>
         <% end %>
       </div>
-    <% end %>
-  <% end %>
+    </div>
+  </div>
 </div>

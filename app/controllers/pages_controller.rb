@@ -50,14 +50,14 @@ class PagesController < ApplicationController
   def dashboard
     start_date = 9.months.ago.beginning_of_month
     end_date = 3.months.from_now.end_of_month
-    if current_user.manager?
+    if current_user.manager_or_admin?
       # temps_consommable_agent_mensuellement = 35 * 4
       # temps_consommable_organisation_mensuellement = current_user.organisation.users.adherent.count * 100
       #
       # Temps total par adhérent
       #
       @temps_total_par_adhérent = {}
-      current_user.organisation.users.adhérent.each do |adhérent|
+      current_user.organisation.users.adhérent.filter_by_service(current_user.services).each do |adhérent|
         @temps_total_par_adhérent[adhérent.nom_prénom] = adhérent.interventions_adherent.sum(:temps_total)
       end
 
@@ -66,7 +66,7 @@ class PagesController < ApplicationController
       #
 
       @temps_total_par_agent = {}
-      current_user.organisation.users.agent.each do |agent|
+      current_user.organisation.users.agent.filter_by_service(current_user.services).each do |agent|
         @temps_total_par_agent[agent.nom_prénom] = 0
         agent.interventions.each do |intervention|
           @temps_total_par_agent[agent.nom_prénom] += intervention.temps_total / intervention.agents.count
@@ -79,7 +79,7 @@ class PagesController < ApplicationController
 
       qté_interventions_par_mois_par_état = {}
 
-      current_user.organisation.interventions.where(début: start_date..end_date).group("DATE_TRUNC('month', début)", :workflow_state).count.each do |(month, state), count|
+      current_user.organisation.interventions.filter_by_service(current_user.services).where(début: start_date..end_date).group("DATE_TRUNC('month', début)", :workflow_state).count.each do |(month, state), count|
         formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
         qté_interventions_par_mois_par_état[formatted_month] ||= {}
         qté_interventions_par_mois_par_état[formatted_month][state] = count
@@ -122,7 +122,7 @@ class PagesController < ApplicationController
       # Graphe qté d'intervention par service
       #
 
-      @qté_interventions_par_service = current_user.organisation.interventions.joins(agent_interventions: :agent).group('users.service').count
+      @qté_interventions_par_service = current_user.organisation.interventions.filter_by_service(current_user.services).group("services.nom").count
 
 
       #
@@ -135,7 +135,7 @@ class PagesController < ApplicationController
       #   @temps_total_par_service
       # end
 
-      @temps_total_par_service = current_user.organisation.interventions.joins(agent_interventions: :agent).group("users.service").sum(:temps_total)
+      @temps_total_par_service = current_user.organisation.interventions.filter_by_service(current_user.services).group("services.nom").sum(:temps_total)
 
 
       #
@@ -144,7 +144,7 @@ class PagesController < ApplicationController
 
       # Pour chaque mois, calcule le co2 total
       co2_total_par_mois = {}
-      current_user.organisation.interventions.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:co2).each do |month, co2|
+      current_user.organisation.interventions.filter_by_service(current_user.services).where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:co2).each do |month, co2|
         formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
         co2_total_par_mois[formatted_month] = co2
       end
@@ -161,6 +161,8 @@ class PagesController < ApplicationController
       @co2_total_par_mois = co2_total_par_mois.sort.to_h
 
     elsif current_user.adhérent?
+      user_interventions = current_user.interventions_adherent.filter_by_service(current_user.services)
+
       temps_consommable_adhérent_mensuellement = 100
 
       #
@@ -168,8 +170,8 @@ class PagesController < ApplicationController
       #
 
       @proportion_temps_consommé = {}
-      @proportion_temps_consommé["temps_consommé"] = current_user.interventions_adherent.sum(:temps_total)
-      @proportion_temps_consommé["temps_restant"] = temps_consommable_adhérent_mensuellement - current_user.interventions_adherent.sum(:temps_total)
+      @proportion_temps_consommé["temps_consommé"] = user_interventions.sum(:temps_total)
+      @proportion_temps_consommé["temps_restant"] = temps_consommable_adhérent_mensuellement - user_interventions.sum(:temps_total)
 
 
 
@@ -179,7 +181,7 @@ class PagesController < ApplicationController
 
       @temps_total_par_mois = {}
 
-      current_user.interventions_adherent.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:temps_total).each do |month, total|
+      user_interventions.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:temps_total).each do |month, total|
         formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
         @temps_total_par_mois[formatted_month] = total
       end
@@ -200,7 +202,7 @@ class PagesController < ApplicationController
 
       qté_interventions_par_mois_par_état = {}
 
-      current_user.interventions_adherent.where(début: start_date..end_date).group("DATE_TRUNC('month', début)", :workflow_state).count.each do |(month, state), count|
+      user_interventions.where(début: start_date..end_date).group("DATE_TRUNC('month', début)", :workflow_state).count.each do |(month, state), count|
         formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
         qté_interventions_par_mois_par_état[formatted_month] ||= {}
         qté_interventions_par_mois_par_état[formatted_month][state] = count
@@ -244,7 +246,7 @@ class PagesController < ApplicationController
       # Graphe qté d'intervention par service
       #
 
-      @qté_interventions_par_service = current_user.interventions_adherent.joins(agent_interventions: :agent).group("users.service").count
+      @qté_interventions_par_service = user_interventions.group("services.nom").count
 
 
       #
@@ -257,7 +259,7 @@ class PagesController < ApplicationController
       #   @temps_total_par_service
       # end
 
-      @temps_total_par_service = current_user.interventions_adherent.joins(agent_interventions: :agent).group("users.service").sum(:temps_total)
+      @temps_total_par_service = user_interventions.group("services.nom").sum(:temps_total)
 
 
       #
@@ -266,7 +268,7 @@ class PagesController < ApplicationController
 
       # Pour chaque mois, calcule le co2 total
       co2_total_par_mois = {}
-      current_user.interventions_adherent.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:co2).each do |month, co2|
+      user_interventions.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:co2).each do |month, co2|
         formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
         co2_total_par_mois[formatted_month] = co2
       end
@@ -281,6 +283,20 @@ class PagesController < ApplicationController
       end
 
       @co2_total_par_mois = co2_total_par_mois.sort.to_h
+    end
+
+    respond_to do |format|
+      format.html do
+      end
+
+      format.xls do
+        if current_user.manager_or_admin?
+          xls_file = DashboardManagerToXls.new(@temps_total_par_adhérent, @temps_total_par_agent, @data_workflow_chart, @qté_interventions_par_service, @temps_total_par_service, @co2_total_par_mois).call
+        else
+          xls_file = DashboardAdherentToXls.new(@proportion_temps_consommé, @temps_total_par_mois, @data_workflow_chart, @qté_interventions_par_service, @temps_total_par_service, @co2_total_par_mois).call
+        end
+        send_data xls_file, filename: "Dashboard_#{l Date.today}.xls"
+      end
     end
   end
 
@@ -310,7 +326,7 @@ class PagesController < ApplicationController
 
     # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh
     @forecasts = Rails.cache.fetch('daily_forecast', expires_in: 10.minutes) do
-      logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur un jour"
+      logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours"
       
       MeteoConceptConnexion.new.call
     end
@@ -326,13 +342,18 @@ class PagesController < ApplicationController
     end
   end
 
-  # Plus utilisé
   # Récupère les données de la météo d'un jour, appelé dans la page "meteo"
-  # def meteo_by_day
-  #   forecasts = MeteoConceptConnexion.instance.get_response_by_daily(params[:day])
+  def meteo_by_day
+    forecasts = Rails.cache.fetch('daily_forecast', expires_in: 10.minutes) do
+      logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours"
 
-  #   render json: { forecast: forecasts, weather: MeteoConceptConnexion.WEATHER[forecasts["weather"]] }
-  # end
+      MeteoConceptConnexion.new.call
+    end
+
+    forecast = forecasts["forecast"][params[:day].to_i].third
+
+    render json: { forecast: forecast, weather: MeteoConceptConnexion.WEATHER[forecast["weather"]] }
+  end
 
   private
 

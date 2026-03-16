@@ -1,4 +1,4 @@
-<%= form_with(model: user, class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-2' }, data: { controller: 'nested-form', nested_form_wrapper_selector_value: '.nested-form-wrapper' }) do |form| %>
+<%= form_with(model: user, id: dom_id(user), class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-2' }, data: { controller: 'nested-form', nested_form_wrapper_selector_value: '.nested-form-wrapper' }) do |form| %>
   <% if user.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
       <h2 class="font-black!">
@@ -13,6 +13,12 @@
     </div>
   <% end %>
 
+
+  <div class="w-full">
+    <%= form.label :nom, style: "display: block" %>
+    <%= form.text_field :nom, class: 'input input-sm w-full' %>
+  </div>
+
   <div data-controller="toggle-role-info">
     <div class="flex flex-wrap md:flex-nowrap gap-2 w-full mb-2">
       <div>
@@ -22,14 +28,14 @@
         </span>
       </div>
 
+      <div data-toggle-role-info-target='prenom' class="w-full">
+        <%= form.label :prénom, style: "display: block" %>
+        <%= form.text_field :prénom, class: 'input input-sm w-full' %>
+      </div>
+
       <div data-toggle-role-info-target='couleur' class="flex-1">
         <%= form.label :color, "Couleur" %>
         <%= form.color_field :color, class: 'input input-bordered input-sm w-full' %>
-      </div>
-
-      <div data-toggle-role-info-target='service' class="flex-1">
-        <%= form.label :service, "Service" %>
-        <%= form.select :service, options_for_select(User.services.keys, user.service), {include_blank: true}, class: 'select select-sm w-full', required: true %>
       </div>
 
       <div data-toggle-role-info-target="localisation" class="flex-1">
@@ -38,16 +44,21 @@
         <%= form.text_field :localisation, class: 'input select-sm w-full', placeholder: 'Tel que copié de Google Maps', required: true %>
       </div>
     </div>
+  </div>
 
-    <div class="w-full">
-      <%= form.label :nom, style: "display: block" %>
-      <%= form.text_field :nom, class: 'input input-sm w-full' %>
-    </div>
+  <div class="w-full sm:flex-1">
+    <%= form.label :tag_list, "Équipe", style: "display: block" %>
+    <%= form.select :tag_list, options_from_collection_for_select(@users_tags, :name, :name, user.tags.map(&:name)), multiple: true, class: 'slim-select w-full' %>
+  </div>
 
-    <div data-toggle-role-info-target='prenom' class="w-full">
-      <%= form.label :prénom, style: "display: block" %>
-      <%= form.text_field :prénom, class: 'input input-sm w-full' %>
-    </div>
+  <div class="w-full">
+    <%= form.label :service_ids, "Service" %>
+    <%= form.select :service_ids, options_from_collection_for_select(current_user.services, 'id', 'nom', user.services.ids), {include_blank: true}, class: 'slim-select w-full', multiple: true, required: true %>
+  </div>
+
+  <div class="w-full">
+    <%= form.label :email, style: "display: block" %>
+    <%= form.email_field :email, class: 'input input-sm w-full', required: true %>
   </div>
 
   <div class="flex flex-wrap md:flex-nowrap gap-2 w-full">
@@ -63,45 +74,35 @@
   </div>
 
   <div class="w-full">
-    <%= form.label :email, style: "display: block" %>
-    <%= form.email_field :email, class: 'input input-sm w-full', required: true %>
-  </div>
-
-  <% if user.new_record? %>
-    <div class="w-full">
-      <%= form.label :password, style: "display: block" %>
-      <%= form.password_field :password, class: 'input input-sm w-full', required: true %>
-    </div>
-    <div class="w-full">
-      <%= form.label :password_confirmation, style: "display: block" %>
-      <%= form.password_field :password_confirmation, class: 'input input-sm w-full', required: true %>
-    </div>
-  <% end %>
-
-  <div class="w-full">
     <%= form.label :memo, "Mémo", style: "display: block" %>
     <%= form.text_area :memo, class: 'textarea w-full' %>
   </div>
 
-  <% if @user.agent? %>
-    <div class="flex mt-4 gap-4 mb-4">
-      <h2 class="text-2xl text-secondary">Absences</h2>
-      <button type="button" data-action="nested-form#add" class="btn btn-sm btn-outline btn-success hover:text-white!">+</button>
-    </div>
+  <% if false %>
+  <!--
+    <% if @user.agent? || @user.manager_or_admin? %>
+      <div class="flex mt-4 gap-4 mb-4">
+        <h2 class="text-2xl text-secondary">Absences</h2>
+        <button type="button" data-action="nested-form#add" class="btn btn-sm btn-outline btn-success hover:text-white!">+</button>
+      </div>
 
 
-    <%= form.fields_for :absences do |absence_fields| %>
-      <%= render "absence_form", f: absence_fields %>
-    <% end %>
-
-    <template data-nested-form-target="template">
-      <%= form.fields_for :absences, Absence.new, child_index: 'NEW_RECORD' do |absence_fields| %>
-        <%= render "absence_form", f: absence_fields %>
+      <%# TODO : Ajouter les erreurs des absences si on réactive cette partie du formulaire%>
+      <%= form.fields_for :absences do |absence_fields| %>
+        <%= render "absence_form_nested", f: absence_fields %>
       <% end %>
-    </template>
 
-    <!-- Inserted elements will be injected before that target. -->
-    <div data-nested-form-target="target"></div>
+      <template data-nested-form-target="template">
+        <%= form.fields_for :absences, Absence.new, child_index: 'NEW_RECORD' do |absence_fields| %>
+          <%= render "absence_form_nested", f: absence_fields %>
+        <% end %>
+      </template>
+
+      <div data-nested-form-target="target"></div>
+
+      <%= render "absence_form_script" %>
+    <% end %>
+  -->
   <% end %>
 
   <%= form.submit "Enregistrer", id:"enregistrer_utilisateur", class: "btn btn-primary mt-4" %>

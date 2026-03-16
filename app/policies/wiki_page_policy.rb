@@ -5,16 +5,16 @@ class WikiPagePolicy < ApplicationPolicy
     end
   end
 
-  # def index?
-  #   true
-  # end
+  def index?
+    true
+  end
 
   # def show?
   #   true
   # end
 
   def new?
-    user && user.super_admin?
+    manager_or_admin?
   end
 
   def create?
@@ -22,7 +22,7 @@ class WikiPagePolicy < ApplicationPolicy
   end
 
   def edit?
-    user && user.super_admin?
+    manager_or_admin?
   end
 
   def update?

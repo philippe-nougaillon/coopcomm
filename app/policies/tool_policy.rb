@@ -6,15 +6,15 @@ class ToolPolicy < ApplicationPolicy
   end
 
   def index?
-    user
+    manager_or_admin?
   end
 
   def show?
-    index? && organisation
+    index? && organisation?
   end
 
   def new?
-    manager
+    manager_or_admin?
   end
 
   def create?
@@ -22,7 +22,7 @@ class ToolPolicy < ApplicationPolicy
   end
 
   def edit?
-    manager && organisation
+    manager_or_admin? && organisation?
   end
 
   def update?
@@ -30,6 +30,6 @@ class ToolPolicy < ApplicationPolicy
   end
 
   def destroy?
-    manager && organisation
+    manager_or_admin? && organisation?
   end
 end

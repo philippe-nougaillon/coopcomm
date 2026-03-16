@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-ruby "3.4.5"
+ruby "3.4.8"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.0"
@@ -70,6 +70,7 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
   gem 'simplecov', require: false
+  gem 'rails-controller-testing'
 end
 
 gem "devise", "~> 4.9"
@@ -152,3 +153,11 @@ gem "markdown-rails", "~> 2.2"
 gem "redcarpet", "~> 3.6"
 
 gem "fetch-api", "~> 0.6.0"
+
+gem "devise-security", "~> 0.18.0"
+
+gem "email_validator", "~> 2.2"
+
+gem "capture_stdout", "~> 0.0.1"
+
+gem "devise_invitable", "~> 2.0"

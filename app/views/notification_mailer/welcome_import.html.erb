@@ -1,0 +1,11 @@
+Bienvenue <%= @user.prénom.humanize %> !
+<br><br>
+Voici vos identifiants pour vous connecter sur CoopComm :
+<br><br>
+Email : <b><%= @user.email %></b>
+<br>
+
+Mot de passe : <b><%= @password %></b>
+
+<br><br>
+Le lien pour vous connecter : <%= link_to new_session_url(@user), new_session_url(@user) %>

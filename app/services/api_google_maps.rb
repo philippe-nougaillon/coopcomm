@@ -1,6 +1,6 @@
 class ApiGoogleMaps < ApplicationService
 
-  attr_reader :map_center, :errors, :routes_info, :data_response
+  attr_reader :localisation_depart, :errors, :routes_info, :data_response
 
   def initialize(localisation_destination)
     @localisation_destination = localisation_destination
@@ -8,18 +8,19 @@ class ApiGoogleMaps < ApplicationService
   end
   
   def call
-    # Prendre la route du siège de la communauté de commune vers l'adhérent courant
-    localisation_siege = { lat: 48.98952882266384, lng: 2.3207725219533186 }
-    @map_center = localisation_siege
+    # Prendre la route du siège de l'organisation vers l'adhérent courant
+    lat, lng = ENV["COORD_DEPART"]&.split(',')
+    localisation_siege = { lat: lat.to_f, lng: lng.to_f }
+    @localisation_depart = localisation_siege
 
     self.prepare_body_request(localisation_siege, @localisation_destination)
     @data_response = self.get_response
 
-    if data_response["error"]
-        @errors = { position: @localisation_destination, message: data_response["error"]["message"] }
+    if @data_response["error"]
+        @errors = { position: @localisation_destination, message: @data_response["error"]["message"] }
     else
         @routes_info = self.get_trajet_from_response
-        @response = data_response
+        @response = @data_response
     end
   end
   
@@ -37,7 +38,7 @@ class ApiGoogleMaps < ApplicationService
   end
 
   def get_response
-      @response = JSON.parse(@http.request(@request).read_body)
+    @response = JSON.parse(@http.request(@request).read_body)
   end
 
   def prepare_body_request(origin, destination)
@@ -72,14 +73,24 @@ class ApiGoogleMaps < ApplicationService
   end
 
   def get_trajet_from_response
-    route = @response["routes"].first
+    if @response["routes"].present?
+      route = @response["routes"].first
 
-    distance = ((route["distanceMeters"] * 2).to_f / 1000).to_i
-    duree = ((route["duration"]).to_f * 2 / 60).to_i
-    essence = ((route["travelAdvisory"]["fuelConsumptionMicroliters"]).to_f * 2 / 1000000).round(2)
-    co2 = self.co2_consumption_by_route(route)
+      # Pour éviter que ça plante, lorsque le point de départ est le même que le point d'arrivé
+      if route["distanceMeters"]
+        msg_distance = "Distance: #{((route["distanceMeters"] * 2).to_f / 1000).to_i} km"
+      else
+        msg_distance = "Distance: 0km"
+      end
 
-    "Distance: #{distance} km, Durée: #{duree} min, Essence: #{essence} L, CO₂: #{co2} kg"
+      duree = ((route["duration"]).to_f * 2 / 60).to_i
+      essence = ((route["travelAdvisory"]["fuelConsumptionMicroliters"]).to_f * 2 / 1000000).round(2)
+      co2 = self.co2_consumption_by_route(route)
+
+      "#{msg_distance}, Durée: #{duree} min, Essence: #{essence} L, CO₂: #{co2} kg"
+    else
+      ""
+    end
   end
 
   def co2_consumption_by_route(route)

@@ -1,0 +1,41 @@
+<div class="w-full">
+  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
+    <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Services') %></h1>
+    <% if policy(Service).new? %>
+      <%= link_to "Ajouter un Service", new_service_path, data: { 'testid': "ajouter_service_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
+      <%= link_to "+", new_service_path, data: { 'testid': "ajouter_service_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
+    <% end %>
+  </div>
+
+  <%= form_tag request.path, method: :get do %>
+    <div class="flex flex-wrap items-start w-full gap-4 mt-8">
+      <div class="w-full md:w-fit">
+        <%= label_tag :search, "Rechercher" %>
+        <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full', placeholder: 'Nom' %>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="divider"></div>
+
+  <div class="overflow-x-auto">
+    <table id="services" class="table table-sm">
+      <thead class="bg-slate-100">
+      <tr>
+        <th>Nom</th>
+        <th>Utilisateurs</th>
+        <th>Nombre utilisateurs</th>
+      </tr>
+      </thead>
+      <tbody>
+      <%= render @services %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="my-6">
+    <%== pagy_info(@pagy) %>
+    <%== pagy_nav(@pagy) %>
+  </div>
+
+</div>

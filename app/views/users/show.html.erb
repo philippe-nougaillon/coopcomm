@@ -2,7 +2,7 @@
   <% page_title!(@user.nom_prénom) %>
 
   <div class="flex flex-wrap justify-between gap-24">
-    <div class="flex-1 flex shadow rounded-lg"  <%= "style=\"border-left: .3rem solid #{@user.color};\"".html_safe if @user.équipe? && @user.color %>>
+    <div class="flex-1 flex shadow rounded-lg">
       <div class="flex flex-col items-center bg-indigo-100 w-48 py-8 rounded-l-lg">
         <div class="avatar avatar-placeholder rounded-full">
           <div class="w-24 bg-gray-100 rounded-full">
@@ -16,8 +16,10 @@
         </p>
         <span class="text-success text-center mt-4">
           <%= @user.rôle.upcase %> 
-          <%= @user.service.try(:humanize) %> 
         </span>
+        <p>
+          <%= @user.tag_list %>
+        </p>
       </div>
       <div class="rounded-r-lg px-6 py-10">
         <p class="mb-4">
@@ -33,6 +35,18 @@
           <p class="mt-4">
             <strong class="block text-slate-400 mb-1">Mémo</strong>
             <%= @user.memo %>
+          </p>
+        <% end %>
+
+        <% if @user.manager_or_admin? %>
+          <p class="mt-4">
+            <strong class="block text-slate-400 mb-1">Responsable des services</strong>
+            <%= @user.services.pluck(:nom).join(", ") %>
+          </p>
+        <% else %>
+          <p class="mt-4">
+            <strong class="block text-slate-400 mb-1">Services</strong>
+            <%= @user.services.pluck(:nom).join(", ") %>
           </p>
         <% end %>
       </div>
@@ -73,28 +87,56 @@
 
   <div class="flex flex-wrap gap-2 mt-8">
     <%= link_to "Modifier", edit_user_path(@user), class: "btn" %>
-    <%= button_to user_path(@user), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet utilisateur ?" }, class: "btn", 'data-testid': "Supprimer l'utilisateur" do %>
-      <span class="material-symbols-outlined">
-        delete
-      </span>
+    <% if policy(@user).destroy? %>
+      <%= button_to user_path(@user), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet utilisateur ?" }, class: "btn", 'data-testid': "Supprimer l'utilisateur" do %>
+        <span class="material-symbols-outlined">
+          delete
+        </span>
+      <% end %>
+      <%= link_to "Retour", users_path, class: "btn" %>
     <% end %>
-    <%= link_to "Retour", users_path, class: "btn" %>
+    <% if policy(@user).edit_password? %>
+      <%= link_to "Modifier mot de passe", edit_password_user_path(@user), class: "btn" %>
+    <% end %>
+    <% if policy(@user).inviter? %>
+      <%= link_to "Réinviter", inviter_user_path(@user), class: "btn", 'data-turbo': false %>
+    <% end %>
   </div>
 
-  <% if @user.adhérent? && @user.localisation %>
-    <div id="map" class="my-8" style="height: 200px;"></div>
-    <%= render 'users/map_script' %>
-  <% end %>
+  <% if @user.agent? || @user.manager_or_admin? %>
+    <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
+      <h2 class="text-2xl text-secondary">
+        Absences
+      </h2>
+      <% if current_user.manager_or_admin? %>
+        <button class="btn btn-sm sm:btn-lg btn-outline btn-success hover:text-white!" onclick="absence_modal.showModal()">
+          Ajouter une absence
+        </button>
 
-  <% if @user.agent? %>
-    <h2 class="text-2xl text-secondary mt-8">Absences</h2>
+        <dialog id="absence_modal" class="modal" <%= 'open' if @user.errors.any? %>>
+          <div class="modal-box">
+            <form method="dialog">
+              <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="font-bold text-lg mb-4">Enregistrer une absence</h3>
+            
+            <%= render 'absence_form', absence: Absence.new(user_id: @user.id) %>
+          </div>
+          
+          <form method="dialog" class="modal-backdrop">
+            <button>Fermer</button>
+          </form>
+        </dialog>
+      <% end %>
+    </div>
     <div class="overflow-x-auto mt-4">
       <table class="table table-sm">
         <thead class="bg-slate-100">
           <tr>
-            <th>Du</th>
-            <th>Au</th>
+            <th>Période</th>
             <th>Motif</th>
+            <th>Observation</th>
+            <th></th>
           </tr>
         </thead>
 
@@ -103,6 +145,7 @@
         </tbody>
       </table>
     </div>
+    <%= render "absence_form_script" %>
   <% end %>
 
   <h2 class="text-2xl text-secondary mt-8">Activité</h2>

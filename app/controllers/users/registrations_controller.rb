@@ -13,7 +13,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
   def create
     super
     @user.organisation = Organisation.create(nom: "Organisation_#{SecureRandom.hex(5)}")
-    @user.rôle = "manager"
+    @user.rôle = "administrateur"
     @user.dispatch_email_to_nom_prénom
     @user.save
     unless Rails.env.development?

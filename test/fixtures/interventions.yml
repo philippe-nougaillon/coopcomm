@@ -79,6 +79,7 @@ intervention_paris:
 intervention_repete:
   organisation: mairie_paris
   adherent: weil
+  agents: martin_technique_paris
   description: Intervention répété
   repeter: true
   workflow_state: nouveau

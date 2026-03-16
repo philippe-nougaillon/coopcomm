@@ -1,33 +1,42 @@
 <div class="w-full mb-24">
   <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
     <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Utilisateurs') %></h1>
-    <%= link_to "Ajouter un Utilisateur", admin_create_new_user_path, data: { 'testid': "ajouter_utilisateur_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
-    <%= link_to "+", admin_create_new_user_path, data: { 'testid': "ajouter_utilisateur_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
+    <div>
+      <%= link_to "Importer des agents", import_users_path, data: { 'testid': "import_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-sm lg:btn-lg rounded hover:text-white!" %>
+      <%= link_to "Import", import_users_path, data: { 'testid': "import_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm lg:btn-lg rounded hover:text-white!" %>
+      <%= link_to "Ajouter un Utilisateur", admin_create_new_user_path, data: { 'testid': "ajouter_utilisateur_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
+      <%= link_to "+", admin_create_new_user_path, data: { 'testid': "ajouter_utilisateur_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
+    </div>
   </div>
 
   <%= form_tag request.path, method: :get do %>
-    <div class="flex flex-wrap items-end gap-4 mt-8">
-      <div class="w-full md:w-fit">
+    <div class="flex flex-wrap items-end gap-4 mt-8 w-full">
+      
+      <div class="w-full md:w-auto md:min-w-48">
         <%= label_tag :search, "Rechercher" %>
         <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full', placeholder: 'Nom / Prénom' %>
       </div>
 
-      <div class="flex items-end gap-4">
-        <div class="w-full md:w-fit">
-          <%= label_tag :rôle %>
-          <%= select_tag :rôle, options_for_select(User.rôles.sort_by { |k, _| I18n.transliterate(k) }, params[:rôle]), include_blank:true, class: 'select select-sm w-full', onchange: 'this.form.submit()' %>    
-        </div>
-
-        <div class="w-full md:w-fit">
-          <%= label_tag :service %>
-          <%= select_tag :service, options_for_select(@services, params[:service]), include_blank: true, class: 'select select-sm w-full', onchange: 'this.form.submit()' %>
-        </div>
-
-        <div class="flex flex-col gap-2">
-          <%= label_tag :absent, "Absents ?", class: 'whitespace-nowrap cursor-pointer' %>
-          <%= check_box_tag :absent, 1, params[:absent], class:'checkbox mr-2', onchange:'this.form.submit()' %>
-        </div>
+      <div class="w-full md:w-auto md:min-w-36">
+        <%= label_tag :rôle %>
+        <%= select_tag :rôle, options_for_select(User.rôles.sort_by { |k, _| I18n.transliterate(k) }, params[:rôle]), include_blank:true, class: 'select select-sm w-full', onchange: 'this.form.submit()' %>    
       </div>
+
+      <div class="w-full md:w-auto md:min-w-36">
+        <%= label_tag :services %>
+        <%= select_tag :services, options_from_collection_for_select(@services, 'id', 'nom', params[:services]), include_blank: true, class: 'slim-select w-full', multiple: true, onchange: 'this.form.submit()' %>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <%= label_tag :absent, "Absents ?", class: 'whitespace-nowrap cursor-pointer' %>
+        <%= check_box_tag :absent, 1, params[:absent], class:'checkbox mr-2', onchange:'this.form.submit()' %>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <%= label_tag :discarded, "Désactivés ?", class: 'whitespace-nowrap cursor-pointer' %>
+        <%= check_box_tag :discarded, 1, params[:discarded], class:'checkbox mr-2', onchange: 'this.form.submit()' %>
+      </div>
+
     </div>
   <% end %>
 
@@ -40,11 +49,11 @@
           <th></th>
           <th><%= sort_link 'users.nom', 'Nom' %></th>
           <th colspan=2><%= sort_link 'users.rôle', 'Rôle' %></th>
-          <th><%= sort_link 'users.service', 'Service' %></th>
+          <th>Service</th>
+          <th>Équipe</th>
           <th><%= sort_link 'users.email', 'Email' %></th>
           <th>Absent ?</th>
           <th>Évaluation</th>
-          <th>Mémo</th>
         </tr>
       </thead>
       <tbody>

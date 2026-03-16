@@ -7,7 +7,7 @@ module ApplicationHelper
     audit.audited_changes.each do |c|
       key = c.first.humanize
       case key
-      when 'User', 'Agent', 'Adherent', 'Agent binome'
+      when 'Agent', 'Adherent', 'Agent binome'
         ids = audit.audited_changes["#{key == "Agent binome" ? key.humanize.downcase.tr(' ', '_') : key.downcase}_id"]
         if User.exists?(id: ids)
           
@@ -18,8 +18,6 @@ module ApplicationHelper
             key = "Agent 1"
           when "Adherent"
             key = "Adhérent"
-          when "User"
-            key = "Équipe" if audit.auditable_type == "Intervention"
           end
 
           case ids.class.name
@@ -58,6 +56,10 @@ module ApplicationHelper
           unless c.last.blank?
             pretty_changes << "#{key} #{audit.action == 'create' ? 'initialisé à' : 'était'} '#{rôles[c.last].humanize}'"
           end
+        end
+      when 'Discarded at'
+        if audit.action == 'update'
+          pretty_changes << "Utilisateur #{c.last.first.nil? ? 'désactivé' : 'réactivé'}"
         end
       else
         

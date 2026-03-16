@@ -6,7 +6,7 @@ class DocumentPolicy < ApplicationPolicy
   end
 
   def valider?
-    manager && record.tool.organisation == user.organisation
+    manager_or_admin? && record.tool.organisation == user.organisation
   end
 
   def refuser?

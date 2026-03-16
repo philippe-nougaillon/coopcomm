@@ -1,0 +1,38 @@
+<tr class="hover:bg-base-300">
+    <td><%= time_ago_in_words(intervention.updated_at) %></td>
+    <td>
+    <span class="badge text-nowrap fontb-old <%= intervention.style %>">
+        <%= intervention.workflow_state.humanize %>
+    </span>
+    </td>
+    <td>
+    <div class="flex items-center gap-2 text-xl sm:text-2xl text-<%= intervention.style.split.first.split('-').last %>">
+        <% if intervention.repeter %>
+        <span class="material-symbols-outlined text-black" title="Modèle pour le pointage">
+            event_repeat
+        </span>
+        <% elsif intervention.template_slug %>
+        <span class="material-symbols-outlined text-black" title="Pointage">
+            qr_code_2
+        </span>
+        <% end %>
+        <%= link_to intervention.description.humanize, intervention, class: 'z-10 hover:underline' %>
+    </div>
+    </td>
+    <td><%= intervention.adherent&.nom_prénom %></td>
+    <td>
+    <%= l(intervention.début_prévue, format: :custom) if intervention.début_prévue  %> <br> <%= l(intervention.fin_prévue, format: :custom)  if intervention.fin_prévue %>
+    </td>
+    <td><%= intervention.temps_total %> h</td>
+    <td>
+    <% if !(intervention.validé? || intervention.refusé?) %>
+        <div class="my-2">
+        <p class="flex gap-2">
+            <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'z-10 btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? %>
+            <%= link_to 'Valider', valider_intervention_path(intervention), class: 'z-10 btn btn-success btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
+            <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'z-10 btn btn-error btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
+        <p>
+        </div>
+    <% end %>
+    </td>
+</tr>

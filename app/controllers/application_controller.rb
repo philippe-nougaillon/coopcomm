@@ -1,6 +1,5 @@
 class ApplicationController < ActionController::Base
   include Pagy::Backend
-  include DefaultRateLimits
   include Pundit::Authorization
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
   rescue_from Pagy::OverflowError, with: :pagy_wrong_page
@@ -8,6 +7,10 @@ class ApplicationController < ActionController::Base
   before_action :prepare_exception_notifier
 
   helper_method :sort_column, :sort_direction
+
+  rate_limit to: 10, within: 1.minute, 
+             by: -> { request.ip }, 
+             if: -> { devise_controller? }
 
   BACKGROUND_COLORS = {
     8  => "#c7c375",
@@ -34,5 +37,11 @@ class ApplicationController < ActionController::Base
 
   def pagy_wrong_page
     redirect_to(request.referrer || request.path || root_path)
+  end
+
+  def set_organisation_user_tags
+    if current_user&.organisation
+      @users_tags = current_user.organisation.users.tag_counts_on(:tags).order(:name)
+    end
   end
 end

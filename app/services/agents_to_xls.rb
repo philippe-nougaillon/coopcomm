@@ -29,7 +29,7 @@ class AgentsToXls < ExportToXls
         agent.nom,
         agent.prénom,
         agent.email,
-        agent.service,
+        agent.services.first.nom,
         interventions.count,
         temps_total,
         nb_jours_absences

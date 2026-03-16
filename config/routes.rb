@@ -19,8 +19,16 @@ Rails.application.routes.draw do
   end
 
   resources :users do
+    member do
+      get :inviter
+      get :edit_password
+      patch :update_password
+      patch :reactivate
+    end
     collection do
       get :agent_calendrier
+      get :import
+      post :import_do
     end
   end
 
@@ -75,7 +83,7 @@ Rails.application.routes.draw do
     get :contact, to: 'pages#contact', as: :contact
     get :home, to: 'pages#home', as: :home
     get :meteo, to: 'pages#meteo', as: :meteo
-    # get :meteo_by_day
+    get :meteo_by_day
   end
 
   resources :documents, only: %i[] do
@@ -88,6 +96,8 @@ Rails.application.routes.draw do
   resources :newsletters, only: %i[index new destroy]
 
   resources :mouvements, only: %i[index new create edit update]
+
+  resources :services
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.

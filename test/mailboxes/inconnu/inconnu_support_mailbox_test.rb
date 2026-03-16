@@ -9,7 +9,9 @@ class InconnuSupportMailboxTest < ActionMailbox::TestCase
         to: "support@mg.coopcom.fr",
         from: "inconnu@gmail.commm",
         subject: subject,
-        body: body)
+        body: body,
+        charset: "UTF-8"
+    )
     end
   end
 end

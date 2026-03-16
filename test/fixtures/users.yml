@@ -4,6 +4,16 @@
 # model remove the "{}" from the fixture names and add the columns immediately
 # below each fixture, per the syntax in the comments below
 #
+
+administrateur_paris:
+  organisation: mairie_paris
+  nom: Administrateur
+  prénom: Paris
+  email: administrateur_paris@aikku.eu
+  rôle: administrateur
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
+  slug: <%= SecureRandom.uuid %>
+
 hidalgo:
   organisation: mairie_paris
   nom: Hidalgo
@@ -38,7 +48,7 @@ nettoyage:
   nom: Team
   prénom: Nettoyage
   email: nettoyage@gmail.commmmm
-  rôle: équipe
+  rôle: agent
   slug: 352adeba-4906-44c5-bc28-22339a6f17fe
 
 
@@ -47,7 +57,7 @@ nettoyage:
   nom: Team
   prénom: Électricité
   email: electricite@gmail.commmmm
-  rôle: équipe
+  rôle: agent
   slug: c379cf52-5e54-4852-bd7a-dc9cfdc70392
 
 bond:
@@ -56,7 +66,6 @@ bond:
   prénom: James
   email: james.bond@gmail.commmmm
   rôle: agent
-  service: Comptabilité
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 17ede8b7-ff8f-4a48-966e-4ef3186cae7d
 
@@ -66,7 +75,6 @@ martin_technique_paris:
   prénom: Michel
   email: michel.martin@gmail.commmmm
   rôle: agent
-  service: Technique
   slug: 7133b68a-1386-4f68-9243-10a8a4241191
 
 patrick_adherent_paris:
@@ -105,6 +113,15 @@ adhérent_sans_intervention:
   localisation: 48.83320364351545, 2.327468354067042
   slug: f0595980-a28d-4424-82db-ee89e6eadc7d
 
+agent_whatsapp:
+  organisation: mairie_paris
+  nom: Poireau
+  prénom: Hercule
+  email: agent_whatsapp@aikku.eu
+  rôle: agent
+  téléphone: +330606060606
+  slug: f0595980-a28d-4424-82db-ee89e6eadc7e
+
 # Organisation marseille
 manager_marseille:
   organisation: mairie_marseille
@@ -119,7 +136,7 @@ nettoyeur_marseille:
   nom: Team
   prénom: Nettoyage Marseille
   email: nettoyage_marseille@gmail.commmmm
-  rôle: équipe
+  rôle: agent
   slug: 3bd58e3a-508a-4f8e-bef7-c0f5741363b5
 
 agent_marseille:
@@ -127,7 +144,7 @@ agent_marseille:
   nom: Dupont
   prénom: René
   email: rene.dupont@gmail.commmmm
-  rôle: équipe
+  rôle: agent
   slug: 96a436c3-1b9c-457a-aeb0-60ca4e53b8f0
 
 adherent_marseille:
@@ -147,7 +164,6 @@ john_wick:
   prénom: john
   email: john.wick@gmail.commmmmm
   rôle: agent
-  service: Comptabilité
   slug: 02cea440-2f32-4f63-9614-df94069a6bca
 
 george_lucas:

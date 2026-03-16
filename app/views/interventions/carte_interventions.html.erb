@@ -24,38 +24,31 @@
             </div>
             <div class="min-w-full md:min-w-36">
                 <%= label_tag :tool_ids, "Outil(s)" %>
-                <%= select_tag :tool_ids, options_from_collection_for_select(@tools, 'id', 'name', params[:tool_ids]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()', multiple: true %>
+                <%= select_tag :tool_ids, options_from_collection_for_select(@tools, 'id', 'name', params[:tool_ids]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()', multiple: true %>
             </div>
         </div>
 
         <div class="flex flex-wrap w-full items-end mt-4">
           <div class="flex flex-wrap gap-4 w-full min-w-fit lg:w-4/12 pr-4">
-            <% if current_user.manager? || current_user.agent? %>
+            <% if current_user.manager_or_admin? || current_user.agent? %>
                 <div class="min-w-full md:min-w-36">
                     <%= label_tag :adherent_id, "Adhérent" %>
-                    <%= select_tag :adherent_id, options_from_collection_for_select(@adhérents, :id, :nom_prénom, params[:adherent_id]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()' %>
+                    <%= select_tag :adherent_id, options_from_collection_for_select(@adhérents, :id, :nom_prénom, params[:adherent_id]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
                 </div>
-
-                <% if current_user.manager? %>
-                    <div class="min-w-full md:min-w-36">
-                    <%= label_tag :team_id, "Équipe" %>
-                    <%= select_tag :team_id, options_from_collection_for_select(@teams, 'id', 'nom_prénom', params[:team_id]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()' %>
-                    </div>
-                <% end %>
             <% end %>
 
-            <% if current_user.manager? || current_user.équipe? %>
-                <% if current_user.manager? || current_user.adhérent? %>
-                    <div class="min-w-full md:min-w-36">
+            <% if current_user.manager_or_admin? || current_user.adhérent?  %>
+                <div class="min-w-full md:min-w-36">
                     <%= label_tag :service %>
-                    <%= select_tag :service, options_for_select(@services, params[:service]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()' %>
+                    <%= select_tag :service, options_for_select(@services, params[:service]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
+                </div>
+
+                <% if current_user.manager_or_admin?%>
+                    <div class="min-w-full md:min-w-36">
+                        <%= label_tag :agent_ids, "Agent(s)" %>
+                        <%= select_tag :agent_ids, grouped_options_for_select(@grouped_agents, params[:agent_ids]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()', multiple: true %>
                     </div>
                 <% end %>
-
-                <div class="min-w-full md:min-w-36">
-                    <%= label_tag :agent_ids, "Agent(s)" %>
-                    <%= select_tag :agent_ids, grouped_options_for_select(@grouped_agents, params[:agent_ids]), include_blank: true, class: 'w-full', onchange: 'this.form.submit()', multiple: true %>
-                </div>
             <% end %>
 
             <div class="flex flex-wrap gap-1 w-full">
@@ -154,62 +147,4 @@
         const route = <%= raw(@routes_info.to_json) %>;
         console.log("Route:", route);
     <% end %>
-</script>
-
-<script>
-  // slimselect
-    new SlimSelect({
-        select: '#adherent_id',
-        settings: {
-        searchPlaceholder: 'Recherche',
-        searchText: 'Pas de résultat',
-        searchingText: 'Recherche...',
-        placeholderText: 'Choisissez un adhérent',
-        allowDeselect: true,
-        }
-    })
-
-    new SlimSelect({
-        select: '#team_id',
-        settings: {
-        searchPlaceholder: 'Recherche',
-        searchText: 'Pas de résultat',
-        searchingText: 'Recherche...',
-        placeholderText: 'Choisissez une équipe',
-        allowDeselect: true,
-        }
-    })
-
-    new SlimSelect({
-        select: '#service',
-        settings: {
-        searchPlaceholder: 'Recherche',
-        searchText: 'Pas de résultat',
-        searchingText: 'Recherche...',
-        placeholderText: 'Choisissez un service',
-        allowDeselect: true,
-        }
-    })
-
-    new SlimSelect({
-        select: '#agent_ids',
-        settings: {
-        searchPlaceholder: 'Recherche',
-        searchText: 'Pas de résultat',
-        searchingText: 'Recherche...',
-        placeholderText: '',
-        allowDeselect: true,
-        }
-    })
-
-    new SlimSelect({
-        select: '#tool_ids',
-        settings: {
-        searchPlaceholder: 'Recherche',
-        searchText: 'Pas de résultat',
-        searchingText: 'Recherche...',
-        placeholderText: '',
-        allowDeselect: true,
-        }
-    })
 </script>

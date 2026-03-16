@@ -23,7 +23,7 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
           nom: "Foo",
           prénom: "Bar",
           email: "email@example.com",
-          password: "password",
+          password: "0DcPIZIq0+f5SvCf",
           rôle: "adhérent",
           téléphone: "0123456789",
           localisation: "123.123,432.120398",
@@ -39,8 +39,13 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "should no send notification without submit message" do
-    assert_no_difference("Notification.count") do
+  test "should show messagerie with a to_id" do
+    get admin_messagerie_url(to_id: users.second.id)
+    assert_response :success
+  end
+
+  test "should send notification" do
+    assert_difference("Notification.count") do
       post admin_send_notification_url, params: {
         message: "Bonjour",
         from_id: users.first.id,
@@ -49,19 +54,6 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :success
-  end
-
-  test "should send notification with submit message" do
-    assert_difference("Notification.count") do
-      post admin_send_notification_url, params: {
-        message: "Bonjour",
-        from_id: users.first.id,
-        to_id: users.second.id,
-        submit_message: true
-      }
-    end
-
-    assert_redirected_to admin_messagerie_path(to_id: users.second.id)
   end
 
   # test "should get stats" do

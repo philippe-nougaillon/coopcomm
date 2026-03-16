@@ -1,8 +1,9 @@
 class AdminController < ApplicationController
   before_action :is_user_authorized
+  before_action :set_organisation_user_tags, only: [:create_new_user, :create_new_user_do]
 
   def audits
-    if current_user.manager?
+    if current_user.manager_or_admin?
       @audits = Audited::Audit.where(user_id: current_user.organisation.users.pluck(:id))
     else
       @audits = Audited::Audit.where(user_id: current_user.id)
@@ -55,33 +56,25 @@ class AdminController < ApplicationController
   end
 
   def messagerie
-    #@notifications = current_user.notifications
+    # On récupère les utilisateurs avec qui on peut envoyer des messages
+    @users = current_user.organisation.users.filter_by_service(current_user.services).where.not(id: current_user.id).ordered
 
-    # Reverse fait dans la vue messagerie pour avoir le dernier en bas, reverse et last transforment en array
-    @notifications = Notification.where(from_id: current_user.id).or(Notification.where(to_id: current_user.id)).ordered.limit(9)
-    #@new_notification_ids = @notifications.where("notifications.created_at > ?", current_user.notifications_last_seen_at).pluck(:id)
+    to_user_id = params[:to_id] || @users.first.id
 
-    @users = current_user.organisation.users.where.not(id: current_user.id).ordered
+    # On récupère les notifications envoyées et reçues d'un utilisateur
+    @notifications = Notification
+                       .where(from_id: current_user.id, to_id: to_user_id)
+                       .or(Notification.where(from_id: to_user_id, to_id: current_user.id))
+                       .last(10)
+
+    # On met à jour la date de la dernière fois qu'on a vu les notifications
     current_user.update!(notifications_last_seen_at: DateTime.now)
   end
 
   def send_notification
-
-    if params.has_key? "submit_message"
-      notification = Notification.new
-      notification.message = params[:message]
-      notification.from_id = current_user.id
-      notification.to_id = params[:to_id]
-
-      if notification.save
-        current_user.update!(notifications_last_seen_at: DateTime.now)
-        #render json: { success: true, message: "Notifications envoyées avec succès" }, status: :ok
-        redirect_to admin_messagerie_path(to_id: notification.to_id)
-      else
-        errors = notification.errors.full_messages
-        render json: { success: false, errors: errors }, status: :unprocessable_entity
-      end
-    end    
+    if params[:message].present? && params[:to_id].present?
+      Notification.create!(message: params[:message], from_id: current_user.id, to_id: params[:to_id])
+    end
   end
 
   def stats

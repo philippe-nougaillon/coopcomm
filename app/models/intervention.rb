@@ -9,14 +9,17 @@ class Intervention < ApplicationRecord
   audited
 
   attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute, :début_hour, :début_minute, :fin_hour, :fin_minute
+  
+  before_destroy :must_not_have_any_mouvements
 
   belongs_to :organisation
-  belongs_to :team, class_name: :User, foreign_key: :team_id, optional: true
+  belongs_to :team, class_name: :User, foreign_key: :team_id, optional: true # Not used anymore 
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
   has_many :agent_interventions, dependent: :destroy
   has_many :agents, through: :agent_interventions, class_name: 'User'
   has_many :tool_interventions, dependent: :destroy
   has_many :tools, through: :tool_interventions
+  has_many :mouvements, through: :tools
 
   has_many_attached :photos
 
@@ -116,8 +119,8 @@ class Intervention < ApplicationRecord
       user.interventions_adherent.ordered
     when 'agent'
       user.interventions.ordered
-    when 'équipe'
-      user.organisation.interventions.where(team_id: user.id)
+    when 'administrateur'
+      user.organisation.interventions.ordered
     end
   end
 
@@ -129,8 +132,8 @@ class Intervention < ApplicationRecord
       user.interventions_adherent.where(workflow_state: ["terminé"]).ordered
     when 'agent'
       user.interventions.where(workflow_state: ["nouveau"]).ordered
-    when 'équipe'
-      user.organisation.interventions.where(team_id: user.id, workflow_state: ["nouveau"]).ordered
+    when 'administrateur'
+      user.organisation.interventions.where.not(workflow_state: ["validé", "refusé", "archivé"]).ordered
     end
   end
 
@@ -214,7 +217,7 @@ class Intervention < ApplicationRecord
 
       if conflicting_interventions.exists?
         messages = conflicting_interventions.map do |conflict|
-          " #{agent.nom} déjà utilisé pour l’intervention « #{conflict.description} » du #{conflict.début_prévue&.strftime('%d/%m/%Y %H:%M')} au #{conflict.fin_prévue&.strftime('%d/%m/%Y %H:%M')}"
+          " #{agent.nom} déjà sur l’intervention « #{conflict.description} » du #{conflict.début_prévue&.strftime('%d/%m/%Y %H:%M')} au #{conflict.fin_prévue&.strftime('%d/%m/%Y %H:%M')}"
         end
         errors.add("", "Conflit(s) détecté(s) sur un agent :#{messages.to_sentence}")
       end
@@ -383,7 +386,6 @@ class Intervention < ApplicationRecord
 
   def passed
     !self.nouveau? || (self.fin && (self.fin < DateTime.now))
-
   end
   
   def schedules_must_make_sense
@@ -393,6 +395,14 @@ class Intervention < ApplicationRecord
     if self.début && self.fin && (self.début > self.fin)
       errors.add(:erreur, ": La fin de l'intervention ne peut pas être avant son commencement")
     end
+  end
+
+  def self.filter_by_service(services)
+    self
+      .joins(agent_interventions: {
+        agent: { user_services: :service }
+      })
+      .where(services: { id: services })
   end
   
   private
@@ -433,4 +443,10 @@ class Intervention < ApplicationRecord
     user_ids
   end
 
+  def must_not_have_any_mouvements
+    if self.mouvements.any?
+      self.errors.add(:base, "Il reste des mouvements liés.")
+      throw(:abort)
+    end
+  end
 end

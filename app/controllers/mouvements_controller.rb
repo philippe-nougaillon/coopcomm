@@ -30,6 +30,7 @@ class MouvementsController < ApplicationController
   # GET /mouvements/new
   def new
     @mouvement = Mouvement.new
+    @tools = current_user.organisation.tools.ordered
   end
 
   # GET /mouvements/1/edit

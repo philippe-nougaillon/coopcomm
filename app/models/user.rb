@@ -4,15 +4,19 @@ class User < ApplicationRecord
 
   include Discard::Model
 
+  acts_as_taggable_on :tags
+
   audited except: :notifications_last_seen_at
 
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :rememberable, :timeoutable 
   devise :database_authenticatable,
          :recoverable,
-         :validatable,
+        #  :validatable,
          :trackable,
-         :lockable
+         :lockable,
+         :secure_validatable,
+         :invitable
         #  :registerable,
         #  :omniauthable,
         #  omniauth_providers: [:google_oauth2]
@@ -20,11 +24,14 @@ class User < ApplicationRecord
   has_one_attached :profile_picture
 
   belongs_to :organisation, optional: true
+
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
   has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention', dependent: :destroy
   has_many :interventions, through: :agent_interventions
   has_many :notifications, dependent: :destroy, foreign_key: :to_id, class_name: "Notification"
   has_many :absences, dependent: :destroy
+  has_many :user_services, dependent: :destroy
+  has_many :services, through: :user_services
   accepts_nested_attributes_for :absences, 
                               allow_destroy:true, 
                               reject_if: lambda {|attributes| attributes['du'].blank? || attributes['au'].blank? }
@@ -36,34 +43,64 @@ class User < ApplicationRecord
     adhérent: 0,
     agent: 1,
     manager: 2,
-    équipe: 3
+    administrateur: 3
   }
 
-  enum :service, {
-    Technique: 0,
-    Comptabilité: 1,
-    Informatique: 2,
-    Secrétariat: 3,
-    Périscolaire: 4,
-    Ménage: 5
-  }
+  # enum :service, {
+  #   Technique: 0,
+  #   Comptabilité: 1,
+  #   Informatique: 2,
+  #   Secrétariat: 3,
+  #   Périscolaire: 4,
+  #   Ménage: 5
+  # }
 
   validates :nom, :email, presence: true
+  validates :prénom, :rôle, presence: true, if: -> { rôle == "agent" }
   validates_uniqueness_of :email
   validates :localisation, presence: true, if: -> { rôle == "adhérent" }
   validates :localisation, format: {
     with: /\A\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*\z/,
     message: "doit être dans ce format : 123.123, 432.120398"
   }, allow_blank: true
+  validate :must_have_at_least_one_service, if: -> { rôle == "agent" }
 
   default_scope -> { kept }
   scope :ordered, -> { order(:nom) }
 
-  def self.grouped_agents(users)
-    h = {}
-    User.services.keys.each do |key|
-      h[key.humanize] = users.agent.where(service: key).order(:nom, :prénom).pluck(:nom, :prénom, :id).map { |nom, prénom, id| ["#{nom} #{prénom}", id] }
+  def self.grouped_agents(user)
+    # 1. On stocke les IDs des services de l'utilisateur courant pour filtrer
+    user_service_ids = user.service_ids
+
+    # 2. On récupère les agents uniques qui appartiennent à au moins un de ces services
+    # Le .includes(:services) est crucial ici pour éviter le problème des requêtes N+1
+    agents = User.intervenants
+                 .joins(:services)
+                 .where(services: { id: user_service_ids })
+                 .distinct
+                 .includes(:services)
+
+    # 3. On initialise un Hash qui créera un tableau vide automatiquement pour toute nouvelle clé
+    h = Hash.new { |hash, key| hash[key] = [] }
+
+    # 4. On trie les agents et on construit nos groupes
+    agents.sort_by { |a| [a.nom.to_s, a.prénom.to_s] }.each do |agent|
+      # On ne garde que les services de l'agent qui sont en commun avec l'utilisateur courant
+      # (Optionnel : si tu veux afficher TOUS les services de l'agent, enlève le .select)
+      services_communs = agent.services.select { |s| user_service_ids.include?(s.id) }
+      
+      # On trie les noms pour garantir que "Ménage - Technique" et "Technique - Ménage" 
+      # aillent dans le même groupe, puis on les assemble.
+      nom_groupe = services_communs.map(&:nom).sort.join(" - ")
+      
+      # Sécurité au cas où
+      nom_groupe = "Sans service" if nom_groupe.blank?
+
+      # On ajoute l'agent dans le groupe correspondant
+      h[nom_groupe] << ["#{agent.nom} #{agent.prénom}", agent.id]
     end
+
+    # 5. On retourne le Hash trié alphabétiquement par le nom du groupe
     return h.sort_by { |k, _| I18n.transliterate(k) }.to_h
   end
 
@@ -127,7 +164,7 @@ class User < ApplicationRecord
         # user.skip_confirmation!
 
         user.organisation = Organisation.create(nom: "Organisation_#{SecureRandom.hex(5)}")
-        user.rôle = "manager"
+        user.rôle = "administrateur"
         
         user.save
 
@@ -151,10 +188,10 @@ class User < ApplicationRecord
       'manage_accounts'
     when 'agent'
       'person'
-    when "équipe"
-      'group'
     when 'adhérent'
       'corporate_fare'
+    when 'administrateur'
+      'supervisor_account'
     end
   end
 
@@ -162,12 +199,35 @@ class User < ApplicationRecord
     return self.notifications.where("notifications.created_at > ?", self.notifications_last_seen_at).any?
   end
 
-  def absent?
-    self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", Date.today).any?
+  def current_absence(date = Date.today, periode = nil)
+    absence = absences.where("du <= :date AND au >= :date", date: date).first
+    
+    # S'il n'y a aucune absence à cette date, on renvoie nil direct
+    return nil unless absence
+
+    # Si on ne demande pas de période précise, on renvoie l'absence trouvée
+    return absence if periode.nil?
+
+    # Si c'est une journée complète (les deux booléens sont à false), 
+    # l'absence est valide peu importe la période demandée
+    journee_entiere = !absence.matin && !absence.après_midi
+    return absence if journee_entiere
+
+    # Si c'est une demi-journée, on vérifie si elle correspond à la demande
+    if periode == :matin && absence.matin
+      return absence
+    elsif periode == :apres_midi && absence.après_midi
+      return absence
+    end
+
+    # Si l'absence ne correspond pas à la période (ex: on demande le matin, 
+    # mais l'absence est posée pour l'après-midi), on renvoie nil
+    nil
   end
 
-  def current_absence(date = Date.today)
-    self.absences.where("DATE(?) BETWEEN absences.du AND absences.au", date).first
+  # La méthode absent? devient ultra minimaliste puisqu'elle se base sur current_absence
+  def absent?(date = Date.today, periode = nil)
+    current_absence(date, periode).present?
   end
 
   def lng_lat
@@ -197,10 +257,86 @@ class User < ApplicationRecord
     Intervention.dernière_en_cours(self.interventions)
   end
 
+  def self.xls_headers
+    ['Nom','Prénom','Email','Téléphone','Service','Mémo']
+  end
+
+  def self.generate_random_password
+    # 1. Définition des bases en retirant les caractères prêtant à confusion
+    minuscules = ('a'..'z').to_a - ['l']
+    majuscules = ('A'..'Z').to_a - ['O', 'I']
+    chiffres = ('1'..'9').to_a
+    symboles = "!@#$%&*-+=?".chars
+
+    tous_les_caracteres = minuscules + majuscules + chiffres + symboles
+
+    # 2. Garantie d'avoir au moins un caractère de chaque type
+    mot_de_passe = [
+      minuscules.sample(random: SecureRandom),
+      majuscules.sample(random: SecureRandom),
+      chiffres.sample(random: SecureRandom),
+      symboles.sample(random: SecureRandom)
+    ]
+
+    # 3. Remplissage pour atteindre 12 caractères
+    8.times do
+      mot_de_passe << tous_les_caracteres.sample(random: SecureRandom)
+    end
+
+    # 4. Mélange sécurisé et conversion en chaîne (String)
+    mot_de_passe.shuffle(random: SecureRandom).join
+  end
+
+  def send_devise_notification(notification, *args)
+    # 1. On prépare l'email (quelle que soit la notification)
+    mail = devise_mailer.send(notification, self, *args)
+    
+    # 2. On l'envoie immédiatement pour récupérer l'objet Mail::Message
+    mailer_response = mail.deliver_now 
+
+    # 3. On détermine qui est à l'origine de l'email
+    # Si c'est une invitation, on prend l'ID de l'inviteur (current_user).
+    # Sinon, on considère que c'est l'utilisateur lui-même (ex: mot de passe oublié).
+    initiator_id = self.try(:invited_by_id) || 0
+
+    # 4. On crée le log pour Mailgun
+    MailLog.create(
+      user_id: initiator_id, 
+      message_id: mailer_response.message_id, 
+      to: self.email, 
+      subject: mailer_response.subject || "Notification CoopComm",
+      organisation_id: self.organisation_id,
+      channel: 0
+    )
+  end
+
+  def self.filter_by_service(services)
+    self
+      .joins(user_services: :service)
+      .where(services: services)
+      .distinct
+  end
+
+  def manager_or_admin?
+    self.manager? || self.administrateur?
+  end
+
+  def self.intervenants
+    self.where(rôle: ["agent", "manager", "administrateur"])
+  end
+
   private
 
   def slug_candidates
     [SecureRandom.uuid]
+  end
+
+  def must_have_at_least_one_service
+    # On rejette les services qui sont sur le point d'être détruits en mémoire
+    # pour s'assurer qu'il en restera bien au moins un après la sauvegarde.
+    if user_services.reject(&:marked_for_destruction?).empty?
+      errors.add(:services, "doit comporter au moins un service")
+    end
   end
 
 end

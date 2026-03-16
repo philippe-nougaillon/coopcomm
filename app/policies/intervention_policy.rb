@@ -10,7 +10,7 @@ class InterventionPolicy < ApplicationPolicy
   end
 
   def show?
-    index? && organisation
+    index? && organisation?
   end
 
   def new?
@@ -30,7 +30,7 @@ class InterventionPolicy < ApplicationPolicy
   end
 
   def destroy?
-    show? && manager
+    show? && manager_or_admin?
   end
 
   # def accepter?
@@ -71,5 +71,13 @@ class InterventionPolicy < ApplicationPolicy
 
   def route_interventions?
     index?
+  end
+
+  def pointer?
+    user && record.agents.include?(user)
+  end
+
+  def pointage_statut?
+    pointer?
   end
 end
