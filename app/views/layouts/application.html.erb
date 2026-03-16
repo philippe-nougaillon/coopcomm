@@ -26,7 +26,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
     
-    <%= render "partials/slimselect-required" %>
   </head>
 
   <body class="bg-slate-50" hx-headers='{"X-CSRF-Token": "<%= form_authenticity_token %>"}'>
@@ -52,7 +51,5 @@
     <% if params[:action] == 'welcome' %>
       <%= render partial: 'partials/footer' %>
     <% end %>
-
-    <%= render 'partials/slim_select' %>
   </body>
 </html>
