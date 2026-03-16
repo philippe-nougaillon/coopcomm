@@ -1,4 +1,4 @@
-# class OrganisationsController < ApplicationController
+class OrganisationsController < ApplicationController
 #   before_action :set_organisation, only: %i[ show edit update ]
 #   before_action :is_user_authorized
 
@@ -40,4 +40,4 @@
 #     def is_user_authorized
 #       authorize @organisation ? @organisation : Organisation
 #     end
-# end
+end
