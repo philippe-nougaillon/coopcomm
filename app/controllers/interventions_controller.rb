@@ -772,7 +772,7 @@ class InterventionsController < ApplicationController
     end
 
     def update_tag_list
-      if current_user.manager?
+      if current_user.manager_or_admin?
         @intervention.tag_list = params[:intervention][:tags_manager]
       else
         @intervention.tag_list = params[:intervention][:tags]
