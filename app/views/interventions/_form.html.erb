@@ -38,12 +38,38 @@
           <% if current_user.manager_or_admin? %>
             <div class="w-full sm:flex-1">
               <%= form.label :tags_manager, "Mots clés", style: "display: block" %>
-              <%= form.select :tags_manager, options_from_collection_for_select(@tags, :name, :name, intervention.tags.map(&:name)), multiple: true, class: 'w-full' %>
+              <% 
+                est_soumission = params[form.object_name].present?
+                
+                if est_soumission
+                  # Formulaire soumis : on garde les choix de l'utilisateur (même s'il a tout effacé)
+                  tags_soumis = Array(params.dig(form.object_name, :tags_manager)).reject(&:blank?)
+                else
+                  # Premier chargement (New ou Edit) : on charge la base de données
+                  tags_soumis = intervention.tags.map(&:name)
+                end
+                
+                options_manager = (@tags.map(&:name) + tags_soumis).uniq
+              %>
+              <%= form.select :tags_manager, options_for_select(options_manager, tags_soumis), {}, multiple: true, class: 'slim-select w-full' %>
             </div>
           <% else %>
             <div class="w-full sm:flex-1">
-              <%= form.label :tags, style: "display: block" %>
-              <%= form.select :tags, options_from_collection_for_select(@tags, :name, :name, intervention.tags.map(&:name)), multiple: true, class: 'w-full' %>
+              <%= form.label :tags_intervenant, "Mots clés", style: "display: block" %>
+              <% 
+                est_soumission = params[form.object_name].present?
+                
+                if est_soumission
+                  # On utilise le nouveau nom ici
+                  tags_soumis = Array(params.dig(form.object_name, :tags_intervenant)).reject(&:blank?)
+                else
+                  tags_soumis = intervention.tags.map(&:name)
+                end
+                
+                options_tags = (@tags.map(&:name) + tags_soumis).uniq
+              %>
+              <%# On utilise le nouveau nom ici aussi %>
+              <%= form.select :tags_intervenant, options_for_select(options_tags, tags_soumis), {}, { multiple: true, class: 'slim-select w-full' } %>
             </div>
           <% end %>
 

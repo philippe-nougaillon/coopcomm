@@ -760,7 +760,7 @@ class InterventionsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def intervention_params
-      params.require(:intervention).permit(:organisation_id, :adherent_id, :team_id, :début, :début_hour, :début_minute, :fin, :fin_hour, :fin_minute, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :repeter, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute, :meteo , photos: [], agent_ids: [], tool_ids: [])
+      params.require(:intervention).permit(:organisation_id, :adherent_id, :team_id, :début, :début_hour, :début_minute, :fin, :fin_hour, :fin_minute, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :note, :avis, :repeter, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute, :meteo , photos: [], agent_ids: [], tool_ids: [], tags_manager: [], tags_intervenant: [])
     end
 
     def is_user_authorized
@@ -775,7 +775,7 @@ class InterventionsController < ApplicationController
       if current_user.manager_or_admin?
         @intervention.tag_list = params[:intervention][:tags_manager]
       else
-        @intervention.tag_list = params[:intervention][:tags]
+        @intervention.tag_list = params[:intervention][:tags_intervenant]
       end
     end
 
