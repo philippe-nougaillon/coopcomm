@@ -29,4 +29,8 @@ class NotificationMailerPreview < ActionMailer::Preview
     NotificationMailer.new_absence(Absence.last, User.last)
   end
 
+  def new_intervention_from_adherent
+    NotificationMailer.new_intervention_from_adherent(Intervention.last, User.last.email, "Nouvelle intervention adhérent")
+  end
+
 end

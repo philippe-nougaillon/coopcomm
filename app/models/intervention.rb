@@ -42,6 +42,8 @@ class Intervention < ApplicationRecord
   scope :ordered, -> { order(updated_at: :desc) }
 
   after_create_commit :broadcast_to_authorized_viewers
+  # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
+  after_create_commit :send_manager_notification
 
   # WORKFLOW
   NOUVEAU   = 'nouveau'
@@ -405,6 +407,13 @@ class Intervention < ApplicationRecord
         agent: { user_services: :service }
       })
       .where(services: { id: services })
+  end
+
+  def send_manager_notification
+    user = User.find_by(id: self.audits.find_by(action: 'create')&.user&.id)
+    if user&.adhérent?
+      NotifManagersNewInterventionFromAdherentJob.perform_later(self, user)
+    end
   end
   
   private

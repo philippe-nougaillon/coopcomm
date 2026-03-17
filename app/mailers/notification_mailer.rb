@@ -74,4 +74,9 @@ class NotificationMailer < ApplicationMailer
     @absence = absence
     mail(to: user_email, subject: '[COOPCOMM] Nouvelle absence')
   end
+
+  def new_intervention_from_adherent(intervention, user_email, title)
+    @intervention = intervention
+    mail(to: user_email, subject: title)
+  end
 end
