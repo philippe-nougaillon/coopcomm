@@ -63,11 +63,13 @@
     <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
   </div>
 
-  <div class="w-full">
-    <%= form.label :service_ids, "Service" %>
-    <%# Obligé de préciser data: { controller: 'slim-select' } dans ce formulaire malgré l'automatisation dans app/javascript/application.js, sinon, en cas d'échec dans l'edit, le champ n'est plus du slimselect %>
-    <%= form.select :service_ids, options_from_collection_for_select(current_user.services, 'id', 'nom', user.services.ids), { include_blank: true }, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
-  </div>
+  <% if current_user.administrateur? %>
+    <div class="w-full">
+      <%= form.label :service_ids, "Service" %>
+      <%# Obligé de préciser data: { controller: 'slim-select' } dans ce formulaire malgré l'automatisation dans app/javascript/application.js, sinon, en cas d'échec dans l'edit, le champ n'est plus du slimselect %>
+      <%= form.select :service_ids, options_from_collection_for_select(current_user.organisation.services, 'id', 'nom', user.services.ids), { include_blank: true }, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
+    </div>
+  <% end %>
 
   <div class="w-full">
     <%= form.label :email, style: "display: block" %>
