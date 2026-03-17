@@ -21,7 +21,7 @@ class Intervention < ApplicationRecord
   has_many :agents, through: :agent_interventions, class_name: 'User'
   has_many :tool_interventions, dependent: :destroy
   has_many :tools, through: :tool_interventions
-  has_many :mouvements, through: :tools
+  has_many :mouvements
 
   has_many_attached :photos
 
