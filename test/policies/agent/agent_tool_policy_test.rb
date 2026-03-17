@@ -10,13 +10,13 @@ class AgentToolPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Index
-  test "should not get index" do
-    refute @policy.index?
+  test "should get index" do
+    assert @policy.index?
   end
 
   # Show
-  test "should not get show" do
-    refute @policy.show?
+  test "should get show" do
+    assert @policy.show?
   end
 
   # New
