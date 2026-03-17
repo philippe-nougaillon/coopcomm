@@ -43,8 +43,8 @@ export default class extends Controller {
     this.toolsTarget.removeEventListener('change', this.boundUpdateToolTags)
   }
 
-  verificationWithInput(event) {
-    this.updateDateValue(event.target)
+  verificationWithInput() {
+    this.updateDatesFromInputs()
     this.change()
   }
 
@@ -105,24 +105,26 @@ export default class extends Controller {
       const matchingOption = [...select.options].find(opt => opt.text.trim() === name)
       const id = matchingOption ? parseInt(matchingOption.value) : null
 
-      tag.style.backgroundColor = conflictIds.includes(id) ? "red" : ""
+      if (conflictIds.includes(id)) {
+        tag.style.setProperty('background-color', 'red', 'important')
+      } else {
+        tag.style.removeProperty('background-color')
+      }
     })
   }
 
   updateAgentTagsStyle() {
-    // On laisse 50 millisecondes à Slim Select
-    // pour fabriquer la petite bulle (tag) dans le HTML avant d'essayer de la peindre en rouge
     setTimeout(() => {
       if (!this.hasFormAgentsTarget || !this.hasAgentsTarget) return;
       this.updateTagsStyle(this.formAgentsTarget, this.agentsTarget, this.conflicting_agent_ids)
-    }, 50)
+    }, 100)
   }
 
   updateToolTagsStyle() {
     setTimeout(() => {
       if (!this.hasFormToolsTarget || !this.hasToolsTarget) return;
       this.updateTagsStyle(this.formToolsTarget, this.toolsTarget, this.conflicting_tool_ids)
-    }, 50)
+    }, 100)
   }
 
   getUnifiedUrl(intervention_id, agent_ids, tool_ids, date_debut, date_fin) {
@@ -174,14 +176,15 @@ export default class extends Controller {
     if (this.fin_prevue_minuteTarget.value) this.date_fin_prevue_minute = this.fin_prevue_minuteTarget.value
   }
 
-  updateDateValue(target) {
-    switch (target.id) {
-      case "intervention_début_prévue": this.date_debut_prevue = target.value; break
-      case "intervention_début_prévue_hour": this.date_debut_prevue_hour = target.value; break
-      case "intervention_début_prévue_minute": this.date_debut_prevue_minute = target.value; break
-      case "intervention_fin_prévue": this.date_fin_prevue = target.value; break
-      case "intervention_fin_prévue_hour": this.date_fin_prevue_hour = target.value; break
-      case "intervention_fin_prévue_minute": this.date_fin_prevue_minute = target.value; break
-    }
-  }
+  // Plus utilisé
+  // updateDateValue(target) {
+  //   switch (target.id) {
+  //     case "intervention_début_prévue": this.date_debut_prevue = target.value; break
+  //     case "intervention_début_prévue_hour": this.date_debut_prevue_hour = target.value; break
+  //     case "intervention_début_prévue_minute": this.date_debut_prevue_minute = target.value; break
+  //     case "intervention_fin_prévue": this.date_fin_prevue = target.value; break
+  //     case "intervention_fin_prévue_hour": this.date_fin_prevue_hour = target.value; break
+  //     case "intervention_fin_prévue_minute": this.date_fin_prevue_minute = target.value; break
+  //   }
+  // }
 }

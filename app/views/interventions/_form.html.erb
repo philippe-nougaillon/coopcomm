@@ -83,7 +83,8 @@
       </div>
 
       <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8" <%= "data-controller=\"meteo-intervention\" data-action=\"change->verification-disponibilites#verificationWithInput\"".html_safe if !@intervention.passed %>>
-        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
+        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" data-action="change->verification-disponibilites#verificationWithInput">
+          
           <div class="w-full min-w-fit flex-1" data-action='change->meteo-intervention#afficher_meteo'>
             <%= form.label :début_prévue %>
             <div class="flex items-center gap-1">
@@ -94,19 +95,21 @@
                                     'verification-disponibilites-target': "debut_prevue",
                                     'meteo-intervention-target': "debut_prevue"
                                   }
-                                  
               %>
               <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, 
-                  {selected: params[:début_prévue_hour] || @intervention.début_prévue&.hour }, 
+                  { selected: params[:début_prévue_hour] || @intervention.début_prévue&.hour }, 
                   class: "select select-sm w-16",
-                  'data-verification-disponibilites-target': "debut_prevue_hour",
-                  'meteo-intervention-target': "debut_prevue_hour"
+                  data: {
+                    'verification-disponibilites-target': "debut_prevue_hour",
+                    'meteo-intervention-target': "debut_prevue_hour"
+                  }
               %>
               :
               <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
-                  {selected: params[:début_prévue_minute] || @intervention.début_prévue&.min }, 
+                  { selected: params[:début_prévue_minute] || @intervention.début_prévue&.min }, 
                   class: "select select-sm w-16",
-                  'data-verification-disponibilites-target': "debut_prevue_minute"  %>
+                  data: { 'verification-disponibilites-target': "debut_prevue_minute" }
+              %>
             </div>
           </div>
 
@@ -116,18 +119,22 @@
               <%= form.date_field :fin_prévue, 
                   value: (params[:début_prévue].try(:to_date) || @intervention.fin_prévue&.to_date), 
                   class: "flex-1 input input-sm", 
-                  'data-verification-disponibilites-target': "fin_prevue"  %>
+                  data: { 'verification-disponibilites-target': "fin_prevue" }
+              %>
               <%= form.select :fin_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, 
-                  {selected: params[:fin_prévue_hour] || @intervention.fin_prévue&.hour }, 
+                  { selected: params[:fin_prévue_hour] || @intervention.fin_prévue&.hour }, 
                   class: "select select-sm w-16",
-                  'data-verification-disponibilites-target': "fin_prevue_hour"  %>
+                  data: { 'verification-disponibilites-target': "fin_prevue_hour" }
+              %>
               :
               <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
-                  {selected: params[:fin_prévue_minute] || @intervention.fin_prévue&.min }, 
+                  { selected: params[:fin_prévue_minute] || @intervention.fin_prévue&.min }, 
                   class: "select select-sm w-16",
-                  'data-verification-disponibilites-target': "fin_prevue_minute"  %>
+                  data: { 'verification-disponibilites-target': "fin_prevue_minute" }
+              %>
             </div>
           </div>
+
         </div>
 
         <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
@@ -145,16 +152,23 @@
     <div data-controller="calc-temps-passe">
       <div class="bg-indigo-50 rounded border border-indigo-100 p-4 shadow-xs">
         <div class="flex flex-wrap gap-5 sm:gap-8">
-          <div class="w-full sm:flex-1", data-verification-disponibilites-target = "formAgents" >
+          <div class="w-full sm:flex-1" data-verification-disponibilites-target="formAgents">
             <%= form.label :agent_ids, "Agents" %>
-            <%= form.select :agent_ids, grouped_options_for_select(@grouped_agents, intervention.agent_ids),
-                            {}, class: "slim-select w-full", multiple: :true,
+            <% 
+              agent_a_verrouiller = !current_user.agent? ? nil : current_user.id 
+            %>
+            
+            <%= form.select :agent_ids, 
+                            grouped_options_with_mandatory(@grouped_agents, intervention.agent_ids, agent_a_verrouiller),
+                            {}, 
+                            class: "w-full", multiple: true,
                             data: { 
+                              controller: 'slim-select',
                               'calc-temps-passe-target': 'agents', 
                               action: "change->calc-temps-passe#calc",
                               'verification-disponibilites-target': "agents"  
-                              }
-                              %>
+                            }
+            %>
           </div>
           <div class="w-full sm:flex-1", data-verification-disponibilites-target = "formTools" >
             <%= form.label :tool_ids, "Matériel(s)" %>
