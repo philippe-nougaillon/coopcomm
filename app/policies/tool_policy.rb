@@ -6,7 +6,7 @@ class ToolPolicy < ApplicationPolicy
   end
 
   def index?
-    manager_or_admin?
+    user && !user.adhérent?
   end
 
   def show?
