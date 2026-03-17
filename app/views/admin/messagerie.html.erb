@@ -25,9 +25,11 @@
         </div>
 
         <input class="mt-4 w-full rounded-xl p-4 border"
-              name="message" placeholder="Ecrivez votre message"
+              name="message" 
+              placeholder="Ecrivez votre message"
               hx-post="/admin/send_notification?to_id=<%= params[:to_id] %>"
-              hx-trigger="keyup[key=='Enter']">
+              hx-trigger="keyup[key=='Enter']"
+              hx-on::after-request="if(event.detail.successful) this.value = ''">
       </div>
     </div>
   </div>
