@@ -53,7 +53,7 @@
     </div>
 
     <div class="flex-1">
-      <% if @user.agent? %>
+      <% if @user.agent? && current_user.manager_or_admin? %>
         <div class="flex-1 mt-10">
           <strong class="block text-slate-400 mb-1">Évaluation</strong>
           <div class="flex justify-between w-32">

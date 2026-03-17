@@ -1,11 +1,15 @@
 module ApplicationHelper
   include Pagy::Frontend
 
-  def prettify(audit)
+  def prettify(audit, current_user)
     pretty_changes = []
 
     audit.audited_changes.each do |c|
-      key = c.first.humanize
+      raw_key = c.first
+      key = raw_key.humanize
+
+      next if raw_key.downcase == 'note' && current_user&.agent?
+
       case key
       when 'Agent', 'Adherent', 'Agent binome'
         ids = audit.audited_changes["#{key == "Agent binome" ? key.humanize.downcase.tr(' ', '_') : key.downcase}_id"]
@@ -62,7 +66,6 @@ module ApplicationHelper
           pretty_changes << "Utilisateur #{c.last.first.nil? ? 'désactivé' : 'réactivé'}"
         end
       else
-        
         if audit.action == 'update'
           unless c.last.first.blank? && c.last.last.blank?    
             pretty_changes << "#{key} modifié de '#{c.last.first}' à '#{c.last.last}'"
