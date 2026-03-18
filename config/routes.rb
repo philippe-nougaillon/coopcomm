@@ -71,6 +71,7 @@ Rails.application.routes.draw do
     get :messagerie
     post :send_notification
     get :stats
+    post :search_contact
   end
 
   controller :pages do

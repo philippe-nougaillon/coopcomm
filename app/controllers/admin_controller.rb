@@ -82,6 +82,11 @@ class AdminController < ApplicationController
     # @pagy, @organisations = pagy(@organisations, items: 5)
   end
 
+  def search_contact
+    @users = current_user.organisation.users.filter_by_service(current_user.services).where.not(id: current_user.id).where("users.nom ILIKE ?", "%#{params[:query]}%").ordered
+    render partial: 'users_list', locals: { users: @users }
+  end
+
   private
 
   def is_user_authorized

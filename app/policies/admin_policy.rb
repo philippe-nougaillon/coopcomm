@@ -28,4 +28,8 @@ class AdminPolicy < ApplicationPolicy
   def stats?
     user && ENV['SUPER_ADMIN'].to_s.split(',').include?(user.email)
   end
+
+  def search_contact?
+    messagerie?
+  end
 end
