@@ -1,0 +1,555 @@
+<header class="bg-white shadow-lg px-6 py-4 relative">
+      <div class="flex items-center justify-between">
+        <!--nav ordenador-->
+        <img src="logo.png" alt="CoopComm Logo" class="h-10" />
+        <button id="menu-btn" class="md:hidden text-3xl focus:outline-none">
+          ☰
+        </button>
+        <nav class="hidden md:block">
+          <ul class="flex flex-row items-center gap-4">
+            <li>
+              <a
+                href="#"
+                class="inline-block bg-[#50b9df] px-4 py-2 rounded-full text-white text-sm font-medium hover:bg-[#48a7c8] transition"
+              >
+                Se connecter
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                class="inline-block bg-[#db2767] px-5 py-2 rounded-full text-white text-sm font-medium hover:bg-[#c51f5b] transition"
+              >
+                Réserver une démo
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <!--mobile-->
+      <div
+        id="menu-mobile"
+        class="hidden md:hidden bg-white pt-6 pb-2 flex flex-col items-center gap-3"
+      >
+        <a
+          href="#"
+          class="w-full max-w-xs text-center bg-[#50b9df] px-5 py-2 rounded-full text-white text-sm font-medium hover:bg-[#48a7c8] transition"
+        >
+          Se connecter
+        </a>
+        <a
+          href="#"
+          class="w-full max-w-xs text-center bg-[#db2767] px-5 py-2 rounded-full text-white text-sm font-medium hover:bg-[#c51f5b] transition"
+        >
+          Réserver une démo
+        </a>
+      </div>
+    </header>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const menuBtn = document.getElementById("menu-btn");
+        const menuMobile = document.getElementById("menu-mobile");
+        menuBtn.addEventListener("click", () => {
+          menuMobile.classList.toggle("hidden");
+          menuBtn.textContent = menuMobile.classList.contains("hidden")
+            ? "☰"
+            : "✕";
+        });
+      });
+    </script>
+
+    <main>
+      <!--premier section hero-->
+      <section
+        class="min-h-[70vh] lg:min-h-[85vh] flex items-center px-6 lg:px-16 py-16"
+        style="
+          background: radial-gradient(
+            ellipse 80% 80% at 70% 50%,
+            #ddeeff 0%,
+            #eef4fb 40%,
+            transparent 100%
+          );
+        "
+      >
+        <div
+          class="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12"
+        >
+          <!--texte-->
+          <div class="flex-1 max-w-xl">
+            <h1 class="font-title text-4xl lg:text-5xl font-bold mb-6">
+              <span
+                class="bg-clip-text text-transparent"
+                style="
+                  background-image: linear-gradient(
+                    to right,
+                    #47b5db,
+                    #bc437e,
+                    #8043ad
+                  );
+                "
+              >
+                Mutualisez mieux,
+              </span>
+              <br />
+              dépensez moins !
+            </h1>
+
+            <p class="text-lg lg:text-xl mb-8 text-black">
+              CoopComm accompagne les
+              <b>communautés de communes</b> dans la <b>mutualisation</b> de
+              leurs
+              <b>agents, investissements et moyens techniques</b>
+            </p>
+
+            <a
+              href="https://calendar.app.google/a52LSSCoXsdwz7A2A"
+              class="inline-block bg-[#db2767] px-8 py-3 rounded-full text-white text-base font-semibold hover:bg-[#c51f5b] transition shadow-md"
+            >
+              Réserver une démo
+            </a>
+          </div>
+
+          <!--imagenes-->
+          <div
+            class="flex-1 relative hidden lg:flex justify-center items-center min-h-[420px]"
+          >
+            <img
+              src="slide1.png"
+              alt="CoopComm interface"
+              class="absolute top-0 left-0 w-[60%] rounded-xl shadow-2xl border border-gray-200 bg-white"
+            />
+            <img
+              src="slide6.png"
+              alt="CoopComm tableau de bord"
+              class="absolute bottom-0 right-0 w-[60%] rounded-xl shadow-2xl border border-gray-200 bg-white"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!--section deux-->
+      <section class="bg-[#F4EFE6] m-6 lg:m-20 rounded-xl p-8">
+        <div class="flex flex-col lg:flex-row gap-16">
+          <div class="max-w-lg">
+            <h2 class="text-lg lg:text-3xl font-medium mb-4">
+              Pourquoi choisir
+              <span class="text-[#47b5db] font-bold">Co</span
+              ><span class="text-[#691E9A] font-bold">op</span
+              ><span class="text-[#47b5db] font-bold">Comm</span
+              ><span class="text-[#691E9A] font-bold">.</span> ?
+            </h2>
+
+            <h3 class="text-black text-lg">
+              Une solution complète pour optimiser la gestion de votre
+              intercommunalité
+            </h3>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div>
+              <h4 class="flex items-center gap-2 text-xl font-semibold mb-2">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="w-5 h-5 text-black"
+                >
+                  <path d="M21.801 10A10 10 0 1 1 17 3.335" />
+                  <path d="m9 11 3 3L22 4" />
+                </svg>
+                Réduction des coûts
+              </h4>
+
+              <p class="text-black">
+                Diminuez vos dépenses de fonctionnement grâce à la mutualisation
+                intelligente des ressources.
+              </p>
+            </div>
+
+            <div>
+              <h4 class="flex items-center gap-2 text-xl font-semibold mb-2">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="w-5 h-5 text-black"
+                >
+                  <path d="M21.801 10A10 10 0 1 1 17 3.335" />
+                  <path d="m9 11 3 3L22 4" />
+                </svg>
+                Optimisation RH
+              </h4>
+
+              <p class="text-black">
+                Maximisez l'efficacité de vos équipes en partageant les
+                compétences entre communes.
+              </p>
+            </div>
+
+            <div>
+              <h4 class="flex items-center gap-2 text-xl font-semibold mb-2">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="w-5 h-5 text-black"
+                >
+                  <path d="M21.801 10A10 10 0 1 1 17 3.335" />
+                  <path d="m9 11 3 3L22 4" />
+                </svg>
+                Conformité garantie
+              </h4>
+
+              <p class="text-black">
+                Respectez toutes les réglementations avec une solution conforme
+                au RGPD.
+              </p>
+            </div>
+
+            <div>
+              <h4 class="flex items-center gap-2 text-xl font-semibold mb-2">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="w-5 h-5 text-black"
+                >
+                  <path d="M21.801 10A10 10 0 1 1 17 3.335" />
+                  <path d="m9 11 3 3L22 4" />
+                </svg>
+                Souveraineté numérique
+              </h4>
+
+              <p class="text-black">
+                Profitez d'une solution développée, hébergée et maintenue à 100
+                % en France.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!--section tres-->
+      <section class="lg:pt-20 lg:pb-24 lg:px-16">
+        <div class="m-4 text-center lg:px-48 mb-12">
+          <h2 class="text-2xl lg:text-3xl font-medium mb-8">
+            Des fonctionnalités <b> pensées pour votre quotidien </b>
+          </h2>
+          <h3 class="m-4">
+            De la coordination des agents à la gestion du matériel en passant
+            par la traçabilité des interventions,
+            <span class="text-[#47b5db] font-bold">Co</span
+            ><span class="text-[#691E9A] font-bold">op</span
+            ><span class="text-[#47b5db] font-bold">Comm</span
+            ><span class="text-[#691E9A] font-bold">.</span>
+            centralise vos opérations dans une interface intuitive et sécurisée.
+          </h3>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-6 gap-6 px-6">
+          <!-- columna 1-->
+          <div class="flex flex-col gap-6 flex-1">
+            <div class="bg-[#E5EFF9] rounded-xl p-6">
+              <h3 class="font-bold mb-3">Gestion des Actifs</h3>
+              <p class="text-sm text-black">
+                Suivi de l'inventaire du matériel et des prêts. Gardez une trace
+                de toutes les utilisations de vos actifs lors d'interventions
+                terrain. Localisez facilement votre matériel grâce à notre carte
+                interactive.
+              </p>
+            </div>
+
+            <div class="bg-[#E5EFF9] rounded-xl p-6">
+              <h3 class="font-bold mb-3">Pointage par QR Code</h3>
+              <p class="text-sm text-black">
+                Pour les interventions récurrentes, il suffit de créer une
+                intervention modèle et d'imprimer son QR Code. En le scannant
+                avec l'application, l'agent ouvre directement l'intervention.
+                L'adhérent est alors automatiquement notifié. Une seconde
+                utilisation du QR Code marquera la fin de l'intervention.
+              </p>
+            </div>
+
+            <div class="border-2 border-[#E5EFF9] rounded-xl p-6">
+              <h3 class="font-bold mb-3">Maîtrise budgétaire</h3>
+              <p class="text-sm text-black">
+                Un tableau de bord de gestion permet aux adhérents et managers
+                de suivre leurs indicateurs clés.
+              </p>
+            </div>
+
+            <div class="border-2 border-[#E5EFF9] rounded-xl p-6">
+              <h3 class="font-bold mb-3">Workflow</h3>
+              <p class="text-sm text-black">
+                Chaque intervention passe d'un état à un autre grâce à des
+                actions déterminées à l'avance. Certaines actions provoquent
+                l'envoi de notifications.
+              </p>
+            </div>
+
+            <div class="border-2 border-[#ECE88F] rounded-xl p-6">
+              <span class="text-xs font-bold bg-[#ECE88F] px-2 py-1 rounded-xl"
+                >NOUVEAUTÉ</span
+              >
+              <h3 class="font-bold mb-3 mt-2">Prévision d'intervention (IA)</h3>
+              <p class="text-sm text-black">
+                Sur la base des interventions précédentes, une intelligence
+                Artificielle va proposer des interventions à prevoir
+              </p>
+            </div>
+          </div>
+
+          <!-- columna 2-->
+          <div class="flex flex-col gap-6 flex-1 lg:mt-16">
+            <div class="bg-[#E5EFF9] rounded-xl p-6">
+              <h3 class="font-bold mb-3">Interventions</h3>
+              <p class="text-sm text-black">
+                Une demande d'intervention est émise par l'adhérent à
+                destination d'une équipe locale via l'application, téléphone,
+                etc. L'équipe se rend sur le terrain et enregistre les
+                informations de l'intervention dans l'outil. Une fois
+                l'intervention terminée, l'adhérent devra la valider ou donner
+                son avis.
+              </p>
+            </div>
+
+            <div class="border-2 border-[#E5EFF9] rounded-xl p-6">
+              <h3 class="font-bold mb-3">Adhérents</h3>
+              <p class="text-sm text-black">
+                Les adhérents ont un accès à la plateforme limité aux données
+                relatives à leurs demandes d'interventions.
+              </p>
+            </div>
+
+            <div class="border-2 border-[#E5EFF9] rounded-xl p-6">
+              <h3 class="font-bold mb-3">Une information claire et partagée</h3>
+              <p class="text-sm text-black">
+                Plateforme numérique fournissant une source unique de référence
+                (SSOT), robuste et fiable. Chaque modification de données est
+                auditée.
+              </p>
+            </div>
+
+            <div class="border-2 border-[#E5EFF9] rounded-xl p-6">
+              <h3 class="font-bold mb-3">Messagerie instantanée</h3>
+              <p class="text-sm text-black">
+                Un espace de communication instantanée permet aux managers de
+                discuter directement avec les agents. Un système de modération
+                du vocabulaire inapproprié veille à la bonne qualité des
+                discussions.
+              </p>
+            </div>
+
+            <div class="border-2 border-[#F4EFE6] rounded-xl p-6">
+              <span class="text-xs font-bold bg-[#F4EFE6] px-2 py-1 rounded-xl">
+                À VENIR
+              </span>
+              <h3 class="font-bold mt-2 mb-3">Maintenance préventive (IA)</h3>
+              <p class="text-sm text-black">
+                Grâce au machine learning, à l'analyse des données
+                opérationnelles et à la surveillance prédictive de l'état des
+                actifs, les utilisateurs peuvent optimiser la maintenance et
+                réduire les risques de défaillance des opérations.
+              </p>
+            </div>
+          </div>
+
+          <!-- columna 3 mt-32 -->
+          <div class="flex flex-col gap-6 flex-1">
+            <div class="bg-[#E5EFF9] rounded-xl p-6">
+              <h3 class="font-bold mb-3">Agents, Équipes et Managers</h3>
+              <p class="text-sm text-black">
+                Les agents et équipes ont un accès à la plateforme limité aux
+                données relatives à leurs interventions. Quant aux managers, ils
+                disposent d'un accès complet aux données de leur organisation.
+              </p>
+            </div>
+
+            <div class="border-2 border-[#E5EFF9] rounded-xl p-6">
+              <h3 class="font-bold mb-3">Gestion des Absences</h3>
+              <p class="text-sm text-black">
+                Bloque la planification ou l'attribution d'une intervention à un
+                agent pour lequel une absence est prévue.
+              </p>
+            </div>
+
+            <div class="border-2 border-[#E5EFF9] rounded-xl p-6">
+              <h3 class="font-bold mb-3">
+                Une référence unique sur tous supports
+              </h3>
+              <p class="text-sm text-black">
+                Design Responsive pour une utilisation sur
+                smartphone/PC/tablette.
+              </p>
+            </div>
+
+            <div class="border-2 border-[#E5EFF9] rounded-xl p-6">
+              <h3 class="font-bold mb-3">Notifications et alertes</h3>
+              <p class="text-sm text-black">
+                Certains changements d'état provoquent l'envoi d'email ou de
+                message WhatsApp afin d'en informer toutes les parties
+                prenantes.
+              </p>
+            </div>
+
+            <div class="border-2 border-[#F4EFE6] rounded-xl p-6">
+              <span class="text-xs font-bold bg-[#F4EFE6] px-2 py-1 rounded-xl">
+                À VENIR
+              </span>
+              <h3 class="font-bold mt-2 mb-3">Maintenance préventive (IA)</h3>
+              <p class="text-sm text-black">
+                La maintenance prédictive est conçue pour programmer des actions
+                de maintenance corrective avant qu'une panne ne se produise.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- imagenes -->
+      <section class="mb:mt-24 bg-[#F4EFE6] rounded-xl p-8 m-10">
+        <h2 class="text-2xl lg:text-3xl font-medium text-center mb-12">
+          <span class="text-[#47b5db] font-bold">Co</span
+          ><span class="text-[#691E9A] font-bold">op</span
+          ><span class="text-[#47b5db] font-bold">Comm</span
+          ><span class="text-[#691E9A] font-bold">.</span>
+          en images
+        </h2>
+
+        <!-- carousel -->
+        <div class="relative w-full md:w-3/4 mx-auto overflow-hidden">
+          <!-- slides -->
+          <div id="carousel" class="flex transition-transform duration-500">
+            <img src="slide1.png" class="w-full flex-shrink-0 object-contain" />
+            <img src="new_intervention.png" class="w-full flex-shrink-0 object-contain" />
+            <img src="interventions.png" class="w-full flex-shrink-0 object-contain" />
+            <img src="intervention.png" class="w-full flex-shrink-0 object-contain" />
+            <img src="tools.png" class="w-full flex-shrink-0 object-contain" />
+            <img src="dashboard.png" class="w-full flex-shrink-0 object-contain" />
+          </div>
+          <!-- bouton ga<uche -->
+          <button
+            id="prev"
+            class="absolute left-4 top-1/2 -translate-y-1/2 bg-[#DCCDE8] text-[#6A1F9C] shadow-lg w-10 h-10 rounded-full flex items-center justify-center"
+          >
+            ❮
+          </button>
+
+          <!-- bouton droite -->
+          <button
+            id="next"
+            class="absolute right-4 top-1/2 -translate-y-1/2 bg-[#DCCDE8] text-[#6A1F9C] shadow-lg w-10 h-10 rounded-full flex items-center justify-center"
+          >
+            ❯
+          </button>
+        </div>
+      </section>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const carousel = document.getElementById("carousel");
+          const slides = document.querySelectorAll("#carousel img");
+          const prev = document.getElementById("prev");
+          const next = document.getElementById("next");
+
+          let index = 0;
+
+          function updateCarousel() {
+            carousel.style.transform = `translateX(-${index * 100}%)`;
+          }
+
+          next.addEventListener("click", () => {
+            index = (index + 1) % slides.length;
+            updateCarousel();
+          });
+
+          prev.addEventListener("click", () => {
+            index = (index - 1 + slides.length) % slides.length;
+            updateCarousel();
+          });
+        });
+      </script>
+
+      <!-- savoir plus-->
+      <section class="mt-24 mb-24">
+        <h2 class="text-2xl lg:text-3xl font-medium text-center mb-12">
+          Vous souhaitez en savoir plus ?
+        </h2>
+
+        <div class="flex flex-wrap items-center justify-around gap-4">
+          <a
+            href="#"
+            class="inline-block bg-[#50b9df] px-4 py-2 rounded-full text-white text-sm font-medium hover:bg-[#48a7c8] transition"
+          >
+            Consultez notre Wiki (Blog / FAQ / ...)
+          </a>
+          <a
+            href="https://calendar.app.google/a52LSSCoXsdwz7A2A"
+            class="inline-block bg-[#db2767] px-5 py-2 rounded-full text-white text-sm font-medium hover:bg-[#c51f5b] transition"
+          >
+            Réservez une démo personnalisée
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <!--footer-->
+    <footer class="bg-[#E5EFF9] lg:bg-[#E5EFF9] shadow-lg px-6 py-4">
+      <div class="flex flex-col md:flex-row p-8 justify-between text-center items-center gap-8">
+        <div class="flex flex-col text-center md:text-left">
+          <p class="text-sm font-black mb-4">NOUS CONTACTER</p>
+
+          <a href="#" class="mb-2 hover:text-[#50b9df]">Mail</a>
+          <a href="#" class="mb-2 hover:text-[#50b9df]">Linkedin</a>
+          <a href="#" class="mb-2 hover:text-[#50b9df]">www.aikku.eu</a>
+        </div>
+
+        <div class="flex flex-col text-center md:text-left">
+          <p class="text-sm font-black mb-4">BESOIN D'AIDE</p>
+
+          <a href="#" class="mb-2 hover:text-[#50b9df]">FAQ</a>
+          <a href="#" class="mb-2 hover:text-[#50b9df]">Blog</a>
+        </div>
+
+        <div class="flex flex-col text-center md:text-left">
+          <p class="text-sm font-black mb-4">CONDITIONS</p>
+
+          <a href="#" class="mb-2 hover:text-[#50b9df]">Mentions légales</a>
+          <a href="#" class="mb-2 hover:text-[#50b9df]"
+            >Protection des Données</a
+          >
+          <a href="#" class="mb-2 hover:text-[#50b9df]">Préférences Cookies</a>
+        </div>
+
+        <div class="flex flex-col max-w-xs">
+          <p class="mb-2 text-sm">
+            <b>S'inscrire à la Newsletter</b> pour recevoir les dernières
+            actualités
+          </p>
+
+          <input
+            type="email"
+            placeholder="Entrez votre adresse email"
+            class="border border-gray-300 rounded-md py-2 px-4 mb-2"
+          />
+
+          <button class="bg-black text-white rounded-md py-2 hover:bg-gray-800">
+            JE M'INSCRIS
+          </button>
+        </div>
+      </div>
+
+      <div
+        class="flex flex-col md:flex-row text-sm justify-between gap-4 p-8 border-t border-gray-300 text-center md:text-left"
+      >
+        <p>© 2026 AÏKKU SAS. Tous droits réservés.</p>
+        <p>AÏKKU SAS, 5 Place de la Pyramide, 92800 PUTEAUX</p>
+        <p>SIREN : 934 780 735 R.C.S Nanterre</p>
+      </div>
+    </footer>

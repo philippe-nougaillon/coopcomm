@@ -2,6 +2,16 @@ class PagesController < ApplicationController
   before_action :is_user_authorized, except: %i[welcome mentions_legales solution tarifs contact]
   skip_before_action :authenticate_user!, only: %i[welcome mentions_legales solution tarifs contact]
 
+  layout :define_layout
+
+  def define_layout
+    if params[:action] == 'welcome'
+      'welcome'
+    else
+      'application'
+    end
+  end
+
   def assistant
 
     if params[:commit].present?
