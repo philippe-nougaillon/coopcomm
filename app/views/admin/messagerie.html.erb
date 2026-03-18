@@ -62,3 +62,22 @@
     </div>
   </div>
 </div>
+
+<script>
+  function scrollToBottom() {
+    // Fait défiler la fenêtre tout en bas instantanément
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'instant' 
+    });
+  }
+
+  // Déclenchement au chargement classique de la page
+  document.addEventListener("DOMContentLoaded", scrollToBottom);
+
+  // Déclenchement si on navigue via Turbo (Hotwire)
+  document.addEventListener("turbo:load", scrollToBottom);
+
+  // Déclenchement quand un nouveau message arrive via Turbo Stream
+  document.addEventListener("turbo:render", scrollToBottom);
+</script>
