@@ -4,7 +4,7 @@ class ServicesController < ApplicationController
 
   # GET /services or /services.json
   def index
-    @services = current_user.services
+    @services = current_user.organisation.services
 
     if params[:search].present?
       @services = @services.where("nom ILIKE :search", {search: "%#{params[:search]}%"})
