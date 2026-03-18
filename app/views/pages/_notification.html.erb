@@ -1,6 +1,6 @@
 <% user = User.with_discarded.find_by(id: notification.from_id) %>
 <div class="flex items-center gap-4 border px-4 py-4">
-  <div class="w-8">
+  <div class="w-10">
     <% if user %>
       <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
     <% else %>
@@ -15,8 +15,7 @@
       <small>
         il y a <%= time_ago_in_words notification.created_at %>
       </small>
-      -
-      <%= user&.nom_prenom_role || "Message automatique" %>
     </div>
+    <%= user&.nom_prenom_role || "Message automatique" %>
   </div>
 </div>

@@ -36,7 +36,7 @@ class UsersController < ApplicationController
 
       format.xls do
         xls_file = AgentsToXls.new(@users.agent).call
-        send_data xls_file, filename: "Agents_#{DateTime.now}.xls"
+        send_data xls_file, filename: "Agents_#{l Date.today}.xls"
       end
     end
   end
@@ -47,10 +47,7 @@ class UsersController < ApplicationController
     # if stale?(@user)
       @absences = @user.absences.ordered
       @audits = @user.own_and_associated_audits.reorder(id: :desc)
-      if @user.localisation
-        @lng = @user.localisation.split(',').last
-        @lat = @user.localisation.split(',').first
-      end
+
       @pagy, @audits = pagy(@audits, items: 10)
     # end
   end
@@ -91,6 +88,27 @@ class UsersController < ApplicationController
         format.json { render :show, status: :ok, location: @user }
       else
         format.html { render :edit, status: :unprocessable_entity }
+        
+        format.turbo_stream do
+          if params[:from_absence_modal]
+            absence_en_erreur = @user.absences.to_a.find(&:new_record?) || @user.absences.last
+            render turbo_stream: turbo_stream.replace(
+              "absence_form", 
+              partial: "absence_form", 
+              locals: { 
+                user: @user,
+                absence: absence_en_erreur 
+              }
+            )
+          else
+            render turbo_stream: turbo_stream.replace(
+              @user,
+              partial: "users/form", # J'ai mis 'users/form' par précaution, adapte si besoin
+              locals: { user: @user }
+            )
+          end
+        end
+        
         format.json { render json: @user.errors, status: :unprocessable_entity }
       end
     end
@@ -114,7 +132,7 @@ class UsersController < ApplicationController
     @agents = current_user.organisation.users.filter_by_service(params[:service].presence || @services).where(rôle: "agent")
 
     if params[:search].present?
-      @agents = @agents.where("nom ILIKE :search OR prénom ILIKE :search OR email ILIKE :search", {search: "%#{params[:search]}%"})
+      @agents = @agents.where("users.nom ILIKE :search OR users.prénom ILIKE :search OR users.email ILIKE :search", {search: "%#{params[:search]}%"})
     end
 
     # Le code actuel n'est pas utile. Si besoin on peut le faire sur la période (@date..@date_fin). Le mieux serait p-e de faire des cases grises directement dans le calendrier.

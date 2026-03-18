@@ -91,6 +91,7 @@ class InterventionsController < ApplicationController
 
     session[:vue] = params[:vue]
 
+    @interventions = @interventions.distinct
     respond_to do |format|
       format.html do
         @pagy, @interventions = pagy(@interventions.includes(:tags, :team, :agents, :adherent).with_attached_photos)
@@ -98,7 +99,7 @@ class InterventionsController < ApplicationController
 
       format.xls do
         xls_file = InterventionsToXls.new(@interventions).call
-        send_data xls_file, filename: "Interventions_#{DateTime.now}.xls"
+        send_data xls_file, filename: "Interventions_#{l Date.today}.xls"
       end
     end
   end
@@ -218,11 +219,15 @@ class InterventionsController < ApplicationController
 
   # DELETE /interventions/1 or /interventions/1.json
   def destroy
-    @intervention.destroy!
-
     respond_to do |format|
-      format.html { redirect_to interventions_url, notice: "Intervention supprimée avec succès." }
-      format.json { head :no_content }
+      if @intervention.destroy
+        format.html { redirect_to interventions_url, notice: "Intervention supprimée avec succès." }
+        format.json { head :no_content }
+      else
+        # Nécessaire s'il y a des erreurs
+        flash[:alert] = "L'intervention ne peut pas être supprimée : #{@intervention.errors.full_messages.join(', ')}"
+        format.html { redirect_to @intervention, status: :see_other } # see_other = erreur 303 = Redirection après échec de suppression 
+      end
     end
   end
 
@@ -767,10 +772,10 @@ class InterventionsController < ApplicationController
     end
 
     def update_tag_list
-      if current_user.manager?
+      if current_user.manager_or_admin?
         @intervention.tag_list = params[:intervention][:tags_manager]
       else
-        @intervention.tag_list = params[:intervention][:tags]
+        @intervention.tag_list = params[:intervention][:tags_intervenant]
       end
     end
 

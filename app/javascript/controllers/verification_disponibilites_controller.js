@@ -5,9 +5,9 @@ export default class extends Controller {
 
   // Cible le slim select des agents
   static targets = [
-    "agents", "tools", 
-    "formAgents", "formTools", 
-    "debut_prevue", "debut_prevue_hour", "debut_prevue_minute", 
+    "agents", "tools",
+    "formAgents", "formTools",
+    "debut_prevue", "debut_prevue_hour", "debut_prevue_minute",
     "fin_prevue", "fin_prevue_hour", "fin_prevue_minute"
   ]
 
@@ -26,24 +26,25 @@ export default class extends Controller {
   }
 
   connect() {
-    // Initialise un observeur sur les agents pour mettre en rouge le tags si l'agent est en conflit. Seul moyen tant qu'il y a slim select.
-    this.observeSlimSelectTags(this.formAgentsTarget, this.updateAgentTagsStyle.bind(this))
-    this.observeSlimSelectTags(this.formToolsTarget, this.updateToolTagsStyle.bind(this))
+    // 1. On prépare nos fonctions pour pouvoir les retirer proprement plus tard
+    this.boundUpdateAgentTags = () => this.updateAgentTagsStyle()
+    this.boundUpdateToolTags = () => this.updateToolTagsStyle()
+
+    // 2. On écoute simplement les changements natifs sur le select (Plus de MutationObserver !)
+    this.agentsTarget.addEventListener('change', this.boundUpdateAgentTags)
+    this.toolsTarget.addEventListener('change', this.boundUpdateToolTags)
 
     this.change()
   }
 
-  // Initialise un observeur pour détecter les ajouts dans la liste des valeurs sélectionnées
-  observeSlimSelectTags(container, callback) {
-    const observer = new MutationObserver(mutations => {
-      if (mutations.some(m => m.addedNodes.length > 0)) callback()
-    })
-    observer.observe(container.querySelector(".ss-values"), { childList: true, subtree: true })
+  disconnect() {
+    // 3. Nettoyage essentiel avec Turbo
+    this.agentsTarget.removeEventListener('change', this.boundUpdateAgentTags)
+    this.toolsTarget.removeEventListener('change', this.boundUpdateToolTags)
   }
 
-  // Fonction appelée à chaque changement d'une valeur des dates prévues
-  verificationWithInput(event) {
-    this.updateDateValue(event.target)
+  verificationWithInput() {
+    this.updateDatesFromInputs()
     this.change()
   }
 
@@ -61,19 +62,12 @@ export default class extends Controller {
     let hasIncludeBlank = options[0]?.value === ""
 
     // Permet une flexibilité du formulaire pour inclure ou non une case vide
-    const agent_ids = hasIncludeBlank
-      ? options.slice(1).map(o => o.value)
-      : options.map(o => o.value)
-
+    const agent_ids = hasIncludeBlank ? options.slice(1).map(o => o.value) : options.map(o => o.value)
     // Initialitation de l'id de tous les outils
     options = [...this.toolsTarget.options]
 
     hasIncludeBlank = options[0]?.value === ""
-
-    const tool_ids = hasIncludeBlank
-      ? options.slice(1).map(o => o.value)
-      : options.map(o => o.value)
-
+    const tool_ids = hasIncludeBlank ? options.slice(1).map(o => o.value) : options.map(o => o.value)
     // Lancement de la requête pour récupérer les outils en conflit
     if ((agent_ids.length || tool_ids.length) && (date_debut || date_fin)) {
       const url = this.getUnifiedUrl(intervention_id, agent_ids, tool_ids, date_debut, date_fin)
@@ -101,7 +95,6 @@ export default class extends Controller {
         option.classList.remove('invalid')
       }
     })
-    
   }
 
   updateTagsStyle(container, select, conflictIds) {
@@ -112,16 +105,26 @@ export default class extends Controller {
       const matchingOption = [...select.options].find(opt => opt.text.trim() === name)
       const id = matchingOption ? parseInt(matchingOption.value) : null
 
-      tag.style.backgroundColor = conflictIds.includes(id) ? "red" : ""
+      if (conflictIds.includes(id)) {
+        tag.style.setProperty('background-color', 'red', 'important')
+      } else {
+        tag.style.removeProperty('background-color')
+      }
     })
   }
 
   updateAgentTagsStyle() {
-    this.updateTagsStyle(this.formAgentsTarget, this.agentsTarget, this.conflicting_agent_ids)
+    setTimeout(() => {
+      if (!this.hasFormAgentsTarget || !this.hasAgentsTarget) return;
+      this.updateTagsStyle(this.formAgentsTarget, this.agentsTarget, this.conflicting_agent_ids)
+    }, 100)
   }
 
   updateToolTagsStyle() {
-    this.updateTagsStyle(this.formToolsTarget, this.toolsTarget, this.conflicting_tool_ids)
+    setTimeout(() => {
+      if (!this.hasFormToolsTarget || !this.hasToolsTarget) return;
+      this.updateTagsStyle(this.formToolsTarget, this.toolsTarget, this.conflicting_tool_ids)
+    }, 100)
   }
 
   getUnifiedUrl(intervention_id, agent_ids, tool_ids, date_debut, date_fin) {
@@ -173,26 +176,15 @@ export default class extends Controller {
     if (this.fin_prevue_minuteTarget.value) this.date_fin_prevue_minute = this.fin_prevue_minuteTarget.value
   }
 
-  updateDateValue(target) {
-    switch (target.id) {
-      case "intervention_début_prévue":
-        this.date_debut_prevue = target.value
-        break
-      case "intervention_début_prévue_hour":
-        this.date_debut_prevue_hour = target.value
-        break
-      case "intervention_début_prévue_minute":
-        this.date_debut_prevue_minute = target.value
-        break
-      case "intervention_fin_prévue":
-        this.date_fin_prevue = target.value
-        break
-      case "intervention_fin_prévue_hour":
-        this.date_fin_prevue_hour = target.value
-        break
-      case "intervention_fin_prévue_minute":
-        this.date_fin_prevue_minute = target.value
-        break
-    }
-  }
+  // Plus utilisé
+  // updateDateValue(target) {
+  //   switch (target.id) {
+  //     case "intervention_début_prévue": this.date_debut_prevue = target.value; break
+  //     case "intervention_début_prévue_hour": this.date_debut_prevue_hour = target.value; break
+  //     case "intervention_début_prévue_minute": this.date_debut_prevue_minute = target.value; break
+  //     case "intervention_fin_prévue": this.date_fin_prevue = target.value; break
+  //     case "intervention_fin_prévue_hour": this.date_fin_prevue_hour = target.value; break
+  //     case "intervention_fin_prévue_minute": this.date_fin_prevue_minute = target.value; break
+  //   }
+  // }
 }

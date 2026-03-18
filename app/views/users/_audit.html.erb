@@ -15,7 +15,7 @@
   </td>
   <td class="whitespace-nowrap">
     <% unless audit.comment %>
-      <%= sanitize prettify(audit).join('<br>') %>
+      <%= sanitize prettify(audit, current_user).join('<br>') %>
     <% else %>
       <%= audit.comment %>
     <% end %>

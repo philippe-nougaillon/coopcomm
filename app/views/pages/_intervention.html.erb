@@ -3,8 +3,8 @@
     construction
   </span>
   <div class="flex flex-col gap-1">
-    <b><%= link_to intervention.description, intervention, class: 'hover:underline' %></b>
-    <%= time_ago_in_words(intervention.updated_at)%>
+    <b><%= link_to intervention.description.humanize, intervention, class: "text-#{intervention.style.split.first.split('-').last} hover:underline" %></b>
+    <small>Modifié il y a <%= time_ago_in_words(intervention.updated_at)%></small>
     <div class="flex gap-2">
       <%= link_to_if intervention.can_terminer?, 'Terminer', terminer_intervention_path(intervention), class: 'font-bold hover:text-primary hover:underline', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false %>
       |

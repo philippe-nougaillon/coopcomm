@@ -10,7 +10,7 @@ class InterventionPolicy < ApplicationPolicy
   end
 
   def show?
-    index? && organisation?
+    index? && organisation? && (manager_or_admin? || record.adherent == user || record.agents.include?(user))
   end
 
   def new?

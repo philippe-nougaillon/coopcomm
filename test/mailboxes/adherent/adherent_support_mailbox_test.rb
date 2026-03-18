@@ -5,7 +5,13 @@ class AdherentSupportMailboxTest < ActionMailbox::TestCase
     user = users(:weil)
     subject = "Gestion de paperasse"
     body = "Bonjour, j'ai besoin d'aide du côté administratif"
-    receive_inbound_email_from_mail(to: "support@mg.coopcom.fr", from: user.email, subject: subject, body: body)
+    receive_inbound_email_from_mail(
+      to: "support@mg.coopcom.fr", 
+      from: user.email, 
+      subject: subject, 
+      body: body,
+      charset: "UTF-8"
+    )
 
     intervention = Intervention.last
     assert_equal user.id, intervention.adherent_id

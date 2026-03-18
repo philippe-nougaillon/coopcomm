@@ -70,7 +70,7 @@ intervention_autre_adhérent:
 
 intervention_paris:
   organisation: mairie_paris
-  adherent_id: patrick_adherent_paris
+  adherent: patrick_adherent_paris
   début: 2025-04-23 12:26:45
   description: Intervention à paris
   workflow_state: nouveau

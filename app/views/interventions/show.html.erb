@@ -39,11 +39,13 @@
           <% end %>
           <%= link_to "Modifier", edit_intervention_path(@intervention), class: "btn btn-primary" %>
           <% if policy(@intervention).destroy? %>
-            <%= button_to intervention_path(@intervention), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette intervention ?" }, class: "btn", 'data-testid': "Supprimer l'intervention" do %>
-              <span class="material-symbols-outlined">
-                delete
+            <span title="<%= "Impossible de supprimer l'intervention car il y a des mouvements rattachés" if @intervention.mouvements.any? %>">
+              <%= button_to intervention_path(@intervention), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette intervention ?" }, class: "btn", disabled: @intervention.mouvements.any? , 'data-testid': "Supprimer l'intervention" do %>
+                <span class="material-symbols-outlined">
+                  delete
+                </span>
+              <% end %>
               </span>
-            <% end %>
           <% end %>
           <%= link_to "Retour", interventions_path, class: "btn" %>
         </div>

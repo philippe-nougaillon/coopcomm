@@ -7,7 +7,7 @@
     <% end %>
   </td>
   <td class="text-xl">
-    <%= link_to intervention.description.humanize, intervention, class: 'font-black text-primary hover:underline' %>
+    <%= link_to_if policy(intervention).edit?, intervention.description.humanize, intervention, class: 'font-black text-primary hover:underline' %>
   </td>
   <td><%= l(intervention.début, format: :long) if intervention.début %></td>
   <td><%= l(intervention.fin, format: :long) if intervention.fin %></td>

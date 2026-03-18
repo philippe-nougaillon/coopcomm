@@ -1,9 +1,11 @@
 require "test_helper"
 
 class OrganisationsControllerTest < ActionDispatch::IntegrationTest
-  setup do
-    @organisation = organisations(:mairie_paris)
-  end
+  # Le controller organisation n'a pas de page activé
+
+  # setup do
+  #   @organisation = organisations(:mairie_paris)
+  # end
 
   # test "should get index" do
   #   get organisations_url

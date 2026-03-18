@@ -10,13 +10,13 @@ class AdherentToolPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Index
-  test "should get index" do
-    assert @policy.index?
+  test "should not get index" do
+    refute @policy.index?
   end
 
   # Show
-  test "should get show" do
-    assert @policy.show?
+  test "should not get show" do
+    refute @policy.show?
   end
 
   # New

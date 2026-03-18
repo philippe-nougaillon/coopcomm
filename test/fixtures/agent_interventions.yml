@@ -27,3 +27,20 @@ bond_intervention_repete:
 agent_marseille_nettoyage_port:
   agent: agent_marseille
   intervention: nettoyage_port
+
+martin_intervention_paris:
+  agent: martin_technique_paris
+  intervention: intervention_paris
+
+martin_nouvelle_intervention:
+  agent: martin_technique_paris
+  intervention: nouvelle_intervention
+
+martin_intervention_terminée:
+  agent: martin_technique_paris
+  intervention: intervention_terminée
+
+martin_intervention_validé:
+  agent: martin_technique_paris
+  intervention: intervention_validé
+  

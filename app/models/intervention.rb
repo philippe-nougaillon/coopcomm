@@ -5,10 +5,14 @@ class Intervention < ApplicationRecord
   include WorkflowActiverecord
 
   acts_as_taggable_on :tags
-
+  
   audited
-
+  
+  # Autorise Rails à lire et écrire ces champs virtuels pour le formulaire
+  attr_accessor :tags_manager
   attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute, :début_hour, :début_minute, :fin_hour, :fin_minute
+  
+  before_destroy :must_not_have_any_mouvements
 
   belongs_to :organisation
   belongs_to :team, class_name: :User, foreign_key: :team_id, optional: true # Not used anymore 
@@ -17,6 +21,7 @@ class Intervention < ApplicationRecord
   has_many :agents, through: :agent_interventions, class_name: 'User'
   has_many :tool_interventions, dependent: :destroy
   has_many :tools, through: :tool_interventions
+  has_many :mouvements
 
   has_many_attached :photos
 
@@ -37,6 +42,8 @@ class Intervention < ApplicationRecord
   scope :ordered, -> { order(updated_at: :desc) }
 
   after_create_commit :broadcast_to_authorized_viewers
+  # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
+  after_create_commit :send_manager_notification
 
   # WORKFLOW
   NOUVEAU   = 'nouveau'
@@ -401,6 +408,13 @@ class Intervention < ApplicationRecord
       })
       .where(services: { id: services })
   end
+
+  def send_manager_notification
+    user = User.find_by(id: self.audits.find_by(action: 'create')&.user&.id)
+    if user&.adhérent?
+      NotifManagersNewInterventionFromAdherentJob.perform_later(self, user)
+    end
+  end
   
   private
 
@@ -440,4 +454,10 @@ class Intervention < ApplicationRecord
     user_ids
   end
 
+  def must_not_have_any_mouvements
+    if self.mouvements.any?
+      self.errors.add(:base, "Il reste des mouvements liés.")
+      throw(:abort)
+    end
+  end
 end

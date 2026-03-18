@@ -12,6 +12,11 @@ class Absence < ApplicationRecord
     congé_sans_solde: 3
   }
 
+  validate :dates_must_make_sense
+  validate :no_overlapping_absences
+
+  # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
+  after_create_commit :send_manager_notification
 
   def en_cours?
     return (self.du..self.au).include?(Date.today)
@@ -19,5 +24,61 @@ class Absence < ApplicationRecord
 
   def nb_jours
     (self.au - self.du).to_i + 1
+  end
+
+  def send_manager_notification
+    NotifManagersNewAbsenceJob.perform_later(self)
+  end
+
+  def takes_morning?
+    matin || (!matin && !après_midi) || (matin && après_midi)
+  end
+
+  def takes_afternoon?
+    après_midi || (!matin && !après_midi) || (matin && après_midi)
+  end
+
+  private
+
+  def dates_must_make_sense
+    if self.du && self.au && (self.du > self.au)
+      errors.add(:base, ": La fin de l'absence ne peut pas être avant son commencement")
+    end
+  end
+
+  def no_overlapping_absences
+    return if du.blank? || au.blank? || user_id.blank?
+
+    overlapping_absences = Absence.where(user_id: user_id)
+                                  .where('du <= ? AND au >= ?', au, du)
+                                  .where.not(id: id)
+
+    overlapping_absences.each do |other_absence|
+      if genuinely_overlaps?(other_absence)
+        # On construit un résumé clair de l'absence en conflit
+        conflit_info = "du #{other_absence.du.strftime('%d/%m/%Y')} au #{other_absence.au.strftime('%d/%m/%Y')}"
+        
+        # On ajoute une précision si c'est une demi-journée spécifique
+        if other_absence.matin && !other_absence.après_midi
+          conflit_info += " (Matin uniquement)"
+        elsif !other_absence.matin && other_absence.après_midi
+          conflit_info += " (Après-midi uniquement)"
+        end
+
+        # On injecte l'information dans l'erreur
+        errors.add(:base, "Cette absence chevauche une autre absence déjà enregistrée #{conflit_info}.")
+        break
+      end
+    end
+  end
+
+  def genuinely_overlaps?(other)
+    my_morning   = takes_morning?
+    my_afternoon = takes_afternoon?
+
+    other_morning   = other.takes_morning?
+    other_afternoon = other.takes_afternoon?
+
+    (my_morning && other_morning) || (my_afternoon && other_afternoon)
   end
 end

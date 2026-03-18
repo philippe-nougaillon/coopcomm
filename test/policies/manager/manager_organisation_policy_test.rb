@@ -1,26 +1,27 @@
 require "test_helper"
 
 class ManagerOrganisationPolicyTest < ActionDispatch::IntegrationTest
-  def setup
-    manager_paris = users(:hidalgo)
-    
-    organisation = organisations(:mairie_paris)
+  # Le controller organisation n'a pas de page activé, donc pas de policy
 
-    @policy = OrganisationPolicy.new(manager_paris, organisation)
-  end
+  # def setup
+  #   manager_paris = users(:hidalgo)
 
-  # Show
-  test "accès autorisé pour un manager avec le show d'une organisation" do
-    assert @policy.show?
-  end
 
-  # Edit
-  test "accès autorisé pour un manager avec l'edit d'une organisation" do
-    assert @policy.edit?
-  end
+  #   @policy = OrganisationPolicy.new(manager_paris, organisation)
+  # end
 
-  # Update
-  test "accès autorisé pour un manager avec l'update d'une organisation" do
-    assert @policy.update?
-  end
+  # # Show
+  # test "accès autorisé pour un manager avec le show d'une organisation" do
+  #   assert @policy.show?
+  # end
+
+  # # Edit
+  # test "accès autorisé pour un manager avec l'edit d'une organisation" do
+  #   assert @policy.edit?
+  # end
+
+  # # Update
+  # test "accès autorisé pour un manager avec l'update d'une organisation" do
+  #   assert @policy.update?
+  # end
 end

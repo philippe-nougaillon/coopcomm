@@ -1,10 +1,10 @@
-<tr id="<%= dom_id tool %>" class="hover:bg-base-300">
+<tr id="<%= dom_id tool %>">
   <td>
     <% if tool.photo.present? %>
       <img src="<%= url_for(tool.photo) %>" class="h-10">  
     <% end %>
   </td>
-  <td class="text-lg sm:text-2xl text-primary">
+  <td class="text-lg sm:text-xl text-primary">
     <%= link_to tool.name.humanize, tool, class: 'text-primary hover:underline', title: (tool.description.blank? ? 'Aucune description' : tool.description) %>
   </td>
 
@@ -35,38 +35,29 @@
     </td>
   <% when 'calendrier' %>
     <% (@date..@date_fin).each do | date | %>
-      <td class="text-center <%= 'bg-yellow-50' if date == Date.today %>">
+      <td class="text-center <%= 'bg-slate-200' if date != Date.today %>">
         <% interventions = tool.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
         <% interventions_matin = interventions.where("début_prévue < ?", Time.parse(date.to_s + " 13:00")) %>
         <% interventions_soir = interventions.where("fin_prévue > ?", Time.parse(date.to_s + " 13:00")) %>
-      
-        <% if interventions_matin.any? %>
-          <% if interventions_matin.one? %>
-            <%= link_to edit_intervention_path(interventions_matin.first), style: 'margin-right: 2px;' do %>
-              <span class="border-1" style="padding-left: 15px; background-color: <%= interventions_matin.first.team ? "#{interventions_matin.first.team.color}" : "red" %>" title="<%= interventions_matin.map{|intervention| intervention.get_title_for_cases }.join(" | ") %>"></span>
-            <% end %>
-          <% else %>
-            <span class="border-1" style="padding-left: 15px; margin-right: 2px; background-color: <%= interventions_matin.first.team ? "#{interventions_matin.first.team.color}" : "red" %>" title="<%= interventions_matin.map{|intervention| intervention.get_title_for_cases }.join(" | ") %>"></span>
-          <% end %>
-        <% else %>
-          <%= link_to new_intervention_path(tool_ids: tool.id, début_prévue: date, début_prévue_hour: 8, fin_prévue: date, fin_prévue_hour: 13), style: 'margin-right: 2px'  do %>
-            <span class="border-1 hover:bg-green-500" style="padding-left: 15px;" title="Créer une intervention pour réserver cet outil"></span>
-          <% end %>
-        <% end %>
 
-        <% if interventions_soir.any? %>
-          <% if interventions_soir.one? %>
-            <%= link_to edit_intervention_path(interventions_soir.first), style: 'margin-left: 2px;' do %>
-              <span class="border-1" style="padding-left: 15px; background-color: <%= interventions_soir.first.team ? "#{interventions_soir.first.team.color}" : "red" %>" title="<%= interventions_soir.map{|intervention| intervention.get_title_for_cases }.join(" | ") %>"></span>
-            <% end %>
-          <% else %>
-            <span class="border-1" style="padding-left: 15px; margin-left: 2px; background-color: <%= interventions_soir.first.team ? "#{interventions_soir.first.team.color}" : "red" %>" title="<%= interventions_soir.map{|intervention| intervention.get_title_for_cases }.join(" | ") %>"></span>
-          <% end %>
-        <% else %>
-          <%= link_to new_intervention_path(tool_ids: tool.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 5, fin_prévue: date, fin_prévue_hour: 18), style: 'margin-left: 2px' do %>
-            <span class="border-1 hover:bg-green-500" style="padding-left: 15px;" title="Créer une intervention pour réserver cet outil"></span>
-          <% end %>
-        <% end %>
+        <%= render 'interventions/intervention_slot', 
+           interventions: interventions_matin, 
+           tool_id: tool.id, 
+           date: date, 
+           margin_style: 'margin-right: 2px', 
+           start_hour: 8, 
+           end_hour: 13, 
+           new_title: "Créer une intervention le #{date.day} au matin" %>
+
+        <%= render 'interventions/intervention_slot', 
+           interventions: interventions_soir, 
+           tool_id: tool.id, 
+           date: date, 
+           margin_style: 'margin-left: 2px', 
+           start_hour: 13, 
+           start_minute: 5, 
+           end_hour: 18, 
+           new_title: "Créer une intervention le #{date.day} après-midi" %>
       </td>
     <% end %>
 

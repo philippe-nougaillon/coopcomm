@@ -11,6 +11,10 @@ class Service < ApplicationRecord
 
   normalizes :nom, with: -> nom { nom.humanize.strip }
 
+  def managers_and_admin
+    users.where(rôle: [:manager, :administrateur])
+  end
+
   private
 
   def slug_candidates

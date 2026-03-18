@@ -15,7 +15,7 @@ class NewslettersController < ApplicationController
 
       format.xls do
         xls_file = NewslettersToXls.new(@newsletters).call
-        send_data xls_file, filename: "Newsletters_#{DateTime.now}.xls"
+        send_data xls_file, filename: "Newsletters_#{l Date.today}.xls"
       end
     end
   end

@@ -1,4 +1,4 @@
-<%= form_with(model: user, class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-2' }, data: { controller: 'nested-form', nested_form_wrapper_selector_value: '.nested-form-wrapper' }) do |form| %>
+<%= form_with(model: user, id: dom_id(user), class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-2' }, data: { controller: 'nested-form', nested_form_wrapper_selector_value: '.nested-form-wrapper' }) do |form| %>
   <% if user.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
       <h2 class="font-black!">
@@ -48,13 +48,28 @@
 
   <div class="w-full sm:flex-1">
     <%= form.label :tag_list, "Équipe", style: "display: block" %>
-    <%= form.select :tag_list, options_from_collection_for_select(@users_tags, :name, :name, user.tags.map(&:name)), multiple: true, class: 'slim-select w-full' %>
+    <% 
+      est_soumission = params[form.object_name].present?
+      
+      if est_soumission
+        tags_users_soumis = Array(params.dig(form.object_name, :tag_list)).reject(&:blank?)
+      else
+        tags_users_soumis = user.tags.map(&:name)
+      end
+      
+      options_users = (@users_tags.map(&:name) + tags_users_soumis).uniq
+    %>
+    <%# Obligé de préciser data: { controller: 'slim-select' } dans ce formulaire malgré l'automatisation dans app/javascript/application.js, sinon, en cas d'échec dans l'edit, le champ n'est plus du slimselect %>
+    <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
   </div>
 
-  <div class="w-full">
-    <%= form.label :service_ids, "Service" %>
-    <%= form.select :service_ids, options_from_collection_for_select(current_user.services, 'id', 'nom', user.services.ids), {include_blank: true}, class: 'slim-select w-full', multiple: true, required: true %>
-  </div>
+  <% if current_user.administrateur? %>
+    <div class="w-full">
+      <%= form.label :service_ids, "Service" %>
+      <%# Obligé de préciser data: { controller: 'slim-select' } dans ce formulaire malgré l'automatisation dans app/javascript/application.js, sinon, en cas d'échec dans l'edit, le champ n'est plus du slimselect %>
+      <%= form.select :service_ids, options_from_collection_for_select(current_user.organisation.services, 'id', 'nom', user.services.ids), { include_blank: true }, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
+    </div>
+  <% end %>
 
   <div class="w-full">
     <%= form.label :email, style: "display: block" %>
@@ -78,27 +93,31 @@
     <%= form.text_area :memo, class: 'textarea w-full' %>
   </div>
 
-  <% if @user.agent? || @user.manager_or_admin? %>
-    <div class="flex mt-4 gap-4 mb-4">
-      <h2 class="text-2xl text-secondary">Absences</h2>
-      <button type="button" data-action="nested-form#add" class="btn btn-sm btn-outline btn-success hover:text-white!">+</button>
-    </div>
+  <% if false %>
+  <!--
+    <% if @user.agent? || @user.manager_or_admin? %>
+      <div class="flex mt-4 gap-4 mb-4">
+        <h2 class="text-2xl text-secondary">Absences</h2>
+        <button type="button" data-action="nested-form#add" class="btn btn-sm btn-outline btn-success hover:text-white!">+</button>
+      </div>
 
 
-    <%= form.fields_for :absences do |absence_fields| %>
-      <%= render "absence_form_nested", f: absence_fields %>
-    <% end %>
-
-    <template data-nested-form-target="template">
-      <%= form.fields_for :absences, Absence.new, child_index: 'NEW_RECORD' do |absence_fields| %>
+      <%# TODO : Ajouter les erreurs des absences si on réactive cette partie du formulaire%>
+      <%= form.fields_for :absences do |absence_fields| %>
         <%= render "absence_form_nested", f: absence_fields %>
       <% end %>
-    </template>
 
-    <!-- Inserted elements will be injected before that target. -->
-    <div data-nested-form-target="target"></div>
+      <template data-nested-form-target="template">
+        <%= form.fields_for :absences, Absence.new, child_index: 'NEW_RECORD' do |absence_fields| %>
+          <%= render "absence_form_nested", f: absence_fields %>
+        <% end %>
+      </template>
 
-    <%= render "absence_form_script" %>
+      <div data-nested-form-target="target"></div>
+
+      <%= render "absence_form_script" %>
+    <% end %>
+  -->
   <% end %>
 
   <%= form.submit "Enregistrer", id:"enregistrer_utilisateur", class: "btn btn-primary mt-4" %>
