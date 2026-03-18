@@ -2,7 +2,7 @@
   <% intervention = interventions.first %>
   
   <% span_content = capture do %>
-    <span class="border-1" 
+    <span class="border-1 border-slate-400" 
           style="padding-left: 15px; <%= margin_style %>; background-color: <%= intervention.team&.color || 'red' %>" 
           title="<%= interventions.map(&:get_title_for_cases).join(' | ') %>">
     </span>
@@ -20,6 +20,6 @@
         fin_prévue_hour: end_hour
       ), 
       title: new_title do %>
-    <span class="border-1 hover:bg-green-500" style="padding-left: 15px; <%= margin_style %>;"></span>
+    <span class="border-1 border-slate-400 hover:bg-green-500" style="padding-left: 15px; <%= margin_style %>;"></span>
   <% end %>
 <% end %>

@@ -1,10 +1,10 @@
-<tr id="<%= dom_id tool %>" class="hover:bg-base-300">
+<tr id="<%= dom_id tool %>">
   <td>
     <% if tool.photo.present? %>
       <img src="<%= url_for(tool.photo) %>" class="h-10">  
     <% end %>
   </td>
-  <td class="text-lg sm:text-2xl text-primary">
+  <td class="text-lg sm:text-xl text-primary">
     <%= link_to tool.name.humanize, tool, class: 'text-primary hover:underline', title: (tool.description.blank? ? 'Aucune description' : tool.description) %>
   </td>
 
@@ -35,7 +35,7 @@
     </td>
   <% when 'calendrier' %>
     <% (@date..@date_fin).each do | date | %>
-      <td class="text-center <%= 'bg-yellow-50' if date == Date.today %>">
+      <td class="text-center <%= 'bg-slate-200' if date != Date.today %>">
         <% interventions = tool.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
         <% interventions_matin = interventions.where("début_prévue < ?", Time.parse(date.to_s + " 13:00")) %>
         <% interventions_soir = interventions.where("fin_prévue > ?", Time.parse(date.to_s + " 13:00")) %>
