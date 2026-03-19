@@ -82,7 +82,7 @@ class AdminController < ApplicationController
   end
 
   def search_contact
-    @users = current_user.organisation.users.filter_by_service(current_user.services).where.not(id: current_user.id).where("users.nom ILIKE ?", "%#{params[:query]}%").ordered
+    @users = current_user.organisation.users.filter_by_service(current_user.services).where.not(id: current_user.id).where("users.nom ILIKE :search OR users.prénom ILIKE :search", {search: "%#{params[:query]}%"}).ordered
     render partial: 'users_list', locals: { users: @users }
   end
 
