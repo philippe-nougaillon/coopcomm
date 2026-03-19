@@ -37,6 +37,7 @@ class Intervention < ApplicationRecord
   validate :schedules_must_make_sense
   validate :tools_must_be_available
   validate :agents_must_be_available
+  validate :dates_cannot_be_in_the_future
 
   before_save :calc_temps_total
 
@@ -455,6 +456,16 @@ class Intervention < ApplicationRecord
     if self.mouvements.any?
       self.errors.add(:base, "Il reste des mouvements liés.")
       throw(:abort)
+    end
+  end
+
+  def dates_cannot_be_in_the_future
+    if début.present? && début > Time.current
+      errors.add(:début, "ne peut pas être dans le futur")
+    end
+
+    if fin.present? && fin > Time.current
+      errors.add(:fin, "ne peut pas être dans le futur")
     end
   end
 end

@@ -46,11 +46,11 @@ class InterventionPolicy < ApplicationPolicy
   end
 
   def valider?
-    show?
+    show? && !user.agent?
   end
 
   def refuser?
-    show?
+    valider?
   end
 
   def archiver?

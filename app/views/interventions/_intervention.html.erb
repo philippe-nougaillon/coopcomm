@@ -34,10 +34,14 @@
       <div class="w-72 text-base">
         <% if !(intervention.validé? || intervention.refusé?) %>
           <div class="my-2">
-            <p class="flex gap-2">
+            <p class="flex justify-end gap-2">
               <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'z-10 btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? %>
-              <%= link_to 'Valider', valider_intervention_path(intervention), class: 'z-10 btn btn-success btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
-              <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'z-10 btn btn-error btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
+              <% if !defined?(from_turbo_stream) && policy(intervention).valider? %>
+                <%= link_to 'Valider', valider_intervention_path(intervention), class: 'z-10 btn btn-success btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
+              <% end %>
+              <% if !defined?(from_turbo_stream) && policy(intervention).refuser? %>
+                <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'z-10 btn btn-error btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
+              <% end %>
             <p>
           </div>
         <% end %>
