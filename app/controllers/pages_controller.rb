@@ -132,7 +132,7 @@ class PagesController < ApplicationController
       # Graphe qté d'intervention par service
       #
 
-      @qté_interventions_par_service = current_user.organisation.interventions.filter_by_service(current_user.services).group("services.nom").count
+      @qté_interventions_par_service = current_user.organisation.interventions.filter_by_service(current_user.services).joins(:service).group("services.nom").count
 
 
       #
@@ -145,7 +145,7 @@ class PagesController < ApplicationController
       #   @temps_total_par_service
       # end
 
-      @temps_total_par_service = current_user.organisation.interventions.filter_by_service(current_user.services).group("services.nom").sum(:temps_total)
+      @temps_total_par_service = current_user.organisation.interventions.filter_by_service(current_user.services).joins(:service).group("services.nom").sum(:temps_total)
 
 
       #
@@ -256,7 +256,7 @@ class PagesController < ApplicationController
       # Graphe qté d'intervention par service
       #
 
-      @qté_interventions_par_service = user_interventions.group("services.nom").count
+      @qté_interventions_par_service = user_interventions.joins(:service).group("services.nom").count
 
 
       #
@@ -269,7 +269,7 @@ class PagesController < ApplicationController
       #   @temps_total_par_service
       # end
 
-      @temps_total_par_service = user_interventions.group("services.nom").sum(:temps_total)
+      @temps_total_par_service = user_interventions.joins(:service).group("services.nom").sum(:temps_total)
 
 
       #

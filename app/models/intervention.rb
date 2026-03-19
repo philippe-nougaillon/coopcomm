@@ -15,6 +15,7 @@ class Intervention < ApplicationRecord
   before_destroy :must_not_have_any_mouvements
 
   belongs_to :organisation
+  belongs_to :service
   belongs_to :team, class_name: :User, foreign_key: :team_id, optional: true # Not used anymore 
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
   has_many :agent_interventions, dependent: :destroy
@@ -402,11 +403,7 @@ class Intervention < ApplicationRecord
   end
 
   def self.filter_by_service(services)
-    self
-      .joins(agent_interventions: {
-        agent: { user_services: :service }
-      })
-      .where(services: { id: services })
+    self.where(service: services )
   end
 
   def send_manager_notification

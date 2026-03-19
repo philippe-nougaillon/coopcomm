@@ -61,6 +61,7 @@ Rails.application.routes.draw do
       get :get_unavailable_elements
       get :carte_interventions
       get :route_interventions
+      get :services_for_adherent
     end
   end
 

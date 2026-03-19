@@ -709,6 +709,14 @@ class InterventionsController < ApplicationController
     end
   end
 
+  def services_for_adherent
+    adherent = User.find(params[:adherent_id])
+    @services = adherent.services.where(id: current_user.service_ids)
+
+    # On renvoie uniquement l'id et le nom pour construire le <select>
+    render json: @services.select(:id, :nom)
+  end
+
   private
 
   def get_routage_responses
@@ -754,13 +762,14 @@ class InterventionsController < ApplicationController
     def set_form_variables
       @tags = current_user.organisation.interventions.tag_counts_on(:tags).order(:name)
       @adhérents = current_user.organisation.users.filter_by_service(current_user.services).adhérent.order(:nom)
+      @services = current_user.organisation.services.ordered
       @grouped_agents = User.grouped_agents(current_user)
       @tools = current_user.organisation.tools.ordered
     end
 
     # Only allow a list of trusted parameters through.
     def intervention_params
-      params.require(:intervention).permit(:organisation_id, :adherent_id, :team_id, :début, :début_hour, :début_minute, :fin, :fin_hour, :fin_minute, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :repeter, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute, :meteo , photos: [], agent_ids: [], tool_ids: [])
+      params.require(:intervention).permit(:organisation_id, :adherent_id, :service_id, :début, :début_hour, :début_minute, :fin, :fin_hour, :fin_minute, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :repeter, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute, :meteo , photos: [], agent_ids: [], tool_ids: [])
     end
 
     def is_user_authorized

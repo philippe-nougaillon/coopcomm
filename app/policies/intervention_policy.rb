@@ -80,4 +80,8 @@ class InterventionPolicy < ApplicationPolicy
   def pointage_statut?
     pointer?
   end
+
+  def services_for_adherent?
+    new?
+  end
 end

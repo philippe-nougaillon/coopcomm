@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_12_095112) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_19_133331) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -138,10 +138,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_12_095112) do
     t.datetime "début_prévue"
     t.datetime "fin_prévue"
     t.string "meteo"
-    t.decimal "co2", default: "0.0"
     t.string "trajet"
+    t.decimal "co2", default: "0.0"
+    t.bigint "service_id"
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
     t.index ["organisation_id"], name: "index_interventions_on_organisation_id"
+    t.index ["service_id"], name: "index_interventions_on_service_id"
     t.index ["team_id"], name: "index_interventions_on_team_id"
   end
 
@@ -414,13 +416,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_12_095112) do
     t.string "téléphone"
     t.string "memo"
     t.string "localisation"
-    t.string "otp_secret"
-    t.integer "consumed_timestep"
-    t.boolean "otp_required_for_login"
     t.datetime "discarded_at"
     t.integer "failed_attempts", default: 0, null: false
     t.datetime "locked_at"
     t.string "unlock_token"
+    t.string "otp_secret"
+    t.integer "consumed_timestep"
+    t.boolean "otp_required_for_login"
     t.integer "otp_method"
     t.string "color"
     t.string "invitation_token"
@@ -464,6 +466,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_12_095112) do
   add_foreign_key "agent_interventions", "users", column: "agent_id"
   add_foreign_key "documents", "tools"
   add_foreign_key "interventions", "organisations"
+  add_foreign_key "interventions", "services"
   add_foreign_key "interventions", "users", column: "team_id"
   add_foreign_key "mail_logs", "organisations"
   add_foreign_key "mouvements", "interventions"

@@ -30,10 +30,28 @@
           </div>
         </div>
 
-        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
+        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" data-controller="dynamic-select" data-dynamic-select-url-value="<%= services_for_adherent_interventions_path %>">
           <div class="w-full sm:flex-1">
             <%= form.label :adherent_id, "Adhérent" %>
-            <%= form.select :adherent_id, options_from_collection_for_select(@adhérents, :id, :nom_prénom, intervention.adherent_id), {include_blank: true}, class: "slim-select w-full" %>
+            <%= form.select :adherent_id, 
+                            options_from_collection_for_select(@adhérents, :id, :nom_prénom, intervention.adherent_id), 
+                            { include_blank: true, required: true }, 
+                            class: "slim-select w-full",
+                            data: { 
+                              dynamic_select_target: "adherent",
+                              action: "change->dynamic-select#updateServices" 
+                            } %>
+          </div>
+
+          <div class="w-full sm:flex-1">
+            <%= form.label :service_id, "Service" %>
+            <%= form.select :service_id, 
+                            options_from_collection_for_select(@services, :id, :nom, intervention.service_id), 
+                            { include_blank: true, required: true }, 
+                            class: "slim-select w-full",
+                            data: { 
+                              dynamic_select_target: "service" 
+                            } %>
           </div>
           <% if current_user.manager_or_admin? %>
             <div class="w-full sm:flex-1">

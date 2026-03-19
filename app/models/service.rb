@@ -6,10 +6,13 @@ class Service < ApplicationRecord
 
   has_many :user_services, dependent: :destroy
   has_many :users, through: :user_services
+  has_many :interventions
 
   validates_uniqueness_of :nom, scope: :organisation_id
 
   normalizes :nom, with: -> nom { nom.humanize.strip }
+
+  scope :ordered, -> { order(:nom) }
 
   def managers_and_admin
     users.where(rôle: [:manager, :administrateur])
