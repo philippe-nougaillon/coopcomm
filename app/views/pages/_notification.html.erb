@@ -10,7 +10,7 @@
     <% end %>
   </div>
   <div>
-    <b><%= link_to_if user&.id, notification.moderation, admin_messagerie_path(to_id: user&.id), class:'hover:underline hover:text-primary' %></b>
+    <b><%= link_to_if user&.id, truncate(notification.moderation, length: 100), admin_messagerie_path(to_id: user&.id), class:'hover:underline hover:text-primary' %></b>
     <div>
       <small>
         il y a <%= time_ago_in_words notification.created_at %>
