@@ -1,7 +1,8 @@
 <% content_for :full_width, true %>
 
-<%= turbo_stream_from "notifications_to_#{current_user.id}" %>
-<%= turbo_stream_from "notifications_from_#{current_user.id}" %>
+<% if @to_user %>
+  <%= turbo_stream_from "chat_#{current_user.id}_with_#{@to_user.id}" %>
+<% end %>
 
 <div class="drawer lg:drawer-open w-full mx-auto">
   <input id="messagerie-drawer" type="checkbox" class="drawer-toggle" />
