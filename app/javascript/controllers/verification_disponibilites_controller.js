@@ -58,17 +58,15 @@ export default class extends Controller {
 
     // Initialitation de l'id de tous les agents
     let options = [...this.agentsTarget.options]
-
     let hasIncludeBlank = options[0]?.value === ""
-
-    // Permet une flexibilité du formulaire pour inclure ou non une case vide
     const agent_ids = hasIncludeBlank ? options.slice(1).map(o => o.value) : options.map(o => o.value)
+
     // Initialitation de l'id de tous les outils
     options = [...this.toolsTarget.options]
-
     hasIncludeBlank = options[0]?.value === ""
     const tool_ids = hasIncludeBlank ? options.slice(1).map(o => o.value) : options.map(o => o.value)
-    // Lancement de la requête pour récupérer les outils en conflit
+
+    // Lancement de la requête UNIQUEMENT si on a des éléments ET au moins une date
     if ((agent_ids.length || tool_ids.length) && (date_debut || date_fin)) {
       const url = this.getUnifiedUrl(intervention_id, agent_ids, tool_ids, date_debut, date_fin)
 
@@ -83,6 +81,16 @@ export default class extends Controller {
         this.updateAgentTagsStyle()
         this.updateToolTagsStyle()
       })
+    } else {
+      // 🔴 LE CORRECTIF EST ICI : S'il manque des dates, on nettoie tout !
+      this.conflicting_agent_ids = []
+      this.conflicting_tool_ids = []
+
+      this.updateSelectStyles(this.agentsTarget, this.conflicting_agent_ids)
+      this.updateSelectStyles(this.toolsTarget, this.conflicting_tool_ids)
+
+      this.updateAgentTagsStyle()
+      this.updateToolTagsStyle()
     }
   }
 
@@ -168,23 +176,12 @@ export default class extends Controller {
   }
 
   updateDatesFromInputs() {
-    if (this.debut_prevueTarget.value) this.date_debut_prevue = this.debut_prevueTarget.value
-    if (this.debut_prevue_hourTarget.value) this.date_debut_prevue_hour = this.debut_prevue_hourTarget.value
-    if (this.debut_prevue_minuteTarget.value) this.date_debut_prevue_minute = this.debut_prevue_minuteTarget.value
-    if (this.fin_prevueTarget.value) this.date_fin_prevue = this.fin_prevueTarget.value
-    if (this.fin_prevue_hourTarget.value) this.date_fin_prevue_hour = this.fin_prevue_hourTarget.value
-    if (this.fin_prevue_minuteTarget.value) this.date_fin_prevue_minute = this.fin_prevue_minuteTarget.value
-  }
+    this.date_debut_prevue = this.debut_prevueTarget.value
+    this.date_debut_prevue_hour = this.debut_prevue_hourTarget.value
+    this.date_debut_prevue_minute = this.debut_prevue_minuteTarget.value
 
-  // Plus utilisé
-  // updateDateValue(target) {
-  //   switch (target.id) {
-  //     case "intervention_début_prévue": this.date_debut_prevue = target.value; break
-  //     case "intervention_début_prévue_hour": this.date_debut_prevue_hour = target.value; break
-  //     case "intervention_début_prévue_minute": this.date_debut_prevue_minute = target.value; break
-  //     case "intervention_fin_prévue": this.date_fin_prevue = target.value; break
-  //     case "intervention_fin_prévue_hour": this.date_fin_prevue_hour = target.value; break
-  //     case "intervention_fin_prévue_minute": this.date_fin_prevue_minute = target.value; break
-  //   }
-  // }
+    this.date_fin_prevue = this.fin_prevueTarget.value
+    this.date_fin_prevue_hour = this.fin_prevue_hourTarget.value
+    this.date_fin_prevue_minute = this.fin_prevue_minuteTarget.value
+  }
 }
