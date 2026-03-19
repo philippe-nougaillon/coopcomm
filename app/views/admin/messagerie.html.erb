@@ -25,7 +25,9 @@
           <%= render partial: "admin/notification", collection: @notifications %>
         </div>
 
-        <div class="sticky bottom-20 lg:bottom-0 bg-slate-50 px-2 lg:pb-4 z-20 w-full mt-auto"> <div id="new-message-badge" class="hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-4 z-30 transform cursor-pointer group">
+        <div class="sticky bottom-20 lg:bottom-0 bg-slate-50 px-2 lg:pb-4 z-20 w-full mt-auto relative">
+          
+          <div id="new-message-badge" class="hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-4 z-30 transform cursor-pointer group">
             <div class="badge badge-primary rounded-full px-4 py-3 shadow-lg flex items-center gap-1 hover:badge-primary-focus transition-colors">
               <span class="text-xs group-hover:-translate-y-0.5 transition-transform">👇</span>
               <span class="text-sm font-semibold text-white">Nouveau message</span>
@@ -75,74 +77,99 @@
 </div>
 
 <script>
-  // Références aux éléments (évite de les rechercher à chaque fois)
-  let notificationsContainer;
   let newMessageBadge;
 
-  // Fonction pour scroller en bas (comportement instantané ou fluide)
+  // Fonction pour scroller tout en bas (utilisée au chargement et pour vos propres messages)
   function scrollToBottom(behavior = 'instant') {
     window.scrollTo({
       top: document.documentElement.scrollHeight,
       behavior: behavior 
     });
-    // On cache le badge si on vient de scroller tout en bas
     if (newMessageBadge) newMessageBadge.classList.add('hidden');
   }
 
-  // Fonction pour surveiller l'arrivée de nouveaux messages
   function setupMessageObserver() {
-    notificationsContainer = document.getElementById('notifications');
+    const notificationsContainer = document.getElementById('notifications');
     newMessageBadge = document.getElementById('new-message-badge');
 
     if (!notificationsContainer || !newMessageBadge) return;
 
-    // Déconnecter l'ancien observer si on navigue pour éviter les doublons
     if (window.messageObserver) {
       window.messageObserver.disconnect();
     }
 
-    // Créer un nouvel observer
     window.messageObserver = new MutationObserver((mutations) => {
-      // Calculer si on est déjà en bas (votre seuil de 100px)
-      const scrollPosition = window.innerHeight + window.scrollY;
-      const isNearBottom = scrollPosition >= (document.documentElement.scrollHeight - 100);
+      mutations.forEach((mutation) => {
+        if (mutation.addedNodes.length > 0) {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === 1) { 
+              
+              // 1. Est-ce MON message ?
+              const isMyMessage = node.classList.contains('chat-end') || node.querySelector('.chat-end') !== null;
 
-      // Si on était en bas, on glisse doucement vers le nouveau message
-      if (isNearBottom) {
-        scrollToBottom('smooth');
-      } else {
-        // SINON, on affiche le badge "Nouveau message"
-        newMessageBadge.classList.remove('hidden');
-      }
+              // 2. Quelle est la taille de ce nouveau message ?
+              const newNodeHeight = node.offsetHeight || 0;
+
+              // 3. Était-on déjà en bas AVANT son arrivée ?
+              const scrollPosition = window.innerHeight + window.scrollY;
+              const distanceToBottom = document.documentElement.scrollHeight - scrollPosition;
+              const distanceBeforeInsertion = distanceToBottom - newNodeHeight;
+              
+              const isNearBottom = distanceBeforeInsertion <= 150;
+
+              // 4. La logique d'affichage
+              if (isMyMessage) {
+                // Si c'est MON message, je veux voir l'input en dessous, donc on scrolle tout en bas
+                scrollToBottom('smooth');
+              } else {
+                // Si c'est le message DE L'AUTRE
+                if (isNearBottom) {
+                  // NOUVEAU COMPORTEMENT : On scrolle en haut du message reçu
+                  
+                  // On calcule la position de l'élément par rapport au haut de la page
+                  const elementPosition = node.getBoundingClientRect().top + window.scrollY;
+                  
+                  // On retire 120 pixels pour ne pas que le message soit caché sous votre header sticky
+                  const offsetPosition = elementPosition - 120; 
+
+                  window.scrollTo({
+                    top: offsetPosition,
+                    behavior: "smooth"
+                  });
+
+                  if (newMessageBadge) newMessageBadge.classList.add('hidden');
+
+                } else {
+                  newMessageBadge.classList.remove('hidden'); // On affiche le badge si on lisait plus haut
+                }
+              }
+            }
+          });
+        }
+      });
     });
 
-    // On dit à l'observer de surveiller l'ajout de nouveaux enfants (messages)
     window.messageObserver.observe(notificationsContainer, { childList: true });
 
-    // --- Nouveaux événements ---
-
-    // 1. Clic sur le badge : scroller en bas et cacher le badge
+    // --- Événements supplémentaires ---
     newMessageBadge.addEventListener('click', () => scrollToBottom('smooth'));
 
-    // 2. Écouter le scroll manuel de l'utilisateur
     window.addEventListener('scroll', () => {
-      // Si l'utilisateur scrolle manuellement tout en bas, on cache le badge
       const scrollPosition = window.innerHeight + window.scrollY;
-      const isAtBottom = scrollPosition >= (document.documentElement.scrollHeight - 10); // marge de 10px pour le bas réel
-
-      if (isAtBottom && !newMessageBadge.classList.contains('hidden')) {
+      const distanceToBottom = document.documentElement.scrollHeight - scrollPosition;
+      
+      if (distanceToBottom <= 50 && !newMessageBadge.classList.contains('hidden')) {
         newMessageBadge.classList.add('hidden');
       }
     });
   }
 
-  // Initialisation au chargement classique de la page
+  // Initialisation
   document.addEventListener("DOMContentLoaded", () => {
     scrollToBottom();
     setupMessageObserver();
   });
 
-  // Initialisation lors de la navigation Turbo (Hotwire)
   document.addEventListener("turbo:load", () => {
     scrollToBottom();
     setupMessageObserver();
