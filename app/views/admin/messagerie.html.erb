@@ -15,7 +15,7 @@
         </svg>
       </label>
 
-      <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Messagerie') %></h1>
+      <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Messagerie') %> - <%= @to_user&.nom_prénom %></h1>
     </div>
     
     <div class="flex justify-center w-full mt-4 flex-1">
@@ -25,7 +25,12 @@
           <%= render partial: "admin/notification", collection: @notifications %>
         </div>
 
-        <div class="sticky bottom-20 lg:bottom-0 bg-slate-50 px-2 lg:pb-4 z-20 w-full mt-auto">
+        <div class="sticky bottom-20 lg:bottom-0 bg-slate-50 px-2 lg:pb-4 z-20 w-full mt-auto"> <div id="new-message-badge" class="hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-4 z-30 transform cursor-pointer group">
+            <div class="badge badge-primary rounded-full px-4 py-3 shadow-lg flex items-center gap-1 hover:badge-primary-focus transition-colors">
+              <span class="text-xs group-hover:-translate-y-0.5 transition-transform">👇</span>
+              <span class="text-sm font-semibold text-white">Nouveau message</span>
+            </div>
+          </div>
           <input class="w-full rounded-xl p-4 border bg-white shadow-sm"
                 name="message" 
                 placeholder="Ecrivez votre message"
@@ -70,20 +75,76 @@
 </div>
 
 <script>
-  function scrollToBottom() {
-    // Fait défiler la fenêtre tout en bas instantanément
+  // Références aux éléments (évite de les rechercher à chaque fois)
+  let notificationsContainer;
+  let newMessageBadge;
+
+  // Fonction pour scroller en bas (comportement instantané ou fluide)
+  function scrollToBottom(behavior = 'instant') {
     window.scrollTo({
       top: document.documentElement.scrollHeight,
-      behavior: 'instant' 
+      behavior: behavior 
+    });
+    // On cache le badge si on vient de scroller tout en bas
+    if (newMessageBadge) newMessageBadge.classList.add('hidden');
+  }
+
+  // Fonction pour surveiller l'arrivée de nouveaux messages
+  function setupMessageObserver() {
+    notificationsContainer = document.getElementById('notifications');
+    newMessageBadge = document.getElementById('new-message-badge');
+
+    if (!notificationsContainer || !newMessageBadge) return;
+
+    // Déconnecter l'ancien observer si on navigue pour éviter les doublons
+    if (window.messageObserver) {
+      window.messageObserver.disconnect();
+    }
+
+    // Créer un nouvel observer
+    window.messageObserver = new MutationObserver((mutations) => {
+      // Calculer si on est déjà en bas (votre seuil de 100px)
+      const scrollPosition = window.innerHeight + window.scrollY;
+      const isNearBottom = scrollPosition >= (document.documentElement.scrollHeight - 100);
+
+      // Si on était en bas, on glisse doucement vers le nouveau message
+      if (isNearBottom) {
+        scrollToBottom('smooth');
+      } else {
+        // SINON, on affiche le badge "Nouveau message"
+        newMessageBadge.classList.remove('hidden');
+      }
+    });
+
+    // On dit à l'observer de surveiller l'ajout de nouveaux enfants (messages)
+    window.messageObserver.observe(notificationsContainer, { childList: true });
+
+    // --- Nouveaux événements ---
+
+    // 1. Clic sur le badge : scroller en bas et cacher le badge
+    newMessageBadge.addEventListener('click', () => scrollToBottom('smooth'));
+
+    // 2. Écouter le scroll manuel de l'utilisateur
+    window.addEventListener('scroll', () => {
+      // Si l'utilisateur scrolle manuellement tout en bas, on cache le badge
+      const scrollPosition = window.innerHeight + window.scrollY;
+      const isAtBottom = scrollPosition >= (document.documentElement.scrollHeight - 10); // marge de 10px pour le bas réel
+
+      if (isAtBottom && !newMessageBadge.classList.contains('hidden')) {
+        newMessageBadge.classList.add('hidden');
+      }
     });
   }
 
-  // Déclenchement au chargement classique de la page
-  document.addEventListener("DOMContentLoaded", scrollToBottom);
+  // Initialisation au chargement classique de la page
+  document.addEventListener("DOMContentLoaded", () => {
+    scrollToBottom();
+    setupMessageObserver();
+  });
 
-  // Déclenchement si on navigue via Turbo (Hotwire)
-  document.addEventListener("turbo:load", scrollToBottom);
-
-  // Déclenchement quand un nouveau message arrive via Turbo Stream
-  document.addEventListener("turbo:render", scrollToBottom);
+  // Initialisation lors de la navigation Turbo (Hotwire)
+  document.addEventListener("turbo:load", () => {
+    scrollToBottom();
+    setupMessageObserver();
+  });
 </script>
