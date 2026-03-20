@@ -127,4 +127,19 @@ module ApplicationHelper
     html.join("\n").html_safe
   end
 
+  def notification_time_format(time)
+    return "" if time.blank?
+
+    date = time.to_date
+    today = Date.current
+
+    if date == today
+      time.strftime("%H:%M")
+    elsif date >= (today - 6.days)
+      I18n.l(time, format: "%A").capitalize
+    else
+      time.strftime("%d/%m/%Y")
+    end
+  end
+
 end

@@ -8,42 +8,81 @@
   <input id="messagerie-drawer" type="checkbox" class="drawer-toggle" />
 
   <div class="drawer-content flex flex-col min-h-screen relative w-full">
-    
+      
     <div class="sticky top-0 lg:top-16 px-4 2xl:px-8 pt-4 pb-4 z-30 bg-slate-50 flex gap-4 items-center min-h-12 sm:min-h-16 w-full border-b lg:border-none">      
       <label for="messagerie-drawer" class="btn btn-square btn-ghost lg:hidden drawer-button cursor-pointer">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
       </label>
-
-      <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Messagerie') %> - <%= @to_user&.nom_prénom %></h1>
+      
+      <h1 class="text-2xl sm:text-4xl text-primary font-bold">
+        <%= page_title!('Messagerie') %> 
+        <%= "- #{@to_user.nom_prénom}" if @to_user %>
+      </h1>
     </div>
-    
-    <div class="flex justify-center w-full mt-4 flex-1">
-      <div class="flex flex-col w-full lg:w-3/5 relative">
-        
-        <div id="notifications" class="w-full lg:mt-12 pb-24 lg:pb-0">
-          <%= render partial: "admin/notification", collection: @notifications %>
-        </div>
 
-        <div class="sticky bottom-20 lg:bottom-0 bg-slate-50 px-2 lg:pb-4 z-20 w-full mt-auto relative">
-          
-          <div id="new-message-badge" class="hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-4 z-30 transform cursor-pointer group">
-            <div class="badge badge-primary rounded-full px-4 py-3 shadow-lg flex items-center gap-1 hover:badge-primary-focus transition-colors">
-              <span class="text-xs group-hover:-translate-y-0.5 transition-transform">👇</span>
-              <span class="text-sm font-semibold text-white">Nouveau message</span>
-            </div>
+    <% if @to_user %>
+      <div class="flex justify-center w-full mt-4 flex-1">
+        <div class="flex flex-col w-full lg:w-3/5 relative">
+          <div id="notifications" class="w-full lg:mt-12 pb-24 lg:pb-0">
+            <%= render partial: "admin/notification", collection: @notifications %>
           </div>
-          <input class="w-full rounded-xl p-4 border bg-white shadow-sm"
-                name="message" 
-                placeholder="Ecrivez votre message"
-                hx-post="/admin/send_notification?to_id=<%= params[:to_id] %>"
-                hx-trigger="keyup[key=='Enter']"
-                hx-on::after-request="if(event.detail.successful) this.value = ''">
-        </div>
 
+          <div class="sticky bottom-20 lg:bottom-0 bg-slate-50 px-2 lg:pb-4 z-20 w-full mt-auto relative">
+            <div id="new-message-badge" class="hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-4 z-30 transform cursor-pointer group">
+              <div class="badge badge-primary rounded-full px-4 py-3 shadow-lg flex items-center gap-1 hover:badge-primary-focus transition-colors">
+                <span class="text-xs group-hover:-translate-y-0.5 transition-transform">👇</span>
+                <span class="text-sm font-semibold text-white">Nouveau message</span>
+              </div>
+            </div>
+            <input class="w-full rounded-xl p-4 border bg-white shadow-sm" name="message" placeholder="Ecrivez votre message" hx-post="/admin/send_notification?to_id=<%= params[:to_id] %>" hx-trigger="keyup[key=='Enter']" hx-on::after-request="if(event.detail.successful) this.value = ''">
+          </div>
+        </div>
       </div>
-    </div>
+
+    <% else %>
+      <div class="flex flex-col items-center justify-center flex-1 p-4 lg:p-8 text-center bg-slate-50">
+        
+        <div class="max-w-xl w-full">
+          <p class="text-slate-500 mb-8 lg:mt-8">Sélectionnez un contact dans le menu pour démarrer une discussion, ou reprenez une conversation récente ci-dessous.</p>
+
+          <% if @recent_conversations.present? && @recent_conversations.any? %>
+            <div class="flex flex-col gap-3 text-left overflow-y-auto mb-20 lg:mb-0">
+              <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2">Discussions récentes</h3>
+              
+              <% @recent_conversations.each do |user| %>
+                <% last_message = @last_messages[user.id] %>
+                
+                <%= link_to admin_messagerie_path(to_id: user.id), "data-turbo": false, class: "card bg-white shadow-sm hover:shadow-md hover:border-primary transition-all border border-slate-200" do %>
+                  <div class="card-body p-4 flex flex-row items-center gap-4">
+                    <%= render partial: 'partials/user_profile_picture', locals: { user: user } %>
+                    
+                    <div class="flex-1 min-w-0">
+                      <div class="flex justify-between items-baseline mb-1">
+                        <h4 class="font-bold text-slate-800 truncate"><%= user.nom_prénom %></h4>
+                        <span class="text-xs text-slate-400 whitespace-nowrap ml-2">
+                          <%= notification_time_format(last_message.created_at) %>
+                        </span>
+                      </div>
+                      
+                      <p class="text-sm text-slate-500 truncate">
+                        <% if last_message.from_id == current_user.id %>
+                          <span class="text-slate-400 mr-1">Vous:</span>
+                        <% end %>
+                        <%= last_message.moderation %>
+                      </p>
+                    </div>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="p-8 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400">
+              <p>Aucune conversation récente.</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
   </div>
 
   <div class="drawer-side z-[100]">

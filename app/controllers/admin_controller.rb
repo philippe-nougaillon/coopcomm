@@ -59,12 +59,34 @@ class AdminController < ApplicationController
     # On récupère les utilisateurs avec qui on peut envoyer des messages
     @users = current_user.organisation.users.filter_by_service(current_user.services).where.not(id: current_user.id).ordered
 
-    @to_user = User.find_by(id: params[:to_id] || @users.first&.id)
+    @to_user = User.find_by(id: params[:to_id])
 
-    # On récupère les notifications envoyées et reçues d'un utilisateur
-    @notifications = Notification
-                       .where(from_id: current_user.id, to_id: @to_user&.id)
-                       .or(Notification.where(from_id: @to_user&.id, to_id: current_user.id))
+    if @to_user
+      # On récupère les notifications envoyées et reçues d'un utilisateur
+      @notifications = Notification
+                        .where(from_id: current_user.id, to_id: @to_user&.id)
+                        .or(Notification.where(from_id: @to_user&.id, to_id: current_user.id))
+    else
+      recent_notifications = Notification.where(from_id: current_user.id)
+                                       .or(Notification.where(to_id: current_user.id))
+                                       .order(created_at: :desc)
+      @last_messages = {}
+      ordered_user_ids = []
+      
+
+      recent_notifications.each do |notif|
+        other_user_id = notif.from_id == current_user.id ? notif.to_id : notif.from_id
+        
+        unless @last_messages.key?(other_user_id)
+          @last_messages[other_user_id] = notif
+          ordered_user_ids << other_user_id
+        end
+      end
+
+      users_by_id = User.where(id: ordered_user_ids).index_by(&:id)
+
+      @recent_conversations = ordered_user_ids.map { |id| users_by_id[id] }.compact
+    end
 
     # On met à jour la date de la dernière fois qu'on a vu les notifications
     current_user.update!(notifications_last_seen_at: DateTime.now)
