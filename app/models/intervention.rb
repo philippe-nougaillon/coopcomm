@@ -26,14 +26,16 @@ class Intervention < ApplicationRecord
 
   has_many_attached :photos
 
-  validates :description, presence: true
   
   before_validation -> { combine_datetime(:début_prévue) }
   before_validation -> { combine_datetime(:fin_prévue) }
   before_validation -> { combine_datetime(:début) }
   before_validation -> { combine_datetime(:fin) }
   before_validation :check_absence
+  before_validation :set_temporary_description, on: :create
   
+  validates :description, presence: true
+
   validate :schedules_must_make_sense
   validate :tools_must_be_available
   validate :agents_must_be_available
@@ -42,6 +44,8 @@ class Intervention < ApplicationRecord
   before_save :calc_temps_total
 
   scope :ordered, -> { order(updated_at: :desc) }
+
+  after_create :replace_description_with_id
 
   after_create_commit :broadcast_to_authorized_viewers
   # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
@@ -466,6 +470,19 @@ class Intervention < ApplicationRecord
 
     if fin.present? && fin > Time.current
       errors.add(:fin, "ne peut pas être dans le futur")
+    end
+  end
+
+  def set_temporary_description
+    # Si la description est vide, on lui donne une valeur bouchon pour passer la validation
+    self.description = "en_attente_id" if description.blank?
+  end
+
+  def replace_description_with_id
+    # Si la description est notre valeur bouchon, on la met à jour avec l'ID généré.
+    # update_column met à jour directement en base sans redéclencher les validations/callbacks.
+    if description == "en_attente_id"
+      update_column(:description, "##{self.id}")
     end
   end
 end

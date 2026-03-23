@@ -24,12 +24,14 @@
     </h2>
     <div class="bg-sky-50 p-4 rounded border border-sky-100">
       <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8 mb-5">
-        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
-          <div class="w-full sm:flex-1">
-            <%= form.label :description %>
-            <%= form.text_field :description, class: "input input-sm w-full", required: true %>
+        <% unless current_user.agent? %>
+          <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
+            <div class="w-full sm:flex-1">
+              <%= form.label :description %>
+              <%= form.text_field :description, class: "input input-sm w-full" %>
+            </div>
           </div>
-        </div>
+        <% end %>
 
         <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" data-controller="dynamic-select" data-dynamic-select-url-value="<%= services_for_adherent_interventions_path %>">
           <% if current_user.adhérent? %>
