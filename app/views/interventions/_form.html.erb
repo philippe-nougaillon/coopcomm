@@ -222,18 +222,21 @@
                         class: "input input-sm flex-1 w-full",
                         value: (params[:début].try(:to_date) || @intervention.début&.to_date),
                         data: { 'calc-temps-passe-target': 'debut_date',
-                        action: "change->calc-temps-passe#calc" } %>
+                        action: "change->calc-temps-passe#calc" },
+                        required: current_user.agent? %>
                     <%= form.select :début_hour, (0..23).map { |h| [format('%02d', h), h] }, 
                         {selected: params[:début_hour] || @intervention.début&.hour }, 
                         class: "select select-sm w-16",
                         data: { 'calc-temps-passe-target': 'debut_hour',
-                        action: "change->calc-temps-passe#calc" } %>
+                        action: "change->calc-temps-passe#calc" },
+                        required: current_user.agent? %>
                     :
                     <%= form.select :début_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
                         {selected: params[:début_minute] ||@intervention.début&.min }, 
                         class: "select select-sm w-16",
                         data: { 'calc-temps-passe-target': 'debut_minute',
-                        action: "change->calc-temps-passe#calc" } %>
+                        action: "change->calc-temps-passe#calc" },
+                        required: current_user.agent? %>
                   </div>
                 </div>
 
@@ -244,19 +247,22 @@
                         class: "input input-sm flex-1 w-full",
                         value: (params[:fin].try(:to_date) || @intervention.fin&.to_date),
                         data: { 'calc-temps-passe-target': 'fin_date',
-                        action: "change->calc-temps-passe#calc" } %>
+                        action: "change->calc-temps-passe#calc" },
+                        required: current_user.agent? %>
 
                     <%= form.select :fin_hour, (0..23).map { |h| [format('%02d', h), h] }, 
                         {selected: params[:fin_hour] || @intervention.fin&.hour }, 
                         class: "select select-sm w-16",
                         data: { 'calc-temps-passe-target': 'fin_hour',
-                        action: "change->calc-temps-passe#calc" } %>
+                        action: "change->calc-temps-passe#calc" },
+                        required: current_user.agent? %>
                     :
                     <%= form.select :fin_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, 
                         {selected: params[:fin_minute] || @intervention.fin&.min }, 
                         class: "select select-sm w-16",
                         data: { 'calc-temps-passe-target': 'fin_minute',
-                        action: "change->calc-temps-passe#calc" } %>
+                        action: "change->calc-temps-passe#calc" },
+                        required: current_user.agent? %>
                   </div>
                 </div>
               </div>
@@ -266,7 +272,8 @@
                   <%= form.label :temps_de_pause, "Temps de pause (h)", class: 'whitespace-nowrap' %>
                   <%= form.select :temps_de_pause, options_for_select([0.0, 0.5, 1.0].map { |v| [v.to_s.tr('.', ','), v] }, intervention.temps_de_pause),
                                   {}, class: "select select-sm w-full",
-                                  data: { 'calc-temps-passe-target': 'pause', action: "change->calc-temps-passe#calc" } %>
+                                  data: { 'calc-temps-passe-target': 'pause', action: "change->calc-temps-passe#calc" },
+                                  required: current_user.agent? %>
                 </div>
 
                 <div class="w-full flex-1">
