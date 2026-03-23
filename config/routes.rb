@@ -70,6 +70,7 @@ Rails.application.routes.draw do
     get :create_new_user
     post :create_new_user_do
     get :messagerie
+    post :mark_as_read
     post :send_notification
     get :stats
     post :search_contact

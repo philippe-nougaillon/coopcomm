@@ -196,7 +196,7 @@ class User < ApplicationRecord
   end
 
   def new_notifications?
-    return self.notifications.where("notifications.created_at > ?", self.notifications_last_seen_at).any?
+    Notification.where(to_id: self.id, read_at: nil).any?
   end
 
   def current_absence(date = Date.today, periode = nil)

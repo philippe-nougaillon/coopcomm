@@ -23,8 +23,27 @@
     <% if @to_user %>
       <div class="flex justify-center w-full mt-4 flex-1">
         <div class="flex flex-col w-full lg:w-3/5 relative">
+          
           <div id="notifications" class="w-full lg:mt-12 pb-24 lg:pb-0">
-            <%= render partial: "admin/notification", collection: @notifications %>
+            <% @notifications.each do |notification| %>
+              
+              <% if notification.id == @first_unread_id %>
+                <div id="first-unread-banner" class="flex items-center gap-4 my-6">
+                  <div class="flex-1 border-t border-primary/30"></div>
+                  <div class="badge badge-primary badge-outline font-bold px-4 py-3">
+                    <%= pluralize(@unread_count, "nouveau message", "nouveaux messages") %>
+                  </div>
+                  <div class="flex-1 border-t border-primary/30"></div>
+                </div>
+              <% end %>
+
+              <div class="message-wrapper" 
+                  data-message-id="<%= notification.id %>" 
+                  data-unread="<%= notification.to_id == current_user.id && notification.read_at.nil? ? 'true' : 'false' %>">
+                <%= render partial: "admin/notification", locals: { notification: notification } %>
+              </div>
+
+            <% end %>
           </div>
 
           <div class="sticky bottom-20 lg:bottom-0 bg-slate-50 px-2 lg:pb-4 z-20 w-full mt-auto relative">
@@ -41,7 +60,6 @@
 
     <% else %>
       <div class="flex flex-col items-center justify-center flex-1 p-4 lg:p-8 text-center bg-slate-50">
-        
         <div class="max-w-xl w-full">
           <p class="text-slate-500 mb-8 lg:mt-8">Sélectionnez un contact dans le menu pour démarrer une discussion, ou reprenez une conversation récente ci-dessous.</p>
 
@@ -51,25 +69,38 @@
               
               <% @recent_conversations.each do |user| %>
                 <% last_message = @last_messages[user.id] %>
+                <% unread_count = @unread_counts[user.id] || 0 %>
                 
                 <%= link_to admin_messagerie_path(to_id: user.id), "data-turbo": false, class: "card bg-white shadow-sm hover:shadow-md hover:border-primary transition-all border border-slate-200" do %>
                   <div class="card-body p-4 flex flex-row items-center gap-4">
                     <%= render partial: 'partials/user_profile_picture', locals: { user: user } %>
                     
                     <div class="flex-1 min-w-0">
+                      
                       <div class="flex justify-between items-baseline mb-1">
-                        <h4 class="font-bold text-slate-800 truncate"><%= user.nom_prénom %></h4>
-                        <span class="text-xs text-slate-400 whitespace-nowrap ml-2">
+                        <h4 class="font-bold truncate <%= unread_count > 0 ? 'text-primary' : 'text-slate-800' %>">
+                          <%= user.nom_prénom %>
+                        </h4>
+                        <span class="text-xs whitespace-nowrap ml-2 <%= unread_count > 0 ? 'text-primary font-bold' : 'text-slate-400' %>">
                           <%= notification_time_format(last_message.created_at) %>
                         </span>
                       </div>
                       
-                      <p class="text-sm text-slate-500 truncate">
-                        <% if last_message.from_id == current_user.id %>
-                          <span class="text-slate-400 mr-1">Vous:</span>
+                      <div class="flex justify-between items-center gap-2">
+                        <p class="text-sm truncate <%= unread_count > 0 ? 'text-slate-700 font-semibold' : 'text-slate-500' %>">
+                          <% if last_message.from_id == current_user.id %>
+                            <span class="text-slate-400 mr-1 font-normal">Vous:</span>
+                          <% end %>
+                          <%= last_message.moderation %>
+                        </p>
+
+                        <% if unread_count > 0 %>
+                          <div class="badge badge-primary badge-sm font-bold shadow-sm">
+                            <%= unread_count %>
+                          </div>
                         <% end %>
-                        <%= last_message.moderation %>
-                      </p>
+                      </div>
+
                     </div>
                   </div>
                 <% end %>
@@ -119,7 +150,22 @@
 <script>
   let newMessageBadge;
 
-  // Fonction pour scroller tout en bas (utilisée au chargement et pour vos propres messages)
+  // 1. Fonction pour scroller à la bonne position au chargement
+  function scrollToCorrectPosition() {
+    const unreadBanner = document.getElementById('first-unread-banner');
+    newMessageBadge = document.getElementById('new-message-badge');
+    
+    if (unreadBanner) {
+      // S'il y a un séparateur de messages non lus, on va jusqu'à lui
+      const y = unreadBanner.getBoundingClientRect().top + window.scrollY - 100;
+      window.scrollTo({ top: y, behavior: 'instant' });
+    } else {
+      // Sinon on va tout en bas
+      scrollToBottom('instant');
+    }
+  }
+
+  // 2. Fonction pour scroller tout en bas
   function scrollToBottom(behavior = 'instant') {
     window.scrollTo({
       top: document.documentElement.scrollHeight,
@@ -128,10 +174,9 @@
     if (newMessageBadge) newMessageBadge.classList.add('hidden');
   }
 
+  // 3. Fonction pour surveiller les nouveaux messages (Turbo Streams)
   function setupMessageObserver() {
     const notificationsContainer = document.getElementById('notifications');
-    newMessageBadge = document.getElementById('new-message-badge');
-
     if (!notificationsContainer || !newMessageBadge) return;
 
     if (window.messageObserver) {
@@ -144,32 +189,19 @@
           mutation.addedNodes.forEach((node) => {
             if (node.nodeType === 1) { 
               
-              // 1. Est-ce MON message ?
               const isMyMessage = node.classList.contains('chat-end') || node.querySelector('.chat-end') !== null;
-
-              // 2. Quelle est la taille de ce nouveau message ?
               const newNodeHeight = node.offsetHeight || 0;
-
-              // 3. Était-on déjà en bas AVANT son arrivée ?
               const scrollPosition = window.innerHeight + window.scrollY;
               const distanceToBottom = document.documentElement.scrollHeight - scrollPosition;
               const distanceBeforeInsertion = distanceToBottom - newNodeHeight;
               
               const isNearBottom = distanceBeforeInsertion <= 150;
 
-              // 4. La logique d'affichage
               if (isMyMessage) {
-                // Si c'est MON message, je veux voir l'input en dessous, donc on scrolle tout en bas
                 scrollToBottom('smooth');
               } else {
-                // Si c'est le message DE L'AUTRE
                 if (isNearBottom) {
-                  // NOUVEAU COMPORTEMENT : On scrolle en haut du message reçu
-                  
-                  // On calcule la position de l'élément par rapport au haut de la page
                   const elementPosition = node.getBoundingClientRect().top + window.scrollY;
-                  
-                  // On retire 120 pixels pour ne pas que le message soit caché sous votre header sticky
                   const offsetPosition = elementPosition - 120; 
 
                   window.scrollTo({
@@ -178,9 +210,13 @@
                   });
 
                   if (newMessageBadge) newMessageBadge.classList.add('hidden');
-
                 } else {
-                  newMessageBadge.classList.remove('hidden'); // On affiche le badge si on lisait plus haut
+                  newMessageBadge.classList.remove('hidden');
+                }
+                
+                // NOUVEAU : Si un message arrive en direct et qu'on doit le marquer comme lu plus tard
+                if (window.readObserver && node.dataset && node.dataset.unread === 'true') {
+                  window.readObserver.observe(node);
                 }
               }
             }
@@ -191,7 +227,7 @@
 
     window.messageObserver.observe(notificationsContainer, { childList: true });
 
-    // --- Événements supplémentaires ---
+    // Événements pour le badge "Nouveau message"
     newMessageBadge.addEventListener('click', () => scrollToBottom('smooth'));
 
     window.addEventListener('scroll', () => {
@@ -204,14 +240,51 @@
     });
   }
 
-  // Initialisation
-  document.addEventListener("DOMContentLoaded", () => {
-    scrollToBottom();
-    setupMessageObserver();
-  });
+  // 4. Fonction pour marquer les messages comme lus (Intersection Observer)
+  function setupReadReceipts() {
+    // On déconnecte un éventuel ancien observer (pour éviter les doublons lors des navigations Turbo)
+    if (window.readObserver) {
+      window.readObserver.disconnect();
+    }
 
-  document.addEventListener("turbo:load", () => {
-    scrollToBottom();
+    window.readObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const messageNode = entry.target;
+          const messageId = messageNode.dataset.messageId;
+
+          // Envoi de la requête au serveur pour marquer comme lu
+          const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+          fetch(`/admin/mark_as_read`, {
+            method: 'POST',
+            headers: {
+              'X-CSRF-Token': csrfToken,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({ id: messageId })
+          });
+
+          // On arrête de surveiller ce message spécifique
+          window.readObserver.unobserve(messageNode);
+          messageNode.dataset.unread = 'false';
+        }
+      });
+    }, { threshold: 0.5 }); // Le message doit être visible à 50%
+
+    // On observe tous les messages actuellement marqués comme non lus dans le DOM
+    document.querySelectorAll('.message-wrapper[data-unread="true"]').forEach((msg) => {
+      window.readObserver.observe(msg);
+    });
+  }
+
+  // Initialisation globale
+  function initMessagerie() {
+    scrollToCorrectPosition();
     setupMessageObserver();
-  });
+    setupReadReceipts();
+  }
+
+  document.addEventListener("DOMContentLoaded", initMessagerie);
+  document.addEventListener("turbo:load", initMessagerie);
 </script>

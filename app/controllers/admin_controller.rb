@@ -66,6 +66,12 @@ class AdminController < ApplicationController
       @notifications = Notification
                         .where(from_id: current_user.id, to_id: @to_user&.id)
                         .or(Notification.where(from_id: @to_user&.id, to_id: current_user.id))
+                        .order(:created_at)
+
+      unread_messages = @notifications.select { |n| n.to_id == current_user.id && n.read_at.nil? }
+      
+      @unread_count = unread_messages.count
+      @first_unread_id = unread_messages.first&.id
     else
       recent_notifications = Notification.where(from_id: current_user.id)
                                        .or(Notification.where(to_id: current_user.id))
@@ -86,16 +92,28 @@ class AdminController < ApplicationController
       users_by_id = User.where(id: ordered_user_ids).index_by(&:id)
 
       @recent_conversations = ordered_user_ids.map { |id| users_by_id[id] }.compact
+      @unread_counts = Notification.where(to_id: current_user.id, read_at: nil).group(:from_id).count
     end
-
-    # On met à jour la date de la dernière fois qu'on a vu les notifications
-    current_user.update!(notifications_last_seen_at: DateTime.now)
   end
 
   def send_notification
     if params[:message].present? && params[:to_id].present?
       Notification.create!(message: params[:message], from_id: current_user.id, to_id: params[:to_id])
     end
+  end
+
+  def mark_as_read
+    notification = Notification.find(params[:id])
+    
+    # Sécurité : on vérifie que c'est bien un message destiné à l'utilisateur courant
+    if notification.to_id == current_user.id && notification.read_at.nil?
+      notification.update(read_at: Time.current)
+      
+      # Plus tard, on pourra ajouter un Turbo Stream ici pour mettre à jour 
+      # les fameux "deux traits bleus" chez l'expéditeur !
+    end
+
+    head :ok # Renvoie juste un statut 200 (OK) sans recharger de page
   end
 
   def stats

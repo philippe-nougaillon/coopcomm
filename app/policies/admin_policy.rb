@@ -32,4 +32,8 @@ class AdminPolicy < ApplicationPolicy
   def search_contact?
     messagerie?
   end
+
+  def mark_as_read?
+    messagerie?
+  end
 end
