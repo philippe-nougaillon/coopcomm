@@ -4,38 +4,51 @@ export default class extends Controller {
   static targets = ["adherent", "service"]
   static values = { url: String }
 
-  updateServices() {
+  // On déclenche la mise à jour dès que le contrôleur est attaché au DOM.
+  // Nécessaire si on a le champ hidden field pour adhérent_id.
+  connect() {
+    // Variable pour le service déjà selectionné quand on est sur un edit 
+    const initialValue = this.serviceTarget.value
+
+    this.updateServices(initialValue)
+  }
+
+  updateServices(valueToRestore = null) {
     const adherentId = this.adherentTarget.value
 
     if (!adherentId) {
       this.populateSelect([])
       return
     }
-
+    console.log('updateServices')
     // Requête vers notre nouvelle action Rails
     fetch(`${this.urlValue}?adherent_id=${adherentId}`, {
       headers: { "Accept": "application/json" }
     })
       .then(response => response.json())
-      .then(data => this.populateSelect(data))
+      .then(data => this.populateSelect(data, valueToRestore))
   }
 
-  populateSelect(services) {
+  populateSelect(services, selectedId) {
     const select = this.serviceTarget
 
     // 1. On met à jour le select natif (toujours utile pour le formulaire)
     select.innerHTML = "<option value=''></option>"
+
+    const slimData = [{ text: '', value: '', placeholder: true }]
+
     services.forEach(service => {
+      // On vérifie si cet ID est celui qu'on doit restaurer
+      const isSelected = selectedId && service.id.toString() === selectedId.toString()
+
       const option = document.createElement("option")
       option.value = service.id
       option.text = service.nom
+      option.selected = isSelected
       select.appendChild(option)
-    })
-
-    // 2. On prépare les données au format exigé par l'API de Slim-Select
-    const slimData = [{ text: '', value: '', placeholder: true }]
-    services.forEach(service => {
-      slimData.push({ text: service.nom, value: service.id })
+      
+      // 2. On prépare les données au format exigé par l'API de Slim-Select
+      slimData.push({ text: service.nom, value: service.id, selected: isSelected })
     })
 
     // Règle métier : S'il y a un seul service, on le sélectionne

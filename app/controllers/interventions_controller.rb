@@ -154,7 +154,6 @@ class InterventionsController < ApplicationController
   # GET /interventions/new
   def new
     @intervention = Intervention.new
-    @intervention.adherent_id = current_user.id if current_user.adhérent?
 
     if current_user.agent?
       @intervention.agent_ids = current_user.id

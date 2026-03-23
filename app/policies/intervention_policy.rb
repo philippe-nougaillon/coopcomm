@@ -42,7 +42,7 @@ class InterventionPolicy < ApplicationPolicy
   # end
 
   def terminer?
-    show?
+    show? && !user.adhérent?
   end
 
   def valider?
