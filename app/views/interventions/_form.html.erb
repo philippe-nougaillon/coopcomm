@@ -1,7 +1,8 @@
 <%= form_with(model: intervention, class: "contents",
-              data: {
+              data: (current_user.adhérent? ? {} : {
                 controller: "verification-disponibilites",
-                'verification-disponibilites-intervention-id-value': (@intervention.id if @intervention.persisted?) }
+                verification_disponibilites_intervention_id_value: (@intervention.id if @intervention.persisted?)
+              })
     ) do |form| %>
   <% if intervention.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
@@ -158,12 +159,13 @@
         <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
           <div class="w-full flex-1">
             <%= form.label :meteo, "Prévision météo" %>
-            <%= form.text_field :meteo, class: "input input-sm w-full", 'data-meteo-intervention-target': "prévisionMétéo", disabled: @intervention.passed %>
+            <%= form.text_field :meteo, class: "input input-sm w-full", 'data-meteo-intervention-target': "prévisionMétéo", disabled: @intervention.passed || current_user.adhérent? %>
           </div>
         </div>
       </div>
     </div>
 
+    <% if !current_user.adhérent?%>
     <h2 class="text-lg text-secondary font-black mt-5">
       Assignation
     </h2>
@@ -292,6 +294,7 @@
 
       </div>
     </div>
+    <% end %>
   <% end %>
 
   <% if intervention.persisted? && (current_user.adhérent? || current_user.manager_or_admin?) %>
