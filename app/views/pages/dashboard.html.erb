@@ -6,6 +6,36 @@
 
 <% if current_user.manager_or_admin? %>
   <%= render partial:'pages/dashboard/dashboard_manager' %>
+  <h1>Historique des exports Excel</h1>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Date et Heure</th>
+        <th>Utilisateur</th>
+        <th>Type d'export</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @export_logs.each do |log| %>
+        <tr>
+          <td><%= l(log.created_at, format: :long) %></td>
+          
+          <td><%= log.user.try(:nom_prénom) || "Utilisateur supprimé" %></td>
+          
+          <td>
+            <% if log.export_type == 'dashboard_manager' %>
+              <span class="badge">Dashboard (Manager)</span>
+            <% elsif log.export_type == 'dashboard_adherent' %>
+              <span class="badge">Dashboard (Adhérent)</span>
+            <% else %>
+              <%= log.export_type.humanize %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
 <% elsif current_user.adhérent? %>
   <%= render partial:'pages/dashboard/dashboard_adhérent' %>
 <% end %>

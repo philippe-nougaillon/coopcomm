@@ -61,6 +61,7 @@ class PagesController < ApplicationController
     start_date = 9.months.ago.beginning_of_month
     end_date = 3.months.from_now.end_of_month
     if current_user.manager_or_admin?
+      @export_logs = current_user.organisation.export_logs.includes(:user).order(created_at: :desc)
       # temps_consommable_agent_mensuellement = 35 * 4
       # temps_consommable_organisation_mensuellement = current_user.organisation.users.adherent.count * 100
       #
@@ -302,8 +303,10 @@ class PagesController < ApplicationController
       format.xls do
         if current_user.manager_or_admin?
           xls_file = DashboardManagerToXls.new(@temps_total_par_adhérent, @temps_total_par_agent, @data_workflow_chart, @qté_interventions_par_service, @temps_total_par_service, @co2_total_par_mois).call
+          ExportLog.create!(user: current_user, organisation: current_user.organisation, export_type: 'dashboard_manager')
         else
           xls_file = DashboardAdherentToXls.new(@proportion_temps_consommé, @temps_total_par_mois, @data_workflow_chart, @qté_interventions_par_service, @temps_total_par_service, @co2_total_par_mois).call
+          ExportLog.create!(user: current_user, organisation: current_user.organisation, export_type: 'dashboard_adherent')
         end
         send_data xls_file, filename: "Dashboard_#{l Date.today}.xls"
       end

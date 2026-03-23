@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_23_101323) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_23_145853) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -115,6 +115,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_23_101323) do
     t.decimal "version", precision: 5, scale: 1
     t.string "slug"
     t.index ["tool_id"], name: "index_documents_on_tool_id"
+  end
+
+  create_table "export_logs", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "organisation_id", null: false
+    t.string "export_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organisation_id"], name: "index_export_logs_on_organisation_id"
+    t.index ["user_id"], name: "index_export_logs_on_user_id"
   end
 
   create_table "interventions", force: :cascade do |t|
@@ -466,6 +476,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_23_101323) do
   add_foreign_key "agent_interventions", "interventions"
   add_foreign_key "agent_interventions", "users", column: "agent_id"
   add_foreign_key "documents", "tools"
+  add_foreign_key "export_logs", "organisations"
+  add_foreign_key "export_logs", "users"
   add_foreign_key "interventions", "organisations"
   add_foreign_key "interventions", "services"
   add_foreign_key "interventions", "users", column: "team_id"
