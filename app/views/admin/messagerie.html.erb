@@ -242,7 +242,6 @@
 
   // 4. Fonction pour marquer les messages comme lus (Intersection Observer)
   function setupReadReceipts() {
-    // On déconnecte un éventuel ancien observer (pour éviter les doublons lors des navigations Turbo)
     if (window.readObserver) {
       window.readObserver.disconnect();
     }
@@ -265,14 +264,18 @@
             body: JSON.stringify({ id: messageId })
           });
 
-          // On arrête de surveiller ce message spécifique
+          // On arrête de surveiller ce message
           window.readObserver.unobserve(messageNode);
           messageNode.dataset.unread = 'false';
         }
       });
-    }, { threshold: 0.5 }); // Le message doit être visible à 50%
+    }, { 
+      // LA CORRECTION EST ICI 👇
+      threshold: 0, // Déclenche dès qu'une partie du message est visible
+      rootMargin: "0px 0px -50px 0px" // Attend que le message rentre d'au moins 50 pixels dans l'écran pour le valider
+    });
 
-    // On observe tous les messages actuellement marqués comme non lus dans le DOM
+    // On observe tous les messages non lus
     document.querySelectorAll('.message-wrapper[data-unread="true"]').forEach((msg) => {
       window.readObserver.observe(msg);
     });
