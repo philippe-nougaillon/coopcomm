@@ -1,9 +1,11 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  user: one
-  export_type: MyString
+  user: hidalgo
+  organisation: mairie_paris
+  export_type: dashboard_manager
 
 two:
-  user: two
-  export_type: MyString
+  user: weil
+  organisation: mairie_paris
+  export_type: dashboard_adherent
