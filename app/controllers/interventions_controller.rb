@@ -258,7 +258,11 @@ class InterventionsController < ApplicationController
 
         send_workflow_changed_notification
         send_intervention_termine_notification
-        redirect_to @intervention, notice: "Intervention terminée"
+        if current_user.agent?
+          redirect_to edit_intervention_path(@intervention), notice: "Intervention terminée"
+        else
+          redirect_to @intervention, notice: "Intervention terminée"
+        end
       elsif @intervention.terminé?
         redirect_to @intervention, alert: "L'intervention est déjà terminée"
       else
