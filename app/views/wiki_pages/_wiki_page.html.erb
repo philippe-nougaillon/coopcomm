@@ -13,7 +13,7 @@
     <% if params[:action] == 'index' %>
       <%= link_to wiki_page.titre, wiki_page_path(wiki_page, catégorie: params[:catégorie]) %>
     <% else %>
-      <span class="text-primary text-2xl"><%= page_title!(wiki_page.titre) %></span>
+      <span class="text-primary text-4xl"><%= page_title!(wiki_page.titre) %></span>
     <% end %>
   </h1>
 

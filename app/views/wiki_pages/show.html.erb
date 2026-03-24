@@ -3,11 +3,18 @@
   <div class="ml-8 sm:ml-64">
     <%= render @wiki_page %>
 
+    <% if @wiki_page.document.attached? %>
+      <% if @wiki_page.document.representable? %>
+        <%= link_to 'Voir le document', @wiki_page.document, class: "btn btn-primary" %>
+      <% else %>
+        <%= link_to "Télécharger le document", rails_blob_path(@wiki_page.document, disposition: "attachment"), class: "btn btn-primary" %>
+      <% end %>
+    <% end %>
+
     <p class="mt-4">
       <i>Publiée le <%= l(@wiki_page.created_at) %></i>
       <i>(Modifiée il y a <%= time_ago_in_words @wiki_page.updated_at %>)</i>
     </p>
-
     <% if policy(@wiki_page).edit? %>
       <%= link_to "Modifier", edit_wiki_page_path(@wiki_page), class: "mt-2 btn" %>
       <div class="inline-block ml-2">

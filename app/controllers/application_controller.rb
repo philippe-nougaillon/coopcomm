@@ -8,7 +8,7 @@ class ApplicationController < ActionController::Base
 
   helper_method :sort_column, :sort_direction
 
-  rate_limit to: 10, within: 1.minute, 
+  rate_limit to: 20, within: 1.minute, 
              by: -> { request.ip }, 
              if: -> { devise_controller? }
 

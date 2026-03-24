@@ -63,7 +63,7 @@ class Intervention < ApplicationRecord
   ARCHIVE   = 'archivé'
 
   workflow do
-    state NOUVEAU, meta: {style: 'badge-info text-white', rgba: '0,181,255,255'} do
+    state NOUVEAU, meta: {style: 'badge-primary text-white', rgba: '0,181,255,255'} do
       # event :accepter, transitions_to: ACCEPTE
       event :terminer, transitions_to: TERMINE
     end
@@ -77,7 +77,7 @@ class Intervention < ApplicationRecord
     #   event :terminer, transitions_to: TERMINE
     # end
 
-    state TERMINE, meta: {style: 'badge-primary text-white'} do
+    state TERMINE, meta: {style: 'badge-accent text-white'} do
       event :valider, transitions_to: VALIDE
       event :refuser, transitions_to: REFUSE
     end

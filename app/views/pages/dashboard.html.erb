@@ -6,38 +6,43 @@
 
 <% if current_user.manager_or_admin? %>
   <%= render partial:'pages/dashboard/dashboard_manager' %>
-  <h1>Historique des exports Excel</h1>
+  <h2 class="text-2xl text-secondary mt-16">Historique des exports</h1>
 
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Date et Heure</th>
-        <th>Utilisateur</th>
-        <th>Type d'export</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @export_logs.each do |log| %>
+  <div class="overflow-x-auto mt-4">
+    <table class="table table-sm">
+      <thead class="bg-slate-100">
         <tr>
-          <td><%= l(log.created_at, format: :long) %></td>
-          
-          <td><%= log.user.try(:nom_prénom) || "Utilisateur supprimé" %></td>
-          
-          <td>
-            <% if log.export_type == 'dashboard_manager' %>
-              <span class="badge">Dashboard (Manager)</span>
-            <% elsif log.export_type == 'dashboard_adherent' %>
-              <span class="badge">Dashboard (Adhérent)</span>
-            <% else %>
-              <%= log.export_type.humanize %>
-            <% end %>
-          </td>
+          <th>Date et Heure</th>
+          <th>Utilisateur</th>
+          <th>Type d'export</th>
         </tr>
-      <% end %>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <% @export_logs.each do |log| %>
+          <tr class="hover:bg-base-300">
+            <td><%= l(log.created_at, format: :long) %></td>
+            
+            <td><%= log.user.try(:nom_prénom) || "Utilisateur supprimé" %></td>
+            
+            <td>
+              <% if log.export_type == 'dashboard_manager' %>
+                <span>Dashboard (Manager)</span>
+              <% elsif log.export_type == 'dashboard_adherent' %>
+                <span>Dashboard (Adhérent)</span>
+              <% else %>
+                <%= log.export_type.humanize %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+      <tfoot>
+        <th></th>
+      </tfoot>
+    </table>
+  </div>
 <% elsif current_user.adhérent? %>
   <%= render partial:'pages/dashboard/dashboard_adhérent' %>
 <% end %>
 
-<%= link_to "Exporter les interventions en XLS", url_for(params.permit!.merge(format: :xls)), class: "text-sm btn btn-sm btn-outline btn-success hover:text-white! mt-8" %>
+<%= link_to "Exporter en XLS", url_for(params.permit!.merge(format: :xls)), class: "text-sm btn btn-sm btn-outline btn-success hover:text-white!" %>

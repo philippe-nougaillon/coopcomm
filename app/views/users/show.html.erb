@@ -3,20 +3,31 @@
 
   <div class="flex flex-wrap justify-between gap-24">
     <div class="flex-1 flex shadow rounded-lg">
-      <div class="flex flex-col items-center bg-indigo-100 w-48 py-8 rounded-l-lg">
+      <div class="flex flex-col items-center bg-slate-200 w-48 py-8 rounded-l-lg">
         <div class="avatar avatar-placeholder rounded-full">
-          <div class="w-24 bg-gray-100 rounded-full">
-            <% if @user.profile_picture.attached? %>
-              <%= image_tag(@user.profile_picture) %>
-            <% end %>
-          </div>
+          <% if @user.profile_picture.attached? %>
+            <div class="avatar">
+              <div class="w-24 rounded-full">
+                <%= image_tag(@user.profile_picture) %>
+              </div>
+            </div>
+          <% else %>
+            <div class="avatar avatar-placeholder">
+              <div class="bg-white text-black w-24 rounded-full text-2xl">
+                <%= @user.initiales %>
+              </div>
+            </div>
+          <% end %>
         </div>
-        <p class="text-primary text-center text-lg font-bold mt-4">
+        <p class="text-center text-lg font-bold mt-4">
           <%= @user.nom_prénom %>
         </p>
-        <span class="text-success text-center mt-4">
+        <div class="flex items-center gap-2 my-4">
+          <span class="material-symbols-outlined">
+            <%= @user.avatar %>
+          </span>
           <%= @user.rôle.upcase %> 
-        </span>
+        </div>
         <p>
           <%= @user.tag_list %>
         </p>
@@ -98,8 +109,10 @@
     <% if policy(@user).edit_password? %>
       <%= link_to "Modifier mot de passe", edit_password_user_path(@user), class: "btn" %>
     <% end %>
-    <% if policy(@user).inviter? %>
-      <%= link_to "Réinviter", inviter_user_path(@user), class: "btn", 'data-turbo': false %>
+    <% if false && policy(@user).inviter? %>
+      <!--
+        <%# link_to "Réinviter", inviter_user_path(@user), class: "btn", 'data-turbo': false %>
+      -->
     <% end %>
   </div>
 
