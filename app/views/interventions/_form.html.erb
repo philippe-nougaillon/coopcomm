@@ -33,12 +33,9 @@
           </div>
         <% end %>
 
-        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" <%= ('data-controller="dynamic-select" data-dynamic-select-url-value="' + services_for_adherent_interventions_path + '"') unless current_user.agent? %>>
+        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" <%= ('data-controller="dynamic-select" data-dynamic-select-url-value="' + services_for_adherent_interventions_path + '"') unless current_user.agent? || current_user.adhérent? %>>
           <% if current_user.adhérent? %>
-            <%= form.hidden_field :adherent_id, value: current_user.id,
-                              data: {
-                                dynamic_select_target: "adherent",
-                              } %>
+            <%= form.hidden_field :adherent_id, value: current_user.id %>
           <% else %>
             <div class="w-full sm:flex-1">
               <%= form.label :adherent_id, "Adhérent" %>
