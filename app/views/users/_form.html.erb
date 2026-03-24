@@ -21,19 +21,17 @@
 
   <div data-controller="toggle-role-info">
     <div class="flex flex-wrap md:flex-nowrap gap-2 w-full mb-2">
-      <% if current_user.administrateur? %>
-        <div>
-          <%= form.label :rôle, "Rôle" %>
-          <span data-action="change->toggle-role-info#change">
-            <%= form.select :rôle, options_for_select(User.rôles.keys, user.rôle), {}, class: 'select select-sm w-full', data: { 'toggle-role-info-target': 'role' } %>
-          </span>
-        </div>
-        <div data-toggle-role-info-target="localisation" class="flex-1">
-          <%# ATTENTION : si on change le nombre d'éléments dans la div avec la target localisation, il faut adapter le stimulus en conséquence. Sinon le required du champ localisation sera présent quel que soit le rôle attribué %>
-          <%= form.label :localisation, "Localisation" %>
-          <%= form.text_field :localisation, class: 'input select-sm w-full', placeholder: 'Tel que copié de Google Maps', required: true %>
-        </div>
-      <% end %>
+      <div>
+        <%= form.label :rôle, "Rôle" %>
+        <span data-action="change->toggle-role-info#change">
+          <%= form.select :rôle, options_for_select((current_user.manager? ? ["agent"] : User.rôles.keys), user.rôle), {}, class: 'select select-sm w-full', data: { 'toggle-role-info-target': 'role' } %>
+        </span>
+      </div>
+      <div data-toggle-role-info-target="localisation" class="flex-1">
+        <%# ATTENTION : si on change le nombre d'éléments dans la div avec la target localisation, il faut adapter le stimulus en conséquence. Sinon le required du champ localisation sera présent quel que soit le rôle attribué %>
+        <%= form.label :localisation, "Localisation" %>
+        <%= form.text_field :localisation, class: 'input select-sm w-full', placeholder: 'Tel que copié de Google Maps', required: true %>
+      </div>
 
       <div data-toggle-role-info-target='prenom' class="w-full">
         <%= form.label :prénom, style: "display: block" %>
@@ -42,36 +40,35 @@
 
     </div>
   </div>
-  <% if current_user.administrateur? || (user.agent? && current_user.manager?) %>
-    <div class="w-full sm:flex-1">
-      <%= form.label :tag_list, "Équipe", style: "display: block" %>
-      <% 
-        est_soumission = params[form.object_name].present?
-        
-        if est_soumission
-          tags_users_soumis = Array(params.dig(form.object_name, :tag_list)).reject(&:blank?)
-        else
-          tags_users_soumis = user.tags.map(&:name)
-        end
-        
-        options_users = (@users_tags.map(&:name) + tags_users_soumis).uniq
-      %>
-      <%# Obligé de préciser data: { controller: 'slim-select' } dans ce formulaire malgré l'automatisation dans app/javascript/application.js, sinon, en cas d'échec dans l'edit, le champ n'est plus du slimselect %>
-      <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
-    </div>
 
-    <% services = current_user.administrateur? ? current_user.organisation.services : current_user.services %>
-    <div class="w-full">
-      <%= form.label :service_ids, "Service" %>
-      <%# Obligé de préciser data: { controller: 'slim-select' } dans ce formulaire malgré l'automatisation dans app/javascript/application.js, sinon, en cas d'échec dans l'edit, le champ n'est plus du slimselect %>
-      <%= form.select :service_ids, options_from_collection_for_select(services, 'id', 'nom', user.services.ids), { include_blank: true }, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
-    </div>
+  <div class="w-full sm:flex-1">
+    <%= form.label :tag_list, "Équipe", style: "display: block" %>
+    <%
+      est_soumission = params[form.object_name].present?
 
-    <div class="w-full">
-      <%= form.label :email, style: "display: block" %>
-      <%= form.email_field :email, class: 'input input-sm w-full', required: true %>
-    </div>
-  <% end %>
+      if est_soumission
+        tags_users_soumis = Array(params.dig(form.object_name, :tag_list)).reject(&:blank?)
+      else
+        tags_users_soumis = user.tags.map(&:name)
+      end
+
+      options_users = (@users_tags.map(&:name) + tags_users_soumis).uniq
+    %>
+    <%# Obligé de préciser data: { controller: 'slim-select' } dans ce formulaire malgré l'automatisation dans app/javascript/application.js, sinon, en cas d'échec dans l'edit, le champ n'est plus du slimselect %>
+    <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
+  </div>
+
+  <% services = current_user.administrateur? ? current_user.organisation.services : current_user.services %>
+  <div class="w-full">
+    <%= form.label :service_ids, "Service" %>
+    <%# Obligé de préciser data: { controller: 'slim-select' } dans ce formulaire malgré l'automatisation dans app/javascript/application.js, sinon, en cas d'échec dans l'edit, le champ n'est plus du slimselect %>
+    <%= form.select :service_ids, options_from_collection_for_select(services, 'id', 'nom', user.services.ids), { include_blank: true }, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
+  </div>
+
+  <div class="w-full">
+    <%= form.label :email, style: "display: block" %>
+    <%= form.email_field :email, class: 'input input-sm w-full', required: true %>
+  </div>
 
   <div class="flex flex-wrap md:flex-nowrap gap-2 w-full">
     <div class="w-full">

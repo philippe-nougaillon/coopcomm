@@ -33,12 +33,9 @@
           </div>
         <% end %>
 
-        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" data-controller="dynamic-select" data-dynamic-select-url-value="<%= services_for_adherent_interventions_path %>">
+        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" <%= ("data-controller=dynamic-select data-dynamic-select-url-value=" + services_for_adherent_interventions_path) unless current_user.agent? || current_user.adhérent? %>>
           <% if current_user.adhérent? %>
-            <%= form.hidden_field :adherent_id, value: current_user.id, 
-                              data: { 
-                                dynamic_select_target: "adherent",
-                              } %>
+            <%= form.hidden_field :adherent_id, value: current_user.id %>
           <% else %>
             <div class="w-full sm:flex-1">
               <%= form.label :adherent_id, "Adhérent" %>
@@ -53,16 +50,21 @@
             </div>
           <% end %>
 
-          <div class="w-full sm:flex-1">
-            <%= form.label :service_id, "Service" %>
-            <%= form.select :service_id, 
-                            options_from_collection_for_select(@services, :id, :nom, intervention.service_id), 
-                            { include_blank: true, required: true }, 
-                            class: "slim-select w-full",
-                            data: { 
-                              dynamic_select_target: "service" 
-                            } %>
-          </div>
+          <% if current_user.agent? %>
+            <%= form.hidden_field :service_id, value: current_user.services.first.id %>
+          <% else %>
+            <div class="w-full sm:flex-1">
+              <%= form.label :service_id, "Service" %>
+              <%= form.select :service_id,
+                              options_from_collection_for_select(@services, :id, :nom, intervention.service_id),
+                              { include_blank: true, required: true },
+                              class: "slim-select w-full",
+                              data: {
+                                dynamic_select_target: "service"
+                              } %>
+            </div>
+          <% end %>
+
           <% if current_user.manager_or_admin? %>
             <div class="w-full sm:flex-1">
               <%= form.label :tags_manager, "Mots clés", style: "display: block" %>
@@ -273,7 +275,7 @@
                 <div class="w-full flex-1">
                   <%= form.label :temps_de_pause, "Temps de pause (h)", class: 'whitespace-nowrap' %>
                   <%= form.select :temps_de_pause, options_for_select([0.0, 0.5, 1.0].map { |v| [v.to_s.tr('.', ','), v] }, intervention.temps_de_pause),
-                                  {}, class: "select select-sm w-full",
+                                  { include_blank: true }, class: "select select-sm w-full",
                                   data: { 'calc-temps-passe-target': 'pause', action: "change->calc-temps-passe#calc" },
                                   required: current_user.agent? %>
                 </div>
