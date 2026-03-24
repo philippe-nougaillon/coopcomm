@@ -4,16 +4,20 @@
       <img src="<%= url_for(tool.photo) %>" class="h-10">  
     <% end %>
   </td>
-  <td class="text-lg sm:text-xl text-primary">
+  <td class="text-lg sm:text-xl">
     <%= link_to tool.name.humanize, tool, class: 'text-primary hover:underline', title: (tool.description.blank? ? 'Aucune description' : tool.description) %>
   </td>
 
-  <td>
-    <%= tool.modèle %>
-  </td>
-  <td>
-    <%= tool.marque %>
-  </td>
+  <% if false %>
+  <!--
+    <td>
+      <%= tool.modèle %>
+    </td>
+    <td>
+      <%= tool.marque %>
+    </td>
+    -->
+  <% end %>
   <td>
     <% if tool.mouvements.any? %> 
       <p class="font-bold badge badge-sm badge-<%= tool.mouvements.last.style %>"><%= tool.mouvements.last.état.humanize %></p>
@@ -35,7 +39,7 @@
     </td>
   <% when 'calendrier' %>
     <% (@date..@date_fin).each do | date | %>
-      <td class="text-center <%= 'bg-slate-200' if date != Date.today %>">
+      <td class="text-center <%= date == Date.today ? 'border-x-1 border-x-error' : 'bg-slate-200' %>">
         <% 
           heure_matin = Time.zone.parse("#{date} 08:00:00")
           heure_soir = Time.zone.parse("#{date} 13:05:00")

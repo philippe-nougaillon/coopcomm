@@ -6,6 +6,8 @@ class Mouvement < ApplicationRecord
   belongs_to :user
   belongs_to :intervention, optional: true
 
+  validates :date, presence: true
+
   scope :ordered, -> { order(date: :desc) }
 
   enum :état, {

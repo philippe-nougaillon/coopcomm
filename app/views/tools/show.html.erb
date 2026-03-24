@@ -143,35 +143,6 @@
     </div>
   <% end %>
 
-  <h2 class="text-2xl text-secondary mt-8 mb-4">
-    Documents
-  </h2>
-  <div class="mx-auto w-full">
-    <div class="overflow-x-auto">
-      <table class="table table-xs shadow">
-        <thead class="bg-slate-100">
-          <th>Type</th>
-          <th>Fichier</th>
-          <th>État</th>
-          <th>Version</th>
-          <th>MàJ il y a</th>
-          <th></th>
-        </thead>
-        <tbody>
-          <% if @tool.documents.any? %>
-            <%= render @tool.documents %>
-          <% else %>
-            <tr>
-              <td colspan=6>
-                <i>Ce matériel n'a pas encore de document</i>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary">
       Mouvements
@@ -184,9 +155,10 @@
     <div class="overflow-x-auto">
       <table class="table table-xs shadow">
         <thead class="bg-slate-100">
+          <th>Il y a</th>
           <th>État</th>
-          <th>Intervention</th>
-          <th>MàJ il y a</th>
+          <th>Par</th>
+          <th>Date</th>
         </thead>
         <tbody>
           <% if @tool.mouvements.any? %>
@@ -202,4 +174,35 @@
       </table>
     </div>
   </div>
+
+  <% if current_user.manager_or_admin? %>
+    <h2 class="text-2xl text-secondary mt-8 mb-4">
+      Documents
+    </h2>
+    <div class="mx-auto w-full">
+      <div class="overflow-x-auto">
+        <table class="table table-xs shadow">
+          <thead class="bg-slate-100">
+            <th>Type</th>
+            <th>Fichier</th>
+            <th>État</th>
+            <th>Version</th>
+            <th>MàJ il y a</th>
+            <th></th>
+          </thead>
+          <tbody>
+            <% if @tool.documents.any? %>
+              <%= render @tool.documents %>
+            <% else %>
+              <tr>
+                <td colspan=6>
+                  <i>Ce matériel n'a pas encore de document</i>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% end %>
 </div>

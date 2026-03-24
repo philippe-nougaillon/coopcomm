@@ -45,7 +45,14 @@ class Tool < ApplicationRecord
   end
 
   def dernier_mouvement_a(heure)
-    mouvements.where("date <= ?", heure).order(date: :desc).first
+    # Si les mouvements ont été préchargés en mémoire par le contrôleur (via includes)
+    if mouvements.loaded?
+      # On filtre le tableau en mémoire
+      mouvements.select { |m| m.date <= heure }.max_by(&:date)
+    else
+      # Fallback SQL de sécurité si on appelle la méthode ailleurs sans "includes"
+      mouvements.where("date <= ?", heure).order(date: :desc).first
+    end
   end
 
   private

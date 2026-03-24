@@ -4,12 +4,16 @@
       <tr>
         <th></th>
         <th><%= sort_link 'tools.name', 'Nom' %></th>
-        <th><%= sort_link 'tools.modèle', 'Modèle' %></th>
-        <th><%= sort_link 'tools.marque', 'Marque' %></th>
+        <% if false %>
+          <!--
+          <th><%= sort_link 'tools.modèle', 'Modèle' %></th>
+          <th><%= sort_link 'tools.marque', 'Marque' %></th>
+          -->
+        <% end %>
         <th>État</th>
         <% if params[:vue] == 'calendrier' %>
           <% (@date..@date_fin).each do |date| %>
-            <th class="text-center <%= 'text-primary' if date == Date.today %>">
+            <th class="text-center <%= 'text-error font-black' if date == Date.today %>">
               <%= l(date, format: :calendar).humanize %>
             </th>
           <% end %>
