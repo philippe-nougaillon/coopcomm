@@ -44,6 +44,10 @@ class Tool < ApplicationRecord
     self.interventions.where(":quand BETWEEN interventions.début_prévue AND interventions.fin_prévue", quand:).first
   end
 
+  def dernier_mouvement_a(heure)
+    mouvements.where("date <= ?", heure).order(date: :desc).first
+  end
+
   private
 
   def create_mouvement

@@ -86,30 +86,33 @@
           <%= date.day %>
         </p>
       </div>
-      
-      <% interventions = @tool.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
-      <% interventions_matin = interventions.where("début_prévue < ?", Time.parse(date.to_s + " 13:00")) %>
-      <% interventions_soir = interventions.where("fin_prévue > ?", Time.parse(date.to_s + " 13:00")) %>
+        <% 
+          heure_matin = Time.zone.parse("#{date} 08:00:00")
+          heure_soir = Time.zone.parse("#{date} 13:05:00")
+
+          mouvement_matin = @tool.dernier_mouvement_a(heure_matin)
+          mouvement_soir = @tool.dernier_mouvement_a(heure_soir)
+        %>
       
       <div class="text-center">
-        <%= render 'interventions/intervention_slot', 
-           interventions: interventions_matin, 
-           tool_id: @tool.id, 
-           date: date, 
-           margin_style: 'margin-right: 2px', 
-           start_hour: 8, 
-           end_hour: 13, 
-           new_title: "Créer une intervention le #{date.day} au matin" %>
+        <%= render 'mouvements/mouvement_slot', 
+                  mouvement: mouvement_matin, 
+                  tool_id: @tool.id, 
+                  date: date, 
+                  margin_style: 'margin-right: 2px', 
+                  start_hour: 8, 
+                  end_hour: 13, 
+                  new_title: "Réserver le #{date.day} au matin" %>
 
-        <%= render 'interventions/intervention_slot', 
-           interventions: interventions_soir, 
-           tool_id: @tool.id, 
-           date: date, 
-           margin_style: 'margin-left: 2px', 
-           start_hour: 13, 
-           start_minute: 5, 
-           end_hour: 18, 
-           new_title: "Créer une intervention le #{date.day} après-midi" %>
+        <%= render 'mouvements/mouvement_slot', 
+                  mouvement: mouvement_soir, 
+                  tool_id: @tool.id, 
+                  date: date, 
+                  margin_style: 'margin-left: 2px', 
+                  start_hour: 13, 
+                  start_minute: 5, 
+                  end_hour: 18, 
+                  new_title: "Réserver le #{date.day} après-midi" %>
       </div>
     <% end %>
   <% when 'liste' %>

@@ -38,7 +38,17 @@ Rails.application.routes.draw do
     end
   end
   match 'notifications', to: 'mail_logs#index', via: :get
-  resources :tools
+
+
+  resources :mouvements, only: %i[index new create edit update destroy]
+  resources :tools do 
+    resources :mouvements, only: [] do
+      collection do
+        post :reserve
+      end
+    end
+  end
+
   resources :wiki_pages
   match 'wiki', to: 'wiki_pages#index', via: :get
 
@@ -97,8 +107,6 @@ Rails.application.routes.draw do
   end
 
   resources :newsletters, only: %i[index new destroy]
-
-  resources :mouvements, only: %i[index new create edit update]
 
   resources :services
 

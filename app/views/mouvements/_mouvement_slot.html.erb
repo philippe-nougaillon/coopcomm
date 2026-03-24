@@ -1,0 +1,25 @@
+<% if mouvement && mouvement.sortie? %>
+  <%# --- CAS ROUGE : L'OUTIL EST SORTI --- %>
+<% span_content = capture do %>
+  <span class="border-1 border-slate-400 h-4 inline-block align-middle" 
+        style="padding-left: 15px; <%= margin_style %>; background-color: red;" 
+        title="Réservé par <%= mouvement.user&.email || 'Utilisateur inconnu' %>">
+  </span>
+<% end %>
+
+  <%= link_to_if policy(mouvement).destroy?, span_content, mouvement_path(mouvement), data: { turbo_method: :delete } %>
+
+<% else %>
+  <%# --- CAS VERT : L'OUTIL EST DISPONIBLE (Entrée ou Aucun mouvement) --- %>
+  <%= link_to reserve_tool_mouvements_path(
+        tool_id: tool_id, 
+        date: date, 
+        start_hour: start_hour, 
+        start_minute: local_assigns[:start_minute] || 0, 
+        end_hour: end_hour
+      ), 
+      data: { turbo_method: :post },
+      title: new_title do %>
+    <span class="border-1 border-slate-400 bg-green-500 hover:opacity-75 h-4 inline-block align-middle" style="padding-left: 15px; <%= margin_style %>;"></span>
+  <% end %>
+<% end %>

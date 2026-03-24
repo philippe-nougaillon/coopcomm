@@ -3,6 +3,7 @@ class Mouvement < ApplicationRecord
   friendly_id :slug_candidates, use: :slugged
 
   belongs_to :tool
+  belongs_to :user
   belongs_to :intervention, optional: true
 
   scope :ordered, -> { order(date: :desc) }

@@ -32,8 +32,11 @@ class MouvementPolicy < ApplicationPolicy
     edit?
   end
 
-  # Page désactivé
   def destroy?
-    false
+    manager_or_admin? || record.user == user
+  end
+
+  def reserve?
+    !user.adhérent?
   end
 end
