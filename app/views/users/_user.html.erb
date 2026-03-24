@@ -2,7 +2,7 @@
 <td>
   <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
 </td>
-<td class="flex items-center gap-2 text-lg sm:text-xl text-primary">
+<td class="text-lg sm:text-xl text-primary">
   <%= link_to user.nom_prénom, user, class: 'hover:underline hover:text-base-content' %>
 
   <% if user.discarded? %>
