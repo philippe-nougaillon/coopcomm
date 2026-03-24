@@ -5,5 +5,9 @@
     </h1>
   </div>
 
-  <%= render "form", intervention: @intervention %>
+  <% if current_user.agent? %>
+    <%= render "form_for_agents", intervention: @intervention %>
+  <% else %>
+    <%= render "form", intervention: @intervention %>
+  <% end %>
 </div>
