@@ -24,7 +24,8 @@
       <div class="flex justify-center w-full mt-4 flex-1">
         <div class="flex flex-col w-full lg:w-3/5 relative">
           
-          <div id="notifications" class="w-full lg:mt-12 pb-24 lg:pb-0">
+          <%# Adapter l'id 'chat-messages-container' au <script>, sinon le scroll automatique ne fontcionnera plus %>
+          <div id="chat-messages-container" class="w-full lg:mt-12 pb-24 lg:pb-0">
             <% @notifications.each do |notification| %>
               
               <% if notification.id == @first_unread_id %>
@@ -176,8 +177,9 @@
 
   // 3. Fonction pour surveiller les nouveaux messages (Turbo Streams)
   function setupMessageObserver() {
-    const notificationsContainer = document.getElementById('notifications');
-    if (!notificationsContainer || !newMessageBadge) return;
+    const chatContainer = document.getElementById('chat-messages-container');
+    newMessageBadge = document.getElementById('new-message-badge');
+    if (!chatContainer || !newMessageBadge) return;
 
     if (window.messageObserver) {
       window.messageObserver.disconnect();
@@ -225,7 +227,7 @@
       });
     });
 
-    window.messageObserver.observe(notificationsContainer, { childList: true });
+    window.messageObserver.observe(chatContainer, { childList: true });
 
     // Événements pour le badge "Nouveau message"
     newMessageBadge.addEventListener('click', () => scrollToBottom('smooth'));
@@ -283,10 +285,23 @@
 
   // Initialisation globale
   function initMessagerie() {
+    // SÉCURITÉ : On cherche notre ID ultra-spécifique
+    const isChatPage = document.getElementById('chat-messages-container');
+    
+    // Si l'élément n'existe pas, on est sur une autre page (ou sur l'accueil de la messagerie), on annule tout !
+    if (!isChatPage) {
+      return; 
+    }
+
     scrollToCorrectPosition();
     setupMessageObserver();
     setupReadReceipts();
   }
+  // Pour s'assurer qu'on ne garde pas d'anciens écouteurs au changement de page
+  document.addEventListener("turbo:before-cache", () => {
+    if (window.messageObserver) window.messageObserver.disconnect();
+    if (window.readObserver) window.readObserver.disconnect();
+  });
 
   document.addEventListener("DOMContentLoaded", initMessagerie);
   document.addEventListener("turbo:load", initMessagerie);
