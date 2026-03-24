@@ -34,7 +34,7 @@ class Intervention < ApplicationRecord
   before_validation :check_absence
   before_validation :set_temporary_description, on: :create
   
-  validates :description, presence: true
+  validates :description, :adherent_id, :service_id, presence: true
 
   validate :schedules_must_make_sense
   validate :tools_must_be_available
