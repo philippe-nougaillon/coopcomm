@@ -1,7 +1,9 @@
 <header class="bg-white shadow-lg px-6 py-4 relative">
   <div class="flex items-center justify-between">
     <!--nav ordenador-->
-    <img src="CoopComm.png" alt="CoopComm Logo" class="h-10" />
+    <%= link_to root_path do %>
+      <%= image_tag "CoopComm.png", class: "h-10" %>
+    <% end %>
     <button id="menu-btn" class="md:hidden text-3xl focus:outline-none">
       ☰
     </button>
