@@ -94,10 +94,10 @@ class MouvementsController < ApplicationController
 
     # On s'assure que les deux mouvements sont créés ensemble et en même temps (pour la suppression groupé)
     timestamp_exact = Time.current
-    Mouvement.transaction do
+    # Mouvement.transaction do
       @tool.mouvements.create!(état: :sortie, date: start_time, user: current_user, created_at: timestamp_exact)
       @tool.mouvements.create!(état: :entrée, date: end_time, user: current_user, created_at: timestamp_exact)
-    end
+    # end
 
     redirect_back fallback_location: tools_path, notice: "Outil réservé avec succès."
   rescue ActiveRecord::RecordInvalid
