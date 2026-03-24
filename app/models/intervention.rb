@@ -41,6 +41,7 @@ class Intervention < ApplicationRecord
   validate :agents_must_be_available
   validate :dates_cannot_be_in_the_future
 
+  before_save -> {self.temps_de_pause = 0 if self.temps_de_pause.nil?}
   before_save :calc_temps_total
 
   scope :ordered, -> { order(updated_at: :desc) }

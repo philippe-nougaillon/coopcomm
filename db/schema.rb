@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_23_145853) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_24_113022) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -130,7 +130,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_23_145853) do
   create_table "interventions", force: :cascade do |t|
     t.datetime "début"
     t.datetime "fin"
-    t.decimal "temps_de_pause", default: "0.0"
+    t.decimal "temps_de_pause"
     t.string "description"
     t.string "workflow_state"
     t.datetime "created_at", null: false
@@ -181,6 +181,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_23_145853) do
     t.datetime "updated_at", null: false
     t.bigint "intervention_id"
     t.datetime "date"
+    t.text "commentaires"
     t.index ["intervention_id"], name: "index_mouvements_on_intervention_id"
     t.index ["tool_id"], name: "index_mouvements_on_tool_id"
   end
