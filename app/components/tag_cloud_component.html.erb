@@ -1,6 +1,6 @@
 <% tag_cloud(@tags, %w(badge-sm badge badge-md badge-lg)) do |tag, css_class| %>
   <%= link_to url_for(params.permit!.except(:page).merge(tags: params[:tags].include?(tag.name) ? params[:tags] - [tag.name] : params[:tags] + [tag.name])), data: { turbo_frame: "results_frame" }, class: "inline" do %>
-    <span class="flex items-center align-bottom hover:font-black rounded-xl badge badge-secondary <%= css_class %> <%= params[:tags].include?(tag.name) ? "font-black text-white" : "badge-outline" %>">
+    <span class="flex items-center align-bottom hover:font-black badge badge-primary <%= css_class %> <%= params[:tags].include?(tag.name) ? "font-black text-white" : "badge-outline" %>">
       <span><%= tag.name.humanize %></span>
     </span>
   <% end %>
