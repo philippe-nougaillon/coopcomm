@@ -5,16 +5,15 @@ class ManagerSupportMailboxTest < ActionMailbox::TestCase
     user = users(:hidalgo)
     subject = "Dératiser ma ville"
     body = "Bonjour, serait-il possible de dératiser Paris, tout le monde s'en plaint"
-    receive_inbound_email_from_mail(
-      to: "support@mg.coopcom.fr",
-      from: user.email, 
-      subject: subject, 
-      body: body,
-      charset: "UTF-8"
-    )
-
-    intervention = Intervention.last
-    assert_equal "[MAIL] #{subject}", intervention.description
-    assert_equal "De #{user.nom_prenom_role} : #{body}", intervention.commentaires
+    
+    assert_no_changes -> { Intervention.count } do 
+      receive_inbound_email_from_mail(
+        to: "support@mg.coopcom.fr",
+        from: user.email, 
+        subject: subject, 
+        body: body,
+        charset: "UTF-8"
+      )
+    end
   end
 end

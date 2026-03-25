@@ -3,6 +3,7 @@ require "test_helper"
 class AgentInterventionTest < ActiveSupport::TestCase
   setup do
     @agent = users(:bond)
+    @template_adherent = users(:weil)
   end
 
   test "Intervention créée si l'agent est disponible" do
@@ -96,7 +97,9 @@ class AgentInterventionTest < ActiveSupport::TestCase
       fin_prévue: fin,
       description: "L'intervention de trop",
       organisation: organisations(:mairie_paris),
-      agents: [@agent]
+      agents: [@agent],
+      adherent: @template_adherent,
+      service: @template_adherent.services.first
     )
   end
 
@@ -106,7 +109,9 @@ class AgentInterventionTest < ActiveSupport::TestCase
       fin_prévue: "2025-04-08 12:00",
       description: "Entretien des locaux",
       organisation: organisations(:mairie_paris),
-      agents: [@agent]
+      agents: [@agent],
+      adherent: @template_adherent,
+      service: @template_adherent.services.first
     )
   end
 

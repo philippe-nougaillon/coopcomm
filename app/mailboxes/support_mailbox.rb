@@ -3,14 +3,15 @@ class SupportMailbox < ApplicationMailbox
   def process
     Rails.logger.debug "SupportMailbox#process called with: #{mail.from_address&.address}"
 
-    # Chercher si l'envoyeur est un adhérent, un manager ou un administrateur
-    if user = User.where(rôle: [0,2,3]).find_by(email: mail.from_address&.address)
+    # Chercher si l'envoyeur est un adhérent
+    if user = User.where(rôle: "adhérent").find_by(email: mail.from_address&.address)
 
       if organisation = Organisation.find_by(id: user.organisation_id)
         organisation.interventions.create( 
-                        adherent_id: (user.id if user.adhérent?),
+                        adherent_id: (user.id),
                         description: "[MAIL] #{mail.subject}", 
-                        commentaires: "De #{user.nom_prenom_role} : #{safe_mail_body(mail)}"
+                        commentaires: "De #{user.nom_prenom_role} : #{safe_mail_body(mail)}",
+                        service_id: user.services.first.id
                       )
       end
 

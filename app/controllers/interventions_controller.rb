@@ -295,13 +295,13 @@ class InterventionsController < ApplicationController
   end
 
   def pointer
-    # Prendre l'intervention la plus récente
 
     if @intervention.repeter?
+      # Intervention fille se passant aujourd'hui (intervention en cours de réalisation)
       current_intervention = Intervention.where(template_slug: @intervention.slug).find_by("DATE(début) = ?", Date.today)
-  
-      # Mettre à jour l'intervention ou créer une nouvelle
-      if current_intervention
+
+      # Si une intervention fille est créé, on la met à jour, sinon on en créée une nouvelle
+      if current_intervention.present?
         unless current_intervention.fin
           current_intervention.fin = DateTime.now
           current_intervention.temps_total = current_intervention.calc_temps_total
@@ -312,7 +312,7 @@ class InterventionsController < ApplicationController
           flash[:alert] = "Fin de journée déjà enregistrée !"
         end
       else
-        current_intervention = @intervention.create_next_intervention
+        current_intervention = @intervention.create_next_intervention(@intervention)
         flash[:notice] = "Début de journée enregistrée"
       end
       unless Rails.env.development?

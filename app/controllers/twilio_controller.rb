@@ -9,7 +9,10 @@ class TwilioController < ApplicationController
     agent = User.agent.find_by_whatsapp_phone(sender) if sender.present?
 
     if sender.present? && message.present? && agent
-      if intervention = Intervention.create!(description: "[WhatsApp] #{l(DateTime.now, format: :long)} #{sender.gsub("whatsapp:", '')}", organisation_id: agent.organisation_id, commentaires: message)
+      intervention = Intervention.new(description: "[WhatsApp] #{l(DateTime.now, format: :long)} #{sender.gsub("whatsapp:", '')}", organisation_id: agent.organisation_id, commentaires: message, service: agent.services.first, workflow_state: "nouveau")
+      # Obligé de bypass les validations comme on ne connait pas l'adhérent concerné par l'intervention
+      intervention.save!(validate: false)
+      if intervention
         # Pas de test de chevauchement d'intervention puisqu'il n'y a aucune date dans ce qu'il y a envoyé
         intervention.agent_interventions.create(agent:)
         render xml: Twilio::TwiML::MessagingResponse.new.message(body: "Intervention créée avec succès.").to_s

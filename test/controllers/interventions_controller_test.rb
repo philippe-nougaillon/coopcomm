@@ -44,7 +44,9 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
           repeter: @intervention.repeter,
           slug: SecureRandom.uuid,
           début_prévue: @intervention.début_prévue,
-          fin_prévue: @intervention.fin_prévue
+          fin_prévue: @intervention.fin_prévue,
+          adherent_id: @intervention.adherent.id,
+          service_id: @intervention.service.id
         }
       }
     end
@@ -75,7 +77,9 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
         note: @intervention.note,
         avis: @intervention.avis,
         début_prévue: @intervention.début_prévue,
-        fin_prévue: @intervention.fin_prévue
+        fin_prévue: @intervention.fin_prévue,
+        adherent: @intervention.adherent,
+        service: @intervention.service
       }
     }
     assert_redirected_to intervention_url(@intervention)
