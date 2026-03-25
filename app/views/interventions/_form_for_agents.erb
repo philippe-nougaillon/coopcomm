@@ -183,6 +183,8 @@
     </div>
   <% end %>
 
+  <%= form.hidden_field :workflow_state %>
+
   <div class="flex flex-wrap gap-2 mt-5">
     <%= form.submit "Enregistrer", id: "enregistrer_intervention", class: "btn btn-primary" %>
     <% if params[:action] == 'edit' %>

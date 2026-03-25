@@ -418,6 +418,18 @@ class Intervention < ApplicationRecord
       NotifManagersNewInterventionFromAdherentJob.perform_later(self, user)
     end
   end
+
+  def calculate_co2
+    unless Rails.env.test?
+      if self.adherent && self.adherent.localisation.present?
+        request = ApiGoogleMaps.new(self.adherent.localisation_to_lat_lng_object)
+        request.call
+        self.trajet = request.routes_info
+        self.co2 = request.co2_consumption_by_route(request.data_response["routes"][0])
+        self.save
+      end
+    end
+  end
   
   private
 

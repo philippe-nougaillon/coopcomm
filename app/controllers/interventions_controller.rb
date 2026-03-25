@@ -157,6 +157,9 @@ class InterventionsController < ApplicationController
 
     if current_user.agent?
       @intervention.agent_ids = current_user.id
+      
+      # Par défaut, un agent saisi une intervention après l'avoir réalisé (le soir)
+      @intervention.workflow_state = "terminé"
     else
       # Si on passe par le planning des agents
       @intervention.agent_ids = params[:agent_id]
@@ -243,76 +246,29 @@ class InterventionsController < ApplicationController
   # end
 
   def terminer
-    if @intervention.valid?
-      if @intervention.can_terminer?
-        @intervention.terminer!
-        unless Rails.env.test?
-          if @intervention.adherent && @intervention.adherent.localisation.present?
-            request = ApiGoogleMaps.new(@intervention.adherent.localisation_to_lat_lng_object)
-            request.call
-            @intervention.trajet = request.routes_info
-            @intervention.co2 = request.co2_consumption_by_route(request.data_response["routes"][0])
-            @intervention.save
-          end
-        end
+    @intervention.terminer!
+    @intervention.calculate_co2
 
-        send_workflow_changed_notification
-        send_intervention_termine_notification
-        if current_user.agent?
-          redirect_to edit_intervention_path(@intervention), notice: "Intervention terminée"
-        else
-          redirect_to @intervention, notice: "Intervention terminée"
-        end
-      elsif @intervention.terminé?
-        redirect_to @intervention, alert: "L'intervention est déjà terminée"
-      else
-        redirect_to @intervention, alert: "L'intervention ne peut pas se terminer"
-      end
-    else
-      redirect_to @intervention, alert: "L'intervention n'est pas valide. Elle ne peut pas être terminée"
-    end
+    send_workflow_changed_notification
+    send_intervention_termine_notification
+
+    redirect_to @intervention, notice: "Intervention terminée"
   end
 
   def valider
-    if @intervention.valid?
-      if @intervention.can_valider?
-        @intervention.valider!
-        send_workflow_changed_notification
-        if current_user.adhérent?
-          terminé = true
-        end
-        redirect_to edit_intervention_path(@intervention, terminé: terminé), notice: "Intervention validée"
-      elsif @intervention.validé?
-        redirect_to @intervention, alert: "L'intervention est déjà validée"
-      else
-        redirect_to @intervention, alert: "L'intervention ne peut pas se valider"
-      end
-    else
-      redirect_to @intervention, alert: "L'intervention n'est pas valide. Elle ne peut pas être validée"
-    end
-
-    # send_workflow_changed_notification
+    @intervention.valider!
     
+    send_workflow_changed_notification
+
+    redirect_to @intervention, notice: "Intervention validée"
   end
 
   def refuser
-    if @intervention.valid?
-      if @intervention.can_refuser?
-        @intervention.refuser!
-        send_workflow_changed_notification
-        if current_user.adhérent?
-          terminé = true
-        end
-        redirect_to edit_intervention_path(@intervention, terminé: terminé), notice: "Intervention refusée"
-      elsif @intervention.refusé?
-        redirect_to @intervention, alert: "L'intervention est déjà refusée"
-      else
-        redirect_to @intervention, alert: "L'intervention ne peut pas se refuser"
-      end
-    else
-      redirect_to @intervention, alert: "L'intervention n'est pas valide. Elle ne peut pas être refusée"
-    end
-    # send_workflow_changed_notification
+    @intervention.refuser!
+
+    send_workflow_changed_notification
+
+    redirect_to @intervention, notice: "Intervention refusée"
   end
 
   def archiver

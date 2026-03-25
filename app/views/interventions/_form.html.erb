@@ -18,117 +18,116 @@
     </div>
   <% end %>
 
-  <% if params[:terminé].blank? %>
-    <h2 class="text-lg text-secondary font-black">
-      Demande
-    </h2>
-    <div class="bg-sky-50 p-4 rounded border border-sky-100">
-      <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8 mb-5">
-        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
-          <div class="w-full sm:flex-1">
-            <%= form.label :description %>
-            <%= form.text_field :description, class: "input input-sm w-full" %>
-          </div>
-        </div>
-
-        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" <%= ("data-controller=dynamic-select data-dynamic-select-url-value=" + services_for_adherent_interventions_path) unless current_user.adhérent? %>>
-          <% if current_user.adhérent? %>
-            <%= form.hidden_field :adherent_id, value: current_user.id %>
-          <% else %>
-            <div class="w-full sm:flex-1">
-              <%= form.label :adherent_id, "Adhérent" %>
-              <%= form.select :adherent_id,
-                              options_from_collection_for_select(@adhérents, :id, :nom_prénom, intervention.adherent_id),
-                              { include_blank: true, required: true },
-                              class: "slim-select w-full",
-                              data: {
-                                dynamic_select_target: "adherent",
-                                action: "change->dynamic-select#updateServices"
-                              } %>
-            </div>
-          <% end %>
-
-          <div class="w-full sm:flex-1">
-            <%= form.label :service_id, "Service" %>
-            <%= form.select :service_id,
-                            options_from_collection_for_select(@services, :id, :nom, intervention.service_id),
-                            { include_blank: true, required: true },
-                            class: "slim-select w-full",
-                            data: {
-                              dynamic_select_target: "service"
-                            } %>
-          </div>
-
-          <div class="flex gap-1 items-center mt-4" title="Cocher pour activer le pointage ?">
-            <%= form.check_box :repeter, class: 'checkbox checkbox-sm checkbox-secondary' %>
-            <%= form.label :repeter, "Modèle pour le pointage ?" %>
-          </div>
+  <h2 class="text-lg text-secondary font-black">
+    Demande
+  </h2>
+  <div class="bg-sky-50 p-4 rounded border border-sky-100">
+    <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8 mb-5">
+      <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
+        <div class="w-full sm:flex-1">
+          <%= form.label :description %>
+          <%= form.text_field :description, class: "input input-sm w-full" %>
         </div>
       </div>
 
-      <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8" <%= "data-controller=\"meteo-intervention\" data-action=\"change->verification-disponibilites#verificationWithInput\"".html_safe if !@intervention.passed %>>
-          <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" data-action="change->verification-disponibilites#verificationWithInput">
+      <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" <%= ("data-controller=dynamic-select data-dynamic-select-url-value=" + services_for_adherent_interventions_path) unless current_user.adhérent? %>>
+        <% if current_user.adhérent? %>
+          <%= form.hidden_field :adherent_id, value: current_user.id %>
+        <% else %>
+          <div class="w-full sm:flex-1">
+            <%= form.label :adherent_id, "Adhérent" %>
+            <%= form.select :adherent_id,
+                            options_from_collection_for_select(@adhérents, :id, :nom_prénom, intervention.adherent_id),
+                            { include_blank: true, required: true },
+                            class: "slim-select w-full",
+                            data: {
+                              dynamic_select_target: "adherent",
+                              action: "change->dynamic-select#updateServices"
+                            } %>
+          </div>
+        <% end %>
 
-              <div class="w-full min-w-fit flex-1" data-action='change->meteo-intervention#afficher_meteo'>
-                <%= form.label :début_prévue %>
-                <div class="flex items-center gap-1">
-                  <%= form.date_field :début_prévue,
-                                      class: "flex-1 input input-sm",
-                                      value: (params[:début_prévue].try(:to_date) || @intervention.début_prévue&.to_date),
-                                      data: {
-                                        'verification-disponibilites-target': "debut_prevue",
-                                        'meteo-intervention-target': "debut_prevue"
-                                      }
-                  %>
-                  <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] },
-                                  { selected: params[:début_prévue_hour] || @intervention.début_prévue&.hour },
-                                  class: "select select-sm w-16",
-                                  data: {
-                                    'verification-disponibilites-target': "debut_prevue_hour",
-                                    'meteo-intervention-target': "debut_prevue_hour"
-                                  }
-                  %>
-                  :
-                  <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] },
-                                  { selected: params[:début_prévue_minute] || @intervention.début_prévue&.min },
-                                  class: "select select-sm w-16",
-                                  data: { 'verification-disponibilites-target': "debut_prevue_minute" }
-                  %>
-                </div>
+        <div class="w-full sm:flex-1">
+          <%= form.label :service_id, "Service" %>
+          <%= form.select :service_id,
+                          options_from_collection_for_select(@services, :id, :nom, intervention.service_id),
+                          { include_blank: true, required: true },
+                          class: "slim-select w-full",
+                          data: {
+                            dynamic_select_target: "service"
+                          } %>
+        </div>
+
+        <div class="flex gap-1 items-center mt-4" title="Cocher pour activer le pointage ?">
+          <%= form.check_box :repeter, class: 'checkbox checkbox-sm checkbox-secondary' %>
+          <%= form.label :repeter, "Modèle pour le pointage ?" %>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8" <%= "data-controller=\"meteo-intervention\" data-action=\"change->verification-disponibilites#verificationWithInput\"".html_safe if !@intervention.passed %>>
+        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" data-action="change->verification-disponibilites#verificationWithInput">
+
+            <div class="w-full min-w-fit flex-1" data-action='change->meteo-intervention#afficher_meteo'>
+              <%= form.label :début_prévue %>
+              <div class="flex items-center gap-1">
+                <%= form.date_field :début_prévue,
+                                    class: "flex-1 input input-sm",
+                                    value: (params[:début_prévue].try(:to_date) || @intervention.début_prévue&.to_date),
+                                    data: {
+                                      'verification-disponibilites-target': "debut_prevue",
+                                      'meteo-intervention-target': "debut_prevue"
+                                    }
+                %>
+                <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] },
+                                { selected: params[:début_prévue_hour] || @intervention.début_prévue&.hour },
+                                class: "select select-sm w-16",
+                                data: {
+                                  'verification-disponibilites-target': "debut_prevue_hour",
+                                  'meteo-intervention-target': "debut_prevue_hour"
+                                }
+                %>
+                :
+                <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] },
+                                { selected: params[:début_prévue_minute] || @intervention.début_prévue&.min },
+                                class: "select select-sm w-16",
+                                data: { 'verification-disponibilites-target': "debut_prevue_minute" }
+                %>
               </div>
-
-              <div class="w-full min-w-fit flex-1">
-                <%= form.label :fin_prévue %>
-                <div class="flex items-center gap-1">
-                  <%= form.date_field :fin_prévue,
-                                      value: (params[:début_prévue].try(:to_date) || @intervention.fin_prévue&.to_date),
-                                      class: "flex-1 input input-sm",
-                                      data: { 'verification-disponibilites-target': "fin_prevue" }
-                  %>
-                  <%= form.select :fin_prévue_hour, (0..23).map { |h| [format('%02d', h), h] },
-                                  { selected: params[:fin_prévue_hour] || @intervention.fin_prévue&.hour },
-                                  class: "select select-sm w-16",
-                                  data: { 'verification-disponibilites-target': "fin_prevue_hour" }
-                  %>
-                  :
-                  <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] },
-                                  { selected: params[:fin_prévue_minute] || @intervention.fin_prévue&.min },
-                                  class: "select select-sm w-16",
-                                  data: { 'verification-disponibilites-target': "fin_prevue_minute" }
-                  %>
-                </div>
-              </div>
-
             </div>
 
-
-          <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
-            <div class="w-full flex-1">
-              <%= form.label :meteo, "Prévision météo" %>
-              <%= form.text_field :meteo, class: "input input-sm w-full", 'data-meteo-intervention-target': "prévisionMétéo", disabled: @intervention.passed || current_user.adhérent? %>
+            <div class="w-full min-w-fit flex-1">
+              <%= form.label :fin_prévue %>
+              <div class="flex items-center gap-1">
+                <%= form.date_field :fin_prévue,
+                                    value: (params[:début_prévue].try(:to_date) || @intervention.fin_prévue&.to_date),
+                                    class: "flex-1 input input-sm",
+                                    data: { 'verification-disponibilites-target': "fin_prevue" }
+                %>
+                <%= form.select :fin_prévue_hour, (0..23).map { |h| [format('%02d', h), h] },
+                                { selected: params[:fin_prévue_hour] || @intervention.fin_prévue&.hour },
+                                class: "select select-sm w-16",
+                                data: { 'verification-disponibilites-target': "fin_prevue_hour" }
+                %>
+                :
+                <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] },
+                                { selected: params[:fin_prévue_minute] || @intervention.fin_prévue&.min },
+                                class: "select select-sm w-16",
+                                data: { 'verification-disponibilites-target': "fin_prevue_minute" }
+                %>
+              </div>
             </div>
+
+          </div>
+
+
+        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
+          <div class="w-full flex-1">
+            <%= form.label :meteo, "Prévision météo" %>
+            <%= form.text_field :meteo, class: "input input-sm w-full", 'data-meteo-intervention-target': "prévisionMétéo", disabled: @intervention.passed || current_user.adhérent? %>
           </div>
         </div>
+      </div>
     </div>
 
     <% if !current_user.adhérent?%>
@@ -294,21 +293,19 @@
         </div>
       </div>
     <% end %>
-  <% end %>
 
   <% if intervention.persisted? && (current_user.adhérent? || current_user.manager_or_admin?) %>
     <h2 class="text-lg text-secondary font-black mt-5">
       Compte-rendu
     </h2>
     <div class="bg-sky-50 rounded border border-sky-100 p-4 shadow-xs">
-      <% if params[:terminé] %>
-        <p class="mb-8">
-          Statut :
-          <span class="badge badge-lg text-nowrap font-bold <%= intervention.style %>">
-            <%= intervention.workflow_state.humanize %>
-          </span>
-        </p>
-      <% end %>
+      <p class="mb-8">
+        Statut :
+        <span class="badge badge-lg text-nowrap font-bold <%= intervention.style %>">
+          <%= intervention.workflow_state.humanize %>
+        </span>
+      </p>
+      
       <div class="flex flex-col gap-4 mb-4">
         <div class="flex-1">
           <%= form.label :avis %>
