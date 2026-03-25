@@ -325,6 +325,15 @@ class User < ApplicationRecord
     self.where(rôle: ["agent", "manager", "administrateur"])
   end
 
+  # Retourne la liste des roles que l'utilisateur a le droit de voir
+  def assignable_roles
+    if self.manager? || self.agent?
+      ["agent"]
+    else
+      User.rôles.keys
+    end
+  end
+
   private
 
   def slug_candidates

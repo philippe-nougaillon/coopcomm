@@ -24,7 +24,7 @@
       <div>
         <%= form.label :rôle, "Rôle" %>
         <span data-action="change->toggle-role-info#change">
-          <%= form.select :rôle, options_for_select((current_user.manager? ? ["agent"] : User.rôles.keys), user.rôle), {}, class: 'select select-sm w-full', data: { 'toggle-role-info-target': 'role' } %>
+          <%= form.select :rôle, options_for_select(current_user.assignable_roles, user.rôle), {}, class: 'select select-sm w-full', data: { 'toggle-role-info-target': 'role' } %>
         </span>
       </div>
       <div data-toggle-role-info-target="localisation" class="flex-1">
