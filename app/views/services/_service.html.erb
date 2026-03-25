@@ -3,7 +3,7 @@
     <%= link_to service.nom, service, class: 'text-primary hover:underline' %>
   </td>
   <td class="text-sm">
-    <%= service.users.map{|user| user.nom_prénom}.join(', ') %>
+    <%= service.users.ordered.map { |user| link_to(user.nom_prenom_role, user, class: 'hover:underline') }.join(', ').html_safe %>
   </td>
   <td class="text-sm">
     <%= service.users.count %>

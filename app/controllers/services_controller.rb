@@ -4,10 +4,15 @@ class ServicesController < ApplicationController
 
   # GET /services or /services.json
   def index
-    @services = current_user.organisation.services
+    @services = current_user.services
+    @users = current_user.organisation.users.filter_by_service(@services)
 
     if params[:search].present?
       @services = @services.where("nom ILIKE :search", {search: "%#{params[:search]}%"})
+    end
+
+    if params[:user_id].present?
+      @services = @services.joins(:users).where(users: {id: params[:user_id]})
     end
 
     @services = @services.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
