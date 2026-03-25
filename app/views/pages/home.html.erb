@@ -7,7 +7,7 @@
     <%= current_user.organisation.nom %>
   </div>
   <div class="hidden sm:block flex-5 w-max">
-    <h2 class="text-lg">
+    <h2>
       Nous sommes le <%= l(Date.today, format: :custom) %>,
       il est <%= Time.now.strftime("%Hh%M") %>.
     </h2>
@@ -33,17 +33,24 @@
   </div>
   <div class="flex-1 sm:flex-5 w-full">
 
-    <div class="border shadow-sm p-4 pb-10 rounded-2xl mb-8">
+    <div class="border shadow-sm px-4 pt-4 pb-7.5 rounded-2xl mb-8">
       <h2 class="font-black text-lg mb-6">Actions rapides</h2>
       <div class="flex flex-col gap-4">
         <%= link_to (current_user.agent? ? 'Nouveau bon d\'Intervention' : 'Créer une Intervention'), new_intervention_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
         <% if current_user.manager_or_admin? %>
           <%= link_to 'Ajouter un nouveau Matériel', new_tool_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
           <%= link_to 'Ajouter un nouvel Utilisateur', new_user_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
+          <%= link_to 'Lancer une discussion', admin_messagerie_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
         <% elsif current_user.adhérent? %>
           <%= link_to 'Voir le tableau de bord', dashboard_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
+          <%= link_to 'Lancer une discussion', admin_messagerie_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
+          <%= link_to '_', root_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
+        <% elsif current_user.agent? %>
+          <%= link_to 'Réserver du matériel', tools_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
+          <%= link_to 'Lancer une discussion', admin_messagerie_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
+          <%= link_to '_', root_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
         <% end %>
-        <%= link_to 'Lancer une discussion', admin_messagerie_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
+
       </div>
     </div>
 
