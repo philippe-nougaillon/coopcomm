@@ -2,6 +2,7 @@
 
 mouvement_tondeuse:
   tool: tondeuse
+  user: bond
   état: 1
   slug: mouvement_tondeuse
   intervention: tonte_locaux
