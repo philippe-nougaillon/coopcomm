@@ -8,8 +8,6 @@ module ApplicationHelper
       raw_key = c.first
       key = raw_key.humanize
 
-      next if raw_key.downcase == 'note' && current_user&.agent?
-
       case key
       when 'Agent', 'Adherent', 'Agent binome'
         ids = audit.audited_changes["#{key == "Agent binome" ? key.humanize.downcase.tr(' ', '_') : key.downcase}_id"]

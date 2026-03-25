@@ -322,25 +322,27 @@
       </div>
     <% end %>
 
-    <h2 class="text-2xl text-secondary mt-8">Activité</h2>
-    <div class="overflow-x-auto mt-4">
-      <table class="table table-sm">
-        <thead class="bg-slate-100">
-          <tr>
-            <th>Date</th>
-            <th>Utilisateur</th>
-            <th>Action</th>
-            <th>Modifications</th>
-          </tr>
-        </thead>
+    <% if current_user.manager_or_admin? %>
+      <h2 class="text-2xl text-secondary mt-8">Activité</h2>
+      <div class="overflow-x-auto mt-4">
+        <table class="table table-sm">
+          <thead class="bg-slate-100">
+            <tr>
+              <th>Date</th>
+              <th>Utilisateur</th>
+              <th>Action</th>
+              <th>Modifications</th>
+            </tr>
+          </thead>
 
-        <%= render partial: 'audit', collection: @audits %>
-      </table>
-    </div>
-    <div class="my-6">
-      <%== pagy_info(@pagy) %>
-      <%== pagy_nav(@pagy) %>
-    </div>
+          <%= render partial: 'audit', collection: @audits %>
+        </table>
+      </div>
+      <div class="my-6">
+        <%== pagy_info(@pagy) %>
+        <%== pagy_nav(@pagy) %>
+      </div>
+    <% end %>
   </div>
 
 </div>
