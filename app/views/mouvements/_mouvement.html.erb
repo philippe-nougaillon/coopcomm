@@ -1,8 +1,8 @@
 <tr class="hover:bg-base-300">
+  <td><%= time_ago_in_words(mouvement.updated_at) %></td>
   <% if params[:controller] != 'tools' %>
     <td><b><%= link_to mouvement.tool.name.humanize, mouvement.tool, class: 'text-lg sm:text-xl text-primary hover:underline' %></b></td>
   <% end %>
-  <td><%= time_ago_in_words(mouvement.updated_at) %></td>
   <td><p class="font-bold badge badge-sm badge-<%= mouvement.style %>"><%= mouvement.état.humanize %></p></td>
   <td><%= mouvement.user.nom_prénom %></td>
   <td>

@@ -12,9 +12,9 @@ class MouvementsController < ApplicationController
       @mouvements = @mouvements.where(tool_id: params[:tool_ids])
     end
 
-    if params[:date].present?
-      @mouvements = @mouvements.joins(:intervention).where("DATE(interventions.début) = ?", params[:date])
-    end
+    # if params[:date].present?
+    #   @mouvements = @mouvements.joins(:intervention).where("DATE(interventions.début) = ?", params[:date])
+    # end
 
     if params[:etats].present?
       @mouvements = @mouvements.where(état: params[:etats])

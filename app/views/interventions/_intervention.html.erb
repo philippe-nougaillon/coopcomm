@@ -172,7 +172,7 @@
       <div class="w-72 mr-4 text-base">
         <% if (intervention.validé? || intervention.refusé?)  && !current_user.agent? %>
           <div>
-            <strong class="block text-slate-400 mb-1">Évaluation</strong>
+            <strong class="block text-slate-400 mt-2 mb-1">Évaluation</strong>
             <div class="rating">
               <% 5.times do |index| %>
                 <input type="radio" name="rating-<%= intervention.id %>" class="mask mask-star bg-primary cursor-text" <%= 'aria-current=true' if intervention.note == index + 1 %> disabled/>

@@ -10,17 +10,21 @@
   <%= form_tag request.path, method: :get do %>
     <div class="flex flex-wrap items-start w-full gap-4 mt-8">
       <div class="w-full md:w-fit">
-        <%= label_tag :tool_ids, "Matériel(s)" %>
+        <%= label_tag :tool_ids, "Matériel" %>
         <%= select_tag :tool_ids, options_from_collection_for_select(@tools, 'id', 'name', params[:tool_ids]), include_blank: true, class: 'slim-select w-full sm:min-w-96 max-w-screen', onchange: 'this.form.submit()', multiple: true %>
       </div>
       <div class="min-w-full md:min-w-36">
-        <%= label_tag :etats, "États" %>
+        <%= label_tag :etats, "État" %>
         <%= select_tag :etats, options_for_select(@états, params[:etats]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
       </div>
-      <div class="w-full md:w-fit">
-        <%= label_tag :date, "Date d'intervention" %>
-        <%= date_field_tag :date, params[:date], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full' %>
-      </div>
+      <% if false %>
+      <!--
+        <div class="w-full md:w-fit">
+          <%= label_tag :date, "Date d'intervention" %>
+          <%= date_field_tag :date, params[:date], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full' %>
+        </div>
+      -->
+      <% end %>
     </div>
   <% end %>
 
@@ -30,8 +34,8 @@
     <table id="tools" class="table table-sm">
       <thead class="bg-slate-100">
         <tr>
-          <th><%= sort_link 'tools.name', 'Matériel'%></th>
           <th><%= sort_link 'mouvements.updated_at', 'MÀJ'%></th>
+          <th><%= sort_link 'tools.name', 'Matériel'%></th>
           <th><%= sort_link 'mouvements.état', 'État'%></th>
           <th>Par</th>
           <th>Date</th>
