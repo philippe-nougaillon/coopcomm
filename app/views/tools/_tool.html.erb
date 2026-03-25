@@ -4,7 +4,7 @@
       <img src="<%= url_for(tool.photo) %>" class="h-10">  
     <% end %>
   </td>
-  <td class="text-lg sm:text-xl">
+  <td class="sticky left-0 top-0 z-10 text-lg sm:text-xl text-primary bg-slate-50 break-words whitespace-normal max-w-[50vw]">
     <%= link_to tool.name.humanize, tool, class: 'text-primary hover:underline', title: (tool.description.blank? ? 'Aucune description' : tool.description) %>
   </td>
 
@@ -55,7 +55,7 @@
                   margin_style: 'margin-right: 2px', 
                   start_hour: 8, 
                   end_hour: 13, 
-                  new_title: "Réserver le #{date.day} au matin" %>
+                  new_title: "Réserver \"#{tool.name.humanize}\" le #{date.day} au matin" %>
 
         <%= render 'mouvements/mouvement_slot', 
                   mouvement: mouvement_soir, 
@@ -65,7 +65,7 @@
                   start_hour: 13, 
                   start_minute: 5, 
                   end_hour: 18, 
-                  new_title: "Réserver le #{date.day} après-midi" %>
+                  new_title: "Réserver \"#{tool.name.humanize}\" le #{date.day} après-midi" %>
       </td>
     <% end %>
 
@@ -83,30 +83,32 @@
 
   <% end %>
   <% if false %>
-    <td>
-      <div class="flex justify-end items-center gap-2">
-        <% if policy(tool).show? %>
-          <%= link_to tool, title: 'Voir' do %>
-            <span class="material-symbols-outlined">
-              visibility
-            </span>
+    <!--
+      <td>
+        <div class="flex justify-end items-center gap-2">
+          <% if policy(tool).show? %>
+            <%= link_to tool, title: 'Voir' do %>
+              <span class="material-symbols-outlined">
+                visibility
+              </span>
+            <% end %>
           <% end %>
-        <% end %>
-        <% if policy(tool).edit? %>
-          <%= link_to edit_tool_path(tool), title: 'Modifier' do %>
-            <span class="material-symbols-outlined">
-              edit
-            </span>
+          <% if policy(tool).edit? %>
+            <%= link_to edit_tool_path(tool), title: 'Modifier' do %>
+              <span class="material-symbols-outlined">
+                edit
+              </span>
+            <% end %>
           <% end %>
-        <% end %>
-        <% if policy(tool).destroy? %>
-          <%= button_to tool_path(tool), title: "Supprimer l'outil", method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, form: { class: "flex items-center" }, 'data-testid': "Supprimer l'outil" do %>
-            <span class="material-symbols-outlined">
-              delete
-            </span>
+          <% if policy(tool).destroy? %>
+            <%= button_to tool_path(tool), title: "Supprimer l'outil", method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, form: { class: "flex items-center" }, 'data-testid': "Supprimer l'outil" do %>
+              <span class="material-symbols-outlined">
+                delete
+              </span>
+            <% end %>
           <% end %>
-        <% end %>
-      </div>
-    </td>
+        </div>
+      </td>
+    -->
   <% end %>
 </tr>
