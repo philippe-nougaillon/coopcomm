@@ -39,7 +39,8 @@ class MouvementsController < ApplicationController
 
   # POST /mouvements or /mouvements.json
   def create
-    @mouvement = Mouvement.new(mouvement_params, user_id: current_user.id)
+    @mouvement = Mouvement.new(mouvement_params)
+    @mouvement.user_id = current_user.id
 
     respond_to do |format|
       if @mouvement.save
@@ -115,7 +116,7 @@ class MouvementsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def mouvement_params
-      params.expect(mouvement: [ :tool_id, :état, :commentaires ])
+      params.expect(mouvement: [ :tool_id, :état, :commentaires, :date ])
     end
 
     def is_user_authorized

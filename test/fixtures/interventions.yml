@@ -103,7 +103,7 @@ nettoyage_port:
   fin: 2024-04-19 17:30:00
   temps_de_pause: 1
   description: Nettoyage Marseille
-  workflow_state: validé
+  workflow_state: nouveau
   slug: a3c694ca-a6bc-49f5-b273-befe366ee48e
   service: service_marseille
 
