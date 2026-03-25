@@ -43,4 +43,9 @@ class AdherentMouvementPolicyTest < ActionDispatch::IntegrationTest
   test "accès interdit pour un adherent sur la page destroy d'un mouvement" do
     refute @policy.destroy?
   end
+
+  # reserve
+  test "accès interdit pour un adherent sur la page reserve d'un mouvement" do
+    refute @policy.reserve?
+  end
 end

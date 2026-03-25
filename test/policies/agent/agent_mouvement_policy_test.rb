@@ -4,9 +4,9 @@ class AgentMouvementPolicyTest < ActionDispatch::IntegrationTest
   def setup
     agent = users(:bond)
     
-    mouvement = mouvements(:mouvement_tondeuse)
+    @mouvement = mouvements(:mouvement_tondeuse)
 
-    @policy = MouvementPolicy.new(agent, mouvement)
+    @policy = MouvementPolicy.new(agent, @mouvement)
   end
 
   # Index
@@ -40,7 +40,18 @@ class AgentMouvementPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # destroy
-  test "accès interdit pour un agent sur la page destroy d'un mouvement" do
-    refute @policy.destroy?
+  test "accès autorisé pour un agent sur la page destroy d'un mouvement si c'est lui qui l'a créé" do
+    assert @policy.destroy?
+  end
+
+  test "accès interdit pour un agent sur la page destroy d'un mouvement si ce n'est pas lui qui l'a créé" do
+    policy = MouvementPolicy.new(users(:martin_technique_paris), @mouvement)
+
+    refute policy.destroy?
+  end
+
+  # reserve
+  test "accès autorisé pour un administrateur sur la page reserve d'un mouvement" do
+    assert @policy.reserve?
   end
 end
