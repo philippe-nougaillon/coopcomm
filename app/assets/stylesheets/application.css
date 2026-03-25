@@ -374,3 +374,14 @@ select.slim-select:focus,
   /* END SLIM-SELECT INDISPONIBILITÉ */
 
 /***** END SLIM-SELECT  *****/
+
+
+.text-cerise{
+  color: #db2767;
+}
+
+.border-x-cerise {
+  border-inline-color: #db2767;
+  border-inline-start-color: #db2767;
+  border-inline-end-color: #db2767;
+}

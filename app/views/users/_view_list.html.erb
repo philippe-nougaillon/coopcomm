@@ -7,7 +7,7 @@
       <th>Service</th>
       <% if params[:vue] == 'calendrier' %>
         <% (@date..@date_fin).each do |date| %>
-          <th class="text-center px-2 <%= 'text-error font-black' if date == Date.today %>">
+          <th class="text-center px-2 <%= 'text-cerise' if date == Date.today %>">
             <%= l(date, format: :calendar).humanize %>
           </th>
         <% end %>

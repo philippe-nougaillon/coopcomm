@@ -39,7 +39,7 @@
     </td>
   <% when 'calendrier' %>
     <% (@date..@date_fin).each do | date | %>
-      <td class="text-center <%= date == Date.today ? 'border-x-1 border-x-error' : 'bg-slate-200' %>">
+      <td class="text-center <%= date == Date.today ? 'border-x-1 border-x-cerise' : 'bg-slate-200' %>">
         <% 
           heure_matin = Time.zone.parse("#{date} 08:00:00")
           heure_soir = Time.zone.parse("#{date} 13:05:00")
