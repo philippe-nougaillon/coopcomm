@@ -41,7 +41,7 @@
               <div class="message-wrapper" 
                   data-message-id="<%= notification.id %>" 
                   data-unread="<%= notification.to_id == current_user.id && notification.read_at.nil? ? 'true' : 'false' %>">
-                <%= render partial: "admin/notification", locals: { notification: notification } %>
+                <%= render partial: "messagerie/notification", locals: { notification: notification } %>
               </div>
 
             <% end %>
@@ -54,7 +54,7 @@
                 <span class="text-sm font-semibold text-white">Nouveau message</span>
               </div>
             </div>
-            <input class="w-full rounded-xl p-4 border bg-white shadow-sm" name="message" placeholder="Ecrivez votre message" hx-post="/admin/send_notification?to_id=<%= params[:to_id] %>" hx-trigger="keyup[key=='Enter']" hx-on::after-request="if(event.detail.successful) this.value = ''">
+            <input class="w-full rounded-xl p-4 border bg-white shadow-sm" name="message" placeholder="Ecrivez votre message" hx-post="/messagerie/send_notification?to_id=<%= params[:to_id] %>" hx-trigger="keyup[key=='Enter']" hx-on::after-request="if(event.detail.successful) this.value = ''">
           </div>
         </div>
       </div>
@@ -72,7 +72,7 @@
                 <% last_message = @last_messages[user.id] %>
                 <% unread_count = @unread_counts[user.id] || 0 %>
                 
-                <%= link_to admin_messagerie_path(to_id: user.id), "data-turbo": false, class: "card bg-white shadow-sm hover:shadow-md hover:border-primary transition-all border border-slate-200" do %>
+                <%= link_to messagerie_path(to_id: user.id), "data-turbo": false, class: "card bg-white shadow-sm hover:shadow-md hover:border-primary transition-all border border-slate-200" do %>
                   <div class="card-body p-4 flex flex-row items-center gap-4">
                     <%= render partial: 'partials/user_profile_picture', locals: { user: user } %>
                     
@@ -132,7 +132,7 @@
           name="query" 
           placeholder="Rechercher un utilisateur..." 
           class="input input-bordered w-full"
-          hx-post="/admin/search_contact" 
+          hx-post="/messagerie/search_contact" 
           hx-trigger="input changed delay:10ms, search" 
           hx-target="#users-list"
         />
@@ -256,7 +256,7 @@
 
           // Envoi de la requête au serveur pour marquer comme lu
           const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-          fetch(`/admin/mark_as_read`, {
+          fetch(`/messagerie/mark_as_read`, {
             method: 'POST',
             headers: {
               'X-CSRF-Token': csrfToken,

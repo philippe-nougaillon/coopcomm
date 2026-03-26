@@ -6,14 +6,14 @@ class Notification < ApplicationRecord
 
   after_create_commit -> { 
     broadcast_append_to "chat_#{self.from_id}_with_#{self.to_id}",
-                        partial: "admin/notification_stream",
+                        partial: "messagerie/notification_stream",
                         locals: { notification: self, my_message: true },
                         target: "chat-messages-container" 
   }
 
   after_create_commit -> { 
     broadcast_append_to "chat_#{self.to_id}_with_#{self.from_id}",
-                        partial: "admin/notification_stream",
+                        partial: "messagerie/notification_stream",
                         locals: { notification: self, my_message: false },
                         target: "chat-messages-container" 
   }

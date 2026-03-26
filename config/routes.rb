@@ -79,11 +79,7 @@ Rails.application.routes.draw do
     get :audits
     get :create_new_user
     post :create_new_user_do
-    get :messagerie
-    post :mark_as_read
-    post :send_notification
     get :stats
-    post :search_contact
   end
 
   controller :pages do
@@ -109,6 +105,13 @@ Rails.application.routes.draw do
   resources :newsletters, only: %i[index new destroy]
 
   resources :services
+
+  namespace :messagerie do
+    get '/', action: :messagerie
+    post :mark_as_read
+    post :send_notification
+    post :search_contact
+  end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.

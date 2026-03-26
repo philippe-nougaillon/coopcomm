@@ -39,7 +39,7 @@
         </li>
       <% end %>
       <li>
-        <%= link_to admin_messagerie_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:action] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
+        <%= link_to messagerie_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:action] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
           <% if current_user.new_notifications? %>
             <span class="material-symbols-outlined text-error">
               chat
@@ -177,7 +177,7 @@
   <% end %>
 
 
-  <%= link_to admin_messagerie_path, class: "flex-none w-12 text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:action] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
+  <%= link_to messagerie_path, class: "flex-none w-12 text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:action] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
     <% if current_user.new_notifications? %>
       <span class="material-symbols-outlined text-error">
         chat
