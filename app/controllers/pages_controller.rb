@@ -337,31 +337,17 @@ class PagesController < ApplicationController
     @interventions = Intervention.by_role_for_home(current_user).filter_by_service(current_user.services).first(2)
     @notifications = current_user.notifications.ordered.first(3)
 
-    # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh
-    @forecasts = Rails.cache.fetch('daily_forecast', expires_in: 10.minutes) do
-      logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours"
-      
-      MeteoConceptConnexion.new.call
-    end
+    @forecasts = MeteoConceptConnexion.call
   end
 
   # Page de la liste des météos sur 14 jours
   def meteo
-    # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh
-    @forecasts = Rails.cache.fetch('daily_forecast', expires_in: 10.minutes) do
-      logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours"
-      
-      MeteoConceptConnexion.new.call
-    end
+    @forecasts = MeteoConceptConnexion.call
   end
 
   # Récupère les données de la météo d'un jour, appelé dans la page "meteo"
   def meteo_by_day
-    forecasts = Rails.cache.fetch('daily_forecast', expires_in: 10.minutes) do
-      logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours"
-
-      MeteoConceptConnexion.new.call
-    end
+    forecasts = MeteoConceptConnexion.call
 
     forecast = forecasts["forecast"][params[:day].to_i].third
 

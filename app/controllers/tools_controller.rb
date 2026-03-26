@@ -27,6 +27,8 @@ class ToolsController < ApplicationController
       @tools = @tools.where(id: tool_ids)
     end
 
+    @forecasts = MeteoConceptConnexion.call
+
     case params[:vue]
     when 'calendrier'
       @date_fin = @date + 13.day
