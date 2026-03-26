@@ -20,6 +20,7 @@ class Mouvement < ApplicationRecord
   validate :coherence_panne, if: :panne?
   validate :coherence_fin_panne, if: :fin_panne?
 
+  after_create :avertir_reservations_futures, if: :panne?
   after_create :nettoyer_reservations_pendant_panne, if: :fin_panne?
   
   def style
@@ -120,6 +121,25 @@ def coherence_panne
     # On utilise created_at pour retrouver la paire exacte (comme vu précédemment)
     mouvements_ecrases.each do |mvt|
       tool.mouvements.where(user_id: mvt.user_id, created_at: mvt.created_at).destroy_all
+    end
+  end
+
+  def avertir_reservations_futures
+    # On cherche toutes les "sorties" (débuts de réservation) prévues APRÈS cette panne
+    # On inclut les utilisateurs pour éviter les requêtes N+1
+    reservations_futures = tool.mouvements
+                               .includes(:user)
+                               .where("date > ?", self.date)
+                               .where(état: :sortie)
+                               .where.not(user_id: self.user_id)
+
+    # Pour chaque réservation future, on envoie l'email
+    reservations_futures.each do |reservation|
+      if reservation.user.present?
+        # On utilise deliver_later pour que l'envoi de l'email se fasse en arrière-plan
+        # sans ralentir le chargement de la page pour la personne qui déclare la panne.
+        NotifPanneJob.perform_later(self.id, reservation.id, )
+      end
     end
   end
 end

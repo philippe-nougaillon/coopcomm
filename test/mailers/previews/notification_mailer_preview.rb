@@ -33,4 +33,11 @@ class NotificationMailerPreview < ActionMailer::Preview
     NotificationMailer.new_intervention_from_adherent(Intervention.last, User.last.email, "Nouvelle intervention adhérent")
   end
 
+  def avertissement_reservation
+    réservation = Mouvement.last(2).first
+    panne = Mouvement.last
+    title = "[COOPCOMM] L'outil #{panne.tool.name} a été déclaré en panne"
+    NotificationMailer.avertissement_reservation(réservation.user, panne.tool, réservation.date, panne.date, title)
+  end
+
 end

@@ -79,4 +79,16 @@ class NotificationMailer < ApplicationMailer
     @intervention = intervention
     mail(to: user_email, subject: title)
   end
+
+  def avertissement_reservation(user, tool, date_reservation, date_panne, title)
+    @user = user
+    @tool = tool
+    @date_reservation = date_reservation
+    @date_panne = date_panne
+
+    mail(
+      to: @user.email, 
+      subject: title
+    )
+  end
 end
