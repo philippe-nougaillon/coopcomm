@@ -14,6 +14,15 @@ class MeteoConceptConnexion < ApplicationService
   end
 
   def call
+    # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh
+    Rails.cache.fetch('daily_forecast', expires_in: 10.minutes) do
+      Rails.logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours"
+
+      fetch_response
+    end
+  end
+
+  def fetch_response
     response = Fetch::API.fetch(@url,
       method: :get,
       headers: {
@@ -27,6 +36,13 @@ class MeteoConceptConnexion < ApplicationService
     end
 
     forecasts
+  end
+
+  def self.get_icon_meteo_by_date(date, forecast)
+    difference_of_day = (date - Date.today).to_i
+    if difference_of_day >= 0 && difference_of_day < 14
+      return get_icon_meteo(forecast[difference_of_day].third["weather"])
+    end
   end
 
   def self.WEATHER
