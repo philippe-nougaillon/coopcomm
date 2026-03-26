@@ -8,7 +8,8 @@ class AdministrateurUserPolicyTest < ActionDispatch::IntegrationTest
     user_marseille_service_different = users(:agent_marseille)
 
     @policy = UserPolicy.new(administrateur_paris, user_paris)
-    @policy_service_different = UserPolicy.new(administrateur_paris, user_marseille_service_different)
+    @policy_user_myself = UserPolicy.new(administrateur_paris, administrateur_paris)
+    @policy_organisation_differente = UserPolicy.new(administrateur_paris, user_marseille_service_different)
   end
 
   # Index
@@ -22,7 +23,7 @@ class AdministrateurUserPolicyTest < ActionDispatch::IntegrationTest
   end
 
   test "accès interdit pour un administrateur sur la page show d'un user d'une autre organisation" do
-    refute @policy_service_different.show?
+    refute @policy_organisation_differente.show?
   end
 
   # New
@@ -46,7 +47,7 @@ class AdministrateurUserPolicyTest < ActionDispatch::IntegrationTest
   end
 
   test "accès interdit pour un administrateur sur la page update d'un user d'une autre organisation" do
-    refute @policy_service_different.update?
+    refute @policy_organisation_differente.update?
   end
 
   # Destroy
@@ -55,11 +56,43 @@ class AdministrateurUserPolicyTest < ActionDispatch::IntegrationTest
   end
 
   test "accès interdit pour un administrateur sur la page destroy d'un user d'une autre organisation" do
-    refute @policy_service_different.destroy?
+    refute @policy_organisation_differente.destroy?
   end
 
   # agent calendrier
   test "accès autorisé pour un administrateur sur la page agent_calendrier" do
     assert @policy.agent_calendrier?
+  end
+
+  # Inviter
+  test "accès interdit pour un administrateur sur la page inviter d'un user" do
+    assert @policy.inviter?
+  end
+
+  # Edit password
+  test "accès autorisé pour un administrateur sur sa page edit_password" do
+    assert @policy_user_myself.edit_password?
+  end
+
+  test "accès interdit pour un administrateur sur sa page edit_password d'un autre user" do
+    refute @policy.edit_password?
+  end
+
+  # Update password
+  test "accès autorisé pour un administrateur sur sa page update_password" do
+    assert @policy_user_myself.update_password?
+  end
+
+  test "accès interdit pour un administrateur sur sa page update_password d'un autre user" do
+    refute @policy.update_password?
+  end
+
+  # Reactivate
+  test "accès autorisé pour un administrateur sur la page reactivate d'un user" do
+    assert @policy.reactivate?
+  end
+
+  test "accès interdit pour un administrateur sur la page reactivate d'un user d'une autre organisation" do
+    refute @policy_organisation_differente.reactivate?
   end
 end
