@@ -7,6 +7,7 @@ class AgentUserPolicyTest < ActionDispatch::IntegrationTest
     user_paris = users(:user_paris)
 
     @policy = UserPolicy.new(agent_paris, user_paris)
+    @policy_user_myself = UserPolicy.new(agent_paris, agent_paris)
   end
 
   # Index
@@ -47,5 +48,25 @@ class AgentUserPolicyTest < ActionDispatch::IntegrationTest
   # Agent calendrier
   test "accès agent user agent calendrier interdit" do
     refute @policy.agent_calendrier?
+  end
+
+  # Inviter
+  test "accès interdit pour un agent sur la page inviter d'un user" do
+    refute @policy.inviter?
+  end
+
+  # Edit password
+  test "accès autorisé pour un agent sur sa page edit_password" do
+    assert @policy_user_myself.edit_password?
+  end
+
+  # Update password
+  test "accès autorisé pour un agent sur sa page update_password" do
+    assert @policy_user_myself.update_password?
+  end
+
+  # Reactivate
+  test "accès interdit pour un agent sur la page reactivate d'un user" do
+    refute @policy.reactivate?
   end
 end
