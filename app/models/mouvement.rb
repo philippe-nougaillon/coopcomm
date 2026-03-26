@@ -6,19 +6,22 @@ class Mouvement < ApplicationRecord
   belongs_to :user
   belongs_to :intervention, optional: true
 
-  validates :date, presence: true
-
+  
   scope :ordered, -> { order(date: :desc) }
-
+  
   enum :état, {
-    achat: 0,
-    réforme: 1,
-    entrée: 2,
-    sortie: 3,
-    révision: 4,
-    panne: 5
+    entrée: 0,
+    sortie: 1,
+    panne: 2,
+    fin_panne: 3
   }
 
+  validates :date, presence: true
+  validate :coherence_panne, if: :panne?
+  validate :coherence_fin_panne, if: :fin_panne?
+
+  after_create :nettoyer_reservations_pendant_panne, if: :fin_panne?
+  
   def style
     case self.état
     when 'début'
@@ -36,9 +39,87 @@ class Mouvement < ApplicationRecord
     end
   end
 
+  def resolue?
+    return false unless panne?
+
+    # On vérifie s'il y a un événement "fin_panne" postérieur à cette panne
+    if tool.mouvements.loaded?
+      tool.mouvements.any? { |m| m.fin_panne? && m.date > date }
+    else
+      tool.mouvements.where(état: :fin_panne).where("date > ?", date).exists?
+    end
+  end
+
   private
 
   def slug_candidates
     [SecureRandom.uuid]
+  end
+
+def coherence_panne
+    # Voisin de gauche (Le passé)
+    event_precedent = tool.mouvements.where.not(id: id)
+                          .where("date <= ?", date)
+                          .where(état: [:panne, :fin_panne])
+                          .order(date: :desc).first
+
+    # Voisin de droite (Le futur)
+    event_suivant = tool.mouvements.where.not(id: id)
+                        .where("date > ?", date)
+                        .where(état: [:panne, :fin_panne])
+                        .order(date: :asc).first
+
+    if event_precedent&.panne?
+      errors.add(:état, "Impossible : l'outil est déjà en panne à ce moment-là.")
+    end
+
+    if event_suivant&.panne?
+      errors.add(:état, "Impossible : une autre panne est déjà déclarée juste après sans avoir été réparée.")
+    end
+  end
+
+  # 2. LA VALIDATION POUR LA FIN DE PANNE
+  def coherence_fin_panne
+    # Voisin de gauche (Le passé)
+    event_precedent = tool.mouvements.where.not(id: id)
+                          .where("date <= ?", date)
+                          .where(état: [:panne, :fin_panne])
+                          .order(date: :desc).first
+
+    # Voisin de droite (Le futur)
+    event_suivant = tool.mouvements.where.not(id: id)
+                        .where("date > ?", date)
+                        .where(état: [:panne, :fin_panne])
+                        .order(date: :asc).first
+
+    if event_precedent.nil? || event_precedent.fin_panne?
+      errors.add(:état, "Impossible : l'outil n'était pas déclaré en panne à cette date.")
+    end
+
+    if event_suivant&.fin_panne?
+      errors.add(:état, "Impossible : une fin de panne est déjà prévue pour plus tard.")
+    end
+  end
+
+  def nettoyer_reservations_pendant_panne
+    # On retrouve la panne qui a déclenché cet incident
+    panne_initiale = tool.mouvements
+                         .where("date <= ?", date)
+                         .where(état: :panne)
+                         .order(date: :desc)
+                         .first
+
+    return unless panne_initiale
+
+    # On trouve tous les mouvements de réservation situés entre le début et la fin de la panne
+    mouvements_ecrases = tool.mouvements
+                             .where(état: [:sortie, :entrée])
+                             .where(date: panne_initiale.date..self.date)
+
+    # Pour chaque mouvement trouvé, on supprime la réservation complète (la paire sortie/entrée)
+    # On utilise created_at pour retrouver la paire exacte (comme vu précédemment)
+    mouvements_ecrases.each do |mvt|
+      tool.mouvements.where(user_id: mvt.user_id, created_at: mvt.created_at).destroy_all
+    end
   end
 end

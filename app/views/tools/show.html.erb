@@ -4,7 +4,7 @@
       <%= page_title!(@tool.name) %>
     </h1>
 
-    <%= link_to "Ajouter une intervention avec ce matériel", new_intervention_path(tool_ids: @tool.id), class: 'btn btn-sm sm:btn-lg btn-outline btn-success hover:text-white!' %>
+    <%= link_to "Créer une panne", new_mouvement_path(tool_id: @tool.id, état: :panne), class: 'btn btn-sm sm:btn-lg btn-outline btn-success hover:text-white!' %>
   </div>
 
   <div class="flex flex-wrap gap-8 mt-8">
@@ -16,14 +16,18 @@
       </span>
     <% end %>
     <div class="flex flex-col flex-wrap">
+      <% if false %>
+        <!--
       <p class="my-2">
         <strong class="block text-slate-400">État</strong>
-        <% if @tool.mouvements.any? %>
+          <% if @tool.mouvements.any? %>
           <p class="font-bold badge badge-sm badge-<%= @tool.mouvements.last.style %> mb-2">
             <%= @tool.mouvements.last.état.humanize %>
           </p>
-        <% end %>
+          <% end %>
       </p>
+        -->
+      <% end %>
       <p class="my-2">
         <strong class="block text-slate-400 mb-1">Modèle</strong>
         <b><%= @tool.modèle %></b>
@@ -147,9 +151,6 @@
     <h2 class="text-2xl text-secondary">
       Mouvements
     </h2>
-    <% if policy(Mouvement).new? %>
-      <%= link_to "Ajouter un mouvement", new_mouvement_path(tool_id: @tool.id), class: 'btn btn-sm sm:btn-lg btn-outline btn-success hover:text-white!' %>
-    <% end %>
   </div>
   <div class="mx-auto w-full">
     <div class="overflow-x-auto">

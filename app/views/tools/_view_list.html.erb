@@ -9,8 +9,8 @@
           <th><%= sort_link 'tools.modèle', 'Modèle' %></th>
           <th><%= sort_link 'tools.marque', 'Marque' %></th>
           -->
-        <% end %>
         <th>État</th>
+        <% end %>
         <% if params[:vue] == 'calendrier' %>
           <% (@date..@date_fin).each do |date| %>
             <th class="text-center <%= 'text-cerise' if date == Date.today %>">

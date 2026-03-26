@@ -20,14 +20,23 @@
     <%= form.select :tool_id, options_from_collection_for_select(@tools, :id, :name), {include_blank: true, required: true}, class: "slim-select w-full" %>
   <% end %>
 
-  <div class="w-full">
-    <%= form.label :état %>
-    <%= form.select :état, options_for_select(Mouvement.états.keys, mouvement.état), {include_blank: true}, class: 'select select-sm w-full', required: true %>
-  </div>
+  <% if params[:état] %>
+    <%= form.hidden_field :état, value: params[:état] %>
+  <% else %>
+    <div class="w-full">
+      <%= form.label :état %>
+      <%= form.select :état, options_for_select(Mouvement.états.keys, mouvement.état || params[:état]), {include_blank: true}, class: 'select select-sm w-full', required: true %>
+    </div>
+  <% end %>
 
   <div class="w-full">
     <%= form.label :date %>
-    <%= form.text_field :date, type: "datetime-local", class: 'input input-bordered input-sm w-full', required: true %>
+    <%= form.datetime_field :date, value: @mouvement.date&.strftime('%Y-%m-%dT%H:%M'), class: 'input input-bordered input-sm w-full', required: true %>
+  </div>
+
+  <div class="w-full">
+    <%= form.label :commentaires %>
+    <%= form.text_area :commentaires, class: 'textarea textarea-bordered textarea-sm w-full', autofocus: true, 'data-controller': 'textarea-autogrow' %>
   </div>
 
   <div class="inline">

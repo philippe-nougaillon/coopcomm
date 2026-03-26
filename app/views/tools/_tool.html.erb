@@ -16,13 +16,13 @@
     <td>
       <%= tool.marque %>
     </td>
+    <td>
+      <% if tool.mouvements.any? %> 
+        <p class="font-bold badge badge-sm badge-<%= tool.mouvements.last.style %>"><%= tool.mouvements.last.état.humanize %></p>
+      <% end %>
+    </td>
     -->
   <% end %>
-  <td>
-    <% if tool.mouvements.any? %> 
-      <p class="font-bold badge badge-sm badge-<%= tool.mouvements.last.style %>"><%= tool.mouvements.last.état.humanize %></p>
-    <% end %>
-  </td>
 
   <% case params[:vue]%>
   <% when 'disponible' %>
@@ -41,8 +41,9 @@
     <% (@date..@date_fin).each do | date | %>
       <td class="text-center <%= date == Date.today ? 'border-x-1 border-x-cerise' : 'bg-slate-200' %>">
         <% 
-          heure_matin = Time.zone.parse("#{date} 08:00:00")
-          heure_soir = Time.zone.parse("#{date} 13:05:00")
+          # On vérifie l'état juste avant la fin du créneau pour capter tout ce qui s'y passe
+          heure_matin = Time.zone.parse("#{date} 12:59:59")
+          heure_soir = Time.zone.parse("#{date} 17:59:59")
 
           mouvement_matin = tool.dernier_mouvement_a(heure_matin)
           mouvement_soir = tool.dernier_mouvement_a(heure_soir)

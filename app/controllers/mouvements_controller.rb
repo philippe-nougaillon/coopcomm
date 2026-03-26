@@ -58,7 +58,7 @@ class MouvementsController < ApplicationController
   def update
     respond_to do |format|
       if @mouvement.update(mouvement_params)
-        format.html { redirect_to @mouvement.tool, notice: "Mouvement modifié avec succès.", status: :see_other }
+        format.html { redirect_to request.referrer, notice: "Mouvement modifié avec succès.", status: :see_other }
         format.json { render :show, status: :ok, location: @mouvement }
       else
         format.html { render :edit, status: :unprocessable_entity }

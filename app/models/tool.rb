@@ -45,13 +45,26 @@ class Tool < ApplicationRecord
   end
 
   def dernier_mouvement_a(heure)
-    # Si les mouvements ont été préchargés en mémoire par le contrôleur (via includes)
     if mouvements.loaded?
-      # On filtre le tableau en mémoire
-      mouvements.select { |m| m.date <= heure }.max_by(&:date)
+      # On filtre et on trie du plus récent au plus ancien
+      mvs = mouvements.select { |m| m.date <= heure }.sort_by { |m| -m.date.to_i }
+      
+      # On cherche le dernier événement lié à une panne
+      dernier_panne_event = mvs.find { |m| m.panne? || m.fin_panne? }
+      
+      # Si l'outil est cassé, on renvoie ce mouvement. Sinon, le mouvement classique.
+      return dernier_panne_event if dernier_panne_event&.panne?
+      mvs.first
+
     else
-      # Fallback SQL de sécurité si on appelle la méthode ailleurs sans "includes"
-      mouvements.where("date <= ?", heure).order(date: :desc).first
+      # --- VERSION SQL (Fallback de sécurité) ---
+      mvs = mouvements.where("date <= ?", heure).order(date: :desc)
+      
+      # On optimise la requête SQL pour chercher directement la dernière panne/fin_panne
+      dernier_panne_event = mvs.where(état: [:panne, :fin_panne]).first
+      
+      return dernier_panne_event if dernier_panne_event&.panne?
+      mvs.first
     end
   end
 
