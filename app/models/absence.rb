@@ -14,6 +14,7 @@ class Absence < ApplicationRecord
 
   validate :dates_must_make_sense
   validate :no_overlapping_absences
+  validate :no_overlapping_interventions
 
   # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
   after_create_commit :send_manager_notification
@@ -69,6 +70,31 @@ class Absence < ApplicationRecord
         errors.add(:base, "Cette absence chevauche une autre absence déjà enregistrée #{conflit_info}.")
         break
       end
+    end
+  end
+
+  def no_overlapping_interventions
+    return if du.blank? || au.blank? || user.blank?
+
+    absence_start = du.beginning_of_day
+    absence_end   = au.end_of_day
+
+    if matin && !après_midi
+      absence_end = au.middle_of_day 
+    elsif après_midi && !matin
+      absence_start = du.middle_of_day
+    end
+    # Si les deux sont à false (ou les deux à true), les bornes par défaut 
+    # couvrent toute la journée, ce qui correspond à ton besoin.
+
+    interventions_en_conflit = user.interventions.where(
+      "début_prévue < ? AND fin_prévue > ?", 
+      absence_end, 
+      absence_start
+    )
+
+    if interventions_en_conflit.exists?
+      errors.add(:base, "Impossible de créer l'absence : la personne est déjà en intervention sur ce créneau horaire.")
     end
   end
 
