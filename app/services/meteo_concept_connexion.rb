@@ -33,6 +33,9 @@ class MeteoConceptConnexion < ApplicationService
     if response.status == 200
       forecasts = response.json
       forecasts[:last_fetched_at] = response.headers.get("date")
+    else
+      forecasts = {}
+      Rails.logger.debug "Erreur lors de l'appel API Meteo Concept : status = #{response.status}, body = #{response.body}"
     end
 
     forecasts
@@ -40,7 +43,7 @@ class MeteoConceptConnexion < ApplicationService
 
   def self.get_icon_meteo_by_date(date, forecast)
     difference_of_day = (date - Date.today).to_i
-    if difference_of_day >= 0 && difference_of_day < 14
+    if forecast && difference_of_day >= 0 && difference_of_day < 14
       return get_icon_meteo(forecast[difference_of_day].third["weather"])
     end
   end

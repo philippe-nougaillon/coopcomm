@@ -16,7 +16,7 @@
             <th class="text-center <%= 'text-cerise' if date == Date.today %>">
               <div class="flex flex-col items-center">
                 <%= l(date, format: :calendar).humanize %>
-                <% if icon_meteo = MeteoConceptConnexion.get_icon_meteo_by_date(date, @forecasts["forecast"])%>
+                <% if @forecasts && icon_meteo = MeteoConceptConnexion.get_icon_meteo_by_date(date, @forecasts["forecast"])%>
                   <%= image_tag icon_meteo, size: 50 %>
                 <% end %>
               </div>
