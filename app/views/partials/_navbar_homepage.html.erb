@@ -1,8 +1,8 @@
-<header class="bg-white shadow-lg px-6 py-4 relative">
+<header class="bg-white shadow-lg px-6 py-4 relative z-10">
   <div class="flex items-center justify-between">
     <!--nav ordenador-->
     <%= link_to root_path do %>
-      <%= image_tag "CoopComm.png", class: "h-10" %>
+      <%= image_tag "CoopComm.png", class: "h-10 #{'ml-6 sm:ml-0' if params[:controller] == 'wiki_pages'}" %>
     <% end %>
     <button id="menu-btn" class="md:hidden text-3xl focus:outline-none">
       ☰
