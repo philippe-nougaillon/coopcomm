@@ -39,11 +39,11 @@
         <%= link_to (current_user.agent? ? 'Nouveau bon d\'Intervention' : 'Créer une Intervention'), new_intervention_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
         <% if current_user.manager_or_admin? %>
           <%= link_to 'Ajouter un nouveau Matériel', new_tool_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
+          <%= link_to 'Lancer une discussion', messagerie_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
           <%= link_to 'Ajouter un nouvel Utilisateur', new_user_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
-          <%= link_to 'Lancer une discussion', messagerie_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
         <% elsif current_user.adhérent? %>
-          <%= link_to 'Voir le tableau de bord', dashboard_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
           <%= link_to 'Lancer une discussion', messagerie_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
+          <%= link_to 'Voir le tableau de bord', dashboard_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
           <%= link_to '_', root_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
         <% elsif current_user.agent? %>
           <%= link_to 'Réserver du matériel', tools_path, class: 'btn btn-outline rounded-full w-fit whitespace-nowrap px-6' %>
