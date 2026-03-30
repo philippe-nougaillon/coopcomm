@@ -419,6 +419,8 @@ class Intervention < ApplicationRecord
     user = User.find_by(id: self.audits.find_by(action: 'create')&.user&.id)
     if user&.adhérent?
       NotifManagersNewInterventionFromAdherentJob.perform_later(self, user)
+    elsif user&.agent? && self.terminé?
+      NotifManagersInterventionDoneByAgentJob.perform_later(self, user)
     end
   end
 

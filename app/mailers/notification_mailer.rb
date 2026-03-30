@@ -80,6 +80,11 @@ class NotificationMailer < ApplicationMailer
     mail(to: user_email, subject: title)
   end
 
+  def intervention_done_by_agent(intervention, user_email, title)
+    @intervention = intervention
+    mail(to: user_email, subject: title)
+  end
+
   def avertissement_reservation(user, tool, date_reservation, date_panne, title)
     @user = user
     @tool = tool
