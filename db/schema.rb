@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_25_135741) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_30_123555) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -140,7 +140,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_25_135741) do
     t.decimal "temps_total", precision: 8, scale: 2, default: "0.0"
     t.text "commentaires"
     t.integer "note", default: 5
-    t.bigint "team_id"
     t.string "avis"
     t.string "slug"
     t.boolean "repeter"
@@ -154,7 +153,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_25_135741) do
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
     t.index ["organisation_id"], name: "index_interventions_on_organisation_id"
     t.index ["service_id"], name: "index_interventions_on_service_id"
-    t.index ["team_id"], name: "index_interventions_on_team_id"
   end
 
   create_table "mail_logs", force: :cascade do |t|
@@ -483,7 +481,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_25_135741) do
   add_foreign_key "export_logs", "users"
   add_foreign_key "interventions", "organisations"
   add_foreign_key "interventions", "services"
-  add_foreign_key "interventions", "users", column: "team_id"
   add_foreign_key "mail_logs", "organisations"
   add_foreign_key "mouvements", "interventions"
   add_foreign_key "mouvements", "tools"

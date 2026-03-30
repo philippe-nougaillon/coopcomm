@@ -27,9 +27,6 @@ class InterventionAdherentFlowTest < ApplicationSystemTestCase
     # find('div.ss-placeholder', text: "Choisissez un ou plusieurs mots clés").click
     # page.driver.browser.switch_to.active_element.send_keys('Coupure électricité', :enter, 'Réparation', :enter)
 
-    # Sélectionner l'équipe
-    select_option("#intervention_team_id", "Électricité")
-
     # Sélectionner l'agent
     select_option("#intervention_agent_ids", "Bond James")
 

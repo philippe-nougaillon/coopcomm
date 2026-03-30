@@ -12,5 +12,4 @@
   <td><%= l(intervention.début, format: :long) if intervention.début %></td>
   <td><%= l(intervention.fin, format: :long) if intervention.fin %></td>
   <td><%= intervention.adherent.try(:nom_prénom) %></td>
-  <td><%= intervention.team.try(:nom_prénom) %></td>
 </td>

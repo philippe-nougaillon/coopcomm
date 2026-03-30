@@ -52,7 +52,6 @@ module ActiveSupport
           temps_total: intervention.temps_total,
           commentaires: intervention.commentaires,
           note: intervention.note,
-          team_id: intervention.team_id,
           avis: intervention.avis,
           repeter: intervention.repeter,
           slug: SecureRandom.uuid,

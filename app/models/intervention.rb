@@ -16,7 +16,6 @@ class Intervention < ApplicationRecord
 
   belongs_to :organisation
   belongs_to :service
-  belongs_to :team, class_name: :User, foreign_key: :team_id, optional: true # Not used anymore 
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
   has_many :agent_interventions, dependent: :destroy
   has_many :agents, through: :agent_interventions, class_name: 'User'
@@ -392,12 +391,6 @@ class Intervention < ApplicationRecord
     ).last
   end
 
-  def get_title_for_cases
-    txt = "#{self.description}"
-    txt += ", Equipe : #{self.team.nom}" if self.team
-    txt
-  end
-
   def passed
     !self.nouveau? || (self.fin && (self.fin < DateTime.now))
   end
@@ -469,7 +462,6 @@ class Intervention < ApplicationRecord
 
   def authorized_users_ids
     user_ids = self.agents.pluck(:id)
-    user_ids << self.team.try(:id)
     user_ids.compact!
     user_ids
   end

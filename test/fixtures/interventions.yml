@@ -14,7 +14,6 @@ tonte_locaux:
   commentaires: Bien tondre sur le bord des routes
   note: 4
   avis: Ça s'est très bien passé
-  team: nettoyage
   repeter: false
   slug: 0286beb9-7249-4a29-96c7-f7fd9196c1dc
   début_prévue: <%= (Date.today + 14).beginning_of_week + 8.hours + 35.minutes %>

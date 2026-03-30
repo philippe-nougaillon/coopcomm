@@ -53,10 +53,6 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.where(adherent_id: params[:adherent_id])
     end
 
-    if params[:team_id].present?
-      @interventions = @interventions.where(team_id: params[:team_id])
-    end
-
     if params[:equipe].present?
       # On nettoie le tableau pour enlever l'élément vide ("") envoyé par le formulaire
       tags = params[:equipe].reject(&:blank?)
@@ -94,7 +90,7 @@ class InterventionsController < ApplicationController
     @interventions = @interventions.distinct
     respond_to do |format|
       format.html do
-        @pagy, @interventions = pagy(@interventions.includes(:tags, :team, :agents, :adherent).with_attached_photos)
+        @pagy, @interventions = pagy(@interventions.includes(:tags, :agents, :adherent).with_attached_photos)
       end
 
       format.xls do
@@ -427,10 +423,6 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.where(adherent_id: params[:adherent_id])
     end
 
-    if params[:team_id].present?
-      @interventions = @interventions.where(team_id: params[:team_id])
-    end
-
     if params[:service].present?
       @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {service: params[:service]})
     end
@@ -561,10 +553,6 @@ class InterventionsController < ApplicationController
 
     if params[:adherent_id].present?
       @interventions = @interventions.where(adherent_id: params[:adherent_id])
-    end
-
-    if params[:team_id].present?
-      @interventions = @interventions.where(team_id: params[:team_id])
     end
 
     if params[:service].present?
