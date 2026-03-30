@@ -40,8 +40,15 @@ export default class extends Controller {
         }
 
         temps.value = temps_total.toFixed(2)
-        temps.classList.remove('text-red-500!')
-        temps.classList.add('text-green-500!')
+        if (temps.value > 0) {
+          temps.classList.remove('text-red-500!')
+          temps.classList.add('text-green-500!')
+        } 
+        else{
+          temps.classList.add('text-red-500!')
+          temps.classList.remove('text-green-500!')
+        }
+        
       } else {
         temps.value = -1
         temps.classList.add('text-red-500!')
