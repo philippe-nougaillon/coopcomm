@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Connects to data-controller="toggle-agent-service"
+// Connects to data-controller="toggle-role-info"
 export default class extends Controller {
   static targets = ['role', 'localisation', 'prenom']
 
@@ -10,7 +10,7 @@ export default class extends Controller {
   }
 
   connect() {
-    console.log("Hello, toggle-agent!", this.element)
+    console.log("Hello, toggle-role-info !", this.element)
   }
 
   change() {

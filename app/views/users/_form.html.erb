@@ -21,12 +21,22 @@
 
   <div data-controller="toggle-role-info">
     <div class="flex flex-wrap md:flex-nowrap gap-2 w-full mb-2">
-      <div>
-        <%= form.label :rôle, "Rôle" %>
-        <span data-action="change->toggle-role-info#change">
-          <%= form.select :rôle, options_for_select(current_user.assignable_roles, user.rôle), {}, class: 'select select-sm w-full', data: { 'toggle-role-info-target': 'role' } %>
-        </span>
-      </div>
+      <% if current_user.administrateur? %>
+        <div>
+          <%= form.label :rôle, "Rôle" %>
+          <%= form.select :rôle, 
+                          User.rôles.keys, 
+                          { selected: user.rôle || 'agent' }, 
+                          class: 'select select-sm w-full', 
+                          data: { 
+                            'toggle-role-info-target': 'role',
+                            action: 'change->toggle-role-info#change'
+                          } %>
+        </div>
+
+      <% else %>
+        <%= form.hidden_field :rôle, value: (user.new_record? ? 'agent' : user.rôle), data: { 'toggle-role-info-target': 'role' } %>
+      <% end %>
       <div data-toggle-role-info-target="localisation" class="flex-1">
         <%# ATTENTION : si on change le nombre d'éléments dans la div avec la target localisation, il faut adapter le stimulus en conséquence. Sinon le required du champ localisation sera présent quel que soit le rôle attribué %>
         <%= form.label :localisation, "Localisation" %>
