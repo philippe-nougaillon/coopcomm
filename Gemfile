@@ -63,6 +63,11 @@ group :development do
 
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem "spring"
+
+  # Preview mail in the browser instead of sending.
+  gem 'letter_opener'
+  # A web interface for browsing Ruby on Rails sent emails
+  gem 'letter_opener_web'
 end
 
 group :test do

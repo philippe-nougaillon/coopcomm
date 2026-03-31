@@ -2,6 +2,8 @@ Rails.application.routes.draw do
   # Mount Mission Control Job's engine where you wish to have it accessible
   mount MissionControl::Jobs::Engine, at: "/jobs"
 
+  mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
+
   devise_for :users
   # devise_for :users, controllers: {
   #   registrations: 'users/registrations',
