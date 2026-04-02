@@ -1,10 +1,10 @@
 <tr id="<%= dom_id tool %>">
-  <td>
+  <td class="hidden sm:block">
     <% if tool.photo.present? %>
       <img src="<%= url_for(tool.photo) %>" class="h-10">  
     <% end %>
   </td>
-  <td class="sticky left-0 top-0 text-lg sm:text-xl text-primary bg-slate-50 break-words whitespace-normal max-w-[50vw]">
+  <td class="sticky left-0 top-0 bg-slate-100 sm:text-xl text-primary bg-slate-50 break-words whitespace-normal max-w-[25vw]">
     <%= link_to tool.name.humanize, tool, class: 'text-primary hover:underline', title: (tool.description.blank? ? 'Aucune description' : tool.description) %>
   </td>
 
@@ -39,7 +39,7 @@
     </td>
   <% when 'calendrier' %>
     <% (@date..@date_fin).each do | date | %>
-      <td class="text-center <%= date == Date.today ? 'border-x-1 border-x-cerise' : 'bg-slate-200' %>">
+      <td class="text-center p-0! <%= date == Date.today ? 'border-x-1 border-x-cerise' : 'bg-slate-200' %>">
         <% 
           # On vérifie l'état juste avant la fin du créneau pour capter tout ce qui s'y passe
           heure_matin = Time.zone.parse("#{date} 12:59:59")
