@@ -58,7 +58,7 @@
       <% if @forecasts %>
         <h2 class="font-black text-lg">Météo à <%= @forecasts["city"]["name"] %></h2>
         <small>Dernière mise à jour : <%= l(Time.zone.parse(@forecasts[:last_fetched_at])) %></small>
-        <div class="flex flex-wrap justify-center gap-8 my-2 mb-8">
+        <div class="flex flex-col md:flex-row flex-wrap justify-center gap-2 my-2 mb-8">
           <%= render partial: 'pages/meteo', collection: [@forecasts["forecast"].first.third, @forecasts["forecast"].second.third], as: :forecast %>
         </div>
         <%= link_to 'Prévision pour les jours à venir', meteo_path, class: 'text-primary' %>
