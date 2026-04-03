@@ -1,5 +1,5 @@
 <% user = User.with_discarded.find_by(id: notification.from_id) %>
-<div class="flex items-center gap-4 border px-4 py-4">
+<div class="flex flex-wrap lg:flex-nowrap items-center gap-4 border px-4 py-4">
   <div class="w-10">
     <% if user %>
       <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
