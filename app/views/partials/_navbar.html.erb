@@ -148,7 +148,7 @@
 
 
 
-<div class="dock lg:hidden z-100 shadow-2xl h-20 overflow-x-auto overflow-y-hidden flex-nowrap justify-start px-2 gap-2" style="scrollbar-width: none;">
+<div class="dock dock-sm lg:hidden z-100 shadow-2xl" style="scrollbar-width: none;">
   <%= link_to home_path, class: "flex-none w-12 text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:action] == 'home'}", title: "Page d'accueil" do %>
     <span class="material-symbols-outlined text-2xl">
       cottage
@@ -189,7 +189,7 @@
     <% end %>
   <% end %>
 
-  <% if policy(Mouvement).index? %>
+  <% if false && policy(Mouvement).index? %>
     <%= link_to mouvements_path, class: "flex-none w-12 text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:controller] == 'mouvements'}", title: "Liste des mouvements" do %>
       <span class="material-symbols-outlined">
         compare_arrows
@@ -197,7 +197,7 @@
     <% end %>
   <% end %>
 
-  <% if policy(WikiPage).index? %>
+  <% if false && policy(WikiPage).index? %>
     <%= link_to wiki_pages_path, class: "flex-none w-12 text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:controller] == 'wiki_pages'}", title: "Wiki" do %>
       <span class="material-symbols-outlined">
         menu_book
@@ -205,7 +205,7 @@
     <% end %>
   <% end %>
 
-  <% if policy(:pages).assistant? %>
+  <% if false && policy(:pages).assistant? %>
     <%= link_to assistant_path, class: "flex-none w-12 text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:action] == 'assistant'}", title: 'Assistant (IA)' do %>
       <span class="material-symbols-outlined">
         smart_toy
@@ -223,7 +223,7 @@
   <% end %>
   -->
 
-  <% if policy(:admin).audits? %>
+  <% if false && policy(:admin).audits? %>
     <%= link_to admin_audits_path, class: "flex-none w-12 text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if (params[:action] == 'audits') || (params[:controller] == 'mail_logs') }", title: 'Activité (historique des modifications)', 'data-testid': "audit_trail" do %>
       <span class="material-symbols-outlined">
         history
@@ -231,7 +231,7 @@
     <% end %>
   <% end %>
 
-  <% if policy(:pages).dashboard? %>
+  <% if false && policy(:pages).dashboard? %>
     <%= link_to dashboard_path, class: "flex-none w-12 text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:action] == 'dashboard'}", title: "Tableau de bord", 'data-turbo': false do %>
       <span class="material-symbols-outlined">
         grid_view
@@ -239,7 +239,7 @@
     <% end %>
   <% end %>
 
-  <% if policy(User).index? %>
+  <% if false && policy(User).index? %>
     <%= link_to users_path, class: "flex-none w-12 text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if (params[:controller] == 'users' && params[:action] != 'agent_calendrier') || params[:action] == 'create_new_user'}", title: "Liste des utilisateurs" do %>
       <span class="material-symbols-outlined">
         group
@@ -247,8 +247,10 @@
     <% end %>
   <% end %>
 
-  <%= link_to user_path(current_user), class: "bg-transparent" do %>
-    <%= render partial: 'partials/user_profile_picture', locals: {user: current_user} %>
+  <%= link_to user_path(current_user), class: "flex-none w-12 text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if (params[:controller] == 'users' && params[:action] != 'agent_calendrier') || params[:action] == 'create_new_user'}", title: "Liste des utilisateurs" do %>
+    <span class="material-symbols-outlined">
+      account_circle
+    </span>
   <% end %>
 
   <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?", testid: "fermer_session" }, title: "Fermer la session de #{current_user.email} (#{current_user.rôle})", class: "flex-none w-12 text-secondary hover-active hover:shadow" do %>
