@@ -1,48 +1,4 @@
-<header class="bg-white shadow-lg px-6 py-4 relative">
-  <div class="flex items-center justify-between">
-    <!--nav ordenador-->
-    <%= link_to root_path do %>
-      <%= image_tag "CoopComm.png", class: "h-10" %>
-    <% end %>
-    <button id="menu-btn" class="md:hidden text-3xl focus:outline-none">
-      ☰
-    </button>
-    <nav class="hidden md:block">
-      <ul class="flex flex-row items-center gap-4">
-        <li>
-          <%= link_to "Se connecter", '/users/sign_in', class: "inline-block bg-[#50b9df] px-4 py-2 rounded-full text-white text-sm font-medium hover:bg-[#48a7c8] transition" %>
-        </li>
-        <li>
-          <%= link_to "Réserver une démo ➔", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: 'inline-block bg-[#db2767] px-5 py-2 rounded-full text-white text-sm font-medium hover:bg-[#c51f5b] transition' %>
-            
-          </a>
-        </li>
-      </ul>
-    </nav>
-  </div>
-
-  <!--mobile-->
-  <div
-    id="menu-mobile"
-    class="hidden md:hidden bg-white pt-6 pb-2 flex flex-col items-center gap-3"
-  >
-    <%= link_to "Se connecter", '/users/sign_in', class: "w-full max-w-xs text-center bg-[#50b9df] px-5 py-2 rounded-full text-white text-sm font-medium hover:bg-[#48a7c8] transition" %>
-    <%= link_to "Réserver une démo", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: "w-full max-w-xs text-center bg-[#db2767] px-5 py-2 rounded-full text-white text-sm font-medium hover:bg-[#c51f5b] transition" %>
-  </div>
-</header>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const menuBtn = document.getElementById("menu-btn");
-      const menuMobile = document.getElementById("menu-mobile");
-      menuBtn.addEventListener("click", () => {
-        menuMobile.classList.toggle("hidden");
-        menuBtn.textContent = menuMobile.classList.contains("hidden")
-          ? "☰"
-          : "✕";
-      });
-    });
-  </script>
+<%= render partial: 'partials/navbar_homepage' %>
 
   <main>
     <!--premier section hero-->
@@ -62,7 +18,7 @@
       >
         <!--texte-->
         <div class="flex-1 max-w-xl">
-          <h1 class="font-title text-4xl lg:text-5xl font-bold mb-6">
+          <h1 class="font-title text-2xl lg:text-5xl font-bold mb-6">
             <span
               class="bg-clip-text text-transparent"
               style="
@@ -80,14 +36,14 @@
             dépensez moins !
           </h1>
 
-          <p class="text-lg lg:text-xl mb-8 text-black">
+          <p class="lg:text-xl mb-8 text-black">
             CoopComm accompagne les
             <b>communautés de communes</b> dans la <b>mutualisation</b> de
             leurs
             <b>agents, investissements et moyens techniques</b>
           </p>
 
-          <%= link_to "Réserver une démo", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: "inline-block bg-[#db2767] px-8 py-3 rounded-full text-white text-base font-semibold hover:bg-[#c51f5b] transition shadow-md" %>
+          <%= link_to "Réserver une démo", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: "hidden md:inline-block bg-[#db2767] px-8 py-3 rounded-full text-white text-base font-semibold hover:bg-[#c51f5b] transition shadow-md" %>
         </div>
 
         <!--imagenes-->

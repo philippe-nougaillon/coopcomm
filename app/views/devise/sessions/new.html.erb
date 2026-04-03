@@ -1,5 +1,5 @@
-<div class="hero min-h-screen">
-  <div class="mx-auto w-full lg:w-96 card shadow bg-base-100 p-8">
+<div class="hero min-h-screen place-items-start">
+  <div class="mx-auto w-full lg:w-96 card shadow bg-base-100 py-8 px-4">
     <h1 class="text-2xl font-bold border-b border-gray-400 pb-4 w-full text-center my-4"><%= page_title!('Connexion') %></h1>
     <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
       <div class="field">
@@ -7,7 +7,7 @@
         <%= f.email_field :email, autofocus: true, autocomplete: "email", class:'input input-sm w-full', required: true %>
       </div>
 
-      <div class="w-full">
+      <div class="w-full mt-4">
         <%= f.label :password, style: "display: block" %>
         
         <div data-controller="password-visibility" class="relative w-full">
@@ -39,7 +39,7 @@
       <% end %>
 
       <div class="actions">
-        <%= f.submit "Se connecter", class: 'btn btn-outline lg:btn-lg rounded btn-primary hover:text-white! w-full my-4'%>
+        <%= f.submit "Se connecter", class: 'btn btn-outline btn-lg rounded btn-primary hover:text-white! w-full my-4'%>
       </div>
     <% end %>
     <%= render "devise/shared/links" %>

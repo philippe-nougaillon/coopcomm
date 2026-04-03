@@ -2,7 +2,7 @@
   <div class="flex items-center justify-between">
     <!--nav ordenador-->
     <%= link_to root_path do %>
-      <%= image_tag "CoopComm.png", class: "h-10 #{'ml-6 sm:ml-0' if params[:controller] == 'wiki_pages'}" %>
+      <%= image_tag "CoopComm.png", class: "h-6 md:h-10 #{'ml-6 sm:ml-0' if params[:controller] == 'wiki_pages'}" %>
     <% end %>
     <button id="menu-btn" class="md:hidden text-3xl focus:outline-none">
       ☰
@@ -25,7 +25,7 @@
     class="hidden md:hidden bg-white pt-6 pb-2 flex flex-col items-center gap-3"
   >
     <%= link_to "Se connecter", '/users/sign_in', class: "w-full max-w-xs text-center bg-[#50b9df] px-5 py-2 rounded-full text-white text-sm font-medium hover:bg-[#48a7c8] transition" %>
-    <%= link_to "Réserver une démo", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: "w-full max-w-xs text-center bg-[#db2767] px-5 py-2 rounded-full text-white text-sm font-medium hover:bg-[#c51f5b] transition" %>
+    <%= link_to "Réserver une démo", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: "hidden md:block w-full max-w-xs text-center bg-[#db2767] px-5 py-2 rounded-full text-white text-sm font-medium hover:bg-[#c51f5b] transition" %>
     </a>
   </div>
 </header>
