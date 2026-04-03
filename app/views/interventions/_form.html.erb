@@ -252,7 +252,7 @@
                 </div>
               </div>
 
-              <div class="flex flex-wrap gap-5 sm:gap-8 flex-1 mb-5">
+              <div class="flex flex-wrap gap-1 sm:gap-8 flex-1 mb-5">
                 <div class="w-full flex-1">
                   <%= form.label :temps_de_pause, "Temps de pause (h)", class: 'whitespace-nowrap' %>
                   <%= form.select :temps_de_pause, options_for_select([0.0, 0.5, 1.0].map { |v| [v.to_s.tr('.', ','), v] }, intervention.temps_de_pause),
@@ -276,7 +276,7 @@
                 <% end %>
 
                 <div class="w-full sm:flex-1">
-                  <%= form.label :photos, "Photos :" %>
+                  <%= form.label :photos, "Photos" %>
                   <%= form.file_field :photos, multiple: true, accept: 'image/png,image/gif,image/jpeg,image/avif,image/webp', class: 'file-input file-input-sm w-full max-w-md' %>
                 </div>
               </div>

@@ -23,10 +23,13 @@
           <% if intervention.persisted? && !User.find_by(id: intervention.audits.first.user_id)&.agent? # Vérifie si en tant qu'agent, l'utilisateur qui a créé l'intervention n'est pas un agent, donc une demande  %>
             <%= form.text_field :adherent_id, value: intervention.adherent.nom_prénom, class: "input input-sm w-full", disabled: true %>
           <% else %>
-            <%= form.select :adherent_id,
-                            options_from_collection_for_select(@adhérents, :id, :nom_prénom, intervention.adherent_id),
-                            { include_blank: true, required: true },
-                            class: "slim-select w-full" %>
+            <div class="w-full">
+              <%= form.label :adherent_id, "Adhérent" %>
+              <%= form.select :adherent_id,
+                              options_from_collection_for_select(@adhérents, :id, :nom_prénom, intervention.adherent_id),
+                              { include_blank: true, required: true },
+                              class: "slim-select w-full" %>
+            </div>
           <% end %>
 
           <%= form.hidden_field :service_id, value: current_user.services.first.id %>
@@ -140,7 +143,7 @@
               </div>
             </div>
 
-            <div class="flex flex-wrap gap-5 sm:gap-8 flex-1 mb-5">
+            <div class="flex flex-wrap gap-1 sm:gap-8 flex-1 mb-5">
               <div class="w-full flex-1">
                 <%= form.label :temps_de_pause, "Temps de pause (h)", class: 'whitespace-nowrap' %>
                 <%= form.select :temps_de_pause, options_for_select([0.0, 0.5, 1.0].map { |v| [v.to_s.tr('.', ','), v] }, intervention.temps_de_pause),
@@ -165,7 +168,7 @@
               <% end %>
 
               <div class="w-full sm:flex-1">
-                <%= form.label :photos, "Photos :" %>
+                <%= form.label :photos, "Photos" %>
                 <%= form.file_field :photos, multiple: true, accept: 'image/png,image/gif,image/jpeg,image/avif,image/webp', class: 'file-input file-input-sm w-full max-w-md' %>
               </div>
             </div>
@@ -186,7 +189,7 @@
   <%= form.hidden_field :workflow_state %>
 
   <div class="flex flex-wrap gap-2 mt-5">
-    <%= form.submit "Enregistrer", id: "enregistrer_intervention", class: "btn btn-primary" %>
+    <%= form.submit "Enregistrer", id: "enregistrer_intervention", class: "btn btn-primary flex-1" %>
     <% if params[:action] == 'edit' %>
       <%= link_to "Voir", @intervention, class: "btn" %>
     <% end %>

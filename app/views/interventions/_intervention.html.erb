@@ -3,20 +3,22 @@
   <div class="collapse-title lg:text-xl font-medium">
     <div class="flex flex-col sm:flex-row justify-between">
       <div>
-        <div class="flex items-center gap-2 text-xl sm:text-2xl text-<%= intervention.style.split.first.split('-').last %>">
-          <span class="badge text-nowrap font-bold <%= intervention.style %>">
-            <%= intervention.workflow_state.humanize %>
-          </span>
-          <% if intervention.repeter %>
-            <span class="material-symbols-outlined text-black" title="Modèle pour le pointage">
-              event_repeat
-            </span>
-          <% elsif intervention.template_slug %>
-            <span class="material-symbols-outlined text-black" title="Pointage">
-              qr_code_2
-            </span>
-          <% end %>
+        <div class="flex flex-col lg:flex-row-reverse lg:gap-2 lg:items-center text-xl sm:text-2xl text-<%= intervention.style.split.first.split('-').last %>">
           <%= link_to intervention.description.humanize, intervention, class: 'z-10 hover:underline' %>
+          <div class="flex items-center gap-1">
+            <span class="badge text-nowrap font-bold <%= intervention.style %>">
+              <%= intervention.workflow_state.humanize %>
+            </span>
+            <% if intervention.repeter %>
+              <span class="material-symbols-outlined text-black" title="Modèle pour le pointage">
+                event_repeat
+              </span>
+            <% elsif intervention.template_slug %>
+              <span class="material-symbols-outlined text-black" title="Pointage">
+                qr_code_2
+              </span>
+            <% end %>
+          </div>
         </div>
         <small>
           <i class="<%= 'text-error animate-pulse font-black' if defined?(from_turbo_stream) %>">
@@ -35,13 +37,13 @@
         <% if !(intervention.validé? || intervention.refusé?) %>
           <div class="my-2">
             <p class="flex justify-end gap-2">
-              <% if !defined?(from_turbo_stream) && policy(intervention).terminer? %>
-              <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'z-10 btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? || current_user.adhérent? %>
+              <% if !defined?(from_turbo_stream) && policy(intervention).terminer? && intervention.can_terminer? %>
+                <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'z-10 btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? || current_user.adhérent? %>
               <% end %>
-              <% if !defined?(from_turbo_stream) && policy(intervention).valider? %>
+              <% if !defined?(from_turbo_stream) && policy(intervention).valider? && intervention.can_valider? %>
                 <%= link_to 'Valider', valider_intervention_path(intervention), class: 'z-10 btn btn-success btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
               <% end %>
-              <% if !defined?(from_turbo_stream) && policy(intervention).refuser? %>
+              <% if !defined?(from_turbo_stream) && policy(intervention).refuser? && intervention.can_refuser? %>
                 <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'z-10 btn btn-error btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
               <% end %>
             <p>
