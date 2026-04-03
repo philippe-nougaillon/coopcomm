@@ -25,7 +25,7 @@
         <div class="flex flex-col w-full lg:w-3/5 relative">
           
           <%# Adapter l'id 'chat-messages-container' au turbo_stream(broadcast_append_to) et au <script>, sinon le scroll automatique ne fontcionnera plus %>
-          <div id="chat-messages-container" class="w-full lg:mt-12 pb-24 lg:pb-0">
+          <div id="chat-messages-container" class="w-full lg:mt-12 pb-24 lg:pb-0 px-2">
             <% @notifications.each do |notification| %>
               
               <% if notification.id == @first_unread_id %>
@@ -47,7 +47,7 @@
             <% end %>
           </div>
 
-          <div class="sticky bottom-20 lg:bottom-0 bg-slate-50 px-2 lg:pb-4 z-20 w-full mt-auto relative">
+          <div class="sticky bottom-18 lg:bottom-0 px-2 lg:pb-4 z-20 w-full mt-auto relative">
             <div id="new-message-badge" class="hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-4 z-30 transform cursor-pointer group">
               <div class="badge badge-primary rounded-full px-4 py-3 shadow-lg flex items-center gap-1 hover:badge-primary-focus transition-colors">
                 <span class="text-xs group-hover:-translate-y-0.5 transition-transform">👇</span>
