@@ -186,7 +186,7 @@
 
     </div>
 
-    <div class="flex flex-wrap gap-12 mt-6">
+    <div class="flex flex-col lg:flex-row flex-wrap gap-12 mt-6">
       <div class="flex-1">
         <% if @intervention.trajet.present? && !@intervention.nouveau? %>
           <div class="my-2">
@@ -195,7 +195,7 @@
           </div>
         <% elsif @intervention.adherent&.localisation && @intervention.nouveau? %>
 
-          <div id="map" class="w-full min-w-sm h-100"></div>
+          <div id="map" class="w-full lg:min-w-sm max-w-screen h-100"></div>
 
           <p><%= @routes_info %></p>
 
