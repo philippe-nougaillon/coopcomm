@@ -3,7 +3,7 @@
   <% if params[:controller] != 'tools' %>
     <td><b><%= link_to mouvement.tool.name.humanize, mouvement.tool, class: 'text-lg sm:text-xl text-primary hover:underline' %></b></td>
   <% end %>
-  <td><p class="font-bold badge badge-sm badge-<%= mouvement.style %>"><%= mouvement.état.humanize %></p></td>
+  <td><p class="font-bold badge badge-sm badge-<%= mouvement.style %> h-fit"><%= mouvement.état.humanize %></p></td>
   <td><%= mouvement.user.nom_prénom %></td>
   <td>
     <%= l mouvement.date, format: :long %></b>

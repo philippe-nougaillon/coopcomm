@@ -1,9 +1,9 @@
 <div id="<%= dom_id intervention %>" class="overflow-x-auto collapse collapse-arrow <%= 'collapse-open' if !defined?(from_turbo_stream) && intervention.id == @interventions.first.id %>">
   <input type="checkbox" class="h-full"/>
   <div class="collapse-title lg:text-xl font-medium">
-    <div class="flex flex-col sm:flex-row justify-between">
+    <div class="flex justify-between">
       <div>
-        <div class="flex flex-col lg:flex-row-reverse lg:gap-2 lg:items-center text-xl sm:text-2xl text-<%= intervention.style.split.first.split('-').last %>">
+        <div class="flex flex-col lg:flex-row-reverse lg:justify-end lg:items-center lg:gap-2 text-xl sm:text-2xl text-<%= intervention.style.split.first.split('-').last %>">
           <%= link_to intervention.description.humanize, intervention, class: 'z-10 hover:underline' %>
           <div class="flex items-center gap-1">
             <span class="badge text-nowrap font-bold <%= intervention.style %>">
@@ -28,7 +28,7 @@
 
         <p>
           <% intervention.tags.each do |tag| %>
-            <span class="badge badge-primary badge-outline badge-xs sm:badge-md"><%= tag.name.humanize %></span>
+            <span class="badge badge-primary badge-outline badge-xs sm:badge-md h-fit"><%= tag.name.humanize %></span>
           <% end %>
         </p>
       </div>

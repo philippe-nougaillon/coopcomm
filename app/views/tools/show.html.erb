@@ -21,7 +21,7 @@
       <p class="my-2">
         <strong class="block text-slate-400">État</strong>
           <% if @tool.mouvements.any? %>
-          <p class="font-bold badge badge-sm badge-<%= @tool.mouvements.last.style %> mb-2">
+          <p class="font-bold badge badge-sm badge-<%= @tool.mouvements.last.style %> h-fit mb-2">
             <%= @tool.mouvements.last.état.humanize %>
           </p>
           <% end %>
