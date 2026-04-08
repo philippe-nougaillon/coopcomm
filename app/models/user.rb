@@ -9,14 +9,15 @@ class User < ApplicationRecord
   audited except: :notifications_last_seen_at
 
   # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :rememberable, :timeoutable 
+  # :confirmable, :lockable, :timeoutable 
   devise :database_authenticatable,
          :recoverable,
         #  :validatable,
          :trackable,
         #  :lockable,
          :secure_validatable,
-         :invitable
+         :invitable,
+         :rememberable
         #  :registerable,
         #  :omniauthable,
         #  omniauth_providers: [:google_oauth2]
@@ -332,6 +333,10 @@ class User < ApplicationRecord
     else
       User.rôles.keys
     end
+  end
+
+  def remember_me
+    true
   end
 
   private
