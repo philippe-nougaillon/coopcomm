@@ -89,6 +89,15 @@
           <% end %>
         </li>
       <% end %>
+      <% if current_user.administrateur? %>
+        <li>
+          <%= link_to warehouses_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if (params[:controller] == 'warehouses') }", title: 'Liste des entrepôts' do %>
+            <span class="material-symbols-outlined">
+              warehouse
+            </span>
+          <% end %>
+        </li>
+      <% end %>
       <% if policy(:admin).audits? %>
         <li>
           <%= link_to admin_audits_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if (params[:action] == 'audits') || (params[:controller] == 'mail_logs') }", title: 'Activité (historique des modifications)', 'data-testid': "audit_trail" do %>

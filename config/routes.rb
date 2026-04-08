@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :warehouses
   # Mount Mission Control Job's engine where you wish to have it accessible
   mount MissionControl::Jobs::Engine, at: "/jobs"
 

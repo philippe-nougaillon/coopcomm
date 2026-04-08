@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_08_090026) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_08_132230) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -216,6 +216,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_08_090026) do
     t.datetime "updated_at", null: false
     t.bigint "organisation_id", null: false
     t.string "slug"
+    t.boolean "calculate_distance", default: false
     t.index ["organisation_id"], name: "index_services_on_organisation_id"
   end
 
@@ -454,6 +455,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_08_090026) do
     t.index ["organisation_id"], name: "index_users_on_organisation_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
+  end
+
+  create_table "warehouses", force: :cascade do |t|
+    t.string "name"
+    t.string "localisation"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "wiki_pages", force: :cascade do |t|

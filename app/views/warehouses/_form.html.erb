@@ -1,0 +1,43 @@
+<%= form_with(model: warehouse, class: "contents") do |form| %>
+  <% if warehouse.errors.any? %>
+    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
+      <h2><%= pluralize(warehouse.errors.count, "error") %> prohibited this warehouse from being saved:</h2>
+
+      <ul class="list-disc ml-6">
+        <% warehouse.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="my-5">
+    <%= form.label :name %>
+    <%= form.text_field :name, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": warehouse.errors[:name].none?, "border-red-400 focus:outline-red-600": warehouse.errors[:name].any?}] %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :localisation %>
+    <%= form.text_field :localisation, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": warehouse.errors[:localisation].none?, "border-red-400 focus:outline-red-600": warehouse.errors[:localisation].any?}] %>
+  </div>
+
+      <div class="w-full sm:flex-1">
+      <%= form.label :tag_list, "Équipe", style: "display: block" %>
+      <%
+        est_soumission = params[form.object_name].present?
+
+        if est_soumission
+          tags_users_soumis = Array(params.dig(form.object_name, :tag_list)).reject(&:blank?)
+        else
+          tags_users_soumis = warehouse.tags.map(&:name)
+        end
+
+        options_users = (@users_tags.map(&:name) + tags_users_soumis).uniq
+      %>
+      <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
+    </div>
+
+  <div class="inline">
+    <%= form.submit class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
+  </div>
+<% end %>

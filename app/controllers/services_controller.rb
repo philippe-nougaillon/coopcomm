@@ -84,7 +84,7 @@ class ServicesController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def service_params
-      params.expect(service: [ :nom ])
+      params.expect(service: [ :nom, :calculate_distance])
     end
 
     def is_user_authorized
