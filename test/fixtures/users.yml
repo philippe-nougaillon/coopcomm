@@ -41,6 +41,7 @@ berthout:
   email: florence.berthout@gmail.commmmm
   rôle: adhérent
   localisation: 48.84624805423277, 2.3447959433145784
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 193866f0-bff9-4ec8-978c-c2c77b948f32
 
 nettoyage:
@@ -49,6 +50,7 @@ nettoyage:
   prénom: Nettoyage
   email: nettoyage@gmail.commmmm
   rôle: agent
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 352adeba-4906-44c5-bc28-22339a6f17fe
 
 
@@ -58,6 +60,7 @@ nettoyage:
   prénom: Électricité
   email: electricite@gmail.commmmm
   rôle: agent
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: c379cf52-5e54-4852-bd7a-dc9cfdc70392
 
 bond:
@@ -75,6 +78,7 @@ martin_technique_paris:
   prénom: Michel
   email: michel.martin@gmail.commmmm
   rôle: agent
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 7133b68a-1386-4f68-9243-10a8a4241191
 
 patrick_adherent_paris:
@@ -84,6 +88,7 @@ patrick_adherent_paris:
   email: patrick.bruel@gmail.commmmm
   rôle: adhérent
   localisation: 48.8411640434812, 2.3890650921762075
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: e2845be0-8193-4771-9e99-94b692ad8c5f
 
 user_paris:
@@ -93,6 +98,7 @@ user_paris:
   email: name.user@gmail.commmmm
   rôle: adhérent
   localisation: 48.8326149054288, 2.3560047233761985
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 7b53b6a3-cf0a-43ec-bb03-7af8d36781d1
 
 philippe_super_admin:
@@ -111,6 +117,7 @@ adhérent_sans_intervention:
   email: adherent-sans-intervention@gmail.commmmm
   rôle: adhérent
   localisation: 48.83320364351545, 2.327468354067042
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: f0595980-a28d-4424-82db-ee89e6eadc7d
 
 agent_whatsapp:
@@ -120,6 +127,7 @@ agent_whatsapp:
   email: agent_whatsapp@aikku.eu
   rôle: agent
   téléphone: +330606060606
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: f0595980-a28d-4424-82db-ee89e6eadc7e
 
 # Organisation marseille
@@ -129,6 +137,7 @@ manager_marseille:
   prénom: Benoît
   email: benoit.payan@gmail.commmmm
   rôle: manager
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: aca60f88-a19b-4417-bfce-1aee4647a624
 
 nettoyeur_marseille:
@@ -137,6 +146,7 @@ nettoyeur_marseille:
   prénom: Nettoyage Marseille
   email: nettoyage_marseille@gmail.commmmm
   rôle: agent
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 3bd58e3a-508a-4f8e-bef7-c0f5741363b5
 
 agent_marseille:
@@ -145,6 +155,7 @@ agent_marseille:
   prénom: René
   email: rene.dupont@gmail.commmmm
   rôle: agent
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 96a436c3-1b9c-457a-aeb0-60ca4e53b8f0
 
 adherent_marseille:
@@ -154,6 +165,7 @@ adherent_marseille:
   email: bernard.tapie@gmail.commmmm
   rôle: adhérent
   localisation: 43.29705053368259, 5.379312844397733
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: ee438223-a203-43f4-9d97-1654c24d2520
 
 # Organisation sans manager
@@ -164,6 +176,7 @@ john_wick:
   prénom: john
   email: john.wick@gmail.commmmmm
   rôle: agent
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 02cea440-2f32-4f63-9614-df94069a6bca
 
 george_lucas:
@@ -173,6 +186,7 @@ george_lucas:
   email: george.lucas@gmail.commmmmm
   rôle: adhérent
   localisation: 1, 1
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: d2a62448-e26a-4a7b-8c07-81f3815825ac
 
 # Organisation sans intervention
@@ -183,6 +197,7 @@ michael_jackson:
   prénom: Michael
   email: michael.jackson@gmail.commmmmm
   rôle: manager
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: a21e461c-088e-418e-a5df-2720326712b8
 
 emmanuel_valls:
@@ -192,4 +207,5 @@ emmanuel_valls:
   email: valls.emmanuel@gmail.commmmmm
   rôle: adhérent
   localisation: 1, 1
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 33872d35-052f-427c-9181-e5aff5db1853
