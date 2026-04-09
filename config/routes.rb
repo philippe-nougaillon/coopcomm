@@ -1,5 +1,4 @@
 Rails.application.routes.draw do
-  resources :warehouses
   # Mount Mission Control Job's engine where you wish to have it accessible
   mount MissionControl::Jobs::Engine, at: "/jobs"
 
@@ -83,6 +82,7 @@ Rails.application.routes.draw do
     get :create_new_user
     post :create_new_user_do
     get :stats
+    get :parametres
   end
 
   controller :pages do
@@ -107,7 +107,9 @@ Rails.application.routes.draw do
 
   resources :newsletters, only: %i[index new destroy]
 
-  resources :services
+  resources :services, except: %i[ index ]
+  resources :warehouses, except: %i[ index ]
+
 
   namespace :messagerie do
     get '/', action: :messagerie

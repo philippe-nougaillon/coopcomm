@@ -11,6 +11,7 @@ class Organisation < ApplicationRecord
   has_many :mouvements, through: :tools, dependent: :destroy
   has_many :services, dependent: :destroy
   has_many :export_logs, dependent: :destroy
+  has_many :warehouses, dependent: :destroy
 
   def numero
     self.nom.split('_').last

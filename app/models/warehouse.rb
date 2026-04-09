@@ -1,5 +1,11 @@
 class Warehouse < ApplicationRecord
+  extend FriendlyId
+  friendly_id :slug_candidates, use: :slugged
+
   acts_as_taggable_on :tags
+
+  belongs_to :organisation
+
   validates :localisation, presence: true
 
   def lng_lat
@@ -11,5 +17,11 @@ class Warehouse < ApplicationRecord
     # Sépare et nettoie la chaine localisation en latitude, longitude
     lat, lng = self.localisation.split(',').map(&:strip).map(&:to_f)
     { lat: lat, lng: lng }
+  end
+
+  private
+
+  def slug_candidates
+    [SecureRandom.uuid]
   end
 end

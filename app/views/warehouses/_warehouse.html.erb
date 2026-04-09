@@ -1,14 +1,11 @@
-<div id="<%= dom_id warehouse %>" class="w-full sm:w-auto my-5 space-y-5">
-  <div>
-    <strong class="block font-medium mb-1">Name:</strong>
-    <%= warehouse.name %>
-  </div>
-  <div>
-    <strong class="block font-medium mb-1">Localisation:</strong>
-    <%= warehouse.localisation %>
-  </div>
-  <div>
-    <strong class="block font-medium mb-1">Équipes:</strong>
+<tr id="<%= dom_id warehouse %>" class="hover:bg-base-300">
+  <td class="text-lg sm:text-2xl text-primary">
+    <%= link_to warehouse.name, warehouse, class: 'text-primary hover:underline' %>
+  </td>
+  <td class="text-sm">
     <%= warehouse.tag_list %>
-  </div>
-</div>
+  </td>
+  <td class="text-sm">
+    <%= warehouse.localisation %>
+  </td>
+</tr>
