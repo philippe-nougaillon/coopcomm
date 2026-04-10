@@ -6,7 +6,7 @@ class PagesPolicy < ApplicationPolicy
   end
 
   def assistant?
-    manager_or_admin?
+    administrateur?
   end
 
   def dashboard?
