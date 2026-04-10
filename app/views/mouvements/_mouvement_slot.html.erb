@@ -1,10 +1,9 @@
 <% if mouvement && mouvement.sortie? %>
   <%# --- CAS ROUGE : L'OUTIL EST SORTI --- %>
   <% span_content = capture do %>
-    <span class="border-1 border-slate-100 h-8 w-full inline-block align-middle rounded font-bold" 
-          style="color: #7d2133;" 
+    <span class="border-1 border-slate-400 h-4 inline-block align-middle" 
+          style="padding-left: 15px; <%= margin_style %>; background-color: #db2767;" 
           title="Réservé par <%= mouvement.user&.email || 'Utilisateur inconnu' %>">
-          Réservé
     </span>
   <% end %>
 
@@ -15,9 +14,9 @@
   <% panne_est_resolue = mouvement.resolue? %>
 
   <% span_content = capture do %>
-    <span class="border-1 border-slate-100 h-8 w-full inline-block align-middle rounded" 
+    <span class="border-1 border-slate-400 h-4 inline-block align-middle" 
+          style="padding-left: 15px; <%= margin_style %>; background-color: black;" 
           title="Panne déclarée le <%= mouvement.date.strftime('%d/%m à %H:%M') %><%= ' (Déjà réparé depuis)' if panne_est_resolue %>">
-          En panne
     </span>
   <% end %>
 
@@ -48,6 +47,6 @@
       ), 
       data: { turbo_method: :post },
       title: new_title do %>
-    <span class="border-1 border-slate-100 bg-[#5b7e7d] hover:opacity-75 h-8 w-full inline-block align-middle rounded" style="padding-left: 15px;"></span>
+    <span class="border-1 border-slate-400 bg-green-500 hover:opacity-75 h-4 inline-block align-middle" style="padding-left: 15px; <%= margin_style %>;"></span>
   <% end %>
 <% end %>
