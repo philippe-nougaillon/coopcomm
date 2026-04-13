@@ -1,8 +1,9 @@
-<tr id="<%= dom_id user %>" class="hover:bg-base-300">
+<tr id="<%= dom_id user %>">
 <td>
   <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
 </td>
-<td class="sticky left-0 top-0 z-10 text-lg sm:text-xl text-primary break-words whitespace-normal max-w-[50vw]">
+<%# la couleur du <td> si dessous est nécessaire si la colonne reste affichée en scrollant, sinon les colonnes se superposeront %>
+<td class="sticky left-0 top-0 z-10 bg-slate-50 text-lg sm:text-xl text-primary break-words whitespace-normal max-w-[50vw]">
   <%= link_to user.nom_prénom, user, class: 'hover:underline hover:text-base-content' %>
 
   <% if user.discarded? %>

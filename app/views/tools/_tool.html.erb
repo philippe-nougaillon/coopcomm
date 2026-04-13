@@ -4,6 +4,7 @@
       <img src="<%= url_for(tool.photo) %>" class="h-10">  
     <% end %>
   </td>
+  <%# la couleur du <td> si dessous est nécessaire si la colonne reste affichée en scrollant, sinon les colonnes se superposeront %>
   <td class="sticky left-0 top-0 bg-slate-100 sm:text-xl text-primary bg-slate-50 break-words whitespace-normal max-w-[25vw]">
     <%= link_to tool.name.humanize, tool, class: 'text-primary hover:underline', title: (tool.description.blank? ? 'Aucune description' : tool.description) %>
   </td>
