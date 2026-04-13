@@ -6,9 +6,9 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:administrateur_paris)
   end
 
-  test "should get index" do
+  test "should not get index" do
     get services_url
-    assert_response :success
+    assert_response :not_found
   end
 
   test "should get new" do
@@ -44,6 +44,6 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
       delete service_url(@service)
     end
 
-    assert_redirected_to services_url
+    assert_redirected_to admin_parametres_url
   end
 end

@@ -2,12 +2,13 @@ require "test_helper"
 
 class WarehousesControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @warehouse = warehouses(:one)
+    @warehouse = warehouses(:entrepot_paris)
+    sign_in users(:administrateur_paris)
   end
 
-  test "should get index" do
+  test "should not get index" do
     get warehouses_url
-    assert_response :success
+    assert_response :not_found
   end
 
   test "should get new" do
@@ -43,6 +44,6 @@ class WarehousesControllerTest < ActionDispatch::IntegrationTest
       delete warehouse_url(@warehouse)
     end
 
-    assert_redirected_to warehouses_url
+    assert_redirected_to admin_parametres_url
   end
 end
