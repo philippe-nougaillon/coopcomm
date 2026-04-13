@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_09_073614) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_13_142914) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -150,6 +150,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_09_073614) do
     t.string "trajet"
     t.decimal "co2", default: "0.0"
     t.bigint "service_id"
+    t.string "localisation"
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
     t.index ["organisation_id"], name: "index_interventions_on_organisation_id"
     t.index ["service_id"], name: "index_interventions_on_service_id"

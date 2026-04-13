@@ -67,6 +67,7 @@ Rails.application.routes.draw do
       delete :purge
       get :pointer
       get :pointage_statut
+      patch :update_location
     end
 
     collection do

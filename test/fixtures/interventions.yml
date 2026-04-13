@@ -82,14 +82,27 @@ intervention_paris:
   slug: ac7e4c84-1ad4-4703-984d-68c1e7d3ce0e
   service: technique
 
+<% slug_commun = "99e2232e-b9f4-4ee6-b043-13ee190fcca6" %>
+
 intervention_repete:
   organisation: mairie_paris
   adherent: weil
   description: Intervention répété
   repeter: true
   workflow_state: nouveau
-  slug: 99e2232e-b9f4-4ee6-b043-13ee190fcca6
+  slug: <%= slug_commun %>
   service: technique
+
+intervention_fille:
+  organisation: mairie_paris
+  adherent: weil
+  description: Intervention fille de intervention_repete
+  repeter: true
+  workflow_state: nouveau
+  slug: <%= SecureRandom.uuid %>
+  service: technique
+  début: <%= DateTime.now %>
+  repeter: true
 
 # Organisation Marseille
 nettoyage_port:

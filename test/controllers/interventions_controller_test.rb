@@ -117,6 +117,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to @intervention
   end
 
+  # Pointage
+
   test "pointer intervention repete doit créer une intervention" do
     # Le sign_in gère tout seul la déconnexion du premier sign_in dans le setup
     sign_in users(:martin_technique_paris)
@@ -207,5 +209,24 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     actual_nb_intervention_filles = Intervention.where(template_slug: intervention.slug).last(2).count
 
     assert_equal expected_nb_intervention_filles, actual_nb_intervention_filles
+  end
+
+  test "update location intervention doit ajouter la geolocalisation à l'intervention fille" do
+    intervention = interventions(:intervention_repete)
+    
+    sign_in users(:martin_technique_paris)
+
+    assert_difference("Intervention.count", 1) do
+      get pointer_intervention_url(intervention)
+    end
+    
+    intervention_fille = Intervention.where(template_slug: intervention.slug).last
+
+    patch update_location_intervention_url(intervention_fille), 
+        params: { latitude: 48.8566, longitude: 2.3522 }, 
+        as: :json
+        
+    intervention_fille.reload
+    assert_not_nil intervention_fille.localisation, "La localisation doit être mise à jour après pointage"
   end
 end
