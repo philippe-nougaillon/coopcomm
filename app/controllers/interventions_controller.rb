@@ -293,7 +293,12 @@ class InterventionsController < ApplicationController
 
     if @intervention.repeter?
       # Intervention fille se passant aujourd'hui (intervention en cours de réalisation)
-      current_intervention = Intervention.joins(:agent_interventions).where(template_slug: @intervention.slug).where(agent_interventions: { agent_id: current_user.id }).find_by("DATE(début) = ?", Date.today)
+      current_intervention = Intervention
+        .joins(:agent_interventions)
+        .where(template_slug: @intervention.slug)
+        .where(agent_interventions: { agent_id: current_user.id })
+        .where("DATE(début) = ?", Date.today)
+        .last
 
       # Si une intervention fille est créé, on la met à jour, sinon on en créée une nouvelle
       if current_intervention.present?
@@ -302,13 +307,14 @@ class InterventionsController < ApplicationController
           current_intervention.temps_total = current_intervention.calc_temps_total
           current_intervention.workflow_state = "terminé"
           current_intervention.save
-          flash[:notice] = "Fin de journée enregistrée"
+          flash[:notice] = "Pointage de fin enregistrée !"
         else
-          flash[:alert] = "Fin de journée déjà enregistrée !"
+          current_intervention = @intervention.create_next_intervention(@intervention, current_user)
+          flash[:notice] = "Reprise d'activité enregistrée !"
         end
       else
         current_intervention = @intervention.create_next_intervention(@intervention, current_user)
-        flash[:notice] = "Début de journée enregistrée"
+        flash[:notice] = "Début de journée enregistrée !"
       end
       unless Rails.env.development?
         Events.instance.publish('intervention.pointage', payload: {intervention_id: current_intervention.id})
