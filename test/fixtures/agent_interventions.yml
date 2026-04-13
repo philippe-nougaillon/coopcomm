@@ -16,6 +16,10 @@ martin_intervention_autre_agent:
   agent: martin_technique_paris
   intervention: intervention_autre_agent
 
+martin_intervention_repete:
+  agent: martin_technique_paris
+  intervention: intervention_repete
+
 bond_intervention_autre_adhérent:
   agent: bond
   intervention: intervention_autre_adhérent

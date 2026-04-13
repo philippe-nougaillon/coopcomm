@@ -331,7 +331,7 @@ class Intervention < ApplicationRecord
                 use_path: true)
   end
 
-  def create_next_intervention(intervention_template)
+  def create_next_intervention(intervention_template, current_user)
     new_intervention = self.dup
     new_intervention.template_slug = self.slug
     new_intervention.début = DateTime.now
@@ -341,12 +341,9 @@ class Intervention < ApplicationRecord
     new_intervention.tags = self.tags
     new_intervention.service = intervention_template.service
     new_intervention.adherent = intervention_template.adherent
+    new_intervention.agents = [current_user]
 
-    if new_intervention.save
-      self.agent_interventions.each do |agent_intervention|
-        new_intervention.agent_interventions.create(agent: agent_intervention.agent)
-      end
-    end
+    new_intervention.save
 
     new_intervention
   end

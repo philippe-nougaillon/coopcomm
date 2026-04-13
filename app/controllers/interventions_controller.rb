@@ -293,7 +293,7 @@ class InterventionsController < ApplicationController
 
     if @intervention.repeter?
       # Intervention fille se passant aujourd'hui (intervention en cours de réalisation)
-      current_intervention = Intervention.where(template_slug: @intervention.slug).find_by("DATE(début) = ?", Date.today)
+      current_intervention = Intervention.joins(:agent_interventions).where(template_slug: @intervention.slug).where(agent_interventions: { agent_id: current_user.id }).find_by("DATE(début) = ?", Date.today)
 
       # Si une intervention fille est créé, on la met à jour, sinon on en créée une nouvelle
       if current_intervention.present?
@@ -307,7 +307,7 @@ class InterventionsController < ApplicationController
           flash[:alert] = "Fin de journée déjà enregistrée !"
         end
       else
-        current_intervention = @intervention.create_next_intervention(@intervention)
+        current_intervention = @intervention.create_next_intervention(@intervention, current_user)
         flash[:notice] = "Début de journée enregistrée"
       end
       unless Rails.env.development?

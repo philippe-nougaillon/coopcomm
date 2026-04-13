@@ -44,7 +44,6 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
           slug: SecureRandom.uuid,
           début_prévue: @intervention.début_prévue,
           fin_prévue: @intervention.fin_prévue,
-          adherent_id: @intervention.adherent.id,
           service_id: @intervention.service.id
         }
       }
@@ -156,5 +155,27 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference("Intervention.count") do
       get pointer_intervention_url(intervention)
     end
+  end
+
+  test "pointer intervention repete doit créer une intervention fille par agent" do
+    intervention = interventions(:intervention_repete)
+    
+    # Pointage avec le 1er agent
+    sign_in users(:martin_technique_paris)
+    assert_difference("Intervention.count", 1) do
+      get pointer_intervention_url(intervention)
+    end
+
+    # Pointage avec le 2eme agent
+    sign_in users(:bond)
+    assert_difference("Intervention.count", 1) do
+      get pointer_intervention_url(intervention)
+    end
+
+    expected_nb_intervention_filles = 2
+    actual_nb_intervention_filles = Intervention.where(template_slug: intervention.slug).last(2).count
+
+    assert_equal expected_nb_intervention_filles, actual_nb_intervention_filles
+    
   end
 end
