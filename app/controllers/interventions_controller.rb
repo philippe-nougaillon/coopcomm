@@ -128,7 +128,7 @@ class InterventionsController < ApplicationController
 
       respond_to do |format|
         format.html do
-          @audits = @intervention.audits.includes(:user).reorder(id: :desc)
+          @audits = @intervention.own_and_associated_audits.includes(:user).reorder(id: :desc)
           @pagy, @audits = pagy(@audits, items: 10)
         end
 
