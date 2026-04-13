@@ -104,6 +104,15 @@ class InterventionsController < ApplicationController
     # TODO : Déplacer le stale au plus près du render
     # if stale?(@intervention)
 
+      if @intervention.repeter?
+        if current_user.agent?
+          @pointages = current_user.interventions.where(template_slug: @intervention.slug, repeter: false)
+        else
+          @pointages = @intervention.pointages
+        end
+        @pointages = @pointages.ordered
+      end
+
       unless Rails.env.test?
         # On vérifie que l'intervention possède un adhérent localisé ET que le service nécessite le calcul
         if @intervention.adherent.present? && @intervention.adherent.localisation.present? && @intervention.service&.calculate_distance?

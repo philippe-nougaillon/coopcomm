@@ -303,6 +303,9 @@
             <tr>
               <th>Il y a</th>
               <th>Id</th>
+              <% unless current_user.agent? %>
+                <th>Agent</th>
+              <% end %>
               <th>Date</th>
               <th>Début</th>
               <th>Fin</th>
@@ -312,10 +315,14 @@
           </thead>
 
           <tbody>
-            <% @intervention.pointages.each do |pointage| %>
+            <% @pointages.each do |pointage| %>
               <tr>
                 <td><%= time_ago_in_words pointage.début %></td>
+
                 <td><%= link_to pointage.id, pointage, class: 'underline' %></td>
+                <% unless current_user.agent? %>
+                  <td><%= pointage.agents.first&.nom_prénom %></td>
+                <% end %>
                 <td><%= l pointage.début.to_date %></td>
                 <td><%= l pointage.début %></td>
                 <td><%= l pointage.fin if pointage.fin %></td>
