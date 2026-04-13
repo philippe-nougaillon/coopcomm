@@ -2,6 +2,8 @@ class Service < ApplicationRecord
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
 
+  audited
+
   belongs_to :organisation
 
   has_many :user_services, dependent: :destroy

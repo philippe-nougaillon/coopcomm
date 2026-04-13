@@ -2,6 +2,8 @@ class Mouvement < ApplicationRecord
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
 
+  audited
+
   belongs_to :tool
   belongs_to :user
   belongs_to :intervention, optional: true

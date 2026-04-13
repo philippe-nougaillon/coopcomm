@@ -4,6 +4,8 @@ class Warehouse < ApplicationRecord
 
   acts_as_taggable_on :tags
 
+  audited
+
   belongs_to :organisation
 
   validates :localisation, presence: true
