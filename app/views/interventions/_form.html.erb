@@ -287,11 +287,18 @@
                                   data: { 'calc-temps-passe-target': 'pause', action: "change->calc-temps-passe#calc" } %>
                 </div>
 
-                <div class="w-full flex-1">
-                  <%= form.label :temps_total %>
-                  <%= form.number_field :temps_total,
-                                        readonly: true, class: 'input input-sm w-full font-black',
-                                        data: { 'calc-temps-passe-target': 'temps' }  %>
+                <div class="flex gap-4 items-end">
+                  <div class="w-full flex-1">
+                    <label for="temps_par_agent" class="block">Temps par agent (h)</label>
+                    <input type="number" id="temps_par_agent" readonly class="input input-sm w-full font-black text-gray-500 bg-gray-50" data-calc-temps-passe-target="tempsParAgent">
+                  </div>
+
+                  <div class="w-full flex-1">
+                    <%= form.label :temps_total %>
+                    <%= form.number_field :temps_total,
+                                          readonly: true, class: 'input input-sm w-full font-black text-gray-500 bg-gray-50',
+                                          data: { 'calc-temps-passe-target': 'temps' }  %>
+                  </div>
                 </div>
               </div>
 

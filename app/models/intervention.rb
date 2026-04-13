@@ -444,6 +444,10 @@ class Intervention < ApplicationRecord
       end
     end
   end
+
+  def temps_par_agent
+    self.temps_total / self.agents.count
+  end
   
   private
 

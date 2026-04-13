@@ -94,8 +94,13 @@
 
             <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
               <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Temps passé</strong>
+                <strong class="block text-slate-400 mb-1">Temps total</strong>
                 <%= @intervention.temps_total %> h
+              </p>
+
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Temps par agent</strong>
+                <%= @intervention.temps_par_agent %> h
               </p>
 
               <p class="my-2">
