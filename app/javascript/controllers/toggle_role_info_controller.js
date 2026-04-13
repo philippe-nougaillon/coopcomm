@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="toggle-role-info"
 export default class extends Controller {
-  static targets = ['role', 'localisation', 'prenom']
+  static targets = ['role', 'localisation', 'prenom', 'tagLabel']
 
   initialize() {
     this.localisationTarget.style.display = 'none';
@@ -22,26 +22,35 @@ export default class extends Controller {
       this.localisationTarget.children[1].required = false;
       this.prenomTarget.style.display = 'block';
       this.prenomTarget.children[1].required = true;
+      this.updateTagLabel("Équipe");
+
     } else if (role.value == 'adhérent') {
       this.localisationTarget.style.display = 'block';
       this.localisationTarget.children[1].required = true;
       this.prenomTarget.style.display = 'none';
       this.prenomTarget.children[1].required = false;
       this.prenomTarget.children[1].value = '';
+      this.updateTagLabel("Secteur");
     } else if (role.value == 'manager') {
-      // console.log(this.serviceTarget.children[1].selectedIndex)
       this.localisationTarget.style.display = 'none';
       this.localisationTarget.children[1].value = '';
       this.localisationTarget.children[1].required = false;
       this.prenomTarget.style.display = 'block';
       this.prenomTarget.children[1].required = true;
+      this.updateTagLabel("Équipe");
     } else {
-      // console.log(this.serviceTarget.children[1].selectedIndex)
       this.localisationTarget.style.display = 'none';
       this.localisationTarget.children[1].value = '';
       this.localisationTarget.children[1].required = false;
       this.prenomTarget.style.display = 'block';
       this.prenomTarget.children[1].required = true;
+      this.updateTagLabel("Équipe");
+    }
+  }
+
+  updateTagLabel(texte) {
+    if (this.hasTagLabelTarget) {
+      this.tagLabelTarget.textContent = texte;
     }
   }
 }
