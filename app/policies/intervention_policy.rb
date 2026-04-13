@@ -84,4 +84,8 @@ class InterventionPolicy < ApplicationPolicy
   def services_for_adherent?
     new?
   end
+
+  def update_location?
+    pointer?
+  end
 end

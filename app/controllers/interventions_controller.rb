@@ -1,5 +1,5 @@
 class InterventionsController < ApplicationController
-  before_action :set_intervention, only: %i[ show edit update destroy terminer valider refuser archiver purge pointer pointage_statut ]
+  before_action :set_intervention, only: %i[ show edit update destroy terminer valider refuser archiver purge pointer pointage_statut update_location ]
   before_action :is_user_authorized
   before_action :set_form_variables, only: %i[ new edit create update ]
   before_action :store_return_location, only: [:new, :edit]
@@ -338,6 +338,14 @@ class InterventionsController < ApplicationController
   def pointage_statut
     if @intervention.repeter
       redirect_to pointage_statut_intervention_path(Intervention.find_by(template_slug: @intervention.slug))
+    end
+  end
+
+  def update_location
+    if @intervention.update(localisation: "#{params[:latitude]}, #{params[:longitude]}")
+      render json: { status: 'success' }, status: :ok
+    else
+      render json: { errors: @intervention.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
