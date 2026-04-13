@@ -80,9 +80,9 @@
           <% end %>
         </li>
       <% end %>
-      <% if policy(Service).index? %>
+      <% if policy(:admin).parametres? %>
         <li>
-          <%= link_to services_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if (params[:controller] == 'services') }", title: 'Liste des services' do %>
+          <%= link_to admin_parametres_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres')) }", title: 'Liste des services' do %>
             <span class="material-symbols-outlined">
               settings
             </span>

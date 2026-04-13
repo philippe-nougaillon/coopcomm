@@ -417,11 +417,30 @@ class Intervention < ApplicationRecord
     end
   end
 
+  def origin_location
+    equipe_adherent = self.adherent&.tag_list&.first
+    warehouse = Warehouse.tagged_with(equipe_adherent).first if equipe_adherent
+
+    if warehouse && warehouse.localisation.present?
+      warehouse.localisation_to_lat_lng_object
+    else
+      lat, lng = ENV["COORD_DEPART"]&.split(',')
+      { lat: lat.to_f, lng: lng.to_f }
+    end
+  end
+
   def calculate_co2
     unless Rails.env.test?
-      if self.adherent && self.adherent.localisation.present?
-        request = ApiGoogleMaps.new(self.adherent.localisation_to_lat_lng_object)
-        request.call
+      return unless self.service && self.service.calculate_distance?
+      return unless self.adherent && self.adherent.localisation.present?
+
+      origine = self.origin_location # Appel de la méthode factorisée
+      destination = self.adherent.localisation_to_lat_lng_object
+
+      request = ApiGoogleMaps.new(origine, destination)
+      request.call
+      
+      if request.errors.blank?
         self.trajet = request.routes_info
         self.co2 = request.co2_consumption_by_route(request.data_response["routes"][0])
         self.save

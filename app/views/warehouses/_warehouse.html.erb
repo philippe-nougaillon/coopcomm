@@ -1,0 +1,11 @@
+<tr id="<%= dom_id warehouse %>" class="hover:bg-base-300">
+  <td class="text-lg sm:text-2xl text-primary">
+    <%= link_to warehouse.name, warehouse, class: 'text-primary hover:underline' %>
+  </td>
+  <td class="text-sm">
+    <%= warehouse.tag_list %>
+  </td>
+  <td class="text-sm">
+    <%= warehouse.localisation %>
+  </td>
+</tr>

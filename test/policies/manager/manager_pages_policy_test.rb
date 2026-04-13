@@ -10,7 +10,7 @@ class ManagerPagesPolicyTest < ActionDispatch::IntegrationTest
 
   # Assistant
   test "accès interdit pour un manager sur la page assistant" do
-    assert @policy.assistant?
+    refute @policy.assistant?
   end
 
   # Dashboard

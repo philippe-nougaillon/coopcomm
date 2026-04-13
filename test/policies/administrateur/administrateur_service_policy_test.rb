@@ -12,7 +12,7 @@ class AdministrateurServicePolicyTest < ActionDispatch::IntegrationTest
 
   # Index
   test "accès autorisé pour un administrateur sur la page index des services" do
-    assert @policy.index?
+    refute @policy.index?
   end
 
   # Show

@@ -8,4 +8,15 @@
   <td class="text-sm">
     <%= service.users.count %>
   </td>
+  <td class="text-sm">
+    <% if service.calculate_distance %>
+    <span class="material-symbols-outlined text-success">
+      check_small
+    </span>
+    <% else %>
+      <span class="material-symbols-outlined text-error">
+        cancel
+      </span>
+    <% end %>
+  </td>
 </tr>

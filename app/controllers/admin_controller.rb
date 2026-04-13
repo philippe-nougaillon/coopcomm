@@ -60,6 +60,21 @@ class AdminController < ApplicationController
     # @pagy, @organisations = pagy(@organisations, items: 5)
   end
 
+  def parametres
+    @warehouses = current_user.organisation.warehouses
+    @services = current_user.services
+    @users = current_user.organisation.users.filter_by_service(@services)
+
+    if params[:search].present?
+      @services = @services.where("nom ILIKE :search", {search: "%#{params[:search]}%"})
+      @warehouses = @warehouses.where("name ILIKE :search", {search: "%#{params[:search]}%"})
+    end
+
+    if params[:user_id].present?
+      @services = @services.joins(:users).where(users: {id: params[:user_id]})
+    end
+  end
+
   private
 
   def is_user_authorized

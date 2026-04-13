@@ -1,19 +1,15 @@
 class ApiGoogleMaps < ApplicationService
+  attr_reader :localisation_depart, :localisation_destination, :errors, :routes_info, :data_response
 
-  attr_reader :localisation_depart, :errors, :routes_info, :data_response
-
-  def initialize(localisation_destination)
+  # L'initialisation prend désormais le départ et la destination
+  def initialize(localisation_depart, localisation_destination)
+    @localisation_depart = localisation_depart
     @localisation_destination = localisation_destination
     prepare_request
   end
   
   def call
-    # Prendre la route du siège de l'organisation vers l'adhérent courant
-    lat, lng = ENV["COORD_DEPART"]&.split(',')
-    localisation_siege = { lat: lat.to_f, lng: lng.to_f }
-    @localisation_depart = localisation_siege
-
-    self.prepare_body_request(localisation_siege, @localisation_destination)
+    self.prepare_body_request(@localisation_depart, @localisation_destination)
     @data_response = self.get_response
 
     if @data_response["error"]
