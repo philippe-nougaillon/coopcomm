@@ -25,9 +25,13 @@
       </div>
     </div>
     <div class="border shadow-sm p-4 rounded-2xl">
-      <h2 class="font-black text-lg mb-8">Messages de votre équipe</h2>
-      <% @notifications.each do |notification| %>
-        <%= render partial: 'notification', locals: {notification: }%>
+      <h2 class="font-black text-lg mb-4">Messages de votre équipe</h2>
+      <% if @notifications.any? %>
+        <% @notifications.each do |notification| %>
+          <%= render partial: 'notification', locals: {notification: }%>
+        <% end %>
+      <% else %>
+        <p>Aucun nouveau message</p>
       <% end %>
     </div>
   </div>
