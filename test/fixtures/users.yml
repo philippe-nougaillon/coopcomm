@@ -115,7 +115,7 @@ philippe_super_admin:
   nom: Nougaillon
   prénom: Philippe
   email: philippe.nougaillon@aikku.eu
-  rôle: manager
+  rôle: administrateur
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 0fbc869e-8104-4f01-8cb1-c826dc8dfae3
 
