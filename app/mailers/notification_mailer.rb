@@ -4,7 +4,7 @@ class NotificationMailer < ApplicationMailer
     @intervention = intervention
 
     mail(to: emails,
-        bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu',
+        bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
         subject: "[COOPCOMM] Changement de statut").tap do |message|
       message.mailgun_options = {
         "tag" => ["changement de statut"]
@@ -16,7 +16,7 @@ class NotificationMailer < ApplicationMailer
     @intervention = intervention
 
     mail(to: emails,
-          bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu',
+          bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
           subject: "[COOPCOMM] Nouveau commentaire").tap do |message|
       message.mailgun_options = {
         "tag" => ["nouveau commentaire"]
@@ -28,7 +28,7 @@ class NotificationMailer < ApplicationMailer
     @intervention = intervention
 
     mail(to: intervention.adherent.email,
-          bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu',
+          bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
           subject: "[COOPCOMM] Relance. Intervention à valider").tap do |message|
       message.mailgun_options = {
         "tag" => ["relance"]
@@ -40,7 +40,7 @@ class NotificationMailer < ApplicationMailer
     @intervention = intervention
 
     mail(to: intervention.adherent.email,
-          bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu',
+          bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
           subject: "[COOPCOMM] Pointage").tap do |message|
       message.mailgun_options = {
         "tag" => ["pointage"]
@@ -55,12 +55,12 @@ class NotificationMailer < ApplicationMailer
 
   def new_organisation(organisation)
     @organisation = organisation
-    mail(to: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu', subject: '[COOPCOMM] Nouvelle Organisation')
+    mail(to: ENV['BCC_NOTIFICATION_EMAILS'].presence, subject: '[COOPCOMM] Nouvelle Organisation')
   end
 
   def confirm_email_newsletter(email)
     mail(to: email,
-          bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu, alexandre.meunier@aikku.eu',
+          bcc: ENV['SUPER_ADMIN'].presence,
           subject: '[COOPCOMM] Confirmation de l\'inscription pour la newsletter')
   end
 
@@ -94,16 +94,6 @@ class NotificationMailer < ApplicationMailer
     mail(
       to: @user.email, 
       subject: title
-    )
-  end
-
-  def report_missed_clock_out(intervention_missed, user_email)
-    @intervention = intervention_missed
-    @agent = @intervention.agents.first
-
-    mail(
-      to: user_email,
-      subject: "[COOPCOMM] Rappel d'un pointage oublié"
     )
   end
 end
