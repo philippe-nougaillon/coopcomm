@@ -99,7 +99,7 @@
   </div>
 
   <div class="flex flex-wrap gap-2 mt-8">
-    <% if policy(@user).destroy? %>
+    <% if policy(@user).edit? %>
       <%= link_to "Modifier", edit_user_path(@user), class: "btn" %>
     <% end %>
     <% if policy(@user).destroy? %>
