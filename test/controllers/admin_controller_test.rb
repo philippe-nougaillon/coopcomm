@@ -26,7 +26,9 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
           password: "0DcPIZIq0+f5SvCf",
           rôle: "adhérent",
           téléphone: "0123456789",
-          localisation: "123.123,432.120398",
+          address: "Mairie de Paris",
+          latitude: 123.123,
+          longitude: 432.120398,
         }
       }
     end
