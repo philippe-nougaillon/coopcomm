@@ -138,6 +138,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   test "should'nt create manager as a manager (forced into agent)" do
     sign_in users(:hidalgo)
 
+    unauthorized_role = "manager"
+
     assert_difference("User.count", 1) do
       post users_url, params: {
         user: {
@@ -145,7 +147,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
           prénom: "Bar",
           email: "email@example.com",
           password: "0DcPIZIq0+f5SvCf",
-          rôle: "manager",
+          rôle: unauthorized_role,
           organisation: organisations(:mairie_paris),
           service_ids: [services(:service_paris).id]
         }
@@ -155,12 +157,14 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     new_user = User.last
 
     assert_equal "agent", new_user.rôle, "Le rôle est censé être agent si c'est un manager qui le créé"
-    assert_not_equal "manager", new_user.rôle
+    assert_not_equal unauthorized_role, new_user.rôle
   end
 
   test "should'nt create administrateur as a manager (forced into agent)" do
     sign_in users(:hidalgo)
 
+    unauthorized_role = "administrateur"
+
     assert_difference("User.count", 1) do
       post users_url, params: {
         user: {
@@ -168,7 +172,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
           prénom: "Bar",
           email: "email@example.com",
           password: "0DcPIZIq0+f5SvCf",
-          rôle: "administrateur",
+          rôle: unauthorized_role,
           organisation: organisations(:mairie_paris),
           service_ids: [services(:service_paris).id]
         }
@@ -178,7 +182,27 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     new_user = User.last
 
     assert_equal "agent", new_user.rôle, "Le rôle est censé être agent si c'est un manager qui le créé"
-    assert_not_equal "administrateur", new_user.rôle
+    assert_not_equal unauthorized_role, new_user.rôle
+  end
+
+  test "should'nt update role of user as a manager" do
+    sign_in users(:manager_paris)
+
+    unauthorized_role = "manager"
+
+    patch user_url(@user), params: {
+      user: {
+        rôle: unauthorized_role,
+        email: @user.email,
+        password: "0DcPIZIq0+f5SvCf",
+        organisation: @user.organisation
+      }
+    }
+
+    @user.reload
+
+    assert_equal "agent", @user.rôle, "Le rôle est censé être agent si c'est un manager qui le modifie"
+    assert_not_equal unauthorized_role, @user.rôle
   end
 
   # test "should import xls with param upload" do

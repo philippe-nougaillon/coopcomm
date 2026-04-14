@@ -86,8 +86,15 @@ class UsersController < ApplicationController
 
   # PATCH/PUT /users/1 or /users/1.json
   def update
+    @user.assign_attributes(user_params)
+
+    # Force le rôle à agent si l'utilisateur courant est un manager
+    if current_user.manager?
+      @user.rôle = "agent"
+    end
+
     respond_to do |format|
-      if @user.update(user_params)
+      if @user.save
         bypass_sign_in(@user) if @user == current_user
         format.html { redirect_to user_url(@user), notice: "Utilisateur modifié avec succès." }
         format.json { render :show, status: :ok, location: @user }
