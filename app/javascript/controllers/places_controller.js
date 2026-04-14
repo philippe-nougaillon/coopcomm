@@ -67,8 +67,8 @@ export default class extends Controller {
     );
 
     this.autocomplete = new Autocomplete(this.addressTarget, {
-      types: ['geocode'],
-      fields: ['geometry', 'formatted_address'],
+      types: [],
+      fields: ['geometry', 'formatted_address', 'name'],
       componentRestrictions: { country: "fr" },
       bounds: regionalBounds,
       strictBounds: false
@@ -91,8 +91,16 @@ export default class extends Controller {
       return;
     }
 
+    // Remplissage des champs cachés
     this.latitudeTarget.value = place.geometry.location.lat();
     this.longitudeTarget.value = place.geometry.location.lng();
-    this.addressTarget.value = place.formatted_address;
+
+    // Si c'est un lieu (ex: Mairie), on peut combiner le nom et l'adresse
+    // ou juste garder l'adresse formatée selon ton besoin.
+    if (place.name && !place.formatted_address.includes(place.name)) {
+      this.addressTarget.value = `${place.name}, ${place.formatted_address}`;
+    } else {
+      this.addressTarget.value = place.formatted_address;
+    }
   }
 }
