@@ -18,7 +18,7 @@ class AdminPolicy < ApplicationPolicy
   end
 
   def stats?
-    user && ENV['SUPER_ADMIN'].to_s.split(',').include?(user.email)
+    user && user.super_admin?
   end
 
   def parametres?

@@ -118,7 +118,7 @@ class User < ApplicationRecord
   end
 
   def super_admin?
-    %w[philippe.nougaillon@aikku.eu pierre-emmanuel.dacquet@aikku.eu sebastien.pourchaire@aikku.eu p-edacquet@hotmail.fr alexandre.meunier@aikku.eu].include?(self.email)
+    ENV['SUPER_ADMIN'].to_s.split(',').include?(self.email)
   end
 
   def moyenne
