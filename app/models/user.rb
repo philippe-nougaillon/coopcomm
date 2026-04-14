@@ -59,11 +59,7 @@ class User < ApplicationRecord
   validates :nom, :email, presence: true
   validates :prénom, :rôle, presence: true, if: -> { rôle == "agent" }
   validates_uniqueness_of :email
-  validates :localisation, presence: true, if: -> { rôle == "adhérent" }
-  validates :localisation, format: {
-    with: /\A\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*\z/,
-    message: "doit être dans ce format : 123.123, 432.120398"
-  }, allow_blank: true
+  validates :address, :latitude, :longitude, presence: true, if: -> { rôle == "adhérent" }
   validate :must_have_at_least_one_service, if: -> { rôle == "agent" }
 
   default_scope -> { kept }

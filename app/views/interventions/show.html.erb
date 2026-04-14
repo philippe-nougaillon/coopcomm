@@ -202,69 +202,17 @@
               <h2 class="text-2xl text-secondary mt-4">Trajet (AR)</h2>
               <p><%= @intervention.trajet %></p>
             </div>
-          <% elsif @intervention.adherent&.localisation && @intervention.nouveau? %>
-
-            <div id="map" class="w-full lg:min-w-sm max-w-screen h-100"></div>
+          <% elsif @intervention.nouveau? && @localisation_depart && @localisation_arrivee %>
+            <%# On affiche la carte uniquement si on a les coordonnées %>
+            <div id="map" 
+                class="w-full lg:min-w-sm max-w-screen h-100"
+                data-controller="map"
+                data-map-depart-value="<%= @localisation_depart.to_json %>"
+                data-map-arrivee-value="<%= @localisation_arrivee.to_json %>"
+                data-map-polyline-value="<%= @response && @response["routes"] ? @response.dig("routes", 0, "polyline", "encodedPolyline") : '' %>">
+            </div>
 
             <p><%= @routes_info %></p>
-
-            <script src="https://maps.googleapis.com/maps/api/js?key=<%= ENV["GOOGLE_MAPS_API_KEY"] %>&libraries=geometry&callback=initMap" async defer></script>
-
-            <script>
-              async function initMap() {
-
-                // Initialisation des bibliothèques nécessaires
-                const { Map } = await google.maps.importLibrary("maps");
-                const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
-                const bounds = await new google.maps.LatLngBounds();
-                const trafficLayer = await new google.maps.TrafficLayer();
-
-                // Initialisation de la map
-                map = new google.maps.Map(document.getElementById("map"), {
-                    center : <%= @localisation_depart %>,
-                    zoom: 11,
-                    mapId: "549c4681c953f814fa1cd142",
-                });
-
-                // Ajout du marker d'arrivée
-                let marker = new google.maps.marker.AdvancedMarkerElement({
-                    map,
-                    position: <%= @localisation_arrivee %>,
-                    title: "<%= "Intervention" %>",
-                });
-
-                // Centrage de la map en fonction des points
-                bounds.extend(map.center);
-                bounds.extend(marker.position);
-                map.fitBounds(bounds);
-
-                // Ajout des routes s'il en existe
-                <% if @response && @response["routes"] %>
-                  let decodedPath;
-                  let flightPath;
-
-                  <% @response["routes"].each do |route| %>
-                    decodedPath = google.maps.geometry.encoding.decodePath(
-                        "<%= j route["polyline"]["encodedPolyline"] %>"
-                    );
-
-                    flightPath = new google.maps.Polyline({
-                        path: decodedPath,
-                        geodesic: true,
-                        strokeColor: "#0f53ff",
-                        strokeOpacity: 0.5,
-                        strokeWeight: 8,
-                    });
-
-                    flightPath.setMap(map);
-
-                  <% end %>
-                <% end %>
-
-                // Ajout du traffic de la route
-                trafficLayer.setMap(map);
-              }
-            </script>
           <% end %>
         </div>
       <% end %>

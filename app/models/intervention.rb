@@ -429,11 +429,11 @@ class Intervention < ApplicationRecord
   def calculate_co2
     unless Rails.env.test?
       return unless self.service && self.service.calculate_distance?
-      return unless self.adherent && self.adherent.localisation.present?
-
+      return unless self.adherent && self.adherent.latitude.present? && self.adherent.longitude.present?
+      
       origine = self.origin_location # Appel de la méthode factorisée
-      destination = self.adherent.localisation_to_lat_lng_object
-
+      destination = { lat: self.adherent.latitude, lng: self.adherent.longitude }
+      
       request = ApiGoogleMaps.new(origine, destination)
       request.call
       

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_13_142914) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_14_151349) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -429,7 +429,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_13_142914) do
     t.string "slug"
     t.string "téléphone"
     t.string "memo"
-    t.string "localisation"
     t.datetime "discarded_at"
     t.integer "failed_attempts", default: 0, null: false
     t.datetime "locked_at"
@@ -448,6 +447,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_13_142914) do
     t.bigint "invited_by_id"
     t.integer "invitations_count", default: 0
     t.datetime "remember_created_at"
+    t.string "address"
+    t.decimal "latitude", precision: 10, scale: 6
+    t.decimal "longitude", precision: 10, scale: 6
     t.index ["discarded_at"], name: "index_users_on_discarded_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true

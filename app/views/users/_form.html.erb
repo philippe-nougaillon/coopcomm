@@ -36,10 +36,18 @@
     <% else %>
       <%= form.hidden_field :rôle, value: (user.new_record? ? 'agent' : user.rôle), data: { 'toggle-role-info-target': 'role' } %>
     <% end %>
-    <div data-toggle-role-info-target="localisation" class="flex-1">
-      <%# ATTENTION : si on change le nombre d'éléments dans la div avec la target localisation, il faut adapter le stimulus en conséquence. Sinon le required du champ localisation sera présent quel que soit le rôle attribué %>
-      <%= form.label :localisation, "Localisation" %>
-      <%= form.text_field :localisation, class: 'input select-sm w-full', placeholder: 'Tel que copié de Google Maps', required: true %>
+    <div data-toggle-role-info-target="localisation" class="flex-1" data-controller="places">
+      <%= form.label :address, "Localisation" %>
+      
+      <%# Le champ visible par l'utilisateur pour chercher l'adresse %>
+      <%= form.text_field :address, 
+            class: 'input select-sm w-full', 
+            placeholder: 'Commencez à taper une adresse...', 
+            data: { places_target: "address" } %>
+
+      <%# Les champs cachés qui seront remplis automatiquement par le JS %>
+      <%= form.hidden_field :latitude, data: { places_target: "latitude" } %>
+      <%= form.hidden_field :longitude, data: { places_target: "longitude" } %>
     </div>
 
     <div data-toggle-role-info-target='prenom' class="w-full">

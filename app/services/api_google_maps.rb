@@ -29,7 +29,7 @@ class ApiGoogleMaps < ApplicationService
 
     @request["accept"] = 'application/json'
     @request["content-type"] = 'application/json'
-    @request["X-Goog-Api-Key"] = "#{ENV['GOOGLE_MAPS_API_KEY']}"
+    @request["X-Goog-Api-Key"] = "#{ENV['GOOGLE_MAPS_BACKEND_API_KEY']}"
     @request["X-Goog-FieldMask"] = "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.travelAdvisory.fuelConsumptionMicroliters"
   end
 

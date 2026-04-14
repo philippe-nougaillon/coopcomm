@@ -14,37 +14,33 @@ export default class extends Controller {
   }
 
   change() {
-    var role = this.roleTarget;
+    var role = this.roleTarget.value;
 
-    if (role.value == 'agent') {
+    // On cible proprement les inputs pour éviter le piège des children[1]
+    const addressInput = this.localisationTarget.querySelector('input[type="text"]');
+    const prenomInput = this.prenomTarget.querySelector('input');
+
+    if (role === 'agent' || role === 'manager' || role === '') {
       this.localisationTarget.style.display = 'none';
-      this.localisationTarget.children[1].value = '';
-      this.localisationTarget.children[1].required = false;
+      if (addressInput) {
+        addressInput.value = '';
+        addressInput.required = false;
+      }
+
       this.prenomTarget.style.display = 'block';
-      this.prenomTarget.children[1].required = true;
+      if (prenomInput) prenomInput.required = true;
       this.updateTagLabel("Équipe");
 
-    } else if (role.value == 'adhérent') {
+    } else if (role === 'adhérent') {
       this.localisationTarget.style.display = 'block';
-      this.localisationTarget.children[1].required = true;
+      if (addressInput) addressInput.required = true;
+
       this.prenomTarget.style.display = 'none';
-      this.prenomTarget.children[1].required = false;
-      this.prenomTarget.children[1].value = '';
+      if (prenomInput) {
+        prenomInput.required = false;
+        prenomInput.value = '';
+      }
       this.updateTagLabel("Secteur");
-    } else if (role.value == 'manager') {
-      this.localisationTarget.style.display = 'none';
-      this.localisationTarget.children[1].value = '';
-      this.localisationTarget.children[1].required = false;
-      this.prenomTarget.style.display = 'block';
-      this.prenomTarget.children[1].required = true;
-      this.updateTagLabel("Équipe");
-    } else {
-      this.localisationTarget.style.display = 'none';
-      this.localisationTarget.children[1].value = '';
-      this.localisationTarget.children[1].required = false;
-      this.prenomTarget.style.display = 'block';
-      this.prenomTarget.children[1].required = true;
-      this.updateTagLabel("Équipe");
     }
   }
 
