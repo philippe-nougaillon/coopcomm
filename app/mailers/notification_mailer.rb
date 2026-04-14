@@ -4,7 +4,7 @@ class NotificationMailer < ApplicationMailer
     @intervention = intervention
 
     mail(to: emails,
-        bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu',
+        bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu',
         subject: "[COOPCOMM] Changement de statut").tap do |message|
       message.mailgun_options = {
         "tag" => ["changement de statut"]
@@ -16,7 +16,7 @@ class NotificationMailer < ApplicationMailer
     @intervention = intervention
 
     mail(to: emails,
-          bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu',
+          bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu',
           subject: "[COOPCOMM] Nouveau commentaire").tap do |message|
       message.mailgun_options = {
         "tag" => ["nouveau commentaire"]
@@ -28,7 +28,7 @@ class NotificationMailer < ApplicationMailer
     @intervention = intervention
 
     mail(to: intervention.adherent.email,
-          bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu',
+          bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu',
           subject: "[COOPCOMM] Relance. Intervention à valider").tap do |message|
       message.mailgun_options = {
         "tag" => ["relance"]
@@ -40,7 +40,7 @@ class NotificationMailer < ApplicationMailer
     @intervention = intervention
 
     mail(to: intervention.adherent.email,
-          bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, sebastien.pourchaire@aikku.eu',
+          bcc: 'philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu',
           subject: "[COOPCOMM] Pointage").tap do |message|
       message.mailgun_options = {
         "tag" => ["pointage"]
