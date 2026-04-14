@@ -10,7 +10,7 @@ class UserPolicy < ApplicationPolicy
   end
 
   def show?
-    (index? && organisation? && shared_service) || record == user
+    (index? && can_manage_record?) || is_myself?
   end
 
   def new?
@@ -23,7 +23,7 @@ class UserPolicy < ApplicationPolicy
 
   def edit?
     # Un manager ne peut pas modifier un manager ou un administrateur, sauf si c'est lui-même
-    show? && (record == user || !(user.manager? && record.manager_or_admin?))
+    show? && (is_myself? || !hierarchy_violation?)
   end
 
   def update?
@@ -31,7 +31,7 @@ class UserPolicy < ApplicationPolicy
   end
 
   def destroy?
-    manager_or_admin? && organisation? && record != user && shared_service && !(user.manager? && record.manager_or_admin?)
+    can_manage_record? && !is_myself? && !hierarchy_violation?
   end
 
   def agent_calendrier?
@@ -47,11 +47,11 @@ class UserPolicy < ApplicationPolicy
   end
 
   def inviter?
-    manager_or_admin? && organisation? && record != user && shared_service
+    can_manage_record? && !is_myself?
   end
 
   def edit_password?
-    record == user
+    is_myself?
   end
 
   def update_password?
@@ -59,6 +59,23 @@ class UserPolicy < ApplicationPolicy
   end
 
   def reactivate?
-    manager_or_admin? && organisation? && shared_service
+    can_manage_record?
+  end
+
+  private
+
+  # Vérifie si l'utilisateur peut manager le record
+  def can_manage_record?
+    manager_or_admin? && organisation? && shared_service?
+  end
+
+  # Vérifie si un manager tente d'agir sur un grade égal ou supérieur
+  def hierarchy_violation?
+    user.manager? && record.manager_or_admin?
+  end
+
+  # Vérifie si le record manipulé est l'utilisateur courant
+  def is_myself?
+    record == user
   end
 end
