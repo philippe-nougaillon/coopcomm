@@ -2,17 +2,22 @@ require "test_helper"
 
 class NewslettersControllerTest < ActionDispatch::IntegrationTest
   setup do
+    @super_admin = users(:philippe_super_admin)
+
+    # Permet à l'utilisateur philippe_super_admin d'être considéré comme un super admin automatiquement
+    ENV['SUPER_ADMIN'] = @super_admin.email
+
     @newsletter = newsletters(:bond)
   end
 
   test "should get index" do
-    sign_in users(:philippe_super_admin)
+    sign_in @super_admin
     get newsletters_url
     assert_response :success
   end
 
   test "should get index with export xls" do
-    sign_in users(:philippe_super_admin)
+    sign_in @super_admin
     get users_url,  params: {
       format: :xls
     }
@@ -50,7 +55,7 @@ class NewslettersControllerTest < ActionDispatch::IntegrationTest
   # end
 
   test "should destroy newsletter as super_admin" do
-    sign_in users(:philippe_super_admin)
+    sign_in @super_admin
     assert_difference("Newsletter.count", -1) do
       delete newsletter_url(@newsletter)
     end

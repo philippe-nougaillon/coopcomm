@@ -78,11 +78,17 @@
   <% end %>
 
   <% if current_user.manager_or_admin? %>
-    <div class="w-full">
-      <%= form.label :service_ids, "Service" %>
-      <%# Obligé de préciser data: { controller: 'slim-select' } dans ce formulaire malgré l'automatisation dans app/javascript/application.js, sinon, en cas d'échec dans l'edit, le champ n'est plus du slimselect %>
-      <%= form.select :service_ids, options_from_collection_for_select(current_user.organisation.services, 'id', 'nom', user.services.ids), { include_blank: true }, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
-    </div>
+    <% if current_user.manager? && user.persisted? %>
+      <%= form.hidden_field :service_ids, value: user.services.ids %>
+    <% else %>
+      <div class="w-full">
+        <%= form.label :service_ids, "Service" %>
+        <%= form.select :service_ids,
+                        options_from_collection_for_select(current_user.organisation.services, 'id', 'nom', user.services.ids),
+                        { include_blank: true },
+                        { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
+      </div>
+    <% end %>
   <% end %>
 
   <div class="w-full">

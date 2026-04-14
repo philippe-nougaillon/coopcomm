@@ -48,7 +48,7 @@ class ApplicationPolicy
     user && user.manager_or_admin?
   end
 
-  def shared_service(record_services = record.services)
+  def shared_service?(record_services = record.services)
     # "&" désigne l'intersection entre deux listes
     (record_services & user.services).any?
   end

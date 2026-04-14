@@ -23,6 +23,15 @@ hidalgo:
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: a188443b-d7d9-44ed-9d59-c1c968eac95b
 
+manager_paris:
+  organisation: mairie_paris
+  nom: manager
+  prénom: paris
+  email: manager.paris@gmail.commmmm
+  rôle: manager
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
+  slug: a188443b-d7d9-44ed-9d59-c1c968eac95c
+
 weil:
   organisation: mairie_paris
   nom: Weil
@@ -106,7 +115,7 @@ philippe_super_admin:
   nom: Nougaillon
   prénom: Philippe
   email: philippe.nougaillon@aikku.eu
-  rôle: manager
+  rôle: administrateur
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 0fbc869e-8104-4f01-8cb1-c826dc8dfae3
 
