@@ -20,6 +20,10 @@ class AdherentUserPolicyTest < ActionDispatch::IntegrationTest
     refute @policy.show?
   end
 
+  test "accès autorisé pour un adhérent sur sa page show" do
+    assert @policy_user_myself.show?
+  end
+
   # New
   test "accès adhérent user new interdit" do
     refute @policy.new?

@@ -20,6 +20,10 @@ class AgentUserPolicyTest < ActionDispatch::IntegrationTest
     refute @policy.show?
   end
 
+  test "accès autorisé pour un agent sur sa page show" do
+    assert @policy_user_myself.show?
+  end
+
   # New
   test "accès agent user new interdit" do
     refute @policy.new?

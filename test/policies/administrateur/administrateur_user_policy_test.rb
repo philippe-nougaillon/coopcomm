@@ -26,6 +26,10 @@ class AdministrateurUserPolicyTest < ActionDispatch::IntegrationTest
     refute @policy_organisation_differente.show?
   end
 
+  test "accès autorisé pour un administrateur sur sa page show" do
+    assert @policy_user_myself.show?
+  end
+
   # New
   test "accès autorisé pour un administrateur sur la page new d'un user" do
     assert @policy.new?

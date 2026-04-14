@@ -28,6 +28,10 @@ class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
     refute @policy_services_differents.show?
   end
 
+  test "accès autorisé pour un manager sur sa page show" do
+    assert @policy_user_myself.show?
+  end
+
   # New
   test "accès autorisé pour un manager sur la page new d'un user" do
     assert @policy.new?
