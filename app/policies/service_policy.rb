@@ -5,12 +5,12 @@ class ServicePolicy < ApplicationPolicy
     end
   end
 
-  def index?
-    administrateur?
-  end
+  # def index?
+  #   administrateur?
+  # end
 
   def show?
-    index? && organisation?
+    administrateur? && organisation?
   end
 
   def new?

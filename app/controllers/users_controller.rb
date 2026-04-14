@@ -67,6 +67,11 @@ class UsersController < ApplicationController
     @user.organisation = current_user.organisation
     @user.password = User.generate_random_password
 
+    # Force le rôle à agent si l'utilisateur courant est un manager
+    if current_user.manager?
+      @user.rôle = "agent"
+    end
+
     respond_to do |format|
       if @user.save
         @user.invite!(current_user)
@@ -81,8 +86,15 @@ class UsersController < ApplicationController
 
   # PATCH/PUT /users/1 or /users/1.json
   def update
+    @user.assign_attributes(user_params)
+
+    # Force le rôle à agent si l'utilisateur courant est un manager
+    if current_user.manager?
+      @user.rôle = "agent"
+    end
+
     respond_to do |format|
-      if @user.update(user_params)
+      if @user.save
         bypass_sign_in(@user) if @user == current_user
         format.html { redirect_to user_url(@user), notice: "Utilisateur modifié avec succès." }
         format.json { render :show, status: :ok, location: @user }
@@ -144,7 +156,7 @@ class UsersController < ApplicationController
     #   @agents = @agents.where(id: agent_ids)
     # end
 
-    @date_fin = @date + 10.day
+    @date_fin = @date + 13.day
 
     @agents = @agents.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
     @pagy, @agents = pagy(@agents, items: 10)
@@ -326,7 +338,7 @@ class UsersController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def user_params
-      params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :rôle, :memo, :localisation, :profile_picture, :color, tag_list: [], absences_attributes: [:id, :du, :au, :motif, :observation, :matin, :après_midi, :_destroy], service_ids: [])
+      params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :rôle, :memo, :address, :longitude, :latitude, :profile_picture, :color, tag_list: [], absences_attributes: [:id, :du, :au, :motif, :observation, :matin, :après_midi, :_destroy], service_ids: [])
     end
 
     def is_user_authorized

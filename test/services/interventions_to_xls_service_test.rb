@@ -2,6 +2,7 @@ require "test_helper"
 
 class InterventionsToXlsServiceTest < ActionDispatch::IntegrationTest
   setup do
+    @template_adherent = users(:weil)
     @interventions = create_interventions
 
     @service = InterventionsToXls.new(@interventions)
@@ -39,11 +40,13 @@ class InterventionsToXlsServiceTest < ActionDispatch::IntegrationTest
         description: "Test intervention #{i}",
         organisation: organisations(:mairie_paris),
         workflow_state: "created",
-        début: Time.current,
-        fin: Time.current + 2.hours,
+        début: Time.current - 2.hours,
+        fin: Time.current,
         temps_de_pause: 0,
         temps_total: 2,
-        slug: SecureRandom.uuid
+        slug: SecureRandom.uuid,
+        adherent: @template_adherent,
+        service: @template_adherent.services.first 
       )
     end
     Intervention.where("description LIKE ?", "Test intervention%")

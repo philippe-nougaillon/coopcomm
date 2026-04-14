@@ -1,0 +1,14 @@
+<% users.each do |user| %>
+  <%= link_to messagerie_path(to_id: user.id), "data-turbo": false do %>
+    <div class="p-3 whitespace-nowrap hover:bg-slate-100 transition-colors <%= (user.id == params[:to_id].to_i) ? "bg-gray-200 font-semibold" : "" %>">
+      <div class="flex items-center gap-3">
+        <%= render partial: 'partials/user_profile_picture', locals: {user:} %>
+        <span><%= truncate(user.nom_prénom, length: 20) %></span>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<% if users.empty? %>
+  <div class="p-4 text-sm text-gray-500 text-center">Aucun utilisateur trouvé.</div>
+<% end %>

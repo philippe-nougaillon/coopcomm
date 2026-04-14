@@ -1,3 +1,7 @@
+<% if current_user&.agent? && audit.audited_changes.keys.map(&:to_s) == ['note'] %>
+  <% return %>
+<% end %>
+
 <tr class="hover:bg-base-300">
   <td class="whitespace-nowrap">
     Il y a <%= time_ago_in_words(audit.created_at) %>
@@ -18,11 +22,17 @@
     <% end %>
   </td>
   <td>
+    <%= audit.auditable_type %>
+  </td>
+  <td>
     <%= audit.action.humanize %>
   </td>
   <td class="whitespace-nowrap">
     <% unless audit.comment %>
-      <%= sanitize prettify(audit).join('<br>') %>
+      <% changes = prettify(audit, current_user) %>
+      <% if changes.any? %>
+        <%= sanitize changes.join('<br>') %>
+      <% end %>
     <% else %>
       <%= audit.comment %>
     <% end %>

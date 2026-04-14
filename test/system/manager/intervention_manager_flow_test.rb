@@ -26,9 +26,6 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     # Sélectionner l'adhérent
     select_option("#intervention_adherent_id", "Weil Ariel")
 
-    # Sélectionner l'équipe
-    select_option("#intervention_team_id", "Électricité")
-
     # Sélectionner l'agent
     select_option("#intervention_agent_ids", "Bond James")
 

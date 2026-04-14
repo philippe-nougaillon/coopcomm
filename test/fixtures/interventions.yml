@@ -5,8 +5,8 @@ tonte_locaux:
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
 #  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
-  début: <%= (Date.today + 14).beginning_of_week + 8.hours + 30.minutes %>
-  fin: <%= (Date.today + 14).beginning_of_week + 17.hours + 30.minutes %>
+  début: <%= (Date.today - 1).beginning_of_week + 8.hours + 30.minutes %>
+  fin: <%= (Date.today - 1).beginning_of_week + 17.hours + 30.minutes %>
   temps_de_pause: 1
   description: Tonte locaux
   workflow_state: Validé
@@ -14,11 +14,11 @@ tonte_locaux:
   commentaires: Bien tondre sur le bord des routes
   note: 4
   avis: Ça s'est très bien passé
-  team: nettoyage
   repeter: false
   slug: 0286beb9-7249-4a29-96c7-f7fd9196c1dc
   début_prévue: <%= (Date.today + 14).beginning_of_week + 8.hours + 35.minutes %>
   fin_prévue: <%= (Date.today + 14).beginning_of_week + 17.hours + 15.minutes %>
+  service: technique
 
 nouvelle_intervention:
   organisation: mairie_paris
@@ -29,6 +29,7 @@ nouvelle_intervention:
   description: Ramasser les feuilles
   workflow_state: nouveau
   slug: caa0d044-03c2-4533-abb7-0fc807051335
+  service: technique
 
 intervention_terminée:
   organisation: mairie_paris
@@ -39,6 +40,7 @@ intervention_terminée:
   description: Tailler les arbres
   workflow_state: terminé
   slug: 7a2bff56-19e4-44aa-891a-441be6b62d6f
+  service: technique
 
 intervention_validé:
   organisation: mairie_paris
@@ -47,6 +49,7 @@ intervention_validé:
   description: Débrousailler la mairie
   workflow_state: validé
   slug: 3952eed3-432c-48f2-a591-d79f4c408ff5
+  service: technique
 
 intervention_autre_agent:
   organisation: mairie_paris
@@ -57,6 +60,7 @@ intervention_autre_agent:
   description: L'intervetion d'un autre agent
   workflow_state: terminé
   slug: effe9850-4218-4f61-99df-a89b82a97de8
+  service: technique
 
 intervention_autre_adhérent:
   organisation: mairie_paris
@@ -67,23 +71,38 @@ intervention_autre_adhérent:
   description: L'intervetion d'un autre adhérent
   workflow_state: terminé
   slug: 49ff96b4-6e36-4636-a652-0f71b5888b12
+  service: technique
 
 intervention_paris:
   organisation: mairie_paris
-  adherent_id: patrick_adherent_paris
+  adherent: patrick_adherent_paris
   début: 2025-04-23 12:26:45
   description: Intervention à paris
   workflow_state: nouveau
   slug: ac7e4c84-1ad4-4703-984d-68c1e7d3ce0e
+  service: technique
+
+<% slug_commun = "99e2232e-b9f4-4ee6-b043-13ee190fcca6" %>
 
 intervention_repete:
   organisation: mairie_paris
   adherent: weil
-  agents: martin_technique_paris
   description: Intervention répété
   repeter: true
   workflow_state: nouveau
-  slug: 99e2232e-b9f4-4ee6-b043-13ee190fcca6
+  slug: <%= slug_commun %>
+  service: technique
+
+intervention_fille:
+  organisation: mairie_paris
+  adherent: weil
+  description: Intervention fille de intervention_repete
+  repeter: true
+  workflow_state: nouveau
+  slug: <%= SecureRandom.uuid %>
+  service: technique
+  début: <%= DateTime.now %>
+  repeter: true
 
 # Organisation Marseille
 nettoyage_port:
@@ -95,8 +114,9 @@ nettoyage_port:
   fin: 2024-04-19 17:30:00
   temps_de_pause: 1
   description: Nettoyage Marseille
-  workflow_state: validé
+  workflow_state: nouveau
   slug: a3c694ca-a6bc-49f5-b273-befe366ee48e
+  service: service_marseille
 
 # Organisation sans manager
 
@@ -107,3 +127,4 @@ intervention_sans_manager:
   description: Intervention sans manager
   workflow_state: nouveau
   slug: 8f69ed4e-cc58-4ecc-ab2b-57377f525bd4
+  service: service_marseille

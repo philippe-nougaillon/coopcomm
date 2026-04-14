@@ -1,16 +1,25 @@
-<div class="overflow-x-auto">
-  <table id="tools" class="table table-sm">
+<div class="overflow-auto h-[60vh]">
+  <table id="tools" class="table table-sm table-pin-rows">
     <thead class="bg-slate-100">
       <tr>
-        <th></th>
-        <th><%= sort_link 'tools.name', 'Nom' %></th>
-        <th><%= sort_link 'tools.modèle', 'Modèle' %></th>
-        <th><%= sort_link 'tools.marque', 'Marque' %></th>
+        <th class="hidden sm:block"></th>
+        <th class="sticky left-0 top-0 z-10 bg-slate-100"><%= sort_link 'tools.name', 'Nom' %></th>
+        <% if false %>
+          <!--
+          <th><%= sort_link 'tools.modèle', 'Modèle' %></th>
+          <th><%= sort_link 'tools.marque', 'Marque' %></th>
+          -->
         <th>État</th>
+        <% end %>
         <% if params[:vue] == 'calendrier' %>
           <% (@date..@date_fin).each do |date| %>
-            <th class="text-center <%= 'bg-yellow-50 text-primary' if date == Date.today %>">
-              <%= l(date, format: :calendar).humanize %>
+            <th class="text-center <%= 'text-cerise' if date == Date.today %>">
+              <div class="flex flex-col items-center">
+                <%= l(date, format: :calendar).humanize %>
+                <% if @forecasts && icon_meteo = MeteoConceptConnexion.get_icon_meteo_by_date(date, @forecasts["forecast"])%>
+                  <%= image_tag icon_meteo, size: 50 %>
+                <% end %>
+              </div>
             </th>
           <% end %>
         <% else %>

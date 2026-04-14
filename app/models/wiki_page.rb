@@ -1,7 +1,9 @@
 class WikiPage < ApplicationRecord
   extend FriendlyId
   friendly_id :titre, use: :slugged
-  
+
+  audited
+
   belongs_to :user
   has_rich_text :contenu
   has_one_attached :document

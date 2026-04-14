@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: hidalgo
+  organisation: mairie_paris
+  export_type: dashboard_manager
+
+two:
+  user: weil
+  organisation: mairie_paris
+  export_type: dashboard_adherent

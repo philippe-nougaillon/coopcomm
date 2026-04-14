@@ -3,4 +3,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.coopcom.fr/sitemap.xml
+Sitemap: https://www.demo.coopcomm.fr/sitemap.xml

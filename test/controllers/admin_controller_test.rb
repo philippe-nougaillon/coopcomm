@@ -26,40 +26,13 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
           password: "0DcPIZIq0+f5SvCf",
           rôle: "adhérent",
           téléphone: "0123456789",
-          localisation: "123.123,432.120398",
+          address: "Mairie de Paris",
+          latitude: 123.123,
+          longitude: 432.120398,
         }
       }
     end
 
     assert_redirected_to users_url
   end
-
-  test "should show messagerie" do
-    get admin_messagerie_url
-    assert_response :success
-  end
-
-  test "should show messagerie with a to_id" do
-    get admin_messagerie_url(to_id: users.second.id)
-    assert_response :success
-  end
-
-  test "should send notification" do
-    assert_difference("Notification.count") do
-      post admin_send_notification_url, params: {
-        message: "Bonjour",
-        from_id: users.first.id,
-        to_id: users.second.id,
-      }
-    end
-
-    assert_response :success
-  end
-
-  # test "should get stats" do
-  #   sign_in users(:philippe_super_admin)
-
-  #   get admin_stats_url
-  #   assert_response :success
-  # end
 end

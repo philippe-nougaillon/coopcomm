@@ -40,7 +40,12 @@ class ManagerMouvementPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # destroy
-  test "accès impossible pour un manager sur la page destroy d'un mouvement" do
-    refute @policy.destroy?
+  test "accès autorisé pour un manager sur la page destroy d'un mouvement" do
+    assert @policy.destroy?
+  end
+
+  # reserve
+  test "accès autorisé pour un administrateur sur la page reserve d'un mouvement" do
+    assert @policy.reserve?
   end
 end

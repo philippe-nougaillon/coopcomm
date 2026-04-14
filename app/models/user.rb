@@ -9,14 +9,15 @@ class User < ApplicationRecord
   audited except: :notifications_last_seen_at
 
   # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :rememberable, :timeoutable 
+  # :confirmable, :lockable, :timeoutable 
   devise :database_authenticatable,
          :recoverable,
         #  :validatable,
          :trackable,
-         :lockable,
+        #  :lockable,
          :secure_validatable,
-         :invitable
+         :invitable,
+         :rememberable
         #  :registerable,
         #  :omniauthable,
         #  omniauth_providers: [:google_oauth2]
@@ -58,11 +59,7 @@ class User < ApplicationRecord
   validates :nom, :email, presence: true
   validates :prénom, :rôle, presence: true, if: -> { rôle == "agent" }
   validates_uniqueness_of :email
-  validates :localisation, presence: true, if: -> { rôle == "adhérent" }
-  validates :localisation, format: {
-    with: /\A\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?\s*\z/,
-    message: "doit être dans ce format : 123.123, 432.120398"
-  }, allow_blank: true
+  validates :address, :latitude, :longitude, presence: true, if: -> { rôle == "adhérent" }
   validate :must_have_at_least_one_service, if: -> { rôle == "agent" }
 
   default_scope -> { kept }
@@ -117,7 +114,7 @@ class User < ApplicationRecord
   end
 
   def super_admin?
-    %w[philippe.nougaillon@aikku.eu pierre-emmanuel.dacquet@aikku.eu sebastien.pourchaire@aikku.eu p-edacquet@hotmail.fr alexandre.meunier@aikku.eu].include?(self.email)
+    ENV['SUPER_ADMIN'].to_s.split(',').include?(self.email)
   end
 
   def moyenne
@@ -196,7 +193,7 @@ class User < ApplicationRecord
   end
 
   def new_notifications?
-    return self.notifications.where("notifications.created_at > ?", self.notifications_last_seen_at).any?
+    Notification.where(to_id: self.id, read_at: nil).any?
   end
 
   def current_absence(date = Date.today, periode = nil)
@@ -323,6 +320,19 @@ class User < ApplicationRecord
 
   def self.intervenants
     self.where(rôle: ["agent", "manager", "administrateur"])
+  end
+
+  # Retourne la liste des roles que l'utilisateur a le droit de voir
+  def assignable_roles
+    if self.manager? || self.agent?
+      ["agent"]
+    else
+      User.rôles.keys
+    end
+  end
+
+  def remember_me
+    true
   end
 
   private

@@ -2,7 +2,7 @@
   <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
     <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Interventions') %></h1>
     <%= link_to "Ajouter une Intervention", new_intervention_path, data: { 'testid': "ajouter_intervention_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-lg rounded btn-outline hover:text-white!" %>
-    <%= link_to "+", new_intervention_path, data: { 'testid': "ajouter_intervention_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
+    <%= link_to "+ Intervention", new_intervention_path, data: { 'testid': "ajouter_intervention_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
   </div>
 
   <%= form_tag request.path, method: :get do %>
@@ -105,7 +105,7 @@
     </div>
   <% end %>
 
-  <hr class="mt-8">
+  <hr class="mt-4">
 
   <div id="interventions" class="min-w-full">
     <% if current_user.agent? %>

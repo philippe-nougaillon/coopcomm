@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_03_12_095112) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_14_151349) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -117,10 +117,20 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_12_095112) do
     t.index ["tool_id"], name: "index_documents_on_tool_id"
   end
 
+  create_table "export_logs", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "organisation_id", null: false
+    t.string "export_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organisation_id"], name: "index_export_logs_on_organisation_id"
+    t.index ["user_id"], name: "index_export_logs_on_user_id"
+  end
+
   create_table "interventions", force: :cascade do |t|
     t.datetime "début"
     t.datetime "fin"
-    t.decimal "temps_de_pause", default: "0.0"
+    t.decimal "temps_de_pause"
     t.string "description"
     t.string "workflow_state"
     t.datetime "created_at", null: false
@@ -130,7 +140,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_12_095112) do
     t.decimal "temps_total", precision: 8, scale: 2, default: "0.0"
     t.text "commentaires"
     t.integer "note", default: 5
-    t.bigint "team_id"
     t.string "avis"
     t.string "slug"
     t.boolean "repeter"
@@ -138,11 +147,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_12_095112) do
     t.datetime "début_prévue"
     t.datetime "fin_prévue"
     t.string "meteo"
-    t.decimal "co2", default: "0.0"
     t.string "trajet"
+    t.decimal "co2", default: "0.0"
+    t.bigint "service_id"
+    t.string "localisation"
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
     t.index ["organisation_id"], name: "index_interventions_on_organisation_id"
-    t.index ["team_id"], name: "index_interventions_on_team_id"
+    t.index ["service_id"], name: "index_interventions_on_service_id"
   end
 
   create_table "mail_logs", force: :cascade do |t|
@@ -169,8 +180,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_12_095112) do
     t.datetime "updated_at", null: false
     t.bigint "intervention_id"
     t.datetime "date"
+    t.bigint "user_id", null: false
+    t.string "commentaires"
     t.index ["intervention_id"], name: "index_mouvements_on_intervention_id"
     t.index ["tool_id"], name: "index_mouvements_on_tool_id"
+    t.index ["user_id"], name: "index_mouvements_on_user_id"
   end
 
   create_table "newsletters", force: :cascade do |t|
@@ -186,6 +200,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_12_095112) do
     t.datetime "updated_at", null: false
     t.bigint "from_id"
     t.bigint "to_id"
+    t.datetime "read_at"
     t.index ["from_id"], name: "index_notifications_on_from_id"
     t.index ["to_id"], name: "index_notifications_on_to_id"
   end
@@ -202,6 +217,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_12_095112) do
     t.datetime "updated_at", null: false
     t.bigint "organisation_id", null: false
     t.string "slug"
+    t.boolean "calculate_distance", default: false
     t.index ["organisation_id"], name: "index_services_on_organisation_id"
   end
 
@@ -413,14 +429,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_12_095112) do
     t.string "slug"
     t.string "téléphone"
     t.string "memo"
-    t.string "localisation"
-    t.string "otp_secret"
-    t.integer "consumed_timestep"
-    t.boolean "otp_required_for_login"
     t.datetime "discarded_at"
     t.integer "failed_attempts", default: 0, null: false
     t.datetime "locked_at"
     t.string "unlock_token"
+    t.string "otp_secret"
+    t.integer "consumed_timestep"
+    t.boolean "otp_required_for_login"
     t.integer "otp_method"
     t.string "color"
     t.string "invitation_token"
@@ -431,6 +446,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_12_095112) do
     t.string "invited_by_type"
     t.bigint "invited_by_id"
     t.integer "invitations_count", default: 0
+    t.datetime "remember_created_at"
+    t.string "address"
+    t.decimal "latitude", precision: 10, scale: 6
+    t.decimal "longitude", precision: 10, scale: 6
     t.index ["discarded_at"], name: "index_users_on_discarded_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true
@@ -439,6 +458,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_12_095112) do
     t.index ["organisation_id"], name: "index_users_on_organisation_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
+  end
+
+  create_table "warehouses", force: :cascade do |t|
+    t.string "name"
+    t.string "localisation"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "organisation_id", null: false
+    t.string "slug"
+    t.index ["organisation_id"], name: "index_warehouses_on_organisation_id"
   end
 
   create_table "wiki_pages", force: :cascade do |t|
@@ -463,11 +492,14 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_12_095112) do
   add_foreign_key "agent_interventions", "interventions"
   add_foreign_key "agent_interventions", "users", column: "agent_id"
   add_foreign_key "documents", "tools"
+  add_foreign_key "export_logs", "organisations"
+  add_foreign_key "export_logs", "users"
   add_foreign_key "interventions", "organisations"
-  add_foreign_key "interventions", "users", column: "team_id"
+  add_foreign_key "interventions", "services"
   add_foreign_key "mail_logs", "organisations"
   add_foreign_key "mouvements", "interventions"
   add_foreign_key "mouvements", "tools"
+  add_foreign_key "mouvements", "users"
   add_foreign_key "services", "organisations"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
@@ -482,5 +514,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_12_095112) do
   add_foreign_key "user_services", "services"
   add_foreign_key "user_services", "users"
   add_foreign_key "users", "organisations"
+  add_foreign_key "warehouses", "organisations"
   add_foreign_key "wiki_pages", "users"
 end

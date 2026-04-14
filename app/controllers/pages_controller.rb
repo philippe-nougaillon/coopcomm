@@ -2,6 +2,16 @@ class PagesController < ApplicationController
   before_action :is_user_authorized, except: %i[welcome mentions_legales solution tarifs contact]
   skip_before_action :authenticate_user!, only: %i[welcome mentions_legales solution tarifs contact]
 
+  layout :define_layout
+
+  def define_layout
+    if params[:action] == 'welcome'
+      'welcome'
+    else
+      'application'
+    end
+  end
+
   def assistant
 
     if params[:commit].present?
@@ -51,6 +61,7 @@ class PagesController < ApplicationController
     start_date = 9.months.ago.beginning_of_month
     end_date = 3.months.from_now.end_of_month
     if current_user.manager_or_admin?
+      @export_logs = current_user.organisation.export_logs.includes(:user).order(created_at: :desc)
       # temps_consommable_agent_mensuellement = 35 * 4
       # temps_consommable_organisation_mensuellement = current_user.organisation.users.adherent.count * 100
       #
@@ -122,7 +133,7 @@ class PagesController < ApplicationController
       # Graphe qté d'intervention par service
       #
 
-      @qté_interventions_par_service = current_user.organisation.interventions.filter_by_service(current_user.services).group("services.nom").count
+      @qté_interventions_par_service = current_user.organisation.interventions.filter_by_service(current_user.services).joins(:service).group("services.nom").count
 
 
       #
@@ -135,7 +146,7 @@ class PagesController < ApplicationController
       #   @temps_total_par_service
       # end
 
-      @temps_total_par_service = current_user.organisation.interventions.filter_by_service(current_user.services).group("services.nom").sum(:temps_total)
+      @temps_total_par_service = current_user.organisation.interventions.filter_by_service(current_user.services).joins(:service).group("services.nom").sum(:temps_total)
 
 
       #
@@ -246,7 +257,7 @@ class PagesController < ApplicationController
       # Graphe qté d'intervention par service
       #
 
-      @qté_interventions_par_service = user_interventions.group("services.nom").count
+      @qté_interventions_par_service = user_interventions.joins(:service).group("services.nom").count
 
 
       #
@@ -259,7 +270,7 @@ class PagesController < ApplicationController
       #   @temps_total_par_service
       # end
 
-      @temps_total_par_service = user_interventions.group("services.nom").sum(:temps_total)
+      @temps_total_par_service = user_interventions.joins(:service).group("services.nom").sum(:temps_total)
 
 
       #
@@ -292,8 +303,10 @@ class PagesController < ApplicationController
       format.xls do
         if current_user.manager_or_admin?
           xls_file = DashboardManagerToXls.new(@temps_total_par_adhérent, @temps_total_par_agent, @data_workflow_chart, @qté_interventions_par_service, @temps_total_par_service, @co2_total_par_mois).call
+          ExportLog.create!(user: current_user, organisation: current_user.organisation, export_type: 'dashboard_manager')
         else
           xls_file = DashboardAdherentToXls.new(@proportion_temps_consommé, @temps_total_par_mois, @data_workflow_chart, @qté_interventions_par_service, @temps_total_par_service, @co2_total_par_mois).call
+          ExportLog.create!(user: current_user, organisation: current_user.organisation, export_type: 'dashboard_adherent')
         end
         send_data xls_file, filename: "Dashboard_#{l Date.today}.xls"
       end
@@ -321,34 +334,20 @@ class PagesController < ApplicationController
     @banner_image_name = "banner/banner_#{base_hour}h.png"
     @banner_background_color = BACKGROUND_COLORS[base_hour]
 
-    @interventions = Intervention.by_role_for_home(current_user).first(2)
-    @notifications = current_user.notifications.ordered.first(3)
+    @interventions = Intervention.by_role_for_home(current_user).filter_by_service(current_user.services).first(2)
+    @notifications = current_user.notifications.where(read_at: nil).ordered.first(3)
 
-    # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh
-    @forecasts = Rails.cache.fetch('daily_forecast', expires_in: 10.minutes) do
-      logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours"
-      
-      MeteoConceptConnexion.new.call
-    end
+    @forecasts = MeteoConceptConnexion.call
   end
 
   # Page de la liste des météos sur 14 jours
   def meteo
-    # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh
-    @forecasts = Rails.cache.fetch('daily_forecast', expires_in: 10.minutes) do
-      logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours"
-      
-      MeteoConceptConnexion.new.call
-    end
+    @forecasts = MeteoConceptConnexion.call
   end
 
   # Récupère les données de la météo d'un jour, appelé dans la page "meteo"
   def meteo_by_day
-    forecasts = Rails.cache.fetch('daily_forecast', expires_in: 10.minutes) do
-      logger.debug "[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours"
-
-      MeteoConceptConnexion.new.call
-    end
+    forecasts = MeteoConceptConnexion.call
 
     forecast = forecasts["forecast"][params[:day].to_i].third
 

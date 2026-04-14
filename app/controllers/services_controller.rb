@@ -3,16 +3,21 @@ class ServicesController < ApplicationController
   before_action :is_user_authorized
 
   # GET /services or /services.json
-  def index
-    @services = current_user.services
+  # def index
+  #   @services = current_user.services
+  #   @users = current_user.organisation.users.filter_by_service(@services)
 
-    if params[:search].present?
-      @services = @services.where("nom ILIKE :search", {search: "%#{params[:search]}%"})
-    end
+  #   if params[:search].present?
+  #     @services = @services.where("nom ILIKE :search", {search: "%#{params[:search]}%"})
+  #   end
 
-    @services = @services.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
-    @pagy, @services = pagy(@services, items: 10)
-  end
+  #   if params[:user_id].present?
+  #     @services = @services.joins(:users).where(users: {id: params[:user_id]})
+  #   end
+
+  #   @services = @services.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
+  #   @pagy, @services = pagy(@services, items: 10)
+  # end
 
   # GET /services/1 or /services/1.json
   def show
@@ -63,7 +68,7 @@ class ServicesController < ApplicationController
     @service.destroy!
 
     respond_to do |format|
-      format.html { redirect_to services_path, notice: "Service supprimé avec succès.", status: :see_other }
+      format.html { redirect_to admin_parametres_path, notice: "Service supprimé avec succès.", status: :see_other }
       format.json { head :no_content }
     end
   end
@@ -79,7 +84,7 @@ class ServicesController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def service_params
-      params.expect(service: [ :nom, :organisation_id, :slug ])
+      params.expect(service: [ :nom, :calculate_distance])
     end
 
     def is_user_authorized

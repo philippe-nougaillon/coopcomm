@@ -15,33 +15,42 @@ class Intervention < ApplicationRecord
   before_destroy :must_not_have_any_mouvements
 
   belongs_to :organisation
-  belongs_to :team, class_name: :User, foreign_key: :team_id, optional: true # Not used anymore 
+  belongs_to :service
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
   has_many :agent_interventions, dependent: :destroy
   has_many :agents, through: :agent_interventions, class_name: 'User'
   has_many :tool_interventions, dependent: :destroy
   has_many :tools, through: :tool_interventions
-  has_many :mouvements, through: :tools
+  has_many :mouvements
 
   has_many_attached :photos
 
-  validates :description, presence: true
   
   before_validation -> { combine_datetime(:début_prévue) }
   before_validation -> { combine_datetime(:fin_prévue) }
   before_validation -> { combine_datetime(:début) }
   before_validation -> { combine_datetime(:fin) }
   before_validation :check_absence
+  before_validation :set_temporary_description, on: :create
   
+  validates :description, :adherent_id, :service_id, presence: true
+
   validate :schedules_must_make_sense
   validate :tools_must_be_available
   validate :agents_must_be_available
+  validate :dates_cannot_be_in_the_future
 
+  before_save -> {self.temps_de_pause = 0 if self.temps_de_pause.nil?}
   before_save :calc_temps_total
 
   scope :ordered, -> { order(updated_at: :desc) }
 
+  after_create :replace_description_with_id
+  after_create :calculate_co2 , if: Proc.new { |intervention| intervention.terminé? }
+
   after_create_commit :broadcast_to_authorized_viewers
+  # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
+  after_create_commit :send_manager_notification
 
   # WORKFLOW
   NOUVEAU   = 'nouveau'
@@ -54,7 +63,7 @@ class Intervention < ApplicationRecord
   ARCHIVE   = 'archivé'
 
   workflow do
-    state NOUVEAU, meta: {style: 'badge-info text-white', rgba: '0,181,255,255'} do
+    state NOUVEAU, meta: {style: 'badge-primary text-white', rgba: '0,181,255,255'} do
       # event :accepter, transitions_to: ACCEPTE
       event :terminer, transitions_to: TERMINE
     end
@@ -68,7 +77,7 @@ class Intervention < ApplicationRecord
     #   event :terminer, transitions_to: TERMINE
     # end
 
-    state TERMINE, meta: {style: 'badge-primary text-white'} do
+    state TERMINE, meta: {style: 'badge-accent text-white'} do
       event :valider, transitions_to: VALIDE
       event :refuser, transitions_to: REFUSE
     end
@@ -322,7 +331,7 @@ class Intervention < ApplicationRecord
                 use_path: true)
   end
 
-  def create_next_intervention
+  def create_next_intervention(intervention_template, current_user)
     new_intervention = self.dup
     new_intervention.template_slug = self.slug
     new_intervention.début = DateTime.now
@@ -330,12 +339,11 @@ class Intervention < ApplicationRecord
     new_intervention.repeter = false
     new_intervention.workflow_state = 'nouveau'
     new_intervention.tags = self.tags
-    
-    if new_intervention.save
-      self.agent_interventions.each do |agent_intervention|
-        new_intervention.agent_interventions.create(agent: agent_intervention.agent)
-      end
-    end
+    new_intervention.service = intervention_template.service
+    new_intervention.adherent = intervention_template.adherent
+    new_intervention.agents = [current_user]
+
+    new_intervention.save
 
     new_intervention
   end
@@ -380,12 +388,6 @@ class Intervention < ApplicationRecord
     ).last
   end
 
-  def get_title_for_cases
-    txt = "#{self.description}"
-    txt += ", Equipe : #{self.team.nom}" if self.team
-    txt
-  end
-
   def passed
     !self.nouveau? || (self.fin && (self.fin < DateTime.now))
   end
@@ -400,11 +402,51 @@ class Intervention < ApplicationRecord
   end
 
   def self.filter_by_service(services)
-    self
-      .joins(agent_interventions: {
-        agent: { user_services: :service }
-      })
-      .where(services: { id: services })
+    self.where(service: services )
+  end
+
+  def send_manager_notification
+    user = User.find_by(id: self.audits.find_by(action: 'create')&.user&.id)
+    if user&.adhérent?
+      NotifManagersNewInterventionFromAdherentJob.perform_later(self, user)
+    elsif user&.agent? && self.terminé?
+      NotifManagersInterventionDoneByAgentJob.perform_later(self, user)
+    end
+  end
+
+  def origin_location
+    equipe_adherent = self.adherent&.tag_list&.first
+    warehouse = Warehouse.tagged_with(equipe_adherent).first if equipe_adherent
+
+    if warehouse && warehouse.localisation.present?
+      warehouse.localisation_to_lat_lng_object
+    else
+      lat, lng = ENV["COORD_DEPART"]&.split(',')
+      { lat: lat.to_f, lng: lng.to_f }
+    end
+  end
+
+  def calculate_co2
+    unless Rails.env.test?
+      return unless self.service && self.service.calculate_distance?
+      return unless self.adherent && self.adherent.latitude.present? && self.adherent.longitude.present?
+      
+      origine = self.origin_location # Appel de la méthode factorisée
+      destination = { lat: self.adherent.latitude, lng: self.adherent.longitude }
+      
+      request = ApiGoogleMaps.new(origine, destination)
+      request.call
+      
+      if request.errors.blank?
+        self.trajet = request.routes_info
+        self.co2 = request.co2_consumption_by_route(request.data_response["routes"][0])
+        self.save
+      end
+    end
+  end
+
+  def temps_par_agent
+    self.temps_total / self.agents.count
   end
   
   private
@@ -440,7 +482,6 @@ class Intervention < ApplicationRecord
 
   def authorized_users_ids
     user_ids = self.agents.pluck(:id)
-    user_ids << self.team.try(:id)
     user_ids.compact!
     user_ids
   end
@@ -449,6 +490,29 @@ class Intervention < ApplicationRecord
     if self.mouvements.any?
       self.errors.add(:base, "Il reste des mouvements liés.")
       throw(:abort)
+    end
+  end
+
+  def dates_cannot_be_in_the_future
+    if début.present? && début > Time.current
+      errors.add(:début, "ne peut pas être dans le futur")
+    end
+
+    if fin.present? && fin > Time.current
+      errors.add(:fin, "ne peut pas être dans le futur")
+    end
+  end
+
+  def set_temporary_description
+    # Si la description est vide, on lui donne une valeur bouchon pour passer la validation
+    self.description = "en_attente_id" if description.blank?
+  end
+
+  def replace_description_with_id
+    # Si la description est notre valeur bouchon, on la met à jour avec l'ID généré.
+    # update_column met à jour directement en base sans redéclencher les validations/callbacks.
+    if description == "en_attente_id"
+      update_column(:description, "##{self.id}")
     end
   end
 end

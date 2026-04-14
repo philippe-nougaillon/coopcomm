@@ -23,7 +23,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
 
   test "should create mouvement" do
     assert_difference("Mouvement.count") do
-      post mouvements_url, params: { mouvement: { tool_id: @template_mouvement.tool_id, état: @template_mouvement.état } }
+      post mouvements_url, params: { mouvement: { tool_id: @template_mouvement.tool_id, état: @template_mouvement.état, date: DateTime.now } }
     end
 
     assert_redirected_to Mouvement.last.tool

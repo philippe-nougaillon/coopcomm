@@ -1,0 +1,18 @@
+<p>Bonjour <%= @user.prénom || @user.nom %>,</p>
+
+<p>
+  Vous avez une réservation prévue pour l'outil <strong><%= @tool.name %></strong> 
+  le <strong><%= @date_reservation.strftime('%d/%m/%Y à %H:%M') %></strong>.
+</p>
+
+<p>
+  Nous vous informons que cet outil a été déclaré en <strong>panne</strong> 
+  le <%= @date_panne.strftime('%d/%m/%Y à %H:%M') %>.
+</p>
+
+<p>
+  Si l'outil n'est pas réparé avant la date de votre réservation, 
+  celle-ci sera automatiquement annulée pour libérer le planning.
+</p>
+
+<p>Merci de vérifier la disponibilité de l'outil sur le planning avant votre intervention.</p>

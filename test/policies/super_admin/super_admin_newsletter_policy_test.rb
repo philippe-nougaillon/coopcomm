@@ -4,6 +4,9 @@ class SuperAdminNewsletterPolicyTest < ActionDispatch::IntegrationTest
   def setup
     super_admin = users(:philippe_super_admin)
 
+    # Permet à l'utilisateur philippe_super_admin d'être considéré comme un super admin automatiquement
+    ENV['SUPER_ADMIN'] = super_admin.email
+
     mail = newsletters(:bond)
 
     @policy = NewsletterPolicy.new(super_admin, mail)

@@ -3,8 +3,8 @@
     <div id="<%= dom_id @intervention %>" class="overflow-x-auto">
       <div class="flex flex-col sm:flex-row justify-between">
         <div>
-          <p class="text-3xl text-<%= @intervention.style.split.first.split('-').last %> font-black">
-            <span class="badge badge-lg text-nowrap font-bold <%= @intervention.style %>">
+          <p class="text-3xl text-<%= @intervention.style.split.first.split('-').last %> font-bold">
+            <span class="badge badge-lg h-fit font-bold <%= @intervention.style %>">
               <%= @intervention.workflow_state.humanize %>
             </span>
             <% if @intervention.repeter %>
@@ -24,7 +24,7 @@
 
           <p class="my-2">
             <% @intervention.tags.each do |tag| %>
-              <span class="badge badge-primary badge-outline text-white"><%= tag.name.humanize %></span>
+              <span class="badge badge-primary badge-outline h-fit"><%= tag.name.humanize %></span>
             <% end %>
           </p>
         </div>
@@ -59,6 +59,10 @@
                 <strong class="block text-slate-400 mb-1">Adhérent</strong>
                 <b><%= @intervention.adherent.try(:nom_prénom) %></b>
               </p>
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Service</strong>
+                <b><%= @intervention.service.nom %></b>
+              </p>
             </div>
 
             <div>
@@ -90,8 +94,13 @@
 
             <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
               <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Temps passé</strong>
+                <strong class="block text-slate-400 mb-1">Temps total</strong>
                 <%= @intervention.temps_total %> h
+              </p>
+
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Temps par agent</strong>
+                <%= @intervention.temps_par_agent %> h
               </p>
 
               <p class="my-2">
@@ -100,17 +109,19 @@
               </p>
             </div>
 
-            <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Début prévu</strong>
-                <%= l(@intervention.début_prévue, format: :long) if @intervention.début_prévue %>
-              </p>
+            <% if @intervention.début_prévue || @intervention.fin_prévue %>
+              <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
+                <p class="my-2">
+                  <strong class="block text-slate-400 mb-1">Début prévu</strong>
+                  <%= l(@intervention.début_prévue, format: :long) if @intervention.début_prévue %>
+                </p>
 
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Fin prévue</strong>
-                <%= l(@intervention.fin_prévue, format: :long) if @intervention.fin_prévue %>
-              </p>
-            </div>
+                <p class="my-2">
+                  <strong class="block text-slate-400 mb-1">Fin prévue</strong>
+                  <%= l(@intervention.fin_prévue, format: :long) if @intervention.fin_prévue %>
+                </p>
+              </div>
+            <% end %>
           </div>
 
           <div>
@@ -146,9 +157,9 @@
         </div>
 
         <div class="w-72 mr-4">
-          <% if @intervention.validé? || @intervention.refusé? %>
+          <% if (@intervention.validé? || @intervention.refusé?) && !current_user.agent? %>
             <div>
-              <strong class="block text-slate-400 mb-1">Évaluation</strong>
+              <strong class="block text-slate-400 mt-2 mb-1">Évaluation</strong>
               <div class="rating">
                 <% 5.times do |index| %>
                   <input type="radio" name="rating-<%= @intervention.id %>" class="mask mask-star bg-primary cursor-text" <%= 'aria-current=true' if @intervention.note == index + 1 %> disabled/>
@@ -160,13 +171,19 @@
                 <%= @intervention.avis %>
               </p>
             </div>
-          <% elsif current_user.manager_or_admin? || current_user.adhérent? %>
+          <% else %>
             <div class="my-2">
               <strong class="block text-slate-400 mb-1">Actions</strong>
               <p class="flex gap-2">
-                <%= link_to 'Terminer', terminer_intervention_path(@intervention), class: 'btn btn-primary btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !@intervention.can_terminer? %>
-                <%= link_to 'Valider', valider_intervention_path(@intervention), class: 'btn btn-success btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !@intervention.can_valider?  %>
-                <%= link_to 'Refuser', refuser_intervention_path(@intervention), class: 'btn btn-error btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !@intervention.can_refuser? %>
+                <% if policy(@intervention).terminer? %>
+                  <%= link_to 'Terminer', terminer_intervention_path(@intervention), class: 'btn btn-primary btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !@intervention.can_terminer? %>
+                <% end %>
+                <% if policy(@intervention).valider? %>
+                  <%= link_to 'Valider', valider_intervention_path(@intervention), class: 'btn btn-success btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !@intervention.can_valider?  %>
+                <% end %>
+                <% if policy(@intervention).refuser? %>
+                  <%= link_to 'Refuser', refuser_intervention_path(@intervention), class: 'btn btn-error btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !@intervention.can_refuser? %>
+                <% end %>
               <p>
             </div>
           <% end %>
@@ -176,78 +193,29 @@
 
     </div>
 
-    <div class="flex flex-wrap gap-12 mt-6">
-      <div class="flex-1">
-        <% if @intervention.trajet.present? && !@intervention.nouveau? %>
-          <div class="my-2">
-            <h2 class="text-2xl text-secondary mt-4">Trajet (AR)</h2>
-            <p><%= @intervention.trajet %></p>
-          </div>
-        <% elsif @intervention.adherent&.localisation && @intervention.nouveau? %>
+    <div class="flex flex-col lg:flex-row flex-wrap gap-12 mt-6">
+      <% if @intervention.service&.calculate_distance? %>
+        <div class="flex-1">
+          
+          <% if @intervention.trajet.present? && !@intervention.nouveau? %>
+            <div class="my-2">
+              <h2 class="text-2xl text-secondary mt-4">Trajet (AR)</h2>
+              <p><%= @intervention.trajet %></p>
+            </div>
+          <% elsif @intervention.nouveau? && @localisation_depart && @localisation_arrivee %>
+            <%# On affiche la carte uniquement si on a les coordonnées %>
+            <div id="map" 
+                class="w-full lg:min-w-sm max-w-screen h-100"
+                data-controller="map"
+                data-map-depart-value="<%= @localisation_depart.to_json %>"
+                data-map-arrivee-value="<%= @localisation_arrivee.to_json %>"
+                data-map-polyline-value="<%= @response && @response["routes"] ? @response.dig("routes", 0, "polyline", "encodedPolyline") : '' %>">
+            </div>
 
-          <div id="map" class="w-full min-w-sm h-100"></div>
-
-          <p><%= @routes_info %></p>
-
-          <script src="https://maps.googleapis.com/maps/api/js?key=<%= ENV["GOOGLE_MAPS_API_KEY"] %>&libraries=geometry&callback=initMap" async defer></script>
-
-          <script>
-            async function initMap() {
-
-              // Initialisation des bibliothèques nécessaires
-              const { Map } = await google.maps.importLibrary("maps");
-              const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
-              const bounds = await new google.maps.LatLngBounds();
-              const trafficLayer = await new google.maps.TrafficLayer();
-
-              // Initialisation de la map
-              map = new google.maps.Map(document.getElementById("map"), {
-                  center : <%= @localisation_depart %>,
-                  zoom: 11,
-                  mapId: "549c4681c953f814fa1cd142",
-              });
-
-              // Ajout du marker d'arrivée
-              let marker = new google.maps.marker.AdvancedMarkerElement({
-                  map,
-                  position: <%= @localisation_arrivee %>,
-                  title: "<%= "Intervention" %>",
-              });
-
-              // Centrage de la map en fonction des points
-              bounds.extend(map.center);
-              bounds.extend(marker.position);
-              map.fitBounds(bounds);
-
-              // Ajout des routes s'il en existe
-              <% if @response && @response["routes"] %>
-                let decodedPath;
-                let flightPath;
-
-                <% @response["routes"].each do |route| %>
-                  decodedPath = google.maps.geometry.encoding.decodePath(
-                      "<%= j route["polyline"]["encodedPolyline"] %>"
-                  );
-
-                  flightPath = new google.maps.Polyline({
-                      path: decodedPath,
-                      geodesic: true,
-                      strokeColor: "#0f53ff",
-                      strokeOpacity: 0.5,
-                      strokeWeight: 8,
-                  });
-
-                  flightPath.setMap(map);
-
-                <% end %>
-              <% end %>
-
-              // Ajout du traffic de la route
-              trafficLayer.setMap(map);
-            }
-          </script>
-        <% end %>
-      </div>
+            <p><%= @routes_info %></p>
+          <% end %>
+        </div>
+      <% end %>
       <div class="flex-1">
         <h2 class="text-2xl text-secondary mt-4">Photos</h2>
         <% if @intervention.photos.attached? %>
@@ -283,6 +251,9 @@
             <tr>
               <th>Il y a</th>
               <th>Id</th>
+              <% unless current_user.agent? %>
+                <th>Agent</th>
+              <% end %>
               <th>Date</th>
               <th>Début</th>
               <th>Fin</th>
@@ -292,16 +263,20 @@
           </thead>
 
           <tbody>
-            <% @intervention.pointages.each do |pointage| %>
+            <% @pointages.each do |pointage| %>
               <tr>
                 <td><%= time_ago_in_words pointage.début %></td>
+
                 <td><%= link_to pointage.id, pointage, class: 'underline' %></td>
+                <% unless current_user.agent? %>
+                  <td><%= pointage.agents.first&.nom_prénom %></td>
+                <% end %>
                 <td><%= l pointage.début.to_date %></td>
                 <td><%= l pointage.début %></td>
                 <td><%= l pointage.fin if pointage.fin %></td>
                 <td><%= pointage.temps_total %></td>
                 <td>
-                  <span class="badge badge text-nowrap font-bold <%= pointage.style %>">
+                  <span class="badge badge h-fit font-bold <%= pointage.style %>">
                     <%= pointage.workflow_state.humanize %>
                   </span>
                 </td>
@@ -312,25 +287,28 @@
       </div>
     <% end %>
 
-    <h2 class="text-2xl text-secondary mt-8">Activité</h2>
-    <div class="overflow-x-auto mt-4">
-      <table class="table table-sm">
-        <thead class="bg-slate-100">
-          <tr>
-            <th>Date</th>
-            <th>Utilisateur</th>
-            <th>Action</th>
-            <th>Modifications</th>
-          </tr>
-        </thead>
+    <% if current_user.manager_or_admin? %>
+      <h2 class="text-2xl text-secondary mt-8">Activité</h2>
+      <div class="overflow-x-auto mt-4">
+        <table class="table table-sm">
+          <thead class="bg-slate-100">
+            <tr>
+              <th>Date</th>
+              <th>Utilisateur</th>
+              <th>Type</th>
+              <th>Action</th>
+              <th>Modifications</th>
+            </tr>
+          </thead>
 
-        <%= render partial: 'audit', collection: @audits %>
-      </table>
-    </div>
-    <div class="my-6">
-      <%== pagy_info(@pagy) %>
-      <%== pagy_nav(@pagy) %>
-    </div>
+          <%= render partial: 'audit', collection: @audits %>
+        </table>
+      </div>
+      <div class="my-6">
+        <%== pagy_info(@pagy) %>
+        <%== pagy_nav(@pagy) %>
+      </div>
+    <% end %>
   </div>
 
 </div>

@@ -39,12 +39,12 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
           temps_total: @intervention.temps_total,
           commentaires: @intervention.commentaires,
           note: @intervention.note,
-          team_id: @intervention.team_id,
           avis: @intervention.avis,
           repeter: @intervention.repeter,
           slug: SecureRandom.uuid,
           début_prévue: @intervention.début_prévue,
-          fin_prévue: @intervention.fin_prévue
+          fin_prévue: @intervention.fin_prévue,
+          service_id: @intervention.service.id
         }
       }
     end
@@ -75,7 +75,9 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
         note: @intervention.note,
         avis: @intervention.avis,
         début_prévue: @intervention.début_prévue,
-        fin_prévue: @intervention.fin_prévue
+        fin_prévue: @intervention.fin_prévue,
+        adherent: @intervention.adherent,
+        service: @intervention.service
       }
     }
     assert_redirected_to intervention_url(@intervention)
@@ -115,6 +117,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to @intervention
   end
 
+  # Pointage
+
   test "pointer intervention repete doit créer une intervention" do
     # Le sign_in gère tout seul la déconnexion du premier sign_in dans le setup
     sign_in users(:martin_technique_paris)
@@ -153,5 +157,76 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference("Intervention.count") do
       get pointer_intervention_url(intervention)
     end
+  end
+
+  test "pointer intervention repete doit créer une intervention fille par agent" do
+    intervention = interventions(:intervention_repete)
+    
+    # Pointage avec le 1er agent
+    sign_in users(:martin_technique_paris)
+    assert_difference("Intervention.count", 1) do
+      get pointer_intervention_url(intervention)
+    end
+
+    # Pointage avec le 2eme agent
+    sign_in users(:bond)
+    assert_difference("Intervention.count", 1) do
+      get pointer_intervention_url(intervention)
+    end
+
+    expected_nb_intervention_filles = 2
+    actual_nb_intervention_filles = Intervention.where(template_slug: intervention.slug).last(2).count
+
+    assert_equal expected_nb_intervention_filles, actual_nb_intervention_filles
+  end
+
+  test "pointer intervention repete doit pouvoir créer plusieurs interventions dans la journée" do
+    intervention = interventions(:intervention_repete)
+    
+    sign_in users(:martin_technique_paris)
+
+    # 1er pointage (début de journée)
+    assert_difference("Intervention.count", 1) do
+      get pointer_intervention_url(intervention)
+    end
+
+    # 2eme pointage (début de pause)
+    assert_no_difference("Intervention.count") do
+      get pointer_intervention_url(intervention)
+    end
+
+    # 3eme pointage (fin de pause, reprise d'activité)
+    assert_difference("Intervention.count", 1) do
+      get pointer_intervention_url(intervention)
+    end
+
+    # 4eme pointage (fin de journée)
+    assert_no_difference("Intervention.count") do
+      get pointer_intervention_url(intervention)
+    end
+
+    expected_nb_intervention_filles = 2
+    actual_nb_intervention_filles = Intervention.where(template_slug: intervention.slug).last(2).count
+
+    assert_equal expected_nb_intervention_filles, actual_nb_intervention_filles
+  end
+
+  test "update location intervention doit ajouter la geolocalisation à l'intervention fille" do
+    intervention = interventions(:intervention_repete)
+    
+    sign_in users(:martin_technique_paris)
+
+    assert_difference("Intervention.count", 1) do
+      get pointer_intervention_url(intervention)
+    end
+    
+    intervention_fille = Intervention.where(template_slug: intervention.slug).last
+
+    patch update_location_intervention_url(intervention_fille), 
+        params: { latitude: 48.8566, longitude: 2.3522 }, 
+        as: :json
+        
+    intervention_fille.reload
+    assert_not_nil intervention_fille.localisation, "La localisation doit être mise à jour après pointage"
   end
 end

@@ -1,0 +1,11 @@
+Bonjour,
+<br><br>
+L'agent <b><%= @agent.nom_prénom %></b> a oublié de pointer pour terminer l'intervention '<b><%= @intervention.description.humanize %></b>'.
+
+<br><br>
+Début de l'intervention :
+<br>
+<strong><%= I18n.l(@intervention.début, format: :long) %></strong>
+
+<br><br>
+<%= link_to "Voir l'intervention", intervention_url(@intervention) %>

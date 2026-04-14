@@ -6,7 +6,7 @@
   </div>
 
   <div class="mb-12">
-    <p>Le fichier doit être au format Excel et avoir les champs dans cet ordre : <b><%= User.xls_headers.join(', ') %></b></p>
+    <p>Le fichier doit être au format Excel 97-2003 (.xls) et avoir les champs dans cet ordre : <b><%= User.xls_headers.join(', ') %></b></p>
     <p>Les champs obligatoires sont : <b>Nom, Prénom, Email, Service</b></p>
     <p>Exemple du format attendu : <%= link_to "Télécharger le modèle", "/Exemple_import_utilisateurs.xls", download: "modele_donnees.xls", class: "btn btn-primary" %></p>
   </div>

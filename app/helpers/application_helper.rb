@@ -1,11 +1,13 @@
 module ApplicationHelper
   include Pagy::Frontend
 
-  def prettify(audit)
+  def prettify(audit, current_user)
     pretty_changes = []
 
     audit.audited_changes.each do |c|
-      key = c.first.humanize
+      raw_key = c.first
+      key = raw_key.humanize
+
       case key
       when 'Agent', 'Adherent', 'Agent binome'
         ids = audit.audited_changes["#{key == "Agent binome" ? key.humanize.downcase.tr(' ', '_') : key.downcase}_id"]
@@ -62,7 +64,6 @@ module ApplicationHelper
           pretty_changes << "Utilisateur #{c.last.first.nil? ? 'désactivé' : 'réactivé'}"
         end
       else
-        
         if audit.action == 'update'
           unless c.last.first.blank? && c.last.last.blank?    
             pretty_changes << "#{key} modifié de '#{c.last.first}' à '#{c.last.last}'"
@@ -94,6 +95,49 @@ module ApplicationHelper
     link_title = sort_direction == "asc" ? "Tri croissant" : "Tri décroissant"
 
     link_to "<span>#{h title}</span><span class='material-symbols-outlined text-primary'>#{icon}</span>".html_safe, url_for(request.parameters.merge(column: column, direction: direction)), class: 'flex items-center', 'data-turbo': false
+  end
+
+  # Génère les options groupées en ajoutant data-mandatory="true" sur un ID spécifique
+  def grouped_options_with_mandatory(grouped_hash, selected_ids, mandatory_id = nil)
+    html = []
+    
+    # 1. On convertit tout en texte pour éviter le bug "1" != 1
+    selected_strings = Array(selected_ids).map(&:to_s)
+    
+    grouped_hash.each do |group_name, options|
+      group_html = []
+      
+      options.each do |option_text, option_value|
+        # 2. Comparaison robuste
+        is_selected = selected_strings.include?(option_value.to_s)
+        is_mandatory = mandatory_id.to_s == option_value.to_s
+        
+        attributes = { value: option_value }
+        attributes[:selected] = "selected" if is_selected
+        attributes[:data] = { mandatory: "true" } if is_mandatory
+        
+        group_html << content_tag(:option, option_text, attributes)
+      end
+      
+      html << content_tag(:optgroup, group_html.join.html_safe, label: group_name)
+    end
+    
+    html.join("\n").html_safe
+  end
+
+  def notification_time_format(time)
+    return "" if time.blank?
+
+    date = time.to_date
+    today = Date.current
+
+    if date == today
+      time.strftime("%H:%M")
+    elsif date >= (today - 6.days)
+      I18n.l(time, format: "%A").capitalize
+    else
+      time.strftime("%d/%m/%Y")
+    end
   end
 
 end

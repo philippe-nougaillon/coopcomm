@@ -7,6 +7,7 @@ class AdherentUserPolicyTest < ActionDispatch::IntegrationTest
     user_paris = users(:user_paris)
 
     @policy = UserPolicy.new(adherent_paris, user_paris)
+    @policy_user_myself = UserPolicy.new(adherent_paris, adherent_paris)
   end
 
   # Index
@@ -17,6 +18,10 @@ class AdherentUserPolicyTest < ActionDispatch::IntegrationTest
   # Show
   test "accès adhérent user show interdit" do
     refute @policy.show?
+  end
+
+  test "accès autorisé pour un adhérent sur sa page show" do
+    assert @policy_user_myself.show?
   end
 
   # New
@@ -47,5 +52,25 @@ class AdherentUserPolicyTest < ActionDispatch::IntegrationTest
   # Agent calendrier
   test "accès adhérent user agent calendrier interdit" do
     refute @policy.agent_calendrier?
+  end
+
+  # Inviter
+  test "accès interdit pour un adherent sur la page inviter d'un user" do
+    refute @policy.inviter?
+  end
+
+  # Edit password
+  test "accès autorisé pour un adherent sur sa page edit_password" do
+    assert @policy_user_myself.edit_password?
+  end
+
+  # Update password
+  test "accès autorisé pour un adherent sur sa page update_password" do
+    assert @policy_user_myself.update_password?
+  end
+
+  # Reactivate
+  test "accès interdit pour un adherent sur la page reactivate d'un user" do
+    refute @policy.reactivate?
   end
 end

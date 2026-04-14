@@ -1,27 +1,27 @@
-<div class="flex flex-wrap justify-center">
-  <div class="w-full sm:w-1/2 flex flex-col items-center mb-12">
+<div class="flex flex-wrap justify-center gap-4">
+  <div class="flex-1 w-full sm:w-1/2 flex flex-col items-center border-3 rounded-xl p-8">
     <h2 class="text-2xl sm:whitespace-nowrap text-center">Proportion temps consommé/restant</h2>
     <canvas id="proportionTempsConsomméChart" class="max-h-64" data-turbo="false"></canvas>
   </div>
-  <div class="w-full sm:w-1/2 flex flex-col items-center mb-12">
+  <div class="flex-1 w-full sm:w-1/2 flex flex-col items-center border-3 rounded-xl p-8">
     <h2 class="text-2xl sm:whitespace-nowrap text-center">Cumul durée d'intervention par mois</h2>
     <canvas id="tempsTotalParMoisChart" class="max-h-64" data-turbo="false"></canvas>
   </div>
-  <div class="w-full sm:w-1/2 flex flex-col items-center mb-12">
+  <div class="flex-1 w-full sm:w-1/2 flex flex-col items-center border-3 rounded-xl p-8">
     <h2 class="text-2xl sm:whitespace-nowrap text-center">Nombre d'interventions par état et par mois</h2>
     <canvas id="workflowChart" class="max-h-64" data-turbo="false"></canvas>
   </div>
-  <div class="flex flex-wrap items-between gap-12">
-    <div class="flex-1 sm:w-1/2 flex flex-col items-center mb-12">
+  <div class="flex-1 flex flex-wrap items-between gap-4">
+    <div class="flex-1 sm:w-1/2 flex flex-col items-center border-3 rounded-xl p-8">
       <h2 class="text-2xl sm:whitespace-nowrap text-center">Nombre d'interventions par service</h2>
       <canvas id="qtéInterventionsParServiceChart" class="max-h-64" data-turbo="false"></canvas>
     </div>
-    <div class="flex-1 sm:w-1/2 flex flex-col items-center mb-12">
+    <div class="flex-1 sm:w-1/2 flex flex-col items-center border-3 rounded-xl p-8">
       <h2 class="text-2xl sm:whitespace-nowrap text-center">Temps total par service</h2>
       <canvas id="tempsTotalParServiceChart" class="max-h-64 max-w-full" data-turbo="false"></canvas>
     </div>
   </div>
-  <div class="w-full sm:w-1/2 flex flex-col items-center mb-12 mt-4">
+  <div class="flex-1 w-full sm:w-1/2 flex flex-col items-center border-3 rounded-xl p-8">
     <h2 class="text-2xl sm:whitespace-nowrap text-center">CO₂ total par mois</h2>
     <canvas id="co2TotalParMois" class="max-h-64" data-turbo="false"></canvas>
   </div>

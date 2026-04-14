@@ -1,0 +1,31 @@
+<div class="mx-auto lg:w-2/3 w-full">
+  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
+    <h1 class="text-2xl sm:text-4xl text-primary font-bold">
+      <%= page_title!(@warehouse.name) %>
+    </h1>
+  </div>
+
+  <p class="mt-4">
+    <strong class="block text-slate-400 mb-1">Équipes</strong>
+    <%= @warehouse.tag_list %>
+  </p>
+
+  <p class="mt-4">
+    <strong class="block text-slate-400 mb-1">Localisation</strong>
+    <%= @warehouse.localisation %>
+  </p>
+
+  <div class="flex flex-wrap gap-2 mt-8">
+    <% if policy(@warehouse).edit? %>
+      <%= link_to "Modifier", edit_warehouse_path(@warehouse), class: "btn" %>
+    <% end %>
+    <% if policy(@warehouse).destroy? %>
+      <%= button_to warehouse_path(@warehouse), method: :delete, id: "supprimer_warehouse", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet entrepôt ?" }, class: "btn", 'data-testid': "Supprimer l'entrepôt" do %>
+          <span class="material-symbols-outlined">
+            delete
+          </span>
+      <% end %>
+    <% end %>
+    <%= link_to "Retour", admin_parametres_path, class: "btn" %>
+  </div>
+</div>

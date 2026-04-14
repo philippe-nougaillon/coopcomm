@@ -44,6 +44,30 @@ class Tool < ApplicationRecord
     self.interventions.where(":quand BETWEEN interventions.début_prévue AND interventions.fin_prévue", quand:).first
   end
 
+  def dernier_mouvement_a(heure)
+    if mouvements.loaded?
+      # On filtre et on trie du plus récent au plus ancien
+      mvs = mouvements.select { |m| m.date <= heure }.sort_by { |m| -m.date.to_i }
+      
+      # On cherche le dernier événement lié à une panne
+      dernier_panne_event = mvs.find { |m| m.panne? || m.fin_panne? }
+      
+      # Si l'outil est cassé, on renvoie ce mouvement. Sinon, le mouvement classique.
+      return dernier_panne_event if dernier_panne_event&.panne?
+      mvs.first
+
+    else
+      # --- VERSION SQL (Fallback de sécurité) ---
+      mvs = mouvements.where("date <= ?", heure).order(date: :desc)
+      
+      # On optimise la requête SQL pour chercher directement la dernière panne/fin_panne
+      dernier_panne_event = mvs.where(état: [:panne, :fin_panne]).first
+      
+      return dernier_panne_event if dernier_panne_event&.panne?
+      mvs.first
+    end
+  end
+
   private
 
   def create_mouvement

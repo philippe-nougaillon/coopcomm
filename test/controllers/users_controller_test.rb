@@ -3,7 +3,7 @@ require "test_helper"
 class UsersControllerTest < ActionDispatch::IntegrationTest
   setup do
     @user = users(:bond)
-    sign_in users(:hidalgo)
+    sign_in users(:administrateur_paris)
   end
 
   # Index
@@ -115,6 +115,94 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   test "should no import with param upload empty" do
     post import_do_users_url(upload: "")
     assert_redirected_to import_users_url
+  end
+
+  test "should create agent as a manager" do
+    assert_difference("User.count", 1) do
+      post users_url, params: {
+        user: {
+          nom: "Foo",
+          prénom: "Bar",
+          email: "email@example.com",
+          password: "0DcPIZIq0+f5SvCf",
+          rôle: "agent",
+          organisation: organisations(:mairie_paris),
+          service_ids: [services(:service_paris).id]
+        }
+      }
+    end
+
+    assert_redirected_to user_url(User.last)
+  end
+
+  test "should'nt create manager as a manager (forced into agent)" do
+    sign_in users(:hidalgo)
+
+    unauthorized_role = "manager"
+
+    assert_difference("User.count", 1) do
+      post users_url, params: {
+        user: {
+          nom: "Foo",
+          prénom: "Bar",
+          email: "email@example.com",
+          password: "0DcPIZIq0+f5SvCf",
+          rôle: unauthorized_role,
+          organisation: organisations(:mairie_paris),
+          service_ids: [services(:service_paris).id]
+        }
+      }
+    end
+
+    new_user = User.last
+
+    assert_equal "agent", new_user.rôle, "Le rôle est censé être agent si c'est un manager qui le créé"
+    assert_not_equal unauthorized_role, new_user.rôle
+  end
+
+  test "should'nt create administrateur as a manager (forced into agent)" do
+    sign_in users(:hidalgo)
+
+    unauthorized_role = "administrateur"
+
+    assert_difference("User.count", 1) do
+      post users_url, params: {
+        user: {
+          nom: "Foo",
+          prénom: "Bar",
+          email: "email@example.com",
+          password: "0DcPIZIq0+f5SvCf",
+          rôle: unauthorized_role,
+          organisation: organisations(:mairie_paris),
+          service_ids: [services(:service_paris).id]
+        }
+      }
+    end
+
+    new_user = User.last
+
+    assert_equal "agent", new_user.rôle, "Le rôle est censé être agent si c'est un manager qui le créé"
+    assert_not_equal unauthorized_role, new_user.rôle
+  end
+
+  test "should'nt update role of user as a manager" do
+    sign_in users(:manager_paris)
+
+    unauthorized_role = "manager"
+
+    patch user_url(@user), params: {
+      user: {
+        rôle: unauthorized_role,
+        email: @user.email,
+        password: "0DcPIZIq0+f5SvCf",
+        organisation: @user.organisation
+      }
+    }
+
+    @user.reload
+
+    assert_equal "agent", @user.rôle, "Le rôle est censé être agent si c'est un manager qui le modifie"
+    assert_not_equal unauthorized_role, @user.rôle
   end
 
   # test "should import xls with param upload" do

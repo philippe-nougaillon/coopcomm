@@ -2,8 +2,9 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
+
   connect() {
-    // 1. Tes paramètres communs (Traductions)
+    // Paramètres communs
     const commonSettings = {
       placeholderText: '',
       searchPlaceholder: 'Rechercher',
@@ -12,7 +13,7 @@ export default class extends Controller {
       allowDeselect: true,
     }
 
-    // 2. Gestion des exceptions "addable" (création de tags)
+    // Gestion des exceptions "addable"
     let specificSettings = {}
     let specificEvents = {}
 
@@ -27,20 +28,47 @@ export default class extends Controller {
       }
     }
 
-    // 3. Initialisation de SlimSelect avec fusion des paramètres
+    // Le videur anti-désélection
+    const beforeChangeFunction = (newVal, oldVal) => {
+      // On cherche si ce select possède des options obligatoires (grâce au Helper Rails)
+      const mandatoryOptions = Array.from(this.element.querySelectorAll('option[data-mandatory="true"]'))
+
+      if (mandatoryOptions.length > 0) {
+        const mandatoryValues = mandatoryOptions.map(opt => String(opt.value))
+
+        // newVal peut être un tableau (select multiple) ou un objet seul (select simple)
+        const selectedValues = Array.isArray(newVal) ? newVal.map(item => String(item.value)) : [String(newVal.value)]
+
+        // On vérifie que TOUTES les valeurs obligatoires sont bien présentes dans la tentative de l'utilisateur
+        const allMandatoryPresent = mandatoryValues.every(val => selectedValues.includes(val))
+
+        if (!allMandatoryPresent) {
+          // Si une valeur obligatoire manque, on annule silencieusement le clic de l'utilisateur
+          return false
+        }
+      }
+      return true // Sinon, on laisse passer
+    }
+
+    // On fusionne les événements existants avec ce nouveau videur
+    const events = {
+      ...specificEvents,
+      beforeChange: beforeChangeFunction
+    }
+
+    // Initialisation
     this.select = new SlimSelect({
       select: this.element,
       settings: { ...commonSettings, ...specificSettings },
-      events: specificEvents
+      events: events
     })
 
-    // 4. Ton fix pour les champs requis
+    // Ton fix pour les champs requis
     if (this.element.hasAttribute('required')) {
       this.applyRequiredFix()
     }
   }
 
-  // ... (Garde exactement les mêmes fonctions applyRequiredFix, handleFocus, et handleRemoveError qu'avant) ...
   applyRequiredFix() {
     if (this.element.parentElement) {
       this.element.parentElement.style.position = 'relative'
@@ -81,7 +109,7 @@ export default class extends Controller {
     if (wrapper) wrapper.classList.remove('ss-error-native')
   }
 
-  // 5. Nettoyage géré par Stimulus (remplace ton ancien turbo:before-cache)
+  // Nettoyage géré par Stimulus (remplace turbo:before-cache)
   disconnect() {
     if (this.observer) this.observer.disconnect()
 

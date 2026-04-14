@@ -15,13 +15,13 @@ class AgentWorkflowStateInterventionPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Valider
-  test "should get valider" do
-    assert @policy.valider?
+  test "should'nt get valider" do
+    refute @policy.valider?
   end
 
   # Refuser
-  test "should get refuser" do
-    assert @policy.refuser?
+  test "should'nt get refuser" do
+    refute @policy.refuser?
   end
 
   # Archiver

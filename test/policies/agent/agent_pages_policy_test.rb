@@ -9,12 +9,27 @@ class AgentPagesPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Assistant
-  test "accès interdit pour un agent pour un assistant de pages" do
+  test "accès interdit pour un agent sur la page assistant" do
     refute @policy.assistant?
   end
 
   # Dashboard
-  test "accès interdit pour un agent pour un dashboard de pages" do
+  test "accès autorisé pour un agent sur la page dashboard" do
     refute @policy.dashboard?
+  end
+
+  # Home
+  test "accès autorisé pour un agent sur la page home" do
+    assert @policy.home?
+  end
+
+  # Meteo
+  test "accès autorisé pour un agent sur la page meteo" do
+    assert @policy.meteo?
+  end
+
+  # meteo_by_day
+  test "accès autorisé pour un agent sur la page meteo_by_day" do
+    assert @policy.meteo_by_day?
   end
 end

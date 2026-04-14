@@ -2,7 +2,8 @@ import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="calc-temps-passe"
 export default class extends Controller {
-  static targets = ['debut_date', 'debut_hour', 'debut_minute', 'fin_date', 'fin_hour', 'fin_minute', 'pause', 'agents', 'temps']
+  static targets = ['debut_date', 'debut_hour', 'debut_minute', 'fin_date', 'fin_hour', 'fin_minute', 'pause', 'agents', 'temps', 'tempsParAgent']
+
   connect() {
     // console.log('Hello, Stimulus! TEMPS PASSE', this.element)
   }
@@ -32,24 +33,58 @@ export default class extends Controller {
       console.log("Debut : " + debut)
 
       if (fin > debut) {
-        const temps_passé = (fin - debut) / (1000 * 60 * 60)
-        let temps_total = temps_passé - temps_pause
+        const temps_passe_brut = (fin - debut) / (1000 * 60 * 60)
+        let temps_par_agent = temps_passe_brut - temps_pause // Le temps unitaire
+        let temps_total = temps_par_agent
 
         if (this.agentsTarget.selectedOptions.length > 0) {
           temps_total *= this.agentsTarget.selectedOptions.length
         }
 
+        // Mise à jour du temps total
         temps.value = temps_total.toFixed(2)
-        temps.classList.remove('text-red-500!')
-        temps.classList.add('text-green-500!')
+        if (temps.value > 0) {
+          temps.classList.remove('text-red-500!')
+          temps.classList.add('text-green-500!')
+        }
+        else {
+          temps.classList.add('text-red-500!')
+          temps.classList.remove('text-green-500!')
+        }
+
+        // Mise à jour du temps par agent
+        if (this.hasTempsParAgentTarget) {
+          this.tempsParAgentTarget.value = temps_par_agent.toFixed(2)
+          if (temps_par_agent > 0) {
+            this.tempsParAgentTarget.classList.remove('text-red-500!')
+            this.tempsParAgentTarget.classList.add('text-green-500!')
+          } else {
+            this.tempsParAgentTarget.classList.add('text-red-500!')
+            this.tempsParAgentTarget.classList.remove('text-green-500!')
+          }
+        }
+
       } else {
+        // En cas d'erreur de dates (fin < début)
         temps.value = -1
         temps.classList.add('text-red-500!')
         temps.classList.remove('text-green-500!')
+
+        if (this.hasTempsParAgentTarget) {
+          this.tempsParAgentTarget.value = -1
+          this.tempsParAgentTarget.classList.add('text-red-500!')
+          this.tempsParAgentTarget.classList.remove('text-green-500!')
+        }
       }
     } else {
+      // Si les dates ne sont pas remplies
       temps.value = 0
       temps.classList.remove('text-green-500!', 'text-red-500!')
+
+      if (this.hasTempsParAgentTarget) {
+        this.tempsParAgentTarget.value = 0
+        this.tempsParAgentTarget.classList.remove('text-green-500!', 'text-red-500!')
+      }
     }
   }
 

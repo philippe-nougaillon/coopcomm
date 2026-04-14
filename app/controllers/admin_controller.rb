@@ -41,7 +41,7 @@ class AdminController < ApplicationController
   end
 
   def create_new_user_do
-    @user = User.new(params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :rôle, :service, :localisation))
+    @user = User.new(params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :rôle, :service, :address, :latitude, :longitude))
     @user.organisation = current_user.organisation
 
     respond_to do |format|
@@ -55,31 +55,24 @@ class AdminController < ApplicationController
     end
   end
 
-  def messagerie
-    # On récupère les utilisateurs avec qui on peut envoyer des messages
-    @users = current_user.organisation.users.filter_by_service(current_user.services).where.not(id: current_user.id).ordered
-
-    to_user_id = params[:to_id] || @users.first.id
-
-    # On récupère les notifications envoyées et reçues d'un utilisateur
-    @notifications = Notification
-                       .where(from_id: current_user.id, to_id: to_user_id)
-                       .or(Notification.where(from_id: to_user_id, to_id: current_user.id))
-                       .last(10)
-
-    # On met à jour la date de la dernière fois qu'on a vu les notifications
-    current_user.update!(notifications_last_seen_at: DateTime.now)
-  end
-
-  def send_notification
-    if params[:message].present? && params[:to_id].present?
-      Notification.create!(message: params[:message], from_id: current_user.id, to_id: params[:to_id])
-    end
-  end
-
   def stats
     @organisations = Organisation.all
     # @pagy, @organisations = pagy(@organisations, items: 5)
+  end
+
+  def parametres
+    @warehouses = current_user.organisation.warehouses
+    @services = current_user.services
+    @users = current_user.organisation.users.filter_by_service(@services)
+
+    if params[:search].present?
+      @services = @services.where("nom ILIKE :search", {search: "%#{params[:search]}%"})
+      @warehouses = @warehouses.where("name ILIKE :search", {search: "%#{params[:search]}%"})
+    end
+
+    if params[:user_id].present?
+      @services = @services.joins(:users).where(users: {id: params[:user_id]})
+    end
   end
 
   private

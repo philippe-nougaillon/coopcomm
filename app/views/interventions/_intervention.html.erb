@@ -1,22 +1,24 @@
 <div id="<%= dom_id intervention %>" class="overflow-x-auto collapse collapse-arrow <%= 'collapse-open' if !defined?(from_turbo_stream) && intervention.id == @interventions.first.id %>">
   <input type="checkbox" class="h-full"/>
   <div class="collapse-title lg:text-xl font-medium">
-    <div class="flex flex-col sm:flex-row justify-between">
+    <div class="flex justify-between">
       <div>
-        <div class="flex items-center gap-2 text-xl sm:text-2xl text-<%= intervention.style.split.first.split('-').last %>">
-          <span class="badge text-nowrap font-bold <%= intervention.style %>">
-            <%= intervention.workflow_state.humanize %>
-          </span>
-          <% if intervention.repeter %>
-            <span class="material-symbols-outlined text-black" title="Modèle pour le pointage">
-              event_repeat
-            </span>
-          <% elsif intervention.template_slug %>
-            <span class="material-symbols-outlined text-black" title="Pointage">
-              qr_code_2
-            </span>
-          <% end %>
+        <div class="flex flex-col lg:flex-row-reverse lg:justify-end lg:items-center lg:gap-2 text-xl sm:text-2xl text-<%= intervention.style.split.first.split('-').last %>">
           <%= link_to intervention.description.humanize, intervention, class: 'z-10 hover:underline' %>
+          <div class="flex items-center gap-1">
+            <span class="badge text-nowrap font-bold <%= intervention.style %>">
+              <%= intervention.workflow_state.humanize %>
+            </span>
+            <% if intervention.repeter %>
+              <span class="material-symbols-outlined text-black" title="Modèle pour le pointage">
+                event_repeat
+              </span>
+            <% elsif intervention.template_slug %>
+              <span class="material-symbols-outlined text-black" title="Pointage">
+                qr_code_2
+              </span>
+            <% end %>
+          </div>
         </div>
         <small>
           <i class="<%= 'text-error animate-pulse font-black' if defined?(from_turbo_stream) %>">
@@ -26,7 +28,7 @@
 
         <p>
           <% intervention.tags.each do |tag| %>
-            <span class="badge badge-primary badge-outline badge-xs sm:badge-md text-white"><%= tag.name.humanize %></span>
+            <span class="badge badge-primary badge-outline badge-xs sm:badge-md h-fit"><%= tag.name.humanize %></span>
           <% end %>
         </p>
       </div>
@@ -34,10 +36,16 @@
       <div class="w-72 text-base">
         <% if !(intervention.validé? || intervention.refusé?) %>
           <div class="my-2">
-            <p class="flex gap-2">
-              <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'z-10 btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? %>
-              <%= link_to 'Valider', valider_intervention_path(intervention), class: 'z-10 btn btn-success btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
-              <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'z-10 btn btn-error btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
+            <p class="flex justify-end gap-2">
+              <% if !defined?(from_turbo_stream) && policy(intervention).terminer? && intervention.can_terminer? %>
+                <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'z-10 btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? || current_user.adhérent? %>
+              <% end %>
+              <% if !defined?(from_turbo_stream) && policy(intervention).valider? && intervention.can_valider? %>
+                <%= link_to 'Valider', valider_intervention_path(intervention), class: 'z-10 btn btn-success btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
+              <% end %>
+              <% if !defined?(from_turbo_stream) && policy(intervention).refuser? && intervention.can_refuser? %>
+                <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'z-10 btn btn-error btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
+              <% end %>
             <p>
           </div>
         <% end %>
@@ -54,6 +62,10 @@
             <p class="my-2">
               <strong class="block text-slate-400 mb-1">Adhérent</strong>
               <b><%= intervention.adherent.try(:nom_prénom) %></b>
+            </p>
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Service</strong>
+              <b><%= intervention.service.nom %></b>
             </p>
           </div>
 
@@ -86,8 +98,13 @@
 
           <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
             <p class="my-2">
-              <strong class="block text-slate-400 mb-1">Temps passé</strong>
+              <strong class="block text-slate-400 mb-1">Temps total</strong>
               <%= intervention.temps_total %> h
+            </p>
+
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Temps par agent</strong>
+              <%= intervention.temps_par_agent %> h
             </p>
 
             <p class="my-2">
@@ -96,17 +113,19 @@
             </p>
           </div>
 
-          <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
-            <p class="my-2">
-              <strong class="block text-slate-400 mb-1">Début prévu</strong>
-              <%= l(intervention.début_prévue, format: :long) if intervention.début_prévue %>
-            </p>
+          <% if intervention.début_prévue || intervention.fin_prévue %>
+            <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Début prévu</strong>
+                <%= l(intervention.début_prévue, format: :long) if intervention.début_prévue %>
+              </p>
 
-            <p class="my-2">
-              <strong class="block text-slate-400 mb-1">Fin prévue</strong>
-              <%= l(intervention.fin_prévue, format: :long) if intervention.fin_prévue %>
-            </p>
-          </div>
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Fin prévue</strong>
+                <%= l(intervention.fin_prévue, format: :long) if intervention.fin_prévue %>
+              </p>
+            </div>
+          <% end %>
         </div>
 
         <div>
@@ -160,9 +179,9 @@
       </div>
 
       <div class="w-72 mr-4 text-base">
-        <% if intervention.validé? || intervention.refusé? %>
+        <% if (intervention.validé? || intervention.refusé?)  && !current_user.agent? %>
           <div>
-            <strong class="block text-slate-400 mb-1">Évaluation</strong>
+            <strong class="block text-slate-400 mt-2 mb-1">Évaluation</strong>
             <div class="rating">
               <% 5.times do |index| %>
                 <input type="radio" name="rating-<%= intervention.id %>" class="mask mask-star bg-primary cursor-text" <%= 'aria-current=true' if intervention.note == index + 1 %> disabled/>

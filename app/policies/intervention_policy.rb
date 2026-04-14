@@ -10,7 +10,7 @@ class InterventionPolicy < ApplicationPolicy
   end
 
   def show?
-    index? && organisation?
+    index? && organisation? && (manager_or_admin? || record.adherent == user || record.agents.include?(user))
   end
 
   def new?
@@ -42,15 +42,15 @@ class InterventionPolicy < ApplicationPolicy
   # end
 
   def terminer?
-    show?
+    show? && !user.adhérent?
   end
 
   def valider?
-    show?
+    show? && !user.agent?
   end
 
   def refuser?
-    show?
+    valider?
   end
 
   def archiver?
@@ -78,6 +78,14 @@ class InterventionPolicy < ApplicationPolicy
   end
 
   def pointage_statut?
+    pointer?
+  end
+
+  def services_for_adherent?
+    new?
+  end
+
+  def update_location?
     pointer?
   end
 end

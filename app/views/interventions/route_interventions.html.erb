@@ -83,7 +83,7 @@
 
 <%= render @interventions %>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=<%= ENV["GOOGLE_MAPS_API_KEY"] %>&libraries=geometry&callback=initMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=<%= ENV["GOOGLE_MAPS_FRONTEND_API_KEY"] %>&libraries=geometry&callback=initMap" async defer></script>
 
 <script>
     let map;

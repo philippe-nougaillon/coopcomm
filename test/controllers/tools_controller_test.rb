@@ -7,7 +7,15 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should get index" do
-    get tools_url
+    # Appel du service MeteoConceptConnexion limité pour éviter l'appel de l'API MeteoConcept dans les tests
+    MeteoConceptConnexion.stub :call, nil do
+      get tools_url
+    end
+
+    MeteoConceptConnexion.stub :call, {forecast: []} do
+      get tools_url
+    end
+
     assert_response :success
   end
 

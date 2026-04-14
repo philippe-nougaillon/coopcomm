@@ -1,24 +1,29 @@
-<tr id="<%= dom_id tool %>" class="hover:bg-base-300">
-  <td>
+<tr id="<%= dom_id tool %>">
+  <td class="hidden sm:block">
     <% if tool.photo.present? %>
       <img src="<%= url_for(tool.photo) %>" class="h-10">  
     <% end %>
   </td>
-  <td class="text-lg sm:text-2xl text-primary">
+  <%# la couleur du <td> si dessous est nécessaire si la colonne reste affichée en scrollant, sinon les colonnes se superposeront %>
+  <td class="sticky left-0 top-0 bg-slate-100 sm:text-xl text-primary bg-slate-50 break-words whitespace-normal max-w-[25vw]">
     <%= link_to tool.name.humanize, tool, class: 'text-primary hover:underline', title: (tool.description.blank? ? 'Aucune description' : tool.description) %>
   </td>
 
-  <td>
-    <%= tool.modèle %>
-  </td>
-  <td>
-    <%= tool.marque %>
-  </td>
-  <td>
-    <% if tool.mouvements.any? %> 
-      <p class="font-bold badge badge-sm badge-<%= tool.mouvements.last.style %>"><%= tool.mouvements.last.état.humanize %></p>
-    <% end %>
-  </td>
+  <% if false %>
+  <!--
+    <td>
+      <%= tool.modèle %>
+    </td>
+    <td>
+      <%= tool.marque %>
+    </td>
+    <td>
+      <% if tool.mouvements.any? %> 
+        <p class="font-bold badge badge-sm badge-<%= tool.mouvements.last.style %> h-fit"><%= tool.mouvements.last.état.humanize %></p>
+      <% end %>
+    </td>
+    -->
+  <% end %>
 
   <% case params[:vue]%>
   <% when 'disponible' %>
@@ -35,38 +40,34 @@
     </td>
   <% when 'calendrier' %>
     <% (@date..@date_fin).each do | date | %>
-      <td class="text-center <%= 'bg-yellow-50' if date == Date.today %>">
-        <% interventions = tool.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
-        <% interventions_matin = interventions.where("début_prévue < ?", Time.parse(date.to_s + " 13:00")) %>
-        <% interventions_soir = interventions.where("fin_prévue > ?", Time.parse(date.to_s + " 13:00")) %>
-      
-        <% if interventions_matin.any? %>
-          <% if interventions_matin.one? %>
-            <%= link_to edit_intervention_path(interventions_matin.first), style: 'margin-right: 2px;' do %>
-              <span class="border-1" style="padding-left: 15px; background-color: <%= interventions_matin.first.team ? "#{interventions_matin.first.team.color}" : "red" %>" title="<%= interventions_matin.map{|intervention| intervention.get_title_for_cases }.join(" | ") %>"></span>
-            <% end %>
-          <% else %>
-            <span class="border-1" style="padding-left: 15px; margin-right: 2px; background-color: <%= interventions_matin.first.team ? "#{interventions_matin.first.team.color}" : "red" %>" title="<%= interventions_matin.map{|intervention| intervention.get_title_for_cases }.join(" | ") %>"></span>
-          <% end %>
-        <% else %>
-          <%= link_to new_intervention_path(tool_ids: tool.id, début_prévue: date, début_prévue_hour: 8, fin_prévue: date, fin_prévue_hour: 13), style: 'margin-right: 2px'  do %>
-            <span class="border-1 hover:bg-green-500" style="padding-left: 15px;" title="Créer une intervention pour réserver cet outil"></span>
-          <% end %>
-        <% end %>
+      <td class="text-center p-0! <%= date == Date.today ? 'border-x-1 border-x-cerise' : 'bg-slate-200' %>">
+        <% 
+          # On vérifie l'état juste avant la fin du créneau pour capter tout ce qui s'y passe
+          heure_matin = Time.zone.parse("#{date} 12:59:59")
+          heure_soir = Time.zone.parse("#{date} 17:59:59")
 
-        <% if interventions_soir.any? %>
-          <% if interventions_soir.one? %>
-            <%= link_to edit_intervention_path(interventions_soir.first), style: 'margin-left: 2px;' do %>
-              <span class="border-1" style="padding-left: 15px; background-color: <%= interventions_soir.first.team ? "#{interventions_soir.first.team.color}" : "red" %>" title="<%= interventions_soir.map{|intervention| intervention.get_title_for_cases }.join(" | ") %>"></span>
-            <% end %>
-          <% else %>
-            <span class="border-1" style="padding-left: 15px; margin-left: 2px; background-color: <%= interventions_soir.first.team ? "#{interventions_soir.first.team.color}" : "red" %>" title="<%= interventions_soir.map{|intervention| intervention.get_title_for_cases }.join(" | ") %>"></span>
-          <% end %>
-        <% else %>
-          <%= link_to new_intervention_path(tool_ids: tool.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 5, fin_prévue: date, fin_prévue_hour: 18), style: 'margin-left: 2px' do %>
-            <span class="border-1 hover:bg-green-500" style="padding-left: 15px;" title="Créer une intervention pour réserver cet outil"></span>
-          <% end %>
-        <% end %>
+          mouvement_matin = tool.dernier_mouvement_a(heure_matin)
+          mouvement_soir = tool.dernier_mouvement_a(heure_soir)
+        %>
+
+        <%= render 'mouvements/mouvement_slot', 
+                  mouvement: mouvement_matin, 
+                  tool_id: tool.id, 
+                  date: date, 
+                  margin_style: 'margin-right: 2px', 
+                  start_hour: 8, 
+                  end_hour: 13, 
+                  new_title: "Réserver \"#{tool.name.humanize}\" le #{date.day} au matin" %>
+
+        <%= render 'mouvements/mouvement_slot', 
+                  mouvement: mouvement_soir, 
+                  tool_id: tool.id, 
+                  date: date, 
+                  margin_style: 'margin-left: 2px', 
+                  start_hour: 13, 
+                  start_minute: 5, 
+                  end_hour: 18, 
+                  new_title: "Réserver \"#{tool.name.humanize}\" le #{date.day} après-midi" %>
       </td>
     <% end %>
 
@@ -84,30 +85,32 @@
 
   <% end %>
   <% if false %>
-    <td>
-      <div class="flex justify-end items-center gap-2">
-        <% if policy(tool).show? %>
-          <%= link_to tool, title: 'Voir' do %>
-            <span class="material-symbols-outlined">
-              visibility
-            </span>
+    <!--
+      <td>
+        <div class="flex justify-end items-center gap-2">
+          <% if policy(tool).show? %>
+            <%= link_to tool, title: 'Voir' do %>
+              <span class="material-symbols-outlined">
+                visibility
+              </span>
+            <% end %>
           <% end %>
-        <% end %>
-        <% if policy(tool).edit? %>
-          <%= link_to edit_tool_path(tool), title: 'Modifier' do %>
-            <span class="material-symbols-outlined">
-              edit
-            </span>
+          <% if policy(tool).edit? %>
+            <%= link_to edit_tool_path(tool), title: 'Modifier' do %>
+              <span class="material-symbols-outlined">
+                edit
+              </span>
+            <% end %>
           <% end %>
-        <% end %>
-        <% if policy(tool).destroy? %>
-          <%= button_to tool_path(tool), title: "Supprimer l'outil", method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, form: { class: "flex items-center" }, 'data-testid': "Supprimer l'outil" do %>
-            <span class="material-symbols-outlined">
-              delete
-            </span>
+          <% if policy(tool).destroy? %>
+            <%= button_to tool_path(tool), title: "Supprimer l'outil", method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, form: { class: "flex items-center" }, 'data-testid': "Supprimer l'outil" do %>
+              <span class="material-symbols-outlined">
+                delete
+              </span>
+            <% end %>
           <% end %>
-        <% end %>
-      </div>
-    </td>
+        </div>
+      </td>
+    -->
   <% end %>
 </tr>

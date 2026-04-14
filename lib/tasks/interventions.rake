@@ -17,4 +17,18 @@ namespace :interventions do
 
     end
 
+    desc "Notifier un manager quand un agent n'a pas pointé de sortie"
+    task :report_missed_clock_out, [:enregistrer] => :environment do |task, args|
+        # Récupération des interventions filles sans date de fin, dont le début a commencé il y a plus de 10h
+        interventions_missed = Intervention.where.not(template_slug: nil).where(fin: nil).where("début < ?", 10.hours.ago)
+
+        interventions_missed.each do |intervention|
+            # Manager qui gère le service de l'intervention
+            manager = User.manager.joins(:services).find_by(services: intervention.service)
+            if manager
+                mailer_response = NotificationMailer.report_missed_clock_out(intervention, manager.email).deliver_now
+                MailLog.create(organisation_id: intervention.organisation_id, user_id: 0, message_id: mailer_response.message_id, to: manager.email, subject: "Rappel d'une intervention non terminée", channel: 0)
+            end
+        end
+    end
 end

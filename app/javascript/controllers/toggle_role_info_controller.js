@@ -1,52 +1,52 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Connects to data-controller="toggle-agent-service"
+// Connects to data-controller="toggle-role-info"
 export default class extends Controller {
-  static targets = ['role', 'localisation', 'prenom', 'couleur']
+  static targets = ['role', 'localisation', 'prenom', 'tagLabel']
 
   initialize() {
     this.localisationTarget.style.display = 'none';
-    this.couleurTarget.style.display = 'none';
     this.change();
   }
 
   connect() {
-    console.log("Hello, toggle-agent!", this.element)
+    console.log("Hello, toggle-role-info !", this.element)
   }
 
   change() {
-    var role = this.roleTarget;
+    var role = this.roleTarget.value;
 
-    if (role.value == 'agent') {
+    // On cible proprement les inputs pour éviter le piège des children[1]
+    const addressInput = this.localisationTarget.querySelector('input[type="text"]');
+    const prenomInput = this.prenomTarget.querySelector('input');
+
+    if (role === 'agent' || role === 'manager' || role === '') {
       this.localisationTarget.style.display = 'none';
-      this.localisationTarget.children[1].value = '';
-      this.localisationTarget.children[1].required = false;
+      if (addressInput) {
+        addressInput.value = '';
+        addressInput.required = false;
+      }
+
       this.prenomTarget.style.display = 'block';
-      this.prenomTarget.children[1].required = true;
-      this.couleurTarget.style.display = 'none';
-    } else if (role.value == 'adhérent') {
+      if (prenomInput) prenomInput.required = true;
+      this.updateTagLabel("Équipe");
+
+    } else if (role === 'adhérent') {
       this.localisationTarget.style.display = 'block';
-      this.localisationTarget.children[1].required = true;
+      if (addressInput) addressInput.required = true;
+
       this.prenomTarget.style.display = 'none';
-      this.prenomTarget.children[1].required = false;
-      this.prenomTarget.children[1].value = '';
-      this.couleurTarget.style.display = 'none';
-    } else if (role.value == 'manager') {
-      // console.log(this.serviceTarget.children[1].selectedIndex)
-      this.localisationTarget.style.display = 'none';
-      this.localisationTarget.children[1].value = '';
-      this.localisationTarget.children[1].required = false;
-      this.prenomTarget.style.display = 'block';
-      this.prenomTarget.children[1].required = true;
-      this.couleurTarget.style.display = 'none';
-    } else {
-      // console.log(this.serviceTarget.children[1].selectedIndex)
-      this.localisationTarget.style.display = 'none';
-      this.localisationTarget.children[1].value = '';
-      this.localisationTarget.children[1].required = false;
-      this.prenomTarget.style.display = 'block';
-      this.prenomTarget.children[1].required = true;
-      this.couleurTarget.style.display = 'none';
+      if (prenomInput) {
+        prenomInput.required = false;
+        prenomInput.value = '';
+      }
+      this.updateTagLabel("Secteur");
+    }
+  }
+
+  updateTagLabel(texte) {
+    if (this.hasTagLabelTarget) {
+      this.tagLabelTarget.textContent = texte;
     }
   }
 }

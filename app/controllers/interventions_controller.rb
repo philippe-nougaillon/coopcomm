@@ -1,9 +1,8 @@
 class InterventionsController < ApplicationController
-  before_action :set_intervention, only: %i[ show edit update destroy terminer valider refuser archiver purge pointer pointage_statut ]
-  before_action :set_form_variables, only: %i[ new edit create update ]
+  before_action :set_intervention, only: %i[ show edit update destroy terminer valider refuser archiver purge pointer pointage_statut update_location ]
   before_action :is_user_authorized
+  before_action :set_form_variables, only: %i[ new edit create update ]
   before_action :store_return_location, only: [:new, :edit]
-  skip_before_action :authenticate_user!
   before_action :set_organisation_user_tags, only: [:index]
 
   # GET /interventions or /interventions.json
@@ -20,8 +19,10 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.where.not(workflow_state: 'archivé')
     end
 
-    # Enlever les interventions filles
-    @interventions = @interventions.where(template_slug: nil)
+    # Enlever les interventions filles si ce n'est pas un adhérent
+    unless current_user.adhérent?
+      @interventions = @interventions.where(template_slug: nil)
+    end
 
     @services = current_user.services
 
@@ -51,10 +52,6 @@ class InterventionsController < ApplicationController
 
     if params[:adherent_id].present?
       @interventions = @interventions.where(adherent_id: params[:adherent_id])
-    end
-
-    if params[:team_id].present?
-      @interventions = @interventions.where(team_id: params[:team_id])
     end
 
     if params[:equipe].present?
@@ -94,7 +91,7 @@ class InterventionsController < ApplicationController
     @interventions = @interventions.distinct
     respond_to do |format|
       format.html do
-        @pagy, @interventions = pagy(@interventions.includes(:tags, :team, :agents, :adherent).with_attached_photos)
+        @pagy, @interventions = pagy(@interventions.includes(:tags, :agents, :adherent).with_attached_photos)
       end
 
       format.xls do
@@ -109,20 +106,29 @@ class InterventionsController < ApplicationController
     # TODO : Déplacer le stale au plus près du render
     # if stale?(@intervention)
 
+      if @intervention.repeter?
+        if current_user.agent?
+          @pointages = current_user.interventions.where(template_slug: @intervention.slug, repeter: false)
+        else
+          @pointages = @intervention.pointages
+        end
+        @pointages = @pointages.ordered
+      end
+
       unless Rails.env.test?
-        # Pour la map avec la route entre l'intervention courant et le siège de la communauté de commune
-        if @intervention.adherent.present? && @intervention.adherent.localisation.present?
+        # On vérifie que l'intervention possède un adhérent localisé ET que le service nécessite le calcul
+        if @intervention.adherent.present? && @intervention.adherent.latitude.present? && @intervention.adherent.longitude.present? && @intervention.service&.calculate_distance?
           if @intervention.trajet.blank? || @intervention.nouveau?
-            # Prendre l'adhérent de l'intervention
-            localisation_arrivee = @intervention.adherent.localisation_to_lat_lng_object
+            
+            origine = @intervention.origin_location
+            localisation_arrivee = { lat: @intervention.adherent.latitude, lng: @intervention.adherent.longitude }
 
-            # Création du service avec l'intervention de destination
-            request = ApiGoogleMaps.new(localisation_arrivee)
-
+            # Création du service avec le départ et la destination
+            request = ApiGoogleMaps.new(origine, localisation_arrivee)
             request.call
 
             # Récupération des données via les getters du service
-            @localisation_depart = request.localisation_depart
+            @localisation_depart = origine
             @localisation_arrivee = localisation_arrivee
             @errors = request.errors
             @routes_info = request.routes_info
@@ -133,7 +139,7 @@ class InterventionsController < ApplicationController
 
       respond_to do |format|
         format.html do
-          @audits = @intervention.audits.includes(:user).reorder(id: :desc)
+          @audits = @intervention.own_and_associated_audits.includes(:user).reorder(id: :desc)
           @pagy, @audits = pagy(@audits, items: 10)
         end
 
@@ -154,10 +160,12 @@ class InterventionsController < ApplicationController
   # GET /interventions/new
   def new
     @intervention = Intervention.new
-    @intervention.adherent_id = current_user.id if current_user.adhérent?
 
     if current_user.agent?
       @intervention.agent_ids = current_user.id
+      
+      # Par défaut, un agent saisi une intervention après l'avoir réalisé (le soir)
+      @intervention.workflow_state = "terminé"
     else
       # Si on passe par le planning des agents
       @intervention.agent_ids = params[:agent_id]
@@ -168,7 +176,9 @@ class InterventionsController < ApplicationController
       now = DateTime.now()
       # Le nombre de minute doit être un mutliple de 5, 
       # Pour cela, on enlève le nombre de minutes modulo 5 (Ex: Si on a 14 minutes -> 14%5 = 4, donc 14-4 = 10)
-      date_fin = now - now.minute.modulo(5).minute
+      # date_fin = now - now.minute.modulo(5).minute
+      # modulo plus nécessaire, le step(5) a été retiré
+      date_fin = now
 
       @intervention.fin = date_fin
     end
@@ -244,72 +254,29 @@ class InterventionsController < ApplicationController
   # end
 
   def terminer
-    if @intervention.valid?
-      if @intervention.can_terminer?
-        @intervention.terminer!
-        unless Rails.env.test?
-          if @intervention.adherent && @intervention.adherent.localisation.present?
-            request = ApiGoogleMaps.new(@intervention.adherent.localisation_to_lat_lng_object)
-            request.call
-            @intervention.trajet = request.routes_info
-            @intervention.co2 = request.co2_consumption_by_route(request.data_response["routes"][0])
-            @intervention.save
-          end
-        end
+    @intervention.terminer!
+    @intervention.calculate_co2
 
-        send_workflow_changed_notification
-        send_intervention_termine_notification
-        redirect_to @intervention, notice: "Intervention terminée"
-      elsif @intervention.terminé?
-        redirect_to @intervention, alert: "L'intervention est déjà terminée"
-      else
-        redirect_to @intervention, alert: "L'intervention ne peut pas se terminer"
-      end
-    else
-      redirect_to @intervention, alert: "L'intervention n'est pas valide. Elle ne peut pas être terminée"
-    end
+    send_workflow_changed_notification
+    send_intervention_termine_notification
+
+    redirect_to @intervention, notice: "Intervention terminée"
   end
 
   def valider
-    if @intervention.valid?
-      if @intervention.can_valider?
-        @intervention.valider!
-        send_workflow_changed_notification
-        if current_user.adhérent?
-          terminé = true
-        end
-        redirect_to edit_intervention_path(@intervention, terminé: terminé), notice: "Intervention validée"
-      elsif @intervention.validé?
-        redirect_to @intervention, alert: "L'intervention est déjà validée"
-      else
-        redirect_to @intervention, alert: "L'intervention ne peut pas se valider"
-      end
-    else
-      redirect_to @intervention, alert: "L'intervention n'est pas valide. Elle ne peut pas être validée"
-    end
-
-    # send_workflow_changed_notification
+    @intervention.valider!
     
+    send_workflow_changed_notification
+
+    redirect_to @intervention, notice: "Intervention validée"
   end
 
   def refuser
-    if @intervention.valid?
-      if @intervention.can_refuser?
-        @intervention.refuser!
-        send_workflow_changed_notification
-        if current_user.adhérent?
-          terminé = true
-        end
-        redirect_to edit_intervention_path(@intervention, terminé: terminé), notice: "Intervention refusée"
-      elsif @intervention.refusé?
-        redirect_to @intervention, alert: "L'intervention est déjà refusée"
-      else
-        redirect_to @intervention, alert: "L'intervention ne peut pas se refuser"
-      end
-    else
-      redirect_to @intervention, alert: "L'intervention n'est pas valide. Elle ne peut pas être refusée"
-    end
-    # send_workflow_changed_notification
+    @intervention.refuser!
+
+    send_workflow_changed_notification
+
+    redirect_to @intervention, notice: "Intervention refusée"
   end
 
   def archiver
@@ -336,25 +303,31 @@ class InterventionsController < ApplicationController
   end
 
   def pointer
-    # Prendre l'intervention la plus récente
 
     if @intervention.repeter?
-      current_intervention = Intervention.where(template_slug: @intervention.slug).find_by("DATE(début) = ?", Date.today)
-  
-      # Mettre à jour l'intervention ou créer une nouvelle
-      if current_intervention
+      # Intervention fille se passant aujourd'hui (intervention en cours de réalisation)
+      current_intervention = Intervention
+        .joins(:agent_interventions)
+        .where(template_slug: @intervention.slug)
+        .where(agent_interventions: { agent_id: current_user.id })
+        .where("DATE(début) = ?", Date.today)
+        .last
+
+      # Si une intervention fille est créé, on la met à jour, sinon on en créée une nouvelle
+      if current_intervention.present?
         unless current_intervention.fin
           current_intervention.fin = DateTime.now
           current_intervention.temps_total = current_intervention.calc_temps_total
           current_intervention.workflow_state = "terminé"
           current_intervention.save
-          flash[:notice] = "Fin de journée enregistrée"
+          flash[:notice] = "Pointage de fin enregistrée !"
         else
-          flash[:alert] = "Fin de journée déjà enregistrée !"
+          current_intervention = @intervention.create_next_intervention(@intervention, current_user)
+          flash[:notice] = "Reprise d'activité enregistrée !"
         end
       else
-        current_intervention = @intervention.create_next_intervention
-        flash[:notice] = "Début de journée enregistrée"
+        current_intervention = @intervention.create_next_intervention(@intervention, current_user)
+        flash[:notice] = "Début de journée enregistrée !"
       end
       unless Rails.env.development?
         Events.instance.publish('intervention.pointage', payload: {intervention_id: current_intervention.id})
@@ -369,6 +342,14 @@ class InterventionsController < ApplicationController
   def pointage_statut
     if @intervention.repeter
       redirect_to pointage_statut_intervention_path(Intervention.find_by(template_slug: @intervention.slug))
+    end
+  end
+
+  def update_location
+    if @intervention.update(localisation: "#{params[:latitude]}, #{params[:longitude]}")
+      render json: { status: 'success' }, status: :ok
+    else
+      render json: { errors: @intervention.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
@@ -466,10 +447,6 @@ class InterventionsController < ApplicationController
 
     if params[:adherent_id].present?
       @interventions = @interventions.where(adherent_id: params[:adherent_id])
-    end
-
-    if params[:team_id].present?
-      @interventions = @interventions.where(team_id: params[:team_id])
     end
 
     if params[:service].present?
@@ -604,10 +581,6 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.where(adherent_id: params[:adherent_id])
     end
 
-    if params[:team_id].present?
-      @interventions = @interventions.where(team_id: params[:team_id])
-    end
-
     if params[:service].present?
       @interventions = @interventions.joins(agent_interventions: :agent).where(agent: {service: params[:service]})
     end
@@ -709,6 +682,14 @@ class InterventionsController < ApplicationController
     end
   end
 
+  def services_for_adherent
+    adherent = User.find(params[:adherent_id])
+    @services = adherent.services.where(id: current_user.service_ids)
+
+    # On renvoie uniquement l'id et le nom pour construire le <select>
+    render json: @services.select(:id, :nom)
+  end
+
   private
 
   def get_routage_responses
@@ -754,13 +735,14 @@ class InterventionsController < ApplicationController
     def set_form_variables
       @tags = current_user.organisation.interventions.tag_counts_on(:tags).order(:name)
       @adhérents = current_user.organisation.users.filter_by_service(current_user.services).adhérent.order(:nom)
+      @services = current_user.services.ordered
       @grouped_agents = User.grouped_agents(current_user)
       @tools = current_user.organisation.tools.ordered
     end
 
     # Only allow a list of trusted parameters through.
     def intervention_params
-      params.require(:intervention).permit(:organisation_id, :adherent_id, :team_id, :début, :début_hour, :début_minute, :fin, :fin_hour, :fin_minute, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :repeter, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute, :meteo , photos: [], agent_ids: [], tool_ids: [])
+      params.require(:intervention).permit(:adherent_id, :service_id, :début, :début_hour, :début_minute, :fin, :fin_hour, :fin_minute, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :repeter, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute, :meteo , photos: [], agent_ids: [], tool_ids: [])
     end
 
     def is_user_authorized

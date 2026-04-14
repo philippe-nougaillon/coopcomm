@@ -7,7 +7,7 @@ class ToolsController < ApplicationController
     params[:vue] ||= 'calendrier'
     params[:date] = Date.today if params[:date].blank?
     @date = params[:date].to_date
-    @tools = current_user.organisation.tools.ordered
+    @tools = current_user.organisation.tools.includes(mouvements: :user).ordered
     @types = Tool.icons
     @états = Mouvement.états.keys
 
@@ -27,9 +27,11 @@ class ToolsController < ApplicationController
       @tools = @tools.where(id: tool_ids)
     end
 
+    @forecasts = MeteoConceptConnexion.call
+
     case params[:vue]
     when 'calendrier'
-      @date_fin = @date + 10.day
+      @date_fin = @date + 13.day
     when 'disponible'
       @tools = @tools.where.not(id: Tool.indisponibles_ids(current_user.organisation_id, params[:date]))
     when 'indisponible'

@@ -10,8 +10,8 @@ class AdherentWorkflowStateInterventionPolicyTest < ActionDispatch::IntegrationT
   end
 
   # Terminer
-  test "should get terminer" do
-    assert @policy.terminer?
+  test "should'nt get terminer" do
+    refute @policy.terminer?
   end
 
   # Valider

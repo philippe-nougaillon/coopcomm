@@ -4,6 +4,7 @@ class ToolInterventionTest < ActiveSupport::TestCase
 
   setup do
     @tool = tools(:tondeuse)
+    @template_adherent = users(:weil)
   end
 
   test "Intervention créée si l'outil est disponible" do
@@ -97,7 +98,9 @@ class ToolInterventionTest < ActiveSupport::TestCase
       fin_prévue: fin,
       description: "L'intervention de trop",
       organisation: organisations(:mairie_paris),
-      tools: [@tool]
+      tools: [@tool],
+      adherent: @template_adherent,
+      service: @template_adherent.services.first
     )
   end
 
@@ -107,7 +110,9 @@ class ToolInterventionTest < ActiveSupport::TestCase
       fin_prévue: "2025-04-08 12:00",
       description: "Entretien des locaux",
       organisation: organisations(:mairie_paris),
-      tools: [@tool]
+      tools: [@tool],
+      adherent: @template_adherent,
+      service: @template_adherent.services.first
     )
   end
 end

@@ -1,4 +1,4 @@
-<%= form_with(model: user, id: dom_id(user), class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-2' }, data: { controller: 'nested-form', nested_form_wrapper_selector_value: '.nested-form-wrapper' }) do |form| %>
+<%= form_with(model: user, id: dom_id(user), class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-2' }, data: { controller: 'nested-form toggle-role-info', nested_form_wrapper_selector_value: '.nested-form-wrapper' }) do |form| %>
   <% if user.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
       <h2 class="font-black!">
@@ -19,55 +19,77 @@
     <%= form.text_field :nom, class: 'input input-sm w-full' %>
   </div>
 
-  <div data-controller="toggle-role-info">
-    <div class="flex flex-wrap md:flex-nowrap gap-2 w-full mb-2">
+  <div class="flex flex-wrap md:flex-nowrap gap-2 w-full mb-2">
+    <% if current_user.administrateur? %>
       <div>
         <%= form.label :rôle, "Rôle" %>
-        <span data-action="change->toggle-role-info#change">
-          <%= form.select :rôle, options_for_select(User.rôles.keys, user.rôle), {}, class: 'select select-sm w-full', data: { 'toggle-role-info-target': 'role' } %>
-        </span>
+        <%= form.select :rôle, 
+                        User.rôles.keys, 
+                        { selected: user.rôle || 'agent' }, 
+                        class: 'select select-sm w-full', 
+                        data: { 
+                          'toggle-role-info-target': 'role',
+                          action: 'change->toggle-role-info#change'
+                        } %>
       </div>
 
-      <div data-toggle-role-info-target='prenom' class="w-full">
-        <%= form.label :prénom, style: "display: block" %>
-        <%= form.text_field :prénom, class: 'input input-sm w-full' %>
-      </div>
+    <% else %>
+      <%= form.hidden_field :rôle, value: (user.new_record? ? 'agent' : user.rôle), data: { 'toggle-role-info-target': 'role' } %>
+    <% end %>
+    <div data-toggle-role-info-target="localisation" class="flex-1" data-controller="places">
+      <%= form.label :address, "Localisation" %>
+      
+      <%# Le champ visible par l'utilisateur pour chercher l'adresse %>
+      <%= form.text_field :address, 
+            class: 'input select-sm w-full', 
+            placeholder: 'Commencez à taper une adresse...', 
+            data: { places_target: "address" } %>
 
-      <div data-toggle-role-info-target='couleur' class="flex-1">
-        <%= form.label :color, "Couleur" %>
-        <%= form.color_field :color, class: 'input input-bordered input-sm w-full' %>
-      </div>
-
-      <div data-toggle-role-info-target="localisation" class="flex-1">
-        <%# ATTENTION : si on change le nombre d'éléments dans la div avec la target localisation, il faut adapter le stimulus en conséquence. Sinon le required du champ localisation sera présent quel que soit le rôle attribué %>
-        <%= form.label :localisation, "Localisation" %>
-        <%= form.text_field :localisation, class: 'input select-sm w-full', placeholder: 'Tel que copié de Google Maps', required: true %>
-      </div>
+      <%# Les champs cachés qui seront remplis automatiquement par le JS %>
+      <%= form.hidden_field :latitude, data: { places_target: "latitude" } %>
+      <%= form.hidden_field :longitude, data: { places_target: "longitude" } %>
     </div>
+
+    <div data-toggle-role-info-target='prenom' class="w-full">
+      <%= form.label :prénom, style: "display: block" %>
+      <%= form.text_field :prénom, class: 'input input-sm w-full' %>
+    </div>
+
   </div>
 
-  <div class="w-full sm:flex-1">
-    <%= form.label :tag_list, "Équipe", style: "display: block" %>
-    <% 
-      est_soumission = params[form.object_name].present?
-      
-      if est_soumission
-        tags_users_soumis = Array(params.dig(form.object_name, :tag_list)).reject(&:blank?)
-      else
-        tags_users_soumis = user.tags.map(&:name)
-      end
-      
-      options_users = (@users_tags.map(&:name) + tags_users_soumis).uniq
-    %>
-    <%# Obligé de préciser data: { controller: 'slim-select' } dans ce formulaire malgré l'automatisation dans app/javascript/application.js, sinon, en cas d'échec dans l'edit, le champ n'est plus du slimselect %>
-    <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
-  </div>
+  <% if current_user.manager_or_admin?  %>
+    <div class="w-full sm:flex-1">
+      <% label_texte = user.rôle == 'adhérent' ? "Secteur" : "Équipe" %>
+      <%= form.label :tag_list, label_texte, style: "display: block", data: { 'toggle-role-info-target': 'tagLabel' } %>
+      <%
+        est_soumission = params[form.object_name].present?
 
-  <div class="w-full">
-    <%= form.label :service_ids, "Service" %>
-    <%# Obligé de préciser data: { controller: 'slim-select' } dans ce formulaire malgré l'automatisation dans app/javascript/application.js, sinon, en cas d'échec dans l'edit, le champ n'est plus du slimselect %>
-    <%= form.select :service_ids, options_from_collection_for_select(current_user.services, 'id', 'nom', user.services.ids), { include_blank: true }, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
-  </div>
+        if est_soumission
+          tags_users_soumis = Array(params.dig(form.object_name, :tag_list)).reject(&:blank?)
+        else
+          tags_users_soumis = user.tags.map(&:name)
+        end
+
+        options_users = (@users_tags.map(&:name) + tags_users_soumis).uniq
+      %>
+      <%# Obligé de préciser data: { controller: 'slim-select' } dans ce formulaire malgré l'automatisation dans app/javascript/application.js, sinon, en cas d'échec dans l'edit, le champ n'est plus du slimselect %>
+      <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
+    </div>
+  <% end %>
+
+  <% if current_user.manager_or_admin? %>
+    <% if current_user.manager? && user.persisted? %>
+      <%= form.hidden_field :service_ids, value: user.services.ids %>
+    <% else %>
+      <div class="w-full">
+        <%= form.label :service_ids, "Service" %>
+        <%= form.select :service_ids,
+                        options_from_collection_for_select(current_user.organisation.services, 'id', 'nom', user.services.ids),
+                        { include_blank: true },
+                        { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
+      </div>
+    <% end %>
+  <% end %>
 
   <div class="w-full">
     <%= form.label :email, style: "display: block" %>

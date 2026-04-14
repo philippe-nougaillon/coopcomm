@@ -2,6 +2,8 @@ Rails.application.routes.draw do
   # Mount Mission Control Job's engine where you wish to have it accessible
   mount MissionControl::Jobs::Engine, at: "/jobs"
 
+  mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
+
   devise_for :users
   # devise_for :users, controllers: {
   #   registrations: 'users/registrations',
@@ -38,7 +40,17 @@ Rails.application.routes.draw do
     end
   end
   match 'notifications', to: 'mail_logs#index', via: :get
-  resources :tools
+
+
+  resources :mouvements, only: %i[index new create edit update destroy]
+  resources :tools do 
+    resources :mouvements, only: [] do
+      collection do
+        post :reserve
+      end
+    end
+  end
+
   resources :wiki_pages
   match 'wiki', to: 'wiki_pages#index', via: :get
 
@@ -55,12 +67,14 @@ Rails.application.routes.draw do
       delete :purge
       get :pointer
       get :pointage_statut
+      patch :update_location
     end
 
     collection do
       get :get_unavailable_elements
       get :carte_interventions
       get :route_interventions
+      get :services_for_adherent
     end
   end
 
@@ -68,9 +82,8 @@ Rails.application.routes.draw do
     get :audits
     get :create_new_user
     post :create_new_user_do
-    get :messagerie
-    post :send_notification
     get :stats
+    get :parametres
   end
 
   controller :pages do
@@ -95,13 +108,20 @@ Rails.application.routes.draw do
 
   resources :newsletters, only: %i[index new destroy]
 
-  resources :mouvements, only: %i[index new create edit update]
+  resources :services, except: %i[ index ]
+  resources :warehouses, except: %i[ index ]
 
-  resources :services
+
+  namespace :messagerie do
+    get '/', action: :messagerie
+    post :mark_as_read
+    post :send_notification
+    post :search_contact
+  end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
-  # get "up" => "rails/health#show", as: :rails_health_check
+  get "up" => "rails/health#show", as: :rails_health_check
 
   get "/service-worker.js" => "service_worker#service_worker"
   get "/manifest.json" => "service_worker#manifest"
