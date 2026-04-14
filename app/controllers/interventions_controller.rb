@@ -19,8 +19,10 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.where.not(workflow_state: 'archivé')
     end
 
-    # Enlever les interventions filles
-    @interventions = @interventions.where(template_slug: nil)
+    # Enlever les interventions filles si ce n'est pas un adhérent
+    unless current_user.adhérent?
+      @interventions = @interventions.where(template_slug: nil)
+    end
 
     @services = current_user.services
 
