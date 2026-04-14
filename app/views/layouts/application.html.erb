@@ -17,6 +17,10 @@
     <%= render 'partials/favicon' %>
     <link rel="manifest" crossorigin="use-credentials" href="/manifest.json" />
 
+    <% unless Rails.env.development? %>
+      <%= render "partials/gtag" %>
+    <% end %>
+
     <script src="https://unpkg.com/slim-select@2.13.1/dist/slimselect.umd.min.js"></script>
     <link href="https://unpkg.com/slim-select@2.13.1/dist/slimselect.css" rel="stylesheet"></link>
 
