@@ -67,6 +67,11 @@ class UsersController < ApplicationController
     @user.organisation = current_user.organisation
     @user.password = User.generate_random_password
 
+    # Force le rôle à agent si l'utilisateur courant est un manager
+    if current_user.manager?
+      @user.rôle = "agent"
+    end
+
     respond_to do |format|
       if @user.save
         @user.invite!(current_user)

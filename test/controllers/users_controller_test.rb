@@ -3,7 +3,7 @@ require "test_helper"
 class UsersControllerTest < ActionDispatch::IntegrationTest
   setup do
     @user = users(:bond)
-    sign_in users(:hidalgo)
+    sign_in users(:administrateur_paris)
   end
 
   # Index
@@ -115,6 +115,70 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   test "should no import with param upload empty" do
     post import_do_users_url(upload: "")
     assert_redirected_to import_users_url
+  end
+
+  test "should create agent as a manager" do
+    assert_difference("User.count", 1) do
+      post users_url, params: {
+        user: {
+          nom: "Foo",
+          prénom: "Bar",
+          email: "email@example.com",
+          password: "0DcPIZIq0+f5SvCf",
+          rôle: "agent",
+          organisation: organisations(:mairie_paris),
+          service_ids: [services(:service_paris).id]
+        }
+      }
+    end
+
+    assert_redirected_to user_url(User.last)
+  end
+
+  test "should'nt create manager as a manager (forced into agent)" do
+    sign_in users(:hidalgo)
+
+    assert_difference("User.count", 1) do
+      post users_url, params: {
+        user: {
+          nom: "Foo",
+          prénom: "Bar",
+          email: "email@example.com",
+          password: "0DcPIZIq0+f5SvCf",
+          rôle: "manager",
+          organisation: organisations(:mairie_paris),
+          service_ids: [services(:service_paris).id]
+        }
+      }
+    end
+
+    new_user = User.last
+
+    assert_equal "agent", new_user.rôle, "Le rôle est censé être agent si c'est un manager qui le créé"
+    assert_not_equal "manager", new_user.rôle
+  end
+
+  test "should'nt create administrateur as a manager (forced into agent)" do
+    sign_in users(:hidalgo)
+
+    assert_difference("User.count", 1) do
+      post users_url, params: {
+        user: {
+          nom: "Foo",
+          prénom: "Bar",
+          email: "email@example.com",
+          password: "0DcPIZIq0+f5SvCf",
+          rôle: "administrateur",
+          organisation: organisations(:mairie_paris),
+          service_ids: [services(:service_paris).id]
+        }
+      }
+    end
+
+    new_user = User.last
+
+    assert_equal "agent", new_user.rôle, "Le rôle est censé être agent si c'est un manager qui le créé"
+    assert_not_equal "administrateur", new_user.rôle
   end
 
   # test "should import xls with param upload" do

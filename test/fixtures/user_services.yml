@@ -16,9 +16,17 @@ hidalgo_service_paris:
   user: hidalgo
   service: service_paris
 
-hidalgo_technique:
+hidalgo_informatique:
   user: hidalgo
   service: informatique
+
+manager_paris_service_paris:
+  user: manager_paris
+  service: service_paris
+
+manager_paris_technique:
+  user: manager_paris
+  service: secretariat
 
 weil_informatique:
   user: weil
@@ -28,7 +36,7 @@ administrateur_paris_service_paris:
   user: administrateur_paris
   service: service_paris
 
-administrateur_paris_technique:
+administrateur_paris_informatique:
   user: administrateur_paris
   service: informatique
 

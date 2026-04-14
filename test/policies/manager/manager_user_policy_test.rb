@@ -2,14 +2,16 @@ require "test_helper"
 
 class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    manager_paris = users(:hidalgo)
+    manager_paris = users(:manager_paris)
     
     user_paris = users(:bond)
     user_paris_service_different = users(:martin_technique_paris)
 
     @policy = UserPolicy.new(manager_paris, user_paris)
     @policy_user_myself = UserPolicy.new(manager_paris, manager_paris)
-    @policy_organisation_differente = UserPolicy.new(manager_paris, user_paris_service_different)
+    @policy_services_differents = UserPolicy.new(manager_paris, user_paris_service_different)
+    @policy_manager = UserPolicy.new(manager_paris, users(:hidalgo))
+    @policy_administrateur = UserPolicy.new(manager_paris, users(:administrateur_paris))
   end
 
   # Index
@@ -23,7 +25,7 @@ class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
   end
 
   test "accès interdit pour un manager sur la page show d'un user sans aucun service en commun avec le manager" do
-    refute @policy_organisation_differente.show?
+    refute @policy_services_differents.show?
   end
 
   # New
@@ -37,8 +39,16 @@ class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Edit
-  test "accès autorisé pour un manager sur la page edit d'un user" do
+  test "accès autorisé pour un manager sur la page edit d'un agent" do
     assert @policy.edit?
+  end
+
+  test "accès interdit pour un manager sur la page edit d'un manager" do
+    refute @policy_manager.edit?
+  end
+
+  test "accès interdit pour un manager sur la page edit d'un administrateur" do
+    refute @policy_administrateur.edit?
   end
 
   # Update
@@ -47,16 +57,24 @@ class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
   end
 
   test "accès interdit pour un manager sur la page update d'un user sans aucun service en commun avec le manager" do
-    refute @policy_organisation_differente.update?
+    refute @policy_services_differents.update?
   end
 
   # Destroy
-  test "accès autorisé pour un manager sur la page destroy d'un user" do
+  test "accès autorisé pour un manager de supprimer un user" do
     assert @policy.destroy?
   end
 
-  test "accès interdit pour un manager sur la page destroy d'un user sans aucun service en commun avec le manager" do
-    refute @policy_organisation_differente.destroy?
+  test "accès interdit pour un manager de supprimer un user sans aucun service en commun avec le manager" do
+    refute @policy_services_differents.destroy?
+  end
+
+  test "accès interdit pour un manager de supprimer un manager" do
+    refute @policy_manager.destroy?
+  end
+
+  test "accès interdit pour un manager de supprimer un administrateur" do
+    refute @policy_administrateur.destroy?
   end
 
   # agent calendrier
@@ -74,7 +92,7 @@ class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
     assert @policy_user_myself.edit_password?
   end
 
-  test "accès interdit pour un manager sur sa page edit_password d'un autre user" do
+  test "accès interdit pour un manager sur la page edit_password d'un autre user" do
     refute @policy.edit_password?
   end
 
@@ -93,6 +111,6 @@ class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
   end
 
   test "accès interdit pour un manager sur la page reactivate d'un user d'une autre organisation" do
-    refute @policy_organisation_differente.reactivate?
+    refute @policy_services_differents.reactivate?
   end
 end

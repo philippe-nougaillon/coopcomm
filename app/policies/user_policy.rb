@@ -22,7 +22,8 @@ class UserPolicy < ApplicationPolicy
   end
 
   def edit?
-    show?
+    # Un manager ne peut pas modifier un manager ou un administrateur, sauf si c'est lui-même
+    show? && (record == user || !(user.manager? && record.manager_or_admin?))
   end
 
   def update?
@@ -30,7 +31,7 @@ class UserPolicy < ApplicationPolicy
   end
 
   def destroy?
-    manager_or_admin? && organisation? && record != user && shared_service
+    manager_or_admin? && organisation? && record != user && shared_service && !(user.manager? && record.manager_or_admin?)
   end
 
   def agent_calendrier?
