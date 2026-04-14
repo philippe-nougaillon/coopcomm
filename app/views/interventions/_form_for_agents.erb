@@ -96,7 +96,7 @@
                 <div class="flex items-center gap-1">
                   <%= form.date_field :début,
                                       class: "input input-sm flex-1 w-full",
-                                      value: (params[:début].try(:to_date) || @intervention.début&.to_date),
+                                      value: (params[:début]&.to_date || @intervention.début&.to_date || (@intervention.new_record? ? Date.current : nil)),
                                       data: { 'calc-temps-passe-target': 'debut_date',
                                               action: "change->calc-temps-passe#calc" },
                                       required: true %>
@@ -107,7 +107,8 @@
                                           action: "change->calc-temps-passe#calc" },
                                   required: true %>
                   :
-                  <%= form.select :début_minute, (0..55).step(5).map { |m| [format('%02d', m), m] },
+                  <%# ATTENTION : si on remet un step(5), il faudra modifier la date de fin sélectionnée dans le controller %>
+                  <%= form.select :début_minute, (0..59).map { |m| [format('%02d', m), m] },
                                   {selected: params[:début_minute] ||@intervention.début&.min },
                                   class: "select select-sm w-16",
                                   data: { 'calc-temps-passe-target': 'debut_minute',
@@ -133,7 +134,7 @@
                                           action: "change->calc-temps-passe#calc" },
                                   required: true %>
                   :
-                  <%= form.select :fin_minute, (0..55).step(5).map { |m| [format('%02d', m), m] },
+                  <%= form.select :fin_minute, (0..59).map { |m| [format('%02d', m), m] },
                                   {selected: params[:fin_minute] || @intervention.fin&.min },
                                   class: "select select-sm w-16",
                                   data: { 'calc-temps-passe-target': 'fin_minute',

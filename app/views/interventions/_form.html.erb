@@ -247,7 +247,7 @@
                         data: { 'calc-temps-passe-target': 'debut_hour',
                         action: "change->calc-temps-passe#calc" } %>
                     :
-                    <%= form.select :début_minute, (0..55).step(5).map { |m| [format('%02d', m), m] },
+                    <%= form.select :début_minute, (0..59).map { |m| [format('%02d', m), m] },
                         {selected: params[:début_minute] ||@intervention.début&.min },
                         class: "select select-sm w-16",
                         data: { 'calc-temps-passe-target': 'debut_minute',
@@ -270,7 +270,8 @@
                         data: { 'calc-temps-passe-target': 'fin_hour',
                         action: "change->calc-temps-passe#calc" } %>
                     :
-                    <%= form.select :fin_minute, (0..55).step(5).map { |m| [format('%02d', m), m] },
+                    <%# ATTENTION : si on remet un step(5), il faudra modifier la date de fin sélectionnée dans le controller %>
+                    <%= form.select :fin_minute, (0..59).map { |m| [format('%02d', m), m] },
                         {selected: params[:fin_minute] || @intervention.fin&.min },
                         class: "select select-sm w-16",
                         data: { 'calc-temps-passe-target': 'fin_minute',

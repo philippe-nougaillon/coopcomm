@@ -174,7 +174,9 @@ class InterventionsController < ApplicationController
       now = DateTime.now()
       # Le nombre de minute doit être un mutliple de 5, 
       # Pour cela, on enlève le nombre de minutes modulo 5 (Ex: Si on a 14 minutes -> 14%5 = 4, donc 14-4 = 10)
-      date_fin = now - now.minute.modulo(5).minute
+      # date_fin = now - now.minute.modulo(5).minute
+      # modulo plus nécessaire, le step(5) a été retiré
+      date_fin = now
 
       @intervention.fin = date_fin
     end
