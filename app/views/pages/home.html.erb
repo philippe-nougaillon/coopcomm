@@ -52,7 +52,7 @@
         <% elsif current_user.agent? %>
           <%= link_to 'Réserver du matériel', tools_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
           <%= link_to 'Lancer une discussion', messagerie_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
-          <%= link_to 'Consulter le guide', root_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
+          <%= link_to 'Consulter le guide', wiki_pages_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
         <% end %>
 
       </div>
