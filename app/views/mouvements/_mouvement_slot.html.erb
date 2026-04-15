@@ -1,9 +1,13 @@
 <% if mouvement && mouvement.sortie? %>
-  <%# --- CAS ROUGE : L'OUTIL EST SORTI --- %>
+  <%# --- CAS ROUGE / BLEU : L'OUTIL EST SORTI --- %>
+  
+  <%# On définit la couleur selon l'utilisateur (bleu si c'est le mien, rouge sinon) %>
+  <% bg_color = (mouvement.user == current_user) ? '#3b82f6' : '#db2767' %>
+
   <% span_content = capture do %>
     <span class="border-1 border-slate-400 h-4 inline-block align-middle" 
-          style="padding-left: 15px; <%= margin_style %>; background-color: #db2767;" 
-          title="Réservé par <%= mouvement.user&.email || 'Utilisateur inconnu' %>">
+          style="padding-left: 15px; <%= margin_style %>; background-color: <%= bg_color %>;" 
+          title="Réservé par <%= mouvement.user == current_user ? 'vous' : (mouvement.user&.email || 'Utilisateur inconnu') %>">
     </span>
   <% end %>
 
