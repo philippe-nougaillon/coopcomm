@@ -31,11 +31,11 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
 
   test "should get edit" do
     get edit_mouvement_url(@template_mouvement)
-    assert_redirected_to root_path # Page non activé
+    assert_response :success
   end
 
   test "should update mouvement" do
-    patch mouvement_url(@template_mouvement), params: { mouvement: { tool_id: @template_mouvement.tool_id, état: @template_mouvement.état } }
-    assert_redirected_to root_path # Page non activé
+    patch mouvement_url(@template_mouvement), params: { mouvement: { tool_id: @template_mouvement.tool_id, état: @template_mouvement.état, date: DateTime.now + 1.day } }
+    assert_redirected_to tool_path(@template_mouvement.tool)
   end
 end

@@ -341,7 +341,7 @@ class UsersController < ApplicationController
     end
 
     def sortable_columns
-      ['users.nom', 'users.rôle', 'users.service', 'users.email', 'users.localisation', 'users.memo']
+      ['users.nom', 'users.rôle', 'users.service', 'users.email', 'users.memo']
     end
 
     def sort_column

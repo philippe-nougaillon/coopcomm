@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_14_151349) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_15_121619) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -462,11 +462,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_14_151349) do
 
   create_table "warehouses", force: :cascade do |t|
     t.string "name"
-    t.string "localisation"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "organisation_id", null: false
     t.string "slug"
+    t.string "address"
+    t.decimal "latitude", precision: 10, scale: 6
+    t.decimal "longitude", precision: 10, scale: 6
     t.index ["organisation_id"], name: "index_warehouses_on_organisation_id"
   end
 

@@ -416,10 +416,10 @@ class Intervention < ApplicationRecord
 
   def origin_location
     equipe_adherent = self.adherent&.tag_list&.first
-    warehouse = Warehouse.tagged_with(equipe_adherent).first if equipe_adherent
+    warehouse = self.organisation.warehouses.tagged_with(equipe_adherent).first if equipe_adherent
 
-    if warehouse && warehouse.localisation.present?
-      warehouse.localisation_to_lat_lng_object
+    if warehouse && warehouse.latitude.present? && warehouse.longitude.present?
+      { lat: warehouse.latitude, lng: warehouse.longitude }
     else
       lat, lng = ENV["COORD_DEPART"]&.split(',')
       { lat: lat.to_f, lng: lng.to_f }

@@ -71,7 +71,7 @@ class WarehousesController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def warehouse_params
-      params.expect(warehouse: [ :name, :localisation, tag_list: [] ])
+      params.expect(warehouse: [ :name, :address, :longitude, :latitude, tag_list: [] ])
     end
 
     def is_user_authorized
