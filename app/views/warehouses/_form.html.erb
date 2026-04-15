@@ -32,13 +32,22 @@
     <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
   </div>
 
-  <div class="my-5">
-    <%= form.label :localisation %>
-    <%= form.text_field :localisation, class: ["input input-sm w-full", {"input-error": warehouse.errors[:localisation].any?}] %>
+  <div class="flex-1" data-controller="places">
+    <%= form.label :address, "Localisation" %>
+    
+    <%# Le champ visible par l'utilisateur pour chercher l'adresse %>
+    <%= form.text_field :address, 
+          class: 'input select-sm w-full', 
+          placeholder: 'Commencez à taper une adresse...', 
+          data: { places_target: "address" } %>
+
+    <%# Les champs cachés qui seront remplis automatiquement par le JS %>
+    <%= form.hidden_field :latitude, data: { places_target: "latitude" } %>
+    <%= form.hidden_field :longitude, data: { places_target: "longitude" } %>
   </div>
 
 
   <div class="inline">
-    <%= form.submit "Enregistrer", class: "btn btn-primary" %>
+    <%= form.submit "Enregistrer", class: "btn btn-primary mt-4" %>
   </div>
 <% end %>

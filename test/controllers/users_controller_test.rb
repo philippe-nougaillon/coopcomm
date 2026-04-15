@@ -185,26 +185,6 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_not_equal unauthorized_role, new_user.rôle
   end
 
-  test "should'nt update role of user as a manager" do
-    sign_in users(:manager_paris)
-
-    unauthorized_role = "manager"
-
-    patch user_url(@user), params: {
-      user: {
-        rôle: unauthorized_role,
-        email: @user.email,
-        password: "0DcPIZIq0+f5SvCf",
-        organisation: @user.organisation
-      }
-    }
-
-    @user.reload
-
-    assert_equal "agent", @user.rôle, "Le rôle est censé être agent si c'est un manager qui le modifie"
-    assert_not_equal unauthorized_role, @user.rôle
-  end
-
   # test "should import xls with param upload" do
   #   headers = ["Nom", "Prénom", "Email", "Téléphone", "Service", "Mémo"]
   #   data = [

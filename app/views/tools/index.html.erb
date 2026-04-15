@@ -1,14 +1,14 @@
 <div class="w-full">
   <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
     <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Réservation de matériel') %></h1>
-    <div>
+    <div class="w-full sm:w-fit flex flex-wrap sm:block justify-between gap-4">
       <% if policy(Tool).new? %>
         <%= link_to "Ajouter un Matériel", new_tool_path, data: { 'testid': "ajouter_outil_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
         <%= link_to "+ Matériel", new_tool_path, data: { 'testid': "ajouter_outil_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
       <% end %>
       <% if policy(Mouvement).new? %>
-        <%= link_to "Signaler une panne", new_mouvement_path(état: :panne), data: { 'testid': "ajouter_panne_mobile" }, class: 'hidden sm:inline-flex btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
-        <%= link_to "+ Panne", new_mouvement_path(état: :panne), data: { 'testid': "ajouter_panne_mobile" }, class: 'inline-flex sm:hidden btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
+        <%= link_to "Déclarer panne/fin de panne", new_mouvement_path(état: :panne), data: { 'testid': "ajouter_panne_mobile" }, class: 'hidden sm:inline-flex btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
+        <%= link_to "+ Panne / + Fin panne", new_mouvement_path(état: :panne), data: { 'testid': "ajouter_panne_mobile" }, class: 'inline-flex sm:hidden btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
       <% end %>
     </div>
   </div>

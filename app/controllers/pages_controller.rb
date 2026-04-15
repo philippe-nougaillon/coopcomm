@@ -335,7 +335,11 @@ class PagesController < ApplicationController
     @banner_background_color = BACKGROUND_COLORS[base_hour]
 
     @interventions = Intervention.by_role_for_home(current_user).filter_by_service(current_user.services).first(2)
-    @notifications = current_user.notifications.where(read_at: nil).ordered.first(3)
+    @notifications = current_user.notifications
+                                            .where(read_at: nil)
+                                            .joins(:from_user) # Filtre les utilisateurs supprimés
+                                            .ordered
+                                            .first(3)
 
     @forecasts = MeteoConceptConnexion.call
   end

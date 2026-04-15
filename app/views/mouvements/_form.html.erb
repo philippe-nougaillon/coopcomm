@@ -13,21 +13,17 @@
     </div>
   <% end %>
 
-  <% if params[:tool_id] %>
-    <%= form.hidden_field :tool_id, value: params[:tool_id] %>
+  <% if @mouvement.tool || params[:tool_id]  %>
+    <%= form.hidden_field :tool_id, value: @mouvement.tool_id || params[:tool_id] %>
   <% else %>
     <%= form.label :tool_id, "Matériel" %>
     <%= form.select :tool_id, options_from_collection_for_select(@tools, :id, :name), {include_blank: true, required: true}, class: "slim-select w-full" %>
   <% end %>
 
-  <% if params[:état] %>
-    <%= form.hidden_field :état, value: params[:état] %>
-  <% else %>
-    <div class="w-full">
-      <%= form.label :état %>
-      <%= form.select :état, options_for_select(Mouvement.états.keys, mouvement.état || params[:état]), {include_blank: true}, class: 'select select-sm w-full', required: true %>
-    </div>
-  <% end %>
+  <div class="w-full">
+    <%= form.label :état %>
+    <%= form.select :état, options_for_select([['Panne', 'panne'], ['Fin de panne', 'fin_panne']], mouvement.état), {include_blank: true}, class: 'select select-sm w-full', required: true %>
+  </div>
 
   <div class="w-full">
     <%= form.label :date %>

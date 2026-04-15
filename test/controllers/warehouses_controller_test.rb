@@ -18,7 +18,7 @@ class WarehousesControllerTest < ActionDispatch::IntegrationTest
 
   test "should create warehouse" do
     assert_difference("Warehouse.count") do
-      post warehouses_url, params: { warehouse: { localisation: @warehouse.localisation, name: @warehouse.name } }
+      post warehouses_url, params: { warehouse: { address: @warehouse.address, name: @warehouse.name, latitude: "1.234", longitude: "5.678" } }
     end
 
     assert_redirected_to warehouse_url(Warehouse.last)
@@ -35,7 +35,7 @@ class WarehousesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should update warehouse" do
-    patch warehouse_url(@warehouse), params: { warehouse: { localisation: @warehouse.localisation, name: @warehouse.name } }
+    patch warehouse_url(@warehouse), params: { warehouse: { address: "7 Rue Francis de Pressensé, 75014 Paris", name: "Entrepôt de Paris", latitude: "2.345", longitude: "6.789" } }
     assert_redirected_to warehouse_url(@warehouse)
   end
 

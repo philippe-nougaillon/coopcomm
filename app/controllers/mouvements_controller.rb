@@ -48,6 +48,7 @@ class MouvementsController < ApplicationController
         format.json { render :show, status: :created, location: @mouvement }
       else
         @tools = current_user.organisation.tools.ordered
+        params[:tool_id] = params[:mouvement][:tool_id]
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @mouvement.errors, status: :unprocessable_entity }
       end
@@ -58,7 +59,7 @@ class MouvementsController < ApplicationController
   def update
     respond_to do |format|
       if @mouvement.update(mouvement_params)
-        format.html { redirect_to request.referrer, notice: "Mouvement modifié avec succès.", status: :see_other }
+        format.html { redirect_to @mouvement.tool , notice: "Mouvement modifié avec succès.", status: :see_other }
         format.json { render :show, status: :ok, location: @mouvement }
       else
         format.html { render :edit, status: :unprocessable_entity }

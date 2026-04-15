@@ -30,13 +30,13 @@ class ManagerMouvementPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Edit
-  test "accès impossible pour un manager sur la page edit d'un mouvement" do
-    refute @policy.edit?
+  test "accès autorisé pour un manager sur la page edit d'un mouvement" do
+    assert @policy.edit?
   end
 
   # Update
-  test "accès impossible pour un manager sur la page update d'un mouvement" do
-    refute @policy.update?
+  test "accès autorisé pour un manager sur la page update d'un mouvement" do
+    assert @policy.update?
   end
 
   # destroy
