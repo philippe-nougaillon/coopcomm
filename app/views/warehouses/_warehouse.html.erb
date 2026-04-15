@@ -3,7 +3,7 @@
     <%= link_to warehouse.name, warehouse, class: 'text-primary hover:underline' %>
   </td>
   <td class="text-sm">
-    <%= warehouse.tag_list %>
+    <%= warehouse.users.pluck(:nom).join(', ') %>
   </td>
   <td class="text-sm">
     <%= warehouse.address %>

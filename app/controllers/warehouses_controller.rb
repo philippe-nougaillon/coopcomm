@@ -1,7 +1,7 @@
 class WarehousesController < ApplicationController
   before_action :set_warehouse, only: %i[ show edit update destroy ]
   before_action :is_user_authorized
-  before_action :set_organisation_user_tags, only: [:new, :create, :edit, :update]
+  before_action :set_form_variables, only: %i[ new edit create update ]
 
   # GET /warehouses or /warehouses.json
   # def index
@@ -28,7 +28,7 @@ class WarehousesController < ApplicationController
 
     respond_to do |format|
       if @warehouse.save
-        format.html { redirect_to @warehouse, notice: "Entrepôt créé avec succès." }
+        format.html { redirect_to @warehouse, notice: "Site créé avec succès." }
         format.json { render :show, status: :created, location: @warehouse }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -41,7 +41,7 @@ class WarehousesController < ApplicationController
   def update
     respond_to do |format|
       if @warehouse.update(warehouse_params)
-        format.html { redirect_to @warehouse, notice: "Entrepôt modifié avec succès.", status: :see_other }
+        format.html { redirect_to @warehouse, notice: "Site modifié avec succès.", status: :see_other }
         format.json { render :show, status: :ok, location: @warehouse }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -55,7 +55,7 @@ class WarehousesController < ApplicationController
     @warehouse.destroy!
 
     respond_to do |format|
-      format.html { redirect_to admin_parametres_path, notice: "Entrepôt supprimé avec succès.", status: :see_other }
+      format.html { redirect_to admin_parametres_path, notice: "Site supprimé avec succès.", status: :see_other }
       format.json { head :no_content }
     end
   end
@@ -65,16 +65,20 @@ class WarehousesController < ApplicationController
     def set_warehouse
       @warehouse = Warehouse.find_by(slug: params.expect(:id))
       if @warehouse.nil?
-        redirect_to root_path, alert: "Entrepôt introuvable"
+        redirect_to root_path, alert: "Site introuvable"
       end
     end
 
     # Only allow a list of trusted parameters through.
     def warehouse_params
-      params.expect(warehouse: [ :name, :address, :longitude, :latitude, tag_list: [] ])
+      params.expect(warehouse: [ :name, :address, :longitude, :latitude, user_ids: [] ])
     end
 
     def is_user_authorized
       authorize @warehouse ? @warehouse : Warehouse
+    end
+
+    def set_form_variables
+      @users = current_user.organisation.users.where.not(rôle: "adhérent").ordered
     end
 end

@@ -2,11 +2,10 @@ class Warehouse < ApplicationRecord
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
 
-  acts_as_taggable_on :tags
-
   audited
 
   belongs_to :organisation
+  has_many :users, dependent: :nullify
 
   validates :address, :latitude, :longitude, presence: true
 

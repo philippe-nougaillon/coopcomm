@@ -17,19 +17,13 @@
   </div>
 
   <div class="w-full sm:flex-1">
-    <%= form.label :tag_list, "Équipe", style: "display: block" %>
-    <%
-      est_soumission = params[form.object_name].present?
-
-      if est_soumission
-        tags_users_soumis = Array(params.dig(form.object_name, :tag_list)).reject(&:blank?)
-      else
-        tags_users_soumis = warehouse.tags.map(&:name)
-      end
-
-      options_users = (@users_tags.map(&:name) + tags_users_soumis).uniq
+    <%= form.label :user_ids, "Équipe (Utilisateurs rattachés)", style: "display: block" %>
+    
+    <%# 
+      Note: Remplace `User.all` par la variable de ton contrôleur (ex: @users) si tu veux filtrer.
+      Remplace `:email` par `:nom_complet` ou l'attribut que tu veux afficher dans la liste déroulante.
     %>
-    <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
+    <%= form.collection_select :user_ids, @users, :id, :nom_prénom, {}, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
   </div>
 
   <div class="flex-1" data-controller="places">

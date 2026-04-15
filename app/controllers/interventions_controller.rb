@@ -117,18 +117,17 @@ class InterventionsController < ApplicationController
 
       unless Rails.env.test?
         # On vérifie que l'intervention possède un adhérent localisé ET que le service nécessite le calcul
-        if @intervention.adherent.present? && @intervention.adherent.latitude.present? && @intervention.adherent.longitude.present? && @intervention.service&.calculate_distance?
+        @localisation_depart = @intervention.origin_location
+        if @localisation_depart && @intervention.adherent.present? && @intervention.adherent.latitude.present? && @intervention.adherent.longitude.present? && @intervention.service&.calculate_distance?
           if @intervention.trajet.blank? || @intervention.nouveau?
             
-            origine = @intervention.origin_location
             localisation_arrivee = { lat: @intervention.adherent.latitude, lng: @intervention.adherent.longitude }
 
             # Création du service avec le départ et la destination
-            request = ApiGoogleMaps.new(origine, localisation_arrivee)
+            request = ApiGoogleMaps.new(@localisation_depart, localisation_arrivee)
             request.call
 
             # Récupération des données via les getters du service
-            @localisation_depart = origine
             @localisation_arrivee = localisation_arrivee
             @errors = request.errors
             @routes_info = request.routes_info

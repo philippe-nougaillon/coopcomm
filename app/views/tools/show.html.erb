@@ -101,12 +101,12 @@
           mouvement_soir = @tool.dernier_mouvement_a(heure_soir)
         %>
       
-      <div class="text-center">
+      <div class="flex flex-nowrap justify-center gap-1 mt-1 px-1">
         <%= render 'mouvements/mouvement_slot', 
                   mouvement: mouvement_matin, 
                   tool_id: @tool.id, 
                   date: date, 
-                  margin_style: 'margin-right: 2px', 
+                  margin_style: '', 
                   start_hour: 8, 
                   end_hour: 13, 
                   new_title: "Réserver le #{date.day} au matin" %>
@@ -115,7 +115,7 @@
                   mouvement: mouvement_soir, 
                   tool_id: @tool.id, 
                   date: date, 
-                  margin_style: 'margin-left: 2px', 
+                  margin_style: '', 
                   start_hour: 13, 
                   start_minute: 5, 
                   end_hour: 18, 
