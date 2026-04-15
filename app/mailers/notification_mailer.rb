@@ -96,4 +96,14 @@ class NotificationMailer < ApplicationMailer
       subject: title
     )
   end
+
+  def report_missed_clock_out(intervention_missed, user_email)
+    @intervention = intervention_missed
+    @agent = @intervention.agents.first
+
+    mail(
+      to: user_email,
+      subject: "[COOPCOMM] Rappel d'un pointage oublié"
+    )
+  end
 end
