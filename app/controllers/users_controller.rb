@@ -88,11 +88,6 @@ class UsersController < ApplicationController
   def update
     @user.assign_attributes(user_params)
 
-    # Force le rôle à agent si l'utilisateur courant est un manager
-    if current_user.manager?
-      @user.rôle = "agent"
-    end
-
     respond_to do |format|
       if @user.save
         bypass_sign_in(@user) if @user == current_user
