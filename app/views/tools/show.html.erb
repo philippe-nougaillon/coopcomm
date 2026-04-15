@@ -4,7 +4,10 @@
       <%= page_title!(@tool.name) %>
     </h1>
 
-    <%= link_to "Créer une panne", new_mouvement_path(tool_id: @tool.id, état: :panne), class: 'btn btn-sm sm:btn-lg btn-outline btn-success hover:text-white!' %>
+    <% if policy(Mouvement).new? %>
+      <%= link_to "Déclarer panne/fin de panne", new_mouvement_path(tool_id: @tool.id), data: { 'testid': "ajouter_panne_mobile" }, class: 'hidden sm:inline-flex btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
+      <%= link_to "+ Panne / + Fin panne", new_mouvement_path(tool_id: @tool.id), data: { 'testid': "ajouter_panne_mobile" }, class: 'inline-flex sm:hidden btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
+    <% end %>
   </div>
 
   <div class="flex flex-wrap gap-8 mt-8">
@@ -151,6 +154,8 @@
     <h2 class="text-2xl text-secondary">
       Mouvements
     </h2>
+    <%= link_to "Déclarer panne/fin de panne", new_mouvement_path(tool_id: @tool.id), data: { 'testid': "ajouter_panne_mobile" }, class: 'hidden sm:inline-flex btn btn-sm sm:btn-md btn-outline btn-neutral' %>
+    <%= link_to "+ Panne / + Fin panne", new_mouvement_path(tool_id: @tool.id), data: { 'testid': "ajouter_panne_mobile" }, class: 'inline-flex sm:hidden btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
   </div>
   <div class="mx-auto w-full">
     <div class="overflow-x-auto">
@@ -160,6 +165,7 @@
           <th>État</th>
           <th>Par</th>
           <th>Date</th>
+          <th></th>
         </thead>
         <tbody>
           <% if @tool.mouvements.any? %>

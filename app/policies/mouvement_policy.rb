@@ -24,7 +24,7 @@ class MouvementPolicy < ApplicationPolicy
 
   # Page désactivé
   def edit?
-    false
+    manager_or_admin? && organisation?
   end
 
   # Page désactivé

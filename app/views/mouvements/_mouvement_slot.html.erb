@@ -32,7 +32,10 @@
     <% datetime_fin_panne = [(datetime_debut - 1.minute), (mouvement.date + 1.minute)].max %>
 
     <%= link_to mouvements_path(mouvement: { tool_id: tool_id, état: 'fin_panne', date: datetime_fin_panne }), 
-                data: { turbo_method: :post }, 
+                data: { 
+                  turbo_method: :post, 
+                  turbo_confirm: "Confirmer la réparation et la fin de panne pour cet outil ? Les réservations présentes au moment de la panne seront supprimées" 
+                }, 
                 title: "Déclarer la fin de la panne" do %>
       <%= span_content %>
     <% end %>

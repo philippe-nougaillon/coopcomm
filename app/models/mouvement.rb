@@ -5,6 +5,7 @@ class Mouvement < ApplicationRecord
   audited
 
   belongs_to :tool
+  has_one :organisation, through: :tool
   belongs_to :user
   belongs_to :intervention, optional: true
 
@@ -23,7 +24,7 @@ class Mouvement < ApplicationRecord
   validate :coherence_fin_panne, if: :fin_panne?
 
   after_create :avertir_reservations_futures, if: :panne?
-  after_create :nettoyer_reservations_pendant_panne, if: :fin_panne?
+  after_save :nettoyer_reservations_pendant_panne, if: :fin_panne?
   
   def style
     case self.état
@@ -59,7 +60,7 @@ class Mouvement < ApplicationRecord
     [SecureRandom.uuid]
   end
 
-def coherence_panne
+  def coherence_panne
     # Voisin de gauche (Le passé)
     event_precedent = tool.mouvements.where.not(id: id)
                           .where("date <= ?", date)
