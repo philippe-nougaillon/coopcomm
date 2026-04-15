@@ -25,6 +25,7 @@ class User < ApplicationRecord
   has_one_attached :profile_picture
 
   belongs_to :organisation, optional: true
+  belongs_to :warehouse, optional: true
 
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
   has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention', dependent: :destroy

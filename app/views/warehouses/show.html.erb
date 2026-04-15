@@ -7,7 +7,15 @@
 
   <p class="mt-4">
     <strong class="block text-slate-400 mb-1">Équipes</strong>
-    <%= @warehouse.tag_list %>
+    <% if @warehouse.users.any? %>
+      <ul>
+        <% @warehouse.users.each do |user| %>
+          <li><%= user.nom_prénom %></li> <%# Change :email par le champ que tu veux afficher %>
+        <% end %>
+      </ul>
+    <% else %>
+      <p>Aucun utilisateur rattaché à cet entrepôt pour le moment.</p>
+    <% end %>
   </p>
 
   <p class="mt-4">

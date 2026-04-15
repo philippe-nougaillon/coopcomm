@@ -1,7 +1,7 @@
 class WarehousesController < ApplicationController
   before_action :set_warehouse, only: %i[ show edit update destroy ]
   before_action :is_user_authorized
-  before_action :set_organisation_user_tags, only: [:new, :create, :edit, :update]
+  before_action :set_form_variables, only: %i[ new edit create update ]
 
   # GET /warehouses or /warehouses.json
   # def index
@@ -71,10 +71,14 @@ class WarehousesController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def warehouse_params
-      params.expect(warehouse: [ :name, :address, :longitude, :latitude, tag_list: [] ])
+      params.expect(warehouse: [ :name, :address, :longitude, :latitude, user_ids: [] ])
     end
 
     def is_user_authorized
       authorize @warehouse ? @warehouse : Warehouse
+    end
+
+    def set_form_variables
+      @users = current_user.organisation.users.where.not(rôle: "adhérent").ordered
     end
 end
