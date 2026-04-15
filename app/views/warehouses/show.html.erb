@@ -14,7 +14,7 @@
         <% end %>
       </ul>
     <% else %>
-      <p>Aucun utilisateur rattaché à cet entrepôt pour le moment.</p>
+      <p>Aucun utilisateur rattaché à ce site pour le moment.</p>
     <% end %>
   </p>
 
@@ -28,7 +28,7 @@
       <%= link_to "Modifier", edit_warehouse_path(@warehouse), class: "btn" %>
     <% end %>
     <% if policy(@warehouse).destroy? %>
-      <%= button_to warehouse_path(@warehouse), method: :delete, id: "supprimer_warehouse", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet entrepôt ?" }, class: "btn", 'data-testid': "Supprimer l'entrepôt" do %>
+      <%= button_to warehouse_path(@warehouse), method: :delete, id: "supprimer_warehouse", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer ce site ?" }, class: "btn", 'data-testid': "Supprimer le site" do %>
           <span class="material-symbols-outlined">
             delete
           </span>

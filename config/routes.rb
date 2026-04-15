@@ -109,7 +109,7 @@ Rails.application.routes.draw do
   resources :newsletters, only: %i[index new destroy]
 
   resources :services, except: %i[ index ]
-  resources :warehouses, except: %i[ index ]
+  resources :warehouses, except: %i[ index ], path: 'sites'
 
 
   namespace :messagerie do
