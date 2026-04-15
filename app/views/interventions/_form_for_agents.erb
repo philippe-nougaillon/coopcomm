@@ -145,7 +145,7 @@
             </div>
 
             <div class="flex flex-wrap gap-1 sm:gap-8 flex-1 mb-5">
-              <div class="w-full flex-1">
+              <div class="w-full sm:w-auto sm:flex-1 min-w-[200px]">
                 <%= form.label :temps_de_pause, "Temps de pause (h)", class: 'whitespace-nowrap' %>
                 <%= form.select :temps_de_pause, options_for_select([0.0, 0.5, 1.0].map { |v| [v.to_s.tr('.', ','), v] }, intervention.temps_de_pause),
                                 { include_blank: true }, class: "select select-sm w-full",
@@ -153,14 +153,14 @@
                                 required: true %>
               </div>
 
-              <div class="flex gap-4 items-end">
+              <div class="flex gap-4 sm:gap-8 items-end w-full sm:w-auto sm:flex-[2] min-w-[250px]">
                 <div class="w-full flex-1">
-                  <label for="temps_par_agent" class="block">Temps par agent (h)</label>
+                  <label for="temps_par_agent" class="block whitespace-nowrap">Temps par agent (h)</label>
                   <input type="number" id="temps_par_agent" readonly class="input input-sm w-full font-black text-gray-500 bg-gray-50" data-calc-temps-passe-target="tempsParAgent">
                 </div>
 
                 <div class="w-full flex-1">
-                  <%= form.label :temps_total %>
+                  <%= form.label :temps_total, class: 'whitespace-nowrap' %>
                   <%= form.number_field :temps_total,
                                         readonly: true, class: 'input input-sm w-full font-black text-gray-500 bg-gray-50',
                                         data: { 'calc-temps-passe-target': 'temps' }  %>
