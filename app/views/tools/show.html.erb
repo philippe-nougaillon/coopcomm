@@ -1,13 +1,9 @@
 <div class="mx-auto lg:w-2/3 w-full">
+  <%= link_to "<", tools_path, title:"Revenir en arrière", class: 'text-xl font-black sm:hidden' %>
   <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
     <h1 class="text-2xl sm:text-4xl text-primary font-bold">
       <%= page_title!(@tool.name) %>
     </h1>
-
-    <% if policy(Mouvement).new? %>
-      <%= link_to "Déclarer panne/fin de panne", new_mouvement_path(tool_id: @tool.id), data: { 'testid': "ajouter_panne_mobile" }, class: 'hidden sm:inline-flex btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
-      <%= link_to "+ Panne / + Fin panne", new_mouvement_path(tool_id: @tool.id), data: { 'testid': "ajouter_panne_mobile" }, class: 'inline-flex sm:hidden btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
-    <% end %>
   </div>
 
   <div class="flex flex-wrap gap-8 mt-8">
@@ -65,7 +61,7 @@
         <% end %>
       <% end %>
     <% end %>
-    <%= link_to "Retour", tools_path, class: "btn" %>
+    <%= link_to "Retour", tools_path, class: "hidden sm:inline-flex btn" %>
   </div>
 
   <h2 class="text-2xl text-secondary mt-12">
@@ -88,8 +84,8 @@
   <% case params[:vue] %>
   <% when 'calendrier' %>
     <%= month_calendar do |date| %>
-      <div class="flex justify-center">
-        <p class="px-2.5 py-1 mb-1 <%= date == Date.today ? 'text-cerise font-black' : '' %>">
+      <div class="flex justify-center items-center h-6 mb-1">
+        <p class="inline-flex items-center justify-center px-2.5 py-1 rounded-full <%= date == Date.today ? 'bg-primary text-primary-content font-black' : '' %>">
           <%= date.day %>
         </p>
       </div>
@@ -101,7 +97,7 @@
           mouvement_soir = @tool.dernier_mouvement_a(heure_soir)
         %>
       
-      <div class="flex flex-nowrap justify-center gap-1 mt-1 px-1">
+      <div class="flex flex-nowrap justify-center gap-1 px-1">
         <%= render 'mouvements/mouvement_slot', 
                   mouvement: mouvement_matin, 
                   tool_id: @tool.id, 
@@ -154,8 +150,7 @@
     <h2 class="text-2xl text-secondary">
       Mouvements
     </h2>
-    <%= link_to "Déclarer panne/fin de panne", new_mouvement_path(tool_id: @tool.id), data: { 'testid': "ajouter_panne_mobile" }, class: 'hidden sm:inline-flex btn btn-sm sm:btn-md btn-outline btn-neutral' %>
-    <%= link_to "+ Panne / + Fin panne", new_mouvement_path(tool_id: @tool.id), data: { 'testid': "ajouter_panne_mobile" }, class: 'inline-flex sm:hidden btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
+    <%= link_to "Panne", new_mouvement_path(tool_id: @tool.id), data: { 'testid': "ajouter_panne" }, class: 'inline-flex btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
   </div>
   <div class="mx-auto w-full">
     <div class="overflow-x-auto">

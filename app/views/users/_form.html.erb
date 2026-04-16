@@ -36,7 +36,7 @@
     <% else %>
       <%= form.hidden_field :rôle, value: (user.new_record? ? 'agent' : user.rôle), data: { 'toggle-role-info-target': 'role' } %>
     <% end %>
-    <div data-toggle-role-info-target="localisation" class="flex-1" data-controller="places">
+    <div data-toggle-role-info-target="localisation" class="flex-1" data-controller="places" data-places-center-lat-value="<%= ENV['MAPS_CENTER_LAT'] %>" data-places-center-lng-value="<%= ENV['MAPS_CENTER_LNG'] %>">
       <%= form.label :address, "Localisation" %>
       
       <%# Le champ visible par l'utilisateur pour chercher l'adresse %>

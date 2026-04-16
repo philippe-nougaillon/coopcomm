@@ -1,314 +1,312 @@
 <div class="mx-auto w-full">
-  <div class="mx-auto">
-    <div id="<%= dom_id @intervention %>" class="overflow-x-auto">
-      <div class="flex flex-col sm:flex-row justify-between">
-        <div>
-          <p class="text-3xl text-<%= @intervention.style.split.first.split('-').last %> font-bold">
-            <span class="badge badge-lg h-fit font-bold <%= @intervention.style %>">
-              <%= @intervention.workflow_state.humanize %>
+  <div id="<%= dom_id @intervention %>" class="overflow-x-auto">
+    <div class="flex flex-col sm:flex-row justify-between">
+      <%= link_to "<", interventions_path, title:"Revenir en arrière", class: 'text-xl font-black sm:hidden' %>
+      <div>
+        <p class="text-3xl text-<%= @intervention.style.split.first.split('-').last %> font-bold">
+          <span class="badge badge-lg h-fit font-bold <%= @intervention.style %>">
+            <%= @intervention.workflow_state.humanize %>
+          </span>
+          <% if @intervention.repeter %>
+            <span class="material-symbols-outlined text-black" title="Modèle pour le pointage">
+              event_repeat
             </span>
-            <% if @intervention.repeter %>
-              <span class="material-symbols-outlined text-black" title="Modèle pour le pointage">
-                event_repeat
-              </span>
-            <% elsif @intervention.template_slug %>
-              <span class="material-symbols-outlined text-black" title="Pointage">
-                qr_code_2
-              </span>
-            <% end %>
-            <%= page_title!(@intervention.description.humanize) %>
-          </p>
-          <small>
-            <i>il y a <%= time_ago_in_words @intervention.updated_at %></i>
-          </small>
+          <% elsif @intervention.template_slug %>
+            <span class="material-symbols-outlined text-black" title="Pointage">
+              qr_code_2
+            </span>
+          <% end %>
+          <%= page_title!(@intervention.description.humanize) %>
+        </p>
+        <small>
+          <i>il y a <%= time_ago_in_words @intervention.updated_at %></i>
+        </small>
 
-          <p class="my-2">
-            <% @intervention.tags.each do |tag| %>
-              <span class="badge badge-primary badge-outline h-fit"><%= tag.name.humanize %></span>
+        <p class="my-2">
+          <% @intervention.tags.each do |tag| %>
+            <span class="badge badge-primary badge-outline h-fit"><%= tag.name.humanize %></span>
+          <% end %>
+        </p>
+      </div>
+
+      <div class="flex flex-wrap gap-2 mt-4 h-fit">
+        <% if @intervention.repeter %>
+          <%= link_to intervention_path(format: :pdf), class: "btn btn-warning", title: "Voir le QRCode de pointage" do %>
+            <span class="material-symbols-outlined">
+              qr_code_2
+            </span>
+          <% end %>
+        <% end %>
+        <%= link_to "Modifier", edit_intervention_path(@intervention), class: "btn btn-primary" %>
+        <% if policy(@intervention).destroy? %>
+          <span title="<%= "Impossible de supprimer l'intervention car il y a des mouvements rattachés" if @intervention.mouvements.any? %>">
+            <%= button_to intervention_path(@intervention), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette intervention ?" }, class: "btn", disabled: @intervention.mouvements.any? , 'data-testid': "Supprimer l'intervention" do %>
+              <span class="material-symbols-outlined">
+                delete
+              </span>
             <% end %>
-          </p>
+            </span>
+        <% end %>
+        <%= link_to "Retour", interventions_path, class: "btn" %>
+      </div>
+    </div>
+
+    <div class="sm:flex sm:gap-4 overflow-x-auto mt-4">
+      <div class="sm:flex sm:gap-4 flex-1">
+        <div class="sm:flex gap-8">
+          <div>
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Adhérent</strong>
+              <b><%= @intervention.adherent.try(:nom_prénom) %></b>
+            </p>
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Service</strong>
+              <b><%= @intervention.service.nom %></b>
+            </p>
+          </div>
+
+          <div>
+            <% if !@intervention.agents.any? %>
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Agent</strong>
+              </p>
+            <% else %>
+              <% @intervention.agents.each_with_index do |agent, index| %>
+                <p class="my-2">
+                  <strong class="block text-slate-400 mb-1">Agent#<%= index + 1 %></strong>
+                  <b><%= agent.nom_prénom %></b>
+                </p>
+              <% end %>
+            <% end %>
+          </div>
+
+          <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Début</strong>
+              <%= l(@intervention.début, format: :long) if @intervention.début %>
+            </p>
+
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Fin</strong>
+              <%= l(@intervention.fin, format: :long) if @intervention.fin %>
+            </p>
+          </div>
+
+          <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Temps total</strong>
+              <%= @intervention.temps_total %> h
+            </p>
+
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Temps par agent</strong>
+              <%= @intervention.temps_par_agent %> h
+            </p>
+
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Pause</strong>
+              <%= @intervention.temps_de_pause %> h
+            </p>
+          </div>
+
+          <% if @intervention.début_prévue || @intervention.fin_prévue %>
+            <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Début prévu</strong>
+                <%= l(@intervention.début_prévue, format: :long) if @intervention.début_prévue %>
+              </p>
+
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Fin prévue</strong>
+                <%= l(@intervention.fin_prévue, format: :long) if @intervention.fin_prévue %>
+              </p>
+            </div>
+          <% end %>
         </div>
 
-        <div class="flex flex-wrap gap-2 mt-4 h-fit">
-          <% if @intervention.repeter %>
-            <%= link_to intervention_path(format: :pdf), class: "btn btn-warning", title: "Voir le QRCode de pointage" do %>
-              <span class="material-symbols-outlined">
-                qr_code_2
-              </span>
+        <div>
+          <% if !@intervention.tools.any? %>
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Matériel</strong>
+            </p>
+          <% else %>
+            <% @intervention.tools.each_with_index do |tool, index| %>
+              <p class="my-2">
+                <strong class="block text-slate-400 mb-1">Matériel#<%= index + 1 %></strong>
+                <b><%= tool.name %></b>
+              </p>
             <% end %>
           <% end %>
-          <%= link_to "Modifier", edit_intervention_path(@intervention), class: "btn btn-primary" %>
-          <% if policy(@intervention).destroy? %>
-            <span title="<%= "Impossible de supprimer l'intervention car il y a des mouvements rattachés" if @intervention.mouvements.any? %>">
-              <%= button_to intervention_path(@intervention), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette intervention ?" }, class: "btn", disabled: @intervention.mouvements.any? , 'data-testid': "Supprimer l'intervention" do %>
+        </div>
+
+        <div class="hidden sm:flex gap-8">
+          <div>
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Commentaires</strong>
+              <%= @intervention.commentaires %>
+            </p>
+          </div>
+          <div>
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Météo</strong>
+              <%= @intervention.meteo %>
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="w-72 mr-4">
+        <% if (@intervention.validé? || @intervention.refusé?) && !current_user.agent? %>
+          <div>
+            <strong class="block text-slate-400 mt-2 mb-1">Évaluation</strong>
+            <div class="rating">
+              <% 5.times do |index| %>
+                <input type="radio" name="rating-<%= @intervention.id %>" class="mask mask-star bg-primary cursor-text" <%= 'aria-current=true' if @intervention.note == index + 1 %> disabled/>
+              <% end %>
+            </div>
+
+            <p class="my-2">
+              <strong class="block text-slate-400 mb-1">Avis</strong>
+              <%= @intervention.avis %>
+            </p>
+          </div>
+        <% else %>
+          <div class="my-2">
+            <strong class="block text-slate-400 mb-1">Actions</strong>
+            <p class="flex gap-2">
+              <% if policy(@intervention).terminer? %>
+                <%= link_to 'Terminer', terminer_intervention_path(@intervention), class: 'btn btn-primary btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !@intervention.can_terminer? %>
+              <% end %>
+              <% if policy(@intervention).valider? %>
+                <%= link_to 'Valider', valider_intervention_path(@intervention), class: 'btn btn-success btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !@intervention.can_valider?  %>
+              <% end %>
+              <% if policy(@intervention).refuser? %>
+                <%= link_to 'Refuser', refuser_intervention_path(@intervention), class: 'btn btn-error btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !@intervention.can_refuser? %>
+              <% end %>
+            <p>
+          </div>
+        <% end %>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="flex flex-col lg:flex-row flex-wrap gap-12 mt-6">
+    <% if @intervention.service&.calculate_distance? %>
+      <div class="flex-1">
+        
+        <% if @intervention.trajet.present? && !@intervention.nouveau? %>
+          <div class="my-2">
+            <h2 class="text-2xl text-secondary mt-4">Trajet (AR)</h2>
+            <p><%= @intervention.trajet %></p>
+          </div>
+        <% elsif @intervention.nouveau? && @localisation_depart && @localisation_arrivee %>
+          <%# On affiche la carte uniquement si on a les coordonnées %>
+          <div id="map" 
+              class="w-full lg:min-w-sm max-w-screen h-100"
+              data-controller="map"
+              data-map-depart-value="<%= @localisation_depart.to_json %>"
+              data-map-arrivee-value="<%= @localisation_arrivee.to_json %>"
+              data-map-polyline-value="<%= @response && @response["routes"] ? @response.dig("routes", 0, "polyline", "encodedPolyline") : '' %>">
+          </div>
+
+          <p><%= @routes_info %></p>
+        <% end %>
+      </div>
+    <% end %>
+    <div class="flex-1">
+      <h2 class="text-2xl text-secondary mt-4">Photos</h2>
+      <% if @intervention.photos.attached? %>
+        <div class="flex flex-wrap gap-8 mt-4">
+          <% @intervention.photos.each do |photo| %>
+            <div class="flex items-end gap-2">
+              <div class="avatar">
+                <div class="w-16 rounded hover:shadow-sm">
+                  <%= link_to image_tag(photo, loading: 'lazy'), photo, target: "_blank"  %>
+                </div>
+              </div>
+              <%= button_to purge_intervention_path(photo_id: photo.id), method: :delete, form: { data: {'turbo-confirm': "Êtes-vous bien certain.e de vouloir supprimer définitivement cette photo ?"} }, class: 'text-base-300 hover:text-error' do %>
                 <span class="material-symbols-outlined">
                   delete
                 </span>
               <% end %>
-              </span>
-          <% end %>
-          <%= link_to "Retour", interventions_path, class: "btn" %>
-        </div>
-      </div>
-
-      <div class="sm:flex sm:gap-4 overflow-x-auto mt-4">
-        <div class="sm:flex sm:gap-4 flex-1">
-          <div class="sm:flex gap-8">
-            <div>
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Adhérent</strong>
-                <b><%= @intervention.adherent.try(:nom_prénom) %></b>
-              </p>
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Service</strong>
-                <b><%= @intervention.service.nom %></b>
-              </p>
-            </div>
-
-            <div>
-              <% if !@intervention.agents.any? %>
-                <p class="my-2">
-                  <strong class="block text-slate-400 mb-1">Agent</strong>
-                </p>
-              <% else %>
-                <% @intervention.agents.each_with_index do |agent, index| %>
-                  <p class="my-2">
-                    <strong class="block text-slate-400 mb-1">Agent#<%= index + 1 %></strong>
-                    <b><%= agent.nom_prénom %></b>
-                  </p>
-                <% end %>
-              <% end %>
-            </div>
-
-            <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Début</strong>
-                <%= l(@intervention.début, format: :long) if @intervention.début %>
-              </p>
-
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Fin</strong>
-                <%= l(@intervention.fin, format: :long) if @intervention.fin %>
-              </p>
-            </div>
-
-            <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Temps total</strong>
-                <%= @intervention.temps_total %> h
-              </p>
-
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Temps par agent</strong>
-                <%= @intervention.temps_par_agent %> h
-              </p>
-
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Pause</strong>
-                <%= @intervention.temps_de_pause %> h
-              </p>
-            </div>
-
-            <% if @intervention.début_prévue || @intervention.fin_prévue %>
-              <div class="<%= (params[:action] == "index") ? 'hidden sm:block' : '' %>">
-                <p class="my-2">
-                  <strong class="block text-slate-400 mb-1">Début prévu</strong>
-                  <%= l(@intervention.début_prévue, format: :long) if @intervention.début_prévue %>
-                </p>
-
-                <p class="my-2">
-                  <strong class="block text-slate-400 mb-1">Fin prévue</strong>
-                  <%= l(@intervention.fin_prévue, format: :long) if @intervention.fin_prévue %>
-                </p>
-              </div>
-            <% end %>
-          </div>
-
-          <div>
-            <% if !@intervention.tools.any? %>
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Matériel</strong>
-              </p>
-            <% else %>
-              <% @intervention.tools.each_with_index do |tool, index| %>
-                <p class="my-2">
-                  <strong class="block text-slate-400 mb-1">Matériel#<%= index + 1 %></strong>
-                  <b><%= tool.name %></b>
-                </p>
-              <% end %>
-            <% end %>
-          </div>
-
-          <div class="hidden sm:flex gap-8">
-            <div>
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Commentaires</strong>
-                <%= @intervention.commentaires %>
-              </p>
-            </div>
-            <div>
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Météo</strong>
-                <%= @intervention.meteo %>
-              </p>
-            </div>
-
-          </div>
-        </div>
-
-        <div class="w-72 mr-4">
-          <% if (@intervention.validé? || @intervention.refusé?) && !current_user.agent? %>
-            <div>
-              <strong class="block text-slate-400 mt-2 mb-1">Évaluation</strong>
-              <div class="rating">
-                <% 5.times do |index| %>
-                  <input type="radio" name="rating-<%= @intervention.id %>" class="mask mask-star bg-primary cursor-text" <%= 'aria-current=true' if @intervention.note == index + 1 %> disabled/>
-                <% end %>
-              </div>
-
-              <p class="my-2">
-                <strong class="block text-slate-400 mb-1">Avis</strong>
-                <%= @intervention.avis %>
-              </p>
-            </div>
-          <% else %>
-            <div class="my-2">
-              <strong class="block text-slate-400 mb-1">Actions</strong>
-              <p class="flex gap-2">
-                <% if policy(@intervention).terminer? %>
-                  <%= link_to 'Terminer', terminer_intervention_path(@intervention), class: 'btn btn-primary btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !@intervention.can_terminer? %>
-                <% end %>
-                <% if policy(@intervention).valider? %>
-                  <%= link_to 'Valider', valider_intervention_path(@intervention), class: 'btn btn-success btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !@intervention.can_valider?  %>
-                <% end %>
-                <% if policy(@intervention).refuser? %>
-                  <%= link_to 'Refuser', refuser_intervention_path(@intervention), class: 'btn btn-error btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !@intervention.can_refuser? %>
-                <% end %>
-              <p>
             </div>
           <% end %>
-
         </div>
-      </div>
-
-    </div>
-
-    <div class="flex flex-col lg:flex-row flex-wrap gap-12 mt-6">
-      <% if @intervention.service&.calculate_distance? %>
-        <div class="flex-1">
-          
-          <% if @intervention.trajet.present? && !@intervention.nouveau? %>
-            <div class="my-2">
-              <h2 class="text-2xl text-secondary mt-4">Trajet (AR)</h2>
-              <p><%= @intervention.trajet %></p>
-            </div>
-          <% elsif @intervention.nouveau? && @localisation_depart && @localisation_arrivee %>
-            <%# On affiche la carte uniquement si on a les coordonnées %>
-            <div id="map" 
-                class="w-full lg:min-w-sm max-w-screen h-100"
-                data-controller="map"
-                data-map-depart-value="<%= @localisation_depart.to_json %>"
-                data-map-arrivee-value="<%= @localisation_arrivee.to_json %>"
-                data-map-polyline-value="<%= @response && @response["routes"] ? @response.dig("routes", 0, "polyline", "encodedPolyline") : '' %>">
-            </div>
-
-            <p><%= @routes_info %></p>
-          <% end %>
-        </div>
+      <% else %>
+        <p class="mt-4">Aucune photo n'est attachée à cette intervention.</p>
       <% end %>
-      <div class="flex-1">
-        <h2 class="text-2xl text-secondary mt-4">Photos</h2>
-        <% if @intervention.photos.attached? %>
-          <div class="flex flex-wrap gap-8 mt-4">
-            <% @intervention.photos.each do |photo| %>
-              <div class="flex items-end gap-2">
-                <div class="avatar">
-                  <div class="w-16 rounded hover:shadow-sm">
-                    <%= link_to image_tag(photo, loading: 'lazy'), photo, target: "_blank"  %>
-                  </div>
-                </div>
-                <%= button_to purge_intervention_path(photo_id: photo.id), method: :delete, form: { data: {'turbo-confirm': "Êtes-vous bien certain.e de vouloir supprimer définitivement cette photo ?"} }, class: 'text-base-300 hover:text-error' do %>
-                  <span class="material-symbols-outlined">
-                    delete
-                  </span>
-                <% end %>
-              </div>
-            <% end %>
-          </div>
-        <% else %>
-          <p class="mt-4">Aucune photo n'est attachée à cette intervention.</p>
-        <% end %>
-      </div>
     </div>
-
-    </div>
-
-    <% if @intervention.repeter %>
-      <h2 class="text-2xl text-secondary mt-8">Pointages</h2>
-      <div class="overflow-x-auto mt-4">
-        <table class="table table-sm">
-          <thead class="bg-slate-100">
-            <tr>
-              <th>Il y a</th>
-              <th>Id</th>
-              <% unless current_user.agent? %>
-                <th>Agent</th>
-              <% end %>
-              <th>Date</th>
-              <th>Début</th>
-              <th>Fin</th>
-              <th>Temps total</th>
-              <th>Statut</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <% @pointages.each do |pointage| %>
-              <tr>
-                <td><%= time_ago_in_words pointage.début %></td>
-
-                <td><%= link_to pointage.id, pointage, class: 'underline' %></td>
-                <% unless current_user.agent? %>
-                  <td><%= pointage.agents.first&.nom_prénom %></td>
-                <% end %>
-                <td><%= l pointage.début.to_date %></td>
-                <td><%= l pointage.début %></td>
-                <td><%= l pointage.fin if pointage.fin %></td>
-                <td><%= pointage.temps_total %></td>
-                <td>
-                  <span class="badge badge h-fit font-bold <%= pointage.style %>">
-                    <%= pointage.workflow_state.humanize %>
-                  </span>
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-    <% end %>
-
-    <% if current_user.manager_or_admin? %>
-      <h2 class="text-2xl text-secondary mt-8">Activité</h2>
-      <div class="overflow-x-auto mt-4">
-        <table class="table table-sm">
-          <thead class="bg-slate-100">
-            <tr>
-              <th>Date</th>
-              <th>Utilisateur</th>
-              <th>Type</th>
-              <th>Action</th>
-              <th>Modifications</th>
-            </tr>
-          </thead>
-
-          <%= render partial: 'audit', collection: @audits %>
-        </table>
-      </div>
-      <div class="my-6">
-        <%== pagy_info(@pagy) %>
-        <%== pagy_nav(@pagy) %>
-      </div>
-    <% end %>
   </div>
 
+  </div>
+
+  <% if @intervention.repeter %>
+    <h2 class="text-2xl text-secondary mt-8">Pointages</h2>
+    <div class="overflow-x-auto mt-4">
+      <table class="table table-sm">
+        <thead class="bg-slate-100">
+          <tr>
+            <th>Il y a</th>
+            <th>Id</th>
+            <% unless current_user.agent? %>
+              <th>Agent</th>
+            <% end %>
+            <th>Date</th>
+            <th>Début</th>
+            <th>Fin</th>
+            <th>Temps total</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% @pointages.each do |pointage| %>
+            <tr>
+              <td><%= time_ago_in_words pointage.début %></td>
+
+              <td><%= link_to pointage.id, pointage, class: 'underline' %></td>
+              <% unless current_user.agent? %>
+                <td><%= pointage.agents.first&.nom_prénom %></td>
+              <% end %>
+              <td><%= l pointage.début.to_date %></td>
+              <td><%= l pointage.début %></td>
+              <td><%= l pointage.fin if pointage.fin %></td>
+              <td><%= pointage.temps_total %></td>
+              <td>
+                <span class="badge badge h-fit font-bold <%= pointage.style %>">
+                  <%= pointage.workflow_state.humanize %>
+                </span>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <% if current_user.manager_or_admin? %>
+    <h2 class="text-2xl text-secondary mt-8">Activité</h2>
+    <div class="overflow-x-auto mt-4">
+      <table class="table table-sm">
+        <thead class="bg-slate-100">
+          <tr>
+            <th>Date</th>
+            <th>Utilisateur</th>
+            <th>Type</th>
+            <th>Action</th>
+            <th>Modifications</th>
+          </tr>
+        </thead>
+
+        <%= render partial: 'audit', collection: @audits %>
+      </table>
+    </div>
+    <div class="my-6">
+      <%== pagy_info(@pagy) %>
+      <%== pagy_nav(@pagy) %>
+    </div>
+  <% end %>
 </div>

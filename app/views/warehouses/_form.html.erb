@@ -26,7 +26,7 @@
     <%= form.collection_select :user_ids, @users, :id, :nom_prénom, {}, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
   </div>
 
-  <div class="flex-1" data-controller="places">
+  <div class="flex-1" data-controller="places" data-places-center-lat-value="<%= ENV['MAPS_CENTER_LAT'] %>" data-places-center-lng-value="<%= ENV['MAPS_CENTER_LNG'] %>">
     <%= form.label :address, "Localisation" %>
     
     <%# Le champ visible par l'utilisateur pour chercher l'adresse %>

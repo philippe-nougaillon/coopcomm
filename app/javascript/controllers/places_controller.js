@@ -3,6 +3,11 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["address", "latitude", "longitude"]
 
+  static values = {
+    centerLat: Number,
+    centerLng: Number
+  }
+
   async connect() {
     // On attend sagement que Google Maps soit 100% prêt
     await this.ensureGoogleMapsLoaded();
@@ -57,13 +62,14 @@ export default class extends Controller {
     const { LatLng, LatLngBounds } = await google.maps.importLibrary("core");
     const { Autocomplete } = await google.maps.importLibrary("places");
 
-    const centerLat = 48.89049048181522;
-    const centerLng = 2.512035843758334;
+    // Paris comme position s'il n'y a pas de valeur
+    const centerLat = this.hasCenterLatValue ? this.centerLatValue : 48.8566;
+    const centerLng = this.hasCenterLngValue ? this.centerLngValue : 2.3522;
 
     // On utilise les classes que l'on vient d'importer
     const regionalBounds = new LatLngBounds(
-      new LatLng(centerLat - 1, centerLng - 1), // Sud-Ouest
-      new LatLng(centerLat + 1, centerLng + 1)  // Nord-Est
+      new LatLng(centerLat - 0.5, centerLng - 0.5), // Sud-Ouest
+      new LatLng(centerLat + 0.5, centerLng + 0.5)  // Nord-Est
     );
 
     this.autocomplete = new Autocomplete(this.addressTarget, {
