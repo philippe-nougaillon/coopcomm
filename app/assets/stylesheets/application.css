@@ -373,6 +373,22 @@ select.slim-select:focus,
 
   /* END SLIM-SELECT INDISPONIBILITÉ */
 
+  /* TAILLE CONTENU SLIM-SELECT */
+  .ss-main .ss-values .ss-value .ss-value-text {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Optionnel : Limite aussi la taille des textes dans le menu déroulant */
+  .ss-main .ss-content .ss-list .ss-option {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* END TAILLE CONTENU SLIM-SELECT */
+
 /***** END SLIM-SELECT  *****/
 
 
