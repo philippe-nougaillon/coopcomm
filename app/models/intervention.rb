@@ -450,6 +450,10 @@ class Intervention < ApplicationRecord
   def temps_par_agent
     self.temps_total / self.agents.count
   end
+
+  def intervention_mère 
+    Intervention.find_by(slug: self.template_slug)
+  end
   
   private
 
