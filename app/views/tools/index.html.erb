@@ -7,8 +7,7 @@
         <%= link_to "+ Matériel", new_tool_path, data: { 'testid': "ajouter_outil_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
       <% end %>
       <% if policy(Mouvement).new? %>
-        <%= link_to "Déclarer panne/fin de panne", new_mouvement_path(état: :panne), data: { 'testid': "ajouter_panne_mobile" }, class: 'hidden sm:inline-flex btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
-        <%= link_to "+ Panne / + Fin panne", new_mouvement_path(état: :panne), data: { 'testid': "ajouter_panne_mobile" }, class: 'inline-flex sm:hidden btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
+        <%= link_to "Panne", new_mouvement_path, data: { 'testid': "ajouter_panne" }, class: 'inline-flex btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
       <% end %>
     </div>
   </div>

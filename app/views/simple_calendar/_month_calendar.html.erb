@@ -4,10 +4,10 @@
       <%= t('date.month_names')[start_date.month].humanize %> <%= start_date.year %>
     </time>
 
-    <nav class="text-center mt-2">
-      <%= link_to t('simple_calendar.previous', default: 'Previous'), calendar.url_for_previous_view, class: 'btn btn-outline btn-primary btn-sm hover:text-white!' %>
-      <%= link_to t('simple_calendar.today', default: 'Today'), calendar.url_for_today_view, class: 'btn btn-outline btn-primary btn-sm hover:text-white!' %>
-      <%= link_to t('simple_calendar.next', default: 'Next'), calendar.url_for_next_view, class: 'btn btn-outline btn-primary btn-sm hover:text-white!' %>
+    <nav class="flex w-full justify-center gap-2 mt-2">
+      <%= link_to t('simple_calendar.previous', default: 'Previous'), calendar.url_for_previous_view, class: 'flex-1 sm:flex-0 btn btn-outline btn-primary btn-sm hover:text-white!' %>
+      <%= link_to t('simple_calendar.today', default: 'Today'), calendar.url_for_today_view, class: 'flex-1 sm:flex-0 btn btn-outline btn-primary btn-sm hover:text-white!' %>
+      <%= link_to t('simple_calendar.next', default: 'Next'), calendar.url_for_next_view, class: 'flex-1 sm:flex-0 btn btn-outline btn-primary btn-sm hover:text-white!' %>
     </nav>
   </div>
 
@@ -25,7 +25,7 @@
         <% date_range.each_slice(7) do |week| %>
           <tr>
             <% week.each do |day| %>
-              <%= content_tag :td, class: calendar.td_classes_for(day) do %>
+              <%= content_tag :td, class: calendar.td_classes_for(day) + ['align-top'] do %>
                 <% instance_exec(day, calendar.sorted_events_for(day), &passed_block) %>
               <% end %>
             <% end %>

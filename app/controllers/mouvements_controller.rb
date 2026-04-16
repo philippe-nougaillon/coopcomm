@@ -77,12 +77,13 @@ class MouvementsController < ApplicationController
       created_at: @mouvement.created_at
     )
 
+    mouvement_date = mouvements_lies.first.date.to_date
     # On supprime l'ensemble dans une transaction sécurisée
     Mouvement.transaction do
       mouvements_lies.destroy_all
     end
 
-    redirect_back fallback_location: tools_path, notice: "La réservation a bien été annulée."
+    redirect_back fallback_location: tools_path, notice: "La réservation du #{l mouvement_date} a bien été annulée."
   rescue ActiveRecord::RecordNotDestroyed
     redirect_back fallback_location: tools_path, alert: "Erreur lors de l'annulation de la réservation."
   end
@@ -96,12 +97,12 @@ class MouvementsController < ApplicationController
 
     # On s'assure que les deux mouvements sont créés ensemble et en même temps (pour la suppression groupé)
     timestamp_exact = Time.current
-    # Mouvement.transaction do
+    Mouvement.transaction do
       @tool.mouvements.create!(état: :sortie, date: start_time, user: current_user, created_at: timestamp_exact)
       @tool.mouvements.create!(état: :entrée, date: end_time, user: current_user, created_at: timestamp_exact)
-    # end
+    end
 
-    redirect_back fallback_location: tools_path, notice: "Outil réservé avec succès."
+    redirect_back fallback_location: tools_path, notice: "Outil réservé le #{l base_date} avec succès."
   rescue ActiveRecord::RecordInvalid
     redirect_back fallback_location: tools_path, alert: "Erreur lors de la réservation de l'outil."
   end
