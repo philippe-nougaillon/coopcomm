@@ -7,7 +7,7 @@ class ToolsController < ApplicationController
     params[:vue] ||= 'calendrier'
     params[:date] = Date.today if params[:date].blank?
     @date = params[:date].to_date
-    @tools = current_user.organisation.tools.includes(mouvements: :user).ordered
+    @tools = current_organisation.tools.includes(mouvements: :user).ordered
     @types = Tool.icons
     @états = Mouvement.états.keys
 
@@ -33,14 +33,14 @@ class ToolsController < ApplicationController
     when 'calendrier'
       @date_fin = @date + 13.day
     when 'disponible'
-      @tools = @tools.where.not(id: Tool.indisponibles_ids(current_user.organisation_id, params[:date]))
+      @tools = @tools.where.not(id: Tool.indisponibles_ids(current_organisation.id, params[:date]))
     when 'indisponible'
-      @tools = @tools.where(id: Tool.indisponibles_ids(current_user.organisation_id, params[:date]))
+      @tools = @tools.where(id: Tool.indisponibles_ids(current_organisation.id, params[:date]))
     when 'indisponible_carte'
-      @tools = @tools.where(id: Tool.indisponibles_ids(current_user.organisation_id, params[:date]))
+      @tools = @tools.where(id: Tool.indisponibles_ids(current_organisation.id, params[:date]))
       @lng_list = []
       @lat_list = []
-      current_user.organisation.users.adhérent.pluck(:localisation).each do |localisation|
+      current_organisation.users.adhérent.pluck(:localisation).each do |localisation|
         @lng_list << localisation.split(',').last
         @lat_list << localisation.split(',').first
       end
@@ -66,7 +66,7 @@ class ToolsController < ApplicationController
   # POST /tools or /tools.json
   def create
     @tool = Tool.new(tool_params)
-    @tool.organisation = current_user.organisation
+    @tool.organisation = current_organisation
 
     respond_to do |format|
       if @tool.save

@@ -28,12 +28,12 @@ class InterventionsController < ApplicationController
 
     @interventions = @interventions.filter_by_service(params[:service].presence || @services )
 
-    organisation_members = current_user.organisation.users.filter_by_service(params[:service].presence || @services)
+    organisation_members = current_organisation.users.filter_by_service(params[:service].presence || @services)
     @adhérents = organisation_members.adhérent.order(:nom)
     if current_user.manager_or_admin? || current_user.adhérent?
       @grouped_agents = User.grouped_agents(current_user)
     end
-    @tools = current_user.organisation.tools.ordered
+    @tools = current_organisation.tools.ordered
     @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
 
     if params[:search].present?
@@ -190,7 +190,7 @@ class InterventionsController < ApplicationController
   # POST /interventions or /interventions.json
   def create
     @intervention = Intervention.new(intervention_params)
-    @intervention.organisation = current_user.organisation
+    @intervention.organisation = current_organisation
     update_tag_list
 
     check_workflow_pointage_mère
@@ -393,7 +393,7 @@ class InterventionsController < ApplicationController
 
     # Si c'est un adhérent, on va chercher toutes les interventions du jour, sans distinction du rôle pour pouvoir trier par outils après.
     if current_user.adhérent?
-      @interventions = current_user.organisation.interventions.ordered
+      @interventions = current_organisation.interventions.ordered
     else
       @interventions = Intervention.by_role_for(current_user)
     end
@@ -420,13 +420,13 @@ class InterventionsController < ApplicationController
     @interventions = @interventions.where("DATE(début) = ?", time_zone_date.to_date)
 
     # Création des variables utilisés par les selecteurs
-    organisation_members = current_user.organisation.users.filter_by_service(current_user.services)
+    organisation_members = current_organisation.users.filter_by_service(current_user.services)
     @adhérents = organisation_members.adhérent.order(:nom)
     if current_user.manager_or_admin? || current_user.adhérent?
       @services = current_user.services.sort
       @grouped_agents = User.grouped_agents(current_user)
     end
-    @tools = current_user.organisation.tools.ordered
+    @tools = current_organisation.tools.ordered
     @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
 
 
@@ -531,7 +531,7 @@ class InterventionsController < ApplicationController
 
     # Si c'est un adhérent, on va chercher toutes les interventions du jour, sans distinction du rôle pour pouvoir trier par outils après.
     if current_user.adhérent?
-      @interventions = current_user.organisation.interventions.ordered
+      @interventions = current_organisation.interventions.ordered
     else
       @interventions = Intervention.by_role_for(current_user)
     end
@@ -552,13 +552,13 @@ class InterventionsController < ApplicationController
     @interventions = @interventions.where("DATE(début) = ?", time_zone_date.to_date)
 
     # Création des variables utilisés par les selecteurs
-    organisation_members = current_user.organisation.users.filter_by_service(current_user.services)
+    organisation_members = current_organisation.users.filter_by_service(current_user.services)
     @adhérents = organisation_members.adhérent.order(:nom)
     if current_user.manager_or_admin? || current_user.adhérent?
       @services = current_user.services.sort
       @grouped_agents = User.grouped_agents(current_user)
     end
-    @tools = current_user.organisation.tools.ordered
+    @tools = current_organisation.tools.ordered
     @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
 
 
@@ -732,11 +732,11 @@ class InterventionsController < ApplicationController
     end
 
     def set_form_variables
-      @tags = current_user.organisation.interventions.tag_counts_on(:tags).order(:name)
-      @adhérents = current_user.organisation.users.filter_by_service(current_user.services).adhérent.order(:nom)
+      @tags = current_organisation.interventions.tag_counts_on(:tags).order(:name)
+      @adhérents = current_organisation.users.filter_by_service(current_user.services).adhérent.order(:nom)
       @services = current_user.services.ordered
       @grouped_agents = User.grouped_agents(current_user)
-      @tools = current_user.organisation.tools.ordered
+      @tools = current_organisation.tools.ordered
     end
 
     # Only allow a list of trusted parameters through.

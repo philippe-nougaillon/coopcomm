@@ -4,10 +4,10 @@ class MailLogsController < ApplicationController
 
   # GET /mail_logs or /mail_logs.json
   def index
-    @organisation_mail_logs = current_user.organisation.mail_logs
+    @organisation_mail_logs = current_organisation.mail_logs
     @mail_logs = @organisation_mail_logs.ordered
 
-    @emails = current_user.organisation.users.pluck(:email).sort
+    @emails = current_organisation.users.pluck(:email).sort
 
     unless params[:search].blank?
       @mail_logs = @mail_logs.where("LOWER(mail_logs.to) like :search", {search: "%#{params[:search]}%".downcase})

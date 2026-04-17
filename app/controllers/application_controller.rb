@@ -7,6 +7,7 @@ class ApplicationController < ActionController::Base
   before_action :prepare_exception_notifier
 
   helper_method :sort_column, :sort_direction
+  helper_method :current_organisation
 
   rate_limit to: 20, within: 1.minute, 
              by: -> { request.ip }, 
@@ -21,6 +22,10 @@ class ApplicationController < ActionController::Base
     18 => "#b7726c",
     20 => '#2e3d58'
   }
+
+  def current_organisation
+    @current_organisation ||= current_user.organisation
+  end
 
   private
 
@@ -40,8 +45,8 @@ class ApplicationController < ActionController::Base
   end
 
   def set_organisation_user_tags
-    if current_user&.organisation
-      @users_tags = current_user.organisation.users.tag_counts_on(:tags).order(:name)
+    if current_organisation
+      @users_tags = current_organisation.users.tag_counts_on(:tags).order(:name)
     end
   end
 end

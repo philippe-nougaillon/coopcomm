@@ -4,8 +4,8 @@ class MouvementsController < ApplicationController
 
   # GET /mouvements or /mouvements.json
   def index
-    @mouvements = current_user.organisation.mouvements
-    @tools = current_user.organisation.tools.ordered
+    @mouvements = current_organisation.mouvements
+    @tools = current_organisation.tools.ordered
     @états = Mouvement.états.keys
 
     if params[:tool_ids].present?
@@ -30,7 +30,7 @@ class MouvementsController < ApplicationController
   # GET /mouvements/new
   def new
     @mouvement = Mouvement.new(date: Time.current)
-    @tools = current_user.organisation.tools.ordered
+    @tools = current_organisation.tools.ordered
   end
 
   # GET /mouvements/1/edit
@@ -47,7 +47,7 @@ class MouvementsController < ApplicationController
         format.html { redirect_to @mouvement.tool, notice: "Mouvement créé avec succès." }
         format.json { render :show, status: :created, location: @mouvement }
       else
-        @tools = current_user.organisation.tools.ordered
+        @tools = current_organisation.tools.ordered
         params[:tool_id] = params[:mouvement][:tool_id]
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @mouvement.errors, status: :unprocessable_entity }
