@@ -82,7 +82,7 @@
       <% end %>
       <% if policy(:admin).parametres? %>
         <li>
-          <%= link_to admin_parametres_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres')) }", title: 'Liste des services' do %>
+          <%= link_to admin_parametres_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres')) }", title: 'Paramètres' do %>
             <span class="material-symbols-outlined">
               settings
             </span>
