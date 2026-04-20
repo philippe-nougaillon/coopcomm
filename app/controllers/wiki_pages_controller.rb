@@ -10,8 +10,8 @@ class WikiPagesController < ApplicationController
         @wiki_pages = WikiPage.blog
       when 'guide'
         @wiki_pages = WikiPage.guide
-      # when 'fiches'
-      #   @wiki_pages = WikiPage.fiches
+      when 'faq'
+        @wiki_pages = WikiPage.faq
       else
         @wiki_pages = WikiPage.where(épinglée: true)
     end
