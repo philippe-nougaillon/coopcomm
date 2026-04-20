@@ -24,7 +24,7 @@ namespace :interventions do
 
         interventions_missed.each do |intervention|
             # Manager qui gère le service de l'intervention
-            manager = User.manager.joins(:services).find_by(services: intervention.service)
+            manager = intervention.intervention_mère&.audits&.find_by(action: 'create')&.user
             if manager
                 mailer_response = NotificationMailer.report_missed_clock_out(intervention, manager.email).deliver_now
                 MailLog.create(organisation_id: intervention.organisation_id, user_id: 0, message_id: mailer_response.message_id, to: manager.email, subject: "Rappel d'une intervention non terminée", channel: 0)
