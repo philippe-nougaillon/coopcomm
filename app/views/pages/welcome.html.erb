@@ -450,8 +450,7 @@
         </p>
 
         <%= form_with(model: @newsletter, id: "nouvelle_newsletter", method: "post", html: { autocomplete: "off", class: 'w-full flex flex-col justify-center', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
-          <input type="email" placeholder="Entrez votre adresse email" data-newsletter-target="email" required class="border border-gray-300 rounded-md py-2 px-4 mb-2" />
-
+          <input id="newsletter_form_email" type="email" placeholder="Entrez votre adresse email" data-newsletter-target="email" required class="border border-gray-300 rounded-md py-2 px-4 mb-2" />
           <%= form.submit "JE M'INSCRIS", 'data-action': 'click->newsletter#print_result', class: "bg-black text-white rounded-md py-2 hover:bg-gray-800" %>
           <%= render "result_newsletter" %>
         <% end %>
