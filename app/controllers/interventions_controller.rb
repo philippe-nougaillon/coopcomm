@@ -1,7 +1,7 @@
 class InterventionsController < ApplicationController
   before_action :set_intervention, only: %i[ show edit update destroy terminer valider refuser archiver purge pointer pointage_statut update_location ]
   before_action :is_user_authorized
-  before_action :set_form_variables, only: %i[ new edit create update ]
+  before_action :set_form_variables, only: %i[ index new edit create update ]
   before_action :store_return_location, only: [:new, :edit]
   before_action :set_organisation_user_tags, only: [:index]
 
@@ -10,18 +10,8 @@ class InterventionsController < ApplicationController
     session[:vue] ||= 'normal'
     params[:vue] ||= session[:vue]
 
-    @services = current_user.services
-
-    users_in_same_services = User.filter_by_service(params[:service].presence || current_user.services)
-
-    @adhérents = users_in_same_services.adhérent.order(:nom)
-
-    if current_user.manager_or_admin? || current_user.adhérent?
-      @grouped_agents = users_in_same_services.grouped_agents(current_user)
-    end
-
     # Récupère les interventions à partir des services de l'utilisateur ou dans les params
-    @interventions = Intervention.filter_by_service(params[:service].presence || current_user.services)
+    @interventions = Intervention.filter_by_service(params[:service].presence || @services)
 
     @interventions = @interventions.by_role_for(current_user)
     
@@ -37,9 +27,6 @@ class InterventionsController < ApplicationController
     unless current_user.adhérent?
       @interventions = @interventions.where(template_slug: nil)
     end
-
-    @tools = current_organisation.tools.ordered
-    @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
 
     if params[:search].present?
       @interventions = @interventions.where("description ILIKE :search OR commentaires ILIKE :search", {search: "%#{params[:search]}%"})
@@ -64,7 +51,7 @@ class InterventionsController < ApplicationController
       tags = params[:equipe].reject(&:blank?)
       
       if tags.any?
-        adherent_ids = users_in_same_services.tagged_with(tags, any: true).pluck(:id)
+        adherent_ids = @users_in_same_services.tagged_with(tags, any: true).pluck(:id)
 
         # Étape B : On filtre directement sur la clé étrangère de l'intervention
         @interventions = @interventions.where(adherent_id: adherent_ids)
@@ -86,14 +73,18 @@ class InterventionsController < ApplicationController
       session[:tags] = params[:tags] = []
     end
 
-
     if params[:vue] == 'compact'
       @interventions = @interventions.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
     end
+    
+    @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
+    # Les tags sont récupérés avant le distinct pour des raisons de logique de requete, 
+    # le tag_counts_on ajoute un group_by dans la requete, ce qui est non compatible avec distinct
+
+    @interventions = @interventions.distinct
 
     session[:vue] = params[:vue]
 
-    @interventions = @interventions.distinct
     respond_to do |format|
       format.html do
         @pagy, @interventions = pagy(@interventions.includes(:tags, :agents, :adherent).with_attached_photos)
@@ -445,10 +436,17 @@ class InterventionsController < ApplicationController
     end
 
     def set_form_variables
-      @tags = current_organisation.interventions.tag_counts_on(:tags).order(:name)
-      @adhérents = User.filter_by_service(current_user.services).adhérent.order(:nom)
+      @users_in_same_services = User.filter_by_service(params[:service].presence || @services)
+
       @services = current_user.services.ordered
-      @grouped_agents = User.grouped_agents(current_user)
+
+      @tags = current_organisation.interventions.tag_counts_on(:tags).order(:name)
+      @adhérents = @users_in_same_services.adhérent.order(:nom)
+
+      if current_user.manager_or_admin? || current_user.adhérent?
+        @grouped_agents = @users_in_same_services.grouped_agents(current_user)
+      end
+
       @tools = current_organisation.tools.ordered
     end
 
