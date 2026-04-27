@@ -28,7 +28,7 @@ class InterventionsController < ApplicationController
 
     @interventions = @interventions.filter_by_service(params[:service].presence || @services )
 
-    organisation_members = current_organisation.users.filter_by_service(params[:service].presence || @services)
+    organisation_members = User.filter_by_service(params[:service].presence || @services)
     @adhérents = organisation_members.adhérent.order(:nom)
     if current_user.manager_or_admin? || current_user.adhérent?
       @grouped_agents = User.grouped_agents(current_user)
@@ -420,7 +420,7 @@ class InterventionsController < ApplicationController
     @interventions = @interventions.where("DATE(début) = ?", time_zone_date.to_date)
 
     # Création des variables utilisés par les selecteurs
-    organisation_members = current_organisation.users.filter_by_service(current_user.services)
+    organisation_members = User.filter_by_service(current_user.services)
     @adhérents = organisation_members.adhérent.order(:nom)
     if current_user.manager_or_admin? || current_user.adhérent?
       @services = current_user.services.sort
@@ -552,7 +552,7 @@ class InterventionsController < ApplicationController
     @interventions = @interventions.where("DATE(début) = ?", time_zone_date.to_date)
 
     # Création des variables utilisés par les selecteurs
-    organisation_members = current_organisation.users.filter_by_service(current_user.services)
+    organisation_members = User.filter_by_service(current_user.services)
     @adhérents = organisation_members.adhérent.order(:nom)
     if current_user.manager_or_admin? || current_user.adhérent?
       @services = current_user.services.sort
@@ -733,7 +733,7 @@ class InterventionsController < ApplicationController
 
     def set_form_variables
       @tags = current_organisation.interventions.tag_counts_on(:tags).order(:name)
-      @adhérents = current_organisation.users.filter_by_service(current_user.services).adhérent.order(:nom)
+      @adhérents = User.filter_by_service(current_user.services).adhérent.order(:nom)
       @services = current_user.services.ordered
       @grouped_agents = User.grouped_agents(current_user)
       @tools = current_organisation.tools.ordered

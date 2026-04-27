@@ -9,8 +9,11 @@ class UsersController < ApplicationController
   # GET /users or /users.json
   def index
     @services = current_user.services
-    @users = params[:discarded].present? ? current_organisation.users.unscoped.discarded : current_organisation.users
-    @users = @users.filter_by_service(params[:services].presence || @services).ordered
+
+    @users = User.filter_by_service(params[:services].presence || @services)
+    
+    @users = @users.unscoped.discarded if params[:discarded].present?
+    @users = @users.ordered
 
     if params[:search].present?
       @users = @users.where("users.nom ILIKE :search OR users.prénom ILIKE :search", {search: "%#{params[:search]}%"})
@@ -136,7 +139,7 @@ class UsersController < ApplicationController
     params[:date] = Date.today if params[:date].blank?
     @date = params[:date].to_date
     @services = current_user.services
-    @agents = current_organisation.users.filter_by_service(params[:service].presence || @services).where(rôle: "agent")
+    @agents = User.filter_by_service(params[:service].presence || @services).agent
 
     if params[:search].present?
       @agents = @agents.where("users.nom ILIKE :search OR users.prénom ILIKE :search OR users.email ILIKE :search", {search: "%#{params[:search]}%"})

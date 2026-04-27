@@ -40,7 +40,7 @@ class ToolsController < ApplicationController
       @tools = @tools.where(id: Tool.indisponibles_ids(current_organisation.id, params[:date]))
       @lng_list = []
       @lat_list = []
-      current_organisation.users.adhérent.pluck(:localisation).each do |localisation|
+      User.filter_by_service(current_user.services).adhérent.pluck(:localisation).each do |localisation|
         @lng_list << localisation.split(',').last
         @lat_list << localisation.split(',').first
       end

@@ -4,13 +4,13 @@ class AdminController < ApplicationController
 
   def audits
     if current_user.manager_or_admin?
-      @audits = Audited::Audit.where(user_id: current_organisation.users.pluck(:id))
+      @audits = Audited::Audit.where(user_id: User.filter_by_service(current_user.services).pluck(:id))
     else
       @audits = Audited::Audit.where(user_id: current_user.id)
     end
     @types  = @audits.pluck(:auditable_type).uniq.sort
     @actions= %w[update create destroy]
-    @users = current_organisation.users.ordered
+    @users = User.filter_by_service(current_user.services).ordered
 
     if params[:search].present?
       @audits = @audits.where("audited_changes ILIKE ?", "%#{params[:search]}%")
@@ -63,7 +63,7 @@ class AdminController < ApplicationController
   def parametres
     @warehouses = current_organisation.warehouses
     @services = current_user.services
-    @users = current_organisation.users.filter_by_service(@services)
+    @users = User.filter_by_service(@services)
 
     if params[:search].present?
       @services = @services.where("nom ILIKE :search", {search: "%#{params[:search]}%"})

@@ -7,7 +7,7 @@ class MailLogsController < ApplicationController
     @organisation_mail_logs = current_organisation.mail_logs
     @mail_logs = @organisation_mail_logs.ordered
 
-    @emails = current_organisation.users.pluck(:email).sort
+    @emails = User.filter_by_service(current_user.services).pluck(:email).sort
 
     unless params[:search].blank?
       @mail_logs = @mail_logs.where("LOWER(mail_logs.to) like :search", {search: "%#{params[:search]}%".downcase})

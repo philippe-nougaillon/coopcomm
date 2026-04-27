@@ -46,7 +46,7 @@ class ApplicationController < ActionController::Base
 
   def set_organisation_user_tags
     if current_organisation
-      @users_tags = current_organisation.users.tag_counts_on(:tags).order(:name)
+      @users_tags = User.filter_by_service(current_user.services).tag_counts_on(:tags).order(:name)
     end
   end
 end
