@@ -121,30 +121,27 @@ class Intervention < ApplicationRecord
     self.workflow_spec.states.keys.map{|i| i.to_s.humanize }
   end
 
-  # retourne les interventions selon le scope de l'utilisateur
+  # Retourne les interventions selon le role de l'utilisateur
   def self.by_role_for(user)
     case user.rôle
-    when 'manager'
-      user.organisation.interventions.ordered
+    when 'manager', 'administrateur'
+      self.ordered
     when 'adhérent'
       user.interventions_adherent.ordered
     when 'agent'
       user.interventions.ordered
-    when 'administrateur'
-      user.organisation.interventions.ordered
     end
   end
 
+  # Retourne les interventions selon le role de l'utilisateur pour la page /home
   def self.by_role_for_home(user)
     case user.rôle
-    when 'manager'
-      user.organisation.interventions.where.not(workflow_state: ["validé", "refusé", "archivé"]).ordered
+    when 'manager', 'administrateur'
+      self.interventions.where.not(workflow_state: ["validé", "refusé", "archivé"]).ordered
     when 'adhérent'
       user.interventions_adherent.where(workflow_state: ["terminé"]).ordered
     when 'agent'
       user.interventions.where(workflow_state: ["nouveau"]).ordered
-    when 'administrateur'
-      user.organisation.interventions.where.not(workflow_state: ["validé", "refusé", "archivé"]).ordered
     end
   end
 

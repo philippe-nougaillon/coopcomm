@@ -334,7 +334,11 @@ class PagesController < ApplicationController
     @banner_image_name = "banner/banner_#{base_hour}h.png"
     @banner_background_color = BACKGROUND_COLORS[base_hour]
 
-    @interventions = Intervention.by_role_for_home(current_user).filter_by_service(current_user.services).first(2)
+    @interventions = Intervention
+                              .filter_by_service(current_user.services)
+                              .by_role_for_home(current_user)
+                              .first(2)
+
     @notifications = current_user.notifications
                                             .where(read_at: nil)
                                             .joins(:from_user) # Filtre les utilisateurs supprimés

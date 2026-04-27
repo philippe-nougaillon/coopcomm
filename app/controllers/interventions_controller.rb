@@ -10,7 +10,21 @@ class InterventionsController < ApplicationController
     session[:vue] ||= 'normal'
     params[:vue] ||= session[:vue]
 
-    @interventions = Intervention.by_role_for(current_user)
+    @services = current_user.services
+
+    users_in_same_services = User.filter_by_service(params[:service].presence || current_user.services)
+
+    @adhérents = users_in_same_services.adhérent.order(:nom)
+
+    if current_user.manager_or_admin? || current_user.adhérent?
+      @grouped_agents = users_in_same_services.grouped_agents(current_user)
+    end
+
+    # Récupère les interventions à partir des services de l'utilisateur ou dans les params
+    @interventions = Intervention.filter_by_service(params[:service].presence || current_user.services)
+
+    @interventions = @interventions.by_role_for(current_user)
+    
     if params[:archives].present?
       @interventions = @interventions.where(workflow_state: 'archivé')
     elsif params[:workflow_state].present?
@@ -24,15 +38,6 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.where(template_slug: nil)
     end
 
-    @services = current_user.services
-
-    @interventions = @interventions.filter_by_service(params[:service].presence || @services )
-
-    organisation_members = User.filter_by_service(params[:service].presence || @services)
-    @adhérents = organisation_members.adhérent.order(:nom)
-    if current_user.manager_or_admin? || current_user.adhérent?
-      @grouped_agents = User.grouped_agents(current_user)
-    end
     @tools = current_organisation.tools.ordered
     @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
 
@@ -59,7 +64,7 @@ class InterventionsController < ApplicationController
       tags = params[:equipe].reject(&:blank?)
       
       if tags.any?
-        adherent_ids = User.tagged_with(tags, any: true).pluck(:id)
+        adherent_ids = users_in_same_services.tagged_with(tags, any: true).pluck(:id)
 
         # Étape B : On filtre directement sur la clé étrangère de l'intervention
         @interventions = @interventions.where(adherent_id: adherent_ids)
