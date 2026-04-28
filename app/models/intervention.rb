@@ -359,7 +359,7 @@ class Intervention < ApplicationRecord
       temps_total = (self.fin - self.début).seconds.in_hours - self.temps_de_pause
       temps_total = temps_total * self.agents.count
     else
-      temps_total = -1
+      temps_total = 0
     end
     temps_total
   end
@@ -448,7 +448,8 @@ class Intervention < ApplicationRecord
   end
 
   def temps_par_agent
-    self.temps_total / self.agents.count
+    # max au cas où il n'y a aucun agent
+    self.temps_total / [self.agents.count, 1].max
   end
 
   def intervention_mère 
