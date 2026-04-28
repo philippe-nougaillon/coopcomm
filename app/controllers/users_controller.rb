@@ -2,7 +2,7 @@ class UsersController < ApplicationController
   before_action :set_user, only: %i[ show edit update destroy inviter edit_password update_password ]
   # la méthode reactivate a tout de même un authorize
   before_action :is_user_authorized, except: %i[ reactivate ] 
-  before_action :set_organisation_user_tags, only: [:new, :create, :edit, :update]
+  before_action :set_users_tags, only: [:new, :create, :edit, :update]
 
   require 'capture_stdout'
 

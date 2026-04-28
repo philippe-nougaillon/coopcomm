@@ -3,7 +3,7 @@ class InterventionsController < ApplicationController
   before_action :is_user_authorized
   before_action :set_form_variables, only: %i[ index new edit create update ]
   before_action :store_return_location, only: [:new, :edit]
-  before_action :set_organisation_user_tags, only: [:index]
+  before_action :set_users_tags, only: [:index]
 
   # GET /interventions or /interventions.json
   def index

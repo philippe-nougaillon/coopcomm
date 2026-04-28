@@ -44,9 +44,7 @@ class ApplicationController < ActionController::Base
     redirect_to(request.referrer || request.path || root_path)
   end
 
-  def set_organisation_user_tags
-    if current_organisation
-      @users_tags = User.filter_by_service(current_user.services).tag_counts_on(:tags).order(:name)
-    end
+  def set_users_tags
+    @users_tags = User.filter_by_service(current_user).tag_counts_on(:tags).order(:name)
   end
 end
