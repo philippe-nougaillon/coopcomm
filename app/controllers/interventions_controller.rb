@@ -1,14 +1,17 @@
 class InterventionsController < ApplicationController
   before_action :set_intervention, only: %i[ show edit update destroy terminer valider refuser archiver purge pointer pointage_statut update_location ]
   before_action :is_user_authorized
-  before_action :set_form_variables, only: %i[ index new edit create update ]
+  before_action :set_form_variables, only: %i[ new edit create update ]
   before_action :store_return_location, only: [:new, :edit]
   before_action :set_users_tags, only: [:index]
+  before_action :set_interventions_tags, only: %i[ index new edit create update ]
 
   # GET /interventions or /interventions.json
   def index
     session[:vue] ||= 'normal'
     params[:vue] ||= session[:vue]
+
+    @services = current_user.services
 
     # Récupère les interventions à partir des services de l'utilisateur ou dans les params
     @interventions = Intervention.filter_by_service(params[:service].presence || @services)
@@ -77,11 +80,17 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
     end
     
-    @tags = @interventions.tag_counts_on(:tags).order(tags_count: :desc).order(:name)
-    # Les tags sont récupérés avant le distinct pour des raisons de logique de requete, 
-    # le tag_counts_on ajoute un group_by dans la requete, ce qui est non compatible avec distinct
-
     @interventions = @interventions.distinct
+
+    users_in_same_services = User.filter_by_service(params[:service].presence || @services)
+
+    @adhérents = users_in_same_services.adhérent.order(:nom)
+
+    if current_user.manager_or_admin? || current_user.adhérent?
+      @grouped_agents = users_in_same_services.grouped_agents(current_user)
+    end
+
+    @tools = current_organisation.tools.ordered
 
     session[:vue] = params[:vue]
 
@@ -436,18 +445,21 @@ class InterventionsController < ApplicationController
     end
 
     def set_form_variables
-      @users_in_same_services = User.filter_by_service(params[:service].presence || @services)
+      @services = current_user.services
 
-      @services = current_user.services.ordered
+      users_in_same_services = User.filter_by_service(@services)
 
-      @tags = current_organisation.interventions.tag_counts_on(:tags).order(:name)
-      @adhérents = @users_in_same_services.adhérent.order(:nom)
+      @adhérents = users_in_same_services.adhérent.order(:nom)
 
       if current_user.manager_or_admin? || current_user.adhérent?
-        @grouped_agents = @users_in_same_services.grouped_agents(current_user)
+        @grouped_agents = users_in_same_services.grouped_agents(current_user)
       end
 
       @tools = current_organisation.tools.ordered
+    end
+
+    def set_interventions_tags
+      @tags = current_organisation.interventions.tag_counts_on(:tags).order(:name)
     end
 
     # Only allow a list of trusted parameters through.
