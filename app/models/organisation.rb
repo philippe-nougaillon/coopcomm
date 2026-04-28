@@ -1,7 +1,6 @@
 class Organisation < ApplicationRecord
   audited
 
-  has_many :interventions, dependent: :destroy
   has_many :mail_logs, dependent: :destroy
   has_many :absences, through: :users, dependent: :destroy
   has_many :tools, dependent: :destroy
@@ -11,6 +10,7 @@ class Organisation < ApplicationRecord
   has_many :warehouses, dependent: :destroy
   has_many :users, -> { distinct }, through: :services
   has_many :notifications, -> { distinct }, through: :users
+  has_many :interventions, through: :services
 
   def numero
     self.nom.split('_').last

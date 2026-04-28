@@ -14,14 +14,16 @@ class Intervention < ApplicationRecord
   
   before_destroy :must_not_have_any_mouvements
 
-  belongs_to :organisation
   belongs_to :service
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
+
   has_many :agent_interventions, dependent: :destroy
   has_many :agents, through: :agent_interventions, class_name: 'User'
   has_many :tool_interventions, dependent: :destroy
   has_many :tools, through: :tool_interventions
   has_many :mouvements
+
+  has_one :organisation, through: :service
 
   has_many_attached :photos
 
