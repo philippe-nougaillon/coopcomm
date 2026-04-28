@@ -258,13 +258,16 @@ class InterventionsController < ApplicationController
   # end
 
   def terminer
-    @intervention.terminer!
-    @intervention.calculate_co2
+    if @intervention.can_terminer?
+      @intervention.terminer!
+      @intervention.calculate_co2
+      send_workflow_changed_notification
+      send_intervention_termine_notification
+      redirect_to @intervention, notice: "Intervention terminée"
+    else
+      redirect_to @intervention, notice: "Impossible de terminer l'intervention"
+    end
 
-    send_workflow_changed_notification
-    send_intervention_termine_notification
-
-    redirect_to @intervention, notice: "Intervention terminée"
   end
 
   def valider

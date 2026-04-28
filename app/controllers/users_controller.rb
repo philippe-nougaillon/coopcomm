@@ -67,7 +67,6 @@ class UsersController < ApplicationController
   # POST /users or /users.json
   def create
     @user = User.new(user_params)
-    @user.organisation = current_organisation
     @user.password = User.generate_random_password
 
     # Force le rôle à agent si l'utilisateur courant est un manager

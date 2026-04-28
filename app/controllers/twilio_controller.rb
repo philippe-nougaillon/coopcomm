@@ -9,7 +9,7 @@ class TwilioController < ApplicationController
     agent = User.agent.find_by_whatsapp_phone(sender) if sender.present?
 
     if sender.present? && message.present? && agent
-      intervention = Intervention.new(description: "[WhatsApp] #{l(DateTime.now, format: :long)} #{sender.gsub("whatsapp:", '')}", organisation_id: agent.organisation_id, commentaires: message, service: agent.services.first, workflow_state: "nouveau")
+      intervention = Intervention.new(description: "[WhatsApp] #{l(DateTime.now, format: :long)} #{sender.gsub("whatsapp:", '')}", organisation_id: agent.organisation.id, commentaires: message, service: agent.services.first, workflow_state: "nouveau")
       # Obligé de bypass les validations comme on ne connait pas l'adhérent concerné par l'intervention
       intervention.save!(validate: false)
       if intervention

@@ -24,7 +24,6 @@ class User < ApplicationRecord
 
   has_one_attached :profile_picture
 
-  belongs_to :organisation, optional: true
   belongs_to :warehouse, optional: true
 
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
@@ -34,6 +33,10 @@ class User < ApplicationRecord
   has_many :absences, dependent: :destroy
   has_many :user_services, dependent: :destroy
   has_many :services, through: :user_services
+
+  # L'utilisateur n'est associé qu'à une seule organisation, via ses services
+  has_many :organisations, -> { limit(1) }, through: :services
+
   accepts_nested_attributes_for :absences, 
                               allow_destroy:true, 
                               reject_if: lambda {|attributes| attributes['du'].blank? || attributes['au'].blank? }
@@ -65,6 +68,10 @@ class User < ApplicationRecord
 
   default_scope -> { kept }
   scope :ordered, -> { order(:nom) }
+
+  def organisation
+    self.organisations.first
+  end
 
   def self.grouped_agents(user)
     # 1. On stocke les IDs des services de l'utilisateur courant pour filtrer

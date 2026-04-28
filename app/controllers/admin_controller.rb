@@ -42,7 +42,6 @@ class AdminController < ApplicationController
 
   def create_new_user_do
     @user = User.new(params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :rôle, :service, :address, :latitude, :longitude))
-    @user.organisation = current_organisation
 
     respond_to do |format|
       if @user.save

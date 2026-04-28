@@ -102,7 +102,6 @@ intervention_fille:
   slug: <%= SecureRandom.uuid %>
   service: technique
   début: <%= DateTime.now %>
-  repeter: true
 
 # Organisation Marseille
 nettoyage_port:
