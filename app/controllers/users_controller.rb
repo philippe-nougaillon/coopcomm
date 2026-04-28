@@ -2,15 +2,18 @@ class UsersController < ApplicationController
   before_action :set_user, only: %i[ show edit update destroy inviter edit_password update_password ]
   # la méthode reactivate a tout de même un authorize
   before_action :is_user_authorized, except: %i[ reactivate ] 
-  before_action :set_organisation_user_tags, only: [:new, :create, :edit, :update]
+  before_action :set_users_tags, only: [:new, :create, :edit, :update]
 
   require 'capture_stdout'
 
   # GET /users or /users.json
   def index
     @services = current_user.services
-    @users = params[:discarded].present? ? current_user.organisation.users.unscoped.discarded : current_user.organisation.users
-    @users = @users.filter_by_service(params[:services].presence || @services).ordered
+
+    @users = User.by_service(params[:services].presence || @services)
+    
+    @users = @users.unscoped.discarded if params[:discarded].present?
+    @users = @users.ordered
 
     if params[:search].present?
       @users = @users.where("users.nom ILIKE :search OR users.prénom ILIKE :search", {search: "%#{params[:search]}%"})
@@ -64,7 +67,6 @@ class UsersController < ApplicationController
   # POST /users or /users.json
   def create
     @user = User.new(user_params)
-    @user.organisation = current_user.organisation
     @user.password = User.generate_random_password
 
     # Force le rôle à agent si l'utilisateur courant est un manager
@@ -136,7 +138,7 @@ class UsersController < ApplicationController
     params[:date] = Date.today if params[:date].blank?
     @date = params[:date].to_date
     @services = current_user.services
-    @agents = current_user.organisation.users.filter_by_service(params[:service].presence || @services).where(rôle: "agent")
+    @agents = User.by_service(params[:service].presence || @services).agent
 
     if params[:search].present?
       @agents = @agents.where("users.nom ILIKE :search OR users.prénom ILIKE :search OR users.email ILIKE :search", {search: "%#{params[:search]}%"})
@@ -194,7 +196,7 @@ class UsersController < ApplicationController
                     
                     new_record = user.new_record?
                     
-          user.organisation_id = current_user.organisation_id
+          user.organisation_id = current_organisation.id
           user.nom = row[headers.index 'Nom']&.strip&.upcase
           user.prénom = row[headers.index 'Prénom']&.strip&.humanize
           user.email = row[headers.index 'Email']

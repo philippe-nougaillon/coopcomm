@@ -5,7 +5,7 @@ class WarehousesController < ApplicationController
 
   # GET /warehouses or /warehouses.json
   # def index
-  #   @warehouses = current_user.organisation.warehouses
+  #   @warehouses = current_organisation.warehouses
   # end
 
   # GET /warehouses/1 or /warehouses/1.json
@@ -24,7 +24,7 @@ class WarehousesController < ApplicationController
   # POST /warehouses or /warehouses.json
   def create
     @warehouse = Warehouse.new(warehouse_params)
-    @warehouse.organisation = current_user.organisation
+    @warehouse.organisation = current_organisation
 
     respond_to do |format|
       if @warehouse.save
@@ -79,6 +79,6 @@ class WarehousesController < ApplicationController
     end
 
     def set_form_variables
-      @users = current_user.organisation.users.where.not(rôle: "adhérent").ordered
+      @users = User.by_service(current_user.services).where.not(rôle: "adhérent").ordered
     end
 end

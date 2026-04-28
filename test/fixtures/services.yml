@@ -39,3 +39,8 @@ service_marseille:
   nom: Service_Marseille
   organisation: mairie_marseille
   slug: <%= SecureRandom.uuid %>
+
+service_marseille2:
+  nom: Service_Marseille2
+  organisation: mairie_marseille
+  slug: <%= SecureRandom.uuid %>

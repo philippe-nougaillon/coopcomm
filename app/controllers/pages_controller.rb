@@ -16,7 +16,7 @@ class PagesController < ApplicationController
 
     if params[:commit].present?
       minimum = 10
-      interventions = current_user.organisation
+      interventions = current_organisation
                                   .interventions
                                   .where.not(début_prévue: nil)
                                   .where(template_slug: nil)
@@ -61,14 +61,14 @@ class PagesController < ApplicationController
     start_date = 9.months.ago.beginning_of_month
     end_date = 3.months.from_now.end_of_month
     if current_user.manager_or_admin?
-      @export_logs = current_user.organisation.export_logs.includes(:user).order(created_at: :desc)
+      @export_logs = current_organisation.export_logs.includes(:user).order(created_at: :desc)
       # temps_consommable_agent_mensuellement = 35 * 4
-      # temps_consommable_organisation_mensuellement = current_user.organisation.users.adherent.count * 100
+      # temps_consommable_organisation_mensuellement = User.filter_by_service(current_user.services).adherent.count * 100
       #
       # Temps total par adhérent
       #
       @temps_total_par_adhérent = {}
-      current_user.organisation.users.adhérent.filter_by_service(current_user.services).each do |adhérent|
+      User.by_service(current_user.services).adhérent.each do |adhérent|
         @temps_total_par_adhérent[adhérent.nom_prénom] = adhérent.interventions_adherent.sum(:temps_total)
       end
 
@@ -77,7 +77,7 @@ class PagesController < ApplicationController
       #
 
       @temps_total_par_agent = {}
-      current_user.organisation.users.agent.filter_by_service(current_user.services).each do |agent|
+      User.by_service(current_user.services).agent.each do |agent|
         @temps_total_par_agent[agent.nom_prénom] = 0
         agent.interventions.each do |intervention|
           @temps_total_par_agent[agent.nom_prénom] += intervention.temps_total / intervention.agents.count
@@ -90,7 +90,7 @@ class PagesController < ApplicationController
 
       qté_interventions_par_mois_par_état = {}
 
-      current_user.organisation.interventions.filter_by_service(current_user.services).where(début: start_date..end_date).group("DATE_TRUNC('month', début)", :workflow_state).count.each do |(month, state), count|
+      current_organisation.interventions.filter_by_service(current_user.services).where(début: start_date..end_date).group("DATE_TRUNC('month', début)", :workflow_state).count.each do |(month, state), count|
         formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
         qté_interventions_par_mois_par_état[formatted_month] ||= {}
         qté_interventions_par_mois_par_état[formatted_month][state] = count
@@ -133,7 +133,7 @@ class PagesController < ApplicationController
       # Graphe qté d'intervention par service
       #
 
-      @qté_interventions_par_service = current_user.organisation.interventions.filter_by_service(current_user.services).joins(:service).group("services.nom").count
+      @qté_interventions_par_service = current_organisation.interventions.filter_by_service(current_user.services).joins(:service).group("services.nom").count
 
 
       #
@@ -146,7 +146,7 @@ class PagesController < ApplicationController
       #   @temps_total_par_service
       # end
 
-      @temps_total_par_service = current_user.organisation.interventions.filter_by_service(current_user.services).joins(:service).group("services.nom").sum(:temps_total)
+      @temps_total_par_service = current_organisation.interventions.filter_by_service(current_user.services).joins(:service).group("services.nom").sum(:temps_total)
 
 
       #
@@ -155,7 +155,7 @@ class PagesController < ApplicationController
 
       # Pour chaque mois, calcule le co2 total
       co2_total_par_mois = {}
-      current_user.organisation.interventions.filter_by_service(current_user.services).where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:co2).each do |month, co2|
+      current_organisation.interventions.filter_by_service(current_user.services).where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:co2).each do |month, co2|
         formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
         co2_total_par_mois[formatted_month] = co2
       end
@@ -303,10 +303,10 @@ class PagesController < ApplicationController
       format.xls do
         if current_user.manager_or_admin?
           xls_file = DashboardManagerToXls.new(@temps_total_par_adhérent, @temps_total_par_agent, @data_workflow_chart, @qté_interventions_par_service, @temps_total_par_service, @co2_total_par_mois).call
-          ExportLog.create!(user: current_user, organisation: current_user.organisation, export_type: 'dashboard_manager')
+          ExportLog.create!(user: current_user, organisation: current_organisation, export_type: 'dashboard_manager')
         else
           xls_file = DashboardAdherentToXls.new(@proportion_temps_consommé, @temps_total_par_mois, @data_workflow_chart, @qté_interventions_par_service, @temps_total_par_service, @co2_total_par_mois).call
-          ExportLog.create!(user: current_user, organisation: current_user.organisation, export_type: 'dashboard_adherent')
+          ExportLog.create!(user: current_user, organisation: current_organisation, export_type: 'dashboard_adherent')
         end
         send_data xls_file, filename: "Dashboard_#{l Date.today}.xls"
       end
@@ -334,7 +334,11 @@ class PagesController < ApplicationController
     @banner_image_name = "banner/banner_#{base_hour}h.png"
     @banner_background_color = BACKGROUND_COLORS[base_hour]
 
-    @interventions = Intervention.by_role_for_home(current_user).filter_by_service(current_user.services).first(2)
+    @interventions = Intervention
+                              .filter_by_service(current_user.services)
+                              .by_role_for_home(current_user)
+                              .first(2)
+
     @notifications = current_user.notifications
                                             .where(read_at: nil)
                                             .joins(:from_user) # Filtre les utilisateurs supprimés
