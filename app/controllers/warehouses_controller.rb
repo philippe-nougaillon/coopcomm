@@ -79,6 +79,6 @@ class WarehousesController < ApplicationController
     end
 
     def set_form_variables
-      @users = User.filter_by_service(current_user.services).where.not(rôle: "adhérent").ordered
+      @users = User.by_service(current_user.services).where.not(rôle: "adhérent").ordered
     end
 end

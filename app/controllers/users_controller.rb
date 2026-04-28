@@ -10,7 +10,7 @@ class UsersController < ApplicationController
   def index
     @services = current_user.services
 
-    @users = User.filter_by_service(params[:services].presence || @services)
+    @users = User.by_service(params[:services].presence || @services)
     
     @users = @users.unscoped.discarded if params[:discarded].present?
     @users = @users.ordered
@@ -139,7 +139,7 @@ class UsersController < ApplicationController
     params[:date] = Date.today if params[:date].blank?
     @date = params[:date].to_date
     @services = current_user.services
-    @agents = User.filter_by_service(params[:service].presence || @services).agent
+    @agents = User.by_service(params[:service].presence || @services).agent
 
     if params[:search].present?
       @agents = @agents.where("users.nom ILIKE :search OR users.prénom ILIKE :search OR users.email ILIKE :search", {search: "%#{params[:search]}%"})

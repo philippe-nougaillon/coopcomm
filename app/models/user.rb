@@ -297,7 +297,7 @@ class User < ApplicationRecord
     )
   end
 
-  def self.filter_by_service(services)
+  def self.by_service(services)
     self
       .joins(user_services: :service)
       .where(services: services)

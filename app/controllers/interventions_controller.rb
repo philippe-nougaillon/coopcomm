@@ -82,7 +82,7 @@ class InterventionsController < ApplicationController
     
     @interventions = @interventions.distinct
 
-    users_in_same_services = User.filter_by_service(params[:service].presence || @services)
+    users_in_same_services = User.by_service(params[:service].presence || @services)
 
     @adhérents = users_in_same_services.adhérent.order(:nom)
 
@@ -447,7 +447,7 @@ class InterventionsController < ApplicationController
     def set_form_variables
       @services = current_user.services
 
-      users_in_same_services = User.filter_by_service(@services)
+      users_in_same_services = User.by_service(@services)
 
       @adhérents = users_in_same_services.adhérent.order(:nom)
 

@@ -45,6 +45,6 @@ class ApplicationController < ActionController::Base
   end
 
   def set_users_tags
-    @users_tags = User.filter_by_service(current_user).tag_counts_on(:tags).order(:name)
+    @users_tags = User.by_service(current_user).tag_counts_on(:tags).order(:name)
   end
 end

@@ -3,7 +3,7 @@ class MessagerieController < ApplicationController
 
   def messagerie
     # On récupère les utilisateurs avec qui on peut envoyer des messages
-    @users = User.filter_by_service(current_user.services).where.not(id: current_user.id).ordered
+    @users = User.by_service(current_user.services).where.not(id: current_user.id).ordered
 
     @to_user = User.find_by(id: params[:to_id])
 
@@ -63,7 +63,7 @@ class MessagerieController < ApplicationController
   end
 
   def search_contact
-    @users = User.filter_by_service(current_user.services).where.not(id: current_user.id).where("users.nom ILIKE :search OR users.prénom ILIKE :search", {search: "%#{params[:query]}%"}).ordered
+    @users = User.by_service(current_user.services).where.not(id: current_user.id).where("users.nom ILIKE :search OR users.prénom ILIKE :search", { search: "%#{params[:query]}%"}).ordered
     render partial: 'users_list', locals: { users: @users }
   end
 

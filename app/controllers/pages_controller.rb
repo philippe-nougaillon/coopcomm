@@ -68,7 +68,7 @@ class PagesController < ApplicationController
       # Temps total par adhérent
       #
       @temps_total_par_adhérent = {}
-      User.filter_by_service(current_user.services).adhérent.each do |adhérent|
+      User.by_service(current_user.services).adhérent.each do |adhérent|
         @temps_total_par_adhérent[adhérent.nom_prénom] = adhérent.interventions_adherent.sum(:temps_total)
       end
 
@@ -77,7 +77,7 @@ class PagesController < ApplicationController
       #
 
       @temps_total_par_agent = {}
-      User.filter_by_service(current_user.services).agent.each do |agent|
+      User.by_service(current_user.services).agent.each do |agent|
         @temps_total_par_agent[agent.nom_prénom] = 0
         agent.interventions.each do |intervention|
           @temps_total_par_agent[agent.nom_prénom] += intervention.temps_total / intervention.agents.count
