@@ -85,8 +85,8 @@
         <%= form.label :service_ids, "Service" %>
         <%= form.select :service_ids,
                         options_from_collection_for_select(current_user.organisation.services, 'id', 'nom', user.services.ids),
-                        { include_blank: true },
-                        { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
+                        { include_blank: true, required: true },
+                        { multiple: true, class: 'slim-select w-full' } %>
       </div>
     <% end %>
   <% end %>
