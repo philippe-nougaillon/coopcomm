@@ -299,7 +299,7 @@ class User < ApplicationRecord
       message_id: mailer_response.message_id, 
       to: self.email, 
       subject: mailer_response.subject || "Notification CoopComm",
-      organisation_id: self.organisation_id,
+      organisation_id: self.organisation.id,
       channel: 0
     )
   end
