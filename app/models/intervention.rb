@@ -137,7 +137,7 @@ class Intervention < ApplicationRecord
   def self.by_role_for_home(user)
     case user.rôle
     when 'manager', 'administrateur'
-      self.interventions.where.not(workflow_state: ["validé", "refusé", "archivé"]).ordered
+      self.where.not(workflow_state: ["validé", "refusé", "archivé"]).ordered
     when 'adhérent'
       user.interventions_adherent.where(workflow_state: ["terminé"]).ordered
     when 'agent'
