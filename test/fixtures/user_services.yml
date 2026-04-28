@@ -20,6 +20,10 @@ hidalgo_informatique:
   user: hidalgo
   service: informatique
 
+hidalgo_tecnique:
+  user: hidalgo
+  service: technique
+
 manager_paris_service_paris:
   user: manager_paris
   service: service_paris

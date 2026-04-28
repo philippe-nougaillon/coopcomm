@@ -10,7 +10,7 @@ class MailLogPolicy < ApplicationPolicy
   end
 
   def show?
-    index? && record.organisation.users.include?(user)
+    index? && organisation?
   end
 
   def refresh?
