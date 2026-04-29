@@ -44,6 +44,7 @@
 
     <h2 class="text-lg text-secondary font-black mb-2">Demande</h2>
     <div class="bg-sky-50 p-4 rounded border border-sky-100 shadow-xs mb-8">
+      
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
         <div>
           <strong class="block text-slate-400 mb-1">Adhérent</strong>
@@ -53,25 +54,30 @@
           <strong class="block text-slate-400 mb-1">Service</strong>
           <b><%= @intervention.service.nom %></b>
         </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8 mt-4">
-        <% if @intervention.début_prévue || @intervention.fin_prévue %>
-          <div>
-            <strong class="block text-slate-400 mb-1">Début prévu</strong>
-            <%= l(@intervention.début_prévue, format: :long) if @intervention.début_prévue %>
-          </div>
-          <div>
-            <strong class="block text-slate-400 mb-1">Fin prévue</strong>
-            <%= l(@intervention.fin_prévue, format: :long) if @intervention.fin_prévue %>
-          </div>
-        <% end %>
-        
         <div>
           <strong class="block text-slate-400 mb-1">Météo</strong>
           <%= @intervention.meteo.presence || "Non renseignée" %>
         </div>
       </div>
+
+      <% if @intervention.début_prévue || @intervention.fin_prévue %>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8 mt-4">
+          <% if @intervention.début_prévue %>
+            <div>
+              <strong class="block text-slate-400 mb-1">Début prévu</strong>
+              <%= l(@intervention.début_prévue, format: :long) %>
+            </div>
+          <% end %>
+          
+          <% if @intervention.fin_prévue %>
+            <div>
+              <strong class="block text-slate-400 mb-1">Fin prévue</strong>
+              <%= l(@intervention.fin_prévue, format: :long) %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
     </div>
 
     <% if !current_user.adhérent? %>
