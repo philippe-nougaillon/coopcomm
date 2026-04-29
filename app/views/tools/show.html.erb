@@ -133,7 +133,7 @@
 
         <tbody>
           <% if @tool.interventions.any? %>
-            <%= render partial: 'intervention', collection: @tool.interventions.ordered %>
+            <%= render partial: 'intervention', collection: @tool.interventions.ordered, cached: true %>
           <% else %>
             <tr>
               <td colspan=6>
