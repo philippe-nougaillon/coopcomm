@@ -17,21 +17,25 @@
     <% end %>
   </h1>
 
+  <small>Il y a <%= time_ago_in_words(wiki_page.updated_at) %></small>
+
   <% if action_name == "show" %>
     <p class="my-5">
       <%= wiki_page.contenu %>
     </p>
   <% else %>
-    <div class="max-h-24 overflow-y-hidden"><%= wiki_page.contenu %>...</div>
-    <br>
-    <%= link_to 'Lire l\'article', wiki_page, class: 'btn' %>
+    <p><%= wiki_page.sous_titre %></p>
     <% if wiki_page.document.attached? %>
-      <% if wiki_page.document.representable? %>
+      <% if wiki_page.document.previewable? %>
+        <%= link_to image_tag(wiki_page.document.preview(resize_to_limit: [150, 150]), class: 'max-w-none shadow-xl'), wiki_page.document %>
+      <% elsif wiki_page.document.representable? %>
         <%= link_to 'Voir le document', wiki_page.document, class: "btn btn-primary" %>
       <% else %>
         <%= link_to "Télécharger le document", rails_blob_path(wiki_page.document, disposition: "attachment"), class: "btn btn-primary" %>
       <% end %>
     <% end %>
+    <br>
+    <%= link_to 'Lire l\'article', wiki_page, class: 'btn' %>
     <hr class="my-6">
   <% end %>
 </div>
