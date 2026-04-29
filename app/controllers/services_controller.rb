@@ -5,7 +5,7 @@ class ServicesController < ApplicationController
   # GET /services or /services.json
   # def index
   #   @services = current_user.services
-  #   @users = current_user.organisation.users.filter_by_service(@services)
+  #   @users = User.filter_by_service(@services)
 
   #   if params[:search].present?
   #     @services = @services.where("nom ILIKE :search", {search: "%#{params[:search]}%"})
@@ -35,7 +35,7 @@ class ServicesController < ApplicationController
   # POST /services or /services.json
   def create
     @service = Service.new(service_params)
-    @service.organisation = current_user.organisation
+    @service.organisation = current_organisation
 
     respond_to do |format|
       if @service.save

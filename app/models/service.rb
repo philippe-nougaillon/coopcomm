@@ -9,6 +9,7 @@ class Service < ApplicationRecord
   has_many :user_services, dependent: :destroy
   has_many :users, through: :user_services
   has_many :interventions
+  has_many :managers, -> { manager }, through: :user_services, source: :user
 
   validates_uniqueness_of :nom, scope: :organisation_id
 

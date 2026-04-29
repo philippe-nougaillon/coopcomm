@@ -29,7 +29,6 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_difference("Intervention.count") do
       post interventions_url, params: {
         intervention: {
-          organisation_id: @intervention.organisation_id,
           début: @intervention.début,
           fin: @intervention.fin,
           temps_de_pause: @intervention.temps_de_pause,

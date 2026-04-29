@@ -1,16 +1,16 @@
 class AdminController < ApplicationController
   before_action :is_user_authorized
-  before_action :set_organisation_user_tags, only: [:create_new_user, :create_new_user_do]
+  before_action :set_users_tags, only: [:create_new_user, :create_new_user_do]
 
   def audits
     if current_user.manager_or_admin?
-      @audits = Audited::Audit.where(user_id: current_user.organisation.users.pluck(:id))
+      @audits = Audited::Audit.where(user_id: User.by_service(current_user.services).pluck(:id))
     else
       @audits = Audited::Audit.where(user_id: current_user.id)
     end
     @types  = @audits.pluck(:auditable_type).uniq.sort
     @actions= %w[update create destroy]
-    @users = current_user.organisation.users.ordered 
+    @users = User.by_service(current_user.services).ordered
 
     if params[:search].present?
       @audits = @audits.where("audited_changes ILIKE ?", "%#{params[:search]}%")
@@ -42,7 +42,6 @@ class AdminController < ApplicationController
 
   def create_new_user_do
     @user = User.new(params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :rôle, :service, :address, :latitude, :longitude))
-    @user.organisation = current_user.organisation
 
     respond_to do |format|
       if @user.save
@@ -61,9 +60,9 @@ class AdminController < ApplicationController
   end
 
   def parametres
-    @warehouses = current_user.organisation.warehouses
+    @warehouses = current_organisation.warehouses
     @services = current_user.services
-    @users = current_user.organisation.users.filter_by_service(@services)
+    @users = User.by_service(@services)
 
     if params[:search].present?
       @services = @services.where("nom ILIKE :search", {search: "%#{params[:search]}%"})

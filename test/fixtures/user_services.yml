@@ -20,6 +20,10 @@ hidalgo_informatique:
   user: hidalgo
   service: informatique
 
+hidalgo_tecnique:
+  user: hidalgo
+  service: technique
+
 manager_paris_service_paris:
   user: manager_paris
   service: service_paris
@@ -56,6 +60,14 @@ agent_whatsapp_service_paris:
   user: agent_whatsapp
   service: service_paris
 
+patrick_adherent_paris_technique:
+  user: patrick_adherent_paris
+  service: service_paris
+
+manager_marseille_service_marseille:
+  user: manager_marseille
+  service: service_marseille
+
 nettoyeur_marseille_service_marseille:
   user: nettoyeur_marseille
   service: service_marseille
@@ -63,3 +75,7 @@ nettoyeur_marseille_service_marseille:
 agent_marseille_service_marseille:
   user: agent_marseille
   service: service_marseille
+
+michael_jackson_service_marseille2:
+  user: michael_jackson
+  service: service_marseille2

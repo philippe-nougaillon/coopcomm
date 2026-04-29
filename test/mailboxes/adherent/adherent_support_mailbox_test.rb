@@ -13,9 +13,9 @@ class AdherentSupportMailboxTest < ActionMailbox::TestCase
       charset: "UTF-8"
     )
 
-    intervention = Intervention.last
+    intervention = Intervention.find_by(description: "[MAIL] #{subject}")
+
     assert_equal user.id, intervention.adherent_id
-    assert_equal "[MAIL] #{subject}", intervention.description
     assert_equal "De #{user.nom_prenom_role} : #{body}", intervention.commentaires
   end
 end

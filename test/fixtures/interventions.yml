@@ -1,7 +1,6 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 tonte_locaux:
-  organisation: mairie_paris
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
 #  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
@@ -21,7 +20,6 @@ tonte_locaux:
   service: technique
 
 nouvelle_intervention:
-  organisation: mairie_paris
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
 #  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
@@ -32,7 +30,6 @@ nouvelle_intervention:
   service: technique
 
 intervention_terminée:
-  organisation: mairie_paris
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
 #  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
@@ -43,7 +40,6 @@ intervention_terminée:
   service: technique
 
 intervention_validé:
-  organisation: mairie_paris
   adherent_id: weil
   début: 2025-05-05 16:16:27
   description: Débrousailler la mairie
@@ -52,7 +48,6 @@ intervention_validé:
   service: technique
 
 intervention_autre_agent:
-  organisation: mairie_paris
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
 #  agent_id: <%#= ActiveRecord::FixtureSet.identify(:martin) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
@@ -63,7 +58,6 @@ intervention_autre_agent:
   service: technique
 
 intervention_autre_adhérent:
-  organisation: mairie_paris
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
 #  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:berthout) %>
@@ -74,7 +68,6 @@ intervention_autre_adhérent:
   service: technique
 
 intervention_paris:
-  organisation: mairie_paris
   adherent: patrick_adherent_paris
   début: 2025-04-23 12:26:45
   description: Intervention à paris
@@ -85,7 +78,6 @@ intervention_paris:
 <% slug_commun = "99e2232e-b9f4-4ee6-b043-13ee190fcca6" %>
 
 intervention_repete:
-  organisation: mairie_paris
   adherent: weil
   description: Intervention répété
   repeter: true
@@ -94,7 +86,6 @@ intervention_repete:
   service: technique
 
 intervention_fille:
-  organisation: mairie_paris
   adherent: weil
   description: Intervention fille de intervention_repete
   repeter: true
@@ -102,11 +93,9 @@ intervention_fille:
   slug: <%= SecureRandom.uuid %>
   service: technique
   début: <%= DateTime.now %>
-  repeter: true
 
 # Organisation Marseille
 nettoyage_port:
-  organisation: mairie_marseille
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:nettoyeur_marseille) %>
 #  agent_id: <%#= ActiveRecord::FixtureSet.identify(:agent_marseille) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:adherent_marseille) %>
@@ -121,7 +110,6 @@ nettoyage_port:
 # Organisation sans manager
 
 intervention_sans_manager:
-  organisation: organisation_sans_manager
   adherent_id: george_lucas
   début: 2025-04-23 12:26:45
   description: Intervention sans manager

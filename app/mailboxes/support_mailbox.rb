@@ -6,12 +6,12 @@ class SupportMailbox < ApplicationMailbox
     # Chercher si l'envoyeur est un adhérent
     if user = User.where(rôle: "adhérent").find_by(email: mail.from_address&.address)
 
-      if organisation = Organisation.find_by(id: user.organisation_id)
-        organisation.interventions.create( 
+      # La création de l'intervention est basé sur le premier service de l'adhérent
+      if service = Service.find_by(id: user.services.first)
+        service.interventions.create(
                         adherent_id: (user.id),
                         description: "[MAIL] #{mail.subject}", 
                         commentaires: "De #{user.nom_prenom_role} : #{safe_mail_body(mail)}",
-                        service_id: user.services.first.id
                       )
       end
 

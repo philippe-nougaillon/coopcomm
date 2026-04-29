@@ -14,14 +14,16 @@ class Intervention < ApplicationRecord
   
   before_destroy :must_not_have_any_mouvements
 
-  belongs_to :organisation
   belongs_to :service
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
+
   has_many :agent_interventions, dependent: :destroy
   has_many :agents, through: :agent_interventions, class_name: 'User'
   has_many :tool_interventions, dependent: :destroy
   has_many :tools, through: :tool_interventions
   has_many :mouvements
+
+  has_one :organisation, through: :service
 
   has_many_attached :photos
 
@@ -121,30 +123,27 @@ class Intervention < ApplicationRecord
     self.workflow_spec.states.keys.map{|i| i.to_s.humanize }
   end
 
-  # retourne les interventions selon le scope de l'utilisateur
+  # Retourne les interventions selon le role de l'utilisateur
   def self.by_role_for(user)
     case user.rôle
-    when 'manager'
-      user.organisation.interventions.ordered
+    when 'manager', 'administrateur'
+      self.ordered
     when 'adhérent'
       user.interventions_adherent.ordered
     when 'agent'
       user.interventions.ordered
-    when 'administrateur'
-      user.organisation.interventions.ordered
     end
   end
 
+  # Retourne les interventions selon le role de l'utilisateur pour la page /home
   def self.by_role_for_home(user)
     case user.rôle
-    when 'manager'
-      user.organisation.interventions.where.not(workflow_state: ["validé", "refusé", "archivé"]).ordered
+    when 'manager', 'administrateur'
+      self.where.not(workflow_state: ["validé", "refusé", "archivé"]).ordered
     when 'adhérent'
       user.interventions_adherent.where(workflow_state: ["terminé"]).ordered
     when 'agent'
       user.interventions.where(workflow_state: ["nouveau"]).ordered
-    when 'administrateur'
-      user.organisation.interventions.where.not(workflow_state: ["validé", "refusé", "archivé"]).ordered
     end
   end
 
@@ -359,7 +358,7 @@ class Intervention < ApplicationRecord
       temps_total = (self.fin - self.début).seconds.in_hours - self.temps_de_pause
       temps_total = temps_total * self.agents.count
     else
-      temps_total = -1
+      temps_total = 0
     end
     temps_total
   end
@@ -448,7 +447,8 @@ class Intervention < ApplicationRecord
   end
 
   def temps_par_agent
-    self.temps_total / self.agents.count
+    # max au cas où il n'y a aucun agent
+    self.temps_total / [self.agents.count, 1].max
   end
 
   def intervention_mère 
