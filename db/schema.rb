@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_28_135005) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_29_120743) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -178,8 +178,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_28_135005) do
     t.datetime "updated_at", null: false
     t.bigint "intervention_id"
     t.datetime "date"
-    t.text "commentaires"
     t.bigint "user_id", null: false
+    t.string "commentaires"
     t.index ["intervention_id"], name: "index_mouvements_on_intervention_id"
     t.index ["tool_id"], name: "index_mouvements_on_tool_id"
     t.index ["user_id"], name: "index_mouvements_on_user_id"
@@ -481,6 +481,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_28_135005) do
     t.boolean "épinglée"
     t.datetime "discarded_at"
     t.bigint "user_id", null: false
+    t.string "sous_titre"
     t.index ["discarded_at"], name: "index_wiki_pages_on_discarded_at"
     t.index ["slug"], name: "index_wiki_pages_on_slug", unique: true
     t.index ["user_id"], name: "index_wiki_pages_on_user_id"

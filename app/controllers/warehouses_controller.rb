@@ -28,7 +28,7 @@ class WarehousesController < ApplicationController
 
     respond_to do |format|
       if @warehouse.save
-        format.html { redirect_to @warehouse, notice: "Site créé avec succès." }
+        format.html { redirect_to admin_parametres_path, notice: "Site créé avec succès." }
         format.json { render :show, status: :created, location: @warehouse }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -41,7 +41,7 @@ class WarehousesController < ApplicationController
   def update
     respond_to do |format|
       if @warehouse.update(warehouse_params)
-        format.html { redirect_to @warehouse, notice: "Site modifié avec succès.", status: :see_other }
+        format.html { redirect_to admin_parametres_path, notice: "Site modifié avec succès.", status: :see_other }
         format.json { render :show, status: :ok, location: @warehouse }
       else
         format.html { render :edit, status: :unprocessable_entity }
