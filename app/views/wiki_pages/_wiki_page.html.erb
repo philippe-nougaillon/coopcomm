@@ -24,10 +24,10 @@
       <%= wiki_page.contenu %>
     </p>
   <% else %>
-    <p><%= wiki_page.sous_titre %></p>
+    <p class="mb-5"><%= wiki_page.sous_titre %></p>
     <% if wiki_page.document.attached? %>
       <% if wiki_page.document.previewable? %>
-        <%= link_to image_tag(wiki_page.document.preview(resize_to_limit: [150, 150]), class: 'max-w-none shadow-xl'), wiki_page.document %>
+        <%= link_to image_tag(wiki_page.document.preview(resize_to_limit: [300, 300]), class: 'max-w-none shadow-xl'), wiki_page.document %>
       <% elsif wiki_page.document.representable? %>
         <%= link_to 'Voir le document', wiki_page.document, class: "btn btn-primary" %>
       <% else %>
@@ -35,7 +35,6 @@
       <% end %>
     <% end %>
     <br>
-    <%= link_to 'Lire l\'article', wiki_page, class: 'btn' %>
     <hr class="my-6">
   <% end %>
 </div>
