@@ -454,9 +454,7 @@ class InterventionsController < ApplicationController
 
       @adhérents = users_in_same_services.adhérent.order(:nom)
 
-      if current_user.manager_or_admin? || current_user.adhérent?
-        @grouped_agents = users_in_same_services.grouped_agents(current_user)
-      end
+      @grouped_agents = users_in_same_services.grouped_agents(current_user)
 
       @tools = current_organisation.tools.ordered
     end
