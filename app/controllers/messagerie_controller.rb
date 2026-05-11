@@ -1,7 +1,7 @@
 class MessagerieController < ApplicationController
   before_action :is_user_authorized
 
-  def messagerie
+  def index
     # On récupère les utilisateurs avec qui on peut envoyer des messages
     @users = User.by_service(current_user.services).where.not(id: current_user.id).ordered
 

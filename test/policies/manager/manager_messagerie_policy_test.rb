@@ -10,8 +10,8 @@ class ManagerMessageriePolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Messagerie
-  test "accès autorisé pour un agent sur la page de messagerie" do
-    assert @policy.messagerie?
+  test "accès autorisé pour un agent sur la page index de messagerie" do
+    assert @policy.index?
   end
 
   # Send notification
