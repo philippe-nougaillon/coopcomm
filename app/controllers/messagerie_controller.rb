@@ -63,7 +63,17 @@ class MessagerieController < ApplicationController
   end
 
   def search_contact
-    @users = User.by_service(current_user.services).where.not(id: current_user.id).where("users.nom ILIKE :search OR users.prénom ILIKE :search", { search: "%#{params[:query]}%"}).ordered
+    @users = User
+              .by_service(current_user.services)
+              .where.not(id: current_user.id)
+              .ordered
+    
+    if params[:query].present?
+      @users = @users.where("users.nom ILIKE :search OR users.prénom ILIKE :search", { search: "%#{params[:query]}%"})
+    end
+
+    @users = @users.with_attached_profile_picture
+
     render partial: 'users_list', locals: { users: @users }
   end
 
