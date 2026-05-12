@@ -17,11 +17,11 @@
   <div class="flex-1 sm:flex-8 w-full">
     <div class="border shadow-sm p-4 rounded-2xl mb-8">
       <h2 class="font-black text-lg mb-6"><%= current_user.agent? ? "Interventions en cours" : "Actions en attente" %></h2>
-      <div class="flex flex-col gap-6">
+      <div class="flex flex-col divide-y divide-gray-300">
         <% @interventions.each do |intervention| %>
           <%= render partial: 'intervention', locals: {intervention: } %>
         <% end %>
-        <%= link_to 'Voir toutes les actions en attente', interventions_path, class: 'text-primary' %>
+        <%= link_to 'Voir toutes les actions en attente', interventions_path, class: 'text-primary mt-8' %>
       </div>
     </div>
     <div class="border shadow-sm p-4 rounded-2xl">
