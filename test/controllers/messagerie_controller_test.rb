@@ -2,11 +2,11 @@ require "test_helper"
 
 class MessagerieControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @user = users(:hidalgo)
+    @current_user = users(:hidalgo)
     
     @interlocutor_user = users(:bond)
 
-    sign_in @user
+    sign_in @current_user
   end
 
   test "should show messagerie" do
@@ -34,7 +34,7 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference("Message.count") do
       post messagerie_send_message_url, params: {
         message: "Bonjour moi-même",
-        to_id: @user.id,
+        to_id: @current_user.id,
       }
     end
 

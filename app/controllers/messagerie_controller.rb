@@ -5,8 +5,8 @@ class MessagerieController < ApplicationController
     # On récupère les utilisateurs avec qui on peut envoyer des messages
     @users = User.by_service(current_user.services).where.not(id: current_user.id).ordered
 
-    @to_user = User.find_by(id: params[:to_id])
-
+    @to_user = User.find_by(id: params[:to_id]) if params[:to_id].to_i != current_user.id
+    
     if @to_user
       # On récupère les messages envoyées et reçues d'un utilisateur
       @messages = Message
@@ -43,7 +43,7 @@ class MessagerieController < ApplicationController
   end
 
   def send_message
-    if params[:message].present? && params[:to_id].present?
+    if params[:message].present? && params[:to_id].present? && (params[:to_id].to_i != current_user.id)
       Message.create!(message: params[:message], from_id: current_user.id, to_id: params[:to_id])
     end
   end
