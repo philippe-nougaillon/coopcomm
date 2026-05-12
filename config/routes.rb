@@ -111,9 +111,9 @@ Rails.application.routes.draw do
 
 
   namespace :messagerie do
-    get '/', action: :messagerie
+    get "/", to: 'index', as: ""
     post :mark_as_read
-    post :send_notification
+    post :send_message
     post :search_contact
   end
 

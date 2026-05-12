@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_29_120743) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_12_093634) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -146,8 +146,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_120743) do
     t.datetime "début_prévue"
     t.datetime "fin_prévue"
     t.string "meteo"
-    t.string "trajet"
     t.decimal "co2", default: "0.0"
+    t.string "trajet"
     t.bigint "service_id"
     t.string "localisation"
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
@@ -170,6 +170,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_120743) do
     t.index ["organisation_id"], name: "index_mail_logs_on_organisation_id"
   end
 
+  create_table "messages", force: :cascade do |t|
+    t.text "message"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "from_id"
+    t.bigint "to_id"
+    t.datetime "read_at"
+    t.index ["from_id"], name: "index_messages_on_from_id"
+    t.index ["to_id"], name: "index_messages_on_to_id"
+  end
+
   create_table "mouvements", force: :cascade do |t|
     t.bigint "tool_id", null: false
     t.integer "état"
@@ -190,17 +201,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_120743) do
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-  end
-
-  create_table "notifications", force: :cascade do |t|
-    t.text "message"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.bigint "from_id"
-    t.bigint "to_id"
-    t.datetime "read_at"
-    t.index ["from_id"], name: "index_notifications_on_from_id"
-    t.index ["to_id"], name: "index_notifications_on_to_id"
   end
 
   create_table "organisations", force: :cascade do |t|
@@ -422,17 +422,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_120743) do
     t.datetime "reset_password_sent_at"
     t.string "uid"
     t.string "provider"
-    t.datetime "notifications_last_seen_at", default: "2024-11-07 09:50:54"
+    t.datetime "messages_last_seen_at", default: "2024-11-07 09:50:54"
     t.string "slug"
     t.string "téléphone"
     t.string "memo"
+    t.string "otp_secret"
+    t.integer "consumed_timestep"
+    t.boolean "otp_required_for_login"
     t.datetime "discarded_at"
     t.integer "failed_attempts", default: 0, null: false
     t.datetime "locked_at"
     t.string "unlock_token"
-    t.string "otp_secret"
-    t.integer "consumed_timestep"
-    t.boolean "otp_required_for_login"
     t.integer "otp_method"
     t.string "color"
     t.string "invitation_token"
@@ -482,6 +482,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_120743) do
     t.datetime "discarded_at"
     t.bigint "user_id", null: false
     t.string "sous_titre"
+    t.boolean "private", default: true
     t.index ["discarded_at"], name: "index_wiki_pages_on_discarded_at"
     t.index ["slug"], name: "index_wiki_pages_on_slug", unique: true
     t.index ["user_id"], name: "index_wiki_pages_on_user_id"

@@ -25,7 +25,7 @@
               <td class=" <%= user.sign_in_count.positive? ? 'text-danger font-black' : ''  %>"><%= user.sign_in_count %></td>
               <td><%= Intervention.filter_by_service(user.services).by_role_for(user).count %></td>
               <td><%= Intervention.filter_by_service(user.services).by_role_for(user).where.not(commentaires: "").count %></td>
-              <td><%= user.notifications.count %></td>
+              <td><%= user.messages.count %></td>
               <td><%= time_ago_in_words user.created_at %></td>
               <%# link_to "[X]", user_path(user), 'data-turbo-method': :delete, class:"btn btn-ghost btn-sm" %>
             </tr>
@@ -38,7 +38,7 @@
             <td><%# organisation.users.count %></td>
             <td class="font-bold"><%= organisation.interventions.count %></td>
             <td class="font-bold"><%= organisation.interventions.where.not(commentaires: "").count %></td>
-            <td class="font-bold"><%= organisation.notifications.count %></td>
+            <td class="font-bold"><%= organisation.messages.count %></td>
             <td><%= l(organisation.created_at, format: :long) %></td>
           </tr>
         <% end %>

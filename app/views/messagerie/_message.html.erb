@@ -1,23 +1,23 @@
 <% 
-  is_my = defined?(my_message) ? my_message : (notification.from_id == current_user.id)
-  is_unread = (!is_my && notification.read_at.nil?) 
+  is_my = defined?(my_message) ? my_message : (message.from_id == current_user.id)
+  is_unread = (!is_my && message.read_at.nil?) 
 %>
 
-<div id="<%= dom_id notification %>" 
+<div id="<%= dom_id message %>" 
      class="mt-2 message-wrapper" 
-     data-message-id="<%= notification.id %>" 
+     data-message-id="<%= message.id %>" 
      data-unread="<%= is_unread ? 'true' : 'false' %>">
   
   <div class="chat <%= is_my ? "chat-end" : "chat-start" %>">
     
     <div class="chat-header text-lg mb-1 opacity-70 px-2">
-      <small><i>il y a <%= time_ago_in_words notification.created_at %></i></small>
+      <small><i>il y a <%= time_ago_in_words message.created_at %></i></small>
     </div>
     
     <div class="chat-bubble rounded <%= is_my ? "chat-bubble-accent" : "bg-gray-200" %> <%= "font-bold" if is_unread %> max-w-full">
       
       <p class="text-xl break-words">
-        <%= notification.moderation %>
+        <%= message.moderation %>
       </p>
       
     </div>

@@ -9,7 +9,7 @@ class Organisation < ApplicationRecord
   has_many :export_logs, dependent: :destroy
   has_many :warehouses, dependent: :destroy
   has_many :users, -> { distinct }, through: :services
-  has_many :notifications, -> { distinct }, through: :users
+  has_many :messages, -> { distinct }, through: :users
   has_many :interventions, through: :services
 
   def numero

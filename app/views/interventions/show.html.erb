@@ -2,7 +2,11 @@
   <div id="<%= dom_id @intervention %>">
     
     <div class="flex flex-col sm:flex-row justify-between mb-8">
-      <%= link_to "<", interventions_path, title:"Revenir en arrière", class: 'text-xl font-black sm:hidden' %>
+      <%= link_to interventions_path, title:"Revenir en arrière", class: "sm:hidden" do %>
+        <span class="material-symbols-outlined">
+          arrow_circle_left
+        </span>
+      <% end %>
       <div>
         <p class="text-3xl text-<%= @intervention.style.split.first.split('-').last %> font-bold flex items-center gap-2">
           <span class="badge badge-lg h-fit font-bold <%= @intervention.style %>">
@@ -38,7 +42,7 @@
             <% end %>
           </span>
         <% end %>
-        <%= link_to "Retour", interventions_path, class: "btn" %>
+        <%= link_to "Retour", interventions_path, class: "btn hidden sm:flex" %>
       </div>
     </div>
 

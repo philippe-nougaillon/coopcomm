@@ -10,13 +10,13 @@ class AdherentMessageriePolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Messagerie
-  test "accès autorisé pour un adherent sur la page de messagerie" do
-    assert @policy.messagerie?
+  test "accès autorisé pour un adherent sur la page index de messagerie" do
+    assert @policy.index?
   end
 
-  # Send notification
-  test "accès autorisé pour un adherent sur la page send_notification de messagerie" do
-    assert @policy.send_notification?
+  # Send message
+  test "accès autorisé pour un adherent sur la page send_message de messagerie" do
+    assert @policy.send_message?
   end
 
   # Search contact
