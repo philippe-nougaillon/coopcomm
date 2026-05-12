@@ -125,7 +125,7 @@ module ApplicationHelper
     html.join("\n").html_safe
   end
 
-  def notification_time_format(time)
+  def message_time_format(time)
     return "" if time.blank?
 
     date = time.to_date

@@ -339,7 +339,7 @@ class PagesController < ApplicationController
                               .by_role_for_home(current_user)
                               .first(2)
 
-    @notifications = current_user.notifications
+    @messages = current_user.messages
                                             .where(read_at: nil)
                                             .joins(:from_user) # Filtre les utilisateurs supprimés
                                             .ordered

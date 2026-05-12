@@ -5,28 +5,28 @@ class MessagerieController < ApplicationController
     # On récupère les utilisateurs avec qui on peut envoyer des messages
     @users = User.by_service(current_user.services).where.not(id: current_user.id).ordered
 
-    @to_user = User.find_by(id: params[:to_id])
-
+    @to_user = User.find_by(id: params[:to_id]) if params[:to_id].to_i != current_user.id
+    
     if @to_user
-      # On récupère les notifications envoyées et reçues d'un utilisateur
-      @notifications = Notification
+      # On récupère les messages envoyées et reçues d'un utilisateur
+      @messages = Message
                         .where(from_id: current_user.id, to_id: @to_user&.id)
-                        .or(Notification.where(from_id: @to_user&.id, to_id: current_user.id))
+                        .or(Message.where(from_id: @to_user&.id, to_id: current_user.id))
                         .order(:created_at)
 
-      unread_messages = @notifications.select { |n| n.to_id == current_user.id && n.read_at.nil? }
+      unread_messages = @messages.select { |n| n.to_id == current_user.id && n.read_at.nil? }
       
       @unread_count = unread_messages.count
       @first_unread_id = unread_messages.first&.id
     else
-      recent_notifications = Notification.where(from_id: current_user.id)
-                                       .or(Notification.where(to_id: current_user.id))
+      recent_messages = Message.where(from_id: current_user.id)
+                                       .or(Message.where(to_id: current_user.id))
                                        .order(created_at: :desc)
       @last_messages = {}
       ordered_user_ids = []
       
 
-      recent_notifications.each do |notif|
+      recent_messages.each do |notif|
         other_user_id = notif.from_id == current_user.id ? notif.to_id : notif.from_id
         
         unless @last_messages.key?(other_user_id)
@@ -38,22 +38,22 @@ class MessagerieController < ApplicationController
       users_by_id = User.where(id: ordered_user_ids).index_by(&:id)
 
       @recent_conversations = ordered_user_ids.map { |id| users_by_id[id] }.compact
-      @unread_counts = Notification.where(to_id: current_user.id, read_at: nil).group(:from_id).count
+      @unread_counts = Message.where(to_id: current_user.id, read_at: nil).group(:from_id).count
     end
   end
 
-  def send_notification
-    if params[:message].present? && params[:to_id].present?
-      Notification.create!(message: params[:message], from_id: current_user.id, to_id: params[:to_id])
+  def send_message
+    if params[:message].present? && params[:to_id].present? && (params[:to_id].to_i != current_user.id)
+      Message.create!(message: params[:message], from_id: current_user.id, to_id: params[:to_id])
     end
   end
 
   def mark_as_read
-    notification = Notification.find(params[:id])
+    message = Message.find(params[:id])
     
     # Sécurité : on vérifie que c'est bien un message destiné à l'utilisateur courant
-    if notification.to_id == current_user.id && notification.read_at.nil?
-      notification.update(read_at: Time.current)
+    if message.to_id == current_user.id && message.read_at.nil?
+      message.update(read_at: Time.current)
       
       # Plus tard, on pourra ajouter un Turbo Stream ici pour mettre à jour 
       # les fameux "deux traits bleus" chez l'expéditeur !
