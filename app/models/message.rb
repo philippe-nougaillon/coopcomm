@@ -1,4 +1,4 @@
-class Notification < ApplicationRecord
+class Message < ApplicationRecord
   belongs_to :from_user, class_name: "User", foreign_key: :from_id
   belongs_to :to_user, class_name: "User", foreign_key: :to_id
 
@@ -6,15 +6,15 @@ class Notification < ApplicationRecord
 
   after_create_commit -> { 
     broadcast_append_to "chat_#{self.from_id}_with_#{self.to_id}",
-                        partial: "messagerie/notification",
-                        locals: { notification: self, my_message: true },
+                        partial: "messagerie/message",
+                        locals: { message: self, my_message: true },
                         target: "chat-messages-container" 
   }
 
   after_create_commit -> { 
     broadcast_append_to "chat_#{self.to_id}_with_#{self.from_id}",
-                        partial: "messagerie/notification",
-                        locals: { notification: self, my_message: false },
+                        partial: "messagerie/message",
+                        locals: { message: self, my_message: false },
                         target: "chat-messages-container" 
   }
 
@@ -33,10 +33,10 @@ class Notification < ApplicationRecord
   end
 
   def moderation
-    self.message.gsub(Notification.bad_words_regex,'🌼🌼🌼')
+    self.message.gsub(Message.bad_words_regex,'🌼🌼🌼')
   end
 
   def nb_bad_words
-    self.message.scan(Notification.bad_words_regex).size
+    self.message.scan(Message.bad_words_regex).size
   end
 end

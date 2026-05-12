@@ -19,9 +19,9 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "should send notification" do
-    assert_difference("Notification.count") do
-      post messagerie_send_notification_url, params: {
+  test "should send message" do
+    assert_difference("Message.count") do
+      post messagerie_send_message_url, params: {
         message: "Bonjour",
         to_id: @interlocutor_user.id,
       }
@@ -30,9 +30,9 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "should'nt send notification with yourself" do
-    assert_no_difference("Intervention.count") do
-      post messagerie_send_notification_url, params: {
+  test "should'nt send message with yourself" do
+    assert_no_difference("Message.count") do
+      post messagerie_send_message_url, params: {
         message: "Bonjour moi-même",
         to_id: @user.id,
       }

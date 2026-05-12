@@ -6,7 +6,7 @@ class User < ApplicationRecord
 
   acts_as_taggable_on :tags
 
-  audited except: :notifications_last_seen_at
+  audited except: :messages_last_seen_at
 
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable 
@@ -29,7 +29,7 @@ class User < ApplicationRecord
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
   has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention', dependent: :destroy
   has_many :interventions, through: :agent_interventions
-  has_many :notifications, dependent: :destroy, foreign_key: :to_id, class_name: "Notification"
+  has_many :messages, dependent: :destroy, foreign_key: :to_id, class_name: "Message"
   has_many :absences, dependent: :destroy
   has_many :user_services, dependent: :destroy
   has_many :services, through: :user_services
@@ -200,8 +200,8 @@ class User < ApplicationRecord
     end
   end
 
-  def new_notifications?
-    Notification.where(to_id: self.id, read_at: nil).any?
+  def new_messages?
+    Message.where(to_id: self.id, read_at: nil).any?
   end
 
   def current_absence(date = Date.today, periode = nil)
@@ -237,8 +237,8 @@ class User < ApplicationRecord
 
   def nb_bad_words
     nb_bad_words = 0
-    Notification.where(from_id: self.id).each do |notification|
-      nb_bad_words += notification.nb_bad_words
+    Notification.where(from_id: self.id).each do |message|
+      nb_bad_words += message.nb_bad_words
     end
     nb_bad_words
   end

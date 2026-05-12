@@ -9,7 +9,7 @@ class MessageriePolicy < ApplicationPolicy
     user
   end
 
-  def send_notification?
+  def send_message?
     index?
   end
 

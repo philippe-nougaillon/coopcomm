@@ -26,9 +26,9 @@
           
           <%# Adapter l'id 'chat-messages-container' au turbo_stream(broadcast_append_to) et au <script>, sinon le scroll automatique ne fontcionnera plus %>
           <div id="chat-messages-container" class="w-full lg:mt-12 pb-24 lg:pb-0 px-2">
-            <% @notifications.each do |notification| %>
+            <% @messages.each do |message| %>
               
-              <% if notification.id == @first_unread_id %>
+              <% if message.id == @first_unread_id %>
                 <div id="first-unread-banner" class="flex items-center gap-4 my-6">
                   <div class="flex-1 border-t border-primary/30"></div>
                   <div class="badge badge-primary badge-outline font-bold px-4 py-3">
@@ -39,9 +39,9 @@
               <% end %>
 
               <div class="message-wrapper" 
-                  data-message-id="<%= notification.id %>" 
-                  data-unread="<%= notification.to_id == current_user.id && notification.read_at.nil? ? 'true' : 'false' %>">
-                <%= render partial: "messagerie/notification", locals: { notification: notification } %>
+                  data-message-id="<%= message.id %>" 
+                  data-unread="<%= message.to_id == current_user.id && message.read_at.nil? ? 'true' : 'false' %>">
+                <%= render partial: "messagerie/message", locals: { message: message } %>
               </div>
 
             <% end %>
@@ -54,7 +54,7 @@
                 <span class="text-sm font-semibold text-white">Nouveau message</span>
               </div>
             </div>
-            <input class="w-full rounded-xl p-4 border bg-white shadow-sm" name="message" placeholder="Ecrivez votre message" hx-post="/messagerie/send_notification?to_id=<%= params[:to_id] %>" hx-trigger="keyup[key=='Enter']" hx-on::after-request="if(event.detail.successful) this.value = ''">
+            <input class="w-full rounded-xl p-4 border bg-white shadow-sm" name="message" placeholder="Ecrivez votre message" hx-post="/messagerie/send_message?to_id=<%= params[:to_id] %>" hx-trigger="keyup[key=='Enter']" hx-on::after-request="if(event.detail.successful) this.value = ''">
           </div>
         </div>
       </div>
@@ -83,7 +83,7 @@
                           <%= user.nom_prénom %>
                         </h4>
                         <span class="text-xs whitespace-nowrap ml-2 <%= unread_count > 0 ? 'text-primary font-bold' : 'text-slate-400' %>">
-                          <%= notification_time_format(last_message.created_at) %>
+                          <%= message_time_format(last_message.created_at) %>
                         </span>
                       </div>
                       
