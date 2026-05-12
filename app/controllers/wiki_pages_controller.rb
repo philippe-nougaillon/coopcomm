@@ -1,7 +1,7 @@
 class WikiPagesController < ApplicationController
   skip_before_action :authenticate_user!, only: %i[ index show ]
   before_action :set_wiki_page, only: %i[ show edit update destroy ]
-  before_action :is_user_authorized, except: %i[ index show ]
+  before_action :is_user_authorized, except: %i[ index ]
 
   # GET /wiki_pages or /wiki_pages.json
   def index
@@ -17,12 +17,18 @@ class WikiPagesController < ApplicationController
     end
 
     if params[:search].present?
+      # PS : C'est voulu que ce soit WikiPage et pas @wiki_pages ? Ça annule le filtre sur les catégorie et les éplinglés ci-dessus
       @wiki_pages = WikiPage.search_titre_and_contenu("%#{ params[:search] }%")
     end
 
     unless policy(WikiPage).new?
       @wiki_pages = @wiki_pages.where(publiée: true)
     end
+
+    if !user_signed_in? || current_user.agent?
+      @wiki_pages = @wiki_pages.where(private: false)
+    end
+
     @wiki_pages = @wiki_pages.order(:poids)
   end
 
@@ -92,7 +98,7 @@ class WikiPagesController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def wiki_page_params
-      params.require(:wiki_page).permit(:titre, :sous_titre, :publiée, :poids, :contenu, :catégorie, :épinglée, :document)
+      params.require(:wiki_page).permit(:titre, :sous_titre, :publiée, :poids, :contenu, :catégorie, :épinglée, :document, :private)
     end
 
     def is_user_authorized

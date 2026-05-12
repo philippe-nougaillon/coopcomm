@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_29_120743) do
+ActiveRecord::Schema[8.0].define(version: 2026_05_12_093634) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -482,6 +482,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_120743) do
     t.datetime "discarded_at"
     t.bigint "user_id", null: false
     t.string "sous_titre"
+    t.boolean "private", default: true
     t.index ["discarded_at"], name: "index_wiki_pages_on_discarded_at"
     t.index ["slug"], name: "index_wiki_pages_on_slug", unique: true
     t.index ["user_id"], name: "index_wiki_pages_on_user_id"
