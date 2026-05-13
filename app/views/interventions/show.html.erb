@@ -126,6 +126,48 @@
         </div>
       </div>
 
+      <% if @intervention.repeter %>
+        <h2 class="text-lg text-secondary font-black mb-2">Pointages</h2>
+        <div class="overflow-x-auto mt-4">
+          <table class="table">
+            <thead class="bg-slate-100">
+              <tr>
+                <th>Id</th>
+                <th>Il y a</th>
+                <% unless current_user.agent? %>
+                  <th>Agent</th>
+                <% end %>
+                <th>Début</th>
+                <th>Fin</th>
+                <th>Temps total</th>
+                <th>Statut</th>
+                <th>Commentaires</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @pointages.each do |pointage| %>
+                <tr>
+                  <td><%= link_to pointage.id, pointage, class: 'underline text-primary' %></td>
+                  <td><%= time_ago_in_words pointage.début %></td>
+                  <% unless current_user.agent? %>
+                    <td><%= pointage.agents.first&.nom_prénom %></td>
+                  <% end %>
+                  <td><%= l pointage.début %></td>
+                  <td><%= l pointage.fin if pointage.fin %></td>
+                  <td><%= pointage.temps_total %></td>
+                  <td>
+                    <span class="badge h-fit font-bold <%= pointage.style %>">
+                      <%= pointage.workflow_state.humanize %>
+                    </span>
+                  </td>
+                  <td><%= truncate(pointage.commentaires, length: 15) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+
       <h2 class="text-lg text-secondary font-black mb-2">Intervention</h2>
       <div class="rounded border border-gray-200 p-4 shadow-xs mb-8 bg-white">
         
@@ -250,48 +292,6 @@
           </div>
         <% end %>
 
-      </div>
-    <% end %>
-
-    <% if @intervention.repeter %>
-      <h2 class="text-2xl text-secondary mt-8">Pointages</h2>
-      <div class="overflow-x-auto mt-4">
-        <table class="table table-sm">
-          <thead class="bg-slate-100">
-            <tr>
-              <th>Il y a</th>
-              <th>Id</th>
-              <% unless current_user.agent? %>
-                <th>Agent</th>
-              <% end %>
-              <th>Date</th>
-              <th>Début</th>
-              <th>Fin</th>
-              <th>Temps total</th>
-              <th>Statut</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @pointages.each do |pointage| %>
-              <tr>
-                <td><%= time_ago_in_words pointage.début %></td>
-                <td><%= link_to pointage.id, pointage, class: 'underline text-primary' %></td>
-                <% unless current_user.agent? %>
-                  <td><%= pointage.agents.first&.nom_prénom %></td>
-                <% end %>
-                <td><%= l pointage.début.to_date %></td>
-                <td><%= l pointage.début %></td>
-                <td><%= l pointage.fin if pointage.fin %></td>
-                <td><%= pointage.temps_total %></td>
-                <td>
-                  <span class="badge h-fit font-bold <%= pointage.style %>">
-                    <%= pointage.workflow_state.humanize %>
-                  </span>
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
       </div>
     <% end %>
 
