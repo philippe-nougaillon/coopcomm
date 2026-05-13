@@ -1,1 +1,1 @@
-PageTitleHelper.options[:app] = 'CoopComm. v1.3'
+PageTitleHelper.options[:app] = 'CoopComm. v1.4'

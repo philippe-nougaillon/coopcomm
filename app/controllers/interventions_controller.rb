@@ -222,7 +222,14 @@ class InterventionsController < ApplicationController
         unless Rails.env.development?
           Events.instance.publish('intervention.updated', payload: {intervention_id: @intervention.id})
         end
-        format.html { redirect_to intervention_url(@intervention), notice: "Intervention modifiée avec succès." }
+        format.html do
+          # Si c'est une modification du commentaire dans le pointage statut, on redirige vers home
+          if params[:commit] == "Enregistrer le commentaire"
+            redirect_to root_path, notice: "Commentaire modifiée avec succès."
+          else
+            redirect_to intervention_url(@intervention), notice: "Intervention modifiée avec succès."
+          end
+        end
         format.json { render :show, status: :ok, location: @intervention }
       else
         format.html { render :edit, status: :unprocessable_entity }

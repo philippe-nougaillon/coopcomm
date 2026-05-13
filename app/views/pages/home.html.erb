@@ -16,13 +16,17 @@
 <div class="flex flex-wrap gap-8 lg:px-48">
   <div class="flex-1 sm:flex-8 w-full">
     <div class="border shadow-sm p-4 rounded-2xl mb-8">
-      <h2 class="font-black text-lg mb-6"><%= current_user.agent? ? "Interventions en cours" : "Actions en attente" %></h2>
-      <div class="flex flex-col divide-y divide-gray-300">
+      <h2 class="font-black text-lg mb-4"><%= current_user.agent? ? "Interventions en cours" : "Actions en attente" %></h2>
+      <% if @interventions.any? %>
+        <div class="flex flex-col divide-y divide-gray-300">
         <% @interventions.each do |intervention| %>
           <%= render partial: 'intervention', locals: {intervention: } %>
         <% end %>
-        <%= link_to 'Voir toutes les actions en attente', interventions_path, class: 'text-primary mt-8' %>
-      </div>
+        <%= link_to 'Voir toutes les actions en attente', interventions_path, class: 'text-primary mt-8 hover:underline' %>
+        </div>
+      <% else %>
+        <p>Il n'y a rien en attente, vous pouvez vous reposer :)</p>
+      <% end %>
     </div>
     <div class="border shadow-sm p-4 rounded-2xl">
       <h2 class="font-black text-lg mb-4">Messages de votre équipe</h2>
@@ -65,7 +69,7 @@
         <div class="flex flex-col md:flex-row flex-wrap justify-center gap-2 my-2 mb-8">
           <%= render partial: 'pages/meteo', collection: [@forecasts["forecast"].first.third, @forecasts["forecast"].second.third], as: :forecast %>
         </div>
-        <%= link_to 'Prévision pour les jours à venir', meteo_path, class: 'text-primary' %>
+        <%= link_to 'Prévision pour les jours à venir', meteo_path, class: 'text-primary hover:underline' %>
       <% else %>
         <p>Météo indisponible</p>
       <% end %>
