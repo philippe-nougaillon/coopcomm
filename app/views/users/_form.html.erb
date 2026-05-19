@@ -4,7 +4,6 @@
       <h2 class="font-black!">
         <%= pluralize(user.errors.count, "erreur") %> empêche(nt) cet utilisateur d'être sauvegardé :
       </h2>
-
       <ul class="list-disc list-inside">
         <% user.errors.each do |error| %>
           <li><%= error.full_message %></li>
@@ -12,13 +11,10 @@
       </ul>
     </div>
   <% end %>
-
-
   <div class="w-full">
     <%= form.label :nom, style: "display: block" %>
     <%= form.text_field :nom, class: 'input input-sm w-full' %>
   </div>
-
   <div class="flex flex-wrap md:flex-nowrap gap-2 w-full mb-2">
     <% if current_user.administrateur? %>
       <div>
@@ -32,31 +28,25 @@
                           action: 'change->toggle-role-info#change'
                         } %>
       </div>
-
     <% else %>
       <%= form.hidden_field :rôle, value: (user.new_record? ? 'agent' : user.rôle), data: { 'toggle-role-info-target': 'role' } %>
     <% end %>
     <div data-toggle-role-info-target="localisation" class="flex-1" data-controller="places" data-places-center-lat-value="<%= ENV['MAPS_CENTER_LAT'] %>" data-places-center-lng-value="<%= ENV['MAPS_CENTER_LNG'] %>">
       <%= form.label :address, "Localisation" %>
-      
       <%# Le champ visible par l'utilisateur pour chercher l'adresse %>
       <%= form.text_field :address, 
             class: 'input select-sm w-full', 
             placeholder: 'Commencez à taper une adresse...', 
             data: { places_target: "address" } %>
-
       <%# Les champs cachés qui seront remplis automatiquement par le JS %>
       <%= form.hidden_field :latitude, data: { places_target: "latitude" } %>
       <%= form.hidden_field :longitude, data: { places_target: "longitude" } %>
     </div>
-
-    <div data-toggle-role-info-target='prenom' class="w-full">
+    <div data-toggle-role-info-target='prenom' class="flex-1">
       <%= form.label :prénom, style: "display: block" %>
       <%= form.text_field :prénom, class: 'input input-sm w-full' %>
     </div>
-
   </div>
-
   <% if current_user.manager_or_admin?  %>
     <div class="w-full sm:flex-1">
       <% label_texte = user.rôle == 'adhérent' ? "Secteur" : "Équipe" %>
@@ -76,7 +66,6 @@
       <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
     </div>
   <% end %>
-
   <% if current_user.manager_or_admin? %>
     <% if current_user.manager? && user.persisted? %>
       <%= form.hidden_field :service_ids, value: user.services.ids %>
@@ -90,31 +79,24 @@
       </div>
     <% end %>
   <% end %>
-
   <div class="w-full">
     <%= form.label :email, style: "display: block" %>
     <%= form.email_field :email, class: 'input input-sm w-full', required: true %>
   </div>
-
-  <div class="flex flex-wrap md:flex-nowrap gap-2 w-full">
-    <div class="w-full">
-      <%= form.label :téléphone, style: "display: block" %>
-      <%= form.text_field :téléphone, class: 'input input-sm w-full' %>
-    </div>
-
-    <div class="w-full">
-      <%= form.label :profile_picture, "Photo de profil", style: "display: block" %>
-      <%= form.file_field :profile_picture, accept: 'image/png,image/jpeg,image/avif,image/webp', class: 'file-input file-input-sm w-full' %>
-    </div>
+  <div class="w-full">
+    <%= form.label :téléphone, style: "display: block" %>
+    <%= form.text_field :téléphone, class: 'input input-sm w-full' %>
   </div>
-
+  <div class="w-full">
+    <%= form.label :profile_picture, "Photo de profil", style: "display: block" %>
+    <%= form.file_field :profile_picture, accept: 'image/png,image/jpeg,image/avif,image/webp', class: 'file-input file-input-sm w-full' %>
+  </div>
   <div class="w-full">
     <%= form.label :memo, "Mémo", style: "display: block" %>
     <%= form.text_area :memo, class: 'textarea w-full' %>
   </div>
-
   <% if false %>
-  <!--
+    <!--
     <% if @user.agent? || @user.manager_or_admin? %>
       <div class="flex mt-4 gap-4 mb-4">
         <h2 class="text-2xl text-secondary">Absences</h2>
@@ -139,6 +121,14 @@
     <% end %>
   -->
   <% end %>
-
-  <%= form.submit "Enregistrer", id:"enregistrer_utilisateur", class: "btn btn-primary mt-4" %>
+  <div class="flex gap-2 mt-4 w-full">
+    <% if current_user.manager_or_admin? %>
+      <%= link_to "Annuler",
+      users_path,
+      class: "btn flex-1" %>
+      <%= form.submit "Enregistrer",
+      id: "enregistrer_utilisateur",
+      class: "btn btn-primary flex-1" %>
+    <% end %>
+  </div>
 <% end %>

@@ -1,15 +1,9 @@
 <div class="mx-auto w-full max-w-md">
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16 mb-4">
-    <h1 class="text-primary font-bold text-4xl">
+    <h1 class="text-primary font-bold my-4 text-2xl md:text-4xl ">
       <%= page_title!('Modifier cet utilisateur') %>
     </h1>
-  </div>
 
   <%= render "form", user: @user %>
 
-  <div class="flex flex-wrap gap-2 mt-4">
-    <% if current_user.manager_or_admin? %>
-      <%=  link_to "Annuler", users_path, class: "btn"  %>
-    <%  end %>
-  </div>
+
 </div>
