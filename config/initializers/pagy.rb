@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'pagy/extras/i18n'
+
 # Pagy initializer file (8.3.0)
 # Customize only what you really need and notice that the core Pagy works also without any of the following lines.
 # Should you just cherry pick part of this file, please maintain the require-order of the extras
@@ -25,6 +27,8 @@ Pagy::DEFAULT[:size]        = [1,2,2,1]             # default in pagy < 7.0
 # Arel extra: For better performance utilizing grouped ActiveRecord collections:
 # See: https://ddnexus.github.io/pagy/docs/extras/arel
 require 'pagy/extras/arel'
+
+
 
 # Array extra: Paginate arrays efficiently, avoiding expensive array-wrapping and without overriding
 # See https://ddnexus.github.io/pagy/docs/extras/array
@@ -186,8 +190,8 @@ require 'pagy/extras/arel'
 #
 # Examples:
 # load the "fr" built-in locale:
-Pagy::I18n.load(locale: 'fr')
-#
+Pagy::I18n.load(locale: 'fr', filepath: 'config/locales/pagy/fr.yml')
+
 # load the "de" locale defined in the custom file at :filepath:
 # Pagy::I18n.load(locale: 'de', filepath: 'path/to/pagy-de.yml')
 #
@@ -211,6 +215,7 @@ Pagy::I18n.load(locale: 'fr')
 # than the default pagy internal i18n (see above)
 # See https://ddnexus.github.io/pagy/docs/extras/i18n
 # require 'pagy/extras/i18n'
+
 
 
 # When you are done setting your own default freeze it, so it will not get changed accidentally

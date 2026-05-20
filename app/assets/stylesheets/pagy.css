@@ -1,111 +1,118 @@
-.pagy {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.25rem;
-  font-family: sans-serif;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #6b7280;
-}
+/* ==========================================================================
+   PAGINACIÓN REFINADA (ESTILO BOTÓN PREMIUM)
+   ========================================================================== */
 
-/* On cible les enfants directs (liens et spans éventuels) */
-.pagy>* {
+/* Contenedor Flex de Pagy */
+.pagy {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.5rem;
-  background-color: #e5e7eb;
-  /* J'ai légèrement augmenté le padding vertical (0.75rem) pour le confort tactile */
-  padding: 0.75rem 0.25rem;
-  color: inherit;
+  gap: 0.75rem; /* Más separación entre elementos */
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.875rem;
+}
+
+/* Base de todos los botones e indicadores */
+.pagy > * {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.25rem;
+  min-width: 2.25rem;
+  color: #4b5563; /* text-slate-600 */
   text-decoration: none;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
 }
 
-/* Retire le fond gris pour les "..." s'ils sont affichés */
-.pagy .gap {
-  background-color: transparent;
+/* Números de página normales */
+.pagy a:not(:first-child):not(:last-child) {
+  border-radius: 9999px;
+  padding: 0 0.5rem;
 }
 
-/* --- RESPONSIVE MOBILE (Stratégie 3 boutons) --- */
-
-/* 1. Précédent et Suivant prennent ~32% */
-.pagy> :first-child,
-.pagy> :last-child {
-  flex: 0 0 32%;
+.pagy a:not(:first-child):not(:last-child):hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
 }
 
-/* 2. On cache tout ce qui n'est ni le 1er, ni le dernier, ni la page courante */
-.pagy> :not(:first-child):not(:last-child):not(.current) {
-  display: none;
+/* Círculo de la página actual */
+.pagy .current, 
+.pagy > .current {
+  background-color: #0284c7 !important; /* Tu azul corporativo */
+  color: #ffffff !important;
+  font-weight: 600;
+  border-radius: 9999px;
+  box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2);
 }
 
-/* 3. La page courante prend l'espace central (le tiers restant) */
-.pagy>.current {
-  flex: 1;
-}
+/* ==========================================================================
+   TRUCO CSS: Transmutar "<" y ">" en Botones "Précédent" y "Suivant"
+   ========================================================================== */
 
-/* --- RESPONSIVE ORDI (Retour au design original complet) --- */
-
-@media (min-width: 768px) {
-  .pagy {
-    width: auto;
-    justify-content: flex-start;
-  }
-
-  .pagy>* {
-    padding: 0.25rem 0.75rem;
-    /* Taille exacte d'origine */
-  }
-
-  /* On annule la répartition en tiers */
-  .pagy> :first-child,
-  .pagy> :last-child,
-  .pagy>.current {
-    flex: none;
-    width: auto;
-  }
-
-  /* On RÉAFFICHE tous les numéros intermédiaires et les "..." */
-  .pagy> :not(:first-child):not(:last-child):not(.current) {
-    display: flex;
-  }
-}
-
-/* --- ÉTATS --- */
-
-.pagy a:hover {
-  background-color: #d1d5db;
-}
-
-/* Liens désactivés (ex: Précédent sur la page 1) MAIS PAS la page actuelle */
-.pagy a:not([href]):not(.current) {
-  cursor: default;
-  background-color: #f3f4f6;
-  color: #d1d5db;
-}
-
-/* Page actuelle (avec une forte priorité) */
-.pagy a.current,
-.pagy>.current {
-  background-color: #9ca3af;
-  /* Le gris foncé d'origine */
-  color: white;
-}
-
-.pagy label {
-  white-space: nowrap;
-  display: inline-block;
+/* Botón Izquierdo (Anterior) */
+.pagy > :first-child {
+  font-size: 0px !important; /* Esconde el caracter "<" original */
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  padding: 0 1rem;
   border-radius: 0.5rem;
-  background-color: #e5e7eb;
-  padding: 0.125rem 0.75rem;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.pagy > :first-child::before {
+  content: "arrow_back_ios"; 
+  font-family: 'Material Symbols Outlined';
+  font-size: 0.75rem; /* Pequeño y estilizado como tu mockup */
+  font-weight: normal;
+  text-transform: none;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
 }
 
-.pagy label input {
-  line-height: 1.5rem;
-  border-radius: 0.375rem;
-  border-style: none;
-  background-color: #f3f4f6;
+/* Botón Derecho (Siguiente) */
+.pagy > :last-child {
+  font-size: 0px !important; /* Esconde el caracter ">" original */
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  padding: 0 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.pagy > :last-child::after {
+  content: "arrow_forward_ios";
+  font-family: 'Material Symbols Outlined';
+  font-size: 0.75rem;
+  font-weight: normal;
+  text-transform: none;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hovers para los botones de texto cuando son enlaces activos */
+.pagy a:first-child:hover,
+.pagy a:last-child:hover {
+  background-color: #BDEAF7;
+  border-color: #0284c7;
+}
+
+/* Estado Deshabilitado (Cuando no puedes ir atrás/adelante) */
+.pagy :not(a):not(.current):not(.gap) {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pagy :not(a):not(.current):not(.gap):before,
+.pagy :not(a):not(.current):not(.gap):after {
+  color: #94a3b8 !important; /* Texto gris tenue si está bloqueado */
+}
+
+/* Quitar fondos raros en los puntos suspensivos (...) */
+.pagy .gap {
+  background-color: transparent !important;
 }

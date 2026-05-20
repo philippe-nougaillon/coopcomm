@@ -34,7 +34,7 @@ class UsersController < ApplicationController
     respond_to do |format|
       format.html do
         @users = @users.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
-        @pagy, @users = pagy(@users, items: 10)
+        @pagy, @users = pagy(@users, items: 5)
       end
 
       format.xls do

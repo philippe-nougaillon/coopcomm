@@ -1,0 +1,6 @@
+fr:
+  pagy:
+    info:
+      no_items: "Aucun résultat"
+      single_page: "%{count} utilisateurs"
+      multiple_pages: "%{from} à %{to} sur %{count} utilisateurs"
