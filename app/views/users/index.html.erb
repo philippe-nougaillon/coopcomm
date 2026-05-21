@@ -1,163 +1,130 @@
-
-  <div class="flex flex-col">
-
-    <div class="flex flex-row justify-between items-center my-4 gap-2">
-      <h1 class="text-4xl text-primary font-bold">
-        <%= page_title!('Utilisateurs') %>
-      </h1>
-      <%= link_to admin_create_new_user_path,
+<div class="flex flex-col">
+  <div class="flex flex-row justify-between items-center my-4 gap-2">
+    <h1 class="text-4xl text-primary font-bold">
+      <%= page_title!('Utilisateurs') %>
+    </h1>
+    <%= link_to admin_create_new_user_path,
             data: { testid: "ajouter_utilisateur" },
-            class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm " do %>
-        <span class="material-symbols-outlined text-lg">add</span>
-        <span class="hidden md:block">Ajouter un Utilisateur</span>
-      <% end %>
-    </div>
-
-   <%= form_tag request.path, method: :get, class: "my-6" do %>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
-
-        <div class="w-full md:flex-1">
-          <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-600 mb-1" %>
-          <%= text_field_tag :search, params[:search], include_blank: true,
+            class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm ",
+            title: "Créer un tout nouvel agent dans le système"  do %>
+      <span class="material-symbols-outlined">
+        person_add
+      </span>        <span class="hidden md:block">Ajouter un Utilisateur</span>
+    <% end %>
+  </div>
+  <%= form_tag request.path, method: :get, class: "my-6" do %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div class="w-full md:flex-1">
+        <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+        <%= text_field_tag :search, params[:search], include_blank: true,
                 onchange: 'this.form.submit()',
                 class: 'input input-bordered input-md w-full',
                 placeholder: 'Nom / Prénom' %>
-        </div>
-
-        <div class="w-full md:flex-1">
-          <%= label_tag :rôle, "Rôle", class: "block text-xs font-semibold text-slate-600 mb-1" %>
-          <%= select_tag :rôle,
+      </div>
+      <div class="w-full md:flex-1">
+        <%= label_tag :rôle, "Rôle", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+        <%= select_tag :rôle,
                 options_for_select(User.rôles.sort_by { |k, _| I18n.transliterate(k) }, params[:rôle]),
                 include_blank: true,
                 class: 'select select-bordered select-md w-full',
                 onchange: 'this.form.submit()' %>
-        </div>
-
-        <div class="w-full md:flex-1">
-          <%= label_tag :services, "Services", class: "block text-xs font-semibold text-slate-600 mb-1" %>
-          <%= select_tag :services,
+      </div>
+      <div class="w-full md:flex-1">
+        <%= label_tag :services, "Services", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+        <%= select_tag :services,
                 options_from_collection_for_select(@services, 'id', 'nom', params[:services]),
                 include_blank: true,
                 multiple: true,
                 class: 'slim-select w-full h-10',
                 onchange: 'this.form.submit()' %>
-        </div>
-
-        <div class="w-full md:flex-1">
-          <%= label_tag :user_tag, "Mots clés", class: "block text-xs font-semibold text-slate-600 mb-1" %>
-          <%
+      </div>
+      <div class="w-full md:flex-1">
+        <%= label_tag :user_tag, "Mots clés", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+        <%
             tags_de_users = ActsAsTaggableOn::Tag.joins(:taggings)
                                                     .where(taggings: { taggable_type: 'User' })
                                                     .distinct
                                                     .pluck(:name)
                                                     .sort
           %>
-          <%= select_tag :user_tag, 
+        <%= select_tag :user_tag, 
                 options_for_select(tags_de_users, params[:user_tag]), 
         include_blank: "Tous les secteurs / équipes", 
         class: 'select select-bordered select-md w-full', 
         onchange: 'this.form.submit()' %>
-        </div>
-
-        <div class="flex justify-center gap-6 py-2 w-full md:flex-1">
-
-          <label class="flex items-center gap-2 cursor-pointer select-none">
-            <%= check_box_tag :absent, 1, params[:absent],
+      </div>
+      <div class="flex justify-center gap-6 py-2 w-full md:flex-1">
+        <label class="flex items-center gap-2 cursor-pointer select-none">
+          <%= check_box_tag :absent, 1, params[:absent],
                   class: 'checkbox checkbox-primary checkbox-sm',
                   onchange: 'this.form.submit()' %>
-            <span class="text-sm font-medium text-slate-700">Absents ?</span>
-          </label>
-
-          <label class="flex items-center gap-2 cursor-pointer select-none">
-            <%= check_box_tag :discarded, 1, params[:discarded],
+          <span class="text-sm font-medium text-slate-700">Absents ?</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer select-none">
+          <%= check_box_tag :discarded, 1, params[:discarded],
                   class: 'checkbox checkbox-primary checkbox-sm',
                   onchange: 'this.form.submit()' %>
-            <span class="text-sm font-medium text-slate-700">Désactivés ?</span>
-          </label>
-
-        </div>
-
+          <span class="text-sm font-medium text-slate-700">Désactivés ?</span>
+        </label>
       </div>
-    <% end %>
-
-  </div>
-
-  <div class="divider"></div>
-
-  <div class="flex flex-col bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden ">
-
-    <div class="overflow-x-auto relative ">
-
-      <div class="flex items-center gap-1 text-xs text-slate-400 mb-1 md:hidden">
-        <span class="material-symbols-outlined text-sm">swipe</span>
-        <span>Faire glisser pour voir plus</span>
-      </div>
-
-      <table id="users" class="table table-sm w-full border-none ">
-
-        <thead class="bg-slate-100">
-          <tr>
-            <th></th>
-            <th class="sticky left-0 top-0 z-10 bg-slate-100 ">
-              <%= sort_link 'users.nom', 'Nom' %>
-            </th>
-            <th colspan="2">
-              <%= sort_link 'users.rôle', 'Rôle' %>
-            </th>
-            <th>Service</th>
-            <th>Mots clés</th>
-            <th>
-              <%= sort_link 'users.email', 'Email' %>
-            </th>
-            <th>Absent ?</th>
-            <th>Évaluation</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <%= render @users %>
-        </tbody>
-
-      </table>
-
     </div>
-
+  <% end %>
+</div>
+<div class="divider"></div>
+<div class="flex flex-col bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden ">
+  <div class="overflow-x-auto relative ">
+    <div class="flex items-center gap-1 text-xs text-slate-400 mb-1 md:hidden">
+      <span class="material-symbols-outlined text-sm">swipe</span>
+      <span>Faire glisser pour voir plus</span>
+    </div>
+    <table id="users" class="table table-sm w-full border-none ">
+      <thead class="bg-slate-100">
+        <tr>
+          <th></th>
+          <th class="sticky left-0 top-0 z-10 bg-slate-100 ">
+            <%= sort_link 'users.nom', 'Nom' %>
+          </th>
+          <th colspan="2">
+            <%= sort_link 'users.rôle', 'Rôle' %>
+          </th>
+          <th>Service</th>
+          <th>Mots clés</th>
+          <th>
+            <%= sort_link 'users.email', 'Email' %>
+          </th>
+          <th>Absent ?</th>
+          <th>Évaluation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%= render @users %>
+      </tbody>
+    </table>
   </div>
-
-  <div class="flex flex-col bg-white border-t border-slate-200">
-
-    <div class="flex flex-wrap justify-end items-center gap-2 p-4">
-
-      <% if @users.any? %>
-        <%= link_to url_for(params.permit(:search, :role, :services, :absent, :discarded).merge(format: :xls)),
+</div>
+<div class="flex flex-col bg-white border-t border-slate-200">
+  <div class="flex flex-wrap justify-end items-center gap-2 p-4">
+    <% if @users.any? %>
+      <%= link_to url_for(params.permit(:search, :role, :services, :absent, :discarded).merge(format: :xls)),
               class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto" do %>
-                  <span class="material-symbols-outlined text-lg">upload</span>
-
-          <span>Exporter en XLS</span>
-        <% end %>
+        <span class="material-symbols-outlined text-lg">upload</span>
+        <span>Exporter en XLS</span>
       <% end %>
-
-      <%= link_to import_users_path,
+    <% end %>
+    <%= link_to import_users_path,
             data: { testid: "import_users" },
             'data-turbo': false,
             class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto" do %>
-          <span class="material-symbols-outlined text-lg">download</span>
-        <span>Importer des agents</span>
-      <% end %>
-
-    </div>
-
-    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50">
-
-      <div class="text-xs sm:text-sm font-medium text-slate-500 order-2 sm:order-1">
-        <%= pagy_info(@pagy).html_safe %>
-      </div>
-
-      <div class="w-full sm:w-auto order-1 sm:order-2 flex justify-center">
-        <%= pagy_nav(@pagy).html_safe %>
-      </div>
-
-    </div>
-
+      <span class="material-symbols-outlined text-lg">download</span>
+      <span>Importer des agents</span>
+    <% end %>
   </div>
-
+  <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50">
+    <div class="text-xs sm:text-sm font-medium text-slate-500 order-2 sm:order-1">
+      <%= pagy_info(@pagy).html_safe %>
+    </div>
+    <div class="w-full sm:w-auto order-1 sm:order-2 flex justify-center">
+      <%= pagy_nav(@pagy).html_safe %>
+    </div>
+  </div>
+</div>
