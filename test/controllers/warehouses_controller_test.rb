@@ -21,7 +21,7 @@ class WarehousesControllerTest < ActionDispatch::IntegrationTest
       post warehouses_url, params: { warehouse: { address: @warehouse.address, name: @warehouse.name, latitude: "1.234", longitude: "5.678" } }
     end
 
-    assert_redirected_to warehouse_url(Warehouse.last)
+    assert_redirected_to admin_parametres_url
   end
 
   test "should show warehouse" do
@@ -36,7 +36,7 @@ class WarehousesControllerTest < ActionDispatch::IntegrationTest
 
   test "should update warehouse" do
     patch warehouse_url(@warehouse), params: { warehouse: { address: "7 Rue Francis de Pressensé, 75014 Paris", name: "Entrepôt de Paris", latitude: "2.345", longitude: "6.789" } }
-    assert_redirected_to warehouse_url(@warehouse)
+    assert_redirected_to admin_parametres_url
   end
 
   test "should destroy warehouse" do
