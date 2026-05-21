@@ -17,24 +17,19 @@
     <% end %>
   <% end %>
 </td>
-<td class="text-center">
-  <span class="material-symbols-outlined text-success">
+
+<td class="flex text-success font-black text-xs items-center">
+   <span class="material-symbols-outlined text-success">
     <%= user.avatar %>
   </span>
-</td>
-<td class="text-success font-black">
   <%= user.rôle.upcase %>
 </td>
-<td><%= user.services.pluck(:nom).join(", ") %></td>
-<td><%= user.tag_list %></td>
-<td><%= user.email %></td>
-<td>
-  <% if user.agent? && user.absent? %>
-    <span class="material-symbols-outlined cursor-help" title="Absent du <%= l user.current_absence.du %> au <%= l user.current_absence.au %>, motif : <%= user.current_absence.motif %>">
-      person_alert
-    </span>
-  <% end %>
-</td>
+
+<td class="text-sm text-slate-600"><%= user.services.pluck(:nom).join(", ") %></td>
+
+<td class="text-sm text-slate-600"><%= user.tag_list.join(", ") %></td>
+
+<td class="text-sm text-slate-500 font-mono"><%= user.email %></td>
 <td>
   <% if user.agent? %>
     <%= "#{ number_with_precision(user.moyenne, precision: 2, strip_insignificant_zeros: true) } / 5" if user.moyenne %>
