@@ -13,7 +13,7 @@
       <% end %>
     </div>
 
-    <%= form_tag request.path, method: :get, class: "my-6" do %>
+   <%= form_tag request.path, method: :get, class: "my-6" do %>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
 
         <div class="w-full md:flex-1">
@@ -43,6 +43,26 @@
                 onchange: 'this.form.submit()' %>
         </div>
 
+        <div class="w-full md:flex-1">
+          <%= label_tag :user_tag, "Mots clés", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+          <%
+            # Capturamos el tag seleccionado en la URL si existe
+            tag_soumis = params[:user_tag]
+            
+            # Obtenemos los tags que pertenecen ÚNICAMENTE a los usuarios (filtrando a través de la tabla taggings)
+            tags_de_usuarios = ActsAsTaggableOn::Tag.joins(:taggings)
+                                                    .where(taggings: { taggable_type: 'User' })
+                                                    .distinct
+                                                    .pluck(:name)
+                                                    .sort
+          %>
+          <%= select_tag :user_tag, 
+                options_for_select(tags_de_usuarios), 
+                include_blank: "", 
+                class: 'select select-bordered select-md w-full', 
+                onchange: 'this.form.submit()' %>
+        </div>
+
         <div class="flex justify-center gap-6 py-2 w-full md:flex-1">
 
           <label class="flex items-center gap-2 cursor-pointer select-none">
@@ -68,28 +88,28 @@
 
   <div class="divider"></div>
 
-  <div class="flex flex-col bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+  <div class="flex flex-col bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden ">
 
-    <div class="overflow-x-auto relative">
+    <div class="overflow-x-auto relative ">
 
       <div class="flex items-center gap-1 text-xs text-slate-400 mb-1 md:hidden">
         <span class="material-symbols-outlined text-sm">swipe</span>
         <span>Faire glisser pour voir plus</span>
       </div>
 
-      <table id="users" class="table table-sm w-full table-auto border-none m-0">
+      <table id="users" class="table table-sm w-full border-none ">
 
         <thead class="bg-slate-100">
           <tr>
             <th></th>
-            <th class="sticky left-0 top-0 z-10 bg-slate-100">
+            <th class="sticky left-0 top-0 z-10 bg-slate-100 ">
               <%= sort_link 'users.nom', 'Nom' %>
             </th>
             <th colspan="2">
               <%= sort_link 'users.rôle', 'Rôle' %>
             </th>
             <th>Service</th>
-            <th>Secteur/Équipe</th>
+            <th>Mots clés</th>
             <th>
               <%= sort_link 'users.email', 'Email' %>
             </th>
