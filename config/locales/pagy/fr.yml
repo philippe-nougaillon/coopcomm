@@ -2,5 +2,5 @@ fr:
   pagy:
     info:
       no_items: "Aucun résultat"
-      single_page: "%{count} utilisateurs"
-      multiple_pages: "%{from} à %{to} sur %{count} utilisateurs"
+      single_page: "%{count} %{item_name}"
+      multiple_pages: "%{from} à %{to} sur %{count} %{item_name}"

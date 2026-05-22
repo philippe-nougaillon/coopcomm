@@ -1,5 +1,5 @@
 /* ==========================================================================
-   PAGINACIÓN REFINADA (ESTILO BOTÓN PREMIUM)
+   PAGINACIÓN REFINADA (ESTILO PREMIUM TOTAL - SEGURO)
    ========================================================================== */
 
 /* Contenedor Flex de Pagy */
@@ -7,36 +7,39 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem; /* Más separación entre elementos */
+  gap: 0.75rem;
   font-family: ui-sans-serif, system-ui, sans-serif;
-  font-size: 0.875rem;
+   margin-top: 10px;
 }
 
-/* Base de todos los botones e indicadores */
+/* Base de todos los botones, enlaces e hijos directos */
 .pagy > * {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 2.25rem;
   min-width: 2.25rem;
-  color: #4b5563; /* text-slate-600 */
+  color: #4b5563;
   text-decoration: none;
   transition: all 0.2s ease;
+  font-size: 0.875rem !important; /* ¡FUERZA EL TAMAÑO DE LOS NÚMEROS! */
 }
 
-/* Números de página normales */
-.pagy a:not(:first-child):not(:last-child) {
+/* Redondear todos los elementos del medio (números y puntos suspensivos) */
+.pagy > *:not(:first-child):not(:last-child) {
   border-radius: 9999px;
-  padding: 0 0.5rem;
+  padding: 0 0.75rem;
 }
 
+/* Hover general para los números que son links */
 .pagy a:not(:first-child):not(:last-child):hover {
   background-color: #f1f5f9;
   color: #0f172a;
 }
 
-/* Círculo de la página actual */
-.pagy .current, 
+/* Círculo de la página actual (activa) */
+.pagy .current,
+.pagy > em,
 .pagy > .current {
   background-color: #0284c7 !important; /* Tu azul corporativo */
   color: #ffffff !important;
@@ -45,11 +48,9 @@
   box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2);
 }
 
-/* ==========================================================================
-   TRUCO CSS: Transmutar "<" y ">" en Botones "Précédent" y "Suivant"
-   ========================================================================== */
-
-/* Botón Izquierdo (Anterior) */
+/* ==========================================
+   BOTÓN IZQUIERDO (Primer elemento de la lista)
+   ========================================== */
 .pagy > :first-child {
   font-size: 0px !important; /* Esconde el caracter "<" original */
   border: 1px solid #e2e8f0;
@@ -58,20 +59,31 @@
   border-radius: 0.5rem;
   font-weight: 500;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-.pagy > :first-child::before {
-  content: "arrow_back_ios"; 
-  font-family: 'Material Symbols Outlined';
-  font-size: 0.75rem; /* Pequeño y estilizado como tu mockup */
-  font-weight: normal;
-  text-transform: none;
-  word-wrap: normal;
-  white-space: nowrap;
-  direction: ltr;
-  -webkit-font-smoothing: antialiased;
+  min-width: auto;
 }
 
-/* Botón Derecho (Siguiente) */
+/* Icono de Google hacia atrás */
+.pagy > :first-child::before {
+  content: "arrow_back_ios"; 
+  font-family: 'Material Symbols Outlined' !important;
+  font-size: 0.85rem !important; 
+  font-weight: normal;
+  margin-right: 0.5rem;
+  -webkit-font-smoothing: antialiased;
+  color: #334155;
+}
+
+/* Texto Précédent */
+.pagy > :first-child::after {
+  content: "Précédent";
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.875rem !important;
+  color: #334155;
+}
+
+/* ==========================================
+   BOTÓN DERECHO (Último elemento de la lista)
+   ========================================== */
 .pagy > :last-child {
   font-size: 0px !important; /* Esconde el caracter ">" original */
   border: 1px solid #e2e8f0;
@@ -80,39 +92,61 @@
   border-radius: 0.5rem;
   font-weight: 500;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  min-width: auto;
 }
+
+/* Texto Suivant */
+.pagy > :last-child::before {
+  content: "Suivant";
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.875rem !important;
+  color: #334155;
+  margin-right: 0.5rem;
+}
+
+/* Icono de Google hacia adelante */
 .pagy > :last-child::after {
   content: "arrow_forward_ios";
-  font-family: 'Material Symbols Outlined';
-  font-size: 0.75rem;
+  font-family: 'Material Symbols Outlined' !important;
+  font-size: 0.85rem !important; 
   font-weight: normal;
-  text-transform: none;
-  word-wrap: normal;
-  white-space: nowrap;
-  direction: ltr;
   -webkit-font-smoothing: antialiased;
+  color: #334155;
 }
 
-/* Hovers para los botones de texto cuando son enlaces activos */
+/* ==========================================
+   HOVERS Y ESTADOS INACTIVOS
+   ========================================== */
+
+/* Hover exclusivo para los botones de texto cuando son clicks reales */
 .pagy a:first-child:hover,
 .pagy a:last-child:hover {
-  background-color: #BDEAF7;
-  border-color: #0284c7;
+  background-color: #BDEAF7 !important;
+  border-color: #0284c7 !important;
+}
+.pagy a:first-child:hover::before,
+.pagy a:first-child:hover::after,
+.pagy a:last-child:hover::before,
+.pagy a:last-child:hover::after {
+  color: #0284c7 !important;
 }
 
-/* Estado Deshabilitado (Cuando no puedes ir atrás/adelante) */
-.pagy :not(a):not(.current):not(.gap) {
-  background-color: #f8fafc;
-  border-color: #e2e8f0;
+/* Cuando están deshabilitados (No son enlaces "a") */
+.pagy > span:first-child,
+.pagy > span:last-child {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
   opacity: 0.5;
   cursor: not-allowed;
 }
-.pagy :not(a):not(.current):not(.gap):before,
-.pagy :not(a):not(.current):not(.gap):after {
-  color: #94a3b8 !important; /* Texto gris tenue si está bloqueado */
+.pagy > span:first-child::before,
+.pagy > span:first-child::after,
+.pagy > span:last-child::before,
+.pagy > span:last-child::after {
+  color: #94a3b8 !important; /* Vuelve el texto gris */
 }
 
-/* Quitar fondos raros en los puntos suspensivos (...) */
+/* Puntos suspensivos (...) */
 .pagy .gap {
   background-color: transparent !important;
 }
