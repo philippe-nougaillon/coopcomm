@@ -1,4 +1,6 @@
-<tr class="hover:bg-base-300 <%= 'text-error font-bold' if absence.en_cours? %>">
+
+<tr class="hover:bg-base-300 <%= ' text-slate-700 font-medium' if absence.en_cours? %>">
+
   <td class="text-nowrap">
     <%= l(absence.du, format: :long) %>
     <% if absence.matin %>
@@ -16,7 +18,7 @@
   <td><%= absence.observation %></td>
   <td>
     <% if current_user.manager_or_admin? %>
-      <button class="btn btn-primary btn-xs" onclick="edit_modal_<%= absence.id %>.showModal()">
+      <button class="btn btn-primary btn-sm" onclick="edit_modal_<%= absence.id %>.showModal()">
         Modifier
       </button>
 

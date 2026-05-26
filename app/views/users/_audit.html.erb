@@ -1,19 +1,26 @@
-<tr class="hover:bg-base-300">
-  <td class="whitespace-nowrap">
-    Il y a <%= time_ago_in_words(audit.created_at) %>
-    <br>
-    (<%= l(audit.created_at, format: :long) %>)
+<tr class=" hover:bg-base-300">
+  <td class="whitespace-nowrap py-3 align-top">
+    <div class=" font-medium text-slate-600">
+      Il y a <%= time_ago_in_words(audit.created_at) %>
+    </div>
+    <div class="text-xs text-slate-400 mt-0.5 font-normal">
+      (<%= l(audit.created_at, format: :long) %>)
+    </div>
   </td>
-  <td>
+
+  <td class="py-3 align-top text-slate-700 font-medium">
     <%= audit.auditable_type %>
   </td>
-  <td style="text-align: right;">
-    <%= link_to_if audited_view_path(audit), audit.auditable_id, audited_view_path(audit), class: 'text-primary hover:underline' %>
+
+  <td class="py-3 align-top" style="text-align: right;">
+    <%= link_to_if audited_view_path(audit), audit.auditable_id, audited_view_path(audit), class: 'text-primary hover:underline font-semibold' %>
   </td>
-  <td>
+
+  <td class="py-3 align-top text-slate-700">
     <%= audit.action.humanize %>
   </td>
-  <td class="whitespace-nowrap">
+
+  <td class="whitespace-nowrap py-3 align-top  text-slate-500 leading-relaxed">
     <% unless audit.comment %>
       <%= sanitize prettify(audit, current_user).join('<br>') %>
     <% else %>

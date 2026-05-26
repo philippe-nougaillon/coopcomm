@@ -297,7 +297,11 @@ class UsersController < ApplicationController
 
   def inviter
     @user.invite!(current_user)
-    redirect_to user_path(@user), notice: "Utilisateur invité"
+    redirect_to user_path(@user), notice: "Lien d’accès renvoyé"
+  end
+
+  def interventions_average
+  interventions.average(:note)&.round(2) || 0
   end
 
   def edit_password
