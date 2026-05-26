@@ -322,7 +322,9 @@ class InterventionsController < ApplicationController
         .where(template_slug: @intervention.slug)
         .where(agent_interventions: { agent_id: current_user.id })
         .where("DATE(début) = ?", Date.today)
-        .last
+        .where(workflow_state: "nouveau") # Seul les nouvelles interventions nous intéresse
+        .order(updated_at: :asc) # Trie du plus ancien au plus récent
+        .last # Prend l'intervention créée/modifiée la plus récente
 
       # Si une intervention fille est créé, on la met à jour, sinon on en créée une nouvelle
       if current_intervention.present?
