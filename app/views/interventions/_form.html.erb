@@ -1,6 +1,6 @@
-<%= form_with(model: intervention, class: "contents",
+<%= form_with(model: intervention, url: (create_intervention_pointage_interventions_path if @intervention.repeter && @intervention.new_record?), class: "contents",
               data: (current_user.adhérent? ? {} : {
-                controller: "verification-disponibilites",
+                controller: ("verification-disponibilites" if !@intervention.repeter),
                 verification_disponibilites_intervention_id_value: (@intervention.id if @intervention.persisted?)
               })
     ) do |form| %>
@@ -21,7 +21,7 @@
   <h2 class="text-lg text-secondary font-black">
     Demande
   </h2>
-  <div class="bg-sky-50 p-4 rounded border border-sky-100" data-controller="toggle-visibility">
+  <div class="bg-sky-50 p-4 rounded border border-sky-100">
     <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8 mb-5">
       <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
         <div class="w-full sm:flex-1">
@@ -58,103 +58,89 @@
                           } %>
         </div>
 
-        <div class="flex gap-1 items-center mt-4" title="Cocher pour activer le pointage ?">
-          <%= form.check_box :repeter, 
-                           class: 'checkbox checkbox-sm checkbox-secondary', 
-                           data: { 
-                             toggle_visibility_target: "checkbox", 
-                             action: "change->toggle-visibility#toggle" 
-                           } %>
-          <%= form.label :repeter, "Modèle pour le pointage ?" %>
-        </div>
       </div>
     </div>
 
-    <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8" 
-          data-toggle-visibility-target="hideable" 
+    <% if !@intervention.repeter%>
+      <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8" 
           <%= "data-controller=\"meteo-intervention\" data-action=\"change->verification-disponibilites#verificationWithInput\"".html_safe if !@intervention.passed %>>
-      <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" data-action="change->verification-disponibilites#verificationWithInput">
+        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" data-action="change->verification-disponibilites#verificationWithInput">
 
-        <div class="w-full min-w-fit flex-1" data-action='change->meteo-intervention#afficher_meteo'>
-          <%= form.label :début_prévue %>
-          <div class="flex items-center gap-1">
-            <%= form.date_field :début_prévue,
-                                class: "flex-1 input input-sm",
-                                value: (params[:début_prévue].try(:to_date) || @intervention.début_prévue&.to_date),
-                                data: {
-                                  'verification-disponibilites-target': "debut_prevue",
-                                  'meteo-intervention-target': "debut_prevue",
-                                  'toggle-visibility-target': "field"
-                                }
-            %>
-            <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] },
-                            { selected: params[:début_prévue_hour] || @intervention.début_prévue&.hour },
-                            class: "select select-sm w-16",
-                            data: {
-                              'verification-disponibilites-target': "debut_prevue_hour",
-                              'meteo-intervention-target': "debut_prevue_hour",
-                              'toggle-visibility-target': "field"
-                            }
-            %>
-            :
-            <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] },
-                            { selected: params[:début_prévue_minute] || @intervention.début_prévue&.min },
-                            class: "select select-sm w-16",
-                            data: { 
-                              'verification-disponibilites-target': "debut_prevue_minute",
-                              'toggle-visibility-target': "field"
-                            }
-            %>
+          <div class="w-full min-w-fit flex-1" data-action='change->meteo-intervention#afficher_meteo'>
+            <%= form.label :début_prévue %>
+            <div class="flex items-center gap-1">
+              <%= form.date_field :début_prévue,
+                                  class: "flex-1 input input-sm",
+                                  value: (params[:début_prévue].try(:to_date) || @intervention.début_prévue&.to_date),
+                                  data: {
+                                    'verification-disponibilites-target': "debut_prevue",
+                                    'meteo-intervention-target': "debut_prevue"
+                                  }
+              %>
+              <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] },
+                              { selected: params[:début_prévue_hour] || @intervention.début_prévue&.hour },
+                              class: "select select-sm w-16",
+                              data: {
+                                'verification-disponibilites-target': "debut_prevue_hour",
+                                'meteo-intervention-target': "debut_prevue_hour"
+                              }
+              %>
+              :
+              <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] },
+                              { selected: params[:début_prévue_minute] || @intervention.début_prévue&.min },
+                              class: "select select-sm w-16",
+                              data: { 
+                                'verification-disponibilites-target': "debut_prevue_minute"
+                              }
+              %>
+            </div>
+          </div>
+
+          <div class="w-full min-w-fit flex-1">
+            <%= form.label :fin_prévue %>
+            <div class="flex items-center gap-1">
+              <%= form.date_field :fin_prévue,
+                                  value: (params[:début_prévue].try(:to_date) || @intervention.fin_prévue&.to_date),
+                                  class: "flex-1 input input-sm",
+                                  data: { 
+                                    'verification-disponibilites-target': "fin_prevue"
+                                  }
+              %>
+              <%= form.select :fin_prévue_hour, (0..23).map { |h| [format('%02d', h), h] },
+                              { selected: params[:fin_prévue_hour] || @intervention.fin_prévue&.hour },
+                              class: "select select-sm w-16",
+                              data: {
+                                'verification-disponibilites-target': "fin_prevue_hour"
+                              }
+              %>
+              :
+              <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] },
+                              { selected: params[:fin_prévue_minute] || @intervention.fin_prévue&.min },
+                              class: "select select-sm w-16",
+                              data: {
+                                'verification-disponibilites-target': "fin_prevue_minute"
+                              }
+              %>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
+          <div class="w-full flex-1">
+            <%= form.label :meteo, "Prévision météo" %>
+            <%= form.text_field :meteo, 
+                              class: "input input-sm w-full", 
+                              readonly: true,
+                              disabled: @intervention.passed || current_user.adhérent?,
+                              data: {
+                                'meteo-intervention-target': "prévisionMétéo"
+                              } %>
           </div>
         </div>
-
-        <div class="w-full min-w-fit flex-1">
-          <%= form.label :fin_prévue %>
-          <div class="flex items-center gap-1">
-            <%= form.date_field :fin_prévue,
-                                value: (params[:début_prévue].try(:to_date) || @intervention.fin_prévue&.to_date),
-                                class: "flex-1 input input-sm",
-                                data: { 
-                                  'verification-disponibilites-target': "fin_prevue",
-                                  'toggle-visibility-target': "field"
-                                }
-            %>
-            <%= form.select :fin_prévue_hour, (0..23).map { |h| [format('%02d', h), h] },
-                            { selected: params[:fin_prévue_hour] || @intervention.fin_prévue&.hour },
-                            class: "select select-sm w-16",
-                            data: {
-                              'verification-disponibilites-target': "fin_prevue_hour",
-                              'toggle-visibility-target': "field"
-                            }
-            %>
-            :
-            <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] },
-                            { selected: params[:fin_prévue_minute] || @intervention.fin_prévue&.min },
-                            class: "select select-sm w-16",
-                            data: {
-                              'verification-disponibilites-target': "fin_prevue_minute",
-                              'toggle-visibility-target': "field"
-                            }
-            %>
-          </div>
-        </div>
-
       </div>
-
-      <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
-        <div class="w-full flex-1">
-          <%= form.label :meteo, "Prévision météo" %>
-          <%= form.text_field :meteo, 
-                            class: "input input-sm w-full", 
-                            readonly: true,
-                            disabled: @intervention.passed || current_user.adhérent?,
-                            data: {
-                              'meteo-intervention-target': "prévisionMétéo",
-                              'toggle-visibility-target': "field"
-                            } %>
-        </div>
-      </div>
-    </div>
+    <% end %>
+    
   </div>
 
     <% if !current_user.adhérent? %>

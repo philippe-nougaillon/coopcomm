@@ -1,10 +1,10 @@
 class InterventionsController < ApplicationController
   before_action :set_intervention, only: %i[ show edit update destroy terminer valider refuser archiver purge pointer pointage_statut update_location ]
   before_action :is_user_authorized
-  before_action :set_form_variables, only: %i[ new edit create update ]
+  before_action :set_form_variables, only: %i[ new edit create update new_intervention_pointage ]
   before_action :store_return_location, only: [:new, :edit]
   before_action :set_users_tags, only: [:index]
-  before_action :set_interventions_tags, only: %i[ index new edit create update ]
+  before_action :set_interventions_tags, only: %i[ index new edit create update new_intervention_pointage ]
 
   # GET /interventions or /interventions.json
   def index
@@ -198,8 +198,6 @@ class InterventionsController < ApplicationController
     @intervention.organisation = current_organisation
     update_tag_list
 
-    check_workflow_pointage_mère
-
     respond_to do |format|
       if @intervention.save
         format.html { redirect_to intervention_url(@intervention), notice: "Intervention créée avec succès." }
@@ -215,7 +213,6 @@ class InterventionsController < ApplicationController
   def update
     @intervention.assign_attributes(intervention_params)
     update_tag_list
-    check_workflow_pointage_mère
 
     respond_to do |format|
       if @intervention.save
@@ -412,6 +409,33 @@ class InterventionsController < ApplicationController
     render json: @services.select(:id, :nom)
   end
 
+  # Pour créer une intervention pointage
+  def new_intervention_pointage
+    @intervention = Intervention.new
+    @intervention.repeter = true
+  end
+
+  def create_intervention_pointage
+    @intervention = Intervention.new(intervention_params)
+    @intervention.organisation = current_organisation
+
+    # Force l'intervention à être répété
+    @intervention.repeter = true
+    @intervention.workflow_state = 'pointage activé'
+    
+    update_tag_list
+
+    respond_to do |format|
+      if @intervention.save
+        format.html { redirect_to intervention_url(@intervention), notice: "Modèle de pointage créée avec succès." }
+        format.json { render :show, status: :created, location: @intervention }
+      else
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: @intervention.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
   private
 
   def get_routage_responses
@@ -488,15 +512,6 @@ class InterventionsController < ApplicationController
         @intervention.tag_list = params[:intervention][:tags_manager]
       else
         @intervention.tag_list = params[:intervention][:tags_intervenant]
-      end
-    end
-
-    # Ajoute ou enlève l'état 'pointage activé' selon si c'est un modèle de pointage.
-    def check_workflow_pointage_mère
-      if !@intervention.repeter? && @intervention.workflow_state == 'pointage activé'
-        @intervention.workflow_state = 'nouveau'
-      elsif @intervention.repeter? && @intervention.workflow_state != 'pointage activé'
-        @intervention.workflow_state = 'pointage activé'
       end
     end
 

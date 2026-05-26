@@ -55,7 +55,7 @@ Rails.application.routes.draw do
   match 'wiki', to: 'wiki_pages#index', via: :get
 
   # resources :organisations, only: %i[ show edit update ]
-
+  
   resources :interventions do
     member do
       # get :accepter
@@ -73,6 +73,8 @@ Rails.application.routes.draw do
     collection do
       get :get_unavailable_elements
       get :services_for_adherent
+      get :new_intervention_pointage
+      post :create_intervention_pointage
     end
   end
 

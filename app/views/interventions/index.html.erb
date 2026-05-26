@@ -1,8 +1,13 @@
 <div class="w-full">
   <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
     <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Interventions') %></h1>
-    <%= link_to "Ajouter une Intervention", new_intervention_path, data: { 'testid': "ajouter_intervention_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-lg rounded btn-outline hover:text-white!" %>
-    <%= link_to "+ Intervention", new_intervention_path, data: { 'testid': "ajouter_intervention_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
+    <div class="flex gap-8">
+      <% if policy(Intervention).new_intervention_pointage? %>
+        <%= link_to "Ajouter un modèle de pointage", new_intervention_pointage_interventions_path, class: "hidden sm:inline-flex btn btn-outline btn-warning btn-lg rounded hover:text-white!" %>
+      <% end %>
+      <%= link_to "Ajouter une Intervention", new_intervention_path, data: { 'testid': "ajouter_intervention_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-lg rounded btn-outline hover:text-white!" %>
+      <%= link_to "+ Intervention", new_intervention_path, data: { 'testid': "ajouter_intervention_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
+    </div>
   </div>
 
   <%= form_tag request.path, method: :get do %>

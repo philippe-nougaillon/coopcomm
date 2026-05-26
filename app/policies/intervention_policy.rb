@@ -80,4 +80,12 @@ class InterventionPolicy < ApplicationPolicy
   def update_location?
     pointer?
   end
+
+  def new_intervention_pointage?
+    manager_or_admin?
+  end
+
+  def create_intervention_pointage?
+    new_intervention_pointage?
+  end
 end
