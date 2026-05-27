@@ -64,12 +64,16 @@ class PagesController < ApplicationController
       @export_logs = current_organisation.export_logs.includes(:user).order(created_at: :desc)
       # temps_consommable_agent_mensuellement = 35 * 4
       # temps_consommable_organisation_mensuellement = User.filter_by_service(current_user.services).adherent.count * 100
+      
+      users = User.by_service(current_user.services)
+
       #
       # Temps total par adhérent
       #
       @temps_total_par_adhérent = {}
-      User.by_service(current_user.services).adhérent.each do |adhérent|
-        @temps_total_par_adhérent[adhérent.nom_prénom] = adhérent.interventions_adherent.sum(:temps_total)
+      users.adhérent.includes(:interventions_adherent).each do |adhérent|
+        # .to_a force l'utilisation des données chargées par le .includes
+        @temps_total_par_adhérent[adhérent.nom_prénom] = adhérent.interventions_adherent.to_a.sum(&:temps_total)
       end
 
       #
@@ -77,10 +81,11 @@ class PagesController < ApplicationController
       #
 
       @temps_total_par_agent = {}
-      User.by_service(current_user.services).agent.each do |agent|
+      users.agent.includes(:agent_interventions, :interventions).each do |agent|
         @temps_total_par_agent[agent.nom_prénom] = 0
         agent.interventions.each do |intervention|
-          @temps_total_par_agent[agent.nom_prénom] += intervention.temps_total / intervention.agents.count
+          # .size utilise le tableau déjà chargé en mémoire par le .includes
+          @temps_total_par_agent[agent.nom_prénom] += intervention.temps_total / intervention.agents.size
         end
       end
 
