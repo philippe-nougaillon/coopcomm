@@ -126,14 +126,7 @@ class User < ApplicationRecord
   end
 
   def moyenne
-    notes_agents  = self.interventions.where(repeter: false)
-    count = notes_agents.count
-
-    unless count.zero?
-      notes_agents.sum(:note).to_f / count
-    else 
-      nil
-    end
+    rated_interventions.average(:note)&.to_f
   end
 
   def star_count(rating)
@@ -148,8 +141,12 @@ class User < ApplicationRecord
     return (rating_per_star[rating].to_f / sum) * 100
   end
 
+  def rated_interventions
+    interventions.where(repeter: false).where.not(note: nil)
+  end
+
   def total_rating
-    self.interventions.where(repeter: false).count
+    rated_interventions.count
   end
 
   def self.from_omniauth(auth)

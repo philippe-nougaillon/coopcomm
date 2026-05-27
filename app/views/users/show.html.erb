@@ -65,27 +65,21 @@
           <div class="bg-white border border-slate-200 rounded-2xl flex-1" style="padding: 1.25rem;">
   <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Évaluation</p>
 
-  <% if @user.total_rating > 0 %>
-
-    <div class="flex justify-between w-32 mb-4">
-      <b>
-        <%= number_with_precision(@user.moyenne, precision: 2, strip_insignificant_zeros: true) %> / 5
-      </b>
-      <%= pluralize(@user.total_rating, 'note') %>
-    </div>
-
-  <% else %>
-
-    <p class="text-sm text-slate-400 italic mb-4">
-      Cet agent n'a pas encore reçu d'évaluation.
-    </p>
-
-
-
-  <% end %>
+<% if @user.rated_interventions.any? %>
+  <div class="flex justify-between w-32 mb-4">
+    <b>
+      <%= number_with_precision(@user.moyenne, precision: 2) %> / 5
+    </b>
+    <%= pluralize(@user.total_rating, "note") %>
+  </div>
+<% else %>
+  <p class="text-sm text-slate-400 italic mb-4">
+    Cet agent n'a pas encore reçu d'évaluation.
+  </p>
+<% end %>
 
   <div class="flex flex-col-reverse">
-    <% (1..5).each do |i| %>
+<% (5).downto(1) do |i| %>
       <div class="flex items-center">
         <div class="flex w-36">
           <% i.times do %>
@@ -227,7 +221,7 @@
             <tr>
               <th class="py-3">Période</th>
               <th class="py-3">Motif</th>
-              <th class="py-3">Observation</th>
+              <th class="py-3">Observations</th>
               <th class="py-3"></th>
             </tr>
           </thead>
@@ -273,12 +267,19 @@
   </div>
   <%# --- PAGINACIÓN --- %>
   <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
+  <% if @pagy.pages > 1 %>
     <div class="hidden sm:block sm:flex-1"></div>
+    
     <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
       <%= pagy_nav(@pagy).html_safe %>
     </div>
+    
     <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
-      <%= pagy_info(@pagy).html_safe %>
+      <%= pagy_info(@pagy, item_name: "interventions").html_safe %>
     </div>
-  </div>
+  <% else %>
+    <div >
+    </div>
+  <% end %>
+</div>
 </div>

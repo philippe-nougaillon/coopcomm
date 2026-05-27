@@ -14,7 +14,7 @@
       <%= l(absence.au, format: :long) %>
     <% end %>
   </td>
-  <td><%= absence.motif %></td>
+  <td class="capitalize"><%= absence.motif %></td>
   <td><%= absence.observation %></td>
   <td>
     <% if current_user.manager_or_admin? %>
