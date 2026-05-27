@@ -22,7 +22,7 @@ class InterventionPolicy < ApplicationPolicy
   end
 
   def edit?
-    show?
+    show? && ( !record.repeter || !user.agent? )
   end
 
   def update?

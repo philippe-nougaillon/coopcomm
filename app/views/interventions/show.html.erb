@@ -34,7 +34,9 @@
             <span class="material-symbols-outlined">qr_code_2</span>
           <% end %>
         <% end %>
-        <%= link_to "Modifier", edit_intervention_path(@intervention), class: "btn btn-primary" %>
+        <% if policy(@intervention).edit? %>
+          <%= link_to "Modifier", edit_intervention_path(@intervention), class: "btn btn-primary" %>
+        <% end %>
         <% if policy(@intervention).destroy? %>
           <span title="<%= "Impossible de supprimer l'intervention car il y a des mouvements rattachés" if @intervention.mouvements.any? %>">
             <%= button_to intervention_path(@intervention), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette intervention ?" }, class: "btn", disabled: @intervention.mouvements.any?, 'data-testid': "Supprimer l'intervention" do %>
