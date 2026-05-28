@@ -1,44 +1,65 @@
-<tr class="hover:bg-base-300">
-    <td><%= time_ago_in_words(intervention.updated_at) %></td>
-    <td>
-    <span class="badge text-nowrap fontb-old <%= intervention.style %>">
-        <%= intervention.workflow_state.humanize %>
+<tr class="hover:bg-base-200/60 transition-colors duration-150">
+  <td class=" capitalize align-middle px-3 py-3 text-slate-600 font-medium whitespace-nowrap">
+    <%= time_ago_in_words(intervention.updated_at) %>
+  </td>
+  
+  <td class="align-middle pl-6 py-3 text-center w-36">
+    <span class="badge inline-block w-34 text-center font-bold <%= intervention.style %>">
+      <%= intervention.workflow_state.humanize %>
     </span>
-    </td>
-    <td>
-    <div class="flex items-center gap-2 text-xl sm:text-2xl text-<%= intervention.style.split.first.split('-').last %>">
-        <% if intervention.repeter %>
-        <span class="material-symbols-outlined text-black" title="Modèle pour le pointage">
-            event_repeat
-        </span>
-        <% elsif intervention.template_slug %>
-        <span class="material-symbols-outlined text-black" title="Pointage">
-            qr_code_2
-        </span>
-        <% end %>
-        <%= link_to intervention.description.humanize, intervention, class: 'z-10 hover:underline' %>
+  </td>
+
+  <td class="align-middle pl-12 py-3">
+    <div class="flex items-center gap-2 justify-center text-lg sm:text-xl font-semibold text-<%= intervention.style.split.first.split('-').last %>">
+      <% if intervention.repeter %>
+        <span class="material-symbols-outlined text-slate-700" title="Modèle pour le pointage">event_repeat</span>
+      <% elsif intervention.template_slug %>
+        <span class="material-symbols-outlined text-slate-700" title="Pointage">qr_code_2</span>
+      <% end %>
+      <%= link_to intervention.description.humanize, intervention, class: 'z-10 hover:underline' %>
     </div>
-    </td>
-    <td><%= intervention.adherent&.nom_prénom %></td>
-    <td>
-    <%= l(intervention.début_prévue, format: :custom) if intervention.début_prévue  %> <br> <%= l(intervention.fin_prévue, format: :custom)  if intervention.fin_prévue %>
-    </td>
-    <td><%= intervention.temps_total %> h</td>
-    <td>
-    <% if !(intervention.validé? || intervention.refusé?) %>
-        <div class="my-2">
-        <p class="flex justify-end gap-2">
-            <% if policy(intervention).terminer? %>
-                <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'z-10 btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? || current_user.adhérent? %>
-            <% end %>
-            <% if policy(intervention).valider? %>
-                <%= link_to 'Valider', valider_intervention_path(intervention), class: 'z-10 btn btn-success btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
-            <% end %>
-            <% if policy(intervention).refuser? %>
-                <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'z-10 btn btn-error btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
-            <% end %>
-        <p>
+  </td>
+
+  <td class="align-middle px-10 py-3 font-medium text-slate-700">
+    <%= intervention.adherent&.nom_prénom %>
+  </td>
+
+  <td class="align-middle px-3 py-3 text-xs text-slate-600 min-w-[140px]">
+    <div class="flex flex-col gap-0.5">
+      <% if intervention.début_prévue %>
+        <div>
+          <span class="font-bold text-slate-400 text-[10px] uppercase mr-1">Du:</span>
+          <%= l(intervention.début_prévue, format: :custom) %>
         </div>
+      <% end %>
+      <% if intervention.fin_prévue %>
+        <div>
+          <span class="font-bold text-slate-400 text-[10px] uppercase mr-1">Au:</span>
+          <%= l(intervention.fin_prévue, format: :custom) %>
+        </div>
+      <% end %>
+    </div>
+  </td>
+
+  <td class="align-middle px-8 py-3 text-center md:text-left font-semibold text-slate-700 whitespace-nowrap">
+    <%= intervention.temps_total %> h
+  </td>
+
+  <td class="align-middle px-3 py-3 text-center md:text-left">
+    <% if !(intervention.validé? || intervention.refusé?) %>
+      <div class="flex justify-start items-center gap-1.5 min-w-[210px]">
+        <% if policy(intervention).terminer? %>
+          <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'z-10 btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white!', title: "Passer en statut 'Terminé'", 'data-turbo': false, disabled: !intervention.can_terminer? || current_user.adhérent? %>
+        <% end %>
+        <% if policy(intervention).valider? %>
+          <%= link_to 'Valider', valider_intervention_path(intervention), class: 'z-10 btn btn-success btn-outline btn-xs sm:btn-sm hover:text-white!', title: "Passer en statut 'Validé'", 'data-turbo': false, disabled: !intervention.can_valider?  %>
+        <% end %>
+        <% if policy(intervention).refuser? %>
+          <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'z-10 btn btn-error btn-outline btn-xs sm:btn-sm hover:text-white!', title: "Passer en statut 'Refusé'", 'data-turbo': false, disabled: !intervention.can_refuser? %>
+        <% end %>
+      </div>
+    <% else %>
+      <span class="text-xs italic text-slate-400 font-medium">Aucune acción</span>
     <% end %>
-    </td>
+  </td>
 </tr>
