@@ -13,6 +13,10 @@ class InterventionPolicy < ApplicationPolicy
     index? && organisation? && (manager_or_admin? || record.adherent == user || record.agents.include?(user))
   end
 
+  def can_see_qrcode_pointage_pdf?
+    show? && !user.agent?
+  end
+
   def new?
     index?
   end

@@ -29,7 +29,7 @@
       </div>
 
       <div class="flex flex-wrap gap-2 mt-4 sm:mt-0 h-fit">
-        <% if @intervention.repeter %>
+        <% if @intervention.repeter && !current_user&.agent? %>
           <%= link_to intervention_path(format: :pdf), class: "btn btn-warning", title: "Voir le QRCode de pointage" do %>
             <span class="material-symbols-outlined">qr_code_2</span>
           <% end %>

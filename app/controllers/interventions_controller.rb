@@ -148,6 +148,8 @@ class InterventionsController < ApplicationController
         end
 
         format.pdf do
+          authorize @intervention, :can_see_qrcode_pointage_pdf?
+
           filename = "QRCode_Pointeuse_#{@intervention.description}"
           pdf = InterventionPdf.new
           pdf.pointeuse_qrcode(@intervention)
