@@ -5,7 +5,7 @@ class MessagerieController < ApplicationController
     # On récupère les utilisateurs avec qui on peut envoyer des messages
     @users = User.by_service(current_user.services).where.not(id: current_user.id).ordered
     
-    @users = @users.includes([:profile_picture_attachment])
+    @users = @users.with_attached_profile_picture
 
     @to_user = User.find_by(id: params[:to_id])
 
@@ -39,7 +39,7 @@ class MessagerieController < ApplicationController
 
       users_by_id = User
                       .where(id: ordered_user_ids)
-                      .includes([:profile_picture_attachment])
+                      .with_attached_profile_picture
                       .index_by(&:id)
 
       @recent_conversations = ordered_user_ids.map { |id| users_by_id[id] }.compact

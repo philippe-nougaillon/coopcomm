@@ -31,7 +31,7 @@ class UsersController < ApplicationController
       @users = @users.where(id: user_ids)
     end
 
-    @users = @users.includes(:taggings, :profile_picture_attachment)
+    @users = @users.includes(:taggings).with_attached_profile_picture
     
     respond_to do |format|
       format.html do

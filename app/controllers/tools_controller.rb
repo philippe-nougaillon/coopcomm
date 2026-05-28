@@ -46,7 +46,7 @@ class ToolsController < ApplicationController
       end
     end
 
-    @tools = @tools.includes([:photo_attachment]).ordered
+    @tools = @tools.with_attached_photo.ordered
 
     @tools = @tools.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
     @pagy, @tools = pagy(@tools, items: 10)
