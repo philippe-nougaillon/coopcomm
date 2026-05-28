@@ -34,6 +34,7 @@ class Intervention < ApplicationRecord
   before_validation -> { combine_datetime(:fin) }
   before_validation :check_absence
   before_validation :set_temporary_description, on: :create
+  before_validation :check_workflow_pointage_mère
   
   validates :description, :adherent_id, :service_id, presence: true
 
@@ -519,6 +520,15 @@ class Intervention < ApplicationRecord
     # update_column met à jour directement en base sans redéclencher les validations/callbacks.
     if description == "en_attente_id"
       update_column(:description, "##{self.id}")
+    end
+  end
+
+  # Ajoute ou enlève l'état 'pointage activé' selon si c'est un modèle de pointage.
+  def check_workflow_pointage_mère
+    if !self.repeter? &&self.workflow_state == 'pointage activé'
+      self.workflow_state = 'nouveau'
+    elsif self.repeter? && self.workflow_state != 'pointage activé'
+      self.workflow_state = 'pointage activé'
     end
   end
 end

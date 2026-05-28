@@ -5,13 +5,14 @@ class MessagerieController < ApplicationController
     # On récupère les utilisateurs avec qui on peut envoyer des messages
     @users = User.by_service(current_user.services).where.not(id: current_user.id).ordered
 
-    @to_user = User.find_by(id: params[:to_id]) if params[:to_id].to_i != current_user.id
+    # On récupère l'utilisateur associé à "to_id", sauf si l'utilisateur courant essaye d'envoyer un message à lui-même
+    @destinataire = User.find_by(id: params[:to_id]) if params[:to_id].to_i != current_user.id
     
-    if @to_user
+    if @destinataire
       # On récupère les messages envoyées et reçues d'un utilisateur
       @messages = Message
-                        .where(from_id: current_user.id, to_id: @to_user&.id)
-                        .or(Message.where(from_id: @to_user&.id, to_id: current_user.id))
+                        .where(from_id: current_user.id, to_id: @destinataire&.id)
+                        .or(Message.where(from_id: @destinataire&.id, to_id: current_user.id))
                         .order(:created_at)
 
       unread_messages = @messages.select { |n| n.to_id == current_user.id && n.read_at.nil? }
@@ -19,31 +20,36 @@ class MessagerieController < ApplicationController
       @unread_count = unread_messages.count
       @first_unread_id = unread_messages.first&.id
     else
-      recent_messages = Message.where(from_id: current_user.id)
-                                       .or(Message.where(to_id: current_user.id))
-                                       .order(created_at: :desc)
+      # On récupère les messages envoyées et reçues d'un utilisateur
+      recent_messages = Message
+                              .where(from_id: current_user.id)
+                              .or(Message.where(to_id: current_user.id))
+                              .order(created_at: :desc)
+
       @last_messages = {}
       ordered_user_ids = []
-      
 
       recent_messages.each do |notif|
-        other_user_id = notif.from_id == current_user.id ? notif.to_id : notif.from_id
+        # Détermine qui est l'interlocuteur avec l'utilisateur courant
+        interlocutor_id = notif.from_id == current_user.id ? notif.to_id : notif.from_id
         
-        unless @last_messages.key?(other_user_id)
-          @last_messages[other_user_id] = notif
-          ordered_user_ids << other_user_id
+        unless @last_messages.key?(interlocutor_id)
+          @last_messages[interlocutor_id] = notif
+          ordered_user_ids << interlocutor_id
         end
       end
 
       users_by_id = User.where(id: ordered_user_ids).index_by(&:id)
 
       @recent_conversations = ordered_user_ids.map { |id| users_by_id[id] }.compact
+
+      # Compte les messages non lus envoyés par chaque utilisateur à l'utilisateur actuel
       @unread_counts = Message.where(to_id: current_user.id, read_at: nil).group(:from_id).count
     end
   end
 
   def send_message
-    if params[:message].present? && params[:to_id].present? && (params[:to_id].to_i != current_user.id)
+    if params[:message].present? && params[:to_id].present? && (params[:to_id].to_i != current_user.id) # Evite que l'utilisateur courant envoie un message à lui-même
       Message.create!(message: params[:message], from_id: current_user.id, to_id: params[:to_id])
     end
   end

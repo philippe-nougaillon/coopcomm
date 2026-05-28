@@ -1,7 +1,7 @@
 <% content_for :full_width, true %>
 
-<% if @to_user %>
-  <%= turbo_stream_from "chat_#{current_user.id}_with_#{@to_user.id}" %>
+<% if @destinataire %>
+  <%= turbo_stream_from "chat_#{current_user.id}_with_#{@destinataire.id}" %>
 <% end %>
 
 <div class="drawer lg:drawer-open w-full mx-auto">
@@ -16,11 +16,11 @@
       
       <h1 class="text-2xl sm:text-4xl text-primary font-bold">
         <%= page_title!('Messagerie') %> 
-        <%= "- #{@to_user.nom_prénom}" if @to_user %>
+        <%= "- #{@destinataire.nom_prénom}" if @destinataire %>
       </h1>
     </div>
 
-    <% if @to_user %>
+    <% if @destinataire %>
       <div class="flex justify-center w-full mt-4 flex-1">
         <div class="flex flex-col w-full lg:w-3/5 relative">
           

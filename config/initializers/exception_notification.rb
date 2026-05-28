@@ -28,7 +28,7 @@ ExceptionNotification.configure do |config|
   config.add_notifier :email, {
     email_prefix: '[COOPCOMM ERROR] ',
     sender_address: %{"COOPCOMM Notifier" <contact@philnoug.com>},
-    exception_recipients: %w{philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, alexandre.meunier@aikku.eu}
+    exception_recipients: %w{philippe.nougaillon@aikku.eu, pierre-emmanuel.dacquet@aikku.eu, alexandre.meunier@aikku.eu lucas.blanquet@aikku.eu}
   }
 
   # Campfire notifier sends notifications to your Campfire room. Requires 'tinder' gem.

@@ -1,15 +1,22 @@
-<div class="flex items-start justify-between sm:justify-start gap-4">
-  <div class="flex items-start gap-4 sm:w-60">
-    <span class="material-symbols-outlined text-secondary p-2 bg-gray-200 rounded-full">
-      construction
-    </span>
-    <div class="flex flex-col gap-1">
-      <b><%= link_to intervention.description.humanize, intervention, class: "text-#{intervention.style.split.first.split('-').last} hover:underline" %></b>
+<div class="flex items-center justify-between sm:justify-start gap-4 border border-gray-200 p-4 sm:p-8">
+  <div class="flex items-start gap-4 sm:w-80 min-w-0">
+    <% if intervention.repeter %>
+      <span class="material-symbols-outlined text-secondary p-2 bg-gray-200 rounded-full shrink-0" title="Intervention répétée">
+        event_repeat
+      </span>
+    <% else %>
+      <span class="material-symbols-outlined text-secondary p-2 bg-gray-200 rounded-full shrink-0" title="Intervention en cours">
+        construction
+      </span>
+    <% end %>
+
+    <div class="flex flex-col gap-1 min-w-0">
+      <b><%= link_to intervention.description.humanize, intervention, class: "text-#{intervention.style.split.first.split('-').last} hover:underline block truncate" %></b>
       <small>Modifié il y a <%= time_ago_in_words(intervention.updated_at)%></small>
     </div>
   </div>
 
-  <div class="flex gap-4">
+  <div class="flex flex-col sm:flex-row gap-4 shrink-0">
     <% if policy(intervention).terminer? && intervention.can_terminer? %>
       <%= link_to 'Terminer', (current_user.agent? && intervention.template_slug) ? pointer_intervention_path(Intervention.find_by(slug: intervention.template_slug)) : terminer_intervention_path(intervention), class: 'btn btn-primary btn-outline btn-ml hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false %>
     <% end %>

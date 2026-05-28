@@ -20,7 +20,7 @@ export default class extends Controller {
     const addressInput = this.localisationTarget.querySelector('input[type="text"]');
     const prenomInput = this.prenomTarget.querySelector('input');
 
-    if (role === 'agent' || role === 'manager' || role === '') {
+    if (role === 'agent' || role === 'manager' || role === 'administrateur' || role === '') {
       this.localisationTarget.style.display = 'none';
       if (addressInput) {
         addressInput.value = '';

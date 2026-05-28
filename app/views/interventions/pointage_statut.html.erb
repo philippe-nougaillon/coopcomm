@@ -19,7 +19,7 @@
 
 <ul class="timeline timeline-vertical mt-8" data-controller="geolocation" data-location-url-value="<%= update_location_intervention_url %>">
   <li>
-    <div class="timeline-start">Début intervention</div>
+    <div class="timeline-start text-right">Début intervention</div>
     <div class="timeline-middle">
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -37,7 +37,7 @@
   </li>
   <li>
     <hr class="<%= 'bg-success' if @intervention.fin %>" />
-    <div class="timeline-start">Fin intervention</div>
+    <div class="timeline-start text-right">Fin intervention</div>
     <div class="timeline-middle">
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -59,7 +59,7 @@
   </li>
   <li>
     <hr class="<%= 'bg-success' if @intervention.fin %>" />
-    <div class="timeline-start">Comptabilisation</div>
+    <div class="timeline-start text-right">Comptabilisation</div>
     <div class="timeline-middle">
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -82,8 +82,8 @@
 
 <%= form_with model: @intervention, class: "w-full mt-8" do |form| %>
   <div class="w-full sm:w-1/4 mx-auto">
-    <%= form.text_area :commentaires, class: "textarea textarea-sm w-full", rows: 6, placeholder: "Ecrivez ici vos remarques ou commentaires", 'data-controller': 'textarea-autogrow' %>
-    <%= form.submit "Enregistrer vos commentaires", class: "btn btn-primary btn-sm mt-2" %>
+    <%= form.text_area :commentaires, class: "textarea w-full", rows: 6, placeholder: "Ecrivez ici vos remarques ou commentaires", 'data-controller': 'textarea-autogrow' %>
+    <%= form.submit "Enregistrer le commentaire", class: "btn btn-primary mt-2" %>
   </div>
 <% end %>
 
