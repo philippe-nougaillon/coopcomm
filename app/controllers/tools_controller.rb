@@ -56,7 +56,7 @@ class ToolsController < ApplicationController
   def show
     params[:vue] ||= 'calendrier'
 
-    @documents = @tool.documents.with_attached_photos
+    @documents = @tool.documents.with_attached_fichier
   end
 
   # GET /tools/new

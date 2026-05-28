@@ -164,7 +164,7 @@
         </thead>
         <tbody>
           <% if @tool.mouvements.any? %>
-            <%= render @tool.mouvements.ordered %>
+            <%= render @tool.mouvements.includes(:user).ordered %>
           <% else %>
             <tr>
               <td colspan=3>
