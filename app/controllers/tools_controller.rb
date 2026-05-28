@@ -55,6 +55,8 @@ class ToolsController < ApplicationController
   # GET /tools/1 or /tools/1.json
   def show
     params[:vue] ||= 'calendrier'
+
+    @documents = @tool.documents.with_attached_photos
   end
 
   # GET /tools/new
