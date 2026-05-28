@@ -1,6 +1,5 @@
 <div class="mx-auto w-full">
   <div id="<%= dom_id @intervention %>">
-    
     <div class="flex flex-col sm:flex-row justify-between mb-8">
       <%= link_to interventions_path, title:"Revenir en arrière", class: "sm:hidden" do %>
         <span class="material-symbols-outlined">
@@ -27,7 +26,6 @@
           <i>il y a <%= time_ago_in_words @intervention.updated_at %></i>
         </small>
       </div>
-
       <div class="flex flex-wrap gap-2 mt-4 sm:mt-0 h-fit">
         <% if @intervention.repeter && !current_user&.agent? %>
           <%= link_to intervention_path(format: :pdf), class: "btn btn-warning", title: "Voir le QRCode de pointage" do %>
@@ -47,10 +45,8 @@
         <%= link_to "Retour", interventions_path, class: "btn hidden sm:flex" %>
       </div>
     </div>
-
     <h2 class="text-lg text-secondary font-black mb-2">Demande</h2>
     <div class="bg-sky-50 p-4 rounded border border-sky-100 shadow-xs mb-8">
-      
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
         <div>
           <strong class="block text-slate-400 mb-1">Adhérent</strong>
@@ -65,7 +61,6 @@
           <%= @intervention.meteo.presence || "Non renseignée" %>
         </div>
       </div>
-
       <% if @intervention.début_prévue || @intervention.fin_prévue %>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8 mt-4">
           <% if @intervention.début_prévue %>
@@ -74,7 +69,6 @@
               <%= l(@intervention.début_prévue, format: :long) %>
             </div>
           <% end %>
-          
           <% if @intervention.fin_prévue %>
             <div>
               <strong class="block text-slate-400 mb-1">Fin prévue</strong>
@@ -83,11 +77,8 @@
           <% end %>
         </div>
       <% end %>
-
     </div>
-
     <% if !current_user.adhérent? %>
-      
       <h2 class="text-lg text-secondary font-black mb-2">Assignation</h2>
       <div class="bg-indigo-50 rounded border border-indigo-100 p-4 shadow-xs mb-8">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
@@ -101,7 +92,6 @@
               <% end %>
             <% end %>
           </div>
-          
           <div>
             <strong class="block text-slate-400 mb-1">Matériel(s)</strong>
             <% if !@intervention.tools.any? %>
@@ -112,7 +102,6 @@
               <% end %>
             <% end %>
           </div>
-
           <div>
             <strong class="block text-slate-400 mb-1">Mots clés</strong>
             <% if @intervention.tags.any? %>
@@ -127,7 +116,6 @@
           </div>
         </div>
       </div>
-
       <% if @intervention.repeter %>
         <div class="mb-8">
           <h2 class="text-lg text-secondary font-black mb-2">Pointages</h2>
@@ -174,9 +162,7 @@
         <div class="mb-8">
           <h2 class="text-lg text-secondary font-black mb-2">Intervention</h2>
           <div class="rounded border border-gray-200 p-4 shadow-xs mb-8 bg-white">
-            
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
-              
               <div class="flex flex-col gap-4">
                 <div>
                   <strong class="block text-slate-400 mb-1">Début</strong>
@@ -187,7 +173,6 @@
                   <%= l(@intervention.fin, format: :long) if @intervention.fin %>
                 </div>
               </div>
-
               <div class="flex flex-col gap-4">
                 <div>
                   <strong class="block text-slate-400 mb-1">Temps passé</strong>
@@ -202,7 +187,6 @@
                   <%= @intervention.temps_de_pause %> h
                 </div>
               </div>
-
               <% if @intervention.service&.calculate_distance? %>
                 <div class="flex flex-col h-full">
                   <strong class="block text-slate-400 mb-1">Trajet (AR)</strong>
@@ -223,7 +207,6 @@
                 <div class="hidden lg:block"></div>
               <% end %>
             </div>
-            
             <div class="mt-8 pt-6 border-t border-gray-100">
               <strong class="block text-slate-400 mb-1">Commentaires</strong>
               <p class="whitespace-pre-wrap"><%= @intervention.commentaires.presence || "Aucun commentaire." %></p>
@@ -260,7 +243,6 @@
                   <strong class="block text-slate-400 mb-1">Avis</strong>
                   <p><%= @intervention.avis.presence || "Aucun avis renseigné." %></p>
                 </div>
-                
                 <div>
                   <strong class="block text-slate-400 mb-1">Évaluation</strong>
                   <div class="rating">
@@ -283,7 +265,6 @@
                   <% if policy(@intervention).refuser? %>
                     <%= link_to 'Refuser', refuser_intervention_path(@intervention), class: 'btn btn-error btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut Refusée', 'data-turbo': false, disabled: !@intervention.can_refuser? %>
                   <% end %>
-                  
                   <% if !policy(@intervention).terminer? && !policy(@intervention).valider? && !policy(@intervention).refuser? %>
                     <p class="text-sm text-gray-500 italic mt-1">Aucune action disponible pour le moment.</p>
                   <% end %>
@@ -294,7 +275,6 @@
         <% end %>
       <% end %>
     <% end %>
-
     <% if current_user.manager_or_admin? %>
       <h2 class="text-2xl text-secondary mt-8">Activité</h2>
       <div class="overflow-x-auto mt-4">
@@ -314,22 +294,19 @@
         </table>
       </div>
       <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
-  <% if @pagy.pages > 1 %>
-    <div class="hidden sm:block sm:flex-1"></div>
-    
-    <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
-      <%= pagy_nav(@pagy).html_safe %>
-    </div>
-    
-    <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
-      <%= pagy_info(@pagy, item_name: "interventions").html_safe %>
-    </div>
-  <% else %>
-    <div >
-    </div>
-  <% end %>
-</div>
+        <% if @pagy.pages > 1 %>
+          <div class="hidden sm:block sm:flex-1"></div>
+          <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
+            <%= pagy_nav(@pagy).html_safe %>
+          </div>
+          <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
+            <%= pagy_info(@pagy, item_name: "interventions").html_safe %>
+          </div>
+        <% else %>
+          <div >
+          </div>
+        <% end %>
+      </div>
     <% end %>
-
   </div>
 </div>
