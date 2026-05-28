@@ -87,14 +87,14 @@
       <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
       <div class="flex items-center gap-2">
         <span class="text-xs font-semibold text-slate-500 hidden sm:inline">Affichage:</span>
-        <div class="join bg-white border border-slate-200 p-0.5 rounded-lg shadow-xs flex">
-          <label class="btn btn-ghost btn-xs h-7 min-h-fit join-item gap-1 px-3 cursor-pointer rounded-md transition-all <%= params[:vue] == 'normal' ? 'bg-primary text-white hover:bg-primary/90 shadow-sm' : 'text-slate-600 hover:bg-slate-100' %>" for="btnradio1">
-            <span class="material-symbols-outlined text-[16px]">density_small</span>
+        <div class=" join ">
+            <label class="btn btn-primary btn-outline btn-sm join-item <%= 'btn-active text-white!' if params[:vue] == 'normal' %>" for="btnradio1" title="Mode normal">
+               <span class="material-symbols-outlined text-[16px]">density_small</span>
             <span class="text-[11px] font-medium">Normal</span>
           </label>
           <%= radio_button_tag :vue, "normal", (params[:vue] == 'normal'), name: 'vue', id: 'btnradio1', onchange: 'this.form.submit()', class: 'hidden' %>
-          <label class="btn btn-ghost btn-xs h-7 min-h-fit join-item gap-1 px-3 cursor-pointer rounded-md transition-all <%= params[:vue] == 'compact' ? 'bg-primary text-white hover:bg-primary/90 shadow-sm' : 'text-slate-600 hover:bg-slate-100' %>" for="btnradio2">
-            <span class="material-symbols-outlined text-[16px]">compress</span>
+           <label class="btn btn-primary btn-outline btn-sm join-item rounded-r <%= 'btn-active text-white!' if params[:vue] == 'compact' %>" for="btnradio2" title="Mode compact">
+                <span class="material-symbols-outlined text-[16px]">compress</span>
             <span class="text-[11px] font-medium">Compact</span>
           </label>
           <%= radio_button_tag :vue, 'compact', (params[:vue] == 'compact'), name: 'vue', id: 'btnradio2', onchange: 'this.form.submit()', class: 'hidden' %>
@@ -130,13 +130,12 @@
         <% end %>
       <% end %>
     </div>
-    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full">
-      <% if @pagy.pages > 1 %>
-        <div class="hidden sm:block sm:flex-1"></div>
-        <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
+    <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
+      <% if @pagy.pages > 0 %>
+        <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
           <%= pagy_nav(@pagy).html_safe %>
         </div>
-        <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
+        <div class=" text-slate-500 text-center text-sm w-full ">
           <%= pagy_info(@pagy, item_name: "interventions").html_safe %>
         </div>
       <% else %>
