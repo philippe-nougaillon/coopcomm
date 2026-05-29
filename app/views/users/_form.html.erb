@@ -134,9 +134,11 @@
 <% end %>
 
 
-  <div class="my-10">
-    <%= link_to user_path(@user), class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition" do %>
+<div class="my-10">
+ 
+<%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition" do %>
       <span class="material-symbols-outlined text-base">arrow_back</span>
-      Retour à la fiche utilisateur
+      Retour à la liste des utilisateurs
     <% end %>
-  </div>
+
+</div>

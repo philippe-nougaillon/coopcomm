@@ -7,11 +7,10 @@
             data: { testid: "ajouter_utilisateur" },
             class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm ",
             title: "Créer un nouvel agent"  do %>
-      <span class="material-symbols-outlined">person_add</span>        
+      <span class="material-symbols-outlined">person_add</span>
       <span class="hidden md:block">Ajouter un Utilisateur</span>
     <% end %>
   </div>
-
   <%= form_tag request.path, method: :get, class: "pt-6" do %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
@@ -70,48 +69,42 @@
     </div>
   <% end %>
 </div>
-
-    <hr class="mt-6 mb-6">
-
-
+<hr class="mt-6 mb-6">
 <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
   <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
 </div>
-
 <div class="flex flex-col bg-white  border-x border-b border-slate-200 shadow-sm overflow-hidden">
   <div class="overflow-x-auto ">
-    
     <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
       <span class="material-symbols-outlined text-sm">swipe</span>
       <span>Faire glisser pour voir plus</span>
     </div>
-
-    <table id="users" class="table table-sm w-full border-none ">
-      <thead class="bg-slate-100 ">
-        <tr >
-          <th></th>
-          <th class="sticky left-0 top-0 z-10 bg-slate-100">
-            <%= sort_link 'users.nom', 'Nom' %>
-          </th>
-          <th colspan="2">
-            <%= sort_link 'users.rôle', 'Rôle' %>
-          </th>
-          <th>Service</th>
-          <th>Mots clés</th>
-          <th>
-            <%= sort_link 'users.email', 'Email' %>
-          </th>
-          <th>Absent ?</th>
-          <th>Évaluation</th>
-        </tr>
-      </thead>
-      <tbody>
-        <%= render @users %>
-      </tbody>
-    </table>
+    <table id="users" class="table table-sm w-full border-none">
+  <thead class="bg-slate-100">
+    <tr>
+      <th class="w-10 px-3 py-3"></th>
+      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">
+        
+        <%= sort_link 'users.nom', 'Nom' %>
+      </th>
+      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap" colspan="2">
+        <%= sort_link 'users.rôle', 'Rôle' %>
+      </th>
+      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">Service</th>
+      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">Mots clés</th>
+      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">
+        <%= sort_link 'users.email', 'Email' %>
+      </th>
+      <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Absent ?</th>
+      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">Évaluation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <%= render @users %>
+  </tbody>
+</table>
   </div>
 </div>
-
 <div class="flex flex-col bg-white border-x border-b border-slate-200 rounded-b-xl">
   <div class="flex flex-wrap justify-end items-center gap-2 p-4">
     <% if @users.any? %>
@@ -129,17 +122,16 @@
       <span>Importer des agents</span>
     <% end %>
   </div>
-
   <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
-      <% if @pagy.pages > 0 %>
-        <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
-          <%= pagy_nav(@pagy).html_safe %>
-        </div>
-        <div class=" text-slate-500 text-center text-sm w-full ">
-          <%= pagy_info(@pagy, item_name: "utilisateurs").html_safe %>
-        </div>
-      <% else %>
-        <div></div>
-      <% end %>
-    </div>
+    <% if @pagy.pages > 1 %>
+      <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+        <%= pagy_nav(@pagy).html_safe %>
+      </div>
+      <div class=" text-slate-500 text-center text-sm w-full ">
+        <%= pagy_info(@pagy, item_name: "utilisateurs").html_safe %>
+      </div>
+    <% else %>
+      <div></div>
+    <% end %>
+  </div>
 </div>

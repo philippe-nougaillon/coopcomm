@@ -38,7 +38,7 @@ class UsersController < ApplicationController
     respond_to do |format|
       format.html do
         @users = @users.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
-        @pagy, @users = pagy(@users, items: 3)
+        @pagy, @users = pagy(@users, items: 10)
       end
 
       format.xls do
@@ -200,7 +200,6 @@ class UsersController < ApplicationController
                     
                     new_record = user.new_record?
                     
-          user.organisation_id = current_organisation.id
           user.nom = row[headers.index 'Nom']&.strip&.upcase
           user.prénom = row[headers.index 'Prénom']&.strip&.humanize
           user.email = row[headers.index 'Email']
