@@ -94,9 +94,11 @@ class InterventionsController < ApplicationController
 
     session[:vue] = params[:vue]
 
+    @interventions = @interventions.includes(:tags, :agents, :adherent, :service, :organisation, :tools).with_attached_photos
+
     respond_to do |format|
       format.html do
-        @pagy, @interventions = pagy(@interventions.includes(:tags, :agents, :adherent).with_attached_photos)
+        @pagy, @interventions = pagy(@interventions)
       end
 
       format.xls do

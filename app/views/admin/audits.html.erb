@@ -59,7 +59,7 @@
       </thead>
 
       <tbody>
-        <%= render partial: 'audit', collection: @audits.includes(:user) %>
+        <%= render partial: 'audit', collection: @audits.includes(:user), cached: true %>
       </tbody>
 
       <tfoot>

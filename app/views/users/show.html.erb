@@ -156,7 +156,7 @@
         </thead>
 
         <tbody>
-          <%= render partial: 'absence', collection: @absences %>
+          <%= render partial: 'absence', collection: @absences, cached: true %>
         </tbody>
       </table>
     </div>
@@ -177,7 +177,7 @@
       </thead>
 
       <tbody>
-        <%= render partial: 'audit', collection: @audits %>
+        <%= render partial: 'audit', collection: @audits, cached: true %>
       </tbody>
     </table>
   </div>

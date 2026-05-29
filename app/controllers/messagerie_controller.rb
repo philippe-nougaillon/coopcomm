@@ -4,6 +4,8 @@ class MessagerieController < ApplicationController
   def index
     # On récupère les utilisateurs avec qui on peut envoyer des messages
     @users = User.by_service(current_user.services).where.not(id: current_user.id).ordered
+    
+    @users = @users.with_attached_profile_picture
 
     # On récupère l'utilisateur associé à "to_id", sauf si l'utilisateur courant essaye d'envoyer un message à lui-même
     @destinataire = User.find_by(id: params[:to_id]) if params[:to_id].to_i != current_user.id
@@ -39,7 +41,10 @@ class MessagerieController < ApplicationController
         end
       end
 
-      users_by_id = User.where(id: ordered_user_ids).index_by(&:id)
+      users_by_id = User
+                      .where(id: ordered_user_ids)
+                      .with_attached_profile_picture
+                      .index_by(&:id)
 
       @recent_conversations = ordered_user_ids.map { |id| users_by_id[id] }.compact
 
@@ -69,7 +74,17 @@ class MessagerieController < ApplicationController
   end
 
   def search_contact
-    @users = User.by_service(current_user.services).where.not(id: current_user.id).where("users.nom ILIKE :search OR users.prénom ILIKE :search", { search: "%#{params[:query]}%"}).ordered
+    @users = User
+              .by_service(current_user.services)
+              .where.not(id: current_user.id)
+              .ordered
+    
+    if params[:query].present?
+      @users = @users.where("users.nom ILIKE :search OR users.prénom ILIKE :search", { search: "%#{params[:query]}%"})
+    end
+
+    @users = @users.with_attached_profile_picture
+
     render partial: 'users_list', locals: { users: @users }
   end
 

@@ -12,7 +12,7 @@
     </tr>
     </thead>
     <tbody>
-      <%= render partial: 'intervention_compact', collection: @interventions, as: :intervention %>
+      <%= render partial: 'intervention_compact', collection: @interventions, as: :intervention, cached: true %>
     </tbody>
     <tfoot>
     <th></th>
