@@ -118,7 +118,7 @@
     <% end %>
 
     <% if params[:vue] == 'normal' %>
-      <%= render @interventions %>
+      <%= render @interventions, cached: true %>
     <% else %>
       <%= render partial: 'view_compact' %>
     <% end %>
