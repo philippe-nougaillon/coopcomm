@@ -3,7 +3,10 @@ class InterventionsController < ApplicationController
   before_action :is_user_authorized
   before_action :set_form_variables, only: %i[ new edit create update new_intervention_pointage create_intervention_pointage ]
   before_action :store_return_location, only: [:new, :edit]
+
+  # TODO : encore nécessaire ? 
   before_action :set_users_tags, only: [:index]
+
   before_action :set_interventions_tags, only: %i[ index new edit create update new_intervention_pointage create_intervention_pointage ]
 
   # GET /interventions or /interventions.json
@@ -122,6 +125,7 @@ class InterventionsController < ApplicationController
         @pointages = @pointages.ordered
       end
 
+      # TODO : déplacer ce bloc dans un service 
       unless Rails.env.test?
         # On vérifie que l'intervention possède un adhérent localisé ET que le service nécessite le calcul
         @localisation_depart = @intervention.origin_location
@@ -151,6 +155,8 @@ class InterventionsController < ApplicationController
 
         format.pdf do
           authorize @intervention, :can_see_qrcode_pointage_pdf?
+
+          # TODO : déplacer ce bloc dans un service 
 
           filename = "QRCode_Pointeuse_#{@intervention.description}"
           pdf = InterventionPdf.new
@@ -182,6 +188,9 @@ class InterventionsController < ApplicationController
     # Ajout de la date de fin si c'est un agent et que la date début prévue et fin prévue sont nil
     if current_user.agent? && (params[:début_prévue].blank? || params[:fin_prévue].blank?)
       now = DateTime.now()
+
+# TODO : remarque encore nécessaire ?
+      
       # Le nombre de minute doit être un mutliple de 5, 
       # Pour cela, on enlève le nombre de minutes modulo 5 (Ex: Si on a 14 minutes -> 14%5 = 4, donc 14-4 = 10)
       # date_fin = now - now.minute.modulo(5).minute
@@ -321,6 +330,9 @@ class InterventionsController < ApplicationController
 
     if @intervention.repeter?
       # Intervention fille se passant aujourd'hui (intervention en cours de réalisation)
+
+# TODO : déplacer ce bloc dans le model 
+
       current_intervention = Intervention
         .joins(:agent_interventions)
         .where(template_slug: @intervention.slug)
@@ -370,6 +382,9 @@ class InterventionsController < ApplicationController
     end
   end
 
+
+# TODO : si ça sert encore, déplacer ce bloc dans le model
+
   # Récupère les agents en conflit avec les dates passées dans l'URL
   def get_unavailable_elements
 
@@ -406,6 +421,9 @@ class InterventionsController < ApplicationController
 
     render json: json, status: :ok
   end
+
+  
+  # TODO : déplacer ce bloc dans le model 
 
   def services_for_adherent
     adherent = User.find(params[:adherent_id])
@@ -447,7 +465,9 @@ class InterventionsController < ApplicationController
   def get_routage_responses
     
   end
-  
+
+  # TODO : déplacer ce bloc dans le model 
+
   def get_interventions_localisations_to_marker(interventions_par_adherent)
     interventions_par_adherent.map{
       |adherent_id, interventions|
@@ -464,11 +484,15 @@ class InterventionsController < ApplicationController
     }
   end
 
+ # TODO : à renommer pour être plus lisible (ex: event_publish_event_name)  
+  
   def send_workflow_changed_notification
       unless Rails.env.development? 
         Events.instance.publish('intervention.workflow_changed', payload: {intervention_id: @intervention.id})
       end
     end
+
+  # TODO : à renommer pour être plus lisible (ex: event_publish_event_name)  
 
     def send_intervention_termine_notification
       unless Rails.env.development?
@@ -484,6 +508,8 @@ class InterventionsController < ApplicationController
       end
     end
 
+     # TODO : toutes les variables globales sont-elles encore nécessaires ?
+  
     def set_form_variables
       @services = current_user.services
 
