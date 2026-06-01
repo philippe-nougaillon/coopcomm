@@ -4,17 +4,33 @@ class ExportToXls < ApplicationService
   def initialize
     Spreadsheet.client_encoding = 'UTF-8'
     @book = Spreadsheet::Workbook.new
-    @bold = Spreadsheet::Format.new :weight => :bold, :size => 11
+    
+    # 🎨 Formato jolie
+    @header_format = Spreadsheet::Format.new(
+      weight: :bold,
+      size: 11,
+      pattern: 1,
+      pattern_fg_color: :gray,         
+      color: :white,                  
+      horizontal_align: :center,      
+      vertical_align: :center
+    )
+    
+    @data_format = Spreadsheet::Format.new(
+      size: 20,
+      vertical_align: :center
+    )
   end
 
   def add_worksheet(name)
     @sheet = @book.create_worksheet name: name
-    @sheet.row(0).default_format = @bold
     self
   end
 
   def add_headers(array_of_headers)
     @sheet.row(0).concat array_of_headers
+    @sheet.row(0).default_format = @header_format
+    @sheet.row(0).height = 26 # Altura elegante para la cabecera
     self
   end
 
@@ -23,6 +39,8 @@ class ExportToXls < ApplicationService
 
     fields_to_export.each do |data|
       @sheet.row(index).replace data
+      @sheet.row(index).default_format = @data_format
+      @sheet.row(index).height = 20 # Altura cómoda para leer los datos
       index += 1
     end
     self
@@ -30,7 +48,7 @@ class ExportToXls < ApplicationService
 
   def build_file
     file_contents = StringIO.new
-    @book.write file_contents # => Now file_contents contains the rendered file output
-    return file_contents.string.force_encoding('binary')
+    @book.write file_contents
+    file_contents.string.force_encoding('binary')
   end
 end

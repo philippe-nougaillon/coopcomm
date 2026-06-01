@@ -10,7 +10,7 @@
   </td>
 
   <td class="align-middle pl-12 py-3">
-    <div class="flex items-center gap-2 justify-center text-lg sm:text-xl font-semibold text-<%= intervention.style.split.first.split('-').last %>">
+    <div class="flex items-center gap-2 justify-left text-lg sm:text-xl font-semibold text-<%= intervention.style.split.first.split('-').last %>">
       <% if intervention.repeter %>
         <span class="material-symbols-outlined text-slate-700" title="Modèle pour le pointage">event_repeat</span>
       <% elsif intervention.template_slug %>
@@ -45,21 +45,23 @@
     <%= intervention.temps_total %> h
   </td>
 
-  <td class="align-middle px-3 py-3 text-center md:text-left">
+  <td class="align-middle px-3 py-3 text-center md:text-center">
     <% if !(intervention.validé? || intervention.refusé?) %>
-      <div class="flex justify-start items-center gap-1.5 min-w-[210px]">
-        <% if policy(intervention).terminer? %>
-          <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'z-10 btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white!', title: "Passer en statut 'Terminé'", 'data-turbo': false, disabled: !intervention.can_terminer? || current_user.adhérent? %>
-        <% end %>
-        <% if policy(intervention).valider? %>
-          <%= link_to 'Valider', valider_intervention_path(intervention), class: 'z-10 btn btn-success btn-outline btn-xs sm:btn-sm hover:text-white!', title: "Passer en statut 'Validé'", 'data-turbo': false, disabled: !intervention.can_valider?  %>
-        <% end %>
-        <% if policy(intervention).refuser? %>
-          <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'z-10 btn btn-error btn-outline btn-xs sm:btn-sm hover:text-white!', title: "Passer en statut 'Refusé'", 'data-turbo': false, disabled: !intervention.can_refuser? %>
-        <% end %>
-      </div>
+       <div class="my-2">
+        <p class="flex justify-end gap-2">
+            <% if policy(intervention).terminer? %>
+                <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'z-10 btn btn-primary border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? || current_user.adhérent? %>
+            <% end %>
+            <% if policy(intervention).valider? %>
+                <%= link_to 'Valider', valider_intervention_path(intervention), class: 'z-10 btn btn-success border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
+            <% end %>
+            <% if policy(intervention).refuser? %>
+                <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'z-10 btn btn-error border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
+            <% end %>
+        <p>
+        </div>
     <% else %>
-      <span class="text-xs italic text-slate-400 font-medium">Aucune acción</span>
+      <span class="text-xs italic text-slate-400 font-medium ">Aucune acción</span>
     <% end %>
   </td>
 </tr>
