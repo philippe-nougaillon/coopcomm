@@ -1,3 +1,5 @@
+# TODO : renommer le service pour être plus précis sur son utilité 
+
 class ApiGoogleMaps < ApplicationService
   attr_reader :localisation_depart, :localisation_destination, :errors, :routes_info, :data_response
 
