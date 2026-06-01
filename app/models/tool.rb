@@ -45,6 +45,9 @@ class Tool < ApplicationRecord
   end
 
   def dernier_mouvement_a(heure)
+
+    # TODO : kezako loaded ??
+    
     if mouvements.loaded?
       # On filtre et on trie du plus récent au plus ancien
       mvs = mouvements.select { |m| m.date <= heure }.sort_by { |m| -m.date.to_i }
@@ -68,6 +71,10 @@ class Tool < ApplicationRecord
     end
   end
 
+  # TODO : on ne pourrait pas faire une fonction qui retourne un tableau de couleurs selon les x jours de dispo d'un outil ? 
+  # ex pour 2 jours : [[vert,vert], [rouge,vert]] => l'outil n'est pas dispo le matin du jour 2
+  # ce serait plus simple à lire et ca irait peut-etre même plus vite à afficher ?!? 
+  
   private
 
   def create_mouvement
