@@ -22,7 +22,10 @@
     <%= render 'absence_fields', f: ff %>
   <% end %>
 
+  
   <div class="modal-action">
-    <%= f.submit "Enregistrer", class: "btn btn-primary" %>
+    <%= link_to "Annuler", user_path(@user), class: "btn flex-1" %>
+    <%= f.submit "Enregistrer", class: "btn btn-primary flex-1" %>
   </div>
+
 <% end %>

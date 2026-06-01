@@ -166,51 +166,69 @@ class UsersController < ApplicationController
   def import
   end
 
-  def import_do
+def import_do
     if params[:upload].present?
       @mdp = ""
-      @stream = capture_stdout do
-        # Enregistre le fichier localement (format = Date + nom du fichier)
-        filename = I18n.l(Time.now, format: :long) + ' - ' + params[:upload].original_filename
+      @success_logs = [] # Guardará los usuarios procesados con éxito
+      @error_logs = []   # Guardará los usuarios que fallaron
 
-        file_with_path = Rails.root.join('public', filename)
-        File.open(file_with_path, 'wb') do |file|
-          file.write(params[:upload].read)
-        end
+      # Enregistre le fichier localement (format = Date + nom du fichier)
+      filename = I18n.l(Time.now, format: :long) + ' - ' + params[:upload].original_filename
 
-        @importes = @errors = 0 
-        index = 1
+      file_with_path = Rails.root.join('public', filename)
+      File.open(file_with_path, 'wb') do |file|
+        file.write(params[:upload].read)
+      end
 
-        # IMPORT XLS
-        Spreadsheet.client_encoding = 'UTF-8'
-        book = Spreadsheet.open file_with_path
-        sheet1 = book.worksheet 0
-        headers = User.xls_headers
+      @importes = @errors = 0 
+      index = 1
 
+      # IMPORT XLS
+      Spreadsheet.client_encoding = 'UTF-8'
+      book = Spreadsheet.open file_with_path
+      sheet1 = book.worksheet 0
+
+      # 🚀 MAPEO DINÁMICO DE COLUMNAS
+      first_row = sheet1.row(0).map { |cell| cell.to_s.strip.downcase }
+
+      idx_nom       = first_row.index { |h| h.start_with?("nom") }
+      idx_prenom    = first_row.index { |h| h.start_with?("prénom") || h.start_with?("prenom") }
+      idx_email     = first_row.index { |h| h.start_with?("email") }
+      idx_service   = first_row.index { |h| h.start_with?("service") }
+      idx_telephone = first_row.index { |h| h.start_with?("téléphone") || h.start_with?("telephone") }
+      idx_memo      = first_row.index { |h| h.start_with?("mémo") || h.start_with?("memo") }
+
+      # Validación Estructural: Comprobamos si las columnas requeridas existen
+      if idx_nom.nil? || idx_prenom.nil? || idx_email.nil? || idx_service.nil?
+        flash.now[:alert] = "Structure du fichier invalide. Les colonnes obligatoires (Nom, Prénom, Email, Service) sont introuvables."
+        @errors += 1
+      else
+        # Si la estructura es correcta, iteramos sobre los datos
         sheet1.each 1 do |row|
           index += 1
-          next unless row[0]
+          next unless row[idx_nom].present?
 
-          user = User
-                    .where("lower(email) = ?", 
-                      row[headers.index 'Email']&.strip&.downcase, 
-                    )
-                    .first_or_initialize
+          email_value = row[idx_email]&.to_s&.strip&.downcase
+          next if email_value.blank?
 
-                    
-                    new_record = user.new_record?
-                    
-          user.nom = row[headers.index 'Nom']&.strip&.upcase
-          user.prénom = row[headers.index 'Prénom']&.strip&.humanize
-          user.email = row[headers.index 'Email']
-          user.téléphone = row[headers.index 'Téléphone']
+          user = User.where("lower(email) = ?", email_value).first_or_initialize
+          new_record = user.new_record?
+          
+          user.nom       = row[idx_nom]&.to_s&.strip&.upcase
+          user.prénom    = row[idx_prenom]&.to_s&.strip&.humanize
+          user.email     = email_value
+          user.téléphone = idx_telephone ? row[idx_telephone]&.to_s&.strip : nil
+          user.memo      = idx_memo ? row[idx_memo]&.to_s&.strip : nil
+          
           if new_record
             password = User.generate_random_password
             user.password = password 
             @mdp << password
           end
           user.rôle = "agent"
-          service = Service.find_by(nom: row[headers.index 'Service']&.humanize)
+
+          service_name = row[idx_service]&.to_s&.strip&.humanize
+          service = Service.find_by(nom: service_name)
 
           if service
             already_linked = user.user_services.any? { |us| us.service_id == service.id && !us.marked_for_destruction? }
@@ -219,75 +237,42 @@ class UsersController < ApplicationController
             end
           end
 
-          user.memo = row[headers.index 'Mémo']
-
           user.valid?
 
-          # À faire après user.valid?, sinon l'erreur sera supprimé
           unless service
-            user.errors.add(:services, "introuvable dans la base de données")
-          end
-
-          safe_changes = user.changes.except("encrypted_password", "password", "slug", "organisation_id")
-          display_changes = new_record ? safe_changes.transform_values(&:last) : safe_changes.dup
-
-          # On détecte si les services ont changé en mémoire
-          # (S'il y a une nouvelle relation non sauvegardée, ou une relation marquée pour destruction)
-          services_changed = user.user_services.any? { |us| us.new_record? || us.marked_for_destruction? }
-
-          # On n'ajoute la clé "services" que s'il y a eu un changement ou si c'est un nouvel utilisateur
-          if new_record || services_changed
-            nouveaux_services = user.user_services.reject(&:marked_for_destruction?).filter_map { |us| us.service&.nom }.join(', ')
-            nouveaux_services = "Aucun" if nouveaux_services.blank?
-
-            if new_record
-              display_changes["service"] = nouveaux_services
-            else
-              # Si c'est une MAJ, on récupère l'ancien état pour imiter le format [Avant, Après] de Rails
-              anciens_services = user.user_services.select(&:persisted?).filter_map { |us| us.service&.nom }.join(', ')
-              anciens_services = "Aucun" if anciens_services.blank?
-              
-              display_changes["service"] = [anciens_services, nouveaux_services]
-            end
-          end
-
-          formatted_changes = display_changes.symbolize_keys
-
-          if formatted_changes.any?
-            puts "#{new_record ? 'NOUVEL' : 'MISE À JOUR'} UTILISATEUR => id: #{user.id || 'N/A'}, changes: #{formatted_changes.inspect}"
-          else
-            puts "UTILISATEUR INCHANGÉ => id: #{user.id}"
+            user.errors.add(:services, "introuvable dans la base de données (Valeur lue: '#{service_name || 'VIDE'}')")
           end
 
           if user.errors.empty? 
             if params[:save] == 'true'
               user.save 
-              
-              if new_record
-                user.invite!(current_user)
-              end
+              user.invite!(current_user) if new_record
             end
             @importes += 1
+            @success_logs << {
+              type: new_record ? "Nouveau" : "Mise à jour",
+              email: user.email,
+              nom: "#{user.nom} #{user.prénom}",
+              service: service&.nom || "Aucun"
+            }
           else
-            puts " || ERREURS: " + user.errors.messages.map { |m| "#{m.first} => #{m.last}" }.join(', ')
             @errors += 1
+            @error_logs << {
+              email: email_value,
+              nom: "#{row[idx_nom]} #{row[idx_prenom]}",
+              service_tente: row[idx_service],
+              messages: user.errors.full_messages
+            }
           end
-        end
+        end # Fin del bucle sheet1.each
+      end # Fin del bloque if/else de validación estructural
 
-        puts 
-        puts "----------- Les modifications n'ont pas été enregistrées ! ---------------" unless params[:save] == 'true'
-        puts
-
-        puts "=" * 40
-        puts "Lignes importées: #{@importes} | Lignes ignorées: #{@errors}"
-        puts "=" * 40
-
-        if @errors > 0
-          flash[:alert] = @importes == 0 ? "L'importation a échouée" : "L'importation a partiellement échouée"
-        else
-          flash[:notice] = "L'importation a bien été exécutée"
-        end
+      if @errors > 0
+        flash.now[:alert] = @importes == 0 ? "L'importation a échouée." : "L'importation a partiellement échouée."
+      else
+        flash.now[:notice] = "L'importation a bien été exécutée."
       end
+
     else
       flash[:alert] = "Manque le fichier source pour pouvoir lancer l'importation !"
       redirect_to action: 'import'

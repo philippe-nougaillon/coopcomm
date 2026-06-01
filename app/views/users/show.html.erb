@@ -1,7 +1,6 @@
 <div class="mx-auto lg:w-2/3 w-full mt-8">
   <% page_title!(@user.nom_prénom) %>
   <div class="flex flex-col md:flex-row gap-6">
-    <%# Panneau gauche — avatar, nom, rôle, tags %>
     <div class="flex flex-col items-center bg-slate-100 border border-slate-200 rounded-2xl py-8 px-6 gap-3" style="flex: 0 0 20%;">
       <div class="avatar avatar-placeholder rounded-full">
         <% if @user.profile_picture.attached? %>
@@ -33,10 +32,8 @@
         </div>
       <% end %>
     </div>
-    <%# Panneau droit %>
     <div class="flex flex-col gap-4 flex-1">
       <% if @user.agent? && current_user.manager_or_admin? %>
-        <%# Agent : infos + évaluation côte à côte %>
         <div class="flex flex-col md:flex-row gap-4">
           <div class="bg-white border border-slate-200 rounded-2xl flex-1" style="padding: 1.25rem;">
             <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Informations</p>
@@ -45,10 +42,16 @@
                 <span class="material-symbols-outlined text-base">mail</span> Email
               </div>
               <div class="py-2.5 text-slate-800 border-b border-slate-100 break-all"><%= @user.email %></div>
-              <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-                <span class="material-symbols-outlined text-base">phone</span> Téléphone
-              </div>
-              <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @user.téléphone %></div>
+  <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+              <span class="material-symbols-outlined text-base">phone</span> Téléphone
+            </div>
+            <div class="py-2.5 border-b border-slate-100">
+              <% if @user.téléphone.to_s.strip.present? %>
+                <span class="text-slate-800"><%= @user.téléphone %></span>
+              <% else %>
+                <span class="text-slate-400 italic text-xs">Non renseigné</span>
+              <% end %>
+            </div>
               <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
                 <span class="material-symbols-outlined text-base">store</span>
                 <%= @user.manager_or_admin? ? "Responsable des services" : "Services" %>
@@ -63,44 +66,40 @@
             </div>
           </div>
           <div class="bg-white border border-slate-200 rounded-2xl flex-1" style="padding: 1.25rem;">
-  <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Évaluation</p>
-
-<% if @user.rated_interventions.any? %>
-  <div class="flex justify-between w-32 mb-4">
-    <b>
-      <%= number_with_precision(@user.moyenne, precision: 2) %> / 5
-    </b>
-    <%= pluralize(@user.total_rating, "note") %>
-  </div>
-<% else %>
-  <p class="text-sm text-slate-400 italic mb-4">
-    Cet agent n'a pas encore reçu d'évaluation.
-  </p>
-<% end %>
-
-  <div class="flex flex-col-reverse">
-<% (5).downto(1) do |i| %>
-      <div class="flex items-center">
-        <div class="flex w-36">
-          <% i.times do %>
-            <span class="material-symbols-outlined text-slate-400">
-              star
-            </span>
-          <% end %>
-        </div>
-
-        <progress
+            <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Évaluation</p>
+            <% if @user.rated_interventions.any? %>
+              <div class="flex justify-between w-32 mb-4">
+                <b>
+                  <%= number_with_precision(@user.moyenne, precision: 2) %> / 5
+                </b>
+                <%= pluralize(@user.total_rating, "note") %>
+              </div>
+            <% else %>
+              <p class="text-sm text-slate-400 italic mb-4">
+                Cet agent n'a pas encore reçu d'évaluation.
+              </p>
+            <% end %>
+            <div class="flex flex-col-reverse">
+              <% (5).downto(1) do |i| %>
+                <div class="flex items-center">
+                  <div class="flex w-36">
+                    <% i.times do %>
+                      <span class="material-symbols-outlined text-slate-400">
+                        star
+                      </span>
+                    <% end %>
+                  </div>
+                  <progress
           class="progress progress-primary w-56"
           value="<%= @user.total_rating > 0 ? @user.star_count(i) : 0 %>"
           max="100">
-        </progress>
-      </div>
-    <% end %>
-  </div>
-</div>
+                  </progress>
+                </div>
+              <% end %>
+            </div>
+          </div>
         </div>
       <% else %>
-        <%# Manager/Admin : infos seules pleine largeur %>
         <div class="bg-white border border-slate-200 rounded-2xl" style="padding: 1.25rem;">
           <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Informations</p>
           <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
@@ -111,7 +110,13 @@
             <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
               <span class="material-symbols-outlined text-base">phone</span> Téléphone
             </div>
-            <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @user.téléphone %></div>
+            <div class="py-2.5 border-b border-slate-100">
+              <% if @user.téléphone.to_s.strip.present? %>
+                <span class="text-slate-800"><%= @user.téléphone %></span>
+              <% else %>
+                <span class="text-slate-400 italic text-xs">Non renseigné</span>
+              <% end %>
+            </div>
             <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
               <span class="material-symbols-outlined text-base">store</span>
               <%= @user.manager_or_admin? ? "Responsable des services" : "Services" %>
@@ -126,7 +131,6 @@
           </div>
         </div>
       <% end %>
-      <%# Boutons d'action %>
       <div class="flex flex-wrap flex-col md:flex-row gap-2 mt-1">
         <% if policy(@user).edit? %>
           <%= link_to edit_user_path(@user), class: "btn" do %>
@@ -144,7 +148,6 @@
           <% end %>
         <% end %>
         <% if policy(@user).destroy? %>
-          <%# ---  modal de DaisyUI --- %>
           <button class="btn btn-soft btn-error" onclick="delete_user_modal.showModal()">
             <span class="material-symbols-outlined text-sm">delete</span> Supprimer
           </button>
@@ -152,7 +155,6 @@
       </div>
     </div>
   </div>
-  <%# --- MODAL DE CONFIRMACIÓN DAISYUI PARA SUPPRIMER --- %>
   <dialog id="delete_user_modal" class="modal">
     <div class="modal-box">
       <form method="dialog">
@@ -187,8 +189,6 @@
       Retour à la liste
     <% end %>
   </div>
-  <%# Section absences %>
-  <%# --- SECCIÓN ABSENCES --- %>
   <% if @user.agent? || @user.manager_or_admin? %>
     <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
       <h2 class="text-2xl text-secondary font-semibold">Absences</h2>
@@ -197,13 +197,29 @@
           Ajouter une absence
         </button>
         <dialog id="absence_modal" class="modal" <%= 'open' if @user.errors.any? %>>
-          <div class="modal-box">
-            <form method="dialog">
-              <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-            </form>
-            <h3 class="font-bold text-lg mb-4">Enregistrer une absence</h3>
-            <%= render 'absence_form', absence: Absence.new(user_id: @user.id) %>
-          </div>
+  <div class="modal-box">
+
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+
+    <!-- HEADER MEJORADO -->
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary">
+          event_busy
+        </span>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-bold uppercase text-primary">Déclarer une absence</h3>
+        <p class="text-sm text-slate-500">Complétez les informations ci-dessous.</p>
+      </div>
+    </div>
+
+    <%= render 'absence_form', absence: Absence.new(user_id: @user.id) %>
+
+  </div>
           <form method="dialog" class="modal-backdrop">
             <button>Fermer</button>
           </form>
@@ -241,7 +257,6 @@
     <% end %>
     <%= render "absence_form_script" %>
   <% end %>
-  <%# --- SECCIÓN ACTIVITÉ --- %>
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary font-semibold">Activité</h2>
   </div>
@@ -265,21 +280,18 @@
       </tbody>
     </table>
   </div>
-  <%# --- PAGINACIÓN --- %>
   <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
-  <% if @pagy.pages > 1 %>
-    <div class="hidden sm:block sm:flex-1"></div>
-    
-    <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
-      <%= pagy_nav(@pagy).html_safe %>
-    </div>
-    
-    <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
-      <%= pagy_info(@pagy, ).html_safe %>
-    </div>
-  <% else %>
-    <div >
-    </div>
-  <% end %>
-</div>
+    <% if @pagy.pages > 1 %>
+      <div class="hidden sm:block sm:flex-1"></div>
+      <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
+        <%= pagy_nav(@pagy).html_safe %>
+      </div>
+      <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
+        <%= pagy_info(@pagy, ).html_safe %>
+      </div>
+    <% else %>
+      <div >
+      </div>
+    <% end %>
+  </div>
 </div>

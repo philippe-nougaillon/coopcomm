@@ -5,25 +5,22 @@
     <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
   </td>
   <%# Nom %>
- <td class="py-3 pr-4 text-lg font-semibold text-primary">
-  <div class="flex flex-row items-center gap-2 w-full">
-    
-    <%# min-w-0 es el secreto para que 'truncate' funcione sin romper el flexbox %>
-    <div class="truncate min-w-0" title="<%= user.nom_prénom %>">
-      <%= link_to user.nom_prénom, user, class: 'hover:underline' %>
-    </div>
-
-    <% if user.discarded? %>
-      <%= link_to reactivate_user_path(user),
+  <td class="py-3 pr-4 text-lg font-semibold text-primary">
+    <div class="flex flex-row items-center gap-2 w-full">
+      <%# min-w-0 es el secreto para que 'truncate' funcione sin romper el flexbox %>
+      <div class="truncate min-w-0" title="<%= user.nom_prénom %>">
+        <%= link_to user.nom_prénom, user, class: 'hover:underline' %>
+      </div>
+      <% if user.discarded? %>
+        <%= link_to reactivate_user_path(user),
                   data: { turbo_method: :patch, turbo_confirm: 'Voulez-vous réactiver ce compte ?' },
                   class: "text-success hover:scale-110 transition-transform flex flex-shrink-0 items-center justify-center",
                   title: "Réactiver le compte" do %>
-        <span class="material-symbols-outlined text-xl leading-none">undo</span>
+          <span class="material-symbols-outlined text-xl leading-none">undo</span>
+        <% end %>
       <% end %>
-    <% end %>
-
-  </div>
-</td>
+    </div>
+  </td>
   <%# Rôle %>
   <td colspan="2" class="py-3 px-4 whitespace-nowrap">
     <div class="flex items-center gap-1.5 text-success font-bold tracking-wider">
@@ -31,72 +28,61 @@
       <span><%= user.rôle.upcase %></span>
     </div>
   </td>
-<%# Service %>
-<td class="py-3 px-4">
-  <% services = user.services.pluck(:nom) %>
-  <% shown = services.first(2) %>
-  <% extra = services.size - shown.size %>
-
-  <div class="flex flex-wrap gap-1.5 items-center">
-
-    <% shown.each do |s| %>
-      <span class="inline-block bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full whitespace-nowrap shadow-sm">
-        <%= s %>
+  <%# Service %>
+  <td class="py-3 px-4">
+    <% services = user.services.pluck(:nom) %>
+    <% shown = services.first(2) %>
+    <% extra = services.size - shown.size %>
+    <div class="flex flex-wrap gap-1.5 items-center">
+      <% shown.each do |s| %>
+        <span class="inline-block bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full whitespace-nowrap shadow-sm">
+          <%= s %>
+        </span>
+      <% end %>
+      <% if extra > 0 %>
+        <details data-controller="dropdown" class="dropdown dropdown-end dropdown-hover sm:dropdown-click group relative inline-block">
+          <summary class="inline-flex bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full cursor-pointer list-none hover:bg-slate-100 hover:border-primary  transition-colors duration-150 shadow-sm select-none">
+            + <%= extra %>
+          </summary>
+          <div class="dropdown-content z-[50] menu p-3 shadow-xl bg-white border border-slate-200 rounded-xl w-56 mt-2 max-h-60 overflow-y-auto">
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 px-1 block">
+              Autres services (<%= extra %>)
+            </span>
+            <div class="flex flex-col gap-1">
+              <% services.drop(2).each do |extra_service| %>
+                <span class="text-sm text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-lg whitespace-normal break-words">
+                  <%= extra_service %>
+                </span>
+              <% end %>
+            </div>
+          </div>
+        </details>
+      <% end %>
+    </div>
+  </td>
+  <%# Mots clés %>
+  <td class="py-3 px-4">
+    <% tags = user.tag_list %>
+    <% if tags.any? %>
+      <div class="flex flex-wrap gap-1 items-center">
+        <% tags.first(2).each_with_index do |tag, i| %>
+          <span class=" text-sm text-slate-600 whitespace-nowrap">
+            <%= tag %><%= "," unless i == [tags.first(2).size - 1, 1].min %>
+          </span>
+        <% end %>
+        <% if tags.size > 2 %>
+          <span class="inline-block bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full cursor-default"
+              title="<%= tags.drop(2).join(', ') %>">
+            +<%= tags.size - 2 %>
+          </span>
+        <% end %>
+      </div>
+    <% else %>
+      <span class="material-symbols-outlined">
+        check_indeterminate_small
       </span>
     <% end %>
-
-    <% if extra > 0 %>
-      <details data-controller="dropdown" class="dropdown dropdown-end dropdown-hover sm:dropdown-click group relative inline-block">
-        
-<summary class="inline-flex bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full cursor-pointer list-none hover:bg-slate-100 hover:border-primary  transition-colors duration-150 shadow-sm select-none">
-            + <%= extra %>
-        </summary>
-
-        <div class="dropdown-content z-[50] menu p-3 shadow-xl bg-white border border-slate-200 rounded-xl w-56 mt-2 max-h-60 overflow-y-auto">
-          <span class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 px-1 block">
-            Autres services (<%= extra %>)
-          </span>
-          <div class="flex flex-col gap-1">
-            <% services.drop(2).each do |extra_service| %>
-              <span class="text-sm text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-lg whitespace-normal break-words">
-                <%= extra_service %>
-              </span>
-            <% end %>
-          </div>
-        </div>
-
-      </details>
-    <% end %>
-
-  </div>
-</td>
-  <%# Mots clés %>
- <td class="py-3 px-4">
-  <% tags = user.tag_list %>
-
-  <% if tags.any? %>
-    <div class="flex flex-wrap gap-1 items-center">
-
-      <% tags.first(2).each_with_index do |tag, i| %>
-        <span class=" text-sm text-slate-600 whitespace-nowrap">
-          <%= tag %><%= "," unless i == [tags.first(2).size - 1, 1].min %>
-        </span>
-      <% end %>
-
-      <% if tags.size > 2 %>
-        <span class="inline-block bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full cursor-default"
-              title="<%= tags.drop(2).join(', ') %>">
-          +<%= tags.size - 2 %>
-        </span>
-      <% end %>
-
-    </div>
-  <% else %>
-    <span class="material-symbols-outlined">
-      check_indeterminate_small
-    </span>
-  <% end %>
-</td>
+  </td>
   <%# Email %>
   <td class="py-3 px-4">
     <div class=" text-base font-mono text-slate-400" title="<%= user.email %>">

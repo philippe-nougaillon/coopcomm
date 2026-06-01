@@ -1,62 +1,131 @@
-<%# app/views/absences/_absence_fields.html.erb %>
 <% is_half_day = f.object.matin || f.object.après_midi %>
 
-<%# On englobe tout dans "absence-form-container" pour que le JS s'y retrouve %>
-<div class="absence-form-container flex flex-col gap-4 w-full">
-  
-  <%# Champs cachés pour Rails %>
+<div class="absence-form-container flex flex-col gap-5 w-full">
+
   <%= f.hidden_field :matin, class: "hidden-matin", value: f.object.matin ? '1' : '0' %>
   <%= f.hidden_field :après_midi, class: "hidden-apres-midi", value: f.object.après_midi ? '1' : '0' %>
 
-  <%# Choix du type de journée (f.object_name permet de grouper les radios par absence automatiquement !) %>
-  <div class="flex gap-6 mt-1">
-    <label class="label cursor-pointer justify-start gap-2">
-      <input type="radio" name="<%= f.object_name %>[absence_type]" value="full" class="type-radio radio radio-primary radio-sm" 
-             onchange="handleHalfDayChange(this)" <%= 'checked' unless is_half_day %> />
-      <span class="label-text">Journée entière</span>
+  <!-- TYPE JOURNÉE -->
+  <div class="flex flex-row gap-3">
+
+    <label class="cursor-pointer flex-1">
+      <input type="radio"
+       name="<%= f.object_name %>[absence_type]"
+       value="full"
+       class="peer hidden type-radio"
+       onchange="handleHalfDayChange(this)"
+       <%= 'checked' unless is_half_day %> />
+      <div class="p-2 rounded-xl border border-base-300 text-center font-medium text-slate-600
+                  hover:bg-primary/10 hover:text-primary
+                  peer-checked:!bg-primary peer-checked:!border-primary peer-checked:!text-primary-content
+                  transition-all duration-200">
+        Journée entière
+      </div>
     </label>
-    
-    <label class="label cursor-pointer justify-start gap-2">
-      <input type="radio" name="<%= f.object_name %>[absence_type]" value="half" class="type-radio radio radio-primary radio-sm" 
-             onchange="handleHalfDayChange(this)" <%= 'checked' if is_half_day %> />
-      <span class="label-text">Demi-journée</span>
+
+    <label class="cursor-pointer flex-1">
+    <input type="radio"
+       name="<%= f.object_name %>[absence_type]"
+       value="half"
+       class="peer hidden type-radio"
+       onchange="handleHalfDayChange(this)"
+       <%= 'checked' if is_half_day %> />
+      <div class="p-2 rounded-xl border border-base-300 text-center font-medium text-slate-600
+                  hover:bg-primary/10 hover:text-primary
+                  peer-checked:!bg-primary peer-checked:!border-primary peer-checked:!text-primary-content
+                  transition-all duration-200">
+        Demi-journée
+      </div>
     </label>
+
   </div>
 
-  <%# Dates %>
+  <!-- DATES -->
   <div class="flex flex-wrap gap-4">
     <div class="flex-1 flex flex-col">
       <%= f.label :du, class: "text-sm text-slate-500 mb-1" %>
-      <%= f.date_field :du, class: "du-input input input-sm input-bordered w-full", required: true, onchange: "syncDates(this)" %>
+      <%= f.date_field :du,
+    class: "du-input input input-bordered w-full rounded-lg border border-base-300",
+    required: true,
+    onchange: "syncDates(this)" %>
     </div>
+
     <div class="au-container flex-1 flex flex-col <%= 'hidden' if is_half_day %>">
-      <%= f.label :au, class: "text-sm text-slate-500 mb-1" %>
-      <%= f.date_field :au, class: "au-input input input-sm input-bordered w-full", required: true %>
-    </div>
+  <%= f.label :au, class: "text-sm text-slate-500 mb-1" %>
+  <%= f.date_field :au,
+      class: "au-input input input-bordered w-full rounded-lg border border-base-300",
+      required: true %>
+</div>
   </div>
 
-  <%# Radios Matin / Après-midi %>
-  <div class="half-days-container <%= is_half_day ? '' : 'hidden' %> flex gap-6 p-3 bg-base-200/50 rounded-box border border-base-200">
-    <label class="label cursor-pointer justify-start gap-2">
-      <input type="radio" name="<%= f.object_name %>[period]" value="matin" class="period-radio radio radio-secondary radio-sm"
-             onchange="updateHiddenPeriods(this)" <%= 'checked' if f.object.matin %> />
-      <span class="label-text font-medium">Matin</span>
+  <!-- MATIN / APREM -->
+  <div class="half-days-container <%= is_half_day ? '' : 'hidden' %> flex flex-row gap-4">
+
+    <!-- MATIN -->
+    <label class="cursor-pointer flex-1">
+      <input type="radio"
+       name="<%= f.object_name %>[period]"
+       value="matin"
+       class="peer hidden period-radio"
+       onchange="updateHiddenPeriods(this)"
+       <%= 'checked' if f.object.matin %> />
+      <div class="relative flex items-center gap-3 p-2 rounded-xl border border-base-300
+                  hover:bg-primary/10 hover:text-primary
+                  peer-checked:!bg-primary peer-checked:!border-primary peer-checked:!text-primary-content
+                  transition-all duration-200">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center"
+             style="background:#FAEEDA;color:#BA7517">
+          <span class="material-symbols-outlined">wb_sunny</span>
+        </div>
+        <div>
+          <p class="font-medium">Matin</p>
+          <p class="text-xs text-gray-500">Jusqu'à midi</p>
+        </div>
+      </div>
     </label>
-    <label class="label cursor-pointer justify-start gap-2">
-      <input type="radio" name="<%= f.object_name %>[period]" value="apres_midi" class="period-radio radio radio-secondary radio-sm"
-             onchange="updateHiddenPeriods(this)" <%= 'checked' if f.object.après_midi %> />
-      <span class="label-text font-medium">Après-midi</span>
+
+    <!-- APREM -->
+    <label class="cursor-pointer flex-1">
+      <input type="radio"
+       name="<%= f.object_name %>[period]"
+       value="apres_midi"
+       class="peer hidden period-radio"
+       onchange="updateHiddenPeriods(this)"
+       <%= 'checked' if f.object.après_midi %> />
+      <div class="relative flex items-center gap-3 p-2 rounded-xl border border-base-300
+                  hover:bg-primary/10 hover:text-primary
+                  peer-checked:!bg-primary peer-checked:!border-primary peer-checked:!text-primary-content
+                  transition-all duration-200">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center"
+             style="background:#E6F1FB;color:#185FA5">
+          <span class="material-symbols-outlined">wb_twilight</span>
+        </div>
+        <div>
+          <p class="font-medium">Après-midi</p>
+          <p class="text-xs text-gray-500">À partir de 13h</p>
+        </div>
+      </div>
     </label>
+
   </div>
 
-  <%# Motif et Observation %>
+  <!-- MOTIF -->
   <div class="flex flex-col gap-1">
-    <%= f.label :motif, class: "text-sm text-slate-500" %>
-    <%= f.select :motif, Absence.motifs.keys.map { |k| [k.humanize, k] }, { selected: f.object.motif }, class: 'select select-sm select-bordered w-full', required: true %>
+    <%= f.label :motif, class: "text-sm text-slate-500" do %>
+      Motif <span class="text-red-500">*</span>
+    <% end %>
+    <%= f.select :motif,
+        Absence.motifs.keys.map { |k| [k.humanize, k] },
+        { selected: f.object.motif },
+        class: "select select-sm select-bordered w-full rounded-lg border border-base-300",
+        required: true %>
   </div>
 
+  <!-- OBSERVATION -->
   <div class="flex flex-col gap-1">
     <%= f.label :observation, class: "text-sm text-slate-500" %>
-    <%= f.text_area :observation, class: "textarea textarea-bordered w-full h-16" %>
+    <%= f.text_area :observation,
+        class: "textarea textarea-bordered w-full h-16 rounded-lg border border-base-300" %>
   </div>
+
 </div>
