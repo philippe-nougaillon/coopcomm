@@ -1,0 +1,49 @@
+<tr class="hover:bg-base-300">
+  <td class="font-medium"><%= convention.service.nom %></td>
+  <td class="text-nowrap"><%= l(convention.date_début, format: :long) if convention.date_début %></td>
+  <td class="text-nowrap">
+    <%= convention.date_fin_prévue ? l(convention.date_fin_prévue, format: :long) : "—" %>
+  </td>
+  <td>
+    <% if convention.document.attached? %>
+      <div class="flex gap-2">
+        <%= link_to "Voir", rails_blob_path(convention.document, disposition: "inline"),
+              target: "_blank", class: "btn btn-ghost btn-xs" %>
+        <%= link_to "Télécharger", rails_blob_path(convention.document, disposition: "attachment"),
+              class: "btn btn-ghost btn-xs" %>
+      </div>
+    <% else %>
+      <span class="text-slate-400 text-sm">Aucun document</span>
+    <% end %>
+  </td>
+  <td>
+    <div class="flex flex-col gap-2 items-start">
+      <% if policy(convention).update? %>
+        <button class="btn btn-primary btn-xs" onclick="convention_edit_<%= convention.id %>.showModal()">
+          Modifier
+        </button>
+
+        <dialog id="convention_edit_<%= convention.id %>" class="modal">
+          <div class="modal-box font-normal text-base-content text-left">
+            <form method="dialog">
+              <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="font-bold text-lg mb-4">Modifier la convention — <%= convention.service.nom %></h3>
+            <%= render "conventions/form", user: user, convention: convention, available_services: [] %>
+          </div>
+          <form method="dialog" class="modal-backdrop">
+            <button>Fermer</button>
+          </form>
+        </dialog>
+      <% end %>
+
+      <% if policy(convention).destroy? %>
+        <%= button_to user_convention_path(user, convention), method: :delete,
+              class: "btn btn-error btn-xs",
+              form: { data: { turbo_confirm: "Supprimer cette convention ?" } } do %>
+          Supprimer
+        <% end %>
+      <% end %>
+    </div>
+  </td>
+</tr>

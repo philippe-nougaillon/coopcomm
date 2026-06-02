@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_12_093634) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_02_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -106,6 +106,18 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_12_093634) do
     t.index ["user_id", "user_type"], name: "user_index"
   end
 
+  create_table "conventions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "service_id", null: false
+    t.date "date_début"
+    t.date "date_fin_prévue"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["service_id"], name: "index_conventions_on_service_id"
+    t.index ["user_id", "service_id"], name: "index_conventions_on_user_id_and_service_id", unique: true
+    t.index ["user_id"], name: "index_conventions_on_user_id"
+  end
+
   create_table "documents", force: :cascade do |t|
     t.string "category"
     t.string "workflow_state"
@@ -146,8 +158,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_12_093634) do
     t.datetime "début_prévue"
     t.datetime "fin_prévue"
     t.string "meteo"
-    t.decimal "co2", default: "0.0"
     t.string "trajet"
+    t.decimal "co2", default: "0.0"
     t.bigint "service_id"
     t.string "localisation"
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
@@ -426,13 +438,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_12_093634) do
     t.string "slug"
     t.string "téléphone"
     t.string "memo"
-    t.string "otp_secret"
-    t.integer "consumed_timestep"
-    t.boolean "otp_required_for_login"
     t.datetime "discarded_at"
     t.integer "failed_attempts", default: 0, null: false
     t.datetime "locked_at"
     t.string "unlock_token"
+    t.string "otp_secret"
+    t.integer "consumed_timestep"
+    t.boolean "otp_required_for_login"
     t.integer "otp_method"
     t.string "color"
     t.string "invitation_token"
@@ -493,6 +505,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_12_093634) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "agent_interventions", "interventions"
   add_foreign_key "agent_interventions", "users", column: "agent_id"
+  add_foreign_key "conventions", "services"
+  add_foreign_key "conventions", "users"
   add_foreign_key "documents", "tools"
   add_foreign_key "export_logs", "organisations"
   add_foreign_key "export_logs", "users"

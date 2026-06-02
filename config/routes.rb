@@ -32,6 +32,8 @@ Rails.application.routes.draw do
       get :import
       post :import_do
     end
+
+    resources :conventions, only: %i[create update destroy]
   end
 
   resources :mail_logs do

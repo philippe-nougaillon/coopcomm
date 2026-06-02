@@ -163,6 +163,51 @@
     <%= render "absence_form_script" %>
   <% end %>
 
+  <% if @user.adhérent? && current_user.manager_or_admin? %>
+    <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
+      <h2 class="text-2xl text-secondary">
+        Conventions
+      </h2>
+      <% if @available_services_for_convention.any? %>
+        <button class="btn btn-sm sm:btn-lg btn-outline btn-success hover:text-white!" onclick="convention_modal.showModal()">
+          Ajouter une convention
+        </button>
+
+        <dialog id="convention_modal" class="modal">
+          <div class="modal-box">
+            <form method="dialog">
+              <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="font-bold text-lg mb-4">Enregistrer une convention</h3>
+
+            <%= render "conventions/form", user: @user, convention: Convention.new(user: @user), available_services: @available_services_for_convention %>
+          </div>
+
+          <form method="dialog" class="modal-backdrop">
+            <button>Fermer</button>
+          </form>
+        </dialog>
+      <% end %>
+    </div>
+    <div class="overflow-x-auto mt-4">
+      <table class="table table-sm">
+        <thead class="bg-slate-100">
+          <tr>
+            <th>Service</th>
+            <th>Début</th>
+            <th>Fin prévue</th>
+            <th>Document</th>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <%= render partial: "conventions/convention", collection: @conventions, locals: { user: @user } %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
   <h2 class="text-2xl text-secondary mt-8">Activité</h2>
   <div class="overflow-x-auto mt-4">
     <table class="table table-sm">
