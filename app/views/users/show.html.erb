@@ -206,6 +206,39 @@
         </tbody>
       </table>
     </div>
+
+    <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
+      <h2 class="text-2xl text-secondary">
+        Cotations
+      </h2>
+      <% if policy(Cotation).new? %>
+        <%= link_to "Ajouter une cotation", new_cotation_path(adherent_id: @user.slug),
+              class: "btn btn-sm sm:btn-lg btn-outline btn-success hover:text-white!" %>
+      <% end %>
+    </div>
+    <div class="overflow-x-auto mt-4">
+      <table class="table table-sm">
+        <thead class="bg-slate-100">
+          <tr>
+            <th>Réf</th>
+            <th>Statut</th>
+            <th>Adhérent</th>
+            <th>Service</th>
+            <th>Intitulé</th>
+            <th>Livraison</th>
+            <th class="text-right">Total HT</th>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <%= render partial: "cotations/cotation", collection: @cotations %>
+        </tbody>
+      </table>
+    </div>
+    <% if @cotations.empty? %>
+      <p class="text-slate-400 mt-2">Aucune cotation.</p>
+    <% end %>
   <% end %>
 
   <h2 class="text-2xl text-secondary mt-8">Activité</h2>

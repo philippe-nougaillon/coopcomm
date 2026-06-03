@@ -1,0 +1,86 @@
+<%= form_with model: @cotation,
+      data: { controller: "nested-form", nested_form_wrapper_selector_value: ".nested-form-wrapper" } do |f| %>
+
+  <% if @cotation.errors.any? %>
+    <div class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
+      <h2 class="font-black!">
+        <%= pluralize(@cotation.errors.count, "erreur") %> empêche(nt) l'enregistrement de la cotation :
+      </h2>
+      <ul class="list-disc list-inside">
+        <% @cotation.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <%# Adhérent : figé s'il est connu (création depuis sa fiche ou édition) %>
+    <div class="flex flex-col gap-1">
+      <%= f.label :adherent_id, "Adhérent", class: "text-sm text-slate-500" %>
+      <% if @cotation.adherent %>
+        <input type="text" value="<%= @cotation.adherent.nom_prénom %>" class="input input-sm input-bordered w-full" disabled>
+        <%= f.hidden_field :adherent_id %>
+      <% else %>
+        <%= f.collection_select :adherent_id, @adherents, :id, :nom_prénom,
+              { prompt: "Choisir un adhérent" },
+              { class: "slim-select w-full", required: true, data: { controller: "slim-select" } } %>
+      <% end %>
+    </div>
+
+    <%# Service : détermine l'organisation et le périmètre de visibilité %>
+    <div class="flex flex-col gap-1">
+      <%= f.label :service_id, "Service", class: "text-sm text-slate-500" %>
+      <%= f.collection_select :service_id, @services, :id, :nom,
+            { prompt: "Choisir un service" },
+            { class: "slim-select w-full", required: true, data: { controller: "slim-select" } } %>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <%= f.label :intitulé, "Intitulé", class: "text-sm text-slate-500" %>
+      <%= f.text_field :intitulé, class: "input input-sm input-bordered w-full", required: true %>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <%= f.label :statut, "Statut", class: "text-sm text-slate-500" %>
+      <%= f.select :statut, Cotation.statuts.keys, {}, { class: "slim-select w-full", data: { controller: "slim-select" } } %>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <%= f.label :date_livraison_souhaitée, "Livraison souhaitée", class: "text-sm text-slate-500" %>
+      <%= f.date_field :date_livraison_souhaitée, class: "input input-sm input-bordered w-full" %>
+    </div>
+
+    <div class="flex flex-col gap-1 sm:col-span-2">
+      <%= f.label :mémo, "Mémo", class: "text-sm text-slate-500" %>
+      <%= f.text_area :mémo, rows: 3, class: "textarea textarea-bordered w-full" %>
+    </div>
+  </div>
+
+  <%# Lignes de la cotation (formulaire imbriqué) %>
+  <div class="flex items-center gap-4 mt-8 mb-3">
+    <h2 class="text-xl text-secondary">Prestations</h2>
+    <button type="button" data-action="nested-form#add" class="btn btn-sm btn-outline btn-success hover:text-white!">
+      + Ajouter une ligne
+    </button>
+  </div>
+
+  <div>
+    <%= f.fields_for :cotation_lignes do |ligne| %>
+      <%= render "ligne_fields", f: ligne, prestations: @prestations %>
+    <% end %>
+
+    <div data-nested-form-target="target"></div>
+  </div>
+
+  <template data-nested-form-target="template">
+    <%= f.fields_for :cotation_lignes, CotationLigne.new, child_index: "NEW_RECORD" do |ligne| %>
+      <%= render "ligne_fields", f: ligne, prestations: @prestations %>
+    <% end %>
+  </template>
+
+  <div class="mt-6 flex gap-2">
+    <%= f.submit "Enregistrer", class: "btn btn-primary" %>
+    <%= link_to "Annuler", (@cotation.persisted? ? cotation_path(@cotation) : cotations_path), class: "btn" %>
+  </div>
+<% end %>

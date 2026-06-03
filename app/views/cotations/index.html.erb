@@ -1,0 +1,56 @@
+<div class="w-full">
+  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
+    <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!("Cotations") %></h1>
+    <% if policy(Cotation).new? %>
+      <%= link_to "Ajouter une cotation", new_cotation_path, class: "btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
+    <% end %>
+  </div>
+
+  <%= form_tag cotations_path, method: :get do %>
+    <div class="flex flex-wrap items-end gap-4 mt-6">
+      <div class="w-full md:w-fit">
+        <%= label_tag :search, "Rechercher" %>
+        <%= text_field_tag :search, params[:search], class: "input input-sm input-bordered w-full",
+              placeholder: "Réf, intitulé", onchange: "this.form.submit()" %>
+      </div>
+      <div class="w-full md:w-fit">
+        <%= label_tag :statut, "Statut" %>
+        <%= select_tag :statut,
+              options_for_select(Cotation.statuts.keys.map { |s| [s, s] }, params[:statut]),
+              include_blank: "Tous", class: "slim-select w-full",
+              onchange: "this.form.submit()" %>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="divider"></div>
+
+  <div class="overflow-x-auto">
+    <table class="table table-sm">
+      <thead class="bg-slate-100">
+        <tr>
+          <th>Réf</th>
+          <th>Statut</th>
+          <th>Adhérent</th>
+          <th>Service</th>
+          <th>Intitulé</th>
+          <th>Livraison</th>
+          <th class="text-right">Total HT</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <%= render partial: "cotation", collection: @cotations %>
+      </tbody>
+    </table>
+  </div>
+
+  <% if @cotations.empty? %>
+    <p class="text-slate-400 mt-4">Aucune cotation.</p>
+  <% end %>
+
+  <div class="my-6">
+    <%== pagy_info(@pagy) %>
+    <%== pagy_nav(@pagy) %>
+  </div>
+</div>

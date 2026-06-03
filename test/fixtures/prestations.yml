@@ -1,0 +1,26 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+nettoyage_bureaux:
+  organisation: mairie_paris
+  code: NET01
+  libellé: Nettoyage de bureaux
+  catégorie: ENTRETIEN
+  unité: heure
+  tarif: 25.50
+  slug: <%= SecureRandom.uuid %>
+
+entretien_espaces_verts:
+  organisation: mairie_paris
+  code: EV01
+  libellé: Entretien des espaces verts
+  catégorie: EXTERIEUR
+  unité: heure
+  tarif: 30.00
+  slug: <%= SecureRandom.uuid %>
+
+prestation_marseille:
+  organisation: mairie_marseille
+  code: MAR01
+  libellé: Prestation Marseille
+  tarif: 50.00
+  slug: <%= SecureRandom.uuid %>

@@ -113,6 +113,15 @@ Rails.application.routes.draw do
   resources :services, except: %i[ index ]
   resources :warehouses, except: %i[ index ], path: 'sites'
 
+  resources :cotations do
+    member do
+      # Le nom de fichier termine l'URL (ex. .../Cotation-2026-1.pdf) pour que la
+      # prévisualisation du navigateur affiche ce nom plutôt que "pdf.pdf".
+      get "pdf(/*filename)", action: :pdf, as: :pdf, format: false
+    end
+  end
+  resources :prestations, except: %i[ index show ]
+
 
   namespace :messagerie do
     get "/", to: 'index', as: ""

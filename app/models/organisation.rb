@@ -6,6 +6,7 @@ class Organisation < ApplicationRecord
   has_many :tools, dependent: :destroy
   has_many :mouvements, through: :tools, dependent: :destroy
   has_many :services, dependent: :destroy
+  has_many :prestations, dependent: :destroy
   has_many :export_logs, dependent: :destroy
   has_many :warehouses, dependent: :destroy
   has_many :users, -> { distinct }, through: :services

@@ -1,0 +1,29 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+# statut : 0=créé, 1=envoyé, 2=validé, 3=refusé, 4=archivé
+
+cotation_paris:
+  adherent: weil
+  service: informatique
+  ref: "2026-1"
+  intitulé: Devis nettoyage trimestriel
+  statut: 0
+  total_ht: 76.50
+  slug: <%= SecureRandom.uuid %>
+
+cotation_secretariat:
+  adherent: weil
+  service: secretariat
+  ref: "2026-2"
+  intitulé: Devis secrétariat
+  statut: 1
+  total_ht: 0
+  slug: <%= SecureRandom.uuid %>
+
+cotation_marseille:
+  adherent: michael_jackson
+  service: service_marseille
+  ref: "2026-1"
+  intitulé: Devis Marseille
+  statut: 0
+  total_ht: 0
+  slug: <%= SecureRandom.uuid %>

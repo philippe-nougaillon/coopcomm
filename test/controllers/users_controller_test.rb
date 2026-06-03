@@ -65,6 +65,11 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "should show adherent user (rend la section Cotations)" do
+    get user_url(users(:weil))
+    assert_response :success
+  end
+
   test "should get edit" do
     get edit_user_url(@user)
     assert_response :success

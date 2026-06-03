@@ -63,10 +63,12 @@ class AdminController < ApplicationController
     @warehouses = current_organisation.warehouses
     @services = current_user.services
     @users = User.by_service(@services)
+    @prestations = current_organisation.prestations.ordered
 
     if params[:search].present?
       @services = @services.where("nom ILIKE :search", {search: "%#{params[:search]}%"})
       @warehouses = @warehouses.where("name ILIKE :search", {search: "%#{params[:search]}%"})
+      @prestations = @prestations.where("code ILIKE :search OR libellé ILIKE :search OR catégorie ILIKE :search", {search: "%#{params[:search]}%"})
     end
 
     if params[:user_id].present?

@@ -1,0 +1,31 @@
+<tr class="hover:bg-base-300">
+  <td class="font-medium"><%= link_to cotation.ref, cotation, class: "link link-primary" %></td>
+  <td>
+    <span class="badge badge-sm text-nowrap font-bold <%= cotation_statut_badge_class(cotation.statut) %>"><%= cotation.statut %></span>
+  </td>
+  <td><%= cotation.adherent&.nom_prénom %></td>
+  <td><%= cotation.service&.nom %></td>
+  <td><%= cotation.intitulé %></td>
+  <td class="text-nowrap"><%= l(cotation.date_livraison_souhaitée, format: :long) if cotation.date_livraison_souhaitée %></td>
+  <td class="text-right"><%= number_to_currency(cotation.total_ht) %></td>
+  <td>
+    <div class="flex gap-2 items-center justify-end">
+      <%= link_to "Voir", cotation, class: "btn btn-sm" %>
+      <% if policy(cotation).pdf? %>
+        <%= link_to pdf_cotation_path(cotation, filename: cotation.pdf_filename),
+              class: "btn btn-sm", target: "_blank", title: "Générer le PDF", data: { turbo: false } do %>
+          <span class="material-symbols-outlined">picture_as_pdf</span>
+        <% end %>
+      <% end %>
+      <% if policy(cotation).update? %>
+        <%= link_to "Modifier", edit_cotation_path(cotation), class: "btn btn-sm btn-primary" %>
+      <% end %>
+      <% if policy(cotation).destroy? %>
+        <%= button_to cotation_path(cotation), method: :delete, class: "btn btn-sm",
+              form: { data: { turbo_confirm: "Supprimer cette cotation ?" } } do %>
+          <span class="material-symbols-outlined">delete</span>
+        <% end %>
+      <% end %>
+    </div>
+  </td>
+</tr>
