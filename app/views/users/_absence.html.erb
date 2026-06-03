@@ -28,7 +28,19 @@
             <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
           </form>
           
-          <h3 class="font-bold text-lg mb-4">Modifier l'absence</h3>
+<div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary">
+          event_busy
+        </span>
+      </div>
+ <div>
+        <h3 class="text-xl font-bold uppercase text-primary">Modifier l'absence</h3>
+        <p class="text-sm text-slate-500">Complétez les informations ci-dessous.</p>
+      </div>
+    </div>
+
+
           <%= render "absence_form", absence: absence %>
         </div>
         <form method="dialog" class="modal-backdrop">

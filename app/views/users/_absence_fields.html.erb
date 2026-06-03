@@ -1,112 +1,113 @@
 <% is_half_day = f.object.matin || f.object.après_midi %>
 
 <div class="absence-form-container flex flex-col gap-5 w-full">
-
+  <%= f.hidden_field :id %>
   <%= f.hidden_field :matin, class: "hidden-matin", value: f.object.matin ? '1' : '0' %>
   <%= f.hidden_field :après_midi, class: "hidden-apres-midi", value: f.object.après_midi ? '1' : '0' %>
 
   <!-- TYPE JOURNÉE -->
   <div class="flex flex-row gap-3">
-
     <label class="cursor-pointer flex-1">
       <input type="radio"
-       name="<%= f.object_name %>[absence_type]"
-       value="full"
-       class="peer hidden type-radio"
-       onchange="handleHalfDayChange(this)"
-       <%= 'checked' unless is_half_day %> />
-      <div class="p-2 rounded-xl border border-base-300 text-center font-medium text-slate-600
-                  hover:bg-primary/10 hover:text-primary
-                  peer-checked:!bg-primary peer-checked:!border-primary peer-checked:!text-primary-content
-                  transition-all duration-200">
+             name="<%= f.object_name %>[absence_type]"
+             value="full"
+             class="peer hidden type-radio"
+             onchange="handleHalfDayChange(this)"
+             <%= 'checked' unless is_half_day %> />
+      <div class="w-full py-2.5 rounded-xl border border-slate-200 text-center font-semibold text-slate-500 bg-white
+                  hover:bg-[#ecf4fb] hover:text-[#007fcc] hover:border-[#007fcc]/30
+                  peer-checked:!bg-[#ecf4fb] peer-checked:!text-[#007fcc] peer-checked:!border-[#007fcc]
+                  transition-all duration-200 shadow-sm">
         Journée entière
       </div>
     </label>
 
     <label class="cursor-pointer flex-1">
-    <input type="radio"
-       name="<%= f.object_name %>[absence_type]"
-       value="half"
-       class="peer hidden type-radio"
-       onchange="handleHalfDayChange(this)"
-       <%= 'checked' if is_half_day %> />
-      <div class="p-2 rounded-xl border border-base-300 text-center font-medium text-slate-600
-                  hover:bg-primary/10 hover:text-primary
-                  peer-checked:!bg-primary peer-checked:!border-primary peer-checked:!text-primary-content
-                  transition-all duration-200">
+      <input type="radio"
+             name="<%= f.object_name %>[absence_type]"
+             value="half"
+             class="peer hidden type-radio"
+             onchange="handleHalfDayChange(this)"
+             <%= 'checked' if is_half_day %> />
+      <div class="w-full py-2.5 rounded-xl border border-slate-200 text-center font-semibold text-slate-500 bg-white
+                  hover:bg-[#ecf4fb] hover:text-[#007fcc] hover:border-[#007fcc]/30
+                  peer-checked:!bg-[#ecf4fb] peer-checked:!text-[#007fcc] peer-checked:!border-[#007fcc]
+                  transition-all duration-200 shadow-sm">
         Demi-journée
       </div>
     </label>
-
   </div>
 
-  <!-- DATES -->
+  <!-- DATES (Totalmente aisladas de interferencias de puntero) -->
   <div class="flex flex-wrap gap-4">
     <div class="flex-1 flex flex-col">
       <%= f.label :du, class: "text-sm text-slate-500 mb-1" %>
       <%= f.date_field :du,
-    class: "du-input input input-bordered w-full rounded-lg border border-base-300",
-    required: true,
-    onchange: "syncDates(this)" %>
+            class: "du-input input input-bordered w-full rounded-lg border border-base-300 px-3 py-2 text-slate-700 bg-white",
+            required: true,
+            onchange: "syncDates(this)" %>
     </div>
 
     <div class="au-container flex-1 flex flex-col <%= 'hidden' if is_half_day %>">
-  <%= f.label :au, class: "text-sm text-slate-500 mb-1" %>
-  <%= f.date_field :au,
-      class: "au-input input input-bordered w-full rounded-lg border border-base-300",
-      required: true %>
-</div>
+      <%= f.label :au, class: "text-sm text-slate-500 mb-1" %>
+      <%= f.date_field :au,
+            class: "au-input input input-bordered w-full rounded-lg border border-base-300 px-3 py-2 text-slate-700 bg-white",
+            required: true %>
+    </div>
   </div>
 
   <!-- MATIN / APREM -->
   <div class="half-days-container <%= is_half_day ? '' : 'hidden' %> flex flex-row gap-4">
-
     <!-- MATIN -->
-    <label class="cursor-pointer flex-1">
+    <label class="group cursor-pointer flex-1 block">
       <input type="radio"
-       name="<%= f.object_name %>[period]"
-       value="matin"
-       class="peer hidden period-radio"
-       onchange="updateHiddenPeriods(this)"
-       <%= 'checked' if f.object.matin %> />
-      <div class="relative flex items-center gap-3 p-2 rounded-xl border border-base-300
-                  hover:bg-primary/10 hover:text-primary
-                  peer-checked:!bg-primary peer-checked:!border-primary peer-checked:!text-primary-content
-                  transition-all duration-200">
-        <div class="w-10 h-10 rounded-full flex items-center justify-center"
-             style="background:#FAEEDA;color:#BA7517">
+             name="<%= f.object_name %>[period]"
+             value="matin"
+             class="peer hidden period-radio"
+             onchange="updateHiddenPeriods(this)"
+             <%= 'checked' if f.object.matin %> />
+      <div class="w-full relative flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white text-slate-500
+                  hover:bg-[#ecf4fb] hover:text-[#007fcc] hover:border-[#007fcc]/30
+                  peer-checked:!bg-[#ecf4fb] peer-checked:!text-[#007fcc] peer-checked:!border-[#007fcc]
+                  transition-all duration-200 shadow-sm select-none">
+        
+        <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 border border-transparent
+                    group-hover:border-[#BA7517]/30 group-hover:shadow-sm transition-all duration-200 pointer-events-none"
+             style="background:#FAEEDA; color:#BA7517">
           <span class="material-symbols-outlined">wb_sunny</span>
         </div>
-        <div>
-          <p class="font-medium">Matin</p>
-          <p class="text-xs text-gray-500">Jusqu'à midi</p>
+        <div class="pointer-events-none">
+          <!-- 🎯 El texto ahora escucha al peer-checked del input usando el selector de herencia combinada de Tailwind -->
+          <p class="font-semibold text-slate-700 peer-checked:group-[]:text-[#007fcc] group-hover:text-[#007fcc] transition-colors duration-200">Matin</p>
+          <p class="text-xs text-slate-400 font-normal">Jusqu'à midi</p>
         </div>
       </div>
     </label>
 
     <!-- APREM -->
-    <label class="cursor-pointer flex-1">
+    <label class="group cursor-pointer flex-1 block">
       <input type="radio"
-       name="<%= f.object_name %>[period]"
-       value="apres_midi"
-       class="peer hidden period-radio"
-       onchange="updateHiddenPeriods(this)"
-       <%= 'checked' if f.object.après_midi %> />
-      <div class="relative flex items-center gap-3 p-2 rounded-xl border border-base-300
-                  hover:bg-primary/10 hover:text-primary
-                  peer-checked:!bg-primary peer-checked:!border-primary peer-checked:!text-primary-content
-                  transition-all duration-200">
-        <div class="w-10 h-10 rounded-full flex items-center justify-center"
-             style="background:#E6F1FB;color:#185FA5">
+             name="<%= f.object_name %>[period]"
+             value="apres_midi"
+             class="peer hidden period-radio"
+             onchange="updateHiddenPeriods(this)"
+             <%= 'checked' if f.object.après_midi %> />
+      <div class="w-full relative flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white text-slate-500
+                  hover:bg-[#ecf4fb] hover:text-[#007fcc] hover:border-[#007fcc]/30
+                  peer-checked:!bg-[#ecf4fb] peer-checked:!text-[#007fcc] peer-checked:!border-[#007fcc]
+                  transition-all duration-200 shadow-sm select-none">
+        
+        <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 border border-transparent
+                    group-hover:border-[#185FA5]/30 group-hover:shadow-sm transition-all duration-200 pointer-events-none"
+             style="background:#E6F1FB; color:#185FA5">
           <span class="material-symbols-outlined">wb_twilight</span>
         </div>
-        <div>
-          <p class="font-medium">Après-midi</p>
-          <p class="text-xs text-gray-500">À partir de 13h</p>
+        <div class="pointer-events-none">
+          <p class="font-semibold text-slate-700 peer-checked:group-[]:text-[#007fcc] group-hover:text-[#007fcc] transition-colors duration-200">Après-midi</p>
+          <p class="text-xs text-slate-400 font-normal">À partir de 13h</p>
         </div>
       </div>
     </label>
-
   </div>
 
   <!-- MOTIF -->
@@ -115,9 +116,9 @@
       Motif <span class="text-red-500">*</span>
     <% end %>
     <%= f.select :motif,
-        Absence.motifs.keys.map { |k| [k.humanize, k] },
+        Absence.motifs.keys.map { |k| [k.to_s.tr('_', ' ').humanize, k] },
         { selected: f.object.motif },
-        class: "select select-sm select-bordered w-full rounded-lg border border-base-300",
+        class: "select select-sm select-bordered w-full rounded-lg border border-base-300 bg-white text-slate-700",
         required: true %>
   </div>
 
@@ -125,7 +126,6 @@
   <div class="flex flex-col gap-1">
     <%= f.label :observation, class: "text-sm text-slate-500" %>
     <%= f.text_area :observation,
-        class: "textarea textarea-bordered w-full h-16 rounded-lg border border-base-300" %>
+        class: "textarea textarea-bordered w-full h-16 rounded-lg border border-base-300 bg-white text-slate-700" %>
   </div>
-
 </div>
