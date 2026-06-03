@@ -1,6 +1,7 @@
 <script>
   if (typeof handleHalfDayChange !== 'function') {
-
+    
+    // Trouve le conteneur parent pour isoler les actions
     function getContainer(element) {
       return element.closest('.absence-form-container');
     }
@@ -9,55 +10,37 @@
       const container = getContainer(radio);
       const auContainer = container.querySelector('.au-container');
       const halfDaysContainer = container.querySelector('.half-days-container');
-      const duInput = container.querySelector('.du-input');
-      const auInput = container.querySelector('.au-input');
-
+      
       if (radio.value === 'half') {
         auContainer.classList.add('hidden');
         halfDaysContainer.classList.remove('hidden');
-
-        if (duInput && auInput) {
-          auInput.value = duInput.value;
-          auInput.required = false;
-        }
-
-        // auto-select matin si nada elegido
+        syncDates(radio);
+        
+        // Coche Matin par défaut si rien n'est sélectionné
         const periodRadios = container.querySelectorAll('.period-radio');
         const hasSelection = Array.from(periodRadios).some(r => r.checked);
-
         if (!hasSelection && periodRadios.length > 0) {
           periodRadios[0].checked = true;
           updateHiddenPeriods(periodRadios[0]);
         }
-
       } else {
         auContainer.classList.remove('hidden');
         halfDaysContainer.classList.add('hidden');
-
-        if (auInput) {
-          auInput.required = true;
-        }
-
         container.querySelector('.hidden-matin').value = '0';
         container.querySelector('.hidden-apres-midi').value = '0';
-
         container.querySelectorAll('.period-radio').forEach(r => r.checked = false);
       }
     }
 
     function updateHiddenPeriods(element) {
       const container = getContainer(element);
-
       const radios = container.querySelectorAll('.period-radio');
       const hiddenMatin = container.querySelector('.hidden-matin');
       const hiddenApresMidi = container.querySelector('.hidden-apres-midi');
-
+      
       let selected = null;
-
-      radios.forEach(r => {
-        if (r.checked) selected = r.value;
-      });
-
+      radios.forEach(r => { if (r.checked) selected = r.value; });
+      
       if (selected === 'matin') {
         hiddenMatin.value = '1';
         hiddenApresMidi.value = '0';
@@ -69,25 +52,15 @@
 
     function syncDates(element) {
       const container = getContainer(element);
-
       const halfRadio = container.querySelector('input[value="half"].type-radio');
-
+      
       if (halfRadio && halfRadio.checked) {
         const duInput = container.querySelector('.du-input');
         const auInput = container.querySelector('.au-input');
-
         if (duInput && auInput) {
           auInput.value = duInput.value;
         }
       }
     }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      document.querySelectorAll('.absence-form-container').forEach(container => {
-        const checked = container.querySelector('input[name*="[absence_type]"]:checked');
-        if (checked) handleHalfDayChange(checked);
-      });
-    });
-
   }
 </script>

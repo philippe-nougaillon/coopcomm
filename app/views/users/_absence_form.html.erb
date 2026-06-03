@@ -1,6 +1,6 @@
 <% unique_id = absence.id || 'new' %>
 <% is_half_day = absence.matin || absence.après_midi %>
-<%= form_with(model: @user, id: "absence_form_#{unique_id}") do |f| %>
+<%= form_with(model: @user, id: "absence_form") do |f| %>
   <%= hidden_field_tag :from_absence_modal, true %>
   <% if absence.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">

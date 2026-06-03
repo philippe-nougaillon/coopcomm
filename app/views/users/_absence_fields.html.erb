@@ -1,131 +1,62 @@
+<%# app/views/absences/_absence_fields.html.erb %>
 <% is_half_day = f.object.matin || f.object.après_midi %>
 
-<div class="absence-form-container flex flex-col gap-5 w-full">
-  <%= f.hidden_field :id %>
+<%# On englobe tout dans "absence-form-container" pour que le JS s'y retrouve %>
+<div class="absence-form-container flex flex-col gap-4 w-full">
+  
+  <%# Champs cachés pour Rails %>
   <%= f.hidden_field :matin, class: "hidden-matin", value: f.object.matin ? '1' : '0' %>
   <%= f.hidden_field :après_midi, class: "hidden-apres-midi", value: f.object.après_midi ? '1' : '0' %>
 
-  <!-- TYPE JOURNÉE -->
-  <div class="flex flex-row gap-3">
-    <label class="cursor-pointer flex-1">
-      <input type="radio"
-             name="<%= f.object_name %>[absence_type]"
-             value="full"
-             class="peer hidden type-radio"
-             onchange="handleHalfDayChange(this)"
-             <%= 'checked' unless is_half_day %> />
-      <div class="w-full py-2.5 rounded-xl border border-slate-200 text-center font-semibold text-slate-500 bg-white
-                  hover:bg-[#ecf4fb] hover:text-[#007fcc] hover:border-[#007fcc]/30
-                  peer-checked:!bg-[#ecf4fb] peer-checked:!text-[#007fcc] peer-checked:!border-[#007fcc]
-                  transition-all duration-200 shadow-sm">
-        Journée entière
-      </div>
+  <%# Choix du type de journée (f.object_name permet de grouper les radios par absence automatiquement !) %>
+  <div class="flex gap-6 mt-1">
+    <label class="label cursor-pointer justify-start gap-2">
+      <input type="radio" name="<%= f.object_name %>[absence_type]" value="full" class="type-radio radio radio-primary radio-sm" 
+             onchange="handleHalfDayChange(this)" <%= 'checked' unless is_half_day %> />
+      <span class="label-text">Journée entière</span>
     </label>
-
-    <label class="cursor-pointer flex-1">
-      <input type="radio"
-             name="<%= f.object_name %>[absence_type]"
-             value="half"
-             class="peer hidden type-radio"
-             onchange="handleHalfDayChange(this)"
-             <%= 'checked' if is_half_day %> />
-      <div class="w-full py-2.5 rounded-xl border border-slate-200 text-center font-semibold text-slate-500 bg-white
-                  hover:bg-[#ecf4fb] hover:text-[#007fcc] hover:border-[#007fcc]/30
-                  peer-checked:!bg-[#ecf4fb] peer-checked:!text-[#007fcc] peer-checked:!border-[#007fcc]
-                  transition-all duration-200 shadow-sm">
-        Demi-journée
-      </div>
+    
+    <label class="label cursor-pointer justify-start gap-2">
+      <input type="radio" name="<%= f.object_name %>[absence_type]" value="half" class="type-radio radio radio-primary radio-sm" 
+             onchange="handleHalfDayChange(this)" <%= 'checked' if is_half_day %> />
+      <span class="label-text">Demi-journée</span>
     </label>
   </div>
 
-  <!-- DATES (Totalmente aisladas de interferencias de puntero) -->
+  <%# Dates %>
   <div class="flex flex-wrap gap-4">
     <div class="flex-1 flex flex-col">
       <%= f.label :du, class: "text-sm text-slate-500 mb-1" %>
-      <%= f.date_field :du,
-            class: "du-input input input-bordered w-full rounded-lg border border-base-300 px-3 py-2 text-slate-700 bg-white",
-            required: true,
-            onchange: "syncDates(this)" %>
+      <%= f.date_field :du, class: "du-input input input-sm input-bordered w-full", required: true, onchange: "syncDates(this)" %>
     </div>
-
     <div class="au-container flex-1 flex flex-col <%= 'hidden' if is_half_day %>">
       <%= f.label :au, class: "text-sm text-slate-500 mb-1" %>
-      <%= f.date_field :au,
-            class: "au-input input input-bordered w-full rounded-lg border border-base-300 px-3 py-2 text-slate-700 bg-white",
-            required: true %>
+      <%= f.date_field :au, class: "au-input input input-sm input-bordered w-full", required: true %>
     </div>
   </div>
 
-  <!-- MATIN / APREM -->
-  <div class="half-days-container <%= is_half_day ? '' : 'hidden' %> flex flex-row gap-4">
-    <!-- MATIN -->
-    <label class="group cursor-pointer flex-1 block">
-      <input type="radio"
-             name="<%= f.object_name %>[period]"
-             value="matin"
-             class="peer hidden period-radio"
-             onchange="updateHiddenPeriods(this)"
-             <%= 'checked' if f.object.matin %> />
-      <div class="w-full relative flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white text-slate-500
-                  hover:bg-[#ecf4fb] hover:text-[#007fcc] hover:border-[#007fcc]/30
-                  peer-checked:!bg-[#ecf4fb] peer-checked:!text-[#007fcc] peer-checked:!border-[#007fcc]
-                  transition-all duration-200 shadow-sm select-none">
-        
-        <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 border border-transparent
-                    group-hover:border-[#BA7517]/30 group-hover:shadow-sm transition-all duration-200 pointer-events-none"
-             style="background:#FAEEDA; color:#BA7517">
-          <span class="material-symbols-outlined">wb_sunny</span>
-        </div>
-        <div class="pointer-events-none">
-          <!-- 🎯 El texto ahora escucha al peer-checked del input usando el selector de herencia combinada de Tailwind -->
-          <p class="font-semibold text-slate-700 peer-checked:group-[]:text-[#007fcc] group-hover:text-[#007fcc] transition-colors duration-200">Matin</p>
-          <p class="text-xs text-slate-400 font-normal">Jusqu'à midi</p>
-        </div>
-      </div>
+  <%# Radios Matin / Après-midi %>
+  <div class="half-days-container <%= is_half_day ? '' : 'hidden' %> flex gap-6 p-3 bg-base-200/50 rounded-box border border-base-200">
+    <label class="label cursor-pointer justify-start gap-2">
+      <input type="radio" name="<%= f.object_name %>[period]" value="matin" class="period-radio radio radio-secondary radio-sm"
+             onchange="updateHiddenPeriods(this)" <%= 'checked' if f.object.matin %> />
+      <span class="label-text font-medium">Matin</span>
     </label>
-
-    <!-- APREM -->
-    <label class="group cursor-pointer flex-1 block">
-      <input type="radio"
-             name="<%= f.object_name %>[period]"
-             value="apres_midi"
-             class="peer hidden period-radio"
-             onchange="updateHiddenPeriods(this)"
-             <%= 'checked' if f.object.après_midi %> />
-      <div class="w-full relative flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white text-slate-500
-                  hover:bg-[#ecf4fb] hover:text-[#007fcc] hover:border-[#007fcc]/30
-                  peer-checked:!bg-[#ecf4fb] peer-checked:!text-[#007fcc] peer-checked:!border-[#007fcc]
-                  transition-all duration-200 shadow-sm select-none">
-        
-        <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 border border-transparent
-                    group-hover:border-[#185FA5]/30 group-hover:shadow-sm transition-all duration-200 pointer-events-none"
-             style="background:#E6F1FB; color:#185FA5">
-          <span class="material-symbols-outlined">wb_twilight</span>
-        </div>
-        <div class="pointer-events-none">
-          <p class="font-semibold text-slate-700 peer-checked:group-[]:text-[#007fcc] group-hover:text-[#007fcc] transition-colors duration-200">Après-midi</p>
-          <p class="text-xs text-slate-400 font-normal">À partir de 13h</p>
-        </div>
-      </div>
+    <label class="label cursor-pointer justify-start gap-2">
+      <input type="radio" name="<%= f.object_name %>[period]" value="apres_midi" class="period-radio radio radio-secondary radio-sm"
+             onchange="updateHiddenPeriods(this)" <%= 'checked' if f.object.après_midi %> />
+      <span class="label-text font-medium">Après-midi</span>
     </label>
   </div>
 
-  <!-- MOTIF -->
+  <%# Motif et Observation %>
   <div class="flex flex-col gap-1">
-    <%= f.label :motif, class: "text-sm text-slate-500" do %>
-      Motif <span class="text-red-500">*</span>
-    <% end %>
-    <%= f.select :motif,
-        Absence.motifs.keys.map { |k| [k.to_s.tr('_', ' ').humanize, k] },
-        { selected: f.object.motif },
-        class: "select select-sm select-bordered w-full rounded-lg border border-base-300 bg-white text-slate-700",
-        required: true %>
+    <%= f.label :motif, class: "text-sm text-slate-500" %>
+    <%= f.select :motif, Absence.motifs.keys.map { |k| [k.humanize, k] }, { selected: f.object.motif }, class: 'select select-sm select-bordered w-full', required: true %>
   </div>
 
-  <!-- OBSERVATION -->
   <div class="flex flex-col gap-1">
     <%= f.label :observation, class: "text-sm text-slate-500" %>
-    <%= f.text_area :observation,
-        class: "textarea textarea-bordered w-full h-16 rounded-lg border border-base-300 bg-white text-slate-700" %>
+    <%= f.text_area :observation, class: "textarea textarea-bordered w-full h-16" %>
   </div>
 </div>
