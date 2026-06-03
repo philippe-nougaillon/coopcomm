@@ -1,7 +1,6 @@
 <script>
   if (typeof handleHalfDayChange !== 'function') {
     
-    // Trouve le conteneur parent pour isoler les actions
     function getContainer(element) {
       return element.closest('.absence-form-container');
     }
@@ -16,7 +15,7 @@
         halfDaysContainer.classList.remove('hidden');
         syncDates(radio);
         
-        // Coche Matin par défaut si rien n'est sélectionné
+        // Selecciona Matin por defecto si el usuario cambia a Demi-journée y no hay nada marcado
         const periodRadios = container.querySelectorAll('.period-radio');
         const hasSelection = Array.from(periodRadios).some(r => r.checked);
         if (!hasSelection && periodRadios.length > 0) {
