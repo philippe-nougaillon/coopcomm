@@ -7,10 +7,8 @@
   <td>
     <% if convention.document.attached? %>
       <div class="flex gap-2">
-        <%= link_to "Voir", rails_blob_path(convention.document, disposition: "inline"),
-              target: "_blank", class: "btn btn-ghost btn-xs" %>
-        <%= link_to "Télécharger", rails_blob_path(convention.document, disposition: "attachment"),
-              class: "btn btn-ghost btn-xs" %>
+        <%= link_to convention.document.filename, rails_blob_path(convention.document, disposition: "inline"),
+              target: "_blank", class: "text-primary hover:!underline" %>
       </div>
     <% else %>
       <span class="text-slate-400 text-sm">Aucun document</span>
@@ -39,9 +37,9 @@
 
       <% if policy(convention).destroy? %>
         <%= button_to user_convention_path(user, convention), method: :delete,
-              class: "btn btn-error btn-xs",
+              class: "btn btn-sm",
               form: { data: { turbo_confirm: "Supprimer cette convention ?" } } do %>
-          Supprimer
+          <span class="material-symbols-outlined">delete</span>
         <% end %>
       <% end %>
     </div>

@@ -48,7 +48,7 @@
                 target: "_blank", class: "link link-primary" %>
         </p>
       <% end %>
-      <%= f.file_field :document, class: "file-input file-input-sm file-input-bordered w-full" %>
+      <%= f.file_field :document, class: "file-input file-input-sm file-input-bordered w-full", accept: '.pdf' %>
       <% if convention.document.attached? %>
         <span class="text-xs text-slate-400">Déposer un nouveau fichier remplacera le document actuel.</span>
       <% end %>
