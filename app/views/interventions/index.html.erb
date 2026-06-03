@@ -6,7 +6,7 @@
         <%= link_to new_intervention_pointage_interventions_path, 
         class: "btn btn-secondary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm ",
         title: "Ajouter un modèle de pointage" do %>
-          <span class="material-symbols-outlined"> qr_code_2_add </span>
+          <img src="/assets/icons/qr_code_2_add.svg" class="icon" alt="Pointage" title="Pointage">
           <span class="hidden md:block">Ajouter un modèle de pointage</span>
         <% end %>
       <% end %>
@@ -14,7 +14,7 @@
       data: { 'testid': "ajouter_intervention_pc" }, 
       class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm ",
       title: "Créer une nouvelle intervention " do %>
-        <span class="material-symbols-outlined">assignment_add</span>
+        <img src="/assets/icons/assignment_add.svg" class="icon" alt="Ajouter une intervention" title="Ajouter une intervention">
         <span class="hidden md:block">Ajouter une Intervention</span>
       <% end %>
     </div>
@@ -49,7 +49,7 @@
       <% if current_user.manager_or_admin? || current_user.agent? || current_user.adhérent? %>
         <details class="group w-full" <%= 'open' if params[:adherent_id].present? || params[:tags].present? || params[:service].present? || params[:agent_ids].present? || params[:tool_ids].present? || params[:archives].present? %>>
           <summary class="flex items-center gap-2 text-primary font-semibold text-sm cursor-pointer select-none list-none w-fit pt-2 hover:underline">
-            <span class="material-symbols-outlined text-[18px] transition-transform group-open:rotate-180">tune</span>
+            <img src="/assets/icons/tune.svg" class="icon text-[18px] transition-transform group-open:rotate-180" alt="Fermer">
             <span class="group-open:hidden">Plus de critères de filtrage</span>
             <span class="hidden group-open:inline">Moins de critères de filtrage</span>
           </summary>
@@ -97,12 +97,12 @@
         <span class="text-xs font-semibold text-slate-500 hidden sm:inline">Affichage:</span>
         <div class=" join ">
           <label class="btn btn-primary btn-outline btn-sm join-item <%= 'btn-active text-white!' if params[:vue] == 'normal' %>" for="btnradio1" title="Mode normal">
-            <span class="material-symbols-outlined text-[16px]">density_small</span>
+            <img src="/assets/icons/density_small.svg" class="icon text-[16px]" alt="Mode normal">
             <span class="text-[11px] font-medium">Normal</span>
           </label>
           <%= radio_button_tag :vue, "normal", (params[:vue] == 'normal'), name: 'vue', id: 'btnradio1', onchange: 'this.form.submit()', class: 'hidden' %>
           <label class="btn btn-primary btn-outline btn-sm join-item rounded-r <%= 'btn-active text-white!' if params[:vue] == 'compact' %>" for="btnradio2" title="Mode compact">
-            <span class="material-symbols-outlined text-[16px]">compress</span>
+            <img src="/assets/icons/compress.svg" class="icon text-[16px]" alt="Mode compact">
             <span class="text-[11px] font-medium">Compact</span>
           </label>
           <%= radio_button_tag :vue, 'compact', (params[:vue] == 'compact'), name: 'vue', id: 'btnradio2', onchange: 'this.form.submit()', class: 'hidden' %>
@@ -113,7 +113,7 @@
   <div id="interventions" class="min-w-full bg-white border-x border-b border-slate-200  overflow-hidden shadow-xs">
     <% if params[:vue] == 'compact' %>
       <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-        <span class="material-symbols-outlined text-sm">swipe</span>
+        <img src="/assets/icons/swipe.svg" class="icon text-sm" alt="swipe">
         <span>Faire glisser pour voir plus</span>
       </div>
     <% end %>
@@ -133,7 +133,7 @@
       <% if @interventions.any? %>
         <%= link_to url_for(params.permit!.merge(format: :xls)), 
               class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto" do %>
-          <span class="material-symbols-outlined text-lg">upload</span>
+          <img src="/assets/icons/upload.svg" class="icon text-lg" alt="Exporter en XLS">
           <span>Exporter en XLS</span>
         <% end %>
       <% end %>

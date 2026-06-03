@@ -8,42 +8,38 @@
     <ul class="menu w-full menu-horizontal flex-1 items-center py-0! px-0">
       <li>
         <%= link_to home_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:action] == 'home'}", title: "Page d'accueil" do %>
-          <span class="material-symbols-outlined">
-            cottage
-          </span>
+                <img src="/assets/icons/cottage.svg" class="icon" alt="Page d'accueil" title="Page d'accueil">
+
+         
         <% end %>
       </li>
       <li>
         <%= link_to interventions_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
-          <span class="material-symbols-outlined">
-            construction
-          </span>
+          <img src="/assets/icons/construction.svg" class="icon" alt="Liste des interventions" title="Liste des interventions">
         <% end %>
       </li>
       <% if policy(Tool).index? %>
         <li>
           <%= link_to tools_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'tools'}", title: "Liste du matériel" do %>
-            <span class="material-symbols-outlined">
-              front_loader
-            </span>
+            
+            <img src="/assets/icons/front_loader.svg" class="icon" alt="Liste du matériel" title="Liste du matériel">
           <% end %>
         </li>
       <% end %>
       <% if policy(User).agent_calendrier? %>
         <li>
           <%= link_to agent_calendrier_users_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:action] == 'agent_calendrier'}", title: "Voir la disponibilité des agents" do %>
-            <span class="material-symbols-outlined">
-              event_available
-            </span>
+            
+            <img src="/assets/icons/event_available.svg" class="icon" alt="Voir la disponibilité des agents" title="Voir la disponibilité des agents">
           <% end %>
         </li>
       <% end %>
       <li>
         <%= link_to messagerie_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
           <% if current_user.new_messages? %>
-            <span class="material-symbols-outlined text-error">
-              chat
-            </span>
+                  <img src="/assets/icons/chat.svg" class="icon text-error" alt="Messagerie" title="Messagerie">
+
+           
           <% else %>
             <span class="material-symbols-outlined text-secondary <%= 'text-primary!' if params[:controller] == 'messagerie' %>">
               chat

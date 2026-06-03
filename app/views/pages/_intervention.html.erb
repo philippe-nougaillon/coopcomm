@@ -1,13 +1,9 @@
 <div class="flex items-center justify-between sm:justify-start gap-4 border border-gray-200 p-4 sm:p-8">
   <div class="flex items-start gap-4 sm:w-80 min-w-0">
     <% if intervention.repeter %>
-      <span class="material-symbols-outlined text-secondary p-2 bg-gray-200 rounded-full shrink-0" title="Intervention répétée">
-        event_repeat
-      </span>
+      <img src="/assets/icons/event_repeat.svg" class="icon text-secondary p-2 bg-gray-200 rounded-full shrink-0" alt="Pointage" title="Intervention répétée">
     <% else %>
-      <span class="material-symbols-outlined text-secondary p-2 bg-gray-200 rounded-full shrink-0" title="Intervention en cours">
-        construction
-      </span>
+      <img src="/assets/icons/construction.svg" class="icon" alt="Construction" title="Intervention en cours">
     <% end %>
     <div class="flex flex-col gap-1 min-w-0">
       <b><%= link_to intervention.description.humanize, intervention, class: "text-#{intervention.style.split.first.split('-').last} hover:underline block truncate" %></b>
