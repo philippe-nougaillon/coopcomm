@@ -11,7 +11,7 @@ class CotationPdf
     Prawn::Fonts::AFM.hide_m17n_warning = true
     @margin_down = 15
     @image_path = "#{Rails.root}/app/assets/images"
-    @logo = "#{@image_path}/CoopComm.png"
+    @logo = "#{@image_path}/Logo_CC_MAd_et_Moselle.jpg"
   end
 
   # Construit le PDF du devis. Retourne self (render appelé par le contrôleur).
@@ -28,7 +28,7 @@ class CotationPdf
   private
 
   def add_header
-    image @logo, height: 40, position: :right if File.exist?(@logo)
+    image @logo, height: 80, position: :right if File.exist?(@logo)
     text "Cotation / Devis n°#{@cotation.ref}", size: 16, style: :bold
     move_down 10
     stroke_horizontal_rule
