@@ -1,42 +1,23 @@
 <tr id="<%= dom_id tool %>">
   <td class="hidden sm:block">
     <% if tool.photo.present? %>
-      <img src="<%= url_for(tool.photo) %>" class="h-10">  
+      <img src="<%= url_for(tool.photo) %>" class="h-10">
     <% end %>
   </td>
   <%# la couleur du <td> si dessous est nécessaire si la colonne reste affichée en scrollant, sinon les colonnes se superposeront %>
   <td class="sticky left-0 top-0 bg-slate-100 sm:text-xl text-primary bg-slate-50 break-words whitespace-normal max-w-[25vw]">
     <%= link_to tool.name.humanize, tool, class: 'text-primary hover:underline', title: (tool.description.blank? ? 'Aucune description' : tool.description) %>
   </td>
-
   <% if false %>
-  <!--
-    <td>
-      <%= tool.modèle %>
-    </td>
-    <td>
-      <%= tool.marque %>
-    </td>
-    <td>
-      <% if tool.mouvements.any? %> 
-        <p class="font-bold badge badge-sm badge-<%= tool.mouvements.last.style %> h-fit"><%= tool.mouvements.last.état.humanize %></p>
-      <% end %>
-    </td>
-    -->
   <% end %>
-
   <% case params[:vue]%>
   <% when 'disponible' %>
     <td>
-      <span class="material-symbols-outlined text-success">
-        check_circle
-      </span>
+      <img src="/assets/icons/check_circle.svg" class="icon text-success" alt="Disponible" title="Outil disponible">
     </td>
   <% when 'indisponible' %>
     <td>
-      <span class="material-symbols-outlined text-error">
-        cancel
-      </span>
+      <img src="/assets/icons/cancel.svg" class="icon text-error" alt="Indisponible" title="Outil indisponible">
     </td>
   <% when 'calendrier' %>
     <% (@date..@date_fin).each do | date | %>
@@ -49,7 +30,6 @@
           mouvement_matin = tool.dernier_mouvement_a(heure_matin)
           mouvement_soir = tool.dernier_mouvement_a(heure_soir)
         %>
-
         <%= render 'mouvements/mouvement_slot', 
                   mouvement: mouvement_matin, 
                   tool_id: tool.id, 
@@ -58,7 +38,6 @@
                   start_hour: 8, 
                   end_hour: 13, 
                   new_title: "Réserver \"#{tool.name.humanize}\" le #{date.day} au matin" %>
-
         <%= render 'mouvements/mouvement_slot', 
                   mouvement: mouvement_soir, 
                   tool_id: tool.id, 
@@ -70,47 +49,7 @@
                   new_title: "Réserver \"#{tool.name.humanize}\" le #{date.day} après-midi" %>
       </td>
     <% end %>
-
-    <!--
-    <%# if tool.disponible?(params[:quand] || DateTime.now) %>
-      <span class="material-symbols-outlined text-success">
-        check_circle
-      </span>
-    <%# elsif  %>
-      <span class="material-symbols-outlined text-error">
-        cancel
-      </span>
-    <%# end %>
-    -->
-
   <% end %>
   <% if false %>
-    <!--
-      <td>
-        <div class="flex justify-end items-center gap-2">
-          <% if policy(tool).show? %>
-            <%= link_to tool, title: 'Voir' do %>
-              <span class="material-symbols-outlined">
-                visibility
-              </span>
-            <% end %>
-          <% end %>
-          <% if policy(tool).edit? %>
-            <%= link_to edit_tool_path(tool), title: 'Modifier' do %>
-              <span class="material-symbols-outlined">
-                edit
-              </span>
-            <% end %>
-          <% end %>
-          <% if policy(tool).destroy? %>
-            <%= button_to tool_path(tool), title: "Supprimer l'outil", method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, form: { class: "flex items-center" }, 'data-testid': "Supprimer l'outil" do %>
-              <span class="material-symbols-outlined">
-                delete
-              </span>
-            <% end %>
-          <% end %>
-        </div>
-      </td>
-    -->
   <% end %>
 </tr>

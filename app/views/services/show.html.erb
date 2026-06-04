@@ -4,29 +4,21 @@
       <%= page_title!(@service.nom) %>
     </h1>
   </div>
-
   <p class="my-2 hover:cursor-help" title="Calcul de distance sur les interventions du service à partir de l'équipe de l'adhérent">
     <strong class="block text-slate-400 mb-1">Calcul distances ?</strong>
     <% if @service.calculate_distance %>
-    <span class="material-symbols-outlined text-success">
-      check_small
-    </span>
+      <img src="/assets/icons/check_small.svg" class="icon text-success" alt="Confirmer" title="Confirmer que la distance a été calculée">
     <% else %>
-      <span class="material-symbols-outlined text-error">
-        cancel
-      </span>
+      <img src="/assets/icons/cancel.svg" class="icon text-error" alt="Annuler" title="Annuler que la distance n'a pas été calculée">
     <% end %>
   </p>
-
   <div class="flex flex-wrap gap-2 mt-8">
     <% if policy(@service).edit? %>
       <%= link_to "Modifier", edit_service_path(@service), class: "btn" %>
     <% end %>
     <% if policy(@service).destroy? %>
       <%= button_to service_path(@service), method: :delete, id: "supprimer_service", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer ce service ?" }, class: "btn", 'data-testid': "Supprimer le service" do %>
-          <span class="material-symbols-outlined">
-            delete
-          </span>
+        <img src="/assets/icons/delete.svg" class="icon" alt="Supprimer" title="Supprimer le service">
       <% end %>
     <% end %>
     <%= link_to "Retour", admin_parametres_path, class: "btn" %>

@@ -16,16 +16,6 @@
     <% end %>
     <div class="flex flex-col flex-wrap">
       <% if false %>
-        <!--
-      <p class="my-2">
-        <strong class="block text-slate-400">État</strong>
-          <% if @tool.mouvements.any? %>
-          <p class="font-bold badge badge-sm badge-<%= @tool.mouvements.last.style %> h-fit mb-2">
-            <%= @tool.mouvements.last.état.humanize %>
-          </p>
-          <% end %>
-      </p>
-        -->
       <% end %>
       <p class="my-2">
         <strong class="block text-slate-400 mb-1">Modèle</strong>
@@ -49,15 +39,11 @@
     <% if policy(@tool).destroy? %>
       <% if @tool.interventions.any? %>
         <div class="btn cursor-not-allowed" title="Suppression impossible, l'outil est utilisé dans des interventions">
-          <span class="material-symbols-outlined text-gray-500">
-            delete
-          </span>
+          <img src="/assets/icons/delete.svg" class="icon text-gray-500" alt="Supprimer" title="Supprimer l'intervention">
         </div>
       <% else %>
         <%= button_to tool_path(@tool), method: :delete, id: "supprimer_outil", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, class: "btn", 'data-testid': "Supprimer l'outil" do %>
-          <span class="material-symbols-outlined">
-            delete
-          </span>
+          <img src="/assets/icons/delete.svg" class="icon" alt="Supprimer" title="Supprimer l'intervention">
         <% end %>
       <% end %>
     <% end %>

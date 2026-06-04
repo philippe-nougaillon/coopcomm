@@ -1,12 +1,9 @@
 <%# app/views/absences/_absence_fields.html.erb %>
 <% is_half_day = f.object.matin || f.object.après_midi %>
-
 <div class="absence-form-container flex flex-col gap-4 w-full">
-  
   <%# Champs cachés pour Rails %>
   <%= f.hidden_field :matin, class: "hidden-matin", value: f.object.matin ? '1' : '0' %>
   <%= f.hidden_field :après_midi, class: "hidden-apres-midi", value: f.object.après_midi ? '1' : '0' %>
-
   <%# 🌟 LOS DOS BOTONES GRANDES (RADIO-BTN) DE DAISY UI %>
   <div class="flex flex-row gap-3 mt-1">
     <input type="radio" 
@@ -16,7 +13,6 @@
            aria-label="Journée entière"
            onchange="handleHalfDayChange(this)" 
            <%= 'checked' unless is_half_day %> />
-    
     <input type="radio" 
            name="<%= f.object_name %>[absence_type]" 
            value="half" 
@@ -25,7 +21,6 @@
            onchange="handleHalfDayChange(this)" 
            <%= 'checked' if is_half_day %> />
   </div>
-
   <%# Dates %>
   <div class="flex flex-wrap gap-4">
     <div class="flex-1 flex flex-col">
@@ -37,10 +32,8 @@
       <%= f.date_field :au, class: "au-input input input-sm input-bordered w-full", required: true %>
     </div>
   </div>
-
   <%# 🌟 NUEVOS BOTONES DE DAISY UI PARA MATIN / APRÈS-MIDI %>
   <div class="half-days-container <%= is_half_day ? '' : 'hidden' %> flex flex-row gap-3 w-full">
-    
     <div class="flex-1 relative">
       <input type="radio" 
              name="<%= f.object_name %>[period]" 
@@ -50,16 +43,15 @@
              onchange="updateHiddenPeriods(this)" 
              <%= 'checked' if f.object.matin %> />
       <label for="period_matin" 
-             class="btn btn-outline border-slate-200 bg-white hover:bg-base-200 h-auto py-3 px-4 w-full flex flex-row items-center justify-start gap-3 rounded-xl normal-case font-normal text-left
-                    peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all duration-200 cursor-pointer">
-        <span class="material-symbols-outlined text-warning text-2xl shrink-0">wb_sunny</span>
+          class="btn btn-outline border-slate-200 bg-white hover:bg-base-200 h-auto py-3 px-4 w-full flex flex-row items-center justify-start gap-3 rounded-xl normal-case font-normal text-left
+          peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all duration-200 cursor-pointer">
+        <img src="/assets/icons/wb_sunny.svg" class="icon text-warning text-2xl shrink-0" alt="Matin" title="Matin">
         <div class="flex flex-col min-w-0">
           <span class="font-semibold text-slate-800 text-sm block leading-none mb-1">Matin</span>
           <span class="text-xs text-slate-400 block font-normal leading-none">avant midi</span>
         </div>
       </label>
     </div>
-
     <div class="flex-1 relative">
       <input type="radio" 
              name="<%= f.object_name %>[period]" 
@@ -69,24 +61,21 @@
              onchange="updateHiddenPeriods(this)" 
              <%= 'checked' if f.object.après_midi %> />
       <label for="period_apres_midi" 
-             class="btn btn-outline border-slate-200 bg-white hover:bg-base-200 h-auto py-3 px-4 w-full flex flex-row items-center justify-start gap-3 rounded-xl normal-case font-normal text-left
-                    peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all duration-200 cursor-pointer">
-        <span class="material-symbols-outlined text-info text-2xl shrink-0">wb_twilight</span>
+          class="btn btn-outline border-slate-200 bg-white hover:bg-base-200 h-auto py-3 px-4 w-full flex flex-row items-center justify-start gap-3 rounded-xl normal-case font-normal text-left
+          peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all duration-200 cursor-pointer">
+        <img src="/assets/icons/wb_twilight.svg" class="icon text-info text-2xl shrink-0" alt="Après-midi" title="Après-midi">
         <div class="flex flex-col min-w-0">
           <span class="font-semibold text-slate-800 text-sm block leading-none mb-1">Après-midi</span>
           <span class="text-xs text-slate-400 block font-normal leading-none">après 13h</span>
         </div>
       </label>
     </div>
-
   </div>
-
   <%# Motif et Observation %>
   <div class="flex flex-col gap-1">
     <%= f.label :motif, class: "text-sm text-slate-500" %>
     <%= f.select :motif, Absence.motifs.keys.map { |k| [k.humanize, k] }, { selected: f.object.motif }, class: 'select select-sm select-bordered w-full', required: true %>
   </div>
-
   <div class="flex flex-col gap-1">
     <%= f.label :observation, class: "text-sm text-slate-500" %>
     <%= f.text_area :observation, class: "textarea textarea-bordered w-full h-16" %>

@@ -19,32 +19,27 @@
       <button class="btn btn-primary btn-sm" onclick="edit_modal_<%= absence.id %>.showModal()">
         Modifier
       </button>
-
       <dialog id="edit_modal_<%= absence.id %>" class="modal">
         <div class="modal-box font-normal text-base-content text-left">
           <form method="dialog">
             <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
           </form>
-          
-<div class="flex items-center gap-3 mb-6">
-      <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-          <span class="material-symbols-outlined text-primary">
-          event_busy
-        </span>
-      </div>
- <div>
-        <h3 class="text-xl font-bold uppercase text-primary">Modifier l'absence</h3>
-        <p class="text-sm text-slate-500">Complétez les informations ci-dessous.</p>
-      </div>
-    </div>
-
-
-          <%= render "absence_form", absence: absence %>
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <img src="/assets/icons/event_busy.svg" class="icon text-primary" alt="Absence" title="Absence">
+            </span>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold uppercase text-primary">Modifier l'absence</h3>
+            <p class="text-sm text-slate-500">Complétez les informations ci-dessous.</p>
+          </div>
         </div>
-        <form method="dialog" class="modal-backdrop">
-          <button>Fermer</button>
-        </form>
-      </dialog>
-    <% end %>
-  </td>
+        <%= render "absence_form", absence: absence %>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>Fermer</button>
+      </form>
+    </dialog>
+  <% end %>
+</td>
 </tr>

@@ -11,7 +11,12 @@
     <div class="space-y-2 px-8 pt-6 text-slate-700  flex-1">
 
       <div class="flex items-center gap-2 font-bold text-blue-800 mb-8">
-        <span class="material-symbols-outlined text-lg">info</span>
+        <img
+          src="/assets/icons/info.svg"
+          class="icon text-lg"
+          alt="Informations"
+          title="Informations"
+        />
         <span class="uppercase">Instructions d'importation</span>
       </div>
 
@@ -122,9 +127,12 @@
 
       <div class="text-xs text-slate-500 italic mt-4 flex items-center gap-1.5">
 
-        <span class="material-symbols-outlined text-sm text-slate-400">
-          help
-        </span>
+        <img
+          src="/assets/icons/help.svg"
+          class="icon text-sm text-slate-400"
+          alt="Aide"
+          title="Aide"
+        />
 
         <span>
           Choisissez "Non" pour simuler l'importation et détecter
@@ -145,7 +153,12 @@
    <div class="my-10">
  
 <%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition" do %>
-      <span class="material-symbols-outlined text-base">arrow_back</span>
+      <img
+          src="/assets/icons/arrow_back.svg"
+          class="icon text-base"
+          alt="Retour à la liste des utilisateurs"
+          title="Retour à la liste des utilisateurs"
+        />
       Retour à la liste des utilisateurs
     <% end %>
 

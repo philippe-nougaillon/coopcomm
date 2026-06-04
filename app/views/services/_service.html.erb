@@ -10,13 +10,9 @@
   </td>
   <td class="text-sm">
     <% if service.calculate_distance %>
-    <span class="material-symbols-outlined text-success">
-      check_small
-    </span>
+      <img src="/assets/icons/check_small.svg" class="icon text-success" alt="Confirmer" title="Confirmer que la distance a été calculée">
     <% else %>
-      <span class="material-symbols-outlined text-error">
-        cancel
-      </span>
+      <img src="/assets/icons/cancel.svg" class="icon text-error" alt="Annuler" title="Annuler que la distance n'a pas été calculée">
     <% end %>
   </td>
 </tr>

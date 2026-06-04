@@ -1,3 +1,4 @@
+
 <div class="flex flex-col">
   <div class="flex flex-row justify-between items-center my-4 gap-2">
     <h1 class="text-4xl text-primary font-bold">
@@ -7,7 +8,12 @@
             data: { testid: "ajouter_utilisateur" },
             class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm ",
             title: "Créer un nouvel agent"  do %>
-      <span class="material-symbols-outlined">person_add</span>
+      <img
+          src="/assets/icons/person_add.svg"
+          class="icon"
+          alt="Ajouter un utilisateur"
+          title="Ajouter un utilisateur"
+        />
       <span class="hidden md:block">Ajouter un Utilisateur</span>
     <% end %>
   </div>
@@ -76,7 +82,12 @@
 <div class="flex flex-col bg-white  border-x border-b border-slate-200 shadow-sm overflow-hidden">
   <div class="overflow-x-auto ">
     <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-      <span class="material-symbols-outlined text-sm">swipe</span>
+      <img
+          src="/assets/icons/swipe.svg"
+          class="icon text-sm"
+          alt="swipe"
+          title="Faire glisser"
+        />
       <span>Faire glisser pour voir plus</span>
     </div>
     <table id="users" class="table table-sm w-full border-none">
@@ -110,7 +121,12 @@
     <% if @users.any? %>
       <%= link_to url_for(params.permit(:search, :role, :services, :absent, :discarded).merge(format: :xls)),
               class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto" do %>
-        <span class="material-symbols-outlined text-lg">upload</span>
+        <img
+          src="/assets/icons/upload.svg"
+          class="icon text-lg"
+          alt="Exporter"
+          title="Exporter"
+        />
         <span>Exporter en XLS</span>
       <% end %>
     <% end %>
@@ -118,7 +134,12 @@
             data: { testid: "import_users" },
             'data-turbo': false,
             class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto" do %>
-      <span class="material-symbols-outlined text-lg">download</span>
+        <img
+          src="/assets/icons/download.svg"
+          class="icon text-lg"
+          alt="Importer"
+          title="Importer"
+        />
       <span>Importer des agents</span>
     <% end %>
   </div>

@@ -1,3 +1,6 @@
+
+
+
 <div class="mx-auto lg:w-2/3 w-full mt-8">
   <% page_title!(@user.nom_prénom) %>
   <div class="flex flex-col md:flex-row gap-6">
@@ -39,11 +42,11 @@
             <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Informations</p>
             <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
               <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-                <img src="/assets/icons/mail.svg" class="icon"  alt="mail"> Email
+                <img src="/assets/icons/mail.svg" class="icon" alt="mail"> Email
               </div>
               <div class="py-2.5 text-slate-800 border-b border-slate-100 break-all"><%= @user.email %></div>
-  <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-              <img src="/assets/icons/call.svg" class="icon"  alt="phone"> Téléphone
+                <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+                  <img src="/assets/icons/call.svg" class="icon" alt="Téléphone"> Téléphone
             </div>
             <div class="py-2.5 border-b border-slate-100">
               <% if @user.téléphone.to_s.strip.present? %>
@@ -53,13 +56,22 @@
               <% end %>
             </div>
               <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-                <span class="material-symbols-outlined text-base">store</span>
+                 <img src="/assets/icons/store.svg"
+                      class="icon text-base"
+                      alt="Services"
+                      title="Services"
+                   />
                 <%= @user.manager_or_admin? ? "Responsable des services" : "Services" %>
               </div>
               <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @user.services.pluck(:nom).join(", ") %></div>
               <% if @user.memo.present? %>
                 <div class="flex items-start gap-2 py-2.5 text-slate-500" style="padding-right: 2rem;">
-                  <span class="material-symbols-outlined text-base">note</span> Mémo
+                   <img
+                      src="/assets/icons/note.svg"
+                      class="icon text-base"
+                      alt="Mémo"
+                      title="Mémo"
+                    />
                 </div>
                 <div class="py-2.5 text-slate-800 italic"><%= @user.memo %></div>
               <% end %>
@@ -84,15 +96,20 @@
                 <div class="flex items-center">
                   <div class="flex w-36">
                     <% i.times do %>
-                      <span class="material-symbols-outlined text-slate-400">
+                      <img
+                        src="/assets/icons/star.svg"
+                        class="icon text-slate-400"
+                        alt="star"
+                        title="star"
+                      />
                         star
                       </span>
                     <% end %>
                   </div>
                   <progress
-          class="progress progress-primary w-56"
-          value="<%= @user.total_rating > 0 ? @user.star_count(i) : 0 %>"
-          max="100">
+                    class="progress progress-primary w-56"
+                    value="<%= @user.total_rating > 0 ? @user.star_count(i) : 0 %>"
+                    max="100">
                   </progress>
                 </div>
               <% end %>
@@ -104,11 +121,21 @@
           <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Informations</p>
           <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
             <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-              <span class="material-symbols-outlined text-base">mail</span> Email
+              <img
+                src="/assets/icons/mail.svg"
+                class="icon text-base"
+                alt="Email"
+                title="Email"
+              /> Email
             </div>
             <div class="py-2.5 text-slate-800 border-b border-slate-100 break-all"><%= @user.email %></div>
             <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-              <span class="material-symbols-outlined text-base">phone</span> Téléphone
+              <img
+                src="/assets/icons/phone.svg"
+                class="icon text-base"
+                alt="Téléphone"
+                title="Téléphone"
+              /> Téléphone
             </div>
             <div class="py-2.5 border-b border-slate-100">
               <% if @user.téléphone.to_s.strip.present? %>
@@ -118,13 +145,23 @@
               <% end %>
             </div>
             <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-              <span class="material-symbols-outlined text-base">store</span>
+               <img
+                  src="/assets/icons/store.svg"
+                  class="icon text-base"
+                  alt="Services"
+                  title="Services"
+                />
               <%= @user.manager_or_admin? ? "Responsable des services" : "Services" %>
             </div>
             <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @user.services.pluck(:nom).join(", ") %></div>
             <% if @user.memo.present? %>
               <div class="flex items-start gap-2 py-2.5 text-slate-500" style="padding-right: 2rem;">
-                <span class="material-symbols-outlined text-base">note</span> Mémo
+                 <img
+                  src="/assets/icons/note.svg"
+                  class="icon text-base"
+                  alt="Mémo"
+                  title="Mémo"
+                /> Mémo
               </div>
               <div class="py-2.5 text-slate-800 italic"><%= @user.memo %></div>
             <% end %>
@@ -134,22 +171,42 @@
       <div class="flex flex-wrap flex-col md:flex-row gap-2 mt-1">
         <% if policy(@user).edit? %>
           <%= link_to edit_user_path(@user), class: "btn" do %>
-            <span class="material-symbols-outlined text-sm">edit</span> Modifier
+            <img
+              src="/assets/icons/edit.svg"
+              class="icon text-sm"
+              alt="Modifier l'utilisateur"
+              title="Modifier l'utilisateur"
+            /> Modifier
           <% end %>
         <% end %>
         <% if policy(@user).inviter? %>
           <%= link_to inviter_user_path(@user), class: "btn btn-soft btn-primary", 'data-turbo': false do %>
-            <span class="material-symbols-outlined text-sm">send</span> Renvoyer le lien d'accès
+             <img
+              src="/assets/icons/send.svg"
+              class="icon text-sm"
+              alt=" Renvoyer le lien d'accès"
+              title=" Renvoyer le lien d'accès"
+            /> Renvoyer le lien d'accès
           <% end %>
         <% end %>
         <% if policy(@user).edit_password? %>
-          <%= link_to edit_password_user_path(@user), class: "btn" do %>
-            <span class="material-symbols-outlined text-sm">lock</span> Modifier le mot de passe
+          <%= link_to edit_password_user_path(@user), class: "btn" do %>  
+             <img
+              src="/assets/icons/lock.svg"
+              class="icon text-sm"
+              alt="Modifier le mot de passe "
+              title="Modifier le mot de passe "
+            />  Modifier le mot de passe
           <% end %>
         <% end %>
         <% if policy(@user).destroy? %>
           <button class="btn btn-soft btn-error" onclick="delete_user_modal.showModal()">
-            <span class="material-symbols-outlined text-sm">delete</span> Supprimer
+               <img
+                src="/assets/icons/delete.svg"
+                class="icon text-sm"
+                alt="Supprimer "
+                title="Supprimer "
+              />  Supprimer
           </button>
         <% end %>
       </div>
@@ -161,7 +218,12 @@
         <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
       </form>
       <h3 class="text-lg font-bold text-error flex items-center gap-2">
-        <span class="material-symbols-outlined">warning</span>
+             <img
+              src="/assets/icons/warning.svg"
+              class="icon"
+              alt="Supprimer l'utilisateur"
+              title="Supprimer l'utilisateur"
+            />   
         Supprimer l'utilisateur
       </h3>
       <p class="py-4 text-sm text-slate-600">
@@ -185,7 +247,12 @@
   </dialog>
   <div class="my-10">
     <%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition" do %>
-      <span class="material-symbols-outlined text-base">arrow_back</span>
+      <img
+          src="/assets/icons/arrow_back.svg"
+          class="icon text-base"
+          alt="Retour à la liste"
+          title="Retour à la liste"
+        /> 
       Retour à la liste
     <% end %>
   </div>
@@ -198,7 +265,6 @@
         </button>
         <dialog id="absence_modal" class="modal" <%= 'open' if @user.errors.any? %>>
   <div class="modal-box">
-
     <form method="dialog">
       <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
     </form>
@@ -206,19 +272,19 @@
     <!-- HEADER MEJORADO -->
     <div class="flex items-center gap-3 mb-6">
       <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-        <span class="material-symbols-outlined text-primary">
-          event_busy
-        </span>
+        <img
+          src="/assets/icons/event_busy.svg"
+          class="icon text-primary"
+          alt="Une absence"
+          title="Déclarer une absence"
+        /> 
       </div>
-
       <div>
         <h3 class="text-xl font-bold uppercase text-primary">Déclarer une absence</h3>
         <p class="text-sm text-slate-500">Complétez les informations ci-dessous.</p>
       </div>
     </div>
-
     <%= render 'absence_form', absence: Absence.new(user_id: @user.id) %>
-
   </div>
           <form method="dialog" class="modal-backdrop">
             <button>Fermer</button>
@@ -228,7 +294,12 @@
     </div>
     <% if @absences.any? %>
       <div class="flex items-center gap-1 text-xs text-slate-400 mb-2 md:hidden">
-        <span class="material-symbols-outlined text-sm">swipe</span>
+           <img
+            src="/assets/icons/swipe.svg"
+            class="icon text-sm"
+            alt="swipe"
+            title="Faire glisser"
+          /> 
         <span>Faire glisser pour voir plus</span>
       </div>
       <div class="overflow-x-auto border border-slate-200 rounded-xl shadow-sm bg-white">
@@ -248,7 +319,12 @@
       </div>
     <% else %>
       <div class="flex flex-col items-center justify-center py-4 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 mt-4">
-        <span class="material-symbols-outlined text-slate-300 text-4xl mb-2">calendar_today</span>
+             <img
+              src="/assets/icons/calendar_today.svg"
+              class="icon text-slate-300 text-4xl mb-2"
+              alt="Calendrier"
+              title="Calendrier des absences"
+            />   
         <h3 class="text-sm font-semibold text-slate-700">Aucune absence enregistrée</h3>
         <p class="text-xs text-slate-400 mt-1 max-w-xs leading-normal">
           Cet utilisateur n'a pas d'absences planifiées ou passées pour le moment.
@@ -261,7 +337,12 @@
     <h2 class="text-2xl text-secondary font-semibold">Activité</h2>
   </div>
   <div class="flex items-center gap-1 text-xs text-slate-400 mb-2 md:hidden">
-    <span class="material-symbols-outlined text-sm">swipe</span>
+    <img
+    src="/assets/icons/swipe.svg"
+    class="icon text-sm"
+    alt="swipe"
+    title="Faire glisser pour voir plus"
+    />   
     <span>Faire glisser pour voir plus</span>
   </div>
   <div class="overflow-x-auto border border-slate-200 rounded-xl shadow-sm bg-white ">
