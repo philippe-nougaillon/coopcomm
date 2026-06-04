@@ -12,6 +12,13 @@ class Absence < ApplicationRecord
     congé_sans_solde: 3
   }
 
+  MOTIF_LABELS = {
+    "congés_payés"     => "Congés payés",
+    "congé_parental"   => "Congé parental",
+    "formation"        => "Formation",
+    "congé_sans_solde" => "Congé sans solde"
+  }.freeze
+
   validate :dates_must_make_sense
   validate :no_overlapping_absences
   validate :no_overlapping_interventions

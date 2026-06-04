@@ -12,7 +12,7 @@
       <%= l(absence.au, format: :long) %>
     <% end %>
   </td>
-  <td class="capitalize"><%= absence.motif %></td>
+  <td class="capitalize"><%= Absence::MOTIF_LABELS[absence.motif]  %></td>
   <td><%= absence.observation %></td>
   <td>
     <% if current_user.manager_or_admin? %>
