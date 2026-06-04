@@ -147,4 +147,26 @@ module ApplicationHelper
     end
   end
 
+  # 🌟 NUEVO HELPER: Inyecta el XML del archivo SVG permitiendo pasar clases dinámicas de Tailwind
+  def embedded_svg(filename, options = {})
+    # Ruta absoluta buscando dentro de app/assets/images
+    file_path = Rails.root.join("app", "assets", "images", filename)
+    
+    if File.exist?(file_path)
+      file = File.read(file_path)
+      doc = Nokogiri::HTML::DocumentFragment.parse(file)
+      svg = doc.at_css("svg")
+      
+      # Si pasamos clases personalizadas en el helper, se las inyectamos al SVG en caliente
+      if options[:class].present?
+        svg["class"] = "#{svg['class']} #{options[:class]}"
+      end
+      
+      doc.to_html.html_safe
+    else
+      # Fallback por si escribimos mal el nombre del archivo en desarrollo
+      "".html_safe
+    end
+  end
+
 end

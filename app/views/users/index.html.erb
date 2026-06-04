@@ -8,12 +8,7 @@
             data: { testid: "ajouter_utilisateur" },
             class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm ",
             title: "Créer un nouvel agent"  do %>
-      <img
-          src="/assets/icons/person_add.svg"
-          class="icon"
-          alt="Ajouter un utilisateur"
-          title="Ajouter un utilisateur"
-        />
+      <%= embedded_svg "icons/person_add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
       <span class="hidden md:block">Ajouter un Utilisateur</span>
     <% end %>
   </div>
@@ -121,12 +116,7 @@
     <% if @users.any? %>
       <%= link_to url_for(params.permit(:search, :role, :services, :absent, :discarded).merge(format: :xls)),
               class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto" do %>
-        <img
-          src="/assets/icons/upload.svg"
-          class="icon text-lg"
-          alt="Exporter"
-          title="Exporter"
-        />
+        <%= embedded_svg "icons/upload.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
         <span>Exporter en XLS</span>
       <% end %>
     <% end %>
@@ -134,12 +124,7 @@
             data: { testid: "import_users" },
             'data-turbo': false,
             class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto" do %>
-        <img
-          src="/assets/icons/download.svg"
-          class="icon text-lg"
-          alt="Importer"
-          title="Importer"
-        />
+        <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
       <span>Importer des agents</span>
     <% end %>
   </div>
