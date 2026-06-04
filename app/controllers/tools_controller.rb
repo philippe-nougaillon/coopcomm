@@ -7,7 +7,7 @@ class ToolsController < ApplicationController
     params[:vue] ||= 'calendrier'
     params[:date] = Date.today if params[:date].blank?
     @date = params[:date].to_date
-    @tools = current_organisation.tools.includes(mouvements: :user).ordered
+    @tools = current_organisation.tools
     @types = Tool.icons
     @états = Mouvement.états.keys
 
@@ -45,6 +45,9 @@ class ToolsController < ApplicationController
         @lat_list << localisation.split(',').first
       end
     end
+
+    @tools = @tools.with_attached_photo.ordered
+
     @tools = @tools.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
     @pagy, @tools = pagy(@tools, items: 10)
   end
@@ -52,6 +55,8 @@ class ToolsController < ApplicationController
   # GET /tools/1 or /tools/1.json
   def show
     params[:vue] ||= 'calendrier'
+
+    @documents = @tool.documents.with_attached_fichier
   end
 
   # GET /tools/new

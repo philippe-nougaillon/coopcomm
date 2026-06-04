@@ -119,7 +119,7 @@
 
         <tbody>
           <% if @tool.interventions.any? %>
-            <%= render partial: 'intervention', collection: @tool.interventions.ordered %>
+            <%= render partial: 'intervention', collection: @tool.interventions.ordered, cached: true %>
           <% else %>
             <tr>
               <td colspan=6>
@@ -150,7 +150,7 @@
         </thead>
         <tbody>
           <% if @tool.mouvements.any? %>
-            <%= render @tool.mouvements.ordered %>
+            <%= render @tool.mouvements.includes(:user).ordered %>
           <% else %>
             <tr>
               <td colspan=3>
@@ -179,8 +179,8 @@
             <th></th>
           </thead>
           <tbody>
-            <% if @tool.documents.any? %>
-              <%= render @tool.documents %>
+            <% if @documents.any? %>
+              <%= render @documents %>
             <% else %>
               <tr>
                 <td colspan=6>

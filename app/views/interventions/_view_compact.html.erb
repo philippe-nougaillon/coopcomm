@@ -11,8 +11,9 @@
         <th class="align-middle px-3 py-3 font-bold text-left">Actions</th>
       </tr>
     </thead>
+   
     <tbody class="divide-y divide-slate-200">
-      <%= render partial: 'intervention_compact', collection: @interventions, as: :intervention %>
+      <%= render partial: 'intervention_compact', collection: @interventions, as: :intervention, cached: true %>
     </tbody>
   </table>
 </div>

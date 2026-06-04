@@ -1,6 +1,13 @@
 module ApplicationHelper
   include Pagy::Frontend
 
+  # Vrai lorsque l'application tourne sur l'instance de démonstration.
+  # Piloté par la variable d'environnement APP_INSTANCE (= "demo" sur le serveur de démo).
+  # Utilisé pour le badge « DÉMO » dans les navbars et le préfixe [DÉMO] du titre dans les layouts.
+  def demo_instance?
+    ENV["APP_INSTANCE"].to_s.strip.downcase == "demo"
+  end
+
   def prettify(audit, current_user)
     pretty_changes = []
 

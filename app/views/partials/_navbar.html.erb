@@ -3,6 +3,9 @@
     <%= link_to root_path do %>
       <%= image_tag "CoopComm.png", class: "h-8 pr-1 ml-6" %>
     <% end %>
+    <% if demo_instance? %>
+      <span data-theme="corporate" class="badge badge-warning font-bold gap-1 shadow-sm">🧪 DÉMO</span>
+    <% end %>
   </div>
   <div class="flex-none">
     <ul class="menu w-full menu-horizontal flex-1 items-center py-0! px-0">
@@ -155,7 +158,7 @@
   <%= link_to users_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if (params[:controller] == 'users' && params[:action] != 'agent_calendrier') || params[:action] == 'create_new_user'}", title: "Liste des utilisateurs" do %>
     <img src="/assets/icons/group.svg" class="icon" alt="Liste des utilisateurs" title="Liste des utilisateurs">
   <% end %>
-<% end %>
+  <% end %>
 <%= link_to user_path(current_user), class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if (params[:controller] == 'users' && params[:action] != 'agent_calendrier') || params[:action] == 'create_new_user'}", title: "Liste des utilisateurs" do %>
   <img src="/assets/icons/account_circle.svg" class="icon" alt="Profil" title="Profil">
 <% end %>
@@ -163,3 +166,8 @@
   <img src="/assets/icons/logout.svg" class="icon" alt="Déconnexion" title="Déconnexion">
 <% end %>
 </div>
+<%# Repère mobile (la navbar desktop ci-dessus, avec son badge, est masquée sous lg) %>
+<% if demo_instance? %>
+  <span data-theme="corporate" class="lg:hidden fixed top-2 right-2 z-300 badge badge-warning font-bold shadow pointer-events-none">🧪 DÉMO</span>
+<% end %>
+>>>>>>> staging

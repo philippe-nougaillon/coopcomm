@@ -19,6 +19,9 @@ class MouvementsController < ApplicationController
     if params[:etats].present?
       @mouvements = @mouvements.where(état: params[:etats])
     end
+
+    @mouvements = @mouvements.includes(:tool, :user)
+
     @mouvements = @mouvements.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
     @pagy, @mouvements = pagy(@mouvements, items: 10)
   end

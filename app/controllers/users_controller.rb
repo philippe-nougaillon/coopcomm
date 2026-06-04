@@ -380,6 +380,8 @@ class UsersController < ApplicationController
       @users = @users.where(id: user_ids)
     end
 
+    @users = @users.includes(:taggings).with_attached_profile_picture
+    
     respond_to do |format|
       format.html do
         @users = @users.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
@@ -503,6 +505,8 @@ class UsersController < ApplicationController
     # end
 
     @date_fin = @date + 13.day
+
+    @agents = @agents.with_attached_profile_picture
 
     @agents = @agents.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
     @pagy, @agents = pagy(@agents, items: 10)

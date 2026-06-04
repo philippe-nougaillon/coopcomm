@@ -68,6 +68,11 @@ group :development do
   gem 'letter_opener'
   # A web interface for browsing Ruby on Rails sent emails
   gem 'letter_opener_web'
+
+  gem "rails-schema"
+
+  # Help to kill N+1 queries and unused eager loading
+  gem 'bullet'
 end
 
 group :test do
@@ -166,5 +171,3 @@ gem "email_validator", "~> 2.2"
 gem "capture_stdout", "~> 0.0.1"
 
 gem "devise_invitable", "~> 2.0"
-
-gem "rails-schema", group: :development
