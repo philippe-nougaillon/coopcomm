@@ -4,7 +4,7 @@
   <%# Champs cachés pour Rails %>
   <%= f.hidden_field :matin, class: "hidden-matin", value: f.object.matin ? '1' : '0' %>
   <%= f.hidden_field :après_midi, class: "hidden-apres-midi", value: f.object.après_midi ? '1' : '0' %>
-  <%# 🌟 LOS DOS BOTONES GRANDES (RADIO-BTN) DE DAISY UI %>
+  <%# journée/demi-journée %>
   <div class="flex flex-row gap-3 mt-1">
     <input type="radio" 
            name="<%= f.object_name %>[absence_type]" 
@@ -32,7 +32,7 @@
       <%= f.date_field :au, class: "au-input input input-sm input-bordered w-full", required: true %>
     </div>
   </div>
-  <%# 🌟 NUEVOS BOTONES DE DAISY UI PARA MATIN / APRÈS-MIDI %>
+  <%# MATIN / APRÈS-MIDI %>
   <div class="half-days-container <%= is_half_day ? '' : 'hidden' %> flex flex-row gap-3 w-full">
     <div class="flex-1 relative">
       <input type="radio" 

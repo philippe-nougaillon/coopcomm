@@ -5,14 +5,13 @@
       <%= page_title!(@tool.name) %>
     </h1>
   </div>
-
   <div class="flex flex-wrap gap-8 mt-8">
     <% if @tool.photo.present? %>
-      <img src="<%= url_for(@tool.photo) %>" class="h-60">  
+      <img src="<%= url_for(@tool.photo) %>" class="h-60">
     <% elsif @tool.icon_name.present? %>
-      <span class="material-symbols-outlined text-warning !text-6xl">
+      <%# <span class="material-symbols-outlined text-warning !text-6xl">
         <%= @tool.icon_name %>
-      </span>
+      <%= embedded_svg "icons/#{@tool.icon_name}.svg", class: "w-24 h-24 fill-current text-warning shrink-0" %>
     <% end %>
     <div class="flex flex-col flex-wrap">
       <% if false %>
@@ -31,7 +30,6 @@
       </p>
     </div>
   </div>
-
   <div class="flex flex-wrap gap-2 mt-8">
     <% if policy(@tool).edit? %>
       <%= link_to "Modifier", edit_tool_path(@tool), class: "btn" %>
@@ -49,11 +47,9 @@
     <% end %>
     <%= link_to "Retour", tools_path, class: "hidden sm:inline-flex btn" %>
   </div>
-
   <h2 class="text-2xl text-secondary mt-12">
     Disponibilités
   </h2>
-
   <%= form_tag tool_path(@tool), method: :get, class:'mb-2 mt-4' do %>
     <div class="flex gap-2">
       <label class="cursor-pointer flex items-center gap-1">
@@ -66,7 +62,6 @@
       </label>
     </div>
   <% end %>
-
   <% case params[:vue] %>
   <% when 'calendrier' %>
     <%= month_calendar do |date| %>
@@ -75,14 +70,13 @@
           <%= date.day %>
         </p>
       </div>
-        <% 
+      <% 
           heure_matin = Time.zone.parse("#{date} 08:00:00")
           heure_soir = Time.zone.parse("#{date} 13:05:00")
 
           mouvement_matin = @tool.dernier_mouvement_a(heure_matin)
           mouvement_soir = @tool.dernier_mouvement_a(heure_soir)
         %>
-      
       <div class="flex flex-nowrap justify-center gap-1 px-1">
         <%= render 'mouvements/mouvement_slot', 
                   mouvement: mouvement_matin, 
@@ -92,7 +86,6 @@
                   start_hour: 8, 
                   end_hour: 13, 
                   new_title: "Réserver le #{date.day} au matin" %>
-
         <%= render 'mouvements/mouvement_slot', 
                   mouvement: mouvement_soir, 
                   tool_id: @tool.id, 
@@ -116,7 +109,6 @@
             <th>Adhérent</th>
           </tr>
         </thead>
-
         <tbody>
           <% if @tool.interventions.any? %>
             <%= render partial: 'intervention', collection: @tool.interventions.ordered, cached: true %>
@@ -131,7 +123,6 @@
       </table>
     </div>
   <% end %>
-
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary">
       Mouvements
@@ -162,7 +153,6 @@
       </table>
     </div>
   </div>
-
   <% if current_user.manager_or_admin? %>
     <h2 class="text-2xl text-secondary mt-8 mb-4">
       Documents

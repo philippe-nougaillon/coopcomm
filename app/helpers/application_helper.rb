@@ -95,14 +95,23 @@ module ApplicationHelper
   end
 
   def sort_link(column, title = nil)
-    title ||= (@model_class ? @model_class.human_attribute_name(column) : column.titleize)
-    direction = column == sort_column && sort_direction == "asc" ? "desc" : "asc"
-    icon = sort_direction == "asc" ? "keyboard_arrow_down" : "keyboard_arrow_up"
-    icon = column == sort_column ? icon : nil
-    link_title = sort_direction == "asc" ? "Tri croissant" : "Tri décroissant"
+  title ||= (@model_class ? @model_class.human_attribute_name(column) : column.titleize)
+  direction = column == sort_column && sort_direction == "asc" ? "desc" : "asc"
+  
+  svg_icon = sort_direction == "asc" ? "keyboard_arrow_down.svg" : "keyboard_arrow_up.svg"
+  link_title = sort_direction == "asc" ? "Tri croissant" : "Tri décroissant"
 
-    link_to "<span>#{h title}</span><span class='material-symbols-outlined text-primary'>#{icon}</span>".html_safe, url_for(request.parameters.merge(column: column, direction: direction)), class: 'flex items-center', 'data-turbo': false
+  icon_html = ""
+  if column == sort_column
+    icon_html = embedded_svg("icons/#{svg_icon}", class: "w-4 h-4 fill-current text-primary shrink-0 ml-1")
   end
+
+  link_to "<span>#{h title}</span>#{icon_html}".html_safe, 
+          url_for(request.parameters.merge(column: column, direction: direction)), 
+          class: 'flex items-center', 
+          title: link_title,
+          'data-turbo': false
+end
 
   # Génère les options groupées en ajoutant data-mandatory="true" sur un ID spécifique
   def grouped_options_with_mandatory(grouped_hash, selected_ids, mandatory_id = nil)

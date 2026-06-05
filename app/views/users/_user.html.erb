@@ -24,7 +24,7 @@
   <%# Rôle %>
   <td colspan="2" class="py-3 px-4 whitespace-nowrap">
     <div class="flex items-center gap-1.5 text-success font-bold tracking-wider">
-      <span class="material-symbols-outlined  leading-none"><%= user.avatar %></span>
+      <%= embedded_svg "icons/#{user.avatar}.svg", class: "w-6 h-6 fill-current shrink-0" %>
       <span><%= user.rôle.upcase %></span>
     </div>
   </td>

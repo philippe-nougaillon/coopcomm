@@ -24,7 +24,7 @@
         <%= @user.nom %> <%= @user.prénom %>
       </p>
       <div class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-medium px-3 py-1 rounded-full">
-        <span class="material-symbols-outlined text-sm"><%= @user.avatar %></span>
+        <%= embedded_svg "icons/#{@user.avatar}.svg", class: "w-6 h-6 fill-current shrink-0" %>
         <%= @user.rôle.upcase %>
       </div>
       <% if @user.tag_list.present? %>
