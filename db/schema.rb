@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_06_03_100400) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_03_100500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -137,13 +137,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_03_100400) do
     t.string "ref"
     t.string "intitulé"
     t.text "mémo"
-    t.integer "statut", default: 0
     t.date "date_livraison_souhaitée"
     t.decimal "total_ht", precision: 10, scale: 2
     t.datetime "discarded_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "slug"
+    t.string "workflow_state", default: "créé"
     t.index ["adherent_id"], name: "index_cotations_on_adherent_id"
     t.index ["discarded_at"], name: "index_cotations_on_discarded_at"
     t.index ["service_id"], name: "index_cotations_on_service_id"

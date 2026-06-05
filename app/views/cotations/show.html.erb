@@ -3,7 +3,16 @@
 
   <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
     <h1 class="text-2xl sm:text-3xl text-primary font-bold">Cotation <%= @cotation.ref %></h1>
-    <div class="flex gap-2">
+    <div class="flex flex-wrap gap-2">
+      <% if policy(@cotation).envoyer? && @cotation.can_envoyer? %>
+        <%= link_to "Envoyer", envoyer_cotation_path(@cotation), class: "btn btn-info btn-outline hover:text-white!", data: { turbo: false } %>
+      <% end %>
+      <% if policy(@cotation).valider? && @cotation.can_valider? %>
+        <%= link_to "Valider", valider_cotation_path(@cotation), class: "btn btn-success btn-outline hover:text-white!", data: { turbo: false } %>
+      <% end %>
+      <% if policy(@cotation).refuser? && @cotation.can_refuser? %>
+        <%= link_to "Refuser", refuser_cotation_path(@cotation), class: "btn btn-error btn-outline hover:text-white!", data: { turbo: false } %>
+      <% end %>
       <%= link_to "Générer PDF", pdf_cotation_path(@cotation, filename: @cotation.pdf_filename),
             class: "btn btn-outline", target: "_blank", data: { turbo: false } %>
       <% if policy(@cotation).update? %>
@@ -15,7 +24,7 @@
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
     <div>
       <strong class="block text-slate-400">Statut</strong>
-      <span class="badge text-nowrap font-bold <%= cotation_statut_badge_class(@cotation.statut) %>"><%= @cotation.statut %></span>
+      <span class="badge text-nowrap font-bold <%= @cotation.style %>"><%= @cotation.workflow_state.humanize %></span>
     </div>
     <div>
       <strong class="block text-slate-400">Adhérent</strong>

@@ -14,9 +14,9 @@
               placeholder: "Réf, intitulé", onchange: "this.form.submit()" %>
       </div>
       <div class="w-full md:w-fit">
-        <%= label_tag :statut, "Statut" %>
-        <%= select_tag :statut,
-              options_for_select(Cotation.statuts.keys.map { |s| [s, s] }, params[:statut]),
+        <%= label_tag :workflow_state, "Statut" %>
+        <%= select_tag :workflow_state,
+              options_for_select(Cotation.workflow_state_humanized, params[:workflow_state]),
               include_blank: "Tous", class: "slim-select w-full",
               onchange: "this.form.submit()" %>
       </div>

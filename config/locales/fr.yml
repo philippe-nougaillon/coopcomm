@@ -22,7 +22,7 @@ fr:
       cotation:
         ref: Référence
         intitulé: Intitulé
-        statut: Statut
+        workflow_state: Statut
         mémo: Mémo
         date_livraison_souhaitée: Livraison souhaitée
         total_ht: Total HT

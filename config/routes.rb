@@ -32,8 +32,6 @@ Rails.application.routes.draw do
       get :import
       post :import_do
     end
-
-    resources :conventions, only: %i[create update destroy]
   end
 
   resources :mail_logs do
@@ -118,9 +116,18 @@ Rails.application.routes.draw do
       # Le nom de fichier termine l'URL (ex. .../Cotation-2026-1.pdf) pour que la
       # prévisualisation du navigateur affiche ce nom plutôt que "pdf.pdf".
       get "pdf(/*filename)", action: :pdf, as: :pdf, format: false
+      get :envoyer
+      get :valider
+      get :refuser
     end
   end
   resources :prestations, except: %i[ index show ]
+
+  resources :conventions, except: %i[ show ] do
+    collection do
+      get :services_for_adherent
+    end
+  end
 
 
   namespace :messagerie do

@@ -1,5 +1,5 @@
 class CotationsController < ApplicationController
-  before_action :set_cotation, only: %i[ show edit update destroy pdf ]
+  before_action :set_cotation, only: %i[ show edit update destroy pdf envoyer valider refuser ]
   before_action :is_user_authorized, except: :create
 
   # GET /cotations
@@ -10,8 +10,8 @@ class CotationsController < ApplicationController
       @cotations = @cotations.where("cotations.ref ILIKE :s OR cotations.intitulé ILIKE :s", s: "%#{params[:search]}%")
     end
 
-    if params[:statut].present?
-      @cotations = @cotations.where(statut: params[:statut])
+    if params[:workflow_state].present?
+      @cotations = @cotations.where("cotations.workflow_state = ?", params[:workflow_state].to_s.downcase)
     end
 
     if params[:adherent_id].present?
@@ -79,7 +79,29 @@ class CotationsController < ApplicationController
               disposition: "inline"
   end
 
+  # Transitions du workflow
+  def envoyer
+    transition!(:envoyer, "Cotation envoyée.")
+  end
+
+  def valider
+    transition!(:valider, "Cotation validée.")
+  end
+
+  def refuser
+    transition!(:refuser, "Cotation refusée.")
+  end
+
   private
+
+  def transition!(event, notice)
+    if @cotation.send("can_#{event}?")
+      @cotation.send("#{event}!")
+      redirect_to @cotation, notice: notice
+    else
+      redirect_to @cotation, alert: "Action impossible dans l'état actuel de la cotation."
+    end
+  end
 
   def set_cotation
     @cotation = Cotation.find_by(slug: params[:id])
@@ -92,8 +114,8 @@ class CotationsController < ApplicationController
 
   def cotation_params
     params.require(:cotation).permit(
-      :adherent_id, :service_id, :intitulé, :statut, :mémo, :date_livraison_souhaitée,
-      cotation_lignes_attributes: %i[id prestation_id intitulé qté prix_ht _destroy]
+      :adherent_id, :service_id, :intitulé, :mémo, :date_livraison_souhaitée,
+      cotation_lignes_attributes: %i[id prestation_id intitulé qté _destroy]
     )
   end
 

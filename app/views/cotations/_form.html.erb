@@ -42,11 +42,6 @@
     </div>
 
     <div class="flex flex-col gap-1">
-      <%= f.label :statut, "Statut", class: "text-sm text-slate-500" %>
-      <%= f.select :statut, Cotation.statuts.keys, {}, { class: "slim-select w-full", data: { controller: "slim-select" } } %>
-    </div>
-
-    <div class="flex flex-col gap-1">
       <%= f.label :date_livraison_souhaitée, "Livraison souhaitée", class: "text-sm text-slate-500" %>
       <%= f.date_field :date_livraison_souhaitée, class: "input input-sm input-bordered w-full" %>
     </div>
@@ -60,14 +55,11 @@
   <%# Lignes de la cotation (formulaire imbriqué) %>
   <div class="flex items-center gap-4 mt-8 mb-3">
     <h2 class="text-xl text-secondary">Prestations</h2>
-    <button type="button" data-action="nested-form#add" class="btn btn-sm btn-outline btn-success hover:text-white!">
-      + Ajouter une ligne
-    </button>
   </div>
 
   <div>
     <%= f.fields_for :cotation_lignes do |ligne| %>
-      <%= render "ligne_fields", f: ligne, prestations: @prestations %>
+      <%= render "prestation_form", f: ligne, prestations: @prestations %>
     <% end %>
 
     <div data-nested-form-target="target"></div>
@@ -75,12 +67,17 @@
 
   <template data-nested-form-target="template">
     <%= f.fields_for :cotation_lignes, CotationLigne.new, child_index: "NEW_RECORD" do |ligne| %>
-      <%= render "ligne_fields", f: ligne, prestations: @prestations %>
+      <%= render "prestation_form", f: ligne, prestations: @prestations %>
     <% end %>
   </template>
 
-  <div class="mt-6 flex gap-2">
-    <%= f.submit "Enregistrer", class: "btn btn-primary" %>
-    <%= link_to "Annuler", (@cotation.persisted? ? cotation_path(@cotation) : cotations_path), class: "btn" %>
+  <div class="mt-6 flex justify-between gap-2">
+    <div>
+      <%= f.submit "Enregistrer", class: "btn btn-primary" %>
+      <%= link_to "Annuler", (@cotation.persisted? ? cotation_path(@cotation) : cotations_path), class: "btn" %>
+    </div>
+    <button type="button" data-action="nested-form#add" class="btn btn-outline btn-success hover:text-white!">
+      + Ajouter une prestation
+    </button>
   </div>
 <% end %>

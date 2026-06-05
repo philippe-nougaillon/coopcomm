@@ -1,7 +1,7 @@
 <tr class="hover:bg-base-300">
   <td class="font-medium"><%= link_to cotation.ref, cotation, class: "link link-primary" %></td>
   <td>
-    <span class="badge badge-sm text-nowrap font-bold <%= cotation_statut_badge_class(cotation.statut) %>"><%= cotation.statut %></span>
+    <span class="badge badge-sm text-nowrap font-bold <%= cotation.style %>"><%= cotation.workflow_state.humanize %></span>
   </td>
   <td><%= cotation.adherent&.nom_prénom %></td>
   <td><%= cotation.service&.nom %></td>
@@ -11,6 +11,15 @@
   <td>
     <div class="flex gap-2 items-center justify-end">
       <%= link_to "Voir", cotation, class: "btn btn-sm" %>
+      <% if policy(cotation).envoyer? && cotation.can_envoyer? %>
+        <%= link_to "Envoyer", envoyer_cotation_path(cotation), class: "btn btn-sm btn-info btn-outline hover:text-white!", data: { turbo: false } %>
+      <% end %>
+      <% if policy(cotation).valider? && cotation.can_valider? %>
+        <%= link_to "Valider", valider_cotation_path(cotation), class: "btn btn-sm btn-success btn-outline hover:text-white!", data: { turbo: false } %>
+      <% end %>
+      <% if policy(cotation).refuser? && cotation.can_refuser? %>
+        <%= link_to "Refuser", refuser_cotation_path(cotation), class: "btn btn-sm btn-error btn-outline hover:text-white!", data: { turbo: false } %>
+      <% end %>
       <% if policy(cotation).pdf? %>
         <%= link_to pdf_cotation_path(cotation, filename: cotation.pdf_filename),
               class: "btn btn-sm", target: "_blank", title: "Générer le PDF", data: { turbo: false } do %>

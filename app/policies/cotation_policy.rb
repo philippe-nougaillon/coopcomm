@@ -38,6 +38,19 @@ class CotationPolicy < ApplicationPolicy
     show?
   end
 
+  # Transitions du workflow : réservées à qui peut gérer la cotation
+  def envoyer?
+    manage?
+  end
+
+  def valider?
+    manage?
+  end
+
+  def refuser?
+    manage?
+  end
+
   private
 
   def manage?

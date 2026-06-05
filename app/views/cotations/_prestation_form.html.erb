@@ -9,13 +9,13 @@
             prestations.map { |p| [p.display_name, p.id, { "data-tarif" => p.tarif, "data-libelle" => p.libellé }] },
             f.object.prestation_id
           ),
-          { prompt: "Choisir une prestation" },
+          { prompt: "" },
           { class: "slim-select w-full", required: true,
             data: { controller: "slim-select", cotation_ligne_target: "prestation", action: "change->cotation-ligne#prestationChanged" } } %>
   </div>
 
   <div class="flex flex-col gap-1 flex-1 min-w-40">
-    <%= f.label :intitulé, "Intitulé (optionnel)", class: "text-sm text-slate-500" %>
+    <%= f.label :intitulé, "Intitulé", class: "text-sm text-slate-500" %>
     <%= f.text_field :intitulé, class: "input input-sm input-bordered w-full",
           data: { cotation_ligne_target: "intitule" } %>
   </div>
@@ -26,10 +26,10 @@
           data: { cotation_ligne_target: "qte", action: "input->cotation-ligne#refresh" } %>
   </div>
 
+  <%# Prix unitaire : non modifiable, dérivé de la prestation choisie (affiché avec €) %>
   <div class="flex flex-col gap-1 w-28">
-    <%= f.label :prix_ht, "Prix HT", class: "text-sm text-slate-500" %>
-    <%= f.number_field :prix_ht, step: 0.01, min: 0, class: "input input-sm input-bordered w-full",
-          data: { cotation_ligne_target: "prix", action: "input->cotation-ligne#refresh" } %>
+    <span class="text-sm text-slate-500">Prix HT</span>
+    <span class="font-medium py-1" data-cotation-ligne-target="prix">—</span>
   </div>
 
   <div class="flex flex-col gap-1 w-28">

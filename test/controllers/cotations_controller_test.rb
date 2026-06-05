@@ -5,7 +5,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     @admin = users(:administrateur_paris)
     @adherent = users(:weil)
     @service = services(:informatique)
-    @prestation = prestations(:nettoyage_bureaux)
+    @prestation = prestations(:nettoyage_bureaux)      # tarif 25.50
     sign_in @admin
   end
 
@@ -19,24 +19,62 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "create avec lignes imbriquées calcule le total et génère une ref" do
+  test "create : le total est calculé à partir du tarif des prestations et une ref est générée" do
+    presta2 = prestations(:entretien_espaces_verts)    # tarif 30.00
+
     assert_difference -> { Cotation.count } => 1, -> { CotationLigne.count } => 2 do
       post cotations_url, params: { cotation: {
         adherent_id: @adherent.id,
         service_id: @service.id,
         intitulé: "Devis test contrôleur",
-        statut: "créé",
         cotation_lignes_attributes: {
-          "0" => { prestation_id: @prestation.id, qté: 3, prix_ht: 25.50 },
-          "1" => { prestation_id: @prestation.id, qté: 2, prix_ht: 10 }
+          "0" => { prestation_id: @prestation.id, qté: 3 },   # 25.50 × 3 = 76.50
+          "1" => { prestation_id: presta2.id, qté: 2 }        # 30.00 × 2 = 60.00
         }
       } }
     end
 
     cotation = Cotation.order(:created_at).last
     assert_redirected_to cotation_path(cotation)
-    assert_equal 96.5, cotation.total_ht.to_f
+    assert_equal 136.5, cotation.total_ht.to_f
+    assert_equal "créé", cotation.workflow_state
     assert_match(/\A#{Date.current.year}-\d+\z/, cotation.ref)
+  end
+
+  test "le prix d'une ligne ne peut pas être forcé via les paramètres" do
+    post cotations_url, params: { cotation: {
+      adherent_id: @adherent.id, service_id: @service.id, intitulé: "Devis",
+      cotation_lignes_attributes: { "0" => { prestation_id: @prestation.id, qté: 1, prix_ht: 1 } }
+    } }
+    ligne = Cotation.order(:created_at).last.cotation_lignes.first
+    assert_equal @prestation.tarif, ligne.prix_ht
+  end
+
+  # --- Workflow ---
+
+  test "envoyer : créé -> envoyé" do
+    cotation = cotations(:cotation_paris) # créé
+    get envoyer_cotation_url(cotation)
+    assert_redirected_to cotation_path(cotation)
+    assert_equal "envoyé", cotation.reload.workflow_state
+  end
+
+  test "valider : envoyé -> validé" do
+    cotation = cotations(:cotation_secretariat) # envoyé
+    get valider_cotation_url(cotation)
+    assert_equal "validé", cotation.reload.workflow_state
+  end
+
+  test "refuser : envoyé -> refusé" do
+    cotation = cotations(:cotation_secretariat) # envoyé
+    get refuser_cotation_url(cotation)
+    assert_equal "refusé", cotation.reload.workflow_state
+  end
+
+  test "valider est sans effet sur une cotation en créé (transition impossible)" do
+    cotation = cotations(:cotation_paris) # créé
+    get valider_cotation_url(cotation)
+    assert_equal "créé", cotation.reload.workflow_state
   end
 
   test "show et génération du PDF" do

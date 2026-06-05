@@ -42,7 +42,7 @@ class CotationPdf
     data = [
       ["Le :", I18n.l(@cotation.updated_at, format: :long)],
       ["Réf :", @cotation.ref.to_s],
-      ["Statut :", @cotation.statut.to_s.humanize],
+      ["Statut :", @cotation.workflow_state.to_s.humanize],
       ["Adhérent :", @cotation.adherent&.nom_prénom.to_s],
       ["Service :", @cotation.service&.nom.to_s],
       ["Intitulé :", @cotation.intitulé.to_s],

@@ -55,20 +55,6 @@ class UsersController < ApplicationController
 
       @pagy, @audits = pagy(@audits, items: 10)
     # end
-
-    if @user.adhérent?
-      @conventions = @user.conventions.visible_to(current_user)
-                          .includes(:service, document_attachment: :blob).ordered
-      adherent_services = current_user.administrateur? ? @user.services.to_a : (@user.services & current_user.services)
-      @available_services_for_convention = (adherent_services - @user.conventions.map(&:service)).sort_by(&:nom)
-
-      @cotations = @user.cotations_adherent.kept.merge(Cotation.visible_to(current_user))
-                        .includes(:service).ordered
-    else
-      @conventions = Convention.none
-      @available_services_for_convention = []
-      @cotations = Cotation.none
-    end
   end
 
   # GET /users/new

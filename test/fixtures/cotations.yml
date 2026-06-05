@@ -1,12 +1,12 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-# statut : 0=créé, 1=envoyé, 2=validé, 3=refusé, 4=archivé
+# workflow_state : créé / envoyé / validé / refusé / archivé
 
 cotation_paris:
   adherent: weil
   service: informatique
   ref: "2026-1"
   intitulé: Devis nettoyage trimestriel
-  statut: 0
+  workflow_state: "créé"
   total_ht: 76.50
   slug: <%= SecureRandom.uuid %>
 
@@ -15,7 +15,7 @@ cotation_secretariat:
   service: secretariat
   ref: "2026-2"
   intitulé: Devis secrétariat
-  statut: 1
+  workflow_state: "envoyé"
   total_ht: 0
   slug: <%= SecureRandom.uuid %>
 
@@ -24,6 +24,6 @@ cotation_marseille:
   service: service_marseille
   ref: "2026-1"
   intitulé: Devis Marseille
-  statut: 0
+  workflow_state: "créé"
   total_ht: 0
   slug: <%= SecureRandom.uuid %>

@@ -7,10 +7,10 @@ class CotationTest < ActiveSupport::TestCase
   end
 
   def build_cotation(attrs = {})
-    Cotation.new({ adherent: @adherent, service: @service, intitulé: "Devis", statut: "créé" }.merge(attrs))
+    Cotation.new({ adherent: @adherent, service: @service, intitulé: "Devis" }.merge(attrs))
   end
 
-  test "valide avec intitulé et statut" do
+  test "valide avec un intitulé" do
     assert build_cotation.valid?
   end
 
@@ -19,6 +19,53 @@ class CotationTest < ActiveSupport::TestCase
     refute cotation.valid?
     assert cotation.errors[:intitulé].any?
   end
+
+  # --- Workflow (gem workflow) ---
+
+  test "état initial : créé" do
+    assert_equal "créé", build_cotation.workflow_state
+    assert build_cotation.créé?
+  end
+
+  test "envoyer : créé -> envoyé" do
+    cotation = build_cotation
+    cotation.save!
+    assert cotation.can_envoyer?
+    cotation.envoyer!
+    assert cotation.envoyé?
+  end
+
+  test "depuis envoyé, on peut valider et refuser" do
+    cotation = build_cotation
+    cotation.save!
+    cotation.envoyer!
+    assert cotation.can_valider?
+    assert cotation.can_refuser?
+  end
+
+  test "valider : envoyé -> validé" do
+    cotation = build_cotation
+    cotation.save!
+    cotation.envoyer!
+    cotation.valider!
+    assert cotation.validé?
+  end
+
+  test "refuser : envoyé -> refusé" do
+    cotation = build_cotation
+    cotation.save!
+    cotation.envoyer!
+    cotation.refuser!
+    assert cotation.refusé?
+  end
+
+  test "on ne peut pas valider directement depuis créé" do
+    cotation = build_cotation
+    cotation.save!
+    refute cotation.can_valider?
+  end
+
+  # --- Référence / périmètre / discard ---
 
   test "ref générée à la création au format AAAA-N" do
     cotation = build_cotation

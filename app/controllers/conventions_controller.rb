@@ -1,60 +1,105 @@
 class ConventionsController < ApplicationController
-  before_action :set_user
-  before_action :set_convention, only: %i[update destroy]
+  before_action :set_convention, only: %i[ edit update destroy ]
+  before_action :is_user_authorized, except: :create
 
+  # GET /conventions
+  def index
+    @conventions = policy_scope(Convention)
+                     .includes(:user, :service, document_attachment: :blob)
+                     .ordered
+
+    if params[:search].present?
+      @conventions = @conventions.joins(:user)
+                                 .where("users.nom ILIKE :s OR users.prénom ILIKE :s", s: "%#{params[:search]}%")
+    end
+
+    if params[:adherent_id].present?
+      @conventions = @conventions.where(user_id: params[:adherent_id])
+    end
+
+    @pagy, @conventions = pagy(@conventions, items: 15)
+  end
+
+  # GET /conventions/new
+  def new
+    @convention = Convention.new
+    @convention.user = find_adherent(params[:adherent_id]) if params[:adherent_id].present?
+    set_form_collections
+  end
+
+  # POST /conventions
   def create
-    @convention = @user.conventions.build(convention_params)
+    @convention = Convention.new(convention_params)
     authorize @convention
 
     if @convention.save
-      redirect_to user_path(@user), notice: "Convention enregistrée."
+      redirect_to conventions_path, notice: "Convention enregistrée."
     else
-      render turbo_stream: turbo_stream.replace(
-        helpers.dom_id(@convention, :form),
-        partial: "conventions/form",
-        locals: { user: @user, convention: @convention, available_services: available_services }
-      ), status: :unprocessable_entity
+      set_form_collections
+      render :new, status: :unprocessable_entity
     end
   end
 
+  # GET /conventions/1/edit
+  def edit
+    set_form_collections
+  end
+
+  # PATCH/PUT /conventions/1
   def update
-    authorize @convention
-
     if @convention.update(convention_params)
-      redirect_to user_path(@user), notice: "Convention mise à jour."
+      redirect_to conventions_path, notice: "Convention mise à jour.", status: :see_other
     else
-      render turbo_stream: turbo_stream.replace(
-        helpers.dom_id(@convention, :form),
-        partial: "conventions/form",
-        locals: { user: @user, convention: @convention, available_services: [] }
-      ), status: :unprocessable_entity
+      set_form_collections
+      render :edit, status: :unprocessable_entity
     end
   end
 
+  # DELETE /conventions/1
   def destroy
-    authorize @convention
     @convention.destroy
-    redirect_to user_path(@user), notice: "Convention supprimée."
+    redirect_to conventions_path, notice: "Convention supprimée.", status: :see_other
+  end
+
+  # GET /conventions/services_for_adherent (JSON) — services encore disponibles pour l'adhérent
+  def services_for_adherent
+    adherent = User.find_by(id: params[:adherent_id])
+    render json: available_services_for(adherent).select(:id, :nom)
   end
 
   private
 
-  def set_user
-    @user = User.find_by(slug: params[:user_id])
+  def set_convention
+    @convention = Convention.find(params[:id])
   end
 
-  def set_convention
-    @convention = @user.conventions.find(params[:id])
+  def is_user_authorized
+    authorize(@convention || Convention)
   end
 
   def convention_params
-    params.require(:convention).permit(:service_id, :date_début, :date_fin_prévue, :document)
+    params.require(:convention).permit(:user_id, :service_id, :date_début, :date_fin_prévue, :document)
   end
 
-  # Services de l'adhérent pour lesquels une convention peut encore être créée
-  def available_services
-    adherent_services = current_user.administrateur? ? @user.services.to_a : (@user.services & current_user.services)
-    used_services = @user.conventions.map(&:service)
-    (adherent_services - used_services).sort_by(&:nom)
+  def find_adherent(identifier)
+    User.find_by(slug: identifier) || User.find_by(id: identifier)
+  end
+
+  def set_form_collections
+    @adherents = if current_user.administrateur?
+      current_organisation.users.adhérent.ordered
+    else
+      User.by_service(current_user.services).adhérent.ordered
+    end
+    @available_services = available_services_for(@convention.user)
+  end
+
+  # Services de l'adhérent gérables par l'utilisateur courant et sans convention existante
+  def available_services_for(adherent)
+    return Service.none if adherent.nil?
+
+    base = current_user.administrateur? ? adherent.services : adherent.services.where(id: current_user.service_ids)
+    used = adherent.conventions.where.not(id: @convention&.id).pluck(:service_id)
+    base.where.not(id: used).ordered
   end
 end
