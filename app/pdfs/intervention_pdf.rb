@@ -1,3 +1,5 @@
+# TODO : déplacer dans un service 
+
 class InterventionPdf
   include Prawn::View
   include ActionView::Helpers::NumberHelper
