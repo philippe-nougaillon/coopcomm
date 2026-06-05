@@ -60,6 +60,10 @@ class Mouvement < ApplicationRecord
     [SecureRandom.uuid]
   end
 
+  # TODO : ajouter quelques commentaires ne tuerait personne ;-)
+  
+  # TODO : vérifier que 'mouvements.date & état' sont indexés car de nombreuses requêtes sont basées dessus... 
+  
   def coherence_panne
     # Voisin de gauche (Le passé)
     event_precedent = tool.mouvements.where.not(id: id)
