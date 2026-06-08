@@ -4,17 +4,32 @@ class ConventionsController < ApplicationController
 
   # GET /conventions
   def index
+    set_index_filter_collections
+
     @conventions = policy_scope(Convention)
                      .includes(:user, :service, document_attachment: :blob)
                      .ordered
 
+    # Recherche sur le nom du document attaché
     if params[:search].present?
-      @conventions = @conventions.joins(:user)
-                                 .where("users.nom ILIKE :s OR users.prénom ILIKE :s", s: "%#{params[:search]}%")
+      @conventions = @conventions.joins(document_attachment: :blob)
+                                 .where("active_storage_blobs.filename ILIKE :s", s: "%#{params[:search]}%")
     end
 
     if params[:adherent_id].present?
       @conventions = @conventions.where(user_id: params[:adherent_id])
+    end
+
+    if params[:service_id].present?
+      @conventions = @conventions.where(service_id: params[:service_id])
+    end
+
+    # Conventions actives à la date choisie (période début → fin prévue, fin ouverte si nulle)
+    if params[:active_on].present?
+      @conventions = @conventions.where(
+        "date_début <= :d AND (date_fin_prévue IS NULL OR date_fin_prévue >= :d)",
+        d: params[:active_on]
+      )
     end
 
     @pagy, @conventions = pagy(@conventions, items: 15)
@@ -92,6 +107,20 @@ class ConventionsController < ApplicationController
       User.by_service(current_user.services).adhérent.ordered
     end
     @available_services = available_services_for(@convention.user)
+  end
+
+  # Collections (tous les adhérents / services du périmètre) pour les filtres de l'index
+  def set_index_filter_collections
+    @adherents = if current_user.administrateur?
+      current_organisation.users.adhérent.ordered
+    else
+      User.by_service(current_user.services).adhérent.ordered
+    end
+    @services = if current_user.administrateur?
+      current_organisation.services.ordered
+    else
+      current_user.services.ordered
+    end
   end
 
   # Services de l'adhérent gérables par l'utilisateur courant et sans convention existante
