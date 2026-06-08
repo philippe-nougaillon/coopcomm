@@ -20,6 +20,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :absences, only: [:destroy]
+
   resources :users do
     member do
       get :inviter

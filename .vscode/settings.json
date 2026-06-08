@@ -1,0 +1,11 @@
+{
+  "files.associations": {
+    "*.html.erb": "erb"
+  },
+  "[erb]": {
+    "editor.defaultFormatter": "aliarabbas.erb-beautify",
+    "editor.formatOnSave": false
+  },
+  "html.validate.styles": true,
+  "html.validate.scripts": true
+}
