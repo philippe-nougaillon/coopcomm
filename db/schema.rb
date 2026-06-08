@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_06_03_100500) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_08_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -113,6 +113,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_03_100500) do
     t.date "date_fin_prévue"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "mémo"
     t.index ["service_id"], name: "index_conventions_on_service_id"
     t.index ["user_id", "service_id"], name: "index_conventions_on_user_id_and_service_id", unique: true
     t.index ["user_id"], name: "index_conventions_on_user_id"
