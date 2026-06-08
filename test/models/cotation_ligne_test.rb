@@ -42,4 +42,47 @@ class CotationLigneTest < ActiveSupport::TestCase
     ligne.destroy
     assert_equal 51.0, @cotation.reload.total_ht.to_f
   end
+
+  # --- Associations requises ---
+
+  test "la prestation est requise" do
+    ligne = CotationLigne.new(cotation: @cotation, qté: 1)
+    refute ligne.valid?
+    assert ligne.errors[:prestation].any?
+  end
+
+  test "la cotation est requise" do
+    ligne = CotationLigne.new(prestation: @prestation, qté: 1)
+    refute ligne.valid?
+    assert ligne.errors[:cotation].any?
+  end
+
+  test "sans prestation, le prix HT n'est pas dérivé et reste tel quel" do
+    ligne = CotationLigne.new(cotation: @cotation, qté: 1, prix_ht: 50)
+    ligne.valid? # déclenche le before_validation
+    assert_equal 50, ligne.prix_ht
+  end
+
+  # --- Audit (associé à la cotation) ---
+
+  test "auditée et associée à la cotation" do
+    ligne = CotationLigne.create!(cotation: @cotation, prestation: @prestation, qté: 1)
+    assert_equal 1, ligne.audits.count
+    assert_equal "create", ligne.audits.last.action
+    assert_equal @cotation, ligne.audits.last.associated
+  end
+
+  # --- Cohérence des fixtures (valeurs dérivées figées en dur) ---
+  # Ces deux gardes transforment une dérive silencieuse (tarif modifié sans
+  # mettre à jour les fixtures) en échec de test explicite.
+
+  test "fixtures cohérentes : prix_ht de la ligne = tarif de la prestation" do
+    ligne = cotation_lignes(:ligne_cotation_paris)
+    assert_equal ligne.prestation.tarif, ligne.prix_ht
+  end
+
+  test "fixtures cohérentes : total_ht de cotation_paris = somme de ses lignes" do
+    cotation = cotations(:cotation_paris)
+    assert_equal cotation.cotation_lignes.sum(&:total_ht), cotation.total_ht
+  end
 end

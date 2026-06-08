@@ -29,4 +29,10 @@ class AdministrateurCotationPolicyTest < ActionDispatch::IntegrationTest
     refute @policy_autre_org.destroy?
     refute @policy_autre_org.create?
   end
+
+  test "scope : un administrateur voit les cotations de son organisation, pas celles d'une autre" do
+    scope = CotationPolicy::Scope.new(@administrateur, Cotation.all).resolve
+    assert_includes scope, cotations(:cotation_paris)
+    refute_includes scope, cotations(:cotation_marseille)
+  end
 end

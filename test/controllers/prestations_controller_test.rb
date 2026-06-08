@@ -58,4 +58,13 @@ class PrestationsControllerTest < ActionDispatch::IntegrationTest
     get new_prestation_url
     assert_redirected_to root_path
   end
+
+  # --- Création invalide ---
+
+  test "create invalide (sans code) : aucune prestation créée et formulaire re-rendu" do
+    assert_no_difference -> { Prestation.count } do
+      post prestations_url, params: { prestation: { libellé: "Sans code", tarif: 10 } }
+    end
+    assert_response :unprocessable_entity
+  end
 end

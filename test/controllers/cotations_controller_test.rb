@@ -105,4 +105,15 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     get cotations_url
     assert_redirected_to root_path
   end
+
+  # --- Création invalide ---
+
+  test "create invalide (sans intitulé) : aucune cotation créée et formulaire re-rendu" do
+    assert_no_difference -> { Cotation.count } do
+      post cotations_url, params: { cotation: {
+        adherent_id: @adherent.id, service_id: @service.id, intitulé: ""
+      } }
+    end
+    assert_response :unprocessable_entity
+  end
 end

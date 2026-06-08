@@ -89,4 +89,36 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     get conventions_url(search: "inexistant.pdf")
     assert_not_includes response.body, edit_convention_path(@convention)
   end
+
+  # --- Créations invalides (les 3 validations métier du model) ---
+
+  test "create invalide (doublon de convention pour le couple adhérent/service) : aucune création" do
+    # weil a déjà convention_paris sur le service informatique
+    assert_no_difference -> { Convention.count } do
+      post conventions_url, params: { convention: {
+        user_id: users(:weil).id, service_id: services(:informatique).id, date_début: "2026-05-01"
+      } }
+    end
+    assert_response :unprocessable_entity
+  end
+
+  test "create invalide (date de fin antérieure à la date de début) : aucune création" do
+    assert_no_difference -> { Convention.count } do
+      post conventions_url, params: { convention: {
+        user_id: @adherent.id, service_id: @service.id,
+        date_début: "2026-06-01", date_fin_prévue: "2026-01-01"
+      } }
+    end
+    assert_response :unprocessable_entity
+  end
+
+  test "create invalide (service n'appartenant pas à l'adhérent) : aucune création" do
+    # patrick n'est rattaché qu'au service service_paris, pas à informatique
+    assert_no_difference -> { Convention.count } do
+      post conventions_url, params: { convention: {
+        user_id: @adherent.id, service_id: services(:informatique).id, date_début: "2026-05-01"
+      } }
+    end
+    assert_response :unprocessable_entity
+  end
 end

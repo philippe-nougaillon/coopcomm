@@ -39,4 +39,11 @@ class ManagerCotationPolicyTest < ActionDispatch::IntegrationTest
     refute @policy_autre_org.show?
     refute @policy_autre_org.destroy?
   end
+
+  test "scope : un manager ne voit que les cotations des services qu'il gère" do
+    scope = CotationPolicy::Scope.new(@manager, Cotation.all).resolve
+    assert_includes scope, cotations(:cotation_secretariat) # service secretariat, géré
+    refute_includes scope, cotations(:cotation_paris)        # service informatique, non géré
+    refute_includes scope, cotations(:cotation_marseille)    # autre organisation
+  end
 end

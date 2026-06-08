@@ -65,4 +65,16 @@ class ConventionsTest < ApplicationSystemTestCase
     assert_selector "[data-controller='dropzone'].border-success"
     assert_no_selector "[data-controller='dropzone'].border-error"
   end
+
+  # --- Liste de services dépendante de l'adhérent (controller dynamic-select) ---
+
+  test "le choix de l'adhérent peuple dynamiquement la liste des services" do
+    visit new_convention_path
+
+    # patrick (Bruel Patrick) est rattaché au seul service Service_Paris, sans convention
+    select_option "#convention_user_id", "Bruel Patrick"
+
+    # le JS appelle services_for_adherent et injecte les <option> dans le select (caché par slim_select)
+    assert_selector "#convention_service_id option", text: "Service_Paris", visible: false, wait: 5
+  end
 end

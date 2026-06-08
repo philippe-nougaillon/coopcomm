@@ -27,4 +27,10 @@ class AdministrateurPrestationPolicyTest < ActionDispatch::IntegrationTest
     refute @policy_autre_org.update?
     refute @policy_autre_org.destroy?
   end
+
+  test "scope : un administrateur ne voit que les prestations de son organisation" do
+    scope = PrestationPolicy::Scope.new(@administrateur, Prestation.all).resolve
+    assert_includes scope, prestations(:nettoyage_bureaux)
+    refute_includes scope, prestations(:prestation_marseille)
+  end
 end

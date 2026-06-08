@@ -39,4 +39,48 @@ class PrestationTest < ActiveSupport::TestCase
     prestation = Prestation.new(code: "NET01", libellé: "Nettoyage", tarif: 25.5)
     assert_equal "NET01 → Nettoyage (25.5 € HT)", prestation.display_name
   end
+
+  # --- Normalisations ---
+
+  test "la catégorie est normalisée en majuscules" do
+    prestation = Prestation.create!(organisation: @org, code: "CAT1", libellé: "x", tarif: 5, catégorie: "entretien")
+    assert_equal "ENTRETIEN", prestation.catégorie
+  end
+
+  test "la sous-catégorie est normalisée en majuscules" do
+    prestation = Prestation.create!(organisation: @org, code: "CAT2", libellé: "x", tarif: 5, sous_catégorie: "vitres")
+    assert_equal "VITRES", prestation.sous_catégorie
+  end
+
+  # --- Scope ---
+
+  test "ordered trie les prestations par code" do
+    codes = Prestation.where(organisation: @org).ordered.pluck(:code)
+    assert_equal codes.sort, codes
+  end
+
+  # --- Suppression contrainte (dependent: :restrict_with_error) ---
+
+  test "destruction refusée quand la prestation est utilisée dans une cotation" do
+    presta = prestations(:nettoyage_bureaux) # utilisée par la ligne ligne_cotation_paris
+    assert_no_difference -> { Prestation.count } do
+      refute presta.destroy
+    end
+    assert presta.errors[:base].any?
+  end
+
+  test "destruction autorisée quand la prestation n'est pas utilisée" do
+    presta = prestations(:entretien_espaces_verts) # aucune ligne en fixture
+    assert_difference -> { Prestation.count }, -1 do
+      assert presta.destroy
+    end
+  end
+
+  # --- Audit ---
+
+  test "auditée à la création" do
+    presta = Prestation.create!(organisation: @org, code: "AUD1", libellé: "x", tarif: 5)
+    assert_equal 1, presta.audits.count
+    assert_equal "create", presta.audits.last.action
+  end
 end
