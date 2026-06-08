@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_06_08_100000) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_08_140113) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -186,7 +186,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_08_100000) do
     t.integer "note", default: 5
     t.string "avis"
     t.string "slug"
-    t.boolean "repeter"
+    t.boolean "repeter", default: false
     t.string "template_slug"
     t.datetime "début_prévue"
     t.datetime "fin_prévue"
