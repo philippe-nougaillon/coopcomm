@@ -11,6 +11,12 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "should get parametres (rend le catalogue de prestations)" do
+    sign_in users(:administrateur_paris)
+    get admin_parametres_url
+    assert_response :success
+  end
+
   test "should get create new user" do
     get admin_create_new_user_url
     assert_response :success

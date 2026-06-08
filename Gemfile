@@ -132,6 +132,8 @@ gem "rqrcode", "~> 2.2"
 
 gem "prawn", "~> 2.5"
 
+gem "prawn-table", "~> 0.2.2"
+
 gem "prawn-qrcode", "~> 0.5.2"
 
 gem "pg_search", "~> 2.3"

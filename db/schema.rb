@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_05_12_093634) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_03_100500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -106,6 +106,50 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_12_093634) do
     t.index ["user_id", "user_type"], name: "user_index"
   end
 
+  create_table "conventions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "service_id", null: false
+    t.date "date_début"
+    t.date "date_fin_prévue"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["service_id"], name: "index_conventions_on_service_id"
+    t.index ["user_id", "service_id"], name: "index_conventions_on_user_id_and_service_id", unique: true
+    t.index ["user_id"], name: "index_conventions_on_user_id"
+  end
+
+  create_table "cotation_lignes", force: :cascade do |t|
+    t.bigint "cotation_id", null: false
+    t.bigint "prestation_id", null: false
+    t.string "intitulé"
+    t.integer "qté"
+    t.decimal "prix_ht", precision: 8, scale: 2
+    t.virtual "total_ht", type: :decimal, precision: 10, scale: 2, as: "(prix_ht * (\"qté\")::numeric)", stored: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["cotation_id"], name: "index_cotation_lignes_on_cotation_id"
+    t.index ["prestation_id"], name: "index_cotation_lignes_on_prestation_id"
+  end
+
+  create_table "cotations", force: :cascade do |t|
+    t.bigint "adherent_id", null: false
+    t.bigint "service_id", null: false
+    t.string "ref"
+    t.string "intitulé"
+    t.text "mémo"
+    t.date "date_livraison_souhaitée"
+    t.decimal "total_ht", precision: 10, scale: 2
+    t.datetime "discarded_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "slug"
+    t.string "workflow_state", default: "créé"
+    t.index ["adherent_id"], name: "index_cotations_on_adherent_id"
+    t.index ["discarded_at"], name: "index_cotations_on_discarded_at"
+    t.index ["service_id"], name: "index_cotations_on_service_id"
+    t.index ["slug"], name: "index_cotations_on_slug", unique: true
+  end
+
   create_table "documents", force: :cascade do |t|
     t.string "category"
     t.string "workflow_state"
@@ -146,8 +190,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_12_093634) do
     t.datetime "début_prévue"
     t.datetime "fin_prévue"
     t.string "meteo"
-    t.decimal "co2", default: "0.0"
     t.string "trajet"
+    t.decimal "co2", default: "0.0"
     t.bigint "service_id"
     t.string "localisation"
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
@@ -207,6 +251,25 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_12_093634) do
     t.string "nom"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "prestations", force: :cascade do |t|
+    t.bigint "organisation_id", null: false
+    t.string "code"
+    t.string "libellé"
+    t.string "catégorie"
+    t.string "sous_catégorie"
+    t.string "description"
+    t.string "unité"
+    t.decimal "tarif", precision: 8, scale: 2
+    t.string "compétence"
+    t.string "délai"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "slug"
+    t.index ["organisation_id", "code"], name: "index_prestations_on_organisation_id_and_code", unique: true
+    t.index ["organisation_id"], name: "index_prestations_on_organisation_id"
+    t.index ["slug"], name: "index_prestations_on_slug", unique: true
   end
 
   create_table "services", force: :cascade do |t|
@@ -426,13 +489,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_12_093634) do
     t.string "slug"
     t.string "téléphone"
     t.string "memo"
-    t.string "otp_secret"
-    t.integer "consumed_timestep"
-    t.boolean "otp_required_for_login"
     t.datetime "discarded_at"
     t.integer "failed_attempts", default: 0, null: false
     t.datetime "locked_at"
     t.string "unlock_token"
+    t.string "otp_secret"
+    t.integer "consumed_timestep"
+    t.boolean "otp_required_for_login"
     t.integer "otp_method"
     t.string "color"
     t.string "invitation_token"
@@ -493,6 +556,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_12_093634) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "agent_interventions", "interventions"
   add_foreign_key "agent_interventions", "users", column: "agent_id"
+  add_foreign_key "conventions", "services"
+  add_foreign_key "conventions", "users"
+  add_foreign_key "cotation_lignes", "cotations"
+  add_foreign_key "cotation_lignes", "prestations"
+  add_foreign_key "cotations", "services"
+  add_foreign_key "cotations", "users", column: "adherent_id"
   add_foreign_key "documents", "tools"
   add_foreign_key "export_logs", "organisations"
   add_foreign_key "export_logs", "users"
@@ -501,6 +570,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_05_12_093634) do
   add_foreign_key "mouvements", "interventions"
   add_foreign_key "mouvements", "tools"
   add_foreign_key "mouvements", "users"
+  add_foreign_key "prestations", "organisations"
   add_foreign_key "services", "organisations"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

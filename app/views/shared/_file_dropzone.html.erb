@@ -1,0 +1,67 @@
+<%#
+  Zone de glisser-déposer réutilisable pour un champ Active Storage (has_one_attached).
+
+  Locals requis :
+    form        - le form builder (ex. f)
+    attribute   - le nom du champ attaché (ex. :document)
+
+  Locals optionnels :
+    accept        - types acceptés par l'input file (défaut ".pdf" ; ex. "image/*", ".pdf,.docx")
+    label         - libellé du champ (défaut : humanize de l'attribut)
+    placeholder   - texte affiché dans la zone (défaut généré depuis accept)
+    error_message - message d'erreur custom (défaut généré depuis accept)
+    wrapper_class - classes du conteneur (ex. "sm:col-span-2" dans une grille)
+    replace_hint  - bool : afficher l'avertissement de remplacement si déjà attaché (défaut true)
+
+  Exemples :
+    render "shared/file_dropzone", form: f, attribute: :document, accept: ".pdf", wrapper_class: "sm:col-span-2"
+    render "shared/file_dropzone", form: f, attribute: :logo, accept: "image/*", label: "Logo"
+%>
+<%
+  accept        = local_assigns.fetch(:accept, ".pdf")
+  label         = local_assigns.fetch(:label, attribute.to_s.humanize)
+  wrapper_class = local_assigns.fetch(:wrapper_class, "")
+  replace_hint  = local_assigns.fetch(:replace_hint, true)
+  attachment    = form.object.public_send(attribute)
+
+  # Liste lisible des formats acceptés (".pdf,.docx" → "PDF, DOCX" ; "image/*" → "IMAGE")
+  formats       = accept.split(",").map { |a| a.strip.delete_prefix(".").sub(%r{/\*\z}, "").upcase }.join(", ")
+  placeholder   = local_assigns.fetch(:placeholder, "Glissez un fichier #{formats} ici ou cliquez pour parcourir")
+  error_message = local_assigns.fetch(:error_message, "Format non accepté. Formats autorisés : #{formats}.")
+%>
+<div class="flex flex-col gap-1 <%= wrapper_class %>">
+  <%= form.label attribute, label, class: "text-sm text-slate-500" %>
+
+  <% if attachment.attached? %>
+    <p class="text-sm mb-1 break-all">
+      Document actuel :
+      <%= link_to attachment.filename, rails_blob_path(attachment, disposition: "inline"),
+            target: "_blank", class: "link link-primary" %>
+    </p>
+  <% end %>
+
+  <div data-controller="dropzone"
+       data-dropzone-active-class="border-slate-500 bg-slate-50"
+       data-dropzone-neutral-class="border-slate-300"
+       data-dropzone-valid-class="border-success bg-success/10"
+       data-dropzone-invalid-class="border-error bg-error/10"
+       data-dropzone-error-message-value="<%= error_message %>"
+       data-action="click->dropzone#open dragover->dropzone#highlight dragleave->dropzone#unhighlight drop->dropzone#drop"
+       class="flex flex-col items-center justify-center gap-1 px-4 py-6 text-center
+              border-2 border-dashed border-slate-300 rounded-lg cursor-pointer
+              transition-colors hover:border-slate-400">
+    <%= form.file_field attribute, accept: accept, class: "hidden",
+          data: { dropzone_target: "input", action: "change->dropzone#change" } %>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+         stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-slate-400">
+      <path stroke-linecap="round" stroke-linejoin="round"
+            d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+    </svg>
+    <span data-dropzone-target="filename" class="text-sm text-slate-500 break-all"><%= placeholder %></span>
+    <span data-dropzone-target="error" class="hidden text-sm text-error font-medium"></span>
+  </div>
+
+  <% if attachment.attached? && replace_hint %>
+    <span class="text-xs text-slate-400">Déposer un nouveau fichier remplacera le document actuel.</span>
+  <% end %>
+</div>
