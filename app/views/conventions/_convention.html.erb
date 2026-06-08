@@ -3,26 +3,25 @@
     <%= link_to convention.user.nom_prénom, user_path(convention.user), class: "link" if convention.user %>
   </td>
   <td><%= convention.service&.nom %></td>
-  <td class="text-nowrap"><%= l(convention.date_début, format: :long) if convention.date_début %></td>
   <td class="text-nowrap">
     <% prog = convention_progress(convention) %>
-    <%# Espace invisible miroir de la barre, pour garder la date centrée verticalement comme les autres colonnes %>
+    <%# Espace invisible miroir de la barre, pour garder la période centrée verticalement comme les autres colonnes %>
     <% if prog %>
-      <div class="mb-1 flex items-center gap-2 invisible" aria-hidden="true">
+      <div class="mb-1 invisible" aria-hidden="true">
         <progress class="progress w-32"></progress>
-        <span class="text-xs">&nbsp;</span>
       </div>
     <% end %>
+    <%= l(convention.date_début, format: :long) if convention.date_début %>
+    <span class="text-slate-400">→</span>
     <%= convention.date_fin_prévue ? l(convention.date_fin_prévue, format: :long) : "—" %>
     <% if prog %>
-      <div class="mt-1 flex items-center gap-2"
+      <div class="mt-1"
            title="<%= "Du #{l(convention.date_début, format: :long)}#{" au #{l(convention.date_fin_prévue, format: :long)}" if convention.date_fin_prévue}" %>">
         <% if prog[:indeterminate] %>
           <progress class="progress <%= prog[:color] %> w-32" value="100" max="100"></progress>
         <% else %>
           <progress class="progress <%= prog[:color] %> w-32" value="<%= prog[:percent] %>" max="100"></progress>
         <% end %>
-        <span class="text-xs text-slate-500"><%= prog[:label] %></span>
       </div>
     <% end %>
   </td>
