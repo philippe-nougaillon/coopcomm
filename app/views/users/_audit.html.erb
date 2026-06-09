@@ -1,30 +1,29 @@
-<tr class=" hover:bg-base-300">
-  <td class="whitespace-nowrap py-3 align-top">
-    <div class=" font-medium text-slate-600">
-      Il y a <%= time_ago_in_words(audit.created_at) %>
-    </div>
-    <div class="text-xs text-slate-400 mt-0.5 font-normal">
-      (<%= l(audit.created_at, format: :long) %>)
-    </div>
+<tr class="hover:bg-base-200 transition-colors duration-150">
+
+<td class="py-4 pl-4 pr-2 text-sm whitespace-nowrap">
+  <div class="font-semibold text-slate-700 text-xs sm:text-sm leading-tight">
+    Il y a <%= time_ago_in_words(audit.created_at) %>
+  </div>
+  <div class="py-4 px-4 text-sm whitespace-nowrap">
+    <%= l(audit.created_at, format: :long) %>
+  </div>
+</td>
+
+  <td class="py-3 px-4 ">
+    <%= audit_badge(audit) %>
   </td>
 
-  <td class="py-3 align-top text-slate-700 font-medium">
-    <%= audit.auditable_type %>
-  </td>
-
-  <td class="py-3 align-top" style="text-align: right;">
-    <%= link_to_if audited_view_path(audit), audit.auditable_id, audited_view_path(audit), class: 'text-primary hover:underline font-semibold' %>
-  </td>
-
-  <td class="py-3 align-top text-slate-700">
-    <%= audit.action.humanize %>
-  </td>
-
-  <td class="whitespace-nowrap py-3 align-top  text-slate-500 leading-relaxed">
-    <% unless audit.comment %>
-      <%= sanitize prettify(audit, current_user).join('<br>') %>
+  <td class="py-4 px-6 text-sm whitespace-nowrap ">
+    <% if audit.comment.present? %>
+      <span class="italic text-slate-500">"<%= audit.comment %>"</span>
+    <% elsif audit.auditable_type == "Absence" && audit.action == "destroy" %>
+      <%= absence_period_badge(audit) %>
+    <% elsif audit.auditable_type == "User" && audit.audited_changes.key?("invitation_token") %>
+      <%= invitation_changes_summary(audit) %>
     <% else %>
-      <%= audit.comment %>
+      <%= audit_changes_list(audit, current_user) %>
     <% end %>
   </td>
+
 </tr>
+

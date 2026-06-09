@@ -44,7 +44,7 @@
           <summary class="inline-flex bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full cursor-pointer list-none hover:bg-slate-100 hover:border-primary  transition-colors duration-150 shadow-sm select-none">
             + <%= extra %>
           </summary>
-          <div class="dropdown-content z-[50] menu p-3 shadow-xl bg-white border border-slate-200 rounded-xl w-56 mt-2 max-h-60 overflow-y-auto">
+          <div class="dropdown-content z-[50] flex flex-row menu p-3 shadow-xl bg-white border border-slate-200 rounded-xl w-56 mt-2 max-h-60 overflow-y-auto">
             <span class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 px-1 block">
               Autres services (<%= extra %>)
             </span>
@@ -104,12 +104,12 @@
     <% if user.agent? && user.moyenne %>
       <div class="inline-flex items-center gap-1 bg-white border border-slate-200 px-2.5 py-1 rounded-full whitespace-nowrap">
         <img
-          src="/assets/icons/star.svg"
+          src="/assets/icons/star_rate.svg"
           class="icon text-amber-400 text-sm leading-none"
           alt="Évaluation"
           title="Évaluation"
         />
-        <span class="text-xs font-semibold text-amber-700">
+        <span class="text-xs font-semibold text-slate-600">
           <%= number_with_precision(user.moyenne, precision: 2, strip_insignificant_zeros: true) %> / 5
         </span>
       </div>

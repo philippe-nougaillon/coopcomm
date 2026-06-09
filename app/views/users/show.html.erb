@@ -205,11 +205,9 @@
     <table class="table text-sm w-full">
       <thead class="bg-slate-100 text-slate-600 font-semibold">
         <tr>
-          <th class="py-3">Date</th>
-          <th class="py-3">Type</th>
-          <th class="py-3">Id</th>
-          <th class="py-3">Action</th>
-          <th class="py-3">Modifications</th>
+          <th class="py-4 pl-4 pr-2 font-semibold text-left">Date</th>
+          <th class="py-4 px-6 font-semibold text-left">Action</th>
+          <th class="py-4 px-6 font-semibold text-left">Modifications</th>
         </tr>
       </thead>
       <tbody>
@@ -217,7 +215,7 @@
       </tbody>
     </table>
   </div>
-  <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
+  <div class="flex flex-col md:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
     <% if @pagy.pages > 1 %>
       <div class="hidden sm:block sm:flex-1"></div>
       <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
@@ -225,6 +223,7 @@
       </div>
       <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
         <%= pagy_info(@pagy).html_safe %>
+       
       </div>
     <% else %>
       <div></div>

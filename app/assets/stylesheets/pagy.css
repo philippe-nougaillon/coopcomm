@@ -150,3 +150,28 @@
 .pagy .gap {
   background-color: transparent !important;
 }
+
+/* ================================
+   MOBILE: solo iconos (sin texto)
+   ================================ */
+@media (max-width: 768px) {
+
+  /* Ocultar textos "Précédent" y "Suivant" */
+  .pagy > :first-child::after,
+  .pagy > :last-child::before {
+    display: none !important;
+  }
+
+  /* Ajustar padding para que sea más compacto */
+  .pagy > :first-child,
+  .pagy > :last-child {
+    padding: 0 0.5rem !important;
+    min-width: 2.25rem;
+  }
+
+  /* Centrar iconos */
+  .pagy > :first-child::before,
+  .pagy > :last-child::after {
+    margin: 0 !important;
+  }
+}
