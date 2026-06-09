@@ -18,13 +18,11 @@
   <% end %>
 
   <%= f.fields_for :absences, absence do |ff| %>
-    <%= render 'absence_fields', f: ff %>
+    <%= render 'users/absence_fields', f: ff %>
   <% end %>
 
-  <%# CONTENEDOR PRINCIPAL DE ACCIONES %>
 <div class="modal-action flex flex-row items-center w-full border-t border-slate-100 pt-4 mt-6 gap-2 <%= absence.persisted? ? 'justify-between' : 'justify-end' %>">
   
-  <%# LADO IZQUIERDO: solo si existe %>
   <% if absence.persisted? %>
     <button type="button" onclick="delete_absence_modal_<%= unique_id %>.showModal()" class="btn btn-soft btn-error inline-flex items-center gap-2 normal-case">
       <%= embedded_svg "icons/delete.svg", class: "w-4 h-4 fill-current" %>
@@ -32,9 +30,8 @@
     </button>
   <% end %>
   
-  <%# LADO DERECHO: siempre %>
   <div class="flex items-center gap-2">
-    <button type="button" class="btn btn-ghost inline-flex items-center gap-2 normal-case" onclick="this.closest('dialog').close()">
+    <button type="button" class="btn btn-soft btn-secondary inline-flex items-center gap-2 normal-case" onclick="this.closest('dialog').close()">
       <%= embedded_svg "icons/cancel.svg", class: "w-4 h-4 fill-current" %>
       <span>Annuler</span>
     </button>

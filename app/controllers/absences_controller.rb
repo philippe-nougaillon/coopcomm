@@ -1,16 +1,21 @@
-# app/controllers/absences_controller.rb
 class AbsencesController < ApplicationController
   def destroy
     @absence = Absence.find(params[:id])
+    @user = @absence.user
     @absence.destroy
 
     respond_to do |format|
-      # Si por alguna razón no usa Turbo, redirige al perfil del usuario
-      format.html { redirect_to user_path(@absence.user), notice: "L'absence a été supprimée." }
-      
-      # ⚡ Esto buscará el id="absence_XX" de tu <tr> en la tabla y lo borrará en vivo
+      format.html { redirect_to user_path(@user), notice: "L'absence a été supprimée avec succès." }
+      format.json { head :no_content }
+
       format.turbo_stream do
-        render turbo_stream: turbo_stream.remove("absence_#{@absence.id}")
+        flash.now[:notice] = "L'absence a été supprimée avec succès."
+        @absences = @user.absences
+        render turbo_stream: [
+          turbo_stream.update("absences_section", partial: "users/absences_section",
+            locals: { user: @user, absences: @absences }),
+          turbo_stream.update("notification", partial: "partials/notification")
+        ]
       end
     end
   end

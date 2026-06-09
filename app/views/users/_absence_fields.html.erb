@@ -33,44 +33,48 @@
     </div>
   </div>
   <%# MATIN / APRÈS-MIDI %>
-  <div class="half-days-container <%= is_half_day ? '' : 'hidden' %> flex flex-row gap-3 w-full">
-    <div class="flex-1 relative">
-      <input type="radio" 
-             name="<%= f.object_name %>[period]" 
-             value="matin" 
-             id="period_matin"
-             class="peer hidden period-radio"
-             onchange="updateHiddenPeriods(this)" 
-             <%= 'checked' if f.object.matin %> />
-      <label for="period_matin" 
-          class="btn btn-outline border-slate-200 bg-white hover:bg-base-200 h-auto py-3 px-4 w-full flex flex-row items-center justify-start gap-3 rounded-md normal-case font-normal text-left
-          peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all duration-200 cursor-pointer">
-        <img src="/assets/icons/wb_sunny.svg" class="icon text-warning text-2xl shrink-0" alt="Matin" title="Matin">
-        <div class="flex flex-col min-w-0">
-          <span class="font-semibold text-slate-800 text-sm block leading-none mb-1">Matin</span>
-          <span class="text-xs text-slate-400 block font-normal leading-none">avant midi</span>
-        </div>
-      </label>
-    </div>
-    <div class="flex-1 relative">
-      <input type="radio" 
-             name="<%= f.object_name %>[period]" 
-             value="apres_midi" 
-             id="period_apres_midi"
-             class="peer hidden period-radio"
-             onchange="updateHiddenPeriods(this)" 
-             <%= 'checked' if f.object.après_midi %> />
-      <label for="period_apres_midi" 
-          class="btn btn-outline border-slate-200 bg-white hover:bg-base-200 h-auto py-3 px-4 w-full flex flex-row items-center justify-start gap-3 rounded-md normal-case font-normal text-left
-          peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all duration-200 cursor-pointer">
-        <img src="/assets/icons/wb_twilight.svg" class="icon text-info text-2xl shrink-0" alt="Après-midi" title="Après-midi">
-        <div class="flex flex-col min-w-0">
-          <span class="font-semibold text-slate-800 text-sm block leading-none mb-1">Après-midi</span>
-          <span class="text-xs text-slate-400 block font-normal leading-none">après 13h</span>
-        </div>
-      </label>
-    </div>
+<% dom_id = f.object.id || "new_#{Time.now.to_i}_#{rand(1000)}" %>
+
+<%# MATIN / APRÈS-MIDI %>
+<div class="half-days-container <%= is_half_day ? '' : 'hidden' %> flex flex-row gap-3 w-full">
+  <div class="flex-1 relative">
+    <input type="radio" 
+           name="<%= f.object_name %>[period]" 
+           value="matin" 
+           id="period_matin_<%= dom_id %>" <%# ← ID Único %>
+           class="peer hidden period-radio"
+           onchange="updateHiddenPeriods(this)" 
+           <%= 'checked' if f.object.matin %> />
+    <label for="period_matin_<%= dom_id %>" 
+        class="btn btn-outline border-slate-200 bg-white hover:bg-base-200 h-auto py-3 px-4 w-full flex flex-row items-center justify-start gap-3 rounded-md normal-case font-normal text-left
+        peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all duration-200 cursor-pointer">
+      <img src="/assets/icons/wb_sunny.svg" class="icon text-warning text-2xl shrink-0" alt="Matin" title="Matin">
+      <div class="flex flex-col min-w-0">
+        <span class="font-semibold text-slate-800 text-sm block leading-none mb-1">Matin</span>
+        <span class="text-xs text-slate-400 block font-normal leading-none">avant midi</span>
+      </div>
+    </label>
   </div>
+  
+  <div class="flex-1 relative">
+    <input type="radio" 
+           name="<%= f.object_name %>[period]" 
+           value="apres_midi" 
+           id="period_apres_midi_<%= dom_id %>" 
+           class="peer hidden period-radio"
+           onchange="updateHiddenPeriods(this)" 
+           <%= 'checked' if f.object.après_midi %> />
+    <label for="period_apres_midi_<%= dom_id %>" 
+        class="btn btn-outline border-slate-200 bg-white hover:bg-base-200 h-auto py-3 px-4 w-full flex flex-row items-center justify-start gap-3 rounded-md normal-case font-normal text-left
+        peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all duration-200 cursor-pointer">
+      <img src="/assets/icons/wb_twilight.svg" class="icon text-info text-2xl shrink-0" alt="Après-midi" title="Après-midi">
+      <div class="flex flex-col min-w-0">
+        <span class="font-semibold text-slate-800 text-sm block leading-none mb-1">Après-midi</span>
+        <span class="text-xs text-slate-400 block font-normal leading-none">après 13h</span>
+      </div>
+    </label>
+  </div>
+</div>
   <%# Motif et Observation %>
   <div class="flex flex-col gap-1">
     <%= f.label :motif, class: "text-sm text-slate-500" %>

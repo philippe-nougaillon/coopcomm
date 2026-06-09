@@ -1,0 +1,91 @@
+  <div id="absences_section">
+    <% if @user.agent? || @user.manager_or_admin? %>
+      <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
+        <h2 class="text-2xl text-secondary font-semibold">Absences</h2>
+        <% if current_user.manager_or_admin? && @absences.any? %>
+          <button class="btn btn-outline btn-success hover:text-white!" onclick="absence_modal.showModal()">
+            Ajouter une absence
+          </button>
+        <% end %>
+      </div>
+
+      <% if @absences.any? %>
+        <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
+        </div>
+        <div class="overflow-x-auto border border-slate-200 rounded-b-xl shadow-sm bg-white">
+          <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+        <img
+            src="/assets/icons/swipe.svg"
+            class="icon text-sm"
+            alt="swipe"
+            title="Faire glisser"
+          />
+        <span>Faire glisser pour voir plus</span>
+      </div>
+          <table class="table w-full">
+            <thead class="bg-slate-100 text-slate-600 border-b border-slate-200 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="py-4 px-6 font-semibold text-left">Période</th>
+                <th class="py-4 px-6 font-semibold text-left">Motif</th>
+                <th class="py-4 px-6 font-semibold text-left">Observation</th>
+                <th class="py-4 px-6"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <%= render partial: 'absence', collection: @absences, cached: true %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
+        </div>
+        <div class="overflow-x-auto border border-slate-200 rounded-b-xl shadow-sm bg-white p-6 sm:p-8">
+          <div class="flex flex-col items-center justify-center text-center p-6 border border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50/50 max-w-2xl mx-auto my-2 transition-all">
+            <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4 animate-pulse">
+              <img src="/assets/icons/event_busy.svg" class="w-6 h-6 text-primary opacity-60" alt="Pas d'absences">
+            </div>
+            <h3 class="text-base sm:text-lg font-bold text-slate-800 uppercase tracking-wide">
+              Aucune absence enregistrée
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-500 max-w-sm mt-1 leading-relaxed mb-6">
+              Cet utilisateur n'a pas d'absences planifiées ou passées pour le moment.
+            </p>
+            
+            <%# Botón en el centro si el usuario tiene permisos %>
+            <% if current_user.manager_or_admin? %>
+              <button class="btn btn-outline btn-success hover:text-white!" onclick="absence_modal.showModal()">
+            Ajouter une absence
+          </button>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <% if current_user.manager_or_admin? %>
+        <dialog id="absence_modal" class="modal" <%= 'open' if @user.errors.any? %>>
+          <div class="modal-box">
+            <form method="dialog">
+              <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <img src="/assets/icons/event_busy.svg" class="icon text-primary" alt="Une absence" title="Déclarer une absence" /> 
+              </div>
+              <div>
+                <h3 class="text-xl font-bold uppercase text-primary">Déclarer une absence</h3>
+                <p class="text-sm text-slate-500">Complétez les informations ci-dessous.</p>
+              </div>
+            </div>
+            <%= render 'users/absence_form', absence: Absence.new(user_id: @user.id) %>
+          </div>
+          <form method="dialog" class="modal-backdrop">
+            <button>Fermer</button>
+          </form>
+        </dialog>
+      <% end %>
+
+    <%= render "users/absence_form_script" %>
+    <% end %>
+  </div>
