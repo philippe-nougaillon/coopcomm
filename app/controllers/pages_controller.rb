@@ -13,14 +13,13 @@ class PagesController < ApplicationController
   end
 
   def assistant
-
     if params[:commit].present?
       minimum = 10
       interventions = current_organisation
-                                  .interventions
-                                  .where.not(début_prévue: nil)
-                                  .where(template_slug: nil)
-                                  .order(:début_prévue)
+                        .interventions
+                        .where.not(début_prévue: nil)
+                        .where(template_slug: nil)
+                        .order(:début_prévue)
 
       if interventions.count >= minimum
         description_list = []
@@ -28,10 +27,6 @@ class PagesController < ApplicationController
           description_list << "#{intervention.description.gsub('[mail] ', '')} #{l(intervention.début_prévue.to_date)}"
         end
 
-        # Version OpenAI
-        # llm = Langchain::LLM::OpenAI.new(api_key: ENV["OPENAI_API_KEY"])
-        # @results = llm.chat(messages: [{role: "user", content: "Génère moi des nouvelles tâches en te basant sur cette liste : #{description_list.join(', ')}"}]).completion
-        
         # Version Mistral
         begin
           llm = Langchain::LLM::MistralAI.new(api_key: ENV["MISTRAL_AI_API_KEY"])
@@ -46,7 +41,6 @@ class PagesController < ApplicationController
         @results = "Oups ! Il n'y a pas encore assez d'interventions passées pour générer une proposition fiable.\n Il en faudrait un minimum de #{ minimum } pour commencer..."
       end
     end
-
   end
 
   def mentions_legales
@@ -60,50 +54,35 @@ class PagesController < ApplicationController
   def dashboard
     start_date = 9.months.ago.beginning_of_month
     end_date = 3.months.from_now.end_of_month
+    
     if current_user.manager_or_admin?
       @export_logs = current_organisation.export_logs.includes(:user).order(created_at: :desc)
-      # temps_consommable_agent_mensuellement = 35 * 4
-      # temps_consommable_organisation_mensuellement = User.filter_by_service(current_user.services).adherent.count * 100
-      
       users = User.by_service(current_user.services)
 
-      #
       # Temps total par adhérent
-      #
       @temps_total_par_adhérent = {}
       users.adhérent.includes(:interventions_adherent).each do |adhérent|
-        # .to_a force l'utilisation des données chargées par le .includes
         @temps_total_par_adhérent[adhérent.nom_prénom] = adhérent.interventions_adherent.to_a.sum(&:temps_total)
       end
 
-      #
       # Temps total par agent
-      #
-
       @temps_total_par_agent = {}
       users.agent.includes(:agent_interventions, :interventions).each do |agent|
         @temps_total_par_agent[agent.nom_prénom] = 0
         agent.interventions.each do |intervention|
-          # .size utilise le tableau déjà chargé en mémoire par le .includes
           @temps_total_par_agent[agent.nom_prénom] += intervention.temps_total / intervention.agents.size
         end
       end
 
-      #
       # Graphe Quantité d'interventions par état et par mois
-      #
-
       qté_interventions_par_mois_par_état = {}
-
       current_organisation.interventions.filter_by_service(current_user.services).where(début: start_date..end_date).group("DATE_TRUNC('month', début)", :workflow_state).count.each do |(month, state), count|
-        formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
+        formatted_month = month.to_date.strftime('%Y-%m')
         qté_interventions_par_mois_par_état[formatted_month] ||= {}
         qté_interventions_par_mois_par_état[formatted_month][state] = count
       end
 
-      # Compléter les mois et workflows manquants avec des valeurs par défaut
       workflows = [Intervention::NOUVEAU, Intervention::POINTAGE_ACTIVE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
-
       (start_date.to_date..end_date.to_date).map { |date| date.beginning_of_month }.uniq.each do |month|
         formatted_month = month.strftime('%Y-%m')
         qté_interventions_par_mois_par_état[formatted_month] ||= {}
@@ -112,121 +91,84 @@ class PagesController < ApplicationController
         end
       end
 
-      qté_interventions_par_mois_par_état = qté_interventions_par_mois_par_état.sort.to_h # Trier par ordre chronologique
-
-      labels = qté_interventions_par_mois_par_état.keys # Les mois comme étiquettes pour l'axe X
-      workflows = [Intervention::NOUVEAU, Intervention::POINTAGE_ACTIVE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
+      qté_interventions_par_mois_par_état = qté_interventions_par_mois_par_état.sort.to_h
+      labels = qté_interventions_par_mois_par_état.keys
 
       datasets = workflows.map do |workflow|
         {
-          label: workflow.capitalize, # Nom de l'état de workflow
-          data: labels.map { |month| qté_interventions_par_mois_par_état[month][workflow] }, # Quantités par mois
+          label: workflow.capitalize,
+          data: labels.map { |month| qté_interventions_par_mois_par_état[month][workflow] },
           backgroundColor: case workflow
-                          when Intervention::NOUVEAU then "rgba(0,181,255,255)" # Info
-                          when Intervention::POINTAGE_ACTIVE then "rgba(123,146,178,255)" # Secondary
-                          when Intervention::TERMINE then "rgba(77,110,255,255)" # Primary
-                          when Intervention::VALIDE then "rgba(0,169,110,255)" # Success
-                          when Intervention::REFUSE then "rgba(255,88,97,255)" # Error
-                          when Intervention::ARCHIVE then "rgba(232,232,232,255)" # Ghost
+                          when Intervention::NOUVEAU then "rgba(0,181,255,255)"
+                          when Intervention::POINTAGE_ACTIVE then "rgba(123,146,178,255)"
+                          when Intervention::TERMINE then "rgba(77,110,255,255)"
+                          when Intervention::VALIDE then "rgba(0,169,110,255)"
+                          when Intervention::REFUSE then "rgba(255,88,97,255)"
+                          when Intervention::ARCHIVE then "rgba(232,232,232,255)"
                           end
         }
       end
-
       @data_workflow_chart = { labels: labels, datasets: datasets }
 
-      #
       # Graphe qté d'intervention par service
-      #
-
       @qté_interventions_par_service = current_organisation.interventions.filter_by_service(current_user.services).joins(:service).group("services.nom").count
 
-
-      #
       # Graphe temps_total par service
-      #
-
-      @temps_total_par_service = {}
-      # pour chaque service, faire le sum des temps totaux
-      # current_user.interventions_adherent.joins(agent_interventions: :agent).each do |intervention|
-      #   @temps_total_par_service
-      # end
-
       @temps_total_par_service = current_organisation.interventions.filter_by_service(current_user.services).joins(:service).group("services.nom").sum(:temps_total)
 
-
-      #
       # Graphe co2 total par mois
-      #
-
-      # Pour chaque mois, calcule le co2 total
       co2_total_par_mois = {}
       current_organisation.interventions.filter_by_service(current_user.services).where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:co2).each do |month, co2|
-        formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
+        formatted_month = month.to_date.strftime('%Y-%m')
         co2_total_par_mois[formatted_month] = co2
       end
 
-      # Pour compléter les mois sans co2 (sinon ils n'apparaissent pas)
-      (start_date.to_date..end_date.to_date)
-        .map(&:beginning_of_month)
-        .uniq
-        .each do |month|
-          formatted_month = month.strftime('%Y-%m')
-          co2_total_par_mois[formatted_month] ||= 0
+      (start_date.to_date..end_date.to_date).map(&:beginning_of_month).uniq.each do |month|
+        formatted_month = month.strftime('%Y-%m')
+        co2_total_par_mois[formatted_month] ||= 0
       end
-
       @co2_total_par_mois = co2_total_par_mois.sort.to_h
+
+      # =================================================================
+      # NUEVOS KPIs: ÁREA MANAGER/ADMIN (Datos globales de organización)
+      # =================================================================
+      manager_interventions = current_organisation.interventions.filter_by_service(current_user.services)
+      @kpi_total_interventions = manager_interventions.count
+      @kpi_temps_total         = "#{manager_interventions.sum(:temps_total).round(1)}h"
+      @kpi_agents_actifs       = users.agent.count
+      @kpi_co2_total           = "#{@co2_total_par_mois.values.sum.round(1)} kg"
 
     elsif current_user.adhérent?
       user_interventions = current_user.interventions_adherent.filter_by_service(current_user.services)
-
       temps_consommable_adhérent_mensuellement = 100
 
-      #
       # Graphe temps consommé
-      #
-
       @proportion_temps_consommé = {}
       @proportion_temps_consommé["temps_consommé"] = user_interventions.sum(:temps_total)
       @proportion_temps_consommé["temps_restant"] = temps_consommable_adhérent_mensuellement - user_interventions.sum(:temps_total)
 
-
-
-      #
       # Graphe temps_total par mois
-      #
-
       @temps_total_par_mois = {}
-
       user_interventions.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:temps_total).each do |month, total|
-        formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
+        formatted_month = month.to_date.strftime('%Y-%m')
         @temps_total_par_mois[formatted_month] = total
       end
 
-      # Compléter les mois manquants avec des valeurs par défaut
       (start_date.to_date..end_date.to_date).map { |date| date.beginning_of_month }.uniq.each do |month|
         formatted_month = month.strftime('%Y-%m')
         @temps_total_par_mois[formatted_month] ||= 0.0
       end
+      @temps_total_par_mois = @temps_total_par_mois.sort.to_h
 
-      @temps_total_par_mois = @temps_total_par_mois.sort.to_h # Trier par ordre chronologique
-
-
-
-      #
-      # Graphe Quantité d'interventions par état et par mois
-      #
-
+      # Graphe Quantité d'interventions par estado et par mois
       qté_interventions_par_mois_par_état = {}
-
       user_interventions.where(début: start_date..end_date).group("DATE_TRUNC('month', début)", :workflow_state).count.each do |(month, state), count|
-        formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
+        formatted_month = month.to_date.strftime('%Y-%m')
         qté_interventions_par_mois_par_état[formatted_month] ||= {}
         qté_interventions_par_mois_par_état[formatted_month][state] = count
       end
 
-      # Compléter les mois et workflows manquants avec des valeurs par défaut
       workflows = [Intervention::NOUVEAU, Intervention::POINTAGE_ACTIVE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
-
       (start_date.to_date..end_date.to_date).map { |date| date.beginning_of_month }.uniq.each do |month|
         formatted_month = month.strftime('%Y-%m')
         qté_interventions_par_mois_par_état[formatted_month] ||= {}
@@ -235,76 +177,55 @@ class PagesController < ApplicationController
         end
       end
 
-      qté_interventions_par_mois_par_état = qté_interventions_par_mois_par_état.sort.to_h # Trier par ordre chronologique
-
-      labels = qté_interventions_par_mois_par_état.keys # Les mois comme étiquettes pour l'axe X
-      workflows = [Intervention::NOUVEAU, Intervention::POINTAGE_ACTIVE, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE, Intervention::ARCHIVE]
+      qté_interventions_par_mois_par_état = qté_interventions_par_mois_par_état.sort.to_h
+      labels = qté_interventions_par_mois_par_état.keys
 
       datasets = workflows.map do |workflow|
         {
-          label: workflow.capitalize, # Nom de l'état de workflow
-          data: labels.map { |month| qté_interventions_par_mois_par_état[month][workflow] }, # Quantités par mois
+          label: workflow.capitalize,
+          data: labels.map { |month| qté_interventions_par_mois_par_état[month][workflow] },
           backgroundColor: case workflow
-                          when Intervention::NOUVEAU then "rgba(0,181,255,255)" # Info
-                          when Intervention::POINTAGE_ACTIVE then "rgba(123,146,178,255)" # Secondary
-                          when Intervention::TERMINE then "rgba(77,110,255,255)" # Primary
-                          when Intervention::VALIDE then "rgba(0,169,110,255)" # Success
-                          when Intervention::REFUSE then "rgba(255,88,97,255)" # Error
-                          when Intervention::ARCHIVE then "rgba(232,232,232,255)" # Ghost
+                          when Intervention::NOUVEAU then "rgba(0,181,255,255)"
+                          when Intervention::POINTAGE_ACTIVE then "rgba(123,146,178,255)"
+                          when Intervention::TERMINE then "rgba(77,110,255,255)"
+                          when Intervention::VALIDE then "rgba(0,169,110,255)"
+                          when Intervention::REFUSE then "rgba(255,88,97,255)"
+                          when Intervention::ARCHIVE then "rgba(232,232,232,255)"
                           end
         }
       end
-
       @data_workflow_chart = { labels: labels, datasets: datasets }
 
-
-      #
       # Graphe qté d'intervention par service
-      #
-
       @qté_interventions_par_service = user_interventions.joins(:service).group("services.nom").count
 
-
-      #
       # Graphe temps_total par service
-      #
-
-      @temps_total_par_service = {}
-      # pour chaque service, faire le sum des temps totaux
-      # current_user.interventions_adherent.joins(agent_interventions: :agent).each do |intervention|
-      #   @temps_total_par_service
-      # end
-
       @temps_total_par_service = user_interventions.joins(:service).group("services.nom").sum(:temps_total)
 
-
-      #
       # Graphe co2 total par mois
-      #
-
-      # Pour chaque mois, calcule le co2 total
       co2_total_par_mois = {}
       user_interventions.where(début: start_date..end_date).group("DATE_TRUNC('month', début)").sum(:co2).each do |month, co2|
-        formatted_month = month.to_date.strftime('%Y-%m') # Format: "YYYY-MM"
+        formatted_month = month.to_date.strftime('%Y-%m')
         co2_total_par_mois[formatted_month] = co2
       end
 
-      # Pour compléter les mois sans co2 (sinon ils n'apparaissent pas)
-      (start_date.to_date..end_date.to_date)
-        .map(&:beginning_of_month)
-        .uniq
-        .each do |month|
+      (start_date.to_date..end_date.to_date).map(&:beginning_of_month).uniq.each do |month|
         formatted_month = month.strftime('%Y-%m')
         co2_total_par_mois[formatted_month] ||= 0
       end
-
       @co2_total_par_mois = co2_total_par_mois.sort.to_h
+
+      # =================================================================
+      # NUEVOS KPIs: ÁREA ADHÉRENT (Datos específicos de este usuario)
+      # =================================================================
+      @kpi_total_interventions = user_interventions.count
+      @kpi_temps_total         = "#{@proportion_temps_consommé['temps_consommé'].round(1)}h"
+      @kpi_agents_actifs       = current_organisation.users.agent.by_service(current_user.services).count rescue 0
+      @kpi_co2_total           = "#{@co2_total_par_mois.values.sum.round(1)} kg"
     end
 
     respond_to do |format|
-      format.html do
-      end
-
+      format.html {}
       format.xls do
         if current_user.manager_or_admin?
           xls_file = DashboardManagerToXls.new(@temps_total_par_adhérent, @temps_total_par_agent, @data_workflow_chart, @qté_interventions_par_service, @temps_total_par_service, @co2_total_par_mois).call
@@ -340,30 +261,26 @@ class PagesController < ApplicationController
     @banner_background_color = BACKGROUND_COLORS[base_hour]
 
     @interventions = Intervention
-                              .filter_by_service(current_user.services)
-                              .by_role_for_home(current_user)
-                              .first(2)
+                       .filter_by_service(current_user.services)
+                       .by_role_for_home(current_user)
+                       .first(2)
 
     @messages = current_user.messages
-                                            .where(read_at: nil)
-                                            .joins(:from_user) # Filtre les utilisateurs supprimés
-                                            .ordered
-                                            .first(3)
+                            .where(read_at: nil)
+                            .joins(:from_user)
+                            .ordered
+                            .first(3)
 
     @forecasts = MeteoConceptConnexion.call
   end
 
-  # Page de la liste des météos sur 14 jours
   def meteo
     @forecasts = MeteoConceptConnexion.call
   end
 
-  # Récupère les données de la météo d'un jour, appelé dans la page "meteo"
   def meteo_by_day
     forecasts = MeteoConceptConnexion.call
-
     forecast = forecasts["forecast"][params[:day].to_i].third
-
     render json: { forecast: forecast, weather: MeteoConceptConnexion.WEATHER[forecast["weather"]] }
   end
 
@@ -373,3 +290,4 @@ class PagesController < ApplicationController
     authorize :pages
   end
 end
+
