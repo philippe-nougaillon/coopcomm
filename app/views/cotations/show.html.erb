@@ -1,0 +1,93 @@
+<div class="mx-auto lg:w-2/3 w-full mt-8">
+  <% page_title!("Cotation #{@cotation.ref}") %>
+
+  <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+    <h1 class="text-2xl sm:text-3xl text-primary font-bold">Cotation <%= @cotation.ref %></h1>
+    <div class="flex flex-wrap gap-2">
+      <% if policy(@cotation).envoyer? && @cotation.can_envoyer? %>
+        <%= link_to "Envoyer", envoyer_cotation_path(@cotation), class: "btn btn-info btn-outline hover:text-white!", data: { turbo: false } %>
+      <% end %>
+      <% if policy(@cotation).valider? && @cotation.can_valider? %>
+        <%= link_to "Valider", valider_cotation_path(@cotation), class: "btn btn-success btn-outline hover:text-white!", data: { turbo: false } %>
+      <% end %>
+      <% if policy(@cotation).refuser? && @cotation.can_refuser? %>
+        <%= link_to "Refuser", refuser_cotation_path(@cotation), class: "btn btn-error btn-outline hover:text-white!", data: { turbo: false } %>
+      <% end %>
+      <%= link_to "Générer PDF", pdf_cotation_path(@cotation, filename: @cotation.pdf_filename),
+            class: "btn btn-outline", target: "_blank", data: { turbo: false } %>
+      <% if policy(@cotation).update? %>
+        <%= link_to "Modifier", edit_cotation_path(@cotation), class: "btn btn-primary" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+    <div>
+      <strong class="block text-slate-400">Statut</strong>
+      <span class="badge text-nowrap font-bold <%= @cotation.style %>"><%= @cotation.workflow_state.humanize %></span>
+    </div>
+    <div>
+      <strong class="block text-slate-400">Adhérent</strong>
+      <%= link_to @cotation.adherent.nom_prénom, user_path(@cotation.adherent), class: "link" if @cotation.adherent %>
+    </div>
+    <div>
+      <strong class="block text-slate-400">Service</strong>
+      <%= @cotation.service&.nom %>
+    </div>
+    <div>
+      <strong class="block text-slate-400">Intitulé</strong>
+      <%= @cotation.intitulé %>
+    </div>
+    <div>
+      <strong class="block text-slate-400">Livraison souhaitée</strong>
+      <%= l(@cotation.date_livraison_souhaitée, format: :long) if @cotation.date_livraison_souhaitée %>
+    </div>
+    <div>
+      <strong class="block text-slate-400">Total HT</strong>
+      <span class="text-lg font-bold"><%= number_to_currency(@cotation.total_ht) %></span>
+    </div>
+  </div>
+
+  <% if @cotation.mémo.present? %>
+    <div class="mb-6">
+      <strong class="block text-slate-400">Mémo</strong>
+      <%= simple_format(@cotation.mémo) %>
+    </div>
+  <% end %>
+
+  <h2 class="text-xl text-secondary mb-2">Prestations</h2>
+  <div class="overflow-x-auto">
+    <table class="table table-sm">
+      <thead class="bg-slate-100">
+        <tr>
+          <th>Code</th>
+          <th>Intitulé</th>
+          <th class="text-right">Prix HT</th>
+          <th class="text-right">Qté</th>
+          <th class="text-right">Total HT</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @cotation.cotation_lignes.includes(:prestation).each do |ligne| %>
+          <tr>
+            <td class="font-medium"><%= ligne.prestation&.code %></td>
+            <td><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
+            <td class="text-right"><%= number_to_currency(ligne.prix_ht) %></td>
+            <td class="text-right"><%= ligne.qté %></td>
+            <td class="text-right"><%= number_to_currency(ligne.total_ht) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+      <tfoot>
+        <tr>
+          <th colspan="4" class="text-right">Total HT</th>
+          <th class="text-right"><%= number_to_currency(@cotation.total_ht) %></th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="mt-6">
+    <%= link_to "Retour", cotations_path, class: "btn" %>
+  </div>
+</div>

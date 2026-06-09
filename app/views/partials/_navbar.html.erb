@@ -19,6 +19,24 @@
           <%= embedded_svg "icons/construction.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
         <% end %>
       </li>
+      <% if policy(Cotation).index? %>
+        <li>
+          <%= link_to cotations_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'cotations'}", title: "Cotations / Devis" do %>
+            <span class="material-symbols-outlined">
+              request_quote
+            </span>
+          <% end %>
+        </li>
+      <% end %>
+      <% if policy(Convention).index? %>
+        <li>
+          <%= link_to conventions_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'conventions'}", title: "Conventions" do %>
+            <span class="material-symbols-outlined">
+              contract
+            </span>
+          <% end %>
+        </li>
+      <% end %>
       <% if policy(Tool).index? %>
         <li>
           <%= link_to tools_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! bg-base-100! border-b-2' if params[:controller] == 'tools'}", title: "Liste du matériel" do %>

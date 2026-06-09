@@ -1,0 +1,21 @@
+<tr class="hover:bg-base-300">
+  <td class="font-medium"><%= prestation.code %></td>
+  <td><%= prestation.libellé %></td>
+  <td><%= prestation.catégorie %></td>
+  <td><%= prestation.sous_catégorie %></td>
+  <td><%= prestation.unité %></td>
+  <td class="text-right"><%= number_to_currency(prestation.tarif) %></td>
+  <td>
+    <div class="flex gap-2 justify-end">
+      <% if policy(prestation).edit? %>
+        <%= link_to "Modifier", edit_prestation_path(prestation), class: "btn btn-sm btn-primary" %>
+      <% end %>
+      <% if policy(prestation).destroy? %>
+        <%= button_to prestation_path(prestation), method: :delete, class: "btn btn-sm",
+              form: { data: { turbo_confirm: "Supprimer cette prestation ?" } } do %>
+          <span class="material-symbols-outlined">delete</span>
+        <% end %>
+      <% end %>
+    </div>
+  </td>
+</tr>
