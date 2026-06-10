@@ -96,7 +96,7 @@
   <%# Absent %>
   <td class="py-3 px-4 text-center">
     <% if user.agent? && user.absent? %>
-      <%= embedded_svg "icons/person_off.svg", class: "icon text-amber-500 cursor-help hover:scale-110 transition-transform text-xl", title: "Absent du <%= l user.current_absence.du %> au <%= l user.current_absence.au %>, motif : <%= user.current_absence.motif %>", alt: "Utilisateur actuellement absent" %>
+      <%= embedded_svg "icons/person_off.svg", class: "icon text-amber-500 cursor-help hover:scale-110 transition-transform text-xl", title: "Absent du #{l user.current_absence.du} au #{l user.current_absence.au}, motif : #{user.current_absence.motif}", alt: "Utilisateur actuellement absent" %>
     <% end %>
   </td>
   <%# Évaluation %>
