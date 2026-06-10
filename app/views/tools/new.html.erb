@@ -7,5 +7,5 @@
 
   <%= render "form", tool: @tool %>
 
-  <%= link_to "Annuler", tools_path, class: "btn mt-2" %>
+  <%= link_to "Annuler",(session[:return_to] || tools_path), class: "btn mt-2" %>
 </div>

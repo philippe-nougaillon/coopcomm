@@ -109,7 +109,7 @@
     </div>
     <div class="flex gap-2 mt-4 w-full">
       <% if current_user.manager_or_admin? %>
-        <%= link_to "Annuler", users_path, class: "btn flex-1" %>
+         <%= link_to "Annuler", (session.delete(:return_to) || users_path), class: "btn flex-1" %>
         <%= form.submit "Enregistrer", id: "enregistrer_utilisateur", class: "btn btn-primary flex-1" %>
       <% end %>
     </div>
