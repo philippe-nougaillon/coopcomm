@@ -1,9 +1,9 @@
-<tr class="hover:bg-base-300">
-  <td class="font-medium">
-    <%= link_to convention.user.nom_prénom, user_path(convention.user), class: "link" if convention.user %>
+<tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
+  <td class="px-4 py-3 text-lg font-semibold text-primary">
+    <%= link_to convention.user.nom_prénom, user_path(convention.user), class: "hover:underline" if convention.user %>
   </td>
-  <td><%= convention.service&.nom %></td>
-  <td class="text-nowrap">
+  <td class="px-4 py-3"><%= convention.service&.nom %></td>
+  <td class="px-4 py-3 text-nowrap">
     <% prog = convention_progress(convention) %>
     <%# Espace invisible miroir de la barre, pour garder la période centrée verticalement comme les autres colonnes %>
     <% if prog %>
@@ -25,7 +25,7 @@
       </div>
     <% end %>
   </td>
-  <td>
+  <td class="px-4 py-3">
     <% if convention.document.attached? %>
       <%= link_to rails_blob_path(convention.document, disposition: "inline"),
             target: "_blank", title: convention.document.filename.to_s,
@@ -45,7 +45,7 @@
       <span class="text-slate-400 text-sm">Aucun document</span>
     <% end %>
   </td>
-  <td>
+  <td class="px-4 py-3">
     <% if convention.mémo.present? %>
       <span class="block max-w-48 truncate text-sm text-slate-500 cursor-help"
             title="<%= convention.mémo %>"><%= convention.mémo %></span>
@@ -53,7 +53,7 @@
       <span class="text-slate-400 text-sm">—</span>
     <% end %>
   </td>
-  <td>
+  <td class="px-4 py-3">
     <div class="flex gap-2 items-center justify-end">
       <% if convention.document.attached? %>
         <%= link_to rails_blob_path(convention.document, disposition: "attachment"),
@@ -62,10 +62,13 @@
         <% end %>
       <% end %>
       <% if policy(convention).update? %>
-        <%= link_to "Modifier", edit_convention_path(convention), class: "btn btn-sm btn-primary" %>
+        <%= link_to edit_convention_path(convention), class: "btn btn-sm btn-primary", title: "Modifier" do %>
+          <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
+          <span class="hidden lg:inline">Modifier</span>
+        <% end %>
       <% end %>
       <% if policy(convention).destroy? %>
-        <%= button_to convention_path(convention), method: :delete, class: "btn btn-sm",
+        <%= button_to convention_path(convention), method: :delete, class: "btn btn-sm", title: "Supprimer",
               form: { data: { turbo_confirm: "Supprimer cette convention ?" } } do %>
           <span class="material-symbols-outlined">delete</span>
         <% end %>

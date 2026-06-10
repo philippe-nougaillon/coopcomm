@@ -1,20 +1,25 @@
-<div class="w-full">
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
-    <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!("Cotations") %></h1>
+<div class="flex flex-col">
+  <div class="flex flex-row justify-between items-center my-4 gap-2">
+    <h1 class="text-4xl text-primary font-bold"><%= page_title!("Cotations") %></h1>
     <% if policy(Cotation).new? %>
-      <%= link_to "Ajouter une cotation", new_cotation_path, class: "btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
+      <%= link_to new_cotation_path,
+              class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm",
+              title: "Créer une nouvelle cotation" do %>
+        <%= embedded_svg "icons/assignment_add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+        <span class="hidden md:block">Ajouter une cotation</span>
+      <% end %>
     <% end %>
   </div>
 
-  <%= form_tag cotations_path, method: :get do %>
-    <div class="flex flex-wrap items-end gap-4 mt-6">
-      <div class="w-full md:w-fit">
-        <%= label_tag :search, "Rechercher" %>
-        <%= text_field_tag :search, params[:search], class: "input input-sm input-bordered w-full",
+  <%= form_tag cotations_path, method: :get, class: "pt-6" do %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div class="w-full md:flex-1">
+        <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+        <%= text_field_tag :search, params[:search], class: "input input-bordered input-md w-full",
               placeholder: "Réf, intitulé", onchange: "this.form.submit()" %>
       </div>
-      <div class="w-full md:w-fit">
-        <%= label_tag :workflow_state, "Statut" %>
+      <div class="w-full md:flex-1">
+        <%= label_tag :workflow_state, "Statut", class: "block text-xs font-semibold text-slate-600 mb-1" %>
         <%= select_tag :workflow_state,
               options_for_select(Cotation.workflow_state_humanized, params[:workflow_state]),
               include_blank: "Tous", class: "slim-select w-full",
@@ -22,47 +27,52 @@
       </div>
     </div>
   <% end %>
+</div>
 
-  <div class="divider"></div>
-
+<hr class="mt-6 mb-6">
+<div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
+  <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
+</div>
+<div class="flex flex-col bg-white border-x border-b border-slate-200 shadow-sm overflow-hidden">
   <div class="overflow-x-auto">
-    <table class="table">
+    <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+      <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+      <span>Faire glisser pour voir plus</span>
+    </div>
+    <table class="table table-sm w-full border-none">
       <thead class="bg-slate-100">
         <tr>
-          <th>Réf</th>
-          <th>Statut</th>
-          <th>Adhérent</th>
-          <th>Service</th>
-          <th>Intitulé</th>
-          <th>Livraison</th>
-          <th class="text-right">Total HT</th>
-          <th></th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Réf</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Adhérent</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Intitulé</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Livraison</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-right">Total HT</th>
+          <th class="px-4 py-3"></th>
         </tr>
       </thead>
       <tbody>
         <%= render partial: "cotation", collection: @cotations %>
       </tbody>
     </table>
+    <% if @cotations.empty? %>
+      <p class="text-center text-slate-400 py-8">Aucune cotation.</p>
+    <% end %>
   </div>
-
-  <% if @cotations.empty? %>
-    <p class="text-slate-400 mt-4">Aucune cotation.</p>
-  <% end %>
-
-  <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
-  <% if @pagy.pages > 1 %>
-    <div class="hidden sm:block sm:flex-1"></div>
-    
-    <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
-      <%= pagy_nav(@pagy).html_safe %>
-    </div>
-    
-    <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
-      <%= pagy_info(@pagy).html_safe %>
-    </div>
-  <% else %>
-    <div >
-    </div>
-  <% end %>
 </div>
+<div class="flex flex-col bg-white border-x border-b border-slate-200 rounded-b-xl">
+  <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full">
+    <% if @pagy.pages > 1 %>
+      <div class="hidden sm:block sm:flex-1"></div>
+      <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
+        <%= pagy_nav(@pagy).html_safe %>
+      </div>
+      <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
+        <%= pagy_info(@pagy).html_safe %>
+      </div>
+    <% else %>
+      <div></div>
+    <% end %>
+  </div>
 </div>

@@ -67,6 +67,54 @@ class CotationTest < ActiveSupport::TestCase
     refute cotation.can_valider?
   end
 
+  test 'renvoyer : refusé -> envoyé (corriger puis renvoyer)' do
+    cotation = build_cotation
+    cotation.save!
+    cotation.envoyer!
+    cotation.refuser!
+    assert cotation.can_envoyer?
+    cotation.envoyer!
+    assert cotation.envoyé?
+  end
+
+  # --- modifiable? (verrou d'édition après envoi) ---
+
+  test "modifiable? vrai à l'état créé" do
+    assert build_cotation.modifiable?
+  end
+
+  test "modifiable? vrai à l'état refusé" do
+    cotation = build_cotation
+    cotation.save!
+    cotation.envoyer!
+    cotation.refuser!
+    assert cotation.modifiable?
+  end
+
+  test "modifiable? faux à l'état envoyé" do
+    cotation = build_cotation
+    cotation.save!
+    cotation.envoyer!
+    refute cotation.modifiable?
+  end
+
+  test "modifiable? faux à l'état validé" do
+    cotation = build_cotation
+    cotation.save!
+    cotation.envoyer!
+    cotation.valider!
+    refute cotation.modifiable?
+  end
+
+  test "modifiable? faux à l'état archivé" do
+    cotation = build_cotation
+    cotation.save!
+    cotation.envoyer!
+    cotation.valider!
+    cotation.archiver!
+    refute cotation.modifiable?
+  end
+
   # --- Référence / périmètre / discard ---
 
   test 'ref générée à la création au format AAAA-N' do

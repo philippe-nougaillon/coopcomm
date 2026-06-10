@@ -1,70 +1,79 @@
-<%= form_with model: @convention, html: { multipart: true } do |f| %>
+<div class="max-w-3xl mx-auto my-6 bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+  <%= form_with model: @convention, html: { multipart: true } do |f| %>
 
-  <% if @convention.errors.any? %>
-    <div class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
-      <h2 class="font-black!">
-        <%= pluralize(@convention.errors.count, "erreur") %> empêche(nt) l'enregistrement de la convention :
-      </h2>
-      <ul class="list-disc list-inside">
-        <% @convention.errors.each do |error| %>
-          <li><%= error.full_message %></li>
+    <% if @convention.errors.any? %>
+      <div class="bg-red-50 text-red-500 px-4 py-3 font-medium rounded-lg mb-4 border border-red-200">
+        <h2 class="font-black mb-2 text-sm md:text-base">
+          <%= pluralize(@convention.errors.count, "erreur") %> empêche(nt) l'enregistrement de la convention :
+        </h2>
+        <ul class="list-disc list-inside text-xs opacity-90">
+          <% @convention.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+         data-controller="dynamic-select"
+         data-dynamic-select-url-value="<%= services_for_adherent_conventions_path %>">
+      <%# Adhérent : figé en modification %>
+      <div class="form-control w-full">
+        <%= f.label :user_id, "Adhérent", class: "label font-semibold text-slate-700" %>
+        <% if @convention.persisted? %>
+          <input type="text" value="<%= @convention.user&.nom_prénom %>" class="input input-sm input-bordered w-full" disabled>
+          <%= f.hidden_field :user_id %>
+        <% else %>
+          <%= f.collection_select :user_id, @adherents, :id, :nom_prénom,
+                { prompt: "Choisir un adhérent" },
+                { class: "slim-select w-full", required: true,
+                  data: { dynamic_select_target: "adherent", action: "change->dynamic-select#updateServices" } } %>
         <% end %>
-      </ul>
+      </div>
+
+      <%# Service : figé en modification (clé d'unicité) ; sinon dépend de l'adhérent choisi %>
+      <div class="form-control w-full">
+        <%= f.label :service_id, "Service", class: "label font-semibold text-slate-700" %>
+        <% if @convention.persisted? %>
+          <input type="text" value="<%= @convention.service&.nom %>" class="input input-sm input-bordered w-full" disabled>
+          <%= f.hidden_field :service_id %>
+        <% else %>
+          <%= f.collection_select :service_id, @available_services, :id, :nom,
+                { prompt: "Choisir un service" },
+                { class: "slim-select w-full", required: true,
+                  data: { dynamic_select_target: "service" } } %>
+        <% end %>
+      </div>
+
+      <div class="form-control w-full">
+        <%= f.label :date_début, "Date de début", class: "label font-semibold text-slate-700" %>
+        <%= f.date_field :date_début, class: "input input-sm input-bordered w-full focus:input-primary", required: true %>
+      </div>
+
+      <div class="form-control w-full">
+        <%= f.label :date_fin_prévue, "Date de fin prévue", class: "label font-semibold text-slate-700" %>
+        <%= f.date_field :date_fin_prévue, class: "input input-sm input-bordered w-full focus:input-primary" %>
+      </div>
+
+      <div class="form-control w-full sm:col-span-2">
+        <%= f.label :mémo, "Mémo", class: "label font-semibold text-slate-700" %>
+        <%= f.text_area :mémo, rows: 3, class: "textarea textarea-bordered w-full focus:textarea-primary" %>
+      </div>
+
+      <%= render "shared/file_dropzone", form: f, attribute: :document,
+            accept: ".pdf", label: "Document", wrapper_class: "sm:col-span-2" %>
+    </div>
+
+    <div class="mt-6 flex gap-2">
+      <%= f.submit "Enregistrer", class: "btn btn-primary" %>
+      <%= link_to "Annuler", conventions_path, class: "btn" %>
     </div>
   <% end %>
+</div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"
-       data-controller="dynamic-select"
-       data-dynamic-select-url-value="<%= services_for_adherent_conventions_path %>">
-    <%# Adhérent : figé en modification %>
-    <div class="flex flex-col gap-1">
-      <%= f.label :user_id, "Adhérent", class: "text-sm text-slate-500" %>
-      <% if @convention.persisted? %>
-        <input type="text" value="<%= @convention.user&.nom_prénom %>" class="input input-sm input-bordered w-full" disabled>
-        <%= f.hidden_field :user_id %>
-      <% else %>
-        <%= f.collection_select :user_id, @adherents, :id, :nom_prénom,
-              { prompt: "Choisir un adhérent" },
-              { class: "slim-select w-full", required: true,
-                data: { dynamic_select_target: "adherent", action: "change->dynamic-select#updateServices" } } %>
-      <% end %>
-    </div>
-
-    <%# Service : figé en modification (clé d'unicité) ; sinon dépend de l'adhérent choisi %>
-    <div class="flex flex-col gap-1">
-      <%= f.label :service_id, "Service", class: "text-sm text-slate-500" %>
-      <% if @convention.persisted? %>
-        <input type="text" value="<%= @convention.service&.nom %>" class="input input-sm input-bordered w-full" disabled>
-        <%= f.hidden_field :service_id %>
-      <% else %>
-        <%= f.collection_select :service_id, @available_services, :id, :nom,
-              { prompt: "Choisir un service" },
-              { class: "slim-select w-full", required: true,
-                data: { dynamic_select_target: "service" } } %>
-      <% end %>
-    </div>
-
-    <div class="flex flex-col gap-1">
-      <%= f.label :date_début, "Date de début", class: "text-sm text-slate-500" %>
-      <%= f.date_field :date_début, class: "input input-sm input-bordered w-full", required: true %>
-    </div>
-
-    <div class="flex flex-col gap-1">
-      <%= f.label :date_fin_prévue, "Date de fin prévue", class: "text-sm text-slate-500" %>
-      <%= f.date_field :date_fin_prévue, class: "input input-sm input-bordered w-full" %>
-    </div>
-
-    <div class="flex flex-col gap-1 sm:col-span-2">
-      <%= f.label :mémo, "Mémo", class: "text-sm text-slate-500" %>
-      <%= f.text_area :mémo, rows: 3, class: "textarea textarea-bordered w-full" %>
-    </div>
-
-    <%= render "shared/file_dropzone", form: f, attribute: :document,
-          accept: ".pdf", label: "Document", wrapper_class: "sm:col-span-2" %>
-  </div>
-
-  <div class="mt-6 flex gap-2">
-    <%= f.submit "Enregistrer", class: "btn btn-primary" %>
-    <%= link_to "Annuler", conventions_path, class: "btn" %>
-  </div>
-<% end %>
+<div class="pt-2 pb-6 max-w-3xl mx-auto px-4">
+  <%= link_to conventions_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+    <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des conventions" %>
+    Retour à la liste des conventions
+  <% end %>
+</div>

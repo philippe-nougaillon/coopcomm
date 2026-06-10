@@ -52,6 +52,29 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal @prestation.tarif, ligne.prix_ht
   end
 
+  # --- Modification & verrou d'édition ---
+
+  test 'update modifie une cotation modifiable (état créé)' do
+    cotation = cotations(:cotation_paris) # créé
+    patch cotation_url(cotation), params: { cotation: { intitulé: 'Titre corrigé' } }
+    assert_redirected_to cotation_path(cotation)
+    assert_equal 'Titre corrigé', cotation.reload.intitulé
+  end
+
+  test 'update interdit sur une cotation envoyée : données inchangées' do
+    cotation = cotations(:cotation_secretariat) # envoyé
+    titre = cotation.intitulé
+    patch cotation_url(cotation), params: { cotation: { intitulé: 'Tentative de modif' } }
+    assert_redirected_to root_path
+    assert_equal titre, cotation.reload.intitulé
+  end
+
+  test 'edit interdit sur une cotation envoyée' do
+    cotation = cotations(:cotation_secretariat) # envoyé
+    get edit_cotation_url(cotation)
+    assert_redirected_to root_path
+  end
+
   # --- Workflow ---
 
   test 'envoyer : créé -> envoyé' do
