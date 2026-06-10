@@ -1,7 +1,7 @@
 <tr class="hover:bg-base-300">
   <td class="font-medium"><%= link_to cotation.ref, cotation, class: "link link-primary" %></td>
   <td>
-    <span class="badge badge-sm text-nowrap font-bold <%= cotation.style %>"><%= cotation.workflow_state.humanize %></span>
+    <span class="badge text-nowrap font-bold <%= cotation.style %>"><%= cotation.workflow_state.humanize %></span>
   </td>
   <td><%= cotation.adherent&.nom_prénom %></td>
   <td><%= cotation.service&.nom %></td>
