@@ -4,7 +4,7 @@
     <% if user %>
       <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
     <% else %>
-      <img src="/assets/images/icons/chat.svg" class="icon text-primary" alt="chat" title="chat">
+          <%= embedded_svg "icons/chat.svg", class: "icon text-primary", title: "chat" %>
     <% end %>
   </div>
   <div>

@@ -37,11 +37,11 @@
     <% if policy(@tool).destroy? %>
       <% if @tool.interventions.any? %>
         <div class="btn cursor-not-allowed" title="Suppression impossible, l'outil est utilisé dans des interventions">
-          <img src="/assets/images/icons/delete.svg" class="icon text-gray-500" alt="Supprimer" title="Supprimer l'intervention">
+                <%= embedded_svg "icons/delete.svg", class: "text-gray-500", title: "Supprimer l'intervention" %>
         </div>
       <% else %>
         <%= button_to tool_path(@tool), method: :delete, id: "supprimer_outil", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, class: "btn", 'data-testid': "Supprimer l'outil" do %>
-          <img src="/assets/images/icons/delete.svg" class="icon" alt="Supprimer" title="Supprimer l'intervention">
+          <%= embedded_svg "icons/delete.svg", class: "icon", title: "Supprimer l'intervention" %>
         <% end %>
       <% end %>
     <% end %>

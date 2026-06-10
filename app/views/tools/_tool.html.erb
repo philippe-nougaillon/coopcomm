@@ -13,11 +13,11 @@
   <% case params[:vue]%>
   <% when 'disponible' %>
     <td>
-      <img src="/assets/images/icons/check_circle.svg" class="icon text-success" alt="Disponible" title="Outil disponible">
+      <%= embedded_svg "icons/check_circle.svg", class: "text-success", title: "Outil disponible" %>
     </td>
   <% when 'indisponible' %>
     <td>
-      <img src="/assets/images/icons/cancel.svg" class="icon text-error" alt="Indisponible" title="Outil indisponible">
+      <%= embedded_svg "icons/cancel.svg", class: " text-error", title: "Outil indisponible" %>
     </td>
   <% when 'calendrier' %>
     <% (@date..@date_fin).each do | date | %>

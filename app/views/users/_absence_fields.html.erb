@@ -47,7 +47,8 @@
       <label for="period_matin_<%= dom_id %>" 
         class="btn btn-outline border-slate-200 bg-white hover:bg-base-200 h-auto py-3 px-4 w-full flex flex-row items-center justify-start gap-3 rounded-md normal-case font-normal text-left
         peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all duration-200 cursor-pointer">
-        <img src="/assets/images/icons/wb_sunny.svg" class="icon text-warning text-2xl shrink-0" alt="Matin" title="Matin">
+        
+        <%= embedded_svg "icons/wb_sunny.svg", class: "icon text-warning text-2xl shrink-0", title: "Matin" %>
         <div class="flex flex-col min-w-0">
           <span class="font-semibold text-slate-800 text-sm block leading-none mb-1">Matin</span>
           <span class="text-xs text-slate-400 block font-normal leading-none">avant midi</span>
@@ -65,7 +66,7 @@
       <label for="period_apres_midi_<%= dom_id %>" 
         class="btn btn-outline border-slate-200 bg-white hover:bg-base-200 h-auto py-3 px-4 w-full flex flex-row items-center justify-start gap-3 rounded-md normal-case font-normal text-left
         peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all duration-200 cursor-pointer">
-        <img src="/assets/images/icons/wb_twilight.svg" class="icon text-info text-2xl shrink-0" alt="Après-midi" title="Après-midi">
+        <%= embedded_svg "icons/wb_twilight.svg", class: "icon text-info text-2xl shrink-0", title: "Après-midi" %>
         <div class="flex flex-col min-w-0">
           <span class="font-semibold text-slate-800 text-sm block leading-none mb-1">Après-midi</span>
           <span class="text-xs text-slate-400 block font-normal leading-none">après 13h</span>

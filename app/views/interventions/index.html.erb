@@ -49,7 +49,8 @@
       <% if current_user.manager_or_admin? || current_user.agent? || current_user.adhérent? %>
         <details class="group w-full" <%= 'open' if params[:adherent_id].present? || params[:tags].present? || params[:service].present? || params[:agent_ids].present? || params[:tool_ids].present? || params[:archives].present? %>>
           <summary class="flex items-center gap-2 text-primary font-semibold text-sm cursor-pointer select-none list-none w-fit pt-2 hover:underline">
-            <img src="/assets/images/icons/tune.svg" class="icon text-[18px] transition-transform group-open:rotate-180" alt="Fermer">
+            
+            <%= embedded_svg "icons/tune.svg", class: "icon text-[18px] transition-transform group-open:rotate-180", title: "Fermer" %>
             <span class="group-open:hidden">Plus de critères de filtrage</span>
             <span class="hidden group-open:inline">Moins de critères de filtrage</span>
           </summary>
@@ -113,7 +114,7 @@
   <div id="interventions" class="min-w-full bg-white border-x border-b border-slate-200  overflow-hidden shadow-xs">
     <% if params[:vue] == 'compact' %>
       <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-        <img src="/assets/images/icons/swipe.svg" class="icon text-sm" alt="swipe">
+        <%= embedded_svg "icons/swipe.svg", class: "icon text-sm", title: "swipe" %>
         <span>Faire glisser pour voir plus</span>
       </div>
     <% end %>
