@@ -68,6 +68,55 @@ class Tool < ApplicationRecord
     end
   end
 
+  def get_mouvements_for_next_14_days
+    self.mouvements
+                  .where("DATE(date) BETWEEN DATE(?) AND DATE(?)", DateTime.now, DateTime.now+13)
+  end
+
+  def get_etats_from_mouvements
+    mouvements = get_mouvements_for_next_14_days
+    
+    days_range = (Date.today..(Date.today + 13.days)).to_a
+
+    planning = []
+
+    est_en_panne = self.en_panne
+
+    # Pour chaque jour, noté J+X
+    (days_range).each do |day|
+      etats = mouvements.where(date: day).pluck(:état) # Where car il peut exister un mouvement de panne et de réservation dans le même jour
+
+      # Si l'outil est toujours en panne ajourd'hui
+      if est_en_panne
+        # Si l'outil est en panne, mais que le jour J+X est en fin de panne
+        if etats.include?("fin_panne")
+          planning << "V"
+          est_en_panne = false
+        # Sinon on considère qu'il est toujours en panne le jour J+X
+        else
+          planning << "N"
+        end
+      else
+        # Si des mouvements existent au jour J+X
+        if etats.any?
+          # Si une panne existe, on ouvre une période de panne
+          if etats.include?("panne")
+            planning << "N"
+            est_en_panne = true
+          # Sinon, l'outil est juste réservé par quelqu'un
+          else
+            planning << "B|R"
+          end
+        # Sinon, l'outil est disponible ce jour
+        else
+          planning << "V"
+        end
+      end
+    end
+
+    planning
+  end
+
   private
 
   def create_mouvement

@@ -39,36 +39,9 @@
       </span>
     </td>
   <% when 'calendrier' %>
-    <% (@date..@date_fin).each do | date | %>
-      <td class="text-center p-0! <%= date == Date.today ? 'border-x-1 border-x-cerise' : 'bg-slate-200' %>">
-        <% 
-          # On vérifie l'état juste avant la fin du créneau pour capter tout ce qui s'y passe
-          heure_matin = Time.zone.parse("#{date} 12:59:59")
-          heure_soir = Time.zone.parse("#{date} 17:59:59")
-
-          mouvement_matin = tool.dernier_mouvement_a(heure_matin)
-          mouvement_soir = tool.dernier_mouvement_a(heure_soir)
-        %>
-
-        <%= render 'mouvements/mouvement_slot', 
-                  mouvement: mouvement_matin, 
-                  tool_id: tool.id, 
-                  date: date, 
-                  margin_style: 'margin-right: 2px', 
-                  start_hour: 8, 
-                  end_hour: 13, 
-                  new_title: "Réserver \"#{tool.name.humanize}\" le #{date.day} au matin" %>
-
-        <%= render 'mouvements/mouvement_slot', 
-                  mouvement: mouvement_soir, 
-                  tool_id: tool.id, 
-                  date: date, 
-                  margin_style: 'margin-left: 2px', 
-                  start_hour: 13, 
-                  start_minute: 5, 
-                  end_hour: 18, 
-                  new_title: "Réserver \"#{tool.name.humanize}\" le #{date.day} après-midi" %>
-      </td>
+    <% tool.get_etats_from_mouvements.each do | etat | %>
+      <td class="text-center p-0! ">
+        <%= etat %>
     <% end %>
 
     <!--
