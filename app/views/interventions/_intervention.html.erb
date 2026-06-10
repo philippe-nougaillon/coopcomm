@@ -11,11 +11,9 @@
             </span>
             <% if intervention.repeter %>
               <%= embedded_svg "icons/event_repeat.svg",
-                 class: "icon",
                  title: "Modèle pour le pointage" %>
             <% elsif intervention.template_slug %>
               <%= embedded_svg "icons/qr_code_2.svg",
-                               class: "icon",
                                title: "Pointage" %>
             <% end %>
           </div>
@@ -182,7 +180,7 @@
           <div class="flex justify-end">
             <button onclick="my_modal_<%= intervention.id %>.close()">
               <%= embedded_svg "icons/cancel.svg",
-                 class: "icon text-5xl text-white font-black",
+                 class: "text-5xl text-white font-black",
                  title: "Fermer" %>
             </button>
           </div>

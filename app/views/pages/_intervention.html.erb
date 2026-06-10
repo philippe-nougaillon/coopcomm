@@ -3,7 +3,7 @@
     <% if intervention.repeter %>
       <%= embedded_svg "icons/event_repeat.svg", class: "text-secondary", title: "Intervention répétée" %>
     <% else %>
-      <%= embedded_svg "icons/construction.svg", class: "icon", title: "Intervention en cours" %>
+      <%= embedded_svg "icons/construction.svg", title: "Intervention en cours" %>
     <% end %>
     <div class="flex flex-col gap-1 min-w-0">
       <b><%= link_to intervention.description.humanize, intervention, class: "text-#{intervention.style.split.first.split('-').last} hover:underline block truncate" %></b>

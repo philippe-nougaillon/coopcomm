@@ -40,11 +40,11 @@
             <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
               <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
                 
-                <%= embedded_svg "icons/mail.svg", class: "icon", title: "Email" %> Email
+                <%= embedded_svg "icons/mail.svg", title: "Email" %> Email
               </div>
               <div class="py-2.5 text-slate-800 border-b border-slate-100 break-all"><%= @user.email %></div>
               <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-                <%= embedded_svg "icons/call.svg", class: "icon", title: "Téléphone" %> Téléphone
+                <%= embedded_svg "icons/call.svg", title: "Téléphone" %> Téléphone
               </div>
               <div class="py-2.5 border-b border-slate-100">
                 <% if @user.téléphone.to_s.strip.present? %>
@@ -54,13 +54,13 @@
                 <% end %>
               </div>
               <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-                <%= embedded_svg "icons/store.svg", class: "icon text-base", title: "Services" %>
+                <%= embedded_svg "icons/store.svg", class: "text-base", title: "Services" %>
                 <%= @user.manager_or_admin? ? "Responsable des services" : "Services" %>
               </div>
               <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @user.services.pluck(:nom).join(", ") %></div>
               <% if @user.memo.present? %>
                 <div class="flex items-start gap-2 py-2.5 text-slate-500" style="padding-right: 2rem;">
-                  <%= embedded_svg "icons/note.svg", class: "icon text-base", title: "Mémo" %>
+                  <%= embedded_svg "icons/note.svg", class: "text-base", title: "Mémo" %>
                 </div>
                 <div class="py-2.5 text-slate-800 italic"><%= @user.memo %></div>
               <% end %>
@@ -81,7 +81,7 @@
                 <div class="flex items-center">
                   <div class="flex w-36">
                     <% i.times do %>
-                      <%= embedded_svg "icons/star.svg", class: "icon text-slate-400", title: "star", alt: "star" %>
+                      <%= embedded_svg "icons/star.svg", class: "text-slate-400", title: "star", alt: "star" %>
                     <% end %>
                   </div>
                   <progress class="progress progress-primary w-56" value="<%= @user.total_rating > 0 ? @user.star_count(i) : 0 %>" max="100"></progress>
@@ -95,11 +95,11 @@
           <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Informations</p>
           <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
             <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-              <%= embedded_svg "icons/mail.svg", class: "icon text-base", title: "Email" %> Email
+              <%= embedded_svg "icons/mail.svg", class: "text-base", title: "Email" %> Email
             </div>
             <div class="py-2.5 text-slate-800 border-b border-slate-100 break-all"><%= @user.email %></div>
             <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-              <%= embedded_svg "icons/call.svg", class: "icon text-base", title: "Téléphone" %> Téléphone
+              <%= embedded_svg "icons/call.svg", class: "text-base", title: "Téléphone" %> Téléphone
             </div>
             <div class="py-2.5 border-b border-slate-100">
               <% if @user.téléphone.to_s.strip.present? %>
@@ -109,13 +109,13 @@
               <% end %>
             </div>
             <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-              <%= embedded_svg "icons/store.svg", class: "icon text-base", title: "Services" %>
+              <%= embedded_svg "icons/store.svg", class: "text-base", title: "Services" %>
               <%= @user.manager_or_admin? ? "Responsable des services" : "Services" %>
             </div>
             <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @user.services.pluck(:nom).join(", ") %></div>
             <% if @user.memo.present? %>
               <div class="flex items-start gap-2 py-2.5 text-slate-500" style="padding-right: 2rem;">
-                <%= embedded_svg "icons/note.svg", class: "icon text-base", title: "Mémo" %> Mémo
+                <%= embedded_svg "icons/note.svg", class: "text-base", title: "Mémo" %> Mémo
               </div>
               <div class="py-2.5 text-slate-800 italic"><%= @user.memo %></div>
             <% end %>
@@ -157,7 +157,7 @@
         <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
       </form>
       <h3 class="text-lg font-bold text-error flex items-center gap-2">
-        <%= embedded_svg "icons/warning.svg", class: "icon", title: "Supprimer l'utilisateur" %>   
+        <%= embedded_svg "icons/warning.svg", title: "Supprimer l'utilisateur" %>   
         Supprimer l'utilisateur
       </h3>
       <p class="py-4 text-sm text-slate-600">
@@ -179,7 +179,7 @@
 
   <div class="my-10">
     <%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition" do %>
-      <%= embedded_svg "icons/arrow_back.svg", class: "icon text-base", title: "Retour à la liste" %> 
+      <%= embedded_svg "icons/arrow_back.svg", class: "text-base", title: "Retour à la liste" %> 
       Retour à la liste
     <% end %>
   </div>
@@ -196,12 +196,7 @@
       </div>
   <div class="overflow-x-auto border border-slate-200  shadow-sm bg-white ">
     <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-      <img
-          src="/assets/images/icons/swipe.svg"
-          class="icon text-sm"
-          alt="swipe"
-          title="Faire glisser"
-        />
+      <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
       <span>Faire glisser pour voir plus</span>
     </div>
     <table class="table text-sm w-full">
