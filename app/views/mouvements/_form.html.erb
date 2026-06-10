@@ -22,7 +22,7 @@
 
   <div class="w-full">
     <%= form.label :état %>
-    <%= form.select :état, options_for_select(Mouvement.états.keys, mouvement.état), {include_blank: true}, class: 'select select-sm w-full', required: true %>
+    <%= form.select :état, options_for_select([['Panne', 'panne'], ['Fin de panne', 'fin_panne']], mouvement.état), {include_blank: true}, class: 'select select-sm w-full', required: true %>
   </div>
 
   <div class="w-full">

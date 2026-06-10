@@ -16,13 +16,4 @@ namespace :mouvements do
   #     end
   #   end
   # end
-
-  desc "Créer un mouvement panne si la veille l'outil était en panne, à lancer le matin"
-  task :create_pannes, [:enregistrer] => :environment do |task, args|
-    mouvements_panne = Mouvement.where(date: Date.today-1.day).where(état: "panne")
-    mouvements_panne.each do |mouvement|
-      panne_today = Mouvement.create(tool_id: mouvement.tool_id, état: "panne", date: Date.today, user_id: mouvement.user_id, commentaires: mouvement.commentaires)
-      binding.break
-    end
-  end
 end
