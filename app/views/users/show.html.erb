@@ -39,7 +39,7 @@
             <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Informations</p>
             <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
               <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-                <img src="/assets/icons/mail.svg" class="icon" alt="mail"> Email
+                 <%= embedded_svg "icons/mail.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
               </div>
               <div class="py-2.5 text-slate-800 border-b border-slate-100 break-all"><%= @user.email %></div>
               <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
@@ -177,6 +177,7 @@
 
   <div class="my-10">
     <%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition" do %>
+      
       <img src="/assets/icons/arrow_back.svg" class="icon text-base" alt="Retour à la liste" title="Retour à la liste" /> 
       Retour à la liste
     <% end %>
