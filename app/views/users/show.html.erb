@@ -109,7 +109,7 @@
               <% end %>
             </div>
             <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-              <%= embedded_svg "icons/store.svg", class: "icon text-base", title: "Services" />
+              <%= embedded_svg "icons/store.svg", class: "icon text-base", title: "Services" %>
               <%= @user.manager_or_admin? ? "Responsable des services" : "Services" %>
             </div>
             <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @user.services.pluck(:nom).join(", ") %></div>
