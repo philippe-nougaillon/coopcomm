@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class CotationTest < ActiveSupport::TestCase
   setup do
@@ -7,14 +9,14 @@ class CotationTest < ActiveSupport::TestCase
   end
 
   def build_cotation(attrs = {})
-    Cotation.new({ adherent: @adherent, service: @service, intitulé: "Devis" }.merge(attrs))
+    Cotation.new({ adherent: @adherent, service: @service, intitulé: 'Devis' }.merge(attrs))
   end
 
-  test "valide avec un intitulé" do
+  test 'valide avec un intitulé' do
     assert build_cotation.valid?
   end
 
-  test "invalide sans intitulé" do
+  test 'invalide sans intitulé' do
     cotation = build_cotation(intitulé: nil)
     refute cotation.valid?
     assert cotation.errors[:intitulé].any?
@@ -22,12 +24,12 @@ class CotationTest < ActiveSupport::TestCase
 
   # --- Workflow (gem workflow) ---
 
-  test "état initial : créé" do
-    assert_equal "créé", build_cotation.workflow_state
+  test 'état initial : créé' do
+    assert_equal 'créé', build_cotation.workflow_state
     assert build_cotation.créé?
   end
 
-  test "envoyer : créé -> envoyé" do
+  test 'envoyer : créé -> envoyé' do
     cotation = build_cotation
     cotation.save!
     assert cotation.can_envoyer?
@@ -35,7 +37,7 @@ class CotationTest < ActiveSupport::TestCase
     assert cotation.envoyé?
   end
 
-  test "depuis envoyé, on peut valider et refuser" do
+  test 'depuis envoyé, on peut valider et refuser' do
     cotation = build_cotation
     cotation.save!
     cotation.envoyer!
@@ -43,7 +45,7 @@ class CotationTest < ActiveSupport::TestCase
     assert cotation.can_refuser?
   end
 
-  test "valider : envoyé -> validé" do
+  test 'valider : envoyé -> validé' do
     cotation = build_cotation
     cotation.save!
     cotation.envoyer!
@@ -51,7 +53,7 @@ class CotationTest < ActiveSupport::TestCase
     assert cotation.validé?
   end
 
-  test "refuser : envoyé -> refusé" do
+  test 'refuser : envoyé -> refusé' do
     cotation = build_cotation
     cotation.save!
     cotation.envoyer!
@@ -59,7 +61,7 @@ class CotationTest < ActiveSupport::TestCase
     assert cotation.refusé?
   end
 
-  test "on ne peut pas valider directement depuis créé" do
+  test 'on ne peut pas valider directement depuis créé' do
     cotation = build_cotation
     cotation.save!
     refute cotation.can_valider?
@@ -67,7 +69,7 @@ class CotationTest < ActiveSupport::TestCase
 
   # --- Référence / périmètre / discard ---
 
-  test "ref générée à la création au format AAAA-N" do
+  test 'ref générée à la création au format AAAA-N' do
     cotation = build_cotation
     cotation.save!
     assert_match(/\A#{Date.current.year}-\d+\z/, cotation.ref)
@@ -77,7 +79,7 @@ class CotationTest < ActiveSupport::TestCase
     cotation = build_cotation
     cotation.save!
     ref = cotation.ref
-    cotation.update!(intitulé: "Nouveau titre")
+    cotation.update!(intitulé: 'Nouveau titre')
     assert_equal ref, cotation.ref
   end
 
@@ -86,24 +88,24 @@ class CotationTest < ActiveSupport::TestCase
     premiere.save!
     seconde = build_cotation
     seconde.save!
-    n1 = premiere.ref.split("-").last.to_i
-    n2 = seconde.ref.split("-").last.to_i
+    n1 = premiere.ref.split('-').last.to_i
+    n2 = seconde.ref.split('-').last.to_i
     assert_equal n1 + 1, n2
   end
 
-  test "organisation dérivée du service" do
+  test 'organisation dérivée du service' do
     cotation = build_cotation
     cotation.save!
     assert_equal @service.organisation, cotation.organisation
   end
 
-  test "visible_to un administrateur de la même organisation" do
+  test 'visible_to un administrateur de la même organisation' do
     cotation = build_cotation
     cotation.save!
     assert_includes Cotation.visible_to(users(:administrateur_paris)), cotation
   end
 
-  test "visible_to un manager possédant le service" do
+  test 'visible_to un manager possédant le service' do
     cotation = build_cotation
     cotation.save!
     # hidalgo gère le service informatique
@@ -116,12 +118,12 @@ class CotationTest < ActiveSupport::TestCase
     refute_includes Cotation.visible_to(users(:manager_marseille)), cotation
   end
 
-  test "aucune cotation visible pour un adhérent" do
+  test 'aucune cotation visible pour un adhérent' do
     build_cotation.save!
     assert_empty Cotation.visible_to(@adherent)
   end
 
-  test "discard (soft delete)" do
+  test 'discard (soft delete)' do
     cotation = build_cotation
     cotation.save!
     cotation.discard
@@ -131,7 +133,7 @@ class CotationTest < ActiveSupport::TestCase
 
   # --- Workflow : archivage (états terminaux) ---
 
-  test "archiver : validé -> archivé" do
+  test 'archiver : validé -> archivé' do
     cotation = build_cotation
     cotation.save!
     cotation.envoyer!
@@ -141,7 +143,7 @@ class CotationTest < ActiveSupport::TestCase
     assert cotation.archivé?
   end
 
-  test "archiver : refusé -> archivé" do
+  test 'archiver : refusé -> archivé' do
     cotation = build_cotation
     cotation.save!
     cotation.envoyer!
@@ -165,25 +167,25 @@ class CotationTest < ActiveSupport::TestCase
 
   # --- Attributs imbriqués (cotation_lignes) ---
 
-  test "une ligne sans prestation_id est ignorée (reject_if)" do
-    cotation = build_cotation(cotation_lignes_attributes: { "0" => { qté: 5 } })
+  test 'une ligne sans prestation_id est ignorée (reject_if)' do
+    cotation = build_cotation(cotation_lignes_attributes: { '0' => { qté: 5 } })
     cotation.save!
     assert_equal 0, cotation.cotation_lignes.count
   end
 
-  test "une ligne avec prestation_id est créée via les attributs imbriqués" do
+  test 'une ligne avec prestation_id est créée via les attributs imbriqués' do
     cotation = build_cotation(cotation_lignes_attributes: {
-      "0" => { prestation_id: prestations(:nettoyage_bureaux).id, qté: 2 }
-    })
+                                '0' => { prestation_id: prestations(:nettoyage_bureaux).id, qté: 2 }
+                              })
     cotation.save!
     assert_equal 1, cotation.cotation_lignes.count
   end
 
-  test "allow_destroy : _destroy supprime une ligne existante" do
+  test 'allow_destroy : _destroy supprime une ligne existante' do
     cotation = build_cotation
     cotation.save!
     ligne = cotation.cotation_lignes.create!(prestation: prestations(:nettoyage_bureaux), qté: 1)
-    cotation.update!(cotation_lignes_attributes: { "0" => { id: ligne.id, _destroy: "1" } })
+    cotation.update!(cotation_lignes_attributes: { '0' => { id: ligne.id, _destroy: '1' } })
     assert_equal 0, cotation.cotation_lignes.count
   end
 
@@ -191,17 +193,17 @@ class CotationTest < ActiveSupport::TestCase
 
   test "style renvoie la classe CSS du badge de l'état courant" do
     cotation = build_cotation
-    assert_equal "badge-ghost", cotation.style # créé
+    assert_equal 'badge-ghost', cotation.style # créé
     cotation.save!
     cotation.envoyer!
-    assert_equal "badge-info text-white", cotation.style # envoyé
+    assert_equal 'badge-info text-white', cotation.style # envoyé
   end
 
   test "workflow_state_humanized liste les états humanisés dans l'ordre du workflow" do
     assert_equal %w[Créé Envoyé Validé Refusé Archivé], Cotation.workflow_state_humanized
   end
 
-  test "pdf_filename est basé sur la référence" do
+  test 'pdf_filename est basé sur la référence' do
     cotation = build_cotation
     cotation.save!
     assert_equal "Cotation-#{cotation.ref}.pdf", cotation.pdf_filename
@@ -212,15 +214,15 @@ class CotationTest < ActiveSupport::TestCase
   test "persist_workflow_state met à jour et persiste l'état" do
     cotation = build_cotation
     cotation.save!
-    cotation.persist_workflow_state("envoyé")
-    assert_equal "envoyé", cotation.reload.workflow_state
+    cotation.persist_workflow_state('envoyé')
+    assert_equal 'envoyé', cotation.reload.workflow_state
   end
 
-  test "auditée : la création est tracée" do
+  test 'auditée : la création est tracée' do
     cotation = build_cotation
     cotation.save!
     assert_equal 1, cotation.audits.count
-    assert_equal "create", cotation.audits.last.action
+    assert_equal 'create', cotation.audits.last.action
   end
 
   test "auditée : un changement d'état du workflow est tracé" do
@@ -229,8 +231,8 @@ class CotationTest < ActiveSupport::TestCase
     assert_difference -> { cotation.audits.count }, 1 do
       cotation.envoyer!
     end
-    assert_equal "update", cotation.audits.last.action
-    assert_includes cotation.audits.last.audited_changes.keys, "workflow_state"
+    assert_equal 'update', cotation.audits.last.action
+    assert_includes cotation.audits.last.audited_changes.keys, 'workflow_state'
   end
 
   test "auditée : les audits sont associés à l'adhérent" do

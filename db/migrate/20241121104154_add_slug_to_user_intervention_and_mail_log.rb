@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddSlugToUserInterventionAndMailLog < ActiveRecord::Migration[7.1]
   def change
     add_column :users, :slug, :string

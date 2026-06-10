@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class SetDefaultRepeterFalseOnInterventions < ActiveRecord::Migration[8.0]
   # Contexte : la colonne `repeter` a été ajoutée sans `default`. Tant que le
   # formulaire d'intervention contenait `form.check_box :repeter`, le champ caché
@@ -8,7 +10,7 @@ class SetDefaultRepeterFalseOnInterventions < ActiveRecord::Migration[8.0]
   def up
     # 1. Backfill : les interventions sans valeur explicite valent `false`
     #    (comportement historique de la case décochée).
-    execute "UPDATE interventions SET repeter = false WHERE repeter IS NULL"
+    execute 'UPDATE interventions SET repeter = false WHERE repeter IS NULL'
 
     # 2. Les futures interventions héritent de `false` même si le formulaire
     #    n'envoie pas le champ.

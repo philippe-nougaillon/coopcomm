@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddFromIdAndToId < ActiveRecord::Migration[8.0]
   def change
     remove_column :notifications, :user_id, :bigint

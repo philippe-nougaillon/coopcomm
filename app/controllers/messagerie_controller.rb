@@ -1,32 +1,34 @@
+# frozen_string_literal: true
+
 class MessagerieController < ApplicationController
   before_action :is_user_authorized
 
   def index
     # On récupère les utilisateurs avec qui on peut envoyer des messages
     @users = User.by_service(current_user.services).where.not(id: current_user.id).ordered
-    
+
     @users = @users.with_attached_profile_picture
 
     # On récupère l'utilisateur associé à "to_id", sauf si l'utilisateur courant essaye d'envoyer un message à lui-même
     @destinataire = User.find_by(id: params[:to_id]) if params[:to_id].to_i != current_user.id
-    
+
     if @destinataire
       # On récupère les messages envoyées et reçues d'un utilisateur
       @messages = Message
-                        .where(from_id: current_user.id, to_id: @destinataire&.id)
-                        .or(Message.where(from_id: @destinataire&.id, to_id: current_user.id))
-                        .order(:created_at)
+                  .where(from_id: current_user.id, to_id: @destinataire&.id)
+                  .or(Message.where(from_id: @destinataire&.id, to_id: current_user.id))
+                  .order(:created_at)
 
       unread_messages = @messages.select { |n| n.to_id == current_user.id && n.read_at.nil? }
-      
+
       @unread_count = unread_messages.count
       @first_unread_id = unread_messages.first&.id
     else
       # On récupère les messages envoyées et reçues d'un utilisateur
       recent_messages = Message
-                              .where(from_id: current_user.id)
-                              .or(Message.where(to_id: current_user.id))
-                              .order(created_at: :desc)
+                        .where(from_id: current_user.id)
+                        .or(Message.where(to_id: current_user.id))
+                        .order(created_at: :desc)
 
       @last_messages = {}
       ordered_user_ids = []
@@ -34,7 +36,7 @@ class MessagerieController < ApplicationController
       recent_messages.each do |notif|
         # Détermine qui est l'interlocuteur avec l'utilisateur courant
         interlocutor_id = notif.from_id == current_user.id ? notif.to_id : notif.from_id
-        
+
         unless @last_messages.key?(interlocutor_id)
           @last_messages[interlocutor_id] = notif
           ordered_user_ids << interlocutor_id
@@ -42,9 +44,9 @@ class MessagerieController < ApplicationController
       end
 
       users_by_id = User
-                      .where(id: ordered_user_ids)
-                      .with_attached_profile_picture
-                      .index_by(&:id)
+                    .where(id: ordered_user_ids)
+                    .with_attached_profile_picture
+                    .index_by(&:id)
 
       @recent_conversations = ordered_user_ids.map { |id| users_by_id[id] }.compact
 
@@ -54,19 +56,20 @@ class MessagerieController < ApplicationController
   end
 
   def send_message
-    if params[:message].present? && params[:to_id].present? && (params[:to_id].to_i != current_user.id) # Evite que l'utilisateur courant envoie un message à lui-même
-      Message.create!(message: params[:message], from_id: current_user.id, to_id: params[:to_id])
-    end
+    # Evite que l'utilisateur courant envoie un message à lui-même
+    return unless params[:message].present? && params[:to_id].present? && (params[:to_id].to_i != current_user.id)
+
+    Message.create!(message: params[:message], from_id: current_user.id, to_id: params[:to_id])
   end
 
   def mark_as_read
     message = Message.find(params[:id])
-    
+
     # Sécurité : on vérifie que c'est bien un message destiné à l'utilisateur courant
     if message.to_id == current_user.id && message.read_at.nil?
       message.update(read_at: Time.current)
-      
-      # Plus tard, on pourra ajouter un Turbo Stream ici pour mettre à jour 
+
+      # Plus tard, on pourra ajouter un Turbo Stream ici pour mettre à jour
       # les fameux "deux traits bleus" chez l'expéditeur !
     end
 
@@ -75,12 +78,12 @@ class MessagerieController < ApplicationController
 
   def search_contact
     @users = User
-              .by_service(current_user.services)
-              .where.not(id: current_user.id)
-              .ordered
-    
+             .by_service(current_user.services)
+             .where.not(id: current_user.id)
+             .ordered
+
     if params[:query].present?
-      @users = @users.where("users.nom ILIKE :search OR users.prénom ILIKE :search", { search: "%#{params[:query]}%"})
+      @users = @users.where('users.nom ILIKE :search OR users.prénom ILIKE :search', { search: "%#{params[:query]}%" })
     end
 
     @users = @users.with_attached_profile_picture
@@ -93,5 +96,4 @@ class MessagerieController < ApplicationController
   def is_user_authorized
     authorize :messagerie
   end
-
 end

@@ -1,7 +1,8 @@
-require "application_system_test_case"
+# frozen_string_literal: true
+
+require 'application_system_test_case'
 
 class MailLogManagerFlowTest < ApplicationSystemTestCase
-
   setup do
     @manager = users(:hidalgo)
     login(@manager)
@@ -9,5 +10,4 @@ class MailLogManagerFlowTest < ApplicationSystemTestCase
 
   # test "Les filtres fonctionnent dans la liste des mail_logs" do
   # end
-
 end

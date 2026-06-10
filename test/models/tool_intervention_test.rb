@@ -1,7 +1,8 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class ToolInterventionTest < ActiveSupport::TestCase
-
   setup do
     @tool = tools(:tondeuse)
     @template_adherent = users(:weil)
@@ -19,7 +20,7 @@ class ToolInterventionTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(intervention.début_prévue, intervention.fin_prévue)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un outil"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Conflit(s) détecté(s) sur un outil'
   end
 
   test "Intervention non créée si l'outil commence avant et fini pendant" do
@@ -31,7 +32,7 @@ class ToolInterventionTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(début_prévue_décalé, fin_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un outil"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Conflit(s) détecté(s) sur un outil'
   end
 
   test "Intervention non créée si l'outil commence pendant et fini après" do
@@ -43,7 +44,7 @@ class ToolInterventionTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(début_prévue_décalé, fin_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un outil"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Conflit(s) détecté(s) sur un outil'
   end
 
   test "Intervention non créée si l'outil commence pendant et fini pendant" do
@@ -55,7 +56,7 @@ class ToolInterventionTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(début_prévue_décalé, fin_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un outil"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Conflit(s) détecté(s) sur un outil'
   end
 
   test "Intervention non créée si l'outil commence avant et fini après" do
@@ -67,7 +68,7 @@ class ToolInterventionTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(début_prévue_décalé, fin_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un outil"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Conflit(s) détecté(s) sur un outil'
   end
 
   test "Intervention non créée si l'outil fini au début" do
@@ -78,7 +79,7 @@ class ToolInterventionTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(nil, fin_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un outil"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Conflit(s) détecté(s) sur un outil'
   end
 
   test "Intervention non créée si l'outil commence à la fin" do
@@ -89,7 +90,7 @@ class ToolInterventionTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(début_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un outil"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Conflit(s) détecté(s) sur un outil'
   end
 
   def createOverlapsIntervention(debut = nil, fin = nil)
@@ -106,9 +107,9 @@ class ToolInterventionTest < ActiveSupport::TestCase
 
   def createDefaultIntervention
     Intervention.create!(
-      début_prévue: "2025-04-08 09:00",
-      fin_prévue: "2025-04-08 12:00",
-      description: "Entretien des locaux",
+      début_prévue: '2025-04-08 09:00',
+      fin_prévue: '2025-04-08 12:00',
+      description: 'Entretien des locaux',
       organisation: organisations(:mairie_paris),
       tools: [@tool],
       adherent: @template_adherent,

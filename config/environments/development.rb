@@ -1,4 +1,6 @@
-require "active_support/core_ext/integer/time"
+# frozen_string_literal: true
+
+require 'active_support/core_ext/integer/time'
 
 Rails.application.configure do
   config.after_initialize do
@@ -33,7 +35,7 @@ Rails.application.configure do
     config.action_controller.enable_fragment_cache_logging = true
 
     config.cache_store = :solid_cache_store
-    config.public_file_server.headers = { "Cache-Control" => "public, max-age=#{2.days.to_i}" }
+    config.public_file_server.headers = { 'Cache-Control' => "public, max-age=#{2.days.to_i}" }
   else
     config.action_controller.perform_caching = false
 
@@ -68,8 +70,8 @@ Rails.application.configure do
   # Highlight code that enqueued background job in logs.
   config.active_job.verbose_enqueue_logs = true
 
-# set Solid Queue as your Active Job's queue backend
-config.active_job.queue_adapter = :solid_queue
+  # set Solid Queue as your Active Job's queue backend
+  config.active_job.queue_adapter = :solid_queue
 
   # Suppress logger output for asset requests.
   config.assets.quiet = true
@@ -85,8 +87,8 @@ config.active_job.queue_adapter = :solid_queue
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
-  
-  config.action_mailer.delivery_method = ENV.fetch("DELIVERY_METHOD", 'letter_opener').to_sym
+
+  config.action_mailer.delivery_method = ENV.fetch('DELIVERY_METHOD', 'letter_opener').to_sym
   config.action_mailer.perform_deliveries = true
 
   # ActionMailer::Base.delivery_method = :mailgun

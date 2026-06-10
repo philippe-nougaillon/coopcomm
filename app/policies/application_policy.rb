@@ -41,11 +41,11 @@ class ApplicationPolicy
   end
 
   def administrateur?
-    user && user.administrateur?
+    user&.administrateur?
   end
 
   def manager_or_admin?
-    user && user.manager_or_admin?
+    user&.manager_or_admin?
   end
 
   def shared_service?(record_services = record.services)

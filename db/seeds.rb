@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # organisation = Organisation.create(nom: "Communauté de Communes Mad et Moselle")
 
 # # --- USERS ---
@@ -67,14 +69,12 @@
 # # Outils sécurité
 # testeur_extincteur = Tool.create!(name: "Testeur d'extincteur", organisation_id: organisation.id, slug: SecureRandom.uuid)
 
-
 # intervention_tonte_pelouse = Intervention.create(description: "Tondre pelouse parc hôtel de ville", adherent_id: adhérent_hannonville_suzemont.id, début_prévue: "2025-12-01 08:00:00.000000000 +0100", fin_prévue: "2025-12-01 11:00:00.000000000 +0100", début: "2025-12-01 08:04:00.000000000 +0100", fin: "2025-12-01 10:43:00.000000000 +0100", workflow_state: "validé", organisation_id: organisation.id, slug: SecureRandom.uuid)
 # ToolIntervention.create!(tool_id: tondeuse_gazon.id, intervention_id: intervention_tonte_pelouse.id)
 # AgentIntervention.create!(agent_id: agent_tech_jean.id, intervention_id: intervention_tonte_pelouse.id)
 
 # intervention_elagage_arbre = Intervention.create(description: "Élagage des arbres du parc", adherent_id: adhérent_hannonville_suzemont.id, début_prévue: "2025-12-01 08:00:00.000000000 +0100", fin_prévue: "2025-12-01 11:00:00.000000000 +0100", organisation_id: organisation.id, slug: SecureRandom.uuid)
 # AgentIntervention.create!(agent_id: agent_tech_andré.id, intervention_id: intervention_elagage_arbre.id)
-
 
 # intervention_recurrente_menage_mère = Intervention.create(description: "Ménage mairie de Jouy-aux-arches", repeter: true, workflow_state: "pointage activé", adherent_id: adhérent_jouy_aux_arches.id, organisation_id: organisation.id, slug: SecureRandom.uuid, created_at: "2025-12-01 14:55:05.000000000 +0100")
 # AgentIntervention.create!(agent_id: agent_menage_nicole.id, intervention_id: intervention_recurrente_menage_mère.id)
@@ -544,7 +544,6 @@
 # AgentIntervention.create!(agent_id: agent_tech_andré.id, intervention_id: i27.id)
 # ToolIntervention.create!(tool_id: clé_molette.id, intervention_id: i27.id)
 # ToolIntervention.create!(tool_id: camionnette_benne.id, intervention_id: i27.id)
-
 
 # # ---------- i28 ----------
 # i28 = Intervention.create!(
@@ -1134,7 +1133,7 @@
 #   fin: "2026-02-17 11:30:00 +0100",
 #   début_prévue: Time.zone.parse("2026-02-10 08:30:00 +0100") + rand(-15..15).minutes,
 #   fin_prévue: Time.zone.parse("2026-02-10 11:30:00 +0100") + rand(-15..15).minutes,
-   
+
 #   workflow_state: "terminé",
 #   adherent_id: adhérent_jouy_aux_arches.id,
 #   organisation_id: organisation.id,
@@ -1149,7 +1148,7 @@
 #   description: "Nettoyage locaux mairie",
 #   début_prévue: "2026-02-28 08:00:00 +0100",
 #   fin_prévue: "2026-02-28 12:00:00 +0100",
-   
+
 #   workflow_state: "nouveau",
 #   adherent_id: adhérent_jouy_aux_arches.id,
 #   organisation_id: organisation.id,
@@ -1177,7 +1176,7 @@
 #   description: "Peinture barrières école primaire",
 #   début_prévue: "2026-03-03 08:30:00 +0100",
 #   fin_prévue: "2026-03-03 11:30:00 +0100",
-   
+
 #   workflow_state: "nouveau",
 #   adherent_id: adhérent_thiaucourt.id,
 #   organisation_id: organisation.id,
@@ -1205,7 +1204,7 @@
 #   description: "Nettoyage vitres mairie",
 #   début_prévue: "2026-03-05 08:00:00 +0100",
 #   fin_prévue: "2026-03-05 11:00:00 +0100",
-   
+
 #   workflow_state: "nouveau",
 #   adherent_id: adhérent_jouy_aux_arches.id,
 #   organisation_id: organisation.id,
@@ -1234,7 +1233,7 @@
 #   description: "Peinture bancs parc central",
 #   début_prévue: "2026-03-07 08:30:00 +0100",
 #   fin_prévue: "2026-03-07 11:30:00 +0100",
-   
+
 #   workflow_state: "nouveau",
 #   adherent_id: adhérent_thiaucourt.id,
 #   organisation_id: organisation.id,
@@ -1249,7 +1248,7 @@
 #   description: "Nettoyage locaux école primaire",
 #   début_prévue: "2026-03-08 08:00:00 +0100",
 #   fin_prévue: "2026-03-08 12:00:00 +0100",
-   
+
 #   workflow_state: "nouveau",
 #   adherent_id: adhérent_jouy_aux_arches.id,
 #   organisation_id: organisation.id,
@@ -1277,7 +1276,7 @@
 #   description: "Peinture passages piétons parc sud",
 #   début_prévue: "2026-03-10 08:30:00 +0100",
 #   fin_prévue: "2026-03-10 11:30:00 +0100",
-   
+
 #   workflow_state: "nouveau",
 #   adherent_id: adhérent_thiaucourt.id,
 #   organisation_id: organisation.id,
@@ -1292,7 +1291,7 @@
 #   description: "Nettoyage vitres salle polyvalente",
 #   début_prévue: "2026-03-11 08:30:00 +0100",
 #   fin_prévue: "2026-03-11 11:30:00 +0100",
-   
+
 #   workflow_state: "nouveau",
 #   adherent_id: adhérent_jouy_aux_arches.id,
 #   organisation_id: organisation.id,
@@ -1320,7 +1319,7 @@
 #   description: "Peinture barrières parc central",
 #   début_prévue: "2026-03-13 08:30:00 +0100",
 #   fin_prévue: "2026-03-13 11:30:00 +0100",
-   
+
 #   workflow_state: "nouveau",
 #   adherent_id: adhérent_thiaucourt.id,
 #   organisation_id: organisation.id,
@@ -1335,7 +1334,7 @@
 #   description: "Nettoyage locaux mairie",
 #   début_prévue: "2026-03-14 08:00:00 +0100",
 #   fin_prévue: "2026-03-14 12:00:00 +0100",
-   
+
 #   workflow_state: "nouveau",
 #   adherent_id: adhérent_jouy_aux_arches.id,
 #   organisation_id: organisation.id,
@@ -1363,7 +1362,7 @@
 #   description: "Peinture passages piétons parc sud",
 #   début_prévue: "2026-03-16 08:30:00 +0100",
 #   fin_prévue: "2026-03-16 11:30:00 +0100",
-   
+
 #   workflow_state: "nouveau",
 #   adherent_id: adhérent_thiaucourt.id,
 #   organisation_id: organisation.id,
@@ -1378,7 +1377,7 @@
 #   description: "Nettoyage vitres salle polyvalente",
 #   début_prévue: "2026-03-17 08:30:00 +0100",
 #   fin_prévue: "2026-03-17 11:30:00 +0100",
-   
+
 #   workflow_state: "nouveau",
 #   adherent_id: adhérent_jouy_aux_arches.id,
 #   organisation_id: organisation.id,
@@ -1406,7 +1405,7 @@
 #   description: "Peinture barrières parc central",
 #   début_prévue: "2026-03-19 08:30:00 +0100",
 #   fin_prévue: "2026-03-19 11:30:00 +0100",
-   
+
 #   workflow_state: "nouveau",
 #   adherent_id: adhérent_thiaucourt.id,
 #   organisation_id: organisation.id,
@@ -1421,7 +1420,7 @@
 #   description: "Nettoyage locaux mairie",
 #   début_prévue: "2026-03-20 08:00:00 +0100",
 #   fin_prévue: "2026-03-20 12:00:00 +0100",
-   
+
 #   workflow_state: "nouveau",
 #   adherent_id: adhérent_jouy_aux_arches.id,
 #   organisation_id: organisation.id,
@@ -1818,7 +1817,6 @@
 # Notification.create!(message: "Vérification extincteurs effectuée, tout est en règle.", from_id: agent_securite_philippe.id, to_id: manager_davy.id, created_at: i59.fin_prévue + 5.minutes, updated_at: i59.fin_prévue + 5.minutes)
 # Notification.create!(message: "Merci pour votre réactivité.", from_id: manager_davy.id, to_id: agent_securite_philippe.id, created_at: i59.fin_prévue + 25.minutes, updated_at: i59.fin_prévue + 25.minutes)
 
-
 # Intervention.where.not(début: nil).each do |intervention|
 #   intervention.tools.each do |tool|
 #     Mouvement.create(tool_id: tool.id, intervention_id: intervention.id, état: 3, date: intervention.début)
@@ -1860,13 +1858,6 @@
 #   end
 #   i.save
 # end
-
-
-
-
-
-
-
 
 # # i1 = Intervention.create(description: "Tonte parc communal - parc République", début: "2025-09-03 08:30:00 +0200", fin: "2025-09-03 11:00:00 +0200", temps_de_pause: 0.5, workflow_state: "validé", adherent_id: adhérent_mandres_aux_quatres_tours.id, organisation_id: organisation.id, slug: SecureRandom.uuid)
 # # # outils: [tondeuse_gazon, camionnette_benne]
@@ -2084,4 +2075,3 @@
 
 # # i54 = Intervention.create(description: "Inventaire matériel ménage", début: "2026-01-30 09:00:00 +0100", fin: "2026-01-30 12:00:00 +0100", workflow_state: "nouveau", adherent_id: adhérent_jouy_aux_arches.id, organisation_id: organisation.id, slug: SecureRandom.uuid)
 # # AgentIntervention.create!(agent_id: agent_menage_nicole.id, intervention_id: i54.id)
-

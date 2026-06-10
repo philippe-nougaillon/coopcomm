@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class InterventionPolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
@@ -26,7 +28,7 @@ class InterventionPolicy < ApplicationPolicy
   end
 
   def edit?
-    show? && ( !record.repeter || !user.agent? )
+    show? && (!record.repeter || !user.agent?)
   end
 
   def update?

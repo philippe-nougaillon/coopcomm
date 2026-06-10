@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 # Rôles sans aucun droit sur le catalogue de prestations (adhérent et agent).
 class AdherentPrestationPolicyTest < ActionDispatch::IntegrationTest
@@ -8,7 +10,7 @@ class AdherentPrestationPolicyTest < ActionDispatch::IntegrationTest
     @prestation = prestations(:nettoyage_bureaux)
   end
 
-  test "un adhérent ne peut pas gérer le catalogue" do
+  test 'un adhérent ne peut pas gérer le catalogue' do
     policy = PrestationPolicy.new(@adherent, @prestation)
     refute policy.new?
     refute policy.create?
@@ -17,7 +19,7 @@ class AdherentPrestationPolicyTest < ActionDispatch::IntegrationTest
     refute policy.destroy?
   end
 
-  test "un agent ne peut pas gérer le catalogue" do
+  test 'un agent ne peut pas gérer le catalogue' do
     policy = PrestationPolicy.new(@agent, @prestation)
     refute policy.new?
     refute policy.create?

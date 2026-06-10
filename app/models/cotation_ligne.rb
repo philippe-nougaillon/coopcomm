@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CotationLigne < ApplicationRecord
   belongs_to :cotation
   belongs_to :prestation
@@ -20,7 +22,7 @@ class CotationLigne < ApplicationRecord
 
   # Recalcule le total HT de la cotation à partir de ses lignes.
   def refresh_cotation_total
-    return unless cotation && cotation.persisted? && !cotation.destroyed?
+    return unless cotation&.persisted? && !cotation.destroyed?
 
     cotation.update_column(:total_ht, cotation.cotation_lignes.sum(:total_ht))
   end

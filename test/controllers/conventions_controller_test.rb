@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class ConventionsControllerTest < ActionDispatch::IntegrationTest
   setup do
@@ -9,49 +11,49 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     sign_in @admin
   end
 
-  test "index accessible à un admin" do
+  test 'index accessible à un admin' do
     get conventions_url
     assert_response :success
   end
 
-  test "new accessible (avec adhérent prérempli)" do
+  test 'new accessible (avec adhérent prérempli)' do
     get new_convention_url(adherent_id: @adherent.slug)
     assert_response :success
   end
 
-  test "create une convention" do
-    assert_difference("Convention.count") do
+  test 'create une convention' do
+    assert_difference('Convention.count') do
       post conventions_url, params: { convention: {
         user_id: @adherent.id,
         service_id: @service.id,
-        date_début: "2026-03-01"
+        date_début: '2026-03-01'
       } }
     end
     assert_redirected_to conventions_path
   end
 
-  test "edit accessible" do
+  test 'edit accessible' do
     get edit_convention_url(@convention)
     assert_response :success
   end
 
-  test "update une convention" do
-    patch convention_url(@convention), params: { convention: { date_fin_prévue: "2026-12-31" } }
+  test 'update une convention' do
+    patch convention_url(@convention), params: { convention: { date_fin_prévue: '2026-12-31' } }
     assert_redirected_to conventions_path
     assert_equal Date.new(2026, 12, 31), @convention.reload.date_fin_prévue
   end
 
-  test "destroy une convention" do
-    assert_difference("Convention.count", -1) do
+  test 'destroy une convention' do
+    assert_difference('Convention.count', -1) do
       delete convention_url(@convention)
     end
     assert_redirected_to conventions_path
   end
 
-  test "services_for_adherent renvoie les services disponibles en JSON" do
+  test 'services_for_adherent renvoie les services disponibles en JSON' do
     get services_for_adherent_conventions_url(adherent_id: @adherent.id)
     assert_response :success
-    noms = response.parsed_body.map { |s| s["nom"] }
+    noms = response.parsed_body.map { |s| s['nom'] }
     assert_includes noms, @service.nom
   end
 
@@ -65,7 +67,7 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
   # On assertit sur le lien d'édition propre à la ligne du tableau ; le nom de l'adhérent
   # apparaît aussi dans les <option> des menus déroulants et n'est donc pas discriminant.
 
-  test "filtre par service inclut le service correspondant et exclut les autres" do
+  test 'filtre par service inclut le service correspondant et exclut les autres' do
     row = edit_convention_path(@convention)
 
     get conventions_url(service_id: services(:informatique).id)
@@ -75,38 +77,38 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, row
   end
 
-  test "filtre active_on inclut une convention active à la date" do
-    get conventions_url(active_on: "2026-06-01")
+  test 'filtre active_on inclut une convention active à la date' do
+    get conventions_url(active_on: '2026-06-01')
     assert_includes response.body, edit_convention_path(@convention)
   end
 
-  test "filtre active_on exclut une convention pas encore commencée à la date" do
-    get conventions_url(active_on: "2025-12-01")
+  test 'filtre active_on exclut une convention pas encore commencée à la date' do
+    get conventions_url(active_on: '2025-12-01')
     assert_not_includes response.body, edit_convention_path(@convention)
   end
 
-  test "recherche par nom de document exclut une convention sans document correspondant" do
-    get conventions_url(search: "inexistant.pdf")
+  test 'recherche par nom de document exclut une convention sans document correspondant' do
+    get conventions_url(search: 'inexistant.pdf')
     assert_not_includes response.body, edit_convention_path(@convention)
   end
 
   # --- Créations invalides (les 3 validations métier du model) ---
 
-  test "create invalide (doublon de convention pour le couple adhérent/service) : aucune création" do
+  test 'create invalide (doublon de convention pour le couple adhérent/service) : aucune création' do
     # weil a déjà convention_paris sur le service informatique
     assert_no_difference -> { Convention.count } do
       post conventions_url, params: { convention: {
-        user_id: users(:weil).id, service_id: services(:informatique).id, date_début: "2026-05-01"
+        user_id: users(:weil).id, service_id: services(:informatique).id, date_début: '2026-05-01'
       } }
     end
     assert_response :unprocessable_entity
   end
 
-  test "create invalide (date de fin antérieure à la date de début) : aucune création" do
+  test 'create invalide (date de fin antérieure à la date de début) : aucune création' do
     assert_no_difference -> { Convention.count } do
       post conventions_url, params: { convention: {
         user_id: @adherent.id, service_id: @service.id,
-        date_début: "2026-06-01", date_fin_prévue: "2026-01-01"
+        date_début: '2026-06-01', date_fin_prévue: '2026-01-01'
       } }
     end
     assert_response :unprocessable_entity
@@ -116,7 +118,7 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     # patrick n'est rattaché qu'au service service_paris, pas à informatique
     assert_no_difference -> { Convention.count } do
       post conventions_url, params: { convention: {
-        user_id: @adherent.id, service_id: services(:informatique).id, date_début: "2026-05-01"
+        user_id: @adherent.id, service_id: services(:informatique).id, date_début: '2026-05-01'
       } }
     end
     assert_response :unprocessable_entity

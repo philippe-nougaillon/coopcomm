@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AdminPolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
@@ -18,7 +20,7 @@ class AdminPolicy < ApplicationPolicy
   end
 
   def stats?
-    user && user.super_admin?
+    user&.super_admin?
   end
 
   def parametres?

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Convention < ApplicationRecord
   audited associated_with: :user
 
@@ -36,24 +38,24 @@ class Convention < ApplicationRecord
     exists = Convention.where(user_id: user_id, service_id: service_id)
                        .where.not(id: id)
                        .exists?
-    if exists
-      errors.add(:base, "Cet adhérent a déjà une convention pour ce service.")
-    end
+    return unless exists
+
+    errors.add(:base, 'Cet adhérent a déjà une convention pour ce service.')
   end
 
   def service_must_belong_to_adherent
     return if service.blank? || user.blank?
 
-    unless user.services.include?(service)
-      errors.add(:service, "n'est pas un service de cet adhérent.")
-    end
+    return if user.services.include?(service)
+
+    errors.add(:service, "n'est pas un service de cet adhérent.")
   end
 
   def end_date_after_start_date
     return if date_début.blank? || date_fin_prévue.blank?
 
-    if date_fin_prévue < date_début
-      errors.add(:date_fin_prévue, "ne peut pas être antérieure à la date de début.")
-    end
+    return unless date_fin_prévue < date_début
+
+    errors.add(:date_fin_prévue, 'ne peut pas être antérieure à la date de début.')
   end
 end

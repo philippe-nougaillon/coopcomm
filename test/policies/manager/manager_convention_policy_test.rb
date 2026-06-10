@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class ManagerConventionPolicyTest < ActionDispatch::IntegrationTest
   def setup
@@ -13,12 +15,12 @@ class ManagerConventionPolicyTest < ActionDispatch::IntegrationTest
     @policy_service_non_géré = ConventionPolicy.new(users(:manager_paris), convention_gérée)
   end
 
-  test "index / new autorisés pour un manager" do
+  test 'index / new autorisés pour un manager' do
     assert @policy.index?
     assert @policy.new?
   end
 
-  test "show / update / destroy / create autorisés sur une convention de son service" do
+  test 'show / update / destroy / create autorisés sur une convention de son service' do
     assert @policy.show?
     assert @policy.update?
     assert @policy.destroy?

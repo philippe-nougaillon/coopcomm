@@ -1,6 +1,8 @@
-require_relative "boot"
+# frozen_string_literal: true
 
-require "rails/all"
+require_relative 'boot'
+
+require 'rails/all'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -23,8 +25,8 @@ module Coopcomm
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
-    
-    config.time_zone = "Paris"
+
+    config.time_zone = 'Paris'
     config.i18n.default_locale = :fr
     config.i18n.fallbacks = [:en]
 
@@ -32,9 +34,9 @@ module Coopcomm
 
     # Mission Control's controllers will extend the host app's ApplicationController.
     # If no authentication is enforced, /jobs will be available to everyone.
-    # You might want to implement some kind of authentication for this in your app. 
+    # You might want to implement some kind of authentication for this in your app.
     # To make this easier, you can specify a different controller as the base class
-    config.mission_control.jobs.base_controller_class = "MissionControlAdminController"
+    config.mission_control.jobs.base_controller_class = 'MissionControlAdminController'
 
     config.active_support.to_time_preserves_timezone = :zone
 

@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 # Rôles sans aucun droit de gestion des cotations (adhérent et agent regroupés).
 class AdherentCotationPolicyTest < ActionDispatch::IntegrationTest
@@ -33,11 +35,11 @@ class AdherentCotationPolicyTest < ActionDispatch::IntegrationTest
     refute policy.pdf?
   end
 
-  test "scope : aucune cotation visible pour un adhérent" do
+  test 'scope : aucune cotation visible pour un adhérent' do
     assert_empty CotationPolicy::Scope.new(@adherent, Cotation.all).resolve
   end
 
-  test "scope : aucune cotation visible pour un agent" do
+  test 'scope : aucune cotation visible pour un agent' do
     assert_empty CotationPolicy::Scope.new(@agent, Cotation.all).resolve
   end
 end

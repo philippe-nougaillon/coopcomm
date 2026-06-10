@@ -1,17 +1,19 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class AbsenceTest < ActiveSupport::TestCase
   setup do
     @agent = users(:bond)
   end
 
-  test "Une intervention ne se créée pas si un agent est absent" do
+  test 'Une intervention ne se créée pas si un agent est absent' do
     absence = createAbsence
 
     intervention = createOverlapsIntervention(absence.du, absence.au)
 
     assert_not intervention.valid?
-    assert_includes intervention.errors.full_messages[0], "Agent(s) indisponible(s)"
+    assert_includes intervention.errors.full_messages[0], 'Agent(s) indisponible(s)'
   end
 
   test "Intervention non créée si l'agent est absent à la même heure" do
@@ -20,7 +22,7 @@ class AbsenceTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(absence.du, absence.au)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Agent(s) indisponible(s)"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Agent(s) indisponible(s)'
   end
 
   test "Intervention non créée si l'agent est absent avant et pendant" do
@@ -32,7 +34,7 @@ class AbsenceTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(début_prévue_décalé, fin_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Agent(s) indisponible(s)"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Agent(s) indisponible(s)'
   end
 
   test "Intervention non créée si l'agent est absent pendant et après" do
@@ -44,7 +46,7 @@ class AbsenceTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(début_prévue_décalé, fin_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Agent(s) indisponible(s)"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Agent(s) indisponible(s)'
   end
 
   test "Intervention non créée si l'agent est absent pendant et pendant" do
@@ -56,7 +58,7 @@ class AbsenceTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(début_prévue_décalé, fin_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Agent(s) indisponible(s)"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Agent(s) indisponible(s)'
   end
 
   test "Intervention non créée si l'agent est absent avant et après" do
@@ -68,7 +70,7 @@ class AbsenceTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(début_prévue_décalé, fin_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Agent(s) indisponible(s)"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Agent(s) indisponible(s)'
   end
 
   test "Intervention non créée si l'agent est absent au début" do
@@ -79,7 +81,7 @@ class AbsenceTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(nil, fin_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Agent(s) indisponible(s)"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Agent(s) indisponible(s)'
   end
 
   test "Intervention non créée si l'agent est absent à la fin" do
@@ -90,7 +92,7 @@ class AbsenceTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(début_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Agent(s) indisponible(s)"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Agent(s) indisponible(s)'
   end
 
   def createOverlapsIntervention(debut = nil, fin = nil)
@@ -105,10 +107,10 @@ class AbsenceTest < ActiveSupport::TestCase
 
   def createAbsence
     Absence.create!(
-      du: "2025-04-08 9:00",
-      au: "2025-04-08 12:00",
+      du: '2025-04-08 9:00',
+      au: '2025-04-08 12:00',
       motif: 0,
-      observation: "Vacances",
+      observation: 'Vacances',
       user: @agent
     )
   end

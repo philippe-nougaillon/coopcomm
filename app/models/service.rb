@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Service < ApplicationRecord
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
@@ -15,12 +17,12 @@ class Service < ApplicationRecord
 
   validates_uniqueness_of :nom, scope: :organisation_id
 
-  normalizes :nom, with: -> nom { nom.humanize.strip }
+  normalizes :nom, with: ->(nom) { nom.humanize.strip }
 
   scope :ordered, -> { order(:nom) }
 
   def managers_and_admin
-    users.where(rôle: [:manager, :administrateur])
+    users.where(rôle: %i[manager administrateur])
   end
 
   private

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # app/services/export_to_xls.rb
 class ExportToXls < ApplicationService
   require 'spreadsheet'
@@ -5,25 +7,25 @@ class ExportToXls < ApplicationService
   def initialize
     Spreadsheet.client_encoding = 'UTF-8'
     @book = Spreadsheet::Workbook.new
-    
-    # format jolie 
+
+    # format jolie
     @header_format = Spreadsheet::Format.new(
       weight: :bold,
       size: 11,
       pattern: 1,
-      pattern_fg_color: :gray,         
-      color: :white,                  
-      horizontal_align: :center,      
+      pattern_fg_color: :gray,
+      color: :white,
+      horizontal_align: :center,
       vertical_align: :center
     )
-    
+
     # text
     @data_format = Spreadsheet::Format.new(
       size: 10,
       vertical_align: :center
     )
 
-    # números et IDs 
+    # números et IDs
     @center_format = Spreadsheet::Format.new(
       size: 10,
       horizontal_align: :center,
@@ -39,19 +41,19 @@ class ExportToXls < ApplicationService
   def add_headers(array_of_headers)
     @sheet.row(0).concat array_of_headers
     @sheet.row(0).default_format = @header_format
-    @sheet.row(0).height = 26 
+    @sheet.row(0).height = 26
     self
   end
 
- def setup_data(fields_to_export)
+  def setup_data(fields_to_export)
     index = 1
 
     fields_to_export.each do |data|
       @sheet.row(index).replace data
-      @sheet.row(index).height = 20 
+      @sheet.row(index).height = 20
 
       data.each_with_index do |value, col_index|
-        if col_index == 0 || value.is_a?(Numeric)
+        if col_index.zero? || value.is_a?(Numeric)
           @sheet.row(index).set_format(col_index, @center_format)
         else
           @sheet.row(index).set_format(col_index, @data_format)

@@ -1,9 +1,11 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class AdministrateurMailLogPolicyTest < ActionDispatch::IntegrationTest
   def setup
     administrateur_paris = users(:administrateur_paris)
-    
+
     mail_log = mail_logs(:mail_log)
 
     @policy = MailLogPolicy.new(administrateur_paris, mail_log)

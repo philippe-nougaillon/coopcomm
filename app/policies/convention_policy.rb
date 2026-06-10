@@ -8,11 +8,11 @@ class ConventionPolicy < ApplicationPolicy
   end
 
   def index?
-    user && user.manager_or_admin?
+    user&.manager_or_admin?
   end
 
   def new?
-    user && user.manager_or_admin?
+    user&.manager_or_admin?
   end
 
   def services_for_adherent?

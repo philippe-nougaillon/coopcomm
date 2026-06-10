@@ -1,43 +1,45 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class ManagerWrongOrganisationInterventionPolicyTest < ActionDispatch::IntegrationTest
   def setup
     manager_marseille = users(:manager_marseille)
-    
+
     intervention_paris = interventions(:intervention_paris)
 
     @wrongPolicy = InterventionPolicy.new(manager_marseille, intervention_paris)
   end
 
-  test "should refute show with wrong organisation" do
+  test 'should refute show with wrong organisation' do
     refute @wrongPolicy.show?
   end
 
-  test "should refute edit with wrong organisation" do
+  test 'should refute edit with wrong organisation' do
     refute @wrongPolicy.edit?
   end
 
-  test "should refute update with wrong organisation" do
+  test 'should refute update with wrong organisation' do
     refute @wrongPolicy.update?
   end
 
-  test "should refute purge with wrong organisation" do
+  test 'should refute purge with wrong organisation' do
     refute @wrongPolicy.purge?
   end
 
-  test "should refute terminer with wrong organisation" do
+  test 'should refute terminer with wrong organisation' do
     refute @wrongPolicy.terminer?
   end
 
-  test "should refute valider with wrong organisation" do
+  test 'should refute valider with wrong organisation' do
     refute @wrongPolicy.valider?
   end
 
-  test "should refute refuser with wrong organisation" do
+  test 'should refute refuser with wrong organisation' do
     refute @wrongPolicy.refuser?
   end
 
-  test "should refute archiver with wrong organisation" do
+  test 'should refute archiver with wrong organisation' do
     refute @wrongPolicy.archiver?
   end
 end

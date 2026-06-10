@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class MailLog < ApplicationRecord
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
@@ -7,7 +9,7 @@ class MailLog < ApplicationRecord
 
   enum :channel, {
     mail: 0,
-    whatsapp: 1,
+    whatsapp: 1
   }
 
   private

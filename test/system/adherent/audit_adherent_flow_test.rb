@@ -1,7 +1,8 @@
-require "application_system_test_case"
+# frozen_string_literal: true
+
+require 'application_system_test_case'
 
 class AuditAdherentFlowTest < ApplicationSystemTestCase
-
   setup do
     @adhérent = users(:weil)
     login(@adhérent)
@@ -11,15 +12,14 @@ class AuditAdherentFlowTest < ApplicationSystemTestCase
     # Fermer la notification de connexion
     find("[data-testid='close_notification']").click
 
-    # Cliquer sur le bouton 'audit trail' de la navbar 
+    # Cliquer sur le bouton 'audit trail' de la navbar
     find("[data-testid='audit_trail']").click
     sleep(1)
   end
 
-  test "Ne peut pas visiter la liste des activités (audits)" do
+  test 'Ne peut pas visiter la liste des activités (audits)' do
     visit admin_audits_url
     assert_text "Vous n'êtes pas autorisé à effectuer cette action."
-    assert_no_text "Activité"
+    assert_no_text 'Activité'
   end
-
 end

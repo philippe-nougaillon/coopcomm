@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddDatePrevueFieldsToIntervention < ActiveRecord::Migration[7.1]
   def change
     add_column :interventions, :début_prévue, :datetime

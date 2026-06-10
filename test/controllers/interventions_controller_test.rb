@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class InterventionsControllerTest < ActionDispatch::IntegrationTest
   setup do
@@ -6,27 +8,27 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:hidalgo)
   end
 
-  test "should get index" do
+  test 'should get index' do
     get interventions_url
     assert_response :success
   end
 
-  test "should get index with export xls" do
+  test 'should get index with export xls' do
     get users_url,  params: {
       format: :xls
     }
 
     assert_response :success
-    assert_equal "application/xls", response.content_type
+    assert_equal 'application/xls', response.content_type
   end
 
-  test "should get new" do
+  test 'should get new' do
     get new_intervention_url
     assert_response :success
   end
 
-  test "should create intervention" do
-    assert_difference("Intervention.count") do
+  test 'should create intervention' do
+    assert_difference('Intervention.count') do
       post interventions_url, params: {
         intervention: {
           début: @intervention.début,
@@ -51,17 +53,17 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to intervention_url(Intervention.last)
   end
 
-  test "should show intervention" do
+  test 'should show intervention' do
     get intervention_url(@intervention)
     assert_response :success
   end
 
-  test "should get edit" do
+  test 'should get edit' do
     get edit_intervention_url(@intervention)
     assert_response :success
   end
 
-  test "should update intervention" do
+  test 'should update intervention' do
     patch intervention_url(@intervention), params: {
       intervention: {
         début: @intervention.début,
@@ -82,16 +84,16 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to intervention_url(@intervention)
   end
 
-  test "should destroy intervention without mouvements" do
-    assert_difference("Intervention.count", -1) do
+  test 'should destroy intervention without mouvements' do
+    assert_difference('Intervention.count', -1) do
       delete intervention_url(interventions(:nouvelle_intervention))
     end
 
     assert_redirected_to interventions_url
   end
 
-  test "must not destroy intervention with mouvements" do
-    assert_no_difference("Intervention.count") do
+  test 'must not destroy intervention with mouvements' do
+    assert_no_difference('Intervention.count') do
       delete intervention_url(@intervention)
     end
 
@@ -99,15 +101,15 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should redirect to root if intervention doesn't exist" do
-    get intervention_url("abcdefg")
+    get intervention_url('abcdefg')
     assert_redirected_to root_path
   end
 
-  test "should destroy photo with purge" do
-    @intervention.photos.attach(file_fixture("exemple.png"))
+  test 'should destroy photo with purge' do
+    @intervention.photos.attach(file_fixture('exemple.png'))
     @intervention.save
 
-    assert_difference("@intervention.photos.count", -1) do
+    assert_difference('@intervention.photos.count', -1) do
       delete purge_intervention_url(@intervention), params: {
         photo_id: @intervention.photos.first.id
       }
@@ -118,27 +120,27 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   # Pointage
 
-  test "pointer intervention repete doit créer une intervention" do
+  test 'pointer intervention repete doit créer une intervention' do
     # Le sign_in gère tout seul la déconnexion du premier sign_in dans le setup
     sign_in users(:martin_technique_paris)
 
     intervention = interventions(:intervention_repete)
-    
-    assert_difference("Intervention.count", 1) do
+
+    assert_difference('Intervention.count', 1) do
       get pointer_intervention_url(intervention)
     end
   end
 
-  test "pointer intervention repete doit mettre fin à une intervention" do
+  test 'pointer intervention repete doit mettre fin à une intervention' do
     # Le sign_in gère tout seul la déconnexion du premier sign_in dans le setup
     sign_in users(:martin_technique_paris)
     intervention = interventions(:intervention_repete)
-    
+
     # Pointage
     get pointer_intervention_url(intervention)
-    
+
     intervention_créée = Intervention.find_by(template_slug: intervention.slug)
-    
+
     assert_nil intervention_créée.fin
 
     # Repointage
@@ -148,28 +150,28 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil intervention_créée
   end
 
-  test "pointer intervention pas repete ne doit pas créer une intervention" do
+  test 'pointer intervention pas repete ne doit pas créer une intervention' do
     intervention = interventions(:intervention_repete)
     intervention.repeter = false
     intervention.save
 
-    assert_no_difference("Intervention.count") do
+    assert_no_difference('Intervention.count') do
       get pointer_intervention_url(intervention)
     end
   end
 
-  test "pointer intervention repete doit créer une intervention fille par agent" do
+  test 'pointer intervention repete doit créer une intervention fille par agent' do
     intervention = interventions(:intervention_repete)
-    
+
     # Pointage avec le 1er agent
     sign_in users(:martin_technique_paris)
-    assert_difference("Intervention.count", 1) do
+    assert_difference('Intervention.count', 1) do
       get pointer_intervention_url(intervention)
     end
 
     # Pointage avec le 2eme agent
     sign_in users(:bond)
-    assert_difference("Intervention.count", 1) do
+    assert_difference('Intervention.count', 1) do
       get pointer_intervention_url(intervention)
     end
 
@@ -179,28 +181,28 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal expected_nb_intervention_filles, actual_nb_intervention_filles
   end
 
-  test "pointer intervention repete doit pouvoir créer plusieurs interventions dans la journée" do
+  test 'pointer intervention repete doit pouvoir créer plusieurs interventions dans la journée' do
     intervention = interventions(:intervention_repete)
-    
+
     sign_in users(:martin_technique_paris)
 
     # 1er pointage (début de journée)
-    assert_difference("Intervention.count", 1) do
+    assert_difference('Intervention.count', 1) do
       get pointer_intervention_url(intervention)
     end
 
     # 2eme pointage (début de pause)
-    assert_no_difference("Intervention.count") do
+    assert_no_difference('Intervention.count') do
       get pointer_intervention_url(intervention)
     end
 
     # 3eme pointage (fin de pause, reprise d'activité)
-    assert_difference("Intervention.count", 1) do
+    assert_difference('Intervention.count', 1) do
       get pointer_intervention_url(intervention)
     end
 
     # 4eme pointage (fin de journée)
-    assert_no_difference("Intervention.count") do
+    assert_no_difference('Intervention.count') do
       get pointer_intervention_url(intervention)
     end
 
@@ -212,20 +214,20 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   test "update location intervention doit ajouter la geolocalisation à l'intervention fille" do
     intervention = interventions(:intervention_repete)
-    
+
     sign_in users(:martin_technique_paris)
 
-    assert_difference("Intervention.count", 1) do
+    assert_difference('Intervention.count', 1) do
       get pointer_intervention_url(intervention)
     end
-    
+
     intervention_fille = Intervention.where(template_slug: intervention.slug).last
 
-    patch update_location_intervention_url(intervention_fille), 
-        params: { latitude: 48.8566, longitude: 2.3522 }, 
-        as: :json
-        
+    patch update_location_intervention_url(intervention_fille),
+          params: { latitude: 48.8566, longitude: 2.3522 },
+          as: :json
+
     intervention_fille.reload
-    assert_not_nil intervention_fille.localisation, "La localisation doit être mise à jour après pointage"
+    assert_not_nil intervention_fille.localisation, 'La localisation doit être mise à jour après pointage'
   end
 end

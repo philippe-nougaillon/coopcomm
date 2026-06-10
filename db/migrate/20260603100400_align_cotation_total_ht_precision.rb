@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AlignCotationTotalHtPrecision < ActiveRecord::Migration[8.0]
   # cotations.total_ht doit pouvoir contenir la somme des cotation_lignes.total_ht
   # (colonne générée en precision: 10), sinon un devis élevé déclenche un

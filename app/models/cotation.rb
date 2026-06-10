@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Cotation < ApplicationRecord
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
@@ -10,7 +12,7 @@ class Cotation < ApplicationRecord
   audited associated_with: :adherent
   has_associated_audits
 
-  belongs_to :adherent, class_name: "User"
+  belongs_to :adherent, class_name: 'User'
   belongs_to :service
   has_one :organisation, through: :service
   has_many :cotation_lignes, dependent: :destroy
@@ -93,7 +95,7 @@ class Cotation < ApplicationRecord
     year = Date.current.year
     org_services = Service.where(organisation_id: service&.organisation_id)
     n = Cotation.where(service: org_services)
-                .where("EXTRACT(YEAR FROM cotations.created_at) = ?", year)
+                .where('EXTRACT(YEAR FROM cotations.created_at) = ?', year)
                 .count + 1
     self.ref = "#{year}-#{n}"
   end

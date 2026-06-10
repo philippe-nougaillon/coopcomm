@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateConventions < ActiveRecord::Migration[8.0]
   def change
     create_table :conventions do |t|
@@ -10,6 +12,6 @@ class CreateConventions < ActiveRecord::Migration[8.0]
     end
 
     # Un adhérent ne peut avoir qu'une seule convention par service
-    add_index :conventions, [:user_id, :service_id], unique: true
+    add_index :conventions, %i[user_id service_id], unique: true
   end
 end

@@ -8,12 +8,12 @@ class CotationPolicy < ApplicationPolicy
   end
 
   def index?
-    user && user.manager_or_admin?
+    user&.manager_or_admin?
   end
 
   # Ouverture du formulaire (niveau classe) : tout manager/admin.
   def new?
-    user && user.manager_or_admin?
+    user&.manager_or_admin?
   end
 
   # À l'enregistrement, on vérifie en plus que le service appartient bien

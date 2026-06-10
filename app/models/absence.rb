@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 class Absence < ApplicationRecord
   audited associated_with: :user
 
   belongs_to :user
 
-  scope :ordered, -> {order(du: :desc)}
+  scope :ordered, -> { order(du: :desc) }
 
   enum :motif, {
     congés_payés: 0,
@@ -13,10 +15,10 @@ class Absence < ApplicationRecord
   }
 
   MOTIF_LABELS = {
-    "congés_payés"     => "Congés payés",
-    "congé_parental"   => "Congé parental",
-    "formation"        => "Formation",
-    "congé_sans_solde" => "Congé sans solde"
+    'congés_payés' => 'Congés payés',
+    'congé_parental' => 'Congé parental',
+    'formation' => 'Formation',
+    'congé_sans_solde' => 'Congé sans solde'
   }.freeze
 
   validate :dates_must_make_sense
@@ -27,11 +29,11 @@ class Absence < ApplicationRecord
   after_create_commit :send_manager_notification
 
   def en_cours?
-    return (self.du..self.au).include?(Date.today)
+    (du..au).include?(Date.today)
   end
 
   def nb_jours
-    (self.au - self.du).to_i + 1
+    (au - du).to_i + 1
   end
 
   def send_manager_notification
@@ -49,9 +51,9 @@ class Absence < ApplicationRecord
   private
 
   def dates_must_make_sense
-    if self.du && self.au && (self.du > self.au)
-      errors.add(:base, ": La fin de l'absence ne peut pas être avant son commencement")
-    end
+    return unless du && au && (du > au)
+
+    errors.add(:base, ": La fin de l'absence ne peut pas être avant son commencement")
   end
 
   def no_overlapping_absences
@@ -62,21 +64,21 @@ class Absence < ApplicationRecord
                                   .where.not(id: id)
 
     overlapping_absences.each do |other_absence|
-      if genuinely_overlaps?(other_absence)
-        # On construit un résumé clair de l'absence en conflit
-        conflit_info = "du #{other_absence.du.strftime('%d/%m/%Y')} au #{other_absence.au.strftime('%d/%m/%Y')}"
-        
-        # On ajoute une précision si c'est une demi-journée spécifique
-        if other_absence.matin && !other_absence.après_midi
-          conflit_info += " (Matin uniquement)"
-        elsif !other_absence.matin && other_absence.après_midi
-          conflit_info += " (Après-midi uniquement)"
-        end
+      next unless genuinely_overlaps?(other_absence)
 
-        # On injecte l'information dans l'erreur
-        errors.add(:base, "Cette absence chevauche une autre absence déjà enregistrée #{conflit_info}.")
-        break
+      # On construit un résumé clair de l'absence en conflit
+      conflit_info = "du #{other_absence.du.strftime('%d/%m/%Y')} au #{other_absence.au.strftime('%d/%m/%Y')}"
+
+      # On ajoute une précision si c'est une demi-journée spécifique
+      if other_absence.matin && !other_absence.après_midi
+        conflit_info += ' (Matin uniquement)'
+      elsif !other_absence.matin && other_absence.après_midi
+        conflit_info += ' (Après-midi uniquement)'
       end
+
+      # On injecte l'information dans l'erreur
+      errors.add(:base, "Cette absence chevauche une autre absence déjà enregistrée #{conflit_info}.")
+      break
     end
   end
 
@@ -87,22 +89,22 @@ class Absence < ApplicationRecord
     absence_end   = au.end_of_day
 
     if matin && !après_midi
-      absence_end = au.middle_of_day 
+      absence_end = au.middle_of_day
     elsif après_midi && !matin
       absence_start = du.middle_of_day
     end
-    # Si les deux sont à false (ou les deux à true), les bornes par défaut 
+    # Si les deux sont à false (ou les deux à true), les bornes par défaut
     # couvrent toute la journée, ce qui correspond à ton besoin.
 
     interventions_en_conflit = user.interventions.where(
-      "début_prévue < ? AND fin_prévue > ?", 
-      absence_end, 
+      'début_prévue < ? AND fin_prévue > ?',
+      absence_end,
       absence_start
     )
 
-    if interventions_en_conflit.exists?
-      errors.add(:base, "Impossible de créer l'absence : la personne est déjà en intervention sur ce créneau horaire.")
-    end
+    return unless interventions_en_conflit.exists?
+
+    errors.add(:base, "Impossible de créer l'absence : la personne est déjà en intervention sur ce créneau horaire.")
   end
 
   def genuinely_overlaps?(other)

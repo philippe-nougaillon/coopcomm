@@ -1,9 +1,10 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'aws-sdk-s3'
 require 'dotenv/load'
 
-puts "🛠️ Configuration du CORS sur le bucket S3..."
+puts '🛠️ Configuration du CORS sur le bucket S3...'
 
 client = Aws::S3::Client.new(
   region: ENV.fetch('AWS_REGION', 'eu-west-1'),
@@ -14,23 +15,23 @@ client = Aws::S3::Client.new(
 bucket = ENV.fetch('BUCKETEER_BUCKET_NAME')
 
 client.put_bucket_cors({
-  bucket: bucket,
-  cors_configuration: {
-    cors_rules: [
-      {
-        allowed_headers: ['*'],
-        allowed_methods: ['GET', 'PUT', 'POST'],
-        allowed_origins: [
-          "https://www.coopcom.fr",
-          "https://coopcom-a2c1f0a1f936.herokuapp.com",
-          "http://localhost:3000",
-          "http://127.0.0.1:3000"
-        ],
-        expose_headers: ['ETag'],
-        max_age_seconds: 3000
-      }
-    ]
-  }
-})
+                         bucket: bucket,
+                         cors_configuration: {
+                           cors_rules: [
+                             {
+                               allowed_headers: ['*'],
+                               allowed_methods: %w[GET PUT POST],
+                               allowed_origins: [
+                                 'https://www.coopcom.fr',
+                                 'https://coopcom-a2c1f0a1f936.herokuapp.com',
+                                 'http://localhost:3000',
+                                 'http://127.0.0.1:3000'
+                               ],
+                               expose_headers: ['ETag'],
+                               max_age_seconds: 3000
+                             }
+                           ]
+                         }
+                       })
 
 puts "✅ CORS configuré avec succès sur le bucket #{bucket}"

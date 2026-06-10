@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Organisation < ApplicationRecord
   audited
 
@@ -14,7 +16,7 @@ class Organisation < ApplicationRecord
   has_many :interventions, through: :services
 
   def numero
-    self.nom.split('_').last
+    nom.split('_').last
   end
 
   def tags

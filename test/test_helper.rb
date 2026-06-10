@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'simplecov'
 SimpleCov.start 'rails' do
   add_group 'Components', 'app/components'
@@ -8,12 +10,12 @@ SimpleCov.start 'rails' do
   add_group 'Subscriptions', 'app/subscriptions'
 end
 
-ENV["RAILS_ENV"] ||= "test"
-require_relative "../config/environment"
-require "rails/test_help"
+ENV['RAILS_ENV'] ||= 'test'
+require_relative '../config/environment'
+require 'rails/test_help'
 require 'bcrypt'
-require "capybara/rails"
-require "capybara/dsl"
+require 'capybara/rails'
+require 'capybara/dsl'
 
 module ActiveSupport
   class TestCase
@@ -33,12 +35,12 @@ module ActiveSupport
     def login(user)
       visit new_user_session_path
 
-      fill_in "user_email", with: user.email
-      fill_in "user_password", with: "qtDug$d843sqACz?V" # équivalent à encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q", généré avec Devise::Encryptor.digest(User, "password123")
-      click_on "Se connecter"
+      fill_in 'user_email', with: user.email
+      fill_in 'user_password', with: 'qtDug$d843sqACz?V' # équivalent à encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q", généré avec Devise::Encryptor.digest(User, "password123")
+      click_on 'Se connecter'
       sleep(1)
     end
-    
+
     def intervention_for_params(intervention)
       {
         intervention: {

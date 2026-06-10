@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateCotations < ActiveRecord::Migration[8.0]
   def change
     create_table :cotations do |t|

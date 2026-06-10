@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ApplicationController < ActionController::Base
   include Pagy::Backend
   include Pundit::Authorization
@@ -9,19 +11,19 @@ class ApplicationController < ActionController::Base
   helper_method :sort_column, :sort_direction
   helper_method :current_organisation
 
-  rate_limit to: 20, within: 1.minute, 
-             by: -> { request.ip }, 
+  rate_limit to: 20, within: 1.minute,
+             by: -> { request.ip },
              if: -> { devise_controller? }
 
   BACKGROUND_COLORS = {
-    8  => "#c7c375",
-    10 => "#d7d385",
-    12 => "#fbf098",
-    14 => "#a1ab6f",
-    16 => "#eca95c",
-    18 => "#b7726c",
+    8 => '#c7c375',
+    10 => '#d7d385',
+    12 => '#fbf098',
+    14 => '#a1ab6f',
+    16 => '#eca95c',
+    18 => '#b7726c',
     20 => '#2e3d58'
-  }
+  }.freeze
 
   def current_organisation
     @current_organisation ||= current_user.organisation
@@ -30,7 +32,7 @@ class ApplicationController < ActionController::Base
   private
 
   def prepare_exception_notifier
-    request.env["exception_notifier.exception_data"] = {
+    request.env['exception_notifier.exception_data'] = {
       current_user: current_user
     }
   end

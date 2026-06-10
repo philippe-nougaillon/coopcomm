@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AbsencesController < ApplicationController
   def destroy
     @absence = Absence.find(params[:id])
@@ -12,9 +14,9 @@ class AbsencesController < ApplicationController
         flash.now[:notice] = "L'absence a été supprimée avec succès."
         @absences = @user.absences
         render turbo_stream: [
-          turbo_stream.update("absences_section", partial: "users/absences_section",
-            locals: { user: @user, absences: @absences }),
-          turbo_stream.update("notification", partial: "partials/notification")
+          turbo_stream.update('absences_section', partial: 'users/absences_section',
+                                                  locals: { user: @user, absences: @absences }),
+          turbo_stream.update('notification', partial: 'partials/notification')
         ]
       end
     end

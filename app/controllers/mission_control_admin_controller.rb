@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class MissionControlAdminController < ApplicationController
   before_action :require_admin
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class User < ApplicationRecord
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
@@ -9,28 +11,28 @@ class User < ApplicationRecord
   audited except: :messages_last_seen_at
 
   # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :timeoutable 
+  # :confirmable, :lockable, :timeoutable
   devise :database_authenticatable,
          :recoverable,
-        #  :validatable,
+         #  :validatable,
          :trackable,
-        #  :lockable,
+         #  :lockable,
          :secure_validatable,
          :invitable,
          :rememberable
-        #  :registerable,
-        #  :omniauthable,
-        #  omniauth_providers: [:google_oauth2]
+  #  :registerable,
+  #  :omniauthable,
+  #  omniauth_providers: [:google_oauth2]
 
   has_one_attached :profile_picture
 
   belongs_to :warehouse, optional: true
 
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
-  has_many :cotations_adherent, class_name: "Cotation", foreign_key: :adherent_id, dependent: :destroy
+  has_many :cotations_adherent, class_name: 'Cotation', foreign_key: :adherent_id, dependent: :destroy
   has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention', dependent: :destroy
   has_many :interventions, through: :agent_interventions
-  has_many :messages, dependent: :destroy, foreign_key: :to_id, class_name: "Message"
+  has_many :messages, dependent: :destroy, foreign_key: :to_id, class_name: 'Message'
   has_many :absences, dependent: :destroy
   has_many :conventions, dependent: :destroy
   has_many :user_services, dependent: :destroy
@@ -39,12 +41,12 @@ class User < ApplicationRecord
   # L'utilisateur n'est associé qu'à une seule organisation, via ses services
   has_many :organisations, -> { limit(1) }, through: :services
 
-  accepts_nested_attributes_for :absences, 
-                              allow_destroy:true, 
-                              reject_if: lambda {|attributes| attributes['du'].blank? || attributes['au'].blank? }
+  accepts_nested_attributes_for :absences,
+                                allow_destroy: true,
+                                reject_if: ->(attributes) { attributes['du'].blank? || attributes['au'].blank? }
 
-  normalizes :nom,    with: -> nom { nom.upcase.strip }
-  normalizes :prénom, with: -> prénom { prénom.humanize.strip }
+  normalizes :nom,    with: ->(nom) { nom.upcase.strip }
+  normalizes :prénom, with: ->(prénom) { prénom.humanize.strip }
 
   enum :rôle, {
     adhérent: 0,
@@ -63,16 +65,16 @@ class User < ApplicationRecord
   # }
 
   validates :nom, :email, presence: true
-  validates :prénom, :rôle, presence: true, if: -> { rôle == "agent" }
+  validates :prénom, :rôle, presence: true, if: -> { rôle == 'agent' }
   validates_uniqueness_of :email
-  validates :address, :latitude, :longitude, presence: true, if: -> { rôle == "adhérent" }
-  validate :must_have_at_least_one_service, if: -> { rôle == "agent" }
+  validates :address, :latitude, :longitude, presence: true, if: -> { rôle == 'adhérent' }
+  validate :must_have_at_least_one_service, if: -> { rôle == 'agent' }
 
   default_scope -> { kept }
   scope :ordered, -> { order(:nom) }
 
   def organisation
-    self.organisations.first
+    organisations.first
   end
 
   def self.grouped_agents(user)
@@ -95,36 +97,36 @@ class User < ApplicationRecord
       # On ne garde que les services de l'agent qui sont en commun avec l'utilisateur courant
       # (Optionnel : si tu veux afficher TOUS les services de l'agent, enlève le .select)
       services_communs = agent.services.select { |s| user_service_ids.include?(s.id) }
-      
-      # On trie les noms pour garantir que "Ménage - Technique" et "Technique - Ménage" 
+
+      # On trie les noms pour garantir que "Ménage - Technique" et "Technique - Ménage"
       # aillent dans le même groupe, puis on les assemble.
-      nom_groupe = services_communs.map(&:nom).sort.join(" - ")
-      
+      nom_groupe = services_communs.map(&:nom).sort.join(' - ')
+
       # Sécurité au cas où
-      nom_groupe = "Sans service" if nom_groupe.blank?
+      nom_groupe = 'Sans service' if nom_groupe.blank?
 
       # On ajoute l'agent dans le groupe correspondant
       h[nom_groupe] << ["#{agent.nom} #{agent.prénom}", agent.id]
     end
 
     # 5. On retourne le Hash trié alphabétiquement par le nom du groupe
-    return h.sort_by { |k, _| I18n.transliterate(k) }.to_h
+    h.sort_by { |k, _| I18n.transliterate(k) }.to_h
   end
 
   def nom_prénom
-    "#{self.nom} #{self.prénom}"
+    "#{nom} #{prénom}"
   end
 
   def nom_prenom_role
-    "#{self.nom_prénom} (#{self.rôle.upcase})"
+    "#{nom_prénom} (#{rôle.upcase})"
   end
 
   def initiales
-    "#{self.nom.first.upcase}#{self.prénom.first.upcase}"
+    "#{nom.first.upcase}#{prénom.first.upcase}"
   end
 
   def super_admin?
-    ENV['SUPER_ADMIN'].to_s.split(',').include?(self.email)
+    ENV['SUPER_ADMIN'].to_s.split(',').include?(email)
   end
 
   def moyenne
@@ -135,12 +137,12 @@ class User < ApplicationRecord
     rating_per_star = {}
     sum = 0
     (1..5).each do |i|
-      rating_per_star[i] = self.interventions.where(note: i, repeter: false).count
+      rating_per_star[i] = interventions.where(note: i, repeter: false).count
       sum += rating_per_star[i]
     end
     # Si sum est à 0, sum devient 1 pour éviter une division par 0
-    sum = sum == 0 ? 1 : sum
-    return (rating_per_star[rating].to_f / sum) * 100
+    sum = sum.zero? ? 1 : sum
+    (rating_per_star[rating].to_f / sum) * 100
   end
 
   def rated_interventions
@@ -152,29 +154,27 @@ class User < ApplicationRecord
   end
 
   def self.from_omniauth(auth)
-    require "open-uri"
+    require 'open-uri'
 
-    if user = User.find_by(email: auth.info.email)
+    if (user = User.find_by(email: auth.info.email))
       user
     else
       find_or_create_by(provider: auth.provider, uid: auth.uid) do |user|
         user.email = auth.info.email
         user.password = Devise.friendly_token[0, 20]
         user.password_confirmation = user.password
-        user.nom = auth.info.last_name   # assuming the user model has a name
-        user.prénom = auth.info.first_name   # assuming the user model has a name
-        # If you are using confirmable and the provider(s) you use validate emails, 
+        user.nom = auth.info.last_name # assuming the user model has a name
+        user.prénom = auth.info.first_name # assuming the user model has a name
+        # If you are using confirmable and the provider(s) you use validate emails,
         # uncomment the line below to skip the confirmation emails.
         # user.skip_confirmation!
 
         user.organisation = Organisation.create(nom: "Organisation_#{SecureRandom.hex(5)}")
-        user.rôle = "administrateur"
-        
+        user.rôle = 'administrateur'
+
         user.save
 
-        unless Rails.env.development?
-          Events.instance.publish('organisation.created', payload: {user_id: user.id})
-        end
+        Events.instance.publish('organisation.created', payload: { user_id: user.id }) unless Rails.env.development?
 
         user
       end
@@ -182,12 +182,12 @@ class User < ApplicationRecord
   end
 
   def dispatch_email_to_nom_prénom
-    nom_prénom = self.email.split('@').first
+    nom_prénom = email.split('@').first
     self.nom, self.prénom = nom_prénom.split('.')
   end
 
   def avatar
-    case self.rôle
+    case rôle
     when 'manager'
       'manage_accounts'
     when 'agent'
@@ -201,19 +201,19 @@ class User < ApplicationRecord
 
   def new_messages?
     # On récupère les messages de l'utilisateur non lues. Filtrage des from_id par service pour éviter les utilisateurs supprimés.
-    Message.where(to_id: self.id, from_id: User.by_service(self.services).ids, read_at: nil).any?
+    Message.where(to_id: id, from_id: User.by_service(services).ids, read_at: nil).any?
   end
 
   def current_absence(date = Date.today, periode = nil)
-    absence = absences.where("du <= :date AND au >= :date", date: date).first
-    
+    absence = absences.where('du <= :date AND au >= :date', date: date).first
+
     # S'il n'y a aucune absence à cette date, on renvoie nil direct
     return nil unless absence
 
     # Si on ne demande pas de période précise, on renvoie l'absence trouvée
     return absence if periode.nil?
 
-    # Si c'est une journée complète (les deux booléens sont à false), 
+    # Si c'est une journée complète (les deux booléens sont à false),
     # l'absence est valide peu importe la période demandée
     journee_entiere = !absence.matin && !absence.après_midi
     return absence if journee_entiere
@@ -225,7 +225,7 @@ class User < ApplicationRecord
       return absence
     end
 
-    # Si l'absence ne correspond pas à la période (ex: on demande le matin, 
+    # Si l'absence ne correspond pas à la période (ex: on demande le matin,
     # mais l'absence est posée pour l'après-midi), on renvoie nil
     nil
   end
@@ -237,30 +237,30 @@ class User < ApplicationRecord
 
   def nb_bad_words
     nb_bad_words = 0
-    Notification.where(from_id: self.id).each do |message|
+    Notification.where(from_id: id).each do |message|
       nb_bad_words += message.nb_bad_words
     end
     nb_bad_words
   end
 
   def self.find_by_whatsapp_phone(phone)
-    User.find_by(téléphone: phone.gsub("whatsapp:", ''))
+    User.find_by(téléphone: phone.gsub('whatsapp:', ''))
   end
 
   def intervention_en_cours
-    Intervention.dernière_en_cours(self.interventions)
+    Intervention.dernière_en_cours(interventions)
   end
 
   def self.xls_headers
-    ['Nom','Prénom','Email','Téléphone','Service','Mémo']
+    %w[Nom Prénom Email Téléphone Service Mémo]
   end
 
   def self.generate_random_password
     # 1. Définition des bases en retirant les caractères prêtant à confusion
     minuscules = ('a'..'z').to_a - ['l']
-    majuscules = ('A'..'Z').to_a - ['O', 'I']
+    majuscules = ('A'..'Z').to_a - %w[O I]
     chiffres = ('1'..'9').to_a
-    symboles = "!@#$%&*-+=?".chars
+    symboles = "!@\#$%&*-+=?".chars
 
     tous_les_caracteres = minuscules + majuscules + chiffres + symboles
 
@@ -284,45 +284,44 @@ class User < ApplicationRecord
   def send_devise_notification(notification, *args)
     # 1. On prépare l'email (quelle que soit la notification)
     mail = devise_mailer.send(notification, self, *args)
-    
+
     # 2. On l'envoie immédiatement pour récupérer l'objet Mail::Message
-    mailer_response = mail.deliver_now 
+    mailer_response = mail.deliver_now
 
     # 3. On détermine qui est à l'origine de l'email
     # Si c'est une invitation, on prend l'ID de l'inviteur (current_user).
     # Sinon, on considère que c'est l'utilisateur lui-même (ex: mot de passe oublié).
-    initiator_id = self.try(:invited_by_id) || 0
+    initiator_id = try(:invited_by_id) || 0
 
     # 4. On crée le log pour Mailgun
     MailLog.create(
-      user_id: initiator_id, 
-      message_id: mailer_response.message_id, 
-      to: self.email, 
-      subject: mailer_response.subject || "Notification CoopComm",
-      organisation_id: self.organisation.id,
+      user_id: initiator_id,
+      message_id: mailer_response.message_id,
+      to: email,
+      subject: mailer_response.subject || 'Notification CoopComm',
+      organisation_id: organisation.id,
       channel: 0
     )
   end
 
   def self.by_service(services)
-    self
-      .joins(user_services: :service)
+    joins(user_services: :service)
       .where(services: services)
       .distinct
   end
 
   def manager_or_admin?
-    self.manager? || self.administrateur?
+    manager? || administrateur?
   end
 
   def self.intervenants
-    self.where(rôle: ["agent", "manager", "administrateur"])
+    where(rôle: %w[agent manager administrateur])
   end
 
   # Retourne la liste des roles que l'utilisateur a le droit de voir
   def assignable_roles
-    if self.manager? || self.agent?
-      ["agent"]
+    if manager? || agent?
+      ['agent']
     else
       User.rôles.keys
     end
@@ -341,9 +340,8 @@ class User < ApplicationRecord
   def must_have_at_least_one_service
     # On rejette les services qui sont sur le point d'être détruits en mémoire
     # pour s'assurer qu'il en restera bien au moins un après la sauvegarde.
-    if user_services.reject(&:marked_for_destruction?).empty?
-      errors.add(:services, "doit comporter au moins un service")
-    end
-  end
+    return unless user_services.reject(&:marked_for_destruction?).empty?
 
+    errors.add(:services, 'doit comporter au moins un service')
+  end
 end

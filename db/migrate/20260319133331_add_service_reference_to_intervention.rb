@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddServiceReferenceToIntervention < ActiveRecord::Migration[8.0]
   def up
     # Ajout de la colonne (null: true par défaut car on doit backfiller les données)
@@ -19,8 +21,7 @@ class AddServiceReferenceToIntervention < ActiveRecord::Migration[8.0]
     remove_reference :interventions, :service
   end
 
-
-private
+  private
 
   def find_service_for(intervention)
     # 1. Le premier service trouvé parmi la liste des agents
@@ -29,18 +30,16 @@ private
     return agent_with_service.services.first if agent_with_service
 
     # 2. S'il n'y a pas d'agent avec un service, on cherche le service de l'adhérent
-    if intervention.adherent&.services&.any?
-      return intervention.adherent.services.first
-    end
+    return intervention.adherent.services.first if intervention.adherent&.services&.any?
 
     # 3. Sinon, on cherche le premier service du créateur de l'intervention
     # Grâce à la gem "audited", on récupère l'audit de création
     creation_audit = intervention.audits.find_by(action: 'create')
     creator = creation_audit&.user
-    
-    if creator&.services&.any?
-      return creator.services.first
-    end
+
+    return unless creator&.services&.any?
+
+    creator.services.first
 
     # Si vraiment aucun service n'est trouvé, on retourne nil
     # intervention.organisation.services.first

@@ -1,6 +1,9 @@
+# frozen_string_literal: true
+
 class DashboardManagerToXls < ExportToXls
   # Ajout de data_workflow_chart en 3ème argument
-  def initialize(temps_total_par_adherent, temps_total_par_agent, data_workflow_chart, qte_interventions_par_service, temps_total_par_service, co2_total_par_mois)
+  def initialize(temps_total_par_adherent, temps_total_par_agent, data_workflow_chart, qte_interventions_par_service,
+                 temps_total_par_service, co2_total_par_mois)
     super()
     @temps_total_par_adherent = temps_total_par_adherent
     @temps_total_par_agent = temps_total_par_agent
@@ -25,7 +28,7 @@ class DashboardManagerToXls < ExportToXls
     add_worksheet('États par mois')
     labels = @data_workflow_chart[:labels]
     datasets = @data_workflow_chart[:datasets]
-    
+
     # En-têtes dynamiques basés sur les statuts
     headers = ['Mois'] + datasets.map { |dataset| dataset[:label] }
     add_headers(headers)
@@ -42,7 +45,7 @@ class DashboardManagerToXls < ExportToXls
 
     # 4. Onglet : Quantité d'interventions par service
     add_worksheet('Qté par service')
-    add_headers(['Service', 'Quantité'])
+    add_headers(%w[Service Quantité])
     setup_data(@qte_interventions_par_service.to_a)
 
     # 5. Onglet : Temps total par service

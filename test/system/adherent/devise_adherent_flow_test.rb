@@ -1,13 +1,14 @@
-require "application_system_test_case"
+# frozen_string_literal: true
+
+require 'application_system_test_case'
 
 class DeviseAdherentFlowTest < ApplicationSystemTestCase
-
   setup do
     @adhérent = users(:weil)
     login(@adhérent)
   end
 
-  test "Se déconnecter" do
+  test 'Se déconnecter' do
     # Fermer la notification de connexion
     find("[data-testid='close_notification']").click
 
@@ -15,9 +16,8 @@ class DeviseAdherentFlowTest < ApplicationSystemTestCase
     page.accept_confirm do
       logout_button.click
     end
-    assert_text "Déconnecté(e) avec succès."
+    assert_text 'Déconnecté(e) avec succès.'
     visit interventions_url
-    assert_text "Vous devez vous connecter ou vous enregistrer pour continuer."
+    assert_text 'Vous devez vous connecter ou vous enregistrer pour continuer.'
   end
-
 end

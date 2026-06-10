@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 # Rôles sans aucun droit sur les conventions (adhérent et agent regroupés :
 # tous deux n'ont aucune action autorisée, le test reste lisible groupé).
@@ -30,11 +32,11 @@ class AdherentConventionPolicyTest < ActionDispatch::IntegrationTest
     refute policy.destroy?
   end
 
-  test "scope : aucune convention visible pour un adhérent" do
+  test 'scope : aucune convention visible pour un adhérent' do
     assert_empty ConventionPolicy::Scope.new(@adherent, Convention.all).resolve
   end
 
-  test "scope : aucune convention visible pour un agent" do
+  test 'scope : aucune convention visible pour un agent' do
     assert_empty ConventionPolicy::Scope.new(@agent, Convention.all).resolve
   end
 end

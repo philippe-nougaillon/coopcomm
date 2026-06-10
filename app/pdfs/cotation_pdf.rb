@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 class CotationPdf
   include Prawn::View
   include ActionView::Helpers::NumberHelper
 
-  require "prawn/table"
+  require 'prawn/table'
 
   def initialize
     super()
@@ -37,17 +39,17 @@ class CotationPdf
 
   # Informations d'en-tête
   def add_metadata
-    livraison = @cotation.date_livraison_souhaitée ? I18n.l(@cotation.date_livraison_souhaitée, format: :long) : "—"
+    livraison = @cotation.date_livraison_souhaitée ? I18n.l(@cotation.date_livraison_souhaitée, format: :long) : '—'
 
     data = [
-      ["Le :", I18n.l(@cotation.updated_at, format: :long)],
-      ["Réf :", @cotation.ref.to_s],
-      ["Statut :", @cotation.workflow_state.to_s.humanize],
-      ["Adhérent :", @cotation.adherent&.nom_prénom.to_s],
-      ["Service :", @cotation.service&.nom.to_s],
-      ["Intitulé :", @cotation.intitulé.to_s],
-      ["Livraison souhaitée :", livraison],
-      ["Total HT :", number_to_currency(@cotation.total_ht || 0)]
+      ['Le :', I18n.l(@cotation.updated_at, format: :long)],
+      ['Réf :', @cotation.ref.to_s],
+      ['Statut :', @cotation.workflow_state.to_s.humanize],
+      ['Adhérent :', @cotation.adherent&.nom_prénom.to_s],
+      ['Service :', @cotation.service&.nom.to_s],
+      ['Intitulé :', @cotation.intitulé.to_s],
+      ['Livraison souhaitée :', livraison],
+      ['Total HT :', number_to_currency(@cotation.total_ht || 0)]
     ]
 
     table(data, cell_style: { border_width: 0, padding: 4 }) do
@@ -60,10 +62,10 @@ class CotationPdf
 
   # Détail des prestations
   def add_lignes
-    text "Prestations", size: 14, style: :bold
+    text 'Prestations', size: 14, style: :bold
     move_down 10
 
-    header = [["Code", "Intitulé", "Prix HT", "Qté", "Total HT"]]
+    header = [['Code', 'Intitulé', 'Prix HT', 'Qté', 'Total HT']]
     rows = @cotation.cotation_lignes.includes(:prestation).map do |ligne|
       [
         ligne.prestation&.code,
@@ -76,7 +78,7 @@ class CotationPdf
 
     table(header + rows, header: true, width: bounds.width, cell_style: { padding: 5, size: 10 }) do
       row(0).font_style = :bold
-      row(0).background_color = "EEEEEE"
+      row(0).background_color = 'EEEEEE'
       columns(2..4).align = :right
     end
 
@@ -86,7 +88,7 @@ class CotationPdf
 
   def add_memo
     move_down 20
-    text "Mémo", size: 12, style: :bold
+    text 'Mémo', size: 12, style: :bold
     move_down 5
     text @cotation.mémo.to_s, align: :justify, size: 10
   end

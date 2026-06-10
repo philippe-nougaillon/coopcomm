@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreatePrestations < ActiveRecord::Migration[8.0]
   def change
     create_table :prestations do |t|
@@ -16,6 +18,6 @@ class CreatePrestations < ActiveRecord::Migration[8.0]
     end
 
     # Un code de prestation est unique au sein d'une organisation
-    add_index :prestations, [:organisation_id, :code], unique: true
+    add_index :prestations, %i[organisation_id code], unique: true
   end
 end

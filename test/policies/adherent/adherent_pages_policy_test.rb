@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class AdherentPagesPolicyTest < ActionDispatch::IntegrationTest
   def setup
@@ -9,27 +11,27 @@ class AdherentPagesPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Assistant
-  test "accès interdit pour un adherent sur la page assistant" do
+  test 'accès interdit pour un adherent sur la page assistant' do
     refute @policy.assistant?
   end
 
   # Dashboard
-  test "accès autorisé pour un adherent sur la page dashboard" do
+  test 'accès autorisé pour un adherent sur la page dashboard' do
     assert @policy.dashboard?
   end
 
   # Home
-  test "accès autorisé pour un adherent sur la page home" do
+  test 'accès autorisé pour un adherent sur la page home' do
     assert @policy.home?
   end
 
   # Meteo
-  test "accès autorisé pour un adherent sur la page meteo" do
+  test 'accès autorisé pour un adherent sur la page meteo' do
     assert @policy.meteo?
   end
 
   # meteo_by_day
-  test "accès autorisé pour un adherent sur la page meteo_by_day" do
+  test 'accès autorisé pour un adherent sur la page meteo_by_day' do
     assert @policy.meteo_by_day?
   end
 end

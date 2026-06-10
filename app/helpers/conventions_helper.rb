@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ConventionsHelper
   # Calcule l'avancement d'une convention dans le temps (aujourd'hui par rapport
   # à date_début / date_fin_prévue) pour alimenter une barre de progression daisyUI.
@@ -12,9 +14,7 @@ module ConventionsHelper
     end_date = convention.date_fin_prévue
 
     # Pas d'échéance : convention active sans terme défini → barre indéterminée.
-    if end_date.blank?
-      return { percent: nil, color: "progress-info", label: "En cours", indeterminate: true }
-    end
+    return { percent: nil, color: 'progress-info', label: 'En cours', indeterminate: true } if end_date.blank?
 
     total   = (end_date - start_date).to_i
     elapsed = (today - start_date).to_i
@@ -28,13 +28,13 @@ module ConventionsHelper
 
     color, label =
       if today < start_date
-        ["progress-info", "À venir"]
+        ['progress-info', 'À venir']
       elsif today > end_date
-        ["progress-error", "Expirée"]
+        %w[progress-error Expirée]
       elsif percent >= 80
-        ["progress-warning", "#{percent} %"]
+        ['progress-warning', "#{percent} %"]
       else
-        ["progress-success", "#{percent} %"]
+        ['progress-success', "#{percent} %"]
       end
 
     { percent: percent, color: color, label: label, indeterminate: false }

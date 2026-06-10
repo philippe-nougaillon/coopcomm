@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class CotationsController < ApplicationController
-  before_action :set_cotation, only: %i[ show edit update destroy pdf envoyer valider refuser ]
+  before_action :set_cotation, only: %i[show edit update destroy pdf envoyer valider refuser]
   before_action :is_user_authorized, except: :create
 
   # GET /cotations
@@ -7,23 +9,20 @@ class CotationsController < ApplicationController
     @cotations = policy_scope(Cotation).kept.includes(:adherent, :service).ordered
 
     if params[:search].present?
-      @cotations = @cotations.where("cotations.ref ILIKE :s OR cotations.intitulé ILIKE :s", s: "%#{params[:search]}%")
+      @cotations = @cotations.where('cotations.ref ILIKE :s OR cotations.intitulé ILIKE :s', s: "%#{params[:search]}%")
     end
 
     if params[:workflow_state].present?
-      @cotations = @cotations.where("cotations.workflow_state = ?", params[:workflow_state].to_s.downcase)
+      @cotations = @cotations.where('cotations.workflow_state = ?', params[:workflow_state].to_s.downcase)
     end
 
-    if params[:adherent_id].present?
-      @cotations = @cotations.where(adherent_id: params[:adherent_id])
-    end
+    @cotations = @cotations.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
 
     @pagy, @cotations = pagy(@cotations, items: 15)
   end
 
   # GET /cotations/1
-  def show
-  end
+  def show; end
 
   # GET /cotations/new
   def new
@@ -39,7 +38,7 @@ class CotationsController < ApplicationController
     authorize @cotation
 
     if @cotation.save
-      redirect_to @cotation, notice: "Cotation créée."
+      redirect_to @cotation, notice: 'Cotation créée.'
     else
       set_form_collections
       render :new, status: :unprocessable_entity
@@ -55,7 +54,7 @@ class CotationsController < ApplicationController
   # PATCH/PUT /cotations/1
   def update
     if @cotation.update(cotation_params)
-      redirect_to @cotation, notice: "Cotation mise à jour.", status: :see_other
+      redirect_to @cotation, notice: 'Cotation mise à jour.', status: :see_other
     else
       set_form_collections
       render :edit, status: :unprocessable_entity
@@ -65,7 +64,7 @@ class CotationsController < ApplicationController
   # DELETE /cotations/1
   def destroy
     @cotation.discard
-    redirect_to cotations_path, notice: "Cotation supprimée.", status: :see_other
+    redirect_to cotations_path, notice: 'Cotation supprimée.', status: :see_other
   end
 
   # GET /cotations/1/pdf
@@ -75,21 +74,21 @@ class CotationsController < ApplicationController
 
     send_data pdf.render,
               filename: @cotation.pdf_filename,
-              type: "application/pdf",
-              disposition: "inline"
+              type: 'application/pdf',
+              disposition: 'inline'
   end
 
   # Transitions du workflow
   def envoyer
-    transition!(:envoyer, "Cotation envoyée.")
+    transition!(:envoyer, 'Cotation envoyée.')
   end
 
   def valider
-    transition!(:valider, "Cotation validée.")
+    transition!(:valider, 'Cotation validée.')
   end
 
   def refuser
-    transition!(:refuser, "Cotation refusée.")
+    transition!(:refuser, 'Cotation refusée.')
   end
 
   private
@@ -105,7 +104,7 @@ class CotationsController < ApplicationController
 
   def set_cotation
     @cotation = Cotation.find_by(slug: params[:id])
-    redirect_to cotations_path, alert: "Cotation introuvable" if @cotation.nil?
+    redirect_to cotations_path, alert: 'Cotation introuvable' if @cotation.nil?
   end
 
   def is_user_authorized
@@ -126,10 +125,10 @@ class CotationsController < ApplicationController
   # Collections proposées dans le formulaire, scopées selon le rôle.
   def set_form_collections
     @adherents = if current_user.administrateur?
-      current_organisation.users.adhérent.ordered
-    else
-      User.by_service(current_user.services).adhérent.ordered
-    end
+                   current_organisation.users.adhérent.ordered
+                 else
+                   User.by_service(current_user.services).adhérent.ordered
+                 end
 
     @services = current_user.administrateur? ? current_organisation.services.ordered : current_user.services.ordered
 

@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class UsersControllerTest < ActionDispatch::IntegrationTest
   setup do
@@ -7,49 +9,49 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Index
-  test "should get index" do
+  test 'should get index' do
     get users_url
     assert_response :success
   end
 
-  test "should get index with export xls" do
+  test 'should get index with export xls' do
     get users_url,  params: {
       format: :xls
     }
 
     assert_response :success
-    assert_equal "application/xls", response.content_type
+    assert_equal 'application/xls', response.content_type
   end
 
-  test "should get index with param search" do
-    get users_url(search: "tonte")
+  test 'should get index with param search' do
+    get users_url(search: 'tonte')
     assert_response :success
   end
 
-  test "should get index with param rôle" do
-    get users_url(rôle: "agent")
+  test 'should get index with param rôle' do
+    get users_url(rôle: 'agent')
     assert_response :success
   end
 
-  test "should get index with param absent" do
+  test 'should get index with param absent' do
     get users_url(absent: true)
     assert_response :success
   end
 
-  test "should get new" do
+  test 'should get new' do
     get new_user_url
     assert_response :success
   end
 
-  test "should create user" do
-    assert_difference("User.count") do
+  test 'should create user' do
+    assert_difference('User.count') do
       post users_url, params: {
         user: {
-          nom: "Foo",
-          prénom: "Bar",
-          email: "email@example.com",
-          password: "0DcPIZIq0+f5SvCf",
-          rôle: "agent",
+          nom: 'Foo',
+          prénom: 'Bar',
+          email: 'email@example.com',
+          password: '0DcPIZIq0+f5SvCf',
+          rôle: 'agent',
           organisation: organisations(:mairie_paris),
           service_ids: [services(:service_paris).id]
         }
@@ -60,26 +62,26 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Show
-  test "should show user" do
+  test 'should show user' do
     get user_url(@user)
     assert_response :success
   end
 
-  test "should show adherent user (rend la section Cotations)" do
+  test 'should show adherent user (rend la section Cotations)' do
     get user_url(users(:weil))
     assert_response :success
   end
 
-  test "should get edit" do
+  test 'should get edit' do
     get edit_user_url(@user)
     assert_response :success
   end
 
-  test "should update user" do
+  test 'should update user' do
     patch user_url(@user), params: {
       user: {
         email: @user.email,
-        password: "0DcPIZIq0+f5SvCf",
+        password: '0DcPIZIq0+f5SvCf',
         rôle: @user.rôle,
         organisation: @user.organisation
       }
@@ -87,8 +89,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to user_url(@user)
   end
 
-  test "should destroy user" do
-    assert_difference("User.count", -1) do
+  test 'should destroy user' do
+    assert_difference('User.count', -1) do
       delete user_url(@user)
     end
 
@@ -96,41 +98,41 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Agent calendrier
-  test "should get agent_calendrier" do
+  test 'should get agent_calendrier' do
     get agent_calendrier_users_url
     assert_response :success
   end
 
-  test "should get agent_calendrier with param search" do
-    get agent_calendrier_users_url(search: "algo")
+  test 'should get agent_calendrier with param search' do
+    get agent_calendrier_users_url(search: 'algo')
     assert_response :success
   end
 
-  test "should get import" do
+  test 'should get import' do
     get import_users_url
     assert_response :success
   end
 
   # Import_do
-  test "should no import without param upload" do
+  test 'should no import without param upload' do
     get import_do_users_url
     assert_redirected_to root_path
   end
 
-  test "should no import with param upload empty" do
-    post import_do_users_url(upload: "")
+  test 'should no import with param upload empty' do
+    post import_do_users_url(upload: '')
     assert_redirected_to import_users_url
   end
 
-  test "should create agent as a manager" do
-    assert_difference("User.count", 1) do
+  test 'should create agent as a manager' do
+    assert_difference('User.count', 1) do
       post users_url, params: {
         user: {
-          nom: "Foo",
-          prénom: "Bar",
-          email: "email@example.com",
-          password: "0DcPIZIq0+f5SvCf",
-          rôle: "agent",
+          nom: 'Foo',
+          prénom: 'Bar',
+          email: 'email@example.com',
+          password: '0DcPIZIq0+f5SvCf',
+          rôle: 'agent',
           organisation: organisations(:mairie_paris),
           service_ids: [services(:service_paris).id]
         }
@@ -143,15 +145,15 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   test "should'nt create manager as a manager (forced into agent)" do
     sign_in users(:hidalgo)
 
-    unauthorized_role = "manager"
+    unauthorized_role = 'manager'
 
-    assert_difference("User.count", 1) do
+    assert_difference('User.count', 1) do
       post users_url, params: {
         user: {
-          nom: "Foo",
-          prénom: "Bar",
-          email: "email@example.com",
-          password: "0DcPIZIq0+f5SvCf",
+          nom: 'Foo',
+          prénom: 'Bar',
+          email: 'email@example.com',
+          password: '0DcPIZIq0+f5SvCf',
           rôle: unauthorized_role,
           organisation: organisations(:mairie_paris),
           service_ids: [services(:service_paris).id]
@@ -161,22 +163,22 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
     new_user = User.last
 
-    assert_equal "agent", new_user.rôle, "Le rôle est censé être agent si c'est un manager qui le créé"
+    assert_equal 'agent', new_user.rôle, "Le rôle est censé être agent si c'est un manager qui le créé"
     assert_not_equal unauthorized_role, new_user.rôle
   end
 
   test "should'nt create administrateur as a manager (forced into agent)" do
     sign_in users(:hidalgo)
 
-    unauthorized_role = "administrateur"
+    unauthorized_role = 'administrateur'
 
-    assert_difference("User.count", 1) do
+    assert_difference('User.count', 1) do
       post users_url, params: {
         user: {
-          nom: "Foo",
-          prénom: "Bar",
-          email: "email@example.com",
-          password: "0DcPIZIq0+f5SvCf",
+          nom: 'Foo',
+          prénom: 'Bar',
+          email: 'email@example.com',
+          password: '0DcPIZIq0+f5SvCf',
           rôle: unauthorized_role,
           organisation: organisations(:mairie_paris),
           service_ids: [services(:service_paris).id]
@@ -186,7 +188,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
     new_user = User.last
 
-    assert_equal "agent", new_user.rôle, "Le rôle est censé être agent si c'est un manager qui le créé"
+    assert_equal 'agent', new_user.rôle, "Le rôle est censé être agent si c'est un manager qui le créé"
     assert_not_equal unauthorized_role, new_user.rôle
   end
 
@@ -213,16 +215,15 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   # def create_xls_file(filename, rows)
   #   book = Spreadsheet::Workbook.new
   #   sheet = book.create_worksheet(name: "Import")
-    
+
   #   # Ajout des données (rows est un tableau de tableaux)
   #   rows.each_with_index do |row_data, index|
   #     sheet.row(index).replace(row_data)
   #   end
-  
+
   #   # Sauvegarde physique du fichier
   #   path = Rails.root.join('tmp', filename)
   #   book.write(path)
   #   path
   # end
-
 end

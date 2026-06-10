@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class AgentInterventionTest < ActiveSupport::TestCase
   setup do
@@ -18,7 +20,7 @@ class AgentInterventionTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(intervention.début_prévue, intervention.fin_prévue)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un agent"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Conflit(s) détecté(s) sur un agent'
   end
 
   test "Intervention non créée si l'agent commence avant et fini pendant" do
@@ -30,7 +32,7 @@ class AgentInterventionTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(début_prévue_décalé, fin_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un agent"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Conflit(s) détecté(s) sur un agent'
   end
 
   test "Intervention non créée si l'agent commence pendant et fini après" do
@@ -42,7 +44,7 @@ class AgentInterventionTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(début_prévue_décalé, fin_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un agent"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Conflit(s) détecté(s) sur un agent'
   end
 
   test "Intervention non créée si l'agent commence pendant et fini pendant" do
@@ -54,7 +56,7 @@ class AgentInterventionTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(début_prévue_décalé, fin_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un agent"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Conflit(s) détecté(s) sur un agent'
   end
 
   test "Intervention non créée si l'agent commence avant et fini après" do
@@ -66,7 +68,7 @@ class AgentInterventionTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(début_prévue_décalé, fin_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un agent"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Conflit(s) détecté(s) sur un agent'
   end
 
   test "Intervention non créée si l'agent fini au début" do
@@ -77,7 +79,7 @@ class AgentInterventionTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(nil, fin_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un agent"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Conflit(s) détecté(s) sur un agent'
   end
 
   test "Intervention non créée si l'agent commence à la fin" do
@@ -88,7 +90,7 @@ class AgentInterventionTest < ActiveSupport::TestCase
     nouvelle_intervention = createOverlapsIntervention(début_prévue_décalé)
 
     assert_not nouvelle_intervention.valid?
-    assert_includes nouvelle_intervention.errors.full_messages[0], "Conflit(s) détecté(s) sur un agent"
+    assert_includes nouvelle_intervention.errors.full_messages[0], 'Conflit(s) détecté(s) sur un agent'
   end
 
   def createOverlapsIntervention(debut = nil, fin = nil)
@@ -105,14 +107,13 @@ class AgentInterventionTest < ActiveSupport::TestCase
 
   def createDefaultIntervention
     Intervention.create!(
-      début_prévue: "2025-04-08 09:00",
-      fin_prévue: "2025-04-08 12:00",
-      description: "Entretien des locaux",
+      début_prévue: '2025-04-08 09:00',
+      fin_prévue: '2025-04-08 12:00',
+      description: 'Entretien des locaux',
       organisation: organisations(:mairie_paris),
       agents: [@agent],
       adherent: @template_adherent,
       service: @template_adherent.services.first
     )
   end
-
 end
