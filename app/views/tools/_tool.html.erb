@@ -39,9 +39,10 @@
       </span>
     </td>
   <% when 'calendrier' %>
-    <% tool.get_etats_from_mouvements.each do | etat | %>
-      <td class="text-center p-0! ">
+    <% tool.get_etats_from_mouvements(@date, @date_fin).each do | etat | %>
+      <td class="text-center">
         <%= etat %>
+      </td>
     <% end %>
 
     <!--
