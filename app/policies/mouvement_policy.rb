@@ -39,4 +39,8 @@ class MouvementPolicy < ApplicationPolicy
   def reserve?
     !user.adhérent?
   end
+
+  def libere?
+    !user.adhérent?
+  end
 end

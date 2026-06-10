@@ -2,9 +2,15 @@
   <td class="sticky left-0 top-0 bg-slate-100 sm:text-xl text-primary bg-slate-50 break-words whitespace-normal max-w-[25vw]">
     <%= link_to tool.name.humanize, tool, class: 'text-primary hover:underline', title: (tool.description.blank? ? 'Aucune description' : tool.description) %>
   </td>
-  <% tool.get_etats_from_mouvements(@date, @date_fin, current_user.id).each do | etat | %>
+  <% tool.get_etats_from_mouvements(@date, @date_fin, current_user.id).each_with_index do | etat, index | %>
     <td class="text-center">
-      <%= etat %>
+
+      <%= render 'tools/mouvement', 
+                  etat:,
+                  tool:,
+                  index:,
+                  date: @date + index.day
+      %>
     </td>
   <% end %>
 </tr>

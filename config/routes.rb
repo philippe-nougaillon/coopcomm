@@ -46,7 +46,8 @@ Rails.application.routes.draw do
   resources :tools do 
     resources :mouvements, only: [] do
       collection do
-        post :reserve
+        get :reserve
+        get :libere
       end
     end
   end

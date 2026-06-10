@@ -110,7 +110,7 @@ class Tool < ApplicationRecord
             est_en_panne = true
           else
             # Sinon, l'outil est juste réservé par quelqu'un
-            mouvement_user_id = etats["sortie"] || etats["entrée"]
+            mouvement_user_id = etats["réservé"]
             if mouvement_user_id == current_user_id
               current_state = "R"
             else
