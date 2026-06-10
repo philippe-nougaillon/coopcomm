@@ -394,7 +394,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_09_101728) do
     t.string "icon_name"
     t.string "modèle"
     t.string "marque"
-    t.boolean "en_panne"
+    t.boolean "en_panne", default: false
     t.index ["organisation_id"], name: "index_tools_on_organisation_id"
   end
 
