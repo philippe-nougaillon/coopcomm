@@ -16,7 +16,7 @@
                   data: { turbo_method: :patch, turbo_confirm: 'Voulez-vous réactiver ce compte ?' },
                   class: "text-success hover:scale-110 transition-transform flex flex-shrink-0 items-center justify-center",
                   title: "Réactiver le compte" do %>
-          <img src="/assets/icons/undo.svg" class="icon text-xl leading-none" alt="Annuler" title="Annuler">
+          <img src="/assets/images/icons/undo.svg" class="icon text-xl leading-none" alt="Annuler" title="Annuler">
         <% end %>
       <% end %>
     </div>
@@ -79,7 +79,7 @@
       </div>
     <% else %>
       <img
-        src="/assets/icons/check_indeterminate_small.svg"
+        src="/assets/images/icons/check_indeterminate_small.svg"
         class="icon"
         alt="Aucun mot-clé"
         title="Aucun mot-clé"
@@ -95,7 +95,7 @@
   <%# Absent %>
   <td class="py-3 px-4 text-center">
     <% if user.agent? && user.absent? %>
-      <img src="/assets/icons/person_off.svg" class="icon text-amber-500 cursor-help hover:scale-110 transition-transform text-xl"
+      <img src="/assets/images/icons/person_off.svg" class="icon text-amber-500 cursor-help hover:scale-110 transition-transform text-xl"
             title="Absent du <%= l user.current_absence.du %> au <%= l user.current_absence.au %>, motif : <%= user.current_absence.motif %>" alt="Utilisateur actuellement absent" />   
     <% end %>
   </td>
@@ -104,7 +104,7 @@
     <% if user.agent? && user.moyenne %>
       <div class="inline-flex items-center gap-1 bg-white border border-slate-200 px-2.5 py-1 rounded-full whitespace-nowrap">
         <img
-          src="/assets/icons/star_rate.svg"
+          src="/assets/images/icons/star_rate.svg"
           class="icon text-amber-400 text-sm leading-none"
           alt="Évaluation"
           title="Évaluation"

@@ -39,11 +39,11 @@
             <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Informations</p>
             <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
               <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-                 <%= embedded_svg "icons/mail.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+                <img src="/assets/images/icons/mail.svg" class="icon" alt="mail"> Email
               </div>
               <div class="py-2.5 text-slate-800 border-b border-slate-100 break-all"><%= @user.email %></div>
               <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-                <img src="/assets/icons/call.svg" class="icon" alt="Téléphone"> Téléphone
+                <img src="/assets/images/icons/call.svg" class="icon" alt="Téléphone"> Téléphone
               </div>
               <div class="py-2.5 border-b border-slate-100">
                 <% if @user.téléphone.to_s.strip.present? %>
@@ -53,13 +53,13 @@
                 <% end %>
               </div>
               <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-                <img src="/assets/icons/store.svg" class="icon text-base" alt="Services" title="Services" />
+                <img src="/assets/images/icons/store.svg" class="icon text-base" alt="Services" title="Services" />
                 <%= @user.manager_or_admin? ? "Responsable des services" : "Services" %>
               </div>
               <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @user.services.pluck(:nom).join(", ") %></div>
               <% if @user.memo.present? %>
                 <div class="flex items-start gap-2 py-2.5 text-slate-500" style="padding-right: 2rem;">
-                  <img src="/assets/icons/note.svg" class="icon text-base" alt="Mémo" title="Mémo" />
+                  <img src="/assets/images/icons/note.svg" class="icon text-base" alt="Mémo" title="Mémo" />
                 </div>
                 <div class="py-2.5 text-slate-800 italic"><%= @user.memo %></div>
               <% end %>
@@ -80,7 +80,7 @@
                 <div class="flex items-center">
                   <div class="flex w-36">
                     <% i.times do %>
-                      <img src="/assets/icons/star.svg" class="icon text-slate-400" alt="star" title="star" />
+                      <img src="/assets/images/icons/star.svg" class="icon text-slate-400" alt="star" title="star" />
                     <% end %>
                   </div>
                   <progress class="progress progress-primary w-56" value="<%= @user.total_rating > 0 ? @user.star_count(i) : 0 %>" max="100"></progress>
@@ -94,11 +94,11 @@
           <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Informations</p>
           <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
             <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-              <img src="/assets/icons/mail.svg" class="icon text-base" alt="Email" title="Email" /> Email
+              <img src="/assets/images/icons/mail.svg" class="icon text-base" alt="Email" title="Email" /> Email
             </div>
             <div class="py-2.5 text-slate-800 border-b border-slate-100 break-all"><%= @user.email %></div>
             <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-              <img src="/assets/icons/call.svg" class="icon text-base" alt="Téléphone" title="Téléphone" /> Téléphone
+              <img src="/assets/images/icons/call.svg" class="icon text-base" alt="Téléphone" title="Téléphone" /> Téléphone
             </div>
             <div class="py-2.5 border-b border-slate-100">
               <% if @user.téléphone.to_s.strip.present? %>
@@ -108,13 +108,13 @@
               <% end %>
             </div>
             <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-              <img src="/assets/icons/store.svg" class="icon text-base" alt="Services" title="Services" />
+              <img src="/assets/images/icons/store.svg" class="icon text-base" alt="Services" title="Services" />
               <%= @user.manager_or_admin? ? "Responsable des services" : "Services" %>
             </div>
             <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @user.services.pluck(:nom).join(", ") %></div>
             <% if @user.memo.present? %>
               <div class="flex items-start gap-2 py-2.5 text-slate-500" style="padding-right: 2rem;">
-                <img src="/assets/icons/note.svg" class="icon text-base" alt="Mémo" title="Mémo" /> Mémo
+                <img src="/assets/images/icons/note.svg" class="icon text-base" alt="Mémo" title="Mémo" /> Mémo
               </div>
               <div class="py-2.5 text-slate-800 italic"><%= @user.memo %></div>
             <% end %>
@@ -124,7 +124,8 @@
       <div class="flex flex-wrap flex-col md:flex-row gap-2 mt-1">
         <% if policy(@user).edit? %>
           <%= link_to edit_user_path(@user), class: "btn" do %>
-            <img src="/assets/icons/edit.svg" class="icon text-sm" alt="Modifier l'utilisateur" title="Modifier l'utilisateur" /> Modifier
+            <%= embedded_svg "icons/edit.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
+            Modifier
           <% end %>
         <% end %>
         <% if policy(@user).inviter? %>
@@ -155,7 +156,7 @@
         <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
       </form>
       <h3 class="text-lg font-bold text-error flex items-center gap-2">
-        <img src="/assets/icons/warning.svg" class="icon" alt="Supprimer l'utilisateur" title="Supprimer l'utilisateur" />   
+        <img src="/assets/images/icons/warning.svg" class="icon" alt="Supprimer l'utilisateur" title="Supprimer l'utilisateur" />   
         Supprimer l'utilisateur
       </h3>
       <p class="py-4 text-sm text-slate-600">
@@ -177,8 +178,7 @@
 
   <div class="my-10">
     <%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition" do %>
-      
-      <img src="/assets/icons/arrow_back.svg" class="icon text-base" alt="Retour à la liste" title="Retour à la liste" /> 
+      <img src="/assets/images/icons/arrow_back.svg" class="icon text-base" alt="Retour à la liste" title="Retour à la liste" /> 
       Retour à la liste
     <% end %>
   </div>
@@ -196,7 +196,7 @@
   <div class="overflow-x-auto border border-slate-200  shadow-sm bg-white ">
     <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
       <img
-          src="/assets/icons/swipe.svg"
+          src="/assets/images/icons/swipe.svg"
           class="icon text-sm"
           alt="swipe"
           title="Faire glisser"

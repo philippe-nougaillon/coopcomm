@@ -10,9 +10,9 @@
               <%= intervention.workflow_state.humanize %>
             </span>
             <% if intervention.repeter %>
-              <img src="/assets/icons/event_repeat.svg" class="icon" alt="Modèle pour le pointage">
+              <img src="/assets/images/icons/event_repeat.svg" class="icon" alt="Modèle pour le pointage">
             <% elsif intervention.template_slug %>
-              <img src="/assets/icons/qr_code_2.svg" class="icon" alt="Pointage" title="Pointage">
+              <img src="/assets/images/icons/qr_code_2.svg" class="icon" alt="Pointage" title="Pointage">
             <% end %>
           </div>
         </div>
@@ -177,7 +177,7 @@
         <dialog id="my_modal_<%= intervention.id %>" class="modal w-full mx-auto my-auto mx-24">
           <div class="flex justify-end">
             <button onclick="my_modal_<%= intervention.id %>.close()">
-              <img src="/assets/icons/cancel.svg" class="icon text-5xl text-white font-black" alt="Fermer">
+              <img src="/assets/images/icons/cancel.svg" class="icon text-5xl text-white font-black" alt="Fermer">
             </button>
           </div>
           <div class="carousel">
