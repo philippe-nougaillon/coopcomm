@@ -20,7 +20,7 @@ module DashboardData
       kpi_total_interventions: interventions.count,
       kpi_temps_total: "#{interventions.sum(:temps_total).round(1)}h",
       kpi_agents_actifs: users.agent.count,
-      kpi_co2_total: "#{co2.values.sum.round(1)} kg"
+      kpi_co2_total: "#{co2.values.sum} kg"
     }
   end
 
@@ -43,7 +43,7 @@ module DashboardData
       kpi_total_interventions: interventions.count,
       kpi_temps_total: "#{temps_consomme.round(1)}h",
       kpi_agents_actifs: current_organisation.users.agent.by_service(current_user.services).count,
-      kpi_co2_total: "#{co2.values.sum.round(1)} kg"
+      kpi_co2_total: "#{co2.values.sum} kg"
     }
   end
 
