@@ -16,9 +16,19 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test 'should show messagerie with a to_id' do
-    get messagerie_url(to_id: users.second.id)
+  test 'should show a conversation with an interlocutor' do
+    get messagerie_conversation_url(@interlocutor_user.id)
     assert_response :success
+  end
+
+  test 'conversation with yourself redirects to messagerie' do
+    get messagerie_conversation_url(@current_user.id)
+    assert_redirected_to messagerie_path
+  end
+
+  test 'conversation with an unknown user redirects to messagerie' do
+    get messagerie_conversation_url(to_id: 0)
+    assert_redirected_to messagerie_path
   end
 
   test 'should send message' do

@@ -2,57 +2,56 @@
 
 class MessagerieController < ApplicationController
   before_action :is_user_authorized
+  before_action :set_sidebar_users, only: %i[index conversation]
 
+  # Accueil de la messagerie : liste des discussions récentes (sans interlocuteur sélectionné)
   def index
-    # On récupère les utilisateurs avec qui on peut envoyer des messages
-    @users = User.by_service(current_user.services).where.not(id: current_user.id).ordered
+    recent_messages = Message
+                      .where(from_id: current_user.id)
+                      .or(Message.where(to_id: current_user.id))
+                      .order(created_at: :desc)
 
-    @users = @users.with_attached_profile_picture
+    @last_messages = {}
+    ordered_user_ids = []
 
-    # On récupère l'utilisateur associé à "to_id", sauf si l'utilisateur courant essaye d'envoyer un message à lui-même
-    @destinataire = User.find_by(id: params[:to_id]) if params[:to_id].to_i != current_user.id
+    recent_messages.each do |notif|
+      # Détermine qui est l'interlocuteur avec l'utilisateur courant
+      interlocutor_id = notif.from_id == current_user.id ? notif.to_id : notif.from_id
 
-    if @destinataire
-      # On récupère les messages envoyées et reçues d'un utilisateur
-      @messages = Message
-                  .where(from_id: current_user.id, to_id: @destinataire&.id)
-                  .or(Message.where(from_id: @destinataire&.id, to_id: current_user.id))
-                  .order(:created_at)
-
-      unread_messages = @messages.select { |n| n.to_id == current_user.id && n.read_at.nil? }
-
-      @unread_count = unread_messages.count
-      @first_unread_id = unread_messages.first&.id
-    else
-      # On récupère les messages envoyées et reçues d'un utilisateur
-      recent_messages = Message
-                        .where(from_id: current_user.id)
-                        .or(Message.where(to_id: current_user.id))
-                        .order(created_at: :desc)
-
-      @last_messages = {}
-      ordered_user_ids = []
-
-      recent_messages.each do |notif|
-        # Détermine qui est l'interlocuteur avec l'utilisateur courant
-        interlocutor_id = notif.from_id == current_user.id ? notif.to_id : notif.from_id
-
-        unless @last_messages.key?(interlocutor_id)
-          @last_messages[interlocutor_id] = notif
-          ordered_user_ids << interlocutor_id
-        end
+      unless @last_messages.key?(interlocutor_id)
+        @last_messages[interlocutor_id] = notif
+        ordered_user_ids << interlocutor_id
       end
-
-      users_by_id = User
-                    .where(id: ordered_user_ids)
-                    .with_attached_profile_picture
-                    .index_by(&:id)
-
-      @recent_conversations = ordered_user_ids.map { |id| users_by_id[id] }.compact
-
-      # Compte les messages non lus envoyés par chaque utilisateur à l'utilisateur actuel
-      @unread_counts = Message.where(to_id: current_user.id, read_at: nil).group(:from_id).count
     end
+
+    users_by_id = User
+                  .where(id: ordered_user_ids)
+                  .with_attached_profile_picture
+                  .index_by(&:id)
+
+    @recent_conversations = ordered_user_ids.map { |id| users_by_id[id] }.compact
+
+    # Compte les messages non lus envoyés par chaque utilisateur à l'utilisateur actuel
+    @unread_counts = Message.where(to_id: current_user.id, read_at: nil).group(:from_id).count
+  end
+
+  # Conversation avec un interlocuteur donné (:to_id)
+  def conversation
+    @destinataire = User.find_by(id: params[:to_id])
+
+    # Interlocuteur inexistant ou soi-même → retour à l'accueil de la messagerie
+    return redirect_to(messagerie_path) if @destinataire.nil? || @destinataire.id == current_user.id
+
+    # On récupère les messages envoyés et reçus avec cet interlocuteur
+    @messages = Message
+                .where(from_id: current_user.id, to_id: @destinataire.id)
+                .or(Message.where(from_id: @destinataire.id, to_id: current_user.id))
+                .order(:created_at)
+
+    unread_messages = @messages.select { |n| n.to_id == current_user.id && n.read_at.nil? }
+
+    @unread_count = unread_messages.count
+    @first_unread_id = unread_messages.first&.id
   end
 
   def send_message
@@ -92,6 +91,15 @@ class MessagerieController < ApplicationController
   end
 
   private
+
+  # Utilisateurs joignables, affichés dans la sidebar partagée (accueil + conversation)
+  def set_sidebar_users
+    @users = User
+             .by_service(current_user.services)
+             .where.not(id: current_user.id)
+             .ordered
+             .with_attached_profile_picture
+  end
 
   def is_user_authorized
     authorize :messagerie

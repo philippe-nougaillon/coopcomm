@@ -135,6 +135,7 @@ Rails.application.routes.draw do
 
   namespace :messagerie do
     get '/', to: 'index', as: ''
+    get 'conversation/:to_id', to: 'conversation', as: 'conversation'
     post :mark_as_read
     post :send_message
     post :search_contact

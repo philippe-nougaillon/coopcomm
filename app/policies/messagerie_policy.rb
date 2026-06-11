@@ -11,6 +11,10 @@ class MessageriePolicy < ApplicationPolicy
     user
   end
 
+  def conversation?
+    index?
+  end
+
   def send_message?
     index?
   end
