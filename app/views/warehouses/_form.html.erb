@@ -2,7 +2,6 @@
   <% if warehouse.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
       <h2><%= pluralize(warehouse.errors.count, "error") %> prohibited this warehouse from being saved:</h2>
-
       <ul class="list-disc ml-6">
         <% warehouse.errors.each do |error| %>
           <li><%= error.full_message %></li>
@@ -10,37 +9,29 @@
       </ul>
     </div>
   <% end %>
-
   <div class="my-5">
     <%= form.label :name %>
     <%= form.text_field :name, class: ["input input-sm w-full", {"input-error": warehouse.errors[:name].any?}] %>
   </div>
-
   <div class="w-full sm:flex-1">
     <%= form.label :user_ids, "Équipe (Utilisateurs rattachés)", style: "display: block" %>
-    
     <%# 
       Note: Remplace `User.all` par la variable de ton contrôleur (ex: @users) si tu veux filtrer.
       Remplace `:email` par `:nom_complet` ou l'attribut que tu veux afficher dans la liste déroulante.
     %>
     <%= form.collection_select :user_ids, @users, :id, :nom_prénom, {}, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
   </div>
-
   <div class="flex-1" data-controller="places" data-places-center-lat-value="<%= ENV['MAPS_CENTER_LAT'] %>" data-places-center-lng-value="<%= ENV['MAPS_CENTER_LNG'] %>">
     <%= form.label :address, "Localisation" %>
-    
     <%# Le champ visible par l'utilisateur pour chercher l'adresse %>
     <%= form.text_field :address, 
           class: 'input select-sm w-full', 
           placeholder: 'Commencez à taper une adresse...', 
           data: { places_target: "address" } %>
-
     <%# Les champs cachés qui seront remplis automatiquement par le JS %>
     <%= form.hidden_field :latitude, data: { places_target: "latitude" } %>
     <%= form.hidden_field :longitude, data: { places_target: "longitude" } %>
   </div>
-
-
   <div class="inline">
     <%= form.submit "Enregistrer", class: "btn btn-primary mt-4" %>
   </div>

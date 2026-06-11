@@ -4,8 +4,6 @@
       <%= page_title!('Nouveau matériel') %>
     </h1>
   </div>
-
   <%= render "form", tool: @tool %>
-
   <%= link_to "Annuler",(session[:return_to] || tools_path), class: "btn mt-2" %>
 </div>

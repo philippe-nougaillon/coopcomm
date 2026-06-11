@@ -81,7 +81,7 @@
                 <div class="flex items-center">
                   <div class="flex w-36">
                     <% i.times do %>
-                      <%= embedded_svg "icons/star.svg", class: "icon text-slate-400", title: "star", alt: "star" %>
+                      <%= embedded_svg "icons/star.svg", class: "icon #{@user.star_count(i) > 0 ? 'text-amber-400 fill-current' : 'text-slate-300'}", title: "star", alt: "star" %>
                     <% end %>
                   </div>
                   <progress class="progress progress-primary w-56" value="<%= @user.total_rating > 0 ? @user.star_count(i) : 0 %>" max="100"></progress>

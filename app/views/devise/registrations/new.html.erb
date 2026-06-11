@@ -3,28 +3,23 @@
     <h1 class="text-2xl font-bold border-b border-gray-400 pb-4 w-full text-center my-4">
       <%= page_title!('Inscription') %>
     </h1>
-
     <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
       <%= render "devise/shared/error_messages", resource: resource %>
-
       <div class="field">
         <%= f.label :email %><br />
         <%= f.email_field :email, autofocus: true, autocomplete: "email", class:'input input-sm w-full', required: true %>
       </div>
-
       <div class="field my-4">
         <%= f.label :password %>
         <% if @minimum_password_length %>
-        <em>(<%= @minimum_password_length %> caractères minimum)</em>
+          <em>(<%= @minimum_password_length %> caractères minimum)</em>
         <% end %><br />
         <%= f.password_field :password, autocomplete: "new-password", class:'input input-sm w-full', required: true %>
       </div>
-
       <div class="field my-4">
         <%= f.label :password_confirmation %><br />
         <%= f.password_field :password_confirmation, autocomplete: "new-password", class:'input input-sm w-full', required: true %>
       </div>
-
       <div class="actions">
         <%= f.submit "S'inscrire", class: 'btn btn-outline btn-success lg:btn-lg rounded hover:text-white! w-full mt-4 mb-8' %>
       </div>

@@ -1,7 +1,10 @@
 Bonjour,
-<br><br>
+<br>
+<br>
 Le statut de l'intervention '<b><%= @intervention.description.humanize %></b>' a été changé par '<b><%= @intervention.audits.last.user.nom_prénom %></b>'.
-<br><br>
+<br>
+<br>
 Le nouveau statut est :  '<b><%= @intervention.workflow_state.humanize %></b>'.
-<br><br>
+<br>
+<br>
 <%= link_to "Voir l'intervention", intervention_url(@intervention) %>

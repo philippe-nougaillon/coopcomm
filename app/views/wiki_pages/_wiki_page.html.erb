@@ -6,9 +6,7 @@
       <span class="text-primary text-4xl"><%= page_title!(wiki_page.titre) %></span>
     <% end %>
   </h1>
-
   <small>Il y a <%= time_ago_in_words(wiki_page.updated_at) %></small>
-
   <% if action_name == "show" %>
     <p class="my-5">
       <%= wiki_page.contenu %>

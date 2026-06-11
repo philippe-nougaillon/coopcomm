@@ -1,227 +1,227 @@
 <script>
-    /*
-      Proportion temps consommé
-    */
-    function afficherProportionTempsConsommé() {
-        var dataProportionTempsConsommé = {
-            labels: <%= @proportion_temps_consommé.keys.to_json.html_safe %>,
-            datasets: [
-                {
-                    label: "Temps(h)",
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.4)',
-                        'rgba(75, 192, 192, 0.4)',
-                    ],
-                    borderColor: [
-                        'rgb(255, 99, 132)',
-                        'rgb(75, 192, 192)',
-                    ],
-                    borderWidth: 1,
-                    data: <%= @proportion_temps_consommé.values.to_json.html_safe %>,
-                },
-            ],
-        };
+  /*
+    Proportion temps consommé
+  */
+  function afficherProportionTempsConsommé() {
+      var dataProportionTempsConsommé = {
+          labels: <%= @proportion_temps_consommé.keys.to_json.html_safe %>,
+          datasets: [
+              {
+                  label: "Temps(h)",
+                  backgroundColor: [
+                      'rgba(255, 99, 132, 0.4)',
+                      'rgba(75, 192, 192, 0.4)',
+                  ],
+                  borderColor: [
+                      'rgb(255, 99, 132)',
+                      'rgb(75, 192, 192)',
+                  ],
+                  borderWidth: 1,
+                  data: <%= @proportion_temps_consommé.values.to_json.html_safe %>,
+              },
+          ],
+      };
 
-        var configProportionTempsConsommé = {
-            type: "pie",
-            data: dataProportionTempsConsommé,
-            options: {},
-        };
+      var configProportionTempsConsommé = {
+          type: "pie",
+          data: dataProportionTempsConsommé,
+          options: {},
+      };
 
-        var elementProportionTempsConsomméChart = document.getElementById("proportionTempsConsomméChart");
-        if (proportionTempsConsomméChart) {
-            new Chart(proportionTempsConsomméChart, configProportionTempsConsommé);
-        }
-    }
+      var elementProportionTempsConsomméChart = document.getElementById("proportionTempsConsomméChart");
+      if (proportionTempsConsomméChart) {
+          new Chart(proportionTempsConsomméChart, configProportionTempsConsommé);
+      }
+  }
 
-    /*
-      Temps total par mois
-    */
-    function afficherTempsTotalParMois() {
-        var dataTempsTotalParMoisChart = {
-            labels: <%= @temps_total_par_mois.keys.to_json.html_safe %>,
-            datasets: [
-                {
-                    label: "Temps total (h)",
-                    backgroundColor: [
-                        'rgba(54, 162, 235, 0.4)',
-                    ],
-                    borderColor: [
-                        'rgb(54, 162, 235)',
-                    ],
-                    borderWidth: 1,
-                    data: <%= @temps_total_par_mois.values.to_json.html_safe %>,
-                },
-            ],
-        };
+  /*
+    Temps total par mois
+  */
+  function afficherTempsTotalParMois() {
+      var dataTempsTotalParMoisChart = {
+          labels: <%= @temps_total_par_mois.keys.to_json.html_safe %>,
+          datasets: [
+              {
+                  label: "Temps total (h)",
+                  backgroundColor: [
+                      'rgba(54, 162, 235, 0.4)',
+                  ],
+                  borderColor: [
+                      'rgb(54, 162, 235)',
+                  ],
+                  borderWidth: 1,
+                  data: <%= @temps_total_par_mois.values.to_json.html_safe %>,
+              },
+          ],
+      };
 
-        var configTempsTotalParMoisChart = {
-            type: "bar",
-            data: dataTempsTotalParMoisChart,
-            options: {},
-        };
+      var configTempsTotalParMoisChart = {
+          type: "bar",
+          data: dataTempsTotalParMoisChart,
+          options: {},
+      };
 
-        var elementTempsTotalParMoisChart = document.getElementById("tempsTotalParMoisChart");
-        if (elementTempsTotalParMoisChart) {
-            new Chart(elementTempsTotalParMoisChart, configTempsTotalParMoisChart);
-        }
-    }
+      var elementTempsTotalParMoisChart = document.getElementById("tempsTotalParMoisChart");
+      if (elementTempsTotalParMoisChart) {
+          new Chart(elementTempsTotalParMoisChart, configTempsTotalParMoisChart);
+      }
+  }
 
-    /*
-      Quantité intervention par workflow par mois
-    */
-    function afficherWorkflowChart() {
+  /*
+    Quantité intervention par workflow par mois
+  */
+  function afficherWorkflowChart() {
 
-        var dataWorkflowChart = <%= @data_workflow_chart.to_json.html_safe %>; // Passez les données depuis Rails au JS
+      var dataWorkflowChart = <%= @data_workflow_chart.to_json.html_safe %>; // Passez les données depuis Rails au JS
 
-        var configWorkflowChart = {
-            type: "bar",
-            data: dataWorkflowChart,
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                    }
-                },
-                scales: {
-                    x: {
-                        stacked: true, // Barres empilées sur l'axe X
-                    },
-                    y: {
-                        stacked: true, // Barres empilées sur l'axe Y
-                    }
-                }
-            }
-        };
+      var configWorkflowChart = {
+          type: "bar",
+          data: dataWorkflowChart,
+          options: {
+              responsive: true,
+              plugins: {
+                  legend: {
+                      position: 'top',
+                  },
+                  tooltip: {
+                      mode: 'index',
+                      intersect: false,
+                  }
+              },
+              scales: {
+                  x: {
+                      stacked: true, // Barres empilées sur l'axe X
+                  },
+                  y: {
+                      stacked: true, // Barres empilées sur l'axe Y
+                  }
+              }
+          }
+      };
 
-        var elementWorkflowChart = document.getElementById("workflowChart");
-        if (elementWorkflowChart) {
-            new Chart(elementWorkflowChart, configWorkflowChart);
-        }
-    }
+      var elementWorkflowChart = document.getElementById("workflowChart");
+      if (elementWorkflowChart) {
+          new Chart(elementWorkflowChart, configWorkflowChart);
+      }
+  }
 
-    /*
-     Quantité intervention par service
-    */
-    function afficherQuantitéInterventionParService() {
+  /*
+   Quantité intervention par service
+  */
+  function afficherQuantitéInterventionParService() {
 
-        var dataQtéInterventionsParService = {
-            labels: <%= @qte_interventions_par_service.keys.to_json.html_safe %>,
-            datasets: [
-                {
-                    label: "Nombre intervention",
-                    backgroundColor: [
-                        'rgba(153, 101, 255, 0.4)',
-                        'rgba(255,159, 64, 0.4)',
-                        'rgba(54, 162, 235, 0.4)',
-                        'rgba(75, 192, 192, 0.4)',
-                        'rgba(255, 205, 86, 0.4)',
-                        'rgba(255, 99, 132, 0.4)',
-                        'rgba(201, 203, 207, 0.4)',
-                    ],
-                    borderColor: [
-                        'rgb(153, 102, 255)',
-                        'rgb(255, 159, 64)',
-                        'rgb(54, 162, 235)',
-                        'rgb(75, 192, 192)',
-                        'rgb(255, 205, 86)',
-                        'rgb(255, 99, 132)',
-                        'rgb(201, 203, 207)'
-                    ],
-                    borderWidth: 1,
-                    data: <%= @qte_interventions_par_service.values.to_json.html_safe %>,
-                },
-            ],
-        };
+      var dataQtéInterventionsParService = {
+          labels: <%= @qte_interventions_par_service.keys.to_json.html_safe %>,
+          datasets: [
+              {
+                  label: "Nombre intervention",
+                  backgroundColor: [
+                      'rgba(153, 101, 255, 0.4)',
+                      'rgba(255,159, 64, 0.4)',
+                      'rgba(54, 162, 235, 0.4)',
+                      'rgba(75, 192, 192, 0.4)',
+                      'rgba(255, 205, 86, 0.4)',
+                      'rgba(255, 99, 132, 0.4)',
+                      'rgba(201, 203, 207, 0.4)',
+                  ],
+                  borderColor: [
+                      'rgb(153, 102, 255)',
+                      'rgb(255, 159, 64)',
+                      'rgb(54, 162, 235)',
+                      'rgb(75, 192, 192)',
+                      'rgb(255, 205, 86)',
+                      'rgb(255, 99, 132)',
+                      'rgb(201, 203, 207)'
+                  ],
+                  borderWidth: 1,
+                  data: <%= @qte_interventions_par_service.values.to_json.html_safe %>,
+              },
+          ],
+      };
 
-        var configQtéInterventionsParService = {
-            type: "polarArea",
-            data: dataQtéInterventionsParService,
-            options: {},
-        };
+      var configQtéInterventionsParService = {
+          type: "polarArea",
+          data: dataQtéInterventionsParService,
+          options: {},
+      };
 
-        var elementQtéInterventionsParService = document.getElementById("qtéInterventionsParServiceChart");
-        if (elementQtéInterventionsParService) {
-            new Chart(elementQtéInterventionsParService, configQtéInterventionsParService);
-        }
-    }
+      var elementQtéInterventionsParService = document.getElementById("qtéInterventionsParServiceChart");
+      if (elementQtéInterventionsParService) {
+          new Chart(elementQtéInterventionsParService, configQtéInterventionsParService);
+      }
+  }
 
-    /*
-      Temps total par service
-    */
-    function afficherTempsTotalParService() {
-        var dataTempsTotalParService = {
-            labels: <%= @temps_total_par_service.keys.to_json.html_safe %>,
-            datasets: [
-                {
-                    label: "Temps total (h)",
-                    backgroundColor: [
-                        'rgba(153, 101, 255, 0.4)',
-                        'rgba(255,159, 64, 0.4)',
-                        'rgba(54, 162, 235, 0.4)',
-                        'rgba(75, 192, 192, 0.4)',
-                        'rgba(255, 205, 86, 0.4)',
-                        'rgba(255, 99, 132, 0.4)',
-                        'rgba(201, 203, 207, 0.4)',
-                    ],
-                    borderColor: [
-                        'rgb(153, 102, 255)',
-                        'rgb(255, 159, 64)',
-                        'rgb(54, 162, 235)',
-                        'rgb(75, 192, 192)',
-                        'rgb(255, 205, 86)',
-                        'rgb(255, 99, 132)',
-                        'rgb(201, 203, 207)'
-                    ],
-                    borderWidth: 1,
-                    data: <%= @temps_total_par_service.values.to_json.html_safe %>,
-                },
-            ],
-        };
+  /*
+    Temps total par service
+  */
+  function afficherTempsTotalParService() {
+      var dataTempsTotalParService = {
+          labels: <%= @temps_total_par_service.keys.to_json.html_safe %>,
+          datasets: [
+              {
+                  label: "Temps total (h)",
+                  backgroundColor: [
+                      'rgba(153, 101, 255, 0.4)',
+                      'rgba(255,159, 64, 0.4)',
+                      'rgba(54, 162, 235, 0.4)',
+                      'rgba(75, 192, 192, 0.4)',
+                      'rgba(255, 205, 86, 0.4)',
+                      'rgba(255, 99, 132, 0.4)',
+                      'rgba(201, 203, 207, 0.4)',
+                  ],
+                  borderColor: [
+                      'rgb(153, 102, 255)',
+                      'rgb(255, 159, 64)',
+                      'rgb(54, 162, 235)',
+                      'rgb(75, 192, 192)',
+                      'rgb(255, 205, 86)',
+                      'rgb(255, 99, 132)',
+                      'rgb(201, 203, 207)'
+                  ],
+                  borderWidth: 1,
+                  data: <%= @temps_total_par_service.values.to_json.html_safe %>,
+              },
+          ],
+      };
 
-        var configTempsTotalParService = {
-            type: "polarArea",
-            data: dataTempsTotalParService,
-            options: {},
-        };
+      var configTempsTotalParService = {
+          type: "polarArea",
+          data: dataTempsTotalParService,
+          options: {},
+      };
 
-        var elementTempsTotalParService = document.getElementById("tempsTotalParServiceChart");
-        if (elementTempsTotalParService) {
-            new Chart(elementTempsTotalParService, configTempsTotalParService);
-        }
-    }
+      var elementTempsTotalParService = document.getElementById("tempsTotalParServiceChart");
+      if (elementTempsTotalParService) {
+          new Chart(elementTempsTotalParService, configTempsTotalParService);
+      }
+  }
 
-    /*
-        CO2 total par mois
-    */
-    function afficherCo2TotalParMois() {
-        var configCO2TotalParMois = {
-            data: {
-                datasets: [{
-                    type: 'bar',
-                    label: "CO2 total (kg)",
-                    backgroundColor: [
-                        'white',
-                    ],
-                    borderColor: [
-                        'rgb(54, 162, 235)',
-                    ],
-                    borderWidth: 1,
-                    data: <%= @co2_total_par_mois.values.to_json.html_safe %>,
-                }],
-                labels: <%= @co2_total_par_mois.keys.to_json.html_safe %>,
-            },
-            options: {}
-        };
+  /*
+      CO2 total par mois
+  */
+  function afficherCo2TotalParMois() {
+      var configCO2TotalParMois = {
+          data: {
+              datasets: [{
+                  type: 'bar',
+                  label: "CO2 total (kg)",
+                  backgroundColor: [
+                      'white',
+                  ],
+                  borderColor: [
+                      'rgb(54, 162, 235)',
+                  ],
+                  borderWidth: 1,
+                  data: <%= @co2_total_par_mois.values.to_json.html_safe %>,
+              }],
+              labels: <%= @co2_total_par_mois.keys.to_json.html_safe %>,
+          },
+          options: {}
+      };
 
-        var elementCO2TotalParMois = document.getElementById("co2TotalParMois");
-        if (elementCO2TotalParMois) {
-            new Chart(elementCO2TotalParMois, configCO2TotalParMois);
-        }
-    }
+      var elementCO2TotalParMois = document.getElementById("co2TotalParMois");
+      if (elementCO2TotalParMois) {
+          new Chart(elementCO2TotalParMois, configCO2TotalParMois);
+      }
+  }
 </script>

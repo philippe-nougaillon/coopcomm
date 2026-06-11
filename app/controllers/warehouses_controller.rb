@@ -68,10 +68,10 @@ class WarehousesController < ApplicationController
   def set_warehouse
     @warehouse = Warehouse.find_by(slug: params.expect(:id))
 
-    if @warehouse.nil?
-      redirect_to root_path, alert: 'Site introuvable'
-      return
-    end
+    return unless @warehouse.nil?
+
+    redirect_to root_path, alert: 'Site introuvable'
+    nil
   end
 
   def warehouse_params

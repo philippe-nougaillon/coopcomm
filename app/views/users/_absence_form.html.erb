@@ -2,7 +2,6 @@
 <% is_half_day = absence.matin || absence.après_midi %>
 <%= form_with(model: @user, id: "absence_form_#{unique_id}") do |f| %>
   <%= hidden_field_tag :from_absence_modal, true %>
-  
   <% if absence.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
       <h2 class="font-black!">
@@ -15,13 +14,10 @@
       </ul>
     </div>
   <% end %>
-
   <%= f.fields_for :absences, absence do |ff| %>
     <%= render 'users/absence_fields', f: ff %>
   <% end %>
-
   <div class="modal-action flex flex-wrap items-center w-full border-t border-slate-100 pt-4 mt-6 gap-2 <%= absence.persisted? ? 'justify-between' : 'justify-end' %>">
-    
     <% if absence.persisted? %>
       <button type="button" 
               onclick="delete_absence_modal_<%= unique_id %>.showModal()" 
@@ -30,7 +26,6 @@
         <span>Supprimer</span>
       </button>
     <% end %>
-    
     <div class="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
       <button type="button" 
               class="btn btn-soft btn-secondary inline-flex items-center gap-2 normal-case flex-1 sm:flex-none justify-center" 
@@ -46,7 +41,6 @@
     </div>
   </div>
 <% end %>
-
 <% if absence.persisted? %>
   <dialog id="delete_absence_modal_<%= unique_id %>" class="modal">
     <div class="modal-box max-w-sm border border-slate-100 shadow-2xl">

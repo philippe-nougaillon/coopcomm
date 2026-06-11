@@ -264,7 +264,9 @@ class UsersController < ApplicationController
               if new_record
                 display_changes['service'] = nouveaux_services
               else
-                anciens_services = user.user_services.select(&:persisted?).filter_map { |us| us.service&.nom }.join(', ')
+                anciens_services = user.user_services.select(&:persisted?).filter_map do |us|
+                  us.service&.nom
+                end.join(', ')
                 anciens_services = 'Aucun' if anciens_services.blank?
                 display_changes['service'] = [anciens_services, nouveaux_services]
               end
@@ -305,7 +307,9 @@ class UsersController < ApplicationController
           end
 
           puts
-          puts "----------- Les modifications n'ont pas été enregistrées ! ---------------" unless params[:save] == 'true'
+          unless params[:save] == 'true'
+            puts "----------- Les modifications n'ont pas été enregistrées ! ---------------"
+          end
           puts
 
           puts '=' * 40
@@ -374,8 +378,8 @@ class UsersController < ApplicationController
   def user_params
     params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :rôle, :memo,
                                  :address, :longitude, :latitude, :profile_picture, :color, tag_list: [],
-                                 absences_attributes: %i[id du au motif observation matin après_midi _destroy],
-                                 service_ids: [])
+                                                                                            absences_attributes: %i[id du au motif observation matin après_midi _destroy],
+                                                                                            service_ids: [])
   end
 
   def is_user_authorized

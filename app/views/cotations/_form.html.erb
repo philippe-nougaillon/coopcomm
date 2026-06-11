@@ -1,6 +1,5 @@
 <%= form_with model: @cotation,
       data: { controller: "nested-form", nested_form_wrapper_selector_value: ".nested-form-wrapper" } do |f| %>
-
   <% if @cotation.errors.any? %>
     <div class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
       <h2 class="font-black!">
@@ -13,7 +12,6 @@
       </ul>
     </div>
   <% end %>
-
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <%# Adhérent : figé s'il est connu (création depuis sa fiche ou édition) %>
     <div class="flex flex-col gap-1">
@@ -27,7 +25,6 @@
               { class: "slim-select w-full", required: true, data: { controller: "slim-select" } } %>
       <% end %>
     </div>
-
     <%# Service : détermine l'organisation et le périmètre de visibilité %>
     <div class="flex flex-col gap-1">
       <%= f.label :service_id, "Service", class: "text-sm text-slate-500" %>
@@ -35,42 +32,34 @@
             { prompt: "Choisir un service" },
             { class: "slim-select w-full", required: true, data: { controller: "slim-select" } } %>
     </div>
-
     <div class="flex flex-col gap-1">
       <%= f.label :intitulé, "Intitulé", class: "text-sm text-slate-500" %>
       <%= f.text_field :intitulé, class: "input input-sm input-bordered w-full", required: true %>
     </div>
-
     <div class="flex flex-col gap-1">
       <%= f.label :date_livraison_souhaitée, "Livraison souhaitée", class: "text-sm text-slate-500" %>
       <%= f.date_field :date_livraison_souhaitée, class: "input input-sm input-bordered w-full" %>
     </div>
-
     <div class="flex flex-col gap-1 sm:col-span-2">
       <%= f.label :mémo, "Mémo", class: "text-sm text-slate-500" %>
       <%= f.text_area :mémo, rows: 3, class: "textarea textarea-bordered w-full" %>
     </div>
   </div>
-
   <%# Lignes de la cotation (formulaire imbriqué) %>
   <div class="flex items-center gap-4 mt-8 mb-3">
     <h2 class="text-xl text-secondary">Prestations</h2>
   </div>
-
   <div>
     <%= f.fields_for :cotation_lignes do |ligne| %>
       <%= render "prestation_form", f: ligne, prestations: @prestations %>
     <% end %>
-
     <div data-nested-form-target="target"></div>
   </div>
-
   <template data-nested-form-target="template">
     <%= f.fields_for :cotation_lignes, CotationLigne.new, child_index: "NEW_RECORD" do |ligne| %>
       <%= render "prestation_form", f: ligne, prestations: @prestations %>
     <% end %>
   </template>
-
   <div class="mt-6 flex justify-between gap-2">
     <div>
       <%= f.submit "Enregistrer", class: "btn btn-primary" %>

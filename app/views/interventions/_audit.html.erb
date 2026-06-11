@@ -1,7 +1,6 @@
 <% if current_user&.agent? && audit.audited_changes.keys.map(&:to_s) == ['note'] %>
   <% return %>
 <% end %>
-
 <tr class="hover:bg-base-300">
   <td class="whitespace-nowrap">
     Il y a <%= time_ago_in_words(audit.created_at) %>

@@ -8,14 +8,14 @@
           <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
         </span>
       <% end %>
-      <span class="font-semibold"><%= l(absence.du, format: "%e %B %Y") %></span>
+      <span class="font-semibold"><%= l(absence.du.to_date, format: "%e %B %Y") %></span>
       <% if absence.matin || absence.après_midi %>
         <span class="flex items-center justify-center w-28 rounded-md text-xs font-medium py-0.5 shrink-0 <%= absence.en_cours? ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600' %>">
           <%= absence.matin ? 'Matin' : 'Après-midi' %>
         </span>
       <% else %>
         <span class="text-slate-400 mx-0.5">→</span>
-        <span class="font-semibold"><%= l(absence.au, format: "%e %B %Y") %></span>
+        <span class="font-semibold"><%= l(absence.du.to_date, format: "%e %B %Y") %></span>
       <% end %>
     </div>
   </td>
@@ -24,10 +24,10 @@
   </td>
   <td class="py-4 px-6 text-sm <%= absence.en_cours? ? 'text-amber-800/80' : 'text-slate-500' %>">
     <% if absence.observation.present? %>
-  <%= absence.observation %>
-<% else %>
-  <%= embedded_svg "icons/check_indeterminate_small.svg", class: "icon", title: "Aucun mot-clé" %>
-<% end %>
+      <%= absence.observation %>
+    <% else %>
+      <%= embedded_svg "icons/check_indeterminate_small.svg", class: "icon", title: "Aucun mot-clé" %>
+    <% end %>
   </td>
   <td class="py-4 px-6 text-left">
     <% if current_user.manager_or_admin? %>

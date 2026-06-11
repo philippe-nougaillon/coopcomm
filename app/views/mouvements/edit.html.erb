@@ -4,9 +4,7 @@
       <%= page_title!('Modifier ce mouvement') %>
     </h1>
   </div>
-
   <%= render "form", mouvement: @mouvement %>
-
   <div class="flex flex-wrap gap-2 mt-2">
     <%= link_to "Voir", @mouvement, class: "btn" %>
     <%= link_to "Annuler", mouvements_path, class: "btn" %>

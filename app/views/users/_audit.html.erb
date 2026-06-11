@@ -1,18 +1,15 @@
 <tr class="hover:bg-base-200 transition-colors duration-150">
-
-<td class="py-4 pl-4 pr-2 text-sm whitespace-nowrap">
-  <div class="font-semibold text-slate-700 text-xs sm:text-sm leading-tight">
-    Il y a <%= time_ago_in_words(audit.created_at) %>
-  </div>
-  <div class="py-4 px-4 text-sm whitespace-nowrap">
-    <%= l(audit.created_at, format: :long) %>
-  </div>
-</td>
-
+  <td class="py-4 pl-4 pr-2 text-sm whitespace-nowrap">
+    <div class="font-semibold text-slate-700 text-xs sm:text-sm leading-tight">
+      Il y a <%= time_ago_in_words(audit.created_at) %>
+    </div>
+    <div class="py-4 px-4 text-sm whitespace-nowrap">
+      <%= l(audit.created_at, format: :long) %>
+    </div>
+  </td>
   <td class="py-3 px-4 ">
     <%= audit_badge(audit) %>
   </td>
-
   <td class="py-4 px-6 text-sm whitespace-nowrap ">
     <% if audit.comment.present? %>
       <span class="italic text-slate-500">"<%= audit.comment %>"</span>
@@ -24,6 +21,4 @@
       <%= audit_changes_list(audit, current_user) %>
     <% end %>
   </td>
-
 </tr>
-

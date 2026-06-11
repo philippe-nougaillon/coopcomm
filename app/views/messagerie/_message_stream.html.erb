@@ -2,7 +2,6 @@
      class="mt-2 message-wrapper" 
      data-message-id="<%= message.id %>" 
      data-unread="<%= my_message ? 'false' : 'true' %>">
-  
   <div class="chat <%= my_message ? "chat-end" : "chat-start" %> mt-2">
     <div class="flex items-end gap-2">
       <div class="avatar <%= my_message ? "order-2" : "order-1" %>">
@@ -10,11 +9,11 @@
           <% if message.from_user.profile_picture.attached? %>
             <%= image_tag url_for(message.from_user.profile_picture) %>
           <% else %>
-          <div class="avatar avatar-placeholder">
-            <div class="bg-neutral text-neutral-content w-10 rounded">
-              <span class="text-xs"><%= message.from_user.initiales %></span>
+            <div class="avatar avatar-placeholder">
+              <div class="bg-neutral text-neutral-content w-10 rounded">
+                <span class="text-xs"><%= message.from_user.initiales %></span>
+              </div>
             </div>
-          </div>
           <% end %>
         </div>
       </div>

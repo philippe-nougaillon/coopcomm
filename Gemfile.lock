@@ -233,6 +233,7 @@ GEM
       guard-compat (~> 1.2)
       minitest (>= 3.0)
     hashie (5.0.0)
+    htmlbeautifier (1.4.3)
     http_parser.rb (0.8.0)
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
@@ -665,6 +666,7 @@ DEPENDENCIES
   guard
   guard-livereload
   guard-minitest
+  htmlbeautifier
   image_processing (~> 1.2)
   importmap-rails
   jbuilder

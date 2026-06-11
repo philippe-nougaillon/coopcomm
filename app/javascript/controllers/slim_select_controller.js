@@ -6,7 +6,8 @@ export default class extends Controller {
   connect() {
     // Paramètres communs
     const commonSettings = {
-      placeholderText: '',
+      showSearch: false,
+      placeholderText: this.element.dataset.placeholder || '',
       searchPlaceholder: 'Rechercher',
       searchText: 'Pas de résultat',
       searchingText: 'Recherche...',

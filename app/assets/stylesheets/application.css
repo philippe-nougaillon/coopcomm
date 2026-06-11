@@ -323,9 +323,18 @@ select.slim-select:focus,
 }
 
 
+
+
   /* SLIM-SELECT REQUIRED */
 
   select.slim-select[required] {
+    
+    /* Oculta el select nativo pero mantiene un bloque invisible del tamaño correcto */
+    visibility: hidden;
+    position: absolute;
+    pointer-events: none;
+
+
     display: block !important;
     position: absolute !important;
 

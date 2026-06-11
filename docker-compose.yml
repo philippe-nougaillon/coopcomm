@@ -6,7 +6,7 @@ services:
       - .:/usr/src/app
       - bundle:/usr/local/bundle
     ports:
-      - "3000:3000"
+      - '3000:3000'
     env_file:
       - .env
     environment:
@@ -17,7 +17,7 @@ services:
   db:
     image: postgres:15
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
       - POSTGRES_PASSWORD=changeme
     volumes:

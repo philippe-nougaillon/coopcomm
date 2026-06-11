@@ -5,7 +5,6 @@
       <%= link_to "Ajouter une cotation", new_cotation_path, class: "btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
     <% end %>
   </div>
-
   <%= form_tag cotations_path, method: :get do %>
     <div class="flex flex-wrap items-end gap-4 mt-6">
       <div class="w-full md:w-fit">
@@ -22,9 +21,7 @@
       </div>
     </div>
   <% end %>
-
   <div class="divider"></div>
-
   <div class="overflow-x-auto">
     <table class="table table-sm">
       <thead class="bg-slate-100">
@@ -44,25 +41,21 @@
       </tbody>
     </table>
   </div>
-
   <% if @cotations.empty? %>
     <p class="text-slate-400 mt-4">Aucune cotation.</p>
   <% end %>
-
   <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
-  <% if @pagy.pages > 1 %>
-    <div class="hidden sm:block sm:flex-1"></div>
-    
-    <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
-      <%= pagy_nav(@pagy).html_safe %>
-    </div>
-    
-    <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
-      <%= pagy_info(@pagy).html_safe %>
-    </div>
-  <% else %>
-    <div >
-    </div>
-  <% end %>
-</div>
+    <% if @pagy.pages > 1 %>
+      <div class="hidden sm:block sm:flex-1"></div>
+      <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
+        <%= pagy_nav(@pagy).html_safe %>
+      </div>
+      <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
+        <%= pagy_info(@pagy).html_safe %>
+      </div>
+    <% else %>
+      <div >
+      </div>
+    <% end %>
+  </div>
 </div>

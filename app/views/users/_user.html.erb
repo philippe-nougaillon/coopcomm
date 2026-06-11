@@ -16,7 +16,6 @@
                   data: { turbo_method: :patch, turbo_confirm: 'Voulez-vous réactiver ce compte ?' },
                   class: "text-success hover:scale-110 transition-transform flex flex-shrink-0 items-center justify-center",
                   title: "Réactiver le compte" do %>
-          
           <%= embedded_svg "icons/undo.svg", class: "icon text-xl leading-none", title: "Réactiver le compte" %>
         <% end %>
       <% end %>
@@ -91,9 +90,8 @@
   <%# Absent %>
   <td class="py-3 px-4 text-center">
     <% if user.agent? && user.absent? %>
-<% title_absence = "Absent du #{l(user.current_absence.du)} au #{l(user.current_absence.au)}, motif : #{user.current_absence.motif}" %>
-
-<%= embedded_svg "icons/person_off.svg",
+      <% title_absence = "Absent du #{l(user.current_absence.du)} au #{l(user.current_absence.au)}, motif : #{user.current_absence.motif}" %>
+      <%= embedded_svg "icons/person_off.svg",
   class: "icon text-amber-500 cursor-help hover:scale-110 transition-transform text-xl",
   title: title_absence,
   alt: "Utilisateur actuellement absent" %>    <% end %>

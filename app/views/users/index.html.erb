@@ -1,4 +1,3 @@
-
 <div class="flex flex-col">
   <div class="flex flex-row justify-between items-center my-4 gap-2">
     <h1 class="text-4xl text-primary font-bold">
@@ -7,148 +6,148 @@
     <%= link_to admin_create_new_user_path,
             data: { testid: "ajouter_utilisateur" },
             class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm ",
-            title: "Créer un nouvel agent"  do %>
+            title: "Créer un nouvel agent" do %>
       <%= embedded_svg "icons/person_add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
       <span class="hidden md:block">Ajouter un Utilisateur</span>
     <% end %>
   </div>
-  <%= form_tag request.path, method: :get, class: "pt-6" do %>
+  <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_frame: "users_table", turbo_action: "advance" } do %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
         <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-600 mb-1" %>
         <%= text_field_tag :search, params[:search], include_blank: true,
-                onchange: 'this.form.submit()',
+                onchange: 'this.form.requestSubmit()',
                 class: 'input input-bordered input-md w-full',
                 placeholder: 'Nom / Prénom' %>
       </div>
+      <%# UX OPTIMIZADA: Añadido data-placeholder para indicar el estado "Todos" de forma elegante %>
       <div class="w-full md:flex-1">
         <%= label_tag :rôle, "Rôle", class: "block text-xs font-semibold text-slate-600 mb-1" %>
         <%= select_tag :rôle,
                 options_for_select(User.rôles.sort_by { |k, _| I18n.transliterate(k) }, params[:rôle]),
-                include_blank: true,
-                class: 'select select-bordered select-md w-full',
-                onchange: 'this.form.submit()' %>
+                multiple: true,
+                class: 'slim-select w-full h-10',
+                data: { placeholder: 'Tous les rôles' },
+                onchange: 'this.form.requestSubmit()' %>
       </div>
+      <%# UX OPTIMIZADA: Añadido data-placeholder coherente para sectores/servicios %>
       <div class="w-full md:flex-1">
         <%= label_tag :services, "Services", class: "block text-xs font-semibold text-slate-600 mb-1" %>
         <%= select_tag :services,
                 options_from_collection_for_select(@services, 'id', 'nom', params[:services]),
-                include_blank: true,
                 multiple: true,
                 class: 'slim-select w-full h-10',
-                onchange: 'this.form.submit()' %>
+                data: { placeholder: 'Tous les services' },
+                onchange: 'this.form.requestSubmit()' %>
       </div>
+      <%# UX OPTIMIZADA: Ajustado el data-placeholder aquí también para unificar comportamiento %>
       <div class="w-full md:flex-1">
         <%= label_tag :user_tag, "Mots clés", class: "block text-xs font-semibold text-slate-600 mb-1" %>
         <%
-            tags_de_users = ActsAsTaggableOn::Tag.joins(:taggings)
-                                                .where(taggings: { taggable_type: 'User' })
-                                                .distinct
-                                                .pluck(:name)
-                                                .sort
-          %>
+          tags_de_users = ActsAsTaggableOn::Tag.joins(:taggings)
+                                              .where(taggings: { taggable_type: 'User' })
+                                              .distinct
+                                              .pluck(:name)
+                                              .sort
+        %>
         <%= select_tag :user_tag, 
                 options_for_select(tags_de_users, params[:user_tag]), 
-        include_blank: "Tous les secteurs / équipes", 
-        class: 'select select-bordered select-md w-full', 
-        onchange: 'this.form.submit()' %>
+                multiple: true,
+                class: 'slim-select w-full h-10', 
+                data: { placeholder: 'Tous les mots-clés' },
+                onchange: 'this.form.requestSubmit()' %>
       </div>
       <div class="flex justify-center gap-6 py-2 w-full md:flex-1">
         <label class="flex items-center gap-2 cursor-pointer select-none">
           <%= check_box_tag :absent, 1, params[:absent],
                   class: 'checkbox checkbox-primary checkbox-sm',
-                  onchange: 'this.form.submit()' %>
+                  onchange: 'this.form.requestSubmit()' %>
           <span class="text-sm font-medium text-slate-700">Absents ?</span>
         </label>
         <label class="flex items-center gap-2 cursor-pointer select-none">
           <%= check_box_tag :discarded, 1, params[:discarded],
                   class: 'checkbox checkbox-primary checkbox-sm',
-                  onchange: 'this.form.submit()' %>
+                  onchange: 'this.form.requestSubmit()' %>
           <span class="text-sm font-medium text-slate-700">Désactivés ?</span>
         </label>
       </div>
     </div>
   <% end %>
 </div>
-
 <hr class="mt-6 mb-6">
-<div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
-  <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
-</div>
-<div class="flex flex-col bg-white  border-x border-b border-slate-200 shadow-sm overflow-hidden">
-  <div class="overflow-x-auto ">
-    <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-      <img
-          src="/assets/images/icons/swipe.svg"
-          class="icon text-sm"
-          alt="swipe"
-          title="Faire glisser"
-        />
-      <span>Faire glisser pour voir plus</span>
-    </div>
-    <table id="users" class="table table-sm w-full border-none">
-  <thead class="bg-slate-100">
-    <tr>
-      <th class="w-10 px-3 py-3"></th>
-      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">
-        
-        <%= sort_link 'users.nom', 'Nom' %>
-      </th>
-      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap" colspan="2">
-        <%= sort_link 'users.rôle', 'Rôle' %>
-      </th>
-      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">Service</th>
-      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">Mots clés</th>
-      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">
-        <%= sort_link 'users.email', 'Email' %>
-      </th>
-      <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Absent ?</th>
-      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">Évaluation</th>
-    </tr>
-  </thead>
-  <tbody>
-    <%= render @users %>
-  </tbody>
-</table>
- <% if params[:absent].present? && @users.empty? %>
-  <div class="text-slate-700 text-base flex justify-center items-center gap-2 m-10">
-    Aucun absent pour le moment
+<%= turbo_frame_tag "users_table" do %>
+  <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
+    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
   </div>
-<% end %>
- <% if params[:discarded].present? && @users.empty? %>
-  <div class="text-slate-700 text-base flex justify-center items-center gap-2 m-10">
-    Aucun compte désactivé pour le moment
-  </div>
-<% end %>
-  </div>
-</div>
-<div class="flex flex-col bg-white border-x border-b border-slate-200 rounded-b-xl">
-  <div class="flex flex-wrap justify-end items-center gap-2 p-4">
-    <% if @users.any? %>
-      <%= link_to url_for(params.permit(:search, :role, :services, :absent, :discarded).merge(format: :xls)),
-              class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto" do %>
-        <%= embedded_svg "icons/upload.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
-        <span>Exporter en XLS</span>
+  <div class="flex flex-col bg-white border-x border-b border-slate-200 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+        <img src="/assets/images/icons/swipe.svg" class="icon text-sm" alt="swipe" title="Faire glisser" />
+        <span>Faire glisser para ver más</span>
+      </div>
+      <table id="users" class="table table-sm w-full border-none">
+        <thead class="bg-slate-100">
+          <tr>
+            <th class="w-10 px-3 py-3"></th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+              <%= sort_link 'users.nom', 'Nom' %>
+            </th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap" colspan="2">
+              <%= sort_link 'users.rôle', 'Rôle' %>
+            </th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Mots clés</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+              <%= sort_link 'users.email', 'Email' %>
+            </th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Absent ?</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Évaluation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%= render @users %>
+        </tbody>
+      </table>
+      <% if params[:absent].present? && @users.empty? %>
+        <div class="text-slate-700 text-base flex justify-center items-center gap-2 m-10">
+          Aucun absent pour le moment
+        </div>
       <% end %>
-    <% end %>
-    <%= link_to import_users_path,
-            data: { testid: "import_users" },
-            'data-turbo': false,
-            class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto" do %>
+      <% if params[:discarded].present? && @users.empty? %>
+        <div class="text-slate-700 text-base flex justify-center items-center gap-2 m-10">
+          Aucun compte désactivé pour le moment
+        </div>
+      <% end %>
+    </div>
+  </div>
+  <div class="flex flex-col bg-white border-x border-b border-slate-200 rounded-b-xl">
+    <div class="flex flex-wrap justify-end items-center gap-2 p-4">
+      <% if @users.any? %>
+        <%= link_to url_for(params.permit(:search, :role, :services, :absent, :discarded).merge(format: :xls)),
+                data: { turbo: false },
+                class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto" do %>
+          <%= embedded_svg "icons/upload.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+          <span>Exporter en XLS</span>
+        <% end %>
+      <% end %>
+      <%= link_to import_users_path,
+              data: { testid: "import_users", turbo: false },
+              class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto" do %>
         <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
-      <span>Importer des agents</span>
-    <% end %>
+        <span>Importer des agents</span>
+      <% end %>
+    </div>
+    <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full">
+      <% if @pagy.pages > 1 %>
+        <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+          <%= pagy_nav(@pagy).html_safe %>
+        </div>
+        <div class="text-slate-500 text-center text-sm w-full">
+          <%= pagy_info(@pagy, item_name: "utilisateurs").html_safe %>
+        </div>
+      <% else %>
+        <div></div>
+      <% end %>
+    </div>
   </div>
-  <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
-    <% if @pagy.pages > 1 %>
-      <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
-        <%= pagy_nav(@pagy).html_safe %>
-      </div>
-      <div class=" text-slate-500 text-center text-sm w-full ">
-        <%= pagy_info(@pagy, item_name: "utilisateurs").html_safe %>
-      </div>
-    <% else %>
-      <div></div>
-    <% end %>
-  </div>
-</div>
+<% end %>

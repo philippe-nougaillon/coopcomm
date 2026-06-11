@@ -1,5 +1,4 @@
 <%= form_with model: @convention, html: { multipart: true } do |f| %>
-
   <% if @convention.errors.any? %>
     <div class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
       <h2 class="font-black!">
@@ -12,7 +11,6 @@
       </ul>
     </div>
   <% end %>
-
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"
        data-controller="dynamic-select"
        data-dynamic-select-url-value="<%= services_for_adherent_conventions_path %>">
@@ -29,7 +27,6 @@
                 data: { dynamic_select_target: "adherent", action: "change->dynamic-select#updateServices" } } %>
       <% end %>
     </div>
-
     <%# Service : figé en modification (clé d'unicité) ; sinon dépend de l'adhérent choisi %>
     <div class="flex flex-col gap-1">
       <%= f.label :service_id, "Service", class: "text-sm text-slate-500" %>
@@ -43,26 +40,21 @@
                 data: { dynamic_select_target: "service" } } %>
       <% end %>
     </div>
-
     <div class="flex flex-col gap-1">
       <%= f.label :date_début, "Date de début", class: "text-sm text-slate-500" %>
       <%= f.date_field :date_début, class: "input input-sm input-bordered w-full", required: true %>
     </div>
-
     <div class="flex flex-col gap-1">
       <%= f.label :date_fin_prévue, "Date de fin prévue", class: "text-sm text-slate-500" %>
       <%= f.date_field :date_fin_prévue, class: "input input-sm input-bordered w-full" %>
     </div>
-
     <div class="flex flex-col gap-1 sm:col-span-2">
       <%= f.label :mémo, "Mémo", class: "text-sm text-slate-500" %>
       <%= f.text_area :mémo, rows: 3, class: "textarea textarea-bordered w-full" %>
     </div>
-
     <%= render "shared/file_dropzone", form: f, attribute: :document,
           accept: ".pdf", label: "Document", wrapper_class: "sm:col-span-2" %>
   </div>
-
   <div class="mt-6 flex gap-2">
     <%= f.submit "Enregistrer", class: "btn btn-primary" %>
     <%= link_to "Annuler", conventions_path, class: "btn" %>

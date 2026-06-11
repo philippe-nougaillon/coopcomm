@@ -5,7 +5,6 @@
   <h2 class="text-2xl text-secondary mt-4 mb-8">
     Bienvenue dans l'assistant (en bêta test), qui vous suggère de nouvelles interventions à planifier
   </h2>
-
   <% if params[:commit].blank? %>
     <%= form_tag request.path, method: :get, class: 'mb-8' do |f| %>
       <%= submit_tag "Lancer la génération de propositions", class: 'btn btn-primary btn-outline rounded hover:text-white! md:btn-lg', 'data-turbo': 'false' %>
@@ -16,12 +15,11 @@
       <% if false %>
         <%# Version OpenAI %>
         <div class="typewriter">
-            <% @results.split("\n").each do |result| %>
-              <p class="text"><%= result %></p>
-            <% end %>
+          <% @results.split("\n").each do |result| %>
+            <p class="text"><%= result %></p>
+          <% end %>
         </div>
       <% end %>
-
       <%# Version Mistral %>
       <%= raw(@results) %>
       <% if @is_failed %>
@@ -32,35 +30,34 @@
     </div>
   <% end %>
 </div>
-
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  const paragraphs = document.querySelectorAll(".typewriter p");
-  const typingSpeed = 1; // Durée de l'animation pour chaque ligne en secondes
-  let totalTime = 0;
+  document.addEventListener("DOMContentLoaded", function() {
+    const paragraphs = document.querySelectorAll(".typewriter p");
+    const typingSpeed = 1; // Durée de l'animation pour chaque ligne en secondes
+    let totalTime = 0;
 
-  paragraphs.forEach((paragraph, index) => {
-    const delay = totalTime; // Le délai dépend du temps total écoulé
-    paragraph.style.animationDelay = `${delay}s`;
+    paragraphs.forEach((paragraph, index) => {
+      const delay = totalTime; // Le délai dépend du temps total écoulé
+      paragraph.style.animationDelay = `${delay}s`;
 
-    // Ajouter la classe "current" pour afficher le curseur sur le paragraphe courant
+      // Ajouter la classe "current" pour afficher le curseur sur le paragraphe courant
+      setTimeout(() => {
+        // Retirer le curseur de la ligne précédente
+        if (index > 0) {
+          paragraphs[index - 1].classList.remove("current");
+        }
+        // Ajouter le curseur à la ligne courante
+        // paragraph.classList.add("current");
+      }, delay * 1000);
+
+      // Temps total pour cette ligne (pour calculer le prochain délai)
+      const duration = typingSpeed + 0.5; // On ajoute 0.5s pour le curseur entre les lignes
+      totalTime += duration;
+    });
+
+    // Retirer le curseur de la dernière ligne une fois l'animation terminée
     setTimeout(() => {
-      // Retirer le curseur de la ligne précédente
-      if (index > 0) {
-        paragraphs[index - 1].classList.remove("current");
-      }
-      // Ajouter le curseur à la ligne courante
-      // paragraph.classList.add("current");
-    }, delay * 1000);
-
-    // Temps total pour cette ligne (pour calculer le prochain délai)
-    const duration = typingSpeed + 0.5; // On ajoute 0.5s pour le curseur entre les lignes
-    totalTime += duration;
+      paragraphs[paragraphs.length - 1].classList.remove("current");
+    }, totalTime * 1000);
   });
-
-  // Retirer le curseur de la dernière ligne une fois l'animation terminée
-  setTimeout(() => {
-    paragraphs[paragraphs.length - 1].classList.remove("current");
-  }, totalTime * 1000);
-});
 </script>
