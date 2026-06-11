@@ -156,6 +156,19 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'application/pdf', response.media_type
   end
 
+  test "le show affiche l'historique des envois (mail_logs de la cotation)" do
+    cotation = cotations(:cotation_paris)
+    MailLog.create!(organisation: cotation.organisation, cotation:, user_id: 0,
+                    to: 'destinataire@exemple.fr', subject: 'Votre cotation',
+                    statut: true, channel: 0)
+
+    get cotation_url(cotation)
+
+    assert_response :success
+    assert_select 'h2', text: 'Historique des envois'
+    assert_select 'td', text: 'destinataire@exemple.fr'
+  end
+
   test 'destroy effectue un soft delete' do
     cotation = cotations(:cotation_paris)
     assert_no_difference -> { Cotation.count } do

@@ -105,6 +105,32 @@
     </table>
   </div>
 
+  <% mail_logs = @cotation.mail_logs.ordered %>
+  <% if mail_logs.any? %>
+    <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
+      <h2 class="text-2xl text-secondary font-semibold">Historique des envois</h2>
+    </div>
+    <div class="overflow-x-auto border border-slate-200 shadow-sm bg-white rounded-xl">
+      <table class="table table-sm w-full border-none">
+        <thead class="bg-slate-100">
+          <tr>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Il y a</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Via</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Expéditeur</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Destinataire</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Sujet</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">État</th>
+            <th class="px-4 py-3"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <%= render partial: "mail_logs/mail_log", collection: mail_logs, as: :mail_log %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
   <div class="my-10">
     <%= link_to cotations_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition" do %>
       <%= embedded_svg "icons/arrow_back.svg", class: "text-base", title: "Retour à la liste" %>
