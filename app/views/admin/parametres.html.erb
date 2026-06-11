@@ -72,4 +72,34 @@
     </div>
   </div>
 
+  <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
+    <h2 class="text-2xl text-secondary">
+      Catalogue des prestations
+    </h2>
+    <% if policy(Prestation).new? %>
+      <%= link_to "Ajouter une prestation", new_prestation_path, data: { 'testid': "ajouter_prestation_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
+      <%= link_to "+ Prestation", new_prestation_path, data: { 'testid': "ajouter_prestation_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
+    <% end %>
+  </div>
+  <div class="mx-auto w-full">
+    <div class="overflow-x-auto">
+      <table id="prestations" class="table table-sm">
+        <thead class="bg-slate-100">
+        <tr>
+          <th>Code</th>
+          <th>Libellé</th>
+          <th>Catégorie</th>
+          <th>Sous-catégorie</th>
+          <th>Unité</th>
+          <th class="text-right">Tarif HT</th>
+          <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <%= render @prestations %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>

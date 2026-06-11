@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class NewslettersToXls < ApplicationService
   attr_reader :newsletters
   private :newsletters
@@ -7,7 +9,7 @@ class NewslettersToXls < ApplicationService
   end
 
   def call
-    headers = %w{Email Créé_le slug}
+    headers = %w[Email Créé_le slug]
 
     data = []
 
@@ -20,10 +22,9 @@ class NewslettersToXls < ApplicationService
     end
 
     ExportToXls.new
-              .add_worksheet("Liste des interventions")
-              .add_headers(headers)
-              .setup_data(data)
-              .build_file
+               .add_worksheet('Liste des interventions')
+               .add_headers(headers)
+               .setup_data(data)
+               .build_file
   end
-
 end

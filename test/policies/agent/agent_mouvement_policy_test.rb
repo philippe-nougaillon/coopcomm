@@ -1,19 +1,21 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class AgentMouvementPolicyTest < ActionDispatch::IntegrationTest
   def setup
     agent = users(:bond)
-    
+
     @mouvement = mouvements(:mouvement_tondeuse)
 
     @policy = MouvementPolicy.new(agent, @mouvement)
   end
 
   # Index
-  test "accès interdit pour un agent sur la page index des mouvements" do
+  test 'accès interdit pour un agent sur la page index des mouvements' do
     refute @policy.index?
   end
-  
+
   # show
   test "accès interdit pour un agent sur la page show d'un mouvement" do
     refute @policy.show?

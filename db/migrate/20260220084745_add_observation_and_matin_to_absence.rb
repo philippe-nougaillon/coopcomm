@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddObservationAndMatinToAbsence < ActiveRecord::Migration[8.0]
   def up
     rename_column :absences, :motif, :observation
@@ -7,7 +9,7 @@ class AddObservationAndMatinToAbsence < ActiveRecord::Migration[8.0]
   end
 
   def down
-    remove_column :absences, :motif    
+    remove_column :absences, :motif
     rename_column :absences, :observation, :motif
     remove_column :absences, :matin
     remove_column :absences, :après_midi

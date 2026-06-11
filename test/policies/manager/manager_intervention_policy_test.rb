@@ -1,56 +1,58 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class ManagerInterventionPolicyTest < ActionDispatch::IntegrationTest
   def setup
     manager_paris = users(:hidalgo)
-    
+
     intervention_paris = interventions(:intervention_paris)
 
     @policy = InterventionPolicy.new(manager_paris, intervention_paris)
   end
 
   # Index
-  test "should get index" do
+  test 'should get index' do
     assert @policy.index?
   end
 
   # Show
-  test "should get show" do
+  test 'should get show' do
     assert @policy.show?
   end
 
   # New
-  test "should get new" do
+  test 'should get new' do
     assert @policy.new?
   end
 
   # Create
-  test "should get create" do
+  test 'should get create' do
     assert @policy.create?
   end
 
   # Edit
-  test "should get edit" do
+  test 'should get edit' do
     assert @policy.edit?
   end
 
   # Update
-  test "should get update" do
+  test 'should get update' do
     assert @policy.update?
   end
 
   # Destroy
-  test "should get destroy" do
+  test 'should get destroy' do
     assert @policy.destroy?
   end
 
   # Purge
-  test "should get purge" do
+  test 'should get purge' do
     assert @policy.purge?
   end
 
   # Get_unavailable_elements
-  test "should get get_unavailable_elements" do
+  test 'should get get_unavailable_elements' do
     assert @policy.get_unavailable_elements?
   end
 end

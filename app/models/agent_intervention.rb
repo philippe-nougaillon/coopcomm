@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AgentIntervention < ApplicationRecord
   audited associated_with: :intervention
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ChangeUserLocalisationMethod < ActiveRecord::Migration[8.0]
   def change
     remove_column :users, :localisation, :string

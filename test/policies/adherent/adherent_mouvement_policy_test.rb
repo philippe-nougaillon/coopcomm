@@ -1,16 +1,18 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class AdherentMouvementPolicyTest < ActionDispatch::IntegrationTest
   def setup
     adherent = users(:weil)
-    
+
     mouvement = mouvements(:mouvement_tondeuse)
 
     @policy = MouvementPolicy.new(adherent, mouvement)
   end
 
   # Index
-  test "accès interdit pour un adherent sur la page index des mouvements" do
+  test 'accès interdit pour un adherent sur la page index des mouvements' do
     refute @policy.index?
   end
 

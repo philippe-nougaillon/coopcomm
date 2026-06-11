@@ -1,13 +1,14 @@
-require "application_system_test_case"
+# frozen_string_literal: true
+
+require 'application_system_test_case'
 
 class DeviseManagerFlowTest < ApplicationSystemTestCase
-
   setup do
     @manager = users(:hidalgo)
     login(@manager)
   end
 
-  test "Se déconnecter" do
+  test 'Se déconnecter' do
     # Fermer la notification de connexion
     find("[data-testid='close_notification']").click
 
@@ -22,5 +23,4 @@ class DeviseManagerFlowTest < ApplicationSystemTestCase
     # visit interventions_url
     # assert_text "Vous devez vous connecter ou vous enregistrer pour continuer."
   end
-
 end

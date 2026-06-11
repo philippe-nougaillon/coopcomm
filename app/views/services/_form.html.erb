@@ -23,5 +23,9 @@
     <%= form.label :calculate_distance, "Ajout du calcul de distance sur les interventions de ce service à partir de l'équipe de l'adhérent ?" %>
   </div>
   
-  <%= form.submit "Enregistrer", class: "btn btn-primary mt-4" %>
+
+  <div class="flex gap-2 mt-4 w-full">
+  <%= link_to "Annuler", admin_parametres_path, class: "btn flex-1" %>
+  <%= form.submit "Enregistrer",  class: "btn btn-primary flex-1" %>
+</div>
 <% end %>

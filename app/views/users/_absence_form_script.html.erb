@@ -1,9 +1,30 @@
 <script>
   if (typeof handleHalfDayChange !== 'function') {
     
-    // Trouve le conteneur parent pour isoler les actions
     function getContainer(element) {
       return element.closest('.absence-form-container');
+    }
+
+      function refreshPeriodStyles(container) {
+      container.querySelectorAll('.period-radio').forEach(r => {
+        const label = container.querySelector(`label[for="${r.id}"]`);
+        if (!label) return;
+        if (r.checked) {
+          if (r.value === 'matin') {
+            label.style.background  = '#FFFBEB'; // amber-50
+            label.style.borderColor = '#F59E0B'; // amber-500
+            label.style.color       = '#92400E'; // amber-800
+          } else {
+            label.style.background  = '#F0FDFA'; // teal-50
+            label.style.borderColor = '#0D9488'; // teal-600
+            label.style.color       = '#134E4A'; // teal-800
+          }
+        } else {
+          label.style.background  = '#ffffff';
+          label.style.borderColor = '#E5E7EB'; // gray-200
+          label.style.color       = '#374151'; // gray-700
+        }
+      });
     }
 
     function handleHalfDayChange(radio) {
@@ -11,24 +32,29 @@
       const auContainer = container.querySelector('.au-container');
       const halfDaysContainer = container.querySelector('.half-days-container');
       
+        refreshPeriodStyles(container);
+
+
       if (radio.value === 'half') {
         auContainer.classList.add('hidden');
         halfDaysContainer.classList.remove('hidden');
         syncDates(radio);
         
-        // Coche Matin par défaut si rien n'est sélectionné
+        // Selecciona Matin por defecto si el usuario cambia a Demi-journée y no hay nada marcado
         const periodRadios = container.querySelectorAll('.period-radio');
         const hasSelection = Array.from(periodRadios).some(r => r.checked);
         if (!hasSelection && periodRadios.length > 0) {
           periodRadios[0].checked = true;
           updateHiddenPeriods(periodRadios[0]);
         }
+        refreshPeriodStyles(container);
       } else {
         auContainer.classList.remove('hidden');
         halfDaysContainer.classList.add('hidden');
         container.querySelector('.hidden-matin').value = '0';
         container.querySelector('.hidden-apres-midi').value = '0';
         container.querySelectorAll('.period-radio').forEach(r => r.checked = false);
+        refreshPeriodStyles(container);
       }
     }
 
@@ -48,6 +74,7 @@
         hiddenMatin.value = '0';
         hiddenApresMidi.value = '1';
       }
+    refreshPeriodStyles(container);
     }
 
     function syncDates(element) {
@@ -62,5 +89,23 @@
         }
       }
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.absence-form-container').forEach(container => {
+        refreshPeriodStyles(container);
+      });
+    });
   }
 </script>
+
+
+
+
+
+
+
+
+
+
+
+

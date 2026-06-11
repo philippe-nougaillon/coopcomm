@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class WikiPagePolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
@@ -5,13 +7,13 @@ class WikiPagePolicy < ApplicationPolicy
     end
   end
 
-  def index?
-    true
-  end
-
-  # def show?
+  # def index?
   #   true
   # end
+
+  def show?
+    !record.private? || manager_or_admin?
+  end
 
   def new?
     manager_or_admin?

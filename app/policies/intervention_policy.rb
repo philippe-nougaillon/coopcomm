@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class InterventionPolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
@@ -13,6 +15,10 @@ class InterventionPolicy < ApplicationPolicy
     index? && organisation? && (manager_or_admin? || record.adherent == user || record.agents.include?(user))
   end
 
+  def can_see_qrcode_pointage_pdf?
+    show? && !user.agent?
+  end
+
   def new?
     index?
   end
@@ -22,7 +28,7 @@ class InterventionPolicy < ApplicationPolicy
   end
 
   def edit?
-    show?
+    show? && (!record.repeter || !user.agent?)
   end
 
   def update?
@@ -79,5 +85,13 @@ class InterventionPolicy < ApplicationPolicy
 
   def update_location?
     pointer?
+  end
+
+  def new_intervention_pointage?
+    manager_or_admin?
+  end
+
+  def create_intervention_pointage?
+    new_intervention_pointage?
   end
 end

@@ -1,34 +1,35 @@
-source "https://rubygems.org"
+# frozen_string_literal: true
 
-ruby "3.4.8"
+source 'https://rubygems.org'
+
+ruby '3.4.9'
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 8.0"
+gem 'rails', '~> 8.0'
 
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
-gem "sprockets-rails"
+gem 'sprockets-rails'
 
 # Use postgresql as the database for Active Record
-gem "pg", "~> 1.1"
+gem 'pg', '~> 1.1'
 
 # Use the Puma web server [https://github.com/puma/puma]
-gem "puma", ">= 5.0"
+gem 'puma', '>= 5.0'
 
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
-gem "importmap-rails"
+gem 'importmap-rails'
 
 # Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
-gem "turbo-rails"
+gem 'turbo-rails'
 
 # Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
-gem "stimulus-rails"
+gem 'stimulus-rails'
 
 # Use Tailwind CSS [https://github.com/rails/tailwindcss-rails]
-gem "tailwindcss-rails", "~> 4.1"
+gem 'tailwindcss-rails', '~> 4.1'
 
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
-gem "jbuilder"
-
+gem 'jbuilder'
 
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 # gem "kredis"
@@ -37,26 +38,27 @@ gem "jbuilder"
 # gem "bcrypt", "~> 3.1.7"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem "tzinfo-data", platforms: %i[ windows jruby ]
+gem 'tzinfo-data', platforms: %i[windows jruby]
 
 # Reduces boot times through caching; required in config/boot.rb
-gem "bootsnap", require: false
+gem 'bootsnap', require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-gem "image_processing", "~> 1.2"
+gem 'image_processing', '~> 1.2'
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem "debug", platforms: %i[ mri windows ]
+  gem 'debug', platforms: %i[mri windows]
   gem 'dotenv'
   gem 'guard'
-  gem 'guard-minitest'
   gem 'guard-livereload'
+  gem 'guard-minitest'
+  gem 'rubocop', require: false
 end
 
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
-  gem "web-console"
+  gem 'web-console'
 
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
   # gem "rack-mini-profiler"
@@ -69,7 +71,7 @@ group :development do
   # A web interface for browsing Ruby on Rails sent emails
   gem 'letter_opener_web'
 
-  gem "rails-schema"
+  gem 'rails-schema'
 
   # Help to kill N+1 queries and unused eager loading
   gem 'bullet'
@@ -77,97 +79,99 @@ end
 
 group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
-  gem "capybara"
-  gem "selenium-webdriver"
-  gem 'simplecov', require: false
+  gem 'capybara'
   gem 'rails-controller-testing'
+  gem 'selenium-webdriver'
+  gem 'simplecov', require: false
 end
 
-gem "devise", "~> 4.9"
+gem 'devise', '~> 4.9'
 
-gem "workflow", "~> 3.0"
-gem "workflow-activerecord", "~> 6.0"
+gem 'workflow', '~> 3.0'
+gem 'workflow-activerecord', '~> 6.0'
 
-gem "acts-as-taggable-on"
+gem 'acts-as-taggable-on'
 
-gem "view_component", "~> 3.12"
+gem 'view_component', '~> 3.12'
 
-gem "audited", "~> 5.6"
+gem 'audited', '~> 5.6'
 
-gem "mailgun-ruby", "~> 1.2"
+gem 'mailgun-ruby', '~> 1.2'
 
-gem 'exception_notification', github: "kmcphillips/exception_notification", branch: "main"
+gem 'exception_notification', github: 'kmcphillips/exception_notification', branch: 'main'
 
-gem "spreadsheet", "~> 1.3"
+gem 'spreadsheet', '~> 1.3'
 
-gem "pundit", "~> 2.3"
+gem 'pundit', '~> 2.3'
 
-gem "solid_queue", "~> 0.3.0"
+gem 'solid_queue', '~> 0.3.0'
 
-gem "mission_control-jobs", "~> 0.2.1"
+gem 'mission_control-jobs', '~> 0.2.1'
 
-gem "dry-events", "~> 1.0"
+gem 'dry-events', '~> 1.0'
 
-gem "pagy", "~> 8.3"
+gem 'pagy', '~> 8.3'
 
-gem "aws-sdk-s3", require: false
-gem "langchainrb", "~> 0.13.4"
+gem 'aws-sdk-s3', require: false
+gem 'langchainrb', '~> 0.13.4'
 
-gem "ruby-openai", "~> 7.1"
-gem "mistral-ai", "~> 1.2"
+gem 'mistral-ai', '~> 1.2'
+gem 'ruby-openai', '~> 7.1'
 
-gem "csv", "~> 3.3"
-gem "tiktoken_ruby", "~> 0.0.9"
+gem 'csv', '~> 3.3'
+gem 'tiktoken_ruby', '~> 0.0.9'
 
-gem "omniauth", "~> 2.1"
+gem 'omniauth', '~> 2.1'
 
-gem "omniauth-rails_csrf_protection", "~> 1.0"
+gem 'omniauth-rails_csrf_protection', '~> 1.0'
 
-gem "omniauth-google-oauth2", "~> 1.1"
-gem "friendly_id", "~> 5.5"
+gem 'friendly_id', '~> 5.5'
+gem 'omniauth-google-oauth2', '~> 1.1'
 
-gem "skylight"
+gem 'skylight'
 
-gem "rqrcode", "~> 2.2"
+gem 'rqrcode', '~> 2.2'
 
-gem "prawn", "~> 2.5"
+gem 'prawn', '~> 2.5'
 
-gem "prawn-qrcode", "~> 0.5.2"
+gem 'prawn-table', '~> 0.2.2'
 
-gem "pg_search", "~> 2.3"
+gem 'prawn-qrcode', '~> 0.5.2'
 
-gem "twilio-ruby", "~> 7.4"
+gem 'pg_search', '~> 2.3'
 
-gem "discard", "~> 1.4"
+gem 'twilio-ruby', '~> 7.4'
 
-gem "rack-cors", "~> 2.0"
+gem 'discard', '~> 1.4'
 
-gem "simple_calendar", "~> 3.1"
+gem 'rack-cors', '~> 2.0'
 
-gem "recaptcha", "~> 5.19"
+gem 'simple_calendar', '~> 3.1'
 
-gem "sitemap_generator", "~> 6.3"
+gem 'recaptcha', '~> 5.19'
 
-gem "meta-tags", "~> 2.22"
+gem 'sitemap_generator', '~> 6.3'
 
-gem "page_title_helper", "~> 9.1"
+gem 'meta-tags', '~> 2.22'
 
-gem "solid_cache", "~> 1.0"
+gem 'page_title_helper', '~> 9.1'
 
-gem "solid_cable", "~> 3.0"
+gem 'solid_cache', '~> 1.0'
 
-gem "seed_dump", "~> 3.3"
+gem 'solid_cable', '~> 3.0'
 
-gem "markdown-rails", "~> 2.2"
+gem 'seed_dump', '~> 3.3'
 
-gem "redcarpet", "~> 3.6"
+gem 'markdown-rails', '~> 2.2'
 
-gem "fetch-api", "~> 0.6.0"
+gem 'redcarpet', '~> 3.6'
 
-gem "devise-security", "~> 0.18.0"
+gem 'fetch-api', '~> 0.6.0'
 
-gem "email_validator", "~> 2.2"
+gem 'devise-security', '~> 0.18.0'
 
-gem "capture_stdout", "~> 0.0.1"
+gem 'email_validator', '~> 2.2'
 
-gem "devise_invitable", "~> 2.0"
+gem 'capture_stdout', '~> 0.0.1'
+
+gem 'devise_invitable', '~> 2.0'

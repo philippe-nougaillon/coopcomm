@@ -8,6 +8,43 @@ fr:
             dépendant(e) existe
           has_many: Vous ne pouvez pas supprimer l'enregistrement parce que les %{record}
             dépendants existent
+    models:
+      cotation:
+        one: Cotation
+        other: Cotations
+      cotation_ligne:
+        one: Ligne de cotation
+        other: Lignes de cotation
+      prestation:
+        one: Prestation
+        other: Prestations
+    attributes:
+      cotation:
+        ref: Référence
+        intitulé: Intitulé
+        workflow_state: Statut
+        mémo: Mémo
+        date_livraison_souhaitée: Livraison souhaitée
+        total_ht: Total HT
+        adherent: Adhérent
+        service: Service
+      cotation_ligne:
+        prestation: Prestation
+        intitulé: Intitulé
+        qté: Quantité
+        prix_ht: Prix HT
+        total_ht: Total HT
+      prestation:
+        code: Code
+        libellé: Libellé
+        catégorie: Catégorie
+        sous_catégorie: Sous-catégorie
+        description: Description
+        unité: Unité
+        tarif: Tarif HT
+        compétence: Compétence
+        délai: Délai
+
   date:
     abbr_day_names:
     - dim

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class MessageriePolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
@@ -5,19 +7,19 @@ class MessageriePolicy < ApplicationPolicy
     end
   end
 
-  def messagerie?
+  def index?
     user
   end
 
-  def send_notification?
-    messagerie?
+  def send_message?
+    index?
   end
 
   def search_contact?
-    messagerie?
+    index?
   end
 
   def mark_as_read?
-    messagerie?
+    index?
   end
 end

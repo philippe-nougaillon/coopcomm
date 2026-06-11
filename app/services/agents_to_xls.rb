@@ -1,35 +1,38 @@
+# frozen_string_literal: true
+
 class AgentsToXls < ExportToXls
-  attr_reader :users
-  private :users
+  attr_reader :agents
+  private :agents
 
   def initialize(agents)
-    @agents = agents
+    @agents = agents.includes(:interventions, :absences, :services)
   end
 
   def call
-
-    headers = %w{Nom Prénom Email Service Nb_d'interventions Temps_total Nb_de_jours_d'absences }
+    headers = [
+      'Nom',
+      'Prénom',
+      'Email',
+      'Service',
+      'Téléphone',
+      "Nombre d'interventions",
+      'Temps total',
+      "Jours d'absence"
+    ]
 
     data = []
 
     @agents.each do |agent|
       interventions = agent.interventions
-
-      temps_total = 0
-      interventions.each do |intervention|
-        temps_total += intervention.calc_temps_total
-      end
-
-      nb_jours_absences = 0
-      agent.absences.each do |absence|
-        nb_jours_absences += absence.nb_jours
-      end
+      temps_total = interventions.sum(&:calc_temps_total)
+      nb_jours_absences = agent.absences.sum(&:nb_jours)
 
       data << [
         agent.nom,
         agent.prénom,
         agent.email,
-        agent.services.first.nom,
+        agent.services.map(&:nom).join(', ').presence || 'Aucun',
+        agent.téléphone,
         interventions.count,
         temps_total,
         nb_jours_absences
@@ -37,11 +40,9 @@ class AgentsToXls < ExportToXls
     end
 
     ExportToXls.new
-              .add_worksheet("Liste des agents")
-              .add_headers(headers)
-              .setup_data(data)
-              .build_file
-
+               .add_worksheet('Liste des agents')
+               .add_headers(headers)
+               .setup_data(data)
+               .build_file
   end
-
 end

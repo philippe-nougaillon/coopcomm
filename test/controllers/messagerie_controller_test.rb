@@ -1,40 +1,42 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class MessagerieControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @user = users(:hidalgo)
-    
+    @current_user = users(:hidalgo)
+
     @interlocutor_user = users(:bond)
 
-    sign_in @user
+    sign_in @current_user
   end
 
-  test "should show messagerie" do
+  test 'should show messagerie' do
     get messagerie_url
     assert_response :success
   end
 
-  test "should show messagerie with a to_id" do
+  test 'should show messagerie with a to_id' do
     get messagerie_url(to_id: users.second.id)
     assert_response :success
   end
 
-  test "should send notification" do
-    assert_difference("Notification.count") do
-      post messagerie_send_notification_url, params: {
-        message: "Bonjour",
-        to_id: @interlocutor_user.id,
+  test 'should send message' do
+    assert_difference('Message.count') do
+      post messagerie_send_message_url, params: {
+        message: 'Bonjour',
+        to_id: @interlocutor_user.id
       }
     end
 
     assert_response :success
   end
 
-  test "should'nt send notification with yourself" do
-    assert_no_difference("Intervention.count") do
-      post messagerie_send_notification_url, params: {
-        message: "Bonjour moi-même",
-        to_id: @user.id,
+  test "should'nt send message with yourself" do
+    assert_no_difference('Message.count') do
+      post messagerie_send_message_url, params: {
+        message: 'Bonjour moi-même',
+        to_id: @current_user.id
       }
     end
 

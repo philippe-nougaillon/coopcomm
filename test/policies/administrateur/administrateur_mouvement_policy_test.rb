@@ -1,16 +1,18 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class AdministrateurMouvementPolicyTest < ActionDispatch::IntegrationTest
   def setup
     administrateur = users(:administrateur_paris)
-    
+
     mouvement = mouvements(:mouvement_tondeuse)
 
     @policy = MouvementPolicy.new(administrateur, mouvement)
   end
 
   # Index
-  test "accès autorisé pour un administrateur sur la page index des mouvements" do
+  test 'accès autorisé pour un administrateur sur la page index des mouvements' do
     assert @policy.index?
   end
 

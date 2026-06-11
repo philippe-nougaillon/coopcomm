@@ -1,22 +1,19 @@
-<div class="overflow-x-auto">
-  <table id="intervenant" class="table table-sm">
-    <thead class="bg-slate-100">
-    <tr>
-      <th><%= sort_link 'interventions.updated_at', 'Il y a'%></th>
-      <th><%= sort_link 'interventions.workflow_state', 'État'%></th>
-      <th><%= sort_link 'interventions.description', 'Description'%></th>
-      <th>Adhérent</th>
-      <th><%= sort_link 'interventions.début_prévue', 'Horaires'%></th>
-      <th><%= sort_link 'interventions.temps_total', 'Temps total'%></th>
-      <th></th>
-    </tr>
+<div class="overflow-x-auto w-full border border-slate-200 shadow-sm">
+  <table id="intervenant" class="table table-sm w-full">
+    <thead class="bg-slate-100 ">
+      <tr>
+        <th class="align-middle px-3 py-3 font-bold"><%= sort_link 'interventions.updated_at', 'Il y a'%></th>
+        <th class="align-middle pl-6 py-3 font-bold text-center w-36"><%= sort_link 'interventions.workflow_state', 'État'%></th>
+        <th class="align-middle pl-12 py-3 font-bold w-40"><%= sort_link 'interventions.description', 'Description'%></th>
+        <th class="align-middle px-10 py-3 font-bold">Adhérent</th>
+        <th class="align-middle px-3 py-3 font-bold min-w-[140px]"><%= sort_link 'interventions.début_prévue', 'Horaires'%></th>
+        <th class="align-middle px-8 py-3 font-bold whitespace-nowrap"><%= sort_link 'interventions.temps_total', 'Temps total'%></th>
+        <th class="align-middle px-3 py-3 font-bold text-left">Actions</th>
+      </tr>
     </thead>
-    <tbody>
+   
+    <tbody class="divide-y divide-slate-200">
       <%= render partial: 'intervention_compact', collection: @interventions, as: :intervention, cached: true %>
     </tbody>
-    <tfoot>
-    <th></th>
-    </tfoot>
   </table>
 </div>
-

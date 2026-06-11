@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class RemoveOrganisationIdFromUser < ActiveRecord::Migration[8.0]
   def up
     # AJout d'un service par défaut si l'utilisateur n'en a pas

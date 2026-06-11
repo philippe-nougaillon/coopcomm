@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ChangeWarehouseLocalisationMethod < ActiveRecord::Migration[8.0]
   def change
     remove_column :warehouses, :localisation, :string

@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class AdministrateurWikiPagesPolicyTest < ActionDispatch::IntegrationTest
   def setup
@@ -10,27 +12,27 @@ class AdministrateurWikiPagesPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # New
-  test "accès autorisé pour un administrateur pour un new de wiki pages" do
+  test 'accès autorisé pour un administrateur pour un new de wiki pages' do
     assert @policy.new?
   end
 
   # Create
-  test "accès autorisé pour un administrateur pour un create de wiki pages" do
+  test 'accès autorisé pour un administrateur pour un create de wiki pages' do
     assert @policy.create?
   end
 
   # Edit
-  test "accès autorisé pour un administrateur pour un edit de wiki pages" do
+  test 'accès autorisé pour un administrateur pour un edit de wiki pages' do
     assert @policy.edit?
   end
 
   # Update
-  test "accès autorisé pour un administrateur pour un update de wiki pages" do
+  test 'accès autorisé pour un administrateur pour un update de wiki pages' do
     assert @policy.update?
   end
 
   # Destroy
-  test "accès autorisé pour un administrateur pour un destroy de wiki pages" do
+  test 'accès autorisé pour un administrateur pour un destroy de wiki pages' do
     assert @policy.destroy?
   end
 end

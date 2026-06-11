@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddOrganisationToService < ActiveRecord::Migration[8.0]
   def change
     add_reference :services, :organisation, null: true, foreign_key: true

@@ -19,7 +19,7 @@
 
 <ul class="timeline timeline-vertical mt-8" data-controller="geolocation" data-location-url-value="<%= update_location_intervention_url %>">
   <li>
-    <div class="timeline-start">Heure d'arrivée</div>
+    <div class="timeline-start text-right">Début intervention</div>
     <div class="timeline-middle">
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -33,11 +33,11 @@
       </svg>
     </div>
     <div class="timeline-end timeline-box mb-4"><%= l(@intervention.début, format: :short) %></div>
-    <hr />
+    <hr class="<%= 'bg-success' if @intervention.fin %>" />
   </li>
   <li>
-    <hr />
-    <div class="timeline-start">Heure de départ</div>
+    <hr class="<%= 'bg-success' if @intervention.fin %>" />
+    <div class="timeline-start text-right">Fin intervention</div>
     <div class="timeline-middle">
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -53,18 +53,43 @@
     <% if @intervention.fin %>
       <div class="timeline-end timeline-box mt-4">
         <%= l(@intervention.fin, format: :short) %>
-        <br>
-        Durée : 
-        <br>
+      </div>
+    <% end %>
+    <hr class="<%= 'bg-success' if @intervention.fin %>" />
+  </li>
+  <li>
+    <hr class="<%= 'bg-success' if @intervention.fin %>" />
+    <div class="timeline-start text-right">Comptabilisation</div>
+    <div class="timeline-middle">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        class="h-5 w-5 <%= 'text-success' if @intervention.fin %>">
+        <path
+          fill-rule="evenodd"
+          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+          clip-rule="evenodd" />
+      </svg>
+    </div>
+    <% if @intervention.fin %>
+      <div class="timeline-end timeline-box mt-4">
         <%= @intervention.durée_humanized %>
       </div>
     <% end %>
   </li>
 </ul>
 
+<%= form_with model: @intervention, class: "w-full mt-8" do |form| %>
+  <div class="w-full sm:w-1/4 mx-auto">
+    <%= form.text_area :commentaires, class: "textarea w-full", rows: 6, placeholder: "Ecrivez ici vos remarques ou commentaires", 'data-controller': 'textarea-autogrow' %>
+    <%= form.submit "Enregistrer le commentaire", class: "btn btn-primary mt-2" %>
+  </div>
+<% end %>
+
 <% if @intervention.fin && flash[:notice] %>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <script>
-    confetti({});
+    setTimeout(() => confetti(), 2*1000);
   </script>
 <% end %>

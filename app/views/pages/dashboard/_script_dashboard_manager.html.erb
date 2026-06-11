@@ -4,7 +4,7 @@
     */
     function afficherTempsTotalParAdherent() {
         var dataTempsTotalParAdhérent = {
-            labels: <%= @temps_total_par_adhérent.keys.to_json.html_safe %>,
+            labels: <%= @temps_total_par_adherent.keys.to_json.html_safe %>,
             datasets: [
                 {
                     label: "Temps(h)",
@@ -27,7 +27,7 @@
                         'rgb(201, 203, 207)'
                     ],
                     borderWidth: 1,
-                    data: <%= @temps_total_par_adhérent.values.to_json.html_safe %>,
+                    data: <%= @temps_total_par_adherent.values.to_json.html_safe %>,
                 },
             ],
         };
@@ -125,7 +125,7 @@
     */
     function afficherQuantitéInterventionParService() {
         var dataQtéInterventionsParService = {
-            labels: <%= @qté_interventions_par_service.keys.to_json.html_safe %>,
+            labels: <%= @qte_interventions_par_service.keys.to_json.html_safe %>,
             datasets: [
                 {
                     label: "Nombre intervention",
@@ -148,7 +148,7 @@
                         'rgb(201, 203, 207)'
                     ],
                     borderWidth: 1,
-                    data: <%= @qté_interventions_par_service.values.to_json.html_safe %>,
+                    data: <%= @qte_interventions_par_service.values.to_json.html_safe %>,
                 },
             ],
         };

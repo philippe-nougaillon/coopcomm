@@ -1,16 +1,18 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class ManagerMouvementPolicyTest < ActionDispatch::IntegrationTest
   def setup
     manager = users(:hidalgo)
-    
+
     mouvement = mouvements(:mouvement_tondeuse)
 
     @policy = MouvementPolicy.new(manager, mouvement)
   end
 
   # Index
-  test "accès autorisé pour un manager sur la page index des mouvements" do
+  test 'accès autorisé pour un manager sur la page index des mouvements' do
     assert @policy.index?
   end
 

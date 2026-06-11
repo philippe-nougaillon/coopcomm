@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 class DashboardAdherentToXls < ExportToXls
-  def initialize(proportion_temps_consomme, temps_total_par_mois, data_workflow_chart, qte_interventions_par_service, temps_total_par_service, co2_total_par_mois)
+  def initialize(proportion_temps_consomme, temps_total_par_mois, data_workflow_chart, qte_interventions_par_service,
+                 temps_total_par_service, co2_total_par_mois)
     super()
     @proportion_temps_consomme = proportion_temps_consomme
     @temps_total_par_mois = temps_total_par_mois
@@ -11,7 +14,7 @@ class DashboardAdherentToXls < ExportToXls
 
   def call
     add_worksheet('Temps consommé')
-    add_headers(['Indicateur', 'Temps'])
+    add_headers(%w[Indicateur Temps])
     setup_data(@proportion_temps_consomme.to_a)
 
     add_worksheet('Temps par mois')
@@ -19,10 +22,10 @@ class DashboardAdherentToXls < ExportToXls
     setup_data(@temps_total_par_mois.to_a)
 
     add_worksheet('États par mois')
-    
+
     labels = @data_workflow_chart[:labels]
     datasets = @data_workflow_chart[:datasets]
-    
+
     # En-têtes : "Mois", "Nouveau", "Pointage_active", "Termine", etc.
     headers = ['Mois'] + datasets.map { |dataset| dataset[:label] }
     add_headers(headers)
@@ -37,7 +40,7 @@ class DashboardAdherentToXls < ExportToXls
     setup_data(workflow_data)
 
     add_worksheet('Qté par service')
-    add_headers(['Service', 'Quantité'])
+    add_headers(%w[Service Quantité])
     setup_data(@qte_interventions_par_service.to_a)
 
     add_worksheet('Temps par service')

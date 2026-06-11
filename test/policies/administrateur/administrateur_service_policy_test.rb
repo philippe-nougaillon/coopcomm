@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class AdministrateurServicePolicyTest < ActionDispatch::IntegrationTest
   def setup
@@ -11,7 +13,7 @@ class AdministrateurServicePolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Index
-  test "accès autorisé pour un administrateur sur la page index des services" do
+  test 'accès autorisé pour un administrateur sur la page index des services' do
     refute @policy.index?
   end
 

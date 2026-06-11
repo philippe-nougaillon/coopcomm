@@ -1,9 +1,11 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class AdherentWorkflowStateInterventionPolicyTest < ActionDispatch::IntegrationTest
   def setup
     adherent_paris = users(:patrick_adherent_paris)
-    
+
     intervention_paris = interventions(:intervention_paris)
 
     @policy = InterventionPolicy.new(adherent_paris, intervention_paris)
@@ -15,17 +17,17 @@ class AdherentWorkflowStateInterventionPolicyTest < ActionDispatch::IntegrationT
   end
 
   # Valider
-  test "should get valider" do
+  test 'should get valider' do
     assert @policy.valider?
   end
 
   # Refuser
-  test "should get refuser" do
+  test 'should get refuser' do
     assert @policy.refuser?
   end
 
   # Archiver
-  test "should get archiver" do
+  test 'should get archiver' do
     assert @policy.archiver?
   end
 end

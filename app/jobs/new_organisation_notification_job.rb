@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class NewOrganisationNotificationJob < ApplicationJob
   queue_as :default
 

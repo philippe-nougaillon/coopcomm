@@ -1,17 +1,19 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class InconnuSupportMailboxTest < ActionMailbox::TestCase
-  test "Ne pas créer une intervention quand un inconnu envoie un mail au support" do
-    subject = "Nids de poule"
-    body = "Rebouchez les nids de poule svp"
-    assert_no_changes -> { Intervention.count } do 
+  test 'Ne pas créer une intervention quand un inconnu envoie un mail au support' do
+    subject = 'Nids de poule'
+    body = 'Rebouchez les nids de poule svp'
+    assert_no_changes -> { Intervention.count } do
       receive_inbound_email_from_mail(
-        to: "support@mg.coopcom.fr",
-        from: "inconnu@gmail.commm",
+        to: 'support@mg.coopcom.fr',
+        from: 'inconnu@gmail.commm',
         subject: subject,
         body: body,
-        charset: "UTF-8"
-    )
+        charset: 'UTF-8'
+      )
     end
   end
 end

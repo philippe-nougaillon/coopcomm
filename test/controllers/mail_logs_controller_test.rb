@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class MailLogsControllerTest < ActionDispatch::IntegrationTest
   setup do
@@ -6,7 +8,7 @@ class MailLogsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:hidalgo)
   end
 
-  test "should get index" do
+  test 'should get index' do
     get mail_logs_url
     assert_response :success
   end
@@ -24,7 +26,7 @@ class MailLogsControllerTest < ActionDispatch::IntegrationTest
   #   assert_redirected_to mail_log_url(MailLog.last)
   # end
 
-  test "should show mail_log" do
+  test 'should show mail_log' do
     get mail_log_url(@mail_log)
     assert_response :success
   end
@@ -47,9 +49,9 @@ class MailLogsControllerTest < ActionDispatch::IntegrationTest
   #   assert_redirected_to mail_logs_url
   # end
 
-  test "should refresh mail_log" do
-    ENV["MAILGUN_API_KEY"] = "abcd1234"
-    ENV["MAILGUN_DOMAIN"] = "example.com"
+  test 'should refresh mail_log' do
+    ENV['MAILGUN_API_KEY'] = 'abcd1234'
+    ENV['MAILGUN_DOMAIN'] = 'example.com'
 
     get notifications_url
     assert_response :success

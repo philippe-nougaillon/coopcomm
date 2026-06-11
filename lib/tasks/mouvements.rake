@@ -1,5 +1,6 @@
+# frozen_string_literal: true
+
 namespace :mouvements do
-  
   # Plus utilisé
   # desc "Créer les mouvements en fonction du passé à lancer le soir"
   # task :create_past_mouvements, [:enregistrer] => :environment do |task, args|

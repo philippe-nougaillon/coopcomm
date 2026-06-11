@@ -44,6 +44,12 @@
       <%= form.check_box :épinglée, class: "checkbox checkbox-lg checkbox-primary" %>
     </div>
 
+    <div class="my-5 hover:cursor-help" title="Visible par les agents ?">
+      <%= form.label :private, "Privé ?", class:'whitespace-nowrap hover:cursor-help' %>
+      <br>
+      <%= form.check_box :private, class: "checkbox checkbox-lg checkbox-primary" %>
+    </div>
+
     <div class="my-5">
       <%= form.label :poids %>
       <%= form.number_field :poids, class: "input input-sm w-full" %>

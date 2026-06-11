@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class ToolsControllerTest < ActionDispatch::IntegrationTest
   setup do
@@ -6,26 +8,26 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:hidalgo)
   end
 
-  test "should get index" do
+  test 'should get index' do
     # Appel du service MeteoConceptConnexion limité pour éviter l'appel de l'API MeteoConcept dans les tests
     MeteoConceptConnexion.stub :call, nil do
       get tools_url
     end
 
-    MeteoConceptConnexion.stub :call, {forecast: []} do
+    MeteoConceptConnexion.stub :call, { forecast: [] } do
       get tools_url
     end
 
     assert_response :success
   end
 
-  test "should get new" do
+  test 'should get new' do
     get new_tool_url
     assert_response :success
   end
 
-  test "should create tool" do
-    assert_difference("Tool.count") do
+  test 'should create tool' do
+    assert_difference('Tool.count') do
       post tools_url, params: {
         tool: {
           name: generate_name,
@@ -42,17 +44,17 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to tool_url(Tool.last)
   end
 
-  test "should show tool" do
+  test 'should show tool' do
     get tool_url(@tool)
     assert_response :success
   end
 
-  test "should get edit" do
+  test 'should get edit' do
     get edit_tool_url(@tool)
     assert_response :success
   end
 
-  test "should update tool" do
+  test 'should update tool' do
     patch tool_url(@tool), params: {
       tool: {
         name: generate_name,
@@ -65,8 +67,8 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to tool_url(@tool)
   end
 
-  test "should destroy tool" do
-    assert_difference("Tool.count", -1) do
+  test 'should destroy tool' do
+    assert_difference('Tool.count', -1) do
       delete tool_url(@tool)
     end
 
