@@ -1,0 +1,35 @@
+<% if etat == "L" %>
+  <%= link_to reserve_tool_mouvements_path(
+      tool_id: tool.id, 
+      date: date,
+      user_id: current_user.id
+    ), 
+    data: { turbo: false },
+    title: "Réserver \"#{tool.name.humanize}\" pour le #{date.strftime('%d/%m')}" do %>
+    <span class="border-1 border-slate-400 bg-green-500 hover:opacity-75 h-4 inline-block align-middle"
+          style="padding-left: 15px;">
+    </span>
+  <% end %>
+<% elsif etat == "R" %>
+  <%= link_to libere_tool_mouvements_path(
+      tool_id: tool.id,
+      date: date,
+      user_id: current_user.id
+    ),
+    data: { turbo: false },
+    title: "Réserver \"#{tool.name.humanize}\"" do %>
+    <span class="border-1 border-slate-400 h-4 inline-block align-middle" 
+          style="padding-left: 15px; background-color: #3b82f6;">
+    </span>
+  <% end %>
+<% elsif etat == "I" %>
+  <span class="border-1 border-slate-400 h-4 inline-block align-middle" 
+        style="padding-left: 15px; background-color: #db2767;" 
+        title="Réservé par vous">
+  </span>
+<% elsif etat == "P" %>
+  <span class="border-1 border-slate-400 h-4 inline-block align-middle" 
+        style="padding-left: 15px; background-color: black;" 
+        title="En panne">
+  </span>
+<% end %>

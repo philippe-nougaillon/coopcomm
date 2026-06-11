@@ -17,7 +17,8 @@ class Mouvement < ApplicationRecord
     entrée: 0,
     sortie: 1,
     panne: 2,
-    fin_panne: 3
+    fin_panne: 3,
+    réservé: 4
   }
 
   validates :date, presence: true
