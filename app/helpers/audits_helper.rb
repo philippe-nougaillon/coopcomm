@@ -128,7 +128,8 @@ module AuditsHelper
       'prenom' => 'Prénom',
       'role' => 'Rôle',
       'telephone' => 'Téléphone',
-      'memo' => 'Mémo'
+      'memo' => 'Mémo',
+      'warehouse_id' => 'Entrepôt'
     }.fetch(key, key.humanize)
   end
 
@@ -140,11 +141,33 @@ module AuditsHelper
       value.in?(['true', true]) ? 'Oui' : 'Non'
     when 'motif'
       { '0' => 'Congé annuel', '1' => 'Maladie', '2' => 'RTT' }.fetch(value.to_s, value)
+    when 'warehouse_id'
+      warehouse_label(value)
     when /at$/
       value.respond_to?(:strftime) ? l(value, format: :short) : value.to_s.sub(' +0200', '').sub(' +0100', '')
     else
       value.to_s
     end
+  end
+
+  # Nom de l'entrepôt pour l'audit. L'entrepôt peut avoir été supprimé depuis
+  # (warehouse_id pointe alors vers une ligne disparue) : dans ce cas on
+  # récupère son nom dans sa propre piste d'audit (Warehouse est `audited`),
+  # pour ne pas afficher un id brut. Repli ultime sur l'id.
+  def warehouse_label(id)
+    Warehouse.find_by(id: id)&.name || deleted_warehouse_name(id) || id.to_s
+  end
+
+  def deleted_warehouse_name(id)
+    audit = Audited::Audit
+            .where(auditable_type: 'Warehouse', auditable_id: id)
+            .order(version: :desc)
+            .detect { |a| a.audited_changes.key?('name') }
+    return nil unless audit
+
+    raw = audit.audited_changes['name']
+    name = raw.is_a?(Array) ? raw.compact.last : raw
+    name.presence
   end
 
   def render_changes_list(items)
