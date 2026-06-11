@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 20_260_608_140_113) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_09_101728) do
   # These are extensions that must be enabled in order to support this database
   enable_extension 'pg_catalog.plpgsql'
 
@@ -136,6 +136,33 @@ ActiveRecord::Schema[8.0].define(version: 20_260_608_140_113) do
     t.index ['prestation_id'], name: 'index_cotation_lignes_on_prestation_id'
   end
 
+  create_table "interventions", force: :cascade do |t|
+    t.datetime "début"
+    t.datetime "fin"
+    t.decimal "temps_de_pause"
+    t.string "description"
+    t.string "workflow_state"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "adherent_id"
+    t.decimal "temps_total", precision: 8, scale: 2, default: "0.0"
+    t.text "commentaires"
+    t.integer "note", default: 5
+    t.string "avis"
+    t.string "slug"
+    t.boolean "repeter"
+    t.string "template_slug"
+    t.datetime "début_prévue"
+    t.datetime "fin_prévue"
+    t.string "meteo"
+    t.decimal "co2", default: "0.0"
+    t.string "trajet"
+    t.bigint "service_id"
+    t.string "localisation"
+    t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
+    t.index ["service_id"], name: "index_interventions_on_service_id"
+  end
+
   create_table 'cotations', force: :cascade do |t|
     t.bigint 'adherent_id', null: false
     t.bigint 'service_id', null: false
@@ -166,6 +193,22 @@ ActiveRecord::Schema[8.0].define(version: 20_260_608_140_113) do
     t.index ['tool_id'], name: 'index_documents_on_tool_id'
   end
 
+  create_table "mouvements", force: :cascade do |t|
+    t.bigint "tool_id", null: false
+    t.integer "état"
+    t.string "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "intervention_id"
+    t.date "date"
+    t.bigint "user_id", null: false
+    t.string "commentaires"
+    t.index ["date"], name: "index_mouvements_on_date"
+    t.index ["intervention_id"], name: "index_mouvements_on_intervention_id"
+    t.index ["tool_id"], name: "index_mouvements_on_tool_id"
+    t.index ["user_id"], name: "index_mouvements_on_user_id"
+  end
+
   create_table 'export_logs', force: :cascade do |t|
     t.bigint 'user_id', null: false
     t.bigint 'organisation_id', null: false
@@ -174,33 +217,6 @@ ActiveRecord::Schema[8.0].define(version: 20_260_608_140_113) do
     t.datetime 'updated_at', null: false
     t.index ['organisation_id'], name: 'index_export_logs_on_organisation_id'
     t.index ['user_id'], name: 'index_export_logs_on_user_id'
-  end
-
-  create_table 'interventions', force: :cascade do |t|
-    t.datetime 'début'
-    t.datetime 'fin'
-    t.decimal 'temps_de_pause'
-    t.string 'description'
-    t.string 'workflow_state'
-    t.datetime 'created_at', null: false
-    t.datetime 'updated_at', null: false
-    t.integer 'adherent_id'
-    t.decimal 'temps_total', precision: 8, scale: 2, default: '0.0'
-    t.text 'commentaires'
-    t.integer 'note', default: 5
-    t.string 'avis'
-    t.string 'slug'
-    t.boolean 'repeter', default: false
-    t.string 'template_slug'
-    t.datetime 'début_prévue'
-    t.datetime 'fin_prévue'
-    t.string 'meteo'
-    t.decimal 'co2', default: '0.0'
-    t.string 'trajet'
-    t.bigint 'service_id'
-    t.string 'localisation'
-    t.index ['adherent_id'], name: 'index_interventions_on_adherent_id'
-    t.index ['service_id'], name: 'index_interventions_on_service_id'
   end
 
   create_table 'mail_logs', force: :cascade do |t|
@@ -230,19 +246,14 @@ ActiveRecord::Schema[8.0].define(version: 20_260_608_140_113) do
     t.index ['to_id'], name: 'index_messages_on_to_id'
   end
 
-  create_table 'mouvements', force: :cascade do |t|
-    t.bigint 'tool_id', null: false
-    t.integer 'état'
-    t.string 'slug'
-    t.datetime 'created_at', null: false
-    t.datetime 'updated_at', null: false
-    t.bigint 'intervention_id'
-    t.datetime 'date'
-    t.bigint 'user_id', null: false
-    t.string 'commentaires'
-    t.index ['intervention_id'], name: 'index_mouvements_on_intervention_id'
-    t.index ['tool_id'], name: 'index_mouvements_on_tool_id'
-    t.index ['user_id'], name: 'index_mouvements_on_user_id'
+  create_table "services", force: :cascade do |t|
+    t.string "nom"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "organisation_id"
+    t.string "slug"
+    t.boolean "calculate_distance", default: false
+    t.index ["organisation_id"], name: "index_services_on_organisation_id"
   end
 
   create_table 'newsletters', force: :cascade do |t|
@@ -275,16 +286,6 @@ ActiveRecord::Schema[8.0].define(version: 20_260_608_140_113) do
     t.index %w[organisation_id code], name: 'index_prestations_on_organisation_id_and_code', unique: true
     t.index ['organisation_id'], name: 'index_prestations_on_organisation_id'
     t.index ['slug'], name: 'index_prestations_on_slug', unique: true
-  end
-
-  create_table 'services', force: :cascade do |t|
-    t.string 'nom'
-    t.datetime 'created_at', null: false
-    t.datetime 'updated_at', null: false
-    t.bigint 'organisation_id', null: false
-    t.string 'slug'
-    t.boolean 'calculate_distance', default: false
-    t.index ['organisation_id'], name: 'index_services_on_organisation_id'
   end
 
   create_table 'solid_cable_messages', force: :cascade do |t|
@@ -400,6 +401,20 @@ ActiveRecord::Schema[8.0].define(version: 20_260_608_140_113) do
     t.index %w[scheduled_at priority job_id], name: 'index_solid_queue_dispatch_all'
   end
 
+  create_table "tools", force: :cascade do |t|
+    t.string "name"
+    t.string "description"
+    t.bigint "organisation_id", null: false
+    t.string "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "icon_name"
+    t.string "modèle"
+    t.string "marque"
+    t.boolean "en_panne", default: false
+    t.index ["organisation_id"], name: "index_tools_on_organisation_id"
+  end
+
   create_table 'solid_queue_semaphores', force: :cascade do |t|
     t.string 'key', null: false
     t.integer 'value', default: 1, null: false
@@ -450,19 +465,6 @@ ActiveRecord::Schema[8.0].define(version: 20_260_608_140_113) do
     t.datetime 'updated_at', null: false
     t.index ['intervention_id'], name: 'index_tool_interventions_on_intervention_id'
     t.index ['tool_id'], name: 'index_tool_interventions_on_tool_id'
-  end
-
-  create_table 'tools', force: :cascade do |t|
-    t.string 'name'
-    t.string 'description'
-    t.bigint 'organisation_id', null: false
-    t.string 'slug'
-    t.datetime 'created_at', null: false
-    t.datetime 'updated_at', null: false
-    t.string 'icon_name'
-    t.string 'modèle'
-    t.string 'marque'
-    t.index ['organisation_id'], name: 'index_tools_on_organisation_id'
   end
 
   create_table 'user_services', force: :cascade do |t|
