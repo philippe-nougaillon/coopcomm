@@ -66,7 +66,11 @@ class NewslettersController < ApplicationController
   # end
 
   # DELETE /newsletters/1 or /newsletters/1.json
+  # Désinscription par lien anonyme : le slug (UUID non devinable) fait office
+  # de jeton ; un slug inconnu redirige sans erreur.
   def destroy
+    return redirect_to(root_path, status: :see_other) if @newsletter.nil?
+
     @newsletter.destroy!
 
     respond_to do |format|

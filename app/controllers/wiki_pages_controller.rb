@@ -3,7 +3,7 @@
 class WikiPagesController < ApplicationController
   skip_before_action :authenticate_user!, only: %i[index show]
   before_action :set_wiki_page, only: %i[show edit update destroy]
-  before_action :is_user_authorized, except: %i[index]
+  before_action :is_user_authorized
 
   # GET /wiki_pages or /wiki_pages.json
   def index

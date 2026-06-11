@@ -26,6 +26,9 @@ class User < ApplicationRecord
 
   has_one_attached :profile_picture
 
+  include PieceJointeValidable
+  valide_piece_jointe :profile_picture, types: PieceJointeValidable::IMAGES
+
   belongs_to :warehouse, optional: true
 
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id

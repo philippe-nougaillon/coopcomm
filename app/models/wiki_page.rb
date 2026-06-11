@@ -10,6 +10,9 @@ class WikiPage < ApplicationRecord
   has_rich_text :contenu
   has_one_attached :document
 
+  include PieceJointeValidable
+  valide_piece_jointe :document, types: PieceJointeValidable::DOCUMENTS
+
   include PgSearch::Model
   include Discard::Model
 

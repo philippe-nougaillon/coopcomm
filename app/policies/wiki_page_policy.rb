@@ -7,12 +7,15 @@ class WikiPagePolicy < ApplicationPolicy
     end
   end
 
-  # def index?
-  #   true
-  # end
+  # Le wiki (blog/FAQ) est public ; le contrôleur filtre publiée/private dans l'action
+  def index?
+    true
+  end
 
+  # Une page non publiée ou privée n'est visible que des managers/admins
+  # (l'index filtre déjà sur publiée: true, show doit suivre la même règle).
   def show?
-    !record.private? || manager_or_admin?
+    (record.publiée? && !record.private?) || manager_or_admin?
   end
 
   def new?

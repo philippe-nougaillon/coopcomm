@@ -75,8 +75,9 @@ class ConventionsController < ApplicationController
   end
 
   # GET /conventions/services_for_adherent (JSON) — services encore disponibles pour l'adhérent
+  # (scopé : l'id d'un adhérent d'une autre organisation ne doit rien révéler)
   def services_for_adherent
-    adherent = User.find_by(id: params[:adherent_id])
+    adherent = current_organisation.users.find_by(id: params[:adherent_id])
     render json: available_services_for(adherent).select(:id, :nom)
   end
 

@@ -2,6 +2,8 @@
 
 # Handles public and authenticated pages for the application.
 class PagesController < ApplicationController
+  # Pages publiques (vitrine) : pas d'utilisateur, donc pas d'authorize
+  skip_after_action :verify_authorized, only: %i[welcome mentions_legales solution tarifs contact]
   include DashboardData
 
   before_action :is_user_authorized, except: %i[welcome mentions_legales solution tarifs contact]
@@ -36,7 +38,9 @@ class PagesController < ApplicationController
         llm = Langchain::LLM::MistralAI.new(api_key: ENV['MISTRAL_AI_API_KEY'])
         @results = llm.chat(messages: [{ role: 'user',
                                          content: "Génère moi des nouvelles tâches en te basant sur cette liste : #{description_list.join(', ')}" }]).chat_completion
-        @results = Redcarpet::Markdown.new(Redcarpet::Render::HTML, {}).render(@results)
+        # filter_html : la sortie du LLM est influençable par les descriptions
+        # d'interventions (injection de prompt) — jamais de HTML brut depuis le LLM.
+        @results = Redcarpet::Markdown.new(Redcarpet::Render::HTML.new(filter_html: true, safe_links_only: true), {}).render(@results)
       rescue StandardError
         @is_failed = true
         @results = 'Veuillez attendre quelques secondes avant de réessayer'

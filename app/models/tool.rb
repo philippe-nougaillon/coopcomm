@@ -14,6 +14,9 @@ class Tool < ApplicationRecord
 
   has_one_attached :photo
 
+  include PieceJointeValidable
+  valide_piece_jointe :photo, types: PieceJointeValidable::IMAGES
+
   accepts_nested_attributes_for :documents,
                                 allow_destroy: true,
                                 reject_if: ->(attributes) { attributes['fichier'].blank? }

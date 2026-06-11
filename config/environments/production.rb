@@ -101,12 +101,13 @@ Rails.application.configure do
   config.active_record.attributes_for_inspect = [:id]
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # Hôtes autorisés via APP_HOSTS (liste séparée par des virgules) : reste
+  # générique multi-organisations, et inactif tant que la variable n'est pas posée.
+  if ENV['APP_HOSTS'].present?
+    config.hosts = ENV['APP_HOSTS'].split(',').map(&:strip)
+    # Skip DNS rebinding protection for the default health check endpoint.
+    config.host_authorization = { exclude: ->(request) { request.path == '/up' } }
+  end
 
   ActionMailer::Base.delivery_method = :mailgun
   config.action_mailer.mailgun_settings = {

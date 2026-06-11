@@ -12,6 +12,9 @@ class Document < ApplicationRecord
 
   has_one_attached :fichier
 
+  include PieceJointeValidable
+  valide_piece_jointe :fichier, types: PieceJointeValidable::DOCUMENTS
+
   validates :category, uniqueness: { scope: %i[tool_id version] }
 
   before_validation :update_version
