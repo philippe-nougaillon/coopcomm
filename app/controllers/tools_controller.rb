@@ -4,12 +4,12 @@ class ToolsController < ApplicationController
 
   # GET /tools or /tools.json
   def index
-    params[:vue] ||= 'calendrier'
     params[:date] = Date.today if params[:date].blank?
     @date = params[:date].to_date
-    @tools = current_organisation.tools
+    @date_fin = @date + 13.day
+    @tools = current_organisation.tools.ordered
     @types = Tool.icons
-    @états = Mouvement.états.keys
+    # @états = Mouvement.états.keys
 
     if params[:search].present?
       @tools = @tools.where("name ILIKE :search OR description ILIKE :search", {search: "%#{params[:search]}%"})
@@ -19,34 +19,15 @@ class ToolsController < ApplicationController
       @tools = @tools.where(icon_name: params[:type])
     end
 
-    if params[:etats].present?
-      tool_ids = []
-      @tools.each do |tool|
-        tool_ids << tool.id if tool.mouvements.last.état == params[:etats]
-      end
-      @tools = @tools.where(id: tool_ids)
-    end
+    # if params[:etats].present?
+    #   tool_ids = []
+    #   @tools.each do |tool|
+    #     tool_ids << tool.id if tool.mouvements.last.état == params[:etats]
+    #   end
+    #   @tools = @tools.where(id: tool_ids)
+    # end
 
     @forecasts = MeteoConceptConnexion.call
-
-    case params[:vue]
-    when 'calendrier'
-      @date_fin = @date + 13.day
-    when 'disponible'
-      @tools = @tools.where.not(id: Tool.indisponibles_ids(current_organisation.id, params[:date]))
-    when 'indisponible'
-      @tools = @tools.where(id: Tool.indisponibles_ids(current_organisation.id, params[:date]))
-    when 'indisponible_carte'
-      @tools = @tools.where(id: Tool.indisponibles_ids(current_organisation.id, params[:date]))
-      @lng_list = []
-      @lat_list = []
-      User.by_service(current_user.services).adhérent.pluck(:localisation).each do |localisation|
-        @lng_list << localisation.split(',').last
-        @lat_list << localisation.split(',').first
-      end
-    end
-
-    @tools = @tools.with_attached_photo.ordered
 
     @tools = @tools.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
     @pagy, @tools = pagy(@tools, items: 10)

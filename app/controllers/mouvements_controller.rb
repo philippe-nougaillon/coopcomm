@@ -93,21 +93,20 @@ class MouvementsController < ApplicationController
 
   def reserve
     @tool = Tool.find(params[:tool_id])
-    base_date = Date.parse(params[:date])
+    date = Date.parse(params[:date])
 
-    start_time = base_date.in_time_zone.change(hour: params[:start_hour].to_i, min: params[:start_minute].to_i)
-    end_time = base_date.in_time_zone.change(hour: params[:end_hour].to_i, min: 0)
+    @tool.mouvements.create!(état: :réservé, date: date, user: current_user)
 
-    # On s'assure que les deux mouvements sont créés ensemble et en même temps (pour la suppression groupé)
-    timestamp_exact = Time.current
-    Mouvement.transaction do
-      @tool.mouvements.create!(état: :sortie, date: start_time, user: current_user, created_at: timestamp_exact)
-      @tool.mouvements.create!(état: :entrée, date: end_time, user: current_user, created_at: timestamp_exact)
+    redirect_back fallback_location: tools_path, notice: "Outil réservé le #{l date} avec succès."
+  end
+
+  def libere
+    if params[:tool_id] && params[:date] && params[:user_id]
+      if mouvement = Mouvement.find_by(tool_id: params[:tool_id], date: params[:date], user_id: params[:user_id])
+        mouvement.destroy
+      end
+      redirect_to tools_path, notice: "Outil libéré pour le #{l params[:date].to_date}."
     end
-
-    redirect_back fallback_location: tools_path, notice: "Outil réservé le #{l base_date} avec succès."
-  rescue ActiveRecord::RecordInvalid
-    redirect_back fallback_location: tools_path, alert: "Erreur lors de la réservation de l'outil."
   end
 
   private

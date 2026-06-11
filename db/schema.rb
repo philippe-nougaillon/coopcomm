@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_29_120743) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_09_101728) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -146,8 +146,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_120743) do
     t.datetime "début_prévue"
     t.datetime "fin_prévue"
     t.string "meteo"
-    t.string "trajet"
     t.decimal "co2", default: "0.0"
+    t.string "trajet"
     t.bigint "service_id"
     t.string "localisation"
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
@@ -177,9 +177,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_120743) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "intervention_id"
-    t.datetime "date"
+    t.date "date"
     t.bigint "user_id", null: false
     t.string "commentaires"
+    t.index ["date"], name: "index_mouvements_on_date"
     t.index ["intervention_id"], name: "index_mouvements_on_intervention_id"
     t.index ["tool_id"], name: "index_mouvements_on_tool_id"
     t.index ["user_id"], name: "index_mouvements_on_user_id"
@@ -213,7 +214,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_120743) do
     t.string "nom"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "organisation_id", null: false
+    t.bigint "organisation_id"
     t.string "slug"
     t.boolean "calculate_distance", default: false
     t.index ["organisation_id"], name: "index_services_on_organisation_id"
@@ -393,6 +394,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_120743) do
     t.string "icon_name"
     t.string "modèle"
     t.string "marque"
+    t.boolean "en_panne", default: false
     t.index ["organisation_id"], name: "index_tools_on_organisation_id"
   end
 
@@ -426,13 +428,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_29_120743) do
     t.string "slug"
     t.string "téléphone"
     t.string "memo"
+    t.string "otp_secret"
+    t.integer "consumed_timestep"
+    t.boolean "otp_required_for_login"
     t.datetime "discarded_at"
     t.integer "failed_attempts", default: 0, null: false
     t.datetime "locked_at"
     t.string "unlock_token"
-    t.string "otp_secret"
-    t.integer "consumed_timestep"
-    t.boolean "otp_required_for_login"
     t.integer "otp_method"
     t.string "color"
     t.string "invitation_token"

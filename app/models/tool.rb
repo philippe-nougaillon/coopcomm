@@ -68,6 +68,64 @@ class Tool < ApplicationRecord
     end
   end
 
+  def get_etats_from_mouvements(first_date, last_date, current_user_id)
+    # Stocke les lettres correspondants à l'état de l'outil sur l'intervalle de temps (L = Libre, P = Panne, R = Réservé, I = Indisponible)
+    results = []
+
+    # Liste des dates entre la date de début et de fin
+    days_range = (first_date..(last_date)).to_a
+
+    # On récupère l'état de l'outil à l'instant T
+    est_en_panne = self.en_panne
+
+    # On récupère les mouvements sur l'intervalle de temps
+    mouvements = self.mouvements
+                  .where("DATE(date) BETWEEN DATE(?) AND DATE(?)", first_date, last_date)
+
+    # Pour chaque jour, noté J (day)
+    (days_range).each do |day|
+      # On récupère les états et user_id des mouvements du jour J
+      # On utilise where plutot que find car il peut exister un mouvement de panne et de réservation dans le même jour)
+      etats = mouvements.where(date: day).pluck(:état, :user_id).to_h
+
+      current_state = "L"
+
+      # Si l'outil est toujours en panne ajourd'hui
+      if est_en_panne
+        current_state = "P"
+
+        # Si l'outil est en panne, mais que le jour J est en fin de panne
+        if etats.include?("fin_panne")
+          est_en_panne = false
+        end
+      else
+        # Si des mouvements existent au jour J
+        if etats.any?
+          # Si une panne existe, on ouvre une période de panne
+          
+          etat = etats["panne"]
+
+          if etat.present?
+            current_state = "P"
+            est_en_panne = true
+          else
+            # Sinon, l'outil est juste réservé par quelqu'un
+            mouvement_user_id = etats["réservé"]
+            if mouvement_user_id == current_user_id
+              current_state = "R"
+            else
+              current_state = "I"
+            end
+          end
+        end
+      end
+
+      results << current_state
+    end
+
+    return results
+  end
+
   private
 
   def create_mouvement
