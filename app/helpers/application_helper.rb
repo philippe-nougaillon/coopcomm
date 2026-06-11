@@ -161,8 +161,9 @@ module ApplicationHelper
 
   # 🌟 NUEVO HELPER: Inyecta el XML del archivo SVG permitiendo pasar clases dinámicas de Tailwind
   def embedded_svg(filename, options = {})
-    # Ruta absoluta buscando dentro de app/assets/images
-    file_path = Rails.root.join('app', 'assets', 'images', filename)
+    # Prefer public assets when icons have been moved there
+    file_path = Rails.root.join('public', filename)
+    file_path = Rails.root.join('app', 'assets', 'images', filename) unless File.exist?(file_path)
 
     if File.exist?(file_path)
       file = File.read(file_path)

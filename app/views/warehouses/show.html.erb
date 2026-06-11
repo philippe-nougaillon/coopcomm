@@ -29,12 +29,7 @@
     <% end %>
     <% if policy(@warehouse).destroy? %>
       <%= button_to warehouse_path(@warehouse), method: :delete, id: "supprimer_warehouse", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer ce site ?" }, class: "btn", 'data-testid': "Supprimer le site" do %>
-            <img
-          src="/assets/images/icons/delete.svg"
-          class="icon"
-          alt="Suppression"
-          title="Suppression de ce site"
-        />   
+              <%= embedded_svg "icons/delete.svg", class: "", title: "Suppression de ce site" %>
       <% end %>
     <% end %>
     <%= link_to "Retour", admin_parametres_path, class: "btn" %>

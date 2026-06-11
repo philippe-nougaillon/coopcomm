@@ -21,7 +21,7 @@
         <% if policy(@wiki_page).destroy? %>
           <%= button_to wiki_page_path(@wiki_page), method: :delete, form: { data: {'turbo-confirm': "Êtes-vous bien certain.e de vouloir supprimer définitivement cette page ?"} }, class: "mt-2 btn" do %>
             <img
-              src="/assets/images/icons/delete.svg"
+              src="/icons/delete.svg"
               class="icon"
               alt="Suppression"
               title="Suppression de la page wiki"
@@ -31,12 +31,7 @@
           <% end %>
         <% else %>
           <div title="Suppression impossible : Vous n'êtes pas l'auteur de cette page wiki" class="mt-2 btn cursor-not-allowed">
-            <img
-              src="/assets/images/icons/delete.svg"
-              class="icon text-gray-500"
-              alt="Suppression impossible"
-              title="Suppression impossible"
-            />
+                  <%= embedded_svg "icons/delete.svg", class: "text-gray-500", title: "Suppression impossible" %>
               delete
             </span>
           </div>

@@ -18,12 +18,7 @@
           <label class="input flex items-center py-2 px-0 border-x-0 rounded-none outline-0! hover:bg-base-200 active:bg-slate-200">
             <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'w-24 border-none grow focus:ring-0 ml-2' %>
             <button type="submit" class="flex items-center cursor-pointer ">
-              <img
-                src="/assets/images/icons/search.svg"
-                class="icon p-2"
-                alt="Recherche"
-                title="Recherche"
-              />   
+                <%= embedded_svg "icons/search.svg", class: "", title: "Recherche" %>
             </button>
           </label>
         <% end %>

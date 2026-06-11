@@ -11,12 +11,7 @@
     <div class="space-y-2 px-8 pt-6 text-slate-700  flex-1">
 
       <div class="flex items-center gap-2 font-bold text-blue-800 mb-8">
-        <img
-          src="/assets/images/icons/info.svg"
-          class="icon text-lg"
-          alt="Informations"
-          title="Informations"
-        />
+        <%= embedded_svg "icons/info.svg", class: "text-lg", title: "Informations" %>
         <span class="uppercase">Instructions d'importation</span>
       </div>
 
@@ -55,6 +50,7 @@
   <%= link_to "/Exemple_import_utilisateurs.xls",
         download: "modele_donnees.xls",
         class: "btn btn-primary btn-md normal-case text-white" do %>
+    <%= embedded_svg "icons/download.svg", class: "icon", title: "Télécharger" %>
     <span>Télécharger le modèle</span>
   <% end %>
 
@@ -127,12 +123,7 @@
 
       <div class="text-xs text-slate-500 italic mt-4 flex items-center gap-1.5">
 
-        <img
-          src="/assets/images/icons/help.svg"
-          class="icon text-sm text-slate-400"
-          alt="Aide"
-          title="Aide"
-        />
+        <%= embedded_svg "icons/help.svg", class: "icon text-sm text-slate-400", title: "Aide" %>
 
         <span>
           Choisissez "Non" pour simuler l'importation et détecter
@@ -153,12 +144,7 @@
    <div class="my-10">
  
 <%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition" do %>
-      <img
-          src="/assets/images/icons/arrow_back.svg"
-          class="icon text-base"
-          alt="Retour à la liste des utilisateurs"
-          title="Retour à la liste des utilisateurs"
-        />
+       <%= embedded_svg "icons/arrow_back.svg", class: "", title: "Retour à la liste des utilisateurs" %>
       Retour à la liste des utilisateurs
     <% end %>
 
