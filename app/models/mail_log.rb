@@ -5,6 +5,7 @@ class MailLog < ApplicationRecord
   friendly_id :slug_candidates, use: :slugged
 
   belongs_to :organisation
+  belongs_to :cotation, optional: true
   scope :ordered, -> { order('mail_logs.created_at DESC') }
 
   enum :channel, {

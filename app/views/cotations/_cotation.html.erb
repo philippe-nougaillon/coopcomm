@@ -11,6 +11,20 @@
   <td class="px-4 py-3 text-nowrap"><%= l(cotation.date_livraison_souhaitée, format: :long) if cotation.date_livraison_souhaitée %></td>
   <td class="px-4 py-3 text-right font-medium"><%= number_to_currency(cotation.total_ht) %></td>
   <td class="px-4 py-3">
+    <% mail_log = last_mail_logs[cotation.id] %>
+    <% if mail_log %>
+      <div class="flex flex-col gap-0.5 text-xs leading-tight">
+        <span class="font-semibold <%= mail_log.statut ? 'text-success' : 'text-error' %>"><%= mail_log.statut ? 'OK' : 'KO' %></span>
+        <% if mail_log.etat %>
+          <span class="text-info">OUVERT</span>
+        <% end %>
+        <span class="text-slate-400"><%= time_ago_in_words mail_log.created_at %></span>
+      </div>
+    <% else %>
+      <span class="text-slate-300">—</span>
+    <% end %>
+  </td>
+  <td class="px-4 py-3">
     <div class="flex gap-2 items-center justify-end">
       <%= link_to "Voir", cotation, class: "btn btn-sm" %>
       <% if policy(cotation).envoyer? && cotation.can_envoyer? %>

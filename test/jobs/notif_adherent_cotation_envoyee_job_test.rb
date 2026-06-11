@@ -25,6 +25,8 @@ class NotifAdherentCotationEnvoyeeJobTest < ActiveJob::TestCase
     assert_equal @cotation.organisation.id, log.organisation_id
     assert_equal @sender.id, log.user_id
     assert_equal 'mail', log.channel
+    # Le log doit être rattaché à la cotation, pour le retrouver dans l'index.
+    assert_equal @cotation.id, log.cotation_id
   end
 
   test 'met l\'émetteur en copie du mail' do

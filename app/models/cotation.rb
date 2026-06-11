@@ -16,6 +16,7 @@ class Cotation < ApplicationRecord
   belongs_to :service
   has_one :organisation, through: :service
   has_many :cotation_lignes, dependent: :destroy
+  has_many :mail_logs, dependent: :nullify
 
   accepts_nested_attributes_for :cotation_lignes,
                                 allow_destroy: true,

@@ -19,6 +19,14 @@ class CotationsController < ApplicationController
     @cotations = @cotations.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
 
     @pagy, @cotations = pagy(@cotations, items: 15)
+
+    # Dernier mail_log par cotation, en une seule requête (DISTINCT ON, Postgres)
+    # pour éviter un N+1 dans l'index.
+    @last_mail_logs = MailLog
+                      .where(cotation_id: @cotations.map(&:id))
+                      .select('DISTINCT ON (cotation_id) *')
+                      .order(:cotation_id, created_at: :desc)
+                      .index_by(&:cotation_id)
   end
 
   # GET /cotations/1

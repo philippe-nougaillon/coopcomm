@@ -18,6 +18,21 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "l'index expose le dernier mail_log de chaque cotation" do
+    cotation = cotations(:cotation_paris)
+    organisation = cotation.organisation
+    MailLog.create!(organisation:, cotation:, user_id: 0, to: 'a@b.fr',
+                    subject: 'ancien', statut: false, channel: 0, created_at: 2.days.ago)
+    dernier = MailLog.create!(organisation:, cotation:, user_id: 0, to: 'a@b.fr',
+                              subject: 'récent', statut: true, etat: true, channel: 0, created_at: 1.hour.ago)
+
+    get cotations_url
+
+    assert_response :success
+    last_mail_logs = assigns(:last_mail_logs)
+    assert_equal dernier, last_mail_logs[cotation.id], 'doit retenir le mail_log le plus récent'
+  end
+
   test 'new accessible avec adhérent prérempli' do
     get new_cotation_url(adherent_id: @adherent.slug)
     assert_response :success

@@ -13,6 +13,7 @@ class NotifAdherentCotationEnvoyeeJob < ApplicationJob
     # On reprend le sujet du mail tel qu'envoyé : une seule source de vérité
     # (le mailer), pour que MailLog et l'email restent toujours synchronisés.
     MailLog.create(organisation_id: cotation.organisation&.id, user_id: user_id,
+                   cotation_id: cotation.id,
                    message_id: mailer_response.message_id, to: adherent.email,
                    subject: mailer_response.subject, channel: 0)
   end
