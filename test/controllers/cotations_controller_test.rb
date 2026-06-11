@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class CotationsControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
   setup do
     @admin = users(:administrateur_paris)
     @adherent = users(:weil)
@@ -82,6 +84,29 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     get envoyer_cotation_url(cotation)
     assert_redirected_to cotation_path(cotation)
     assert_equal 'envoyé', cotation.reload.workflow_state
+  end
+
+  test 'envoyer : déclenche la notification de l\'adhérent' do
+    cotation = cotations(:cotation_paris) # créé, adhérent avec email
+    assert_enqueued_with(job: NotifAdherentCotationEnvoyeeJob) do
+      get envoyer_cotation_url(cotation)
+    end
+  end
+
+  test 'renvoyer depuis refusé : re-déclenche la notification' do
+    cotation = cotations(:cotation_secretariat) # envoyé
+    cotation.refuser!
+    assert_enqueued_with(job: NotifAdherentCotationEnvoyeeJob) do
+      get envoyer_cotation_url(cotation)
+    end
+    assert_equal 'envoyé', cotation.reload.workflow_state
+  end
+
+  test 'une transition impossible ne déclenche aucune notification' do
+    cotation = cotations(:cotation_secretariat) # envoyé : envoyer n'est pas possible
+    assert_no_enqueued_jobs only: NotifAdherentCotationEnvoyeeJob do
+      get envoyer_cotation_url(cotation)
+    end
   end
 
   test 'valider : envoyé -> validé' do
