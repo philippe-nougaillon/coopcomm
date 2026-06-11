@@ -127,7 +127,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     intervention = interventions(:intervention_repete)
 
     assert_difference('Intervention.count', 1) do
-      get pointer_intervention_url(intervention)
+      post pointer_intervention_url(intervention)
     end
   end
 
@@ -137,14 +137,14 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     intervention = interventions(:intervention_repete)
 
     # Pointage
-    get pointer_intervention_url(intervention)
+    post pointer_intervention_url(intervention)
 
     intervention_créée = Intervention.find_by(template_slug: intervention.slug)
 
     assert_nil intervention_créée.fin
 
     # Repointage
-    get pointer_intervention_url(intervention)
+    post pointer_intervention_url(intervention)
 
     intervention_créée.reload
     assert_not_nil intervention_créée
@@ -156,7 +156,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     intervention.save
 
     assert_no_difference('Intervention.count') do
-      get pointer_intervention_url(intervention)
+      post pointer_intervention_url(intervention)
     end
   end
 
@@ -166,13 +166,13 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     # Pointage avec le 1er agent
     sign_in users(:martin_technique_paris)
     assert_difference('Intervention.count', 1) do
-      get pointer_intervention_url(intervention)
+      post pointer_intervention_url(intervention)
     end
 
     # Pointage avec le 2eme agent
     sign_in users(:bond)
     assert_difference('Intervention.count', 1) do
-      get pointer_intervention_url(intervention)
+      post pointer_intervention_url(intervention)
     end
 
     expected_nb_intervention_filles = 2
@@ -188,22 +188,22 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
     # 1er pointage (début de journée)
     assert_difference('Intervention.count', 1) do
-      get pointer_intervention_url(intervention)
+      post pointer_intervention_url(intervention)
     end
 
     # 2eme pointage (début de pause)
     assert_no_difference('Intervention.count') do
-      get pointer_intervention_url(intervention)
+      post pointer_intervention_url(intervention)
     end
 
     # 3eme pointage (fin de pause, reprise d'activité)
     assert_difference('Intervention.count', 1) do
-      get pointer_intervention_url(intervention)
+      post pointer_intervention_url(intervention)
     end
 
     # 4eme pointage (fin de journée)
     assert_no_difference('Intervention.count') do
-      get pointer_intervention_url(intervention)
+      post pointer_intervention_url(intervention)
     end
 
     expected_nb_intervention_filles = 2
@@ -218,7 +218,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:martin_technique_paris)
 
     assert_difference('Intervention.count', 1) do
-      get pointer_intervention_url(intervention)
+      post pointer_intervention_url(intervention)
     end
 
     intervention_fille = Intervention.where(template_slug: intervention.slug).last

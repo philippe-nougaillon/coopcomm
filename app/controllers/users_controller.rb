@@ -33,348 +33,6 @@ class UsersController < ApplicationController
       @users = @users.where(id: user_ids)
     end
 
-    respond_to do |format|
-      format.html do
-        @users = @users.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
-        @pagy, @users = pagy(@users, items: 10)
-      end
-
-      format.xls do
-        xls_file = AgentsToXls.new(@users.agent).call
-        send_data xls_file, filename: "Agents_#{l Date.today}.xls"
-      end
-    end
-  end
-
-  # GET /users/1 or /users/1.json
-  def show
-    # TODO : Stale à mettre au plus proche du render
-    # if stale?(@user)
-    @absences = @user.absences.ordered
-    @audits = @user.own_and_associated_audits.reorder(id: :desc)
-
-    @pagy, @audits = pagy(@audits, items: 10)
-    # end
-  end
-
-  # GET /users/new
-  def new
-    @user = User.new
-  end
-
-  # GET /users/1/edit
-  def edit; end
-
-  # POST /users or /users.json
-  def create
-    @user = User.new(user_params)
-    @user.password = User.generate_random_password
-
-    # Force le rôle à agent si l'utilisateur courant est un manager
-    @user.rôle = 'agent' if current_user.manager?
-
-    respond_to do |format|
-      if @user.save
-        @user.invite!(current_user)
-        format.html { redirect_to user_url(@user), notice: 'Utilisateur créé avec succès.' }
-        format.json { render :show, status: :created, location: @user }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @user.errors, status: :unprocessable_entity }
-      end
-    end
-  end
-
-  # PATCH/PUT /users/1 or /users/1.json
-  def update
-    @user.assign_attributes(user_params)
-
-    respond_to do |format|
-      if @user.save
-        bypass_sign_in(@user) if @user == current_user
-        format.html { redirect_to user_url(@user), notice: 'Utilisateur modifié avec succès.' }
-        format.json { render :show, status: :ok, location: @user }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-
-        format.turbo_stream do
-          if params[:from_absence_modal]
-            absence_en_erreur = @user.absences.to_a.find(&:new_record?) || @user.absences.last
-            render turbo_stream: turbo_stream.replace(
-              'absence_form',
-              partial: 'absence_form',
-              locals: {
-                user: @user,
-                absence: absence_en_erreur
-              }
-            )
-          else
-            render turbo_stream: turbo_stream.replace(
-              @user,
-              partial: 'users/form', # J'ai mis 'users/form' par précaution, adapte si besoin
-              locals: { user: @user }
-            )
-          end
-        end
-
-        format.json { render json: @user.errors, status: :unprocessable_entity }
-      end
-    end
-  end
-
-  # DELETE /users/1 or /users/1.json
-  def destroy
-    @user.discard
-
-    respond_to do |format|
-      format.html { redirect_to users_url, notice: 'Utilisateur supprimé avec succès.' }
-      format.json { head :no_content }
-    end
-  end
-
-  def agent_calendrier
-    params[:vue] ||= 'calendrier'
-    params[:date] = Date.today if params[:date].blank?
-    @date = params[:date].to_date
-    @services = current_user.services
-    @agents = User.by_service(params[:service].presence || @services).agent
-
-    if params[:search].present?
-      @agents = @agents.where('users.nom ILIKE :search OR users.prénom ILIKE :search OR users.email ILIKE :search',
-                              { search: "%#{params[:search]}%" })
-    end
-
-    # Le code actuel n'est pas utile. Si besoin on peut le faire sur la période (@date..@date_fin). Le mieux serait p-e de faire des cases grises directement dans le calendrier.
-    # if params[:absent].present?
-    #   agent_ids = []
-    #   @agents.each do |agent|
-    #     agent_ids << agent.id if agent.absences.any?
-    #   end
-    #   @agents = @agents.where(id: agent_ids)
-    # end
-
-    @date_fin = @date + 13.day
-
-    @agents = @agents.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
-    @pagy, @agents = pagy(@agents, items: 10)
-  end
-
-  def import; end
-
-  def import_do
-    if params[:upload].present?
-      @mdp = ''
-      @success_logs = [] # Guardará los usuarios procesados con éxito
-      @error_logs = []   # Guardará los usuarios que fallaron
-
-      # Enregistre le fichier localement (format = Date + nom du fichier)
-      filename = "#{I18n.l(Time.now, format: :long)} - #{params[:upload].original_filename}"
-
-      file_with_path = Rails.root.join('public', filename)
-      File.open(file_with_path, 'wb') do |file|
-        file.write(params[:upload].read)
-      end
-
-      @importes = @errors = 0
-      index = 1
-
-      # IMPORT XLS
-      Spreadsheet.client_encoding = 'UTF-8'
-      book = Spreadsheet.open file_with_path
-      sheet1 = book.worksheet 0
-
-      # 🚀 MAPEO DINÁMICO DE COLUMNAS
-      first_row = sheet1.row(0).map { |cell| cell.to_s.strip.downcase }
-
-      idx_nom       = first_row.index { |h| h.start_with?('nom') }
-      idx_prenom    = first_row.index { |h| h.start_with?('prénom') || h.start_with?('prenom') }
-      idx_email     = first_row.index { |h| h.start_with?('email') }
-      idx_service   = first_row.index { |h| h.start_with?('service') }
-      idx_telephone = first_row.index { |h| h.start_with?('téléphone') || h.start_with?('telephone') }
-      idx_memo      = first_row.index { |h| h.start_with?('mémo') || h.start_with?('memo') }
-
-      # Validación Estructural: Comprobamos si las columnas requeridas existen
-      if idx_nom.nil? || idx_prenom.nil? || idx_email.nil? || idx_service.nil?
-        flash.now[:alert] =
-          'Structure du fichier invalide. Les colonnes obligatoires (Nom, Prénom, Email, Service) sont introuvables.'
-        @errors += 1
-      else
-        # Si la estructura es correcta, iteramos sobre los datos
-        sheet1.each 1 do |row|
-          index += 1
-          next unless row[idx_nom].present?
-
-          email_value = row[idx_email]&.to_s&.strip&.downcase
-          next if email_value.blank?
-
-          user = User.where('lower(email) = ?', email_value).first_or_initialize
-          new_record = user.new_record?
-
-          user.nom       = row[idx_nom]&.to_s&.strip&.upcase
-          user.prénom    = row[idx_prenom]&.to_s&.strip&.humanize
-          user.email     = email_value
-          user.téléphone = idx_telephone ? row[idx_telephone]&.to_s&.strip : nil
-          user.memo      = idx_memo ? row[idx_memo]&.to_s&.strip : nil
-
-          if new_record
-            password = User.generate_random_password
-            user.password = password
-            @mdp << password
-          end
-          user.rôle = 'agent'
-
-          service_name = row[idx_service]&.to_s&.strip&.humanize
-          service = Service.find_by(nom: service_name)
-
-          if service
-            already_linked = user.user_services.any? do |us|
-              us.service_id == service.id && !us.marked_for_destruction?
-            end
-            user.user_services.build(service: service) unless already_linked
-          end
-
-          user.valid?
-
-          unless service
-            user.errors.add(:services,
-                            "introuvable dans la base de données (Valeur lue: '#{service_name || 'VIDE'}')")
-          end
-
-          if user.errors.empty?
-            if params[:save] == 'true'
-              user.save
-              user.invite!(current_user) if new_record
-            end
-            @importes += 1
-            @success_logs << {
-              type: new_record ? 'Nouveau' : 'Mise à jour',
-              email: user.email,
-              nom: "#{user.nom} #{user.prénom}",
-              service: service&.nom || 'Aucun'
-            }
-          else
-            @errors += 1
-            @error_logs << {
-              email: email_value,
-              nom: "#{row[idx_nom]} #{row[idx_prenom]}",
-              service_tente: row[idx_service],
-              messages: user.errors.full_messages
-            }
-          end
-        end
-      end
-
-      if @errors.positive?
-        flash.now[:alert] = @importes.zero? ? "L'importation a échouée." : "L'importation a partiellement échouée."
-      else
-        flash.now[:notice] = "L'importation a bien été exécutée."
-      end
-
-    else
-      flash[:alert] = "Manque le fichier source pour pouvoir lancer l'importation !"
-      redirect_to action: 'import'
-    end
-  end
-
-  def inviter
-    @user.invite!(current_user)
-    redirect_to user_path(@user), notice: 'Lien d’accès renvoyé'
-  end
-
-  def interventions_average
-    interventions.average(:note)&.round(2) || 0
-  end
-
-  def edit_password; end
-
-  def update_password
-    respond_to do |format|
-      if @user.update(user_params)
-        bypass_sign_in(@user) if @user == current_user
-        format.html { redirect_to user_url(@user), notice: 'Mot de passe modifié avec succès.' }
-        format.json { render :show, status: :ok, location: @user }
-      else
-        format.html { render :edit_password, status: :unprocessable_entity }
-        format.json { render json: @user.errors, status: :unprocessable_entity }
-      end
-    end
-  end
-
-  def reactivate
-    @user = User.unscoped.find_by(slug: params[:id])
-    authorize @user
-
-    if @user.undiscard
-      redirect_to users_path, notice: "Le compte de #{@user.nom_prénom} a été réactivé avec succès."
-    else
-      redirect_to users_path(discarded: true), alert: 'Impossible de réactiver ce compte.'
-    end
-  end
-
-  private
-
-  # Use callbacks to share common setup or constraints between actions.
-  def set_user
-    @user = User.find_by(slug: params[:id])
-    return unless @user.nil?
-
-    redirect_to root_path, alert: 'Utilisateur introuvable'
-  end
-
-  # Only allow a list of trusted parameters through.
-  def user_params
-    params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :rôle, :memo,
-                                 :address, :longitude, :latitude, :profile_picture, :color, tag_list: [], absences_attributes: %i[id du au motif observation matin après_midi absence_type period _destroy], service_ids: [])
-  end
-
-  def is_user_authorized
-    authorize @user || User
-  end
-
-  def sortable_columns
-    ['users.nom', 'users.rôle', 'users.service', 'users.email', 'users.memo']
-  end
-
-  def sort_column
-    sortable_columns.include?(params[:column]) ? params[:column] : 'users.nom'
-  end
-
-  def sort_direction
-    %w[asc desc].include?(params[:direction]) ? params[:direction] : 'asc'
-  end
-end
-
-class UsersController < ApplicationController
-  before_action :set_user, only: %i[show edit update destroy inviter edit_password update_password]
-  # la méthode reactivate a tout de même un authorize
-  before_action :is_user_authorized, except: %i[reactivate]
-  before_action :set_users_tags, only: %i[new create edit update]
-
-  require 'capture_stdout'
-
-  # GET /users or /users.json
-  def index
-    @services = current_user.services
-
-    @users = User.by_service(params[:services].presence || @services)
-
-    @users = @users.unscoped.discarded if params[:discarded].present?
-    @users = @users.ordered
-
-    if params[:search].present?
-      @users = @users.where('users.nom ILIKE :search OR users.prénom ILIKE :search', { search: "%#{params[:search]}%" })
-    end
-
-    @users = @users.where(rôle: params[:rôle]) if params[:rôle].present?
-
-    if params[:absent].present?
-      user_ids = []
-      @users.each do |user|
-        user_ids << user.id if user.absent?
-      end
-      @users = @users.where(id: user_ids)
-    end
-
     @users = @users.includes(:taggings).with_attached_profile_picture
 
     respond_to do |format|
@@ -511,13 +169,9 @@ class UsersController < ApplicationController
     if params[:upload].present?
       @mdp = ''
       @stream = capture_stdout do
-        # Enregistre le fichier localement (format = Date + nom du fichier)
-        filename = "#{I18n.l(Time.now, format: :long)} - #{params[:upload].original_filename}"
-
-        file_with_path = Rails.root.join('public', filename)
-        File.open(file_with_path, 'wb') do |file|
-          file.write(params[:upload].read)
-        end
+        # On lit directement le fichier uploadé (Tempfile) : surtout pas de copie
+        # dans public/ — elle y serait servie sans authentification (PII).
+        file_with_path = params[:upload].tempfile.path
 
         @importes = @errors = 0
         index = 1
@@ -539,7 +193,7 @@ class UsersController < ApplicationController
 
           new_record = user.new_record?
 
-          user.organisation_id = current_organisation.id
+          # (l'organisation dérive des services : pas de colonne organisation_id)
           user.nom = row[headers.index 'Nom']&.strip&.upcase
           user.prénom = row[headers.index 'Prénom']&.strip&.humanize
           user.email = row[headers.index 'Email']
@@ -672,9 +326,25 @@ class UsersController < ApplicationController
   end
 
   # Only allow a list of trusted parameters through.
+  # :rôle n'est accepté que d'un administrateur (seul à voir le sélecteur dans le
+  # formulaire) ; service_ids est borné aux services de l'organisation courante.
   def user_params
-    params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :rôle, :memo,
-                                 :address, :longitude, :latitude, :profile_picture, :color, tag_list: [], absences_attributes: %i[id du au motif observation matin après_midi _destroy], service_ids: [])
+    permitted = params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :memo,
+                                             :address, :longitude, :latitude, :profile_picture, :color, tag_list: [], absences_attributes: %i[id du au motif observation matin après_midi _destroy], service_ids: [])
+
+    rôle = params[:user][:rôle]
+    permitted[:rôle] = rôle if current_user.administrateur? && User.rôles.key?(rôle.to_s)
+
+    # service_ids= écrit immédiatement en base (has_many through) : on ne garde
+    # que les services de l'organisation courante, et on ne touche à rien si la
+    # demande est entièrement hors organisation (tentative de forgerie).
+    demandés = Array(permitted[:service_ids]).compact_blank
+    if demandés.any?
+      valides = current_organisation.services.where(id: demandés).ids
+      valides.any? ? permitted[:service_ids] = valides : permitted.delete(:service_ids)
+    end
+
+    permitted
   end
 
   def is_user_authorized

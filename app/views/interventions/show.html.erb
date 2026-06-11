@@ -252,13 +252,13 @@
                 <strong class="block text-slate-400 mb-2">Actions de validation</strong>
                 <div class="flex flex-wrap gap-2">
                   <% if policy(@intervention).terminer? %>
-                    <%= link_to 'Terminer', terminer_intervention_path(@intervention), class: 'btn btn-primary btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut Terminée', 'data-turbo': false, disabled: !@intervention.can_terminer? %>
+                    <%= button_to 'Terminer', terminer_intervention_path(@intervention), class: 'btn btn-primary btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut Terminée', form: { data: { turbo: false }, class: 'contents' }, disabled: !@intervention.can_terminer? %>
                   <% end %>
                   <% if policy(@intervention).valider? %>
-                    <%= link_to 'Valider', valider_intervention_path(@intervention), class: 'btn btn-success btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut Validée', 'data-turbo': false, disabled: !@intervention.can_valider?  %>
+                    <%= button_to 'Valider', valider_intervention_path(@intervention), class: 'btn btn-success btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut Validée', form: { data: { turbo: false }, class: 'contents' }, disabled: !@intervention.can_valider?  %>
                   <% end %>
                   <% if policy(@intervention).refuser? %>
-                    <%= link_to 'Refuser', refuser_intervention_path(@intervention), class: 'btn btn-error btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut Refusée', 'data-turbo': false, disabled: !@intervention.can_refuser? %>
+                    <%= button_to 'Refuser', refuser_intervention_path(@intervention), class: 'btn btn-error btn-outline btn-sm sm:btn-md hover:text-white!', title: 'Cliquez pour passer cette intervention en statut Refusée', form: { data: { turbo: false }, class: 'contents' }, disabled: !@intervention.can_refuser? %>
                   <% end %>
                   <% if !policy(@intervention).terminer? && !policy(@intervention).valider? && !policy(@intervention).refuser? %>
                     <p class="text-sm text-gray-500 italic mt-1">Aucune action disponible pour le moment.</p>

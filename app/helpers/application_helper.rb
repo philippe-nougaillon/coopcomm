@@ -10,6 +10,15 @@ module ApplicationHelper
     ENV['APP_INSTANCE'].to_s.strip.downcase == 'demo'
   end
 
+  # Liste blanche des paramètres de filtre/tri réinjectables dans un url_for
+  # (jamais params.permit! : un paramètre forgé — ex. host — se retrouverait
+  # dans les liens générés).
+  def intervention_filter_params
+    params.permit(:service, :search, :workflow_state, :du, :au, :adherent_id, :equipe,
+                  :archives, :vue, :column, :direction, :page,
+                  tags: [], agent_ids: [], tool_ids: [])
+  end
+
   def prettify(audit, _current_user)
     pretty_changes = []
 

@@ -37,7 +37,7 @@ class MessagerieController < ApplicationController
 
   # Conversation avec un interlocuteur donné (:to_id)
   def conversation
-    @destinataire = User.find_by(id: params[:to_id])
+    @destinataire = joignables.find_by(id: params[:to_id])
 
     # Interlocuteur inexistant ou soi-même → retour à l'accueil de la messagerie
     return redirect_to(messagerie_path) if @destinataire.nil? || @destinataire.id == current_user.id
@@ -58,7 +58,11 @@ class MessagerieController < ApplicationController
     # Evite que l'utilisateur courant envoie un message à lui-même
     return unless params[:message].present? && params[:to_id].present? && (params[:to_id].to_i != current_user.id)
 
-    Message.create!(message: params[:message], from_id: current_user.id, to_id: params[:to_id])
+    # Le destinataire doit être joignable (to_id forgeable : inter-organisations sinon)
+    destinataire = joignables.find_by(id: params[:to_id])
+    return if destinataire.nil?
+
+    Message.create!(message: params[:message], from_id: current_user.id, to_id: destinataire.id)
   end
 
   def mark_as_read
@@ -91,6 +95,12 @@ class MessagerieController < ApplicationController
   end
 
   private
+
+  # Le même périmètre que la sidebar et la recherche : on ne peut ni écrire à,
+  # ni lire une conversation avec, un utilisateur hors de ses services.
+  def joignables
+    User.by_service(current_user.services)
+  end
 
   # Utilisateurs joignables, affichés dans la sidebar partagée (accueil + conversation)
   def set_sidebar_users

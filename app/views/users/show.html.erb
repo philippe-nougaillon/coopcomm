@@ -130,7 +130,7 @@
           <% end %>
         <% end %>
         <% if policy(@user).inviter? %>
-          <%= link_to inviter_user_path(@user), class: "btn btn-soft btn-primary", 'data-turbo': false do %>
+          <%= button_to inviter_user_path(@user), class: "btn btn-soft btn-primary", form: { data: { turbo: false }, class: "contents" } do %>
             <%= embedded_svg "icons/send.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
             Renvoyer le lien d'accès
           <% end %>

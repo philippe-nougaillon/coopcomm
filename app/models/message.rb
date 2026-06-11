@@ -6,6 +6,17 @@ class Message < ApplicationRecord
 
   scope :ordered, -> { order(created_at: :desc) }
 
+  validates :message, presence: true
+  # Filet de sécurité sous le contrôleur : jamais de message inter-organisations
+  validate :interlocuteurs_de_la_même_organisation
+
+  def interlocuteurs_de_la_même_organisation
+    return if from_user.nil? || to_user.nil?
+    return if from_user.organisation == to_user.organisation
+
+    errors.add(:base, 'Destinataire injoignable')
+  end
+
   after_create_commit lambda {
     broadcast_append_to "chat_#{from_id}_with_#{to_id}",
                         partial: 'messagerie/message',

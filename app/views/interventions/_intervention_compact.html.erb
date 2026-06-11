@@ -47,13 +47,13 @@
       <div class="my-2">
         <p class="flex justify-end gap-2">
           <% if policy(intervention).terminer? %>
-            <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'z-10 btn btn-primary border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? || current_user.adhérent? %>
+            <%= button_to 'Terminer', terminer_intervention_path(intervention), class: 'z-10 btn btn-primary border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', form: { data: { turbo: false }, class: 'contents' }, disabled: !intervention.can_terminer? || current_user.adhérent? %>
           <% end %>
           <% if policy(intervention).valider? %>
-            <%= link_to 'Valider', valider_intervention_path(intervention), class: 'z-10 btn btn-success border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 'data-turbo': false, disabled: !intervention.can_valider?  %>
+            <%= button_to 'Valider', valider_intervention_path(intervention), class: 'z-10 btn btn-success border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', form: { data: { turbo: false }, class: 'contents' }, disabled: !intervention.can_valider?  %>
           <% end %>
           <% if policy(intervention).refuser? %>
-            <%= link_to 'Refuser', refuser_intervention_path(intervention), class: 'z-10 btn btn-error border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', 'data-turbo': false, disabled: !intervention.can_refuser? %>
+            <%= button_to 'Refuser', refuser_intervention_path(intervention), class: 'z-10 btn btn-error border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', form: { data: { turbo: false }, class: 'contents' }, disabled: !intervention.can_refuser? %>
           <% end %>
           <p>
           </div>

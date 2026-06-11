@@ -3,6 +3,8 @@
 class AbsencesController < ApplicationController
   def destroy
     @absence = Absence.find(params[:id])
+    authorize @absence
+
     @user = @absence.user
     @absence.destroy
 

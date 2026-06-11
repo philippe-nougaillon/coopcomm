@@ -8,7 +8,7 @@ class OnInterventionDoneTest < ActionDispatch::IntegrationTest
     intervention = interventions(:nouvelle_intervention)
 
     assert_enqueued_with(job: NotifAdherentInterventionTermineeJob) do
-      get terminer_intervention_path(intervention)
+      post terminer_intervention_path(intervention)
     end
   end
 end

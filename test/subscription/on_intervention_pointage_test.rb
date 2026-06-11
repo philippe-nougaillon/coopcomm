@@ -8,7 +8,7 @@ class OnInterventionPointageTest < ActionDispatch::IntegrationTest
     intervention = interventions(:intervention_repete)
 
     assert_enqueued_with(job: NotifMailAdherentInterventionPointageJob) do
-      get pointer_intervention_path(intervention)
+      post pointer_intervention_path(intervention)
     end
   end
 
@@ -17,7 +17,7 @@ class OnInterventionPointageTest < ActionDispatch::IntegrationTest
     intervention = interventions(:intervention_repete)
 
     assert_enqueued_with(job: NotifWhatsappAdherentInterventionPointageJob) do
-      get pointer_intervention_path(intervention)
+      post pointer_intervention_path(intervention)
     end
   end
 end
