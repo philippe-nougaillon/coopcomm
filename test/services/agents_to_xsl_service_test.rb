@@ -5,7 +5,7 @@ require 'test_helper'
 class AgentsToXlsServiceTest < ActionDispatch::IntegrationTest
   setup do
     # Récupère tous les agents pour les tests
-    @agents = users.filter { |user| user.rôle == 'agent' }
+    @agents = User.agent
     @service = AgentsToXls.new(@agents)
   end
 

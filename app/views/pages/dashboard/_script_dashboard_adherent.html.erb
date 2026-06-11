@@ -4,7 +4,7 @@
     */
     function afficherProportionTempsConsommé() {
         var dataProportionTempsConsommé = {
-            labels: <%= @proportion_temps_consommé.keys.to_json.html_safe %>,
+            labels: <%= @proportion_temps_consomme.keys.to_json.html_safe %>,
             datasets: [
                 {
                     label: "Temps(h)",
@@ -17,7 +17,7 @@
                         'rgb(75, 192, 192)',
                     ],
                     borderWidth: 1,
-                    data: <%= @proportion_temps_consommé.values.to_json.html_safe %>,
+                    data: <%= @proportion_temps_consomme.values.to_json.html_safe %>,
                 },
             ],
         };
