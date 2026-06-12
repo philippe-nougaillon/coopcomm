@@ -60,7 +60,7 @@
       </div>
     </div>
     <div class="border shadow-sm p-4 pb-3 rounded-2xl">
-      <% if @forecasts %>
+      <% if @forecasts && @forecasts["city"] && @forecasts["forecast"] %>
         <h2 class="font-black text-lg">Météo à <%= @forecasts["city"]["name"] %></h2>
         <small>Dernière mise à jour : <%= l(Time.zone.parse(@forecasts[:last_fetched_at])) %></small>
         <div class="flex flex-col md:flex-row flex-wrap justify-center gap-2 my-2 mb-8">

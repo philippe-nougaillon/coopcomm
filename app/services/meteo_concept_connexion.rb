@@ -15,8 +15,10 @@ class MeteoConceptConnexion < ApplicationService
   end
 
   def call
-    # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh
-    Rails.cache.fetch('daily_forecast', expires_in: 10.minutes) do
+    # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh.
+    # skip_nil : un échec de l'API ne doit pas être mis en cache (sinon la météo
+    # reste « cassée » 10 minutes alors que l'API est peut-être déjà revenue).
+    Rails.cache.fetch('daily_forecast', expires_in: 10.minutes, skip_nil: true) do
       Rails.logger.debug '[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours'
 
       fetch_response
@@ -33,12 +35,15 @@ class MeteoConceptConnexion < ApplicationService
     if response.status == 200
       forecasts = response.json
       forecasts[:last_fetched_at] = response.headers.get('date')
+      forecasts
     else
-      forecasts = {}
       Rails.logger.debug "Erreur lors de l'appel API Meteo Concept : status = #{response.status}, body = #{response.body}"
+      nil
     end
-
-    forecasts
+  rescue StandardError => e
+    # Une API météo en panne ne doit jamais faire tomber la page d'accueil
+    Rails.logger.warn "[Meteo] API injoignable : #{e.class} #{e.message}"
+    nil
   end
 
   def self.get_icon_meteo_by_date(date, forecast)
