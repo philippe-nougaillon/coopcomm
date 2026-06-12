@@ -26,8 +26,10 @@ class CotationPolicy < ApplicationPolicy
     manage?
   end
 
+  # Modification (et edit?, qui en hérite) : réservée aux états modifiables,
+  # c.-à-d. tant que la cotation n'a pas été envoyée, ou après un refus.
   def update?
-    manage?
+    manage? && record.modifiable?
   end
 
   def destroy?

@@ -107,4 +107,21 @@ class NotificationMailer < ApplicationMailer
       subject: "[COOPCOMM] Rappel d'un pointage oublié"
     )
   end
+
+  def cotation_envoyee(cotation, email, cc_email = nil)
+    @cotation = cotation
+
+    pdf = CotationPdf.new
+    pdf.devis(cotation)
+    attachments[cotation.pdf_filename] = pdf.render
+
+    mail(to: email,
+         cc: cc_email.presence,
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Votre cotation').tap do |message|
+      message.mailgun_options = {
+        'tag' => ['cotation envoyée']
+      }
+    end
+  end
 end

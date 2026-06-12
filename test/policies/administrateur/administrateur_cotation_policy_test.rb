@@ -25,6 +25,13 @@ class AdministrateurCotationPolicyTest < ActionDispatch::IntegrationTest
     assert @policy.create?
   end
 
+  test 'update interdit sur une cotation envoyée, même pour un administrateur' do
+    # cotation_secretariat (mairie_paris) est à l'état « envoyé »
+    policy = CotationPolicy.new(@administrateur, cotations(:cotation_secretariat))
+    refute policy.update?
+    refute policy.edit?
+  end
+
   test "accès interdit sur une cotation d'une autre organisation" do
     refute @policy_autre_org.show?
     refute @policy_autre_org.update?

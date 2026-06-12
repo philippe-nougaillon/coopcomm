@@ -29,3 +29,15 @@ const autoInjectSlimSelect = () => {
 document.addEventListener("turbo:load", autoInjectSlimSelect);
 document.addEventListener("turbo:render", autoInjectSlimSelect);
 document.addEventListener("turbo:frame-load", autoInjectSlimSelect);
+
+// htmx câble ses attributs hx-* au chargement initial du DOM, mais ne re-traite pas
+// le contenu que Turbo injecte lors d'un échange de <body> (navigation, retour
+// navigateur). On relance htmx.process à chaque rendu Turbo pour recâbler les
+// éléments hx-* (ex. la recherche de contact dans la messagerie).
+const reprocessHtmx = () => {
+  if (window.htmx) window.htmx.process(document.body);
+};
+
+document.addEventListener("turbo:load", reprocessHtmx);
+document.addEventListener("turbo:render", reprocessHtmx);
+document.addEventListener("turbo:frame-load", reprocessHtmx);

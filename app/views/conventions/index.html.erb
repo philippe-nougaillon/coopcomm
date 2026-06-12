@@ -1,10 +1,16 @@
-<div class="w-full">
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
-    <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!("Conventions") %></h1>
+<div class="flex flex-col">
+  <div class="flex flex-row justify-between items-center my-4 gap-2">
+    <h1 class="text-4xl text-primary font-bold"><%= page_title!("Conventions") %></h1>
     <% if policy(Convention).new? %>
-      <%= link_to "Ajouter une convention", new_convention_path, class: "btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
+      <%= link_to new_convention_path,
+              class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm",
+              title: "Créer une nouvelle convention" do %>
+        <%= embedded_svg "icons/assignment_add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+        <span class="hidden md:block">Ajouter une convention</span>
+      <% end %>
     <% end %>
   </div>
+<<<<<<< HEAD
   <%= form_tag conventions_path, method: :get do %>
     <div class="flex flex-wrap items-end gap-4 mt-6">
       <div class="w-full md:w-64">
@@ -14,45 +20,94 @@
       </div>
       <div class="w-full md:w-64">
         <%= label_tag :adherent_id, "Adhérent" %>
+=======
+
+  <%= form_tag conventions_path, method: :get, class: "pt-6" do %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div class="w-full md:flex-1">
+        <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+        <%= text_field_tag :search, params[:search], class: "input input-bordered input-md w-full",
+              placeholder: "Nom du document", onchange: "this.form.submit()" %>
+      </div>
+
+      <div class="w-full md:flex-1">
+        <%= label_tag :adherent_id, "Adhérent", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+>>>>>>> staging
         <%= select_tag :adherent_id,
               options_from_collection_for_select(@adherents, :id, :nom_prénom, params[:adherent_id]),
               include_blank: "Tous", class: "slim-select w-full", onchange: "this.form.submit()" %>
       </div>
+<<<<<<< HEAD
       <div class="w-full md:w-64">
         <%= label_tag :service_id, "Service" %>
+=======
+
+      <div class="w-full md:flex-1">
+        <%= label_tag :service_id, "Service", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+>>>>>>> staging
         <%= select_tag :service_id,
               options_from_collection_for_select(@services, :id, :nom, params[:service_id]),
               include_blank: "Tous", class: "slim-select w-full", onchange: "this.form.submit()" %>
       </div>
+<<<<<<< HEAD
       <div class="w-full md:w-fit">
         <%= label_tag :active_on, "Active au" %>
         <%= date_field_tag :active_on, params[:active_on], class: "input input-sm input-bordered w-full",
+=======
+
+      <div class="w-full md:flex-1">
+        <%= label_tag :active_on, "Active au", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+        <%= date_field_tag :active_on, params[:active_on], class: "input input-bordered input-md w-full",
+>>>>>>> staging
               onchange: "this.form.submit()" %>
       </div>
     </div>
   <% end %>
+<<<<<<< HEAD
   <div class="divider"></div>
+=======
+</div>
+
+<hr class="mt-6 mb-6">
+<div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
+  <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
+</div>
+<div class="flex flex-col bg-white border-x border-b border-slate-200 shadow-sm overflow-hidden">
+>>>>>>> staging
   <div class="overflow-x-auto">
-    <table class="table table-sm">
+    <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+      <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+      <span>Faire glisser pour voir plus</span>
+    </div>
+    <table class="table table-sm w-full border-none">
       <thead class="bg-slate-100">
         <tr>
-          <th>Adhérent</th>
-          <th>Service</th>
-          <th>Période</th>
-          <th>Document</th>
-          <th>Mémo</th>
-          <th></th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Adhérent</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Période</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Document</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Mémo</th>
+          <th class="px-4 py-3"></th>
         </tr>
       </thead>
       <tbody>
         <%= render partial: "convention", collection: @conventions %>
       </tbody>
     </table>
+    <% if @conventions.empty? %>
+      <p class="text-center text-slate-400 py-8">Aucune convention.</p>
+    <% end %>
   </div>
+<<<<<<< HEAD
   <% if @conventions.empty? %>
     <p class="text-slate-400 mt-4">Aucune convention.</p>
   <% end %>
   <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
+=======
+</div>
+<div class="flex flex-col bg-white border-x border-b border-slate-200 rounded-b-xl">
+  <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full">
+>>>>>>> staging
     <% if @pagy.pages > 1 %>
       <div class="hidden sm:block sm:flex-1"></div>
       <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
@@ -62,8 +117,12 @@
         <%= pagy_info(@pagy).html_safe %>
       </div>
     <% else %>
+<<<<<<< HEAD
       <div >
       </div>
+=======
+      <div></div>
+>>>>>>> staging
     <% end %>
   </div>
 </div>

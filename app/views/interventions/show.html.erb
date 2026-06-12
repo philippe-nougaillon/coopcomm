@@ -2,7 +2,7 @@
   <div id="<%= dom_id @intervention %>">
     <div class="flex flex-col sm:flex-row justify-between mb-8">
       <%= link_to interventions_path, title:"Revenir en arrière", class: "sm:hidden" do %>
-        <%= embedded_svg "icons/arrow_circle_left.svg", class: "icon", title: "Revenir en arrière" %>
+        <%= embedded_svg "icons/arrow_circle_left.svg", title: "Revenir en arrière" %>
       <% end %>
       <div>
         <p class="text-3xl text-<%= @intervention.style.split.first.split('-').last %> font-bold flex items-center gap-2">
@@ -10,9 +10,9 @@
             <%= @intervention.workflow_state.humanize %>
           </span>
           <% if @intervention.repeter %>
-            <%= embedded_svg "icons/event_repeat.svg", class: "icon text-black", title: "Modèle pour le pointage" %>
+            <%= embedded_svg "icons/event_repeat.svg", class: "text-black", title: "Modèle pour le pointage" %>
           <% elsif @intervention.template_slug %>
-            <%= embedded_svg "icons/qr_code_2.svg", class: "icon text-black", title: "Pointage" %>
+            <%= embedded_svg "icons/qr_code_2.svg", class: "text-black", title: "Pointage" %>
           <% end %>
           <%= page_title!(@intervention.description.humanize) %>
         </p>
@@ -23,7 +23,7 @@
       <div class="flex flex-wrap gap-2 mt-4 sm:mt-0 h-fit">
         <% if @intervention.repeter && !current_user&.agent? %>
           <%= link_to intervention_path(format: :pdf), class: "btn btn-warning", title: "Voir le QRCode de pointage" do %>
-            <%= embedded_svg "icons/qr_code_2.svg", class: "icon text-lg", title: "Voir le QRCode de pointage" %>
+            <%= embedded_svg "icons/qr_code_2.svg", class: "text-lg", title: "Voir le QRCode de pointage" %>
           <% end %>
         <% end %>
         <% if policy(@intervention).edit? %>
@@ -32,7 +32,7 @@
         <% if policy(@intervention).destroy? %>
           <span title="<%= "Impossible de supprimer l'intervention car il y a des mouvements rattachés" if @intervention.mouvements.any? %>">
             <%= button_to intervention_path(@intervention), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette intervention ?" }, class: "btn", disabled: @intervention.mouvements.any?, 'data-testid': "Supprimer l'intervention" do %>
-              <%= embedded_svg "icons/delete.svg", class: "icon text-lg", title: "Supprimer" %>
+              <%= embedded_svg "icons/delete.svg", class: "text-lg", title: "Supprimer" %>
             <% end %>
           </span>
         <% end %>
@@ -217,7 +217,7 @@
                         </div>
                       </div>
                       <%= button_to purge_intervention_path(photo_id: photo.id), method: :delete, form: { data: {'turbo-confirm': "Êtes-vous bien certain.e de vouloir supprimer définitivement cette photo ?"} }, class: 'text-base-300 hover:text-error' do %>
-                        <%= embedded_svg "icons/delete.svg", class: "icon", title: "Supprimer" %>
+                        <%= embedded_svg "icons/delete.svg", title: "Supprimer" %>
                       <% end %>
                     </div>
                   <% end %>

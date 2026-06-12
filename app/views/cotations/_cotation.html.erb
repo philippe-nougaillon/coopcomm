@@ -1,14 +1,30 @@
-<tr class="hover:bg-base-300">
-  <td class="font-medium"><%= link_to cotation.ref, cotation, class: "link link-primary" %></td>
-  <td>
-    <span class="badge badge-sm text-nowrap font-bold <%= cotation.style %>"><%= cotation.workflow_state.humanize %></span>
+<tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
+  <td class="px-4 py-3 text-lg font-semibold text-primary">
+    <%= link_to cotation.ref, cotation, class: "hover:underline" %>
   </td>
-  <td><%= cotation.adherent&.nom_prénom %></td>
-  <td><%= cotation.service&.nom %></td>
-  <td><%= cotation.intitulé %></td>
-  <td class="text-nowrap"><%= l(cotation.date_livraison_souhaitée, format: :long) if cotation.date_livraison_souhaitée %></td>
-  <td class="text-right"><%= number_to_currency(cotation.total_ht) %></td>
-  <td>
+  <td class="px-4 py-3">
+    <span class="badge text-nowrap font-bold <%= cotation.style %>"><%= cotation.workflow_state.humanize %></span>
+  </td>
+  <td class="px-4 py-3"><%= cotation.adherent&.nom_prénom %></td>
+  <td class="px-4 py-3"><%= cotation.service&.nom %></td>
+  <td class="px-4 py-3"><%= cotation.intitulé %></td>
+  <td class="px-4 py-3 text-nowrap"><%= l(cotation.date_livraison_souhaitée, format: :long) if cotation.date_livraison_souhaitée %></td>
+  <td class="px-4 py-3 text-right font-medium"><%= number_to_currency(cotation.total_ht) %></td>
+  <td class="px-4 py-3">
+    <% mail_log = last_mail_logs[cotation.id] %>
+    <% if mail_log %>
+      <div class="flex flex-col gap-0.5 text-xs leading-tight">
+        <span class="font-semibold <%= mail_log.statut ? 'text-success' : 'text-error' %>"><%= mail_log.statut ? 'OK' : 'KO' %></span>
+        <% if mail_log.etat %>
+          <span class="text-info">OUVERT</span>
+        <% end %>
+        <span class="text-slate-400"><%= time_ago_in_words mail_log.created_at %></span>
+      </div>
+    <% else %>
+      <span class="text-slate-300">—</span>
+    <% end %>
+  </td>
+  <td class="px-4 py-3">
     <div class="flex gap-2 items-center justify-end">
       <%= link_to "Voir", cotation, class: "btn btn-sm" %>
       <% if policy(cotation).envoyer? && cotation.can_envoyer? %>
@@ -27,10 +43,13 @@
         <% end %>
       <% end %>
       <% if policy(cotation).update? %>
-        <%= link_to "Modifier", edit_cotation_path(cotation), class: "btn btn-sm btn-primary" %>
+        <%= link_to edit_cotation_path(cotation), class: "btn btn-sm btn-primary", title: "Modifier" do %>
+          <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
+          <span class="hidden lg:inline">Modifier</span>
+        <% end %>
       <% end %>
       <% if policy(cotation).destroy? %>
-        <%= button_to cotation_path(cotation), method: :delete, class: "btn btn-sm",
+        <%= button_to cotation_path(cotation), method: :delete, class: "btn btn-sm", title: "Supprimer",
               form: { data: { turbo_confirm: "Supprimer cette cotation ?" } } do %>
           <span class="material-symbols-outlined">delete</span>
         <% end %>

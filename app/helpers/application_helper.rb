@@ -173,6 +173,18 @@ module ApplicationHelper
       # Si pasamos clases personalizadas en el helper, se las inyectamos al SVG en caliente
       svg['class'] = "#{svg['class']} #{options[:class]}" if options[:class].present?
 
+      # Equivalent de l'attribut `title`/`alt` d'un <img> : <title> = tooltip natif au survol,
+      # role/aria-label = nom accessible. Sans titre, le SVG est purement décoratif.
+      if options[:title].present?
+        svg['role'] = 'img'
+        svg['aria-label'] = options[:title]
+        title_node = Nokogiri::XML::Node.new('title', doc)
+        title_node.content = options[:title]
+        svg.prepend_child(title_node)
+      else
+        svg['aria-hidden'] = 'true'
+      end
+
       doc.to_html.html_safe
     else
       # Fallback por si escribimos mal el nombre del archivo en desarrollo

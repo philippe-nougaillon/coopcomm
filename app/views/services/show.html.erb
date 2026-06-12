@@ -7,9 +7,9 @@
   <p class="my-2 hover:cursor-help" title="Calcul de distance sur les interventions du service à partir de l'équipe de l'adhérent">
     <strong class="block text-slate-400 mb-1">Calcul distances ?</strong>
     <% if @service.calculate_distance %>
-      <%= embedded_svg "icons/check_small.svg", class: "icon text-success", title: "Confirmer que la distance a été calculée" %>
+      <%= embedded_svg "icons/check_small.svg", class: "text-success", title: "Confirmer que la distance a été calculée" %>
     <% else %>
-      <%= embedded_svg "icons/cancel.svg", class: "icon text-error", title: "Annuler que la distance n'a pas été calculée" %>
+      <%= embedded_svg "icons/cancel.svg", class: "text-error", title: "Annuler que la distance n'a pas été calculée" %>
     <% end %>
   </p>
   <div class="flex flex-wrap gap-2 mt-8">
@@ -18,7 +18,7 @@
     <% end %>
     <% if policy(@service).destroy? %>
       <%= button_to service_path(@service), method: :delete, id: "supprimer_service", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer ce service ?" }, class: "btn", 'data-testid': "Supprimer le service" do %>
-        <%= embedded_svg "icons/delete.svg", class: "icon", title: "Supprimer le service" %>
+        <%= embedded_svg "icons/delete.svg", title: "Supprimer le service" %>
       <% end %>
     <% end %>
     <%= link_to "Retour", admin_parametres_path, class: "btn" %>

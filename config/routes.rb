@@ -49,7 +49,8 @@ Rails.application.routes.draw do
   resources :tools do
     resources :mouvements, only: [] do
       collection do
-        post :reserve
+        get :reserve
+        get :libere
       end
     end
   end
@@ -134,6 +135,7 @@ Rails.application.routes.draw do
 
   namespace :messagerie do
     get '/', to: 'index', as: ''
+    get 'conversation/:to_id', to: 'conversation', as: 'conversation'
     post :mark_as_read
     post :send_message
     post :search_contact

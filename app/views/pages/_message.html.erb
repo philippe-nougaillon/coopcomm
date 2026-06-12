@@ -4,11 +4,11 @@
     <% if user %>
       <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
     <% else %>
-      <%= embedded_svg "icons/chat.svg", class: "icon text-primary", title: "chat" %>
+          <%= embedded_svg "icons/chat.svg", class: "text-primary", title: "chat" %>
     <% end %>
   </div>
   <div>
-    <b><%= link_to_if user&.id, truncate(message.moderation, length: 100), messagerie_path(to_id: user&.id), class:'hover:underline hover:text-primary' %></b>
+    <b><%= link_to_if user&.id, truncate(message.moderation, length: 100), (user ? messagerie_conversation_path(user.id) : messagerie_path), class:'hover:underline hover:text-primary' %></b>
     <div>
       <small>
         il y a <%= time_ago_in_words message.created_at %>

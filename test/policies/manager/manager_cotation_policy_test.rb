@@ -19,15 +19,29 @@ class ManagerCotationPolicyTest < ActionDispatch::IntegrationTest
     assert @policy.index?
   end
 
-  test 'show / update / destroy / pdf autorisés sur une cotation de son service' do
+  test 'show / destroy / pdf autorisés sur une cotation de son service' do
     assert @policy.show?
-    assert @policy.update?
     assert @policy.destroy?
     assert @policy.pdf?
   end
 
   test 'create autorisé sur une cotation de son service' do
     assert @policy.create?
+  end
+
+  # --- Verrou d'édition selon l'état (modifiable?) ---
+
+  test 'update interdit sur une cotation envoyée de son service' do
+    # cotation_secretariat est à l'état « envoyé »
+    refute @policy.update?
+    refute @policy.edit?
+  end
+
+  test 'update autorisé sur une cotation modifiable (créé) de son service' do
+    cotation_creee = Cotation.new(service: services(:secretariat), adherent: users(:weil), intitulé: 'Brouillon')
+    policy = CotationPolicy.new(@manager, cotation_creee)
+    assert policy.update?
+    assert policy.edit?
   end
 
   test "accès interdit sur une cotation d'un service qu'il ne gère pas" do

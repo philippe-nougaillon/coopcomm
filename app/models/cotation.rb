@@ -16,6 +16,7 @@ class Cotation < ApplicationRecord
   belongs_to :service
   has_one :organisation, through: :service
   has_many :cotation_lignes, dependent: :destroy
+  has_many :mail_logs, dependent: :nullify
 
   accepts_nested_attributes_for :cotation_lignes,
                                 allow_destroy: true,
@@ -39,6 +40,8 @@ class Cotation < ApplicationRecord
       event :archiver, transitions_to: ARCHIVE
     end
     state REFUSE, meta: { style: 'badge-error text-white' } do
+      # Une cotation refusée peut être corrigée puis renvoyée (retour à « envoyé »).
+      event :envoyer, transitions_to: ENVOYE
       event :archiver, transitions_to: ARCHIVE
     end
     state ARCHIVE, meta: { style: 'badge-neutral' }
@@ -63,6 +66,12 @@ class Cotation < ApplicationRecord
 
   def self.workflow_state_humanized
     workflow_spec.states.keys.map { |state| state.to_s.humanize }
+  end
+
+  # Une cotation n'est modifiable que tant qu'elle n'a pas été envoyée, ou
+  # après avoir été refusée (pour la corriger avant de la renvoyer).
+  def modifiable?
+    workflow_state == CREE || workflow_state == REFUSE
   end
 
   # Nom du fichier PDF (utilisé dans l'URL et l'en-tête Content-Disposition)

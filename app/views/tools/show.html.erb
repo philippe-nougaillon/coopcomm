@@ -41,7 +41,7 @@
         </div>
       <% else %>
         <%= button_to tool_path(@tool), method: :delete, id: "supprimer_outil", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, class: "btn", 'data-testid': "Supprimer l'outil" do %>
-          <%= embedded_svg "icons/delete.svg", class: "icon", title: "Supprimer l'intervention" %>
+          <%= embedded_svg "icons/delete.svg", title: "Supprimer l'intervention" %>
         <% end %>
       <% end %>
     <% end %>
