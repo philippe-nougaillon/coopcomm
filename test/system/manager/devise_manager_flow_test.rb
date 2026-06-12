@@ -10,7 +10,7 @@ class DeviseManagerFlowTest < ApplicationSystemTestCase
 
   test 'Se déconnecter' do
     # Fermer la notification de connexion
-    find("[data-testid='close_notification']").click
+    fermer_notification
 
     # TODO: Bouton de connexion invisible à fixer
 

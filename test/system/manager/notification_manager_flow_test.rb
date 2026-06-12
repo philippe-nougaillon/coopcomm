@@ -9,11 +9,17 @@ class NotificationManagerFlowTest < ApplicationSystemTestCase
   end
 
   test 'Envoyer un message' do
-    click_on 'Messagerie'
-    sleep(1)
-    page.select 'Bond', from: 'user_id'
+    fermer_notification
+    visit messagerie_path
+
+    click_on users(:bond).nom_prénom
     fill_in 'message', with: 'Salut !!!'
     page.driver.browser.switch_to.active_element.send_keys(:enter)
-    assert_text 'À Bond : Salut !!!'
+
+    # L'adapter cable de test ne pousse pas le broadcast au navigateur :
+    # on recharge la conversation pour vérifier la persistance.
+    sleep(0.5)
+    visit messagerie_conversation_path(users(:bond).id)
+    assert_text 'Salut !!!'
   end
 end

@@ -15,6 +15,6 @@ class SecuriteAdherentFlowTest < ApplicationSystemTestCase
     visit user_url(user.slug)
     assert_no_text user.nom_prénom
     assert_text "Vous n'êtes pas autorisé à effectuer cette action."
-    assert_selector 'h1', text: 'Interventions'
+    assert_selector 'h1', text: 'Bonjour' # redirection vers l'accueil
   end
 end
