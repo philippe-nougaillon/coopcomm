@@ -46,7 +46,7 @@
   <td class="align-middle px-3 py-3 text-center md:text-center">
     <% if !(intervention.validé? || intervention.refusé?) %>
       <div class="my-2">
-        <p class="flex justify-end gap-2">
+        <p class="flex justify-center gap-2">
           <% if policy(intervention).terminer? %>
             <%= link_to 'Terminer', terminer_intervention_path(intervention), class: 'z-10 btn btn-primary border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 'data-turbo': false, disabled: !intervention.can_terminer? || current_user.adhérent? %>
           <% end %>

@@ -2,13 +2,13 @@
   <table id="intervenant" class="table table-sm w-full">
     <thead class="bg-slate-100 ">
       <tr>
-        <th class="align-middle px-3 py-3 font-bold"><%= sort_link 'interventions.updated_at', 'Il y a'%></th>
-        <th class="align-middle pl-6 py-3 font-bold text-center w-36"><%= sort_link 'interventions.workflow_state', 'État'%></th>
-        <th class="align-middle pl-12 py-3 font-bold w-40"><%= sort_link 'interventions.description', 'Description'%></th>
-        <th class="align-middle px-10 py-3 font-bold">Adhérent</th>
-        <th class="align-middle px-3 py-3 font-bold min-w-[140px]"><%= sort_link 'interventions.début_prévue', 'Horaires'%></th>
-        <th class="align-middle px-8 py-3 font-bold whitespace-nowrap"><%= sort_link 'interventions.temps_total', 'Temps total'%></th>
-        <th class="align-middle px-3 py-3 font-bold text-left">Actions</th>
+        <th class="align-middle px-3 py-3 font-semibold text-slate-500 uppercase tracking-wider"><%= sort_link 'interventions.updated_at', 'Il y a'%></th>
+        <th class="align-middle pl-6 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center w-36"><%= sort_link 'interventions.workflow_state', 'État'%></th>
+        <th class="align-middle pl-12 py-3 font-semibold text-slate-500 uppercase tracking-wider w-40"><%= sort_link 'interventions.description', 'Description'%></th>
+        <th class="align-middle px-10 py-3 font-semibold text-slate-500 uppercase tracking-wider">Adhérent</th>
+        <th class="align-middle px-3 py-3 font-semibold text-slate-500 uppercase tracking-wider min-w-[140px]"><%= sort_link 'interventions.début_prévue', 'Horaires'%></th>
+        <th class="align-middle px-8 py-3 font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap"><%= sort_link 'interventions.temps_total', 'Temps total'%></th>
+        <th class="align-middle px-3 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Actions</th>
       </tr>
     </thead>
     <tbody class="divide-y divide-slate-200">
