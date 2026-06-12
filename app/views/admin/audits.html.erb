@@ -74,11 +74,11 @@
           <div class="w-full">
             <%= label_tag :action_name, "Action", class: "block text-xs font-semibold text-slate-600 mb-1" %>
             <%= select_tag :action_name,
-                options_for_select(@actions, params[:action_name]), 
-                multiple: true,
-                data: { placeholder: 'Toutes les actions' },
-                onchange: 'this.form.requestSubmit()',
-                class: 'slim-select w-full h-10' %>
+              options_for_select([['Création', 'create'], ['Modification', 'update'], ['Suppression', 'destroy']], params[:action_name]), 
+              multiple: true,
+              data: { placeholder: 'Toutes les actions' },
+              onchange: 'this.form.requestSubmit()',
+              class: 'slim-select w-full h-10' %>
           </div>
         </div>
       </details>
@@ -100,10 +100,22 @@
     </div>
     <table id="users" class="table table-sm w-full border-none"><thead class="bg-slate-100">
           <tr>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider"><%= sort_link 'audits.created_at', 'Date' %></th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider"><%= sort_link 'audits.user_id', 'Utilisateur' %></th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider"><%= sort_link 'audits.action', 'Action' %></th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider"><%= sort_link 'audits.audited_changes', 'Modifications' %></th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+              <div class="flex justify-center items-center w-full text-center">
+                <%= sort_link 'audits.created_at', 'Date' %></th>              
+                </div>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+              <div class="flex justify-center items-center w-full text-center">
+                <%= sort_link 'audits.user_id', 'Utilisateur' %></th>
+              </div>
+            <th class="px-1 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+                <div class="flex justify-center items-center w-full text-center">
+                  <%= sort_link 'audits.action', 'Action' %></th>
+                </div>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+               <div class="flex justify-center items-center w-full text-center">
+                <%= sort_link 'audits.audited_changes', 'Modifications' %></th>
+              </div>
           </tr>
         </thead>
 

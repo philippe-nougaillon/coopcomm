@@ -1,18 +1,43 @@
+
 <div class="overflow-x-auto w-full border border-slate-200 shadow-sm">
   <table id="intervenant" class="table table-sm w-full">
     <thead class="bg-slate-100 ">
-      <tr>
-        <th class="align-middle px-3 py-3 font-semibold text-slate-500 uppercase tracking-wider"><%= sort_link 'interventions.updated_at', 'Il y a'%></th>
-        <th class="align-middle pl-6 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center w-36"><%= sort_link 'interventions.workflow_state', 'État'%></th>
-        <th class="align-middle pl-12 py-3 font-semibold text-slate-500 uppercase tracking-wider w-40"><%= sort_link 'interventions.description', 'Description'%></th>
-        <th class="align-middle px-10 py-3 font-semibold text-slate-500 uppercase tracking-wider">Adhérent</th>
-        <th class="align-middle px-3 py-3 font-semibold text-slate-500 uppercase tracking-wider min-w-[140px]"><%= sort_link 'interventions.début_prévue', 'Horaires'%></th>
-        <th class="align-middle px-8 py-3 font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap"><%= sort_link 'interventions.temps_total', 'Temps total'%></th>
-        <th class="align-middle px-3 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Actions</th>
-      </tr>
-    </thead>
+  <tr>
+    <th class="align-middle px-3 py-3 font-semibold text-slate-500 uppercase tracking-wider"><%= sort_link 'interventions.updated_at', 'Il y a'%></th>
+    <th class="align-middle pl-2 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center w-36">
+      <div class="flex justify-center items-center w-full text-center">
+       <%= sort_link 'interventions.workflow_state', 'État'%></th>
+       </div>
+    <th class="align-middle pl-12 py-3 font-semibold text-slate-500 uppercase tracking-wider w-70">
+      <div class="flex justify-center items-center w-full text-center">
+        <%= sort_link 'interventions.description', 'Description'%></th>
+      </div>
+    <th class="align-middle px-4 py-3 text-center font-semibold text-slate-500 uppercase tracking-wider">Adhérent</th>
+    
+    <th class="align-middle px-3 py-3 font-semibold text-slate-500 uppercase tracking-wider min-w-[140px]">
+      <div class="flex justify-center items-center w-full text-center">
+        <%= sort_link 'interventions.début_prévue', 'Horaires' %>
+      </div>
+    </th>
+    
+    <th class="align-middle px-2 py-3 font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap w-10">
+      <div class="flex justify-center items-center w-full text-center">
+        <%= sort_link 'interventions.temps_total', 'Temps total' %>
+      </div>
+    </th>
+    
+    <th class="align-middle px-3 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Actions</th>
+  </tr>
+</thead>
     <tbody class="divide-y divide-slate-200">
-      <%= render partial: 'intervention_compact', collection: @interventions, as: :intervention, cached: true %>
-    </tbody>
+      <% if @interventions.any? %>
+        <%= render partial: 'intervention_compact', collection: @interventions, as: :intervention, cached: true %>
+      <% else %>
+        <tr>
+          <td colspan="8" class="text-left md:text-center py-8 text-slate-400 text-base italic">
+            Aucun résultat trouvé pour cette recherche.
+          </td>
+        </tr>
+      <% end %> </tbody>
   </table>
 </div>
