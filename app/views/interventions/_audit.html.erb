@@ -3,7 +3,7 @@
 <% end %>
 <tr class="hover:bg-base-300">
   <td class="whitespace-nowrap">
-    Il y a <%= time_ago_in_words(audit.created_at) %>
+    <%= time_tag(audit.created_at, format: :long) { "Il y a #{time_ago_in_words(audit.created_at)}" } %>
     <br>
     (<%= l(audit.created_at, format: :long) %>)
   </td>

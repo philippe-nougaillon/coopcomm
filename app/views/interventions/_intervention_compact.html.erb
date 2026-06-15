@@ -1,6 +1,6 @@
 <tr class="hover:bg-base-200/60 transition-colors duration-150">
   <td class="capitalize align-middle px-3 py-3 text-slate-600 font-medium whitespace-nowrap">
-    <%= time_ago_in_words(intervention.updated_at) %>
+    <%= time_tag(intervention.updated_at, format: :long) { time_ago_in_words(intervention.updated_at) } %>
   </td>
   <td class="align-middle pl-2 py-3 text-center w-36">
     <span class="badge inline-block w-34 text-center font-bold <%= intervention.style %>">
