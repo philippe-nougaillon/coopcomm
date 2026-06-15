@@ -39,6 +39,7 @@
             <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Informations</p>
             <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
               <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+                
                 <%= embedded_svg "icons/mail.svg", title: "Email" %> Email
               </div>
               <div class="py-2.5 text-slate-800 border-b border-slate-100 break-all"><%= @user.email %></div>
@@ -57,16 +58,12 @@
                 <%= @user.manager_or_admin? ? "Responsable des services" : "Services" %>
               </div>
               <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @user.services.pluck(:nom).join(", ") %></div>
-              <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-                <%= embedded_svg "icons/sticky_note.svg", class: "text-base", title: "Mémo" %> Mémo
-              </div>
-              <div class="py-2.5 border-b border-slate-100">
-                <% if @user.memo.to_s.strip.present? %>
-                  <div class="text-slate-800 italic"><%= @user.memo %></div>
-                <% else %>
-                  <span class="text-slate-400 italic text-xs">Non renseigné</span>
-                <% end %>
-              </div>
+              <% if @user.memo.present? %>
+                <div class="flex items-start gap-2 py-2.5 text-slate-500" style="padding-right: 2rem;">
+                  <%= embedded_svg "icons/note.svg", class: "text-base", title: "Mémo" %>
+                </div>
+                <div class="py-2.5 text-slate-800 italic"><%= @user.memo %></div>
+              <% end %>
             </div>
           </div>
           <div class="bg-white border border-slate-200 rounded-2xl flex-1" style="padding: 1.25rem;">
@@ -116,16 +113,12 @@
               <%= @user.manager_or_admin? ? "Responsable des services" : "Services" %>
             </div>
             <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @user.services.pluck(:nom).join(", ") %></div>
-            <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-              <%= embedded_svg "icons/sticky_note.svg", class: "text-base", title: "Mémo" %> Mémo
-            </div>
-            <div class="py-2.5 border-b border-slate-100">
-              <% if @user.memo.to_s.strip.present? %>
-                <div class="text-slate-800 italic"><%= @user.memo %></div>
-              <% else %>
-                <span class="text-slate-400 italic text-xs">Non renseigné</span>
-              <% end %>
-            </div>
+            <% if @user.memo.present? %>
+              <div class="flex items-start gap-2 py-2.5 text-slate-500" style="padding-right: 2rem;">
+                <%= embedded_svg "icons/note.svg", class: "text-base", title: "Mémo" %> Mémo
+              </div>
+              <div class="py-2.5 text-slate-800 italic"><%= @user.memo %></div>
+            <% end %>
           </div>
         </div>
       <% end %>
@@ -143,7 +136,7 @@
           <% end %>
         <% end %>
         <% if policy(@user).edit_password? %>
-          <%= link_to edit_password_user_path(@user), class: "btn" do %>
+          <%= link_to edit_password_user_path(@user), class: "btn" do %>  
             <%= embedded_svg "icons/lock.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
             Modifier le mot de passe
           <% end %>
@@ -157,13 +150,14 @@
       </div>
     </div>
   </div>
+
   <dialog id="delete_user_modal" class="modal">
     <div class="modal-box">
       <form method="dialog">
         <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
       </form>
       <h3 class="text-lg font-bold text-error flex items-center gap-2">
-        <%= embedded_svg "icons/warning.svg", title: "Supprimer l'utilisateur" %>
+        <%= embedded_svg "icons/warning.svg", title: "Supprimer l'utilisateur" %>   
         Supprimer l'utilisateur
       </h3>
       <p class="py-4 text-sm text-slate-600">
@@ -182,21 +176,24 @@
       <button>Fermer</button>
     </form>
   </dialog>
+
   <div class="my-10">
     <%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition" do %>
-      <%= embedded_svg "icons/arrow_back.svg", class: "text-base", title: "Retour à la liste" %>
+      <%= embedded_svg "icons/arrow_back.svg", class: "text-base", title: "Retour à la liste" %> 
       Retour à la liste
     <% end %>
   </div>
-  <div id="absences_section">
-    <%= render 'absences_section', user: @user, absences: @absences %>
-  </div>
+
+<div id="absences_section">
+  <%= render 'absences_section', user: @user, absences: @absences %>
+</div>
+
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary font-semibold">Activité</h2>
   </div>
   <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
-    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
-  </div>
+      <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
+      </div>
   <div class="overflow-x-auto border border-slate-200  shadow-sm bg-white ">
     <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
       <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
@@ -223,6 +220,7 @@
       </div>
       <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
         <%= pagy_info(@pagy).html_safe %>
+       
       </div>
     <% else %>
       <div></div>
