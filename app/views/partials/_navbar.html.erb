@@ -121,7 +121,7 @@
   </div>
 </div>
 <!-- MODE MOBILE -->
-<div class="dock dock-lg lg:hidden z-100 shadow-2xl" style="scrollbar-width: none;">
+<div class="dock dock-lg lg:hidden z-100 shadow-2xl <%= 'bg-yellow-100' if demo_instance? %>" style="scrollbar-width: none;">
   <%= link_to home_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:action] == 'home'}", title: "Page d'accueil" do %>
     <%= embedded_svg "icons/home.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
   <% end %>
@@ -182,7 +182,3 @@
     <%= embedded_svg "icons/logout.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
   <% end %>
 </div>
-<%# Repère mobile (la navbar desktop ci-dessus, avec son badge, est masquée sous lg) %>
-<% if demo_instance? %>
-  <span data-theme="corporate" class="lg:hidden fixed top-2 right-2 z-300 badge badge-warning font-bold shadow pointer-events-none">🧪 DÉMO</span>
-<% end %>
