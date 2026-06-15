@@ -1,33 +1,41 @@
 <tr class="hover:bg-base-300">
-  <td class="whitespace-nowrap"><%= time_ago_in_words mail_log.created_at %></td>
-  <td><%= mail_log.channel.humanize %></td>
-  <td class="whitespace-nowrap"><%= mail_log.user_id == 0 ? "Système" : User.find(mail_log.user_id).nom_prénom %></td>
-  <td><%= mail_log.to %></td>
-  <td><%= mail_log.subject %></td>
- 
-<td class="px-4 py-3">
-  <% if mail_log.statut %>
-    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
-      <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>OK
-    </span>
-  <% else %>
-    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700">
-      <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>KO
-    </span>
-  <% end %>
-</td>
+  <td class="px-4 py-3 whitespace-nowrap"><%= time_ago_in_words mail_log.created_at %></td>
+  <td class="px-4 py-3"><%= mail_log.channel.humanize %></td>
+  <td class="px-4 py-3 whitespace-nowrap"><%= mail_log.user_id == 0 ? "Système" : User.find(mail_log.user_id).nom_prénom %></td>
+  <td class="px-4 py-3">
+    <%= mail_log.to %></td>
+  <td class="px-4 py-3">
+    <%= mail_log.subject %></td>
+  <td class="px-4 py-3">
+    <% if mail_log.statut %>
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
+        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>OK
+      </span>
+    <% else %>
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700">
+        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>KO
+      </span>
+    <% end %>
+  </td>
+  <%# État %>
+  <td class="px-4 py-3">
+    <% if mail_log.etat == 'OUVERT' %>
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Ouvert
+      </span>
+    <% else %>
+      <span class="text-slate-400 text-sm">
+        <%= embedded_svg "icons/check_indeterminate_small.svg", class: "text-sm", title: "Aucun état" %>
+      </span>
+    <% end %>
+  </td>
+  <td class="pr-4 py-3">
+    <div class="group flex flex-row border border-[#007fcb] items-center rounded-xl px-2 md:w-16 md:px-2 gap-2 justify-center transition-colors duration-200 hover:bg-[#007fcb]">
+  
+  <%= link_to 'Voir', mail_log, class: 'text-primary transition-colors duration-200 group-hover:text-white group-hover:no-underline' %>
+  
+  <%= embedded_svg "icons/visibility.svg", class: "text-sm text-primary transition-colors duration-200 group-hover:text-white", title: "Aucun état" %>
 
-<%# État %>
-<td class="px-4 py-3">
-  <% if mail_log.etat == 'OUVERT' %>
-    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-      <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Ouvert
-    </span>
-  <% else %>
-    <span class="text-slate-400 text-sm">
-            <%= embedded_svg "icons/check_indeterminate_small.svg", class: "text-sm", title: "Aucun état" %>
-    </span>
-  <% end %>
-</td>
-  <td><%= link_to 'Voir', mail_log, class: 'text-primary hover:underline' %></td>
+</div>
+  </td>
 </tr>
