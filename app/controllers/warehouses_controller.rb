@@ -67,14 +67,7 @@ class WarehousesController < ApplicationController
     @warehouse = Warehouse.find_by(slug: params.expect(:id))
     return unless @warehouse.nil?
 
-<<<<<<< HEAD
-    return unless @warehouse.nil?
-
     redirect_to root_path, alert: 'Site introuvable'
-    nil
-=======
-    redirect_to root_path, alert: 'Site introuvable'
->>>>>>> staging
   end
 
   # Only allow a list of trusted parameters through.

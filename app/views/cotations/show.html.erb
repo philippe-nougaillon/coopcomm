@@ -22,43 +22,6 @@
       <% end %>
     </div>
   </div>
-<<<<<<< HEAD
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-    <div>
-      <strong class="block text-slate-400">Statut</strong>
-      <span class="badge text-nowrap font-bold <%= @cotation.style %>"><%= @cotation.workflow_state.humanize %></span>
-    </div>
-    <div>
-      <strong class="block text-slate-400">Adhérent</strong>
-      <%= link_to @cotation.adherent.nom_prénom, user_path(@cotation.adherent), class: "link" if @cotation.adherent %>
-    </div>
-    <div>
-      <strong class="block text-slate-400">Service</strong>
-      <%= @cotation.service&.nom %>
-    </div>
-    <div>
-      <strong class="block text-slate-400">Intitulé</strong>
-      <%= @cotation.intitulé %>
-    </div>
-    <div>
-      <strong class="block text-slate-400">Livraison souhaitée</strong>
-      <%= l(@cotation.date_livraison_souhaitée, format: :long) if @cotation.date_livraison_souhaitée %>
-    </div>
-    <div>
-      <strong class="block text-slate-400">Total HT</strong>
-      <span class="text-lg font-bold"><%= number_to_currency(@cotation.total_ht) %></span>
-    </div>
-  </div>
-  <% if @cotation.mémo.present? %>
-    <div class="mb-6">
-      <strong class="block text-slate-400">Mémo</strong>
-      <%= simple_format(@cotation.mémo) %>
-    </div>
-  <% end %>
-  <h2 class="text-xl text-secondary mb-2">Prestations</h2>
-  <div class="overflow-x-auto">
-    <table class="table table-sm">
-=======
 
   <div class="bg-white border border-slate-200 rounded-2xl" style="padding: 1.25rem;">
     <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Informations</p>
@@ -112,7 +75,6 @@
       <span>Faire glisser pour voir plus</span>
     </div>
     <table class="table table-sm w-full border-none">
->>>>>>> staging
       <thead class="bg-slate-100">
         <tr>
           <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Code</th>
@@ -141,10 +103,7 @@
       </tfoot>
     </table>
   </div>
-<<<<<<< HEAD
-  <div class="mt-6">
-    <%= link_to "Retour", cotations_path, class: "btn" %>
-=======
+
 
   <% mail_logs = @cotation.mail_logs.ordered %>
   <% if mail_logs.any? %>
@@ -177,6 +136,5 @@
       <%= embedded_svg "icons/arrow_back.svg", class: "text-base", title: "Retour à la liste" %>
       Retour à la liste
     <% end %>
->>>>>>> staging
   </div>
 </div>
