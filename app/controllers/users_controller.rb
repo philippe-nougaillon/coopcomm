@@ -187,31 +187,6 @@ class UsersController < ApplicationController
         Spreadsheet.client_encoding = 'UTF-8'
         book = Spreadsheet.open file_with_path
         sheet1 = book.worksheet 0
-        headers = User.xls_headers
-
-        sheet1.each 1 do |row|
-          index += 1
-          next unless row[0]
-
-          user = User
-                 .where('lower(email) = ?',
-                        row[headers.index 'Email']&.strip&.downcase)
-                 .first_or_initialize
-
-          new_record = user.new_record?
-
-          # (l'organisation dérive des services : pas de colonne organisation_id)
-          user.nom = row[headers.index 'Nom']&.strip&.upcase
-          user.prénom = row[headers.index 'Prénom']&.strip&.humanize
-          user.email = row[headers.index 'Email']
-          user.téléphone = row[headers.index 'Téléphone']
-          if new_record
-            password = User.generate_random_password
-            user.password = password
-            @mdp << password
-          end
-          user.rôle = 'agent'
-          service = Service.find_by(nom: row[headers.index 'Service']&.humanize)
 
         # ✅ V1 : mapping dynamique des colonnes (robuste aux variations d'en-têtes)
         first_row = sheet1.row(0).map { |cell| cell.to_s.strip.downcase }
