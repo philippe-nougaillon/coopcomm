@@ -34,10 +34,17 @@ module ActiveSupport
 
     def login(user)
       visit new_user_session_path
+      # Filet anti-flake : si la session du test précédent subsiste (reset
+      # incomplet), la page de connexion redirige vers l'accueil connecté.
+      unless page.has_css?('#user_email', wait: 3)
+        Capybara.reset_sessions!
+        visit new_user_session_path
+      end
 
-      fill_in 'user_email', with: user.email
+      fill_in 'user_email', with: user.email, wait: 5
       fill_in 'user_password', with: 'qtDug$d843sqACz?V' # équivalent à encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q", généré avec Devise::Encryptor.digest(User, "password123")
-      click_on 'Se connecter'
+      # Le bouton du FORMULAIRE (la navbar publique a aussi un « Se connecter »)
+      find('input[type="submit"][value="Se connecter"]').click
       sleep(1)
     end
 

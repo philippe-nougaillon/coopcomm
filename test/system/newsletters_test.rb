@@ -3,41 +3,28 @@
 require 'application_system_test_case'
 
 class NewslettersTest < ApplicationSystemTestCase
-  setup do
-    @newsletter = newsletters(:one)
+  test "inscription à la newsletter depuis la page d'accueil publique" do
+    visit root_url
+    # Filet anti-flake (cf. test_helper#login)
+    visit root_url unless page.has_css?('#newsletter_form_email', wait: 5)
+
+    fill_in 'newsletter_form_email', with: 'nouvel.inscrit@exemple.fr'
+    click_on "JE M'INSCRIS"
+
+    assert_text 'Votre inscription a bien été effectuée.'
+    assert Newsletter.exists?(email: 'nouvel.inscrit@exemple.fr')
   end
 
-  test 'visiting the index' do
+  test 'la liste des inscrits est réservée au super admin' do
+    ancien = ENV['SUPER_ADMIN']
+    ENV['SUPER_ADMIN'] = users(:hidalgo).email
+    login(users(:hidalgo))
+
     visit newsletters_url
+
     assert_selector 'h1', text: 'Newsletters'
-  end
-
-  test 'should create newsletter' do
-    visit newsletters_url
-    click_on 'New newsletter'
-
-    fill_in 'Email', with: @newsletter.email
-    click_on 'Create Newsletter'
-
-    assert_text 'Newsletter was successfully created'
-    click_on 'Back'
-  end
-
-  test 'should update Newsletter' do
-    visit newsletter_url(@newsletter)
-    click_on 'Edit this newsletter', match: :first
-
-    fill_in 'Email', with: @newsletter.email
-    click_on 'Update Newsletter'
-
-    assert_text 'Newsletter was successfully updated'
-    click_on 'Back'
-  end
-
-  test 'should destroy Newsletter' do
-    visit newsletter_url(@newsletter)
-    click_on 'Destroy this newsletter', match: :first
-
-    assert_text 'Newsletter was successfully destroyed'
+    assert_text newsletters(:bond).email
+  ensure
+    ENV['SUPER_ADMIN'] = ancien
   end
 end

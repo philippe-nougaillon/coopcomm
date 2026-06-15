@@ -154,7 +154,7 @@
   <div class="flex flex-col bg-white border-x border-b border-slate-200 rounded-b-xl">
     <div class="flex flex-wrap justify-end items-center gap-2 p-4">
       <% if @interventions.any? %>
-        <%= link_to url_for(params.permit!.merge(format: :xls)), 
+        <%= link_to url_for(intervention_filter_params.merge(format: :xls)), 
               class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto" do %>
           <%= embedded_svg "icons/upload.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
           <span>Exporter en XLS</span>

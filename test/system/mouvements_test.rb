@@ -4,44 +4,41 @@ require 'application_system_test_case'
 
 class MouvementsTest < ApplicationSystemTestCase
   setup do
-    @mouvement = mouvements(:one)
+    @manager = users(:hidalgo)
+    login(@manager)
   end
 
-  test 'visiting the index' do
+  test 'visiter la liste des mouvements' do
     visit mouvements_url
+
     assert_selector 'h1', text: 'Mouvements'
+    assert_text 'Tondeuse' # mouvement de la fixture mouvement_tondeuse
   end
 
-  test 'should create mouvement' do
-    visit mouvements_url
-    click_on 'New mouvement'
+  test 'déclarer une panne via le formulaire' do
+    visit new_mouvement_url
 
-    fill_in 'Slug', with: @mouvement.slug
-    fill_in 'Tool', with: @mouvement.tool_id
-    fill_in 'état', with: @mouvement.état
-    click_on 'Create Mouvement'
+    select_option '#mouvement_tool_id', 'Tondeuse'
+    select 'Panne', from: 'mouvement_état'
+    page.execute_script("document.getElementById('mouvement_date').value = '#{Date.tomorrow}T10:00'")
+    fill_in 'mouvement_commentaires', with: 'Courroie cassée'
+    click_on 'Enregistrer'
 
-    assert_text 'Mouvement was successfully created'
-    click_on 'Back'
+    assert_text 'Mouvement créé avec succès'
+    panne = Mouvement.order(:created_at).last
+    assert panne.panne?
+    assert_equal tools(:tondeuse), panne.tool
   end
 
-  test 'should update Mouvement' do
-    visit mouvement_url(@mouvement)
-    click_on 'Edit this mouvement', match: :first
+  test 'ne pas pouvoir déclarer deux pannes actives sur le même outil' do
+    tools(:tondeuse).mouvements.create!(état: :panne, date: Time.current, user: @manager)
 
-    fill_in 'Slug', with: @mouvement.slug
-    fill_in 'Tool', with: @mouvement.tool_id
-    fill_in 'état', with: @mouvement.état
-    click_on 'Update Mouvement'
+    visit new_mouvement_url
+    select_option '#mouvement_tool_id', 'Tondeuse'
+    select 'Panne', from: 'mouvement_état'
+    page.execute_script("document.getElementById('mouvement_date').value = '#{Date.tomorrow}T10:00'")
+    click_on 'Enregistrer'
 
-    assert_text 'Mouvement was successfully updated'
-    click_on 'Back'
-  end
-
-  test 'should destroy Mouvement' do
-    visit mouvement_url(@mouvement)
-    accept_confirm { click_on 'Destroy this mouvement', match: :first }
-
-    assert_text 'Mouvement was successfully destroyed'
+    assert_text 'déjà', wait: 5 # message de cohérence du model (panne déjà active)
   end
 end

@@ -96,7 +96,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
 
   test 'envoyer : créé -> envoyé' do
     cotation = cotations(:cotation_paris) # créé
-    get envoyer_cotation_url(cotation)
+    post envoyer_cotation_url(cotation)
     assert_redirected_to cotation_path(cotation)
     assert_equal 'envoyé', cotation.reload.workflow_state
   end
@@ -104,7 +104,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
   test 'envoyer : déclenche la notification de l\'adhérent' do
     cotation = cotations(:cotation_paris) # créé, adhérent avec email
     assert_enqueued_with(job: NotifAdherentCotationEnvoyeeJob) do
-      get envoyer_cotation_url(cotation)
+      post envoyer_cotation_url(cotation)
     end
   end
 
@@ -112,7 +112,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     cotation = cotations(:cotation_secretariat) # envoyé
     cotation.refuser!
     assert_enqueued_with(job: NotifAdherentCotationEnvoyeeJob) do
-      get envoyer_cotation_url(cotation)
+      post envoyer_cotation_url(cotation)
     end
     assert_equal 'envoyé', cotation.reload.workflow_state
   end
@@ -120,25 +120,25 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
   test 'une transition impossible ne déclenche aucune notification' do
     cotation = cotations(:cotation_secretariat) # envoyé : envoyer n'est pas possible
     assert_no_enqueued_jobs only: NotifAdherentCotationEnvoyeeJob do
-      get envoyer_cotation_url(cotation)
+      post envoyer_cotation_url(cotation)
     end
   end
 
   test 'valider : envoyé -> validé' do
     cotation = cotations(:cotation_secretariat) # envoyé
-    get valider_cotation_url(cotation)
+    post valider_cotation_url(cotation)
     assert_equal 'validé', cotation.reload.workflow_state
   end
 
   test 'refuser : envoyé -> refusé' do
     cotation = cotations(:cotation_secretariat) # envoyé
-    get refuser_cotation_url(cotation)
+    post refuser_cotation_url(cotation)
     assert_equal 'refusé', cotation.reload.workflow_state
   end
 
   test 'valider est sans effet sur une cotation en créé (transition impossible)' do
     cotation = cotations(:cotation_paris) # créé
-    get valider_cotation_url(cotation)
+    post valider_cotation_url(cotation)
     assert_equal 'créé', cotation.reload.workflow_state
   end
 

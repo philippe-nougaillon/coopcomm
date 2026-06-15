@@ -39,6 +39,8 @@ class MouvementsController < ApplicationController
   # POST /mouvements or /mouvements.json
   def create
     @mouvement = Mouvement.new(mouvement_params)
+    # L'outil doit appartenir à l'organisation courante (tool_id forgeable)
+    @mouvement.tool = current_organisation.tools.find_by(id: mouvement_params[:tool_id])
     @mouvement.user_id = current_user.id
 
     respond_to do |format|
@@ -56,8 +58,12 @@ class MouvementsController < ApplicationController
 
   # PATCH/PUT /mouvements/1 or /mouvements/1.json
   def update
+    safe_params = mouvement_params
+    # Empêche de déplacer le mouvement vers l'outil d'une autre organisation
+    safe_params = safe_params.except(:tool_id) if safe_params[:tool_id].present? && !current_organisation.tools.exists?(id: safe_params[:tool_id])
+
     respond_to do |format|
-      if @mouvement.update(mouvement_params)
+      if @mouvement.update(safe_params)
         format.html { redirect_to @mouvement.tool, notice: 'Mouvement modifié avec succès.', status: :see_other }
         format.json { render :show, status: :ok, location: @mouvement }
       else
@@ -88,7 +94,7 @@ class MouvementsController < ApplicationController
   end
 
   def reserve
-    @tool = Tool.find(params[:tool_id])
+    @tool = current_organisation.tools.find(params[:tool_id])
     date = Date.parse(params[:date])
 
     @tool.mouvements.create!(état: :réservé, date: date, user: current_user)
@@ -98,7 +104,9 @@ class MouvementsController < ApplicationController
 
   def libere
     if params[:tool_id] && params[:date] && params[:user_id]
-      if mouvement = Mouvement.find_by(tool_id: params[:tool_id], date: params[:date], user_id: params[:user_id])
+      # Seul un manager/admin peut libérer la réservation d'un autre utilisateur
+      user_id = current_user.manager_or_admin? ? params[:user_id] : current_user.id
+      if mouvement = current_organisation.mouvements.find_by(tool_id: params[:tool_id], date: params[:date], user_id: user_id)
         mouvement.destroy
       end
       redirect_to tools_path, notice: "Outil libéré pour le #{l params[:date].to_date}."

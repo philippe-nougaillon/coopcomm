@@ -13,7 +13,7 @@
   <td><%= document.version %></td>
   <td><%= time_ago_in_words(document.created_at) %></td>
   <td>
-    <%= link_to 'Valider', valider_document_path(document), class: 'btn btn-success btn-outline hover:text-white! btn-xs', title: 'Cliquez pour passer ce document en statut \'Validé\'', 'data-turbo': false, disabled: !document.can_valider?  %>
-    <%= link_to 'Refuser', refuser_document_path(document), class: 'btn btn-error btn-outline hover:text-white! btn-xs', title: 'Cliquez pour passer ce document en statut \'Refusé\'', 'data-turbo': false, disabled: !document.can_refuser? %>
+    <%= button_to 'Valider', valider_document_path(document), class: 'btn btn-success btn-outline hover:text-white! btn-xs', title: 'Cliquez pour passer ce document en statut \'Validé\'', form: { data: { turbo: false }, class: 'contents' }, disabled: !document.can_valider?  %>
+    <%= button_to 'Refuser', refuser_document_path(document), class: 'btn btn-error btn-outline hover:text-white! btn-xs', title: 'Cliquez pour passer ce document en statut \'Refusé\'', form: { data: { turbo: false }, class: 'contents' }, disabled: !document.can_refuser? %>
   </td>
 </tr>

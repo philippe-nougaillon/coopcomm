@@ -35,7 +35,7 @@ class MouvementPolicy < ApplicationPolicy
   end
 
   def destroy?
-    manager_or_admin? || record.user == user
+    (manager_or_admin? || record.user == user) && organisation?
   end
 
   def reserve?

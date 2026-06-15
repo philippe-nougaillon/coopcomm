@@ -26,7 +26,7 @@ Rails.application.routes.draw do
 
   resources :users do
     member do
-      get :inviter
+      post :inviter
       get :edit_password
       patch :update_password
       patch :reactivate
@@ -49,8 +49,8 @@ Rails.application.routes.draw do
   resources :tools do
     resources :mouvements, only: [] do
       collection do
-        get :reserve
-        get :libere
+        post :reserve
+        post :libere
       end
     end
   end
@@ -62,14 +62,14 @@ Rails.application.routes.draw do
 
   resources :interventions do
     member do
-      # get :accepter
-      # get :en_cours
-      get :terminer
-      get :valider
-      get :refuser
-      get :archiver
+      # post :accepter
+      # post :en_cours
+      post :terminer
+      post :valider
+      post :refuser
+      post :archiver
       delete :purge
-      get :pointer
+      post :pointer
       get :pointage_statut
       patch :update_location
     end
@@ -105,8 +105,8 @@ Rails.application.routes.draw do
 
   resources :documents, only: %i[] do
     member do
-      get :valider
-      get :refuser
+      post :valider
+      post :refuser
     end
   end
 
@@ -120,9 +120,9 @@ Rails.application.routes.draw do
       # Le nom de fichier termine l'URL (ex. .../Cotation-2026-1.pdf) pour que la
       # prévisualisation du navigateur affiche ce nom plutôt que "pdf.pdf".
       get 'pdf(/*filename)', action: :pdf, as: :pdf, format: false
-      get :envoyer
-      get :valider
-      get :refuser
+      post :envoyer
+      post :valider
+      post :refuser
     end
   end
   resources :prestations, except: %i[index show]
@@ -149,8 +149,6 @@ Rails.application.routes.draw do
   get '/manifest.json' => 'service_worker#manifest'
 
   post '/twilio/whatsapp_reply', to: 'twilio#whatsapp_reply'
-  get '/twilio/get_request', to: 'twilio#get_request'
-  post '/twilio/get_request', to: 'twilio#get_request'
 
   root 'pages#home'
 end

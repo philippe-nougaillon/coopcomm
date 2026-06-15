@@ -9,7 +9,7 @@ class ToolsTest < ApplicationSystemTestCase
 
   test 'Voir la liste des outils' do
     visit tools_url
-    assert_selector 'h1', text: 'Outils / Machine'
+    assert_selector 'h1', text: 'Réservation de matériel'
   end
 
   test 'Créer un outil' do
@@ -27,7 +27,9 @@ class ToolsTest < ApplicationSystemTestCase
 
     click_on 'enregistrer_tool'
 
-    assert_text 'Outil créé avec succès.'
+    # On vérifie l'état (le toast de flash est instable après navigation Turbo)
+    assert_text 'MX57SH3V'
+    assert Tool.exists?(name: 'Tondeuse à gazon', marque: 'Marina Systems')
   end
 
   test 'Supprimer un outil' do
@@ -43,6 +45,7 @@ class ToolsTest < ApplicationSystemTestCase
   test 'Ne pas pouvoir supprimer un outil avec une intervention' do
     visit tool_url(tools(:tondeuse))
 
-    assert_selector '#supprimer_outil[disabled]'
+    # La refonte UX masque le bouton de suppression au lieu de le désactiver
+    assert_no_selector '#supprimer_outil'
   end
 end

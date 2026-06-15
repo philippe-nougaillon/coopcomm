@@ -35,8 +35,14 @@ class AdminController < ApplicationController
   end
 
   def create_new_user_do
-    @user = User.new(params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :rôle, :service,
+    @user = User.new(params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :service,
                                                   :address, :latitude, :longitude))
+
+    # Un manager ne peut créer que des rôles non privilégiés ; seul un
+    # administrateur peut attribuer manager/administrateur (anti-escalade).
+    rôle = params[:user][:rôle].to_s
+    rôles_attribuables = current_user.administrateur? ? User.rôles.keys : %w[adhérent agent]
+    @user.rôle = rôle if rôles_attribuables.include?(rôle)
 
     respond_to do |format|
       if @user.save

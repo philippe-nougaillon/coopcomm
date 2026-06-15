@@ -9,10 +9,14 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
   end
 
   test 'Voir la liste des interventions en se connectant' do
+    # Depuis #291 la connexion arrive sur la page d'accueil, pas sur la liste
+    assert_selector 'h1', text: 'Bonjour'
+    visit interventions_url
     assert_selector 'h1', text: 'Interventions'
   end
 
   test 'Ne voir que ses interventions' do
+    visit interventions_url
     agent_intervention = interventions(:tonte_locaux)
     other_intervention = interventions(:intervention_autre_agent)
     assert_text agent_intervention.description
@@ -20,23 +24,19 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
   end
 
   test 'Créer intervention' do
-    # Pour cliquer sur le bouton d'ajout d'une intervention en fonction du format de l'écran
+    visit interventions_url
     click_sur_boutton_ajouter('intervention')
 
-    fill_in 'Description', with: 'Tailler les arbres'
-    # find('div.ss-placeholder', text: "Choisissez un ou plusieurs mots clés").click
-    # page.driver.browser.switch_to.active_element.send_keys('Coupure électricité', :enter, 'Réparation', :enter)
+    # « Bon d'intervention » agent : pas de description (générée automatiquement),
+    # service caché ; on saisit l'adhérent, le créneau réalisé (passé) et le commentaire
+    select_option('#intervention_adherent_id', 'Bruel Patrick') # adhérent du service de bond
 
-    # Sélectionner l'adhérent
-    select_option('#intervention_adherent_id', 'Weil Ariel')
-
-    # find('div.ss-single', text: "Choisissez une équipe").click
-    # page.driver.browser.switch_to.active_element.send_keys('Élec', :down, :enter)
-    # find('div.ss-single', text: "Choisissez un agent", match: :first).click
-    # page.driver.browser.switch_to.active_element.send_keys(:down, :enter)
-
-    fill_in 'Début', with: DateTime.current.strftime("%m%d%Y\t%I%M%P")
-    fill_in 'Fin', with: (DateTime.current + 8.hours).strftime("%m%d%Y\t%I%M%P")
+    fill_in 'Début', with: (Date.today - 1).strftime('%m%d%Y')
+    select '08', from: 'intervention_début_hour'
+    select '00', from: 'intervention_début_minute'
+    fill_in 'Fin', with: (Date.today - 1).strftime('%m%d%Y')
+    select '16', from: 'intervention_fin_hour'
+    select '00', from: 'intervention_fin_minute'
     page.select '1,0', from: 'Temps de pause (h)'
     fill_in 'Commentaires', with: 'Ceci est un commentaire !'
     click_on 'enregistrer_intervention'
@@ -44,17 +44,20 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
   end
 
   test 'Modifier intervention' do
+    visit interventions_url
     intervention = interventions(:tonte_locaux)
     click_on intervention.description
     sleep(1)
     click_on 'Modifier'
-    fill_in 'Description', with: 'Installer la fibre'
+    # Le formulaire agent n'expose pas la description : on modifie le commentaire
+    fill_in 'Commentaires', with: 'Pelouse tondue, bordures faites'
     click_on 'enregistrer_intervention'
-    assert_no_text 'Modifier intervention'
-    assert_text 'Installer la fibre'
+    assert_text 'Intervention modifiée avec succès'
+    assert_text 'Pelouse tondue, bordures faites'
   end
 
   test 'Ne pas pouvoir supprimer intervention' do
+    visit interventions_url
     intervention = interventions(:tonte_locaux)
     click_on intervention.description
     sleep(1)
@@ -66,11 +69,19 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
   # end
 
   test 'Ne pas pouvoir valider une intervention' do
-    assert_selector 'a[disabled]', text: 'Valider'
+    visit interventions_url
+    assert_no_button 'Valider'
+
+    visit intervention_url(interventions(:nouvelle_intervention))
+    assert_no_button 'Valider'
   end
 
   test 'Ne pas pouvoir refuser une intervention' do
-    assert_selector 'a[disabled]', text: 'Refuser'
+    visit interventions_url
+    assert_no_button 'Refuser'
+
+    visit intervention_url(interventions(:nouvelle_intervention))
+    assert_no_button 'Refuser'
   end
 
   # test "Les filtres fonctionnent dans la liste des interventions" do

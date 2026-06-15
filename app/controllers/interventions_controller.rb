@@ -213,7 +213,8 @@ class InterventionsController < ApplicationController
 
     respond_to do |format|
       if @intervention.save
-        format.html { redirect_to intervention_url(@intervention), notice: 'Intervention créée avec succès.' }
+        # 303 : cf. commentaire de #update (Turbo + redirection post-formulaire)
+        format.html { redirect_to intervention_url(@intervention), notice: 'Intervention créée avec succès.', status: :see_other }
         format.json { render :show, status: :created, location: @intervention }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -234,10 +235,13 @@ class InterventionsController < ApplicationController
         end
         format.html do
           # Si c'est une modification du commentaire dans le pointage statut, on redirige vers home
+          # 303 (see_other) obligatoire après un PATCH soumis par Turbo : en 302,
+          # le fetch suit la redirection en gardant l'Accept turbo-stream et la
+          # page reste figée sur le formulaire (cf. ServicesController#update).
           if params[:commit] == 'Enregistrer le commentaire'
-            redirect_to root_path, notice: 'Commentaire modifiée avec succès.'
+            redirect_to root_path, notice: 'Commentaire modifiée avec succès.', status: :see_other
           else
-            redirect_to intervention_url(@intervention), notice: 'Intervention modifiée avec succès.'
+            redirect_to intervention_url(@intervention), notice: 'Intervention modifiée avec succès.', status: :see_other
           end
         end
         format.json { render :show, status: :ok, location: @intervention }
@@ -252,7 +256,8 @@ class InterventionsController < ApplicationController
   def destroy
     respond_to do |format|
       if @intervention.destroy
-        format.html { redirect_to interventions_url, notice: 'Intervention supprimée avec succès.' }
+        # 303 : un fetch qui suit un 302 après DELETE peut rejouer le DELETE sur la cible
+        format.html { redirect_to interventions_url, notice: 'Intervention supprimée avec succès.', status: :see_other }
         format.json { head :no_content }
       else
         # Nécessaire s'il y a des erreurs
@@ -524,9 +529,14 @@ class InterventionsController < ApplicationController
   end
 
   # Only allow a list of trusted parameters through.
+  # :workflow_state ne passe JAMAIS par le mass assignment (transitions par les
+  # actions dédiées) ; :note/:avis sont réservés à ceux qui voient la section
+  # « Compte-rendu » du formulaire (adhérent, manager, admin) — pas à l'agent noté.
   def intervention_params
-    params.require(:intervention).permit(:adherent_id, :service_id, :début, :début_hour, :début_minute, :fin,
-                                         :fin_hour, :fin_minute, :temps_de_pause, :temps_total, :description, :commentaires, :workflow_state, :tag_list, :note, :avis, :repeter, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute, :meteo, photos: [], agent_ids: [], tool_ids: [])
+    permitted = params.require(:intervention).permit(:adherent_id, :service_id, :début, :début_hour, :début_minute, :fin,
+                                                     :fin_hour, :fin_minute, :temps_de_pause, :temps_total, :description, :commentaires, :tag_list, :repeter, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute, :meteo, photos: [], agent_ids: [], tool_ids: [])
+    permitted.merge!(params.require(:intervention).permit(:note, :avis)) if current_user.adhérent? || current_user.manager_or_admin?
+    permitted
   end
 
   def is_user_authorized

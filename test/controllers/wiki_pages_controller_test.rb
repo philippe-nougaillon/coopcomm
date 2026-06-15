@@ -14,7 +14,7 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'should show wiki page' do
-    get wiki_pages_url(@wiki_page)
+    get wiki_page_url(@wiki_page)
     assert_response :success
   end
 

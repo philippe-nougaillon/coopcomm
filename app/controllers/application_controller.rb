@@ -7,6 +7,10 @@ class ApplicationController < ActionController::Base
   rescue_from Pagy::OverflowError, with: :pagy_wrong_page
   before_action :authenticate_user!
   before_action :prepare_exception_notifier
+  # Filet Pundit : toute action qui oublie `authorize` lève une erreur au lieu
+  # de passer silencieusement (cf. AbsencesController#destroy avant l'audit).
+  # Exemption ponctuelle : `skip_after_action :verify_authorized` + justification.
+  after_action :verify_authorized, unless: :devise_controller?
 
   helper_method :sort_column, :sort_direction
   helper_method :current_organisation

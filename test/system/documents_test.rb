@@ -27,24 +27,24 @@ class DocumentsTest < ApplicationSystemTestCase
   test 'should validate document' do
     visit tool_url(@tool)
 
-    assert_link 'Valider', match: :first
-    assert_link 'Refuser', match: :first
+    assert_button 'Valider', disabled: false, match: :first
+    assert_button 'Refuser', disabled: false, match: :first
 
     click_on 'Valider', match: :first
 
-    assert_selector 'a.btn[disabled]', text: 'Valider', match: :first
-    assert_selector 'a.btn[disabled]', text: 'Refuser', match: :first
+    assert_selector 'button.btn[disabled]', text: 'Valider', match: :first
+    assert_selector 'button.btn[disabled]', text: 'Refuser', match: :first
   end
 
   test 'should refuse document' do
     visit tool_url(@tool)
 
-    assert_link 'Valider', match: :first
-    assert_link 'Refuser', match: :first
+    assert_button 'Valider', disabled: false, match: :first
+    assert_button 'Refuser', disabled: false, match: :first
 
     click_on 'Refuser', match: :first
 
-    assert_selector 'a.btn[disabled]', text: 'Valider', match: :first
-    assert_selector 'a.btn[disabled]', text: 'Refuser', match: :first
+    assert_selector 'button.btn[disabled]', text: 'Valider', match: :first
+    assert_selector 'button.btn[disabled]', text: 'Refuser', match: :first
   end
 end

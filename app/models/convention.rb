@@ -9,6 +9,9 @@ class Convention < ApplicationRecord
 
   has_one_attached :document
 
+  include PieceJointeValidable
+  valide_piece_jointe :document, types: PieceJointeValidable::DOCUMENTS
+
   validates :date_début, presence: true
   validate :one_convention_per_service
   validate :service_must_belong_to_adherent

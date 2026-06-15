@@ -1,10 +1,10 @@
 <% if etat == "L" %>
   <%= link_to reserve_tool_mouvements_path(
-      tool_id: tool.id, 
+      tool_id: tool.id,
       date: date,
       user_id: current_user.id
-    ), 
-    data: { turbo: false },
+    ),
+    data: { turbo_method: :post },
     title: "Réserver \"#{tool.name.humanize}\" pour le #{date.strftime('%d/%m')}" do %>
     <span class="border-1 border-slate-400 bg-green-500 hover:opacity-75 h-4 inline-block align-middle"
           style="padding-left: 15px;">
@@ -16,7 +16,7 @@
       date: date,
       user_id: current_user.id
     ),
-    data: { turbo: false },
+    data: { turbo_method: :post },
     title: "Réserver \"#{tool.name.humanize}\"" do %>
     <span class="border-1 border-slate-400 h-4 inline-block align-middle" 
           style="padding-left: 15px; background-color: #3b82f6;">

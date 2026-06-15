@@ -176,13 +176,9 @@ class UsersController < ApplicationController
 
       # ✅ V2 : capture stdout pour logs détaillés dans la vue
       @stream = capture_stdout do
-        # Enregistre le fichier localement (format = Date + nom du fichier)
-        filename = "#{I18n.l(Time.now, format: :long)} - #{params[:upload].original_filename}"
-
-        file_with_path = Rails.root.join('public', filename)
-        File.open(file_with_path, 'wb') do |file|
-          file.write(params[:upload].read)
-        end
+        # On lit directement le fichier uploadé (Tempfile) : surtout pas de copie
+        # dans public/ — elle y serait servie sans authentification (PII).
+        file_with_path = params[:upload].tempfile.path
 
         @importes = @errors = 0
         index = 1
@@ -191,6 +187,31 @@ class UsersController < ApplicationController
         Spreadsheet.client_encoding = 'UTF-8'
         book = Spreadsheet.open file_with_path
         sheet1 = book.worksheet 0
+        headers = User.xls_headers
+
+        sheet1.each 1 do |row|
+          index += 1
+          next unless row[0]
+
+          user = User
+                 .where('lower(email) = ?',
+                        row[headers.index 'Email']&.strip&.downcase)
+                 .first_or_initialize
+
+          new_record = user.new_record?
+
+          # (l'organisation dérive des services : pas de colonne organisation_id)
+          user.nom = row[headers.index 'Nom']&.strip&.upcase
+          user.prénom = row[headers.index 'Prénom']&.strip&.humanize
+          user.email = row[headers.index 'Email']
+          user.téléphone = row[headers.index 'Téléphone']
+          if new_record
+            password = User.generate_random_password
+            user.password = password
+            @mdp << password
+          end
+          user.rôle = 'agent'
+          service = Service.find_by(nom: row[headers.index 'Service']&.humanize)
 
         # ✅ V1 : mapping dynamique des colonnes (robuste aux variations d'en-têtes)
         first_row = sheet1.row(0).map { |cell| cell.to_s.strip.downcase }
@@ -374,12 +395,27 @@ class UsersController < ApplicationController
     redirect_to root_path, alert: 'Utilisateur introuvable'
   end
 
-  # ✅ V1 : absences_attributes complets avec :absence_type et :period
+  # Only allow a list of trusted parameters through.
+  # :rôle n'est accepté que d'un administrateur (seul à voir le sélecteur dans le
+  # formulaire) ; service_ids est borné aux services de l'organisation courante.
   def user_params
-    params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :rôle, :memo,
-                                 :address, :longitude, :latitude, :profile_picture, :color, tag_list: [],
-                                                                                            absences_attributes: %i[id du au motif observation matin après_midi _destroy],
-                                                                                            service_ids: [])
+    permitted = params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :memo,
+                                             :address, :longitude, :latitude, :profile_picture, :color, tag_list: [], absences_attributes: %i[id du au motif observation matin après_midi _destroy], service_ids: [])
+
+    rôle = params[:user][:rôle]
+    permitted[:rôle] = rôle if current_user.administrateur? && User.rôles.key?(rôle.to_s)
+
+    # service_ids= écrit immédiatement en base (has_many through) : on ne garde
+    # que les services de l'organisation courante, et on ne touche à rien si la
+    # demande est entièrement hors organisation (tentative de forgerie).
+    demandés = Array(permitted[:service_ids]).compact_blank
+    if demandés.any?
+      valides = current_organisation.services.where(id: demandés).ids
+      valides.any? ? permitted[:service_ids] = valides : permitted.delete(:service_ids)
+    end
+
+    permitted
+
   end
 
   def is_user_authorized

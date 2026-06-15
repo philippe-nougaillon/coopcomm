@@ -2,6 +2,8 @@
 
 class MissionControlAdminController < ApplicationController
   before_action :require_admin
+  # L'engine Mission Control n'utilise pas Pundit : acces garde par require_admin
+  skip_after_action :verify_authorized
 
   private
 

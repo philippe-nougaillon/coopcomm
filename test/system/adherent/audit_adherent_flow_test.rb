@@ -10,7 +10,7 @@ class AuditAdherentFlowTest < ApplicationSystemTestCase
 
   def go_to_audit_page
     # Fermer la notification de connexion
-    find("[data-testid='close_notification']").click
+    fermer_notification
 
     # Cliquer sur le bouton 'audit trail' de la navbar
     find("[data-testid='audit_trail']").click

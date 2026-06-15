@@ -30,6 +30,9 @@ class Intervention < ApplicationRecord
 
   has_many_attached :photos
 
+  include PieceJointeValidable
+  valide_piece_jointe :photos, types: PieceJointeValidable::IMAGES
+
   before_validation -> { combine_datetime(:début_prévue) }
   before_validation -> { combine_datetime(:fin_prévue) }
   before_validation -> { combine_datetime(:début) }

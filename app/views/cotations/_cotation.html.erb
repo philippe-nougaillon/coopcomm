@@ -28,13 +28,13 @@
     <div class="flex gap-2 items-center justify-end">
       <%= link_to "Voir", cotation, class: "btn btn-sm" %>
       <% if policy(cotation).envoyer? && cotation.can_envoyer? %>
-        <%= link_to "Envoyer", envoyer_cotation_path(cotation), class: "btn btn-sm btn-info btn-outline hover:text-white!", data: { turbo: false } %>
+        <%= button_to "Envoyer", envoyer_cotation_path(cotation), class: "btn btn-sm btn-info btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
       <% end %>
       <% if policy(cotation).valider? && cotation.can_valider? %>
-        <%= link_to "Valider", valider_cotation_path(cotation), class: "btn btn-sm btn-success btn-outline hover:text-white!", data: { turbo: false } %>
+        <%= button_to "Valider", valider_cotation_path(cotation), class: "btn btn-sm btn-success btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
       <% end %>
       <% if policy(cotation).refuser? && cotation.can_refuser? %>
-        <%= link_to "Refuser", refuser_cotation_path(cotation), class: "btn btn-sm btn-error btn-outline hover:text-white!", data: { turbo: false } %>
+        <%= button_to "Refuser", refuser_cotation_path(cotation), class: "btn btn-sm btn-error btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
       <% end %>
       <% if policy(cotation).pdf? %>
         <%= link_to pdf_cotation_path(cotation, filename: cotation.pdf_filename),

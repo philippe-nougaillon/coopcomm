@@ -2,7 +2,12 @@
 
 class TwilioController < ApplicationController
   skip_before_action :verify_authenticity_token # nécessaire pour les webhooks externes
-  skip_before_action :authenticate_user!, only: %i[whatsapp_reply get_request]
+  skip_before_action :authenticate_user!, only: %i[whatsapp_reply]
+  # Webhook machine-à-machine : l'autorisation est portée par la signature ci-dessous
+  skip_after_action :verify_authorized
+  # CSRF et authentification étant désactivés, la signature Twilio est le SEUL
+  # garde-fou : sans elle, n'importe qui peut forger des webhooks depuis Internet.
+  before_action :validate_twilio_signature, only: %i[whatsapp_reply]
 
   def whatsapp_reply
     sender = params['From']
@@ -29,11 +34,14 @@ class TwilioController < ApplicationController
     end
   end
 
-  def get_request
-    puts params
-  end
-
   private
+
+  def validate_twilio_signature
+    validator = Twilio::Security::RequestValidator.new(ENV['TWILIO_AUTH_TOKEN'].to_s)
+    signature = request.headers['X-Twilio-Signature'].to_s
+
+    head :forbidden unless signature.present? && validator.validate(request.original_url, request.POST, signature)
+  end
 
   def send_options
     account_sid = ENV['TWILIO_ACCOUNT_SID']
