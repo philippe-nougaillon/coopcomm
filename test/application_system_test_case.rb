@@ -1,3 +1,4 @@
+
 # frozen_string_literal: true
 
 require 'test_helper'
@@ -12,8 +13,12 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     [544, 900] # 544 est le minimum en largeur
   end
 
-  driven_by :selenium, using: :chrome, screen_size: taille_tel
-  # driven_by :selenium, using: :headless_chrome, screen_size: taille_tel
+  # 💡 CORRECTION : On passe sur :headless_chrome et on configure les options du bloc
+  driven_by :selenium, using: :headless_chrome, screen_size: taille_tel do |driver_options|
+    driver_options.add_argument('--no-sandbox')
+    driver_options.add_argument('--disable-dev-shm-usage')
+    driver_options.add_argument('--disable-gpu')
+  end
 
   # Ceinture et bretelles : certains environnements Chrome ignorent screen_size
   # au lancement — les tests sont écrits pour la largeur mobile (544 px).
