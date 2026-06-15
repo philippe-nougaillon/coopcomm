@@ -101,9 +101,17 @@
       }
 
       .icon {
-        font-size: 96px;
+        width: 96px;
+        height: 96px;
+        display: block;
+        margin: 0 auto 1.5rem;
         color: var(--primary);
-        margin-bottom: 1.5rem;
+      }
+
+      .btn-icon {
+        width: 1.25em;
+        height: 1.25em;
+        flex-shrink: 0;
       }
 
       h1 {
@@ -213,12 +221,19 @@
 
     <main>
       <div class="container">
-        <img
-          src="/assets/images/icons/search_off.svg"
+        <svg
           class="icon"
-          alt="Page non trouvée"
-          title="Page non trouvée"
-        />
+          role="img"
+          aria-label="Page non trouvée"
+          viewBox="0 -960 960 960"
+          fill="currentColor"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <title>Page non trouvée</title>
+          <path
+            d="M138.5-138.5Q80-197 80-280t58.5-141.5Q197-480 280-480t141.5 58.5Q480-363 480-280t-58.5 141.5Q363-80 280-80t-141.5-58.5ZM824-120 568-376q-12-13-25.5-26.5T516-428q38-24 61-64t23-88q0-75-52.5-127.5T420-760q-75 0-127.5 52.5T240-580q0 6 .5 11.5T242-557q-18 2-39.5 8T164-535q-2-11-3-22t-1-23q0-109 75.5-184.5T420-840q109 0 184.5 75.5T680-580q0 43-13.5 81.5T629-428l251 252-56 56Zm-615-61 71-71 70 71 29-28-71-71 71-71-28-28-71 71-71-71-28 28 71 71-71 71 28 28Z"
+          />
+        </svg>
         <h1>404</h1>
         <h2>Page introuvable</h2>
         <p>
@@ -231,21 +246,33 @@
             "
             class="btn btn-outline"
           >
-            <img
-              src="/assets/images/icons/arrow_back.svg"
-              class="icon"
-              alt="Page précédente"
-              title="Page précédente"
-            />
+            <svg
+              class="btn-icon"
+              role="img"
+              aria-label="Page précédente"
+              viewBox="0 -960 960 960"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <title>Page précédente</title>
+              <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
+            </svg>
             Page précédente
           </button>
           <a href="/" class="btn btn-primary">
-            <img
-              src="/assets/images/icons/home.svg"
-              class="icon"
-              alt="Accueil"
-              title="Accueil"
-            />
+            <svg
+              class="btn-icon"
+              role="img"
+              aria-label="Accueil"
+              viewBox="0 -960 960 960"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <title>Accueil</title>
+              <path
+                d="M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z"
+              />
+            </svg>
             Accueil
           </a>
         </div>

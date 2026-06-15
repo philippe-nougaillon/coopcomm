@@ -95,9 +95,17 @@
     }
 
     .icon {
-      font-size: 96px;
+      width: 96px;
+      height: 96px;
+      display: block;
+      margin: 0 auto 1.5rem;
       color: var(--warning);
-      margin-bottom: 1.5rem;
+    }
+
+    .btn-icon {
+      width: 1.25em;
+      height: 1.25em;
+      flex-shrink: 0;
     }
 
     h1 {
@@ -197,33 +205,54 @@
 
   <main>
     <div class="container">
-      <img
-          src="/assets/images/icons/warning.svg"
-          class="icon"
-          alt="warning"
-          title="warning"
+      <svg
+        class="icon"
+        role="img"
+        aria-label="warning"
+        viewBox="0 -960 960 960"
+        fill="currentColor"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <title>warning</title>
+        <path
+          d="m40-120 440-760 440 760H40Zm138-80h604L480-720 178-200Zm330.5-51.5Q520-263 520-280t-11.5-28.5Q497-320 480-320t-28.5 11.5Q440-297 440-280t11.5 28.5Q463-240 480-240t28.5-11.5ZM440-360h80v-200h-80v200Zm40-100Z"
         />
+      </svg>
       <h1>422</h1>
       <h2>Requête invalide</h2>
       <p>La requête envoyée n'a pas pu être traitée. Cela peut être dû à une session expirée. Veuillez rafraîchir la
         page et réessayer.</p>
       <div class="actions">
         <button onclick="location.reload()" class="btn btn-outline">
-          <img
-            src="/assets/images/icons/refresh.svg"
-            class="icon"
-            alt="Rafraîchir"
-            title="Rafraîchir"
-          />
+          <svg
+            class="btn-icon"
+            role="img"
+            aria-label="Rafraîchir"
+            viewBox="0 -960 960 960"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <title>Rafraîchir</title>
+            <path
+              d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"
+            />
+          </svg>
           Rafraîchir
         </button>
         <a href="/" class="btn btn-primary">
-          <img
-            src="/assets/images/icons/home.svg"
-            class="icon"
-            alt="Accueil"
-            title="Accueil"
-          />
+          <svg
+            class="btn-icon"
+            role="img"
+            aria-label="Accueil"
+            viewBox="0 -960 960 960"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <title>Accueil</title>
+            <path
+              d="M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z"
+            />
+          </svg>
           Accueil
         </a>
       </div>
