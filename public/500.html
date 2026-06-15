@@ -102,9 +102,17 @@
       }
 
       .icon {
-        font-size: 96px;
+        width: 96px;
+        height: 96px;
+        display: block;
+        margin: 0 auto 1.5rem;
         color: var(--error);
-        margin-bottom: 1.5rem;
+      }
+
+      .btn-icon {
+        width: 1.25em;
+        height: 1.25em;
+        flex-shrink: 0;
       }
 
       h1 {
@@ -204,12 +212,19 @@
 
     <main>
       <div class="container">
-        <img
-          src="/assets/images/icons/error.svg"
+        <svg
           class="icon"
-          alt="error"
-          title="error"
-        />
+          role="img"
+          aria-label="error"
+          viewBox="0 -960 960 960"
+          fill="currentColor"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <title>error</title>
+          <path
+            d="M508.5-291.5Q520-303 520-320t-11.5-28.5Q497-360 480-360t-28.5 11.5Q440-337 440-320t11.5 28.5Q463-280 480-280t28.5-11.5ZM440-440h80v-240h-80v240Zm40 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+          />
+        </svg>
 
         <h1>500</h1>
         <h2>Une erreur est survenue</h2>
@@ -219,21 +234,35 @@
         </p>
         <div class="actions">
           <button onclick="location.reload()" class="btn btn-outline">
-            <img
-              src="/assets/images/icons/refresh.svg"
-              class="icon"
-              alt="Réessayer"
-              title="Réessayer"
-            />
+            <svg
+              class="btn-icon"
+              role="img"
+              aria-label="Réessayer"
+              viewBox="0 -960 960 960"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <title>Réessayer</title>
+              <path
+                d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"
+              />
+            </svg>
             Réessayer
           </button>
           <a href="/" class="btn btn-primary">
-            <img
-              src="/assets/images/icons/home.svg"
-              class="icon"
-              alt="Accueil"
-              title="Accueil"
-            />
+            <svg
+              class="btn-icon"
+              role="img"
+              aria-label="Accueil"
+              viewBox="0 -960 960 960"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <title>Accueil</title>
+              <path
+                d="M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z"
+              />
+            </svg>
             Accueil
           </a>
         </div>
