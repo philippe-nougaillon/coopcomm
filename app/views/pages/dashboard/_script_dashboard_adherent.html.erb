@@ -4,7 +4,7 @@
     */
     function afficherProportionTempsConsommé() {
         var dataProportionTempsConsommé = {
-            labels: <%= @proportion_temps_consomme.keys.to_json.html_safe %>,
+            labels: <%= (@proportion_temps_consomme&.keys || []).to_json.html_safe %>,
             datasets: [
                 {
                     label: "Temps(h)",
@@ -17,7 +17,7 @@
                         'rgb(75, 192, 192)',
                     ],
                     borderWidth: 1,
-                    data: <%= @proportion_temps_consommé.values.to_json.html_safe %>,
+                    data: <%= (@proportion_temps_consommé&.values || []).to_json.html_safe %>,
                 },
             ],
         };
@@ -29,8 +29,8 @@
       };
 
       var elementProportionTempsConsomméChart = document.getElementById("proportionTempsConsomméChart");
-      if (proportionTempsConsomméChart) {
-          new Chart(proportionTempsConsomméChart, configProportionTempsConsommé);
+      if (elementProportionTempsConsomméChart) {
+          new Chart(elementProportionTempsConsomméChart, configProportionTempsConsommé);
       }
   }
 
@@ -39,7 +39,7 @@
   */
   function afficherTempsTotalParMois() {
       var dataTempsTotalParMoisChart = {
-          labels: <%= @temps_total_par_mois.keys.to_json.html_safe %>,
+          labels: <%= (@temps_total_par_mois&.keys || []).to_json.html_safe %>,
           datasets: [
               {
                   label: "Temps total (h)",
@@ -50,7 +50,7 @@
                       'rgb(54, 162, 235)',
                   ],
                   borderWidth: 1,
-                  data: <%= @temps_total_par_mois.values.to_json.html_safe %>,
+                  data: <%= (@temps_total_par_mois&.values || []).to_json.html_safe %>,
               },
           ],
       };
@@ -71,8 +71,7 @@
     Quantité intervention par workflow par mois
   */
   function afficherWorkflowChart() {
-
-      var dataWorkflowChart = <%= @data_workflow_chart.to_json.html_safe %>; // Passez les données depuis Rails au JS
+      var dataWorkflowChart = <%= (@data_workflow_chart || {}).to_json.html_safe %>; 
 
       var configWorkflowChart = {
           type: "bar",
@@ -90,10 +89,10 @@
               },
               scales: {
                   x: {
-                      stacked: true, // Barres empilées sur l'axe X
+                      stacked: true,
                   },
                   y: {
-                      stacked: true, // Barres empilées sur l'axe Y
+                      stacked: true,
                   }
               }
           }
@@ -111,7 +110,7 @@
   function afficherQuantitéInterventionParService() {
 
       var dataQtéInterventionsParService = {
-          labels: <%= @qte_interventions_par_service.keys.to_json.html_safe %>,
+          labels: <%= (@qte_interventions_par_service&.keys || []).to_json.html_safe %>,
           datasets: [
               {
                   label: "Nombre intervention",
@@ -134,7 +133,7 @@
                       'rgb(201, 203, 207)'
                   ],
                   borderWidth: 1,
-                  data: <%= @qte_interventions_par_service.values.to_json.html_safe %>,
+                  data: <%= (@qte_interventions_par_service&.values || []).to_json.html_safe %>,
               },
           ],
       };
@@ -156,7 +155,7 @@
   */
   function afficherTempsTotalParService() {
       var dataTempsTotalParService = {
-          labels: <%= @temps_total_par_service.keys.to_json.html_safe %>,
+          labels: <%= (@temps_total_par_service&.keys || []).to_json.html_safe %>,
           datasets: [
               {
                   label: "Temps total (h)",
@@ -179,7 +178,7 @@
                       'rgb(201, 203, 207)'
                   ],
                   borderWidth: 1,
-                  data: <%= @temps_total_par_service.values.to_json.html_safe %>,
+                  data: <%= (@temps_total_par_service&.values || []).to_json.html_safe %>,
               },
           ],
       };
@@ -212,9 +211,9 @@
                       'rgb(54, 162, 235)',
                   ],
                   borderWidth: 1,
-                  data: <%= @co2_total_par_mois.values.to_json.html_safe %>,
+                  data: <%= (@co2_total_par_mois&.values || []).to_json.html_safe %>,
               }],
-              labels: <%= @co2_total_par_mois.keys.to_json.html_safe %>,
+              labels: <%= (@co2_total_par_mois&.keys || []).to_json.html_safe %>,
           },
           options: {}
       };
