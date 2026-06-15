@@ -3,15 +3,12 @@
     <h1 class="text-2xl font-bold border-b border-gray-400 pb-4 w-full text-center my-4">
       <%= page_title!('Mot de passe oublié') %>
     </h1>
-
     <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
       <%= render "devise/shared/error_messages", resource: resource %>
-
       <div class="field mb-4">
         <%= f.label :email %><br />
         <%= f.email_field :email, autofocus: true, autocomplete: "email", class:'input input-sm w-full' %>
       </div>
-
       <div class="actions">
         <%= f.submit "Changer de mot de passe", class: 'btn btn-outline btn-primary btn-lg rounded hover:text-white! w-full mt-4 mb-8' %>
       </div>

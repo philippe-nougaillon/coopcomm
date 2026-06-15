@@ -1,7 +1,5 @@
 <div class="space-y-8 animate-fade-in">
-
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    
     <div class="flex flex-col bg-base-100 border border-base-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
       <div class="mb-4">
         <h3 class="text-lg font-bold text-base-content font-sans">Suivi du forfait mensuel</h3>
@@ -11,7 +9,6 @@
         <canvas id="proportionTempsConsomméChart" class="max-h-56" data-turbo="false"></canvas>
       </div>
     </div>
-    
     <div class="flex flex-col bg-base-100 border border-base-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow lg:col-span-2">
       <div class="mb-4">
         <h3 class="text-lg font-bold text-base-content font-sans">Statut des interventions par mois</h3>
@@ -21,11 +18,8 @@
         <canvas id="workflowChart" class="max-h-56 w-full" data-turbo="false"></canvas>
       </div>
     </div>
-
   </div>
-
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    
     <div class="flex flex-col bg-base-100 border border-base-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
       <div class="mb-4">
         <h3 class="text-lg font-bold text-base-content font-sans">Demande par pôle d'activité</h3>
@@ -43,7 +37,6 @@
         <% end %>
       </div>
     </div>
-
     <div class="flex flex-col bg-base-100 border border-base-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
       <div class="mb-4">
         <h3 class="text-lg font-bold text-base-content font-sans">Temps alloué par pôle</h3>
@@ -61,11 +54,8 @@
         <% end %>
       </div>
     </div>
-
   </div>
-
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    
     <div class="flex flex-col bg-base-100 border border-base-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
       <div class="mb-4">
         <h3 class="text-lg font-bold text-base-content font-sans">Évolution de la charge horaire</h3>
@@ -75,7 +65,6 @@
         <canvas id="tempsTotalParMoisChart" class="max-h-56 w-full" data-turbo="false"></canvas>
       </div>
     </div>
-
     <div class="flex flex-col bg-base-100 border border-base-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
       <div class="mb-4">
         <h3 class="text-lg font-bold text-base-content font-sans">Bilan carbone mensuel</h3>
@@ -85,13 +74,9 @@
         <canvas id="co2TotalParMois" class="max-h-56 w-full" data-turbo="false"></canvas>
       </div>
     </div>
-
   </div>
-
 </div>
-
 <%= render partial:'pages/dashboard/script_dashboard_adherent' %>
-
 <script>
   // Inicialización segura de gráficos con validación de elementos
   document.addEventListener("DOMContentLoaded", () => {

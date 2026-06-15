@@ -1,35 +1,32 @@
 <div class="overflow-x-auto">
   <table id="agents" class="table table-sm">
     <thead class="bg-slate-100">
-    <tr>
-      <th></th>
-      <th class="sticky left-0 top-0 z-10 bg-slate-100"><%= sort_link 'users.nom', 'Nom' %></th>
-      <th>Service</th>
-      <% if params[:vue] == 'calendrier' %>
-        <% (@date..@date_fin).each do |date| %>
-          <th class="text-center px-2 <%= 'text-cerise' if date == Date.today %>">
-            <%= l(date, format: :calendar).humanize %>
-          </th>
+      <tr>
+        <th></th>
+        <th class="sticky left-0 top-0 z-10 bg-slate-100"><%= sort_link 'users.nom', 'Nom' %></th>
+        <th>Service</th>
+        <% if params[:vue] == 'calendrier' %>
+          <% (@date..@date_fin).each do |date| %>
+            <th class="text-center px-2 <%= 'text-cerise' if date == Date.today %>">
+              <%= l(date, format: :calendar).humanize %>
+            </th>
+          <% end %>
+        <% else %>
+          <th>Disponible ?</th>
         <% end %>
-      <% else %>
-        <th>Disponible ?</th>
-      <% end %>
-    </tr>
+      </tr>
     </thead>
     <tbody>
       <%= render partial: 'agent', collection: @agents %>
     </tbody>
   </table>
 </div>
-
 <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
   <% if @pagy.pages > 1 %>
     <div class="hidden sm:block sm:flex-1"></div>
-    
     <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
       <%= pagy_nav(@pagy).html_safe %>
     </div>
-    
     <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
       <%= pagy_info(@pagy, item_name: "utilisateurs").html_safe %>
     </div>

@@ -2,37 +2,28 @@
   <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
     <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Agents / Disponibilités') %></h1>
   </div>
-
   <%= form_tag request.path, method: :get do %>
     <div class="flex flex-wrap items-start w-full gap-4 mt-8">
       <div class="w-full md:w-fit">
         <%= label_tag :search, "Rechercher" %>
         <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full', placeholder: 'Nom / Prénom' %>
       </div>
-
       <div class="w-full md:w-fit">
         <%= label_tag :date %>
         <%= date_field_tag :date, params[:date], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full' %>
       </div>
-
       <div class="min-w-full md:min-w-36">
         <%= label_tag :service %>
         <%= select_tag :service, options_from_collection_for_select(@services, 'id', 'nom' , params[:service]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
       </div>
-
       <!--
       <div class="flex flex-col gap-2">
         <%# label_tag :absent, "Absents ?", class: 'whitespace-nowrap cursor-pointer' %>
         <%# check_box_tag :absent, 1, params[:absent], class:'checkbox mr-2', onchange:'this.form.submit()' %>
       </div>
       -->
-
     </div>
   <% end %>
-
-
   <div class="divider"></div>
-
   <%= render partial: 'view_list' %>
-
 </div>

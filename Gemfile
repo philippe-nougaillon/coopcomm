@@ -175,3 +175,5 @@ gem 'email_validator', '~> 2.2'
 gem 'capture_stdout', '~> 0.0.1'
 
 gem 'devise_invitable', '~> 2.0'
+
+gem 'htmlbeautifier'

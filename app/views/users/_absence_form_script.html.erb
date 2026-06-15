@@ -1,6 +1,6 @@
 <script>
   if (typeof handleHalfDayChange !== 'function') {
-    
+
     function getContainer(element) {
       return element.closest('.absence-form-container');
     }
@@ -31,7 +31,7 @@
       const container = getContainer(radio);
       const auContainer = container.querySelector('.au-container');
       const halfDaysContainer = container.querySelector('.half-days-container');
-      
+
         refreshPeriodStyles(container);
 
 
@@ -39,7 +39,7 @@
         auContainer.classList.add('hidden');
         halfDaysContainer.classList.remove('hidden');
         syncDates(radio);
-        
+
         // Selecciona Matin por defecto si el usuario cambia a Demi-journée y no hay nada marcado
         const periodRadios = container.querySelectorAll('.period-radio');
         const hasSelection = Array.from(periodRadios).some(r => r.checked);
@@ -63,10 +63,10 @@
       const radios = container.querySelectorAll('.period-radio');
       const hiddenMatin = container.querySelector('.hidden-matin');
       const hiddenApresMidi = container.querySelector('.hidden-apres-midi');
-      
+
       let selected = null;
       radios.forEach(r => { if (r.checked) selected = r.value; });
-      
+
       if (selected === 'matin') {
         hiddenMatin.value = '1';
         hiddenApresMidi.value = '0';
@@ -80,7 +80,7 @@
     function syncDates(element) {
       const container = getContainer(element);
       const halfRadio = container.querySelector('input[value="half"].type-radio');
-      
+
       if (halfRadio && halfRadio.checked) {
         const duInput = container.querySelector('.du-input');
         const auInput = container.querySelector('.au-input');
@@ -97,15 +97,3 @@
     });
   }
 </script>
-
-
-
-
-
-
-
-
-
-
-
-

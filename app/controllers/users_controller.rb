@@ -23,6 +23,7 @@ class UsersController < ApplicationController
 
     @users = @users.where(rôle: params[:rôle]) if params[:rôle].present?
 
+    # ✅ V1 : filtrage par tag
     @users = @users.tagged_with(params[:user_tag]) if params[:user_tag].present?
 
     if params[:absent].present?
@@ -33,6 +34,7 @@ class UsersController < ApplicationController
       @users = @users.where(id: user_ids)
     end
 
+    # ✅ V2 : optimisation N+1
     @users = @users.includes(:taggings).with_attached_profile_picture
 
     respond_to do |format|
@@ -113,7 +115,7 @@ class UsersController < ApplicationController
           else
             render turbo_stream: turbo_stream.replace(
               @user,
-              partial: 'users/form', # J'ai mis 'users/form' par précaution, adapte si besoin
+              partial: 'users/form',
               locals: { user: @user }
             )
           end
@@ -157,6 +159,7 @@ class UsersController < ApplicationController
 
     @date_fin = @date + 13.day
 
+    # ✅ V2 : optimisation N+1
     @agents = @agents.with_attached_profile_picture
 
     @agents = @agents.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
@@ -168,6 +171,10 @@ class UsersController < ApplicationController
   def import_do
     if params[:upload].present?
       @mdp = ''
+      @success_logs = [] # Utilisateurs traités avec succès
+      @error_logs   = [] # Utilisateurs en erreur
+
+      # ✅ V2 : capture stdout pour logs détaillés dans la vue
       @stream = capture_stdout do
         # On lit directement le fichier uploadé (Tempfile) : surtout pas de copie
         # dans public/ — elle y serait servie sans authentification (PII).
@@ -206,76 +213,136 @@ class UsersController < ApplicationController
           user.rôle = 'agent'
           service = Service.find_by(nom: row[headers.index 'Service']&.humanize)
 
-          if service
-            already_linked = user.user_services.any? { |us| us.service_id == service.id && !us.marked_for_destruction? }
-            user.user_services.build(service: service) unless already_linked
-          end
+        # ✅ V1 : mapping dynamique des colonnes (robuste aux variations d'en-têtes)
+        first_row = sheet1.row(0).map { |cell| cell.to_s.strip.downcase }
 
-          user.memo = row[headers.index 'Mémo']
+        idx_nom       = first_row.index { |h| h.start_with?('nom') }
+        idx_prenom    = first_row.index { |h| h.start_with?('prénom') || h.start_with?('prenom') }
+        idx_email     = first_row.index { |h| h.start_with?('email') }
+        idx_service   = first_row.index { |h| h.start_with?('service') }
+        idx_telephone = first_row.index { |h| h.start_with?('téléphone') || h.start_with?('telephone') }
+        idx_memo      = first_row.index { |h| h.start_with?('mémo') || h.start_with?('memo') }
 
-          user.valid?
+        # ✅ V1 : validation structurelle avant d'itérer
+        if idx_nom.nil? || idx_prenom.nil? || idx_email.nil? || idx_service.nil?
+          flash.now[:alert] =
+            'Structure du fichier invalide. Les colonnes obligatoires (Nom, Prénom, Email, Service) sont introuvables.'
+          @errors += 1
+        else
+          sheet1.each 1 do |row|
+            index += 1
+            next unless row[idx_nom].present?
 
-          # À faire après user.valid?, sinon l'erreur sera supprimé
-          user.errors.add(:services, 'introuvable dans la base de données') unless service
+            email_value = row[idx_email]&.to_s&.strip&.downcase
+            next if email_value.blank?
 
-          safe_changes = user.changes.except('encrypted_password', 'password', 'slug', 'organisation_id')
-          display_changes = new_record ? safe_changes.transform_values(&:last) : safe_changes.dup
+            user = User.where('lower(email) = ?', email_value).first_or_initialize
+            new_record = user.new_record?
 
-          # On détecte si les services ont changé en mémoire
-          # (S'il y a une nouvelle relation non sauvegardée, ou une relation marquée pour destruction)
-          services_changed = user.user_services.any? { |us| us.new_record? || us.marked_for_destruction? }
-
-          # On n'ajoute la clé "services" que s'il y a eu un changement ou si c'est un nouvel utilisateur
-          if new_record || services_changed
-            nouveaux_services = user.user_services.reject(&:marked_for_destruction?).filter_map do |us|
-              us.service&.nom
-            end.join(', ')
-            nouveaux_services = 'Aucun' if nouveaux_services.blank?
+            user.nom       = row[idx_nom]&.to_s&.strip&.upcase
+            user.prénom    = row[idx_prenom]&.to_s&.strip&.humanize
+            user.email     = email_value
+            user.téléphone = idx_telephone ? row[idx_telephone]&.to_s&.strip : nil
+            user.memo      = idx_memo ? row[idx_memo]&.to_s&.strip : nil
 
             if new_record
-              display_changes['service'] = nouveaux_services
+              password = User.generate_random_password
+              user.password = password
+              @mdp << password
+            end
+            user.rôle = 'agent'
+
+            service_name = row[idx_service]&.to_s&.strip&.humanize
+            service = Service.find_by(nom: service_name)
+
+            if service
+              already_linked = user.user_services.any? do |us|
+                us.service_id == service.id && !us.marked_for_destruction?
+              end
+              user.user_services.build(service: service) unless already_linked
+            end
+
+            user.valid?
+
+            # ✅ Après user.valid? pour ne pas écraser l'erreur
+            unless service
+              user.errors.add(:services,
+                              "introuvable dans la base de données (Valeur lue: '#{service_name || 'VIDE'}')")
+            end
+
+            # ✅ V2 : logs détaillés des changements
+            safe_changes = user.changes.except('encrypted_password', 'password', 'slug', 'organisation_id')
+            display_changes = new_record ? safe_changes.transform_values(&:last) : safe_changes.dup
+
+            services_changed = user.user_services.any? { |us| us.new_record? || us.marked_for_destruction? }
+
+            if new_record || services_changed
+              nouveaux_services = user.user_services.reject(&:marked_for_destruction?).filter_map do |us|
+                us.service&.nom
+              end.join(', ')
+              nouveaux_services = 'Aucun' if nouveaux_services.blank?
+
+              if new_record
+                display_changes['service'] = nouveaux_services
+              else
+                anciens_services = user.user_services.select(&:persisted?).filter_map do |us|
+                  us.service&.nom
+                end.join(', ')
+                anciens_services = 'Aucun' if anciens_services.blank?
+                display_changes['service'] = [anciens_services, nouveaux_services]
+              end
+            end
+
+            formatted_changes = display_changes.symbolize_keys
+
+            if formatted_changes.any?
+              puts "#{new_record ? 'NOUVEL' : 'MISE À JOUR'} UTILISATEUR => id: #{user.id || 'N/A'}, changes: #{formatted_changes.inspect}"
             else
-              # Si c'est une MAJ, on récupère l'ancien état pour imiter le format [Avant, Après] de Rails
-              anciens_services = user.user_services.select(&:persisted?).filter_map { |us| us.service&.nom }.join(', ')
-              anciens_services = 'Aucun' if anciens_services.blank?
+              puts "UTILISATEUR INCHANGÉ => id: #{user.id}"
+            end
 
-              display_changes['service'] = [anciens_services, nouveaux_services]
+            if user.errors.empty?
+              if params[:save] == 'true'
+                user.save
+                user.invite!(current_user) if new_record
+              end
+              @importes += 1
+              # ✅ V1 : alimentation des logs succès pour la vue
+              @success_logs << {
+                type: new_record ? 'Nouveau' : 'Mise à jour',
+                email: user.email,
+                nom: "#{user.nom} #{user.prénom}",
+                service: service&.nom || 'Aucun'
+              }
+            else
+              puts ' || ERREURS: ' + user.errors.messages.map { |m| "#{m.first} => #{m.last}" }.join(', ')
+              @errors += 1
+              # ✅ V1 : alimentation des logs erreurs pour la vue
+              @error_logs << {
+                email: email_value,
+                nom: "#{row[idx_nom]} #{row[idx_prenom]}",
+                service_tente: row[idx_service],
+                messages: user.errors.full_messages
+              }
             end
           end
 
-          formatted_changes = display_changes.symbolize_keys
-
-          if formatted_changes.any?
-            puts "#{new_record ? 'NOUVEL' : 'MISE À JOUR'} UTILISATEUR => id: #{user.id || 'N/A'}, changes: #{formatted_changes.inspect}"
-          else
-            puts "UTILISATEUR INCHANGÉ => id: #{user.id}"
+          puts
+          unless params[:save] == 'true'
+            puts "----------- Les modifications n'ont pas été enregistrées ! ---------------"
           end
+          puts
 
-          if user.errors.empty?
-            if params[:save] == 'true'
-              user.save
+          puts '=' * 40
+          puts "Lignes importées: #{@importes} | Lignes ignorées: #{@errors}"
+          puts '=' * 40
 
-              user.invite!(current_user) if new_record
-            end
-            @importes += 1
+          # ✅ V1 : flash.now correct (pas de redirect, on reste sur la page)
+          if @errors.positive?
+            flash.now[:alert] = @importes.zero? ? "L'importation a échouée." : "L'importation a partiellement échouée."
           else
-            puts ' || ERREURS: ' + user.errors.messages.map { |m| "#{m.first} => #{m.last}" }.join(', ')
-            @errors += 1
+            flash.now[:notice] = "L'importation a bien été exécutée."
           end
-        end
-
-        puts
-        puts "----------- Les modifications n'ont pas été enregistrées ! ---------------" unless params[:save] == 'true'
-        puts
-
-        puts '=' * 40
-        puts "Lignes importées: #{@importes} | Lignes ignorées: #{@errors}"
-        puts '=' * 40
-
-        if @errors.positive?
-          flash[:alert] = @importes.zero? ? "L'importation a échouée" : "L'importation a partiellement échouée"
-        else
-          flash[:notice] = "L'importation a bien été exécutée"
         end
       end
     else
@@ -286,7 +353,11 @@ class UsersController < ApplicationController
 
   def inviter
     @user.invite!(current_user)
-    redirect_to user_path(@user), notice: 'Utilisateur invité'
+    redirect_to user_path(@user), notice: 'Lien d\'accès renvoyé avec succès.'
+  end
+
+  def interventions_average
+    interventions.average(:note)&.round(2) || 0
   end
 
   def edit_password; end
@@ -317,7 +388,6 @@ class UsersController < ApplicationController
 
   private
 
-  # Use callbacks to share common setup or constraints between actions.
   def set_user
     @user = User.find_by(slug: params[:id])
     return unless @user.nil?
@@ -345,6 +415,7 @@ class UsersController < ApplicationController
     end
 
     permitted
+
   end
 
   def is_user_authorized

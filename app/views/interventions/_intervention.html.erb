@@ -20,7 +20,7 @@
         </div>
         <small>
           <i class="<%= 'text-error animate-pulse font-black' if defined?(from_turbo_stream) %>">
-            il y a <%= time_ago_in_words intervention.updated_at %>
+            <%= time_tag(intervention.updated_at, format: :long) { "il y a #{time_ago_in_words(intervention.updated_at)}" } %>
           </i>
         </small>
         <p>
@@ -32,7 +32,7 @@
       <div class="text-base">
         <% if !(intervention.validé? || intervention.refusé?) %>
           <div class="my-2">
-            <p class="flex justify-end gap-2">
+            <p class="flex justify-center gap-2">
               <% if !defined?(from_turbo_stream) && policy(intervention).terminer? && intervention.can_terminer? %>
                 <%= button_to 'Terminer', terminer_intervention_path(intervention), class: 'z-10 btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', form: { data: { turbo: false }, class: 'contents' }, disabled: !intervention.can_terminer? || current_user.adhérent? %>
               <% end %>

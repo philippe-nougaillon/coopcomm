@@ -1,8 +1,9 @@
 Bonjour,
-<br><br>
+<br>
+<br>
 Une nouvelle absence vient d'être créée :
-
-<br><%= @absence.user.nom_prénom %>
+<br>
+<%= @absence.user.nom_prénom %>
 <br>
 <% if @absence.matin %>
   Le <%= I18n.l(@absence.du, format: :long) %> matin
@@ -11,8 +12,9 @@ Une nouvelle absence vient d'être créée :
 <% else %>
   Du <%= I18n.l(@absence.du, format: :long) %> au <%= I18n.l(@absence.au, format: :long) %>
 <% end %>
-<br><br>
+<br>
+<br>
 Motif : <%= @absence.motif %>
-<br><br>
+<br>
+<br>
 Observation : <%= @absence.observation.presence || "Aucune" %>
-

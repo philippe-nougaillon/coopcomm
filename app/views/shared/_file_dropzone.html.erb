@@ -31,7 +31,6 @@
 %>
 <div class="flex flex-col gap-1 <%= wrapper_class %>">
   <%= form.label attribute, label, class: "text-sm text-slate-500" %>
-
   <% if attachment.attached? %>
     <p class="text-sm mb-1 break-all">
       Document actuel :
@@ -39,7 +38,6 @@
             target: "_blank", class: "link link-primary" %>
     </p>
   <% end %>
-
   <div data-controller="dropzone"
        data-dropzone-active-class="border-slate-500 bg-slate-50"
        data-dropzone-neutral-class="border-slate-300"
@@ -47,9 +45,9 @@
        data-dropzone-invalid-class="border-error bg-error/10"
        data-dropzone-error-message-value="<%= error_message %>"
        data-action="click->dropzone#open dragover->dropzone#highlight dragleave->dropzone#unhighlight drop->dropzone#drop"
-       class="flex flex-col items-center justify-center gap-1 px-4 py-6 text-center
-              border-2 border-dashed border-slate-300 rounded-lg cursor-pointer
-              transition-colors hover:border-slate-400">
+    class="flex flex-col items-center justify-center gap-1 px-4 py-6 text-center
+    border-2 border-dashed border-slate-300 rounded-lg cursor-pointer
+    transition-colors hover:border-slate-400">
     <%= form.file_field attribute, accept: accept, class: "hidden",
           data: { dropzone_target: "input", action: "change->dropzone#change" } %>
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -60,7 +58,6 @@
     <span data-dropzone-target="filename" class="text-sm text-slate-500 break-all"><%= placeholder %></span>
     <span data-dropzone-target="error" class="hidden text-sm text-error font-medium"></span>
   </div>
-
   <% if attachment.attached? && replace_hint %>
     <span class="text-xs text-slate-400">Déposer un nouveau fichier remplacera le document actuel.</span>
   <% end %>

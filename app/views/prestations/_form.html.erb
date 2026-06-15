@@ -1,5 +1,4 @@
 <%= form_with model: @prestation do |f| %>
-
   <% if @prestation.errors.any? %>
     <div class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
       <h2 class="font-black!">
@@ -12,54 +11,44 @@
       </ul>
     </div>
   <% end %>
-
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <div class="flex flex-col gap-1">
       <%= f.label :code, "Code", class: "text-sm text-slate-500" %>
       <%= f.text_field :code, class: "input input-sm input-bordered w-full", required: true %>
     </div>
-
     <div class="flex flex-col gap-1">
       <%= f.label :libellé, "Libellé", class: "text-sm text-slate-500" %>
       <%= f.text_field :libellé, class: "input input-sm input-bordered w-full", required: true %>
     </div>
-
     <div class="flex flex-col gap-1">
       <%= f.label :catégorie, "Catégorie", class: "text-sm text-slate-500" %>
       <%= f.text_field :catégorie, class: "input input-sm input-bordered w-full" %>
     </div>
-
     <div class="flex flex-col gap-1">
       <%= f.label :sous_catégorie, "Sous-catégorie", class: "text-sm text-slate-500" %>
       <%= f.text_field :sous_catégorie, class: "input input-sm input-bordered w-full" %>
     </div>
-
     <div class="flex flex-col gap-1">
       <%= f.label :unité, "Unité", class: "text-sm text-slate-500" %>
       <%= f.text_field :unité, class: "input input-sm input-bordered w-full", placeholder: "heure, forfait, jour…" %>
     </div>
-
     <div class="flex flex-col gap-1">
       <%= f.label :tarif, "Tarif HT (€)", class: "text-sm text-slate-500" %>
       <%= f.number_field :tarif, step: 0.01, min: 0, class: "input input-sm input-bordered w-full", required: true %>
     </div>
-
     <div class="flex flex-col gap-1">
       <%= f.label :compétence, "Compétence", class: "text-sm text-slate-500" %>
       <%= f.text_field :compétence, class: "input input-sm input-bordered w-full" %>
     </div>
-
     <div class="flex flex-col gap-1">
       <%= f.label :délai, "Délai", class: "text-sm text-slate-500" %>
       <%= f.text_field :délai, class: "input input-sm input-bordered w-full" %>
     </div>
-
     <div class="flex flex-col gap-1 sm:col-span-2">
       <%= f.label :description, "Description", class: "text-sm text-slate-500" %>
       <%= f.text_area :description, rows: 3, class: "textarea textarea-bordered w-full" %>
     </div>
   </div>
-
   <div class="mt-6 flex gap-2">
     <%= f.submit "Enregistrer", class: "btn btn-primary" %>
     <%= link_to "Annuler", admin_parametres_path, class: "btn" %>

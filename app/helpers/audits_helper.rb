@@ -22,7 +22,45 @@ module AuditsHelper
     slug
     discarded_at
     updated_at
+    id
+    template_slug
+    tag_list
   ].freeze
+
+  def field_label(key)
+    {
+      'du' => 'Début',
+      'au' => 'Fin',
+      'motif' => 'Motif',
+      'apres_midi' => 'Après-midi',
+      'matin' => 'Matin',
+      'journee' => 'Journée',
+      'invitation_created_at' => 'Invité le',
+      'invitation_sent_at' => 'Email envoyé',
+      'email' => 'Email',
+      'nom' => 'Nom',
+      'prenom' => 'Prénom',
+      'role' => 'Rôle',
+      'telephone' => 'Téléphone',
+      'memo' => 'Mémo',
+      'warehouse_id' => 'Entrepôt',
+      'workflow_state' => 'Statut',
+      'adherent_id' => 'Adhérent',
+      'description' => 'Description',
+      'temps_total' => 'Temps total',
+      'temps_de_pause' => 'Temps de pause',
+      'commentaires' => 'Commentaires',
+      'note' => 'Note / Évaluation',
+      'avis' => 'Avis',
+      'repeter' => 'Répéter l\'action',
+      'debut_prevue' => 'Début prévu',
+      'fin_prevue' => 'Fin prévue',
+      'meteo' => 'Météo',
+      'co2' => 'Calcul CO₂',
+      'trajet' => 'Détails du trajet',
+      'service_id' => 'Service'
+    }.fetch(key, key.humanize)
+  end
 
   def audit_badge(audit)
     label, color_classes = badge_config(audit)
@@ -52,6 +90,89 @@ module AuditsHelper
     render_changes_list(humanize_changes(audit.audited_changes))
   end
 
+  def humanize_changes(changes)
+    changes.filter_map do |key, value|
+      next if FILTERED_FIELDS.include?(key)
+
+      old_val, new_val = value.is_a?(Array) ? value : [nil, value]
+      
+      # Forzar formato legible antes de validar si están vacíos
+      formatted_old = format_audit_value(key, old_val)
+      formatted_new = format_audit_value(key, new_val)
+
+      # FILTRO ESTRICTO: Si el campo no cambió nada real o está vacío/guión, se ignora por completo
+      next if formatted_old == formatted_new
+      next if (formatted_old.blank? || formatted_old == '—') && (formatted_new.blank? || formatted_new == '—')
+
+      { label: field_label(key), from: formatted_old, to: formatted_new }
+    end
+  end
+
+  def format_audit_value(key, value)
+    return '—' if value.nil? || value.to_s.strip.empty? || value.to_s == '—'
+
+    case key
+    when 'apres_midi', 'matin', 'journee'
+      # .to_s asegura que siempre lo tratemos como texto para buscar con la Expresión Regular
+      value.to_s.match?(/true|1/) ? 'Oui' : 'Non'
+    when 'motif'
+      { '0' => 'Congé annuel', '1' => 'Maladie', '2' => 'RTT' }.fetch(value.to_s, value)
+    when 'warehouse_id'
+      warehouse_label(value)
+    when 'adherent_id'
+      User.find_by(id: value)&.email || "Utilisateur ##{value}"
+    when /at$|_prevue$/
+      if value.respond_to?(:strftime)
+        l(value, format: :short)
+      else
+        begin
+          parsed = Time.zone.parse(value.to_s)
+          parsed ? l(parsed, format: :short) : value.to_s
+        rescue
+          value.to_s.sub(/ \+\d+/, '')
+        end
+      end
+    else
+      value.to_s
+    end
+  end
+
+  def warehouse_label(id)
+    Warehouse.find_by(id: id)&.name || deleted_warehouse_name(id) || id.to_s
+  end
+
+  def deleted_warehouse_name(id)
+    audit = Audited::Audit
+            .where(auditable_type: 'Warehouse', auditable_id: id)
+            .order(version: :desc)
+            .detect { |a| a.audited_changes.key?('name') }
+    return nil unless audit
+
+    raw = audit.audited_changes['name']
+    name = raw.is_a?(Array) ? raw.compact.last : raw
+    name.presence
+  end
+
+  def render_changes_list(items)
+    return content_tag(:span, '—', class: 'text-slate-400') if items.blank?
+
+    content_tag(:ul, class: 'space-y-1.5') do
+      items.map do |item|
+        content_tag(:li, class: 'flex flex-wrap items-baseline gap-1 text-xs') do
+          label = content_tag(:span, "#{item[:label]} :", class: 'text-slate-400 font-medium shrink-0')
+          body  = if item[:from].present? && item[:from] != '—'
+                    content_tag(:span, item[:from], class: 'line-through text-slate-400') +
+                      content_tag(:span, ' → ', class: 'text-slate-300') +
+                      content_tag(:span, item[:to], class: 'text-slate-700 font-bold')
+                  else
+                    content_tag(:span, item[:to], class: 'text-slate-700 font-bold')
+                  end
+          label + ' '.html_safe + body
+        end
+      end.join.html_safe
+    end
+  end
+
   private
 
   def badge_icon(audit)
@@ -66,6 +187,12 @@ module AuditsHelper
                   audit.audited_changes.key?('invitation_token') ? 'mail' : 'edit'
                 when 'UserService'
                   audit.action == 'create' ? 'add' : 'delete'
+                else
+                  case audit.action
+                  when 'create'  then 'add'
+                  when 'update'  then 'edit'
+                  when 'destroy' then 'delete'
+                  end
                 end
 
     return '' unless icon_name
@@ -99,71 +226,12 @@ module AuditsHelper
       else                ['Service',         'bg-slate-100 text-slate-600']
       end
     else
-      ["#{audit.auditable_type} #{audit.action}", 'bg-slate-100 text-slate-500']
-    end
-  end
-
-  def humanize_changes(changes)
-    changes.filter_map do |key, value|
-      next if FILTERED_FIELDS.include?(key)
-
-      label = field_label(key)
-      old_val, new_val = value.is_a?(Array) ? value : [nil, value]
-      { label: label, from: format_audit_value(key, old_val), to: format_audit_value(key, new_val) }
-    end
-  end
-
-  def field_label(key)
-    {
-      'du' => 'Début',
-      'au' => 'Fin',
-      'motif' => 'Motif',
-      'apres_midi' => 'Après-midi',
-      'matin' => 'Matin',
-      'journee' => 'Journée',
-      'invitation_created_at' => 'Invité le',
-      'invitation_sent_at' => 'Email envoyé',
-      'email' => 'Email',
-      'nom' => 'Nom',
-      'prenom' => 'Prénom',
-      'role' => 'Rôle',
-      'telephone' => 'Téléphone',
-      'memo' => 'Mémo'
-    }.fetch(key, key.humanize)
-  end
-
-  def format_audit_value(key, value)
-    return '—' if value.nil?
-
-    case key
-    when 'apres_midi', 'matin', 'journee'
-      value.in?(['true', true]) ? 'Oui' : 'Non'
-    when 'motif'
-      { '0' => 'Congé annuel', '1' => 'Maladie', '2' => 'RTT' }.fetch(value.to_s, value)
-    when /at$/
-      value.respond_to?(:strftime) ? l(value, format: :short) : value.to_s.sub(' +0200', '').sub(' +0100', '')
-    else
-      value.to_s
-    end
-  end
-
-  def render_changes_list(items)
-    return content_tag(:span, '—', class: 'text-slate-400') if items.blank?
-
-    content_tag(:ul, class: 'space-y-1') do
-      items.map do |item|
-        content_tag(:li, class: 'flex flex-wrap items-baseline gap-1 text-xs') do
-          label = content_tag(:span, "#{item[:label]} :", class: 'text-slate-400 shrink-0')
-          body  = if item[:from].present? && item[:from] != '—'
-                    content_tag(:span, item[:from], class: 'line-through text-slate-400') +
-                      content_tag(:span, ' → ', class: 'text-slate-300') +
-                      content_tag(:span, item[:to], class: 'text-slate-700 font-medium')
-                  else
-                    content_tag(:span, item[:to], class: 'text-slate-700 font-medium')
-                  end
-          label + ' '.html_safe + body
-        end
-      end.join.html_safe
+      case audit.action
+      when 'create'  then ["Création", 'bg-emerald-50 text-emerald-700']
+      when 'update'  then ["Modification", 'bg-amber-50 text-amber-700']
+      when 'destroy' then ["Suppression", 'bg-red-50 text-red-600']
+      else                [audit.action.humanize, 'bg-slate-100 text-slate-500']
+      end
     end
   end
 end

@@ -1,4 +1,3 @@
-
 <div class="flex flex-col">
   <div class="flex flex-row justify-between items-center my-4 gap-2">
     <h1 class="text-4xl text-primary font-bold">
@@ -7,17 +6,17 @@
     <%= link_to admin_create_new_user_path,
             data: { testid: "ajouter_utilisateur" },
             class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm ",
-            title: "Créer un nouvel agent"  do %>
+            title: "Créer un nouvel agent" do %>
       <%= embedded_svg "icons/person_add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
       <span class="hidden md:block">Ajouter un Utilisateur</span>
     <% end %>
   </div>
-  <%= form_tag request.path, method: :get, class: "pt-6" do %>
+  <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_frame: "users_table", turbo_action: "advance" } do %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
         <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-600 mb-1" %>
         <%= text_field_tag :search, params[:search], include_blank: true,
-                onchange: 'this.form.submit()',
+                onchange: 'this.form.requestSubmit()',
                 class: 'input input-bordered input-md w-full',
                 placeholder: 'Nom / Prénom' %>
       </div>
@@ -25,48 +24,72 @@
         <%= label_tag :rôle, "Rôle", class: "block text-xs font-semibold text-slate-600 mb-1" %>
         <%= select_tag :rôle,
                 options_for_select(User.rôles.sort_by { |k, _| I18n.transliterate(k) }, params[:rôle]),
-                include_blank: true,
-                class: 'select select-bordered select-md w-full',
-                onchange: 'this.form.submit()' %>
+                multiple: true,
+                class: 'slim-select w-full h-10',
+                data: { placeholder: 'Tous les rôles' },
+                onchange: 'this.form.requestSubmit()' %>
       </div>
       <div class="w-full md:flex-1">
         <%= label_tag :services, "Services", class: "block text-xs font-semibold text-slate-600 mb-1" %>
         <%= select_tag :services,
                 options_from_collection_for_select(@services, 'id', 'nom', params[:services]),
-                include_blank: true,
                 multiple: true,
                 class: 'slim-select w-full h-10',
-                onchange: 'this.form.submit()' %>
+                data: { placeholder: 'Tous les services' },
+                onchange: 'this.form.requestSubmit()' %>
       </div>
       <div class="w-full md:flex-1">
         <%= label_tag :user_tag, "Mots clés", class: "block text-xs font-semibold text-slate-600 mb-1" %>
         <%
-            tags_de_users = ActsAsTaggableOn::Tag.joins(:taggings)
-                                                .where(taggings: { taggable_type: 'User' })
-                                                .distinct
-                                                .pluck(:name)
-                                                .sort
-          %>
+          tags_de_users = ActsAsTaggableOn::Tag.joins(:taggings)
+                                              .where(taggings: { taggable_type: 'User' })
+                                              .distinct
+                                              .pluck(:name)
+                                              .sort
+        %>
         <%= select_tag :user_tag, 
                 options_for_select(tags_de_users, params[:user_tag]), 
-        include_blank: "Tous les secteurs / équipes", 
-        class: 'select select-bordered select-md w-full', 
-        onchange: 'this.form.submit()' %>
+                multiple: true,
+                class: 'slim-select w-full h-10', 
+                data: { placeholder: 'Tous les mots-clés' },
+                onchange: 'this.form.requestSubmit()' %>
       </div>
-      <div class="flex justify-center gap-6 py-2 w-full md:flex-1">
-        <label class="flex items-center gap-2 cursor-pointer select-none">
-          <%= check_box_tag :absent, 1, params[:absent],
-                  class: 'checkbox checkbox-primary checkbox-sm',
-                  onchange: 'this.form.submit()' %>
-          <span class="text-sm font-medium text-slate-700">Absents ?</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer select-none">
-          <%= check_box_tag :discarded, 1, params[:discarded],
-                  class: 'checkbox checkbox-primary checkbox-sm',
-                  onchange: 'this.form.submit()' %>
-          <span class="text-sm font-medium text-slate-700">Désactivés ?</span>
-        </label>
-      </div>
+
+
+      <div class="flex items-center gap-3 h-10 px-3 border border-slate-200 rounded-lg bg-slate-50 cursor-pointer"
+       onclick="document.getElementById('absent').click()">
+    <%= check_box_tag :absent, 1, params[:absent],
+          id: 'absent',
+          class: 'hidden',
+          onchange: 'this.form.requestSubmit()' %>
+    <div id="toggle-track"
+         class="w-8 h-4 rounded-full transition-colors duration-200 flex items-center px-0.5 flex-shrink-0 <%= params[:absent].present? ? 'bg-[#007fcb]' : 'bg-slate-300' %>">
+      <div class="w-3 h-3 rounded-full bg-white transition-transform duration-200 <%= params[:absent].present? ? 'translate-x-4' : 'translate-x-0' %>"></div>
+    </div>
+    <span class="text-sm font-medium text-slate-600 whitespace-nowrap">
+      Absents ?
+    </span>
+  </div>
+
+
+  <div class="flex items-center gap-3 h-10 px-3 border border-slate-200 rounded-lg bg-slate-50 cursor-pointer"
+       onclick="document.getElementById('discarded').click()">
+    <%= check_box_tag :discarded, 1, params[:discarded],
+          id: 'discarded',
+          class: 'hidden',
+          onchange: 'this.form.requestSubmit()' %>
+    <div id="toggle-track"
+         class="w-8 h-4 rounded-full transition-colors duration-200 flex items-center px-0.5 flex-shrink-0 <%= params[:discarded].present? ? 'bg-[#007fcb]' : 'bg-slate-300' %>">
+      <div class="w-3 h-3 rounded-full bg-white transition-transform duration-200 <%= params[:discarded].present? ? 'translate-x-4' : 'translate-x-0' %>"></div>
+    </div>
+    <span class="text-sm font-medium text-slate-600 whitespace-nowrap">
+      Désactivés ?
+    </span>
+  </div>
+
+
+
+      
     </div>
   <% end %>
 </div>
@@ -81,29 +104,36 @@
       <span>Faire glisser pour voir plus</span>
     </div>
     <table id="users" class="table table-sm w-full border-none">
-  <thead class="bg-slate-100">
-    <tr>
-      <th class="w-10 px-3 py-3"></th>
-      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">
-        
-        <%= sort_link 'users.nom', 'Nom' %>
-      </th>
-      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap" colspan="2">
-        <%= sort_link 'users.rôle', 'Rôle' %>
-      </th>
-      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">Service</th>
-      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">Mots clés</th>
-      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">
-        <%= sort_link 'users.email', 'Email' %>
-      </th>
-      <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Absent ?</th>
-      <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">Évaluation</th>
-    </tr>
-  </thead>
-  <tbody>
-    <%= render @users %>
-  </tbody>
-</table>
+      <thead class="bg-slate-100">
+        <tr>
+          <th class="w-10 px-3 py-3"></th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+            <%= sort_link 'users.nom', 'Nom' %>
+          </th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap" colspan="2">
+            <%= sort_link 'users.rôle', 'Rôle' %>
+          </th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Mots clés</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+            <%= sort_link 'users.email', 'Email' %>
+          </th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Absent ?</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Évaluation</th>
+        </tr>
+      </thead>
+        <tbody>
+          <% if @users.any? %>
+            <%= render @users %>
+          <% else %>
+            <tr>
+              <td colspan="8" class="text-left md:text-center py-8 text-slate-400 text-base italic">
+                Aucun résultat trouvé pour cette recherche.
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+    </table>
   </div>
 </div>
 <div class="flex flex-col bg-white border-x border-b border-slate-200 rounded-b-xl">

@@ -1,36 +1,46 @@
-<tr class="hover:bg-base-300">
-  <td class="whitespace-nowrap">
-    <b>Il y a <%= time_ago_in_words(audit.created_at) %></b>
-    <br>
-    <i><%= l(audit.created_at, format: :long) %></i>
+<tr class="hover:bg-base-200 transition-colors duration-150">
+  <td class="py-4 pl-4 pr-1 text-sm whitespace-nowrap">
+    <div class="font-semibold text-slate-700 text-xs sm:text-sm leading-tight">
+      <%= time_tag(audit.created_at, format: :long) { "Il y a #{time_ago_in_words(audit.created_at)}" } %>
+    </div>
+    <div class="py-4 px-4 text-sm whitespace-nowrap">
+      <%= l(audit.created_at, format: :long) %>
+    </div>
   </td>
-  <td>
-    <% if audit.user_id %>
-      <% if user = audit.user %>
-        <%= user.email %>
-        (#<%= user.id %>)
-        <br>
-        <%= user.rôle.humanize %>
-        <br>
-      <% end %>
+
+  <%# utilisateur %>
+  <td class="py-3 px-2 text-sm align-center text-center whitespace-nowrap">
+    <% if audit.user_id && (user = audit.user) %>
+      <div class="font-semibold text-slate-800 break-all"><%= user.email %></div>
+      <div class="text-xs justify-center text-slate-400 mt-0.5 flex items-center gap-1.5">
+        <span class="bg-slate-100 px-1.5 py-0.5 rounded text-[11px] font-medium text-slate-600">#<%= user.id %></span>
+        • <span class="font-medium text-slate-500"><%= user.rôle.humanize %></span>
+      </div>
     <% else %>
-      SYSTEM CONSOLE
+      <span class="inline-flex items-center text-center px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-800 uppercase tracking-wider font-mono">
+        System Console
+      </span>
     <% end %>
   </td>
-  <td>
-    <%= audit.auditable_type %>
+
+  <%# action -helper %>
+  <td class="py-3 px-4 text-center ">
+    <%= audit_badge(audit) %>
   </td>
-  <td style="text-align: right;">
-    <%= link_to_if audited_view_path(audit), audit.auditable_id, audited_view_path(audit), class: 'text-primary hover:underline' %>
-  </td>
-  <td>
-    <%= audit.action.humanize %>
-  </td>
-  <td class="whitespace-nowrap">
-    <% unless audit.comment %>
-      <%= sanitize prettify(audit, current_user).join('<br>') %>
-    <% else %>
-      <%= audit.comment %>
-    <% end %>
-  </td>
+
+  <%# modifications %>
+  <td class="py-3 px-4 text-sm align-center min-w-[280px]">
+  <% if audit.comment.present? %>
+    <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-50/50 text-blue-700 text-xs italic border border-blue-100">
+      "<%= audit.comment %>"
+    </span>
+  <% else %>
+    <div class="bg-slate-50/60 rounded-lg p-2 border border-slate-100 group-hover:bg-white transition-colors duration-150">
+      <%= audit_changes_list(audit, current_user) %>
+    </div>
+  <% end %>
+</td>
+
 </tr>
+
+

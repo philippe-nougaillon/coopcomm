@@ -1,86 +1,151 @@
-<div class="w-full mb-24">
+<div class="flex flex-col">
+  <div class="flex flex-row justify-between items-center my-4 gap-2">
+    <h1 class="text-4xl text-primary font-bold">
+      <%= page_title!('Activité') %>
+    </h1>
 
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
-    <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Activité') %></h1>
-
-    <%= link_to "Notifications", notifications_path, class: "btn btn-primary btn-outline sm:btn-lg rounded hover:text-white!", title: "Mail Logs (historique des mails envoyés)" %>
+    <%= link_to notifications_path,
+        data: { testid: "mail_logs" },
+        class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm ",
+        title: "Mail Logs (historique des mails envoyés)" do %>
+      <%= embedded_svg "icons/mail.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+      <span class="hidden md:block">Notifications (Mails)</span>
+    <% end %>
   </div>
 
-  <%= form_tag request.path, method: :get do %>
-    <div class="flex flex-wrap items-end gap-4 mt-8">
+  <%# FORMULARIO CON CONEXIÓN TURBO FRAME %>
+  <%= form_tag request.path, method: :get, data: { turbo_frame: "audits_table", turbo_action: "advance" },class: "pt-6"  do %>
+    <div class="flex flex-col gap-3 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+      
+      <%# Filtros Principales %>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end w-full">
+        <div class="w-full">
+          <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-600 mb-1" %>    
+          <%= text_field_tag :search, params[:search], 
+              onchange: 'this.form.requestSubmit()',
+              class: 'input input-bordered input-md w-full',
+              placeholder: 'Rechercher...' %>
+        </div> 
 
-      <div class="w-full sm:w-fit pr-4">
-        <%= label_tag :search, "Rechercher" %>      
-        <%= text_field_tag :search, params[:search], onchange:'this.form.submit()', class:"input input-sm w-full" %>
-      </div> 
+        <div class="w-full">
+          <%= label_tag :start_date, "Du", class: "block text-xs font-semibold text-slate-600 mb-1" %>    
+          <%= date_field_tag :start_date, params[:start_date], 
+              class: 'input input-bordered input-md w-full ', 
+              onchange: 'this.form.requestSubmit()' %>
+        </div>
 
-      <div class="w-full sm:w-min pr-4">
-        <%= label_tag :start_date, "Du" %>    
-        <%= text_field_tag :start_date, params[:start_date], type:'date', class:"input input-sm w-full" %>
+        <div class="w-full">
+          <%= label_tag :end_date, "Au", class: "block text-xs font-semibold text-slate-600 mb-1" %>    
+          <%= date_field_tag :end_date, params[:end_date], 
+              class: 'input input-bordered input-md w-full ', 
+              onchange: 'this.form.requestSubmit()' %>
+        </div>
       </div>
 
-      <div class="w-full sm:w-min pr-4">
-        <%= label_tag :end_date, "Au" %>    
-        <%= text_field_tag :end_date, params[:end_date], type:'date', class:"input input-sm w-full", onchange:'this.form.submit()' %>
-      </div>
+      <%# Filtros Avanzados %>
+      <details class="group w-full" <%= 'open' if params[:user_id].present? || params[:type].present? || params[:action_name].present? %>>
+        <summary class="flex items-center gap-2 text-primary font-semibold text-sm cursor-pointer select-none list-none w-fit pt-2 hover:underline">
+          <%= embedded_svg "icons/tune.svg", class: "w-5 h-5 transition-transform group-open:rotate-180" %>
+          <span class="group-open:hidden">Plus de critères de filtrage</span>
+          <span class="hidden group-open:inline">Moins de critères de filtrage</span>
+        </summary>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end w-full pt-4 mt-2 border-t border-slate-200/60">
+          <div class="w-full">
+            <%= label_tag :user_id, "Utilisateur", class: "block text-xs font-semibold text-slate-600 mb-1"  %>
+            <%= select_tag :user_id, 
+              options_from_collection_for_select(@users, 'id', 'nom', params[:user_id]), 
+              multiple: true,
+              data: { placeholder: 'Tous les utilisateurs' },
+              onchange: 'this.form.requestSubmit()',
+              class: 'slim-select w-full h-10' %>
+          </div>
 
-      <div class="w-full sm:w-fit pr-4">
-        <%= label_tag :user_id, "Utilisateur" %>
-        <%= select_tag :user_id, options_from_collection_for_select(@users, 'id', 'nom', params[:user_id]), include_blank:true, onchange:'this.form.submit()', class:"select select-sm w-full" %>
-      </div>
+          <div class="w-full">
+            <%= label_tag :type, "Type", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+            <%= select_tag :type,
+                options_for_select(@types, params[:type]), 
+                multiple: true,
+                data: { placeholder: 'Tous les types' },
+                onchange: 'this.form.requestSubmit()',
+                class: 'slim-select w-full h-10' %>
+          </div>
 
-      <div class="w-full sm:w-fit pr-4">
-        <%= label_tag :type, "Type" %>
-        <%= select_tag :type,
-            options_for_select(@types, params[:type]), include_blank:true, onchange:'this.form.submit()', class:"select select-sm w-full" %>
-      </div>
-
-      <div class="w-full sm:w-1/12 min-w-fit pr-4">
-        <%= label_tag :action_name, "Action" %>
-        <%= select_tag :action_name,
-            options_for_select(@actions, params[:action_name]), include_blank:true, onchange:'this.form.submit()', class:"select select-sm w-full" %>
-      </div>  
+          <div class="w-full">
+            <%= label_tag :action_name, "Action", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+            <%= select_tag :action_name,
+              options_for_select([['Création', 'create'], ['Modification', 'update'], ['Suppression', 'destroy']], params[:action_name]), 
+              multiple: true,
+              data: { placeholder: 'Toutes les actions' },
+              onchange: 'this.form.requestSubmit()',
+              class: 'slim-select w-full h-10' %>
+          </div>
+        </div>
+      </details>
     </div>
   <% end %>
 
-  <div class="divider"></div>
 
-  <div class="overflow-x-auto mt-4">
-    <table class="table table-sm">
-      <thead class="bg-slate-100">
-        <tr>
-          <th><%= sort_link 'audits.created_at', 'Date' %></th>
-          <th><%= sort_link 'audits.user_id', 'Utilisateur' %></th>
-          <th><%= sort_link 'audits.auditable_type', 'Type' %></th>
-          <th><%= sort_link 'audits.auditable_id', 'Id' %></th>
-          <th><%= sort_link 'audits.action', 'Action' %></th>
-          <th><%= sort_link 'audits.audited_changes', 'Modifications' %></th>
-        </tr>
-      </thead>
+  <%= turbo_frame_tag "audits_table" do %>
 
-      <tbody>
-        <%= render partial: 'audit', collection: @audits.includes(:user), cached: true %>
-      </tbody>
+<hr class="mt-6 mb-6">
+<div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
+  <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
+</div>
+<div class="flex flex-col bg-white  border-x border-b border-slate-200 shadow-sm overflow-hidden">
+  <div class="overflow-x-auto ">
+    <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+      <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+      <span>Faire glisser pour voir plus</span>
+    </div>
+    <table id="users" class="table table-sm w-full border-none"><thead class="bg-slate-100">
+          <tr>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+              <div class="flex justify-center items-center w-full text-center">
+                <%= sort_link 'audits.created_at', 'Date' %></th>              
+                </div>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+              <div class="flex justify-center items-center w-full text-center">
+                <%= sort_link 'audits.user_id', 'Utilisateur' %></th>
+              </div>
+            <th class="px-1 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+                <div class="flex justify-center items-center w-full text-center">
+                  <%= sort_link 'audits.action', 'Action' %></th>
+                </div>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+               <div class="flex justify-center items-center w-full text-center">
+                <%= sort_link 'audits.audited_changes', 'Modifications' %></th>
+              </div>
+          </tr>
+        </thead>
 
-      <tfoot>
-        <tr>
-          <th colspan=6></th>
-        </tr>
-      </tfoot>
-    </table>
+        <tbody>
+          <% if @audits.any? %>
+            <%= render partial: 'audit', collection: @audits.includes(:user) %>
+          <% else %>
+            <tr>
+              <td colspan="6" class=" text-left md:text-center py-8 text-slate-400 text-base italic">
+                Aucun résultat trouvé pour cette recherche.
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <%# PAGINACIÓN %>
+    <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
+    <% if @pagy.pages > 1 %>
+      <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+        <%= pagy_nav(@pagy).html_safe %>
+      </div>
+      <div class=" text-slate-500 text-center text-sm w-full ">
+        <%= pagy_info(@pagy, item_name: "utilisateurs").html_safe %>
+      </div>
+    <% else %>
+      <div></div>
+    <% end %>
   </div>
-
-  <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
-  
-  <div class="hidden sm:block sm:flex-1"></div>
-
-  <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
-    <%= pagy_nav(@pagy).html_safe %>
-  </div>
-
-  <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
-    <%= pagy_info(@pagy).html_safe %>
-  </div>
+  <% end %>
 
 </div>
-</div>    

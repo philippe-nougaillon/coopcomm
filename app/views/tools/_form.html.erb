@@ -4,7 +4,6 @@
       <h2 class="font-black!">
         <%= pluralize(tool.errors.count, "erreur") %> empêche(nt) cet outil d'être sauvegardé :
       </h2>
-
       <ul class="list-disc list-inside">
         <% tool.errors.each do |error| %>
           <li><%= error.full_message %></li>
@@ -12,37 +11,30 @@
       </ul>
     </div>
   <% end %>
-
   <div class="w-full">
     <%= form.label :name, 'Nom' %>
     <%= form.text_field :name, class: 'input input-sm w-full', required: true %>
   </div>
-
   <div class="w-full">
     <%= form.label :description %>
     <%= form.text_area :description, class: "textarea textarea-sm w-full" %>
   </div>
-
   <div class="w-full">
     <%= form.label :icon_name, "Type" %>
     <%= form.select :icon_name, options_for_select(Tool.icons.sort, @tool.icon_name), {include_blank: true}, class: "input input-sm w-full" %>
   </div>
-
   <div class="w-full">
     <%= form.label :modèle %>
     <%= form.text_field :modèle, class: 'input input-sm w-full' %>
   </div>
-
   <div class="w-full">
     <%= form.label :marque %>
     <%= form.text_field :marque, class: 'input input-sm w-full' %>
-  </div>  
-
+  </div>
   <div class="w-full">
     <%= form.label :photo %>
     <%= form.file_field :photo, accept: 'image/png,image/jpeg,.pdf,image/avif,image/webp', class: 'file-input file-input-sm w-full' %>
   </div>
-
   <h3 class="text-xl text-slate-400 mt-4">Documents</h3>
   <% Document.categories.each_with_index do |category| %>
     <%= form.fields_for :documents, @tool.documents.build(category: category) do |document_fields| %>
@@ -61,9 +53,7 @@
           </div>
         </div>
       </div>
-
     <% end %>
   <% end %>
-
   <%= form.submit "Enregistrer", id: "enregistrer_tool", class: "btn btn-primary mt-4" %>
 <% end %>

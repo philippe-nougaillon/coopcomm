@@ -5,7 +5,6 @@
       <%= link_to "Panne", new_mouvement_path, data: { 'testid': "ajouter_panne" }, class: 'inline-flex btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
     <% end %>
   </div>
-
   <%= form_tag request.path, method: :get do %>
     <div class="flex flex-wrap items-start w-full gap-4 mt-8">
       <div class="w-full md:w-fit">
@@ -17,7 +16,7 @@
         <%= select_tag :etats, options_for_select(@états, params[:etats]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
       </div>
       <% if false %>
-      <!--
+        <!--
         <div class="w-full md:w-fit">
           <%= label_tag :date, "Date d'intervention" %>
           <%= date_field_tag :date, params[:date], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full' %>
@@ -26,9 +25,7 @@
       <% end %>
     </div>
   <% end %>
-
   <div class="divider"></div>
-
   <div class="overflow-x-auto">
     <table id="tools" class="table table-sm">
       <thead class="bg-slate-100">
@@ -48,22 +45,18 @@
       </tfoot>
     </table>
   </div>
-
- <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
-  <% if @pagy.pages > 1 %>
-    <div class="hidden sm:block sm:flex-1"></div>
-    
-    <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
-      <%= pagy_nav(@pagy).html_safe %>
-    </div>
-    
-    <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
-      <%= pagy_info(@pagy, item_name: "mouvements").html_safe %>
-    </div>
-  <% else %>
-    <div >
-    </div>
-  <% end %>
-</div>
-
+  <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
+    <% if @pagy.pages > 1 %>
+      <div class="hidden sm:block sm:flex-1"></div>
+      <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
+        <%= pagy_nav(@pagy).html_safe %>
+      </div>
+      <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
+        <%= pagy_info(@pagy, item_name: "mouvements").html_safe %>
+      </div>
+    <% else %>
+      <div >
+      </div>
+    <% end %>
+  </div>
 </div>

@@ -2,25 +2,18 @@
   is_my = defined?(my_message) ? my_message : (message.from_id == current_user.id)
   is_unread = (!is_my && message.read_at.nil?) 
 %>
-
 <div id="<%= dom_id message %>" 
      class="mt-2 message-wrapper" 
      data-message-id="<%= message.id %>" 
      data-unread="<%= is_unread ? 'true' : 'false' %>">
-  
   <div class="chat <%= is_my ? "chat-end" : "chat-start" %>">
-    
     <div class="chat-header text-lg mb-1 opacity-70 px-2">
       <small><i>il y a <%= time_ago_in_words message.created_at %></i></small>
     </div>
-    
     <div class="chat-bubble rounded <%= is_my ? "chat-bubble-accent" : "bg-gray-200" %> <%= "font-bold" if is_unread %> max-w-full">
-      
       <p class="text-xl break-words">
         <%= message.moderation %>
       </p>
-      
     </div>
-
   </div>
 </div>

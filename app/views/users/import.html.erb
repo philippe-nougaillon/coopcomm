@@ -11,7 +11,7 @@
     <div class="space-y-2 px-8 pt-6 text-slate-700  flex-1">
 
       <div class="flex items-center gap-2 font-bold text-blue-800 mb-8">
-        <%= embedded_svg "icons/info.svg", class: "text-lg", title: "Informations" %>
+        <%= embedded_svg "icons/info.svg", class:"text-lg", title:"Informations" %>
         <span class="uppercase">Instructions d'importation</span>
       </div>
 
@@ -50,6 +50,7 @@
   <%= link_to "/Exemple_import_utilisateurs.xls",
         download: "modele_donnees.xls",
         class: "btn btn-primary btn-md normal-case text-white" do %>
+    <%= embedded_svg "icons/download.svg", class: "icon", title: "Télécharger" %>
     <span>Télécharger le modèle</span>
   <% end %>
 

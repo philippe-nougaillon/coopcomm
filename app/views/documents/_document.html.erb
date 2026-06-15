@@ -2,7 +2,7 @@
   <td><b><%= document.category.humanize %></b></td>
   <td>
     <% if document.fichier.attached? %>
-    <%= link_to document.fichier.filename, url_for(document.fichier), target: '_blank', class: 'text-primary hover:underline' %>
+      <%= link_to document.fichier.filename, url_for(document.fichier), target: '_blank', class: 'text-primary hover:underline' %>
     <% end %>
   </td>
   <td>
@@ -16,5 +16,4 @@
     <%= button_to 'Valider', valider_document_path(document), class: 'btn btn-success btn-outline hover:text-white! btn-xs', title: 'Cliquez pour passer ce document en statut \'Validé\'', form: { data: { turbo: false }, class: 'contents' }, disabled: !document.can_valider?  %>
     <%= button_to 'Refuser', refuser_document_path(document), class: 'btn btn-error btn-outline hover:text-white! btn-xs', title: 'Cliquez pour passer ce document en statut \'Refusé\'', form: { data: { turbo: false }, class: 'contents' }, disabled: !document.can_refuser? %>
   </td>
-
 </tr>
