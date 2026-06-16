@@ -23,6 +23,10 @@
   wrapper_class = local_assigns.fetch(:wrapper_class, "")
   replace_hint  = local_assigns.fetch(:replace_hint, true)
   attachment    = form.object.public_send(attribute)
+  # Un fichier fraîchement uploadé mais non sauvegardé (ré-affichage après échec de
+  # validation) est « attached? » sans être persisté → pas de signed_id, donc pas de
+  # rails_blob_path possible. On ne lie que vers un blob réellement en base.
+  has_saved_attachment = attachment.attached? && attachment.blob&.persisted?
 
   # Liste lisible des formats acceptés (".pdf,.docx" → "PDF, DOCX" ; "image/*" → "IMAGE")
   formats       = accept.split(",").map { |a| a.strip.delete_prefix(".").sub(%r{/\*\z}, "").upcase }.join(", ")
@@ -31,7 +35,7 @@
 %>
 <div class="flex flex-col gap-1 <%= wrapper_class %>">
   <%= form.label attribute, label, class: "text-sm text-slate-500" %>
-  <% if attachment.attached? %>
+  <% if has_saved_attachment %>
     <p class="text-sm mb-1 break-all">
       Document actuel :
       <%= link_to attachment.filename, rails_blob_path(attachment, disposition: "inline"),
@@ -58,7 +62,7 @@
     <span data-dropzone-target="filename" class="text-sm text-slate-500 break-all"><%= placeholder %></span>
     <span data-dropzone-target="error" class="hidden text-sm text-error font-medium"></span>
   </div>
-  <% if attachment.attached? && replace_hint %>
+  <% if has_saved_attachment && replace_hint %>
     <span class="text-xs text-slate-400">Déposer un nouveau fichier remplacera le document actuel.</span>
   <% end %>
 </div>
