@@ -60,6 +60,32 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     assert_text 'Tailler les arbres'
   end
 
+  # Anti-régression : la recherche SlimSelect (réglage `showSearch`, actif par défaut)
+  # avait été désactivée par `showSearch: false` (commit 1f3dc709), empêchant de filtrer
+  # en tapant. On la teste sur le slim-select le plus important du projet : l'assignation
+  # des agents (#intervention_agent_ids, partial _form_for_agents) — un select groupé et
+  # multiple.
+  test 'le slim-select des agents propose une recherche qui filtre les options' do
+    visit new_intervention_url
+
+    activate_dropdown_slimSelect('#intervention_agent_ids')
+
+    # Garde anti-faux-positif : les deux agents sont bien présents AVANT de filtrer
+    # (sinon l'assertion de disparition passerait sans que le filtrage ne marche).
+    within('.ss-list') do
+      assert_selector '.ss-option', text: 'Bond James'
+      assert_selector '.ss-option', text: 'Martin Michel'
+    end
+
+    # La barre de recherche doit exister (cœur de la régression) et filtrer la liste.
+    find('.ss-search input').set('Bond')
+
+    within('.ss-list') do
+      assert_selector '.ss-option', text: 'Bond James'
+      assert_no_selector '.ss-option', text: 'Martin Michel'
+    end
+  end
+
   test 'Modifier intervention' do
     visit interventions_url
     intervention = interventions(:tonte_locaux)
