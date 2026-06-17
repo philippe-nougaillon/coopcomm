@@ -45,7 +45,11 @@ module ActiveSupport
       fill_in 'user_password', with: 'qtDug$d843sqACz?V' # équivalent à encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q", généré avec Devise::Encryptor.digest(User, "password123")
       # Le bouton du FORMULAIRE (la navbar publique a aussi un « Se connecter »)
       find('input[type="submit"][value="Se connecter"]').click
-      sleep(1)
+      # Anti-flake : attendre la fin EFFECTIVE du login (on a quitté la page de
+      # connexion → le champ email a disparu) plutôt qu'un sleep fixe. Sinon la
+      # navigation suivante peut survenir avant que la session soit posée et
+      # retomber sur l'écran de connexion.
+      assert_no_selector('#user_email', wait: 10)
     end
 
     def intervention_for_params(intervention)
@@ -78,8 +82,13 @@ module ActiveSupport
 
     def select_option(id, value)
       activate_dropdown_slimSelect(id)
+      # On filtre d'abord via la recherche du slim-select, puis on clique :
+      # pendant l'animation d'ouverture, un clic direct par texte atteint
+      # parfois la mauvaise option (la liste défile encore). En tapant la
+      # valeur, il ne reste que l'option voulue → sélection déterministe.
+      find('.ss-search input', visible: true).set(value)
       within('.ss-list') do
-        find('div.ss-option', text: value).click
+        find('div.ss-option', text: value, match: :first).click
       end
     end
 
