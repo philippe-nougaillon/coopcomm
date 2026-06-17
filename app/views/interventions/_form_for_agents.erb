@@ -46,7 +46,10 @@
           <div class="w-full sm:flex-1">
             <%= form.label :agent_ids, "Agents" %>
             <%= form.select :agent_ids,
-                            grouped_options_with_mandatory(@grouped_agents, intervention.agent_ids, current_user.id),
+                            options_for_select(
+                              @agents.map { |nom, id| id == current_user.id ? [nom, id, { data: { mandatory: true } }] : [nom, id] },
+                              selected: (Array(intervention.agent_ids) + [current_user.id]).uniq
+                            ),
                             {},
                             class: "w-full", multiple: true,
                             data: {

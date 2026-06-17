@@ -1,7 +1,9 @@
 <%= form_with(model: intervention, url: (create_intervention_pointage_interventions_path if @intervention.repeter && @intervention.new_record?), class: "contents",
               data: (current_user.adhérent? ? {} : {
-                controller: ("verification-disponibilites" if !@intervention.repeter),
-                verification_disponibilites_intervention_id_value: (@intervention.id if @intervention.persisted?)
+                controller: ([(@intervention.repeter ? nil : "verification-disponibilites"), "dynamic-select"].compact.join(" ")),
+                verification_disponibilites_intervention_id_value: (@intervention.id if @intervention.persisted?),
+                dynamic_select_url_value: services_for_adherent_interventions_path,
+                dynamic_select_agents_url_value: agents_for_service_interventions_path
               })
     ) do |form| %>
   <% if intervention.errors.any? %>
@@ -27,7 +29,7 @@
           <%= form.text_field :description, class: "input input-sm w-full" %>
         </div>
       </div>
-      <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" <%= ("data-controller=dynamic-select data-dynamic-select-url-value=" + services_for_adherent_interventions_path) unless current_user.adhérent? %>>
+      <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
         <% if current_user.adhérent? %>
           <%= form.hidden_field :adherent_id, value: current_user.id %>
         <% else %>
@@ -50,7 +52,8 @@
                           { include_blank: true, required: true },
                           class: "slim-select w-full",
                           data: {
-                            dynamic_select_target: "service"
+                            dynamic_select_target: "service",
+                            action: "change->dynamic-select#updateAgents"
                           } %>
         </div>
       </div>
@@ -141,14 +144,15 @@
           <div class="w-full sm:flex-1" data-verification-disponibilites-target="formAgents">
             <%= form.label :agent_ids, "Agents" %>
             <%= form.select :agent_ids,
-                              grouped_options_with_mandatory(@grouped_agents, intervention.agent_ids, nil),
+                              options_for_select(@agents, selected: intervention.agent_ids),
                               {},
                               class: "w-full", multiple: true,
                               data: {
                                 controller: 'slim-select',
                                 'calc-temps-passe-target': 'agents',
                                 action: "change->calc-temps-passe#calc",
-                                'verification-disponibilites-target': "agents"
+                                'verification-disponibilites-target': "agents",
+                                'dynamic-select-target': "agents"
                               }
               %>
           </div>

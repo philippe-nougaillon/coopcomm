@@ -439,6 +439,19 @@ class InterventionsController < ApplicationController
     render json: @services.select(:id, :nom)
   end
 
+  # Renvoie la liste PLATE des agents pour le service sélectionné (mise à jour
+  # dynamique du select agents dans le formulaire d'intervention).
+  # Si aucun service n'est fourni, on liste les agents de tous les services du
+  # current_user. Le périmètre est toujours borné aux services du current_user.
+  def agents_for_service
+    service = current_user.services.find_by(id: params[:service_id]) if params[:service_id].present?
+
+    agents = User.agents_for_services(service ? [service] : current_user.services)
+
+    # Format aligné sur agents_for_services : [nom_complet, id] → {id, nom}
+    render json: agents.map { |nom, id| { id: id, nom: nom } }
+  end
+
   # Pour créer une intervention pointage
   def new_intervention_pointage
     @intervention = Intervention.new
@@ -519,9 +532,25 @@ class InterventionsController < ApplicationController
 
     @adhérents = users_in_same_services.adhérent.order(:nom)
 
-    @grouped_agents = users_in_same_services.grouped_agents(current_user)
+    # Liste PLATE des agents (sans groupe par service). Si un service est
+    # pré-sélectionné (édition, ou ?service_id en création), on restreint à ce
+    # service ; sinon on liste tous les agents des services du current_user.
+    selected_service = preselected_form_service
+    @agents = User.agents_for_services(selected_service ? [selected_service] : @services)
 
     @tools = current_organisation.tools.ordered
+  end
+
+  # Service pré-sélectionné du formulaire : celui de l'intervention en cours
+  # d'édition, ou passé en paramètre, restreint au périmètre du current_user.
+  # Côté agent (`_form_for_agents`), le service est figé sur le premier service
+  # de l'agent (champ caché) : on s'aligne dessus pour la liste des agents.
+  def preselected_form_service
+    service_id = @intervention&.service_id || params[:service_id]
+    service_id ||= current_user.services.first&.id if current_user.agent?
+    return nil if service_id.blank?
+
+    current_user.services.find_by(id: service_id)
   end
 
   def set_interventions_tags

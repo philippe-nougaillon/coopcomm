@@ -125,34 +125,6 @@ module ApplicationHelper
             'data-turbo': false
   end
 
-  # Génère les options groupées en ajoutant data-mandatory="true" sur un ID spécifique
-  def grouped_options_with_mandatory(grouped_hash, selected_ids, mandatory_id = nil)
-    html = []
-
-    # 1. On convertit tout en texte pour éviter le bug "1" != 1
-    selected_strings = Array(selected_ids).map(&:to_s)
-
-    grouped_hash.each do |group_name, options|
-      group_html = []
-
-      options.each do |option_text, option_value|
-        # 2. Comparaison robuste
-        is_selected = selected_strings.include?(option_value.to_s)
-        is_mandatory = mandatory_id.to_s == option_value.to_s
-
-        attributes = { value: option_value }
-        attributes[:selected] = 'selected' if is_selected
-        attributes[:data] = { mandatory: 'true' } if is_mandatory
-
-        group_html << content_tag(:option, option_text, attributes)
-      end
-
-      html << content_tag(:optgroup, group_html.join.html_safe, label: group_name)
-    end
-
-    html.join("\n").html_safe
-  end
-
   def message_time_format(time)
     return '' if time.blank?
 

@@ -83,6 +83,10 @@ class InterventionPolicy < ApplicationPolicy
     new?
   end
 
+  def agents_for_service?
+    new?
+  end
+
   def update_location?
     pointer?
   end

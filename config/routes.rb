@@ -77,6 +77,7 @@ Rails.application.routes.draw do
     collection do
       get :get_unavailable_elements
       get :services_for_adherent
+      get :agents_for_service
       get :new_intervention_pointage
       post :create_intervention_pointage
     end

@@ -230,4 +230,67 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     intervention_fille.reload
     assert_not_nil intervention_fille.localisation, 'La localisation doit être mise à jour après pointage'
   end
+
+  test 'new (form manager) : liste des agents PLATE (sans optgroup) et câblée au service' do
+    get new_intervention_url
+    assert_response :success
+
+    selecteur = "select[name='intervention[agent_ids][]']"
+    # Plus aucun groupe dans la liste des agents
+    assert_select "#{selecteur} optgroup", false, 'la liste des agents ne doit plus contenir de groupe'
+    # Le select agents est la cible de mise à jour dynamique selon le service
+    assert_select "#{selecteur}[data-dynamic-select-target='agents']"
+    # Le select service déclenche le rechargement des agents
+    assert_select "select[name='intervention[service_id]'][data-action*='dynamic-select#updateAgents']"
+  end
+
+  test 'should get new as agent (form_for_agents)' do
+    sign_in users(:martin_technique_paris)
+    get new_intervention_url
+    assert_response :success
+    # L'agent qui crée est obligatoire (data-mandatory) dans la liste plate
+    assert_select "select[name='intervention[agent_ids][]'] option[data-mandatory='true']"
+  end
+
+  # --- GET agents_for_service ---------------------------------------------
+  # Endpoint JSON alimentant la mise à jour dynamique de la liste des agents
+  # en fonction du service sélectionné. hidalgo (manager) a accès aux services
+  # service_paris / informatique / technique.
+
+  test 'agents_for_service renvoie les agents du service en JSON' do
+    get agents_for_service_interventions_url(service_id: services(:technique).id), as: :json
+
+    assert_response :success
+    ids = response.parsed_body.map { |a| a['id'] }
+
+    assert_includes ids, users(:martin_technique_paris).id
+    # Un adhérent ne doit jamais figurer dans la liste des agents
+    assert_not_includes ids, users(:weil).id
+    # Format attendu : {id, nom}
+    agent = response.parsed_body.find { |a| a['id'] == users(:martin_technique_paris).id }
+    assert_equal users(:martin_technique_paris).nom_prénom, agent['nom']
+  end
+
+  test 'agents_for_service borne le résultat au périmètre du current_user' do
+    # service_marseille est hors du périmètre de hidalgo : on ne fuite pas ses agents
+    get agents_for_service_interventions_url(service_id: services(:service_marseille).id), as: :json
+
+    assert_response :success
+    ids = response.parsed_body.map { |a| a['id'] }
+
+    assert_not_includes ids, users(:agent_marseille).id
+    # Service hors périmètre ⇒ repli sur tous les agents du current_user
+    assert_includes ids, users(:martin_technique_paris).id
+  end
+
+  test 'agents_for_service sans service renvoie tous les agents du périmètre' do
+    get agents_for_service_interventions_url, as: :json
+
+    assert_response :success
+    ids = response.parsed_body.map { |a| a['id'] }
+
+    assert_includes ids, users(:martin_technique_paris).id
+    assert_includes ids, users(:agent_whatsapp).id
+    assert_not_includes ids, users(:agent_marseille).id
+  end
 end
