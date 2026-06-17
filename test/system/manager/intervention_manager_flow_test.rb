@@ -86,6 +86,32 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     end
   end
 
+  # Anti-régression : un select `required` masqué par SlimSelect doit rester FOCUSABLE,
+  # sinon la validation HTML5 ne peut pas l'atteindre au submit (« An invalid form
+  # control ... is not focusable ») et l'erreur passe inaperçue pour l'utilisateur.
+  # La régression venait d'un `visibility: hidden` ajouté au CSS (commit 1f3dc709) ;
+  # `opacity: 0` masque déjà le champ tout en le laissant focusable.
+  test 'un slim-select requis reste focusable pour la validation HTML5' do
+    visit new_intervention_url
+
+    # #intervention_adherent_id est `required` et rendu invisible par slim-select.
+    style = page.evaluate_script(<<~JS)
+      (() => {
+        const el = document.getElementById('intervention_adherent_id');
+        if (!el) return null;
+        const cs = getComputedStyle(el);
+        document.body.focus();
+        el.focus();
+        return { visibility: cs.visibility, display: cs.display, focused: document.activeElement === el };
+      })()
+    JS
+
+    assert style, '#intervention_adherent_id introuvable sur le formulaire'
+    assert_not_equal 'hidden', style['visibility'], 'visibility:hidden rend le champ non-focusable'
+    assert_not_equal 'none', style['display'], 'display:none rend le champ non-focusable'
+    assert style['focused'], 'le select requis masqué par slim-select doit rester focusable'
+  end
+
   test 'Modifier intervention' do
     visit interventions_url
     intervention = interventions(:tonte_locaux)

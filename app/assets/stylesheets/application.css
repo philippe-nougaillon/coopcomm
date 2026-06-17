@@ -329,10 +329,10 @@ select.slim-select:focus,
 
   select.slim-select[required] {
     
-    /* Oculta el select nativo pero mantiene un bloque invisible del tamaño correcto */
-    visibility: hidden;
-    position: absolute;
-    pointer-events: none;
+    /* NE PAS remettre `visibility: hidden` ni `display: none` ici : le select doit
+       rester focusable pour que la validation HTML5 puisse l'atteindre au submit
+       (sinon « An invalid form control is not focusable »). `opacity: 0` (plus bas)
+       suffit à le masquer visuellement tout en le gardant focusable. */
 
 
     display: block !important;
