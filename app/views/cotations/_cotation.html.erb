@@ -15,7 +15,7 @@
     <% if mail_log %>
       <div class="flex flex-col gap-0.5 text-xs leading-tight">
         <span class="font-semibold <%= mail_log.statut ? 'text-success' : 'text-error' %>"><%= mail_log.statut ? 'OK' : 'KO' %></span>
-        <% if mail_log.etat %>
+        <% if mail_log.statut && mail_log.etat %>
           <span class="text-info">OUVERT</span>
         <% end %>
         <span class="text-slate-400"><%= time_ago_in_words mail_log.created_at %></span>
