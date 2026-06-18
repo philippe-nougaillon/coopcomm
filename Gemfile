@@ -158,6 +158,9 @@ gem 'page_title_helper', '~> 9.1'
 
 gem 'solid_cache', '~> 1.0'
 
+# Vues (matérialisées) PostgreSQL versionnées via migrations — alimentent le dashboard
+gem 'scenic', '~> 1.8'
+
 gem 'solid_cable', '~> 3.0'
 
 gem 'seed_dump', '~> 3.3'

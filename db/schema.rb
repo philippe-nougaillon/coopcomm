@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_06_11_124048) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_17_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -593,4 +593,37 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_11_124048) do
   add_foreign_key "users", "warehouses"
   add_foreign_key "warehouses", "organisations"
   add_foreign_key "wiki_pages", "users"
+
+  create_view "dashboard_agent_stats", materialized: true, sql_definition: <<-SQL
+      SELECT services.organisation_id,
+      agent_interventions.agent_id,
+      COALESCE(sum((interventions.temps_total / (nb_agents.cnt)::numeric)), (0)::numeric) AS temps_total
+     FROM ((((agent_interventions
+       JOIN users ON (((users.id = agent_interventions.agent_id) AND (users.discarded_at IS NULL))))
+       JOIN interventions ON ((interventions.id = agent_interventions.intervention_id)))
+       JOIN services ON ((services.id = interventions.service_id)))
+       JOIN ( SELECT ai.intervention_id,
+              count(*) AS cnt
+             FROM (agent_interventions ai
+               JOIN users u ON (((u.id = ai.agent_id) AND (u.discarded_at IS NULL))))
+            GROUP BY ai.intervention_id) nb_agents ON ((nb_agents.intervention_id = agent_interventions.intervention_id)))
+    GROUP BY services.organisation_id, agent_interventions.agent_id;
+  SQL
+  add_index "dashboard_agent_stats", ["organisation_id", "agent_id"], name: "idx_dashboard_agent_stats_unique", unique: true
+
+  create_view "dashboard_intervention_stats", materialized: true, sql_definition: <<-SQL
+      SELECT services.organisation_id,
+      interventions.service_id,
+      interventions.adherent_id,
+      (date_trunc('month'::text, interventions."début"))::date AS mois,
+      interventions.workflow_state,
+      count(*) AS nb,
+      COALESCE(sum(interventions.temps_total), (0)::numeric) AS temps_total,
+      COALESCE(sum(interventions.co2), (0)::numeric) AS co2
+     FROM (interventions
+       JOIN services ON ((services.id = interventions.service_id)))
+    GROUP BY services.organisation_id, interventions.service_id, interventions.adherent_id, (date_trunc('month'::text, interventions."début")), interventions.workflow_state;
+  SQL
+  add_index "dashboard_intervention_stats", ["organisation_id", "service_id", "adherent_id", "mois", "workflow_state"], name: "idx_dashboard_intervention_stats_unique", unique: true
+
 end
