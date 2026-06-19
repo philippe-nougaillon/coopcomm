@@ -69,7 +69,7 @@ Rails.application.routes.draw do
       post :refuser
       post :archiver
       delete :purge
-      post :pointer
+      get :pointer
       get :pointage_statut
       patch :update_location
     end
@@ -128,7 +128,7 @@ Rails.application.routes.draw do
   end
   resources :prestations, except: %i[index show]
 
-  resources :conventions, except: %i[show] do
+  resources :conventions do
     collection do
       get :services_for_adherent
     end
