@@ -127,7 +127,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     intervention = interventions(:intervention_repete)
 
     assert_difference('Intervention.count', 1) do
-      post pointer_intervention_url(intervention)
+      get pointer_intervention_url(intervention)
     end
   end
 
@@ -137,14 +137,14 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     intervention = interventions(:intervention_repete)
 
     # Pointage
-    post pointer_intervention_url(intervention)
+    get pointer_intervention_url(intervention)
 
     intervention_créée = Intervention.find_by(template_slug: intervention.slug)
 
     assert_nil intervention_créée.fin
 
     # Repointage
-    post pointer_intervention_url(intervention)
+    get pointer_intervention_url(intervention)
 
     intervention_créée.reload
     assert_not_nil intervention_créée
@@ -156,7 +156,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     intervention.save
 
     assert_no_difference('Intervention.count') do
-      post pointer_intervention_url(intervention)
+      get pointer_intervention_url(intervention)
     end
   end
 
@@ -166,13 +166,13 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     # Pointage avec le 1er agent
     sign_in users(:martin_technique_paris)
     assert_difference('Intervention.count', 1) do
-      post pointer_intervention_url(intervention)
+      get pointer_intervention_url(intervention)
     end
 
     # Pointage avec le 2eme agent
     sign_in users(:bond)
     assert_difference('Intervention.count', 1) do
-      post pointer_intervention_url(intervention)
+      get pointer_intervention_url(intervention)
     end
 
     expected_nb_intervention_filles = 2
@@ -188,22 +188,22 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
     # 1er pointage (début de journée)
     assert_difference('Intervention.count', 1) do
-      post pointer_intervention_url(intervention)
+      get pointer_intervention_url(intervention)
     end
 
     # 2eme pointage (début de pause)
     assert_no_difference('Intervention.count') do
-      post pointer_intervention_url(intervention)
+      get pointer_intervention_url(intervention)
     end
 
     # 3eme pointage (fin de pause, reprise d'activité)
     assert_difference('Intervention.count', 1) do
-      post pointer_intervention_url(intervention)
+      get pointer_intervention_url(intervention)
     end
 
     # 4eme pointage (fin de journée)
     assert_no_difference('Intervention.count') do
-      post pointer_intervention_url(intervention)
+      get pointer_intervention_url(intervention)
     end
 
     expected_nb_intervention_filles = 2
@@ -212,13 +212,33 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal expected_nb_intervention_filles, actual_nb_intervention_filles
   end
 
+  test 'pointer dont le save échoue ne renvoie pas 404 mais remonte l erreur' do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+
+    intervention = interventions(:intervention_repete)
+    # L'agent est déjà affecté au modèle ; on lui ajoute une fenêtre planifiée.
+    # L'intervention fille hérite de la même fenêtre et entre donc en conflit de
+    # disponibilité avec son propre modèle → le save échoue (id nil).
+    intervention.update_columns(début_prévue: DateTime.new(2026, 6, 1), fin_prévue: DateTime.new(2026, 6, 30))
+
+    assert_no_difference('Intervention.count') do
+      assert_no_enqueued_jobs only: NotifMailAdherentInterventionPointageJob do
+        get pointer_intervention_url(intervention)
+      end
+    end
+
+    assert_response :redirect
+    assert_match(/pointage n'a pas pu être enregistré/i, flash[:alert].to_s)
+  end
+
   test "update location intervention doit ajouter la geolocalisation à l'intervention fille" do
     intervention = interventions(:intervention_repete)
 
     sign_in users(:martin_technique_paris)
 
     assert_difference('Intervention.count', 1) do
-      post pointer_intervention_url(intervention)
+      get pointer_intervention_url(intervention)
     end
 
     intervention_fille = Intervention.where(template_slug: intervention.slug).last

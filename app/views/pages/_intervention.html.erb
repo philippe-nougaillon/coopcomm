@@ -12,7 +12,14 @@
   </div>
   <div class="flex flex-col sm:flex-row gap-4 shrink-0">
     <% if policy(intervention).terminer? && intervention.can_terminer? %>
-      <%= button_to 'Terminer', (current_user.agent? && intervention.template_slug) ? pointer_intervention_path(Intervention.find_by(slug: intervention.template_slug)) : terminer_intervention_path(intervention), class: 'btn btn-primary btn-outline btn-ml hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', form: { data: { turbo: false }, class: 'contents' } %>
+      <% pointe = current_user.agent? && intervention.template_slug %>
+      <%# `pointer` est une route GET (scan QR / URL), `terminer` une route POST : verbe conditionnel. %>
+      <%= button_to 'Terminer',
+            pointe ? pointer_intervention_path(Intervention.find_by(slug: intervention.template_slug)) : terminer_intervention_path(intervention),
+            method: pointe ? :get : :post,
+            class: 'btn btn-primary btn-outline btn-ml hover:text-white!',
+            title: "Cliquez pour passer cette intervention en statut 'Terminé'",
+            form: { data: { turbo: false }, class: 'contents' } %>
     <% end %>
     <% if policy(intervention).valider? && intervention.can_valider? %>
       <%= button_to 'Valider', valider_intervention_path(intervention), class: 'btn btn-success btn-outline btn-ml hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', form: { data: { turbo: false }, class: 'contents' } %>
