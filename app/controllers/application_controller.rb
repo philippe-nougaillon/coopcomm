@@ -35,6 +35,30 @@ class ApplicationController < ActionController::Base
 
   private
 
+  # Périmètre de services d'un index, avec valeur par défaut pré-filtrée pour les
+  # administrateurs. Mutualisé entre les index (interventions, utilisateurs, et à
+  # venir). `param_key` est la clé du paramètre de filtre (ex. :service, :services).
+  #
+  # Effets de bord pour les vues :
+  #   @services            → options du menu déroulant : tous les services de
+  #                          l'organisation pour un administrateur, sinon les
+  #                          services du current_user ;
+  #   @selected_service_ids → ids à pré-sélectionner dans le menu.
+  #
+  # Retourne la relation des services sélectionnés : les services demandés via le
+  # param, TOUJOURS bornés au périmètre autorisé (un param forgé hors périmètre
+  # est ignoré) ; à défaut, les services du current_user (pré-filtre).
+  def scoped_services(param_key)
+    default_services = current_user.services
+    allowed_services = (current_user.administrateur? && current_organisation&.services) || default_services
+    @services = allowed_services
+
+    requested = allowed_services.where(id: params[param_key]) if params[param_key].present?
+    selected = requested.presence || default_services
+    @selected_service_ids = selected.ids
+    selected
+  end
+
   def prepare_exception_notifier
     request.env['exception_notifier.exception_data'] = {
       current_user: current_user

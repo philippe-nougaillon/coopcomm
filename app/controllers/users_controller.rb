@@ -10,9 +10,8 @@ class UsersController < ApplicationController
 
   # GET /users or /users.json
   def index
-    @services = current_user.services
-
-    @users = User.by_service(params[:services].presence || @services)
+    # Périmètre de services filtré (menu + pré-filtre admin), cf. ApplicationController.
+    @users = User.by_service(scoped_services(:services))
 
     @users = @users.unscoped.discarded if params[:discarded].present?
     @users = @users.ordered

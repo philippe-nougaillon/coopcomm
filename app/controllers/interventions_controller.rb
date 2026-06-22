@@ -20,10 +20,11 @@ class InterventionsController < ApplicationController
     session[:vue] ||= 'normal'
     params[:vue] ||= session[:vue]
 
-    @services = current_user.services
+    # Périmètre de services filtré (menu + pré-filtre admin), cf. ApplicationController.
+    selected_services = scoped_services(:service)
 
-    # Récupère les interventions à partir des services de l'utilisateur ou dans les params
-    @interventions = Intervention.filter_by_service(params[:service].presence || @services)
+    # Récupère les interventions à partir des services sélectionnés
+    @interventions = Intervention.filter_by_service(selected_services)
 
     @interventions = @interventions.by_role_for(current_user)
 
@@ -87,9 +88,12 @@ class InterventionsController < ApplicationController
 
     @interventions = @interventions.distinct
 
-    users_in_same_services = User.by_service(params[:service].presence || @services)
+    users_in_same_services = User.by_service(selected_services)
 
-    @adhérents = users_in_same_services.adhérent.order(:nom)
+    # Adhérents : pour un administrateur, la liste reste complète (indépendante du
+    # filtre de services) ; pour les autres rôles, elle suit les services sélectionnés.
+    adherents_services = current_user.administrateur? ? @services : selected_services
+    @adhérents = User.by_service(adherents_services).adhérent.order(:nom)
 
     if current_user.manager_or_admin? || current_user.adhérent?
       @grouped_agents = users_in_same_services.grouped_agents(current_user)

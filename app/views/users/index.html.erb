@@ -32,7 +32,7 @@
       <div class="w-full md:flex-1">
         <%= label_tag :services, "Services", class: "block text-xs font-semibold text-slate-600 mb-1" %>
         <%= select_tag :services,
-                options_from_collection_for_select(@services, 'id', 'nom', params[:services]),
+                options_from_collection_for_select(@services, 'id', 'nom', @selected_service_ids),
                 multiple: true,
                 class: 'slim-select w-full h-10',
                 data: { placeholder: 'Tous les services' },
