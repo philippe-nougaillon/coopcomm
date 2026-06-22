@@ -9,6 +9,11 @@ class Prestation < ApplicationRecord
   belongs_to :organisation
   has_many :cotation_lignes, dependent: :restrict_with_error
 
+  # Unité facturée pré-remplie à « H » (heure) à la création ; reste modifiable.
+  # Le défaut ne s'applique qu'aux nouveaux enregistrements ; les prestations
+  # déjà en base conservent leur valeur (y compris vide).
+  attribute :unité, :string, default: "H"
+
   validates :code, :libellé, :tarif, presence: true
   validates :code, uniqueness: { scope: :organisation_id, case_sensitive: false }
 

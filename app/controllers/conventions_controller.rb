@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ConventionsController < ApplicationController
-  before_action :set_convention, only: %i[edit update destroy]
+  before_action :set_convention, only: %i[show edit update destroy]
   before_action :is_user_authorized, except: :create
 
   # GET /conventions
@@ -31,6 +31,12 @@ class ConventionsController < ApplicationController
     end
 
     @pagy, @conventions = pagy(@conventions, items: 15)
+  end
+
+  # GET /conventions/1
+  def show
+    @audits = @convention.audits.includes(:user).reorder(id: :desc)
+    @pagy, @audits = pagy(@audits, items: 10)
   end
 
   # GET /conventions/new

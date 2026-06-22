@@ -169,6 +169,19 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'td', text: 'destinataire@exemple.fr'
   end
 
+  test "le show affiche le journal d'activité (audits) pour un manager/admin" do
+    cotation = cotations(:cotation_paris)
+    # Une modification génère un audit (gem `audited`) ; on vérifie qu'il
+    # apparaît dans la section « Activité » (rendue par le partial _audit + prettify).
+    cotation.update!(intitulé: 'Intitulé révisé')
+
+    get cotation_url(cotation)
+
+    assert_response :success
+    assert_select 'h2', text: 'Activité'
+    assert_select 'td', text: /Intitulé révisé/
+  end
+
   test 'destroy effectue un soft delete' do
     cotation = cotations(:cotation_paris)
     assert_no_difference -> { Cotation.count } do

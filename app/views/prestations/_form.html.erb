@@ -22,7 +22,7 @@
     </div>
     <div class="flex flex-col gap-1">
       <%= f.label :catégorie, "Catégorie", class: "text-sm text-slate-500" %>
-      <%= f.text_field :catégorie, class: "input input-sm input-bordered w-full" %>
+      <%= f.select :catégorie, %w[A B C], { include_blank: "—" }, class: "select select-sm select-bordered w-full" %>
     </div>
     <div class="flex flex-col gap-1">
       <%= f.label :sous_catégorie, "Sous-catégorie", class: "text-sm text-slate-500" %>
@@ -38,7 +38,7 @@
     </div>
     <div class="flex flex-col gap-1">
       <%= f.label :compétence, "Compétence", class: "text-sm text-slate-500" %>
-      <%= f.text_field :compétence, class: "input input-sm input-bordered w-full" %>
+      <%= f.text_field :compétence, class: "input input-sm input-bordered w-full", placeholder: "ex : plomberie, électricité…" %>
     </div>
     <div class="flex flex-col gap-1">
       <%= f.label :délai, "Délai", class: "text-sm text-slate-500" %>
