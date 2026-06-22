@@ -356,18 +356,28 @@ class InterventionsController < ApplicationController
       if current_intervention.present?
         if current_intervention.fin
           current_intervention = @intervention.create_next_intervention(@intervention, current_user)
-          flash[:notice] = "Reprise d'activité enregistrée !"
+          message = "Reprise d'activité enregistrée !"
         else
           current_intervention.fin = DateTime.now
           current_intervention.temps_total = current_intervention.calc_temps_total
           current_intervention.workflow_state = 'terminé'
           current_intervention.save
-          flash[:notice] = 'Pointage de fin enregistrée !'
+          message = 'Pointage de fin enregistrée !'
         end
       else
         current_intervention = @intervention.create_next_intervention(@intervention, current_user)
-        flash[:notice] = 'Début de journée enregistrée !'
+        message = 'Début de journée enregistrée !'
       end
+
+      # Le pointage crée/modifie une intervention : si une validation échoue, le
+      # save renvoie false et l'id reste nil. On ne publie alors aucun event
+      # (sinon find(nil) → RecordNotFound → 404) et on remonte l'erreur métier.
+      unless current_intervention.persisted? && current_intervention.errors.empty?
+        return redirect_to @intervention,
+                           alert: "Le pointage n'a pas pu être enregistré : #{current_intervention.errors.full_messages.to_sentence}"
+      end
+
+      flash[:notice] = message
       unless Rails.env.development?
         Events.instance.publish('intervention.pointage', payload: { intervention_id: current_intervention.id })
       end
