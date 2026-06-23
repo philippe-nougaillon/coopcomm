@@ -54,55 +54,47 @@
                 data: { placeholder: 'Tous les mots-clés' },
                 onchange: 'this.form.requestSubmit()' %>
       </div>
-
-
       <div class="flex items-center gap-3 h-10 px-3 border border-slate-200 rounded-lg bg-slate-50 cursor-pointer"
        onclick="document.getElementById('absent').click()">
-    <%= check_box_tag :absent, 1, params[:absent],
+        <%= check_box_tag :absent, 1, params[:absent],
           id: 'absent',
           class: 'hidden',
           onchange: 'this.form.requestSubmit()' %>
-    <div id="toggle-track"
+        <div id="toggle-track"
          class="w-8 h-4 rounded-full transition-colors duration-200 flex items-center px-0.5 flex-shrink-0 <%= params[:absent].present? ? 'bg-[#007fcb]' : 'bg-slate-300' %>">
-      <div class="w-3 h-3 rounded-full bg-white transition-transform duration-200 <%= params[:absent].present? ? 'translate-x-4' : 'translate-x-0' %>"></div>
-    </div>
-    <span class="text-sm font-medium text-slate-600 whitespace-nowrap">
-      Absents ?
-    </span>
-  </div>
-
-
-  <div class="flex items-center gap-3 h-10 px-3 border border-slate-200 rounded-lg bg-slate-50 cursor-pointer"
+          <div class="w-3 h-3 rounded-full bg-white transition-transform duration-200 <%= params[:absent].present? ? 'translate-x-4' : 'translate-x-0' %>"></div>
+        </div>
+        <span class="text-sm font-medium text-slate-600 whitespace-nowrap">
+          Absents ?
+        </span>
+      </div>
+      <div class="flex items-center gap-3 h-10 px-3 border border-slate-200 rounded-lg bg-slate-50 cursor-pointer"
        onclick="document.getElementById('discarded').click()">
-    <%= check_box_tag :discarded, 1, params[:discarded],
+        <%= check_box_tag :discarded, 1, params[:discarded],
           id: 'discarded',
           class: 'hidden',
           onchange: 'this.form.requestSubmit()' %>
-    <div id="toggle-track"
+        <div id="toggle-track"
          class="w-8 h-4 rounded-full transition-colors duration-200 flex items-center px-0.5 flex-shrink-0 <%= params[:discarded].present? ? 'bg-[#007fcb]' : 'bg-slate-300' %>">
-      <div class="w-3 h-3 rounded-full bg-white transition-transform duration-200 <%= params[:discarded].present? ? 'translate-x-4' : 'translate-x-0' %>"></div>
-    </div>
-    <span class="text-sm font-medium text-slate-600 whitespace-nowrap">
-      Désactivés ?
-    </span>
-  </div>
-
-
-
-      
+          <div class="w-3 h-3 rounded-full bg-white transition-transform duration-200 <%= params[:discarded].present? ? 'translate-x-4' : 'translate-x-0' %>"></div>
+        </div>
+        <span class="text-sm font-medium text-slate-600 whitespace-nowrap">
+          Désactivés ?
+        </span>
+      </div>
     </div>
   <% end %>
 </div>
-<hr class="mt-6 mb-6">
-<div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
-  <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
-</div>
-<div class="flex flex-col bg-white  border-x border-b border-slate-200 shadow-sm overflow-hidden">
-  <div class="overflow-x-auto ">
-    <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-      <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
-      <span>Faire glisser pour voir plus</span>
+<hr class="mt-2 mb-6">
+    <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
+      <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
     </div>
+    <div class="flex flex-col bg-white  border-x border-b border-slate-200 shadow-sm ">
+      <div class="!overflow-visible ">
+        <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+          <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+          <span>Faire glisser pour voir plus</span>
+        </div>
     <table id="users" class="table table-sm w-full border-none">
       <thead class="bg-slate-100">
         <tr>
@@ -122,17 +114,17 @@
           <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Évaluation</th>
         </tr>
       </thead>
-        <tbody>
-          <% if @users.any? %>
-            <%= render @users %>
-          <% else %>
-            <tr>
-              <td colspan="8" class="text-left md:text-center py-8 text-slate-400 text-base italic">
-                Aucun résultat trouvé pour cette recherche.
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
+      <tbody>
+        <% if @users.any? %>
+          <%= render @users %>
+        <% else %>
+          <tr>
+            <td colspan="8" class="text-left md:text-center py-8 text-slate-400 text-base italic">
+              Aucun résultat trouvé pour cette recherche.
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
     </table>
   </div>
 </div>
@@ -149,7 +141,7 @@
             data: { testid: "import_users" },
             'data-turbo': false,
             class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base w-full sm:w-auto" do %>
-        <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+      <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
       <span>Importer des agents</span>
     <% end %>
   </div>
