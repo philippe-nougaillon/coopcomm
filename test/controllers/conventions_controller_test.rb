@@ -50,6 +50,32 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to conventions_path
   end
 
+  test 'show accessible à un admin et affiche les informations clés' do
+    get convention_url(@convention)
+    assert_response :success
+    assert_select 'h1', text: /Convention/
+    assert_match @convention.user.nom_prénom, response.body
+    assert_match @convention.service.nom, response.body
+  end
+
+  test "le show affiche le journal d'activité (audits) de la convention" do
+    # Une modification génère un audit (gem `audited`) ; on vérifie qu'il
+    # apparaît dans la section « Activité » (rendue par le partial _audit + prettify).
+    @convention.update!(mémo: 'Note de suivi')
+
+    get convention_url(@convention)
+
+    assert_response :success
+    assert_select 'h2', text: 'Activité'
+    assert_select 'td', text: /Note de suivi/
+  end
+
+  test "un agent n'est pas autorisé à voir le show" do
+    sign_in users(:agent_whatsapp)
+    get convention_url(@convention)
+    assert_redirected_to root_path
+  end
+
   test 'services_for_adherent renvoie les services disponibles en JSON' do
     get services_for_adherent_conventions_url(adherent_id: @adherent.id)
     assert_response :success

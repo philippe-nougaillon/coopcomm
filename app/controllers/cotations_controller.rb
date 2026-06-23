@@ -30,7 +30,10 @@ class CotationsController < ApplicationController
   end
 
   # GET /cotations/1
-  def show; end
+  def show
+    @audits = @cotation.own_and_associated_audits.includes(:user).reorder(id: :desc)
+    @pagy, @audits = pagy(@audits, items: 10)
+  end
 
   # GET /cotations/new
   def new

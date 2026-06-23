@@ -24,36 +24,49 @@
       <span class="text-slate-300">—</span>
     <% end %>
   </td>
-  <td class="px-4 py-3">
-    <div class="flex gap-2 items-center justify-end">
-      <%= link_to "Voir", cotation, class: "btn btn-sm" %>
-      <% if policy(cotation).envoyer? && cotation.can_envoyer? %>
-        <%= button_to "Envoyer", envoyer_cotation_path(cotation), class: "btn btn-sm btn-info btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
+  <%# Une colonne par action : chaque bouton de même catégorie s'aligne
+      verticalement d'une cotation à l'autre (cellule vide si l'action ne
+      s'applique pas à l'état courant). %>
+  <td class="px-2 py-3 text-center">
+    <%= link_to "Voir", cotation, class: "btn btn-sm" %>
+  </td>
+  <td class="px-2 py-3 text-center">
+    <% if policy(cotation).envoyer? && cotation.can_envoyer? %>
+      <%= button_to "Envoyer", envoyer_cotation_path(cotation), class: "btn btn-sm btn-info btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
+    <% end %>
+  </td>
+  <td class="px-2 py-3 text-center">
+    <% if policy(cotation).valider? && cotation.can_valider? %>
+      <%= button_to "Valider", valider_cotation_path(cotation), class: "btn btn-sm btn-success btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
+    <% end %>
+  </td>
+  <td class="px-2 py-3 text-center">
+    <% if policy(cotation).refuser? && cotation.can_refuser? %>
+      <%= button_to "Refuser", refuser_cotation_path(cotation), class: "btn btn-sm btn-error btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
+    <% end %>
+  </td>
+  <td class="px-2 py-3 text-center">
+    <% if policy(cotation).pdf? %>
+      <%= link_to pdf_cotation_path(cotation, filename: cotation.pdf_filename),
+            class: "btn btn-sm", target: "_blank", title: "Générer le PDF", data: { turbo: false } do %>
+        <span class="material-symbols-outlined">picture_as_pdf</span>
       <% end %>
-      <% if policy(cotation).valider? && cotation.can_valider? %>
-        <%= button_to "Valider", valider_cotation_path(cotation), class: "btn btn-sm btn-success btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
+    <% end %>
+  </td>
+  <td class="px-2 py-3 text-center">
+    <% if policy(cotation).update? %>
+      <%= link_to edit_cotation_path(cotation), class: "btn btn-sm btn-primary", title: "Modifier" do %>
+        <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
+        <span class="hidden lg:inline">Modifier</span>
       <% end %>
-      <% if policy(cotation).refuser? && cotation.can_refuser? %>
-        <%= button_to "Refuser", refuser_cotation_path(cotation), class: "btn btn-sm btn-error btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
+    <% end %>
+  </td>
+  <td class="px-2 py-3 text-center">
+    <% if policy(cotation).destroy? %>
+      <%= button_to cotation_path(cotation), method: :delete, class: "btn btn-sm", title: "Supprimer",
+            form: { data: { turbo_confirm: "Supprimer cette cotation ?" }, class: 'inline-block' } do %>
+        <span class="material-symbols-outlined">delete</span>
       <% end %>
-      <% if policy(cotation).pdf? %>
-        <%= link_to pdf_cotation_path(cotation, filename: cotation.pdf_filename),
-              class: "btn btn-sm", target: "_blank", title: "Générer le PDF", data: { turbo: false } do %>
-          <span class="material-symbols-outlined">picture_as_pdf</span>
-        <% end %>
-      <% end %>
-      <% if policy(cotation).update? %>
-        <%= link_to edit_cotation_path(cotation), class: "btn btn-sm btn-primary", title: "Modifier" do %>
-          <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
-          <span class="hidden lg:inline">Modifier</span>
-        <% end %>
-      <% end %>
-      <% if policy(cotation).destroy? %>
-        <%= button_to cotation_path(cotation), method: :delete, class: "btn btn-sm", title: "Supprimer",
-              form: { data: { turbo_confirm: "Supprimer cette cotation ?" } } do %>
-          <span class="material-symbols-outlined">delete</span>
-        <% end %>
-      <% end %>
-    </div>
+    <% end %>
   </td>
 </tr>

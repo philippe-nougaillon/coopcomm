@@ -20,10 +20,11 @@ class InterventionsController < ApplicationController
     session[:vue] ||= 'normal'
     params[:vue] ||= session[:vue]
 
-    @services = current_user.services
+    # Périmètre de services filtré (menu + pré-filtre admin), cf. ApplicationController.
+    selected_services = scoped_services(:service)
 
-    # Récupère les interventions à partir des services de l'utilisateur ou dans les params
-    @interventions = Intervention.filter_by_service(params[:service].presence || @services)
+    # Récupère les interventions à partir des services sélectionnés
+    @interventions = Intervention.filter_by_service(selected_services)
 
     @interventions = @interventions.by_role_for(current_user)
 
@@ -87,9 +88,12 @@ class InterventionsController < ApplicationController
 
     @interventions = @interventions.distinct
 
-    users_in_same_services = User.by_service(params[:service].presence || @services)
+    users_in_same_services = User.by_service(selected_services)
 
-    @adhérents = users_in_same_services.adhérent.order(:nom)
+    # Adhérents : pour un administrateur, la liste reste complète (indépendante du
+    # filtre de services) ; pour les autres rôles, elle suit les services sélectionnés.
+    adherents_services = current_user.administrateur? ? @services : selected_services
+    @adhérents = User.by_service(adherents_services).adhérent.order(:nom)
 
     if current_user.manager_or_admin? || current_user.adhérent?
       @grouped_agents = users_in_same_services.grouped_agents(current_user)
@@ -352,18 +356,28 @@ class InterventionsController < ApplicationController
       if current_intervention.present?
         if current_intervention.fin
           current_intervention = @intervention.create_next_intervention(@intervention, current_user)
-          flash[:notice] = "Reprise d'activité enregistrée !"
+          message = "Reprise d'activité enregistrée !"
         else
           current_intervention.fin = DateTime.now
           current_intervention.temps_total = current_intervention.calc_temps_total
           current_intervention.workflow_state = 'terminé'
           current_intervention.save
-          flash[:notice] = 'Pointage de fin enregistrée !'
+          message = 'Pointage de fin enregistrée !'
         end
       else
         current_intervention = @intervention.create_next_intervention(@intervention, current_user)
-        flash[:notice] = 'Début de journée enregistrée !'
+        message = 'Début de journée enregistrée !'
       end
+
+      # Le pointage crée/modifie une intervention : si une validation échoue, le
+      # save renvoie false et l'id reste nil. On ne publie alors aucun event
+      # (sinon find(nil) → RecordNotFound → 404) et on remonte l'erreur métier.
+      unless current_intervention.persisted? && current_intervention.errors.empty?
+        return redirect_to @intervention,
+                           alert: "Le pointage n'a pas pu être enregistré : #{current_intervention.errors.full_messages.to_sentence}"
+      end
+
+      flash[:notice] = message
       unless Rails.env.development?
         Events.instance.publish('intervention.pointage', payload: { intervention_id: current_intervention.id })
       end

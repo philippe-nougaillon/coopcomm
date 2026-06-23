@@ -10,9 +10,8 @@ class UsersController < ApplicationController
 
   # GET /users or /users.json
   def index
-    @services = current_user.services
-
-    @users = User.by_service(params[:services].presence || @services)
+    # Périmètre de services filtré (menu + pré-filtre admin), cf. ApplicationController.
+    @users = User.by_service(scoped_services(:services))
 
     @users = @users.unscoped.discarded if params[:discarded].present?
     @users = @users.ordered
@@ -246,7 +245,7 @@ class UsersController < ApplicationController
             end
 
             # ✅ V2 : logs détaillés des changements
-            safe_changes = user.changes.except('encrypted_password', 'password', 'slug', 'organisation_id')
+            safe_changes = user.changes.except('encrypted_password', 'password', 'slug')
             display_changes = new_record ? safe_changes.transform_values(&:last) : safe_changes.dup
 
             services_changed = user.user_services.any? { |us| us.new_record? || us.marked_for_destruction? }

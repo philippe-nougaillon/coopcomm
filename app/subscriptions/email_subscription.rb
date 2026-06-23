@@ -38,7 +38,11 @@ class EmailSubscription
   end
 
   def on_intervention_pointage(event)
-    intervention = Intervention.find(event[:payload][:intervention_id])
+    # Un pointage dont le save a échoué publie un intervention_id nil : on ne
+    # plante pas toute la requête web (find(nil) → RecordNotFound → 404) pour
+    # une notification.
+    intervention = Intervention.find_by(id: event[:payload][:intervention_id])
+    return unless intervention
 
     NotifMailAdherentInterventionPointageJob.perform_later(intervention)
 

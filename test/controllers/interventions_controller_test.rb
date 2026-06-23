@@ -13,6 +13,112 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # --- Pré-filtrage par service de l'index --------------------------------
+  # administrateur_paris (org mairie_paris) a pour services service_paris /
+  # informatique / technique. `comptabilite` est dans son organisation mais
+  # PAS dans ses services → sert de témoin « hors périmètre personnel ».
+
+  test 'index : un administrateur ne voit que ses services par défaut' do
+    sign_in users(:administrateur_paris)
+    hors_perimetre = interventions(:tonte_locaux)
+    hors_perimetre.update_columns(service_id: services(:comptabilite).id)
+
+    get interventions_url
+
+    assert_response :success
+    assert_select "a[href=?]", intervention_path(hors_perimetre), { count: 0 },
+                  'le service comptabilite (hors de ses services) ne doit pas apparaître par défaut'
+  end
+
+  test "index : un administrateur peut filtrer sur un autre service de son organisation" do
+    sign_in users(:administrateur_paris)
+    hors_perimetre = interventions(:tonte_locaux)
+    hors_perimetre.update_columns(service_id: services(:comptabilite).id)
+
+    get interventions_url, params: { service: [services(:comptabilite).id] }
+
+    assert_response :success
+    assert_select "a[href=?]", intervention_path(hors_perimetre), { minimum: 1 },
+                  "l'administrateur peut voir un service de son organisation hors de ses propres services"
+  end
+
+  test "index : le menu service propose toute l'organisation à un administrateur" do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url
+
+    assert_response :success
+    assert_select "select[name='service[]'] option", { text: 'Comptabilité' },
+                  'un service hors de ses services mais dans son organisation doit être proposé'
+  end
+
+  test "index : un manager ne peut pas forger un service hors de son périmètre" do
+    # hidalgo (manager) est signé par le setup. service_marseille est hors org.
+    hors_perimetre = interventions(:tonte_locaux)
+    hors_perimetre.update_columns(service_id: services(:comptabilite).id)
+
+    get interventions_url, params: { service: [services(:comptabilite).id] }
+
+    assert_response :success
+    # Le param hors périmètre est ignoré → repli sur ses propres services
+    assert_select "a[href=?]", intervention_path(hors_perimetre), { count: 0 },
+                  'un manager ne doit pas voir un service hors de son périmètre via un param forgé'
+    # …et le menu ne le lui propose pas non plus
+    assert_select "select[name='service[]'] option", { text: 'Comptabilité', count: 0 }
+  end
+
+  # --- Affichage du filtre service selon le nombre de services ------------
+
+  test 'index : le filtre service est masqué pour un utilisateur à un seul service' do
+    sign_in users(:manager_marseille) # un seul service : service_marseille
+
+    get interventions_url
+
+    assert_response :success
+    assert_select "select[name='service[]']", false,
+                  'le filtre service doit être masqué quand le current_user n\'a qu\'un seul service'
+  end
+
+  test 'index : le filtre service reste visible pour un manager à plusieurs services' do
+    # hidalgo (setup) a 3 services
+    get interventions_url
+
+    assert_response :success
+    assert_select "select[name='service[]']"
+  end
+
+  test 'index : le filtre service reste visible pour un administrateur' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url
+
+    assert_response :success
+    assert_select "select[name='service[]']"
+  end
+
+  # --- Liste des adhérents et filtre service ------------------------------
+  # weil est un adhérent du service `informatique`. En filtrant sur `service_paris`,
+  # il ne doit rester proposé QUE pour un administrateur (liste complète).
+
+  test 'index : la liste des adhérents ne suit pas le filtre service pour un administrateur' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url, params: { service: [services(:service_paris).id] }
+
+    assert_response :success
+    assert_select "select[name='adherent_id[]'] option[value=?]", users(:weil).id.to_s, { minimum: 1 },
+                  "l'administrateur garde la liste complète des adhérents malgré le filtre service"
+  end
+
+  test 'index : la liste des adhérents suit le filtre service pour un manager' do
+    # hidalgo (manager, setup) filtre sur service_paris : weil (informatique) sort de la liste
+    get interventions_url, params: { service: [services(:service_paris).id] }
+
+    assert_response :success
+    assert_select "select[name='adherent_id[]'] option[value=?]", users(:weil).id.to_s, { count: 0 },
+                  'pour un manager, la liste des adhérents suit les services sélectionnés'
+  end
+
   test 'should get index with export xls' do
     get users_url,  params: {
       format: :xls

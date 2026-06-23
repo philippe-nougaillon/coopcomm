@@ -14,6 +14,50 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # --- Pré-filtrage par service de l'index --------------------------------
+  # Le setup signe administrateur_paris (services : service_paris / informatique
+  # / technique). john_wick est un agent du service `comptabilite`, dans la même
+  # organisation mais hors des services de l'administrateur → témoin.
+
+  test 'index : un administrateur ne voit que ses services par défaut' do
+    hors_perimetre = users(:john_wick) # service comptabilite
+
+    get users_url
+
+    assert_response :success
+    assert_select "a[href=?]", user_path(hors_perimetre), { count: 0 },
+                  'un utilisateur hors des services de l\'administrateur ne doit pas apparaître par défaut'
+  end
+
+  test "index : un administrateur peut filtrer sur un autre service de son organisation" do
+    hors_perimetre = users(:john_wick) # service comptabilite
+
+    get users_url, params: { services: [services(:comptabilite).id] }
+
+    assert_response :success
+    assert_select "a[href=?]", user_path(hors_perimetre), { minimum: 1 },
+                  "l'administrateur peut voir les utilisateurs d'un service de son organisation hors des siens"
+  end
+
+  test "index : le menu services propose toute l'organisation à un administrateur" do
+    get users_url
+
+    assert_response :success
+    assert_select "select[name='services[]'] option", { text: 'Comptabilité' }
+  end
+
+  test "index : un manager ne peut pas forger un service hors de son périmètre" do
+    sign_in users(:hidalgo) # manager : service_paris / informatique / technique
+    hors_perimetre = users(:john_wick) # service comptabilite
+
+    get users_url, params: { services: [services(:comptabilite).id] }
+
+    assert_response :success
+    assert_select "a[href=?]", user_path(hors_perimetre), { count: 0 },
+                  'un manager ne doit pas voir un service hors de son périmètre via un param forgé'
+    assert_select "select[name='services[]'] option", { text: 'Comptabilité', count: 0 }
+  end
+
   test 'should get index with export xls' do
     get users_url,  params: {
       format: :xls
