@@ -245,7 +245,7 @@ class UsersController < ApplicationController
             end
 
             # ✅ V2 : logs détaillés des changements
-            safe_changes = user.changes.except('encrypted_password', 'password', 'slug', 'organisation_id')
+            safe_changes = user.changes.except('encrypted_password', 'password', 'slug')
             display_changes = new_record ? safe_changes.transform_values(&:last) : safe_changes.dup
 
             services_changed = user.user_services.any? { |us| us.new_record? || us.marked_for_destruction? }
