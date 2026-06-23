@@ -140,7 +140,7 @@
   <% end %>
   <%= link_to messagerie_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:controller] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
     <% if current_user.new_messages? %>
-      <%= embedded_svg "icons/chat_error.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+      <%= embedded_svg "icons/chat.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-error" %>
     <% else %>
       <%= embedded_svg "icons/chat.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
     <% end %>
