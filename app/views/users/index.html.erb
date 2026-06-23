@@ -5,7 +5,7 @@
     </h1>
     <%= link_to admin_create_new_user_path,
             data: { testid: "ajouter_utilisateur" },
-            class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm ",
+            class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-base ",
             title: "Créer un nouvel agent" do %>
       <%= embedded_svg "icons/person_add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
       <span class="hidden md:block">Ajouter un Utilisateur</span>
@@ -14,14 +14,14 @@
   <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_frame: "users_table", turbo_action: "advance" } do %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
-        <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+        <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
         <%= text_field_tag :search, params[:search], include_blank: true,
                 onchange: 'this.form.requestSubmit()',
                 class: 'input input-bordered input-md w-full',
                 placeholder: 'Nom / Prénom' %>
       </div>
       <div class="w-full md:flex-1">
-        <%= label_tag :rôle, "Rôle", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+        <%= label_tag :rôle, "Rôle", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
         <%= select_tag :rôle,
                 options_for_select(User.rôles.sort_by { |k, _| I18n.transliterate(k) }, params[:rôle]),
                 multiple: true,
@@ -30,7 +30,7 @@
                 onchange: 'this.form.requestSubmit()' %>
       </div>
       <div class="w-full md:flex-1">
-        <%= label_tag :services, "Services", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+        <%= label_tag :services, "Services", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
         <%= select_tag :services,
                 options_from_collection_for_select(@services, 'id', 'nom', params[:services]),
                 multiple: true,
@@ -39,7 +39,7 @@
                 onchange: 'this.form.requestSubmit()' %>
       </div>
       <div class="w-full md:flex-1">
-        <%= label_tag :user_tag, "Mots clés", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+        <%= label_tag :user_tag, "Mots clés", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
         <%
           tags_de_users = ActsAsTaggableOn::Tag.joins(:taggings)
                                               .where(taggings: { taggable_type: 'User' })
@@ -140,7 +140,7 @@
   <div class="flex flex-wrap justify-end items-center gap-2 p-4">
     <% if @users.any? %>
       <%= link_to url_for(params.permit(:search, :role, :services, :absent, :discarded).merge(format: :xls)),
-              class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto" do %>
+              class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base w-full sm:w-auto" do %>
         <%= embedded_svg "icons/upload.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
         <span>Exporter en XLS</span>
       <% end %>
@@ -148,7 +148,7 @@
     <%= link_to import_users_path,
             data: { testid: "import_users" },
             'data-turbo': false,
-            class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto" do %>
+            class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base w-full sm:w-auto" do %>
         <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
       <span>Importer des agents</span>
     <% end %>
