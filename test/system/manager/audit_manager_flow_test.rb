@@ -76,15 +76,22 @@ class AuditManagerFlowTest < ApplicationSystemTestCase
 
   test 'Filter les audits par date' do
     go_to_audit_page
-    fill_in 'Du', with: (Date.today - 14).strftime('%d-%m-%Y')
-    fill_in 'Au', with: Date.today.strftime('%d-%m-%Y')
+    # `<input type="date">` natif : on saisit une séquence de chiffres MMJJAAAA
+    # (ordre des segments du widget), pas une chaîne à tirets DMY — sinon le
+    # champ misparse et, en réécriture, produit une date invalide non soumise.
+    fill_in 'Du', with: (Date.today - 14).strftime('%m%d%Y')
+    fill_in 'Au', with: Date.today.strftime('%m%d%Y')
     sleep(1)
     page.driver.browser.switch_to.active_element.send_keys(:enter)
     assert_text @manager.email # l'audit du login (aujourd'hui) est dans la plage
 
-    fill_in 'Au', with: (Date.today - 1).strftime('%d-%m-%Y')
+    # Réécriture d'un champ date déjà rempli (le champ persiste hors du turbo-frame
+    # rechargé, focus resté sur le segment année) : `fill_in` taperait dans l'année.
+    # On revient au 1er segment (mois) via des flèches gauche avant de retaper MMJJAAAA.
+    champ_au = find_field('Au')
+    champ_au.send_keys(:arrow_left, :arrow_left, :arrow_left, (Date.today - 1).strftime('%m%d%Y'))
     sleep(1)
-    page.driver.browser.switch_to.active_element.send_keys(:enter)
+    champ_au.send_keys(:enter)
     assert_text 'Aucun résultat trouvé' # plage se terminant hier : exclut l'audit d'aujourd'hui
   end
 
@@ -123,8 +130,8 @@ class AuditManagerFlowTest < ApplicationSystemTestCase
 
   test 'Cumuler les filtres' do
     go_to_audit_page
-    fill_in 'Du', with: (Date.today - 14).strftime('%d-%m-%Y')
-    fill_in 'Au', with: Date.today.strftime('%d-%m-%Y')
+    fill_in 'Du', with: (Date.today - 14).strftime('%m%d%Y')
+    fill_in 'Au', with: Date.today.strftime('%m%d%Y')
     ouvrir_criteres_avances
     choisir_filtre('#user_id', @manager.nom)
     choisir_filtre('#type', 'User')

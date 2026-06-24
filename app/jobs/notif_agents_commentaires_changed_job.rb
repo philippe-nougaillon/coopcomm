@@ -6,7 +6,7 @@ class NotifAgentsCommentairesChangedJob < ApplicationJob
   def perform(intervention, agent_ids, user_id)
     agents = User.where(id: agent_ids)
     mailer_response = NotificationMailer.commentaires_changed(intervention, agents.pluck(:email)).deliver_now
-    MailLog.create(organisation_id: intervention.organisation_id, user_id: user_id,
+    MailLog.create(organisation_id: intervention.organisation.id, user_id: user_id,
                    message_id: mailer_response.message_id, to: agents.pluck(:email), subject: 'Nouveau commentaire', channel: 0)
 
     # agents.each do |agent|

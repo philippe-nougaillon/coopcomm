@@ -35,5 +35,5 @@ plugin :tmp_restart
 # In other environments, only set the PID file if requested.
 pidfile ENV['PIDFILE'] if ENV['PIDFILE']
 
-# run the Solid Queue's supervisor together with Puma and have Puma monitor and manage it
-plugin :solid_queue
+# Run the Solid Queue supervisor inside of Puma for single-server deployments.
+plugin :solid_queue if ENV['SOLID_QUEUE_IN_PUMA']

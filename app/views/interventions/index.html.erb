@@ -80,14 +80,17 @@
               </div>
             <% end %>
             <% if current_user.manager_or_admin? || current_user.adhérent? %>
-              <div class="w-full">
-                <%= label_tag :service, "Service", class: "block font-semibold text-slate-600 text-sm mb-1" %>
-                <%= select_tag :service, options_from_collection_for_select(@services, 'id', 'nom', params[:service]), 
-                    multiple: true,
-                    class: 'slim-select w-full h-10',
-                    data: { placeholder: 'Tous les services' },
-                    onchange: 'this.form.requestSubmit()' %>              
-                    </div>
+              <%# Filtre service masqué si le current_user n'a qu'un seul service (sauf administrateur, qui filtre sur toute l'organisation). %>
+              <% if current_user.administrateur? || @services.size > 1 %>
+                <div class="w-full">
+                  <%= label_tag :service, "Service", class: "block font-semibold text-slate-600 text-sm mb-1" %>
+                  <%= select_tag :service, options_from_collection_for_select(@services, 'id', 'nom', @selected_service_ids),
+                      multiple: true,
+                      class: 'slim-select w-full h-10',
+                      data: { placeholder: 'Tous les services' },
+                      onchange: 'this.form.requestSubmit()' %>
+                </div>
+              <% end %>
               <div class="w-full">
                 <%= label_tag :agent_ids, "Agent(s)", class: "block font-semibold text-slate-600 text-sm mb-1" %>
                 <%= select_tag :agent_ids, grouped_options_for_select(@grouped_agents, params[:agent_ids]), 

@@ -14,7 +14,7 @@
                 placeholder: 'Rechercher...' %>
       </div>
       <div class="w-full md:flex-1">
-        <%= label_tag :user_id, "Utilisateur" %>
+        <%= label_tag :user_id, "Utilisateur", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
         <%= select_tag :user_id, options_from_collection_for_select(@users, :id, :nom_prénom, params[:user_id]),
                 multiple: true,
                 class: 'slim-select w-full h-10',
@@ -22,96 +22,162 @@
                 onchange: 'this.form.requestSubmit()' %>      </div>
     </div>
   <% end %>
-  <div class="divider"></div>
-  <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
-    <h2 class="text-2xl text-secondary">
-      Services
-    </h2>
-    <% if policy(Service).new? %>
-      <%= link_to "Ajouter un Service", new_service_path, data: { 'testid': "ajouter_service_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
-      <%= link_to "+ Service", new_service_path, data: { 'testid': "ajouter_service_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
-    <% end %>
+  <div class="mt-6 border-b border-slate-200">
+    <nav class="flex gap-1" aria-label="Sections des paramètres">
+      <a href="#services"
+         class="px-4 py-2.5 text-sm font-medium text-primary border-b-2 border-primary -mb-px"
+         data-section-tab="services">
+        Services
+        <span class="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+          <%= @services.size %>
+        </span>
+      </a>
+      <a href="#sites"
+         class="px-4 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-800 border-b-2 border-transparent -mb-px transition-colors"
+         data-section-tab="sites">
+        Sites
+        <span class="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">
+          <%= @warehouses.size %>
+        </span>
+      </a>
+      <a href="#prestations"
+         class="px-4 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-800 border-b-2 border-transparent -mb-px transition-colors"
+         data-section-tab="prestations">
+        Prestations
+        <span class="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">
+          <%= @prestations.size %>
+        </span>
+      </a>
+    </nav>
   </div>
-  <hr class="mt-6 mb-6">
-  <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
-    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
-  </div>
-  <div class="flex flex-col bg-white  border-x border-b border-slate-200 shadow-sm overflow-hidden">
-    <div class="overflow-x-auto ">
-      <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-        <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
-        <span>Faire glisser pour voir plus</span>
+  <section id="services" class="mt-6" data-section="services">
+    <div class="flex justify-between items-center">
+      <h2 class="text-xl font-semibold uppercase text-slate-700">Services</h2>
+      <% if policy(Service).new? %>
+        <%= link_to new_service_path,
+              data: { testid: "ajouter_service" },
+                          class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base mb-2 " do %>
+          <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current transition-colors duration-200", title: "Ajouter un service" %>
+          <span class="hidden md:block">Ajouter un service</span>
+        <% end %>
+      <% end %>
+    </div>
+    <hr class="mt-2 mb-6">
+    <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
+      <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
+    </div>
+    <div class="flex flex-col bg-white  border-x border-b border-slate-200 shadow-sm ">
+      <div class="!overflow-visible ">
+        <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+          <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+          <span>Faire glisser pour voir plus</span>
+        </div>
+        <table id="parametres" class="table table-sm w-full border-none">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+                Services</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+                Utilisateurs</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase text-center tracking-wider">
+                Nombre d'utilisateurs</th>
+              <th class="px-4 py-3 gap-1 items-center justify-center font-semibold flex flex-row text-slate-500 uppercase tracking-wider text-center  cursor-help"
+                    title="Calcul de distance sur les interventions du service à partir de l'équipe de l'adhérent">
+                Calcul distances
+                <%= embedded_svg "icons/error.svg", class: "w-6 h-6 fill-current transition-colors duration-200", title: "Ajouter un site" %>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if @services.any? %>
+              <%= render @services %>
+            <% else %>
+              <tr>
+                <td colspan="8" class="text-left md:text-center py-8 text-slate-400 text-base italic">
+                  Aucun service pour le moment.
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
       </div>
-      <table id="parametres" class="table table-sm w-full border-none">
-        <thead class="bg-slate-100">
-          <tr>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-              Services</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-              Utilisateurs</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-              Nombre utilisateurs</th>
-            <th class="hover:cursor-help" title="Calcul de distance sur les interventions du service à partir de l'équipe de l'adhérent">Calcul distances ?</th>
-          </tr>
-        </thead>
-        <tbody>
-          <%= render @services %>
-        </tbody>
-      </table>
     </div>
+    <section id="sites" class="mt-10" data-section="sites">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold text-slate-700">Sites</h2>
+        <% if policy(Warehouse).new? %>
+          <%= link_to new_warehouse_path,
+              data: { testid: "ajouter_warehouse" },
+                          class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base mb-2 " do %>
+            <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current transition-colors duration-200", title: "Ajouter un site" %>
+            <span class="hidden md:block"> Ajouter un site</span>
+          <% end %>
+        <% end %>
+      </div>
+      <div class="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+          <table id="warehouses-table" class="table table-sm w-full bg-white">
+            <thead class="bg-slate-100">
+              <tr>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-44">Nom</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Utilisateurs</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Localisation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if @warehouses.any? %>
+                <%= render @warehouses %>
+              <% else %>
+                <tr>
+                  <td colspan="8" class="text-left md:text-center py-8 text-slate-400 text-base italic">
+                    Aucun site pour le moment.
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    <section id="prestations" class="mt-10 mb-8" data-section="prestations">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold text-slate-700">Catalogue des prestations</h2>
+        <% if policy(Prestation).new? %>
+          <%= link_to new_prestation_path,
+              data: { testid: "ajouter_prestation" },
+                          class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base mb-2 " do %>
+            <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current transition-colors duration-200", title: "Ajouter une prestation" %>
+            <span class="hidden md:block">Ajouter une prestation</span>
+          <% end %>
+        <% end %>
+      </div>
+      <div class="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+          <table id="prestations-table" class="table table-sm w-full bg-white">
+            <thead class="bg-slate-100">
+              <tr>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-24">Code</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Libellé</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Catégorie</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Sous-catégorie</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center w-20">Unité</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right w-28">Tarif HT</th>
+                <th class="px-4 py-3 w-24"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if @prestations.any? %>
+                <%= render @prestations %>
+              <% else %>
+                <tr>
+                  <td colspan="8" class="text-left md:text-center py-8 text-slate-400 text-base italic">
+                    Aucun prestation pour le moment.
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
   </div>
-  <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
-    <h2 class="text-2xl text-secondary">
-      Sites
-    </h2>
-    <% if policy(Warehouse).new? %>
-      <%= link_to "Ajouter un site", new_warehouse_path, data: { 'testid': "ajouter_warehouse_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
-      <%= link_to "+ Site", new_warehouse_path, data: { 'testid': "ajouter_warehouse_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
-    <% end %>
-  </div>
-  <div class="mx-auto w-full">
-    <div class="overflow-x-auto">
-      <table id="services" class="table table-sm">
-        <thead class="bg-slate-100">
-          <tr>
-            <th>Nom</th>
-            <th>Utilisateurs</th>
-            <th>Localisation</th>
-          </tr>
-        </thead>
-        <tbody>
-          <%= render @warehouses %>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
-    <h2 class="text-2xl text-secondary">
-      Catalogue des prestations
-    </h2>
-    <% if policy(Prestation).new? %>
-      <%= link_to "Ajouter une prestation", new_prestation_path, data: { 'testid': "ajouter_prestation_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
-      <%= link_to "+ Prestation", new_prestation_path, data: { 'testid': "ajouter_prestation_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
-    <% end %>
-  </div>
-  <div class="mx-auto w-full">
-    <div class="overflow-x-auto">
-      <table id="prestations" class="table table-sm">
-        <thead class="bg-slate-100">
-          <tr>
-            <th>Code</th>
-            <th>Libellé</th>
-            <th>Catégorie</th>
-            <th>Sous-catégorie</th>
-            <th>Unité</th>
-            <th class="text-right">Tarif HT</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <%= render @prestations %>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>

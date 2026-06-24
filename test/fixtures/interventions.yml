@@ -8,7 +8,7 @@ tonte_locaux:
   fin: <%= (Date.today - 1).beginning_of_week + 17.hours + 30.minutes %>
   temps_de_pause: 1
   description: Tonte locaux
-  workflow_state: Validé
+  workflow_state: validé
   temps_total: 9
   commentaires: Bien tondre sur le bord des routes
   note: 4
