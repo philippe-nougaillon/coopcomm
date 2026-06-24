@@ -46,11 +46,29 @@ class MeteoConceptConnexion < ApplicationService
     nil
   end
 
-  def self.get_icon_meteo_by_date(date, forecast)
-    difference_of_day = (date - Date.today).to_i
-    return unless forecast && difference_of_day >= 0 && difference_of_day < 14
+  # Retourne l'icon météo en fonction du jour de la prévision
+  def self.get_icon_meteo_by_date(date, forecasts_for_14_days)
+    day_forecast = self.get_forecast_for_date(date, forecasts_for_14_days)
+    return unless day_forecast
 
-    get_icon_meteo(forecast[difference_of_day].third['weather'])
+    get_icon_meteo(day_forecast['weather'])
+  end
+
+  # Retourne la prévision au jour J, à 13h (la troisième prévision)
+  def self.get_forecast_for_date(date, forecasts_for_14_days)
+    return unless forecasts_for_14_days
+
+    # La date doit être sur les 14 prochains jours
+    difference_of_day = (date - Date.today).to_i
+    return unless difference_of_day >= 0 && difference_of_day < 14
+
+    forecasts_for_14_days[difference_of_day].third
+  end
+
+  # Retourne le forecast sous forme de titre
+  def self.get_title(date, forecasts_for_14_days)
+    forecast = self.get_forecast_for_date(date, forecasts_for_14_days)
+    "#{self.WEATHER[forecast["weather"]]} | Température : #{forecast["temp2m"]} °C | Probabilité de pluie : #{forecast["probarain"]}% | Vent : #{forecast["wind10m"]} km/h"
   end
 
   def self.WEATHER
