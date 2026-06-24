@@ -49,7 +49,9 @@ class MouvementsController < ApplicationController
         format.json { render :show, status: :created, location: @mouvement }
       else
         @tools = current_organisation.tools.ordered
-        params[:tool_id] = params[:mouvement][:tool_id]
+        # Pas de params[:tool_id] = ... ici : le formulaire renvoie lui-même un tool_id
+        # de premier niveau quand l'outil est imposé (cf. _form.html.erb). Le réécrire
+        # cacherait à tort le select quand l'outil avait été librement choisi.
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @mouvement.errors, status: :unprocessable_entity }
       end
