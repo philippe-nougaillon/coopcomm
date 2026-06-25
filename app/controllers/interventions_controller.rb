@@ -21,7 +21,9 @@ class InterventionsController < ApplicationController
     params[:vue] ||= session[:vue]
 
     # Périmètre de services filtré (menu + pré-filtre admin), cf. ApplicationController.
-    selected_services = scoped_services(:service)
+    # admin_sees_all : un administrateur voit par défaut TOUTES les interventions de
+    # son organisation (filtre vide, services non présélectionnés).
+    selected_services = scoped_services(:service, admin_sees_all: true)
 
     # Récupère les interventions à partir des services sélectionnés
     @interventions = Intervention.filter_by_service(selected_services)

@@ -35,30 +35,6 @@ class ApplicationController < ActionController::Base
 
   private
 
-  # Périmètre de services d'un index, avec valeur par défaut pré-filtrée pour les
-  # administrateurs. Mutualisé entre les index (interventions, utilisateurs, et à
-  # venir). `param_key` est la clé du paramètre de filtre (ex. :service, :services).
-  #
-  # Effets de bord pour les vues :
-  #   @services            → options du menu déroulant : tous les services de
-  #                          l'organisation pour un administrateur, sinon les
-  #                          services du current_user ;
-  #   @selected_service_ids → ids à pré-sélectionner dans le menu.
-  #
-  # Retourne la relation des services sélectionnés : les services demandés via le
-  # param, TOUJOURS bornés au périmètre autorisé (un param forgé hors périmètre
-  # est ignoré) ; à défaut, les services du current_user (pré-filtre).
-  def scoped_services(param_key)
-    default_services = current_user.services
-    allowed_services = (current_user.administrateur? && current_organisation&.services) || default_services
-    @services = allowed_services
-
-    requested = allowed_services.where(id: params[param_key]) if params[param_key].present?
-    selected = requested.presence || default_services
-    @selected_service_ids = selected.ids
-    selected
-  end
-
   def prepare_exception_notifier
     request.env['exception_notifier.exception_data'] = {
       current_user: current_user
@@ -76,5 +52,41 @@ class ApplicationController < ActionController::Base
 
   def set_users_tags
     @users_tags = User.by_service(current_user).tag_counts_on(:tags).order(:name)
+  end
+
+  # Périmètre de services d'un index. Au premier affichage (filtre non soumis), le
+  # filtre est laissé VIDE et on montre tout le périmètre (toute l'organisation pour
+  # un admin si `admin_sees_all`, sinon les services du current_user) — sauf l'admin
+  # d'un index où il reste scopé à ses services (`admin_sees_all: false`, ex. /users),
+  # auquel cas ses services sont présélectionnés. Une fois le filtre soumis : les
+  # services demandés (bornés au périmètre), ou tout le périmètre s'il est vidé.
+  # Renseigne @services (options du menu) et @selected_service_ids (sélection).
+  def scoped_services(param_key, admin_sees_all: false)
+    default_services = current_user.services
+    allowed_services = (current_user.administrateur? && current_organisation&.services) || default_services
+    @services = allowed_services
+
+    # Premier affichage : filtre non soumis.
+    unless params.key?(param_key)
+      # Admin d'un index « scopé » (ex. /users) : ses services restent présélectionnés.
+      if current_user.administrateur? && !admin_sees_all
+        @selected_service_ids = default_services.ids
+        return default_services
+      end
+      # Sinon (admin « voit tout », ou manager) : filtre vide, on montre tout le périmètre.
+      @selected_service_ids = []
+      return allowed_services
+    end
+
+    # Filtre soumis : services demandés (bornés au périmètre), ou tout le périmètre
+    # autorisé si le filtre a été vidé.
+    requested = allowed_services.where(id: params[param_key])
+    if requested.present?
+      @selected_service_ids = requested.ids
+      requested
+    else
+      @selected_service_ids = []
+      allowed_services
+    end
   end
 end

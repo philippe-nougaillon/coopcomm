@@ -18,7 +18,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   # informatique / technique. `comptabilite` est dans son organisation mais
   # PAS dans ses services → sert de témoin « hors périmètre personnel ».
 
-  test 'index : un administrateur ne voit que ses services par défaut' do
+  test 'index : un administrateur voit toute son organisation par défaut' do
     sign_in users(:administrateur_paris)
     hors_perimetre = interventions(:tonte_locaux)
     hors_perimetre.update_columns(service_id: services(:comptabilite).id)
@@ -26,8 +26,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     get interventions_url
 
     assert_response :success
-    assert_select "a[href=?]", intervention_path(hors_perimetre), { count: 0 },
-                  'le service comptabilite (hors de ses services) ne doit pas apparaître par défaut'
+    assert_select "a[href=?]", intervention_path(hors_perimetre), { minimum: 1 },
+                  'un admin voit par défaut toute son organisation, y compris hors de ses services'
   end
 
   test "index : un administrateur peut filtrer sur un autre service de son organisation" do
