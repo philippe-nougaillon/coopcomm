@@ -61,22 +61,55 @@ class AdminController < ApplicationController
   end
 
   def parametres
-    @warehouses = current_organisation.warehouses
-    @services = current_user.services
-    @users = User.by_service(@services)
-    @prestations = current_organisation.prestations.ordered
+  # 1. Definir los Scopes Base
+  services_scope = current_user.services
+  warehouses_scope = current_organisation.warehouses
+  prestations_scope = current_organisation.prestations.ordered
+  
+  # Lista completa de usuarios para cargar el select del formulario
+  @users = User.by_service(services_scope)
 
-    if params[:search].present?
-      @services = @services.where('nom ILIKE :search', { search: "%#{params[:search]}%" })
-      @warehouses = @warehouses.where('name ILIKE :search', { search: "%#{params[:search]}%" })
-      @prestations = @prestations.where('code ILIKE :search OR libellé ILIKE :search OR catégorie ILIKE :search',
-                                        { search: "%#{params[:search]}%" })
-    end
-
-    return unless params[:user_id].present?
-
-    @services = @services.joins(:users).where(users: { id: params[:user_id] })
+  # 2. Aplicar Filtro de Búsqueda por Texto (`:search`)
+  if params[:search].present?
+    search_term = "%#{params[:search]}%"
+    services_scope = services_scope.where('nom ILIKE :search', search: search_term)
+    warehouses_scope = warehouses_scope.where('name ILIKE :search', search: search_term)
+    prestations_scope = prestations_scope.where('code ILIKE :search OR libellé ILIKE :search OR catégorie ILIKE :search', search: search_term)
   end
+
+  # 3. Aplicar Filtro por Selección de Usuarios (`:user_id`)
+  if params[:user_id].present?
+    # Filtrar Servicios por usuarios (INNER JOIN estricto)
+    services_scope = services_scope.joins(:users).where(users: { id: params[:user_id] }).distinct
+    
+    # Filtramos también los Sitios por los usuarios seleccionados
+    warehouses_scope = warehouses_scope.joins(:users).where(users: { id: params[:user_id] }).distinct
+    
+    # Si las prestaciones no tienen usuarios vinculados, las limpiamos cuando filtramos por usuario
+    prestations_scope = prestations_scope.none 
+  end
+
+  # 4. Conteos Totales Reales para los contadores de los Tabs (Antes de paginar)
+  @services_count = services_scope.size
+  @warehouses_count = warehouses_scope.size
+  @prestations_count = prestations_scope.size
+
+  # 5. Segmentar Consultas y Paginar Exclusivamente el Tab Activo
+  case params[:tab]
+  when 'sites'
+    @pagy, @warehouses = pagy(warehouses_scope)
+    @services = []
+    @prestations = []
+  when 'prestations'
+    @pagy, @prestations = pagy(prestations_scope)
+    @services = []
+    @warehouses = []
+  else # 'services' por defecto
+    @pagy, @services = pagy(services_scope)
+    @warehouses = []
+    @prestations = []
+  end
+end
 
   private
 
