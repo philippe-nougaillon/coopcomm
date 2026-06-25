@@ -13,25 +13,28 @@
         </span>
       <% end %>
       <% if overflow_users > 0 %>
-        <div class="dropdown dropdown-end dropdown-hover relative inline-block">
-          <input type="checkbox" class="peer absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-          <div class="inline-flex bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full shadow-sm select-none">
-            + <%= overflow_users %>
-          </div>
-          <div class="dropdown-content z-[100] absolute flex flex-col menu p-3 shadow-xl bg-white border border-slate-200 rounded-xl w-56 mt-2 max-h-60 overflow-y-auto hidden peer-checked:flex">
-            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 px-1 block">
-              Autres utilisateurs (<%= overflow_users %>)
-            </span>
-            <div class="flex flex-col gap-1">
-              <% users.drop(3).each do |u| %>
-                <span class="text-sm text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-lg whitespace-normal break-words">
-                  <%= u.nom_prénom %>
-                </span>
-              <% end %>
-            </div>
-          </div>
-        </div>
-      <% end %>
+  <div class="relative inline-block" data-controller="dropdown">
+    <button type="button"
+            data-action="click->dropdown#togglePortal"
+            class="inline-flex bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full shadow-sm select-none cursor-pointer hover:bg-slate-50">
+      + <%= overflow_users %>
+    </button>
+
+    <div data-dropdown-target="menu"
+         class="hidden flex-col p-4 shadow-2xl bg-white border border-slate-200 rounded-xl w-58 max-h-60 overflow-y-auto">
+      <span class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 px-1 block text-left">
+        Autres utilisateurs (<%= overflow_users %>)
+      </span>
+      <div class="flex flex-col gap-1">
+        <% users.drop(3).each do |u| %>
+          <span class="text-sm text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-lg whitespace-normal break-words text-left">
+            <%= u.nom_prénom %>
+          </span>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
     </div>
   </td>
   <td class="px-4 py-3 text-center">

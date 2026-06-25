@@ -119,16 +119,11 @@ class Mouvement < ApplicationRecord
 
     return unless panne_initiale
 
-    # On trouve tous les mouvements de réservation situés entre le début et la fin de la panne
-    mouvements_ecrases = tool.mouvements
-                             .where(état: %i[sortie entrée])
-                             .where(date: panne_initiale.date..date)
-
-    # Pour chaque mouvement trouvé, on supprime la réservation complète (la paire sortie/entrée)
-    # On utilise created_at pour retrouver la paire exacte (comme vu précédemment)
-    mouvements_ecrases.each do |mvt|
-      tool.mouvements.where(user_id: mvt.user_id, created_at: mvt.created_at).destroy_all
-    end
+    # On supprime tous les mouvements de réservation situés entre le début et la fin de la panne
+    tool.mouvements
+         .where(état: "réservé")
+         .where(date: panne_initiale.date..date)
+         .destroy_all
   end
 
   def avertir_reservations_futures
@@ -137,7 +132,7 @@ class Mouvement < ApplicationRecord
     reservations_futures = tool.mouvements
                                .includes(:user)
                                .where('date > ?', date)
-                               .where(état: :sortie)
+                               .where(état: :réservé)
                                .where.not(user_id: user_id)
 
     # Pour chaque réservation future, on envoie l'email

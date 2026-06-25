@@ -53,7 +53,6 @@ group :development, :test do
   gem 'guard'
   gem 'guard-livereload'
   gem 'guard-minitest'
-  gem 'rubocop', require: false
 end
 
 group :development do

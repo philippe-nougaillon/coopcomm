@@ -19,6 +19,12 @@ module ApplicationHelper
                   tags: [], agent_ids: [], tool_ids: [])
   end
 
+
+   # tab en parametres pour les diviser
+   def safe_params
+    params.permit(:search, :tab, user_id: [])
+  end
+
   def prettify(audit, _current_user)
     pretty_changes = []
 
@@ -173,3 +179,5 @@ module ApplicationHelper
     end
   end
 end
+
+
