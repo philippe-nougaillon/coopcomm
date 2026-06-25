@@ -82,8 +82,7 @@ class Tool < ApplicationRecord
     # Liste des dates entre la date de début et de fin
     days_range = (first_date..(last_date)).to_a
 
-    # On récupère l'état de l'outil à l'instant T
-    est_en_panne = self.en_panne
+    est_en_panne = est_encore_en_panne_le(first_date)
 
     # On récupère les mouvements sur l'intervalle de temps
     mouvements = self.mouvements
@@ -95,33 +94,33 @@ class Tool < ApplicationRecord
       # On utilise where plutot que find car il peut exister un mouvement de panne et de réservation dans le même jour)
       etats = mouvements.where(date: day).pluck(:état, :user_id).to_h
 
+      # Valeur par défaut (Correspondant à rien)
       current_state = "L"
+
+      # Arrête la période de panne si fin_panne, pour éviter d'entrer dans la condition est_en_panne
+      if etats.include?("fin_panne")
+        est_en_panne = false
+      end
 
       # Si l'outil est toujours en panne ajourd'hui
       if est_en_panne
-        current_state = "P"
-
         # Si l'outil est en panne, mais que le jour J est en fin de panne
-        if etats.include?("fin_panne")
-          est_en_panne = false
-        end
+        current_state = "P"
       else
         # Si des mouvements existent au jour J
         if etats.any?
           # Si une panne existe, on ouvre une période de panne
-          
-          etat = etats["panne"]
-
-          if etat.present?
+          if etats["panne"].present?
             current_state = "P"
             est_en_panne = true
           else
             # Sinon, l'outil est juste réservé par quelqu'un
-            mouvement_user_id = etats["réservé"]
-            if mouvement_user_id == current_user_id
-              current_state = "R"
-            else
-              current_state = "I"
+            if mouvement_user_id = etats["réservé"].presence
+              if mouvement_user_id == current_user_id
+                current_state = "R"
+              else
+                current_state = "I"
+              end
             end
           end
         end
@@ -131,6 +130,15 @@ class Tool < ApplicationRecord
     end
 
     return results
+  end
+
+  # On récupère la dernière panne en cours à la date donnée
+  def est_encore_en_panne_le(date)
+    self.mouvements
+        .where('date <= ?', date)
+        .where(état: ["panne", "fin_panne"])
+        .order(date: :desc, id: :desc)
+        .pick(:état) == "panne" # Permet de prendre
   end
 
   private

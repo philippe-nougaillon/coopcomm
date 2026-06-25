@@ -147,4 +147,40 @@ class ConventionTest < ActiveSupport::TestCase
     assert_equal 'update', convention.audits.last.action
     assert_includes convention.audits.last.audited_changes.keys, 'date_fin_prévue'
   end
+
+  # --- Somme du temps des interventions (temps_total_interventions) ---
+
+  def insert_intervention(attrs = {})
+    # insert_all : on écrit directement la ligne (temps_total figé) sans déclencher
+    # les callbacks d'Intervention (broadcast, friendly_id…) hors sujet ici.
+    now = Time.current
+    Intervention.insert_all([{ adherent_id: @adherent.id, service_id: @service.id,
+                               description: 'test', temps_total: 0,
+                               created_at: now, updated_at: now }.merge(attrs)])
+  end
+
+  test 'temps_total_interventions somme les interventions du même adhérent et service' do
+    insert_intervention(temps_total: 3)
+    insert_intervention(temps_total: 5)
+
+    assert_equal 8, build_convention.temps_total_interventions
+  end
+
+  test "temps_total_interventions exclut les interventions d'un autre service" do
+    insert_intervention(temps_total: 3)
+    insert_intervention(temps_total: 99, service_id: services(:service_marseille).id)
+
+    assert_equal 3, build_convention.temps_total_interventions
+  end
+
+  test "temps_total_interventions exclut les interventions d'un autre adhérent" do
+    insert_intervention(temps_total: 3)
+    insert_intervention(temps_total: 99, adherent_id: users(:michael_jackson).id)
+
+    assert_equal 3, build_convention.temps_total_interventions
+  end
+
+  test "temps_total_interventions vaut 0 sans intervention correspondante" do
+    assert_equal 0, build_convention.temps_total_interventions
+  end
 end

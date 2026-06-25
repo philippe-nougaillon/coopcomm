@@ -9,7 +9,7 @@ class WarehousesTest < ApplicationSystemTestCase
   end
 
   test 'créer un site depuis les paramètres' do
-    visit admin_parametres_url
+    visit admin_parametres_url(tab: 'sites')
     click_sur_boutton_ajouter('warehouse')
 
     assert_selector 'h1', text: 'Nouveau site'
@@ -25,7 +25,7 @@ class WarehousesTest < ApplicationSystemTestCase
   end
 
   test 'refuser un site sans localisation' do
-    visit admin_parametres_url
+    visit admin_parametres_url(tab: 'sites')
     click_sur_boutton_ajouter('warehouse')
 
     fill_in 'warehouse_name', with: 'Site sans adresse'

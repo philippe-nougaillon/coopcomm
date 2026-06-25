@@ -84,6 +84,11 @@
               <% if current_user.administrateur? || @services.size > 1 %>
                 <div class="w-full">
                   <%= label_tag :service, "Service", class: "block font-semibold text-slate-600 text-sm mb-1" %>
+                  <%# Champ caché : garantit que `service[]` est TOUJOURS soumis, même
+                      filtre vidé → le contrôleur distingue « premier affichage » (param
+                      absent → services présélectionnés) de « filtre vidé » (param présent
+                      vide → tout le périmètre). Cf. ApplicationController#scoped_services. %>
+                  <%= hidden_field_tag 'service[]', '', id: nil %>
                   <%= select_tag :service, options_from_collection_for_select(@services, 'id', 'nom', @selected_service_ids),
                       multiple: true,
                       class: 'slim-select w-full h-10',

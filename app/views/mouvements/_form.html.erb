@@ -11,11 +11,17 @@
       </ul>
     </div>
   <% end %>
-  <% if @mouvement.tool || params[:tool_id]  %>
+  <% if (@mouvement.tool && @mouvement.persisted?) || params[:tool_id] %>
+    <%# Deux champs volontairement : ils n'ont PAS le même name, donc pas le même rôle. %>
+    <%# 1) la donnée enregistrée — name="mouvement[tool_id]", lue par mouvement_params %>
     <%= form.hidden_field :tool_id, value: @mouvement.tool_id || params[:tool_id] %>
+    <%# 2) le signal "outil imposé" — name="tool_id" (1er niveau), ignoré à l'enregistrement. %>
+    <%#    Seul moyen de garder le champ caché après une erreur de validation : mouvement[tool_id] %>
+    <%#    est envoyé que l'outil soit imposé OU choisi, donc il ne peut pas distinguer les deux cas. %>
+    <%= hidden_field_tag :tool_id, @mouvement.tool_id || params[:tool_id], id: nil %>
   <% else %>
     <%= form.label :tool_id, "Matériel" %>
-    <%= form.select :tool_id, options_from_collection_for_select(@tools, :id, :name), {include_blank: true, required: true}, class: "slim-select w-full" %>
+    <%= form.select :tool_id, options_from_collection_for_select(@tools, :id, :name, @mouvement.tool_id), {include_blank: true, required: true}, class: "slim-select w-full" %>
   <% end %>
   <div class="w-full">
     <%= form.label :état %>

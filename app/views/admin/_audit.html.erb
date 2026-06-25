@@ -1,4 +1,4 @@
-<tr class="hover:bg-base-200 transition-colors duration-150">
+<tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
   <td class="py-4 pl-4 pr-1 text-sm whitespace-nowrap">
     <div class="font-semibold text-slate-700 text-xs sm:text-sm leading-tight">
       <%= time_tag(audit.created_at, format: :long) { "Il y a #{time_ago_in_words(audit.created_at)}" } %>
@@ -35,7 +35,7 @@
       "<%= audit.comment %>"
     </span>
   <% else %>
-    <div class="bg-slate-50/60 rounded-lg p-2 border border-slate-100 group-hover:bg-white transition-colors duration-150">
+    <div class="bg-slate-50/60 rounded-lg p-2 border border-slate-300 group-hover:bg-white transition-colors duration-150">
       <%= audit_changes_list(audit, current_user) %>
     </div>
   <% end %>

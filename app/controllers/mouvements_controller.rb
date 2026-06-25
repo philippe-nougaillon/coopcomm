@@ -49,7 +49,9 @@ class MouvementsController < ApplicationController
         format.json { render :show, status: :created, location: @mouvement }
       else
         @tools = current_organisation.tools.ordered
-        params[:tool_id] = params[:mouvement][:tool_id]
+        # Pas de params[:tool_id] = ... ici : le formulaire renvoie lui-même un tool_id
+        # de premier niveau quand l'outil est imposé (cf. _form.html.erb). Le réécrire
+        # cacherait à tort le select quand l'outil avait été librement choisi.
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @mouvement.errors, status: :unprocessable_entity }
       end
@@ -106,7 +108,7 @@ class MouvementsController < ApplicationController
     if params[:tool_id] && params[:date] && params[:user_id]
       # Seul un manager/admin peut libérer la réservation d'un autre utilisateur
       user_id = current_user.manager_or_admin? ? params[:user_id] : current_user.id
-      if mouvement = current_organisation.mouvements.find_by(tool_id: params[:tool_id], date: params[:date], user_id: user_id)
+      if mouvement = current_organisation.mouvements.find_by(tool_id: params[:tool_id], date: params[:date], user_id: user_id, état: "réservé")
         mouvement.destroy
       end
       redirect_to tools_path, notice: "Outil libéré pour le #{l params[:date].to_date}."
