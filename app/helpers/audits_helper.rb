@@ -74,7 +74,7 @@ module AuditsHelper
     du = audit.audited_changes['du']
     au = audit.audited_changes['au']
     content_tag(:span, "#{du} → #{au}",
-                class: 'inline-flex items-center gap-1 text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-md font-mono')
+                class: 'inline-flex items-center text-xs bg-slate-50/60 rounded-lg border border-slate-300  transition-colors duration-150 border text-slate-600 px-2 py-1 font-mono group-hover:bg-white ')
   end
 
   def invitation_changes_summary(audit)

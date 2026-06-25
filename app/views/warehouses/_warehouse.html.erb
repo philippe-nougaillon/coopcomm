@@ -1,11 +1,62 @@
-<tr id="<%= dom_id warehouse %>" class="hover:bg-base-300">
-  <td class="text-lg sm:text-2xl text-primary">
-    <%= link_to warehouse.name, warehouse, class: 'text-primary hover:underline' %>
+<tr id="<%= dom_id warehouse %>" class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
+  <td class="px-4 py-3 uppercase text-primary font-semibold text-lg">
+    <%= link_to warehouse.name, warehouse, class: 'hover:underline' %>
   </td>
-  <td class="text-sm">
-    <%= warehouse.users.pluck(:nom).join(', ') %>
+
+
+
+  <td class="px-4 py-3 text-center">
+ <% users = warehouse.users.to_a %>
+    <% visible = users.first(3) %>
+    <% overflow_users = users.size - visible.size %>
+ <div class="flex flex-wrap gap-1.5 items-center">
+<% visible.each do |w| %>
+   <span class="inline-block bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full whitespace-nowrap shadow-sm">
+         <%= w.nom_prénom %>
+        </span>
+      <% end %>
+      <% if overflow_users > 0 %>
+ <div class="relative inline-block" data-controller="dropdown">
+    <button type="button"
+            data-action="click->dropdown#togglePortal"
+            class="inline-flex bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full shadow-sm select-none cursor-pointer hover:bg-slate-50">
+      + <%= overflow_users %>
+    </button>
+
+    <div data-dropdown-target="menu"
+         class="hidden flex-col p-4 shadow-2xl bg-white border border-slate-200 rounded-xl w-58 max-h-60 overflow-y-auto">
+      <span class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 px-1 block text-left">
+        Autres utilisateurs (<%= overflow_users %>)
+      </span>
+   <div class="flex flex-col gap-1">
+        <% users.drop(3).each do |w| %>
+          <span class="text-sm text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-lg whitespace-normal break-words text-left">
+            <%= w.nom_prénom %>
+          </span>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+    </div>
   </td>
-  <td class="text-sm">
-    <%= warehouse.address %>
-  </td>
+
+
+
+
+
+  <td class="px-4 py-3">
+  <div class="flex flex-col gap-2">
+    <div class="flex items-center gap-2">
+      <%= embedded_svg "icons/pin_drop.svg", class: "w-4 h-4 flex-shrink-0 text-slate-600" %>
+      <span class="text-slate-600 text-sm"><%= warehouse.address %></span>
+    </div>
+    <%= link_to "Voir sur la carte", 
+        "https://maps.google.com/?q=#{CGI.escape(warehouse.address.to_s)}", 
+        target: "_blank",
+        class: "text-xs text-blue-600 hover:underline flex items-center gap-1 mt-0.5" %>
+  </div>
+</td>
 </tr>
+
+

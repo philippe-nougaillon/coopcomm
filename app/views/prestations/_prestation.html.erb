@@ -1,20 +1,79 @@
-<tr class="hover:bg-base-300">
-  <td class="text-lg sm:text-2xl text-primary"><%= prestation.code %></td>
-  <td><%= prestation.libellé %></td>
-  <td><%= prestation.catégorie %></td>
-  <td><%= prestation.sous_catégorie %></td>
-  <td><%= prestation.unité %></td>
-  <td class="text-right"><%= number_to_currency(prestation.tarif) %></td>
+<tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
+  <td class="px-4 py-3 uppercase text-primary font-semibold text-lg max-w-[120px] truncate">
+  <%= prestation.code %>
+</td>
+  <td class="px-4 py-3 text-sm font-semibold capitalize"><%= prestation.libellé %></td>
+  <td class="px-4 py-3 text-sm text-success font-semibold "><%= prestation.catégorie %></td>
+
+
+
+  <td class="px-4 py-3 text-sm">
+  <% sous = prestation.sous_catégorie %>
+
+  <% if sous.present? %>
+    <span class=" text-slate-600 whitespace-nowrap">
+      <%= sous %>
+    </span>
+  <% else %>
+    <%= embedded_svg "icons/check_indeterminate_small.svg", title: "Aucun mot-clé" %>
+  <% end %>
+</td>
+
+
+  
+
+
+
+
+  <td class="px-4 py-3 text-sm capitalize"><%= prestation.unité %></td>
+  <td class="px-4 py-3 text-sm text-center">
+    <%= number_to_currency(prestation.tarif) %>
+  </td>
   <td>
-    <div class="flex gap-2 justify-end">
+    <div class="px-4 py-3 flex flex-row items-center gap-2 ">
       <% if policy(prestation).edit? %>
-        <%= link_to "Modifier", edit_prestation_path(prestation), class: "btn btn-sm btn-primary" %>
+        <%= link_to edit_prestation_path(prestation), class: "btn" do %>
+          <%= embedded_svg "icons/edit.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
+            Modifier
+          <% end %>
       <% end %>
       <% if policy(prestation).destroy? %>
-        <%= button_to prestation_path(prestation), method: :delete, class: "btn btn-sm",
-              form: { data: { turbo_confirm: "Supprimer cette prestation ?" } } do %>
-          <span class="material-symbols-outlined">delete</span>
-        <% end %>
+        <button
+          class="btn btn-soft btn-error" onclick="delete_prestation_modal_<%= prestation.id %>.showModal()">
+           <%= embedded_svg "icons/delete.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
+            Supprimer
+          </button>
+        <!-- MODAL -->
+        <dialog id="delete_prestation_modal_<%= prestation.id %>" class="modal">
+          <div class="modal-box">
+            <form method="dialog">
+              <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                ✕
+              </button>
+            </form>
+            <h3 class="text-lg font-bold text-error flex items-center gap-2">
+              <%= embedded_svg "icons/warning.svg", title: "Supprimer la prestation" %>
+              Supprimer la prestation
+            </h3>
+            <p class="py-4 text-sm text-slate-600">
+              Êtes-vous certain(e) de vouloir supprimer cette prestation ?
+              Cette action est irréversible.
+            </p>
+            <div class="modal-action">
+              <form method="dialog">
+                <button class="btn btn-ghost">Annuler</button>
+              </form>
+              <%= button_to prestation_path(prestation),
+                    method: :delete,
+                    class: "btn btn-error text-white" do %>
+                Oui, supprimer
+              <% end %>
+            </div>
+          </div>
+          <form method="dialog" class="modal-backdrop">
+            <button>Fermer</button>
+          </form>
+        </dialog>
       <% end %>
     </div>
   </td>
