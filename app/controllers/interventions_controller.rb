@@ -220,6 +220,7 @@ class InterventionsController < ApplicationController
   def create
     @intervention = Intervention.new(intervention_params)
     @intervention.organisation = current_organisation
+    @intervention.workflow_state = Intervention::TERMINE if current_user.agent?
     update_tag_list
 
     respond_to do |format|

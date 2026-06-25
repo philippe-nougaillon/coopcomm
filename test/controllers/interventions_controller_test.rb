@@ -159,6 +159,30 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to intervention_url(Intervention.last)
   end
 
+  test "un agent crée une intervention à postériori : elle est terminée d'emblée" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+
+    assert_difference('Intervention.count') do
+      post interventions_url, params: {
+        intervention: {
+          début: 2.hours.ago,
+          fin: 1.hour.ago,
+          description: 'Tonte saisie le soir',
+          adherent_id: users(:patrick_adherent_paris).id,
+          service_id: services(:technique).id,
+          agent_ids: [agent.id],
+          # Le formulaire agent soumet un workflow_state caché : il ne doit PAS
+          # piloter l'état (mass assignment interdit). L'état terminé est forcé
+          # côté serveur, même si le param vaut 'nouveau'.
+          workflow_state: Intervention::NOUVEAU
+        }
+      }
+    end
+
+    assert_equal Intervention::TERMINE, Intervention.last.workflow_state
+  end
+
   test 'should show intervention' do
     get intervention_url(@intervention)
     assert_response :success
