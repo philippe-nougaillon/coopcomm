@@ -33,6 +33,10 @@ class Convention < ApplicationRecord
     end
   end
 
+  def temps_total_interventions
+    Intervention.where(adherent_id: user_id, service_id: service_id).sum(:temps_total)
+  end
+
   private
 
   def one_convention_per_service

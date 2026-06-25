@@ -28,10 +28,15 @@ class InterventionsController < ApplicationController
 
     @interventions = @interventions.by_role_for(current_user)
 
+    # Le select « Statut » est `multiple` → params[:workflow_state] est un tableau
+    # de libellés humanisés (ex. ["Nouveau", "Validé"]). On le ramène aux valeurs
+    # stockées en base (minuscules) avant de filtrer ; un scalaire reste géré.
+    selected_states = Array(params[:workflow_state]).reject(&:blank?).map(&:downcase)
+
     @interventions = if params[:archives].present?
                        @interventions.where(workflow_state: 'archivé')
-                     elsif params[:workflow_state].present?
-                       @interventions.where('interventions.workflow_state = ?', params[:workflow_state].to_s.downcase)
+                     elsif selected_states.any?
+                       @interventions.where(workflow_state: selected_states)
                      else
                        @interventions.where.not(workflow_state: 'archivé')
                      end

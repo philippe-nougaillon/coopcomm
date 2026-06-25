@@ -50,6 +50,10 @@
           </div>
         <% end %>
       </div>
+      <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+        <span class="material-symbols-outlined text-base" title="Heures consommées">schedule</span> Heures consommées
+      </div>
+      <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @convention.temps_total_interventions.round(1) %> h</div>
       <div class="flex items-center gap-2 py-2.5 text-slate-500<%= " border-b border-slate-100" if @convention.mémo.present? %>" style="padding-right: 2rem;">Document</div>
       <div class="py-2.5 text-slate-800<%= " border-b border-slate-100" if @convention.mémo.present? %>">
         <% if @convention.document.attached? %>
