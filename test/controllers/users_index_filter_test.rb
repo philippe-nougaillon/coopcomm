@@ -60,4 +60,26 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
     assert_select "input[type=hidden][name='services[]']", { minimum: 1 },
                   'un champ caché services[] doit toujours être soumis pour distinguer vide/non-soumis'
   end
+
+  # --- Manager : filtre vide par défaut (pas de présélection) -----------------
+
+  test 'manager : premier affichage → aucun service présélectionné (filtre vide)' do
+    sign_in users(:hidalgo) # manager, 3 services
+
+    get users_url
+
+    assert_response :success
+    assert_select "select[name='services[]'] option[selected]", false,
+                  'un manager ne doit avoir aucun service présélectionné par défaut'
+  end
+
+  test 'manager mono-service : le filtre services est masqué' do
+    sign_in users(:manager_marseille) # un seul service
+
+    get users_url
+
+    assert_response :success
+    assert_select "select[name='services[]']", false,
+                  'le filtre services doit être masqué pour un manager mono-service'
+  end
 end

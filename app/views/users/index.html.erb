@@ -29,20 +29,23 @@
                 data: { placeholder: 'Tous les rôles' },
                 onchange: 'this.form.requestSubmit()' %>
       </div>
-      <div class="w-full md:flex-1">
-        <%= label_tag :services, "Services", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
-        <%# Champ caché : garantit que `services[]` est TOUJOURS soumis, même filtre
-            vidé → le contrôleur distingue « premier affichage » (param absent →
-            services présélectionnés) de « filtre vidé » (param présent vide → tout
-            le périmètre). Cf. ApplicationController#scoped_services. %>
-        <%= hidden_field_tag 'services[]', '', id: nil %>
-        <%= select_tag :services,
-                options_from_collection_for_select(@services, 'id', 'nom', @selected_service_ids),
-                multiple: true,
-                class: 'slim-select w-full h-10',
-                data: { placeholder: 'Tous les services' },
-                onchange: 'this.form.requestSubmit()' %>
-      </div>
+      <%# Filtre masqué si le current_user n'a qu'un seul service (sauf administrateur). %>
+      <% if current_user.administrateur? || @services.size > 1 %>
+        <div class="w-full md:flex-1">
+          <%= label_tag :services, "Services", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
+          <%# Champ caché : garantit que `services[]` est TOUJOURS soumis, même filtre
+              vidé → le contrôleur distingue « premier affichage » (param absent →
+              services présélectionnés) de « filtre vidé » (param présent vide → tout
+              le périmètre). Cf. ApplicationController#scoped_services. %>
+          <%= hidden_field_tag 'services[]', '', id: nil %>
+          <%= select_tag :services,
+                  options_from_collection_for_select(@services, 'id', 'nom', @selected_service_ids),
+                  multiple: true,
+                  class: 'slim-select w-full h-10',
+                  data: { placeholder: 'Tous les services' },
+                  onchange: 'this.form.requestSubmit()' %>
+        </div>
+      <% end %>
       <div class="w-full md:flex-1">
         <%= label_tag :user_tag, "Mots clés", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
         <%
