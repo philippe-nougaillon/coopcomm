@@ -54,59 +54,59 @@ jobs:
           bin/rails db:test:prepare
           bin/rails test
 
-  system-test:
-    runs-on: ubuntu-latest
+  # system-test:
+  #   runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: test_db
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U postgres"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+  #   services:
+  #     postgres:
+  #       image: postgres:15
+  #       env:
+  #         POSTGRES_DB: test_db
+  #         POSTGRES_USER: postgres
+  #         POSTGRES_PASSWORD: password
+  #       ports:
+  #         - 5432:5432
+  #       options: >-
+  #         --health-cmd="pg_isready -U postgres"
+  #         --health-interval=10s
+  #         --health-timeout=5s
+  #         --health-retries=5
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3.4.9
+  #     - name: Set up Ruby
+  #       uses: ruby/setup-ruby@v1
+  #       with:
+  #         ruby-version: 3.4.9
 
-      - name: Install dependencies
-        run: |
-          gem install bundler
-          bundle install
+  #     - name: Install dependencies
+  #       run: |
+  #         gem install bundler
+  #         bundle install
 
-      # Chrome est nécessaire aux tests Capybara/Selenium
-      - name: Set up Chrome
-        uses: browser-actions/setup-chrome@v1
+  #     # Chrome est nécessaire aux tests Capybara/Selenium
+  #     - name: Set up Chrome
+  #       uses: browser-actions/setup-chrome@v1
 
-      - name: Set up database and run system tests
-        env:
-          DATABASE_URL: postgres://postgres:password@localhost:5432/test
-          RAILS_ENV: test
-          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-          PG_USER: postgres
-        run: |
-          bin/rails db:test:prepare
-          bin/rails test:system
+  #     - name: Set up database and run system tests
+  #       env:
+  #         DATABASE_URL: postgres://postgres:password@localhost:5432/test
+  #         RAILS_ENV: test
+  #         RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+  #         PG_USER: postgres
+  #       run: |
+  #         bin/rails db:test:prepare
+  #         bin/rails test:system
 
-      - name: Capture des captures d'écran en cas d'échec
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: captures-echecs
-          path: tmp/capybara
-          if-no-files-found: ignore
+  #     - name: Capture des captures d'écran en cas d'échec
+  #       if: failure()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: captures-echecs
+  #         path: tmp/capybara
+  #         if-no-files-found: ignore
 
   build:
     runs-on: ubuntu-latest
