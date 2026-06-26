@@ -14,7 +14,7 @@
   <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_frame: "users_table", turbo_action: "advance" } do %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
-        <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
+        <%= label_tag :search, "Rechercher",class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
         <%= text_field_tag :search, params[:search], include_blank: true,
                 onchange: 'this.form.requestSubmit()',
                 class: 'input input-bordered input-md w-full',
