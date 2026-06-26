@@ -54,28 +54,27 @@ multiple: true,
       <div class="overflow-x-auto">
        <table id="tools" class="table table-sm w-full border-none">
   <thead class="bg-slate-100">
-    <tr>
-      <%# 2. Quitamos 'flex-1' de todos los th %>
-      <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-        <%= sort_link 'mouvements.updated_at', 'MÀJ'%>
-      </th>
-      <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-        <%= sort_link 'tools.name', 'Matériel'%>
-      </th>
-      <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-        <%= sort_link 'mouvements.état', 'État'%>
-      </th>
-      <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-        Par
-      </th>
-      <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-        Date
-      </th>
-      <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-        Actions
-      </th>
-    </tr>
-          </thead>
+  <tr>
+    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-32">
+      <%= sort_link 'mouvements.updated_at', 'MÀJ'%>
+    </th>
+    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+      <%= sort_link 'tools.name', 'Matériel'%>
+    </th>
+    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-36 text-center">
+      <%= sort_link 'mouvements.état', 'État'%>
+    </th>
+    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-48">
+      Par
+    </th>
+    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-44">
+      Date
+    </th>
+    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-28">
+      Actions
+    </th>
+  </tr>
+</thead>
           <tbody>
              <% if @mouvements.present? %>
           <%= render @mouvements %>
