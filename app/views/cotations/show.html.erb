@@ -85,22 +85,31 @@
         </tr>
       </thead>
       <tbody>
-        <% @cotation.cotation_lignes.includes(:prestation).each do |ligne| %>
-          <tr class="border-b border-slate-100">
-            <td class="px-4 py-3 font-medium"><%= ligne.prestation&.code %></td>
-            <td class="px-4 py-3"><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
-            <td class="px-4 py-3 text-right"><%= number_to_currency(ligne.prix_ht) %></td>
-            <td class="px-4 py-3 text-right"><%= ligne.qté %></td>
-            <td class="px-4 py-3 text-right"><%= number_to_currency(ligne.total_ht) %></td>
+        <% cotation_lignes = @cotation.cotation_lignes.includes(:prestation) %>
+        <% if cotation_lignes.any? %>
+          <% cotation_lignes.each do |ligne| %>
+            <tr class="border-b border-slate-100">
+              <td class="px-4 py-3 font-medium"><%= ligne.prestation&.code %></td>
+              <td class="px-4 py-3"><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
+              <td class="px-4 py-3 text-right"><%= number_to_currency(ligne.prix_ht) %></td>
+              <td class="px-4 py-3 text-right"><%= ligne.qté %></td>
+              <td class="px-4 py-3 text-right"><%= number_to_currency(ligne.total_ht) %></td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">Aucune prestation enregistrée.</td>
           </tr>
         <% end %>
       </tbody>
-      <tfoot>
-        <tr class="bg-slate-50/50">
-          <th colspan="4" class="px-4 py-3 text-right">Total HT</th>
-          <th class="px-4 py-3 text-right"><%= number_to_currency(@cotation.total_ht) %></th>
-        </tr>
-      </tfoot>
+      <% if cotation_lignes.any? %>
+        <tfoot>
+          <tr class="bg-slate-50/50">
+            <th colspan="4" class="px-4 py-3 text-right">Total HT</th>
+            <th class="px-4 py-3 text-right"><%= number_to_currency(@cotation.total_ht) %></th>
+          </tr>
+        </footer>
+      <% end %>
     </table>
   </div>
 
@@ -135,27 +144,44 @@
     <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
       <h2 class="text-2xl text-secondary font-semibold">Activité</h2>
     </div>
-    <div class="overflow-x-auto border border-slate-200 shadow-sm bg-white rounded-xl">
-      <table class="table table-sm w-full border-none">
-        <thead class="bg-slate-100">
-          <tr>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Date</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Utilisateur</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Type</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Action</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Modifications</th>
-          </tr>
-        </thead>
-        <tbody>
-          <%= render partial: "audit", collection: @audits %>
-        </tbody>
-      </table>
-    </div>
-    <% if @pagy.pages > 1 %>
-      <div class="flex justify-center mt-4">
-        <%= pagy_nav(@pagy).html_safe %>
+    
+    <div class="flex flex-col bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="table table-sm w-full border-none">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Date</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Utilisateur</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Type</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Action</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Modifications</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if @audits&.any? %>
+              <%= render partial: "audit", collection: @audits %>
+            <% else %>
+              <tr>
+                <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">
+                  Aucun historique d'activité disponible.
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
       </div>
-    <% end %>
+
+      <% if @pagy&.pages.to_i > 1 %>
+        <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full">
+          <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+            <%= pagy_nav(@pagy).html_safe %>
+          </div>
+          <div class="text-slate-500 text-center text-sm w-full mt-2">
+            <%= pagy_info(@pagy, item_name: "audits").html_safe %>
+          </div>
+        </div>
+      <% end %>
+    </div>
   <% end %>
 
   <div class="my-10">
