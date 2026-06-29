@@ -52,52 +52,51 @@ multiple: true,
         <span>Faire glisser pour voir plus</span>
       </div>
       <div class="overflow-x-auto">
-       <table id="tools" class="table table-sm w-full border-none">
-  <thead class="bg-slate-100">
-  <tr>
-    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-32">
-      <%= sort_link 'mouvements.updated_at', 'MÀJ'%>
-    </th>
-    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-      <%= sort_link 'tools.name', 'Matériel'%>
-    </th>
-    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-36 text-center">
-      <%= sort_link 'mouvements.état', 'État'%>
-    </th>
-    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-48">
-      Par
-    </th>
-    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-44">
-      Date
-    </th>
-    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-28">
-      Actions
-    </th>
-  </tr>
-</thead>
+        <table id="tools" class="table table-sm w-full border-none">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-32">
+                <%= sort_link 'mouvements.updated_at', 'MÀJ'%>
+              </th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+                <%= sort_link 'tools.name', 'Matériel'%>
+              </th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-36 text-center">
+                <%= sort_link 'mouvements.état', 'État'%>
+              </th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-48">
+                Par
+              </th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-44">
+                Date
+              </th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-28">
+                Actions
+              </th>
+            </tr>
+          </thead>
           <tbody>
-             <% if @mouvements.present? %>
-          <%= render @mouvements %>
-        <% else %>
-          <tr>
-            <td colspan="8" class="text-left md:text-center py-8 text-slate-400 text-base italic">
-              Aucun résultat trouvé pour cette recherche.
-            </td>
-          </tr>
-        <% end %>
+            <% if @mouvements.present? %>
+              <%= render @mouvements %>
+            <% else %>
+              <tr>
+                <td colspan="8" class="text-left md:text-center py-8 text-slate-400 text-base italic">
+                  Aucun résultat trouvé pour cette recherche.
+                </td>
+              </tr>
+            <% end %>
           </tbody>
         </table>
       </div>
-      <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
-    <% if @pagy.pages > 1 %>
-      <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
-        <%= pagy_nav(@pagy).html_safe %>
-      </div>
-      <div class=" text-slate-500 text-center text-sm w-full ">
-        <%= pagy_info(@pagy, item_name: "mouvements").html_safe %>
-      </div>
-    <% else %>
-      <div></div>
-    <% end %>
-  </div>
+    <% if @pagy&.pages.to_i > 1 %>
+        <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
+          <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+            <%= pagy_nav(@pagy).html_safe %>
+          </div>
+          <div class=" text-slate-500 text-center text-sm w-full ">
+            <%= pagy_info(@pagy, item_name: "mouvements").html_safe %>
+          </div>
+        </div>
+      <% end %>
     </div>
+  </div>
