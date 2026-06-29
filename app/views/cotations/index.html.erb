@@ -1,6 +1,7 @@
 <div class="flex flex-col">
   <div class="flex flex-row justify-between items-center my-4 gap-2">
-    <h1 class="text-4xl text-primary font-bold"><%= page_title!("Cotations") %></h1>
+    <h1 class="text-4xl text-primary font-bold">
+      <%= page_title!("Cotations") %></h1>
     <% if policy(Cotation).new? %>
       <%= link_to new_cotation_path,
               class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm",
