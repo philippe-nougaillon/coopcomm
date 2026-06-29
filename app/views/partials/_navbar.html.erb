@@ -257,7 +257,7 @@
       </div>
       <% # Déconnexion %>
       <div class="absolute bottom-0 left-0 right-0 bg-base-100 border-t border-slate-100 p-2.5 rounded-b-2xl z-10">
-        <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?" }, class: "flex items-center text-red-400 hover:text-red-600 font-semibold text-xs transition-colors w-full px-3 py-1" do %>
+        <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?", testid: 'fermer_session' }, class: "flex items-center text-red-400 hover:text-red-600 font-semibold text-xs transition-colors w-full px-3 py-1" do %>
           <%= embedded_svg "icons/logout.svg", class: "w-4 h-4 mr-2 " %> Déconnexion
         <% end %>
       </div>
