@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
 require 'test_helper'
-require 'minitest/mock'
-require 'ostruct'
 
 class FetchTwilioInfosServiceTest < ActionDispatch::IntegrationTest
+  # Construit le type de message correspondant à la réponse que Twilio renvoie
+  TwilioMessageSimule = Data.define(:status, :body, :sid, :error_code)
+
   def setup
     # Préparation de fausses variables d'environnements
     ENV['TWILIO_ACCOUNT_SID'] = 'abcd'
@@ -76,7 +77,7 @@ class FetchTwilioInfosServiceTest < ActionDispatch::IntegrationTest
 
   # Pour créer un object message
   def get_failed_message
-    OpenStruct.new(
+    TwilioMessageSimule.new(
       status: 'failed',
       error_code: 500,
       body: 'Message de test échoué',
@@ -85,10 +86,11 @@ class FetchTwilioInfosServiceTest < ActionDispatch::IntegrationTest
   end
 
   def get_read_message
-    OpenStruct.new(
+    TwilioMessageSimule.new(
       status: 'read',
+      error_code: nil,
       body: 'Message de test lu',
-      sid: 'SMXXXXXXXX'
+      sid: 'SMXXXXXXXX',
     )
   end
 end
