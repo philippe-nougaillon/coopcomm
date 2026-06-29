@@ -1,56 +1,87 @@
-<%= form_with model: @prestation do |f| %>
-  <% if @prestation.errors.any? %>
-    <div class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
-      <h2 class="font-black!">
-        <%= pluralize(@prestation.errors.count, "erreur") %> empêche(nt) l'enregistrement de la prestation :
-      </h2>
-      <ul class="list-disc list-inside">
-        <% @prestation.errors.each do |error| %>
-          <li><%= error.full_message %></li>
+<div class="max-w-3xl mx-auto my-6 bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+  <%= form_with model: @prestation do |f| %>
+    <% if @prestation.errors.any? %>
+      <div id="error_explanation" class="bg-red-50 text-red-500 px-4 py-3 font-medium rounded-lg mb-2 border border-red-200">
+        <h2 class="font-black mb-2 text-sm md:text-base">
+          <%= pluralize(@prestation.errors.count, "erreur") %> empêche(nt) l'enregistrement de la prestation :
+        </h2>
+        <ul class="list-disc list-inside text-xs opacity-90">
+          <% @prestation.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%= hidden_field_tag :tab, params[:tab] %>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <%= f.label :code, class: "label font-semibold text-slate-700" do %>
+          <span>Code <span class="text-red-500">*</span></span>
         <% end %>
-      </ul>
+        <%= f.text_field :code, class: "input input-sm input-bordered w-full", required: true %>
+      </div>
+      <div class="flex flex-col gap-1">
+        <%= f.label :libellé,  class: "label font-semibold text-slate-700"  do %>
+          <span>Libellé <span class="text-red-500">*</span></span>
+        <% end %>
+        <%= f.text_field :libellé, class: "input input-sm input-bordered w-full", required: true %>
+      </div>
+      <div class="flex flex-col gap-1">
+        <%= f.label :catégorie, class: "label font-semibold text-slate-700" do %>
+          <span>Catégorie</span>
+        <% end %>
+        <%= f.select :catégorie, %w[A B C],
+       { include_blank: true },
+        class: 'slim-select w-full' %>
+      </div>
+      <div class="flex flex-col gap-1">
+        <%= f.label :sous_catégorie, class: "label font-semibold text-slate-700"  do %>
+          <span>Sous-catégorie </span>
+        <% end %>
+        <%= f.text_field :sous_catégorie, class: "input input-sm input-bordered w-full" %>
+      </div>
+      <div class="flex flex-col gap-1">
+        <%= f.label :unité, class: "label font-semibold text-slate-700" do %>
+          <span>Unité <span class="text-red-500">*</span> </span>
+        <% end %>
+        <%= f.text_field :unité, class: "input input-sm input-bordered w-full", placeholder: "heure, forfait, jour…" %>
+      </div>
+      <div class="flex flex-col gap-1">
+        <%= f.label :tarif, class: "label font-semibold text-slate-700"  do %>
+          <span>Tarif HT (€) <span class="text-red-500">*</span></span>
+        <% end %>
+        <%= f.number_field :tarif, 
+      step: 0.01, min: 0, class: "input input-sm input-bordered w-full", required: true %>
+      </div>
+      <div class="flex flex-col gap-1">
+        <%= f.label :compétence, class: "label font-semibold text-slate-700" do %>
+          <span>Compétence </span>
+        <% end %>
+        <%= f.text_field :compétence, class: "input input-sm input-bordered w-full", placeholder: "ex : plomberie, électricité…" %>
+      </div>
+      <div class="flex flex-col gap-1">
+        <%= f.label :délai, class: "label font-semibold text-slate-700"  do %>
+          <span>Délai </span>
+        <% end %>
+        <%= f.text_field :délai, class: "input input-sm input-bordered w-full" %>
+      </div>
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <%= f.label :description, class: "label font-semibold text-slate-700" do %>
+          <span>Description </span>
+        <% end %>
+        <%= f.text_area :description, rows: 3, class: "textarea textarea-bordered w-full" %>
+      </div>
+    </div>
+    <div class="flex gap-2 mt-4 w-full">
+      <%= link_to "Annuler", (session.delete(:return_to) || admin_parametres_path(tab: params[:tab] || 'prestations')),  class: "btn flex-1" %>
+      <%= f.submit "Enregistrer",  class: "btn btn-primary flex-1" %>
     </div>
   <% end %>
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-    <div class="flex flex-col gap-1">
-      <%= f.label :code, "Code", class: "text-sm text-slate-500" %>
-      <%= f.text_field :code, class: "input input-sm input-bordered w-full", required: true %>
-    </div>
-    <div class="flex flex-col gap-1">
-      <%= f.label :libellé, "Libellé", class: "text-sm text-slate-500" %>
-      <%= f.text_field :libellé, class: "input input-sm input-bordered w-full", required: true %>
-    </div>
-    <div class="flex flex-col gap-1">
-      <%= f.label :catégorie, "Catégorie", class: "text-sm text-slate-500" %>
-      <%= f.select :catégorie, %w[A B C], { include_blank: "—" }, class: "select select-sm select-bordered w-full" %>
-    </div>
-    <div class="flex flex-col gap-1">
-      <%= f.label :sous_catégorie, "Sous-catégorie", class: "text-sm text-slate-500" %>
-      <%= f.text_field :sous_catégorie, class: "input input-sm input-bordered w-full" %>
-    </div>
-    <div class="flex flex-col gap-1">
-      <%= f.label :unité, "Unité", class: "text-sm text-slate-500" %>
-      <%= f.text_field :unité, class: "input input-sm input-bordered w-full", placeholder: "heure, forfait, jour…" %>
-    </div>
-    <div class="flex flex-col gap-1">
-      <%= f.label :tarif, "Tarif HT (€)", class: "text-sm text-slate-500" %>
-      <%= f.number_field :tarif, step: 0.01, min: 0, class: "input input-sm input-bordered w-full", required: true %>
-    </div>
-    <div class="flex flex-col gap-1">
-      <%= f.label :compétence, "Compétence", class: "text-sm text-slate-500" %>
-      <%= f.text_field :compétence, class: "input input-sm input-bordered w-full", placeholder: "ex : plomberie, électricité…" %>
-    </div>
-    <div class="flex flex-col gap-1">
-      <%= f.label :délai, "Délai", class: "text-sm text-slate-500" %>
-      <%= f.text_field :délai, class: "input input-sm input-bordered w-full" %>
-    </div>
-    <div class="flex flex-col gap-1 sm:col-span-2">
-      <%= f.label :description, "Description", class: "text-sm text-slate-500" %>
-      <%= f.text_area :description, rows: 3, class: "textarea textarea-bordered w-full" %>
-    </div>
+  <div class="pt-6 max-w-3xl mx-auto px-4">
+    <%= link_to admin_parametres_path(tab: params[:tab] || 'prestations'), class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+      <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des utilisateurs" %>
+      Retour aux paramètres
+    <% end %>
   </div>
-  <div class="mt-6 flex gap-2">
-    <%= f.submit "Enregistrer", class: "btn btn-primary" %>
-    <%= link_to "Annuler", admin_parametres_path, class: "btn" %>
-  </div>
-<% end %>

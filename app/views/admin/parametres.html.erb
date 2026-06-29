@@ -57,7 +57,7 @@
         <div class="flex justify-between items-center mb-4">
           <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats (<%= @services.size %>)</span>
           <% if policy(Service).new? %>
-            <%= link_to new_service_path, data: { testid: "ajouter_service" }, class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base" do %>
+            <%= link_to new_service_path(tab: current_tab), data: { testid: "ajouter_service" }, class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base" do %>
               <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current", title: "Ajouter un service" %>
               <span class="hidden md:block">Ajouter un service</span>
             <% end %>
@@ -113,14 +113,19 @@
         <div class="flex justify-between items-center mb-4">
           <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats (<%= @warehouses.size %>)</span>
           <% if policy(Warehouse).new? %>
-            <%= link_to new_warehouse_path, data: { testid: "ajouter_warehouse" }, class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base" do %>
+            <%= link_to new_warehouse_path(tab: current_tab), data: { testid: "ajouter_warehouse" }, class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base" do %>
               <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current", title: "Ajouter un site" %>
               <span class="hidden md:block"> Ajouter un site</span>
             <% end %>
           <% end %>
         </div>
-        <div class="rounded-xl border border-slate-200 overflow-hidden shadow-sm bg-white">
-          <div class="overflow-x-auto">
+         <div class="flex flex-col bg-white border border-slate-200 rounded-xl shadow-sm overflow-visible">
+          <div class="overflow-visible">
+            <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+              <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+              <span>Faire glisser pour voir plus</span>
+            </div>
+            <div class="overflow-x-auto">
             <table id="warehouses-table" class="table table-sm w-full">
               <thead class="bg-slate-100">
                 <tr>
@@ -159,22 +164,27 @@
         <div class="flex justify-between items-center mb-4">
           <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats (<%= @prestations.size %>)</span>
           <% if policy(Prestation).new? %>
-            <%= link_to new_prestation_path, data: { testid: "ajouter_prestation" }, class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base" do %>
+            <%= link_to new_prestation_path(tab: current_tab), data: { testid: "ajouter_prestation" }, class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base" do %>
               <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current", title: "Ajouter une prestation" %>
               <span class="hidden md:block">Ajouter une prestation</span>
             <% end %>
           <% end %>
         </div>
-        <div class="rounded-xl border border-slate-200 overflow-hidden shadow-sm bg-white">
-          <div class="overflow-x-auto">
+        <div class="flex flex-col bg-white border border-slate-200 rounded-xl shadow-sm overflow-visible">
+          <div class="overflow-visible">
+            <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+              <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+              <span>Faire glisser pour voir plus</span>
+            </div>
+            <div class="overflow-x-auto">
             <table id="prestations-table" class="table table-sm w-full">
               <thead class="bg-slate-100">
                 <tr>
-                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-24">Code</th>
+                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-32">Code</th>
                   <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">Libellé</th>
-                  <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">Catégorie</th>
-                  <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">Sous-catégorie</th>
-                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider ">Unité</th>
+                  <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider text-center ">Catégorie</th>
+                  <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider text-center ">Sous-catégorie</th>
+                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider  text-center">Unité</th>
                   <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider text-center ">Tarif HT</th>
                   <th class="px-4 py-3 w-24"></th>
                 </tr>

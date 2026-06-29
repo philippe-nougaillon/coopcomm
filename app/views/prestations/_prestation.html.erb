@@ -1,21 +1,41 @@
 <tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
-  <%# 1. Reducido de text-lg a text-sm y py-3 a py-1.5 %>
-  <td class="px-4 py-1.5 uppercase text-primary font-bold text-sm max-w-[120px] truncate">
+  <td class="px-4 py-1.5 uppercase text-primary font-bold text-sm max-w-[180px] truncate">
     <%= prestation.code %>
   </td>
   <td class="px-4 py-1.5 text-sm font-semibold capitalize"><%= prestation.libellé %></td>
-  <td class="px-4 py-1.5 text-sm text-success font-semibold "><%= prestation.catégorie %></td>
-  <td class="px-4 py-1.5 text-sm">
+ 
+ 
+  <td class="px-4 py-1.5 text-sm text-center ">
+    <% if prestation.catégorie.present? %>
+       <span class="text-success font-semibold whitespace-nowrap">
+        <%= prestation.catégorie %>
+      </span>
+    <% else %>
+     <span class="text-success font-semibold flex justify-center whitespace-nowrap">
+      <%= embedded_svg "icons/check_indeterminate_small.svg",
+       title: "Aucun sous catégorie" %>
+    <% end %>
+    </span>
+    </td>
+  
+  
+  
+  <td class="px-4 py-1.5 text-sm text-center "> 
     <% sous = prestation.sous_catégorie %>
     <% if sous.present? %>
       <span class="text-slate-600 whitespace-nowrap">
         <%= sous %>
       </span>
     <% else %>
-      <%= embedded_svg "icons/check_indeterminate_small.svg", title: "Aucun mot-clé" %>
+    <span class="text-slate-600 flex justify-center whitespace-nowrap">
+      <%= embedded_svg "icons/check_indeterminate_small.svg",
+       title: "Aucun sous catégorie" %>
     <% end %>
+    </span>
   </td>
-  <td class="px-4 py-1.5 text-sm capitalize"><%= prestation.unité %></td>
+
+
+  <td class="px-4 py-1.5 text-sm capitalize text-center"><%= prestation.unité %></td>
   <td class="px-4 py-1.5 text-sm text-center">
     <%= number_to_currency(prestation.tarif) %>
   </td>

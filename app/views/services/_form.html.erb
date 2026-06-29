@@ -12,6 +12,7 @@
         </ul>
       </div>
     <% end %>
+    <%= hidden_field_tag :tab, params[:tab] %>
     <div class="w-full">
       <%= form.label :nom, class:'label font-semibold text-slate-700', style: "display: block" %>
       <%= form.text_field :nom, class: 'input input-sm w-full', required: true %>
@@ -30,7 +31,13 @@
       </label>
     </div>
     <div class="flex gap-2 mt-4 w-full">
-      <%= link_to "Annuler", admin_parametres_path, class: "btn flex-1" %>
+      <%= link_to "Annuler",(session.delete(:return_to) || admin_parametres_path(tab: params[:tab] || 'prestations')),    class: "btn flex-1" %>
       <%= form.submit "Enregistrer",  class: "btn btn-primary flex-1" %>
     </div>
   <% end %>
+  <div class="pt-6 max-w-3xl mx-auto px-4">
+    <%= link_to admin_parametres_path(tab: params[:tab] || 'prestations'), class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+      <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des utilisateurs" %>
+      Retour aux paramètres
+    <% end %>
+  </div>
