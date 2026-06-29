@@ -6,10 +6,10 @@ module AuditsHelper
     encrypted_password
     reset_password_token
     reset_password_sent_at
-    remember_created_at
-    sign_in_count
+             remember_created_at
+             sign_in_count
     current_sign_in_at
-    last_sign_in_at
+             last_sign_in_at
     current_sign_in_ip
     last_sign_in_ip
     failed_attempts
@@ -85,7 +85,27 @@ module AuditsHelper
   end
 
   def audit_changes_list(audit, _current_user)
-    return content_tag(:span, '—', class: 'text-slate-400') if audit.audited_changes.blank?
+    if audit.audited_changes.blank? || humanize_changes(audit.audited_changes).blank?
+      
+      if audit.auditable_type == 'User'
+        # 1. Caso de Login real
+        if (audit.audited_changes.keys & %w[sign_in_count current_sign_in_at]).any?
+          return content_tag(:span, "Connexion à l'application", class: 'text-slate-600 font-medium text-xs')
+        
+        # 2. Caso de Logout real
+        elsif audit.audited_changes['remember_created_at']&.last.nil?
+          return content_tag(:span, "Déconnexion de l'application", class: 'text-slate-600 font-medium text-xs')
+
+        elsif audit.audited_changes['remember_created_at'] &.first.nil?
+          return content_tag(:span, "Maintien de la connexion (Cookie)", class: 'text-slate-600 font-medium text-xs')
+        
+        elsif audit.audited_changes.key?('warehouse_id')
+          return content_tag(:span, "Mise à jour de l'affectation logistique (Entrepôt)", class: 'text-slate-600 font-medium text-xs')  
+        end
+      end
+
+      return content_tag(:span, '—', class: 'text-slate-400')
+    end
 
     render_changes_list(humanize_changes(audit.audited_changes))
   end
@@ -183,8 +203,18 @@ module AuditsHelper
                   when 'update'  then 'edit'
                   when 'destroy' then 'delete'
                   end
-                when 'User'
-                  audit.audited_changes.key?('invitation_token') ? 'mail' : 'edit'
+             when 'User'
+                  if audit.audited_changes.key?('invitation_token')
+                    'mail'
+                  elsif audit.action == 'update' && (audit.audited_changes.keys & %w[current_sign_in_at sign_in_count]).any?
+                    'login'
+                  elsif audit.action == 'update' && audit.audited_changes.key?('remember_created_at') && audit.audited_changes['remember_created_at']&.last.nil?
+                    'logout'
+                  elsif audit.action == 'update' && audit.audited_changes.keys == ['remember_created_at'] && audit.audited_changes['remember_created_at']&.first.nil?
+                    'key' # o puedes usar 'login' o dejarlo vacío si no tienes un icono específico
+                  else
+                    'edit'
+                  end
                 when 'UserService'
                   audit.action == 'create' ? 'add' : 'delete'
                 else
@@ -209,9 +239,27 @@ module AuditsHelper
       when 'destroy' then ['Absence supprimée', 'bg-red-50 text-red-600']
       else                ['Absence',           'bg-slate-100 text-slate-600']
       end
-    when 'User'
-      if audit.audited_changes.key?('invitation_token')
+  when 'User'
+      # 1. Login legítimo (Cambia el contador o la hora actual de entrada)
+      if audit.action == 'update' && (audit.audited_changes.keys & %w[current_sign_in_at sign_in_count]).any?
+        ['Connexion', 'bg-indigo-50 text-indigo-700']
+        
+      # 2. Logout legítimo (La cookie pasa a ser nil al salir)
+      elsif audit.action == 'update' && audit.audited_changes.key?('remember_created_at') && audit.audited_changes['remember_created_at']&.last.nil?
+        ['Déconnexion', 'bg-slate-100 text-slate-600']
+        
+      # 3. Copia/Persistencia técnica de la cookie de sesión
+      elsif audit.action == 'update' && audit.audited_changes.keys == ['remember_created_at'] && audit.audited_changes['remember_created_at']&.first.nil?
+        ['Session', 'bg-slate-50 text-slate-400 border border-slate-200']
+        
+      # 4. Invitaciones de Devise
+      elsif audit.audited_changes.key?('invitation_token')
         ['Invitation relancée', 'bg-blue-50 text-blue-700']
+        
+      # 5. Cambio real de Almacén / Logística
+      elsif audit.audited_changes.key?('warehouse_id')
+        ['Logistique', 'bg-orange-50 text-orange-700']
+        
       else
         case audit.action
         when 'create'  then ['Compte créé',    'bg-emerald-50 text-emerald-700']
