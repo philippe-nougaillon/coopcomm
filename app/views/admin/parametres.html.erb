@@ -95,18 +95,16 @@
             </div>
           </div>
         </div>
-        <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full mt-4 rounded-b-xl">
           <% if @pagy&.pages.to_i > 1 %>
+        <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full mt-4 rounded-b-xl">
             <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
               <%= pagy_nav(@pagy).html_safe %>
             </div>
             <div class="text-slate-500 text-center text-sm w-full">
               <%= pagy_info(@pagy, item_name: "service").html_safe %>
             </div>
-          <% else %>
-            <div></div>
+         </div>
           <% end %>
-        </div>
       </section>
     <% when 'sites' %>
       <section id="sites" class="animate-fade-in">
@@ -146,18 +144,17 @@
             </table>
           </div>
         </div>
-        <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full mt-4 rounded-b-xl">
+        </div> 
           <% if @pagy&.pages.to_i > 1 %>
+        <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full mt-4 rounded-b-xl">
             <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
               <%= pagy_nav(@pagy).html_safe %>
             </div>
             <div class="text-slate-500 text-center text-sm w-full">
-              <%= pagy_info(@pagy, item_name: "site").html_safe %>
+              <%= pagy_info(@pagy, item_name: "service").html_safe %>
             </div>
-          <% else %>
-            <div></div>
+         </div>
           <% end %>
-        </div>
       </section>
     <% when 'prestations' %>
       <section id="prestations" class="mb-8 animate-fade-in">
@@ -201,18 +198,17 @@
             </table>
           </div>
         </div>
+         </div>
+        <% if @pagy&.pages.to_i > 1 %>
         <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full mt-4 rounded-b-xl">
-          <% if @pagy&.pages.to_i > 1 %>
             <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
               <%= pagy_nav(@pagy).html_safe %>
             </div>
             <div class="text-slate-500 text-center text-sm w-full">
-              <%= pagy_info(@pagy, item_name: "prestation").html_safe %>
+              <%= pagy_info(@pagy, item_name: "service").html_safe %>
             </div>
-          <% else %>
-            <div></div>
+         </div>
           <% end %>
-        </div>
       </section>
     <% end %>
   </div>
