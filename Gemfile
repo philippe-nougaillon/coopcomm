@@ -83,6 +83,7 @@ group :test do
   gem 'selenium-webdriver'
   gem 'simplecov', require: false
   gem 'minitest-mock'
+  gem 'webmock'
 end
 
 gem 'devise', '~> 4.9'
