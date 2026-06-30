@@ -370,11 +370,11 @@ class InterventionsController < ApplicationController
           current_intervention.temps_total = current_intervention.calc_temps_total
           current_intervention.workflow_state = 'terminé'
           current_intervention.save
-          message = 'Pointage de fin enregistrée !'
+          message = 'Pointage de fin enregistré !'
         end
       else
         current_intervention = @intervention.create_next_intervention(@intervention, current_user)
-        message = 'Début de journée enregistrée !'
+        message = 'Début de journée enregistré !'
       end
 
       # Le pointage crée/modifie une intervention : si une validation échoue, le
@@ -492,7 +492,7 @@ class InterventionsController < ApplicationController
 
     respond_to do |format|
       if @intervention.save
-        format.html { redirect_to intervention_url(@intervention), notice: 'Modèle de pointage créée avec succès.' }
+        format.html { redirect_to intervention_url(@intervention), notice: 'Modèle de pointage créé avec succès.' }
         format.json { render :show, status: :created, location: @intervention }
       else
         format.html { render :new, status: :unprocessable_entity }

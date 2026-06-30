@@ -11,7 +11,7 @@ class MeteoConceptConnexion < ApplicationService
     # Appel des setters pour pouvoir charger uniquement la requete que l'on veut.
     @url = "#{api_url}forecast/daily/periods?insee=#{insee}"
 
-    puts '[METEO] Nouvelle instance de MeteoConceptConnexion créée !'
+    Rails.logger.debug '[METEO] Nouvelle instance de MeteoConceptConnexion créée !'
   end
 
   def call
@@ -43,6 +43,7 @@ class MeteoConceptConnexion < ApplicationService
   rescue StandardError => e
     # Une API météo en panne ne doit jamais faire tomber la page d'accueil
     Rails.logger.warn "[Meteo] API injoignable : #{e.class} #{e.message}"
+    puts "probleme" + e.message
     nil
   end
 
