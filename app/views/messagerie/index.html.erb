@@ -2,18 +2,19 @@
 <div class="drawer lg:drawer-open w-full mx-auto">
   <input id="messagerie-drawer" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content flex flex-col min-h-screen relative w-full">
-    <div class="sticky top-0 lg:top-16 px-4 2xl:px-8 pt-4 pb-4 z-30 bg-slate-50 flex gap-4 items-center min-h-12 sm:min-h-16 w-full border-b lg:border-none">
-      <label for="messagerie-drawer" class="btn btn-square btn-ghost lg:hidden drawer-button cursor-pointer">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    <div class="sticky top-0 lg:top-16 px-4 2xl:px-8 pt-4 pb-4 z-30 bg-slate-50 flex gap-4 items-center justify-between min-h-12 sm:min-h-16 w-full border-b lg:border-none">
+      <label for="messagerie-drawer" class="btn btn-sm lg:hidden drawer-button cursor-pointer flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-lg normal-case">
+        <%= embedded_svg "icons/group.svg", class: "w-4 h-4 fill-current" %>
+        <span class="font-semibold text-sm">Contacts</span>
       </label>
-      <h1 class="text-2xl sm:text-4xl text-primary font-bold">
+      <h1 class="text-2xl sm:text-4xl text-primary font-bold ml-auto lg:ml-0">
         <%= page_title!('Messagerie') %>
       </h1>
     </div>
     <div class="flex flex-col items-center justify-center flex-1 p-4 lg:p-8 text-center bg-slate-50">
       <div class="max-w-xl w-full">
-        <p class="text-slate-500 mb-8 lg:mt-8">Sélectionnez un contact dans le menu pour démarrer une discussion, ou reprenez une conversation récente ci-dessous.</p>
         <% if @recent_conversations.present? && @recent_conversations.any? %>
+          <p class="text-slate-500 mb-8 lg:mt-8">Sélectionnez un contact pour démarrer une discussion, ou reprenez une conversation récente ci-dessous.</p>
           <div class="flex flex-col gap-3 text-left overflow-y-auto mb-20 lg:mb-0">
             <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2">Discussions récentes</h3>
             <% @recent_conversations.each do |user| %>
@@ -50,8 +51,11 @@
             <% end %>
           </div>
         <% else %>
-          <div class="p-8 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400">
-            <p>Aucune conversation récente.</p>
+          <div class="flex flex-col items-center justify-center py-12">
+            <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-4 border border-slate-200">
+              <%= embedded_svg "icons/chat_bubble.svg", class: "w-5 h-5 fill-current text-slate-400" %>
+            </div>
+            <p class="text-slate-500">Sélectionnez un contact dans le menu pour démarrer votre première discussion.</p>
           </div>
         <% end %>
       </div>

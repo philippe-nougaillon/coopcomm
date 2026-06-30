@@ -3,18 +3,38 @@
 <div class="drawer lg:drawer-open w-full mx-auto">
   <input id="messagerie-drawer" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content flex flex-col min-h-screen relative w-full">
-    <div class="sticky top-0 lg:top-16 px-4 2xl:px-8 pt-4 pb-4 z-30 bg-slate-50 flex gap-4 items-center min-h-12 sm:min-h-16 w-full border-b lg:border-none">
-      <label for="messagerie-drawer" class="btn btn-square btn-ghost lg:hidden drawer-button cursor-pointer">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-      </label>
-      <h1 class="text-2xl sm:text-4xl text-primary font-bold">
-        <%= page_title!('Messagerie') %> - <%= @destinataire.nom_prénom %>
-      </h1>
+    <div class="sticky top-0 lg:top-16 px-4 2xl:px-8 py-4 z-30 bg-slate-50 border-b lg:border-none">
+      <div class="flex items-center justify-between lg:justify-start">
+        <div class="lg:hidden flex-shrink-0">
+          <label
+            for="messagerie-drawer"
+            class="btn btn-sm drawer-button bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-lg"
+          >
+            <%= embedded_svg "icons/group.svg", class: "w-6 h-6 fill-current" %>
+            <span class="hidden md:inline lg:hidden font-medium text-sm">
+              Contacts
+            </span>
+          </label>
+        </div>
+        <div class="flex items-center gap-4">
+          <%= render partial: "partials/user_profile_picture", locals: { user: @destinataire } %>
+          <h1 class="text-xl sm:text-2xl text-primary font-bold truncate">
+            <%= "#{@destinataire.prénom} #{@destinataire.nom.first.upcase}." %>
+          </h1>
+        </div>
+      </div>
     </div>
     <div class="flex justify-center w-full mt-4 flex-1">
-      <div class="flex flex-col w-full lg:w-3/5 relative" data-controller="conversation" data-conversation-to-id-value="<%= @destinataire.id %>">
-        <%# Adapter l'id 'chat-messages-container' au turbo_stream (broadcast_append_to), sinon le scroll automatique ne fonctionnera plus %>
-        <div id="chat-messages-container" data-conversation-target="container" class="w-full lg:mt-12 pb-24 lg:pb-0 px-2">
+      <div
+        class="flex flex-col w-full lg:w-3/5 relative"
+        data-controller="conversation"
+        data-conversation-to-id-value="<%= @destinataire.id %>"
+      >
+        <div
+          id="chat-messages-container"
+          data-conversation-target="container"
+          class="w-full lg:mt-12 pb-24 lg:pb-0 px-2"
+        >
           <% @messages.each do |message| %>
             <% if message.id == @first_unread_id %>
               <div id="first-unread-banner" class="flex items-center gap-4 my-6">
@@ -25,26 +45,43 @@
                 <div class="flex-1 border-t border-primary/30"></div>
               </div>
             <% end %>
-            <div class="message-wrapper"
-                data-message-id="<%= message.id %>"
-                data-unread="<%= message.to_id == current_user.id && message.read_at.nil? ? 'true' : 'false' %>">
+            <div
+              class="message-wrapper"
+              data-message-id="<%= message.id %>"
+              data-unread="<%= message.to_id == current_user.id && message.read_at.nil? ? 'true' : 'false' %>"
+            >
               <%= render partial: "messagerie/message", locals: { message: message } %>
             </div>
           <% end %>
         </div>
         <div class="sticky bottom-18 lg:bottom-0 px-2 lg:pb-4 z-20 w-full mt-auto relative">
-          <div id="new-message-badge" data-conversation-target="badge" data-action="click->conversation#jumpToBottom" class="hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-4 z-30 transform cursor-pointer group">
+          <div
+            id="new-message-badge"
+            data-conversation-target="badge"
+            data-action="click->conversation#jumpToBottom"
+            class="hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-4 z-30 transform cursor-pointer group"
+            >
             <div class="badge badge-primary rounded-full px-4 py-3 shadow-lg flex items-center gap-1 hover:badge-primary-focus transition-colors">
               <span class="text-xs group-hover:-translate-y-0.5 transition-transform">👇</span>
               <span class="text-sm font-semibold text-white">Nouveau message</span>
             </div>
           </div>
-          <form data-action="submit->conversation#send">
-            <input data-conversation-target="input" type="text" autocomplete="off" class="w-full rounded-xl p-4 border bg-white shadow-sm" name="message" placeholder="Ecrivez votre message">
-          </form>
+          <form data-action="submit->conversation#send" class="flex gap-2 p-4 items-center">
+            <input
+              data-conversation-target="input"
+              type="text"
+              autocomplete="off"
+              class="flex-1 rounded-xl p-4 border bg-white shadow-sm"
+              name="message"
+              placeholder="Écrivez votre message"
+            >
+              <button type="submit" class="btn btn-primary btn-circle shadow-sm" aria-label="Envoyer">
+                <%= embedded_svg "icons/send.svg", class: "w-6 h-6 fill-current" %>
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
+    <%= render "sidebar" %>
   </div>
-  <%= render 'sidebar' %>
-</div>

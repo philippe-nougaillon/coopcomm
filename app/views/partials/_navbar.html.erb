@@ -69,29 +69,34 @@
           <%= embedded_svg "icons/menu.svg", class: "w-6 h-6 fill-current" %>
         </div>
         <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 mt-1 text-slate-700">
-          <li class="menu-title px-4 py-1 text-xs uppercase font-bold text-slate-400">Configuration</li>
-          <% if policy(:admin).parametres? %>
-            <li>
-              <%= link_to admin_parametres_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres'))}" do %>
-                <%= embedded_svg "icons/settings.svg", class: "w-4 h-4 inline mr-1" %> Paramètres
-              <% end %>
-            </li>
+          
+          <!-- SECCIÓN DE CONFIGURACIÓN PROTEGIDA (DESKTOP) -->
+          <% if policy(:admin).parametres? || policy(User).index? || policy(Mouvement).index? %>
+            <li class="menu-title px-4 py-1 text-xs uppercase font-bold text-slate-400">Configuration</li>
+            <% if policy(:admin).parametres? %>
+              <li>
+                <%= link_to admin_parametres_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres'))}" do %>
+                  <%= embedded_svg "icons/settings.svg", class: "w-4 h-4 inline mr-1" %> Paramètres
+                <% end %>
+              </li>
+            <% end %>
+            <% if policy(User).index? %>
+              <li>
+                <%= link_to users_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if (params[:controller] == 'users' && params[:action] != 'agent_calendrier' && !(params[:id] == current_user.slug)) || params[:action] == 'create_new_user'}" do %>
+                  <%= embedded_svg "icons/group.svg", class: "w-4 h-4 inline mr-1" %> Utilisateurs
+                <% end %>
+              </li>
+            <% end %>
+            <% if policy(Mouvement).index? %>
+              <li>
+                <%= link_to mouvements_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'mouvements'}" do %>
+                  <%= embedded_svg "icons/compare_arrows.svg", class: "w-4 h-4 inline mr-1" %> Mouvements
+                <% end %>
+              </li>
+            <% end %>
+            <div class="divider my-1 opacity-50"></div>
           <% end %>
-          <% if policy(User).index? %>
-            <li>
-              <%= link_to users_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if (params[:controller] == 'users' && params[:action] != 'agent_calendrier' && !(params[:id] == current_user.slug)) || params[:action] == 'create_new_user'}" do %>
-                <%= embedded_svg "icons/group.svg", class: "w-4 h-4 inline mr-1" %> Utilisateurs
-              <% end %>
-            </li>
-          <% end %>
-          <% if policy(Mouvement).index? %>
-            <li>
-              <%= link_to mouvements_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'mouvements'}" do %>
-                <%= embedded_svg "icons/compare_arrows.svg", class: "w-4 h-4 inline mr-1" %> Mouvements
-              <% end %>
-            </li>
-          <% end %>
-          <div class="divider my-1 opacity-50"></div>
+
           <li class="menu-title px-4 py-1 text-xs uppercase font-bold text-slate-400">Ressources</li>
           <% if policy(:pages).dashboard? %>
             <li>
@@ -136,6 +141,7 @@
     </ul>
   </div>
 </div>
+
 <div class="dock dock-lg lg:hidden z-200 shadow-2xl <%= 'bg-indigo-100' if demo_instance? %>" style="scrollbar-width: none;">
   <%# accueil %>
   <%= link_to home_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:action] == 'home'}", title: "Page d'accueil" do %>
@@ -222,37 +228,41 @@
               <% end %>
             </li>
           <% end %>
-          <% # CONFIGURATION %>
-          <div class="divider my-1 opacity-50"></div>
-          <li class="menu-title px-4 py-1 text-xs uppercase font-bold text-slate-400">Configuration</li>
-          <% if policy(:admin).parametres? %>
-            <li>
-              <%= link_to admin_parametres_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres'))}" do %>
-                <%= embedded_svg "icons/settings.svg", class: "w-5 h-5 inline mr-2" %> Paramètres
-              <% end %>
-            </li>
+          
+          <!-- SECCIÓN DE CONFIGURACIÓN PROTEGIDA (MOBILE) -->
+          <% if policy(:admin).parametres? || policy(User).index? || policy(Mouvement).index? || policy(:admin).audits? %>
+            <div class="divider my-1 opacity-50"></div>
+            <li class="menu-title px-4 py-1 text-xs uppercase font-bold text-slate-400">Configuration</li>
+            <% if policy(:admin).parametres? %>
+              <li>
+                <%= link_to admin_parametres_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres'))}" do %>
+                  <%= embedded_svg "icons/settings.svg", class: "w-5 h-5 inline mr-2" %> Paramètres
+                <% end %>
+              </li>
+            <% end %>
+            <% if policy(User).index? %>
+              <li>
+                <%= link_to users_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if (params[:controller] == 'users' && params[:action] != 'agent_calendrier' && params[:id] != current_user.slug)}" do %>
+                  <%= embedded_svg "icons/group.svg", class: "w-5 h-5 inline mr-2" %> Utilisateurs
+                <% end %>
+              </li>
+            <% end %>
+            <% if policy(Mouvement).index? %>
+              <li>
+                <%= link_to mouvements_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'mouvements'}" do %>
+                  <%= embedded_svg "icons/compare_arrows.svg", class: "w-5 h-5 inline mr-2" %> Mouvements
+                <% end %>
+              </li>
+            <% end %>
+            <% if policy(:admin).audits? %>
+              <li>
+                <%= link_to admin_audits_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if (params[:action] == 'audits')}" do %>
+                  <%= embedded_svg "icons/history.svg", class: "w-5 h-5 inline mr-2" %> Historique d'activité
+                <% end %>
+              </li>
+            <% end %>
           <% end %>
-          <% if policy(User).index? %>
-            <li>
-              <%= link_to users_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if (params[:controller] == 'users' && params[:action] != 'agent_calendrier' && params[:id] != current_user.slug)}" do %>
-                <%= embedded_svg "icons/group.svg", class: "w-5 h-5 inline mr-2" %> Utilisateurs
-              <% end %>
-            </li>
-          <% end %>
-          <% if policy(Mouvement).index? %>
-            <li>
-              <%= link_to mouvements_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'mouvements'}" do %>
-                <%= embedded_svg "icons/compare_arrows.svg", class: "w-5 h-5 inline mr-2" %> Mouvements
-              <% end %>
-            </li>
-          <% end %>
-          <% if policy(:admin).audits? %>
-            <li>
-              <%= link_to admin_audits_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if (params[:action] == 'audits')}" do %>
-                <%= embedded_svg "icons/history.svg", class: "w-5 h-5 inline mr-2" %> Historique d'activité
-              <% end %>
-            </li>
-          <% end %>
+
         </ul>
       </div>
       <% # Déconnexion %>
@@ -264,6 +274,3 @@
     </div>
   </div>
 </div>
-
-
-
