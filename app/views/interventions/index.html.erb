@@ -151,10 +151,18 @@
         <span>Faire glisser pour voir plus</span>
       </div>
     <% end %>
+    <%# Abonnement Turbo Stream par rôle : reçoit le prepend live d'une nouvelle
+        intervention selon le périmètre du rôle. Cf. Intervention#broadcast_channels. %>
     <% if current_user.agent? %>
       <%= turbo_stream_from "interventions_user_#{current_user.id}" %>
-    <% else %>
-      <%= turbo_stream_from "interventions_organisation_#{current_user.id}" %>
+    <% elsif current_user.adhérent? %>
+      <%= turbo_stream_from "interventions_adherent_#{current_user.id}" %>
+    <% elsif current_user.administrateur? %>
+      <%= turbo_stream_from "interventions_organisation_#{current_organisation.id}" %>
+    <% elsif current_user.manager? %>
+      <% current_user.services.each do |service| %>
+        <%= turbo_stream_from "interventions_service_#{service.id}" %>
+      <% end %>
     <% end %>
     <% if params[:vue] == 'normal' %>
       <%= render @interventions, cached: true %>
