@@ -1,5 +1,6 @@
 class CommandesController < ApplicationController
-  before_action :set_commande, only: %i[ show edit update destroy ]
+  before_action :set_commande, only: %i[ show destroy ]
+  before_action :is_user_authorized
 
   # GET /commandes or /commandes.json
   def index
@@ -34,6 +35,28 @@ class CommandesController < ApplicationController
   #   end
   # end
 
+  # POST /commandes or /commandes.json
+  def create_from_cotation
+    if cotation = Cotation.find_by(slug: params[:cotation_id])
+      # Création de la commande à partir de la cotation
+      @commande = Commande.new
+      @commande.adherent_id = cotation.adherent_id
+      @commande.service_id = cotation.service_id
+      @commande.intitulé = cotation.intitulé
+      @commande.mémo = cotation.mémo
+      @commande.date_livraison_souhaitée = cotation.date_livraison_souhaitée
+
+      if @commande.save
+        redirect_to @commande, notice: "Commande créée avec succès."
+      else
+        redirect_to cotation, alert: "Impossible de créer la commande."
+      end
+    else
+      redirect_to cotations_path, alert: "La cotation n'existe pas."
+    end
+
+  end
+
   # PATCH/PUT /commandes/1 or /commandes/1.json
   # def update
   #   respond_to do |format|
@@ -66,5 +89,9 @@ class CommandesController < ApplicationController
     # Only allow a list of trusted parameters through.
     def commande_params
       params.fetch(:commande, {})
+    end
+
+    def is_user_authorized
+      authorize(@commande || Commande)
     end
 end

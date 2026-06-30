@@ -134,7 +134,11 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :commandes
+  resources :commandes do
+    collection do
+      post :create_from_cotation
+    end
+  end
 
   namespace :messagerie do
     get '/', to: 'index', as: ''
