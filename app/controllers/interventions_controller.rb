@@ -204,7 +204,7 @@ class InterventionsController < ApplicationController
 
     # TODO : remarque encore nécessaire ?
 
-    # Le nombre de minute doit être un mutliple de 5,
+    # Le nombre de minute doit être un multiple de 5,
     # Pour cela, on enlève le nombre de minutes modulo 5 (Ex: Si on a 14 minutes -> 14%5 = 4, donc 14-4 = 10)
     # date_fin = now - now.minute.modulo(5).minute
     # modulo plus nécessaire, le step(5) a été retiré
@@ -251,7 +251,7 @@ class InterventionsController < ApplicationController
           # le fetch suit la redirection en gardant l'Accept turbo-stream et la
           # page reste figée sur le formulaire (cf. ServicesController#update).
           if params[:commit] == 'Enregistrer le commentaire'
-            redirect_to root_path, notice: 'Commentaire modifiée avec succès.', status: :see_other
+            redirect_to root_path, notice: 'Votre commentaire a été enregistré', status: :see_other
           else
             redirect_to intervention_url(@intervention), notice: 'Intervention modifiée avec succès.', status: :see_other
           end
@@ -370,11 +370,11 @@ class InterventionsController < ApplicationController
           current_intervention.temps_total = current_intervention.calc_temps_total
           current_intervention.workflow_state = 'terminé'
           current_intervention.save
-          message = 'Pointage de fin enregistrée !'
+          message = 'Pointage de fin enregistré !'
         end
       else
         current_intervention = @intervention.create_next_intervention(@intervention, current_user)
-        message = 'Début de journée enregistrée !'
+        message = 'Début de journée enregistré !'
       end
 
       # Le pointage crée/modifie une intervention : si une validation échoue, le
@@ -492,7 +492,7 @@ class InterventionsController < ApplicationController
 
     respond_to do |format|
       if @intervention.save
-        format.html { redirect_to intervention_url(@intervention), notice: 'Modèle de pointage créée avec succès.' }
+        format.html { redirect_to intervention_url(@intervention), notice: 'Modèle de pointage créé avec succès.' }
         format.json { render :show, status: :created, location: @intervention }
       else
         format.html { render :new, status: :unprocessable_entity }

@@ -51,13 +51,30 @@ class UsersController < ApplicationController
 
   # GET /users/1 or /users/1.json
   def show
+   
+
     # TODO : Stale à mettre au plus proche du render
     # if stale?(@user)
     @absences = @user.absences.ordered
-    @audits = @user.own_and_associated_audits.reorder(id: :desc)
+  # 1. Cargamos todas las auditorías
+    all_audits = @user.own_and_associated_audits.reorder(id: :desc).to_a
 
-    @pagy, @audits = pagy(@audits, items: 10)
-    # end
+    # 2. Filtramos el duplicado en memoria RAM
+    filtered_audits = all_audits.reject do |audit|
+      audit.auditable_type == 'User' && 
+        audit.audited_changes.keys == ['remember_created_at'] && 
+        audit.audited_changes['remember_created_at']&.first.nil?
+    end
+
+    # 3. Paginamos el Array de forma nativa y creamos el objeto @pagy manualmente
+    page_number = [params[:page].to_i, 1].max
+    items_per_page = 10
+    
+    # Recortamos el array para la página actual
+    @audits = filtered_audits.slice((page_number - 1) * items_per_page, items_per_page) || []
+    
+    # Creamos el objeto Pagy para que la vista dibuje los botones de navegación sin enterarse del cambio
+    @pagy = Pagy.new(count: filtered_audits.size, page: page_number, items: items_per_page)
   end
 
   # GET /users/new

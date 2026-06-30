@@ -16,6 +16,7 @@ require 'rails/test_help'
 require 'bcrypt'
 require 'capybara/rails'
 require 'capybara/dsl'
+require 'webmock/minitest' # Permet de stopper les requêtes en dehors du serveur (Ex: API météo)
 
 module ActiveSupport
   class TestCase
@@ -31,6 +32,20 @@ module ActiveSupport
     # teardown do
     #   Rails.cache.clear
     # end
+
+    setup do
+      # Pour accepter les requêtes vers le serveur lui-même
+      WebMock.disable_net_connect!(allow_localhost: true)
+
+      # Dès qu'un test système tente d'appeler l'API météo,
+      # WebMock intercepte l'appel et renvoie une réponse vide.
+      stub_request(:get, /api.meteo-concept.com/)
+        .to_return(
+          status: 200, 
+          body: nil, 
+          headers: { 'Content-Type' => 'application/json' }
+        )
+    end
 
     def login(user)
       visit new_user_session_path

@@ -73,7 +73,7 @@
           <% if policy(:admin).parametres? %>
             <li>
               <%= link_to admin_parametres_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres'))}" do %>
-                <%= embedded_svg "icons/settings.svg", class: "w-4 h-4 inline mr-1" %> Paramètres généraux
+                <%= embedded_svg "icons/settings.svg", class: "w-4 h-4 inline mr-1" %> Paramètres
               <% end %>
             </li>
           <% end %>
@@ -127,7 +127,7 @@
           <%= render partial: 'partials/user_profile_picture', locals: {user: current_user} %>
         <% end %>
       </li>
-      <%# deconnexion %>
+      <%# déconnexion %>
       <li>
         <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?" }, title: "Fermer la session de #{current_user.email} (#{current_user.rôle})", class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 hover:border-primary!" do %>
           <%= embedded_svg "icons/logout.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
@@ -228,7 +228,7 @@
           <% if policy(:admin).parametres? %>
             <li>
               <%= link_to admin_parametres_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres'))}" do %>
-                <%= embedded_svg "icons/settings.svg", class: "w-5 h-5 inline mr-2" %> Paramètres généraux
+                <%= embedded_svg "icons/settings.svg", class: "w-5 h-5 inline mr-2" %> Paramètres
               <% end %>
             </li>
           <% end %>
@@ -264,3 +264,6 @@
     </div>
   </div>
 </div>
+
+
+
