@@ -1,0 +1,2 @@
+class CommandeLigne < ApplicationRecord
+end

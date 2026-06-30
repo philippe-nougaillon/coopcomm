@@ -134,6 +134,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :commandes
+
   namespace :messagerie do
     get '/', to: 'index', as: ''
     get 'conversation/:to_id', to: 'conversation', as: 'conversation'
