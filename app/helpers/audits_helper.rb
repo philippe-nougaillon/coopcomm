@@ -1,26 +1,24 @@
 # frozen_string_literal: true
 
 module AuditsHelper
-  FILTERED_FIELDS = %w[
+ FILTERED_FIELDS = %w[
     invitation_token
     encrypted_password
     reset_password_token
     reset_password_sent_at
-             remember_created_at
-             sign_in_count
+    remember_created_at
+    sign_in_count
     current_sign_in_at
-             last_sign_in_at
+    last_sign_in_at
     current_sign_in_ip
     last_sign_in_ip
     failed_attempts
-    locked_at
     otp_secret
     consumed_timestep
     otp_required_for_login
     uid
     provider
     slug
-    discarded_at
     updated_at
     id
     template_slug
@@ -29,6 +27,8 @@ module AuditsHelper
 
   def field_label(key)
     {
+      'discarded_at' => 'Statut du compte',
+      'locked_at' => 'Verrouillage',
       'du' => 'Début',
       'au' => 'Fin',
       'motif' => 'Motif',
@@ -65,8 +65,7 @@ module AuditsHelper
   def audit_badge(audit)
     label, color_classes = badge_config(audit)
     content_tag(:span,
-                class: "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium #{color_classes}") do
-      badge_icon(audit).to_s.html_safe + label
+               class: "flex items-center justify-center gap-1.5 w-36 py-1 rounded-md text-xs font-medium #{color_classes}") do badge_icon(audit).to_s.html_safe + label
     end
   end
 
@@ -88,6 +87,15 @@ module AuditsHelper
     if audit.audited_changes.blank? || humanize_changes(audit.audited_changes).blank?
       
       if audit.auditable_type == 'User'
+        # Prioridad: Control de desactivación/reactivación por descarte lógico
+        if audit.audited_changes.key?('discarded_at')
+          if audit.audited_changes['discarded_at']&.last.present?
+            return content_tag(:span, "Désactivation du compte par un administrateur", class: 'text-red-600 font-medium text-xs')
+          else
+            return content_tag(:span, "Réhabilitation du compte par un administrateur", class: 'text-emerald-600 font-medium text-xs')
+          end
+        end
+
         # 1. Caso de Login real
         if (audit.audited_changes.keys & %w[sign_in_count current_sign_in_at]).any?
           return content_tag(:span, "Connexion à l'application", class: 'text-slate-600 font-medium text-xs')
@@ -129,11 +137,18 @@ module AuditsHelper
   end
 
   def format_audit_value(key, value)
+    case key
+    when 'discarded_at'
+      return (value.present? && value != '—') ? 'Désactivé' : 'Réactivé'
+    when 'locked_at'
+      return (value.present? && value != '—') ? 'Verrouillé' : 'Ouvert'
+    end
+
+    # 2. Regla general para el resto de los campos (si es nil, muestra un guión)
     return '—' if value.nil? || value.to_s.strip.empty? || value.to_s == '—'
 
     case key
     when 'apres_midi', 'matin', 'journee'
-      # .to_s asegura que siempre lo tratemos como texto para buscar con la Expresión Regular
       value.to_s.match?(/true|1/) ? 'Oui' : 'Non'
     when 'motif'
       { '0' => 'Congé annuel', '1' => 'Maladie', '2' => 'RTT' }.fetch(value.to_s, value)
@@ -203,15 +218,32 @@ module AuditsHelper
                   when 'update'  then 'edit'
                   when 'destroy' then 'delete'
                   end
-             when 'User'
-                  if audit.audited_changes.key?('invitation_token')
+                when 'User'
+                  # 1. Prioridad absoluta: Control de desactivación / reactivación
+                  if audit.action == 'update' && audit.audited_changes.key?('discarded_at')
+                    if audit.audited_changes['discarded_at']&.last.present?
+                      'no_accounts' # Icono para cuenta desactivada
+                    else
+                      'account_circle' # Icono para cuenta reactivada
+                    end
+
+                  # 2. Invitaciones de Devise
+                  elsif audit.audited_changes.key?('invitation_token')
                     'mail'
+
+                  # 3. Login legítimo
                   elsif audit.action == 'update' && (audit.audited_changes.keys & %w[current_sign_in_at sign_in_count]).any?
                     'login'
+
+                  # 4. Logout legítimo
                   elsif audit.action == 'update' && audit.audited_changes.key?('remember_created_at') && audit.audited_changes['remember_created_at']&.last.nil?
                     'logout'
+
+                  # 5. Persistencia de cookie
                   elsif audit.action == 'update' && audit.audited_changes.keys == ['remember_created_at'] && audit.audited_changes['remember_created_at']&.first.nil?
-                    'key' # o puedes usar 'login' o dejarlo vacío si no tienes un icono específico
+                    'key'
+
+                  # 6. Cualquier otra edición de perfil
                   else
                     'edit'
                   end
@@ -239,46 +271,62 @@ module AuditsHelper
       when 'destroy' then ['Absence supprimée', 'bg-red-50 text-red-600']
       else                ['Absence',           'bg-slate-100 text-slate-600']
       end
-  when 'User'
-      # 1. Login legítimo (Cambia el contador o la hora actual de entrada)
-      if audit.action == 'update' && (audit.audited_changes.keys & %w[current_sign_in_at sign_in_count]).any?
-        ['Connexion', 'bg-indigo-50 text-indigo-700']
+    when 'User'
+     # 1. Caso de Desactivación / Eliminación lógica
+      if audit.action == 'update' && audit.audited_changes.key?('discarded_at')
+        if audit.audited_changes['discarded_at']&.last.present?
+          ['Compte désactivé', 'bg-red-50 text-red-700 border border-red-200']
+        else
+          ['Compte réactivé', 'bg-emerald-50 text-emerald-700 border border-emerald-200']
+        end
+
+      # 2. Caso alternativo si usas 'locked_at' de Devise
+      elsif audit.action == 'update' && audit.audited_changes.key?('locked_at')
+        if audit.audited_changes['locked_at']&.last.present?
+          ['Compte bloqué', 'bg-red-50 text-red-700 border border-red-200']
+        else
+          ['Compte débloqué', 'bg-emerald-50 text-emerald-700 border border-emerald-200']
+        end
+
+      # 3. Login legítimo
+      elsif audit.action == 'update' && (audit.audited_changes.keys & %w[current_sign_in_at sign_in_count]).any?
+        ['Connexion', 'bg-indigo-50 text-indigo-700 border border-indigo-200']
         
-      # 2. Logout legítimo (La cookie pasa a ser nil al salir)
+      # 4. Logout legítimo (Solo si NO se modificó al mismo tiempo el estado del usuario)
       elsif audit.action == 'update' && audit.audited_changes.key?('remember_created_at') && audit.audited_changes['remember_created_at']&.last.nil?
-        ['Déconnexion', 'bg-slate-100 text-slate-600']
+        ['Déconnexion', 'bg-slate-100 text-slate-600 border border-slate-200']
         
-      # 3. Copia/Persistencia técnica de la cookie de sesión
+      # 5. Copia/Persistencia técnica de la cookie de sesión
       elsif audit.action == 'update' && audit.audited_changes.keys == ['remember_created_at'] && audit.audited_changes['remember_created_at']&.first.nil?
         ['Session', 'bg-slate-50 text-slate-400 border border-slate-200']
         
-      # 4. Invitaciones de Devise
+      # 6. Invitaciones de Devise
       elsif audit.audited_changes.key?('invitation_token')
-        ['Invitation relancée', 'bg-blue-50 text-blue-700']
+        ['Invitation relancée', 'bg-blue-50 text-blue-700 border border-bleu-200']
         
-      # 5. Cambio real de Almacén / Logística
+      # 7. Cambio real de Almacén / Logística
       elsif audit.audited_changes.key?('warehouse_id')
-        ['Logistique', 'bg-orange-50 text-orange-700']
+        ['Logistique', 'bg-orange-50 text-orange-700 border border-orange-200']
         
       else
         case audit.action
-        when 'create'  then ['Compte créé',    'bg-emerald-50 text-emerald-700']
-        when 'update'  then ['Profil modifié', 'bg-amber-50 text-amber-700']
-        else                ['Utilisateur',    'bg-slate-100 text-slate-600']
+        when 'create'  then ['Compte créé',    'bg-emerald-50 text-emerald-700 border border-emerald-200']
+        when 'update'  then ['Profil modifié', 'bg-amber-50 text-amber-700 border border-amber-200']
+        else                ['Utilisateur',    'bg-slate-100 text-slate-600 border border-slate-200']
         end
       end
     when 'UserService'
       case audit.action
-      when 'create'  then ['Service associé', 'bg-emerald-50 text-emerald-700']
-      when 'destroy' then ['Service retiré',  'bg-red-50 text-red-600']
-      else                ['Service',         'bg-slate-100 text-slate-600']
+      when 'create'  then ['Service associé', 'bg-emerald-50 text-emerald-700 border border-emerald-200']
+      when 'destroy' then ['Service retiré',  'bg-red-50 text-red-600 border border-red-200']
+      else                ['Service',         'bg-slate-100 text-slate-600 border border-slate-200']
       end
     else
       case audit.action
-      when 'create'  then ["Création", 'bg-emerald-50 text-emerald-700']
-      when 'update'  then ["Modification", 'bg-amber-50 text-amber-700']
-      when 'destroy' then ["Suppression", 'bg-red-50 text-red-600']
-      else                [audit.action.humanize, 'bg-slate-100 text-slate-500']
+      when 'create'  then ["Création", 'bg-emerald-50 text-emerald-700 border border-emerald-200']
+      when 'update'  then ["Modification", 'bg-amber-50 text-amber-700 border border-amber-200']
+      when 'destroy' then ["Suppression", 'bg-red-50 text-red-600 border border-red-200']
+      else                [audit.action.humanize, 'bg-slate-100 text-slate-500 border border-slate-200']
       end
     end
   end
