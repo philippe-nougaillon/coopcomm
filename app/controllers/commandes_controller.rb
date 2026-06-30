@@ -4,11 +4,25 @@ class CommandesController < ApplicationController
 
   # GET /commandes or /commandes.json
   def index
-    @commandes = Commande.all
+    @commandes = Commande.includes(:adherent, :service).ordered
+
+    if params[:search].present?
+      @commandes = @commandes.where('commandes.ref ILIKE :s OR commandes.intitulé ILIKE :s', s: "%#{params[:search]}%")
+    end
+
+    if params[:workflow_state].present?
+      @commandes = @commandes.where('commandes.workflow_state = ?', params[:workflow_state].to_s.downcase)
+    end
+
+    @commandes = @commandes.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
+
+    @pagy, @commandes = pagy(@commandes, items: 15)
   end
 
   # GET /commandes/1 or /commandes/1.json
   def show
+    @audits = @commande.own_and_associated_audits.includes(:user).reorder(id: :desc)
+    @pagy, @audits = pagy(@audits, items: 10)
   end
 
   # GET /commandes/new
@@ -45,6 +59,10 @@ class CommandesController < ApplicationController
       @commande.intitulé = cotation.intitulé
       @commande.mémo = cotation.mémo
       @commande.date_livraison_souhaitée = cotation.date_livraison_souhaitée
+
+      cotation.cotation_lignes.each do |cotation_ligne|
+        @commande.commande_lignes.build(prestation: cotation_ligne.prestation, intitulé: cotation_ligne.intitulé, qté: cotation_ligne.qté, prix_ht: cotation_ligne.prix_ht, total_ht: cotation_ligne.total_ht)
+      end
 
       if @commande.save
         redirect_to @commande, notice: "Commande créée avec succès."
@@ -83,7 +101,7 @@ class CommandesController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_commande
-      @commande = Commande.find(params.expect(:id))
+      @commande = Commande.find_by(slug: params.expect(:id))
     end
 
     # Only allow a list of trusted parameters through.

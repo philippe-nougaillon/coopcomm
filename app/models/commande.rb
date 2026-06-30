@@ -14,7 +14,6 @@ class Commande < ApplicationRecord
   belongs_to :service
   has_one :organisation, through: :service
   has_many :commande_lignes, dependent: :destroy
-  has_many :mail_logs, dependent: :nullify
 
   CREE    = 'créé'
   ENVOYE  = 'envoyé'

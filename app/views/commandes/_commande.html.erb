@@ -1,2 +1,24 @@
-<div id="<%= dom_id commande %>" class="w-full sm:w-auto my-5 space-y-5">
-</div>
+<tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
+  <td class="px-4 py-3 text-lg font-semibold text-primary">
+    <%= link_to commande.ref, commande, class: "hover:underline" %>
+  </td>
+  <td class="px-4 py-3">
+    <span class="badge text-nowrap font-bold <%= commande.style %>"><%= commande.workflow_state.humanize %></span>
+  </td>
+  <td class="px-4 py-3"><%= commande.adherent&.nom_prénom %></td>
+  <td class="px-4 py-3"><%= commande.service&.nom %></td>
+  <td class="px-4 py-3"><%= commande.intitulé %></td>
+  <td class="px-4 py-3 text-nowrap"><%= l(commande.date_livraison_souhaitée, format: :long) if commande.date_livraison_souhaitée %></td>
+  <td class="px-4 py-3 text-right font-medium"><%= number_to_currency(commande.total_ht) %></td>
+  <td class="px-2 py-3 text-center">
+    <%= link_to "Voir", commande, class: "btn btn-sm" %>
+  </td>
+  <td class="px-2 py-3 text-center">
+    <% if policy(commande).destroy? %>
+      <%= button_to commande_path(commande), method: :delete, class: "btn btn-sm", title: "Supprimer",
+                    form: { data: { turbo_confirm: "Supprimer cette commande ?" }, class: 'inline-block' } do %>
+        <span class="material-symbols-outlined">delete</span>
+      <% end %>
+    <% end %>
+  </td>
+</tr>
