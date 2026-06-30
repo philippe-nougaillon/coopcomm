@@ -1,5 +1,5 @@
 class CommandesController < ApplicationController
-  before_action :set_commande, only: %i[ show edit update destroy pdf ]
+  before_action :set_commande, only: %i[ show edit update destroy pdf envoyer valider refuser ]
   before_action :is_user_authorized
   before_action :set_form_collections, only: %i[edit]
 
@@ -82,7 +82,44 @@ class CommandesController < ApplicationController
               disposition: 'inline'
   end
 
+  # Transitions du workflow
+  def envoyer
+    transition!(:envoyer, 'Commande envoyée.') do
+      notify_adherent_commande_envoyee
+    end
+  end
+
+  def valider
+    transition!(:valider, 'Commande validée.')
+  end
+
+  def refuser
+    transition!(:refuser, 'Commande refusée.')
+  end
+
   private
+
+  def transition!(event, notice)
+    if @commande.send("can_#{event}?")
+      @commande.send("#{event}!")
+      # Effet de bord optionnel propre à l'action (ex. notifier l'adhérent pour
+      # `envoyer`) : exécuté seulement si un bloc est fourni ET après une
+      # transition réussie. Sans bloc (valider/refuser), on ne fait rien.
+      yield if block_given?
+      redirect_to @commande, notice: notice
+    else
+      redirect_to @commande, alert: "Action impossible dans l'état actuel de la commande."
+    end
+  end
+
+  # Notifie l'adhérent (mail + PDF + copie à l'émetteur) que sa commande est
+  # envoyée. Sans email côté adhérent, on n'envoie rien.
+  def notify_adherent_commande_envoyee
+    adherent = @commande.adherent
+    return if adherent&.email.blank?
+
+    NotifAdherentCommandeEnvoyeeJob.perform_later(@commande, adherent, current_user.id)
+  end
 
   # Use callbacks to share common setup or constraints between actions.
   def set_commande

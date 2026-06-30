@@ -65,6 +65,12 @@ class Commande < ApplicationRecord
     workflow_spec.states.keys.map { |state| state.to_s.humanize }
   end
 
+  # Une cotation n'est modifiable que tant qu'elle n'a pas été envoyée, ou
+  # après avoir été refusée (pour la corriger avant de la renvoyer).
+  def modifiable?
+    workflow_state == CREE || workflow_state == REFUSE
+  end
+
   # Nom du fichier PDF (utilisé dans l'URL et l'en-tête Content-Disposition)
   def pdf_filename
     "Commande-#{ref}.pdf"
