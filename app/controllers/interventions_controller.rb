@@ -44,7 +44,7 @@ class InterventionsController < ApplicationController
                      end
 
     # Enlever les interventions filles si ce n'est pas un adhérent
-    @interventions = @interventions.where(template_slug: nil) unless current_user.adhérent?
+    # @interventions = @interventions.where(template_slug: nil) unless current_user.adhérent?
 
     if params[:search].present?
       @interventions = @interventions.where('description ILIKE :search OR commentaires ILIKE :search',
