@@ -61,27 +61,9 @@ class Commande < ApplicationRecord
     workflow_spec.states.keys.map { |state| state.to_s.humanize }
   end
 
-  # Une commande n'est modifiable que tant qu'elle n'a pas été envoyée, ou
-  # après avoir été refusée (pour la corriger avant de la renvoyer).
-  def modifiable?
-    workflow_state == CREE || workflow_state == REFUSE
-  end
-
   # Nom du fichier PDF (utilisé dans l'URL et l'en-tête Content-Disposition)
   def pdf_filename
     "Commande-#{ref}.pdf"
-  end
-
-  # Commandes visibles : un admin voit celles de son organisation,
-  # un manager celles de ses services, les autres rôles aucune.
-  def self.visible_to(user)
-    if user.administrateur?
-      joins(:service).where(services: { organisation_id: user.organisation&.id })
-    elsif user.manager?
-      where(service_id: user.service_ids)
-    else
-      none
-    end
   end
 
   private

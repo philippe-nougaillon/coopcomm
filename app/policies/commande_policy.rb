@@ -34,4 +34,8 @@ class CommandePolicy < ApplicationPolicy
   def destroy?
     manager_or_admin?
   end
+
+  def pdf?
+    show?
+  end
 end

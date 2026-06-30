@@ -3,6 +3,8 @@
   <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
     <h1 class="text-2xl sm:text-3xl text-primary font-bold">Commande <%= @commande.ref %></h1>
     <div class="flex flex-wrap gap-2">
+      <%= link_to "Générer PDF", pdf_commande_path(@commande, filename: @commande.pdf_filename),
+                  class: "btn btn-outline", target: "_blank", data: { turbo: false } %>
       <% if policy(@commande).update? %>
         <%= link_to edit_commande_path(@commande), class: "btn btn-primary" do %>
           <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>

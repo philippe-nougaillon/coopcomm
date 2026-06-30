@@ -1,5 +1,5 @@
 class CommandesController < ApplicationController
-  before_action :set_commande, only: %i[ show destroy ]
+  before_action :set_commande, only: %i[ show destroy pdf ]
   before_action :is_user_authorized
 
   # GET /commandes or /commandes.json
@@ -98,6 +98,14 @@ class CommandesController < ApplicationController
     end
   end
 
+  def pdf
+    pdf = CommandePdf.new
+    pdf.devis(@commande)
+    send_data pdf.render,
+              filename: @commande.pdf_filename,
+              type: 'application/pdf',
+              disposition: 'inline'
+  end
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_commande

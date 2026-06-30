@@ -14,6 +14,14 @@
     <%= link_to "Voir", commande, class: "btn btn-sm" %>
   </td>
   <td class="px-2 py-3 text-center">
+    <% if policy(commande).pdf? %>
+      <%= link_to pdf_commande_path(commande, filename: commande.pdf_filename),
+                  class: "btn btn-sm", target: "_blank", title: "Générer le PDF", data: { turbo: false } do %>
+        <span class="material-symbols-outlined">picture_as_pdf</span>
+      <% end %>
+    <% end %>
+  </td>
+  <td class="px-2 py-3 text-center">
     <% if policy(commande).destroy? %>
       <%= button_to commande_path(commande), method: :delete, class: "btn btn-sm", title: "Supprimer",
                     form: { data: { turbo_confirm: "Supprimer cette commande ?" }, class: 'inline-block' } do %>
