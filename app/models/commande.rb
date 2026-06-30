@@ -15,6 +15,10 @@ class Commande < ApplicationRecord
   has_one :organisation, through: :service
   has_many :commande_lignes, dependent: :destroy
 
+  accepts_nested_attributes_for :commande_lignes,
+                                allow_destroy: true,
+                                reject_if: ->(attributes) { attributes[:prestation_id].blank? }
+
   CREE    = 'créé'
   ENVOYE  = 'envoyé'
   VALIDE  = 'validé'

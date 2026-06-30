@@ -15,17 +15,17 @@ class CommandePolicy < ApplicationPolicy
   #   manager_or_admin?
   # end
 
-  def create?
-    manager_or_admin?
-  end
+  # def create?
+  #   manager_or_admin?
+  # end
 
   def show?
     manager_or_admin?
   end
 
-  # def update?
-  #   manage?
-  # end
+  def update?
+    manager_or_admin?
+  end
 
   def destroy?
     manager_or_admin?

@@ -22,6 +22,14 @@
     <% end %>
   </td>
   <td class="px-2 py-3 text-center">
+    <% if policy(commande).update? %>
+      <%= link_to edit_commande_path(commande), class: "btn btn-sm btn-primary", title: "Modifier" do %>
+        <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
+        <span class="hidden lg:inline">Modifier</span>
+      <% end %>
+    <% end %>
+  </td>
+  <td class="px-2 py-3 text-center">
     <% if policy(commande).destroy? %>
       <%= button_to commande_path(commande), method: :delete, class: "btn btn-sm", title: "Supprimer",
                     form: { data: { turbo_confirm: "Supprimer cette commande ?" }, class: 'inline-block' } do %>

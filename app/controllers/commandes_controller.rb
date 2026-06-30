@@ -1,6 +1,7 @@
 class CommandesController < ApplicationController
-  before_action :set_commande, only: %i[ show destroy pdf ]
+  before_action :set_commande, only: %i[ show edit update destroy pdf ]
   before_action :is_user_authorized
+  before_action :set_form_collections, only: %i[edit]
 
   # GET /commandes or /commandes.json
   def index
@@ -31,8 +32,8 @@ class CommandesController < ApplicationController
   # end
 
   # GET /commandes/1/edit
-  # def edit
-  # end
+  def edit
+  end
 
   # POST /commandes or /commandes.json
   # def create
@@ -50,17 +51,17 @@ class CommandesController < ApplicationController
   # end
 
   # PATCH/PUT /commandes/1 or /commandes/1.json
-  # def update
-  #   respond_to do |format|
-  #     if @commande.update(commande_params)
-  #       format.html { redirect_to @commande, notice: "Commande modifiée avec succès.", status: :see_other }
-  #       format.json { render :show, status: :ok, location: @commande }
-  #     else
-  #       format.html { render :edit, status: :unprocessable_content }
-  #       format.json { render json: @commande.errors, status: :unprocessable_content }
-  #     end
-  #   end
-  # end
+  def update
+    respond_to do |format|
+      if @commande.update(commande_params)
+        format.html { redirect_to @commande, notice: "Commande modifiée avec succès.", status: :see_other }
+        format.json { render :show, status: :ok, location: @commande }
+      else
+        format.html { render :edit, status: :unprocessable_content }
+        format.json { render json: @commande.errors, status: :unprocessable_content }
+      end
+    end
+  end
 
   # DELETE /commandes/1 or /commandes/1.json
   def destroy
@@ -80,18 +81,35 @@ class CommandesController < ApplicationController
               type: 'application/pdf',
               disposition: 'inline'
   end
+
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_commande
-      @commande = Commande.find_by(slug: params.expect(:id))
-    end
 
-    # Only allow a list of trusted parameters through.
-    def commande_params
-      params.fetch(:commande, {})
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_commande
+    @commande = Commande.find_by(slug: params.expect(:id))
+  end
 
-    def is_user_authorized
-      authorize(@commande || Commande)
-    end
+  # Only allow a list of trusted parameters through.
+  def commande_params
+    params.require(:commande).permit(
+      :adherent_id, :service_id, :intitulé, :mémo, :date_livraison_souhaitée,
+      commande_lignes_attributes: %i[id prestation_id intitulé qté _destroy]
+    )
+  end
+
+  def is_user_authorized
+    authorize(@commande || Commande)
+  end
+
+  def set_form_collections
+    @adherents = if current_user.administrateur?
+                   current_organisation.users.adhérent.ordered
+                 else
+                   User.by_service(current_user.services).adhérent.ordered
+                 end
+
+    @services = current_user.administrateur? ? current_organisation.services.ordered : current_user.services.ordered
+
+    @prestations = current_organisation.prestations.ordered
+  end
 end
