@@ -53,6 +53,10 @@ class ApplicationPolicy
     (record_services & user.services).any?
   end
 
+  def manage?
+    organisation? && (administrateur? || (user.manager? && user.services.include?(record.service)))
+  end
+
   class Scope
     def initialize(user, scope)
       @user = user

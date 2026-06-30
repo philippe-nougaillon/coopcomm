@@ -20,18 +20,33 @@ class CommandePolicy < ApplicationPolicy
   # end
 
   def show?
-    manager_or_admin?
+    manage?
   end
 
+  # Modification (et edit?, qui en hérite) : réservée aux états modifiables,
+  # c.-à-d. tant que la cotation n'a pas été envoyée, ou après un refus.
   def update?
-    manager_or_admin?
+    manage? && record.modifiable?
   end
 
   def destroy?
-    manager_or_admin?
+    manage?
   end
 
   def pdf?
     show?
+  end
+
+  # Transitions du workflow : réservées à qui peut gérer la cotation
+  def envoyer?
+    manage?
+  end
+
+  def valider?
+    manage?
+  end
+
+  def refuser?
+    manage?
   end
 end
