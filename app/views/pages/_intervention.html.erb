@@ -10,7 +10,7 @@
       <small>Modifié il y a <%= time_ago_in_words(intervention.updated_at)%></small>
     </div>
   </div>
-  <div class="flex flex-col ml-8 md:ml-0 sm:flex-row gap-4 shrink-0">
+  <div class="flex flex-row ml-8 md:ml-0  gap-4 shrink-0">
     <% if policy(intervention).terminer? && intervention.can_terminer? %>
       <% pointe = current_user.agent? && intervention.template_slug %>
       <%# `pointer` est une route GET (scan QR / URL), `terminer` une route POST : verbe conditionnel. %>
