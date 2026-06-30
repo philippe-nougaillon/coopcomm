@@ -19,10 +19,6 @@ class CommandePolicy < ApplicationPolicy
     manager_or_admin?
   end
 
-  def create_from_cotation?
-    manager_or_admin?
-  end
-
   def show?
     manager_or_admin?
   end

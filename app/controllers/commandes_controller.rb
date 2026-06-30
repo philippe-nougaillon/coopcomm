@@ -49,32 +49,6 @@ class CommandesController < ApplicationController
   #   end
   # end
 
-  # POST /commandes or /commandes.json
-  def create_from_cotation
-    if cotation = Cotation.find_by(slug: params[:cotation_id])
-      # Création de la commande à partir de la cotation
-      @commande = Commande.new
-      @commande.adherent_id = cotation.adherent_id
-      @commande.service_id = cotation.service_id
-      @commande.intitulé = cotation.intitulé
-      @commande.mémo = cotation.mémo
-      @commande.date_livraison_souhaitée = cotation.date_livraison_souhaitée
-
-      cotation.cotation_lignes.each do |cotation_ligne|
-        @commande.commande_lignes.build(prestation: cotation_ligne.prestation, intitulé: cotation_ligne.intitulé, qté: cotation_ligne.qté, prix_ht: cotation_ligne.prix_ht, total_ht: cotation_ligne.total_ht)
-      end
-
-      if @commande.save
-        redirect_to @commande, notice: "Commande créée avec succès."
-      else
-        redirect_to cotation, alert: "Impossible de créer la commande."
-      end
-    else
-      redirect_to cotations_path, alert: "La cotation n'existe pas."
-    end
-
-  end
-
   # PATCH/PUT /commandes/1 or /commandes/1.json
   # def update
   #   respond_to do |format|

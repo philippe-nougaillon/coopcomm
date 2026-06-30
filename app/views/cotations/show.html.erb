@@ -14,7 +14,7 @@
       <% end %>
       <%= link_to "Générer PDF", pdf_cotation_path(@cotation, filename: @cotation.pdf_filename),
             class: "btn btn-outline", target: "_blank", data: { turbo: false } %>
-      <%= button_to "Créer une commande à partir de cette cotation", create_from_cotation_commandes_path(cotation_id: @cotation), class: "btn btn-success btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents', turbo_method: :post } %>
+      <%= button_to "Créer une commande à partir de cette cotation", create_commande_cotation_path(@cotation), class: "btn btn-success btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents', turbo_method: :post } %>
       <% if policy(@cotation).update? %>
         <%= link_to edit_cotation_path(@cotation), class: "btn btn-primary" do %>
           <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
@@ -109,7 +109,7 @@
             <th colspan="4" class="px-4 py-3 text-right">Total HT</th>
             <th class="px-4 py-3 text-right"><%= number_to_currency(@cotation.total_ht) %></th>
           </tr>
-        </footer>
+        </tfoot>
       <% end %>
     </table>
   </div>

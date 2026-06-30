@@ -124,6 +124,7 @@ Rails.application.routes.draw do
       post :envoyer
       post :valider
       post :refuser
+      post :create_commande
     end
   end
   resources :prestations, except: %i[index show]
@@ -142,7 +143,6 @@ Rails.application.routes.draw do
     end
 
     collection do
-      post :create_from_cotation
     end
   end
 

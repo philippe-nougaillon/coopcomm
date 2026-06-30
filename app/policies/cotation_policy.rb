@@ -53,6 +53,10 @@ class CotationPolicy < ApplicationPolicy
     manage?
   end
 
+  def create_commande?
+    manage?
+  end
+
   private
 
   def manage?

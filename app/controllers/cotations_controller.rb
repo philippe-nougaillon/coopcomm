@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class CotationsController < ApplicationController
-  before_action :set_cotation, only: %i[show edit update destroy pdf envoyer valider refuser]
+  before_action :set_cotation, only: %i[show edit update destroy pdf envoyer valider refuser create_commande]
   before_action :is_user_authorized, except: :create
 
   # GET /cotations
@@ -102,6 +102,19 @@ class CotationsController < ApplicationController
 
   def refuser
     transition!(:refuser, 'Cotation refusée.')
+  end
+
+  def create_commande
+    if @cotation.present?
+
+      @commande = CreateCommandeFromCotation.new(@cotation).call
+
+      if @commande.save
+        redirect_to @commande, notice: "Commande créée avec succès."
+      else
+        redirect_to cotation, alert: "Impossible de créer la commande."
+      end
+    end
   end
 
   private
