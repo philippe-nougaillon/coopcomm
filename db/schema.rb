@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_06_24_143620) do
+ActiveRecord::Schema[8.0].define(version: 2026_06_30_093046) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -104,6 +104,38 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_24_143620) do
     t.index ["created_at"], name: "index_audits_on_created_at"
     t.index ["request_uuid"], name: "index_audits_on_request_uuid"
     t.index ["user_id", "user_type"], name: "user_index"
+  end
+
+  create_table "commande_lignes", force: :cascade do |t|
+    t.bigint "commande_id", null: false
+    t.bigint "prestation_id", null: false
+    t.string "intitulé"
+    t.integer "qté"
+    t.decimal "prix_ht", precision: 8, scale: 2
+    t.virtual "total_ht", type: :decimal, precision: 10, scale: 2, as: "(prix_ht * (\"qté\")::numeric)", stored: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["commande_id"], name: "index_commande_lignes_on_commande_id"
+    t.index ["prestation_id"], name: "index_commande_lignes_on_prestation_id"
+  end
+
+  create_table "commandes", force: :cascade do |t|
+    t.bigint "adherent_id", null: false
+    t.bigint "service_id", null: false
+    t.string "ref"
+    t.string "intitulé"
+    t.text "mémo"
+    t.string "workflow_state", default: "créé"
+    t.date "date_livraison_souhaitée"
+    t.decimal "total_ht", precision: 10, scale: 2
+    t.datetime "discarded_at"
+    t.string "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["adherent_id"], name: "index_commandes_on_adherent_id"
+    t.index ["discarded_at"], name: "index_commandes_on_discarded_at"
+    t.index ["service_id"], name: "index_commandes_on_service_id"
+    t.index ["slug"], name: "index_commandes_on_slug", unique: true
   end
 
   create_table "conventions", force: :cascade do |t|
@@ -560,6 +592,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_24_143620) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "agent_interventions", "interventions"
   add_foreign_key "agent_interventions", "users", column: "agent_id"
+  add_foreign_key "commande_lignes", "commandes"
+  add_foreign_key "commande_lignes", "prestations"
+  add_foreign_key "commandes", "services"
+  add_foreign_key "commandes", "users", column: "adherent_id"
   add_foreign_key "conventions", "services"
   add_foreign_key "conventions", "users"
   add_foreign_key "cotation_lignes", "cotations"
