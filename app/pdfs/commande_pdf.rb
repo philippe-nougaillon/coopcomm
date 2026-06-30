@@ -31,7 +31,7 @@ class CommandePdf
 
   def add_header
     image @logo, height: 80, position: :right if File.exist?(@logo)
-    text "Commande / Devis n°#{@commande.ref}", size: 16, style: :bold
+    text "Commande n°#{@commande.ref}", size: 16, style: :bold
     move_down 10
     stroke_horizontal_rule
     move_down 20

@@ -51,19 +51,30 @@ class UsersController < ApplicationController
 
   # GET /users/1 or /users/1.json
   def show
-   
-
     # TODO : Stale à mettre au plus proche du render
     # if stale?(@user)
     @absences = @user.absences.ordered
-  # 1. Cargamos todas las auditorías
+    
+    # 1. Cargamos todas las auditorías
     all_audits = @user.own_and_associated_audits.reorder(id: :desc).to_a
 
-    # 2. Filtramos el duplicado en memoria RAM
+    # 2. Filtramos el ruido técnico en memoria RAM
     filtered_audits = all_audits.reject do |audit|
-      audit.auditable_type == 'User' && 
-        audit.audited_changes.keys == ['remember_created_at'] && 
-        audit.audited_changes['remember_created_at']&.first.nil?
+      if audit.auditable_type == 'User'
+        changes = audit.audited_changes
+        
+        # CASO A: Es SOLO la persistencia de la cookie de Devise (antes la mostrabas como "Session")
+        is_only_cookie = changes.keys == ['remember_created_at'] && changes['remember_created_at']&.first.nil?
+
+        # CASO B: El administrador modificó el estado del usuario (discard/undiscard)
+        # e implícitamente Devise limpió la sesión (remember_created_at pasa a ser [fecha, nil]).
+        # Queremos rechazar este audit duplicado colateral porque el cambio real de la cuenta ya genera su propio registro.
+        is_technical_cleanup = changes.key?('discarded_at') && changes.key?('remember_created_at') && changes['remember_created_at']&.last.nil?
+
+        is_only_cookie || is_technical_cleanup
+      else
+        false
+      end
     end
 
     # 3. Paginamos el Array de forma nativa y creamos el objeto @pagy manualmente
@@ -76,6 +87,9 @@ class UsersController < ApplicationController
     # Creamos el objeto Pagy para que la vista dibuje los botones de navegación sin enterarse del cambio
     @pagy = Pagy.new(count: filtered_audits.size, page: page_number, items: items_per_page)
   end
+
+
+
 
   # GET /users/new
   def new

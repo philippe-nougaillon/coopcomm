@@ -15,6 +15,10 @@ class Commande < ApplicationRecord
   has_one :organisation, through: :service
   has_many :commande_lignes, dependent: :destroy
 
+  accepts_nested_attributes_for :commande_lignes,
+                                allow_destroy: true,
+                                reject_if: ->(attributes) { attributes[:prestation_id].blank? }
+
   CREE    = 'créé'
   ENVOYE  = 'envoyé'
   VALIDE  = 'validé'
@@ -59,6 +63,12 @@ class Commande < ApplicationRecord
 
   def self.workflow_state_humanized
     workflow_spec.states.keys.map { |state| state.to_s.humanize }
+  end
+
+  # Une cotation n'est modifiable que tant qu'elle n'a pas été envoyée, ou
+  # après avoir été refusée (pour la corriger avant de la renvoyer).
+  def modifiable?
+    workflow_state == CREE || workflow_state == REFUSE
   end
 
   # Nom du fichier PDF (utilisé dans l'URL et l'en-tête Content-Disposition)

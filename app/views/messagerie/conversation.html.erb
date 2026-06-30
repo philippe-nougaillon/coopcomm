@@ -19,7 +19,8 @@
         <div class="flex items-center gap-4">
           <%= render partial: "partials/user_profile_picture", locals: { user: @destinataire } %>
           <h1 class="text-xl sm:text-2xl text-primary font-bold truncate">
-            <%= "#{@destinataire.prénom} #{@destinataire.nom.first.upcase}." %>
+            <span class="block md:hidden"><%= "#{@destinataire.nom} #{@destinataire.prénom.first.upcase}." %></span>
+            <span class="hidden md:block"><%= @destinataire.nom_prénom %> </span>
           </h1>
         </div>
       </div>
