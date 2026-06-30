@@ -134,6 +134,18 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :commandes do
+    member do
+      # Le nom de fichier termine l'URL (ex. .../Cotation-2026-1.pdf) pour que la
+      # prévisualisation du navigateur affiche ce nom plutôt que "pdf.pdf".
+      get 'pdf(/*filename)', action: :pdf, as: :pdf, format: false
+    end
+
+    collection do
+      post :create_from_cotation
+    end
+  end
+
   namespace :messagerie do
     get '/', to: 'index', as: ''
     get 'conversation/:to_id', to: 'conversation', as: 'conversation'

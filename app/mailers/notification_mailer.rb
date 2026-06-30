@@ -124,4 +124,16 @@ class NotificationMailer < ApplicationMailer
       }
     end
   end
+
+  def intervention_pointage_terminee_automatiquement(intervention, agent_email)
+    @intervention = intervention
+
+    mail(to: agent_email,
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Pointage terminé automatiquement').tap do |message|
+      message.mailgun_options = {
+        'tag' => ['pointage terminé']
+      }
+    end
+  end
 end

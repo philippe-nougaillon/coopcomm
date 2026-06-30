@@ -56,7 +56,7 @@ class Intervention < ApplicationRecord
   after_create :replace_description_with_id
   after_create :calculate_co2, if: proc(&:terminé?)
 
-  after_create_commit :broadcast_to_authorized_viewers
+  # after_create_commit :broadcast_to_authorized_viewers
   # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
   after_create_commit :send_manager_notification
 
@@ -475,17 +475,26 @@ class Intervention < ApplicationRecord
   end
 
   def broadcast_to_authorized_viewers
-    broadcast_prepend_to "interventions_organisation_#{organisation.id}",
-                         partial: 'interventions/intervention',
-                         locals: { intervention: self, from_turbo_stream: true },
-                         target: 'interventions'
-
-    authorized_users_ids.each do |user_id|
-      broadcast_prepend_to "interventions_user_#{user_id}",
+    broadcast_channels.each do |channel|
+      broadcast_prepend_to channel,
                            partial: 'interventions/intervention',
                            locals: { intervention: self, from_turbo_stream: true },
                            target: 'interventions'
     end
+  end
+
+  # Canaux Turbo Stream qui reçoivent le prepend d'une nouvelle intervention,
+  # cf. l'abonnement par rôle dans interventions/index.html.erb :
+  #   - organisation : les administrateurs (toute l'organisation)
+  #   - service      : les managers dont l'intervention relève d'un de leurs services
+  #   - adhérent     : l'adhérent rattaché à l'intervention
+  #   - user         : chaque agent assigné
+  def broadcast_channels
+    channels = ["interventions_organisation_#{organisation.id}",
+                "interventions_service_#{service_id}"]
+    channels << "interventions_adherent_#{adherent_id}" if adherent_id.present?
+    channels.concat(authorized_users_ids.map { |user_id| "interventions_user_#{user_id}" })
+    channels
   end
 
   def authorized_users_ids
