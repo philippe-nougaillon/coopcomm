@@ -5,10 +5,21 @@ class CommandesController < ApplicationController
 
   # GET /commandes or /commandes.json
   def index
-    @commandes = Commande.kept.includes(:adherent, :service).ordered
+    @services = current_user.services
+    @adhérents = User.by_service(@services).adhérent
+
+    @commandes = Commande.kept.includes(:adherent, :service).where(service: @services).ordered
 
     if params[:search].present?
       @commandes = @commandes.where('commandes.ref ILIKE :s OR commandes.intitulé ILIKE :s', s: "%#{params[:search]}%")
+    end
+
+    if params[:adhérent_ids].present?
+      @commandes = @commandes.where(adherent_id: params[:adhérent_ids])
+    end
+
+    if params[:service_ids].present?
+      @commandes = @commandes.where(service_id: params[:service_ids])
     end
 
     if params[:workflow_state].present?

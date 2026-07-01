@@ -6,10 +6,21 @@ class CotationsController < ApplicationController
 
   # GET /cotations
   def index
-    @cotations = policy_scope(Cotation).kept.includes(:adherent, :service).ordered
+    @services = current_user.services
+    @adhérents = User.by_service(@services).adhérent
+
+    @cotations = policy_scope(Cotation).kept.where(service_id: @services).includes(:adherent, :service).ordered
 
     if params[:search].present?
       @cotations = @cotations.where('cotations.ref ILIKE :s OR cotations.intitulé ILIKE :s', s: "%#{params[:search]}%")
+    end
+
+    if params[:adhérent_ids].present?
+      @cotations = @cotations.where(adherent_id: params[:adhérent_ids])
+    end
+
+    if params[:service_ids].present?
+      @cotations = @cotations.where(service_id: params[:service_ids])
     end
 
     if params[:workflow_state].present?
@@ -17,6 +28,9 @@ class CotationsController < ApplicationController
     end
 
     @cotations = @cotations.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
+
+    @adhérents = User.by_service(current_user.services).adhérent
+    @services = current_user.services
 
     @pagy, @cotations = pagy(@cotations, items: 15)
 
