@@ -14,10 +14,33 @@
     <%= link_to "Voir", commande, class: "btn btn-sm" %>
   </td>
   <td class="px-2 py-3 text-center">
+    <% if policy(commande).envoyer? && commande.can_envoyer? %>
+      <%= button_to "Envoyer", envoyer_commande_path(commande), class: "btn btn-sm btn-info btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
+    <% end %>
+  </td>
+  <td class="px-2 py-3 text-center">
+    <% if policy(commande).valider? && commande.can_valider? %>
+      <%= button_to "Valider", valider_commande_path(commande), class: "btn btn-sm btn-success btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
+    <% end %>
+  </td>
+  <td class="px-2 py-3 text-center">
+    <% if policy(commande).refuser? && commande.can_refuser? %>
+      <%= button_to "Refuser", refuser_commande_path(commande), class: "btn btn-sm btn-error btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
+    <% end %>
+  </td>
+  <td class="px-2 py-3 text-center">
     <% if policy(commande).pdf? %>
       <%= link_to pdf_commande_path(commande, filename: commande.pdf_filename),
                   class: "btn btn-sm", target: "_blank", title: "Générer le PDF", data: { turbo: false } do %>
         <span class="material-symbols-outlined">picture_as_pdf</span>
+      <% end %>
+    <% end %>
+  </td>
+  <td class="px-2 py-3 text-center">
+    <% if policy(commande).update? %>
+      <%= link_to edit_commande_path(commande), class: "btn btn-sm btn-primary", title: "Modifier" do %>
+        <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
+        <span class="hidden lg:inline">Modifier</span>
       <% end %>
     <% end %>
   </td>

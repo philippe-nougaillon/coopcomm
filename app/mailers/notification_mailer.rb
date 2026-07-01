@@ -125,6 +125,23 @@ class NotificationMailer < ApplicationMailer
     end
   end
 
+  def commande_envoyee(commande, email, cc_email = nil)
+    @commande = commande
+
+    pdf = CommandePdf.new
+    pdf.devis(commande)
+    attachments[commande.pdf_filename] = pdf.render
+
+    mail(to: email,
+         cc: cc_email.presence,
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Votre commande').tap do |message|
+      message.mailgun_options = {
+        'tag' => ['commande envoyée']
+      }
+    end
+  end
+
   def intervention_pointage_terminee_automatiquement(intervention, agent_email)
     @intervention = intervention
 

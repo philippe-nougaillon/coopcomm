@@ -29,6 +29,14 @@
           <% end %>
         </li>
       <% end %>
+      <%# commandes %>
+      <% if policy(Commande).index? %>
+        <li>
+          <%= link_to commandes_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'commandes'}", title: "Commandes" do %>
+            <span class="material-symbols-outlined">request_quote</span>
+          <% end %>
+        </li>
+      <% end %>
       <%# conventions %>
       <% if policy(Convention).index? %>
         <li>

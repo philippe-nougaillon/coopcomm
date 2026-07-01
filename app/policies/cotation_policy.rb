@@ -53,11 +53,7 @@ class CotationPolicy < ApplicationPolicy
     manage?
   end
 
-  private
-
-  def manage?
-    return false unless user
-
-    organisation? && (administrateur? || (user.manager? && user.services.include?(record.service)))
+  def create_commande?
+    manage?
   end
 end
