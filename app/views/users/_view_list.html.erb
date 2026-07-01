@@ -1,36 +1,47 @@
-<div class="overflow-x-auto">
-  <table id="agents" class="table table-sm">
-    <thead class="bg-slate-100">
-      <tr>
-        <th></th>
-        <th class="sticky left-0 top-0 z-10 bg-slate-100"><%= sort_link 'users.nom', 'Nom' %></th>
-        <th>Service</th>
-        <% if params[:vue] == 'calendrier' %>
-          <% (@date..@date_fin).each do |date| %>
-            <th class="text-center px-2 <%= 'text-cerise' if date == Date.today %>">
-              <%= l(date, format: :calendar).humanize %>
-            </th>
-          <% end %>
-        <% else %>
-          <th>Disponible ?</th>
-        <% end %>
-      </tr>
-    </thead>
-    <tbody>
-      <%= render partial: 'agent', collection: @agents %>
-    </tbody>
-  </table>
-</div>
-
-
-    <% if @pagy&.pages.to_i > 1 %>
-<div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
-    <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
-      <%= pagy_nav(@pagy).html_safe %>
-    </div>
-    <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
-      <%= pagy_info(@pagy, item_name: "utilisateurs").html_safe %>
-    </div>
+<div class="overflow-visible">
+  <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+    <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+    <span>Faire glisser pour voir plus</span>
   </div>
+  <div class="overflow-x-auto">
+    <table id="agents" class="table table-sm w-full border-none">
+      <thead class="bg-slate-100">
+        <tr>
+          <th></th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider"><%= sort_link 'users.nom', 'Nom' %></th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
+          <% if params[:vue] == 'calendrier' %>
+            <% (@date..@date_fin).each do |date| %>
+              <th class="text-center px-2 <%= date == Date.today ? 'text-purple-700 font-bold' : '' %>">
+                <%= l(date, format: :calendar).humanize %>
+              </th>
+            <% end %>
+          <% else %>
+            <th>Disponible ?</th>
+          <% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% if @agents.any? %>
+            <%= render partial: 'agent', collection: @agents %>
+          <% else %>
+            <tr>
+              <td colspan="8" class="text-left md:text-center py-8 text-slate-400 text-base italic">
+                Aucun résultat trouvé pour cette recherche.
+              </td>
+            </tr>
+          <% end %>
+      </tbody>
+    </table>
+  </div>
+  <% if @pagy&.pages.to_i > 1 %>
+    <div class="flex flex-col  justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
+      <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
+        <%= pagy_nav(@pagy).html_safe %>
+      </div>
+      <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
+        <%= pagy_info(@pagy, item_name: "résultats").html_safe %>
+      </div>
+    </div>
   <% end %>
 </div>

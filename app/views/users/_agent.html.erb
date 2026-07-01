@@ -1,17 +1,48 @@
-<tr>
+<tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
   <td>
     <%= render partial: 'partials/user_profile_picture', locals: {user: agent} %>
   </td>
-  <td class="sticky left-0 top-0 z-10 text-lg sm:text-xl text-primary bg-slate-50 break-words whitespace-normal max-w-[50vw]">
-    <%= link_to agent, class: 'hover:underline hover:text-base-content' do %>
+  <td class="py-3 pr-4 text-lg font-semibold text-primary">
+    <%= link_to agent, class: 'hover:underline' do %>
       <%= agent.nom_prénom %>
     <% end %>
   </td>
-  <td>
-    <%= agent.services.pluck(:nom).join(", ") %>
+  <td class="px-4 py-3 text-center">
+    <% services = agent.services.pluck(:nom) %>
+    <% shown = services.first(2) %>
+    <% extra = services.size - shown.size %>
+    <div class="flex flex-wrap gap-1.5 items-center">
+      <% shown.each do |s| %>
+        <span class="inline-block bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full whitespace-nowrap shadow-sm">
+          <%= s %>
+        </span>
+      <% end %>
+      <% if extra > 0 %>
+        <div class="relative inline-block" data-controller="dropdown">
+          <button type="button"
+            data-action="click->dropdown#togglePortal"
+            class="inline-flex bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full shadow-sm select-none cursor-pointer hover:bg-slate-50">
+            + <%= extra %>
+          </button>
+          <div data-dropdown-target="menu"
+         class="hidden flex-col p-4 shadow-2xl bg-white border border-slate-200 rounded-xl w-58 max-h-60 overflow-y-auto">
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 px-1 block text-left">
+              Autres services (<%= extra %>)
+            </span>
+            <div class="flex flex-col gap-1">
+              <% services.drop(2).each do |extra_service| %>
+                <span class="text-sm text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-lg whitespace-normal break-words">
+                  <%= extra_service %>
+                </span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
   </td>
-  <% (@date..@date_fin).each do | date | %>
-    <td class="text-center <%= date == Date.today ? 'border-x-1 border-x-cerise' : 'bg-slate-200' %>">
+  <% (@date..@date_fin).each do |date| %>
+    <td class="text-center <%= date == Date.today ? 'border-x-2 border-x-purple-400 bg-purple-50/40' : 'bg-slate-200' %>">
       <% interventions = agent.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
       <% absence_matin = agent.current_absence(date, :matin) %>
       <% absence_soir = agent.current_absence(date, :apres_midi) %>

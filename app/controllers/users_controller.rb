@@ -178,7 +178,7 @@ class UsersController < ApplicationController
     #   @agents = @agents.where(id: agent_ids)
     # end
 
-    @date_fin = @date + 13.day
+    @date_fin = @date + 6.day
 
     # ✅ V2 : optimisation N+1
     @agents = @agents.with_attached_profile_picture

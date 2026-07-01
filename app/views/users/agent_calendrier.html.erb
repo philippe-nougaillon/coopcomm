@@ -6,36 +6,64 @@
   <%= form_tag request.path, method: :get, class: "pt-6" do %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
-        <%= label_tag :search, "Rechercher",class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
+        <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
         <%= text_field_tag :search, params[:search], include_blank: true,
                 onchange: 'this.form.requestSubmit()',
                 class: 'input input-bordered input-md w-full',
                 placeholder: 'Nom / Prénom' %>
       </div>
-       <div class="w-full md:flex-1">
-          <%= label_tag :services, "Services", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
-         <%= select_tag :services,
-                  options_from_collection_for_select(@services, 'id', 'nom', @selected_service_ids),
-                  multiple: true,
-                  class: 'slim-select w-full h-10',
-                  data: { placeholder: 'Tous les services' },
-                  onchange: 'this.form.requestSubmit()' %>
-        </div>
-       <div class="w-full md:flex-1">
+      <div class="w-full md:flex-1">
+        <%= label_tag :services, "Services", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
+        <%= select_tag :services,
+                options_from_collection_for_select(@services, 'id', 'nom', @selected_service_ids),
+                multiple: true,
+                class: 'slim-select w-full h-10',
+                data: { placeholder: 'Tous les services' },
+                onchange: 'this.form.requestSubmit()' %>
+      </div>
+      <div class="w-full md:flex-1">
         <%= label_tag :date, "Date", class: "block font-semibold text-slate-600 text-sm mb-1" %>
-        <%= date_field_tag :date, params[:date], 
-        include_blank:true, onchange:'this.form.submit()',
-                      class: 'input input-bordered input-md w-full '
- %>
+        <%= date_field_tag :date, params[:date],
+              include_blank: true, onchange: 'this.form.submit()',
+              class: 'input input-bordered input-md w-full' %>
       </div>
-      <!--
-      <div class="flex flex-col gap-2">
-        <%# label_tag :absent, "Absents ?", class: 'whitespace-nowrap cursor-pointer' %>
-        <%# check_box_tag :absent, 1, params[:absent], class:'checkbox mr-2', onchange:'this.form.submit()' %>
-      </div>
-      -->
     </div>
   <% end %>
-  <div class="divider"></div>
-  <%= render partial: 'view_list' %>
+
+  <hr class="mt-2 mb-6">
+
+  <%# --- Navigation semaine (couleurs logo : bleu/turquoise + violet) --- %>
+  <div class="flex items-center justify-center gap-4 mb-4">
+    <%= link_to agent_calendrier_users_path(request.query_parameters.merge(date: @date - 7.days)),
+        class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10", title: "Semaine précédente", data: { turbo: false } do %>
+      <%= embedded_svg "icons/arrow_back.svg", class: "w-5 h-5 fill-current" %>
+    <% end %>
+
+    <div class="flex items-center gap-3">
+      <span class="font-semibold text-primary text-sm sm:text-base whitespace-nowrap">
+        <%= @date.strftime("%d %b") %> — <%= @date_fin.strftime("%d %b %Y") %>
+      </span>
+      <% if @date == Date.today %>
+        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-purple-100 text-purple-700">
+          Aujourd'hui
+        </span>
+      <% else %>
+        <%= link_to "Aujourd'hui",
+              agent_calendrier_users_path(request.query_parameters.merge(date: Date.today)),
+              class: "btn btn-xs rounded-full border-purple-300 text-purple-700 hover:bg-purple-50" %>
+      <% end %>
+    </div>
+
+    <%= link_to agent_calendrier_users_path(request.query_parameters.merge(date: @date + 7.days)),
+        class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10", title: "Semaine suivante", data: { turbo: false } do %>
+      <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current" %>
+    <% end %>
+  </div>
+
+  <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-none md:rounded-t-xl border-t border-x md:border-b-0 border-slate-200">
+    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
+  </div>
+  <div class="flex flex-col bg-white border border-slate-200 rounded-b-xl rounded-t-none md:rounded-b-xl md:rounded-t-none shadow-sm overflow-visible">
+    <%= render partial: 'view_list' %>
+  </div>
 </div>

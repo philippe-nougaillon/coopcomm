@@ -94,48 +94,47 @@
   <% end %>
 </div>
 <hr class="mt-2 mb-6">
-    <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
-      <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
-    </div>
-<div class="flex flex-col bg-white border border-slate-200 rounded-xl shadow-sm overflow-visible">
+<div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-none md:rounded-t-xl border-t border-x md:border-b-0 border-slate-200">
+  <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
+</div>
+<div class="flex flex-col bg-white border border-slate-200 rounded-b-xl rounded-t-none md:rounded-b-xl md:rounded-t-none shadow-sm overflow-visible">
   <div class="overflow-visible">
-        <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-          <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
-          <span>Faire glisser pour voir plus</span>
-        </div>
-         <div class="overflow-x-auto">
-
-    <table id="users" class="table table-sm w-full border-none">
-      <thead class="bg-slate-100">
-        <tr>
-          <th class="w-10 px-3 py-3"></th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-            <%= sort_link 'users.nom', 'Nom' %>
-          </th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap" colspan="2">
-            <%= sort_link 'users.rôle', 'Rôle' %>
-          </th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Mots clés</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-            <%= sort_link 'users.email', 'Email' %>
-          </th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Absent ?</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Évaluation</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if @users.any? %>
-          <%= render @users %>
-        <% else %>
+    <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+      <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+      <span>Faire glisser pour voir plus</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table id="users" class="table table-sm w-full border-none">
+        <thead class="bg-slate-100">
           <tr>
-            <td colspan="8" class="text-left md:text-center py-8 text-slate-400 text-base italic">
-              Aucun résultat trouvé pour cette recherche.
-            </td>
+            <th class="w-10 px-3 py-3"></th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+              <%= sort_link 'users.nom', 'Nom' %>
+            </th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap" colspan="2">
+              <%= sort_link 'users.rôle', 'Rôle' %>
+            </th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Mots clés</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+              <%= sort_link 'users.email', 'Email' %>
+            </th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Absent ?</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Évaluation</th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% if @users.any? %>
+            <%= render @users %>
+          <% else %>
+            <tr>
+              <td colspan="8" class="text-left md:text-center py-8 text-slate-400 text-base italic">
+                Aucun résultat trouvé pour cette recherche.
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -156,10 +155,8 @@
       <span>Importer des agents</span>
     <% end %>
   </div>
-
-
-    <% if @pagy.pages > 1 %>
-  <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
+  <% if @pagy.pages > 1 %>
+    <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
       <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
         <%= pagy_nav(@pagy).html_safe %>
       </div>
@@ -170,6 +167,4 @@
       <div></div>
     <% end %>
   </div>
-
-  
 </div>
