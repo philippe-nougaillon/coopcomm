@@ -12,8 +12,11 @@
       <% if policy(@cotation).refuser? && @cotation.can_refuser? %>
         <%= button_to "Refuser", refuser_cotation_path(@cotation), class: "btn btn-error btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
       <% end %>
-      <%= link_to "Générer PDF", pdf_cotation_path(@cotation, filename: @cotation.pdf_filename),
-            class: "btn btn-outline", target: "_blank", data: { turbo: false } %>
+      <%= link_to pdf_cotation_path(@cotation, filename: @cotation.pdf_filename),
+                  class: "btn btn-outline", target: "_blank", data: { turbo: false } do %>
+        <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+        Générer PDF
+      <% end %>
       <% if policy(@cotation).create_commande? %>
         <%= button_to "Convertir en commande", create_commande_cotation_path(@cotation), class: "btn btn-success btn-outline hover:text-white!", form: { data: { turbo_confirm: "Êtes-vous certain(e) de vouloir transformer cette cotation en commande  ? Cette action est irréversible." }, class: 'contents', turbo_method: :post} %>
       <% end %>

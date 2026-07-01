@@ -12,8 +12,11 @@
       <% if policy(@commande).refuser? && @commande.can_refuser? %>
         <%= button_to "Refuser", refuser_commande_path(@commande), class: "btn btn-error btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
       <% end %>
-      <%= link_to "Générer PDF", pdf_commande_path(@commande, filename: @commande.pdf_filename),
-                  class: "btn btn-outline", target: "_blank", data: { turbo: false } %>
+      <%= link_to pdf_commande_path(@commande, filename: @commande.pdf_filename),
+                  class: "btn btn-outline", target: "_blank", data: { turbo: false } do %>
+        <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+        Générer PDF
+      <% end %>
       <% if policy(@commande).update? %>
         <%= link_to edit_commande_path(@commande), class: "btn btn-primary" do %>
           <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>

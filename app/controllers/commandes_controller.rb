@@ -5,7 +5,10 @@ class CommandesController < ApplicationController
 
   # GET /commandes or /commandes.json
   def index
-    @commandes = Commande.kept.includes(:adherent, :service).ordered
+    @services = current_user.services
+    @adhérents = User.by_service(@services).adhérent
+
+    @commandes = Commande.kept.includes(:adherent, :service).where(service: @services).ordered
 
     if params[:search].present?
       @commandes = @commandes.where('commandes.ref ILIKE :s OR commandes.intitulé ILIKE :s', s: "%#{params[:search]}%")
@@ -15,13 +18,15 @@ class CommandesController < ApplicationController
       @commandes = @commandes.where(adherent_id: params[:adhérent_ids])
     end
 
+    if params[:service_ids].present?
+      @commandes = @commandes.where(service_id: params[:service_ids])
+    end
+
     if params[:workflow_state].present?
       @commandes = @commandes.where('commandes.workflow_state = ?', params[:workflow_state].to_s.downcase)
     end
 
     @commandes = @commandes.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
-
-    @adhérents = User.by_service(current_user.services).adhérent
 
     @pagy, @commandes = pagy(@commandes, items: 15)
   end
