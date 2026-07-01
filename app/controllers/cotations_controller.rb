@@ -12,11 +12,17 @@ class CotationsController < ApplicationController
       @cotations = @cotations.where('cotations.ref ILIKE :s OR cotations.intitulé ILIKE :s', s: "%#{params[:search]}%")
     end
 
+    if params[:adhérent_ids].present?
+      @cotations = @cotations.where(adherent_id: params[:adhérent_ids])
+    end
+
     if params[:workflow_state].present?
       @cotations = @cotations.where('cotations.workflow_state = ?', params[:workflow_state].to_s.downcase)
     end
 
     @cotations = @cotations.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
+
+    @adhérents = User.by_service(current_user.services).adhérent
 
     @pagy, @cotations = pagy(@cotations, items: 15)
 
