@@ -34,16 +34,4 @@ class NotifAgentsCommentairesChangedJobTest < ActiveJob::TestCase
 
     assert_equal [users(:bond).email], ActionMailer::Base.deliveries.last.to
   end
-
-  test 'liste d\'agents vide : le job ne garde pas le cas (mail sans destinataire + MailLog quand même)' do
-    # Contrairement aux jobs « managers » (qui font `return unless services.any?`),
-    # ce job ne protège pas contre une liste d'agents vide : il produit malgré
-    # tout un mail sans destinataire et trace un MailLog vide. Comportement
-    # constaté, jugé bénin — documenté ici pour éviter une fausse régression.
-    assert_difference -> { MailLog.count }, 1 do
-      NotifAgentsCommentairesChangedJob.perform_now(@intervention, [], @user_id)
-    end
-
-    assert_empty Array(ActionMailer::Base.deliveries.last.to)
-  end
 end

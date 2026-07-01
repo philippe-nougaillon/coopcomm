@@ -40,7 +40,7 @@ class CommandesControllerTest < ActionDispatch::IntegrationTest
   # end
 
   test "should destroy commande" do
-    assert_difference("Commande.count", -1) do
+    assert_difference("Commande.kept.count", -1) do
       delete commande_url(@commande)
     end
 
