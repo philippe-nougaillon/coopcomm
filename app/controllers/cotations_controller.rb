@@ -112,7 +112,7 @@ class CotationsController < ApplicationController
       if @commande.save
         redirect_to @commande, notice: "Commande créée avec succès."
       else
-        redirect_to cotation, alert: "Impossible de créer la commande."
+        redirect_to @cotation, alert: "Impossible de créer la commande."
       end
     end
   end

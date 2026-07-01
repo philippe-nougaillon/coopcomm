@@ -5,7 +5,7 @@ class CommandesController < ApplicationController
 
   # GET /commandes or /commandes.json
   def index
-    @commandes = Commande.includes(:adherent, :service).ordered
+    @commandes = Commande.kept.includes(:adherent, :service).ordered
 
     if params[:search].present?
       @commandes = @commandes.where('commandes.ref ILIKE :s OR commandes.intitulé ILIKE :s', s: "%#{params[:search]}%")
@@ -65,12 +65,8 @@ class CommandesController < ApplicationController
 
   # DELETE /commandes/1 or /commandes/1.json
   def destroy
-    @commande.destroy!
-
-    respond_to do |format|
-      format.html { redirect_to commandes_path, notice: "Commande supprimée avec succès.", status: :see_other }
-      format.json { head :no_content }
-    end
+    @commande.discard
+    redirect_to commandes_path, notice: 'Commande supprimée.', status: :see_other
   end
 
   def pdf
