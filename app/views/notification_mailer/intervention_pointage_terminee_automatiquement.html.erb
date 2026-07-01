@@ -1,13 +1,7 @@
 Bonjour,
 <br>
 <br>
-Votre pointage sur l'intervention '<b><%= @intervention.description.humanize %></b>', commencé le <b><%= @intervention.début&.strftime('%d/%m/%Y') %></b>, a été clôturé automatiquement car il était resté ouvert.
-<br>
-<br>
-Une date de fin a été enregistrée automatiquement : <b><%= @intervention.fin&.strftime('%d/%m/%Y à %H:%M') %></b>.
-<br>
-<br>
-Si elle ne correspond pas à la réalité, merci de la corriger en modifiant la date de fin de l'intervention.
+L'intervention "<%= @intervention.description.humanize %>", commencée le <%= @intervention.début&.strftime('%d/%m/%Y') %>, a été <b>clôturée automatiquement</b> à la date du <b><%= @intervention.fin&.strftime('%d/%m/%Y à %H:%M') %></b>.
 <br>
 <br>
 <%= link_to "Voir l'intervention", intervention_url(@intervention) %>

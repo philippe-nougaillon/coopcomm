@@ -54,6 +54,6 @@ class CotationPolicy < ApplicationPolicy
   end
 
   def create_commande?
-    manage?
+    manage? && record.validé?
   end
 end
