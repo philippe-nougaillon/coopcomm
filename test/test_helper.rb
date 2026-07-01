@@ -41,9 +41,12 @@ module ActiveSupport
       # WebMock intercepte l'appel et renvoie une réponse vide.
       stub_request(:get, /api.meteo-concept.com/)
         .to_return(
-          status: 200, 
-          body: nil, 
-          headers: { 'Content-Type' => 'application/json' }
+          status: 200,
+          body: File.read('test/fixtures/files/responseMeteoConcept.json'),
+          headers: { 
+            'Content-Type' => 'application/json',
+            'Date' => Time.now.httpdate
+          }
         )
     end
 
