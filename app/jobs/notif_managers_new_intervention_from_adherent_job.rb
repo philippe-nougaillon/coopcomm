@@ -19,7 +19,7 @@ class NotifManagersNewInterventionFromAdherentJob < ApplicationJob
     managers.each do |manager|
       mailer_response = NotificationMailer.new_intervention_from_adherent(intervention, manager.email,
                                                                           title).deliver_now
-      MailLog.create(organisation_id: manager.organisation_id, user_id: adherent.id || 0,
+      MailLog.create(organisation_id: manager.organisation&.id, user_id: adherent.id || 0,
                      message_id: mailer_response.message_id, to: manager.email, subject: 'Nouvelle intervention adhérent', channel: 0)
     end
   end
