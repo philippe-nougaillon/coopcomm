@@ -222,9 +222,9 @@ module AuditsHelper
                   # 1. Prioridad absoluta: Control de desactivación / reactivación
                   if audit.action == 'update' && audit.audited_changes.key?('discarded_at')
                     if audit.audited_changes['discarded_at']&.last.present?
-                      'no_accounts' # Icono para cuenta desactivada
+                      'no_accounts' 
                     else
-                      'account_circle' # Icono para cuenta reactivada
+                      'account_circle'
                     end
 
                   # 2. Invitaciones de Devise
