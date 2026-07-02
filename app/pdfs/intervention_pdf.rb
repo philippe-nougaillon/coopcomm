@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-# TODO : déplacer dans un service
+# TODO VU : déplacer dans un service
+# OK, à mettre avec les autres fichier _pdf, dans un dossier "pdf" créé dans les services, pareil pour les "xls"
 
 class InterventionPdf
   include Prawn::View

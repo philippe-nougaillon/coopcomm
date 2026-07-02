@@ -91,11 +91,11 @@ class InterventionPolicy < ApplicationPolicy
     pointer?
   end
 
-  def new_intervention_pointage?
+  def new_intervention_modele_pointage?
     manager_or_admin?
   end
 
-  def create_intervention_pointage?
-    new_intervention_pointage?
+  def create_intervention_modele_pointage?
+    new_intervention_modele_pointage?
   end
 end

@@ -128,6 +128,7 @@ class ConventionsController < ApplicationController
                 end
   end
 
+  # TODO VU : Si ça reste tel quel, il y a peut-être moyen de mettre ça dans le model, voire de fusionner ça avec l'autre fonction "services_for_adherent" utilisé dans les interventions
   # Services de l'adhérent gérables par l'utilisateur courant et sans convention existante
   def available_services_for(adherent)
     return Service.none if adherent.nil?

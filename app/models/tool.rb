@@ -50,7 +50,9 @@ class Tool < ApplicationRecord
   end
 
   def dernier_mouvement_a(heure)
-    # TODO : kezako loaded ??
+    # TODO VU : kezako loaded ??
+    # La fonction devrait disparaitre quand tools/show sera refait comme l'index
+    # "loaded?" répond simplement à la question : « les mouvements ont-ils déjà été chargés en mémoire (dans un tableau Ruby), ou pas encore ? »
 
     if mouvements.loaded?
       # On filtre et on trie du plus récent au plus ancien
@@ -109,7 +111,7 @@ class Tool < ApplicationRecord
         # Si des mouvements existent au jour J
         if etats.any?
           # Si une panne existe, on ouvre une période de panne
-          if etats["panne"].present?
+          if etats["panne"].present? && etats["fin_panne"].blank?
             current_state = "P"
             est_en_panne = true
           else

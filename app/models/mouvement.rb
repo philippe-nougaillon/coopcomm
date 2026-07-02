@@ -62,22 +62,12 @@ class Mouvement < ApplicationRecord
     [SecureRandom.uuid]
   end
 
-  # TODO : ajouter quelques commentaires ne tuerait personne ;-)
+  # TODO VU : vérifier que 'mouvements.date & état' sont indexés car de nombreuses requêtes sont basées dessus...
+  # Seul "date" est indexé
 
-  # TODO : vérifier que 'mouvements.date & état' sont indexés car de nombreuses requêtes sont basées dessus...
-
+  # Vérifie qu'on ne déclare pas une panne alors que l'outil est déjà en panne.
   def coherence_panne
-    # Voisin de gauche (Le passé)
-    event_precedent = tool.mouvements.where.not(id: id)
-                          .where('date <= ?', date)
-                          .where(état: %i[panne fin_panne])
-                          .order(date: :desc).first
-
-    # Voisin de droite (Le futur)
-    event_suivant = tool.mouvements.where.not(id: id)
-                        .where('date > ?', date)
-                        .where(état: %i[panne fin_panne])
-                        .order(date: :asc).first
+    event_precedent, event_suivant = evenements_panne_voisins
 
     errors.add(:état, "Impossible : l'outil est déjà en panne à ce moment-là.") if event_precedent&.panne?
 
@@ -86,19 +76,9 @@ class Mouvement < ApplicationRecord
     errors.add(:état, 'Impossible : une autre panne est déjà déclarée juste après sans avoir été réparée.')
   end
 
-  # 2. LA VALIDATION POUR LA FIN DE PANNE
+  # Vérifie qu'on ne déclare pas une fin de panne alors que l'outil ne l'est pas.
   def coherence_fin_panne
-    # Voisin de gauche (Le passé)
-    event_precedent = tool.mouvements.where.not(id: id)
-                          .where('date <= ?', date)
-                          .where(état: %i[panne fin_panne])
-                          .order(date: :desc).first
-
-    # Voisin de droite (Le futur)
-    event_suivant = tool.mouvements.where.not(id: id)
-                        .where('date > ?', date)
-                        .where(état: %i[panne fin_panne])
-                        .order(date: :asc).first
+    event_precedent, event_suivant = evenements_panne_voisins
 
     if event_precedent.nil? || event_precedent.fin_panne?
       errors.add(:état, "Impossible : l'outil n'était pas déclaré en panne à cette date.")
@@ -143,5 +123,16 @@ class Mouvement < ApplicationRecord
       # sans ralentir le chargement de la page pour la personne qui déclare la panne.
       NotifPanneJob.perform_later(id, reservation.id)
     end
+  end
+
+  # Renvoie les mouvements panne/fin_panne encadrant ce mouvement :
+  # le voisin de gauche (le passé, <= date) et le voisin de droite (le futur, > date).
+  def evenements_panne_voisins
+    mouvements_panne_et_fin_panne = tool.mouvements.where.not(id: id).where(état: %i[panne fin_panne])
+
+    event_precedent = mouvements_panne_et_fin_panne.where('date <= ?', date).order(date: :desc).first
+    event_suivant = mouvements_panne_et_fin_panne.where('date > ?', date).order(date: :asc).first
+
+    [event_precedent, event_suivant]
   end
 end
