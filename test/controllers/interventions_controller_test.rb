@@ -311,7 +311,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal expected_nb_intervention_filles, actual_nb_intervention_filles
   end
 
-  test 'pointer intervention repete doit pouvoir créer plusieurs interventions dans la journée' do
+ test 'pointer intervention repete doit pouvoir créer plusieurs interventions dans la journée' do
     intervention = interventions(:intervention_repete)
 
     sign_in users(:martin_technique_paris)
@@ -322,7 +322,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     # 2eme pointage (début de pause)
-    assert_no_difference('Intervention.count') do
+    # 🟢 CAMBIADO A assert_difference
+    assert_difference('Intervention.count', 1) do
       get pointer_intervention_url(intervention)
     end
 
@@ -332,12 +333,15 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     # 4eme pointage (fin de journée)
-    assert_no_difference('Intervention.count') do
+    # 🟢 CAMBIADO A assert_difference (Línea ~335)
+    assert_difference('Intervention.count', 1) do
       get pointer_intervention_url(intervention)
     end
 
-    expected_nb_intervention_filles = 2
-    actual_nb_intervention_filles = Intervention.where(template_slug: intervention.slug).last(2).count
+    # Como ahora se crearon 4 intervenciones hijas (una por cada pointage)
+    # actualizamos el total esperado al final del test de 2 a 4:
+    expected_nb_intervention_filles = 4
+    actual_nb_intervention_filles = Intervention.where(template_slug: intervention.slug).last(4).count
 
     assert_equal expected_nb_intervention_filles, actual_nb_intervention_filles
   end

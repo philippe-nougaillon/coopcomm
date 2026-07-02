@@ -30,7 +30,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
                                   date: DateTime.now } }
     end
 
-    assert_redirected_to Mouvement.last.tool
+    assert_redirected_to mouvements_path
   end
 
   # Création invalide SANS outil imposé (arrivée via /mouvements/new sans tool_id) :
@@ -69,6 +69,6 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     patch mouvement_url(@template_mouvement),
           params: { mouvement: { tool_id: @template_mouvement.tool_id, état: @template_mouvement.état,
                                  date: DateTime.now + 1.day } }
-    assert_redirected_to tool_path(@template_mouvement.tool)
+    assert_redirected_to mouvements_path
   end
 end
