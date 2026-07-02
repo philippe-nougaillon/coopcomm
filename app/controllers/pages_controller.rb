@@ -97,6 +97,7 @@ class PagesController < ApplicationController
     @interventions = Intervention
                      .filter_by_service(current_user.services)
                      .by_role_for_home(current_user)
+                     .includes(:service, :organisation)
                      .first(2)
 
     @messages = current_user.messages

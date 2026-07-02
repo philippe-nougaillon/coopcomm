@@ -9,7 +9,11 @@ class CotationsController < ApplicationController
     @services = current_user.services
     @adhérents = User.by_service(@services).adhérent
 
-    @cotations = policy_scope(Cotation).kept.where(service_id: @services).includes(:adherent, :service).ordered
+    @cotations = policy_scope(Cotation)
+                                      .kept
+                                      .includes(:adherent, :service, :organisation)
+                                      .where(service: @services)
+                                      .ordered
 
     if params[:search].present?
       @cotations = @cotations.where('cotations.ref ILIKE :s OR cotations.intitulé ILIKE :s', s: "%#{params[:search]}%")
@@ -28,9 +32,6 @@ class CotationsController < ApplicationController
     end
 
     @cotations = @cotations.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
-
-    @adhérents = User.by_service(current_user.services).adhérent
-    @services = current_user.services
 
     @pagy, @cotations = pagy(@cotations, items: 15)
 
