@@ -112,7 +112,7 @@ class Tool < ApplicationRecord
         # Si des mouvements existent au jour J
         if etats.any?
           # Si une panne existe, on ouvre une période de panne
-          if etats["panne"].present?
+          if etats["panne"].present? && etats["fin_panne"].blank?
             current_state = "P"
             est_en_panne = true
           else
