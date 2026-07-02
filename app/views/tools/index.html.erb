@@ -13,7 +13,7 @@
         <% end %>
       <% end %>
       <% if policy(Mouvement).new? %>
-        <%= link_to new_mouvement_path, 
+        <%= link_to new_mouvement_path(redirect_to: request.fullpath), 
             data: { 'testid': "Gestion panne" }, 
             class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-base ",
             title: "Gestion panne" do %>

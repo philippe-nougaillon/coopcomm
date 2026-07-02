@@ -1,18 +1,24 @@
-<div class="nested-form-wrapper flex flex-wrap shadow-lg py-4 mb-4" data-new-record="<%= form.object.new_record? %>" data-controller="version-document">
-  <%# form.hidden_field :version, value: (Document.where('category = ?', form.object.category).maximum(:version) || 0)+1 %>
-  <div class="form-control">
-    <%= form.label :category, 'Type' %>
-    <%= form.select :category, ['Carte grise', 'Certificat d\'assurance'], {}, class: 'select select-sm w-full' %>
-  </div>
-  <div class="w-full">
-    <%= form.file_field :document, accept: 'image/png,image/jpeg,.pdf,image/avif,image/webp', class: 'file-input file-input-sm w-full' %>
-  </div>
-  <div class="flex w-full justify-between mb-2">
-    <div class="sm:w-fit px-4">
-      <div class="w-full">
-        <%= form.label :statut %>
-        <%= form.select :workflow_state, Document.workflow_spec.states.keys.to_a, {}, class: 'input input-sm w-full' %>
-      </div>
+<%# app/views/tools/_document_form.html.erb %>
+<div class="nested-form-wrapper flex items-center justify-between gap-3 bg-zinc-800/60 border border-zinc-800 px-4 py-3 rounded-lg relative" data-nested-documents-target="item">
+  <div class="flex items-center gap-3">
+    <%# Icono representativo de archivos del documento %>
+    <div class="text-zinc-400">
+      <%= embedded_svg "icons/document.svg", class: "w-5 h-5 text-zinc-400" %>
+    </div>
+    
+    <div class="flex flex-col">
+      <span class="text-sm font-semibold text-zinc-100">
+        <%= form.object.category.present? ? form.object.category.tr('_', ' ').humanize : "Document" %>
+      </span>
+      <% if form.object.fichier.attached? %>
+        <span class="text-xs text-zinc-500 font-normal mt-0.5"><%= form.object.fichier.filename %></span>
+      <% end %>
     </div>
   </div>
+
+  <%= form.hidden_field :_destroy %>
+
+  <button type="button" data-action="nested-documents#remove" class="text-zinc-500 hover:text-red-400 bg-transparent hover:bg-zinc-700/50 p-1.5 rounded transition-colors" title="Supprimer">
+    <%= embedded_svg "icons/trash.svg", class: "w-4 h-4 fill-current" %>
+  </button>
 </div>

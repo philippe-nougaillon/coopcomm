@@ -9,17 +9,16 @@ class Tool < ApplicationRecord
   belongs_to :organisation
   has_many :tool_interventions, dependent: :destroy
   has_many :interventions, through: :tool_interventions
-  has_many :documents, dependent: :destroy
   has_many :mouvements, dependent: :destroy
+  has_many :documents, dependent: :destroy
+ 
+   accepts_nested_attributes_for :documents, allow_destroy: true,
+    reject_if: proc { |attrs| attrs['fichier'].blank? && attrs['id'].blank? }
 
   has_one_attached :photo
 
   include PieceJointeValidable
   valide_piece_jointe :photo, types: PieceJointeValidable::IMAGES
-
-  accepts_nested_attributes_for :documents,
-                                allow_destroy: true,
-                                reject_if: ->(attributes) { attributes['fichier'].blank? }
 
   validates :name, presence: true
   validates_uniqueness_of :name, scope: :organisation_id
@@ -30,7 +29,7 @@ class Tool < ApplicationRecord
 
   def self.icons
     { 'Brouette': 'garden_cart', 'Camionette': 'local_shipping', 'Tracteur': 'agriculture', 'Échelle': 'tools_ladder',
-      'Perçeuse': 'tools_power_drill' }
+      'Perceuse': 'tools_power_drill' }
   end
 
   def disponible?(quand)
