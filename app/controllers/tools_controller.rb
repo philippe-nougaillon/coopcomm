@@ -8,7 +8,7 @@ class ToolsController < ApplicationController
   def index
     params[:date] = Date.today if params[:date].blank?
     @date = params[:date].to_date
-    @date_fin = @date + 13.day
+    @date_fin = @date + 9.day
     @tools = current_organisation.tools.ordered
     @types = Tool.icons
     # @états = Mouvement.états.keys
