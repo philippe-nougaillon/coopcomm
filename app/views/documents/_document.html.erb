@@ -1,5 +1,4 @@
 <tr class="hover:bg-base-300">
-  <td><b><%= document.category.humanize %></b></td>
   <td>
     <% if document.fichier.attached? %>
       <%= link_to document.fichier.filename, url_for(document.fichier), target: '_blank', class: 'text-primary hover:underline' %>

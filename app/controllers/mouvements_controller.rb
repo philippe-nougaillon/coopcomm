@@ -132,7 +132,7 @@ class MouvementsController < ApplicationController
   end
 
   # Only allow a list of trusted parameters through.
-  def movimiento_params
+  def mouvement_params
     params.expect(mouvement: %i[tool_id état commentaires date])
   end
 
