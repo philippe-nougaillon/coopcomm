@@ -11,11 +11,17 @@
           <% (@date..@date_fin).each do |date| %>
             <th class="text-center <%= 'text-purple-700 font-bold' if date == Date.today %>">
               <div class="flex flex-col items-center">
-                <%= l(date, format: :calendar).humanize %>
-                <% if @forecasts && icon_meteo = MeteoConceptConnexion.get_icon_meteo_by_date(date, @forecasts["forecast"])%>
-                  <%= image_tag icon_meteo, size: 50, title: MeteoConceptConnexion.get_title(date, @forecasts["forecast"]) %>
-                <% end %>
-              </div>
+  <%= l(date, format: :calendar).humanize %>
+  
+  <%# Contenedor con altura fija para alinear los iconos perfectamente %>
+  <div class="flex items-center justify-center h-12 mt-1">
+    <% if @forecasts && icon_meteo = MeteoConceptConnexion.get_icon_meteo_by_date(date, @forecasts["forecast"])%>
+      <%= image_tag icon_meteo, class: "h-12 w-auto object-contain", title: MeteoConceptConnexion.get_title(date, @forecasts["forecast"]) %>
+    <% else %>
+      <%= embedded_svg "icons/cloud_sign.svg", class: "w-8 h-8 text-slate-400", title: "Prévision météo indisponible" %>
+    <% end %>
+  </div>
+</div>
             </th>
           <% end %>
         </tr>
