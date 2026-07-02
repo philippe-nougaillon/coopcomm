@@ -541,12 +541,11 @@ class InterventionsController < ApplicationController
     redirect_to root_path, alert: 'Intervention introuvable'
   end
 
-  # TODO : toutes les variables globales sont-elles encore nécessaires ?
-
   def set_form_variables
-    @services = current_user.services
+    services = current_user.services
+    @services = services unless current_user.agent?
 
-    users_in_same_services = User.by_service(@services)
+    users_in_same_services = User.by_service(services)
 
     @adhérents = users_in_same_services.adhérent.order(:nom)
 
@@ -554,7 +553,7 @@ class InterventionsController < ApplicationController
     # pré-sélectionné (édition, ou ?service_id en création), on restreint à ce
     # service ; sinon on liste tous les agents des services du current_user.
     selected_service = preselected_form_service
-    @agents = User.agents_for_services(selected_service ? [selected_service] : @services)
+    @agents = User.agents_for_services(selected_service ? [selected_service] : services)
 
     @tools = current_organisation.tools.ordered
   end
