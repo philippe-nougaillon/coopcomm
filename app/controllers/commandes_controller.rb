@@ -8,7 +8,11 @@ class CommandesController < ApplicationController
     @services = current_user.services
     @adhérents = User.by_service(@services).adhérent
 
-    @commandes = Commande.kept.includes(:adherent, :service).where(service: @services).ordered
+    @commandes = Commande
+                        .kept
+                        .includes(:adherent, :service, :organisation)
+                        .where(service: @services)
+                        .ordered
 
     if params[:search].present?
       @commandes = @commandes.where('commandes.ref ILIKE :s OR commandes.intitulé ILIKE :s', s: "%#{params[:search]}%")

@@ -9,7 +9,7 @@ class InterventionsController < ApplicationController
                 only: %i[new edit create update new_intervention_pointage create_intervention_pointage]
   before_action :store_return_location, only: %i[new edit]
 
-  # TODO : encore nécessaire ?
+  # Déclaré dans application_controller.rb
   before_action :set_users_tags, only: [:index]
 
   before_action :set_interventions_tags,
@@ -576,7 +576,7 @@ class InterventionsController < ApplicationController
   end
 
   def set_interventions_tags
-    @tags = current_organisation.interventions.tag_counts_on(:tags).order(:name)
+    @intervention_tags = current_organisation.interventions.tag_counts_on(:tags).order(:name)
   end
 
   # Only allow a list of trusted parameters through.
