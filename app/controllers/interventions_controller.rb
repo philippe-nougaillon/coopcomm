@@ -6,14 +6,14 @@ class InterventionsController < ApplicationController
                          update_location]
   before_action :is_user_authorized
   before_action :set_form_variables,
-                only: %i[new edit create update new_intervention_pointage create_intervention_pointage]
+                only: %i[new edit create update new_intervention_modele_pointage create_intervention_modele_pointage]
   before_action :store_return_location, only: %i[new edit]
 
   # Déclaré dans application_controller.rb
   before_action :set_users_tags, only: [:index]
 
   before_action :set_interventions_tags,
-                only: %i[index new edit create update new_intervention_pointage create_intervention_pointage]
+                only: %i[index new edit create update new_intervention_modele_pointage create_intervention_modele_pointage]
 
   # GET /interventions or /interventions.json
   def index
@@ -284,13 +284,13 @@ class InterventionsController < ApplicationController
 
   # def accepter
   #   @intervention.accepter!
-  #   # send_workflow_changed_notification
+  #   # event_publish_workflow_changed
   #   redirect_to @intervention, notice: "Intervention acceptée"
   # end
 
   # def en_cours
   #   @intervention.en_cours!
-  #   # send_workflow_changed_notification
+  #   # event_publish_workflow_changed
   #   redirect_to @intervention, notice: "Intervention en cours"
   # end
 
@@ -298,8 +298,8 @@ class InterventionsController < ApplicationController
     if @intervention.can_terminer?
       @intervention.terminer!
       @intervention.calculate_co2
-      send_workflow_changed_notification
-      send_intervention_termine_notification
+      event_publish_workflow_changed
+      event_publish_intervention_termine
       redirect_to @intervention, notice: 'Intervention terminée'
     else
       redirect_to @intervention, notice: "Impossible de terminer l'intervention"
@@ -309,7 +309,7 @@ class InterventionsController < ApplicationController
   def valider
     @intervention.valider!
 
-    send_workflow_changed_notification
+    event_publish_workflow_changed
 
     redirect_to @intervention, notice: 'Intervention validée'
   end
@@ -317,7 +317,7 @@ class InterventionsController < ApplicationController
   def refuser
     @intervention.refuser!
 
-    send_workflow_changed_notification
+    event_publish_workflow_changed
 
     redirect_to @intervention, notice: 'Intervention refusée'
   end
@@ -326,7 +326,7 @@ class InterventionsController < ApplicationController
     if @intervention.valid?
       if @intervention.can_archiver?
         @intervention.archiver!
-        send_workflow_changed_notification
+        event_publish_workflow_changed
         redirect_to @intervention, notice: 'Intervention archivée'
       elsif @intervention.archivé?
         redirect_to @intervention, alert: "L'intervention est déjà archivée"
@@ -336,7 +336,7 @@ class InterventionsController < ApplicationController
     else
       redirect_to @intervention, alert: "L'intervention n'est pas valide. Elle ne peut pas être archivée"
     end
-    # send_workflow_changed_notification
+    # event_publish_workflow_changed
   end
 
   def purge
@@ -475,12 +475,12 @@ class InterventionsController < ApplicationController
   end
 
   # Pour créer une intervention pointage
-  def new_intervention_pointage
+  def new_intervention_modele_pointage
     @intervention = Intervention.new
     @intervention.repeter = true
   end
 
-  def create_intervention_pointage
+  def create_intervention_modele_pointage
     @intervention = Intervention.new(intervention_params)
     @intervention.organisation = current_organisation
 
@@ -521,17 +521,13 @@ class InterventionsController < ApplicationController
     end
   end
 
-  # TODO : à renommer pour être plus lisible (ex: event_publish_event_name)
-
-  def send_workflow_changed_notification
+  def event_publish_workflow_changed
     return if Rails.env.development?
 
     Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id })
   end
 
-  # TODO : à renommer pour être plus lisible (ex: event_publish_event_name)
-
-  def send_intervention_termine_notification
+  def event_publish_intervention_termine
     return if Rails.env.development?
 
     Events.instance.publish('intervention.done', payload: { intervention_id: @intervention.id })

@@ -3,8 +3,8 @@
     <h1 class="text-4xl text-primary font-bold">
       <%= page_title!('Interventions') %></h1>
     <div class="flex gap-2">
-      <% if policy(Intervention).new_intervention_pointage? %>
-        <%= link_to new_intervention_pointage_interventions_path, 
+      <% if policy(Intervention).new_intervention_modele_pointage? %>
+        <%= link_to new_intervention_modele_pointage_interventions_path, 
         class: "btn btn-secondary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm ",
         title: "Ajouter un modèle de pointage" do %>
           <%= embedded_svg "icons/qr_code_2_add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>

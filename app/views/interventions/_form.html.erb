@@ -1,4 +1,4 @@
-<%= form_with(model: intervention, url: (create_intervention_pointage_interventions_path if @intervention.repeter && @intervention.new_record?), class: "contents",
+<%= form_with(model: intervention, url: (create_intervention_modele_pointage_interventions_path if @intervention.repeter && @intervention.new_record?), class: "contents",
               data: (current_user.adhérent? ? {} : {
                 controller: ([(@intervention.repeter ? nil : "verification-disponibilites"), "dynamic-select"].compact.join(" ")),
                 verification_disponibilites_intervention_id_value: (@intervention.id if @intervention.persisted?),
