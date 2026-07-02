@@ -240,6 +240,7 @@ class Intervention < ApplicationRecord
     end
   end
 
+  # TODO VU : mettre le contenu dans "get_unavailable_agents_with_interventions". "get_unavailable_agents" doit appeler "get_unavailable_agents_with_interventions" et "get_unavailable_agents_with_absences"
   def self.get_unavailable_agents(intervention_id, agent_ids, début_prévue, fin_prévue)
     agents = User.joins(:interventions).where(id: agent_ids)
 

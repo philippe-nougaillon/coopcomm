@@ -186,7 +186,8 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
 
   # !!! Tests sur les filtres obsolètes !!!
 
-  # TODO: Rendre dynamique les assert_text
+  # TODO VU: Rendre dynamique les assert_text
+  # On s'en occupera avec l'US #332
   # test "Rechercher dans les interventions" do
   #   # Recherche sur les descriptions
   #   fill_in "Rechercher", with: "asser les feui"
@@ -241,7 +242,8 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
   #   assert_text "Affichage de 5 éléments"
   # end
 
-  # # TODO: à faire
+  # TODO VU: à faire
+  # On s'en occupera avec l'US #332
   # test "Filter les interventions sur les tags" do
   #   assert_text "Affichage de 4 éléments"
   #   assert_text "Affichage de 1 élément"

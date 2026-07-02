@@ -139,12 +139,14 @@ class InterventionsController < ApplicationController
       @pointages = @pointages.ordered
     end
 
-    # TODO : déplacer ce bloc dans un service
+    # TODO VU: déplacer ce bloc dans un service
+    # OK, mais dans les tests, comme pour la météo, il faudra aussi simuler la réponse de l'API google
     unless Rails.env.test?
       # On vérifie que l'intervention possède un adhérent localisé ET que le service nécessite le calcul
       @localisation_depart = @intervention.origin_location
       if @localisation_depart && @intervention.adherent.present? && @intervention.adherent.latitude.present? && @intervention.adherent.longitude.present? && @intervention.service&.calculate_distance? && (@intervention.trajet.blank? || @intervention.nouveau?)
 
+        #TODO VU : supprimer les variables inutiles et créer directement @localisation_arrivee si c'est utile
         localisation_arrivee = { lat: @intervention.adherent.latitude, lng: @intervention.adherent.longitude }
 
         # Création du service avec le départ et la destination
@@ -168,7 +170,8 @@ class InterventionsController < ApplicationController
       format.pdf do
         authorize @intervention, :can_see_qrcode_pointage_pdf?
 
-        # TODO : déplacer ce bloc dans un service
+        # TODO VU : déplacer ce bloc dans un service
+        # OK
 
         filename = "QRCode_Pointeuse_#{@intervention.description}"
         pdf = InterventionPdf.new
@@ -200,17 +203,7 @@ class InterventionsController < ApplicationController
     # Ajout de la date de fin si c'est un agent et que la date début prévue et fin prévue sont nil
     return unless current_user.agent? && (params[:début_prévue].blank? || params[:fin_prévue].blank?)
 
-    now = DateTime.now
-
-    # TODO : remarque encore nécessaire ?
-
-    # Le nombre de minute doit être un multiple de 5,
-    # Pour cela, on enlève le nombre de minutes modulo 5 (Ex: Si on a 14 minutes -> 14%5 = 4, donc 14-4 = 10)
-    # date_fin = now - now.minute.modulo(5).minute
-    # modulo plus nécessaire, le step(5) a été retiré
-    date_fin = now
-
-    @intervention.fin = date_fin
+    @intervention.fin = DateTime.now
   end
 
   # GET /interventions/1/edit
@@ -349,7 +342,8 @@ class InterventionsController < ApplicationController
     if @intervention.repeter?
       # Intervention fille se passant aujourd'hui (intervention en cours de réalisation)
 
-      # TODO : déplacer ce bloc dans le model
+      # TODO VU : déplacer ce bloc dans le model
+      # OK
 
       current_intervention = Intervention
                              .joins(:agent_interventions)
@@ -410,11 +404,13 @@ class InterventionsController < ApplicationController
     end
   end
 
-  # TODO : si ça sert encore, déplacer ce bloc dans le model
-
+  # TODO VU : si ça sert encore, déplacer ce bloc dans le model
+  # On appelle ça dans un stimulus_controller, on ne peut pas tout déplacer dans le model.
+  
   # Récupère les agents en conflit avec les dates passées dans l'URL
   def get_unavailable_elements
     # Récupération des données dans l'url
+    # TODO VU : La valeur "null" doit être évité à partir du stimulus
     intervention_id = params['intervention_id'] != 'null' ? params['intervention_id'] : nil
     date_debut_prevue = params['date_debut_prevue'] != 'null' ? params['date_debut_prevue'] : nil
     date_fin_prevue = params['date_fin_prevue'] != 'null' ? params['date_fin_prevue'] : nil
@@ -427,6 +423,7 @@ class InterventionsController < ApplicationController
     conflicting_tool_ids = []
 
     if agent_ids
+      # TODO VU : mettre le contenu dans "get_unavailable_agents_with_interventions". "get_unavailable_agents" doit appeler "get_unavailable_agents_with_interventions" et "get_unavailable_agents_with_absences"
       conflicting_agents_ids = Intervention.get_unavailable_agents(intervention_id, agent_ids, date_debut_prevue,
                                                                    date_fin_prevue)
       conflicting_agents_ids += Intervention.get_unavailable_agents_with_absences(agent_ids, date_debut_prevue,
@@ -451,7 +448,7 @@ class InterventionsController < ApplicationController
     render json: json, status: :ok
   end
 
-  # TODO : déplacer ce bloc dans le model
+  # TODO VU : déplacer ce bloc dans le model
 
   def services_for_adherent
     adherent = User.find(params[:adherent_id])
@@ -505,21 +502,21 @@ class InterventionsController < ApplicationController
 
   def get_routage_responses; end
 
-  # TODO : déplacer ce bloc dans le model
+  # TODO VU : à supprimer s'il n'y a pas d'optique d'amélioration sur la carte google, sinon, déplacer ce bloc dans le model
 
-  def get_interventions_localisations_to_marker(interventions_par_adherent)
-    interventions_par_adherent.map do |adherent_id, interventions|
-      adherent = User.find(adherent_id)
-      {
-        position: adherent.localisation_to_lat_lng_object,
-        title: interventions.map do |intervention|
-          agent_name = intervention.agents.any? ? "#{intervention.agents.first.nom_prénom}, " : ''
-          "#{agent_name}#{intervention.description}, #{intervention.début}/#{intervention.fin}"
-        end.join(' | '),
-        adherent_slug: User.find(adherent_id).slug
-      }
-    end
-  end
+  # def get_interventions_localisations_to_marker(interventions_par_adherent)
+  #   interventions_par_adherent.map do |adherent_id, interventions|
+  #     adherent = User.find(adherent_id)
+  #     {
+  #       position: adherent.localisation_to_lat_lng_object,
+  #       title: interventions.map do |intervention|
+  #         agent_name = intervention.agents.any? ? "#{intervention.agents.first.nom_prénom}, " : ''
+  #         "#{agent_name}#{intervention.description}, #{intervention.début}/#{intervention.fin}"
+  #       end.join(' | '),
+  #       adherent_slug: User.find(adherent_id).slug
+  #     }
+  #   end
+  # end
 
   def event_publish_workflow_changed
     return if Rails.env.development?

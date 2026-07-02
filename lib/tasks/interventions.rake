@@ -8,7 +8,8 @@ namespace :interventions do
     interventions.each do |intervention|
       next unless intervention.adherent
 
-      # TODO: à mettre dans un job
+      # TODO VU : à mettre dans un job
+      # Pourquoi pas mais la fonction n'est pas utilisé pour l'instant
       mailer_response = NotificationMailer.relance(intervention).deliver_now
       MailLog.create(organisation_id: intervention.organisation_id, user_id: 0,
                      message_id: mailer_response.message_id, to: intervention.adherent.email, subject: 'Relance : intervention terminée', channel: 0)
