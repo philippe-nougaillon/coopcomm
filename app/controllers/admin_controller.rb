@@ -27,7 +27,7 @@ class AdminController < ApplicationController
     @audits = @audits.where(action: params[:action_name]) if params[:action_name].present?
 
     @audits = @audits.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
-    @pagy, @audits = pagy(@audits, items: 6)
+    @pagy, @audits = pagy(@audits, items: 10)
   end
 
   def create_new_user
