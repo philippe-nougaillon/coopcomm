@@ -440,7 +440,7 @@ class Intervention < ApplicationRecord
 
     destination = { lat: adherent.latitude, lng: adherent.longitude }
 
-    request = ApiGoogleMaps.new(origine, destination)
+    request = FetchRoutesInfos.new(origine, destination)
     request.call
 
     return unless request.errors.blank? && request.data_response['routes'].present?

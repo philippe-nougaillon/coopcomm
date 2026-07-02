@@ -148,7 +148,7 @@ class InterventionsController < ApplicationController
         localisation_arrivee = { lat: @intervention.adherent.latitude, lng: @intervention.adherent.longitude }
 
         # Création du service avec le départ et la destination
-        request = ApiGoogleMaps.new(@localisation_depart, localisation_arrivee)
+        request = FetchRoutesInfos.new(@localisation_depart, localisation_arrivee)
         request.call
 
         # Récupération des données via les getters du service
