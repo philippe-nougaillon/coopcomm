@@ -178,7 +178,7 @@
                     tags_soumis = intervention.tags.map(&:name)
                   end
 
-                  options_manager = (@tags.map(&:name) + tags_soumis).uniq
+                  options_manager = (@intervention_tags.map(&:name) + tags_soumis).uniq
                 %>
               <%= form.select :tags_manager, options_for_select(options_manager, tags_soumis), {}, multiple: true, class: 'slim-select w-full' %>
             </div>
@@ -195,7 +195,7 @@
                     tags_soumis = intervention.tags.map(&:name)
                   end
 
-                  options_tags = (@tags.map(&:name) + tags_soumis).uniq
+                  options_tags = (@intervention_tags.map(&:name) + tags_soumis).uniq
                 %>
               <%# On utilise le nouveau nom ici aussi %>
               <%= form.select :tags_intervenant, options_for_select(options_tags, tags_soumis), {}, { multiple: true, class: 'slim-select w-full' } %>

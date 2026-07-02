@@ -75,7 +75,7 @@
               <div class="w-full">
                 <%= label_tag :tags, "Mots clés", class: "block font-semibold text-slate-600 text-sm mb-1" %>
                 <%= select_tag "tags[]", 
-                    options_from_collection_for_select(@tags, :name, :name, params[:tags]), 
+                    options_from_collection_for_select(@intervention_tags, :name, :name, params[:tags]), 
                     multiple: true,
                 class: 'slim-select w-full h-10', 
                 data: { placeholder: 'Tous les mots-clés' },
@@ -181,7 +181,7 @@
       <% end %>
     </div>
     <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
-    <% if @pagy&.pages.to_i > 1 %>
+      <% if @pagy&.pages.to_i > 1 %>
         <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
           <%= pagy_nav(@pagy).html_safe %>
         </div>
