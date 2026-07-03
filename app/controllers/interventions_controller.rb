@@ -171,7 +171,7 @@ class InterventionsController < ApplicationController
         authorize @intervention, :can_see_qrcode_pointage_pdf?
 
         # TODO VU : déplacer ce bloc dans un service
-        # OK
+        # Pas possible car la fonction send_data n'est appelable que par les controllers. De plus, le service QrcodeModeleIntervention contient déjà toute la logique métier.
 
         filename = "QRCode_Pointeuse_#{@intervention.description}"
         pdf = TransformToPdf::QrcodeModeleIntervention.call(@intervention)
