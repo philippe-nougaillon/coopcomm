@@ -106,8 +106,8 @@ Rails.application.routes.draw do
 
   resources :documents, only: %i[] do
     member do
-      post :valider
-      post :refuser
+      # post :valider
+      # post :refuser
     end
   end
 

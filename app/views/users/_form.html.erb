@@ -27,9 +27,8 @@
           <%= form.select :rôle, 
                           User.rôles.keys, 
                           { selected: user.rôle || 'agent' }, 
-                          class: 'select select-bordered select-sm w-full focus:select-primary', 
-                          data: { 
-                            'toggle-role-info-target': 'role',
+                          class: 'slim-select w-full', 
+                          data: { 'toggle-role-info-target': 'role',
                             action: 'change->toggle-role-info#change'
                           } %>
         </div>

@@ -11,11 +11,17 @@
           <% (@date..@date_fin).each do |date| %>
             <th class="text-center <%= 'text-purple-700 font-bold' if date == Date.today %>">
               <div class="flex flex-col items-center">
-                <%= l(date, format: :calendar).humanize %>
-                <% if @forecasts && icon_meteo = MeteoConceptConnexion.get_icon_meteo_by_date(date, @forecasts["forecast"])%>
-                  <%= image_tag icon_meteo, size: 50, title: MeteoConceptConnexion.get_title(date, @forecasts["forecast"]) %>
-                <% end %>
-              </div>
+  <%= l(date, format: :calendar).humanize %>
+  
+  <%# Contenedor con altura fija para alinear los iconos perfectamente %>
+  <div class="flex items-center justify-center h-12 mt-1">
+    <% if @forecasts && icon_meteo = MeteoConceptConnexion.get_icon_meteo_by_date(date, @forecasts["forecast"])%>
+      <%= image_tag icon_meteo, class: "h-12 w-auto object-contain", title: MeteoConceptConnexion.get_title(date, @forecasts["forecast"]) %>
+    <% else %>
+      <%= embedded_svg "icons/cloud_sign.svg", class: "w-8 h-8 text-slate-400", title: "Prévision météo indisponible" %>
+    <% end %>
+  </div>
+</div>
             </th>
           <% end %>
         </tr>
@@ -34,7 +40,7 @@
     </table>
   </div>
   <% if @pagy&.pages.to_i > 1 %>
-    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
+    <div class="flex flex-col justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
       <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
         <%= pagy_nav(@pagy).html_safe %>
       </div>

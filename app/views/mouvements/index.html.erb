@@ -4,7 +4,7 @@
       <%= page_title!('Mouvements') %>
     </h1>
     <% if policy(Mouvement).new? %>
-      <%= link_to new_mouvement_path, 
+      <%= link_to new_mouvement_path(redirect_to: mouvements_path), 
             data: { 'testid': "Gestion panne" }, 
             class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-base ",
             title: "Gestion panne" do %>
@@ -43,7 +43,7 @@
       <% end %>
     </div>
   <% end %>
-  <hr class="mt-2 mb-6">
+  <hr class="mt-6 mb-6">
   <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-none md:rounded-t-xl border-t border-x md:border-b-0 border-slate-200">
     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
   </div>
@@ -71,9 +71,6 @@
               </th>
               <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-44">
                 Date
-              </th>
-              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-28">
-                Actions
               </th>
             </tr>
           </thead>
