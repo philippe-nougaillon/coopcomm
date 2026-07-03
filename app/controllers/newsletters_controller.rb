@@ -15,7 +15,7 @@ class NewslettersController < ApplicationController
       end
 
       format.xls do
-        xls_file = NewslettersToXls.new(@newsletters).call
+        xls_file = ExportToXls::Newsletters.call(@newsletters)
         send_data xls_file, filename: "Newsletters_#{l Date.today}.xls"
       end
     end

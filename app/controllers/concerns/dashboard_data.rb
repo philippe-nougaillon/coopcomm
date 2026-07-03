@@ -49,14 +49,14 @@ module DashboardData
 
   def export_xls
     if current_user.manager_or_admin?
-      xls = DashboardManagerToXls.new(
+      xls = ExportToXls::DashboardManager.new(
         @temps_total_par_adherent, @temps_total_par_agent,
         @data_workflow_chart, @qte_interventions_par_service,
         @temps_total_par_service, @co2_total_par_mois
       ).call
       ExportLog.create!(user: current_user, organisation: current_organisation, export_type: 'dashboard_manager')
     else
-      xls = DashboardAdherentToXls.new(
+      xls = ExportToXls::DashboardAdherent.new(
         @proportion_temps_consomme, @temps_total_par_mois,
         @data_workflow_chart, @qte_interventions_par_service,
         @temps_total_par_service, @co2_total_par_mois

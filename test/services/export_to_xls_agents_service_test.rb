@@ -2,11 +2,11 @@
 
 require 'test_helper'
 
-class AgentsToXlsServiceTest < ActionDispatch::IntegrationTest
+class ExportToXlsAgentsServiceTest < ActionDispatch::IntegrationTest
   setup do
     # Récupère tous les agents pour les tests
     @agents = User.agent
-    @service = AgentsToXls.new(@agents)
+    @service = ExportToXls::Agents.new(@agents)
   end
 
   test 'contient les bons agents' do
@@ -21,7 +21,7 @@ class AgentsToXlsServiceTest < ActionDispatch::IntegrationTest
   end
 
   test 'retourne un fichier xsl contenant aucun agents' do
-    result = AgentsToXls.new(Newsletter.where(id: nil)).call
+    result = ExportToXls::Agents.call(Newsletter.where(id: nil))
 
     book = Spreadsheet.open(StringIO.new(result))
     sheet = book.worksheet(0)

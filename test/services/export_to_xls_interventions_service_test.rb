@@ -2,12 +2,12 @@
 
 require 'test_helper'
 
-class InterventionsToXlsServiceTest < ActionDispatch::IntegrationTest
+class ExportToXlsInterventionsServiceTest < ActionDispatch::IntegrationTest
   setup do
     @template_adherent = users(:weil)
     @interventions = create_interventions
 
-    @service = InterventionsToXls.new(@interventions)
+    @service = ExportToXls::Interventions.new(@interventions)
   end
 
   test 'le service contient les bonnes interventions' do
@@ -22,7 +22,7 @@ class InterventionsToXlsServiceTest < ActionDispatch::IntegrationTest
   end
 
   test 'retourne un fichier xls contenant aucune interventions' do
-    result = InterventionsToXls.new(Intervention.where(id: nil)).call
+    result = ExportToXls::Interventions.call(Intervention.where(id: nil))
 
     book = Spreadsheet.open(StringIO.new(result))
     sheet = book.worksheet(0)
