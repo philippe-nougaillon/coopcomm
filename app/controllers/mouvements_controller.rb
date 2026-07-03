@@ -3,7 +3,8 @@
 class MouvementsController < ApplicationController
   before_action :set_mouvement, only: %i[show edit update destroy]
   before_action :is_user_authorized
-  # Extraemos el destino antes de renderizar los formularios
+
+  # Défini la route du redirect
   before_action :set_redirect_path, only: %i[new edit create update]
 
   # GET /mouvements or /mouvements.json
@@ -13,12 +14,13 @@ class MouvementsController < ApplicationController
     @états = Mouvement.états.keys
 
     @mouvements = @mouvements.where(tool_id: params[:tool_ids]) if params[:tool_ids].present?
-    
-     # if params[:date].present?
+
+    # if params[:date].present?
     #   @mouvements = @mouvements.joins(:intervention).where("DATE(interventions.début) = ?", params[:date])
     # end
 
     @mouvements = @mouvements.where(état: params[:etats]) if params[:etats].present?
+
     @mouvements = @mouvements.includes(:tool, :user)
 
     @mouvements = @mouvements.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
@@ -46,12 +48,11 @@ class MouvementsController < ApplicationController
 
     respond_to do |format|
       if @mouvement.save
-        # UX CAMBIO: Redirige al destino inteligente en lugar de ir fijo a @mouvement.tool
         format.html { redirect_to @redirect_to, notice: 'Mouvement créé avec succès.' }
         format.json { render :show, status: :created, location: @mouvement }
       else
         @tools = current_organisation.tools.ordered
-         # Pas de params[:tool_id] = ... ici : le formulaire renvoie lui-même un tool_id
+        # Pas de params[:tool_id] = ... ici : le formulaire renvoie lui-même un tool_id
         # de premier niveau quand l'outil est imposé (cf. _form.html.erb). Le réécrire
         # cacherait à tort le select quand l'outil avait été librement choisi.
         format.html { render :new, status: :unprocessable_entity }
@@ -68,7 +69,6 @@ class MouvementsController < ApplicationController
 
     respond_to do |format|
       if @mouvement.update(safe_params)
-        # UX CAMBIO: Redirige al destino inteligente tras editar, usando :see_other
         format.html { redirect_to @redirect_to, notice: 'Mouvement modifié avec succès.', status: :see_other }
         format.json { render :show, status: :ok, location: @mouvement }
       else
@@ -93,7 +93,7 @@ class MouvementsController < ApplicationController
       mouvements_lies.destroy_all
     end
 
-    redirect_back fallback_location: tools_path, notice: "La réservation du #{l movimiento_date} a bien été annulée."
+    redirect_back fallback_location: tools_path, notice: "La réservation du #{l mouvement_date} a bien été annulée."
   rescue ActiveRecord::RecordNotDestroyed
     redirect_back fallback_location: tools_path, alert: "Erreur lors de l'annulation de la réservation."
   end
@@ -101,25 +101,39 @@ class MouvementsController < ApplicationController
   def reserve
     @tool = current_organisation.tools.find(params[:tool_id])
     date = Date.parse(params[:date])
+
     @tool.mouvements.create!(état: :réservé, date: date, user: current_user)
     redirect_back fallback_location: tools_path, notice: "Outil réservé le #{l date} avec succès."
   end
 
   def libere
     if params[:tool_id] && params[:date] && params[:user_id]
+      # Seul un manager/admin peut libérer la réservation d'un autre utilisateur
       user_id = current_user.manager_or_admin? ? params[:user_id] : current_user.id
-       if mouvement = current_organisation.mouvements.find_by(tool_id: params[:tool_id], date: params[:date], user_id: user_id, état: "réservé")
-        mouvement.destroy
+
+      mouvement = current_organisation.mouvements.find_by(
+        tool_id: params[:tool_id],
+        date: params[:date],
+        user_id: user_id,
+        état: "réservé"
+      )
+
+      if mouvement
+        if mouvement.destroy
+          redirect_to tools_path, notice: "Outil libéré pour le #{l params[:date].to_date}."
+        else
+          redirect_to tools_path, alert: "L'outil n'a pas pu être libéré : #{mouvement.errors.full_messages.to_sentence}."
+        end
+      else
+        redirect_to tools_path, alert: "Il n'existe pas de réservation ce jour-là pour cet utilisateur."
       end
-      redirect_to tools_path, notice: "Outil libéré pour le #{l params[:date].to_date}."
     end
   end
 
   private
 
-  # Determina de forma segura a dónde regresar tras procesar el formulario
+  # Détermine de manière fiable la page vers laquelle rediriger l'utilisateur après le traitement du formulaire
   def set_redirect_path
-    # Prioridad: 1. Parámetro explícito de URL -> 2. Caer por defecto a la lista de movimientos
     @redirect_to = params[:redirect_to].present? ? params[:redirect_to] : mouvements_path
   end
 
