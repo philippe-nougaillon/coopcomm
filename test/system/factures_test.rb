@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class FacturesTest < ApplicationSystemTestCase
   setup do
-    @facture = factures(:one)
+    @facture = factures(:facture_paris)
   end
 
   test "visiting the index" do
