@@ -1,8 +1,8 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 mail_log:
-  to: abcd
-  subject: abcd
+  to: info@coopcomm.com
+  subject: Nouvelle intervention adhérent
   message_id: 1234
   organisation: mairie_paris
   etat: false
