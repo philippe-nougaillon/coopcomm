@@ -2,10 +2,11 @@
 
 module ExportToXls
   # Génère un fichier XLS des interventions
-  class Interventions < ApplicationService
+  class Interventions < ExportToXls::Base
     attr_reader :interventions
 
     def initialize(interventions)
+      super()
       @interventions = interventions
     end
 
@@ -54,11 +55,10 @@ module ExportToXls
         data << row
       end
 
-      ExportToXls::Base.new
-                 .add_worksheet('Interventions')
-                 .add_headers(headers)
-                 .setup_data(data)
-                 .build_file
+      add_worksheet('Interventions')
+      add_headers(headers)
+      setup_data(data)
+      build_file
     end
   end
 end

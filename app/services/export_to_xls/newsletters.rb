@@ -2,11 +2,12 @@
 
 module ExportToXls
   # Génère un fichier XLS des newsletters
-  class Newsletters < ApplicationService
+  class Newsletters < ExportToXls::Base
     attr_reader :newsletters
     private :newsletters
 
     def initialize(newsletters)
+      super()
       @newsletters = newsletters
     end
 
@@ -23,11 +24,10 @@ module ExportToXls
         ]
       end
 
-      ExportToXls::Base.new
-                 .add_worksheet('Liste des interventions')
-                 .add_headers(headers)
-                 .setup_data(data)
-                 .build_file
+      add_worksheet('Liste des interventions')
+      add_headers(headers)
+      setup_data(data)
+      build_file
     end
   end
 end

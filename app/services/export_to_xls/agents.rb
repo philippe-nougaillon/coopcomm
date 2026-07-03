@@ -2,11 +2,12 @@
 
 module ExportToXls
   # Génère un fichier XLS des agents
-  class Agents < ApplicationService
+  class Agents < ExportToXls::Base
     attr_reader :agents
     private :agents
 
     def initialize(agents)
+      super()
       @agents = agents.includes(:interventions, :absences, :services)
     end
 
@@ -41,11 +42,10 @@ module ExportToXls
         ]
       end
 
-      ExportToXls::Base.new
-                 .add_worksheet('Liste des agents')
-                 .add_headers(headers)
-                 .setup_data(data)
-                 .build_file
+     add_worksheet('Liste des agents')
+     add_headers(headers)
+     setup_data(data)
+     build_file
     end
   end
 end
