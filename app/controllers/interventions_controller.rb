@@ -174,8 +174,7 @@ class InterventionsController < ApplicationController
         # OK
 
         filename = "QRCode_Pointeuse_#{@intervention.description}"
-        pdf = InterventionPdf.new
-        pdf.pointeuse_qrcode(@intervention)
+        pdf = TransformToPdf::QrcodeModeleIntervention.call(@intervention)
 
         send_data pdf.render,
                   filename: filename.concat('.pdf'),
