@@ -361,7 +361,7 @@ class UsersController < ApplicationController
 
   def update_password
     respond_to do |format|
-      if @user.update(user_params)
+      if @user.update(password_params)
         bypass_sign_in(@user) if @user == current_user
         format.html { redirect_to user_url(@user), notice: 'Mot de passe modifié avec succès.' }
         format.json { render :show, status: :ok, location: @user }
@@ -371,6 +371,7 @@ class UsersController < ApplicationController
       end
     end
   end
+
 
   def reactivate
     @user = User.unscoped.find_by(slug: params[:id])
@@ -413,6 +414,10 @@ class UsersController < ApplicationController
 
     permitted
 
+  end
+
+  def password_params
+    params.require(:user).permit(:password, :password_confirmation)
   end
 
   def is_user_authorized
