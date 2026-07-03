@@ -111,8 +111,8 @@ class NotificationMailer < ApplicationMailer
   def cotation_envoyee(cotation, email, cc_email = nil)
     @cotation = cotation
 
-    pdf = CotationPdf.new
-    pdf.devis(cotation)
+    pdf = TransformToPdf::Cotation.call(cotation)
+
     attachments[cotation.pdf_filename] = pdf.render
 
     mail(to: email,
@@ -128,8 +128,8 @@ class NotificationMailer < ApplicationMailer
   def commande_envoyee(commande, email, cc_email = nil)
     @commande = commande
 
-    pdf = CommandePdf.new
-    pdf.devis(commande)
+    pdf = TransformToPdf::Commande.call(commande)
+
     attachments[commande.pdf_filename] = pdf.render
 
     mail(to: email,
@@ -145,8 +145,8 @@ class NotificationMailer < ApplicationMailer
   def facture_envoyee(facture, email, cc_email = nil)
     @facture = facture
 
-    pdf = FacturePdf.new
-    pdf.devis(facture)
+    pdf = TransformToPdf::Facture.call(facture)
+
     attachments[facture.pdf_filename] = pdf.render
 
     mail(to: email,

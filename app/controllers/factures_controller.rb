@@ -85,8 +85,8 @@ class FacturesController < ApplicationController
   end
 
   def pdf
-    pdf = FacturePdf.new
-    pdf.devis(@facture)
+    pdf = TransformToPdf::Facture.call(@facture)
+
     send_data pdf.render,
               filename: @facture.pdf_filename,
               type: 'application/pdf',

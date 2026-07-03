@@ -85,8 +85,8 @@ class CommandesController < ApplicationController
   end
 
   def pdf
-    pdf = CommandePdf.new
-    pdf.devis(@commande)
+    pdf = TransformToPdf::Commande.call(@commande)
+
     send_data pdf.render,
               filename: @commande.pdf_filename,
               type: 'application/pdf',
