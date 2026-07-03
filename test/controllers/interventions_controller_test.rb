@@ -311,37 +311,34 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal expected_nb_intervention_filles, actual_nb_intervention_filles
   end
 
- test 'pointer intervention repete doit pouvoir créer plusieurs interventions dans la journée' do
+test 'pointer intervention repete doit pouvoir créer plusieurs interventions dans la journée' do
     intervention = interventions(:intervention_repete)
 
     sign_in users(:martin_technique_paris)
 
-    # 1er pointage (début de journée)
+    # 1er pointage (début de journée) -> Création (Clock in)
     assert_difference('Intervention.count', 1) do
       get pointer_intervention_url(intervention)
     end
 
-    # 2eme pointage (début de pause)
-    # 🟢 CAMBIADO A assert_difference
+    # 2eme pointage (début de pause) -> Clôture (Clock out)
+    assert_no_difference('Intervention.count') do
+      get pointer_intervention_url(intervention)
+    end
+
+    # 3eme pointage (fin de pause, reprise d'activité) -> Nouvelle Création (Clock in)
     assert_difference('Intervention.count', 1) do
       get pointer_intervention_url(intervention)
     end
 
-    # 3eme pointage (fin de pause, reprise d'activité)
-    assert_difference('Intervention.count', 1) do
+    # 4eme pointage (fin de journée) -> Clôture (Clock out)
+    assert_no_difference('Intervention.count') do
       get pointer_intervention_url(intervention)
     end
 
-    # 4eme pointage (fin de journée)
-    # 🟢 CAMBIADO A assert_difference (Línea ~335)
-    assert_difference('Intervention.count', 1) do
-      get pointer_intervention_url(intervention)
-    end
-
-    # Como ahora se crearon 4 intervenciones hijas (una por cada pointage)
-    # actualizamos el total esperado al final del test de 2 a 4:
-    expected_nb_intervention_filles = 4
-    actual_nb_intervention_filles = Intervention.where(template_slug: intervention.slug).last(4).count
+    # Il y a eu 2 créations (matin et après-midi), donc 2 interventions filles au total
+    expected_nb_intervention_filles = 2
+    actual_nb_intervention_filles = Intervention.where(template_slug: intervention.slug).last(2).count
 
     assert_equal expected_nb_intervention_filles, actual_nb_intervention_filles
   end
