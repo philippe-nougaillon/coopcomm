@@ -108,7 +108,7 @@ class MouvementsController < ApplicationController
   def libere
     if params[:tool_id] && params[:date] && params[:user_id]
       user_id = current_user.manager_or_admin? ? params[:user_id] : current_user.id
-      if movimiento = current_organisation.mouvements.find_by(tool_id: params[:tool_id], date: params[:date], user_id: user_id, état: "réservé")
+       if mouvement = current_organisation.mouvements.find_by(tool_id: params[:tool_id], date: params[:date], user_id: user_id, état: "réservé")
         mouvement.destroy
       end
       redirect_to tools_path, notice: "Outil libéré pour le #{l params[:date].to_date}."
