@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_02_142552) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_03_095723) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -202,6 +202,38 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_02_142552) do
     t.index ["user_id"], name: "index_export_logs_on_user_id"
   end
 
+  create_table "facture_lignes", force: :cascade do |t|
+    t.bigint "facture_id", null: false
+    t.bigint "prestation_id", null: false
+    t.string "intitulé"
+    t.integer "qté"
+    t.decimal "prix_ht", precision: 8, scale: 2
+    t.virtual "total_ht", type: :decimal, precision: 10, scale: 2, as: "(prix_ht * (\"qté\")::numeric)", stored: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["facture_id"], name: "index_facture_lignes_on_facture_id"
+    t.index ["prestation_id"], name: "index_facture_lignes_on_prestation_id"
+  end
+
+  create_table "factures", force: :cascade do |t|
+    t.bigint "adherent_id", null: false
+    t.bigint "service_id", null: false
+    t.string "ref"
+    t.string "intitulé"
+    t.text "mémo"
+    t.string "workflow_state", default: "créé"
+    t.date "date_livraison_souhaitée"
+    t.decimal "total_ht", precision: 10, scale: 2
+    t.datetime "discarded_at"
+    t.string "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["adherent_id"], name: "index_factures_on_adherent_id"
+    t.index ["discarded_at"], name: "index_factures_on_discarded_at"
+    t.index ["service_id"], name: "index_factures_on_service_id"
+    t.index ["slug"], name: "index_factures_on_slug", unique: true
+  end
+
   create_table "interventions", force: :cascade do |t|
     t.datetime "début"
     t.datetime "fin"
@@ -221,8 +253,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_02_142552) do
     t.datetime "début_prévue"
     t.datetime "fin_prévue"
     t.string "meteo"
-    t.decimal "co2", default: "0.0"
     t.string "trajet"
+    t.decimal "co2", default: "0.0"
     t.bigint "service_id"
     t.string "localisation"
     t.index ["adherent_id"], name: "index_interventions_on_adherent_id"
@@ -266,8 +298,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_02_142552) do
     t.datetime "updated_at", null: false
     t.bigint "intervention_id"
     t.date "date"
+    t.text "commentaires"
     t.bigint "user_id", null: false
-    t.string "commentaires"
     t.index ["date"], name: "index_mouvements_on_date"
     t.index ["intervention_id"], name: "index_mouvements_on_intervention_id"
     t.index ["tool_id"], name: "index_mouvements_on_tool_id"
@@ -523,13 +555,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_02_142552) do
     t.string "slug"
     t.string "téléphone"
     t.string "memo"
-    t.string "otp_secret"
-    t.integer "consumed_timestep"
-    t.boolean "otp_required_for_login"
     t.datetime "discarded_at"
     t.integer "failed_attempts", default: 0, null: false
     t.datetime "locked_at"
     t.string "unlock_token"
+    t.string "otp_secret"
+    t.integer "consumed_timestep"
+    t.boolean "otp_required_for_login"
     t.integer "otp_method"
     t.string "color"
     t.string "invitation_token"
@@ -603,6 +635,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_02_142552) do
   add_foreign_key "documents", "tools"
   add_foreign_key "export_logs", "organisations"
   add_foreign_key "export_logs", "users"
+  add_foreign_key "facture_lignes", "factures"
+  add_foreign_key "facture_lignes", "prestations"
+  add_foreign_key "factures", "services"
+  add_foreign_key "factures", "users", column: "adherent_id"
   add_foreign_key "interventions", "services"
   add_foreign_key "mail_logs", "cotations"
   add_foreign_key "mail_logs", "organisations"

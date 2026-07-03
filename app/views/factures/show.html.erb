@@ -1,27 +1,24 @@
 <div class="mx-auto lg:w-2/3 w-full mt-8">
-  <% page_title!("Commande #{@commande.ref}") %>
+  <% page_title!("Facture #{@facture.ref}") %>
   <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
-    <h1 class="text-2xl sm:text-3xl text-primary font-bold">Commande <%= @commande.ref %></h1>
+    <h1 class="text-2xl sm:text-3xl text-primary font-bold">Facture <%= @facture.ref %></h1>
     <div class="flex flex-wrap gap-2">
-      <% if policy(@commande).envoyer? && @commande.can_envoyer? %>
-        <%= button_to "Envoyer", envoyer_commande_path(@commande), class: "btn btn-info btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
+      <% if policy(@facture).envoyer? && @facture.can_envoyer? %>
+        <%= button_to "Envoyer", envoyer_facture_path(@facture), class: "btn btn-info btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
       <% end %>
-      <% if policy(@commande).valider? && @commande.can_valider? %>
-        <%= button_to "Valider", valider_commande_path(@commande), class: "btn btn-success btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
+      <% if policy(@facture).valider? && @facture.can_valider? %>
+        <%= button_to "Valider", valider_facture_path(@facture), class: "btn btn-success btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
       <% end %>
-      <% if policy(@commande).refuser? && @commande.can_refuser? %>
-        <%= button_to "Refuser", refuser_commande_path(@commande), class: "btn btn-error btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
+      <% if policy(@facture).refuser? && @facture.can_refuser? %>
+        <%= button_to "Refuser", refuser_facture_path(@facture), class: "btn btn-error btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
       <% end %>
-      <%= link_to pdf_commande_path(@commande, filename: @commande.pdf_filename),
+      <%= link_to pdf_facture_path(@facture, filename: @facture.pdf_filename),
                   class: "btn btn-outline", target: "_blank", data: { turbo: false } do %>
         <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
         Générer PDF
       <% end %>
-      <% if policy(@commande).create_facture? %>
-        <%= button_to "Convertir en facture", create_facture_commande_path(@commande), class: "btn btn-success btn-outline hover:text-white!", form: { data: { turbo_confirm: "Êtes-vous certain(e) de vouloir transformer cette commande en facture  ? Cette action est irréversible." }, class: 'contents', turbo_method: :post} %>
-      <% end %>
-      <% if policy(@commande).update? %>
-        <%= link_to edit_commande_path(@commande), class: "btn btn-primary" do %>
+      <% if policy(@facture).update? %>
+        <%= link_to edit_facture_path(@facture), class: "btn btn-primary" do %>
           <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
           Modifier
         <% end %>
@@ -34,37 +31,37 @@
     <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
       <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">Statut</div>
       <div class="py-2.5 border-b border-slate-100">
-        <span class="badge text-nowrap font-bold <%= @commande.style %>"><%= @commande.workflow_state.humanize %></span>
+        <span class="badge text-nowrap font-bold <%= @facture.style %>"><%= @facture.workflow_state.humanize %></span>
       </div>
       <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
         <%= embedded_svg "icons/account_circle.svg", class: "text-base", title: "Adhérent" %> Adhérent
       </div>
       <div class="py-2.5 text-slate-800 border-b border-slate-100">
-        <%= link_to @commande.adherent.nom_prénom, user_path(@commande.adherent), class: "link" if @commande.adherent %>
+        <%= link_to @facture.adherent.nom_prénom, user_path(@facture.adherent), class: "link" if @facture.adherent %>
       </div>
       <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
         <%= embedded_svg "icons/store.svg", class: "text-base", title: "Service" %> Service
       </div>
-      <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @commande.service&.nom %></div>
+      <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @facture.service&.nom %></div>
       <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">Intitulé</div>
-      <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @commande.intitulé %></div>
+      <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @facture.intitulé %></div>
       <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
         <%= embedded_svg "icons/calendar_today.svg", class: "text-base", title: "Livraison souhaitée" %> Livraison souhaitée
       </div>
       <div class="py-2.5 text-slate-800 border-b border-slate-100">
-        <% if @commande.date_livraison_souhaitée %>
-          <%= l(@commande.date_livraison_souhaitée, format: :long) %>
+        <% if @facture.date_livraison_souhaitée %>
+          <%= l(@facture.date_livraison_souhaitée, format: :long) %>
         <% else %>
           <span class="text-slate-400 italic text-xs">Non renseignée</span>
         <% end %>
       </div>
-      <div class="flex items-center gap-2 py-2.5 text-slate-500<%= " border-b border-slate-100" if @commande.mémo.present? %>" style="padding-right: 2rem;">Total HT</div>
-      <div class="py-2.5<%= " border-b border-slate-100" if @commande.mémo.present? %>">
-        <span class="text-lg font-bold text-slate-800"><%= number_to_currency(@commande.total_ht) %></span>
+      <div class="flex items-center gap-2 py-2.5 text-slate-500<%= " border-b border-slate-100" if @facture.mémo.present? %>" style="padding-right: 2rem;">Total HT</div>
+      <div class="py-2.5<%= " border-b border-slate-100" if @facture.mémo.present? %>">
+        <span class="text-lg font-bold text-slate-800"><%= number_to_currency(@facture.total_ht) %></span>
       </div>
-      <% if @commande.mémo.present? %>
+      <% if @facture.mémo.present? %>
         <div class="flex items-start gap-2 py-2.5 text-slate-500" style="padding-right: 2rem;">Mémo</div>
-        <div class="py-2.5 text-slate-800 italic"><%= simple_format(@commande.mémo) %></div>
+        <div class="py-2.5 text-slate-800 italic"><%= simple_format(@facture.mémo) %></div>
       <% end %>
     </div>
   </div>
@@ -91,9 +88,9 @@
       </tr>
       </thead>
       <tbody>
-      <% commande_lignes = @commande.commande_lignes.includes(:prestation) %>
-      <% if commande_lignes.any? %>
-        <% commande_lignes.each do |ligne| %>
+      <% facture_lignes = @facture.facture_lignes.includes(:prestation) %>
+      <% if facture_lignes.any? %>
+        <% facture_lignes.each do |ligne| %>
           <tr class="border-b border-slate-100">
             <td class="px-4 py-3 font-medium"><%= ligne.prestation&.code %></td>
             <td class="px-4 py-3"><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
@@ -108,12 +105,12 @@
         </tr>
       <% end %>
       </tbody>
-      <% if commande_lignes.any? %>
+      <% if facture_lignes.any? %>
         <tfoot>
-          <tr class="bg-slate-50/50">
-            <th colspan="4" class="px-4 py-3 text-right">Total HT</th>
-            <th class="px-4 py-3 text-right"><%= number_to_currency(@commande.total_ht) %></th>
-          </tr>
+        <tr class="bg-slate-50/50">
+          <th colspan="4" class="px-4 py-3 text-right">Total HT</th>
+          <th class="px-4 py-3 text-right"><%= number_to_currency(@facture.total_ht) %></th>
+        </tr>
         </tfoot>
       <% end %>
     </table>
@@ -164,7 +161,7 @@
   <% end %>
 
   <div class="my-10">
-    <%= link_to commandes_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition" do %>
+    <%= link_to factures_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition" do %>
       <%= embedded_svg "icons/arrow_back.svg", class: "text-base", title: "Retour à la liste" %>
       Retour à la liste
     <% end %>

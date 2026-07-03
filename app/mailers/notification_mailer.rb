@@ -142,6 +142,23 @@ class NotificationMailer < ApplicationMailer
     end
   end
 
+  def facture_envoyee(facture, email, cc_email = nil)
+    @facture = facture
+
+    pdf = FacturePdf.new
+    pdf.devis(facture)
+    attachments[facture.pdf_filename] = pdf.render
+
+    mail(to: email,
+         cc: cc_email.presence,
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Votre facture').tap do |message|
+      message.mailgun_options = {
+        'tag' => ['facture envoyée']
+      }
+    end
+  end
+
   def intervention_pointage_terminee_automatiquement(intervention, agent_email)
     @intervention = intervention
 
