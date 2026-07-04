@@ -4,24 +4,28 @@
     <span>Faire glisser pour voir plus</span>
   </div>
   <div class="overflow-x-auto">
-    <table id="tools" class="table table-sm w-full border-none">
+    <%# Añadimos border-separate y border-spacing-0 para que los bordes verticales no se corten %>
+    <table id="tools" class="table table-sm w-full border-separate border-spacing-0 border-none">
       <thead class="bg-slate-100">
         <tr>
-          <th class="sticky left-0 top-0 z-10 bg-slate-100"><%= sort_link 'tools.name', 'Nom' %></th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 text-left"><%= sort_link 'tools.name', 'Nom' %></th>
+          
           <% (@date..@date_fin).each do |date| %>
-            <th class="text-center <%= 'text-purple-700 font-bold' if date == Date.today %>">
-              <div class="flex flex-col items-center"
-  <%= l(date, format: :calendar).humanize %>
-  
-  <%# Contenedor con altura fija para alinear los iconos perfectamente %>
-  <div class="flex items-center justify-center h-12 mt-1">
-    <% if @forecasts && icon_meteo = MeteoConceptConnexion.get_icon_meteo_by_date(date, @forecasts["forecast"])%>
-      <%= image_tag icon_meteo, class: "h-12 w-auto object-contain", title: MeteoConceptConnexion.get_title(date, @forecasts["forecast"]) %>
-    <% else %>
-      <%= embedded_svg "icons/cloud_sign.svg", class: "w-8 h-8 text-slate-400", title: "Prévision météo indisponible" %>
-    <% end %>
-  </div>
-</div>
+            <% es_hoy = (date == Date.today) %>
+            
+            <%# Th con lógica de bordes morados para la cabecera si es el día actual %>
+            <th class="text-center p-3 transition-all min-w-[90px]
+                       <%= es_hoy ? 'text-purple-700 bg-purple-50/40 border-x-2 border-t border-purple-500 font-bold' : 'text-slate-500 bg-slate-100' %>">
+              <div class="flex flex-col items-center">
+                <span class="capitalize text-xs tracking-wider"><%= l(date, format: :calendar).humanize %></span>
+                <div class="flex items-center justify-center h-12 mt-1">
+                  <% if @forecasts && icon_meteo = MeteoConceptConnexion.get_icon_meteo_by_date(date, @forecasts["forecast"])%>
+                    <%= image_tag icon_meteo, class: "h-12 w-auto object-contain", title: MeteoConceptConnexion.get_title(date, @forecasts["forecast"]) %>
+                  <% else %>
+                    <%= embedded_svg "icons/cloud_sign.svg", class: "w-8 h-8 text-slate-400", title: "Prévision météo indisponible" %>
+                  <% end %>
+                </div>
+              </div>
             </th>
           <% end %>
         </tr>

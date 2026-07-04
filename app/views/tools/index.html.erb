@@ -31,7 +31,7 @@
           <%= text_field_tag :search, params[:search], include_blank:true,
          onchange:'this.form.submit()', 
           class: 'input input-bordered input-md w-full',
-         placeholder: 'Nom / Description' %>
+          placeholder: 'Nom / Description' %>
         </div>
         <div class="w-full">
           <%= label_tag :type , "Type", class: "block font-semibold text-slate-600 text-sm mb-1" %>
@@ -50,7 +50,6 @@
   <% end %>
   <hr class="mt-6 mb-6">
 
-  <%# --- Navigation semaine --- %>
   <div class="flex flex-wrap items-center justify-center gap-3 mb-4">
     <%= link_to tools_path(request.query_parameters.merge(date: @date - 7.days)),
         class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10 flex-shrink-0 flex items-center justify-center", title: "Semaine précédente", data: { turbo: false } do %>
@@ -61,14 +60,15 @@
       <span class="font-semibold text-primary text-sm sm:text-base whitespace-nowrap">
         <%= @date.strftime("%d %b") %> — <%= @date_fin.strftime("%d %b %Y") %>
       </span>
+      
       <% if @date == Date.today %>
-        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-purple-100 text-purple-700 whitespace-nowrap">
+        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm whitespace-nowrap">
           Aujourd'hui
         </span>
       <% else %>
         <%= link_to "Aujourd'hui",
               tools_path(request.query_parameters.merge(date: Date.today)),
-              class: "btn btn-xs rounded-full border-purple-300 text-purple-700 hover:bg-purple-50 whitespace-nowrap" %>
+              class: "inline-block text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm hover:bg-purple-50 transition-colors whitespace-nowrap" %>
       <% end %>
     </div>
 
@@ -92,6 +92,7 @@
   <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-none md:rounded-t-xl border-t border-x md:border-b-0 border-slate-200">
     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
   </div>
+  
   <div class="flex flex-col bg-white border border-slate-200 rounded-b-xl rounded-t-none md:rounded-b-xl md:rounded-t-none shadow-sm overflow-visible">
     <%= render partial: 'view_list' %>
   </div>

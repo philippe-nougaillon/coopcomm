@@ -161,10 +161,14 @@ class UsersController < ApplicationController
   def agent_calendrier
     params[:vue] ||= 'calendrier'
     params[:date] = Date.today if params[:date].blank?
-    @date = params[:date].to_date
+    
+    fecha_base = params[:date].to_date
+    @date = fecha_base.beginning_of_week 
+    @date_fin = fecha_base.end_of_week   
+
     @services = current_user.services
     @agents = User.by_service(params[:service].presence || @services).agent
-
+    
     if params[:search].present?
       @agents = @agents.where('users.nom ILIKE :search OR users.prénom ILIKE :search OR users.email ILIKE :search',
                               { search: "%#{params[:search]}%" })

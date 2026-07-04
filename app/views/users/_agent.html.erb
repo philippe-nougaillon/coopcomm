@@ -1,13 +1,16 @@
-<tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
-  <td>
+<tr id="<%= dom_id agent %>" class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle group">
+  
+  <td class="px-4 py-1.5 bg-white group-hover:bg-transparent">
     <%= render partial: 'partials/user_profile_picture', locals: {user: agent} %>
   </td>
-  <td class="py-3 pr-4 text-lg font-semibold text-primary">
+  
+  <td class="py-3 pr-4 text-lg font-semibold text-primary bg-white group-hover:bg-transparent">
     <%= link_to agent, class: 'hover:underline' do %>
       <%= agent.nom_prénom %>
     <% end %>
   </td>
-  <td class="px-4 py-3 text-center">
+  
+  <td class="px-4 py-3 text-center bg-white group-hover:bg-transparent">
     <% services = agent.services.pluck(:nom) %>
     <% shown = services.first(2) %>
     <% extra = services.size - shown.size %>
@@ -25,7 +28,7 @@
             + <%= extra %>
           </button>
           <div data-dropdown-target="menu"
-         class="hidden flex-col p-4 shadow-2xl bg-white border border-slate-200 rounded-xl w-58 max-h-60 overflow-y-auto">
+               class="hidden flex-col p-4 shadow-2xl bg-white border border-slate-200 rounded-xl w-58 max-h-60 overflow-y-auto">
             <span class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 px-1 block text-left">
               Autres services (<%= extra %>)
             </span>
@@ -41,28 +44,38 @@
       <% end %>
     </div>
   </td>
+
+  <%# El bucle de fechas %>
   <% (@date..@date_fin).each do |date| %>
-    <td class="text-center <%= date == Date.today ? 'border-x-2 border-x-purple-400 bg-purple-50/40' : 'bg-slate-200' %>">
+    <% es_hoy = (date == Date.today) %>
+    
+    <td class="text-center p-3 transition-colors duration-150 min-w-[80px]
+               <%= es_hoy ? 'bg-purple-50/40 border-x-2 border-purple-500 font-bold [tr:last-child_&]:border-b-2 [tr:last-child_&]:border-b-purple-500' : 'bg-slate-50/50 group-hover:bg-transparent' %>">
+      
       <% interventions = agent.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
       <% absence_matin = agent.current_absence(date, :matin) %>
       <% absence_soir = agent.current_absence(date, :apres_midi) %>
-      <% interventions = agent.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
       <% interventions_matin = interventions.where("début_prévue < ?", Time.parse(date.to_s + " 13:00")) %>
       <% interventions_soir = interventions.where("fin_prévue > ?", Time.parse(date.to_s + " 13:00")) %>
-      <% if interventions_matin.any? || absence_matin %>
-        <span class="bg-[#db2767] border-1 border-slate-400 " style="padding-left: 15px;" title="<%= absence_matin&.motif || interventions_matin.pluck(:description) %>"></span>
-      <% else %>
-        <%= link_to new_intervention_path(agent_id: agent.id, début_prévue: date, début_prévue_hour: 8, fin_prévue: date, fin_prévue_hour: 13) do %>
-          <span class="border-1 border-slate-400 bg-green-500" style="padding-left: 15px;" title="Créer une intervention pour réserver cet agent"></span>
+      
+      <div class="flex justify-center items-center gap-1">
+        <% if interventions_matin.any? || absence_matin %>
+          <span class="bg-[#db2767] border border-slate-400 inline-block w-4 h-4 rounded-sm shadow-sm" title="<%= absence_matin&.motif || interventions_matin.pluck(:description) %>"></span>
+        <% else %>
+          <%= link_to new_intervention_path(agent_id: agent.id, début_prévue: date, début_prévue_hour: 8, fin_prévue: date, fin_prévue_hour: 13) do %>
+            <span class="border border-slate-400 bg-green-500 inline-block w-4 h-4 rounded-sm hover:scale-110 transition-transform shadow-sm" title="Créer une intervention pour réserver cet agent"></span>
+          <% end %>
         <% end %>
-      <% end %>
-      <% if interventions_soir.any? || absence_soir %>
-        <span  class="bg-[#db2767] border-1 border-slate-400" style="padding-left: 15px; margin-left: 5px;" title="<%= absence_soir&.motif || interventions_soir.pluck(:description) %>"></span>
-      <% else %>
-        <%= link_to new_intervention_path(agent_id: agent.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 5, fin_prévue: date, fin_prévue_hour: 18) do %>
-          <span class="border-1 border-slate-400 bg-green-500" style="padding-left: 15px; margin-left: 5px;" title="Créer une intervention pour réserver cet agent"></span>
+        
+        <% if interventions_soir.any? || absence_soir %>
+          <span class="bg-[#db2767] border border-slate-400 inline-block w-4 h-4 rounded-sm shadow-sm" title="<%= absence_soir&.motif || interventions_soir.pluck(:description) %>"></span>
+        <% else %>
+          <%= link_to new_intervention_path(agent_id: agent.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 5, fin_prévue: date, fin_prévue_hour: 18) do %>
+            <span class="border border-slate-400 bg-green-500 inline-block w-4 h-4 rounded-sm hover:scale-110 transition-transform shadow-sm" title="Créer une intervention pour réserver cet agent"></span>
+          <% end %>
         <% end %>
-      <% end %>
+      </div>
+      
     </td>
   <% end %>
 </tr>

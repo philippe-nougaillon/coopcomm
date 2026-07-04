@@ -6,7 +6,7 @@
     ),
     data: { turbo_method: :post },
     title: "Réserver \"#{tool.name.humanize}\" pour le #{date.strftime('%d/%m')}" do %>
-    <span class="border-1 border-slate-400 bg-green-500 hover:opacity-75 h-4 inline-block align-middle"
+    <span class="border-1 border-slate-400 rounded-sm bg-green-500 shadow-sm hover:opacity-75 h-4 inline-block align-middle"
           style="padding-left: 15px;">
     </span>
   <% end %>
@@ -18,18 +18,20 @@
     ),
     data: { turbo_method: :post },
     title: "Réservé par vous (cliquez pour libérer)" do %>
-    <span class="border-1 border-slate-400 bg-blue-600 hover:opacity-75 h-4 inline-block align-middle cursor-pointer"
+    <span class="border-1 border-slate-400 rounded-sm  bg-blue-600 hover:opacity-75 h-4 inline-block align-middle cursor-pointer shadow-sm"
           style="padding-left: 15px;">
     </span>
   <% end %>
 <% elsif etat == "I" %>
-  <span class="border-1 border-slate-400 bg-blue-300 h-4 inline-block align-middle cursor-default"
+  <span class="border-1 border-slate-400 rounded-sm bg-blue-300 h-4 inline-block align-middle cursor-default shadow-sm"
         style="padding-left: 15px;"
         title="Réservé par qqn d'autre">
   </span>
 <% elsif etat == "P" %>
-  <span class="border-1 border-slate-400 bg-red-500 h-4 inline-block align-middle"
+  <span class="border-1 border-slate-400 rounded-sm bg-red-500 h-4 inline-block align-middle shadow-sm "
         style="padding-left: 15px;"
         title="En panne">
   </span>
 <% end %>
+
+

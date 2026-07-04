@@ -7,8 +7,10 @@ class ToolsController < ApplicationController
   # GET /tools or /tools.json
   def index
     params[:date] = Date.today if params[:date].blank?
-    @date = params[:date].to_date
-    @date_fin = @date + 9.day
+    fecha_base = params[:date].to_date
+
+    @date = fecha_base.beginning_of_week # Siempre será el Lunes
+    @date_fin = fecha_base.end_of_week   # Siempre será el Domingo
     @tools = current_organisation.tools.ordered
     @types = Tool.icons
     # @états = Mouvement.états.keys

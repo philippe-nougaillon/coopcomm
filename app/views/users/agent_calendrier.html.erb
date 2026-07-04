@@ -29,45 +29,35 @@
       </div>
     </div>
   <% end %>
-
   <hr class="mt-6 mb-6">
-
-  <%# --- Navigation semaine (couleurs logo : bleu/turquoise + violet) --- %>
   <div class="flex items-center justify-center gap-4 mb-4">
     <%= link_to agent_calendrier_users_path(request.query_parameters.merge(date: @date - 7.days)),
         class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10", title: "Semaine précédente", data: { turbo: false } do %>
       <%= embedded_svg "icons/arrow_back.svg", class: "w-5 h-5 fill-current" %>
     <% end %>
-
     <div class="flex items-center gap-3">
       <span class="font-semibold text-primary text-sm sm:text-base whitespace-nowrap">
         <%= @date.strftime("%d %b") %> — <%= @date_fin.strftime("%d %b %Y") %>
       </span>
       <% if @date == Date.today %>
-        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-purple-100 text-purple-700">
+        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm">
           Aujourd'hui
         </span>
       <% else %>
         <%= link_to "Aujourd'hui",
-              agent_calendrier_users_path(request.query_parameters.merge(date: Date.today)),
-              class: "btn btn-xs rounded-full border-purple-300 text-purple-700 hover:bg-purple-50" %>
+          agent_calendrier_users_path(request.query_parameters.merge(date: Date.today)),
+          class: "inline-block text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm hover:bg-purple-50 transition-colors" %>
       <% end %>
     </div>
-
     <%= link_to agent_calendrier_users_path(request.query_parameters.merge(date: @date + 7.days)),
         class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10", title: "Semaine suivante", data: { turbo: false } do %>
       <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current" %>
     <% end %>
   </div>
-
-
- <div class="flex flex-row items-center gap-4 mb-3 px-4 py-2 bg-slate-50 rounded-lg text-xs text-slate-500">
-      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-green-500"></span>Disponible</span>
-       <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span>Indisponible</span>
-   
+  <div class="flex flex-row items-center gap-4 mb-3 px-4 py-2 bg-slate-50 rounded-lg text-xs text-slate-500">
+    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-green-500"></span>Disponible</span>
+    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span>Indisponible</span>
   </div>
-
-
   <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-none md:rounded-t-xl border-t border-x md:border-b-0 border-slate-200">
     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
   </div>
