@@ -1,0 +1,26 @@
+facture_paris:
+  adherent: weil
+  service: informatique
+  ref: "2026-1"
+  intitulé: Devis nettoyage trimestriel
+  workflow_state: "créé"
+  total_ht: 76.50
+  slug: <%= SecureRandom.uuid %>
+
+facture_secretariat:
+  adherent: weil
+  service: secretariat
+  ref: "2026-2"
+  intitulé: Devis secrétariat
+  workflow_state: "envoyé"
+  total_ht: 0
+  slug: <%= SecureRandom.uuid %>
+
+facture_marseille:
+  adherent: michael_jackson
+  service: service_marseille
+  ref: "2026-1"
+  intitulé: Devis Marseille
+  workflow_state: "créé"
+  total_ht: 0
+  slug: <%= SecureRandom.uuid %>

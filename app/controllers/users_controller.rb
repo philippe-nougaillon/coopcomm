@@ -44,7 +44,7 @@ class UsersController < ApplicationController
       end
 
       format.xls do
-        xls_file = AgentsToXls.new(@users.agent).call
+        xls_file = ExportToXls::Agents.call(@users.agent)
         send_data xls_file, filename: "Agents_#{l Date.today}.xls"
       end
     end

@@ -37,6 +37,14 @@
           <% end %>
         </li>
       <% end %>
+      <%# factures %>
+      <% if policy(Facture).index? %>
+        <li>
+          <%= link_to factures_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'factures'}", title: "Factures" do %>
+            <span class="material-symbols-outlined">receipt</span>
+          <% end %>
+        </li>
+      <% end %>
       <%# conventions %>
       <% if policy(Convention).index? %>
         <li>

@@ -95,8 +95,7 @@ class CotationsController < ApplicationController
 
   # GET /cotations/1/pdf
   def pdf
-    pdf = CotationPdf.new
-    pdf.devis(@cotation)
+    pdf = TransformToPdf::Cotation.call(@cotation)
 
     send_data pdf.render,
               filename: @cotation.pdf_filename,

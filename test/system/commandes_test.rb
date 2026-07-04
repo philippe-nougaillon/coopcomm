@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class CommandesTest < ApplicationSystemTestCase
   setup do
-    @commande = commandes(:one)
+    @commande = commandes(:commande_paris)
   end
 
   test "visiting the index" do

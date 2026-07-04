@@ -137,15 +137,20 @@ Rails.application.routes.draw do
 
   resources :commandes do
     member do
-      # Le nom de fichier termine l'URL (ex. .../Cotation-2026-1.pdf) pour que la
-      # prévisualisation du navigateur affiche ce nom plutôt que "pdf.pdf".
       get 'pdf(/*filename)', action: :pdf, as: :pdf, format: false
       post :envoyer
       post :valider
       post :refuser
+      post :create_facture
     end
+  end
 
-    collection do
+  resources :factures do
+    member do
+      get 'pdf(/*filename)', action: :pdf, as: :pdf, format: false
+      post :envoyer
+      post :valider
+      post :refuser
     end
   end
 

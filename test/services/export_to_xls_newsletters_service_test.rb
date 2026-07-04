@@ -2,11 +2,11 @@
 
 require 'test_helper'
 
-class NewslettersToXlsServiceTest < ActionDispatch::IntegrationTest
+class ExportToXlsNewslettersServiceTest < ActionDispatch::IntegrationTest
   setup do
     @newsletters = newsletters
 
-    @service = NewslettersToXls.new(@newsletters)
+    @service = ExportToXls::Newsletters.new(@newsletters)
   end
 
   test 'contient les bonnes newsletters' do
@@ -21,7 +21,7 @@ class NewslettersToXlsServiceTest < ActionDispatch::IntegrationTest
   end
 
   test 'retourne un fichier xls contenant aucune newsletters' do
-    result = NewslettersToXls.new(Newsletter.where(id: nil)).call
+    result = ExportToXls::Newsletters.call(Newsletter.where(id: nil))
 
     book = Spreadsheet.open(StringIO.new(result))
     sheet = book.worksheet(0)

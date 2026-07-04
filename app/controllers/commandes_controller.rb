@@ -1,5 +1,5 @@
 class CommandesController < ApplicationController
-  before_action :set_commande, only: %i[ show edit update destroy pdf envoyer valider refuser ]
+  before_action :set_commande, only: %i[ show edit update destroy pdf envoyer valider refuser create_facture ]
   before_action :is_user_authorized
   before_action :set_form_collections, only: %i[edit]
 
@@ -85,8 +85,8 @@ class CommandesController < ApplicationController
   end
 
   def pdf
-    pdf = CommandePdf.new
-    pdf.devis(@commande)
+    pdf = TransformToPdf::Commande.call(@commande)
+
     send_data pdf.render,
               filename: @commande.pdf_filename,
               type: 'application/pdf',
@@ -106,6 +106,18 @@ class CommandesController < ApplicationController
 
   def refuser
     transition!(:refuser, 'Commande refusée.')
+  end
+
+  def create_facture
+    if @commande.present?
+      @facture = CreateFactureFromCommande.new(@commande).call
+
+      if @facture.save
+        redirect_to @facture, notice: "facture créée avec succès."
+      else
+        redirect_to @commande, alert: "Impossible de créer la facture."
+      end
+    end
   end
 
   private

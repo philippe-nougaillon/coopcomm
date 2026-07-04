@@ -119,7 +119,7 @@ class InterventionsController < ApplicationController
       end
 
       format.xls do
-        xls_file = InterventionsToXls.new(@interventions).call
+        xls_file = ExportToXls::Interventions.call(@interventions)
         send_data xls_file, filename: "Interventions_#{l Date.today}.xls"
       end
     end
@@ -171,11 +171,10 @@ class InterventionsController < ApplicationController
         authorize @intervention, :can_see_qrcode_pointage_pdf?
 
         # TODO VU : déplacer ce bloc dans un service
-        # OK
+        # Pas possible car la fonction send_data n'est appelable que par les controllers. De plus, le service QrcodeModeleIntervention contient déjà toute la logique métier.
 
         filename = "QRCode_Pointeuse_#{@intervention.description}"
-        pdf = InterventionPdf.new
-        pdf.pointeuse_qrcode(@intervention)
+        pdf = TransformToPdf::QrcodeModeleIntervention.call(@intervention)
 
         send_data pdf.render,
                   filename: filename.concat('.pdf'),

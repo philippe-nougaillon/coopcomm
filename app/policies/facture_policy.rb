@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CommandePolicy < ApplicationPolicy
+class FacturePolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
       scope
@@ -48,9 +48,5 @@ class CommandePolicy < ApplicationPolicy
 
   def refuser?
     manage?
-  end
-
-  def create_facture?
-    manage? && record.validé?
   end
 end
