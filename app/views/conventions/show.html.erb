@@ -39,16 +39,13 @@
         <%= l(@convention.date_début, format: :long) if @convention.date_début %>
         <span class="text-slate-400">→</span>
         <%= @convention.date_fin_prévue ? l(@convention.date_fin_prévue, format: :long) : "—" %>
-        <% if prog %>
-          <div class="mt-1 max-w-xs">
-            <% if prog[:indeterminate] %>
-              <progress class="progress <%= prog[:color] %> w-full" value="100" max="100"></progress>
-            <% else %>
-              <progress class="progress <%= prog[:color] %> w-full" value="<%= prog[:percent] %>" max="100"></progress>
-            <% end %>
-            <span class="text-xs text-slate-400"><%= prog[:label] %></span>
+        <div class="mt-1" title="<%= "Du #{l(@convention.date_début, format: :long)}#{" au #{l(@convention.date_fin_prévue, format: :long)}"}" %>"> 
+          <div class="relative w-60 flex items-center h-6">
+            <progress class="progress <%=prog[:color] %> w-full h-4" value="<%= prog[:percent] %>" max="100"></progress>
+            <div class="absolute top-0 bottom-0 w-1 <%= prog[:indicateur_color] %> rounded dashed" style="left: <%= prog[:indicateur] %>%;" title="<%= prog[:indicateur_label] %>"></div>
           </div>
-        <% end %>
+          <span class="text-xs text-slate-400"><%= prog[:label] %></span>   
+        </div>
       </div>
       <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
         <span class="material-symbols-outlined text-base" title="Heures consommées">schedule</span> Heures consommées
