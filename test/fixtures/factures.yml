@@ -24,3 +24,15 @@ facture_marseille:
   workflow_state: "créé"
   total_ht: 0
   slug: <%= SecureRandom.uuid %>
+
+# Facture d'un service géré par hidalgo (informatique) mais dans un état
+# NON modifiable (« validé ») : sert à vérifier le verrou d'édition côté
+# contrôleur (update? = manage? && modifiable?).
+facture_validée:
+  adherent: weil
+  service: informatique
+  ref: "2026-3"
+  intitulé: Facture validée informatique
+  workflow_state: "validé"
+  total_ht: 0
+  slug: <%= SecureRandom.uuid %>
