@@ -30,15 +30,15 @@ module ConventionsHelper
         ['progress-success', "#{percent} %"]
       end
 
-    indicateur = convention.temps_total_interventions / convention.heures_conventionnees * 100
+    indicateur = (convention.temps_total_interventions / convention.heures_conventionnees * 100).round(1)
     
     # L'indicateur devient rouge si le temps total dans les interventions est supérieur au nombre d'heures conventionnées
     if indicateur > 100
-      indicateur_label = "Dépassement de #{(indicateur - 100).round(1)}%"
+      indicateur_label = "Dépassement de #{(indicateur - 100)}%"
       indicateur = 100
       indicateur_color = 'bg-error'
     else
-      indicateur_label = "Indicateur : #{indicateur.round(1)}% du temps utilisé"
+      indicateur_label = "Indicateur : #{indicateur}% du temps utilisé"
       indicateur_color = 'bg-neutral'
     end
 
