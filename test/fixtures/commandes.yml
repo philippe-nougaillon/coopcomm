@@ -3,6 +3,8 @@ commande_paris:
   service: informatique
   ref: "2026-1"
   intitulé: Devis nettoyage trimestriel
+  mémo: Prévoir un accès badge le matin
+  date_livraison_souhaitée: 2026-09-01
   workflow_state: "créé"
   total_ht: 76.50
   slug: <%= SecureRandom.uuid %>
