@@ -91,6 +91,6 @@ class Facture < ApplicationRecord
     n = Facture.where(service: org_services)
                 .where('EXTRACT(YEAR FROM factures.created_at) = ?', year)
                 .count + 1
-    self.ref = "#{year}-#{n}"
+    self.ref = "FA-#{year}-#{n}"
   end
 end

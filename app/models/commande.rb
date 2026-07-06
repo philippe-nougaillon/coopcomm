@@ -91,6 +91,6 @@ class Commande < ApplicationRecord
     n = Commande.where(service: org_services)
                 .where('EXTRACT(YEAR FROM commandes.created_at) = ?', year)
                 .count + 1
-    self.ref = "#{year}-#{n}"
+    self.ref = "CM-#{year}-#{n}"
   end
 end
