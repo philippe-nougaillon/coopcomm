@@ -106,6 +106,6 @@ class Cotation < ApplicationRecord
     n = Cotation.where(service: org_services)
                 .where('EXTRACT(YEAR FROM cotations.created_at) = ?', year)
                 .count + 1
-    self.ref = "#{year}-#{n}"
+    self.ref = "CO-#{year}-#{n}"
   end
 end
