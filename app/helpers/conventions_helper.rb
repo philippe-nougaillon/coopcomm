@@ -37,6 +37,20 @@ module ConventionsHelper
         ['progress-success', "#{percent} %"]
       end
 
-    { percent: percent, color: color, label: label, indeterminate: false }
+      indicateur = convention.temps_total_interventions / convention.heures_conventionnees*100
+      if indicateur > 100
+        indicateur_label = "Dépassement de #{indicateur - 100} %"
+        indicateur = 100
+        indicateur_color = 'bg-error'
+      else
+        indicateur_label = "Indicateur : #{indicateur.round(1)} %"
+        indicateur_color = 'bg-neutral'
+      end
+
+    { percent: percent, color: color, label: label, indeterminate: false, indicateur: indicateur, indicateur_label: indicateur_label, indicateur_color: indicateur_color }
+
+
   end
+
+
 end
