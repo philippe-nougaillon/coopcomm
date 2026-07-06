@@ -27,15 +27,11 @@
       <% else %>
         <p>Il n'y a rien en attente, vous pouvez vous reposer :)</p>
       <% end %>
-      <% if current_user.adhérent? %>
-        <div class="flex flex-col divide-y divide-gray-300 mt-8">
-          <h2 class="font-black text-lg mb-4">Vos cotations à signer</h2>
-          <% if @cotations.any? %>
-            <% @cotations.each do |cotation| %>
-              <%= render partial: 'cotation', locals: {cotation: } %>
-            <% end %>
-          <% else %>
-            <p>Aucune cotation à signer</p>
+      <% if current_user.adhérent? && @cotations.any? %>
+        <div class="flex flex-col mt-8">
+          <h2 class="font-black text-lg mb-4">Cotations à signer</h2>
+          <% @cotations.each do |cotation| %>
+            <%= render partial: 'cotation', locals: {cotation: } %>
           <% end %>
         </div>
       <% end %>

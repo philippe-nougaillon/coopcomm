@@ -47,7 +47,7 @@ class AdherentCotationPolicyTest < ActionDispatch::IntegrationTest
   end
 
   test "un adhérent ne peut pas signer la cotation d'un autre adhérent, même envoyée" do
-    @autre.update!(workflow_state: 'envoyé') # envoyée (can_valider?) mais pas la sienne
+    @autre.update!(workflow_state: 'envoyé') # envoyée (can_signer?) mais pas la sienne
     policy = CotationPolicy.new(@adherent, @autre)
     refute policy.signer?
     refute policy.signer_do?

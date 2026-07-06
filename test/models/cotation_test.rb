@@ -37,18 +37,39 @@ class CotationTest < ActiveSupport::TestCase
     assert cotation.envoyé?
   end
 
-  test 'depuis envoyé, on peut valider et refuser' do
+  # Depuis « envoyé », l'adhérent SIGNE (envoyé -> signé) ; la validation par le
+  # gestionnaire n'intervient qu'ensuite (signé -> validé).
+  test 'depuis envoyé, on peut signer et refuser (mais pas valider directement)' do
     cotation = build_cotation
     cotation.save!
     cotation.envoyer!
+    assert cotation.can_signer?
+    assert cotation.can_refuser?
+    refute cotation.can_valider?
+  end
+
+  test 'signer : envoyé -> signé' do
+    cotation = build_cotation
+    cotation.save!
+    cotation.envoyer!
+    cotation.signer!
+    assert cotation.signé?
+  end
+
+  test 'depuis signé, on peut valider et refuser' do
+    cotation = build_cotation
+    cotation.save!
+    cotation.envoyer!
+    cotation.signer!
     assert cotation.can_valider?
     assert cotation.can_refuser?
   end
 
-  test 'valider : envoyé -> validé' do
+  test 'valider : signé -> validé' do
     cotation = build_cotation
     cotation.save!
     cotation.envoyer!
+    cotation.signer!
     cotation.valider!
     assert cotation.validé?
   end
@@ -61,10 +82,25 @@ class CotationTest < ActiveSupport::TestCase
     assert cotation.refusé?
   end
 
+  test 'refuser : signé -> refusé' do
+    cotation = build_cotation
+    cotation.save!
+    cotation.envoyer!
+    cotation.signer!
+    cotation.refuser!
+    assert cotation.refusé?
+  end
+
   test 'on ne peut pas valider directement depuis créé' do
     cotation = build_cotation
     cotation.save!
     refute cotation.can_valider?
+  end
+
+  test 'on ne peut pas signer directement depuis créé' do
+    cotation = build_cotation
+    cotation.save!
+    refute cotation.can_signer?
   end
 
   test 'renvoyer : refusé -> envoyé (corriger puis renvoyer)' do
@@ -98,10 +134,19 @@ class CotationTest < ActiveSupport::TestCase
     refute cotation.modifiable?
   end
 
+  test "modifiable? faux à l'état signé" do
+    cotation = build_cotation
+    cotation.save!
+    cotation.envoyer!
+    cotation.signer!
+    refute cotation.modifiable?
+  end
+
   test "modifiable? faux à l'état validé" do
     cotation = build_cotation
     cotation.save!
     cotation.envoyer!
+    cotation.signer!
     cotation.valider!
     refute cotation.modifiable?
   end
@@ -110,6 +155,7 @@ class CotationTest < ActiveSupport::TestCase
     cotation = build_cotation
     cotation.save!
     cotation.envoyer!
+    cotation.signer!
     cotation.valider!
     cotation.archiver!
     refute cotation.modifiable?
@@ -189,6 +235,7 @@ class CotationTest < ActiveSupport::TestCase
     cotation = build_cotation
     cotation.save!
     cotation.envoyer!
+    cotation.signer!
     cotation.valider!
     assert cotation.can_archiver?
     cotation.archiver!
@@ -209,6 +256,7 @@ class CotationTest < ActiveSupport::TestCase
     cotation = build_cotation
     cotation.save!
     cotation.envoyer!
+    cotation.signer!
     cotation.valider!
     cotation.archiver!
     refute cotation.can_envoyer?
@@ -249,10 +297,12 @@ class CotationTest < ActiveSupport::TestCase
     cotation.save!
     cotation.envoyer!
     assert_equal 'badge-info text-white', cotation.style # envoyé
+    cotation.signer!
+    assert_equal 'badge-accent text-white', cotation.style # signé
   end
 
   test "workflow_state_humanized liste les états humanisés dans l'ordre du workflow" do
-    assert_equal %w[Créé Envoyé Validé Refusé Archivé], Cotation.workflow_state_humanized
+    assert_equal %w[Créé Envoyé Signé Validé Refusé Archivé], Cotation.workflow_state_humanized
   end
 
   test 'pdf_filename est basé sur la référence' do

@@ -124,8 +124,9 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'valider : envoyé -> validé' do
+  test 'valider : signé -> validé' do
     cotation = cotations(:cotation_secretariat) # envoyé
+    cotation.update!(workflow_state: 'signé')   # la validation n'est possible qu'après signature
     post valider_cotation_url(cotation)
     assert_equal 'validé', cotation.reload.workflow_state
   end
@@ -224,15 +225,17 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
-  test 'signer_do : un adhérent signe une cotation envoyée -> validée + signature/ip/date persistées' do
+  test 'signer_do : un adhérent signe une cotation envoyée -> signée + signature/ip/date persistées' do
     sign_in @adherent
-    cotation = cotations(:cotation_secretariat) # envoyé
+    cotation = cotations(:cotation_secretariat) # envoyé, audit create = administrateur_paris (a un email)
 
     post signer_do_cotation_url(cotation), params: { cotation: { signature: SIGNATURE } }
 
-    assert_redirected_to root_path
+    # Depuis le nouveau workflow, la signature transite vers « signé » (la validation
+    # reste à la charge du gestionnaire) et redirige vers la cotation.
+    assert_redirected_to cotation_url(cotation)
     cotation.reload
-    assert_equal 'validé', cotation.workflow_state
+    assert_equal 'signé', cotation.workflow_state
     assert_equal SIGNATURE, cotation.signature
     assert_not_nil cotation.signee_le
     assert cotation.ip.present?
@@ -255,10 +258,23 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_no_enqueued_jobs only: NotifCotationSigneeJob do
       post signer_do_cotation_url(cotation), params: { cotation: { signature: SIGNATURE } }
     end
+
+    # La signature est bien enregistrée (le workflow transite vers « signé ») même
+    # sans destinataire à notifier.
+    assert_equal 'signé', cotation.reload.workflow_state
+
+    # ⚠ RÉGRESSION signalée (non corrigée) : `signer_do` exécute
+    # `return if creator&.email.blank?` AVANT le `redirect_to`. Quand le créateur
+    # n'a pas d'email (ou n'est pas identifiable), l'action ne rend rien → 204 No
+    # Content. Via Turbo, l'adhérent signe sans aucun retour visuel (ni redirection
+    # ni flash). Avant le refactor, `redirect_to root_path` s'exécutait toujours.
+    # Correctif proposé : sortir le `redirect_to` de la garde (p. ex. remettre la
+    # notification dans une méthode privée dédiée, comme `notify_adherent_cotation_envoyee`).
+    assert_response :no_content
   end
 
   test "signer_do : refusé par la policy si la cotation n'est pas envoyée (état créé) : rien n'est signé" do
-    # CotationPolicy#signer? exige `record.can_valider?` : sur une cotation `créé`,
+    # CotationPolicy#signer? exige `record.can_signer?` : sur une cotation `créé`,
     # l'autorisation échoue en amont (redirection root), avant toute signature.
     sign_in @adherent
     cotation = cotations(:cotation_paris) # créé

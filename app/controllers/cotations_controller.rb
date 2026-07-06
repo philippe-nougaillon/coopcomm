@@ -145,9 +145,13 @@ class CotationsController < ApplicationController
     @cotation.signature = params[:cotation][:signature]
     @cotation.signee_le = Time.current
     
-    if @cotation.valider!
-      notify_cotation_signee
-      redirect_to root_path, notice: "Cotation signée avec succès."
+    if @cotation.can_signer? && @cotation.signer!
+      #TODO : à mettre dans le pub/sub
+      creator = @cotation.audits.find_by(action: 'create')&.user
+      return if creator&.email.blank?
+
+      NotifCotationSigneeJob.perform_later(@cotation, creator.id, current_user.id)
+      redirect_to @cotation, notice: "Cotation signée avec succès."
     else
       render :new, status: :unprocessable_entity
     end
@@ -171,20 +175,11 @@ class CotationsController < ApplicationController
   # Notifie l'adhérent (mail + PDF + copie à l'émetteur) que sa cotation est
   # envoyée. Sans email côté adhérent, on n'envoie rien.
   def notify_adherent_cotation_envoyee
+    # TODO : utiliser le pub/sub à la place
     adherent = @cotation.adherent
     return if adherent&.email.blank?
 
     NotifAdherentCotationEnvoyeeJob.perform_later(@cotation, adherent, current_user.id)
-  end
-
-  # Prévient le créateur de la cotation (retrouvé via l'audit de création)
-  # qu'elle vient d'être signée. Sans créateur identifiable ou sans email, on
-  # n'envoie rien.
-  def notify_cotation_signee
-    creator = @cotation.audits.find_by(action: 'create')&.user
-    return if creator&.email.blank?
-
-    NotifCotationSigneeJob.perform_later(@cotation, creator.id, current_user.id)
   end
 
   def set_cotation

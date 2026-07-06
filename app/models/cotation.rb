@@ -24,6 +24,7 @@ class Cotation < ApplicationRecord
 
   CREE    = 'créé'
   ENVOYE  = 'envoyé'
+  SIGNE   = 'signé'
   VALIDE  = 'validé'
   REFUSE  = 'refusé'
   ARCHIVE = 'archivé'
@@ -33,6 +34,10 @@ class Cotation < ApplicationRecord
       event :envoyer, transitions_to: ENVOYE
     end
     state ENVOYE, meta: { style: 'badge-info text-white' } do
+      event :signer, transitions_to: SIGNE
+      event :refuser, transitions_to: REFUSE
+    end
+    state SIGNE, meta: { style: 'badge-accent text-white' } do
       event :valider, transitions_to: VALIDE
       event :refuser, transitions_to: REFUSE
     end
