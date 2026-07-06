@@ -75,10 +75,10 @@
       </label>
     </div>
 
-    
+
     <div class="flex gap-2 mt-4 w-full">
-      <%= link_to "Annuler", (session.delete(:return_to) || tools_path), class: "btn flex-1" %>
       <%= form.submit "Enregistrer", id: "enregistrer_tool", class: "btn btn-primary flex-1" %>
+      <%= link_to "Annuler", (session[:return_to] || tools_path), class: "btn flex-1" %>
     </div>
   <% end %>
 </div>

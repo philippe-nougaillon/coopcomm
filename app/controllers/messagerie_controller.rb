@@ -3,6 +3,8 @@
 class MessagerieController < ApplicationController
   before_action :is_user_authorized
   before_action :set_sidebar_users, only: %i[index conversation]
+  skip_before_action :return_security
+
 
   # Accueil de la messagerie : liste des discussions récentes (sans interlocuteur sélectionné)
   def index

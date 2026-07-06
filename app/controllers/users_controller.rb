@@ -6,6 +6,7 @@ class UsersController < ApplicationController
   before_action :is_user_authorized, except: %i[reactivate]
   # Déclaré dans application_controller.rb
   before_action :set_users_tags, only: %i[new create edit update]
+  before_action :return_security, only: [:edit_password]
 
   require 'capture_stdout'
 
@@ -111,8 +112,8 @@ class UsersController < ApplicationController
       end
 
       if @user.save
-    session.delete(:return_to)
-    redirect_to users_path, notice: "Utilisateur créé avec succès"
+        session.delete(:return_to)
+        redirect_to users_path, notice: "Utilisateur créé avec succès"
   else
     render :new
   end 
