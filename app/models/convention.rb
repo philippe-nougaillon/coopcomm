@@ -34,7 +34,10 @@ class Convention < ApplicationRecord
   end
 
   def temps_total_interventions
-    Intervention.where(adherent_id: user_id, service_id: service_id).sum(:temps_total)
+    Intervention
+            .where(adherent_id: user_id, service_id: service_id)
+            .where(début: date_début.beginning_of_day..date_fin_prévue.end_of_day)
+            .sum(:temps_total)
   end
 
   private
