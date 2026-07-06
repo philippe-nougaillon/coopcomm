@@ -34,7 +34,7 @@
   error_message = local_assigns.fetch(:error_message, "Format non accepté. Formats autorisés : #{formats}.")
 %>
 <div class="flex flex-col gap-1 <%= wrapper_class %>">
-  <%= form.label attribute, label, class: "text-sm text-slate-500" %>
+  <%= form.label attribute, label, class: "label font-semibold text-slate-700"  %>
   <% if has_saved_attachment %>
     <p class="text-sm mb-1 break-all">
       Document actuel :
@@ -49,17 +49,12 @@
        data-dropzone-invalid-class="border-error bg-error/10"
        data-dropzone-error-message-value="<%= error_message %>"
        data-action="click->dropzone#open dragover->dropzone#highlight dragleave->dropzone#unhighlight drop->dropzone#drop"
-    class="flex flex-col items-center justify-center gap-1 px-4 py-6 text-center
-    border-2 border-dashed border-slate-300 rounded-lg cursor-pointer
-    transition-colors hover:border-slate-400">
+    class="flex flex-col items-center p-6 justify-center w-full border border-dashed border-zinc-700/40 rounded-lg cursor-pointer hover:bg-primary transition-colors duration-150 group px-4">
     <%= form.file_field attribute, accept: accept, class: "hidden",
           data: { dropzone_target: "input", action: "change->dropzone#change" } %>
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-         stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-slate-400">
-      <path stroke-linecap="round" stroke-linejoin="round"
-            d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
-    </svg>
-    <span data-dropzone-target="filename" class="text-sm text-slate-500 break-all"><%= placeholder %></span>
+              <%= embedded_svg "icons/upload.svg", class: "w-8 h-8 text-slate-400 group-hover:text-white transition-colors duration-150", title: "Parcourir" %>
+
+    <span data-dropzone-target="filename" class="text-base mt-2 text-slate-500 font-semibold text-center group-hover:text-white transition-colors duration-150 break-all"><%= placeholder %></span>
     <span data-dropzone-target="error" class="hidden text-sm text-error font-medium"></span>
   </div>
   <% if has_saved_attachment && replace_hint %>

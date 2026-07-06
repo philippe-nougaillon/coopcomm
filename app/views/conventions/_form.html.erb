@@ -1,14 +1,14 @@
 
 <div class="max-w-3xl mx-auto my-6 bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
-  <%= form_with model: @convention, html: { multipart: true } do |f| %>
+  <%= form_with model: @convention, html: { multipart: true, class: 'flex flex-col gap-2' } do |f| %>
 
     <% if @convention.errors.any? %>
-      <div class="bg-red-50 text-red-500 px-4 py-3 font-medium rounded-lg mb-4 border border-red-200">
+      <div id="error_explanation" class="bg-red-50 text-red-500 px-4 py-3 font-medium rounded-lg mb-2 border border-red-200">
         <h2 class="font-black mb-2 text-sm md:text-base">
           <%= pluralize(@convention.errors.count, "erreur") %> empêche(nt) l'enregistrement de la convention :
         </h2>
         <ul class="list-disc list-inside text-xs opacity-90">
-          <% @convention.errors.each do |error| %>
+         <% @convention.errors.each do |error| %>
             <li><%= error.full_message %></li>
           <% end %>
         </ul>
@@ -65,9 +65,11 @@
             accept: ".pdf", label: "Document", wrapper_class: "sm:col-span-2" %>
     </div>
 
-    <div class="mt-6 flex gap-2">
-      <%= f.submit "Enregistrer", class: "btn btn-primary" %>
-      <%= link_to "Annuler", conventions_path, class: "btn" %>
+    
+
+ <div class="flex gap-2 mt-4 w-full">
+      <%= link_to "Annuler", (session.delete(:return_to) || conventions_path), class: "btn flex-1" %>
+      <%= f.submit "Enregistrer", id: "conventions_path", class: "btn btn-primary flex-1" %>
     </div>
   <% end %>
 </div>
