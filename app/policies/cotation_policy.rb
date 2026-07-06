@@ -58,7 +58,7 @@ class CotationPolicy < ApplicationPolicy
   end
 
   def signer?
-    adhérent? && record.adherent_id == user.id && record.can_valider?
+    adhérent? && record.adherent_id == user.id && record.can_signer?
   end
 
   def signer_do?

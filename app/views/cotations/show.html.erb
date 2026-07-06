@@ -12,6 +12,9 @@
       <% if policy(@cotation).refuser? && @cotation.can_refuser? %>
         <%= button_to "Refuser", refuser_cotation_path(@cotation), class: "btn btn-error btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
       <% end %>
+      <% if policy(@cotation).signer? && @cotation.can_signer? %>
+        <%= link_to "Signer", signer_cotation_path(@cotation), class: "btn btn-accent btn-outline hover:text-white!", data: { turbo: false } %>
+      <% end %>
       <%= link_to pdf_cotation_path(@cotation, filename: @cotation.pdf_filename),
                   class: "btn btn-outline", target: "_blank", data: { turbo: false } do %>
         <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
@@ -28,7 +31,6 @@
       <% end %>
     </div>
   </div>
-
   <div class="bg-white border border-slate-200 rounded-2xl" style="padding: 1.25rem;">
     <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Informations</p>
     <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
@@ -66,9 +68,14 @@
         <div class="flex items-start gap-2 py-2.5 text-slate-500" style="padding-right: 2rem;">Mémo</div>
         <div class="py-2.5 text-slate-800 italic"><%= simple_format(@cotation.mémo) %></div>
       <% end %>
+      <% if @cotation.signee_le.present? %>
+        <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+          <%= embedded_svg "icons/signature.svg", class: "text-base", title: "Livraison souhaitée" %> Signature
+        </div>
+        <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= l(@cotation.signee_le, format: :long) %> <span class="text-secondary">(<%= @cotation.ip %>)</span></div>
+      <% end %>
     </div>
   </div>
-
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary font-semibold">Prestations</h2>
   </div>
@@ -118,22 +125,6 @@
       <% end %>
     </table>
   </div>
-
-  <% if @cotation.signature.present? %>
-    <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
-      <h2 class="text-2xl text-secondary font-semibold">Signature</h2>
-    </div>
-    <div class="bg-white border border-slate-200 rounded-2xl" style="padding: 1.25rem;">
-      <img src="<%= @cotation.signature %>" alt="Signature de l'adhérent" class="border border-slate-200 rounded-lg bg-white" style="max-width: 350px; width: 100%; height: auto;">
-
-      <p class="text-xs text-slate-400 mt-3">
-        Signée par <%= @cotation.adherent&.nom %>
-        <% if @cotation.signee_le %>le <%= l(@cotation.signee_le, format: :long) %><% end %>
-        <% if @cotation.ip.present? %>(IP <%= @cotation.ip %>)<% end %>
-      </p>
-    </div>
-  <% end %>
-
   <% mail_logs = @cotation.mail_logs.ordered %>
   <% if mail_logs.any? %>
     <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
@@ -159,12 +150,10 @@
       </table>
     </div>
   <% end %>
-
   <% if current_user.manager_or_admin? %>
     <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
       <h2 class="text-2xl text-secondary font-semibold">Activité</h2>
     </div>
-    
     <div class="flex flex-col bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden">
       <div class="overflow-x-auto">
         <table class="table table-sm w-full border-none">
@@ -190,7 +179,6 @@
           </tbody>
         </table>
       </div>
-
       <% if @pagy&.pages.to_i > 1 %>
         <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full">
           <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
@@ -203,7 +191,6 @@
       <% end %>
     </div>
   <% end %>
-
   <div class="my-10">
     <%= link_to cotations_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition" do %>
       <%= embedded_svg "icons/arrow_back.svg", class: "text-base", title: "Retour à la liste" %>
