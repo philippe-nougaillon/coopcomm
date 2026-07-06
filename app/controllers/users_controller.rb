@@ -102,12 +102,20 @@ class UsersController < ApplicationController
     respond_to do |format|
       if @user.save
         @user.invite!(current_user)
+        session.delete(:return_to)
         format.html { redirect_to user_url(@user), notice: 'Utilisateur créé avec succès.' }
         format.json { render :show, status: :created, location: @user }
       else
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @user.errors, status: :unprocessable_entity }
       end
+
+      if @user.save
+    session.delete(:return_to)
+    redirect_to users_path, notice: "Utilisateur créé avec succès"
+  else
+    render :new
+  end 
     end
   end
 
