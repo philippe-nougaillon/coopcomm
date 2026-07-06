@@ -15,10 +15,10 @@ module DashboardData
       temps_total_par_agent: temps_par_agent(users),
       data_workflow_chart: build_workflow_chart(interventions, start_date, end_date),
       qte_interventions_par_service: interventions.joins(:service).group('services.nom').count,
-      temps_total_par_service: interventions.joins(:service).group('services.nom').sum(:temps_total),
+      temps_total_par_service: interventions.joins(:service).where("temps_total >= 0").group('services.nom').sum(:temps_total),
       co2_total_par_mois: co2,
       kpi_total_interventions: interventions.count,
-      kpi_temps_total: "#{interventions.sum(:temps_total).round(1)}h",
+      kpi_temps_total: "#{interventions.where("temps_total >= 0").sum(:temps_total).round(1)}h",
       kpi_agents_actifs: users.agent.count,
       kpi_co2_total: "#{co2.values.sum} kg"
     }
@@ -27,7 +27,7 @@ module DashboardData
   def build_dashboard_for_adherent(start_date, end_date)
     interventions = current_user.interventions_adherent.filter_by_service(current_user.services)
     temps_consommable = 100
-    temps_consomme = interventions.sum(:temps_total)
+    temps_consomme = interventions.where("temps_total >= 0").sum(:temps_total)
     co2 = build_co2_par_mois(interventions, start_date, end_date)
 
     {
@@ -38,7 +38,7 @@ module DashboardData
       temps_total_par_mois: build_temps_par_mois(interventions, start_date, end_date),
       data_workflow_chart: build_workflow_chart(interventions, start_date, end_date),
       qte_interventions_par_service: interventions.joins(:service).group('services.nom').count,
-      temps_total_par_service: interventions.joins(:service).group('services.nom').sum(:temps_total),
+      temps_total_par_service: interventions.joins(:service).where("temps_total >= 0").group('services.nom').sum(:temps_total),
       co2_total_par_mois: co2,
       kpi_total_interventions: interventions.count,
       kpi_temps_total: "#{temps_consomme.round(1)}h",
@@ -74,7 +74,7 @@ module DashboardData
 
   def temps_par_agent(users)
     users.agent.includes(:agent_interventions, :interventions).each_with_object({}) do |agent, hash|
-      hash[agent.nom_prénom] = agent.interventions.sum do |i|
+      hash[agent.nom_prénom] = agent.interventions.where("temps_total >= 0").sum do |i|
         i.temps_total / i.agents.size
       end
     end
@@ -114,7 +114,7 @@ module DashboardData
   end
 
   def build_temps_par_mois(interventions, start_date, end_date)
-    raw = interventions.where(début: start_date..end_date)
+    raw = interventions.where(début: start_date..end_date).where("temps_total >= 0")
                        .group("DATE_TRUNC('month', début)")
                        .sum(:temps_total)
                        .transform_keys { |m| m.to_date.strftime('%Y-%m') }
