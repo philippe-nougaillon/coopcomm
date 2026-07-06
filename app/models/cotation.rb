@@ -86,6 +86,8 @@ class Cotation < ApplicationRecord
       joins(:service).where(services: { organisation_id: user.organisation&.id })
     elsif user.manager?
       where(service_id: user.service_ids)
+    elsif user.adhérent?
+      where(adherent_id: user.id)
     else
       none
     end

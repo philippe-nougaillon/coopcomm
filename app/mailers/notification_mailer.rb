@@ -125,6 +125,18 @@ class NotificationMailer < ApplicationMailer
     end
   end
 
+  def cotation_signee(cotation, email)
+    @cotation = cotation
+
+    mail(to: email,
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Cotation signée').tap do |message|
+      message.mailgun_options = {
+        'tag' => ['cotation signée']
+      }
+    end
+  end
+
   def commande_envoyee(commande, email, cc_email = nil)
     @commande = commande
 

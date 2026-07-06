@@ -106,6 +106,10 @@ class PagesController < ApplicationController
                             .ordered
                             .first(3)
 
+    if current_user.adhérent?
+      @cotations = current_user.cotations_adherent.where(workflow_state: Cotation::ENVOYE)
+    end
+
     @forecasts = MeteoConceptConnexion.call
   end
 

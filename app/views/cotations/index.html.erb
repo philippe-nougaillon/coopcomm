@@ -11,7 +11,6 @@
       <% end %>
     <% end %>
   </div>
-
   <%= form_tag cotations_path, method: :get, class: "pt-6" do %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
@@ -19,15 +18,17 @@
         <%= text_field_tag :search, params[:search], class: "input input-bordered input-md w-full",
               placeholder: "Réf, intitulé", onchange: "this.form.submit()" %>
       </div>
-      <div class="w-full md:flex-1">
-        <%= label_tag :adhérent_ids, "Adhérents", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
-        <%= select_tag :adhérent_ids,
-                options_from_collection_for_select(@adhérents, 'id', 'nom_prénom', params[:adhérent_ids]),
-                multiple: true,
-                class: 'slim-select w-full h-10',
-                data: { placeholder: 'Tous les adhérents' },
-                onchange: 'this.form.requestSubmit()' %>
-      </div>
+      <% unless current_user.adhérent? %>
+        <div class="w-full md:flex-1">
+          <%= label_tag :adhérent_ids, "Adhérents", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
+          <%= select_tag :adhérent_ids,
+                  options_from_collection_for_select(@adhérents, 'id', 'nom_prénom', params[:adhérent_ids]),
+                  multiple: true,
+                  class: 'slim-select w-full h-10',
+                  data: { placeholder: 'Tous les adhérents' },
+                  onchange: 'this.form.requestSubmit()' %>
+        </div>
+      <% end %>
       <div class="w-full md:flex-1">
         <%= label_tag :service_ids, "Services", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
         <%= select_tag :service_ids,
@@ -47,12 +48,10 @@
     </div>
   <% end %>
 </div>
-
 <hr class="mt-6 mb-6">
 <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
   <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
 </div>
-
 <div class="flex flex-col bg-white border-x border-b border-slate-200 shadow-sm overflow-hidden <%= 'rounded-b-xl' unless @pagy&.pages.to_i > 1 %>">
   <div class="overflow-x-auto">
     <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
@@ -92,7 +91,6 @@
       </tbody>
     </table>
   </div>
-
   <% if @pagy&.pages.to_i > 1 %>
     <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
       <div class="hidden sm:block sm:flex-1"></div>

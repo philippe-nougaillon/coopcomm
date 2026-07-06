@@ -22,10 +22,22 @@
           <% @interventions.each do |intervention| %>
             <%= render partial: 'intervention', locals: {intervention: } %>
           <% end %>
-          <%= link_to 'Voir toutes les actions en attente', interventions_path, class: 'text-primary mt-8 hover:underline' %>
+          <%= link_to 'Voir toutes les interventions en attente', interventions_path, class: 'text-primary mt-8 hover:underline' %>
         </div>
       <% else %>
         <p>Il n'y a rien en attente, vous pouvez vous reposer :)</p>
+      <% end %>
+      <% if current_user.adhérent? %>
+        <div class="flex flex-col divide-y divide-gray-300 mt-8">
+          <h2 class="font-black text-lg mb-4">Vos cotations à signer</h2>
+          <% if @cotations.any? %>
+            <% @cotations.each do |cotation| %>
+              <%= render partial: 'cotation', locals: {cotation: } %>
+            <% end %>
+          <% else %>
+            <p>Aucune cotation à signer</p>
+          <% end %>
+        </div>
       <% end %>
     </div>
     <div class="border shadow-sm p-4 rounded-2xl">

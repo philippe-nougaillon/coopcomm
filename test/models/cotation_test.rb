@@ -117,10 +117,10 @@ class CotationTest < ActiveSupport::TestCase
 
   # --- Référence / périmètre / discard ---
 
-  test 'ref générée à la création au format AAAA-N' do
+  test 'ref générée à la création au format CO-AAAA-N' do
     cotation = build_cotation
     cotation.save!
-    assert_match(/\A#{Date.current.year}-\d+\z/, cotation.ref)
+    assert_match(/\ACO-#{Date.current.year}-\d+\z/, cotation.ref)
   end
 
   test "la ref n'est pas modifiée lors d'une mise à jour" do
@@ -166,9 +166,13 @@ class CotationTest < ActiveSupport::TestCase
     refute_includes Cotation.visible_to(users(:manager_marseille)), cotation
   end
 
-  test 'aucune cotation visible pour un adhérent' do
-    build_cotation.save!
-    assert_empty Cotation.visible_to(@adherent)
+  test 'visible_to un adhérent : ses propres cotations, pas celles des autres' do
+    sienne = build_cotation # adhérent: weil
+    sienne.save!
+    visibles = Cotation.visible_to(@adherent)
+    assert_includes visibles, sienne
+    # Une cotation appartenant à un autre adhérent n'est pas visible.
+    refute_includes visibles, cotations(:cotation_marseille) # adhérent: michael_jackson
   end
 
   test 'discard (soft delete)' do

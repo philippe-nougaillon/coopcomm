@@ -1,0 +1,12 @@
+Bonjour,
+<br>
+<br>
+La cotation <b>n°<%= @cotation.ref %></b> — « <%= @cotation.intitulé %> » — vient d'être <b>signée</b> par <%= @cotation.adherent&.nom %>.
+<br>
+<br>
+<%= link_to "Voir la cotation", cotation_url(@cotation) %>
+<br>
+<br>
+Cordialement,
+<br>
+L'équipe COOPCOMM
