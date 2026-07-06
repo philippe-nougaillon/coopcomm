@@ -4,7 +4,6 @@ module ConventionsHelper
   # TODO : Modifier la fonction qui n'est plus adaptée dans la vue _convention.html.erb
   # Calcule l'avancement d'une convention dans le temps (aujourd'hui par rapport
   # à date_début / date_fin_prévue) pour alimenter une barre de progression daisyUI.
-  #
   # Renvoie nil si aucune date de début (rien à afficher), sinon un hash :
   #   { percent:, color:, label:, indeterminate: }
   # - indeterminate: true  → convention sans échéance (barre animée « En cours »)
