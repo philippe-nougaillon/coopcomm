@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module ConventionsHelper
+  # TODO : Modifier la fonction qui n'est plus adaptée dans la vue _convention.html.erb
   # Calcule l'avancement d'une convention dans le temps (aujourd'hui par rapport
   # à date_début / date_fin_prévue) pour alimenter une barre de progression daisyUI.
   #

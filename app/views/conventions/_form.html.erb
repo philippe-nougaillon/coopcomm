@@ -20,7 +20,9 @@
          data-dynamic-select-url-value="<%= services_for_adherent_conventions_path %>">
       <%# Adhérent : figé en modification %>
       <div class="form-control w-full">
-        <%= f.label :user_id, "Adhérent", class: "label font-semibold text-slate-700" %>
+        <%= f.label :user_id, "Adhérent", class: "label font-semibold text-slate-700" do %>
+          Adhérent <span class="text-red-500">*</span>
+        <% end %>
         <% if @convention.persisted? %>
           <input type="text" value="<%= @convention.user&.nom_prénom %>" class="input input-sm input-bordered w-full" disabled>
           <%= f.hidden_field :user_id %>
@@ -34,7 +36,9 @@
 
       <%# Service : figé en modification (clé d'unicité) ; sinon dépend de l'adhérent choisi %>
       <div class="form-control w-full">
-        <%= f.label :service_id, "Service", class: "label font-semibold text-slate-700" %>
+        <%= f.label :service_id, "Service", class: "label font-semibold text-slate-700" do %>
+          Service <span class="text-red-500">*</span>
+        <% end %>
         <% if @convention.persisted? %>
           <input type="text" value="<%= @convention.service&.nom %>" class="input input-sm input-bordered w-full" disabled>
           <%= f.hidden_field :service_id %>
@@ -47,13 +51,24 @@
       </div>
 
       <div class="form-control w-full">
-        <%= f.label :date_début, "Date de début", class: "label font-semibold text-slate-700" %>
+        <%= f.label :date_début, class: "label font-semibold text-slate-700" do %>
+          Date de début <span class="text-red-500">*</span>
+        <% end %>
         <%= f.date_field :date_début, class: "input input-sm input-bordered w-full focus:input-primary", required: true %>
       </div>
 
       <div class="form-control w-full">
-        <%= f.label :date_fin_prévue, "Date de fin prévue", class: "label font-semibold text-slate-700" %>
-        <%= f.date_field :date_fin_prévue, class: "input input-sm input-bordered w-full focus:input-primary" %>
+        <%= f.label :date_fin_prévue, "Date de fin prévue", class: "label font-semibold text-slate-700" do %>
+          Date de fin prévue <span class="text-red-500">*</span>
+        <% end %>
+        <%= f.date_field :date_fin_prévue, class: "input input-sm input-bordered w-full focus:input-primary", required: true  %>
+      </div>
+
+      <div class="form-control w-full sm:col-span-2">
+        <%= f.label :heures_conventionnees, "Heures conventionnées", class: "label font-semibold text-slate-700" do %>
+          Heures conventionnées <span class="text-red-500">*</span>
+        <% end %>
+        <%= f.number_field :heures_conventionnees, min:"0", class: "input input-sm input-bordered w-full focus:input-primary", required: true %>
       </div>
 
       <div class="form-control w-full sm:col-span-2">
