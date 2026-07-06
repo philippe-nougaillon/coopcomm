@@ -98,7 +98,7 @@ class ConventionsController < ApplicationController
   end
 
   def convention_params
-    params.require(:convention).permit(:user_id, :service_id, :date_début, :date_fin_prévue, :mémo, :document)
+    params.require(:convention).permit(:user_id, :service_id, :date_début, :date_fin_prévue, :mémo, :document, :heures_conventionnees)
   end
 
   def find_adherent(identifier)
