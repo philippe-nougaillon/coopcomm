@@ -57,7 +57,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to cotation_path(cotation)
     assert_equal 136.5, cotation.total_ht.to_f
     assert_equal 'créé', cotation.workflow_state
-    assert_match(/\A#{Date.current.year}-\d+\z/, cotation.ref)
+    assert_match(/\ACO-#{Date.current.year}-\d+\z/, cotation.ref)
   end
 
   test "le prix d'une ligne ne peut pas être forcé via les paramètres" do
@@ -206,5 +206,115 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
       } }
     end
     assert_response :unprocessable_entity
+  end
+
+  # --- Signature (signer / signer_do) ---
+  # La policy réserve ces actions aux adhérents (CotationPolicy#signer? => adhérent?).
+  SIGNATURE = 'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4='
+
+  test 'signer : un adhérent accède au formulaire de signature' do
+    sign_in @adherent
+    get signer_cotation_url(cotations(:cotation_secretariat)) # envoyé
+    assert_response :success
+  end
+
+  test "signer : un non-adhérent (admin) n'est pas autorisé" do
+    # @admin est déjà connecté (setup)
+    get signer_cotation_url(cotations(:cotation_secretariat))
+    assert_redirected_to root_path
+  end
+
+  test 'signer_do : un adhérent signe une cotation envoyée -> validée + signature/ip/date persistées' do
+    sign_in @adherent
+    cotation = cotations(:cotation_secretariat) # envoyé
+
+    post signer_do_cotation_url(cotation), params: { cotation: { signature: SIGNATURE } }
+
+    assert_redirected_to root_path
+    cotation.reload
+    assert_equal 'validé', cotation.workflow_state
+    assert_equal SIGNATURE, cotation.signature
+    assert_not_nil cotation.signee_le
+    assert cotation.ip.present?
+  end
+
+  test 'signer_do : la signature notifie le créateur de la cotation (via l\'audit de création)' do
+    sign_in @adherent
+    cotation = cotations(:cotation_secretariat) # envoyé, audit create = administrateur_paris
+
+    assert_enqueued_with(job: NotifCotationSigneeJob) do
+      post signer_do_cotation_url(cotation), params: { cotation: { signature: SIGNATURE } }
+    end
+  end
+
+  test 'signer_do : sans créateur identifiable (aucun audit), aucune notification n\'est enqueue' do
+    sign_in @adherent
+    cotation = cotations(:cotation_paris)
+    cotation.update!(workflow_state: 'envoyé') # signable, mais sans audit create
+
+    assert_no_enqueued_jobs only: NotifCotationSigneeJob do
+      post signer_do_cotation_url(cotation), params: { cotation: { signature: SIGNATURE } }
+    end
+  end
+
+  test "signer_do : refusé par la policy si la cotation n'est pas envoyée (état créé) : rien n'est signé" do
+    # CotationPolicy#signer? exige `record.can_valider?` : sur une cotation `créé`,
+    # l'autorisation échoue en amont (redirection root), avant toute signature.
+    sign_in @adherent
+    cotation = cotations(:cotation_paris) # créé
+
+    post signer_do_cotation_url(cotation), params: { cotation: { signature: SIGNATURE } }
+
+    assert_redirected_to root_path
+    cotation.reload
+    assert_equal 'créé', cotation.workflow_state
+    assert_nil cotation.signature
+  end
+
+  test "signer_do : un non-adhérent n'est pas autorisé et ne signe pas" do
+    cotation = cotations(:cotation_secretariat) # envoyé ; @admin connecté
+
+    post signer_do_cotation_url(cotation), params: { cotation: { signature: SIGNATURE } }
+
+    assert_redirected_to root_path
+    cotation.reload
+    assert_nil cotation.signature
+    assert_equal 'envoyé', cotation.workflow_state
+  end
+
+  test "signer_do : un adhérent ne peut pas signer la cotation d'un autre adhérent" do
+    sign_in @adherent # weil
+    autre = cotations(:cotation_marseille) # adhérent: michael_jackson
+    autre.update!(workflow_state: 'envoyé') # envoyée, mais pas à weil
+
+    post signer_do_cotation_url(autre), params: { cotation: { signature: SIGNATURE } }
+
+    assert_redirected_to root_path
+    autre.reload
+    assert_nil autre.signature
+    assert_equal 'envoyé', autre.workflow_state
+  end
+
+  # --- Index côté adhérent (voit TOUTES ses cotations, tous services confondus) ---
+  # weil est rattaché au seul service Informatique mais possède une cotation sur
+  # Secrétariat : l'ancien filtre `.where(service: current_user.services)` la masquait.
+
+  test 'un adhérent voit toutes ses cotations, quel que soit le service prestataire' do
+    sign_in @adherent
+    get cotations_url
+
+    assert_response :success
+    listed = assigns(:cotations)
+    assert_includes listed, cotations(:cotation_paris)       # service Informatique (rattaché)
+    assert_includes listed, cotations(:cotation_secretariat) # service Secrétariat (non rattaché)
+  end
+
+  test "le filtre Services d'un adhérent liste les services de ses cotations" do
+    sign_in @adherent
+    get cotations_url
+
+    svcs = assigns(:services)
+    assert_includes svcs, services(:informatique)
+    assert_includes svcs, services(:secretariat)
   end
 end

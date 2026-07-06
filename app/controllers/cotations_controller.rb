@@ -1,19 +1,25 @@
 # frozen_string_literal: true
 
 class CotationsController < ApplicationController
-  before_action :set_cotation, only: %i[show edit update destroy pdf envoyer valider refuser create_commande]
+  before_action :set_cotation, only: %i[show edit update destroy pdf envoyer valider refuser create_commande signer signer_do]
   before_action :is_user_authorized, except: :create
 
   # GET /cotations
   def index
-    @services = current_user.services
-    @adhérents = User.by_service(@services).adhérent
+    base = policy_scope(Cotation)
+          .kept
+          .includes(:adherent, :service, :organisation)
+          .ordered
 
-    @cotations = policy_scope(Cotation)
-                                      .kept
-                                      .includes(:adherent, :service, :organisation)
-                                      .where(service: @services)
-                                      .ordered
+    if current_user.adhérent?
+      @cotations = base
+      service_ids = base.reorder(nil).distinct.pluck(:service_id)
+      @services   = Service.where(id: service_ids).ordered
+    else
+      @services  = current_user.services
+      @adhérents = User.by_service(@services).adhérent
+      @cotations = base.where(service: @services)
+    end
 
     if params[:search].present?
       @cotations = @cotations.where('cotations.ref ILIKE :s OR cotations.intitulé ILIKE :s', s: "%#{params[:search]}%")
@@ -131,6 +137,22 @@ class CotationsController < ApplicationController
     end
   end
 
+  def signer
+  end
+
+  def signer_do
+    @cotation.ip = request.remote_ip
+    @cotation.signature = params[:cotation][:signature]
+    @cotation.signee_le = Time.current
+    
+    if @cotation.valider!
+      notify_cotation_signee
+      redirect_to root_path, notice: "Cotation signée avec succès."
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def transition!(event, notice)
@@ -153,6 +175,16 @@ class CotationsController < ApplicationController
     return if adherent&.email.blank?
 
     NotifAdherentCotationEnvoyeeJob.perform_later(@cotation, adherent, current_user.id)
+  end
+
+  # Prévient le créateur de la cotation (retrouvé via l'audit de création)
+  # qu'elle vient d'être signée. Sans créateur identifiable ou sans email, on
+  # n'envoie rien.
+  def notify_cotation_signee
+    creator = @cotation.audits.find_by(action: 'create')&.user
+    return if creator&.email.blank?
+
+    NotifCotationSigneeJob.perform_later(@cotation, creator.id, current_user.id)
   end
 
   def set_cotation

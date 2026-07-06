@@ -8,7 +8,7 @@ class CotationPolicy < ApplicationPolicy
   end
 
   def index?
-    user&.manager_or_admin?
+    user&.manager_or_admin? || adhérent?
   end
 
   # Ouverture du formulaire (niveau classe) : tout manager/admin.
@@ -23,7 +23,7 @@ class CotationPolicy < ApplicationPolicy
   end
 
   def show?
-    manage?
+    manage? || (adhérent? && record.adherent_id == user.id)
   end
 
   # Modification (et edit?, qui en hérite) : réservée aux états modifiables,
@@ -55,5 +55,13 @@ class CotationPolicy < ApplicationPolicy
 
   def create_commande?
     manage? && record.validé?
+  end
+
+  def signer?
+    adhérent? && record.adherent_id == user.id && record.can_valider?
+  end
+
+  def signer_do?
+    signer? 
   end
 end

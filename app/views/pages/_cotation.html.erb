@@ -1,0 +1,11 @@
+<div class="flex flex-wrap lg:flex-nowrap items-center gap-4 border px-4 py-4">
+  <div>
+    <b><%= link_to cotation.intitulé, signer_cotation_path(cotation.slug), class:'hover:underline hover:text-primary' %></b>
+    <div>
+      <small>
+        créé il y a <%= time_ago_in_words cotation.created_at %>
+      </small>
+    </div>
+    <%= cotation.ref %>
+  </div>
+</div>

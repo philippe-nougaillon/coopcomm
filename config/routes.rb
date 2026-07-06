@@ -125,6 +125,8 @@ Rails.application.routes.draw do
       post :valider
       post :refuser
       post :create_commande
+      get  :signer
+      post :signer_do
     end
   end
   resources :prestations, except: %i[index show]

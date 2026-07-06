@@ -119,6 +119,20 @@
     </table>
   </div>
 
+  <% if @cotation.signature.present? %>
+    <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
+      <h2 class="text-2xl text-secondary font-semibold">Signature</h2>
+    </div>
+    <div class="bg-white border border-slate-200 rounded-2xl" style="padding: 1.25rem;">
+      <img src="<%= @cotation.signature %>" alt="Signature de l'adhérent" class="border border-slate-200 rounded-lg bg-white" style="max-width: 350px; width: 100%; height: auto;">
+
+      <p class="text-xs text-slate-400 mt-3">
+        Signée par <%= @cotation.adherent&.nom %>
+        <% if @cotation.signee_le %>le <%= l(@cotation.signee_le, format: :long) %><% end %>
+        <% if @cotation.ip.present? %>(IP <%= @cotation.ip %>)<% end %>
+      </p>
+    </div>
+  <% end %>
 
   <% mail_logs = @cotation.mail_logs.ordered %>
   <% if mail_logs.any? %>
