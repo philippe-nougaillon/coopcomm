@@ -111,8 +111,8 @@
     <div class="flex gap-2 mt-4 w-full">
       <% if current_user.manager_or_admin? %>
         <%= form.submit "Enregistrer", id: "enregistrer_utilisateur", class: "btn btn-primary flex-1" %>
-        <%= link_to "Annuler", (session[:return_to] || users_path), class: "btn flex-1" %>
-      <% end %>
+        <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>      
+        <% end %>
     </div>
   <% end %>
   <div class="pt-6 max-w-3xl mx-auto px-4">

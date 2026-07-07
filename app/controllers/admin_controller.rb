@@ -3,7 +3,6 @@
 class AdminController < ApplicationController
   before_action :is_user_authorized
   before_action :set_users_tags, only: %i[create_new_user create_new_user_do]
-  before_action :return_security, only: [:create_new_user]
 
   def audits
     @audits = if current_user.manager_or_admin?

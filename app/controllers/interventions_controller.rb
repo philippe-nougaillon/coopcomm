@@ -15,7 +15,6 @@ class InterventionsController < ApplicationController
   before_action :set_interventions_tags,
                 only: %i[index new edit create update new_intervention_modele_pointage create_intervention_modele_pointage]
 
-  before_action :return_security, only: [:new_intervention_modele_pointage]
 
   # GET /interventions or /interventions.json
   def index
