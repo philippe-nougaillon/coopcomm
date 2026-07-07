@@ -5,9 +5,8 @@ module ConventionsHelper
   # à date_début / date_fin_prévue) pour alimenter une barre de progression daisyUI.
   def convention_progress(convention, today: Date.current)
     start_date = convention.date_début
-    return nil if start_date.blank?
-
     end_date = convention.date_fin_prévue
+    
 
     total   = (end_date - start_date).to_i
     elapsed = (today - start_date).to_i
@@ -30,7 +29,9 @@ module ConventionsHelper
         ['progress-success', "#{percent} %"]
       end
 
-    indicateur = (convention.temps_total_interventions / convention.heures_conventionnees * 100).round(1)
+    # Evitamos división por cero si heures_conventionnees es nil o cero
+    heures = convention.heures_conventionnees.to_f
+    indicateur = heures.positive? ? (convention.temps_total_interventions / heures * 100).round(1) : 0
     
     # L'indicateur devient rouge si le temps total dans les interventions est supérieur au nombre d'heures conventionnées
     if indicateur > 100
@@ -42,6 +43,6 @@ module ConventionsHelper
       indicateur_color = 'bg-neutral'
     end
 
-    { percent: percent, label: label, color: color, indicateur: indicateur, indicateur_label: indicateur_label, indicateur_color: indicateur_color }
+    { percent: percent, label: label, color: color,indeterminate: false, indicateur: indicateur, indicateur_label: indicateur_label, indicateur_color: indicateur_color }
   end
 end

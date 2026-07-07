@@ -13,6 +13,7 @@ class Convention < ApplicationRecord
   valide_piece_jointe :document, types: PieceJointeValidable::DOCUMENTS
 
   validates :date_début, presence: true
+  validates :date_fin_prévue, presence: true
   validate :one_convention_per_service
   validate :service_must_belong_to_adherent
   validate :end_date_after_start_date
@@ -34,6 +35,9 @@ class Convention < ApplicationRecord
   end
 
   def temps_total_interventions
+    # Si las fechas son nulas en las fixtures o pruebas, devolvemos 0 de inmediato
+    return 0 if date_début.blank? || date_fin_prévue.blank?
+
     Intervention
             .where(adherent_id: user_id, service_id: service_id)
             .where(début: date_début.beginning_of_day..date_fin_prévue.end_of_day)

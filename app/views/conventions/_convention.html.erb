@@ -13,7 +13,7 @@
     <% end %>
     <%= l(convention.date_début, format: :long) if convention.date_début %>
     <span class="text-slate-400">→</span>
-    <%= convention.date_fin_prévue ? l(convention.date_fin_prévue, format: :long) : "—" %>
+    <%= convention.date_fin_prévue ? l(convention.date_fin_prévue) : "Non renseignée" %>
     <div class="mt-1" title="<%= "Du #{l(convention.date_début, format: :long)}#{" au #{l(convention.date_fin_prévue, format: :long)}"}" %>">
       <div class="relative w-60 flex items-center h-6">
         <progress class="progress  <%=prog[:color] %> w-full h-4" value="<%= prog[:percent] %>" max="100"></progress>

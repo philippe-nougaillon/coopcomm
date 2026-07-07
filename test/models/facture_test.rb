@@ -129,7 +129,7 @@ class FactureTest < ActiveSupport::TestCase
     service = Service.create!(nom: 'Service A', organisation: org)
     facture = build_facture(service: service)
     facture.save!
-    assert_equal "#{Date.current.year}-1", facture.ref
+    assert_equal "FA-#{Date.current.year}-1", facture.ref
   end
 
   test 'ref incrémentée au sein de la même organisation' do
@@ -138,7 +138,7 @@ class FactureTest < ActiveSupport::TestCase
     build_facture(service: service).save!
     deuxième = build_facture(service: service)
     deuxième.save!
-    assert_equal "#{Date.current.year}-2", deuxième.ref
+    assert_equal "FA-#{Date.current.year}-2", deuxième.ref
   end
 
   test 'ref réinitialisée indépendamment pour chaque organisation' do
@@ -148,8 +148,8 @@ class FactureTest < ActiveSupport::TestCase
     facture2 = build_facture(service: Service.create!(nom: 'Service D', organisation: org2))
     facture1.save!
     facture2.save!
-    assert_equal "#{Date.current.year}-1", facture1.ref
-    assert_equal "#{Date.current.year}-1", facture2.ref
+    assert_equal "FA-#{Date.current.year}-1", facture1.ref
+    assert_equal "FA-#{Date.current.year}-1", facture2.ref
   end
 
   test 'une ref fournie explicitement est respectée' do

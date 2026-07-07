@@ -26,7 +26,8 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
       post conventions_url, params: { convention: {
         user_id: @adherent.id,
         service_id: @service.id,
-        date_début: '2026-03-01'
+        date_début: '2026-03-01',
+        date_fin_prévue: '2027-03-01',
       } }
     end
     assert_redirected_to conventions_path

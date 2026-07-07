@@ -7,17 +7,7 @@ class ConventionsHelperTest < ActionView::TestCase
     Convention.new(date_début: start_date, date_fin_prévue: end_date)
   end
 
-  test 'renvoie nil sans date de début' do
-    assert_nil convention_progress(convention(nil, Date.new(2026, 12, 31)))
-  end
-
-  test 'barre indéterminée quand pas de date de fin' do
-    prog = convention_progress(convention(Date.new(2026, 1, 1), nil))
-    assert prog[:indeterminate]
-    assert_equal 'En cours', prog[:label]
-    assert_equal 'progress-info', prog[:color]
-    assert_nil prog[:percent]
-  end
+  
 
   test 'convention à venir : 0 % et couleur info' do
     prog = convention_progress(convention(Date.new(2026, 7, 1), Date.new(2026, 12, 31)),
