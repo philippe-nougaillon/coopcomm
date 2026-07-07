@@ -345,20 +345,9 @@ class InterventionsController < ApplicationController
   def pointer
     if @intervention.repeter?
       # Intervention fille se passant aujourd'hui (intervention en cours de réalisation)
+      current_intervention = current_user.find_current_intervention(@intervention.slug)
 
-      # TODO VU : déplacer ce bloc dans le model
-      # OK
-
-      current_intervention = Intervention
-                             .joins(:agent_interventions)
-                             .where(template_slug: @intervention.slug)
-                             .where(agent_interventions: { agent_id: current_user.id })
-                             .where('DATE(début) = ?', Date.today)
-                             .where(workflow_state: 'nouveau') # Seul les nouvelles interventions nous intéresse
-                             .order(updated_at: :asc) # Trie du plus ancien au plus récent
-                             .last # Prend l'intervention créée/modifiée la plus récente
-
-      # Si une intervention fille est créé, on la met à jour, sinon on en créée une nouvelle
+      # Si une intervention fille existe déjà, on la met à jour, sinon on en créée une nouvelle
       if current_intervention.present?
         if current_intervention.fin
           current_intervention = @intervention.create_next_intervention(@intervention, current_user)
