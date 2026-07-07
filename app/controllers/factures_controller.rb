@@ -6,7 +6,7 @@ class FacturesController < ApplicationController
 
   # GET /factures or /factures.json
   def index
-    @services = current_user.services
+    @services = current_user.administrateur? ? current_organisation.services.ordered : current_user.services
     @adhérents = User.by_service(@services).adhérent
 
     @factures = Facture
