@@ -96,11 +96,11 @@ module AuditsHelper
           end
         end
 
-        # 1. Caso de Login real
+        # 1. Cas d'authentification réelle
         if (audit.audited_changes.keys & %w[sign_in_count current_sign_in_at]).any?
           return content_tag(:span, "Connexion à l'application", class: 'text-slate-600 font-medium text-xs')
-        
-        # 2. Caso de Logout real
+
+        # 2. Cas de déconnexion réelle
         elsif audit.audited_changes['remember_created_at']&.last.nil?
           return content_tag(:span, "Déconnexion de l'application", class: 'text-slate-600 font-medium text-xs')
 
@@ -239,11 +239,11 @@ module AuditsHelper
                   elsif audit.action == 'update' && audit.audited_changes.key?('remember_created_at') && audit.audited_changes['remember_created_at']&.last.nil?
                     'logout'
 
-                  # 5. Persistencia de cookie
+                  # 5. Persistance du cookie
                   elsif audit.action == 'update' && audit.audited_changes.keys == ['remember_created_at'] && audit.audited_changes['remember_created_at']&.first.nil?
                     'key'
 
-                  # 6. Cualquier otra edición de perfil
+                  # 6. Toute autre modification de profil
                   else
                     'edit'
                   end
@@ -272,7 +272,7 @@ module AuditsHelper
       else                ['Absence',           'bg-slate-100 text-slate-600']
       end
     when 'User'
-     # 1. Caso de Desactivación / Eliminación lógica
+     # 1. Cas de désactivation / suppression logique
       if audit.action == 'update' && audit.audited_changes.key?('discarded_at')
         if audit.audited_changes['discarded_at']&.last.present?
           ['Compte désactivé', 'bg-red-50 text-red-700 border border-red-200']
@@ -280,7 +280,7 @@ module AuditsHelper
           ['Compte réactivé', 'bg-emerald-50 text-emerald-700 border border-emerald-200']
         end
 
-      # 2. Caso alternativo si usas 'locked_at' de Devise
+      # 2. Cas alternatif si vous utilisez 'locked_at' de Devise
       elsif audit.action == 'update' && audit.audited_changes.key?('locked_at')
         if audit.audited_changes['locked_at']&.last.present?
           ['Compte bloqué', 'bg-red-50 text-red-700 border border-red-200']
@@ -296,15 +296,15 @@ module AuditsHelper
       elsif audit.action == 'update' && audit.audited_changes.key?('remember_created_at') && audit.audited_changes['remember_created_at']&.last.nil?
         ['Déconnexion', 'bg-slate-100 text-slate-600 border border-slate-200']
         
-      # 5. Copia/Persistencia técnica de la cookie de sesión
+      # 5. Copie / persistance technique du cookie de session
       elsif audit.action == 'update' && audit.audited_changes.keys == ['remember_created_at'] && audit.audited_changes['remember_created_at']&.first.nil?
         ['Session', 'bg-slate-50 text-slate-400 border border-slate-200']
-        
-      # 6. Invitaciones de Devise
+
+      # 6. Invitations de Devise
       elsif audit.audited_changes.key?('invitation_token')
         ['Invitation relancée', 'bg-blue-50 text-blue-700 border border-bleu-200']
         
-      # 7. Cambio real de Almacén / Logística
+      # 7. Vrai changement d'entrepôt / logistique
       elsif audit.audited_changes.key?('warehouse_id')
         ['Logistique', 'bg-orange-50 text-orange-700 border border-orange-200']
         

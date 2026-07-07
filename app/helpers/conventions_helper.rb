@@ -29,11 +29,11 @@ module ConventionsHelper
         ['progress-success', "#{percent} %"]
       end
 
-    # Evitamos división por cero si heures_conventionnees es nil o cero
+    # On évite la division par zéro si heures_conventionnees est nil ou égal à zéro.
     heures = convention.heures_conventionnees.to_f
     indicateur = heures.positive? ? (convention.temps_total_interventions / heures * 100).round(1) : 0
-    
-    # L'indicateur devient rouge si le temps total dans les interventions est supérieur au nombre d'heures conventionnées
+
+    # L'indicateur devient rouge si le temps total dans les interventions dépasse le nombre d'heures conventionnées.
     if indicateur > 100
       indicateur_label = "Dépassement de #{(indicateur - 100)}%"
       indicateur = 100

@@ -1,7 +1,7 @@
 <div class="max-w-3xl mx-auto my-6 bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
   <%= form_with(model: mouvement, class:'flex flex-col gap-4') do |form| %>
 
-  <%# CAMBIO 1: Guardamos el redirect_to dentro del formulario por si fallan las validaciones %>
+  <%# Changement 1 : on enregistre le redirect_to dans le formulaire au cas où les validations échouent. %>
     <%= hidden_field_tag :redirect_to, @redirect_to %>
 
     <% if mouvement.errors.any? %>
@@ -26,7 +26,6 @@
       <%#    est envoyé que l'outil soit imposé OU choisi, donc il ne peut pas distinguer les deux cas. %>
       <%= hidden_field_tag :tool_id, @mouvement.tool_id || params[:tool_id], id: nil %>
     <% else %>
-      <%# CORRECCIÓN: El contenedor div ahora envuelve únicamente al select visible %>
       <div class="w-full">
         <%= form.label :tool_id, class: "label font-semibold text-slate-700" do %>
           <span>Matériel <span class="text-red-500">*</span></span>
@@ -35,7 +34,7 @@
             options_from_collection_for_select(@tools, :id, :name, @mouvement.tool_id),
             {include_blank: true, required: true}, 
             class: "slim-select w-full" %>
-      </div> <%# <-- El cierre se movió aquí adentro para evitar cajas vacías al editar %>
+      </div> 
     <% end %>
 
     <div class="w-full">

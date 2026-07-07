@@ -161,7 +161,7 @@ class ConventionTest < ActiveSupport::TestCase
   end
 
   test 'temps_total_interventions somme les interventions du même adhérent et service' do
-    # Viajamos en el tiempo a una fecha que esté dentro de la convención (por ejemplo, Junio de 2026)
+    # On se déplace dans le temps jusqu'à une date comprise dans la convention (par exemple, juin 2026).
     travel_to Time.zone.parse("2026-06-01 12:00:00") do
       insert_intervention(temps_total: 3)
       insert_intervention(temps_total: 5)

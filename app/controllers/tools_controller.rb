@@ -9,8 +9,8 @@ class ToolsController < ApplicationController
     params[:date] = Date.today if params[:date].blank?
     fecha_base = params[:date].to_date
 
-    @date = fecha_base.beginning_of_week # Siempre será el Lunes
-    @date_fin = fecha_base.end_of_week   # Siempre será el Domingo
+    @date = fecha_base.beginning_of_week # Ce sera toujours le lundi.
+    @date_fin = fecha_base.end_of_week   # Ce sera toujours le dimanche.
     @tools = current_organisation.tools.ordered
     @types = Tool.icons
     # @états = Mouvement.états.keys

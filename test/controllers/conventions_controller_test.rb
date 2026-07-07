@@ -9,7 +9,7 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     @service = services(:service_paris)
     @convention = conventions(:convention_paris)
 
-    # --- Definimos fechas dinámicas relativas a HOY ---
+    # --- On définit des dates dynamiques relatives à AUJOURD'HUI ---
     @today = Date.current
     @start_of_year = @today.beginning_of_year
     @end_of_year = @today.end_of_year
@@ -111,7 +111,7 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'filtre active_on inclut une convention active à la date' do
-    # Usamos la fecha de inicio del año actual, donde sabemos que la convención de la fixture está activa
+    # On utilise la date de début de l'année en cours, à laquelle on sait que la convention de la fixture est active.
     get conventions_url(active_on: @start_of_year.to_s)
     assert_includes response.body, edit_convention_path(@convention)
   end

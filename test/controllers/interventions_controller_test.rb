@@ -163,7 +163,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     agent = users(:martin_technique_paris)
     sign_in agent
 
-    # Viajamos al mediodía de HOY para que "hours.ago" nunca cambie de día o año
+    # On se place à midi d'AUJOURD'HUI pour que "hours.ago" ne change jamais de jour ni d'année.
     travel_to Time.current.middle_of_day do
       assert_difference('Intervention.count') do
         post interventions_url, params: {
@@ -355,7 +355,7 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
     # L'intervention fille hérite de la même fenêtre et entre donc en conflit de
     # disponibilité avec son propre modèle → le save échoue (id nil).
 
-    # --- FECHAS DINÁMICAS BASADAS EN EL AÑO ACTUAL ---
+    # --- DATES DYNAMIQUES BASÉES SUR L'ANNÉE EN COURS ---
     current_year = Date.current.year
     start_date = DateTime.new(current_year, 6, 1)
     end_date = DateTime.new(current_year, 6, 30)

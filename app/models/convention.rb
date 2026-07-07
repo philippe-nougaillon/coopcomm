@@ -35,7 +35,7 @@ class Convention < ApplicationRecord
   end
 
   def temps_total_interventions
-    # Si las fechas son nulas en las fixtures o pruebas, devolvemos 0 de inmediato
+    # Si les dates sont vides dans les fixtures ou les tests, on retourne 0 immédiatement.
     return 0 if date_début.blank? || date_fin_prévue.blank?
 
     Intervention
