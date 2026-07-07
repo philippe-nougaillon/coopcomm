@@ -51,19 +51,19 @@
     <div class="border shadow-sm px-4 pt-4 pb-7.5 rounded-2xl mb-8">
       <h2 class="font-black text-lg mb-6">Actions rapides</h2>
       <div class="flex flex-col gap-4">
-        <%= link_to (current_user.agent? ? 'Nouveau bon d\'Intervention' : 'Créer une Intervention'), new_intervention_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
+        <%= link_to (current_user.agent? ? 'Nouveau bon d\'Intervention' : 'Créer une Intervention'), new_intervention_path, class: 'btn btn-outline rounded-full w-full  whitespace-nowrap px-6' %>
         <% if current_user.manager_or_admin? %>
-          <%= link_to 'Ajouter un nouveau Matériel', new_tool_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
-          <%= link_to 'Lancer une discussion', messagerie_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
-          <%= link_to 'Ajouter un nouvel Utilisateur', new_user_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
+          <%= link_to 'Ajouter un nouveau Matériel', new_tool_path, class: 'btn btn-outline rounded-full w-full  whitespace-nowrap px-6' %>
+          <%= link_to 'Lancer une discussion', messagerie_path, class: 'btn btn-outline rounded-full w-full  whitespace-nowrap px-6' %>
+          <%= link_to 'Ajouter un nouvel Utilisateur', new_user_path, class: 'btn btn-outline rounded-full w-full whitespace-nowrap px-6' %>
         <% elsif current_user.adhérent? %>
-          <%= link_to 'Lancer une discussion', messagerie_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
-          <%= link_to 'Voir le tableau de bord', dashboard_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
-          <%= link_to '_', root_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
+          <%= link_to 'Lancer une discussion', messagerie_path, class: 'btn btn-outline rounded-full w-full  whitespace-nowrap px-6' %>
+          <%= link_to 'Voir le tableau de bord', dashboard_path, class: 'btn btn-outline rounded-full w-full  whitespace-nowrap px-6' %>
+          <%= link_to '_', root_path, class: 'btn btn-outline rounded-full w-full whitespace-nowrap px-6' %>
         <% elsif current_user.agent? %>
-          <%= link_to 'Réserver du matériel', tools_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
-          <%= link_to 'Lancer une discussion', messagerie_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
-          <%= link_to 'Consulter le guide', wiki_pages_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
+          <%= link_to 'Réserver du matériel', tools_path, class: 'btn btn-outline rounded-full w-full  whitespace-nowrap px-6' %>
+          <%= link_to 'Lancer une discussion', messagerie_path, class: 'btn btn-outline rounded-full w-full  whitespace-nowrap px-6' %>
+          <%= link_to 'Consulter le guide', wiki_pages_path, class: 'btn btn-outline rounded-full w-full  whitespace-nowrap px-6' %>
         <% end %>
       </div>
     </div>

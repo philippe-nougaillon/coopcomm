@@ -1,94 +1,128 @@
 <div class="hidden lg:navbar <%= demo_instance? ? 'bg-indigo-100' : 'bg-base-100' %> shadow-sm py-0! pr-0! fixed top-0 z-200">
   <div class="flex items-center flex-1">
-    <%= link_to root_path do %>
+    <%= link_to root_path, title: "Page d'accueil" do %>
       <%= image_tag "CoopComm.png", class: "h-8 pr-1 ml-6" %>
     <% end %>
-    <% if false && demo_instance? %>
-      <span data-theme="corporate" class="badge badge-warning font-bold gap-1 shadow-sm">🧪 DÉMO</span>
-    <% end %>
   </div>
+
   <div class="flex-none">
     <ul class="menu w-full menu-horizontal flex-1 items-center py-0! px-0">
-      <%# page d'accueil %>
+      
+      <%# --- ACCUEIL --- %>
       <li>
-        <%= link_to home_path, class: "group h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:action] == 'home'}", title: "Page d'accueil" do %>
-          <%= embedded_svg "icons/cottage.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+        <%= link_to home_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{'dock-active shadow text-primary!' if params[:action] == 'home'}", title: "Page d'accueil" do %>
+          <%= embedded_svg "icons/home.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %> 
+          <span class="ml-1">Accueil</span>
         <% end %>
       </li>
-      <%# liste des interventions %>
-      <li>
-        <%= link_to interventions_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
-          <%= embedded_svg "icons/construction.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+
+      <%# --- CRM / DOCUMENTS --- %>
+      <% if policy(Convention).index? || policy(Cotation).index? || policy(Commande).index? || policy(Facture).index? %>
+        <li class="dropdown dropdown-end">
+          <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if %w[conventions cotations commandes factures].include?(params[:controller])}" title="Documents">
+            <span class="material-symbols-outlined">folder_copy</span>
+            <span class="text-sm">CRM</span>
+            <span class="material-symbols-outlined text-base">expand_more</span>
+          </div>
+          <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 mt-1 text-slate-700">
+            <% if policy(Convention).index? %>
+              <li>
+                <%= link_to conventions_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'conventions'}" do %>
+                  <span class="material-symbols-outlined">contract</span> Conventions
+                <% end %>
+              </li>
+            <% end %>
+            <% if policy(Cotation).index? %>
+              <li>
+                <%= link_to cotations_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'cotations'}" do %>
+                  <span class="material-symbols-outlined">request_quote</span> Cotations / Devis
+                <% end %>
+              </li>
+            <% end %>
+            <% if policy(Commande).index? %>
+              <li>
+                <%= link_to commandes_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'commandes'}" do %>
+                  <span class="material-symbols-outlined">order_approve</span> Commandes
+                <% end %>
+              </li>
+            <% end %>
+            <% if policy(Facture).index? %>
+              <li>
+                <%= link_to factures_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'factures'}" do %>
+                  <span class="material-symbols-outlined">receipt</span> Factures
+                <% end %>
+              </li>
+            <% end %>
+            <% if policy(:pages).dashboard? %>
+              <li>
+                <%= link_to dashboard_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'dashboard'}", 'data-turbo': false do %>
+                  <%= embedded_svg "icons/bar_chart.svg", class: "w-5 h-5 inline mr-2" %> Tableau de bord
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        </li>
+      <% end %>
+
+      <%# --- PLANIFICATION & RESSOURCES (Lógica inteligente para Agente) --- %>
+      <% if current_user.rôle == 'agent' %>
+        <%# Si es agente, va directo al calendario de disponibilidades sin dropdown %>
+        <% if policy(User).agent_calendrier? %>
+          <li>
+            <%= link_to agent_calendrier_users_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:action] == 'agent_calendrier'}", title: "Disponibilités" do %>
+              <%= embedded_svg "icons/event_available.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+              <span class="ml-1 text-sm">Disponibilités</span>
+            <% end %>
+          </li>
         <% end %>
-      </li>
-      <%# cotations %>
-      <% if policy(Cotation).index? %>
-        <li>
-          <%= link_to cotations_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'cotations'}", title: "Cotations / Devis" do %>
-            <span class="material-symbols-outlined">request_quote</span>
-          <% end %>
-        </li>
-      <% end %>
-      <%# commandes %>
-      <% if policy(Commande).index? %>
-        <li>
-          <%= link_to commandes_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'commandes'}", title: "Commandes" do %>
-            <span class="material-symbols-outlined">order_approve</span>
-          <% end %>
-        </li>
-      <% end %>
-      <%# factures %>
-      <% if policy(Facture).index? %>
-        <li>
-          <%= link_to factures_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'factures'}", title: "Factures" do %>
-            <span class="material-symbols-outlined">receipt</span>
-          <% end %>
-        </li>
-      <% end %>
-      <%# conventions %>
-      <% if policy(Convention).index? %>
-        <li>
-          <%= link_to conventions_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'conventions'}", title: "Conventions" do %>
-            <span class="material-symbols-outlined">contract</span>
-          <% end %>
-        </li>
-      <% end %>
-      <%# liste du materiel %>
-      <% if policy(Tool).index? %>
-        <li>
-          <%= link_to tools_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'tools'}", title: "Liste du matériel" do %>
-            <%= embedded_svg "icons/front_loader.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
-          <% end %>
-        </li>
-      <% end %>
-      <%# disponibilité des agents %>
-      <% if policy(User).agent_calendrier? %>
-        <li>
-          <%= link_to agent_calendrier_users_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:action] == 'agent_calendrier'}", title: "Voir la disponibilité des agents" do %>
-            <%= embedded_svg "icons/event_available.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
-          <% end %>
-        </li>
-      <% end %>
-      <%# messagerie %>
-      <li>
-        <%= link_to messagerie_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
-          <% if current_user.new_messages? %>
-            <%= embedded_svg "icons/chat.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-error" %>
-          <% else %>
-            <%= embedded_svg "icons/chat.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-secondary #{'text-primary!' if params[:controller] == 'messagerie'}" %>
-          <% end %>
+      <% else %>
+        <%# Si es Admin/Manager y tiene acceso a herramientas o calendarios, ve el Dropdown completo %>
+        <% if policy(Tool).index? || policy(User).agent_calendrier? %>
+          <li class="dropdown dropdown-end">
+            <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'tools' || params[:action] == 'agent_calendrier'}" title="Ressources">
+              <span class="material-symbols-outlined">event_available</span>
+              <span class="text-sm">Ressources</span>
+              <span class="material-symbols-outlined text-base">expand_more</span>
+            </div>
+            <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 mt-1 text-slate-700">
+              <% if policy(Tool).index? %>
+                <li>
+                  <%= link_to tools_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'tools'}" do %>
+                    <%= embedded_svg "icons/front_loader.svg", class: "w-4 h-4 inline mr-1" %> Matériel
+                  <% end %>
+                </li>
+              <% end %>
+              <% if policy(User).agent_calendrier? %>
+                <li>
+                  <%= link_to agent_calendrier_users_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'agent_calendrier'}" do %>
+                    <%= embedded_svg "icons/event_available.svg", class: "w-4 h-4 inline mr-1" %> Agent / Disponibilités
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+          </li>
         <% end %>
-      </li>
-      <%# MENu DESPLEGABLE DESKTOP %>
-      <li class="dropdown dropdown-end">
-        <div tabindex="0" role="button" class="h-16 py-0 flex items-center text-secondary hover:text-primary" title="Plus de fonctions">
-          <%= embedded_svg "icons/menu.svg", class: "w-6 h-6 fill-current" %>
-        </div>
-        <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 mt-1 text-slate-700">
-          
-          <!-- SECCIÓN DE CONFIGURACIÓN PROTEGIDA (DESKTOP) -->
-          <% if policy(:admin).parametres? || policy(User).index? || policy(Mouvement).index? %>
-            <li class="menu-title px-4 py-1 text-xs uppercase font-bold text-slate-400">Configuration</li>
+      <% end %>
+
+      <%# --- PLANNING GENERAL --- %>
+<% if policy(Tool).index? %>
+        <li>
+          <%= link_to tools_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:action] == 'planning'}", title: "Planning des agents" do %>
+            <%= embedded_svg "icons/calendar_month.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %> 
+            <span class="ml-1">Planning</span>
+          <% end %>
+        </li>
+      <% end %>
+
+      <%# --- ADMINISTRATION --- %>
+      <% if policy(:admin).parametres? || policy(User).index? || policy(Mouvement).index? || policy(:admin).audits? %>
+        <li class="dropdown dropdown-end">
+          <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if %w[services warehouses users mouvements].include?(params[:controller]) || params[:action] == 'audits'}" title="Administration">
+            <span class="material-symbols-outlined">admin_panel_settings</span>
+            <span class="text-sm">Admin</span>
+            <span class="material-symbols-outlined text-base">expand_more</span>
+          </div>
+          <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 mt-1 text-slate-700">
             <% if policy(:admin).parametres? %>
               <li>
                 <%= link_to admin_parametres_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres'))}" do %>
@@ -110,56 +144,69 @@
                 <% end %>
               </li>
             <% end %>
-            <div class="divider my-1 opacity-50"></div>
-          <% end %>
-
-          <li class="menu-title px-4 py-1 text-xs uppercase font-bold text-slate-400">Ressources</li>
-          <% if policy(:pages).dashboard? %>
-            <li>
-              <%= link_to dashboard_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'dashboard'}", 'data-turbo': false do %>
-                <%= embedded_svg "icons/grid_view.svg", class: "w-4 h-4 inline mr-1" %> Tableau de bord
-              <% end %>
-            </li>
-          <% end %>
-          <li>
-            <%= link_to wiki_pages_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'wiki_pages'}" do %>
-              <%= embedded_svg "icons/menu_book.svg", class: "w-4 h-4 inline mr-1" %> Wiki / Guide
+            <% if policy(:admin).audits? %>
+              <li>
+                <%= link_to admin_audits_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if (params[:action] == 'audits') || (params[:controller] == 'mail_logs')}" do %>
+                  <%= embedded_svg "icons/history.svg", class: "w-4 h-4 inline mr-1" %> Historique d'activité
+                <% end %>
+              </li>
             <% end %>
-          </li>
-          <% if policy(:pages).assistant? %>
-            <li>
-              <%= link_to assistant_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'assistant'}" do %>
-                <%= embedded_svg "icons/smart_toy.svg", class: "w-4 h-4 inline mr-1" %> Assistant (IA)
-              <% end %>
-            </li>
-          <% end %>
-          <% if policy(:admin).audits? %>
-            <li>
-              <%= link_to admin_audits_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if (params[:action] == 'audits') || (params[:controller] == 'mail_logs') }" do %>
-                <%= embedded_svg "icons/history.svg", class: "w-4 h-4 inline mr-1" %> Historique d'activité
-              <% end %>
-            </li>
-          <% end %>
-        </ul>
+            <% if policy(:pages).assistant? %>
+              <li>
+                <%= link_to assistant_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'assistant'}" do %>
+                  <%= embedded_svg "icons/smart_toy.svg", class: "w-4 h-4 inline mr-1" %> Assistant (IA)
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        </li>
+      <% end %>
+
+      <%# --- INTERVENTIONS --- %>
+      <li>
+        <%= link_to interventions_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
+          <%= embedded_svg "icons/construction.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+        <% end %>
       </li>
-      <%# usuario %>
+
+      <%# --- MESSAGERIE --- %>
+      <li>
+        <%= link_to messagerie_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
+          <% if current_user.new_messages? %>
+            <%= embedded_svg "icons/chat.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-error" %>
+          <% else %>
+            <%= embedded_svg "icons/chat.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-secondary #{'text-primary!' if params[:controller] == 'messagerie'}" %>
+          <% end %>
+        <% end %>
+      </li>
+
+      <%# --- WIKI --- %>
+      <li>
+        <%= link_to wiki_pages_path, class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'wiki_pages'}", title: "Wiki" do %>
+          <%= embedded_svg "icons/menu_book.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %> 
+        <% end %>
+      </li>
+
+      <%# --- AVATAR --- %>
       <li title="<%= current_user.nom_prenom_role %>">
         <%= link_to user_path(current_user), class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'users' && (params[:id] == current_user.slug)}" do %>
           <%= render partial: 'partials/user_profile_picture', locals: {user: current_user} %>
         <% end %>
       </li>
-      <%# déconnexion %>
+
+      <%# --- LOGOUT --- %>
       <li>
         <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?" }, title: "Fermer la session de #{current_user.email} (#{current_user.rôle})", class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 hover:border-primary!" do %>
           <%= embedded_svg "icons/logout.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
         <% end %>
       </li>
+
     </ul>
   </div>
 </div>
 
 <div class="dock dock-lg lg:hidden z-200 shadow-2xl <%= 'bg-indigo-100' if demo_instance? %>" style="scrollbar-width: none;">
-  <%# accueil %>
+  <%# accueil (nécessaire en mobile : pas de logo visible ici) %>
   <%= link_to home_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:action] == 'home'}", title: "Page d'accueil" do %>
     <%= embedded_svg "icons/home.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
   <% end %>
@@ -175,11 +222,12 @@
       <%= embedded_svg "icons/chat.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
     <% end %>
   <% end %>
-  <%# perfil del Usuario %>
+  <%# avatar %>
   <%= link_to user_path(current_user), class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if (params[:controller] == 'users' && params[:action] != 'agent_calendrier' && params[:id] == current_user.slug)}", title: "Mon profil" do %>
     <%= embedded_svg "icons/account_circle.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
   <% end %>
-  <% # menu despegable %>
+
+  <%# menu dépliable : documents + planification + ressources + admin %>
   <div class="dropdown dropdown-top dropdown-end flex items-center justify-center w-full h-full">
     <div tabindex="0" role="button" class="flex flex-col items-center justify-center text-secondary w-full h-full active:bg-slate-100">
       <%= embedded_svg "icons/more_vert.svg", class: "w-6 h-6 fill-current" %>
@@ -187,56 +235,66 @@
     <div tabindex="0" class="dropdown-content z-[210] shadow-xl bg-base-100 rounded-2xl w-60 border border-slate-200 mb-2 max-h-[70vh] flex flex-col overflow-hidden">
       <div class="overflow-y-auto flex-1 p-2 pb-14" style="scrollbar-width: none;">
         <ul class="menu p-0 text-slate-700 w-full">
-          <% # OUTILS & GESTION %>
-          <li class="menu-title px-4 py-2 text-xs uppercase font-bold text-slate-400">Outils & Gestion</li>
-          <%# Cotations %>
-          <% if policy(Cotation).index? %>
-            <li>
-              <%= link_to cotations_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'cotations'}" do %>
-                <span class="material-symbols-outlined !w-5 !h-5 text-md mr-2 flex items-center justify-center">request_quote</span> Cotations / Devis
-              <% end %>
-            </li>
+
+          <% if policy(Convention).index? || policy(Cotation).index? || policy(Commande).index? || policy(Facture).index? %>
+            <li class="menu-title px-4 py-2 text-xs uppercase font-bold text-slate-400">Documents</li>
+            <% if policy(Convention).index? %>
+              <li>
+                <%= link_to conventions_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'conventions'}" do %>
+                  <span class="material-symbols-outlined !w-5 !h-5 text-md mr-2 flex items-center justify-center">contract</span> Conventions
+                <% end %>
+              </li>
+            <% end %>
+            <% if policy(Cotation).index? %>
+              <li>
+                <%= link_to cotations_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'cotations'}" do %>
+                  <span class="material-symbols-outlined !w-5 !h-5 text-md mr-2 flex items-center justify-center">request_quote</span> Cotations / Devis
+                <% end %>
+              </li>
+            <% end %>
+            <% if policy(Commande).index? %>
+              <li>
+                <%= link_to commandes_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'commandes'}" do %>
+                  <span class="material-symbols-outlined !w-5 !h-5 text-md mr-2 flex items-center justify-center">order_approve</span> Commandes
+                <% end %>
+              </li>
+            <% end %>
+            <% if policy(Facture).index? %>
+              <li>
+                <%= link_to factures_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'factures'}" do %>
+                  <span class="material-symbols-outlined !w-5 !h-5 text-md mr-2 flex items-center justify-center">receipt</span> Factures
+                <% end %>
+              </li>
+            <% end %>
+            <div class="divider my-1 opacity-50"></div>
           <% end %>
-          <%# Conventions %>
-          <% if policy(Convention).index? %>
-            <li>
-              <%= link_to conventions_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'conventions'}" do %>
-                <span class="material-symbols-outlined !w-5 !h-5 text-md mr-2 flex items-center justify-center">contract</span> Conventions
-              <% end %>
-            </li>
+
+          <% if policy(Tool).index? || policy(User).agent_calendrier? %>
+            <li class="menu-title px-4 py-1 text-xs uppercase font-bold text-slate-400">Ressources</li>
+            <% if policy(Tool).index? %>
+              <li>
+                <%= link_to tools_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'tools'}" do %>
+                  <%= embedded_svg "icons/front_loader.svg", class: "w-5 h-5 inline mr-2" %> Matériel
+                <% end %>
+              </li>
+            <% end %>
+            <% if policy(User).agent_calendrier? %>
+              <li>
+                <%= link_to agent_calendrier_users_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'agent_calendrier'}" do %>
+                  <%= embedded_svg "icons/event_available.svg", class: "w-5 h-5 inline mr-2" %> Disponibilités
+                <% end %>
+              </li>
+            <% end %>
+            <div class="divider my-1 opacity-50"></div>
           <% end %>
-          <% if policy(Tool).index? %>
-            <li>
-              <%= link_to tools_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'tools'}" do %>
-                <%= embedded_svg "icons/front_loader.svg", class: "w-5 h-5 inline mr-2" %> Matériel
-              <% end %>
-            </li>
-          <% end %>
-          <% if policy(User).agent_calendrier? %>
-            <li>
-              <%= link_to agent_calendrier_users_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'agent_calendrier'}" do %>
-                <%= embedded_svg "icons/event_available.svg", class: "w-5 h-5 inline mr-2" %> Disponibilités
-              <% end %>
-            </li>
-          <% end %>
-          <% # Ressources %>
-          <div class="divider my-1 opacity-50"></div>
+
           <li class="menu-title px-4 py-1 text-xs uppercase font-bold text-slate-400">Ressources</li>
-          <%# Dashboard %>
-          <% if policy(:pages).dashboard? %>
-            <li>
-              <%= link_to dashboard_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'dashboard'}", 'data-turbo': false do %>
-                <%= embedded_svg "icons/grid_view.svg", class: "w-5 h-5 inline mr-2" %> Tableau de bord
-              <% end %>
-            </li>
-          <% end %>
-          <%# Wiki %>
+         
           <li>
             <%= link_to wiki_pages_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'wiki_pages'}" do %>
               <%= embedded_svg "icons/menu_book.svg", class: "w-5 h-5 inline mr-2" %> Wiki / Guide
             <% end %>
           </li>
-          <%# ia %>
           <% if policy(:pages).assistant? %>
             <li>
               <%= link_to assistant_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'assistant'}" do %>
@@ -244,11 +302,10 @@
               <% end %>
             </li>
           <% end %>
-          
-          <!-- SECCIÓN DE CONFIGURACIÓN PROTEGIDA (MOBILE) -->
+
           <% if policy(:admin).parametres? || policy(User).index? || policy(Mouvement).index? || policy(:admin).audits? %>
             <div class="divider my-1 opacity-50"></div>
-            <li class="menu-title px-4 py-1 text-xs uppercase font-bold text-slate-400">Configuration</li>
+            <li class="menu-title px-4 py-1 text-xs uppercase font-bold text-slate-400">Admin</li>
             <% if policy(:admin).parametres? %>
               <li>
                 <%= link_to admin_parametres_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres'))}" do %>
@@ -281,7 +338,6 @@
 
         </ul>
       </div>
-      <% # Déconnexion %>
       <div class="absolute bottom-0 left-0 right-0 bg-base-100 border-t border-slate-100 p-2.5 rounded-b-2xl z-10">
         <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?", testid: 'fermer_session' }, class: "flex items-center text-red-400 hover:text-red-600 font-semibold text-xs transition-colors w-full px-3 py-1" do %>
           <%= embedded_svg "icons/logout.svg", class: "w-4 h-4 mr-2 " %> Déconnexion
