@@ -1,45 +1,93 @@
-<div class="flex flex-wrap justify-center gap-4">
-  <div class="flex-1 w-full sm:w-1/2 flex flex-col items-center border-3 rounded-xl p-8">
-    <h2 class="text-2xl sm:whitespace-nowrap text-center">Proportion temps consommé/restant</h2>
-    <canvas id="proportionTempsConsomméChart" class="max-h-64" data-turbo="false"></canvas>
-  </div>
-  <div class="flex-1 w-full sm:w-1/2 flex flex-col items-center border-3 rounded-xl p-8">
-    <h2 class="text-2xl sm:whitespace-nowrap text-center">Cumul durée d'intervention par mois</h2>
-    <canvas id="tempsTotalParMoisChart" class="max-h-64" data-turbo="false"></canvas>
-  </div>
-  <div class="flex-1 w-full sm:w-1/2 flex flex-col items-center border-3 rounded-xl p-8">
-    <h2 class="text-2xl sm:whitespace-nowrap text-center">Nombre d'interventions par état et par mois</h2>
-    <canvas id="workflowChart" class="max-h-64" data-turbo="false"></canvas>
-  </div>
-  <div class="flex-1 flex flex-wrap items-between gap-4">
-    <div class="flex-1 sm:w-1/2 flex flex-col items-center border-3 rounded-xl p-8">
-      <h2 class="text-2xl sm:whitespace-nowrap text-center">Nombre d'interventions par service</h2>
-      <canvas id="qtéInterventionsParServiceChart" class="max-h-64" data-turbo="false"></canvas>
+<div class="space-y-8 animate-fade-in">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="flex flex-col bg-base-100 border border-base-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+      <div class="mb-4">
+        <h3 class="text-lg font-bold text-base-content font-sans">Suivi du forfait mensuel</h3>
+        <p class="text-xs text-base-content/60 mt-0.5">Visualisation du temps consommé par rapport au crédit disponible.</p>
+      </div>
+      <div class="relative flex items-center justify-center my-auto p-2">
+        <canvas id="proportionTempsConsomméChart" class="max-h-56" data-turbo="false"></canvas>
+      </div>
     </div>
-    <div class="flex-1 sm:w-1/2 flex flex-col items-center border-3 rounded-xl p-8">
-      <h2 class="text-2xl sm:whitespace-nowrap text-center">Temps total par service</h2>
-      <canvas id="tempsTotalParServiceChart" class="max-h-64 max-w-full" data-turbo="false"></canvas>
+    <div class="flex flex-col bg-base-100 border border-base-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow lg:col-span-2">
+      <div class="mb-4">
+        <h3 class="text-lg font-bold text-base-content font-sans">Statut des interventions par mois</h3>
+        <p class="text-xs text-base-content/60 mt-0.5">Flux des volumes de tâches triées par état d'avancement chronologique.</p>
+      </div>
+      <div class="my-auto p-2">
+        <canvas id="workflowChart" class="max-h-56 w-full" data-turbo="false"></canvas>
+      </div>
     </div>
   </div>
-  <div class="flex-1 w-full sm:w-1/2 flex flex-col items-center border-3 rounded-xl p-8">
-    <h2 class="text-2xl sm:whitespace-nowrap text-center">CO₂ total par mois</h2>
-    <canvas id="co2TotalParMois" class="max-h-64" data-turbo="false"></canvas>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="flex flex-col bg-base-100 border border-base-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+      <div class="mb-4">
+        <h3 class="text-lg font-bold text-base-content font-sans">Demande par pôle d'activité</h3>
+        <p class="text-xs text-base-content/60 mt-0.5">Répartition du nombre total d'interventions demandées par service.</p>
+      </div>
+      <div class="flex-1 flex flex-col justify-center p-2">
+        <% if @qte_interventions_par_service.keys.size <= 1 %>
+          <div class="flex flex-col items-center justify-center py-8 text-center bg-base-200/30 rounded-xl border border-dashed border-base-300">
+            <span class="badge badge-primary badge-md px-4 py-3 font-semibold text-white"><%= @qte_interventions_par_service.keys.first || "Général" %></span>
+            <span class="text-6xl font-black mt-4 text-primary tracking-tight"><%= @qte_interventions_par_service.values.first || 0 %></span>
+            <span class="text-xs font-medium text-base-content/50 uppercase tracking-widest mt-2">Interventions</span>
+          </div>
+        <% else %>
+          <canvas id="qtéInterventionsParServiceChart" class="max-h-56" data-turbo="false"></canvas>
+        <% end %>
+      </div>
+    </div>
+    <div class="flex flex-col bg-base-100 border border-base-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+      <div class="mb-4">
+        <h3 class="text-lg font-bold text-base-content font-sans">Temps alloué par pôle</h3>
+        <p class="text-xs text-base-content/60 mt-0.5">Somme des heures réelles dédiées à chaque type de prestation.</p>
+      </div>
+      <div class="flex-1 flex flex-col justify-center p-2">
+        <% if @temps_total_par_service.keys.size <= 1 %>
+          <div class="flex flex-col items-center justify-center py-8 text-center bg-base-200/30 rounded-xl border border-dashed border-base-300">
+            <span class="badge badge-secondary badge-md px-4 py-3 font-semibold text-white"><%= @temps_total_par_service.keys.first || "Général" %></span>
+            <span class="text-6xl font-black mt-4 text-secondary tracking-tight"><%= @temps_total_par_service.values.first ? "#{@temps_total_par_service.values.first.round(1)}h" : "0h" %></span>
+            <span class="text-xs font-medium text-base-content/50 uppercase tracking-widest mt-2">Heures cumulées</span>
+          </div>
+        <% else %>
+          <canvas id="tempsTotalParServiceChart" class="max-h-56" data-turbo="false"></canvas>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="flex flex-col bg-base-100 border border-base-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+      <div class="mb-4">
+        <h3 class="text-lg font-bold text-base-content font-sans">Évolution de la charge horaire</h3>
+        <p class="text-xs text-base-content/60 mt-0.5">Progression mensuelle du volume d'heures consommées.</p>
+      </div>
+      <div class="my-auto p-2">
+        <canvas id="tempsTotalParMoisChart" class="max-h-56 w-full" data-turbo="false"></canvas>
+      </div>
+    </div>
+    <div class="flex flex-col bg-base-100 border border-base-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+      <div class="mb-4">
+        <h3 class="text-lg font-bold text-base-content font-sans">Bilan carbone mensuel</h3>
+        <p class="text-xs text-base-content/60 mt-0.5">Analyse de la tendance des émissions de CO₂ de vos activités.</p>
+      </div>
+      <div class="my-auto p-2">
+        <canvas id="co2TotalParMois" class="max-h-56 w-full" data-turbo="false"></canvas>
+      </div>
+    </div>
   </div>
 </div>
-
 <%= render partial:'pages/dashboard/script_dashboard_adherent' %>
-
 <script>
-
-  afficherProportionTempsConsommé()
-
-  afficherTempsTotalParMois()
-
-  afficherWorkflowChart()
-
-  afficherQuantitéInterventionParService()
-
-  afficherTempsTotalParService()
-
-  afficherCo2TotalParMois()
+  // Inicialización segura de gráficos con validación de elementos
+  document.addEventListener("DOMContentLoaded", () => {
+    const charts = [
+      { id: 'proportionTempsConsomméChart', func: afficherProportionTempsConsommé },
+      { id: 'tempsTotalParMoisChart', func: afficherTempsTotalParMois },
+      { id: 'workflowChart', func: afficherWorkflowChart },
+      { id: 'qtéInterventionsParServiceChart', func: afficherQuantitéInterventionParService },
+      { id: 'tempsTotalParServiceChart', func: afficherTempsTotalParService },
+      { id: 'co2TotalParMois', func: afficherCo2TotalParMois }
+    ];
+    charts.forEach(c => { if(document.getElementById(c.id)) c.func(); });
+  });
 </script>

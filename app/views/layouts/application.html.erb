@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr" data-theme="corporate">
   <head>
-    <title><%= page_title %></title>
-    
+    <title><%= "[DÉMO] " if demo_instance? %><%= page_title %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= display_meta_tags author: "AIKKU SAS" %>
     <%= display_meta_tags description: "Plateforme de mutualisation de services communs. Gérez facilement la coopération et la mutualisation des services et ressources de votre intercommunalité (EPCI). Suivi des prêts de matériels : Gestion De Matériel — Traçabilité de votre inventaire" %>
@@ -10,52 +9,44 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <meta name="google-maps-api-key" content="<%= ENV['GOOGLE_MAPS_FRONTEND_API_KEY'] %>">
-
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
-
     <%= render 'partials/favicon' %>
     <link rel="manifest" crossorigin="use-credentials" href="/manifest.json" />
-
     <% unless Rails.env.development? %>
       <%= render "partials/gtag" %>
     <% end %>
-
     <script src="https://unpkg.com/slim-select@2.13.1/dist/slimselect.umd.min.js"></script>
     <link href="https://unpkg.com/slim-select@2.13.1/dist/slimselect.css" rel="stylesheet"></link>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Montserrat:wght@700&family=Google+Sans+Flex:opsz,wght@8..144,100..1000&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
-
-    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
-  </head>
-
-  <body class="bg-slate-50" hx-headers='{"X-CSRF-Token": "<%= form_authenticity_token %>"}'>
-    <% if user_signed_in? %>
-      <%= render 'partials/navbar' %>
-    <% else %>
-      <%= render 'partials/navbar_homepage' %>
-    <% end %>
-    <main>
-      <%= render 'partials/notification' %>
-      <% if params[:action] == 'home' %>
-        <div class="w-full lg:mt-16" style="background-color: <%= @banner_background_color %>">
-          <%= image_tag @banner_image_name, class: "w-full h-24 lg:h-36 object-none mb-6" %>
-        </div>
-      <% end %>
-      <div class="min-h-screen mx-auto <%= content_for?(:full_width) ? "" : "px-4 2xl:px-8 py-4 pb-24 #{user_signed_in? ? 'md:pt-8 lg:pt-20' : 'pt-16 lg:pt-24'}" %>">
-        <%= yield %>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Montserrat:wght@700&family=Google+Sans+Flex:opsz,wght@8..144,100..1000&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz" crossorigin="anonymous"></script>
+</head>
+<body class="bg-slate-50" hx-headers='{"X-CSRF-Token": "<%= form_authenticity_token %>"}'>
+  <% if user_signed_in? %>
+    <%= render 'partials/navbar' %>
+  <% else %>
+    <%= render 'partials/navbar_homepage' %>
+  <% end %>
+  <main>
+    <%= render 'partials/notification' %>
+    <% if params[:action] == 'home' %>
+      <div class="w-full lg:mt-16" style="background-color: <%= @banner_background_color %>">
+        <%= image_tag @banner_image_name, class: "w-full h-24 lg:h-36 object-none mb-6" %>
       </div>
-    </main>
-
-    <div class="hidden badge-success badge-info badge-secondary badge-error badge-ghost badge-warning badge-accent text-accent">required for DaisyUI 😭</div>
-
-    <% if params[:action] == 'welcome' %>
-      <%= render partial: 'partials/footer' %>
     <% end %>
-  </body>
+    <div class="min-h-screen mx-auto <%= content_for?(:full_width) ? "" : "px-4 2xl:px-8 py-4 pb-24 #{user_signed_in? ? 'md:pt-8 lg:pt-20' : 'pt-16 lg:pt-24'}" %>">
+      <%= yield %>
+    </div>
+  </main>
+  <div class="hidden badge-success badge-info badge-secondary badge-error badge-ghost badge-warning badge-accent text-accent">required for DaisyUI 😭</div>
+  <% if params[:action] == 'welcome' %>
+    <%= render partial: 'partials/footer' %>
+  <% end %>
+</body>
 </html>

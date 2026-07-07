@@ -1,1 +1,3 @@
-json.partial! "mail_logs/mail_log", mail_log: @mail_log
+# frozen_string_literal: true
+
+json.partial! 'mail_logs/mail_log', mail_log: @mail_log

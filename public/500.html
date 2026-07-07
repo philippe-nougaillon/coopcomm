@@ -1,66 +1,272 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Nous sommes désolés, une erreur s'est produite (Erreur 500)</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <style>
-  .rails-default-error-page {
-    background-color: #EFEFEF;
-    color: #2E2F30;
-    text-align: center;
-    font-family: arial, sans-serif;
-    margin: 0;
-  }
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Erreur serveur - CoopComm.</title>
 
-  .rails-default-error-page div.dialog {
-    width: 95%;
-    max-width: 33em;
-    margin: 4em auto 0;
-  }
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,100..1000&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
 
-  .rails-default-error-page div.dialog > div {
-    border: 1px solid #CCC;
-    border-right-color: #999;
-    border-left-color: #999;
-    border-bottom-color: #BBB;
-    border-top: #B00100 solid 4px;
-    border-top-left-radius: 9px;
-    border-top-right-radius: 9px;
-    background-color: white;
-    padding: 7px 12% 0;
-    box-shadow: 0 3px 8px rgba(50, 50, 50, 0.17);
-  }
+    <style>
+      /* Thème corporate de DaisyUI */
+      :root {
+        --primary: #0082ce;
+        --primary-hover: #0082ce;
+        --primary-content: #ffffff;
+        --base-100: #ffffff;
+        --base-200: #e8e8e8;
+        --base-300: #d1d1d1;
+        --base-content: #181a2a;
+        --base-content-muted: #6b7280;
+        --error: #ff6266;
+      }
 
-  .rails-default-error-page h1 {
-    font-size: 100%;
-    color: #730E15;
-    line-height: 1.5em;
-  }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-  .rails-default-error-page div.dialog > p {
-    margin: 0 0 1em;
-    padding: 1em;
-    background-color: #F7F7F7;
-    border: 1px solid #CCC;
-    border-right-color: #999;
-    border-left-color: #999;
-    border-bottom-color: #999;
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-    border-top-color: #DADADA;
-    color: #666;
-    box-shadow: 0 3px 8px rgba(50, 50, 50, 0.17);
-  }
-  </style>
-</head>
+      body {
+        font-family:
+          "Google Sans Flex",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background-color: var(--base-100);
+        color: var(--base-content);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
 
-<body class="rails-default-error-page">
-  <!-- This file lives in public/500.html -->
-  <div class="dialog">
-    <div>
-      <h1>Nous sommes désolés, une erreur s'est produite.</h1>
-    </div>
-  </div>
-</body>
+      /* Navbar — cachée sur mobile, visible à partir de lg (1024px) */
+      .navbar {
+        display: none;
+      }
+
+      @media (min-width: 1024px) {
+        .navbar {
+          display: flex;
+          align-items: center;
+          background-color: var(--base-100);
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+          padding: 0;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 200;
+          min-height: 4rem;
+        }
+
+        main {
+          padding-top: 4rem;
+        }
+      }
+
+      .navbar-inner {
+        display: flex;
+        align-items: center;
+        flex: 1;
+      }
+
+      .navbar-logo {
+        height: 2rem;
+        padding-right: 0.25rem;
+        margin-left: 1.5rem;
+        display: block;
+      }
+
+      /* Main content */
+      main {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+      }
+
+      .container {
+        text-align: center;
+        max-width: 32rem;
+      }
+
+      .icon {
+        width: 96px;
+        height: 96px;
+        display: block;
+        margin: 0 auto 1.5rem;
+        color: var(--error);
+      }
+
+      .btn-icon {
+        width: 1.25em;
+        height: 1.25em;
+        flex-shrink: 0;
+      }
+
+      h1 {
+        font-size: 5rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 1rem;
+        color: var(--base-content);
+      }
+
+      @media (min-width: 1024px) {
+        h1 {
+          font-size: 7rem;
+        }
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: var(--base-content);
+      }
+
+      @media (min-width: 1024px) {
+        h2 {
+          font-size: 1.875rem;
+        }
+      }
+
+      p {
+        color: var(--base-content-muted);
+        margin-bottom: 2rem;
+        line-height: 1.5;
+      }
+
+      .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        justify-content: center;
+      }
+
+      @media (min-width: 640px) {
+        .actions {
+          flex-direction: row;
+        }
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+        border: 2px solid transparent;
+      }
+
+      .btn-primary {
+        background-color: var(--primary);
+        color: var(--primary-content);
+        border-color: var(--primary);
+      }
+
+      .btn-primary:hover {
+        background-color: var(--primary-hover);
+        border-color: var(--primary-hover);
+      }
+
+      .btn-outline {
+        background-color: transparent;
+        color: var(--primary);
+        border-color: var(--primary);
+      }
+
+      .btn-outline:hover {
+        background-color: var(--primary);
+        color: var(--primary-content);
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="navbar">
+      <div class="navbar-inner">
+        <a href="/">
+          <img src="/CoopComm.png" alt="CoopComm" class="navbar-logo" />
+        </a>
+      </div>
+    </header>
+
+    <main>
+      <div class="container">
+        <svg
+          class="icon"
+          role="img"
+          aria-label="error"
+          viewBox="0 -960 960 960"
+          fill="currentColor"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <title>error</title>
+          <path
+            d="M508.5-291.5Q520-303 520-320t-11.5-28.5Q497-360 480-360t-28.5 11.5Q440-337 440-320t11.5 28.5Q463-280 480-280t28.5-11.5ZM440-440h80v-240h-80v240Zm40 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+          />
+        </svg>
+
+        <h1>500</h1>
+        <h2>Une erreur est survenue</h2>
+        <p>
+          Désolé, un problème est survenu de notre côté. Nos équipes ont été
+          informées. Vous pouvez réessayer ou revenir à l'accueil.
+        </p>
+        <div class="actions">
+          <button onclick="location.reload()" class="btn btn-outline">
+            <svg
+              class="btn-icon"
+              role="img"
+              aria-label="Réessayer"
+              viewBox="0 -960 960 960"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <title>Réessayer</title>
+              <path
+                d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"
+              />
+            </svg>
+            Réessayer
+          </button>
+          <a href="/" class="btn btn-primary">
+            <svg
+              class="btn-icon"
+              role="img"
+              aria-label="Accueil"
+              viewBox="0 -960 960 960"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <title>Accueil</title>
+              <path
+                d="M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z"
+              />
+            </svg>
+            Accueil
+          </a>
+        </div>
+      </div>
+    </main>
+  </body>
 </html>

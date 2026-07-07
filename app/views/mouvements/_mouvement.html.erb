@@ -1,16 +1,25 @@
-<tr class="hover:bg-base-300">
-  <td><%= time_ago_in_words(mouvement.updated_at) %></td>
+<tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
+  <td class="align-middle capitalize  px-4 py-1.5 text-slate-600 font-medium whitespace-nowrap">
+    <%= time_ago_in_words(mouvement.updated_at) %>
+  </td>
+  
   <% if params[:controller] != 'tools' %>
-    <td><b><%= link_to mouvement.tool.name.humanize, mouvement.tool, class: 'text-lg sm:text-xl text-primary hover:underline' %></b></td>
+    <td class="px-4 py-1.5 uppercase font-bold">
+      <%= link_to mouvement.tool.name.humanize, mouvement.tool, class: 'text-sm font-bold text-primary hover:underline' %>
+    </td>
   <% end %>
-  <td><p class="font-bold badge badge-sm badge-<%= mouvement.style %> h-fit"><%= mouvement.état.humanize %></p></td>
-  <td><%= mouvement.user.nom_prénom %></td>
-  <td>
-    <%= l mouvement.date, format: :long %></b>
+  
+  <td class="align-middle px-4 py-1.5 text-center w-36">
+    <span class="font-bold w-34 text-center badge badge-<%= mouvement.style %> h-fit px-3 py-1">
+      <%= mouvement.état.humanize %>
+    </span>
   </td>
-  <td>
-    <% if mouvement.panne? || mouvement.fin_panne? %>
-      <%= link_to "Modifier", edit_mouvement_path(mouvement), class: 'btn btn-xs' %>
-    <% end %>
+  
+  <td class="px-4 py-1.5 text-sm text-slate-600"><%= mouvement.user.nom_prénom %></td>
+  
+  <td class="px-4 py-1.5 text-sm text-slate-600 whitespace-nowrap">
+    <%= l mouvement.date, format: :long %>
   </td>
+  
+
 </tr>

@@ -1,12 +1,12 @@
-require "application_system_test_case"
+# frozen_string_literal: true
+
+require 'application_system_test_case'
 
 class SecuriteAgentFlowTest < ApplicationSystemTestCase
-
   setup do
     @agent = users(:bond)
     login(@agent)
   end
-
 
   test "Ne pas avoir accès aux informations d'une autre organisation" do
     user = users(:manager_marseille)
@@ -15,7 +15,6 @@ class SecuriteAgentFlowTest < ApplicationSystemTestCase
     visit user_url(user.slug)
     assert_no_text user.nom_prénom
     assert_text "Vous n'êtes pas autorisé à effectuer cette action."
-    assert_selector "h1", text: "Interventions"
+    assert_selector 'h1', text: 'Bonjour' # redirection vers l'accueil
   end
-
 end

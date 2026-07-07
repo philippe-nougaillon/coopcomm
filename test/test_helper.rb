@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'simplecov'
 SimpleCov.start 'rails' do
   add_group 'Components', 'app/components'
@@ -8,12 +10,13 @@ SimpleCov.start 'rails' do
   add_group 'Subscriptions', 'app/subscriptions'
 end
 
-ENV["RAILS_ENV"] ||= "test"
-require_relative "../config/environment"
-require "rails/test_help"
+ENV['RAILS_ENV'] ||= 'test'
+require_relative '../config/environment'
+require 'rails/test_help'
 require 'bcrypt'
-require "capybara/rails"
-require "capybara/dsl"
+require 'capybara/rails'
+require 'capybara/dsl'
+require 'webmock/minitest' # Permet de stopper les requêtes en dehors du serveur (Ex: API météo)
 
 module ActiveSupport
   class TestCase
@@ -30,15 +33,43 @@ module ActiveSupport
     #   Rails.cache.clear
     # end
 
+    setup do
+      # Pour accepter les requêtes vers le serveur lui-même
+      WebMock.disable_net_connect!(allow_localhost: true)
+
+      # Dès qu'un test système tente d'appeler l'API météo,
+      # WebMock intercepte l'appel et renvoie une réponse vide.
+      stub_request(:get, /api.meteo-concept.com/)
+        .to_return(
+          status: 200,
+          body: File.read('test/fixtures/files/responseMeteoConcept.json'),
+          headers: { 
+            'Content-Type' => 'application/json',
+            'Date' => Time.now.httpdate
+          }
+        )
+    end
+
     def login(user)
       visit new_user_session_path
+      # Filet anti-flake : si la session du test précédent subsiste (reset
+      # incomplet), la page de connexion redirige vers l'accueil connecté.
+      unless page.has_css?('#user_email', wait: 3)
+        Capybara.reset_sessions!
+        visit new_user_session_path
+      end
 
-      fill_in "user_email", with: user.email
-      fill_in "user_password", with: "qtDug$d843sqACz?V" # équivalent à encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q", généré avec Devise::Encryptor.digest(User, "password123")
-      click_on "Se connecter"
-      sleep(1)
+      fill_in 'user_email', with: user.email, wait: 5
+      fill_in 'user_password', with: 'qtDug$d843sqACz?V' # équivalent à encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q", généré avec Devise::Encryptor.digest(User, "password123")
+      # Le bouton du FORMULAIRE (la navbar publique a aussi un « Se connecter »)
+      find('input[type="submit"][value="Se connecter"]').click
+      # Anti-flake : attendre la fin EFFECTIVE du login (on a quitté la page de
+      # connexion → le champ email a disparu) plutôt qu'un sleep fixe. Sinon la
+      # navigation suivante peut survenir avant que la session soit posée et
+      # retomber sur l'écran de connexion.
+      assert_no_selector('#user_email', wait: 10)
     end
-    
+
     def intervention_for_params(intervention)
       {
         intervention: {
@@ -69,8 +100,13 @@ module ActiveSupport
 
     def select_option(id, value)
       activate_dropdown_slimSelect(id)
+      # On filtre d'abord via la recherche du slim-select, puis on clique :
+      # pendant l'animation d'ouverture, un clic direct par texte atteint
+      # parfois la mauvaise option (la liste défile encore). En tapant la
+      # valeur, il ne reste que l'option voulue → sélection déterministe.
+      find('.ss-search input', visible: true).set(value)
       within('.ss-list') do
-        find('div.ss-option', text: value).click
+        find('div.ss-option', text: value, match: :first).click
       end
     end
 

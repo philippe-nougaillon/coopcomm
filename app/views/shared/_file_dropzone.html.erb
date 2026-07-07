@@ -1,0 +1,63 @@
+<%#
+  Zone de glisser-déposer réutilisable pour un champ Active Storage (has_one_attached).
+
+  Locals requis :
+    form        - le form builder (ex. f)
+    attribute   - le nom du champ attaché (ex. :document)
+
+  Locals optionnels :
+    accept        - types acceptés par l'input file (défaut ".pdf" ; ex. "image/*", ".pdf,.docx")
+    label         - libellé du champ (défaut : humanize de l'attribut)
+    placeholder   - texte affiché dans la zone (défaut généré depuis accept)
+    error_message - message d'erreur custom (défaut généré depuis accept)
+    wrapper_class - classes du conteneur (ex. "sm:col-span-2" dans une grille)
+    replace_hint  - bool : afficher l'avertissement de remplacement si déjà attaché (défaut true)
+
+  Exemples :
+    render "shared/file_dropzone", form: f, attribute: :document, accept: ".pdf", wrapper_class: "sm:col-span-2"
+    render "shared/file_dropzone", form: f, attribute: :logo, accept: "image/*", label: "Logo"
+%>
+<%
+  accept        = local_assigns.fetch(:accept, ".pdf")
+  label         = local_assigns.fetch(:label, attribute.to_s.humanize)
+  wrapper_class = local_assigns.fetch(:wrapper_class, "")
+  replace_hint  = local_assigns.fetch(:replace_hint, true)
+  attachment    = form.object.public_send(attribute)
+  # Un fichier fraîchement uploadé mais non sauvegardé (ré-affichage après échec de
+  # validation) est « attached? » sans être persisté → pas de signed_id, donc pas de
+  # rails_blob_path possible. On ne lie que vers un blob réellement en base.
+  has_saved_attachment = attachment.attached? && attachment.blob&.persisted?
+
+  # Liste lisible des formats acceptés (".pdf,.docx" → "PDF, DOCX" ; "image/*" → "IMAGE")
+  formats       = accept.split(",").map { |a| a.strip.delete_prefix(".").sub(%r{/\*\z}, "").upcase }.join(", ")
+  placeholder   = local_assigns.fetch(:placeholder, "Glissez un fichier #{formats} ici ou cliquez pour parcourir")
+  error_message = local_assigns.fetch(:error_message, "Format non accepté. Formats autorisés : #{formats}.")
+%>
+<div class="flex flex-col gap-1 <%= wrapper_class %>">
+  <%= form.label attribute, label, class: "label font-semibold text-slate-700"  %>
+  <% if has_saved_attachment %>
+    <p class="text-sm mb-1 break-all">
+      Document actuel :
+      <%= link_to attachment.filename, rails_blob_path(attachment, disposition: "inline"),
+            target: "_blank", class: "link link-primary" %>
+    </p>
+  <% end %>
+  <div data-controller="dropzone"
+       data-dropzone-active-class="border-slate-500 bg-slate-50"
+       data-dropzone-neutral-class="border-slate-300"
+       data-dropzone-valid-class="border-success bg-success/10"
+       data-dropzone-invalid-class="border-error bg-error/10"
+       data-dropzone-error-message-value="<%= error_message %>"
+       data-action="click->dropzone#open dragover->dropzone#highlight dragleave->dropzone#unhighlight drop->dropzone#drop"
+    class="flex flex-col items-center p-6 justify-center w-full border border-dashed border-zinc-700/40 rounded-lg cursor-pointer hover:bg-primary transition-colors duration-150 group px-4">
+    <%= form.file_field attribute, accept: accept, class: "hidden",
+          data: { dropzone_target: "input", action: "change->dropzone#change" } %>
+              <%= embedded_svg "icons/upload.svg", class: "w-8 h-8 text-slate-400 group-hover:text-white transition-colors duration-150", title: "Parcourir" %>
+
+    <span data-dropzone-target="filename" class="text-base mt-2 text-slate-500 font-semibold text-center group-hover:text-white transition-colors duration-150 break-all"><%= placeholder %></span>
+    <span data-dropzone-target="error" class="hidden text-sm text-error font-medium"></span>
+  </div>
+  <% if has_saved_attachment && replace_hint %>
+    <span class="text-xs text-slate-400">Déposer un nouveau fichier remplacera le document actuel.</span>
+  <% end %>
+</div>

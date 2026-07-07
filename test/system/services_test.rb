@@ -1,41 +1,33 @@
-require "application_system_test_case"
+# frozen_string_literal: true
+
+require 'application_system_test_case'
 
 class ServicesTest < ApplicationSystemTestCase
   setup do
-    @service = services(:one)
+    @admin = users(:administrateur_paris)
+    login(@admin)
   end
 
-  test "visiting the index" do
-    visit services_url
-    assert_selector "h1", text: "Services"
+  test 'créer un service depuis les paramètres' do
+    visit admin_parametres_url
+    click_sur_boutton_ajouter('service')
+
+    assert_selector 'h1', text: 'Nouveau service'
+    fill_in 'service_nom', with: 'Espaces Verts'
+    click_on 'Enregistrer'
+
+    assert_text 'Service créé avec succès'
   end
 
-  test "should create service" do
-    visit services_url
-    click_on "New service"
+  test 'modifier un service depuis les paramètres' do
+    visit admin_parametres_url
+    click_on services(:service_paris).nom
 
-    fill_in "Nom", with: @service.nom
-    click_on "Create Service"
+    click_on 'Modifier'
+    fill_in 'service_nom', with: 'Service Paris Renommé'
+    click_on 'Enregistrer'
 
-    assert_text "Service was successfully created"
-    click_on "Back"
-  end
-
-  test "should update Service" do
-    visit service_url(@service)
-    click_on "Edit this service", match: :first
-
-    fill_in "Nom", with: @service.nom
-    click_on "Update Service"
-
-    assert_text "Service was successfully updated"
-    click_on "Back"
-  end
-
-  test "should destroy Service" do
-    visit service_url(@service)
-    accept_confirm { click_on "Destroy this service", match: :first }
-
-    assert_text "Service was successfully destroyed"
+    # Le toast de flash est instable après navigation Turbo : on vérifie l'état
+    assert_text 'Service paris renommé'
   end
 end

@@ -1,9 +1,7 @@
 <tr class="hover:bg-base-300">
   <td>
     <% if intervention.en_cours? %>
-      <span class="material-symbols-outlined text-error">
-        cancel
-      </span>
+      <%= embedded_svg "icons/cancel.svg", class: "text-error", title: "Annuler l'intervention en cours" %>
     <% end %>
   </td>
   <td class="text-xl">

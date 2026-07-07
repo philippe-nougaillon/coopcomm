@@ -1,8 +1,9 @@
-class NewslettersController < ApplicationController
-  before_action :set_newsletter, only: %i[ destroy ]
-  before_action :is_user_authorized
-  skip_before_action :authenticate_user!, only: %i[ new destroy ]
+# frozen_string_literal: true
 
+class NewslettersController < ApplicationController
+  before_action :set_newsletter, only: %i[destroy]
+  before_action :is_user_authorized
+  skip_before_action :authenticate_user!, only: %i[new destroy]
 
   # GET /newsletters or /newsletters.json
   def index
@@ -14,7 +15,7 @@ class NewslettersController < ApplicationController
       end
 
       format.xls do
-        xls_file = NewslettersToXls.new(@newsletters).call
+        xls_file = ExportToXls::Newsletters.call(@newsletters)
         send_data xls_file, filename: "Newsletters_#{l Date.today}.xls"
       end
     end
@@ -65,46 +66,51 @@ class NewslettersController < ApplicationController
   # end
 
   # DELETE /newsletters/1 or /newsletters/1.json
+  # Désinscription par lien anonyme : le slug (UUID non devinable) fait office
+  # de jeton ; un slug inconnu redirige sans erreur.
   def destroy
+    return redirect_to(root_path, status: :see_other) if @newsletter.nil?
+
     @newsletter.destroy!
 
     respond_to do |format|
-      format.html { redirect_to (user_signed_in? && current_user.super_admin?) ? newsletters_path : root_path, status: :see_other, notice: "Utilisateur désinscrit de la newsletter." }
+      format.html do
+        redirect_to user_signed_in? && current_user.super_admin? ? newsletters_path : root_path, status: :see_other,
+                                                                                                 notice: 'Utilisateur désinscrit de la newsletter.'
+      end
       format.json { head :no_content }
     end
   end
 
   def new
-
-    if (email = params["email"])
+    if (email = params['email'])
       newsletter = Newsletter.new(email: email)
       if newsletter.save
-        result = "Votre inscription a bien été effectuée."
+        result = 'Votre inscription a bien été effectuée.'
         valid = true
-        unless Rails.env.development?
-          Events.instance.publish('create.newsletter', payload: {newsletter_id: newsletter.id})
-        end
-      else
-        result = "Oups ! Il existe déjà une inscription pour cette adresse mail..."
-      end
-      
-      render partial: "pages/result_newsletter", locals: { result: result, valid: valid }
-    end
 
+        Events.instance.publish('create.newsletter', payload: { newsletter_id: newsletter.id }) unless Rails.env.development?
+      else
+        result = 'Oups ! Il existe déjà une inscription pour cette adresse mail...'
+      end
+
+      render partial: 'pages/result_newsletter', locals: { result: result, valid: valid }
+    end
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_newsletter
-      @newsletter = Newsletter.find_by(slug: params[:id])
-    end
 
-    # Only allow a list of trusted parameters through.
-    def newsletter_params
-      params.expect(newsletter: [ :email ])
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_newsletter
+    @newsletter = Newsletter.find_by(slug: params[:id])
+  end
 
-    def is_user_authorized
-      authorize @newsletter ? @newsletter : Newsletter
-    end
+  # Only allow a list of trusted parameters through.
+  def newsletter_params
+    params.expect(newsletter: [:email])
+  end
+
+  def is_user_authorized
+    authorize @newsletter || Newsletter
+  end
 end

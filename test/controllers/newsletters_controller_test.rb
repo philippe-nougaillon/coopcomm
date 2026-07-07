@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class NewslettersControllerTest < ActionDispatch::IntegrationTest
   setup do
@@ -10,20 +12,20 @@ class NewslettersControllerTest < ActionDispatch::IntegrationTest
     @newsletter = newsletters(:bond)
   end
 
-  test "should get index" do
+  test 'should get index' do
     sign_in @super_admin
     get newsletters_url
     assert_response :success
   end
 
-  test "should get index with export xls" do
+  test 'should get index with export xls' do
     sign_in @super_admin
-    get users_url,  params: {
+    get users_url, params: {
       format: :xls
     }
 
     assert_response :success
-    assert_equal "application/xls", response.content_type
+    assert_equal 'application/xls', response.content_type
   end
 
   # test "should get new" do
@@ -31,9 +33,9 @@ class NewslettersControllerTest < ActionDispatch::IntegrationTest
   #   assert_response :success
   # end
 
-  test "should create newsletter" do
-    assert_difference("Newsletter.count") do
-      get new_newsletter_url, params: { email: @newsletter.email + "m" }
+  test 'should create newsletter' do
+    assert_difference('Newsletter.count') do
+      get new_newsletter_url, params: { email: "#{@newsletter.email}m" }
     end
 
     assert_response :success
@@ -54,17 +56,17 @@ class NewslettersControllerTest < ActionDispatch::IntegrationTest
   #   assert_redirected_to newsletter_url(@newsletter)
   # end
 
-  test "should destroy newsletter as super_admin" do
+  test 'should destroy newsletter as super_admin' do
     sign_in @super_admin
-    assert_difference("Newsletter.count", -1) do
+    assert_difference('Newsletter.count', -1) do
       delete newsletter_url(@newsletter)
     end
 
     assert_redirected_to newsletters_url
   end
 
-  test "should destroy newsletter from unsubscribe link" do
-    assert_difference("Newsletter.count", -1) do
+  test 'should destroy newsletter from unsubscribe link' do
+    assert_difference('Newsletter.count', -1) do
       delete newsletter_url(@newsletter)
     end
 

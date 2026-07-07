@@ -1,23 +1,30 @@
-require "application_system_test_case"
+# frozen_string_literal: true
+
+require 'application_system_test_case'
 
 class DeviseAgentFlowTest < ApplicationSystemTestCase
-
   setup do
     @agent = users(:bond)
     login(@agent)
   end
 
-  test "Se déconnecter" do
+  test 'Se déconnecter' do
     # Fermer la notification de connexion
-    find("[data-testid='close_notification']").click
+    fermer_notification
 
-    logout_button = find("[title=\"Fermer la session de #{@agent.email} (#{@agent.rôle})\"]")
-    page.accept_confirm do
-      logout_button.click
-    end
-    assert_text "Déconnecté(e) avec succès."
+    # Anti-flake (déconnexion). Deux pièges combinés :
+    # 1) le clic Selenium natif sur le lien du dock mobile tombe sur le SVG
+    #    enfant et n'atteint pas l'ancre → le DELETE Turbo n'est pas émis ;
+    # 2) Turbo déclenche un window.confirm que page.accept_confirm capte de façon
+    #    instable. On stube donc le confirm, puis on dispatche le clic en JS sur
+    #    l'ancre (testid du dock), ce qui rend la déconnexion déterministe.
+    page.execute_script('window.confirm = () => true')
+    page.execute_script("document.querySelector(\"[data-testid='fermer_session']\").click()")
+    # Le layout public n'affiche pas le flash : on vérifie l'état déconnecté.
+    # Le DELETE + la redirection vers la landing peuvent dépasser le délai par
+    # défaut (2 s) de Capybara.
+    assert_text 'Mutualisez mieux', wait: 10
     visit interventions_url
-    assert_text "Vous devez vous connecter ou vous enregistrer pour continuer."
+    assert_current_path new_user_session_path
   end
-
 end

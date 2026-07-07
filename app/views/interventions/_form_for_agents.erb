@@ -20,7 +20,7 @@
     <div class="bg-sky-50 p-4 rounded border border-sky-100">
       <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8 mb-5">
         <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
-          <% if intervention.persisted? && !User.find_by(id: intervention.audits.first.user_id)&.agent? # Vérifie si en tant qu'agent, l'utilisateur qui a créé l'intervention n'est pas un agent, donc une demande  %>
+          <% if intervention.persisted? && !User.find_by(id: intervention.audits.first&.user_id)&.agent? # Vérifie si en tant qu'agent, l'utilisateur qui a créé l'intervention n'est pas un agent, donc une demande (audits.first peut être nil) %>
             <%= form.text_field :adherent_id, value: intervention.adherent.nom_prénom, class: "input input-sm w-full", disabled: true %>
           <% else %>
             <div class="w-full">
@@ -46,7 +46,10 @@
           <div class="w-full sm:flex-1">
             <%= form.label :agent_ids, "Agents" %>
             <%= form.select :agent_ids,
-                            grouped_options_with_mandatory(@grouped_agents, intervention.agent_ids, current_user.id),
+                            options_for_select(
+                              @agents.map { |nom, id| id == current_user.id ? [nom, id, { data: { mandatory: true } }] : [nom, id] },
+                              selected: (Array(intervention.agent_ids) + [current_user.id]).uniq
+                            ),
                             {},
                             class: "w-full", multiple: true,
                             data: {
@@ -76,7 +79,7 @@
                 tags_soumis = intervention.tags.map(&:name)
               end
 
-              options_tags = (@tags.map(&:name) + tags_soumis).uniq
+              options_tags = (@intervention_tags.map(&:name) + tags_soumis).uniq
             %>
             <%# On utilise le nouveau nom ici aussi %>
             <%= form.select :tags_intervenant, options_for_select(options_tags, tags_soumis), {}, { multiple: true, class: 'slim-select w-full' } %>
@@ -194,10 +197,9 @@
     </div>
   <% end %>
 
-  <%= form.hidden_field :workflow_state %>
 
   <div class="flex flex-wrap gap-2 mt-5">
     <%= form.submit "Enregistrer", id: "enregistrer_intervention", class: "btn btn-primary flex-1" %>
-    <%= link_to "Annuler", (session[:return_to] || interventions_path), class: "btn" %>
+    <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>      
   </div>
 <% end %>

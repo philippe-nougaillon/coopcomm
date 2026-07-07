@@ -1,7 +1,6 @@
 <div class="mx-auto w-full flex">
   <div class="mx-auto">
     <%= render @organisation %>
-
     <%= link_to "Modifier cette organisation", edit_organisation_path(@organisation), class: "mt-2 btn" %>
     <div class="inline-block ml-2">
       <%= button_to "Détruire cette organisation", organisation_path(@organisation), method: :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cette organisation ?" }, class: "mt-2 btn" %>

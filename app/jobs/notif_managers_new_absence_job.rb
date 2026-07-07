@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class NotifManagersNewAbsenceJob < ApplicationJob
   queue_as :default
 
@@ -14,7 +16,8 @@ class NotifManagersNewAbsenceJob < ApplicationJob
     # Mail unique pour des informations plus précises dans le MailLog
     managers.each do |manager|
       mailer_response = NotificationMailer.new_absence(absence, manager.email).deliver_now
-      MailLog.create(organisation_id: manager.organisation_id, user_id: absence_created_by_id || 0, message_id: mailer_response.message_id, to: manager.email, subject: "Nouvelle absence", channel: 0)
+      MailLog.create(organisation_id: manager.organisation&.id, user_id: absence_created_by_id || 0,
+                     message_id: mailer_response.message_id, to: manager.email, subject: 'Nouvelle absence', channel: 0)
     end
   end
 end

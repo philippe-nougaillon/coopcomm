@@ -2,7 +2,6 @@
   <% if mail_log.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3">
       <h2><%= pluralize(mail_log.errors.count, "erreur") %> empêche(nt) ce mail_log d'être sauvegardé :</h2>
-
       <ul>
         <% mail_log.errors.each do |error| %>
           <li><%= error.full_message %></li>
@@ -10,27 +9,22 @@
       </ul>
     </div>
   <% end %>
-
   <div class="my-5">
     <%= form.label :to %>
     <%= form.text_field :to, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
   </div>
-
   <div class="my-5">
     <%= form.label :subject %>
     <%= form.text_field :subject, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
   </div>
-
   <div class="my-5">
     <%= form.label :message_id %>
     <%= form.text_field :message_id, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
   </div>
-
   <div class="my-5">
     <%= form.label :organisation_id %>
     <%= form.text_field :organisation_id, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
   </div>
-
   <div class="inline">
     <%= form.submit "Enregistrer", class: "btn btn-primary" %>
   </div>

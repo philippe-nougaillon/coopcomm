@@ -1,28 +1,26 @@
 <%# app/views/absences/_absence_fields.html.erb %>
 <% is_half_day = f.object.matin || f.object.après_midi %>
-
-<%# On englobe tout dans "absence-form-container" pour que le JS s'y retrouve %>
 <div class="absence-form-container flex flex-col gap-4 w-full">
-  
   <%# Champs cachés pour Rails %>
   <%= f.hidden_field :matin, class: "hidden-matin", value: f.object.matin ? '1' : '0' %>
   <%= f.hidden_field :après_midi, class: "hidden-apres-midi", value: f.object.après_midi ? '1' : '0' %>
-
-  <%# Choix du type de journée (f.object_name permet de grouper les radios par absence automatiquement !) %>
-  <div class="flex gap-6 mt-1">
-    <label class="label cursor-pointer justify-start gap-2">
-      <input type="radio" name="<%= f.object_name %>[absence_type]" value="full" class="type-radio radio radio-primary radio-sm" 
-             onchange="handleHalfDayChange(this)" <%= 'checked' unless is_half_day %> />
-      <span class="label-text">Journée entière</span>
-    </label>
-    
-    <label class="label cursor-pointer justify-start gap-2">
-      <input type="radio" name="<%= f.object_name %>[absence_type]" value="half" class="type-radio radio radio-primary radio-sm" 
-             onchange="handleHalfDayChange(this)" <%= 'checked' if is_half_day %> />
-      <span class="label-text">Demi-journée</span>
-    </label>
+  <%# journée/demi-journée %>
+  <div class="flex flex-row gap-3 mt-1">
+    <input type="radio" 
+           name="<%= f.object_name %>[absence_type]" 
+           value="full" 
+           class="btn btn-outline btn-secondary flex-1 type-radio" 
+           aria-label="Journée entière"
+           onchange="handleHalfDayChange(this)" 
+          <%= 'checked' unless is_half_day %> <%= 'autofocus' unless is_half_day %> />
+    <input type="radio" 
+           name="<%= f.object_name %>[absence_type]" 
+           value="half" 
+           class="btn btn-outline btn-secondary flex-1 type-radio" 
+           aria-label="Demi-journée"
+           onchange="handleHalfDayChange(this)" 
+          <%= 'checked' if is_half_day %> <%= 'autofocus' if is_half_day %> />
   </div>
-
   <%# Dates %>
   <div class="flex flex-wrap gap-4">
     <div class="flex-1 flex flex-col">
@@ -34,27 +32,52 @@
       <%= f.date_field :au, class: "au-input input input-sm input-bordered w-full", required: true %>
     </div>
   </div>
-
-  <%# Radios Matin / Après-midi %>
-  <div class="half-days-container <%= is_half_day ? '' : 'hidden' %> flex gap-6 p-3 bg-base-200/50 rounded-box border border-base-200">
-    <label class="label cursor-pointer justify-start gap-2">
-      <input type="radio" name="<%= f.object_name %>[period]" value="matin" class="period-radio radio radio-secondary radio-sm"
-             onchange="updateHiddenPeriods(this)" <%= 'checked' if f.object.matin %> />
-      <span class="label-text font-medium">Matin</span>
-    </label>
-    <label class="label cursor-pointer justify-start gap-2">
-      <input type="radio" name="<%= f.object_name %>[period]" value="apres_midi" class="period-radio radio radio-secondary radio-sm"
-             onchange="updateHiddenPeriods(this)" <%= 'checked' if f.object.après_midi %> />
-      <span class="label-text font-medium">Après-midi</span>
-    </label>
+  <%# MATIN / APRÈS-MIDI %>
+  <% dom_id = f.object.id || "new_#{Time.now.to_i}_#{rand(1000)}" %>
+  <%# MATIN / APRÈS-MIDI %>
+  <div class="half-days-container <%= is_half_day ? '' : 'hidden' %> flex flex-row gap-3 w-full">
+    <div class="flex-1 relative">
+      <input type="radio" 
+           name="<%= f.object_name %>[period]" 
+           value="matin" 
+           id="period_matin_<%= dom_id %>" <%# ← ID Único %>
+           class="peer hidden period-radio"
+           onchange="updateHiddenPeriods(this)" 
+           <%= 'checked' if f.object.matin %> />
+      <label for="period_matin_<%= dom_id %>" 
+        class="btn btn-outline border-slate-200 bg-white hover:bg-base-200 h-auto py-3 px-4 w-full flex flex-row items-center justify-start gap-3 rounded-md normal-case font-normal text-left
+        peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all duration-200 cursor-pointer">
+        <%= embedded_svg "icons/wb_sunny.svg", class: "text-warning text-2xl shrink-0", title: "Matin" %>
+        <div class="flex flex-col min-w-0">
+          <span class="font-semibold text-slate-800 text-sm block leading-none mb-1">Matin</span>
+          <span class="text-xs text-slate-400 block font-normal leading-none">avant midi</span>
+        </div>
+      </label>
+    </div>
+    <div class="flex-1 relative">
+      <input type="radio" 
+           name="<%= f.object_name %>[period]" 
+           value="apres_midi" 
+           id="period_apres_midi_<%= dom_id %>" 
+           class="peer hidden period-radio"
+           onchange="updateHiddenPeriods(this)" 
+           <%= 'checked' if f.object.après_midi %> />
+      <label for="period_apres_midi_<%= dom_id %>" 
+        class="btn btn-outline border-slate-200 bg-white hover:bg-base-200 h-auto py-3 px-4 w-full flex flex-row items-center justify-start gap-3 rounded-md normal-case font-normal text-left
+        peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary transition-all duration-200 cursor-pointer">
+        <%= embedded_svg "icons/wb_twilight.svg", class: "text-info text-2xl shrink-0", title: "Après-midi" %>
+        <div class="flex flex-col min-w-0">
+          <span class="font-semibold text-slate-800 text-sm block leading-none mb-1">Après-midi</span>
+          <span class="text-xs text-slate-400 block font-normal leading-none">après 13h</span>
+        </div>
+      </label>
+    </div>
   </div>
-
   <%# Motif et Observation %>
   <div class="flex flex-col gap-1">
     <%= f.label :motif, class: "text-sm text-slate-500" %>
     <%= f.select :motif, Absence.motifs.keys.map { |k| [k.humanize, k] }, { selected: f.object.motif }, class: 'select select-sm select-bordered w-full', required: true %>
   </div>
-
   <div class="flex flex-col gap-1">
     <%= f.label :observation, class: "text-sm text-slate-500" %>
     <%= f.text_area :observation, class: "textarea textarea-bordered w-full h-16" %>

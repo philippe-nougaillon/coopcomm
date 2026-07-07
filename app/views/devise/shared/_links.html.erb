@@ -2,25 +2,20 @@
   Vous avez déjà un compte ?
   <%= link_to "Se connecter", new_session_path(resource_name), class: 'text-primary' %><br />
 <% end %>
-
 <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
   <p>Vous n'avez pas de compte ?</p>
   <%= link_to "S'inscrire", new_registration_path(resource_name), class: 'text-success' %><br />
 <% end %>
-
 <%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
   <p>Vous avez oublié votre mot de passe ?</p>
   <%= link_to "Changer de mot de passe", new_password_path(resource_name), class: 'text-primary' %><br />
 <% end %>
-
 <%- if devise_mapping.confirmable? && controller_name != 'confirmations' %>
   <%= link_to "J'ai oublié mon mot de passe", new_confirmation_path(resource_name) %><br />
 <% end %>
-
 <%- if devise_mapping.lockable? && resource_class.unlock_strategy_enabled?(:email) && controller_name != 'unlocks' %>
   <%= link_to "Vous n'avez pas reçu les instructions de confirmation ?", new_unlock_path(resource_name) %><br />
 <% end %>
-
 <%- if devise_mapping.omniauthable? %>
   <div class="divider">OU</div>
   <%- resource_class.omniauth_providers.each do |provider| %>
@@ -28,12 +23,12 @@
       url: omniauth_authorize_path(resource_name, provider),
       method: :post,
       data: {turbo: "false"} do |f| %>
-        <div class="mb-4">
-          <button type="submit" class="btn btn-outline rounded w-full py-2">
-            <%= image_tag "Google__G__logo.svg" %>
-            <span class="ms-2">Continuer avec Google</span>
-          </button>
-        </div>
+      <div class="mb-4">
+        <button type="submit" class="btn btn-outline rounded w-full py-2">
+          <%= image_tag "Google__G__logo.svg" %>
+          <span class="ms-2">Continuer avec Google</span>
+        </button>
+      </div>
     <% end %>
   <% end %>
 <% end %>

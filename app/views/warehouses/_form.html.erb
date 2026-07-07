@@ -1,9 +1,11 @@
-<%= form_with(model: warehouse, class: "contents") do |form| %>
+<div class="max-w-3xl mx-auto my-6 bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+<%= form_with(model: warehouse,  class:'flex flex-col gap-4') do |form| %>
   <% if warehouse.errors.any? %>
-    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
-      <h2><%= pluralize(warehouse.errors.count, "error") %> prohibited this warehouse from being saved:</h2>
-
-      <ul class="list-disc ml-6">
+   <div id="error_explanation" class="bg-red-50 text-red-500 px-4 py-3 font-medium rounded-lg mb-2 border border-red-200">
+        <h2 class="font-black mb-2 text-sm md:text-base">
+         <%= pluralize(warehouse.errors.count, "error") %> empêche(nt) ce mouvement d'être sauvegardé :
+         </h2>
+        <ul class="list-disc list-inside text-xs opacity-90">
         <% warehouse.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
@@ -11,37 +13,46 @@
     </div>
   <% end %>
 
-  <div class="my-5">
-    <%= form.label :name %>
+  <%= hidden_field_tag :tab, params[:tab] %>
+    <div class="w-full">
+    <%= form.label :name, class: "label font-semibold text-slate-700" do %>
+     <span>Name <span class="text-red-500">*</span></span>
+      <% end %>
     <%= form.text_field :name, class: ["input input-sm w-full", {"input-error": warehouse.errors[:name].any?}] %>
   </div>
-
-  <div class="w-full sm:flex-1">
-    <%= form.label :user_ids, "Équipe (Utilisateurs rattachés)", style: "display: block" %>
-    
+    <div class="w-full">
+    <%= form.label :user_ids, class: "label font-semibold text-slate-700" do %>
+    <span>Équipe (Utilisateurs rattachés) <span class="text-red-500">*</span></span>
+      <% end %>
     <%# 
       Note: Remplace `User.all` par la variable de ton contrôleur (ex: @users) si tu veux filtrer.
       Remplace `:email` par `:nom_complet` ou l'attribut que tu veux afficher dans la liste déroulante.
     %>
     <%= form.collection_select :user_ids, @users, :id, :nom_prénom, {}, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
   </div>
-
-  <div class="flex-1" data-controller="places" data-places-center-lat-value="<%= ENV['MAPS_CENTER_LAT'] %>" data-places-center-lng-value="<%= ENV['MAPS_CENTER_LNG'] %>">
-    <%= form.label :address, "Localisation" %>
-    
+    <div class="w-full">
+    <%= form.label :address, class: "label font-semibold text-slate-700" do %>
+    <span>Localisation <span class="text-red-500">*</span></span>
+      <% end %>
     <%# Le champ visible par l'utilisateur pour chercher l'adresse %>
     <%= form.text_field :address, 
           class: 'input select-sm w-full', 
           placeholder: 'Commencez à taper une adresse...', 
           data: { places_target: "address" } %>
-
     <%# Les champs cachés qui seront remplis automatiquement par le JS %>
     <%= form.hidden_field :latitude, data: { places_target: "latitude" } %>
     <%= form.hidden_field :longitude, data: { places_target: "longitude" } %>
   </div>
 
-
-  <div class="inline">
-    <%= form.submit "Enregistrer", class: "btn btn-primary mt-4" %>
-  </div>
+   <div class="flex gap-2 mt-4 w-full">
+      <%= form.submit "Enregistrer",  class: "btn btn-primary flex-1" %>
+      <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>      
+    </div>
 <% end %>
+  <div class="pt-6 max-w-3xl mx-auto px-4">
+    <%= link_to admin_parametres_path(tab: params[:tab] || 'prestations'), class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+      <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des utilisateurs" %>
+      Retour aux paramètres
+    <% end %>
+  </div>
+

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Intervention < ApplicationRecord
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
@@ -5,13 +7,14 @@ class Intervention < ApplicationRecord
   include WorkflowActiverecord
 
   acts_as_taggable_on :tags
-  
+
   audited
-  
+
   # Autorise Rails à lire et écrire ces champs virtuels pour le formulaire
   attr_accessor :tags_manager
-  attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute, :début_hour, :début_minute, :fin_hour, :fin_minute
-  
+  attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute, :début_hour,
+                :début_minute, :fin_hour, :fin_minute
+
   before_destroy :must_not_have_any_mouvements
 
   belongs_to :service
@@ -27,14 +30,17 @@ class Intervention < ApplicationRecord
 
   has_many_attached :photos
 
-  
+  include PieceJointeValidable
+  valide_piece_jointe :photos, types: PieceJointeValidable::IMAGES
+
   before_validation -> { combine_datetime(:début_prévue) }
   before_validation -> { combine_datetime(:fin_prévue) }
   before_validation -> { combine_datetime(:début) }
   before_validation -> { combine_datetime(:fin) }
   before_validation :check_absence
   before_validation :set_temporary_description, on: :create
-  
+  before_validation :check_workflow_pointage_mère
+
   validates :description, :adherent_id, :service_id, presence: true
 
   validate :schedules_must_make_sense
@@ -42,21 +48,21 @@ class Intervention < ApplicationRecord
   validate :agents_must_be_available
   validate :dates_cannot_be_in_the_future
 
-  before_save -> {self.temps_de_pause = 0 if self.temps_de_pause.nil?}
+  before_save -> { self.temps_de_pause = 0 if temps_de_pause.nil? }
   before_save :calc_temps_total
 
   scope :ordered, -> { order(updated_at: :desc) }
 
   after_create :replace_description_with_id
-  after_create :calculate_co2 , if: Proc.new { |intervention| intervention.terminé? }
+  after_create :calculate_co2, if: proc(&:terminé?)
 
-  after_create_commit :broadcast_to_authorized_viewers
+  # after_create_commit :broadcast_to_authorized_viewers
   # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
   after_create_commit :send_manager_notification
 
   # WORKFLOW
-  NOUVEAU   = 'nouveau'
-  POINTAGE_ACTIVE   = 'pointage activé'
+  NOUVEAU = 'nouveau'
+  POINTAGE_ACTIVE = 'pointage activé'
   # ACCEPTE   = 'accepté'
   # EN_COURS  = 'en cours'
   TERMINE   = 'terminé'
@@ -65,11 +71,11 @@ class Intervention < ApplicationRecord
   ARCHIVE   = 'archivé'
 
   workflow do
-    state NOUVEAU, meta: {style: 'badge-primary text-white', rgba: '0,181,255,255'} do
+    state NOUVEAU, meta: { style: 'badge-primary text-white', rgba: '0,181,255,255' } do
       # event :accepter, transitions_to: ACCEPTE
       event :terminer, transitions_to: TERMINE
     end
-    state POINTAGE_ACTIVE,  meta: {style: 'badge-warning text-white'}
+    state POINTAGE_ACTIVE, meta: { style: 'badge-warning text-white' }
 
     # state ACCEPTE, meta: {style: 'badge-primary text-white'} do
     #   event :en_cours, transitions_to: EN_COURS
@@ -79,21 +85,21 @@ class Intervention < ApplicationRecord
     #   event :terminer, transitions_to: TERMINE
     # end
 
-    state TERMINE, meta: {style: 'badge-accent text-white'} do
+    state TERMINE, meta: { style: 'badge-accent text-white' } do
       event :valider, transitions_to: VALIDE
       event :refuser, transitions_to: REFUSE
     end
 
-    state VALIDE, meta: {style: 'badge-success text-white'} do
+    state VALIDE, meta: { style: 'badge-success text-white' } do
       event :archiver, transitions_to: ARCHIVE
     end
 
-    state REFUSE, meta: {style: 'badge-error text-white'} do
+    state REFUSE, meta: { style: 'badge-error text-white' } do
       # event :accepter, transitions_to: ACCEPTE
       event :archiver, transitions_to: ARCHIVE
     end
 
-    state ARCHIVE, meta: {style: 'badge-ghost'}
+    state ARCHIVE, meta: { style: 'badge-ghost' }
   end
 
   # pour que le changement de 'workflow_state' se voit dans l'audit trail
@@ -101,33 +107,33 @@ class Intervention < ApplicationRecord
     self[:workflow_state] = new_value
     save!
   end
-  
+
   def style
-    self.current_state.meta[:style]
+    current_state.meta[:style]
   end
 
   def rgba
-    self.current_state.meta[:rgba]
+    current_state.meta[:rgba]
   end
 
   def self.workflow_states_count(interventions)
     results = interventions.reorder(:workflow_state).select(:id).group(:workflow_state).count(:id)
     h = {}
-    self.workflow_state_humanized.each do |workflow_state|
+    workflow_state_humanized.each do |workflow_state|
       h[workflow_state] = results[workflow_state.downcase] || 0
     end
     h
   end
 
   def self.workflow_state_humanized
-    self.workflow_spec.states.keys.map{|i| i.to_s.humanize }
+    workflow_spec.states.keys.map { |i| i.to_s.humanize }
   end
 
   # Retourne les interventions selon le role de l'utilisateur
   def self.by_role_for(user)
     case user.rôle
     when 'manager', 'administrateur'
-      self.ordered
+      ordered
     when 'adhérent'
       user.interventions_adherent.ordered
     when 'agent'
@@ -139,19 +145,20 @@ class Intervention < ApplicationRecord
   def self.by_role_for_home(user)
     case user.rôle
     when 'manager', 'administrateur'
-      self.where.not(workflow_state: ["validé", "refusé", "archivé"]).ordered
+      where.not(workflow_state: %w[validé refusé archivé]).ordered
     when 'adhérent'
-      user.interventions_adherent.where(workflow_state: ["terminé"]).ordered
+      user.interventions_adherent.where(workflow_state: ['terminé']).ordered
     when 'agent'
-      user.interventions.where(workflow_state: ["nouveau"]).where.not(template_slug: nil).ordered
+      user.interventions.where(workflow_state: ['nouveau']).where.not(template_slug: nil).ordered
     end
   end
 
   def check_absence
-    if self.agents.any?
-      absence_ids = self.agents.flat_map do |agent|
-        agent.absences.where(
-          " (absences.du = :debut) OR
+    return unless agents.any?
+
+    absence_ids = agents.flat_map do |agent|
+      agent.absences.where(
+        " (absences.du = :debut) OR
             (absences.du = :fin) OR
             (absences.au = :debut) OR
             (absences.au = :fin) OR
@@ -162,18 +169,17 @@ class Intervention < ApplicationRecord
             (absences.du <= :debut AND absences.au >= :fin) OR
             (absences.du >= :debut AND absences.au <= :fin)
           ",
-          debut: self.début_prévue.try(:to_date), fin: self.fin_prévue.try(:to_date)
-        ).pluck(:id)
-      end.uniq
+        debut: début_prévue.try(:to_date), fin: fin_prévue.try(:to_date)
+      ).pluck(:id)
+    end.uniq
 
-      return if absence_ids.empty?
+    return if absence_ids.empty?
 
-      absences = Absence.where(id: absence_ids.uniq.flatten)
-      messages = absences.includes(:user).map do |absence|
-        "#{absence.user.nom_prénom} (du #{absence.du&.strftime('%d/%m/%Y')} au #{absence.au&.strftime('%d/%m/%Y')}, motif : '#{absence.motif}')"
-      end
-      errors.add(:interventions, ": Agent(s) indisponible(s) : #{messages.to_sentence}")
+    absences = Absence.where(id: absence_ids.uniq.flatten)
+    messages = absences.includes(:user).map do |absence|
+      "#{absence.user.nom_prénom} (du #{absence.du&.strftime('%d/%m/%Y')} au #{absence.au&.strftime('%d/%m/%Y')}, motif : '#{absence.motif}')"
     end
+    errors.add(:interventions, ": Agent(s) indisponible(s) : #{messages.to_sentence}")
   end
 
   def self.get_unavailable_agents_with_absences(agent_ids, début_prévue, fin_prévue)
@@ -181,9 +187,9 @@ class Intervention < ApplicationRecord
 
     agent_ids.each do |agent_id|
       conflicting_agents += User
-        .find(agent_id)
-        .absences.where(
-          " (absences.du = :debut) OR
+                            .find(agent_id)
+                            .absences.where(
+                              " (absences.du = :debut) OR
             (absences.du = :fin) OR
             (absences.au = :debut) OR
             (absences.au = :fin) OR
@@ -194,11 +200,11 @@ class Intervention < ApplicationRecord
             (absences.du <= :debut AND absences.au >= :fin) OR
             (absences.du >= :debut AND absences.au <= :fin)
           ",
-          debut: début_prévue.try(:to_date), fin: fin_prévue.try(:to_date)
-        )
-        .pluck(:user_id)
-      end
-      
+                              debut: début_prévue.try(:to_date), fin: fin_prévue.try(:to_date)
+                            )
+                            .pluck(:user_id)
+    end
+
     conflicting_agents.uniq
   end
 
@@ -207,11 +213,11 @@ class Intervention < ApplicationRecord
 
     agents.each do |agent|
       conflicting_interventions = Intervention
-        .joins(:agents)
-        .where(agents: { id: agent.id })
-        .where.not(id: id)
-        .where(
-          " (interventions.début_prévue = :debut) OR
+                                  .joins(:agents)
+                                  .where(agents: { id: agent.id })
+                                  .where.not(id: id)
+                                  .where(
+                                    " (interventions.début_prévue = :debut) OR
             (interventions.début_prévue = :fin) OR
             (interventions.fin_prévue = :debut) OR
             (interventions.fin_prévue = :fin) OR
@@ -222,27 +228,27 @@ class Intervention < ApplicationRecord
             (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
             (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)
           ",
-          debut: début_prévue, fin: fin_prévue
-        )
+                                    debut: début_prévue, fin: fin_prévue
+                                  )
 
-      if conflicting_interventions.exists?
-        messages = conflicting_interventions.map do |conflict|
-          " #{agent.nom} déjà sur l’intervention « #{conflict.description} » du #{conflict.début_prévue&.strftime('%d/%m/%Y %H:%M')} au #{conflict.fin_prévue&.strftime('%d/%m/%Y %H:%M')}"
-        end
-        errors.add("", "Conflit(s) détecté(s) sur un agent :#{messages.to_sentence}")
+      next unless conflicting_interventions.exists?
+
+      messages = conflicting_interventions.map do |conflict|
+        " #{agent.nom} déjà sur l’intervention « #{conflict.description} » du #{conflict.début_prévue&.strftime('%d/%m/%Y %H:%M')} au #{conflict.fin_prévue&.strftime('%d/%m/%Y %H:%M')}"
       end
+      errors.add('', "Conflit(s) détecté(s) sur un agent :#{messages.to_sentence}")
     end
   end
 
+  # TODO VU : mettre le contenu dans "get_unavailable_agents_with_interventions". "get_unavailable_agents" doit appeler "get_unavailable_agents_with_interventions" et "get_unavailable_agents_with_absences"
   def self.get_unavailable_agents(intervention_id, agent_ids, début_prévue, fin_prévue)
-
-    agents = User.joins(:interventions).where(id: agent_ids )
+    agents = User.joins(:interventions).where(id: agent_ids)
 
     # Condition nécessaire si on est sur la création d'une intervention
-    agents = agents.where.not("interventions.id = ?", intervention_id) if intervention_id
+    agents = agents.where.not('interventions.id = ?', intervention_id) if intervention_id
 
     agents = agents.where(
-        " (interventions.début_prévue = :debut) OR
+      " (interventions.début_prévue = :debut) OR
           (interventions.début_prévue = :fin) OR
           (interventions.fin_prévue = :debut) OR
           (interventions.fin_prévue = :fin) OR
@@ -253,8 +259,8 @@ class Intervention < ApplicationRecord
           (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
           (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)
         ",
-        debut: début_prévue, fin: fin_prévue
-      )
+      debut: début_prévue, fin: fin_prévue
+    )
 
     agents.pluck(:id).uniq
   end
@@ -264,11 +270,11 @@ class Intervention < ApplicationRecord
 
     tools.each do |tool|
       conflicting_interventions = Intervention
-        .joins(:tools)
-        .where(tools: { id: tool.id })
-        .where.not(id: id)
-        .where(
-          " (interventions.début_prévue = :debut) OR
+                                  .joins(:tools)
+                                  .where(tools: { id: tool.id })
+                                  .where.not(id: id)
+                                  .where(
+                                    " (interventions.début_prévue = :debut) OR
             (interventions.début_prévue = :fin) OR
             (interventions.fin_prévue = :debut) OR
             (interventions.fin_prévue = :fin) OR
@@ -279,30 +285,29 @@ class Intervention < ApplicationRecord
             (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
             (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)
           ",
-          debut: début_prévue, fin: fin_prévue
-        )
+                                    debut: début_prévue, fin: fin_prévue
+                                  )
 
-        
-      if conflicting_interventions.exists?
-        messages = conflicting_interventions.map do |conflict|
-          " #{tool.name} déjà utilisé pour l’intervention « #{conflict.description} » du #{conflict.début_prévue&.strftime('%d/%m/%Y %H:%M')} au #{conflict.fin_prévue&.strftime('%d/%m/%Y %H:%M')}"
-        end
-        errors.add("", "Conflit(s) détecté(s) sur un outil :#{messages.to_sentence}")
+      next unless conflicting_interventions.exists?
+
+      messages = conflicting_interventions.map do |conflict|
+        " #{tool.name} déjà utilisé pour l’intervention « #{conflict.description} » du #{conflict.début_prévue&.strftime('%d/%m/%Y %H:%M')} au #{conflict.fin_prévue&.strftime('%d/%m/%Y %H:%M')}"
       end
+      errors.add('', "Conflit(s) détecté(s) sur un outil :#{messages.to_sentence}")
     end
   end
 
   def self.get_unavailable_tools(intervention_id, tools_ids, début_prévue, fin_prévue)
     conflicting_tools = []
 
-    tools_ids.each do |tool|
-      tools = Tool.joins(:interventions).where(id: tools_ids )
+    tools_ids.each do |_tool|
+      tools = Tool.joins(:interventions).where(id: tools_ids)
 
       # Condition nécessaire si on est sur la création d'une intervention
-      tools = tools.where.not("interventions.id = ?", intervention_id) if intervention_id
+      tools = tools.where.not('interventions.id = ?', intervention_id) if intervention_id
 
       tools = tools.where(
-          " (interventions.début_prévue = :debut) OR
+        " (interventions.début_prévue = :debut) OR
             (interventions.début_prévue = :fin) OR
             (interventions.fin_prévue = :debut) OR
             (interventions.fin_prévue = :fin) OR
@@ -313,8 +318,8 @@ class Intervention < ApplicationRecord
             (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
             (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)
           ",
-          debut: début_prévue, fin: fin_prévue
-        )
+        debut: début_prévue, fin: fin_prévue
+      )
 
       conflicting_tools += tools.pluck(:id)
     end
@@ -323,21 +328,22 @@ class Intervention < ApplicationRecord
 
   def qrcode(url)
     RQRCode::QRCode.new(url).as_svg(
-                color: "000",
-                shape_rendering: "crispEdges",
-                module_size: 3,
-                standalone: true,
-                use_path: true)
+      color: '000',
+      shape_rendering: 'crispEdges',
+      module_size: 3,
+      standalone: true,
+      use_path: true
+    )
   end
 
   def create_next_intervention(intervention_template, current_user)
-    new_intervention = self.dup
-    new_intervention.template_slug = self.slug
+    new_intervention = dup
+    new_intervention.template_slug = slug
     new_intervention.début = DateTime.now
     new_intervention.fin = nil
     new_intervention.repeter = false
     new_intervention.workflow_state = 'nouveau'
-    new_intervention.tags = self.tags
+    new_intervention.tags = tags
     new_intervention.service = intervention_template.service
     new_intervention.adherent = intervention_template.adherent
     new_intervention.agents = [current_user]
@@ -348,15 +354,15 @@ class Intervention < ApplicationRecord
   end
 
   def pointages
-    Intervention.where(template_slug: self.slug).order(updated_at: :desc)
+    Intervention.where(template_slug: slug).order(updated_at: :desc)
   end
 
   def calc_temps_total
-    if !self.fin || !self.début
+    if !fin || !début
       temps_total = 0
-    elsif self.fin > self.début
-      temps_total = (self.fin - self.début).seconds.in_hours - self.temps_de_pause
-      temps_total = temps_total * self.agents.count
+    elsif fin > début
+      temps_total = (fin - début).seconds.in_hours - temps_de_pause
+      temps_total *= agents.count
     else
       temps_total = 0
     end
@@ -364,13 +370,13 @@ class Intervention < ApplicationRecord
   end
 
   def en_cours?
-    if self.début && self.fin
-      DateTime.now.between?(self.début, self.fin)
-    end
+    return unless début && fin
+
+    DateTime.now.between?(début, fin)
   end
 
   def durée_humanized
-    Time.at(self.fin - self.début).utc.strftime("%Hh %Mmin")
+    Time.at(fin - début).utc.strftime('%Hh %Mmin')
   end
 
   def self.dernière_en_cours(interventions)
@@ -388,33 +394,33 @@ class Intervention < ApplicationRecord
   end
 
   def passed
-    !self.nouveau? || (self.fin && (self.fin < DateTime.now))
+    !nouveau? || (fin && (fin < DateTime.now))
   end
-  
+
   def schedules_must_make_sense
-    if self.début_prévue && self.fin_prévue && (self.début_prévue > self.fin_prévue)
+    if début_prévue && fin_prévue && (début_prévue > fin_prévue)
       errors.add(:erreur, ": La fin prévue de l'intervention ne peut pas être avant son commencement")
     end
-    if self.début && self.fin && (self.début > self.fin)
-      errors.add(:erreur, ": La fin de l'intervention ne peut pas être avant son commencement")
-    end
+    return unless début && fin && (début > fin)
+
+    errors.add(:erreur, ": La fin de l'intervention ne peut pas être avant son commencement")
   end
 
   def self.filter_by_service(services)
-    self.where(service: services )
+    where(service: services)
   end
 
   def send_manager_notification
-    user = User.find_by(id: self.audits.find_by(action: 'create')&.user&.id)
+    user = User.find_by(id: audits.find_by(action: 'create')&.user&.id)
     if user&.adhérent?
       NotifManagersNewInterventionFromAdherentJob.perform_later(self, user)
-    elsif user&.agent? && self.terminé?
+    elsif user&.agent? && terminé?
       NotifManagersInterventionDoneByAgentJob.perform_later(self, user)
     end
   end
 
   def origin_location
-    warehouse = self.agents.filter_map(&:warehouse).first
+    warehouse = agents.filter_map(&:warehouse).first
 
     # Si on a trouvé un warehouse valide avec des coordonnées
     if warehouse && warehouse.latitude.present? && warehouse.longitude.present?
@@ -425,36 +431,35 @@ class Intervention < ApplicationRecord
   end
 
   def calculate_co2
-    unless Rails.env.test?
-      # Les vérifications de base
-      return unless self.service && self.service.calculate_distance?
-      return unless self.adherent && self.adherent.latitude.present? && self.adherent.longitude.present?
-      
-      origine = self.origin_location 
-      return unless origine.present?
+    return if Rails.env.test?
+    # Les vérifications de base
+    return unless service&.calculate_distance?
+    return unless adherent && adherent.latitude.present? && adherent.longitude.present?
 
-      destination = { lat: self.adherent.latitude, lng: self.adherent.longitude }
-      
-      request = ApiGoogleMaps.new(origine, destination)
-      request.call
-      
-      if request.errors.blank? && request.data_response["routes"].present?
-        self.trajet = request.routes_info
-        self.co2 = request.co2_consumption_by_route(request.data_response["routes"][0])
-        self.save
-      end
-    end
+    origine = origin_location
+    return unless origine.present?
+
+    destination = { lat: adherent.latitude, lng: adherent.longitude }
+
+    request = FetchRoutesInfos.new(origine, destination)
+    request.call
+
+    return unless request.errors.blank? && request.data_response['routes'].present?
+
+    self.trajet = request.routes_info
+    self.co2 = request.co2_consumption_by_route(request.data_response['routes'][0])
+    save
   end
 
   def temps_par_agent
     # max au cas où il n'y a aucun agent
-    self.temps_total / [self.agents.count, 1].max
+    temps_total / [agents.count, 1].max
   end
 
-  def intervention_mère 
-    Intervention.find_by(slug: self.template_slug)
+  def intervention_mère
+    Intervention.find_by(slug: template_slug)
   end
-  
+
   private
 
   def slug_candidates
@@ -471,54 +476,68 @@ class Intervention < ApplicationRecord
   end
 
   def broadcast_to_authorized_viewers
-    broadcast_prepend_to "interventions_organisation_#{organisation.id}",
-                          partial: "interventions/intervention",
-                          locals: { intervention: self, from_turbo_stream: true },
-                          target: "interventions"
-    
-  
-    authorized_users_ids.each do |user_id|
-      broadcast_prepend_to "interventions_user_#{user_id}",
-                            partial: "interventions/intervention",
-                            locals: { intervention: self, from_turbo_stream: true },
-                            target: "interventions"
-      
+    broadcast_channels.each do |channel|
+      broadcast_prepend_to channel,
+                           partial: 'interventions/intervention',
+                           locals: { intervention: self, from_turbo_stream: true },
+                           target: 'interventions'
     end
   end
 
+  # Canaux Turbo Stream qui reçoivent le prepend d'une nouvelle intervention,
+  # cf. l'abonnement par rôle dans interventions/index.html.erb :
+  #   - organisation : les administrateurs (toute l'organisation)
+  #   - service      : les managers dont l'intervention relève d'un de leurs services
+  #   - adhérent     : l'adhérent rattaché à l'intervention
+  #   - user         : chaque agent assigné
+  def broadcast_channels
+    channels = ["interventions_organisation_#{organisation.id}",
+                "interventions_service_#{service_id}"]
+    channels << "interventions_adherent_#{adherent_id}" if adherent_id.present?
+    channels.concat(authorized_users_ids.map { |user_id| "interventions_user_#{user_id}" })
+    channels
+  end
+
   def authorized_users_ids
-    user_ids = self.agents.pluck(:id)
+    user_ids = agents.pluck(:id)
     user_ids.compact!
     user_ids
   end
 
   def must_not_have_any_mouvements
-    if self.mouvements.any?
-      self.errors.add(:base, "Il reste des mouvements liés.")
-      throw(:abort)
-    end
+    return unless mouvements.any?
+
+    errors.add(:base, 'Il reste des mouvements liés.')
+    throw(:abort)
   end
 
   def dates_cannot_be_in_the_future
-    if début.present? && début > Time.current
-      errors.add(:début, "ne peut pas être dans le futur")
-    end
+    errors.add(:début, 'ne peut pas être dans le futur') if début.present? && début > Time.current
 
-    if fin.present? && fin > Time.current
-      errors.add(:fin, "ne peut pas être dans le futur")
-    end
+    return unless fin.present? && fin > Time.current
+
+    errors.add(:fin, 'ne peut pas être dans le futur')
   end
 
   def set_temporary_description
     # Si la description est vide, on lui donne une valeur bouchon pour passer la validation
-    self.description = "en_attente_id" if description.blank?
+    self.description = 'en_attente_id' if description.blank?
   end
 
   def replace_description_with_id
     # Si la description est notre valeur bouchon, on la met à jour avec l'ID généré.
     # update_column met à jour directement en base sans redéclencher les validations/callbacks.
-    if description == "en_attente_id"
-      update_column(:description, "##{self.id}")
+    return unless description == 'en_attente_id'
+
+    update_column(:description, "##{id}")
+  end
+
+  # Ajoute ou enlève l'état 'pointage activé' selon si c'est un modèle de pointage.
+  def check_workflow_pointage_mère
+    if !repeter? && workflow_state == 'pointage activé'
+      self.workflow_state = 'nouveau'
+    elsif repeter? && workflow_state != 'pointage activé'
+      self.workflow_state = 'pointage activé'
     end
   end
 end

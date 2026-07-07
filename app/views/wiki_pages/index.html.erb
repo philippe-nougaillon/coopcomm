@@ -1,6 +1,5 @@
 <div class="flex w-full">
   <%= render "wiki_navbar" %>
-
   <div class="w-full ml-8 sm:ml-64">
     <div class="flex flex-wrap justify-between items-center mb-12 min-h-12 sm:min-h-16">
       <h1 class="text-2xl sm:text-4xl text-primary font-bold">
@@ -13,11 +12,16 @@
         <% end %>
       </h1>
       <% if policy(WikiPage).new? %>
-        <%= link_to "Ajouter une Page", new_wiki_page_path, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
+        <%= link_to new_wiki_page_path,
+            data: { testid: "Ajouter_une_Page" },
+            class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm ",
+            title: "Créer un nouvel agent"  do %>
+          <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+          <span class="hidden md:block">Ajouter une Page</span>
+        <% end %>
         <%= link_to "+ Page", new_wiki_page_path, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
       <% end %>
     </div>
-    
     <div id="wiki_pages" class="min-w-full">
       <%= render @wiki_pages %>
     </div>

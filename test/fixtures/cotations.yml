@@ -1,0 +1,31 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+# workflow_state : créé / envoyé / validé / refusé / archivé
+# total_ht est figé ici mais doit refléter la somme des lignes (prix_ht × qté).
+# Cohérence garantie par CotationLigneTest "fixtures cohérentes : total_ht …".
+
+cotation_paris:
+  adherent: weil
+  service: informatique
+  ref: "2026-1"
+  intitulé: Devis nettoyage trimestriel
+  workflow_state: "créé"
+  total_ht: 76.50
+  slug: <%= SecureRandom.uuid %>
+
+cotation_secretariat:
+  adherent: weil
+  service: secretariat
+  ref: "2026-2"
+  intitulé: Devis secrétariat
+  workflow_state: "envoyé"
+  total_ht: 0
+  slug: <%= SecureRandom.uuid %>
+
+cotation_marseille:
+  adherent: michael_jackson
+  service: service_marseille
+  ref: "2026-1"
+  intitulé: Devis Marseille
+  workflow_state: "créé"
+  total_ht: 0
+  slug: <%= SecureRandom.uuid %>

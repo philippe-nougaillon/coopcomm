@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class RemoveOldColumnsFromIntervention < ActiveRecord::Migration[7.1]
   def change
     remove_column :interventions, :agent_id, :integer

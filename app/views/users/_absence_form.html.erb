@@ -1,16 +1,12 @@
 <% unique_id = absence.id || 'new' %>
 <% is_half_day = absence.matin || absence.après_midi %>
-
-<%= form_with(model: @user, id: "absence_form") do |f| %>
-  
+<%= form_with(model: @user, id: "absence_form_#{unique_id}") do |f| %>
   <%= hidden_field_tag :from_absence_modal, true %>
-
   <% if absence.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
       <h2 class="font-black!">
         <%= pluralize(absence.errors.count, "erreur") %> empêche(nt) cette absence d'être sauvegardée :
       </h2>
-
       <ul class="list-disc list-inside">
         <% absence.errors.each do |error| %>
           <li><%= error.full_message %></li>
@@ -19,10 +15,60 @@
     </div>
   <% end %>
   <%= f.fields_for :absences, absence do |ff| %>
-    <%= render 'absence_fields', f: ff %>
+    <%= render 'users/absence_fields', f: ff %>
   <% end %>
-
-  <div class="modal-action">
-    <%= f.submit "Enregistrer", class: "btn btn-primary" %>
+  <div class="modal-action flex flex-wrap items-center w-full border-t border-slate-100 pt-4 mt-6 gap-2 <%= absence.persisted? ? 'justify-between' : 'justify-end' %>">
+    <% if absence.persisted? %>
+      <button type="button" 
+              onclick="delete_absence_modal_<%= unique_id %>.showModal()" 
+              class="btn btn-soft btn-error inline-flex items-center gap-2 normal-case w-full sm:w-auto order-last sm:order-first">
+        <%= embedded_svg "icons/delete.svg", class: "w-4 h-4 fill-current" %>
+        <span>Supprimer</span>
+      </button>
+    <% end %>
+    <div class="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
+      <button type="button" 
+              class="btn btn-soft btn-secondary inline-flex items-center gap-2 normal-case flex-1 sm:flex-none justify-center" 
+              onclick="this.closest('dialog').close()">
+        <%= embedded_svg "icons/cancel.svg", class: "w-4 h-4 fill-current" %>
+        <span>Annuler</span>
+      </button>
+      <%= f.button type: :submit, 
+                   class: "btn btn-primary inline-flex items-center justify-center gap-2 normal-case px-6 flex-1 sm:flex-none" do %>
+        <%= embedded_svg "icons/check.svg", class: "w-4 h-4 fill-current" %>
+        <span>Enregistrer</span>
+      <% end %>
+    </div>
   </div>
+<% end %>
+<% if absence.persisted? %>
+  <dialog id="delete_absence_modal_<%= unique_id %>" class="modal">
+    <div class="modal-box max-w-sm border border-slate-100 shadow-2xl">
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+      </form>
+      <div class="flex flex-col items-center text-center p-2">
+        <div class="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mb-4">
+          <%= embedded_svg "icons/delete.svg", class: "w-6 h-6 fill-current" %>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900 mb-2">
+          Supprimer l'absence ?
+        </h3>
+        <p class="text-sm text-slate-500 leading-relaxed mb-6">
+          Êtes-vous certain de vouloir supprimer cette absence del <span class="font-semibold text-slate-700"><%= l(absence.du, format: "%e %B %Y") %></span> ? Cette action est irréversible.
+        </p>
+        <div class="flex items-center gap-3 w-full">
+          <form method="dialog" class="flex-1">
+            <button class="btn btn-neutral btn-outline w-full normal-case">Annuler</button>
+          </form>
+          <%= link_to absence_path(absence), data: { turbo_method: :delete }, class: "btn btn-error text-white flex-1 normal-case" do %>
+            Oui, supprimer
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>Fermer</button>
+    </form>
+  </dialog>
 <% end %>

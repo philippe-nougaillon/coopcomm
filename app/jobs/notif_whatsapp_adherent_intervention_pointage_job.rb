@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class NotifWhatsappAdherentInterventionPointageJob < ApplicationJob
   queue_as :default
   require 'twilio-ruby'
@@ -11,6 +13,7 @@ class NotifWhatsappAdherentInterventionPointageJob < ApplicationJob
       from: "whatsapp:#{ENV['TWILIO_PHONE_NUMBER']}",
       to: "whatsapp:#{adherent.téléphone}"
     )
-    MailLog.create(organisation_id: intervention.organisation_id, user_id: 0, message_id: response.sid, to: adherent.téléphone, subject: "Intervention pointage", channel: 1)
+    MailLog.create(organisation_id: intervention.organisation&.id, user_id: 0, message_id: response.sid,
+                   to: adherent.téléphone, subject: 'Intervention pointage', channel: 1)
   end
 end

@@ -1,27 +1,30 @@
+# frozen_string_literal: true
+
 class UsersController < ApplicationController
-  before_action :set_user, only: %i[ show edit update destroy inviter edit_password update_password ]
+  before_action :set_user, only: %i[show edit update destroy inviter edit_password update_password]
   # la méthode reactivate a tout de même un authorize
-  before_action :is_user_authorized, except: %i[ reactivate ] 
-  before_action :set_users_tags, only: [:new, :create, :edit, :update]
+  before_action :is_user_authorized, except: %i[reactivate]
+  # Déclaré dans application_controller.rb
+  before_action :set_users_tags, only: %i[new create edit update]
 
   require 'capture_stdout'
 
   # GET /users or /users.json
   def index
-    @services = current_user.services
+    # Périmètre de services filtré (menu + pré-filtre admin), cf. ApplicationController.
+    @users = User.by_service(scoped_services(:services))
 
-    @users = User.by_service(params[:services].presence || @services)
-    
     @users = @users.unscoped.discarded if params[:discarded].present?
     @users = @users.ordered
 
     if params[:search].present?
-      @users = @users.where("users.nom ILIKE :search OR users.prénom ILIKE :search", {search: "%#{params[:search]}%"})
+      @users = @users.where('users.nom ILIKE :search OR users.prénom ILIKE :search', { search: "%#{params[:search]}%" })
     end
 
-    if params[:rôle].present?
-      @users = @users.where(rôle: params[:rôle])
-    end
+    @users = @users.where(rôle: params[:rôle]) if params[:rôle].present?
+
+    # ✅ V1 : filtrage par tag
+    @users = @users.tagged_with(params[:user_tag]) if params[:user_tag].present?
 
     if params[:absent].present?
       user_ids = []
@@ -31,6 +34,9 @@ class UsersController < ApplicationController
       @users = @users.where(id: user_ids)
     end
 
+    # ✅ V2 : optimisation N+1
+    @users = @users.includes(:taggings).with_attached_profile_picture
+
     respond_to do |format|
       format.html do
         @users = @users.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
@@ -38,7 +44,7 @@ class UsersController < ApplicationController
       end
 
       format.xls do
-        xls_file = AgentsToXls.new(@users.agent).call
+        xls_file = ExportToXls::Agents.call(@users.agent)
         send_data xls_file, filename: "Agents_#{l Date.today}.xls"
       end
     end
@@ -48,12 +54,34 @@ class UsersController < ApplicationController
   def show
     # TODO : Stale à mettre au plus proche du render
     # if stale?(@user)
-      @absences = @user.absences.ordered
-      @audits = @user.own_and_associated_audits.reorder(id: :desc)
+    @absences = @user.absences.ordered
+    
+    all_audits = @user.own_and_associated_audits.reorder(id: :desc).to_a
 
-      @pagy, @audits = pagy(@audits, items: 10)
-    # end
+    filtered_audits = all_audits.reject do |audit|
+      if audit.auditable_type == 'User'
+        changes = audit.audited_changes
+        
+        is_only_cookie = changes.keys == ['remember_created_at'] && changes['remember_created_at']&.first.nil?
+
+        is_technical_cleanup = changes.key?('discarded_at') && changes.key?('remember_created_at') && changes['remember_created_at']&.last.nil?
+
+        is_only_cookie || is_technical_cleanup
+      else
+        false
+      end
+    end
+
+    page_number = [params[:page].to_i, 1].max
+    items_per_page = 10
+    
+    @audits = filtered_audits.slice((page_number - 1) * items_per_page, items_per_page) || []
+    
+    @pagy = Pagy.new(count: filtered_audits.size, page: page_number, items: items_per_page)
   end
+
+
+
 
   # GET /users/new
   def new
@@ -61,8 +89,7 @@ class UsersController < ApplicationController
   end
 
   # GET /users/1/edit
-  def edit
-  end
+  def edit; end
 
   # POST /users or /users.json
   def create
@@ -70,14 +97,13 @@ class UsersController < ApplicationController
     @user.password = User.generate_random_password
 
     # Force le rôle à agent si l'utilisateur courant est un manager
-    if current_user.manager?
-      @user.rôle = "agent"
-    end
+    @user.rôle = 'agent' if current_user.manager?
 
     respond_to do |format|
       if @user.save
         @user.invite!(current_user)
-        format.html { redirect_to user_url(@user), notice: "Utilisateur créé avec succès." }
+        session.delete(:return_to)
+        format.html { redirect_to user_url(@user), notice: 'Utilisateur créé avec succès.' }
         format.json { render :show, status: :created, location: @user }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -93,31 +119,31 @@ class UsersController < ApplicationController
     respond_to do |format|
       if @user.save
         bypass_sign_in(@user) if @user == current_user
-        format.html { redirect_to user_url(@user), notice: "Utilisateur modifié avec succès." }
+        format.html { redirect_to user_url(@user), notice: 'Utilisateur modifié avec succès.' }
         format.json { render :show, status: :ok, location: @user }
       else
         format.html { render :edit, status: :unprocessable_entity }
-        
+
         format.turbo_stream do
           if params[:from_absence_modal]
             absence_en_erreur = @user.absences.to_a.find(&:new_record?) || @user.absences.last
             render turbo_stream: turbo_stream.replace(
-              "absence_form", 
-              partial: "absence_form", 
-              locals: { 
+              'absence_form',
+              partial: 'absence_form',
+              locals: {
                 user: @user,
-                absence: absence_en_erreur 
+                absence: absence_en_erreur
               }
             )
           else
             render turbo_stream: turbo_stream.replace(
               @user,
-              partial: "users/form", # J'ai mis 'users/form' par précaution, adapte si besoin
+              partial: 'users/form',
               locals: { user: @user }
             )
           end
         end
-        
+
         format.json { render json: @user.errors, status: :unprocessable_entity }
       end
     end
@@ -128,7 +154,7 @@ class UsersController < ApplicationController
     @user.discard
 
     respond_to do |format|
-      format.html { redirect_to users_url, notice: "Utilisateur supprimé avec succès." }
+      format.html { redirect_to users_url, notice: 'Utilisateur supprimé avec succès.' }
       format.json { head :no_content }
     end
   end
@@ -136,12 +162,17 @@ class UsersController < ApplicationController
   def agent_calendrier
     params[:vue] ||= 'calendrier'
     params[:date] = Date.today if params[:date].blank?
-    @date = params[:date].to_date
+    
+    fecha_base = params[:date].to_date
+    @date = fecha_base.beginning_of_week 
+    @date_fin = fecha_base.end_of_week   
+
     @services = current_user.services
     @agents = User.by_service(params[:service].presence || @services).agent
-
+    
     if params[:search].present?
-      @agents = @agents.where("users.nom ILIKE :search OR users.prénom ILIKE :search OR users.email ILIKE :search", {search: "%#{params[:search]}%"})
+      @agents = @agents.where('users.nom ILIKE :search OR users.prénom ILIKE :search OR users.email ILIKE :search',
+                              { search: "%#{params[:search]}%" })
     end
 
     # Le code actuel n'est pas utile. Si besoin on peut le faire sur la période (@date..@date_fin). Le mieux serait p-e de faire des cases grises directement dans le calendrier.
@@ -153,157 +184,191 @@ class UsersController < ApplicationController
     #   @agents = @agents.where(id: agent_ids)
     # end
 
-    @date_fin = @date + 13.day
+    @date_fin = @date + 6.day
+
+    # ✅ V2 : optimisation N+1
+    @agents = @agents.with_attached_profile_picture
 
     @agents = @agents.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
     @pagy, @agents = pagy(@agents, items: 10)
   end
 
-  def import
-  end
+  def import; end
 
   def import_do
     if params[:upload].present?
-      @mdp = ""
+      @mdp = ''
+      @success_logs = [] # Utilisateurs traités avec succès
+      @error_logs   = [] # Utilisateurs en erreur
+
+      # ✅ V2 : capture stdout pour logs détaillés dans la vue
       @stream = capture_stdout do
-        # Enregistre le fichier localement (format = Date + nom du fichier)
-        filename = I18n.l(Time.now, format: :long) + ' - ' + params[:upload].original_filename
+        # On lit directement le fichier uploadé (Tempfile) : surtout pas de copie
+        # dans public/ — elle y serait servie sans authentification (PII).
+        file_with_path = params[:upload].tempfile.path
 
-        file_with_path = Rails.root.join('public', filename)
-        File.open(file_with_path, 'wb') do |file|
-          file.write(params[:upload].read)
-        end
-
-        @importes = @errors = 0 
+        @importes = @errors = 0
         index = 1
 
         # IMPORT XLS
         Spreadsheet.client_encoding = 'UTF-8'
         book = Spreadsheet.open file_with_path
         sheet1 = book.worksheet 0
-        headers = User.xls_headers
 
-        sheet1.each 1 do |row|
-          index += 1
-          next unless row[0]
+        # ✅ V1 : mapping dynamique des colonnes (robuste aux variations d'en-têtes)
+        first_row = sheet1.row(0).map { |cell| cell.to_s.strip.downcase }
 
-          user = User
-                    .where("lower(email) = ?", 
-                      row[headers.index 'Email']&.strip&.downcase, 
-                    )
-                    .first_or_initialize
+        idx_nom       = first_row.index { |h| h.start_with?('nom') }
+        idx_prenom    = first_row.index { |h| h.start_with?('prénom') || h.start_with?('prenom') }
+        idx_email     = first_row.index { |h| h.start_with?('email') }
+        idx_service   = first_row.index { |h| h.start_with?('service') }
+        idx_telephone = first_row.index { |h| h.start_with?('téléphone') || h.start_with?('telephone') }
+        idx_memo      = first_row.index { |h| h.start_with?('mémo') || h.start_with?('memo') }
 
-                    
-                    new_record = user.new_record?
-                    
-          user.organisation_id = current_organisation.id
-          user.nom = row[headers.index 'Nom']&.strip&.upcase
-          user.prénom = row[headers.index 'Prénom']&.strip&.humanize
-          user.email = row[headers.index 'Email']
-          user.téléphone = row[headers.index 'Téléphone']
-          if new_record
-            password = User.generate_random_password
-            user.password = password 
-            @mdp << password
-          end
-          user.rôle = "agent"
-          service = Service.find_by(nom: row[headers.index 'Service']&.humanize)
+        # ✅ V1 : validation structurelle avant d'itérer
+        if idx_nom.nil? || idx_prenom.nil? || idx_email.nil? || idx_service.nil?
+          flash.now[:alert] =
+            'Structure du fichier invalide. Les colonnes obligatoires (Nom, Prénom, Email, Service) sont introuvables.'
+          @errors += 1
+        else
+          sheet1.each 1 do |row|
+            index += 1
+            next unless row[idx_nom].present?
 
-          if service
-            already_linked = user.user_services.any? { |us| us.service_id == service.id && !us.marked_for_destruction? }
-            unless already_linked
-              user.user_services.build(service: service)
-            end
-          end
+            email_value = row[idx_email]&.to_s&.strip&.downcase
+            next if email_value.blank?
 
-          user.memo = row[headers.index 'Mémo']
+            user = User.where('lower(email) = ?', email_value).first_or_initialize
+            new_record = user.new_record?
 
-          user.valid?
-
-          # À faire après user.valid?, sinon l'erreur sera supprimé
-          unless service
-            user.errors.add(:services, "introuvable dans la base de données")
-          end
-
-          safe_changes = user.changes.except("encrypted_password", "password", "slug", "organisation_id")
-          display_changes = new_record ? safe_changes.transform_values(&:last) : safe_changes.dup
-
-          # On détecte si les services ont changé en mémoire
-          # (S'il y a une nouvelle relation non sauvegardée, ou une relation marquée pour destruction)
-          services_changed = user.user_services.any? { |us| us.new_record? || us.marked_for_destruction? }
-
-          # On n'ajoute la clé "services" que s'il y a eu un changement ou si c'est un nouvel utilisateur
-          if new_record || services_changed
-            nouveaux_services = user.user_services.reject(&:marked_for_destruction?).filter_map { |us| us.service&.nom }.join(', ')
-            nouveaux_services = "Aucun" if nouveaux_services.blank?
+            user.nom       = row[idx_nom]&.to_s&.strip&.upcase
+            user.prénom    = row[idx_prenom]&.to_s&.strip&.humanize
+            user.email     = email_value
+            user.téléphone = idx_telephone ? row[idx_telephone]&.to_s&.strip : nil
+            user.memo      = idx_memo ? row[idx_memo]&.to_s&.strip : nil
 
             if new_record
-              display_changes["service"] = nouveaux_services
-            else
-              # Si c'est une MAJ, on récupère l'ancien état pour imiter le format [Avant, Après] de Rails
-              anciens_services = user.user_services.select(&:persisted?).filter_map { |us| us.service&.nom }.join(', ')
-              anciens_services = "Aucun" if anciens_services.blank?
-              
-              display_changes["service"] = [anciens_services, nouveaux_services]
+              password = User.generate_random_password
+              user.password = password
+              @mdp << password
             end
-          end
+            user.rôle = 'agent'
 
-          formatted_changes = display_changes.symbolize_keys
+            service_name = row[idx_service]&.to_s&.strip&.humanize
+            service = Service.find_by(nom: service_name)
 
-          if formatted_changes.any?
-            puts "#{new_record ? 'NOUVEL' : 'MISE À JOUR'} UTILISATEUR => id: #{user.id || 'N/A'}, changes: #{formatted_changes.inspect}"
-          else
-            puts "UTILISATEUR INCHANGÉ => id: #{user.id}"
-          end
+            if service
+              already_linked = user.user_services.any? do |us|
+                us.service_id == service.id && !us.marked_for_destruction?
+              end
+              user.user_services.build(service: service) unless already_linked
+            end
 
-          if user.errors.empty? 
-            if params[:save] == 'true'
-              user.save 
-              
+            user.valid?
+
+            # ✅ Après user.valid? pour ne pas écraser l'erreur
+            unless service
+              user.errors.add(:services,
+                              "introuvable dans la base de données (Valeur lue: '#{service_name || 'VIDE'}')")
+            end
+
+            # ✅ V2 : logs détaillés des changements
+            safe_changes = user.changes.except('encrypted_password', 'password', 'slug')
+            display_changes = new_record ? safe_changes.transform_values(&:last) : safe_changes.dup
+
+            services_changed = user.user_services.any? { |us| us.new_record? || us.marked_for_destruction? }
+
+            if new_record || services_changed
+              nouveaux_services = user.user_services.reject(&:marked_for_destruction?).filter_map do |us|
+                us.service&.nom
+              end.join(', ')
+              nouveaux_services = 'Aucun' if nouveaux_services.blank?
+
               if new_record
-                user.invite!(current_user)
+                display_changes['service'] = nouveaux_services
+              else
+                anciens_services = user.user_services.select(&:persisted?).filter_map do |us|
+                  us.service&.nom
+                end.join(', ')
+                anciens_services = 'Aucun' if anciens_services.blank?
+                display_changes['service'] = [anciens_services, nouveaux_services]
               end
             end
-            @importes += 1
-          else
-            puts " || ERREURS: " + user.errors.messages.map { |m| "#{m.first} => #{m.last}" }.join(', ')
-            @errors += 1
+
+            formatted_changes = display_changes.symbolize_keys
+
+            if formatted_changes.any?
+              puts "#{new_record ? 'NOUVEL' : 'MISE À JOUR'} UTILISATEUR => id: #{user.id || 'N/A'}, changes: #{formatted_changes.inspect}"
+            else
+              puts "UTILISATEUR INCHANGÉ => id: #{user.id}"
+            end
+
+            if user.errors.empty?
+              if params[:save] == 'true'
+                user.save
+                user.invite!(current_user) if new_record
+              end
+              @importes += 1
+              # ✅ V1 : alimentation des logs succès pour la vue
+              @success_logs << {
+                type: new_record ? 'Nouveau' : 'Mise à jour',
+                email: user.email,
+                nom: "#{user.nom} #{user.prénom}",
+                service: service&.nom || 'Aucun'
+              }
+            else
+              puts ' || ERREURS: ' + user.errors.messages.map { |m| "#{m.first} => #{m.last}" }.join(', ')
+              @errors += 1
+              # ✅ V1 : alimentation des logs erreurs pour la vue
+              @error_logs << {
+                email: email_value,
+                nom: "#{row[idx_nom]} #{row[idx_prenom]}",
+                service_tente: row[idx_service],
+                messages: user.errors.full_messages
+              }
+            end
           end
-        end
 
-        puts 
-        puts "----------- Les modifications n'ont pas été enregistrées ! ---------------" unless params[:save] == 'true'
-        puts
+          puts
+          unless params[:save] == 'true'
+            puts "----------- Les modifications n'ont pas été enregistrées ! ---------------"
+          end
+          puts
 
-        puts "=" * 40
-        puts "Lignes importées: #{@importes} | Lignes ignorées: #{@errors}"
-        puts "=" * 40
+          puts '=' * 40
+          puts "Lignes importées: #{@importes} | Lignes ignorées: #{@errors}"
+          puts '=' * 40
 
-        if @errors > 0
-          flash[:alert] = @importes == 0 ? "L'importation a échouée" : "L'importation a partiellement échouée"
-        else
-          flash[:notice] = "L'importation a bien été exécutée"
+          # ✅ V1 : flash.now correct (pas de redirect, on reste sur la page)
+          if @errors.positive?
+            flash.now[:alert] = @importes.zero? ? "L'importation a échouée." : "L'importation a partiellement échouée."
+          else
+            flash.now[:notice] = "L'importation a bien été exécutée."
+          end
         end
       end
     else
       flash[:alert] = "Manque le fichier source pour pouvoir lancer l'importation !"
       redirect_to action: 'import'
-    end 
+    end
   end
 
   def inviter
     @user.invite!(current_user)
-    redirect_to user_path(@user), notice: "Utilisateur invité"
+    redirect_to user_path(@user), notice: 'Lien d\'accès renvoyé avec succès.'
   end
 
-  def edit_password
+  def interventions_average
+    interventions.average(:note)&.round(2) || 0
   end
+
+  def edit_password; end
 
   def update_password
     respond_to do |format|
-      if @user.update(user_params)
+      if @user.update(password_params)
         bypass_sign_in(@user) if @user == current_user
-        format.html { redirect_to user_url(@user), notice: "Mot de passe modifié avec succès." }
+        format.html { redirect_to user_url(@user), notice: 'Mot de passe modifié avec succès.' }
         format.json { render :show, status: :ok, location: @user }
       else
         format.html { render :edit_password, status: :unprocessable_entity }
@@ -312,6 +377,7 @@ class UsersController < ApplicationController
     end
   end
 
+
   def reactivate
     @user = User.unscoped.find_by(slug: params[:id])
     authorize @user
@@ -319,39 +385,59 @@ class UsersController < ApplicationController
     if @user.undiscard
       redirect_to users_path, notice: "Le compte de #{@user.nom_prénom} a été réactivé avec succès."
     else
-      redirect_to users_path(discarded: true), alert: "Impossible de réactiver ce compte."
+      redirect_to users_path(discarded: true), alert: 'Impossible de réactiver ce compte.'
     end
   end
 
-
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_user
-      @user = User.find_by(slug: params[:id])
-      if @user.nil?
-        redirect_to root_path, alert: "Utilisateur introuvable"
-      end
+
+  def set_user
+    @user = User.find_by(slug: params[:id])
+    return unless @user.nil?
+
+    redirect_to root_path, alert: 'Utilisateur introuvable'
+  end
+
+  # Only allow a list of trusted parameters through.
+  # :rôle n'est accepté que d'un administrateur (seul à voir le sélecteur dans le
+  # formulaire) ; service_ids est borné aux services de l'organisation courante.
+  def user_params
+    permitted = params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :memo,
+                                             :address, :longitude, :latitude, :profile_picture, :color, tag_list: [], absences_attributes: %i[id du au motif observation matin après_midi _destroy], service_ids: [])
+
+    rôle = params[:user][:rôle]
+    permitted[:rôle] = rôle if current_user.administrateur? && User.rôles.key?(rôle.to_s)
+
+    # service_ids= écrit immédiatement en base (has_many through) : on ne garde
+    # que les services de l'organisation courante, et on ne touche à rien si la
+    # demande est entièrement hors organisation (tentative de forgerie).
+    demandés = Array(permitted[:service_ids]).compact_blank
+    if demandés.any?
+      valides = current_organisation.services.where(id: demandés).ids
+      valides.any? ? permitted[:service_ids] = valides : permitted.delete(:service_ids)
     end
 
-    # Only allow a list of trusted parameters through.
-    def user_params
-      params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :rôle, :memo, :address, :longitude, :latitude, :profile_picture, :color, tag_list: [], absences_attributes: [:id, :du, :au, :motif, :observation, :matin, :après_midi, :_destroy], service_ids: [])
-    end
+    permitted
 
-    def is_user_authorized
-      authorize @user ? @user : User
-    end
+  end
 
-    def sortable_columns
-      ['users.nom', 'users.rôle', 'users.service', 'users.email', 'users.memo']
-    end
+  def password_params
+    params.require(:user).permit(:password, :password_confirmation)
+  end
 
-    def sort_column
-      sortable_columns.include?(params[:column]) ? params[:column] : "users.nom"
-    end
+  def is_user_authorized
+    authorize @user || User
+  end
 
-    def sort_direction
-      %w[asc desc].include?(params[:direction]) ? params[:direction] : "asc"
-    end
+  def sortable_columns
+    ['users.nom', 'users.rôle', 'users.service', 'users.email', 'users.memo']
+  end
 
+  def sort_column
+    sortable_columns.include?(params[:column]) ? params[:column] : 'users.nom'
+  end
+
+  def sort_direction
+    %w[asc desc].include?(params[:direction]) ? params[:direction] : 'asc'
+  end
 end

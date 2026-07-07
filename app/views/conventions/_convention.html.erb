@@ -1,0 +1,76 @@
+<tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
+  <td class="px-4 py-3 text-lg font-semibold text-primary">
+    <%= link_to convention.user.nom_prénom, convention, class: "hover:underline" %>
+  </td>
+  <td class="px-4 py-3"><%= convention.service&.nom %></td>
+  <td class="px-4 py-3 text-nowrap">
+    <% prog = convention_progress(convention) %>
+    <%# Espace invisible miroir de la barre, pour garder la période centrée verticalement comme les autres colonnes %>
+    <% if prog %>
+      <div class="mb-1 invisible" aria-hidden="true">
+        <progress class="progress w-32"></progress>
+      </div>
+    <% end %>
+    <%= l(convention.date_début, format: :long) if convention.date_début %>
+    <span class="text-slate-400">→</span>
+    <%= convention.date_fin_prévue ? l(convention.date_fin_prévue) : "Non renseignée" %>
+    <div class="mt-1" title="<%= "Du #{l(convention.date_début, format: :long)}#{" au #{l(convention.date_fin_prévue, format: :long)}"}" %>">
+      <div class="relative w-60 flex items-center h-6">
+        <progress class="progress  <%=prog[:color] %> w-full h-4" value="<%= prog[:percent] %>" max="100"></progress>
+        <div class="absolute top-0 bottom-0 w-1 <%= prog[:indicateur_color] %> rounded dashed" style="left: <%= prog[:indicateur] %>%;" title="<%= prog[:indicateur_label] %>"></div>
+      </div>
+    </td>
+    <td class="px-4 py-3 text-nowrap">
+      <%= convention.temps_total_interventions.round(1) %> h / <%= convention.heures_conventionnees %> h (<%= prog[:indicateur] %>%)
+    </td>
+    <td class="px-4 py-3">
+      <% if convention.document.attached? %>
+        <%= link_to rails_blob_path(convention.document, disposition: "inline"),
+            target: "_blank", title: convention.document.filename.to_s,
+            class: "inline-block" do %>
+          <% if convention.document.representable? %>
+            <%= image_tag convention.document.representation(resize_to_limit: [80, 100]),
+                alt: convention.document.filename.to_s,
+                class: "h-20 w-auto rounded border border-base-300 hover:opacity-80 transition" %>
+          <% else %>
+            <span class="flex flex-col items-center gap-1 text-primary hover:underline">
+              <span class="material-symbols-outlined text-4xl">description</span>
+              <span class="text-xs max-w-32 truncate"><%= convention.document.filename %></span>
+            </span>
+          <% end %>
+        <% end %>
+      <% else %>
+        <span class="text-slate-400 text-sm">Aucun document</span>
+      <% end %>
+    </td>
+    <td class="px-4 py-3">
+      <% if convention.mémo.present? %>
+        <span class="block max-w-48 truncate text-sm text-slate-500 cursor-help"
+            title="<%= convention.mémo %>"><%= convention.mémo %></span>
+      <% else %>
+        <span class="text-slate-400 text-sm">—</span>
+      <% end %>
+    </td>
+    <td class="px-4 py-3">
+      <div class="flex gap-2 items-center justify-end">
+        <% if convention.document.attached? %>
+          <%= link_to rails_blob_path(convention.document, disposition: "attachment"),
+              class: "btn btn-sm btn-ghost", title: "Télécharger le document" do %>
+            <span class="material-symbols-outlined">download</span>
+          <% end %>
+        <% end %>
+        <% if policy(convention).update? %>
+          <%= link_to edit_convention_path(convention), class: "btn btn-sm btn-primary", title: "Modifier" do %>
+            <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
+            <span class="hidden lg:inline">Modifier</span>
+          <% end %>
+        <% end %>
+        <% if policy(convention).destroy? %>
+          <%= button_to convention_path(convention), method: :delete, class: "btn btn-sm", title: "Supprimer",
+              form: { data: { turbo_confirm: "Supprimer cette convention ?" } } do %>
+            <span class="material-symbols-outlined">delete</span>
+          <% end %>
+        <% end %>
+      </div>
+    </td>
+  </tr>

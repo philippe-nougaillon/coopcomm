@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddUserToMouvements < ActiveRecord::Migration[8.0]
   def change
     add_reference :mouvements, :user, null: true, foreign_key: true
@@ -11,9 +13,7 @@ class AddUserToMouvements < ActiveRecord::Migration[8.0]
           target_user_id = nil
 
           # A. On cherche le premier agent de l'intervention
-          if mouvement.intervention.present?
-            target_user_id = mouvement.intervention.agents.first&.id
-          end
+          target_user_id = mouvement.intervention.agents.first&.id if mouvement.intervention.present?
 
           # B. S'il n'y a pas d'agent, on cherche le créateur de l'outil via Audited
           if target_user_id.nil? && mouvement.tool.present?
@@ -21,9 +21,9 @@ class AddUserToMouvements < ActiveRecord::Migration[8.0]
             target_user_id = creation_audit&.user_id
           end
 
-          # C. SÉCURITÉ : Il te faut un fallback absolu au cas où l'outil a été créé avant 
+          # C. SÉCURITÉ : Il te faut un fallback absolu au cas où l'outil a été créé avant
           # l'installation de Audited ou si la BDD est un peu sale.
-          target_user_id ||= User.first&.id 
+          target_user_id ||= User.first&.id
 
           # On met à jour silencieusement (sans déclencher validations/callbacks/audits)
           mouvement.update_column(:user_id, target_user_id) if target_user_id

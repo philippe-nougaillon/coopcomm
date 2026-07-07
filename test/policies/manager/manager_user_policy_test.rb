@@ -1,9 +1,11 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
   def setup
     manager_paris = users(:manager_paris)
-    
+
     user_paris = users(:bond)
     user_paris_service_different = users(:martin_technique_paris)
 
@@ -15,7 +17,7 @@ class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Index
-  test "accès autorisé pour un manager sur la page index des users" do
+  test 'accès autorisé pour un manager sur la page index des users' do
     assert @policy.index?
   end
 
@@ -28,7 +30,7 @@ class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
     refute @policy_services_differents.show?
   end
 
-  test "accès autorisé pour un manager sur sa page show" do
+  test 'accès autorisé pour un manager sur sa page show' do
     assert @policy_user_myself.show?
   end
 
@@ -65,24 +67,24 @@ class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Destroy
-  test "accès autorisé pour un manager de supprimer un user" do
+  test 'accès autorisé pour un manager de supprimer un user' do
     assert @policy.destroy?
   end
 
-  test "accès interdit pour un manager de supprimer un user sans aucun service en commun avec le manager" do
+  test 'accès interdit pour un manager de supprimer un user sans aucun service en commun avec le manager' do
     refute @policy_services_differents.destroy?
   end
 
-  test "accès interdit pour un manager de supprimer un manager" do
+  test 'accès interdit pour un manager de supprimer un manager' do
     refute @policy_manager.destroy?
   end
 
-  test "accès interdit pour un manager de supprimer un administrateur" do
+  test 'accès interdit pour un manager de supprimer un administrateur' do
     refute @policy_administrateur.destroy?
   end
 
   # agent calendrier
-  test "accès autorisé pour un manager sur la page agent_calendrier" do
+  test 'accès autorisé pour un manager sur la page agent_calendrier' do
     assert @policy.agent_calendrier?
   end
 
@@ -92,7 +94,7 @@ class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Edit password
-  test "accès autorisé pour un manager sur sa page edit_password" do
+  test 'accès autorisé pour un manager sur sa page edit_password' do
     assert @policy_user_myself.edit_password?
   end
 
@@ -101,7 +103,7 @@ class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Update password
-  test "accès autorisé pour un manager sur sa page update_password" do
+  test 'accès autorisé pour un manager sur sa page update_password' do
     assert @policy_user_myself.update_password?
   end
 

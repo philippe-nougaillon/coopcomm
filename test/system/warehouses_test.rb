@@ -1,43 +1,37 @@
-require "application_system_test_case"
+# frozen_string_literal: true
+
+require 'application_system_test_case'
 
 class WarehousesTest < ApplicationSystemTestCase
   setup do
-    @warehouse = warehouses(:one)
+    @admin = users(:administrateur_paris)
+    login(@admin)
   end
 
-  test "visiting the index" do
-    visit warehouses_url
-    assert_selector "h1", text: "Warehouses"
+  test 'créer un site depuis les paramètres' do
+    visit admin_parametres_url(tab: 'sites')
+    click_sur_boutton_ajouter('warehouse')
+
+    assert_selector 'h1', text: 'Nouveau site'
+    fill_in 'warehouse_name', with: 'Atelier municipal'
+    fill_in 'warehouse_address', with: '1 rue de la Mairie'
+    # Les coordonnées sont normalement posées par l'autocomplétion Google Places
+    page.execute_script("document.querySelector('[data-places-target=\"latitude\"]').value = '48.89'")
+    page.execute_script("document.querySelector('[data-places-target=\"longitude\"]').value = '6.05'")
+    click_on 'Enregistrer'
+
+    assert_text 'Site créé avec succès'
+    assert Warehouse.exists?(name: 'Atelier municipal')
   end
 
-  test "should create warehouse" do
-    visit warehouses_url
-    click_on "New warehouse"
+  test 'refuser un site sans localisation' do
+    visit admin_parametres_url(tab: 'sites')
+    click_sur_boutton_ajouter('warehouse')
 
-    fill_in "Localisation", with: @warehouse.localisation
-    fill_in "Name", with: @warehouse.name
-    click_on "Create Warehouse"
+    fill_in 'warehouse_name', with: 'Site sans adresse'
+    click_on 'Enregistrer'
 
-    assert_text "Warehouse was successfully created"
-    click_on "Back"
-  end
-
-  test "should update Warehouse" do
-    visit warehouse_url(@warehouse)
-    click_on "Edit this warehouse", match: :first
-
-    fill_in "Localisation", with: @warehouse.localisation
-    fill_in "Name", with: @warehouse.name
-    click_on "Update Warehouse"
-
-    assert_text "Warehouse was successfully updated"
-    click_on "Back"
-  end
-
-  test "should destroy Warehouse" do
-    visit warehouse_url(@warehouse)
-    accept_confirm { click_on "Destroy this warehouse", match: :first }
-
-    assert_text "Warehouse was successfully destroyed"
+    assert_no_text 'Site créé avec succès'
+    assert_not Warehouse.exists?(name: 'Site sans adresse')
   end
 end

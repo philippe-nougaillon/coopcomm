@@ -1,7 +1,9 @@
-require "test_helper"
+
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
-
   # Largeur / Hauteur
   def self.taille_pc
     [1400, 1400]
@@ -11,20 +13,33 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     [544, 900] # 544 est le minimum en largeur
   end
 
-  driven_by :selenium, using: :chrome, screen_size: taille_tel
-  # driven_by :selenium, using: :headless_chrome, screen_size: taille_tel
+  # 💡 CORRECTION : On passe sur :headless_chrome et on configure les options du bloc
+  driven_by :selenium, using: :headless_chrome, screen_size: taille_tel do |driver_options|
+    driver_options.add_argument('--no-sandbox')
+    driver_options.add_argument('--disable-dev-shm-usage')
+    driver_options.add_argument('--disable-gpu')
+  end
+
+  # Ceinture et bretelles : certains environnements Chrome ignorent screen_size
+  # au lancement — les tests sont écrits pour la largeur mobile (544 px).
+  setup do
+    Capybara.current_session.current_window.resize_to(*self.class.taille_tel)
+  end
+
+  # Le toast de notification n'a plus de bouton de fermeture (il s'auto-masque
+  # apres 5 s) ; on le retire du DOM pour qu'il ne masque pas la barre mobile.
+  def fermer_notification
+    page.execute_script("document.querySelectorAll('#notification > div').forEach(e => e.remove())")
+  end
 
   # Pour cliquer sur le bouton d'ajout d'un element en fonction du format de l'écran
   def click_sur_boutton_ajouter(element)
-    id_boutton_ajout_element_pc = "[data-testid=\"ajouter_#{element}_pc\"]"
-    id_boutton_ajout_element_mobile = "[data-testid=\"ajouter_#{element}_mobile\"]"
-
-    taille_ecran_test = Capybara.current_session.current_window.size
-
-    if taille_ecran_test == self.class.taille_pc
-      find(id_boutton_ajout_element_pc).click
-    elsif taille_ecran_test == self.class.taille_tel
-      find(id_boutton_ajout_element_mobile).click
+    # Selon les pages : testid simple, ou variantes _mobile/_pc (le bouton _pc
+    # reste visible en largeur mobile sur certaines pages, seul son libelle est masque)
+    ["ajouter_#{element}", "ajouter_#{element}_mobile", "ajouter_#{element}_pc"].each do |tid|
+      sel = "[data-testid=\"#{tid}\"]"
+      return find(sel).click if has_css?(sel, wait: 0)
     end
+    raise Capybara::ElementNotFound, "Aucun bouton d'ajout visible pour #{element}"
   end
 end

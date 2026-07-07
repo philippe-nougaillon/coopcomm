@@ -1,0 +1,92 @@
+<div class="max-w-3xl mx-auto my-6 bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+  <%= form_with model: @facture,
+                data: { controller: "nested-form", nested_form_wrapper_selector_value: ".nested-form-wrapper" } do |f| %>
+
+    <% if @facture.errors.any? %>
+      <div class="bg-red-50 text-red-500 px-4 py-3 font-medium rounded-lg mb-4 border border-red-200">
+        <h2 class="font-black mb-2 text-sm md:text-base">
+          <%= pluralize(@facture.errors.count, "erreur") %> empêche(nt) l'enregistrement de la facture :
+        </h2>
+        <ul class="list-disc list-inside text-xs opacity-90">
+          <% @facture.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <%# Adhérent : figé s'il est connu (création depuis sa fiche ou édition) %>
+      <div class="form-control w-full">
+        <%= f.label :adherent_id, "Adhérent", class: "label font-semibold text-slate-700" %>
+        <% if @facture.adherent %>
+          <input type="text" value="<%= @facture.adherent.nom_prénom %>" class="input input-sm input-bordered w-full" disabled>
+          <%= f.hidden_field :adherent_id %>
+        <% else %>
+          <%= f.collection_select :adherent_id, @adherents, :id, :nom_prénom,
+                                  { prompt: "Choisir un adhérent" },
+                                  { class: "slim-select w-full", required: true, data: { controller: "slim-select" } } %>
+        <% end %>
+      </div>
+
+      <%# Service : détermine l'organisation et le périmètre de visibilité %>
+      <div class="form-control w-full">
+        <%= f.label :service_id, "Service", class: "label font-semibold text-slate-700" %>
+        <%= f.collection_select :service_id, @services, :id, :nom,
+                                { prompt: "Choisir un service" },
+                                { class: "slim-select w-full", required: true, data: { controller: "slim-select" } } %>
+      </div>
+
+      <div class="form-control w-full">
+        <%= f.label :intitulé, "Intitulé", class: "label font-semibold text-slate-700" %>
+        <%= f.text_field :intitulé, class: "input input-sm input-bordered w-full focus:input-primary", required: true %>
+      </div>
+
+      <div class="form-control w-full">
+        <%= f.label :date_livraison_souhaitée, "Livraison souhaitée", class: "label font-semibold text-slate-700" %>
+        <%= f.date_field :date_livraison_souhaitée, class: "input input-sm input-bordered w-full focus:input-primary" %>
+      </div>
+
+      <div class="form-control w-full sm:col-span-2">
+        <%= f.label :mémo, "Mémo", class: "label font-semibold text-slate-700" %>
+        <%= f.text_area :mémo, rows: 3, class: "textarea textarea-bordered w-full focus:textarea-primary" %>
+      </div>
+    </div>
+
+    <%# Lignes de la facture (formulaire imbriqué) %>
+    <div class="flex items-center gap-4 mt-8 mb-3">
+      <h2 class="text-xl text-secondary font-semibold">Prestations</h2>
+    </div>
+
+    <div>
+      <%= f.fields_for :facture_lignes do |ligne| %>
+        <%= render "prestation_form", f: ligne, prestations: @prestations %>
+      <% end %>
+
+      <div data-nested-form-target="target"></div>
+    </div>
+
+    <template data-nested-form-target="template">
+      <%= f.fields_for :facture_lignes, FactureLigne.new, child_index: "NEW_RECORD" do |ligne| %>
+        <%= render "prestation_form", f: ligne, prestations: @prestations %>
+      <% end %>
+    </template>
+
+    <div class="mt-6 flex justify-between gap-2">
+      <div class="flex gap-2">
+        <%= f.submit "Enregistrer", class: "btn btn-primary" %>
+        <%= link_to "Annuler", (@facture.persisted? ? facture_path(@facture) : factures_path), class: "btn" %>
+      </div>
+      <button type="button" data-action="nested-form#add" class="btn btn-outline btn-success hover:text-white!">
+        + Ajouter une prestation
+      </button>
+    </div>
+  <% end %>
+</div>
+
+<div class="pt-2 pb-6 max-w-3xl mx-auto px-4">
+  <%= link_to factures_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+    <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des factures" %>
+    Retour à la liste des factures
+  <% end %>
+</div>

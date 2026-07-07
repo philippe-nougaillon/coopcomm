@@ -4,11 +4,9 @@
       <%= page_title!('Modifier ce service') %>
     </h1>
   </div>
-
   <%= render "form", service: @service %>
-
   <div class="flex flex-wrap gap-2 mt-4">
     <%= link_to "Voir", @service, class: "btn" %>
-    <%= link_to "Annuler", admin_parametres_path, class: "btn" %>
+    <button type="button" onclick="history.back();" class="btn ">Annuler</button>      
   </div>
 </div>

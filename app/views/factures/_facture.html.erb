@@ -1,0 +1,55 @@
+<tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
+  <td class="px-4 py-3 text-lg font-semibold text-primary">
+    <%= link_to facture.ref, facture, class: "hover:underline" %>
+  </td>
+  <td class="px-4 py-3">
+    <span class="badge text-nowrap font-bold <%= facture.style %>"><%= facture.workflow_state.humanize %></span>
+  </td>
+  <td class="px-4 py-3"><%= facture.adherent&.nom_prénom %></td>
+  <td class="px-4 py-3"><%= facture.service&.nom %></td>
+  <td class="px-4 py-3"><%= facture.intitulé %></td>
+  <td class="px-4 py-3 text-nowrap"><%= l(facture.date_livraison_souhaitée, format: :long) if facture.date_livraison_souhaitée %></td>
+  <td class="px-4 py-3 text-right font-medium"><%= number_to_currency(facture.total_ht) %></td>
+  <td class="px-2 py-3 text-center">
+    <%= link_to "Voir", facture, class: "btn btn-sm" %>
+  </td>
+  <td class="px-2 py-3 text-center">
+    <% if policy(facture).envoyer? && facture.can_envoyer? %>
+      <%= button_to "Envoyer", envoyer_facture_path(facture), class: "btn btn-sm btn-info btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
+    <% end %>
+  </td>
+  <td class="px-2 py-3 text-center">
+    <% if policy(facture).valider? && facture.can_valider? %>
+      <%= button_to "Valider", valider_facture_path(facture), class: "btn btn-sm btn-success btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
+    <% end %>
+  </td>
+  <td class="px-2 py-3 text-center">
+    <% if policy(facture).refuser? && facture.can_refuser? %>
+      <%= button_to "Refuser", refuser_facture_path(facture), class: "btn btn-sm btn-error btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
+    <% end %>
+  </td>
+  <td class="px-2 py-3 text-center">
+    <% if policy(facture).pdf? %>
+      <%= link_to pdf_facture_path(facture, filename: facture.pdf_filename),
+                  class: "btn btn-sm", target: "_blank", title: "Générer le PDF", data: { turbo: false } do %>
+        <span class="material-symbols-outlined">picture_as_pdf</span>
+      <% end %>
+    <% end %>
+  </td>
+  <td class="px-2 py-3 text-center">
+    <% if policy(facture).update? %>
+      <%= link_to edit_facture_path(facture), class: "btn btn-sm btn-primary", title: "Modifier" do %>
+        <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
+        <span class="hidden lg:inline">Modifier</span>
+      <% end %>
+    <% end %>
+  </td>
+  <td class="px-2 py-3 text-center">
+    <% if policy(facture).destroy? %>
+      <%= button_to facture_path(facture), method: :delete, class: "btn btn-sm", title: "Supprimer",
+                    form: { data: { turbo_confirm: "Supprimer cette facture ?" }, class: 'inline-block' } do %>
+        <span class="material-symbols-outlined">delete</span>
+      <% end %>
+    <% end %>
+  </td>
+</tr>

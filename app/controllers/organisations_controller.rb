@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 class OrganisationsController < ApplicationController
-#   before_action :set_organisation, only: %i[ show edit update ]
-#   before_action :is_user_authorized
+  #   before_action :set_organisation, only: %i[ show edit update ]
+  #   before_action :is_user_authorized
 
   # Désactivé
   # GET /organisations/1 or /organisations/1.json
@@ -26,18 +28,18 @@ class OrganisationsController < ApplicationController
   #   end
   # end
 
-#   private
-#     # Use callbacks to share common setup or constraints between actions.
-#     def set_organisation
-#       @organisation = Organisation.find(params[:id])
-#     end
+  #   private
+  #     # Use callbacks to share common setup or constraints between actions.
+  #     def set_organisation
+  #       @organisation = Organisation.find(params[:id])
+  #     end
 
-#     # Only allow a list of trusted parameters through.
-#     def organisation_params
-#       params.require(:organisation).permit(:nom)
-#     end
+  #     # Only allow a list of trusted parameters through.
+  #     def organisation_params
+  #       params.require(:organisation).permit(:nom)
+  #     end
 
-#     def is_user_authorized
-#       authorize @organisation ? @organisation : Organisation
-#     end
+  #     def is_user_authorized
+  #       authorize @organisation ? @organisation : Organisation
+  #     end
 end

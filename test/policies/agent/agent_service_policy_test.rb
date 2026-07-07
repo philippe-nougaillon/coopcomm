@@ -1,4 +1,6 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class AgentServicePolicyTest < ActionDispatch::IntegrationTest
   def setup
@@ -12,7 +14,7 @@ class AgentServicePolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Index
-  test "accès interdit pour un agent sur la page index des services" do
+  test 'accès interdit pour un agent sur la page index des services' do
     refute @policy.index?
   end
 

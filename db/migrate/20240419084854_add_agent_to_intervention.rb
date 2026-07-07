@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddAgentToIntervention < ActiveRecord::Migration[7.1]
   def change
     add_column :interventions, :agent_id, :integer

@@ -1,7 +1,9 @@
-<%= form_with(model: intervention, class: "contents",
+<%= form_with(model: intervention, url: (create_intervention_modele_pointage_interventions_path if @intervention.repeter && @intervention.new_record?), class: "contents",
               data: (current_user.adhérent? ? {} : {
-                controller: "verification-disponibilites",
-                verification_disponibilites_intervention_id_value: (@intervention.id if @intervention.persisted?)
+                controller: ([(@intervention.repeter ? nil : "verification-disponibilites"), "dynamic-select"].compact.join(" ")),
+                verification_disponibilites_intervention_id_value: (@intervention.id if @intervention.persisted?),
+                dynamic_select_url_value: services_for_adherent_interventions_path,
+                dynamic_select_agents_url_value: agents_for_service_interventions_path
               })
     ) do |form| %>
   <% if intervention.errors.any? %>
@@ -9,7 +11,6 @@
       <h2 class="font-black!">
         <%= pluralize(intervention.errors.count, "erreur") %> empêche(nt) cette intervention d'être sauvegardée :
       </h2>
-
       <ul class="list-disc list-inside">
         <% intervention.errors.each do |error| %>
           <li><%= error.full_message %></li>
@@ -17,11 +18,10 @@
       </ul>
     </div>
   <% end %>
-
   <h2 class="text-lg text-secondary font-black">
     Demande
   </h2>
-  <div class="bg-sky-50 p-4 rounded border border-sky-100" data-controller="toggle-visibility">
+  <div class="bg-sky-50 p-4 rounded border border-sky-100">
     <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8 mb-5">
       <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
         <div class="w-full sm:flex-1">
@@ -29,8 +29,7 @@
           <%= form.text_field :description, class: "input input-sm w-full" %>
         </div>
       </div>
-
-      <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" <%= ("data-controller=dynamic-select data-dynamic-select-url-value=" + services_for_adherent_interventions_path) unless current_user.adhérent? %>>
+      <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
         <% if current_user.adhérent? %>
           <%= form.hidden_field :adherent_id, value: current_user.id %>
         <% else %>
@@ -46,7 +45,6 @@
                             } %>
           </div>
         <% end %>
-
         <div class="w-full sm:flex-1">
           <%= form.label :service_id, "Service" %>
           <%= form.select :service_id,
@@ -54,142 +52,122 @@
                           { include_blank: true, required: true },
                           class: "slim-select w-full",
                           data: {
-                            dynamic_select_target: "service"
+                            dynamic_select_target: "service",
+                            action: "change->dynamic-select#updateAgents"
                           } %>
         </div>
-
-        <div class="flex gap-1 items-center mt-4" title="Cocher pour activer le pointage ?">
-          <%= form.check_box :repeter, 
-                           class: 'checkbox checkbox-sm checkbox-secondary', 
-                           data: { 
-                             toggle_visibility_target: "checkbox", 
-                             action: "change->toggle-visibility#toggle" 
-                           } %>
-          <%= form.label :repeter, "Modèle pour le pointage ?" %>
-        </div>
       </div>
     </div>
-
-    <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8" 
-          data-toggle-visibility-target="hideable" 
+    <% if !@intervention.repeter%>
+      <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8" 
           <%= "data-controller=\"meteo-intervention\" data-action=\"change->verification-disponibilites#verificationWithInput\"".html_safe if !@intervention.passed %>>
-      <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" data-action="change->verification-disponibilites#verificationWithInput">
-
-        <div class="w-full min-w-fit flex-1" data-action='change->meteo-intervention#afficher_meteo'>
-          <%= form.label :début_prévue %>
-          <div class="flex items-center gap-1">
-            <%= form.date_field :début_prévue,
-                                class: "flex-1 input input-sm",
-                                value: (params[:début_prévue].try(:to_date) || @intervention.début_prévue&.to_date),
-                                data: {
-                                  'verification-disponibilites-target': "debut_prevue",
-                                  'meteo-intervention-target': "debut_prevue",
-                                  'toggle-visibility-target': "field"
-                                }
-            %>
-            <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] },
-                            { selected: params[:début_prévue_hour] || @intervention.début_prévue&.hour },
-                            class: "select select-sm w-16",
-                            data: {
-                              'verification-disponibilites-target': "debut_prevue_hour",
-                              'meteo-intervention-target': "debut_prevue_hour",
-                              'toggle-visibility-target': "field"
-                            }
-            %>
-            :
-            <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] },
-                            { selected: params[:début_prévue_minute] || @intervention.début_prévue&.min },
-                            class: "select select-sm w-16",
-                            data: { 
-                              'verification-disponibilites-target': "debut_prevue_minute",
-                              'toggle-visibility-target': "field"
-                            }
-            %>
+        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1" data-action="change->verification-disponibilites#verificationWithInput">
+          <div class="w-full min-w-fit flex-1" data-action='change->meteo-intervention#afficher_meteo'>
+            <%= form.label :début_prévue %>
+            <div class="flex items-center gap-1">
+              <%= form.date_field :début_prévue,
+                                  class: "flex-1 input input-sm",
+                                  value: (params[:début_prévue].try(:to_date) || @intervention.début_prévue&.to_date),
+                                  data: {
+                                    'verification-disponibilites-target': "debut_prevue",
+                                    'meteo-intervention-target': "debut_prevue"
+                                  }
+              %>
+              <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] },
+                              { selected: params[:début_prévue_hour] || @intervention.début_prévue&.hour },
+                              class: "select select-sm w-16",
+                              data: {
+                                'verification-disponibilites-target': "debut_prevue_hour",
+                                'meteo-intervention-target': "debut_prevue_hour"
+                              }
+              %>
+              :
+              <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] },
+                              { selected: params[:début_prévue_minute] || @intervention.début_prévue&.min },
+                              class: "select select-sm w-16",
+                              data: { 
+                                'verification-disponibilites-target': "debut_prevue_minute"
+                              }
+              %>
+            </div>
+          </div>
+          <div class="w-full min-w-fit flex-1">
+            <%= form.label :fin_prévue %>
+            <div class="flex items-center gap-1">
+              <%= form.date_field :fin_prévue,
+                                  value: (params[:début_prévue].try(:to_date) || @intervention.fin_prévue&.to_date),
+                                  class: "flex-1 input input-sm",
+                                  data: { 
+                                    'verification-disponibilites-target': "fin_prevue"
+                                  }
+              %>
+              <%= form.select :fin_prévue_hour, (0..23).map { |h| [format('%02d', h), h] },
+                              { selected: params[:fin_prévue_hour] || @intervention.fin_prévue&.hour },
+                              class: "select select-sm w-16",
+                              data: {
+                                'verification-disponibilites-target': "fin_prevue_hour"
+                              }
+              %>
+              :
+              <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] },
+                              { selected: params[:fin_prévue_minute] || @intervention.fin_prévue&.min },
+                              class: "select select-sm w-16",
+                              data: {
+                                'verification-disponibilites-target': "fin_prevue_minute"
+                              }
+              %>
+            </div>
           </div>
         </div>
-
-        <div class="w-full min-w-fit flex-1">
-          <%= form.label :fin_prévue %>
-          <div class="flex items-center gap-1">
-            <%= form.date_field :fin_prévue,
-                                value: (params[:début_prévue].try(:to_date) || @intervention.fin_prévue&.to_date),
-                                class: "flex-1 input input-sm",
-                                data: { 
-                                  'verification-disponibilites-target': "fin_prevue",
-                                  'toggle-visibility-target': "field"
-                                }
-            %>
-            <%= form.select :fin_prévue_hour, (0..23).map { |h| [format('%02d', h), h] },
-                            { selected: params[:fin_prévue_hour] || @intervention.fin_prévue&.hour },
-                            class: "select select-sm w-16",
-                            data: {
-                              'verification-disponibilites-target': "fin_prevue_hour",
-                              'toggle-visibility-target': "field"
-                            }
-            %>
-            :
-            <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] },
-                            { selected: params[:fin_prévue_minute] || @intervention.fin_prévue&.min },
-                            class: "select select-sm w-16",
-                            data: {
-                              'verification-disponibilites-target': "fin_prevue_minute",
-                              'toggle-visibility-target': "field"
-                            }
-            %>
+        <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
+          <div class="w-full flex-1">
+            <%= form.label :meteo, "Prévision météo" %>
+            <%= form.text_field :meteo, 
+                              class: "input input-sm w-full", 
+                              readonly: true,
+                              disabled: @intervention.passed || current_user.adhérent?,
+                              data: {
+                                'meteo-intervention-target': "prévisionMétéo"
+                              } %>
           </div>
         </div>
-
       </div>
-
-      <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-1">
-        <div class="w-full flex-1">
-          <%= form.label :meteo, "Prévision météo" %>
-          <%= form.text_field :meteo, 
-                            class: "input input-sm w-full", 
-                            readonly: true,
-                            disabled: @intervention.passed || current_user.adhérent?,
-                            data: {
-                              'meteo-intervention-target': "prévisionMétéo",
-                              'toggle-visibility-target': "field"
-                            } %>
-        </div>
-      </div>
-    </div>
+    <% end %>
   </div>
-
-    <% if !current_user.adhérent? %>
-      <div data-controller="calc-temps-passe">
-        <h2 class="text-lg text-secondary font-black mt-5">
-          Assignation
-        </h2>
-        <div class="bg-indigo-50 rounded border border-indigo-100 p-4 shadow-xs">
-          <div class="flex flex-wrap gap-5 sm:gap-8">
-            <div class="w-full sm:flex-1" data-verification-disponibilites-target="formAgents">
-              <%= form.label :agent_ids, "Agents" %>
-              <%= form.select :agent_ids,
-                              grouped_options_with_mandatory(@grouped_agents, intervention.agent_ids, nil),
+  <% if !current_user.adhérent? %>
+    <div data-controller="calc-temps-passe">
+      <h2 class="text-lg text-secondary font-black mt-5">
+        Assignation
+      </h2>
+      <div class="bg-indigo-50 rounded border border-indigo-100 p-4 shadow-xs">
+        <div class="flex flex-wrap gap-5 sm:gap-8">
+          <div class="w-full sm:flex-1" data-verification-disponibilites-target="formAgents">
+            <%= form.label :agent_ids, "Agents" %>
+            <%= form.select :agent_ids,
+                              options_for_select(@agents, selected: intervention.agent_ids),
                               {},
                               class: "w-full", multiple: true,
                               data: {
                                 controller: 'slim-select',
                                 'calc-temps-passe-target': 'agents',
                                 action: "change->calc-temps-passe#calc",
-                                'verification-disponibilites-target': "agents"
+                                'verification-disponibilites-target': "agents",
+                                'dynamic-select-target': "agents"
                               }
               %>
-            </div>
-            <div class="w-full sm:flex-1" data-verification-disponibilites-target="formTools">
-              <%= form.label :tool_ids, "Matériel(s)" %>
-              <%= form.select :tool_ids,
+          </div>
+          <div class="w-full sm:flex-1" data-verification-disponibilites-target="formTools">
+            <%= form.label :tool_ids, "Matériel(s)" %>
+            <%= form.select :tool_ids,
                 options_from_collection_for_select(@tools, 'id', 'name', intervention.tool_ids.presence || params[:tool_ids]),
                 {},
                 class: "slim-select w-full", multiple: :true,
                 'data-verification-disponibilites-target': "tools" %>
-            </div>
-            <% if current_user.manager_or_admin? %>
-              <div class="w-full sm:flex-1">
-                <%= form.label :tags_manager, "Mots clés", style: "display: block" %>
-                <%
+          </div>
+          <% if current_user.manager_or_admin? %>
+            <div class="w-full sm:flex-1">
+              <%= form.label :tags_manager, "Mots clés", style: "display: block" %>
+              <%
                   est_soumission = params[form.object_name].present?
 
                   if est_soumission
@@ -200,14 +178,14 @@
                     tags_soumis = intervention.tags.map(&:name)
                   end
 
-                  options_manager = (@tags.map(&:name) + tags_soumis).uniq
+                  options_manager = (@intervention_tags.map(&:name) + tags_soumis).uniq
                 %>
-                <%= form.select :tags_manager, options_for_select(options_manager, tags_soumis), {}, multiple: true, class: 'slim-select w-full' %>
-              </div>
-            <% else %>
-              <div class="w-full sm:flex-1">
-                <%= form.label :tags_intervenant, "Mots clés", style: "display: block" %>
-                <%
+              <%= form.select :tags_manager, options_for_select(options_manager, tags_soumis), {}, multiple: true, class: 'slim-select w-full' %>
+            </div>
+          <% else %>
+            <div class="w-full sm:flex-1">
+              <%= form.label :tags_intervenant, "Mots clés", style: "display: block" %>
+              <%
                   est_soumission = params[form.object_name].present?
 
                   if est_soumission
@@ -217,15 +195,15 @@
                     tags_soumis = intervention.tags.map(&:name)
                   end
 
-                  options_tags = (@tags.map(&:name) + tags_soumis).uniq
+                  options_tags = (@intervention_tags.map(&:name) + tags_soumis).uniq
                 %>
-                <%# On utilise le nouveau nom ici aussi %>
-                <%= form.select :tags_intervenant, options_for_select(options_tags, tags_soumis), {}, { multiple: true, class: 'slim-select w-full' } %>
-              </div>
-            <% end %>
-          </div>
+              <%# On utilise le nouveau nom ici aussi %>
+              <%= form.select :tags_intervenant, options_for_select(options_tags, tags_soumis), {}, { multiple: true, class: 'slim-select w-full' } %>
+            </div>
+          <% end %>
         </div>
-
+      </div>
+      <% if !@intervention.repeter %>
         <h2 class="text-lg text-secondary font-black mt-5">
           Intervention
         </h2>
@@ -237,86 +215,78 @@
                   <%= form.label :début %>
                   <div class="flex items-center gap-1">
                     <%= form.date_field :début,
-                        class: "input input-sm flex-1 w-full",
-                        value: (params[:début].try(:to_date) || @intervention.début&.to_date),
-                        data: { 'calc-temps-passe-target': 'debut_date',
-                        action: "change->calc-temps-passe#calc" } %>
+                          class: "input input-sm flex-1 w-full",
+                          value: (params[:début].try(:to_date) || @intervention.début&.to_date),
+                          data: { 'calc-temps-passe-target': 'debut_date',
+                          action: "change->calc-temps-passe#calc" } %>
                     <%= form.select :début_hour, (0..23).map { |h| [format('%02d', h), h] },
-                        {selected: params[:début_hour] || @intervention.début&.hour },
-                        class: "select select-sm w-16",
-                        data: { 'calc-temps-passe-target': 'debut_hour',
-                        action: "change->calc-temps-passe#calc" } %>
+                          {selected: params[:début_hour] || @intervention.début&.hour },
+                          class: "select select-sm w-16",
+                          data: { 'calc-temps-passe-target': 'debut_hour',
+                          action: "change->calc-temps-passe#calc" } %>
                     :
                     <%= form.select :début_minute, (0..59).map { |m| [format('%02d', m), m] },
-                        {selected: params[:début_minute] ||@intervention.début&.min },
-                        class: "select select-sm w-16",
-                        data: { 'calc-temps-passe-target': 'debut_minute',
-                        action: "change->calc-temps-passe#calc" } %>
+                          {selected: params[:début_minute] ||@intervention.début&.min },
+                          class: "select select-sm w-16",
+                          data: { 'calc-temps-passe-target': 'debut_minute',
+                          action: "change->calc-temps-passe#calc" } %>
                   </div>
                 </div>
-
                 <div class="w-full min-w-fit flex-1">
                   <%= form.label :fin %>
                   <div class="flex items-center gap-1">
                     <%= form.date_field :fin,
-                        class: "input input-sm flex-1 w-full",
-                        value: (params[:fin].try(:to_date) || @intervention.fin&.to_date),
-                        data: { 'calc-temps-passe-target': 'fin_date',
-                        action: "change->calc-temps-passe#calc" } %>
-
+                          class: "input input-sm flex-1 w-full",
+                          value: (params[:fin].try(:to_date) || @intervention.fin&.to_date),
+                          data: { 'calc-temps-passe-target': 'fin_date',
+                          action: "change->calc-temps-passe#calc" } %>
                     <%= form.select :fin_hour, (0..23).map { |h| [format('%02d', h), h] },
-                        {selected: params[:fin_hour] || @intervention.fin&.hour },
-                        class: "select select-sm w-16",
-                        data: { 'calc-temps-passe-target': 'fin_hour',
-                        action: "change->calc-temps-passe#calc" } %>
+                          {selected: params[:fin_hour] || @intervention.fin&.hour },
+                          class: "select select-sm w-16",
+                          data: { 'calc-temps-passe-target': 'fin_hour',
+                          action: "change->calc-temps-passe#calc" } %>
                     :
                     <%# ATTENTION : si on remet un step(5), il faudra modifier la date de fin sélectionnée dans le controller %>
                     <%= form.select :fin_minute, (0..59).map { |m| [format('%02d', m), m] },
-                        {selected: params[:fin_minute] || @intervention.fin&.min },
-                        class: "select select-sm w-16",
-                        data: { 'calc-temps-passe-target': 'fin_minute',
-                        action: "change->calc-temps-passe#calc" } %>
+                          {selected: params[:fin_minute] || @intervention.fin&.min },
+                          class: "select select-sm w-16",
+                          data: { 'calc-temps-passe-target': 'fin_minute',
+                          action: "change->calc-temps-passe#calc" } %>
                   </div>
                 </div>
               </div>
-
               <div class="flex flex-wrap gap-1 sm:gap-8 flex-1 mb-5">
                 <div class="w-full sm:w-auto sm:flex-1 min-w-[200px]">
                   <%= form.label :temps_de_pause, "Temps de pause (h)", class: 'whitespace-nowrap' %>
                   <%= form.select :temps_de_pause, options_for_select([0.0, 0.5, 1.0].map { |v| [v.to_s.tr('.', ','), v] }, intervention.temps_de_pause),
-                                  { include_blank: true }, class: "select select-sm w-full",
-                                  data: { 'calc-temps-passe-target': 'pause', action: "change->calc-temps-passe#calc" } %>
+                                    { include_blank: true }, class: "select select-sm w-full",
+                                    data: { 'calc-temps-passe-target': 'pause', action: "change->calc-temps-passe#calc" } %>
                 </div>
-
                 <div class="flex gap-4 sm:gap-8 items-end w-full sm:w-auto sm:flex-[2] min-w-[250px]">
                   <div class="w-full flex-1">
                     <label for="temps_par_agent" class="block whitespace-nowrap">Temps par agent (h)</label>
                     <input type="number" id="temps_par_agent" readonly class="input input-sm w-full font-black text-gray-500 bg-gray-50" data-calc-temps-passe-target="tempsParAgent">
                   </div>
-
                   <div class="w-full flex-1">
                     <%= form.label :temps_total, class: 'whitespace-nowrap' %>
                     <%= form.number_field :temps_total,
-                                          readonly: true, class: 'input input-sm w-full font-black text-gray-500 bg-gray-50',
-                                          data: { 'calc-temps-passe-target': 'temps' }  %>
+                                            readonly: true, class: 'input input-sm w-full font-black text-gray-500 bg-gray-50',
+                                            data: { 'calc-temps-passe-target': 'temps' }  %>
                   </div>
                 </div>
               </div>
-
               <div class="flex flex-wrap gap-5 sm:gap-8 flex-1">
                 <% intervention.photos.each do |photo| %>
                   <% unless photo.new_record? %>
                     <%= form.hidden_field :photos, multiple: true, value: photo.signed_id %>
                   <% end %>
                 <% end %>
-
                 <div class="w-full sm:flex-1">
                   <%= form.label :photos, "Photos" %>
                   <%= form.file_field :photos, multiple: true, accept: 'image/png,image/gif,image/jpeg,image/avif,image/webp', class: 'file-input file-input-sm w-full max-w-md' %>
                 </div>
               </div>
             </div>
-
             <div class="flex flex-wrap w-full gap-5 sm:gap-8 flex-2">
               <div class="w-full">
                 <%= form.label :commentaires %>
@@ -324,11 +294,10 @@
               </div>
             </div>
           </div>
-
         </div>
-      </div>
-    <% end %>
-
+      <% end %>
+    </div>
+  <% end %>
   <% if intervention.persisted? && (current_user.adhérent? || current_user.manager_or_admin?) %>
     <h2 class="text-lg text-secondary font-black mt-5">
       Compte-rendu
@@ -340,13 +309,11 @@
           <%= intervention.workflow_state.humanize %>
         </span>
       </p>
-      
       <div class="flex flex-col gap-4 mb-4">
         <div class="flex-1">
           <%= form.label :avis %>
           <%= form.text_area :avis, class: "textarea textarea-sm w-full", 'data-controller': 'textarea-autogrow' %>
         </div>
-
         <div class="flex gap-2">
           <%= form.label :note, 'Évaluation des agents :' %>
           <div class="rating">
@@ -360,11 +327,17 @@
         </div>
       </div>
     </div>
-
   <% end %>
-
   <div class="flex flex-wrap gap-2 mt-5">
-    <%= form.submit "Enregistrer", id: "enregistrer_intervention", class: "btn btn-primary" %>
-    <%= link_to "Annuler", (session[:return_to] || interventions_path), class: "btn" %>
+    <%= form.submit "Enregistrer", id: "enregistrer_intervention", class: "btn btn-primary flex-1" %>
+        <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>      
   </div>
 <% end %>
+
+<div class="pt-6 max-w-3xl mx-auto px-4">
+    <%= link_to interventions_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+      
+      <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des interventions" %>
+      Retour à la liste des interventions
+    <% end %>
+  </div>

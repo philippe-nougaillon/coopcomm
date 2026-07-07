@@ -1,0 +1,25 @@
+<div class="flex flex-col md:flex-row items-left md:items-center justify-left sm:justify-start gap-4 border border-gray-200 p-4 sm:p-8">
+  <div class="flex items-start gap-4 sm:w-80 min-w-0">
+    <span class="material-symbols-outlined">request_quote</span>
+    <div class="flex flex-col gap-1 min-w-0">
+      <b><%= link_to cotation.ref, cotation_path(cotation.slug), class: "text-#{cotation.style.split.first.split('-').last} hover:underline block truncate" %></b>
+      <%= cotation.service.nom %>
+      (<%= number_to_currency(cotation.total_ht) %> HT)
+      <p class="text-sm">
+        Créée il y a <%= time_ago_in_words cotation.created_at %>
+      </p>
+    </div>
+  </div>
+  <div class="flex flex-row ml-8 md:ml-0 gap-4 shrink-0">
+    <% if policy(cotation).signer? && cotation.can_signer? %>
+      <%= link_to 'Signer', signer_cotation_path(cotation), 
+            class: 'btn btn-accent btn-outline btn-ml hover:text-white! w-[100px] justify-center', 
+            data: { turbo: false } %>
+    <% end %>
+    <% if policy(cotation).signer? && cotation.can_refuser? %>
+      <%= button_to 'Refuser', refuser_cotation_path(cotation), 
+        class: 'btn btn-error btn-outline btn-ml hover:text-white! w-[100px] justify-center', 
+        form: { data: { turbo: false }, class: 'w-[100px]' } %>
+    <% end %>
+  </div>
+</div>

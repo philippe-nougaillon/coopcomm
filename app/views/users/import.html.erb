@@ -1,39 +1,152 @@
 <div class="mx-auto w-full">
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
+  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16 mb-6">
     <h1 class="text-primary font-bold text-3xl sm:text-4xl whitespace-nowrap">
       <%= page_title!('Import agents') %>
     </h1>
   </div>
 
-  <div class="mb-12">
-    <p>Le fichier doit être au format Excel 97-2003 (.xls) et avoir les champs dans cet ordre : <b><%= User.xls_headers.join(', ') %></b></p>
-    <p>Les champs obligatoires sont : <b>Nom, Prénom, Email, Service</b></p>
-    <p>Exemple du format attendu : <%= link_to "Télécharger le modèle", "/Exemple_import_utilisateurs.xls", download: "modele_donnees.xls", class: "btn btn-primary" %></p>
+  <!-- BANNIÈRE D'INFORMATIONS -->
+  <div class=" max-w-2xl bg-blue-50 border border-blue-200 rounded-xl  mb-8 shadow-sm flex flex-col  gap-4">
+
+    <div class="space-y-2 px-8 pt-6 text-slate-700  flex-1">
+
+      <div class="flex items-center gap-2 font-bold text-blue-800 mb-8">
+        <%= embedded_svg "icons/info.svg", class:"text-lg", title:"Informations" %>
+        <span class="uppercase">Instructions d'importation</span>
+      </div>
+
+      <p>
+        Le fichier doit être au format Excel 97-2003
+        (<span class="font-mono bg-white px-1.5 py-0.5 rounded border border-blue-200 text-xs text-blue-700 font-semibold">
+          .xls
+        </span>)
+      </p>
+
+      <p>
+        Veuillez respecter l’ordre des colonnes suivant :
+        <span class="font-semibold text-slate-900 bg-blue-100/60 px-1.5 py-0.5 rounded">
+          <%= User.xls_headers.join(', ') %>
+        </span>
+      </p>
+
+      <p class=" text-slate-500 pt-1">
+        <span class="text-error font-bold">*</span>
+        Champs obligatoires :
+        <span class="font-medium text-slate-800">
+          Nom, Prénom, Email, Service
+        </span>
+      </p>
+    </div>
+
+    <!-- Bouton téléchargement -->
+    <div class="w-full px-8 py-6 flex flex-col sm:flex-row items-center justify-start gap-4 border-t border-blue-200 bg-blue-50/50 rounded-b-xl">
+
+  <%# Forzamos 'leading-none' para eliminar márgenes fantasmas del texto %>
+  <p class="text-sm font-medium text-slate-700 leading-none">
+    Exemple du format attendu :
+  </p>
+
+  <%# El botón se alineará al centro perfecto del texto de su izquierda %>
+  <%= link_to "/Exemple_import_utilisateurs.xls",
+        download: "modele_donnees.xls",
+        class: "btn btn-primary btn-md normal-case text-white" do %>
+    <%= embedded_svg "icons/download.svg", class: "icon", title: "Télécharger" %>
+    <span>Télécharger le modèle</span>
+  <% end %>
+
+</div>
   </div>
 
-  <%= form_tag({action: "import_do", method: :post}, multipart: true, id: "import_form") do %>
-    <div>
-      <%= label :upload, "Fichier source" %>
-      <%= file_field_tag 'upload', accept: 'application/vnd.ms-excel', class: 'file-input file-input-bordered file-input-sm', required: true %>
-      <%= render "partials/script_accept_file_type", id_form: "import_form", id_file_input: "upload", file_type_accepted: 'application/vnd.ms-excel', file_type_for_alert: 'XLS' %>
+  <!-- FORMULAIRE -->
+  <%= form_tag(
+        { action: "import_do" },
+        multipart: true,
+        method: :post,
+        id: "import_form",
+        class: "max-w-2xl bg-white border border-slate-200 rounded-xl p-6 shadow-sm"
+      ) do %>
+
+    <!-- Sélection du fichier -->
+    <div class="form-control w-full">
+
+      <%= label_tag :upload,
+          "Fichier source",
+          class: "block text-sm font-semibold text-slate-700 mb-2" %>
+
+      <%= file_field_tag "upload",
+          accept: ".xls,application/vnd.ms-excel",
+          class: "file-input file-input-bordered file-input-primary w-full bg-slate-50",
+          required: true %>
+
+      <%= render "partials/script_accept_file_type",
+          id_form: "import_form",
+          id_file_input: "upload",
+          file_type_accepted: "application/vnd.ms-excel",
+          file_type_for_alert: "XLS" %>
     </div>
 
-    <div>
-      <b>Enregistrer les changements ?</b>
-      <br>
-      <label class="radio-inline">
-        <%= radio_button_tag :save, true %>
-        Oui
-      </label>
-      <label class="radio-inline">     
-        <%= radio_button_tag :save, false, :checked => true %>
-        Non
-      </label>
-      
-      <br>
-      <i>Choisissez 'Non' pour tester votre import</b></i><br />
+    <!-- Options -->
+    <div class="bg-slate-50 border border-slate-200 p-4 my-4 rounded-xl space-y-3 ">
+
+      <span class="block text-sm font-bold text-slate-800 mb-4">
+        Enregistrer les changements ?
+      </span>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+
+        <!-- Oui -->
+        <label class="flex items-center gap-3 cursor-pointer select-none bg-white border border-slate-200 rounded-lg p-3 flex-1 hover:bg-slate-100 transition">
+
+          <%= radio_button_tag :save,
+              true,
+              false,
+              class: "radio radio-primary radio-sm" %>
+
+          <span class="text-sm font-medium text-slate-700">
+            Oui (Appliquer)
+          </span>
+        </label>
+
+        <!-- Non -->
+        <label class="flex items-center gap-3 cursor-pointer select-none bg-white border border-slate-200 rounded-lg p-3 flex-1 hover:bg-slate-100 transition">
+
+          <%= radio_button_tag :save,
+              false,
+              true,
+              class: "radio radio-primary radio-sm" %>
+
+          <span class="text-sm font-medium text-slate-700">
+            Non (Mode test)
+          </span>
+        </label>
+      </div>
+
+      <div class="text-xs text-slate-500 italic mt-4 flex items-center gap-1.5">
+
+        <%= embedded_svg "icons/help.svg", class: "text-sm text-slate-400", title: "Aide" %>
+
+        <span>
+          Choisissez "Non" pour simuler l'importation et détecter
+          d'éventuelles erreurs.
+        </span>
+      </div>
     </div>
 
-    <%= submit_tag "Lancer l'importation", class: "btn btn-primary btn-outline hover:text-white mb-4", 'data-turbo': false %>
+    <!-- Bouton principal -->
+    <div class="pt-2">
+      <%= submit_tag "Lancer l'importation",
+          class: "btn btn-primary btn-block sm:w-auto text-white px-8 shadow-md",
+          data: { turbo: false } %>
+    </div>
+
   <% end %>
+
+   <div class="my-10">
+ 
+<%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition" do %>
+      <%= embedded_svg "icons/arrow_back.svg", class: "text-base", title: "Retour à la liste des utilisateurs" %>
+      Retour à la liste des utilisateurs
+    <% end %>
+
+</div>
 </div>

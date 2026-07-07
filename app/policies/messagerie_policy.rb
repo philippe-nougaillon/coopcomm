@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class MessageriePolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
@@ -7,6 +9,10 @@ class MessageriePolicy < ApplicationPolicy
 
   def index?
     user
+  end
+
+  def conversation?
+    index?
   end
 
   def send_message?

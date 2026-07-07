@@ -1,28 +1,25 @@
+<% page_title!('Notification') %>
+
 <p class="mb-4">
   <strong>Il y a :</strong>
   <%= time_ago_in_words @mail_log.created_at %>
 </p>
-
 <p class="mb-4">
   <strong>Destinataire :</strong>
   <%= @mail_log.to %>
 </p>
-
 <p class="mb-4">
   <strong>Sujet :</strong>
   <%= @mail_log.subject %>
 </p>
-
 <p class="mb-4">
   <strong>Date :</strong>
   <%= l @mail_log.created_at %>
 </p>
-
 <p class="mb-4">
   <strong>ID du message :</strong>
   <%= @mail_log.message_id %>
 </p>
-
 <p class="mb-4">
   <strong>Statut :</strong>
   <% if @mail_log.statut %>
@@ -31,18 +28,15 @@
     <span class="text-error break-words!"><%= JSON.pretty_generate(@mail_log.error_message) %></span>
   <% end %>
 </p>
-
 <p class="mb-4">
   <strong>État :</strong>
   <% if @mail_log.etat %>
     <span class="text-info">OUVERT</span>
   <% end %>
 </p>
-
 <% if @mail_log.whatsapp? %>
   <p class="mb-4">
     <%= link_to "Voir le 'Message Details Twilio'", "https://console.twilio.com/us1/monitor/logs/sms/#{ENV['TWILIO_ACCOUNT_SID']}/#{@mail_log.message_id}", class: 'text-primary hover:underline', target:'_blank' %>
   </p>
 <% end %>
-
 <%= link_to 'Retour', notifications_path, class: 'text-primary hover:underline' %>

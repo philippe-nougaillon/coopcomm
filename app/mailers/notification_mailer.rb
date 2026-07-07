@@ -1,13 +1,14 @@
-class NotificationMailer < ApplicationMailer
+# frozen_string_literal: true
 
+class NotificationMailer < ApplicationMailer
   def workflow_changed(intervention, emails)
     @intervention = intervention
 
     mail(to: emails,
-        bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
-        subject: "[COOPCOMM] Changement de statut").tap do |message|
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Changement de statut').tap do |message|
       message.mailgun_options = {
-        "tag" => ["changement de statut"]
+        'tag' => ['changement de statut']
       }
     end
   end
@@ -16,10 +17,10 @@ class NotificationMailer < ApplicationMailer
     @intervention = intervention
 
     mail(to: emails,
-          bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
-          subject: "[COOPCOMM] Nouveau commentaire").tap do |message|
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Nouveau commentaire').tap do |message|
       message.mailgun_options = {
-        "tag" => ["nouveau commentaire"]
+        'tag' => ['nouveau commentaire']
       }
     end
   end
@@ -28,10 +29,10 @@ class NotificationMailer < ApplicationMailer
     @intervention = intervention
 
     mail(to: intervention.adherent.email,
-          bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
-          subject: "[COOPCOMM] Relance. Intervention à valider").tap do |message|
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Relance. Intervention à valider').tap do |message|
       message.mailgun_options = {
-        "tag" => ["relance"]
+        'tag' => ['relance']
       }
     end
   end
@@ -40,10 +41,10 @@ class NotificationMailer < ApplicationMailer
     @intervention = intervention
 
     mail(to: intervention.adherent.email,
-          bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
-          subject: "[COOPCOMM] Pointage").tap do |message|
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Pointage').tap do |message|
       message.mailgun_options = {
-        "tag" => ["pointage"]
+        'tag' => ['pointage']
       }
     end
   end
@@ -60,8 +61,8 @@ class NotificationMailer < ApplicationMailer
 
   def confirm_email_newsletter(email)
     mail(to: email,
-          bcc: ENV['SUPER_ADMIN'].presence,
-          subject: '[COOPCOMM] Confirmation de l\'inscription pour la newsletter')
+         bcc: ENV['SUPER_ADMIN'].presence,
+         subject: '[COOPCOMM] Confirmation de l\'inscription pour la newsletter')
   end
 
   def welcome_import(user, title, password)
@@ -92,7 +93,7 @@ class NotificationMailer < ApplicationMailer
     @date_panne = date_panne
 
     mail(
-      to: @user.email, 
+      to: @user.email,
       subject: title
     )
   end
@@ -105,5 +106,80 @@ class NotificationMailer < ApplicationMailer
       to: user_email,
       subject: "[COOPCOMM] Rappel d'un pointage oublié"
     )
+  end
+
+  def cotation_envoyee(cotation, email, cc_email = nil)
+    @cotation = cotation
+
+    pdf = TransformToPdf::Cotation.call(cotation)
+
+    attachments[cotation.pdf_filename] = pdf.render
+
+    mail(to: email,
+         cc: cc_email.presence,
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Votre cotation').tap do |message|
+      message.mailgun_options = {
+        'tag' => ['cotation envoyée']
+      }
+    end
+  end
+
+  def cotation_signee(cotation, email)
+    @cotation = cotation
+
+    mail(to: email,
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Cotation signée').tap do |message|
+      message.mailgun_options = {
+        'tag' => ['cotation signée']
+      }
+    end
+  end
+
+  def commande_envoyee(commande, email, cc_email = nil)
+    @commande = commande
+
+    pdf = TransformToPdf::Commande.call(commande)
+
+    attachments[commande.pdf_filename] = pdf.render
+
+    mail(to: email,
+         cc: cc_email.presence,
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Votre commande').tap do |message|
+      message.mailgun_options = {
+        'tag' => ['commande envoyée']
+      }
+    end
+  end
+
+  def facture_envoyee(facture, email, cc_email = nil)
+    @facture = facture
+
+    pdf = TransformToPdf::Facture.call(facture)
+
+    attachments[facture.pdf_filename] = pdf.render
+
+    mail(to: email,
+         cc: cc_email.presence,
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Votre facture').tap do |message|
+      message.mailgun_options = {
+        'tag' => ['facture envoyée']
+      }
+    end
+  end
+
+  def intervention_pointage_terminee_automatiquement(intervention, agent_email)
+    @intervention = intervention
+
+    mail(to: agent_email,
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Pointage terminé automatiquement').tap do |message|
+      message.mailgun_options = {
+        'tag' => ['pointage terminé']
+      }
+    end
   end
 end

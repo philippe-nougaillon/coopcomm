@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+convention_paris:
+  user: weil
+  service: informatique
+  date_début: 2026-01-01
+  date_fin_prévue: 2026-12-31
+
+convention_marseille:
+  user: michael_jackson
+  service: service_marseille
+  date_début: 2026-01-01
+  date_fin_prévue: 2026-12-31

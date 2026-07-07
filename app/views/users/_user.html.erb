@@ -1,43 +1,113 @@
-<tr id="<%= dom_id user %>">
-<td>
-  <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
-</td>
-<%# la couleur du <td> si dessous est nécessaire si la colonne reste affichée en scrollant, sinon les colonnes se superposeront %>
-<td class="sticky left-0 top-0 z-10 bg-slate-50 text-lg sm:text-xl text-primary break-words whitespace-normal max-w-[50vw]">
-  <%= link_to user.nom_prénom, user, class: 'hover:underline hover:text-base-content' %>
-
-  <% if user.discarded? %>
-    <%= link_to reactivate_user_path(user), 
-                data: { turbo_method: :patch, turbo_confirm: 'Voulez-vous réactiver ce compte ?' },
-                class: "text-success hover:scale-110 transition-transform",
-                title: "Réactiver le compte" do %>
-      <span class="material-symbols-outlined align-middle">
-        undo
-      </span>
+<tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle"
+ id="<%= dom_id user %>">
+  <%# Avatar %>
+  <td class="px-3 py-3">
+    <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
+  </td>
+  <%# Nom %>
+  <td class="py-3 pr-4 text-lg font-semibold text-primary">
+    <div class="flex flex-row items-center gap-2 w-full">
+      <%# min-w-0 es el secreto para que 'truncate' funcione sin romper el flexbox %>
+      <div class="truncate min-w-0" title="<%= user.nom_prénom %>">
+        <%= link_to user.nom_prénom, user, class: 'hover:underline' %>
+      </div>
+      <% if user.discarded? %>
+        <%= link_to reactivate_user_path(user),
+                  data: { turbo_method: :patch, turbo_confirm: 'Voulez-vous réactiver ce compte ?' },
+                  class: "text-success hover:scale-110 transition-transform flex flex-shrink-0 items-center justify-center",
+                  title: "Réactiver le compte" do %>
+          <%= embedded_svg "icons/undo.svg", class: "text-xl leading-none", title: "Réactiver le compte" %>
+        <% end %>
+      <% end %>
+    </div>
+  </td>
+  <%# Rôle %>
+  <td colspan="2" class="py-3 px-4 whitespace-nowrap">
+    <div class="flex items-center gap-1.5 text-success font-bold tracking-wider">
+      <%= embedded_svg "icons/#{user.avatar}.svg", class: "w-6 h-6 fill-current shrink-0" %>
+      <span><%= user.rôle.upcase %></span>
+    </div>
+  </td>
+  <%# Service %>
+  <td class="px-4 py-3 text-center">
+    <% services = user.services.pluck(:nom) %>
+    <% shown = services.first(2) %>
+    <% extra = services.size - shown.size %>
+    <div class="flex flex-wrap gap-1.5 items-center">
+      <% shown.each do |s| %>
+        <span class="inline-block bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full whitespace-nowrap shadow-sm">
+          <%= s %>
+        </span>
+      <% end %>
+      <% if extra > 0 %>
+       <div class="relative inline-block" data-controller="dropdown">
+    <button type="button"
+            data-action="click->dropdown#togglePortal"
+            class="inline-flex bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full shadow-sm select-none cursor-pointer hover:bg-slate-50">
+      + <%= extra %>
+          </button>
+           <div data-dropdown-target="menu"
+         class="hidden flex-col p-4 shadow-2xl bg-white border border-slate-200 rounded-xl w-58 max-h-60 overflow-y-auto">
+      <span class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 px-1 block text-left">
+       Autres services (<%= extra %>)
+            </span>
+            <div class="flex flex-col gap-1">
+              <% services.drop(2).each do |extra_service| %>
+                <span class="text-sm text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-lg whitespace-normal break-words">
+                  <%= extra_service %>
+                </span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </td>
+  <%# Mots clés %>
+  <td class="py-3 px-4">
+    <% tags = user.tag_list %>
+    <% if tags.any? %>
+      <div class="flex flex-wrap gap-1 items-center">
+        <% tags.first(2).each_with_index do |tag, i| %>
+          <span class=" text-sm text-slate-600 whitespace-nowrap">
+            <%= tag %><%= "," unless i == [tags.first(2).size - 1, 1].min %>
+          </span>
+        <% end %>
+        <% if tags.size > 2 %>
+          <span class="inline-block bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full cursor-default"
+              title="<%= tags.drop(2).join(', ') %>">
+            +<%= tags.size - 2 %>
+          </span>
+        <% end %>
+      </div>
+    <% else %>
+      <%= embedded_svg "icons/check_indeterminate_small.svg", title: "Aucun mot-clé" %>
     <% end %>
-  <% end %>
-</td>
-<td class="text-center">
-  <span class="material-symbols-outlined text-success">
-    <%= user.avatar %>
-  </span>
-</td>
-<td class="text-success font-black">
-  <%= user.rôle.upcase %>
-</td>
-<td><%= user.services.pluck(:nom).join(", ") %></td>
-<td><%= user.tag_list %></td>
-<td><%= user.email %></td>
-<td>
-  <% if user.agent? && user.absent? %>
-    <span class="material-symbols-outlined cursor-help" title="Absent du <%= l user.current_absence.du %> au <%= l user.current_absence.au %>, motif : <%= user.current_absence.motif %>">
-      person_alert
-    </span>
-  <% end %>
-</td>
-<td>
-  <% if user.agent? %>
-    <%= "#{ number_with_precision(user.moyenne, precision: 2, strip_insignificant_zeros: true) } / 5" if user.moyenne %>
-  <% end %>
-</td>
+  </td>
+  <%# Email %>
+  <td class="py-3 px-4">
+    <div class=" text-base font-mono text-slate-400" title="<%= user.email %>">
+      <%= user.email %>
+    </div>
+  </td>
+  <%# Absent %>
+  <td class="py-3 px-4 text-center">
+    <% if user.agent? && user.absent? %>
+      <% title_absence = "Absent du #{l(user.current_absence.du)} au #{l(user.current_absence.au)}, motif : #{user.current_absence.motif}" %>
+      <%= embedded_svg "icons/person_off.svg",
+  class: "text-amber-500 cursor-help hover:scale-110 transition-transform text-xl",
+  title: title_absence,
+  alt: "Utilisateur actuellement absent" %>    <% end %>
+  </td>
+  <%# Évaluation %>
+  <td class="py-3 px-4">
+    <% if user.agent? && user.moyenne %>
+      <div class="inline-flex items-center gap-1 bg-white border border-slate-200 px-2.5 py-1 rounded-full whitespace-nowrap">
+        <%= embedded_svg "icons/star_rate.svg", class: "text-amber-400 text-sm leading-none", title: "Évaluation", alt: "Évaluation" %>
+        <span class="text-xs font-semibold text-slate-600">
+          <%= number_with_precision(user.moyenne, precision: 2, strip_insignificant_zeros: true) %> / 5
+        </span>
+      </div>
+    <% end %>
+  </td>
 </tr>

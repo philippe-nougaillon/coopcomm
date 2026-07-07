@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class PagesPolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
@@ -10,7 +12,7 @@ class PagesPolicy < ApplicationPolicy
   end
 
   def dashboard?
-    user && (manager_or_admin? || user.adhérent? )
+    user && (manager_or_admin? || user.adhérent?)
   end
 
   def home?

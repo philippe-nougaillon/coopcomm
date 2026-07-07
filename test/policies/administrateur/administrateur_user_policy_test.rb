@@ -1,9 +1,11 @@
-require "test_helper"
+# frozen_string_literal: true
+
+require 'test_helper'
 
 class AdministrateurUserPolicyTest < ActionDispatch::IntegrationTest
   def setup
     administrateur_paris = users(:administrateur_paris)
-    
+
     user_paris = users(:bond)
     user_marseille_service_different = users(:agent_marseille)
 
@@ -13,7 +15,7 @@ class AdministrateurUserPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Index
-  test "accès autorisé pour un administrateur sur la page index des users" do
+  test 'accès autorisé pour un administrateur sur la page index des users' do
     assert @policy.index?
   end
 
@@ -26,7 +28,7 @@ class AdministrateurUserPolicyTest < ActionDispatch::IntegrationTest
     refute @policy_organisation_differente.show?
   end
 
-  test "accès autorisé pour un administrateur sur sa page show" do
+  test 'accès autorisé pour un administrateur sur sa page show' do
     assert @policy_user_myself.show?
   end
 
@@ -64,7 +66,7 @@ class AdministrateurUserPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # agent calendrier
-  test "accès autorisé pour un administrateur sur la page agent_calendrier" do
+  test 'accès autorisé pour un administrateur sur la page agent_calendrier' do
     assert @policy.agent_calendrier?
   end
 
@@ -74,7 +76,7 @@ class AdministrateurUserPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Edit password
-  test "accès autorisé pour un administrateur sur sa page edit_password" do
+  test 'accès autorisé pour un administrateur sur sa page edit_password' do
     assert @policy_user_myself.edit_password?
   end
 
@@ -83,7 +85,7 @@ class AdministrateurUserPolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Update password
-  test "accès autorisé pour un administrateur sur sa page update_password" do
+  test 'accès autorisé pour un administrateur sur sa page update_password' do
     assert @policy_user_myself.update_password?
   end
 

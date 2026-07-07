@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class NewsletterPolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
@@ -6,7 +8,7 @@ class NewsletterPolicy < ApplicationPolicy
   end
 
   def index?
-    user && user.super_admin?
+    user&.super_admin?
   end
 
   def new?

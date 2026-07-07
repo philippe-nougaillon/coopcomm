@@ -1,53 +1,99 @@
-<div class="w-full">
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
-    <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Réservation de matériel') %></h1>
-    <div class="w-full sm:w-fit flex flex-wrap sm:block justify-between gap-4">
+<div class="flex flex-col">
+  <div class="flex flex-row justify-between items-center my-4 gap-2">
+    <h1 class="text-4xl text-primary font-bold">
+      <%= page_title!('Réservation de matériel') %></h1>
+    <div class="flex gap-2">
       <% if policy(Tool).new? %>
-        <%= link_to "Ajouter un Matériel", new_tool_path, data: { 'testid': "ajouter_outil_pc" }, class: "hidden sm:inline-flex btn btn-primary btn-outline btn-lg rounded hover:text-white!" %>
-        <%= link_to "+ Matériel", new_tool_path, data: { 'testid': "ajouter_outil_mobile" }, class: "inline-flex sm:hidden btn btn-primary btn-outline btn-sm hover:text-white!" %>
+        <%= link_to new_tool_path, 
+        data: { 'testid': "ajouter_outil_pc" }, 
+        class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-base ",
+         title: "Ajouter un matériel" do %>
+          <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+          <span class="hidden md:block">Ajouter un matériel</span>
+        <% end %>
       <% end %>
       <% if policy(Mouvement).new? %>
-        <%= link_to "Panne", new_mouvement_path, data: { 'testid': "ajouter_panne" }, class: 'inline-flex btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
+        <%= link_to new_mouvement_path(redirect_to: request.fullpath), 
+            data: { 'testid': "Gestion panne" }, 
+            class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-base ",
+            title: "Gestion panne" do %>
+          <%= embedded_svg "icons/cone.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+          <span class="hidden md:block">Gestion panne</span>
+        <% end %>
       <% end %>
     </div>
   </div>
-
-  <%= form_tag request.path, method: :get do %>
-    <div class="flex flex-wrap items-start w-full gap-4 mt-8">
-      <div class="w-full md:w-fit">
-        <%= label_tag :search, "Rechercher" %>
-        <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full', placeholder: 'Nom / Description' %>
-      </div>
-
-      <div class="w-full md:w-fit">
-        <%= label_tag :date %>
-        <%= date_field_tag :date, params[:date], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full' %>
-      </div>
-
-      <div class="min-w-full md:min-w-36">
-        <%= label_tag :type %>
-        <%= select_tag :type, options_for_select(@types, params[:type]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
-      </div>
-
-      <% if false %>
-        <!-- Crash si un outil n'a pas de mouvement (il n'y a plus de mouvement créé à la création de l'outil)
-
-        <div class="min-w-full md:min-w-36">
-          <%= label_tag :etats, "État" %>
-          <%= select_tag :etats, options_for_select(@états, params[:etats]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
+  <%= form_tag request.path, method: :get, class: "pt-6" do %>
+    <div class="flex flex-col gap-3 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end w-full">
+        <div class="w-full">
+          <%= label_tag :search, "Rechercher", class: "block font-semibold text-slate-600 text-sm mb-1" %>
+          <%= text_field_tag :search, params[:search], include_blank:true,
+         onchange:'this.form.submit()', 
+          class: 'input input-bordered input-md w-full',
+          placeholder: 'Nom / Description' %>
         </div>
-        -->
-      <% end %>
+        <div class="w-full">
+          <%= label_tag :type , "Type", class: "block font-semibold text-slate-600 text-sm mb-1" %>
+          <%= select_tag :type, options_for_select(@types, params[:type]), include_blank: true, 
+                class: 'slim-select w-full h-10',
+                onchange: 'this.form.requestSubmit()' %>
+        </div>
+        <div class="w-full">
+          <%= label_tag :date, "Date", class: "block font-semibold text-slate-600 text-sm mb-1" %>
+          <%= date_field_tag :date, params[:date], include_blank:true, 
+        onchange:'this.form.submit()', 
+        class: 'input input-bordered input-md w-full '%>
+       </div>
+      </div>
     </div>
   <% end %>
+  <hr class="mt-6 mb-6">
 
-  <div class="divider"></div>
+  <div class="flex flex-wrap items-center justify-center gap-3 mb-4">
+    <%= link_to tools_path(request.query_parameters.merge(date: @date - 7.days)),
+        class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10 flex-shrink-0 flex items-center justify-center", title: "Semaine précédente", data: { turbo: false } do %>
+      <%= embedded_svg "icons/arrow_back.svg", class: "w-5 h-5 fill-current" %>
+    <% end %>
 
-  <% case params[:vue] %>
-    <% when 'calendrier', 'disponible', 'indisponible' %>
-      <%= render partial: 'view_list' %>
-    <% when 'indisponible_carte' %>
-      <%= render partial: 'view_map' %>
-  <% end %>
+    <div class="flex items-center gap-3 flex-wrap justify-center">
+      <span class="font-semibold text-primary text-sm sm:text-base whitespace-nowrap">
+        <%= @date.strftime("%d %b") %> — <%= @date_fin.strftime("%d %b %Y") %>
+      </span>
+      
+      <% if @date == Date.today %>
+        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm whitespace-nowrap">
+          Aujourd'hui
+        </span>
+      <% else %>
+        <%= link_to "Aujourd'hui",
+              tools_path(request.query_parameters.merge(date: Date.today)),
+              class: "inline-block text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm hover:bg-purple-50 transition-colors whitespace-nowrap" %>
+      <% end %>
+    </div>
 
+    <%= link_to tools_path(request.query_parameters.merge(date: @date + 7.days)),
+        class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10 flex-shrink-0 flex items-center justify-center", title: "Semaine suivante", data: { turbo: false } do %>
+      <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current" %>
+    <% end %>
+  </div>
+
+  <div class="flex flex-row items-center gap-4 mb-3 px-4 py-2 bg-slate-50 rounded-lg text-xs text-slate-500">
+    <div class="flex flex-col md:flex-row gap-2">
+      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-green-500"></span>Disponible</span>
+       <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span>En panne</span>
+    </div>
+    <div class="flex flex-col md:flex-row gap-2">
+      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-blue-500"></span>Réservé</span>
+      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-blue-300"></span>Réservé par un autre</span>
+    </div>
+  </div>
+
+  <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-none md:rounded-t-xl border-t border-x md:border-b-0 border-slate-200">
+    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
+  </div>
+  
+  <div class="flex flex-col bg-white border border-slate-200 rounded-b-xl rounded-t-none md:rounded-b-xl md:rounded-t-none shadow-sm overflow-visible">
+    <%= render partial: 'view_list' %>
+  </div>
 </div>

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class MouvementPolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
@@ -33,10 +35,14 @@ class MouvementPolicy < ApplicationPolicy
   end
 
   def destroy?
-    manager_or_admin? || record.user == user
+    (manager_or_admin? || record.user == user) && organisation?
   end
 
   def reserve?
+    !user.adhérent?
+  end
+
+  def libere?
     !user.adhérent?
   end
 end

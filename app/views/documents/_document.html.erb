@@ -1,20 +1,13 @@
 <tr class="hover:bg-base-300">
-  <td><b><%= document.category.humanize %></b></td>
   <td>
     <% if document.fichier.attached? %>
-    <%= link_to document.fichier.filename, url_for(document.fichier), target: '_blank', class: 'text-primary hover:underline' %>
+      <%= link_to document.fichier.filename, url_for(document.fichier), target: '_blank', class: 'text-primary hover:underline' %>
     <% end %>
   </td>
   <td>
-    <span class="badge <%= document.style %> text-white">
-      <%= document.workflow_state.humanize %>
-    </span>
   </td>
   <td><%= document.version %></td>
   <td><%= time_ago_in_words(document.created_at) %></td>
   <td>
-    <%= link_to 'Valider', valider_document_path(document), class: 'btn btn-success btn-outline hover:text-white! btn-xs', title: 'Cliquez pour passer ce document en statut \'Validé\'', 'data-turbo': false, disabled: !document.can_valider?  %>
-    <%= link_to 'Refuser', refuser_document_path(document), class: 'btn btn-error btn-outline hover:text-white! btn-xs', title: 'Cliquez pour passer ce document en statut \'Refusé\'', 'data-turbo': false, disabled: !document.can_refuser? %>
-  </td>
-
+   </td>
 </tr>

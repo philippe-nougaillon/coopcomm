@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
   # Mount Mission Control Job's engine where you wish to have it accessible
-  mount MissionControl::Jobs::Engine, at: "/jobs"
+  mount MissionControl::Jobs::Engine, at: '/jobs'
 
-  mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
+  mount LetterOpenerWeb::Engine, at: '/letter_opener' if Rails.env.development?
 
   devise_for :users
   # devise_for :users, controllers: {
@@ -20,9 +22,11 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :absences, only: [:destroy]
+
   resources :users do
     member do
-      get :inviter
+      post :inviter
       get :edit_password
       patch :update_password
       patch :reactivate
@@ -41,12 +45,12 @@ Rails.application.routes.draw do
   end
   match 'notifications', to: 'mail_logs#index', via: :get
 
-
   resources :mouvements, only: %i[index new create edit update destroy]
-  resources :tools do 
+  resources :tools do
     resources :mouvements, only: [] do
       collection do
         post :reserve
+        post :libere
       end
     end
   end
@@ -58,12 +62,12 @@ Rails.application.routes.draw do
 
   resources :interventions do
     member do
-      # get :accepter
-      # get :en_cours
-      get :terminer
-      get :valider
-      get :refuser
-      get :archiver
+      # post :accepter
+      # post :en_cours
+      post :terminer
+      post :valider
+      post :refuser
+      post :archiver
       delete :purge
       get :pointer
       get :pointage_statut
@@ -73,6 +77,9 @@ Rails.application.routes.draw do
     collection do
       get :get_unavailable_elements
       get :services_for_adherent
+      get :agents_for_service
+      get :new_intervention_modele_pointage
+      post :create_intervention_modele_pointage
     end
   end
 
@@ -99,19 +106,59 @@ Rails.application.routes.draw do
 
   resources :documents, only: %i[] do
     member do
-      get :valider
-      get :refuser
+      # post :valider
+      # post :refuser
     end
   end
 
   resources :newsletters, only: %i[index new destroy]
 
-  resources :services, except: %i[ index ]
-  resources :warehouses, except: %i[ index ], path: 'sites'
+  resources :services, except: %i[index]
+  resources :warehouses, except: %i[index], path: 'sites'
 
+  resources :cotations do
+    member do
+      # Le nom de fichier termine l'URL (ex. .../Cotation-2026-1.pdf) pour que la
+      # prévisualisation du navigateur affiche ce nom plutôt que "pdf.pdf".
+      get 'pdf(/*filename)', action: :pdf, as: :pdf, format: false
+      post :envoyer
+      post :valider
+      post :refuser
+      post :create_commande
+      get  :signer
+      post :signer_do
+    end
+  end
+  resources :prestations, except: %i[index show]
+
+  resources :conventions do
+    collection do
+      get :services_for_adherent
+    end
+  end
+
+  resources :commandes do
+    member do
+      get 'pdf(/*filename)', action: :pdf, as: :pdf, format: false
+      post :envoyer
+      post :valider
+      post :refuser
+      post :create_facture
+    end
+  end
+
+  resources :factures do
+    member do
+      get 'pdf(/*filename)', action: :pdf, as: :pdf, format: false
+      post :envoyer
+      post :valider
+      post :refuser
+    end
+  end
 
   namespace :messagerie do
-    get "/", to: 'index', as: ""
+    get '/', to: 'index', as: ''
+    get 'conversation/:to_id', to: 'conversation', as: 'conversation'
     post :mark_as_read
     post :send_message
     post :search_contact
@@ -119,15 +166,12 @@ Rails.application.routes.draw do
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "up" => "rails/health#show", as: :rails_health_check
+  get 'up' => 'rails/health#show', as: :rails_health_check
 
-  get "/service-worker.js" => "service_worker#service_worker"
-  get "/manifest.json" => "service_worker#manifest"
+  get '/service-worker.js' => 'service_worker#service_worker'
+  get '/manifest.json' => 'service_worker#manifest'
 
   post '/twilio/whatsapp_reply', to: 'twilio#whatsapp_reply'
-  get '/twilio/get_request', to: 'twilio#get_request'
-  post '/twilio/get_request', to: 'twilio#get_request'
 
-
-  root "pages#home"
+  root 'pages#home'
 end

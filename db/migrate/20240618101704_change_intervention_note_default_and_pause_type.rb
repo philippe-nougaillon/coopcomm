@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ChangeInterventionNoteDefaultAndPauseType < ActiveRecord::Migration[7.1]
   def change
     change_column :interventions, :note, :integer, default: 0

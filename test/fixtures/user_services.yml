@@ -79,3 +79,7 @@ agent_marseille_service_marseille:
 michael_jackson_service_marseille2:
   user: michael_jackson
   service: service_marseille2
+
+emmanuel_valls_service_marseille2:
+  user: emmanuel_valls
+  service: service_marseille2

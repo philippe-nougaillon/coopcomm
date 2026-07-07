@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class MailLogsController < ApplicationController
-  before_action :set_mail_log, only: %i[ show ]
+  before_action :set_mail_log, only: %i[show]
   before_action :is_user_authorized
 
   # GET /mail_logs or /mail_logs.json
@@ -10,23 +12,18 @@ class MailLogsController < ApplicationController
     @emails = User.by_service(current_user.services).pluck(:email).sort
 
     unless params[:search].blank?
-      @mail_logs = @mail_logs.where("LOWER(mail_logs.to) like :search", {search: "%#{params[:search]}%".downcase})
+      @mail_logs = @mail_logs.where('LOWER(mail_logs.to) like :search', { search: "%#{params[:search]}%".downcase })
     end
 
-    unless params[:search_subject].blank?
-      @mail_logs = @mail_logs.where(subject: params[:search_subject])
-    end
+    @mail_logs = @mail_logs.where(subject: params[:search_subject]) unless params[:search_subject].blank?
 
-    if params[:ko].present?
-      @mail_logs = @mail_logs.where(statut: false)
-    end
+    @mail_logs = @mail_logs.where(statut: false) if params[:ko].present?
 
     @pagy, @mail_logs = pagy(@mail_logs)
   end
 
   # GET /mail_logs/1 or /mail_logs/1.json
-  def show
-  end
+  def show; end
 
   # # GET /mail_logs/new
   # def new
@@ -82,20 +79,21 @@ class MailLogsController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_mail_log
-      @mail_log = MailLog.find_by(slug: params[:id])
-      if @mail_log.nil?
-        redirect_to root_path, alert: "Notification introuvable"
-      end
-    end
 
-    # Only allow a list of trusted parameters through.
-    def mail_log_params
-      params.require(:mail_log).permit(:to, :subject, :message_id, :user_id)
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_mail_log
+    @mail_log = MailLog.find_by(slug: params[:id])
+    return unless @mail_log.nil?
 
-    def is_user_authorized
-      authorize @mail_log ? @mail_log : MailLog
-    end
+    redirect_to root_path, alert: 'Notification introuvable'
+  end
+
+  # Only allow a list of trusted parameters through.
+  def mail_log_params
+    params.require(:mail_log).permit(:to, :subject, :message_id, :user_id)
+  end
+
+  def is_user_authorized
+    authorize @mail_log || MailLog
+  end
 end

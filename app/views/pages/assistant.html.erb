@@ -1,66 +1,79 @@
-<div>
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
-    <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Assistant (IA)') %></h1>
+
+<div class="flex flex-col">
+  <div class="flex flex-col justify-between items-left my-4 gap-2">
+      <span class="inline-flex w-18 items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-700">
+      <%= embedded_svg "icons/star_shine.svg", class: "w-4 h-4 fill-current" %>
+      Bêta
+    </span>
+    <h1 class="text-4xl text-primary font-bold">
+      <%= page_title!('Assistant (IA)') %>
+    </h1>
   </div>
-  <h2 class="text-2xl text-secondary mt-4 mb-8">
-    Bienvenue dans l'assistant (en bêta test), qui vous suggère de nouvelles interventions à planifier
-  </h2>
 
-  <% if params[:commit].blank? %>
-    <%= form_tag request.path, method: :get, class: 'mb-8' do |f| %>
-      <%= submit_tag "Lancer la génération de propositions", class: 'btn btn-primary btn-outline rounded hover:text-white! md:btn-lg', 'data-turbo': 'false' %>
-    <% end %>
-  <% else %>
-    <div class="mb-8">
-      <h3 class="text-2xl mb-4">Propositions de l'IA (mistral-medium-2508) :</h3>
-      <% if false %>
-        <%# Version OpenAI %>
-        <div class="typewriter">
-            <% @results.split("\n").each do |result| %>
-              <p class="text"><%= result %></p>
-            <% end %>
-        </div>
-      <% end %>
 
-      <%# Version Mistral %>
-      <%= raw(@results) %>
-      <% if @is_failed %>
-        <%= form_tag request.path, method: :get, class: 'mb-8' do |f| %>
-          <%= submit_tag "Lancer la génération de propositions", class: 'btn btn-primary btn-outline rounded hover:text-white! md:btn-lg', 'data-turbo': 'false' %>
-        <% end %>
-      <% end %>
+  <p class="text-lg text-secondary mb-14">
+    Analyse vos données d'intervention et génère automatiquement des propositions de planification adaptées à votre contexte.
+  </p>
+
+  <%= form_tag request.path, method: :get, class: 'mb-8' do %>
+    <%= submit_tag "Lancer la génération de propositions",
+        class: 'btn btn-primary btn-outline rounded hover:text-white! md:btn-lg',
+        'data-turbo': 'false' %>
+  <% end %>
+
+  <% if @results.present? %>
+    <div class="mb-4">
+      <h3 class="text-xl font-semibold mb-4">Propositions de l'IA <span class="text-sm font-normal text-slate-400">(mistral-medium-2508)</span></h3>
+
+      <%# Version Mistral — sanitize en 2e barrière derrière filter_html (injection de prompt) %>
+      <div class="prose max-w-none">
+        <%= sanitize(@results) %>
+      </div>
     </div>
   <% end %>
+
+  <% if @is_failed %>
+    <%= form_tag request.path, method: :get, class: 'mb-8' do %>
+      <%= submit_tag "Réessayer la génération",
+          class: 'btn btn-primary btn-outline rounded hover:text-white! md:btn-lg',
+          'data-turbo': 'false' %>
+    <% end %>
+  <% end %>
+
+  <div class="flex items-start gap-2 mt-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800">
+    <%= embedded_svg "icons/warning.svg", class: "w-4 h-4 fill-current text-amber-600 mt-0.5 flex-shrink-0" %>
+    <p>Les propositions générées sont des suggestions basées sur l'historique. Aucune intervention n'est créée automatiquement sans votre validation explicite.</p>
+  </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  const paragraphs = document.querySelectorAll(".typewriter p");
-  const typingSpeed = 1; // Durée de l'animation pour chaque ligne en secondes
-  let totalTime = 0;
+  document.addEventListener("DOMContentLoaded", function() {
+    const paragraphs = document.querySelectorAll(".typewriter p");
+    const typingSpeed = 1; // Durée de l'animation pour chaque ligne en secondes
+    let totalTime = 0;
 
-  paragraphs.forEach((paragraph, index) => {
-    const delay = totalTime; // Le délai dépend du temps total écoulé
-    paragraph.style.animationDelay = `${delay}s`;
+    paragraphs.forEach((paragraph, index) => {
+      const delay = totalTime; // Le délai dépend du temps total écoulé
+      paragraph.style.animationDelay = `${delay}s`;
 
-    // Ajouter la classe "current" pour afficher le curseur sur le paragraphe courant
+      // Ajouter la classe "current" pour afficher le curseur sur le paragraphe courant
+      setTimeout(() => {
+        // Retirer le curseur de la ligne précédente
+        if (index > 0) {
+          paragraphs[index - 1].classList.remove("current");
+        }
+        // Ajouter le curseur à la ligne courante
+        // paragraph.classList.add("current");
+      }, delay * 1000);
+
+      // Temps total pour cette ligne (pour calculer le prochain délai)
+      const duration = typingSpeed + 0.5; // On ajoute 0.5s pour le curseur entre les lignes
+      totalTime += duration;
+    });
+
+    // Retirer le curseur de la dernière ligne une fois l'animation terminée
     setTimeout(() => {
-      // Retirer le curseur de la ligne précédente
-      if (index > 0) {
-        paragraphs[index - 1].classList.remove("current");
-      }
-      // Ajouter le curseur à la ligne courante
-      // paragraph.classList.add("current");
-    }, delay * 1000);
-
-    // Temps total pour cette ligne (pour calculer le prochain délai)
-    const duration = typingSpeed + 0.5; // On ajoute 0.5s pour le curseur entre les lignes
-    totalTime += duration;
+      paragraphs[paragraphs.length - 1].classList.remove("current");
+    }, totalTime * 1000);
   });
-
-  // Retirer le curseur de la dernière ligne une fois l'animation terminée
-  setTimeout(() => {
-    paragraphs[paragraphs.length - 1].classList.remove("current");
-  }, totalTime * 1000);
-});
 </script>

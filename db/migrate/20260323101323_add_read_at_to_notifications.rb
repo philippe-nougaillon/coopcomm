@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddReadAtToNotifications < ActiveRecord::Migration[8.0]
   def change
     add_column :notifications, :read_at, :datetime

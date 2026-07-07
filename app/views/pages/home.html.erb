@@ -16,13 +16,25 @@
 <div class="flex flex-wrap gap-8 lg:px-48">
   <div class="flex-1 sm:flex-8 w-full">
     <div class="border shadow-sm p-4 rounded-2xl mb-8">
-      <h2 class="font-black text-lg mb-6"><%= current_user.agent? ? "Interventions en cours" : "Actions en attente" %></h2>
-      <div class="flex flex-col gap-6">
-        <% @interventions.each do |intervention| %>
-          <%= render partial: 'intervention', locals: {intervention: } %>
-        <% end %>
-        <%= link_to 'Voir toutes les actions en attente', interventions_path, class: 'text-primary' %>
-      </div>
+      <h2 class="font-black text-lg mb-4"><%= current_user.agent? ? "Interventions en cours" : "Actions en attente" %></h2>
+      <% if @interventions.any? %>
+        <div class="flex flex-col divide-y divide-gray-300">
+          <% @interventions.each do |intervention| %>
+            <%= render partial: 'intervention', locals: {intervention: } %>
+          <% end %>
+          <%= link_to 'Voir toutes les interventions', interventions_path, class: 'text-primary mt-8 hover:underline' %>
+        </div>
+      <% else %>
+        <p>Il n'y a rien en attente, vous pouvez vous reposer :)</p>
+      <% end %>
+      <% if current_user.adhérent? && @cotations.any? %>
+        <div class="flex flex-col mt-8">
+          <h2 class="font-black text-lg mb-4">Cotations à signer</h2>
+          <% @cotations.each do |cotation| %>
+            <%= render partial: 'cotation', locals: {cotation: } %>
+          <% end %>
+        </div>
+      <% end %>
     </div>
     <div class="border shadow-sm p-4 rounded-2xl">
       <h2 class="font-black text-lg mb-4">Messages de votre équipe</h2>
@@ -36,36 +48,33 @@
     </div>
   </div>
   <div class="flex-1 sm:flex-5 w-full">
-
     <div class="border shadow-sm px-4 pt-4 pb-7.5 rounded-2xl mb-8">
       <h2 class="font-black text-lg mb-6">Actions rapides</h2>
       <div class="flex flex-col gap-4">
-        <%= link_to (current_user.agent? ? 'Nouveau bon d\'Intervention' : 'Créer une Intervention'), new_intervention_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
+        <%= link_to (current_user.agent? ? 'Nouveau bon d\'Intervention' : 'Créer une Intervention'), new_intervention_path, class: 'btn btn-outline rounded-full w-full  whitespace-nowrap px-6' %>
         <% if current_user.manager_or_admin? %>
-          <%= link_to 'Ajouter un nouveau Matériel', new_tool_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
-          <%= link_to 'Lancer une discussion', messagerie_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
-          <%= link_to 'Ajouter un nouvel Utilisateur', new_user_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
+          <%= link_to 'Ajouter un nouveau Matériel', new_tool_path, class: 'btn btn-outline rounded-full w-full  whitespace-nowrap px-6' %>
+          <%= link_to 'Lancer une discussion', messagerie_path, class: 'btn btn-outline rounded-full w-full  whitespace-nowrap px-6' %>
+          <%= link_to 'Ajouter un nouvel Utilisateur', new_user_path, class: 'btn btn-outline rounded-full w-full whitespace-nowrap px-6' %>
         <% elsif current_user.adhérent? %>
-          <%= link_to 'Lancer une discussion', messagerie_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
-          <%= link_to 'Voir le tableau de bord', dashboard_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
-          <%= link_to '_', root_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
+          <%= link_to 'Lancer une discussion', messagerie_path, class: 'btn btn-outline rounded-full w-full  whitespace-nowrap px-6' %>
+          <%= link_to 'Voir le tableau de bord', dashboard_path, class: 'btn btn-outline rounded-full w-full  whitespace-nowrap px-6' %>
+          <%= link_to '_', root_path, class: 'btn btn-outline rounded-full w-full whitespace-nowrap px-6' %>
         <% elsif current_user.agent? %>
-          <%= link_to 'Réserver du matériel', tools_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
-          <%= link_to 'Lancer une discussion', messagerie_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
-          <%= link_to 'Consulter le guide', wiki_pages_path, class: 'btn btn-outline rounded-full w-full lg:w-fit whitespace-nowrap px-6' %>
+          <%= link_to 'Réserver du matériel', tools_path, class: 'btn btn-outline rounded-full w-full  whitespace-nowrap px-6' %>
+          <%= link_to 'Lancer une discussion', messagerie_path, class: 'btn btn-outline rounded-full w-full  whitespace-nowrap px-6' %>
+          <%= link_to 'Consulter le guide', wiki_pages_path, class: 'btn btn-outline rounded-full w-full  whitespace-nowrap px-6' %>
         <% end %>
-
       </div>
     </div>
-
     <div class="border shadow-sm p-4 pb-3 rounded-2xl">
-      <% if @forecasts %>
+      <% if @forecasts && @forecasts["city"] && @forecasts["forecast"] %>
         <h2 class="font-black text-lg">Météo à <%= @forecasts["city"]["name"] %></h2>
         <small>Dernière mise à jour : <%= l(Time.zone.parse(@forecasts[:last_fetched_at])) %></small>
         <div class="flex flex-col md:flex-row flex-wrap justify-center gap-2 my-2 mb-8">
           <%= render partial: 'pages/meteo', collection: [@forecasts["forecast"].first.third, @forecasts["forecast"].second.third], as: :forecast %>
         </div>
-        <%= link_to 'Prévision pour les jours à venir', meteo_path, class: 'text-primary' %>
+        <%= link_to 'Prévision pour les jours à venir', meteo_path, class: 'text-primary hover:underline' %>
       <% else %>
         <p>Météo indisponible</p>
       <% end %>

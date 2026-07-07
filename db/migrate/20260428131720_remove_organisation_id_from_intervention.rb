@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class RemoveOrganisationIdFromIntervention < ActiveRecord::Migration[8.0]
   def up
     # AJout d'un service par défaut si l'intervention n'en a pas

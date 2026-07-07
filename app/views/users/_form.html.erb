@@ -1,144 +1,124 @@
-<%= form_with(model: user, id: dom_id(user), class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-2' }, data: { controller: 'nested-form toggle-role-info', nested_form_wrapper_selector_value: '.nested-form-wrapper' }) do |form| %>
-  <% if user.errors.any? %>
-    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
-      <h2 class="font-black!">
-        <%= pluralize(user.errors.count, "erreur") %> empêche(nt) cet utilisateur d'être sauvegardé :
-      </h2>
-
-      <ul class="list-disc list-inside">
-        <% user.errors.each do |error| %>
-          <li><%= error.full_message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
-
-
-  <div class="w-full">
-    <%= form.label :nom, style: "display: block" %>
-    <%= form.text_field :nom, class: 'input input-sm w-full' %>
-  </div>
-
-  <div class="flex flex-wrap md:flex-nowrap gap-2 w-full mb-2">
-    <% if current_user.administrateur? %>
-      <div>
-        <%= form.label :rôle, "Rôle" %>
-        <%= form.select :rôle, 
-                        User.rôles.keys, 
-                        { selected: user.rôle || 'agent' }, 
-                        class: 'select select-sm w-full', 
-                        data: { 
-                          'toggle-role-info-target': 'role',
-                          action: 'change->toggle-role-info#change'
-                        } %>
-      </div>
-
-    <% else %>
-      <%= form.hidden_field :rôle, value: (user.new_record? ? 'agent' : user.rôle), data: { 'toggle-role-info-target': 'role' } %>
-    <% end %>
-    <div data-toggle-role-info-target="localisation" class="flex-1" data-controller="places" data-places-center-lat-value="<%= ENV['MAPS_CENTER_LAT'] %>" data-places-center-lng-value="<%= ENV['MAPS_CENTER_LNG'] %>">
-      <%= form.label :address, "Localisation" %>
-      
-      <%# Le champ visible par l'utilisateur pour chercher l'adresse %>
-      <%= form.text_field :address, 
-            class: 'input select-sm w-full', 
-            placeholder: 'Commencez à taper une adresse...', 
-            data: { places_target: "address" } %>
-
-      <%# Les champs cachés qui seront remplis automatiquement par le JS %>
-      <%= form.hidden_field :latitude, data: { places_target: "latitude" } %>
-      <%= form.hidden_field :longitude, data: { places_target: "longitude" } %>
-    </div>
-
-    <div data-toggle-role-info-target='prenom' class="w-full">
-      <%= form.label :prénom, style: "display: block" %>
-      <%= form.text_field :prénom, class: 'input input-sm w-full' %>
-    </div>
-
-  </div>
-
-  <% if current_user.manager_or_admin?  %>
-    <div class="w-full sm:flex-1">
-      <% label_texte = user.rôle == 'adhérent' ? "Secteur" : "Équipe" %>
-      <%= form.label :tag_list, label_texte, style: "display: block", data: { 'toggle-role-info-target': 'tagLabel' } %>
-      <%
-        est_soumission = params[form.object_name].present?
-
-        if est_soumission
-          tags_users_soumis = Array(params.dig(form.object_name, :tag_list)).reject(&:blank?)
-        else
-          tags_users_soumis = user.tags.map(&:name)
-        end
-
-        options_users = (@users_tags.map(&:name) + tags_users_soumis).uniq
-      %>
-      <%# Obligé de préciser data: { controller: 'slim-select' } dans ce formulaire malgré l'automatisation dans app/javascript/application.js, sinon, en cas d'échec dans l'edit, le champ n'est plus du slimselect %>
-      <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
-    </div>
-  <% end %>
-
-  <% if current_user.manager_or_admin? %>
-    <% if current_user.manager? && user.persisted? %>
-      <%= form.hidden_field :service_ids, value: user.services.ids %>
-    <% else %>
-      <div class="w-full">
-        <%= form.label :service_ids, "Service" %>
-        <%= form.select :service_ids,
-                        options_from_collection_for_select(current_user.organisation.services, 'id', 'nom', user.services.ids),
-                        { include_blank: true, required: true },
-                        { multiple: true, class: 'slim-select w-full' } %>
+<div class="max-w-3xl mx-auto my-6 bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+  <%= form_with(model: user, id: dom_id(user), class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-4' }, data: { controller: 'nested-form toggle-role-info', nested_form_wrapper_selector_value: '.nested-form-wrapper' }) do |form| %>
+    <% if user.errors.any? %>
+      <div id="error_explanation" class="bg-red-50 text-red-500 px-4 py-3 font-medium rounded-lg mb-2 border border-red-200">
+        <h2 class="font-black mb-2 text-sm md:text-base">
+          <%= pluralize(user.errors.count, "erreur") %> empêche(nt) cet utilisateur d'être sauvegardé :
+        </h2>
+        <ul class="list-disc list-inside text-xs opacity-90">
+          <% user.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
       </div>
     <% end %>
-  <% end %>
 
-  <div class="w-full">
-    <%= form.label :email, style: "display: block" %>
-    <%= form.email_field :email, class: 'input input-sm w-full', required: true %>
-  </div>
-
-  <div class="flex flex-wrap md:flex-nowrap gap-2 w-full">
-    <div class="w-full">
-      <%= form.label :téléphone, style: "display: block" %>
-      <%= form.text_field :téléphone, class: 'input input-sm w-full' %>
-    </div>
-
-    <div class="w-full">
-      <%= form.label :profile_picture, "Photo de profil", style: "display: block" %>
-      <%= form.file_field :profile_picture, accept: 'image/png,image/jpeg,image/avif,image/webp', class: 'file-input file-input-sm w-full' %>
-    </div>
-  </div>
-
-  <div class="w-full">
-    <%= form.label :memo, "Mémo", style: "display: block" %>
-    <%= form.text_area :memo, class: 'textarea w-full' %>
-  </div>
-
-  <% if false %>
-  <!--
-    <% if @user.agent? || @user.manager_or_admin? %>
-      <div class="flex mt-4 gap-4 mb-4">
-        <h2 class="text-2xl text-secondary">Absences</h2>
-        <button type="button" data-action="nested-form#add" class="btn btn-sm btn-outline btn-success hover:text-white!">+</button>
-      </div>
-
-
-      <%# TODO : Ajouter les erreurs des absences si on réactive cette partie du formulaire%>
-      <%= form.fields_for :absences do |absence_fields| %>
-        <%= render "absence_form_nested", f: absence_fields %>
+    
+    <div class="form-control w-full">
+      <%= form.label :nom, class: "label font-semibold text-slate-700 pt-0" do %>
+        <span>Nom <span class="text-red-500">*</span></span>
       <% end %>
-
-      <template data-nested-form-target="template">
-        <%= form.fields_for :absences, Absence.new, child_index: 'NEW_RECORD' do |absence_fields| %>
-          <%= render "absence_form_nested", f: absence_fields %>
+      <%= form.text_field :nom, class: 'input input-bordered input-sm w-full focus:input-primary', required: true %>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+      <% if current_user.administrateur? %>
+        <div class="form-control w-full">
+          <%= form.label :rôle, "Rôle", class: "label font-semibold text-slate-700" %>
+          <%= form.select :rôle, 
+                          User.rôles.keys, 
+                          { selected: user.rôle || 'agent' }, 
+                          class: 'slim-select w-full', 
+                          data: { 'toggle-role-info-target': 'role',
+                            action: 'change->toggle-role-info#change'
+                          } %>
+        </div>
+      <% else %>
+        <%= form.hidden_field :rôle, value: (user.new_record? ? 'agent' : user.rôle), data: { 'toggle-role-info-target': 'role' } %>
+      <% end %>
+      <div data-toggle-role-info-target="localisation" class="form-control w-full" data-controller="places" data-places-center-lat-value="<%= ENV['MAPS_CENTER_LAT'] %>" data-places-center-lng-value="<%= ENV['MAPS_CENTER_LNG'] %>">
+        <%= form.label :address, class: "label font-semibold text-slate-700" do %>
+          Localisation <span class="text-red-500">*</span>
         <% end %>
-      </template>
-
-      <div data-nested-form-target="target"></div>
-
-      <%= render "absence_form_script" %>
-    <% end %>
-  -->
+        <%= form.text_field :address, 
+        class: 'input input-bordered select-sm w-full focus:input-primary', 
+        placeholder: 'Commencez à tapez une adresse...', 
+        data: { places_target: "address" } %>
+        <%= form.hidden_field :latitude, data: { places_target: "latitude" } %>
+        <%= form.hidden_field :longitude, data: { places_target: "longitude" } %>
+      </div>
+      <div data-toggle-role-info-target='prenom' class="form-control w-full">
+        <%= form.label :prénom, class: "label font-semibold text-slate-700" do %>
+          <span>Prénom <span class="text-red-500">*</span></span>
+        <% end %>
+        <%= form.text_field :prénom, class: 'input input-bordered input-sm w-full focus:input-primary' %>
+      </div>
+    </div>
+    <hr class="border-slate-100 my-1" />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+      <div class="form-control w-full">
+        <%= form.label :téléphone, "Téléphone", class: "label font-semibold text-slate-700" %>
+        <%= form.text_field :téléphone, class: 'input input-bordered input-sm w-full focus:input-primary', placeholder: 'ex: 0612345678' %>
+      </div>
+      <div class="form-control w-full">
+        <%= form.label :email, class: "label font-semibold text-slate-700" do %>
+          <span>Adresse email <span class="text-red-500">*</span></span>
+        <% end %>
+        <%= form.email_field :email, class: 'input input-bordered input-sm w-full focus:input-primary', required: true %>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+      <% if current_user.manager_or_admin? %>
+        <div class="form-control w-full">
+          <% label_texte = user.rôle == 'adhérent' ? "Secteur" : "Équipe" %>
+          <%= form.label :tag_list, label_texte, class: "label font-semibold text-slate-700", data: { 'toggle-role-info-target': 'tagLabel' } %>
+          <%
+            est_soumission = params[form.object_name].present?
+            if est_soumission
+              tags_users_soumis = Array(params.dig(form.object_name, :tag_list)).reject(&:blank?)
+            else
+              tags_users_soumis = user.tags.map(&:name)
+            end
+            options_users = (@users_tags.map(&:name) + tags_users_soumis).uniq
+          %>
+          <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full', data: { controller: 'slim-select' } } %>
+        </div>
+      <% end %>
+      <% if current_user.manager_or_admin? %>
+        <% if current_user.manager? && user.persisted? %>
+          <%= form.hidden_field :service_ids, value: user.services.ids %>
+        <% else %>
+          <div class="form-control w-full">
+            <%= form.label :service_ids, class: "label font-semibold text-slate-700" do %>
+              <span>Service <span class="text-red-500">*</span></span>
+            <% end %>
+            <%= form.select :service_ids,
+                            options_from_collection_for_select(current_user.organisation.services, 'id', 'nom', user.services.ids),
+                            { include_blank: true, required: true },
+                            { multiple: true, class: 'slim-select w-full' } %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+    <hr class="border-slate-100 my-1" />
+    <div class="form-control w-full">
+      <%= form.label :profile_picture, "Photo de profil", class: "label font-semibold text-slate-700" %>
+      <%= form.file_field :profile_picture, accept: 'image/png,image/jpeg,image/avif,image/webp', class: 'file-input file-input-bordered file-input-sm file-input-primary w-full' %>
+    </div>
+    <div class="form-control w-full">
+      <%= form.label :memo, "Mémo", class: "label font-semibold text-slate-700" %>
+      <%= form.text_area :memo, class: 'textarea textarea-bordered w-full h-24 focus:textarea-primary', placeholder: 'Notes concernant cet utilisateur...' %>
+    </div>
+    <div class="flex gap-2 mt-4 w-full">
+      <% if current_user.manager_or_admin? %>
+        <%= form.submit "Enregistrer", id: "enregistrer_utilisateur", class: "btn btn-primary flex-1" %>
+        <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>      
+        <% end %>
+    </div>
   <% end %>
-
-  <%= form.submit "Enregistrer", id:"enregistrer_utilisateur", class: "btn btn-primary mt-4" %>
-<% end %>
+  <div class="pt-6 max-w-3xl mx-auto px-4">
+    <%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+      
+      <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des utilisateurs" %>
+      Retour à la liste des utilisateurs
+    <% end %>
+  </div>

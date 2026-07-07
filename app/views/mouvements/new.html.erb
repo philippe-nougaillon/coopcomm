@@ -1,11 +1,7 @@
 <div class="mx-auto w-full max-w-md">
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16 mb-4">
-    <h1 class="text-primary font-bold text-4xl">
-      <%= page_title!('Nouveau mouvement (panne)') %>
-    </h1>
+  <div class="flex flex-col justify-between items-center my-4 gap-2 ">
+    <h1 class="text-primary font-bold text-center text-4xl">
+        <%= page_title!('Nouveau mouvement (Panne)') %></h1>
   </div>
-
   <%= render "form", mouvement: @mouvement %>
-
-  <%= link_to "Annuler", mouvements_path, class: "btn mt-2" %>
 </div>

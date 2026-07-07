@@ -1,308 +1,65 @@
 <% content_for :full_width, true %>
-
-<% if @to_user %>
-  <%= turbo_stream_from "chat_#{current_user.id}_with_#{@to_user.id}" %>
-<% end %>
-
 <div class="drawer lg:drawer-open w-full mx-auto">
   <input id="messagerie-drawer" type="checkbox" class="drawer-toggle" />
-
   <div class="drawer-content flex flex-col min-h-screen relative w-full">
-      
-    <div class="sticky top-0 lg:top-16 px-4 2xl:px-8 pt-4 pb-4 z-30 bg-slate-50 flex gap-4 items-center min-h-12 sm:min-h-16 w-full border-b lg:border-none">      
-      <label for="messagerie-drawer" class="btn btn-square btn-ghost lg:hidden drawer-button cursor-pointer">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    <div class="sticky top-4 lg:top-16 px-4 2xl:px-8 pt-4 pb-4 z-30 bg-slate-50 flex gap-4 items-center justify-between min-h-12 sm:min-h-16 w-full border-b lg:border-none">
+      <label for="messagerie-drawer" class="btn btn-sm lg:hidden drawer-button cursor-pointer flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-lg normal-case">
+        <%= embedded_svg "icons/group.svg", class: "w-4 h-4 fill-current" %>
+        <span class="font-semibold text-sm">Contacts</span>
       </label>
-      
-      <h1 class="text-2xl sm:text-4xl text-primary font-bold">
-        <%= page_title!('Messagerie') %> 
-        <%= "- #{@to_user.nom_prénom}" if @to_user %>
+      <h1 class="text-2xl sm:text-4xl text-primary font-bold ml-auto lg:ml-0">
+        <%= page_title!('Messagerie') %>
       </h1>
     </div>
-
-    <% if @to_user %>
-      <div class="flex justify-center w-full mt-4 flex-1">
-        <div class="flex flex-col w-full lg:w-3/5 relative">
-          
-          <%# Adapter l'id 'chat-messages-container' au turbo_stream(broadcast_append_to) et au <script>, sinon le scroll automatique ne fontcionnera plus %>
-          <div id="chat-messages-container" class="w-full lg:mt-12 pb-24 lg:pb-0 px-2">
-            <% @messages.each do |message| %>
-              
-              <% if message.id == @first_unread_id %>
-                <div id="first-unread-banner" class="flex items-center gap-4 my-6">
-                  <div class="flex-1 border-t border-primary/30"></div>
-                  <div class="badge badge-primary badge-outline font-bold px-4 py-3">
-                    <%= pluralize(@unread_count, "nouveau message", "nouveaux messages") %>
-                  </div>
-                  <div class="flex-1 border-t border-primary/30"></div>
-                </div>
-              <% end %>
-
-              <div class="message-wrapper" 
-                  data-message-id="<%= message.id %>" 
-                  data-unread="<%= message.to_id == current_user.id && message.read_at.nil? ? 'true' : 'false' %>">
-                <%= render partial: "messagerie/message", locals: { message: message } %>
-              </div>
-
-            <% end %>
-          </div>
-
-          <div class="sticky bottom-18 lg:bottom-0 px-2 lg:pb-4 z-20 w-full mt-auto relative">
-            <div id="new-message-badge" class="hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-4 z-30 transform cursor-pointer group">
-              <div class="badge badge-primary rounded-full px-4 py-3 shadow-lg flex items-center gap-1 hover:badge-primary-focus transition-colors">
-                <span class="text-xs group-hover:-translate-y-0.5 transition-transform">👇</span>
-                <span class="text-sm font-semibold text-white">Nouveau message</span>
-              </div>
-            </div>
-            <input class="w-full rounded-xl p-4 border bg-white shadow-sm" name="message" placeholder="Ecrivez votre message" hx-post="/messagerie/send_message?to_id=<%= params[:to_id] %>" hx-trigger="keyup[key=='Enter']" hx-on::after-request="if(event.detail.successful) this.value = ''">
-          </div>
-        </div>
-      </div>
-
-    <% else %>
-      <div class="flex flex-col items-center justify-center flex-1 p-4 lg:p-8 text-center bg-slate-50">
-        <div class="max-w-xl w-full">
-          <p class="text-slate-500 mb-8 lg:mt-8">Sélectionnez un contact dans le menu pour démarrer une discussion, ou reprenez une conversation récente ci-dessous.</p>
-
-          <% if @recent_conversations.present? && @recent_conversations.any? %>
-            <div class="flex flex-col gap-3 text-left overflow-y-auto mb-20 lg:mb-0">
-              <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2">Discussions récentes</h3>
-              
-              <% @recent_conversations.each do |user| %>
-                <% last_message = @last_messages[user.id] %>
-                <% unread_count = @unread_counts[user.id] || 0 %>
-                
-                <%= link_to messagerie_path(to_id: user.id), "data-turbo": false, class: "card bg-white shadow-sm hover:shadow-md hover:border-primary transition-all border border-slate-200" do %>
-                  <div class="card-body p-4 flex flex-row items-center gap-4">
-                    <%= render partial: 'partials/user_profile_picture', locals: { user: user } %>
-                    
-                    <div class="flex-1 min-w-0">
-                      
-                      <div class="flex justify-between items-baseline mb-1">
-                        <h4 class="font-bold truncate <%= unread_count > 0 ? 'text-primary' : 'text-slate-800' %>">
-                          <%= user.nom_prénom %>
-                        </h4>
-                        <span class="text-xs whitespace-nowrap ml-2 <%= unread_count > 0 ? 'text-primary font-bold' : 'text-slate-400' %>">
-                          <%= message_time_format(last_message.created_at) %>
-                        </span>
-                      </div>
-                      
-                      <div class="flex justify-between items-center gap-2">
-                        <p class="text-sm truncate <%= unread_count > 0 ? 'text-slate-700 font-semibold' : 'text-slate-500' %>">
-                          <% if last_message.from_id == current_user.id %>
-                            <span class="text-slate-400 mr-1 font-normal">Vous:</span>
-                          <% end %>
-                          <%= last_message.moderation %>
-                        </p>
-
-                        <% if unread_count > 0 %>
-                          <div class="badge badge-primary badge-sm font-bold shadow-sm">
-                            <%= unread_count %>
-                          </div>
+    <div class="flex flex-col items-center justify-center flex-1 p-4 lg:p-8 text-center bg-slate-50">
+      <div class="max-w-xl w-full">
+        <% if @recent_conversations.present? && @recent_conversations.any? %>
+          <p class="text-slate-500 mb-8 lg:mt-8">Sélectionnez un contact pour démarrer une discussion, ou reprenez une conversation récente ci-dessous.</p>
+          <div class="flex flex-col gap-3 text-left overflow-y-auto mb-20 lg:mb-0">
+            <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2">Discussions récentes</h3>
+            <% @recent_conversations.each do |user| %>
+              <% last_message = @last_messages[user.id] %>
+              <% unread_count = @unread_counts[user.id] || 0 %>
+              <%= link_to messagerie_conversation_path(user.id), "data-turbo": false, class: "card bg-white shadow-sm hover:shadow-md hover:border-primary transition-all border border-slate-200" do %>
+                <div class="card-body p-4 flex flex-row items-center gap-4">
+                  <%= render partial: 'partials/user_profile_picture', locals: { user: user } %>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-baseline mb-1">
+                      <h4 class="font-bold truncate <%= unread_count > 0 ? 'text-primary' : 'text-slate-800' %>">
+                        <%= user.nom_prénom %>
+                      </h4>
+                      <span class="text-xs whitespace-nowrap ml-2 <%= unread_count > 0 ? 'text-primary font-bold' : 'text-slate-400' %>">
+                        <%= message_time_format(last_message.created_at) %>
+                      </span>
+                    </div>
+                    <div class="flex justify-between items-center gap-2">
+                      <p class="text-sm truncate <%= unread_count > 0 ? 'text-slate-700 font-semibold' : 'text-slate-500' %>">
+                        <% if last_message.from_id == current_user.id %>
+                          <span class="text-slate-400 mr-1 font-normal">Vous:</span>
                         <% end %>
-                      </div>
-
+                        <%= last_message.moderation %>
+                      </p>
+                      <% if unread_count > 0 %>
+                        <div class="badge badge-primary badge-sm font-bold shadow-sm">
+                          <%= unread_count %>
+                        </div>
+                      <% end %>
                     </div>
                   </div>
-                <% end %>
+                </div>
               <% end %>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="flex flex-col items-center justify-center py-12">
+            <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-4 border border-slate-200">
+              <%= embedded_svg "icons/chat_bubble.svg", class: "w-5 h-5 fill-current text-slate-400" %>
             </div>
-          <% else %>
-            <div class="p-8 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400">
-              <p>Aucune conversation récente.</p>
-            </div>
-          <% end %>
-        </div>
+            <p class="text-slate-500">Sélectionnez un contact dans le menu pour démarrer votre première discussion.</p>
+          </div>
+        <% end %>
       </div>
-    <% end %>
-  </div>
-
-  <div class="drawer-side z-[100]">
-    <label for="messagerie-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-    
-    <div class="bg-base-100 min-h-screen w-72 lg:w-fit flex flex-col border-r overflow-y-auto pt-4 lg:pt-20">
-      
-      <div class="p-4 border-b lg:hidden">
-        <h2 class="text-xl font-bold text-primary">Utilisateurs</h2>
-      </div>
-
-      <div class="p-4 border-b">
-        <input 
-          type="search" 
-          name="query" 
-          placeholder="Rechercher un utilisateur..." 
-          class="input input-bordered w-full"
-          hx-post="/messagerie/search_contact" 
-          hx-trigger="input changed delay:10ms, search" 
-          hx-target="#users-list"
-        />
-      </div>
-
-      <div class="flex flex-col py-2">
-        <div id="users-list">
-          <%= render partial: 'users_list', locals: { users: @users } %>
-        </div>
-      </div>
-
     </div>
   </div>
+  <%= render 'sidebar' %>
 </div>
-
-<script>
-  let newMessageBadge;
-
-  // 1. Fonction pour scroller à la bonne position au chargement
-  function scrollToCorrectPosition() {
-    const unreadBanner = document.getElementById('first-unread-banner');
-    newMessageBadge = document.getElementById('new-message-badge');
-    
-    if (unreadBanner) {
-      // S'il y a un séparateur de messages non lus, on va jusqu'à lui
-      const y = unreadBanner.getBoundingClientRect().top + window.scrollY - 100;
-      window.scrollTo({ top: y, behavior: 'instant' });
-    } else {
-      // Sinon on va tout en bas
-      scrollToBottom('instant');
-    }
-  }
-
-  // 2. Fonction pour scroller tout en bas
-  function scrollToBottom(behavior = 'instant') {
-    window.scrollTo({
-      top: document.documentElement.scrollHeight,
-      behavior: behavior 
-    });
-    if (newMessageBadge) newMessageBadge.classList.add('hidden');
-  }
-
-  // 3. Fonction pour surveiller les nouveaux messages (Turbo Streams)
-  function setupMessageObserver() {
-    const chatContainer = document.getElementById('chat-messages-container');
-    newMessageBadge = document.getElementById('new-message-badge');
-    if (!chatContainer || !newMessageBadge) return;
-
-    if (window.messageObserver) {
-      window.messageObserver.disconnect();
-    }
-
-    window.messageObserver = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.addedNodes.length > 0) {
-          mutation.addedNodes.forEach((node) => {
-            if (node.nodeType === 1) { 
-              
-              const isMyMessage = node.classList.contains('chat-end') || node.querySelector('.chat-end') !== null;
-              const newNodeHeight = node.offsetHeight || 0;
-              const scrollPosition = window.innerHeight + window.scrollY;
-              const distanceToBottom = document.documentElement.scrollHeight - scrollPosition;
-              const distanceBeforeInsertion = distanceToBottom - newNodeHeight;
-              
-              const isNearBottom = distanceBeforeInsertion <= 150;
-
-              if (isMyMessage) {
-                scrollToBottom('smooth');
-              } else {
-                if (isNearBottom) {
-                  const elementPosition = node.getBoundingClientRect().top + window.scrollY;
-                  const offsetPosition = elementPosition - 120; 
-
-                  window.scrollTo({
-                    top: offsetPosition,
-                    behavior: "smooth"
-                  });
-
-                  if (newMessageBadge) newMessageBadge.classList.add('hidden');
-                } else {
-                  newMessageBadge.classList.remove('hidden');
-                }
-                
-                // NOUVEAU : Si un message arrive en direct et qu'on doit le marquer comme lu plus tard
-                if (window.readObserver && node.dataset && node.dataset.unread === 'true') {
-                  window.readObserver.observe(node);
-                }
-              }
-            }
-          });
-        }
-      });
-    });
-
-    window.messageObserver.observe(chatContainer, { childList: true });
-
-    // Événements pour le badge "Nouveau message"
-    newMessageBadge.addEventListener('click', () => scrollToBottom('smooth'));
-
-    window.addEventListener('scroll', () => {
-      const scrollPosition = window.innerHeight + window.scrollY;
-      const distanceToBottom = document.documentElement.scrollHeight - scrollPosition;
-      
-      if (distanceToBottom <= 50 && !newMessageBadge.classList.contains('hidden')) {
-        newMessageBadge.classList.add('hidden');
-      }
-    });
-  }
-
-  // 4. Fonction pour marquer les messages comme lus (Intersection Observer)
-  function setupReadReceipts() {
-    if (window.readObserver) {
-      window.readObserver.disconnect();
-    }
-
-    window.readObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const messageNode = entry.target;
-          const messageId = messageNode.dataset.messageId;
-
-          // Envoi de la requête au serveur pour marquer comme lu
-          const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-          fetch(`/messagerie/mark_as_read`, {
-            method: 'POST',
-            headers: {
-              'X-CSRF-Token': csrfToken,
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify({ id: messageId })
-          });
-
-          // On arrête de surveiller ce message
-          window.readObserver.unobserve(messageNode);
-          messageNode.dataset.unread = 'false';
-        }
-      });
-    }, { 
-      // LA CORRECTION EST ICI 👇
-      threshold: 0, // Déclenche dès qu'une partie du message est visible
-      rootMargin: "0px 0px -50px 0px" // Attend que le message rentre d'au moins 50 pixels dans l'écran pour le valider
-    });
-
-    // On observe tous les messages non lus
-    document.querySelectorAll('.message-wrapper[data-unread="true"]').forEach((msg) => {
-      window.readObserver.observe(msg);
-    });
-  }
-
-  // Initialisation globale
-  function initMessagerie() {
-    // SÉCURITÉ : On cherche notre ID ultra-spécifique
-    const isChatPage = document.getElementById('chat-messages-container');
-    
-    // Si l'élément n'existe pas, on est sur une autre page (ou sur l'accueil de la messagerie), on annule tout !
-    if (!isChatPage) {
-      return; 
-    }
-
-    scrollToCorrectPosition();
-    setupMessageObserver();
-    setupReadReceipts();
-  }
-  // Pour s'assurer qu'on ne garde pas d'anciens écouteurs au changement de page
-  document.addEventListener("turbo:before-cache", () => {
-    if (window.messageObserver) window.messageObserver.disconnect();
-    if (window.readObserver) window.readObserver.disconnect();
-  });
-
-  document.addEventListener("DOMContentLoaded", initMessagerie);
-  document.addEventListener("turbo:load", initMessagerie);
-</script>

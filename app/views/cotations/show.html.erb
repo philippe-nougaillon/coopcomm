@@ -1,0 +1,200 @@
+<div class="mx-auto lg:w-2/3 w-full mt-8">
+  <% page_title!("Cotation #{@cotation.ref}") %>
+  <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+    <h1 class="text-2xl sm:text-3xl text-primary font-bold">Cotation <%= @cotation.ref %></h1>
+    <div class="flex flex-wrap gap-2">
+      <% if policy(@cotation).envoyer? && @cotation.can_envoyer? %>
+        <%= button_to "Envoyer", envoyer_cotation_path(@cotation), class: "btn btn-info btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
+      <% end %>
+      <% if policy(@cotation).valider? && @cotation.can_valider? %>
+        <%= button_to "Valider", valider_cotation_path(@cotation), class: "btn btn-success btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
+      <% end %>
+      <% if policy(@cotation).refuser? && @cotation.can_refuser? %>
+        <%= button_to "Refuser", refuser_cotation_path(@cotation), class: "btn btn-error btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'contents' } %>
+      <% end %>
+      <% if policy(@cotation).signer? && @cotation.can_signer? %>
+        <%= link_to "Signer", signer_cotation_path(@cotation), class: "btn btn-accent btn-outline hover:text-white!", data: { turbo: false } %>
+      <% end %>
+      <%= link_to pdf_cotation_path(@cotation, filename: @cotation.pdf_filename),
+                  class: "btn btn-outline", target: "_blank", data: { turbo: false } do %>
+        <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+        Générer PDF
+      <% end %>
+      <% if policy(@cotation).create_commande? %>
+        <%= button_to "Convertir en commande", create_commande_cotation_path(@cotation), class: "btn btn-success btn-outline hover:text-white!", form: { data: { turbo_confirm: "Êtes-vous certain(e) de vouloir transformer cette cotation en commande  ? Cette action est irréversible." }, class: 'contents', turbo_method: :post} %>
+      <% end %>
+      <% if policy(@cotation).update? %>
+        <%= link_to edit_cotation_path(@cotation), class: "btn btn-primary" do %>
+          <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
+          Modifier
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+  <div class="bg-white border border-slate-200 rounded-2xl" style="padding: 1.25rem;">
+    <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Informations</p>
+    <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
+      <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">Statut</div>
+      <div class="py-2.5 border-b border-slate-100">
+        <span class="badge text-nowrap font-bold <%= @cotation.style %>"><%= @cotation.workflow_state.humanize %></span>
+      </div>
+      <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+        <%= embedded_svg "icons/account_circle.svg", class: "text-base", title: "Adhérent" %> Adhérent
+      </div>
+      <div class="py-2.5 text-slate-800 border-b border-slate-100">
+        <%= link_to @cotation.adherent.nom_prénom, user_path(@cotation.adherent), class: "link" if @cotation.adherent %>
+      </div>
+      <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+        <%= embedded_svg "icons/store.svg", class: "text-base", title: "Service" %> Service
+      </div>
+      <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @cotation.service&.nom %></div>
+      <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">Intitulé</div>
+      <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @cotation.intitulé %></div>
+      <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+        <%= embedded_svg "icons/calendar_today.svg", class: "text-base", title: "Livraison souhaitée" %> Livraison souhaitée
+      </div>
+      <div class="py-2.5 text-slate-800 border-b border-slate-100">
+        <% if @cotation.date_livraison_souhaitée %>
+          <%= l(@cotation.date_livraison_souhaitée, format: :long) %>
+        <% else %>
+          <span class="text-slate-400 italic text-xs">Non renseignée</span>
+        <% end %>
+      </div>
+      <div class="flex items-center gap-2 py-2.5 text-slate-500<%= " border-b border-slate-100" if @cotation.mémo.present? %>" style="padding-right: 2rem;">Total HT</div>
+      <div class="py-2.5<%= " border-b border-slate-100" if @cotation.mémo.present? %>">
+        <span class="text-lg font-bold text-slate-800"><%= number_to_currency(@cotation.total_ht) %></span>
+      </div>
+      <% if @cotation.mémo.present? %>
+        <div class="flex items-start gap-2 py-2.5 text-slate-500" style="padding-right: 2rem;">Mémo</div>
+        <div class="py-2.5 text-slate-800 italic"><%= simple_format(@cotation.mémo) %></div>
+      <% end %>
+      <% if @cotation.signee_le.present? %>
+        <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+          <%= embedded_svg "icons/signature.svg", class: "text-base", title: "Livraison souhaitée" %> Signature
+        </div>
+        <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= l(@cotation.signee_le, format: :long) %> <span class="text-secondary">(<%= @cotation.ip %>)</span></div>
+      <% end %>
+    </div>
+  </div>
+  <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
+    <h2 class="text-2xl text-secondary font-semibold">Prestations</h2>
+  </div>
+  <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
+    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
+  </div>
+  <div class="overflow-x-auto border-x border-b border-slate-200 shadow-sm bg-white rounded-b-xl">
+    <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+      <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+      <span>Faire glisser pour voir plus</span>
+    </div>
+    <table class="table table-sm w-full border-none">
+      <thead class="bg-slate-100">
+        <tr>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Code</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Intitulé</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-right">Prix HT</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-right">Qté</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-right">Total HT</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% cotation_lignes = @cotation.cotation_lignes.includes(:prestation) %>
+        <% if cotation_lignes.any? %>
+          <% cotation_lignes.each do |ligne| %>
+            <tr class="border-b border-slate-100">
+              <td class="px-4 py-3 font-medium"><%= ligne.prestation&.code %></td>
+              <td class="px-4 py-3"><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
+              <td class="px-4 py-3 text-right"><%= number_to_currency(ligne.prix_ht) %></td>
+              <td class="px-4 py-3 text-right"><%= ligne.qté %></td>
+              <td class="px-4 py-3 text-right"><%= number_to_currency(ligne.total_ht) %></td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">Aucune prestation enregistrée.</td>
+          </tr>
+        <% end %>
+      </tbody>
+      <% if cotation_lignes.any? %>
+        <tfoot>
+          <tr class="bg-slate-50/50">
+            <th colspan="4" class="px-4 py-3 text-right">Total HT</th>
+            <th class="px-4 py-3 text-right"><%= number_to_currency(@cotation.total_ht) %></th>
+          </tr>
+        </tfoot>
+      <% end %>
+    </table>
+  </div>
+  <% mail_logs = @cotation.mail_logs.ordered %>
+  <% if mail_logs.any? %>
+    <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
+      <h2 class="text-2xl text-secondary font-semibold">Historique des envois</h2>
+    </div>
+    <div class="overflow-x-auto border border-slate-200 shadow-sm bg-white rounded-xl">
+      <table class="table table-sm w-full border-none">
+        <thead class="bg-slate-100">
+          <tr>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Il y a</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Via</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Expéditeur</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Destinataire</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Sujet</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">État</th>
+            <th class="px-4 py-3"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <%= render partial: "mail_logs/mail_log", collection: mail_logs, as: :mail_log %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+  <% if current_user.manager_or_admin? %>
+    <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
+      <h2 class="text-2xl text-secondary font-semibold">Activité</h2>
+    </div>
+    <div class="flex flex-col bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="table table-sm w-full border-none">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Date</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Utilisateur</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Type</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Action</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Modifications</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if @audits&.any? %>
+              <%= render partial: "audit", collection: @audits %>
+            <% else %>
+              <tr>
+                <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">
+                  Aucun historique d'activité disponible.
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <% if @pagy&.pages.to_i > 1 %>
+        <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full">
+          <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+            <%= pagy_nav(@pagy).html_safe %>
+          </div>
+          <div class="text-slate-500 text-center text-sm w-full mt-2">
+            <%= pagy_info(@pagy, item_name: "audits").html_safe %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+  <div class="my-10">
+    <%= link_to cotations_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition" do %>
+      <%= embedded_svg "icons/arrow_back.svg", class: "text-base", title: "Retour à la liste" %>
+      Retour à la liste
+    <% end %>
+  </div>
+</div>
