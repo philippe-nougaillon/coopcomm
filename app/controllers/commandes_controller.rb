@@ -5,14 +5,15 @@ class CommandesController < ApplicationController
 
   # GET /commandes or /commandes.json
   def index
-    @services = current_user.services
+    # TODO : A l'avenir, la condition sur le current_user devrait être dans by_service; Même ligne dans l'index des factures
+    @services = current_user.administrateur? ? current_organisation.services.ordered : current_user.services
     @adhérents = User.by_service(@services).adhérent
 
     @commandes = Commande
-                        .kept
-                        .includes(:adherent, :service, :organisation)
-                        .where(service: @services)
-                        .ordered
+                      .kept
+                      .includes(:adherent, :service, :organisation)
+                      .where(service: @services)
+                      .ordered
 
     if params[:search].present?
       @commandes = @commandes.where('commandes.ref ILIKE :s OR commandes.intitulé ILIKE :s', s: "%#{params[:search]}%")
