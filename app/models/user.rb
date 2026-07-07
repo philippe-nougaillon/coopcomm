@@ -33,6 +33,8 @@ class User < ApplicationRecord
 
   has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id
   has_many :cotations_adherent, class_name: 'Cotation', foreign_key: :adherent_id, dependent: :destroy
+  has_many :commandes_adherent, class_name: 'Commande', foreign_key: :adherent_id, dependent: :destroy
+  has_many :factures_adherent, class_name: 'Facture', foreign_key: :adherent_id, dependent: :destroy
   has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention', dependent: :destroy
   has_many :interventions, through: :agent_interventions
   has_many :messages, dependent: :destroy, foreign_key: :to_id, class_name: 'Message'
