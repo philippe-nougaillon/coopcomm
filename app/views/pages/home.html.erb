@@ -22,7 +22,7 @@
           <% @interventions.each do |intervention| %>
             <%= render partial: 'intervention', locals: {intervention: } %>
           <% end %>
-          <%= link_to 'Voir toutes les interventions en attente', interventions_path, class: 'text-primary mt-8 hover:underline' %>
+          <%= link_to 'Voir toutes les interventions', interventions_path, class: 'text-primary mt-8 hover:underline' %>
         </div>
       <% else %>
         <p>Il n'y a rien en attente, vous pouvez vous reposer :)</p>
