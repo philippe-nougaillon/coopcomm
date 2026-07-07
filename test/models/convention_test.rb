@@ -156,15 +156,18 @@ class ConventionTest < ActiveSupport::TestCase
     # les callbacks d'Intervention (broadcast, friendly_id…) hors sujet ici.
     now = Time.current # <--- C'est ici ! 'now' correspond à l'année en cours (2026), mais...
     Intervention.insert_all([{ adherent_id: @adherent.id, service_id: @service.id,
-                               description: 'test', temps_total: 0,
+                               description: 'test', temps_total: 0, début: now,
                                created_at: now, updated_at: now }.merge(attrs)])
   end
 
   test 'temps_total_interventions somme les interventions du même adhérent et service' do
-    insert_intervention(temps_total: 3)
-    insert_intervention(temps_total: 5)
+    # Viajamos en el tiempo a una fecha que esté dentro de la convención (por ejemplo, Junio de 2026)
+    travel_to Time.zone.parse("2026-06-01 12:00:00") do
+      insert_intervention(temps_total: 3)
+      insert_intervention(temps_total: 5)
 
-    assert_equal 8, build_convention.temps_total_interventions
+      assert_equal 8, build_convention.temps_total_interventions
+    end # Al salir del bloque, Rails vuelve al tiempo real automáticamente
   end
 
   test "temps_total_interventions exclut les interventions d'un autre service" do

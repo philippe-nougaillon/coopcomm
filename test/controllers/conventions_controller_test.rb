@@ -8,6 +8,12 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     @adherent = users(:patrick_adherent_paris)   # a le service service_paris, sans convention
     @service = services(:service_paris)
     @convention = conventions(:convention_paris)
+
+    # --- Definimos fechas dinámicas relativas a HOY ---
+    @today = Date.current
+    @start_of_year = @today.beginning_of_year
+    @end_of_year = @today.end_of_year
+
     sign_in @admin
   end
 
@@ -26,8 +32,8 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
       post conventions_url, params: { convention: {
         user_id: @adherent.id,
         service_id: @service.id,
-        date_début: '2026-03-01',
-        date_fin_prévue: '2027-03-01',
+        date_début: @today.to_s,
+        date_fin_prévue: (@today + 1.year).to_s
       } }
     end
     assert_redirected_to conventions_path
@@ -105,12 +111,14 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'filtre active_on inclut une convention active à la date' do
-    get conventions_url(active_on: '2026-06-01')
+    # Usamos la fecha de inicio del año actual, donde sabemos que la convención de la fixture está activa
+    get conventions_url(active_on: @start_of_year.to_s)
     assert_includes response.body, edit_convention_path(@convention)
   end
 
   test 'filtre active_on exclut une convention pas encore commencée à la date' do
-    get conventions_url(active_on: '2025-12-01')
+    # Un año antes del inicio del año actual
+    get conventions_url(active_on: (@start_of_year - 1.year).to_s)
     assert_not_includes response.body, edit_convention_path(@convention)
   end
 
@@ -125,7 +133,7 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     # weil a déjà convention_paris sur le service informatique
     assert_no_difference -> { Convention.count } do
       post conventions_url, params: { convention: {
-        user_id: users(:weil).id, service_id: services(:informatique).id, date_début: '2026-05-01'
+        user_id: users(:weil).id, service_id: services(:informatique).id, date_début: @today.to_s
       } }
     end
     assert_response :unprocessable_entity
@@ -135,7 +143,8 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference -> { Convention.count } do
       post conventions_url, params: { convention: {
         user_id: @adherent.id, service_id: @service.id,
-        date_début: '2026-06-01', date_fin_prévue: '2026-01-01'
+        date_début: @today.to_s, 
+        date_fin_prévue: (@today - 1.month).to_s # Un mes ANTES de empezar (inválido)
       } }
     end
     assert_response :unprocessable_entity
@@ -145,7 +154,7 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     # patrick n'est rattaché qu'au service service_paris, pas à informatique
     assert_no_difference -> { Convention.count } do
       post conventions_url, params: { convention: {
-        user_id: @adherent.id, service_id: services(:informatique).id, date_début: '2026-05-01'
+        user_id: @adherent.id, service_id: services(:informatique).id, date_début: @today.to_s
       } }
     end
     assert_response :unprocessable_entity

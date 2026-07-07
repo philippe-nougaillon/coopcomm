@@ -163,23 +163,26 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     agent = users(:martin_technique_paris)
     sign_in agent
 
-    assert_difference('Intervention.count') do
-      post interventions_url, params: {
-        intervention: {
-          début: 2.hours.ago,
-          fin: 1.hour.ago,
-          description: 'Tonte saisie le soir',
-          adherent_id: users(:patrick_adherent_paris).id,
-          service_id: services(:technique).id,
-          agent_ids: [agent.id],
-          # Le formulaire agent soumet un workflow_state caché : il ne doit PAS
-          # piloter l'état (mass assignment interdit). L'état terminé est forcé
-          # côté serveur, même si le param vaut 'nouveau'.
-          workflow_state: Intervention::NOUVEAU
+    # Viajamos al mediodía de HOY para que "hours.ago" nunca cambie de día o año
+    travel_to Time.current.middle_of_day do
+      assert_difference('Intervention.count') do
+        post interventions_url, params: {
+          intervention: {
+            début: 2.hours.ago,
+            fin: 1.hour.ago,
+            description: 'Tonte saisie le soir',
+            adherent_id: users(:patrick_adherent_paris).id,
+            service_id: services(:technique).id,
+            agent_ids: [agent.id],
+            # Le formulaire agent soumet un workflow_state caché : il ne doit PAS
+            # piloter l'état (mass assignment interdit). L'état terminé est forcé
+            # côté serveur, même si le param vaut 'nouveau'.
+            workflow_state: Intervention::NOUVEAU
+          }
         }
-      }
+      end
     end
-
+    
     assert_equal Intervention::TERMINE, Intervention.last.workflow_state
   end
 
@@ -351,7 +354,14 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
     # L'agent est déjà affecté au modèle ; on lui ajoute une fenêtre planifiée.
     # L'intervention fille hérite de la même fenêtre et entre donc en conflit de
     # disponibilité avec son propre modèle → le save échoue (id nil).
-    intervention.update_columns(début_prévue: DateTime.new(2026, 6, 1), fin_prévue: DateTime.new(2026, 6, 30))
+
+    # --- FECHAS DINÁMICAS BASADAS EN EL AÑO ACTUAL ---
+    current_year = Date.current.year
+    start_date = DateTime.new(current_year, 6, 1)
+    end_date = DateTime.new(current_year, 6, 30)
+
+
+    intervention.update_columns(début_prévue: start_date, fin_prévue: end_date)
 
     assert_no_difference('Intervention.count') do
       assert_no_enqueued_jobs only: NotifMailAdherentInterventionPointageJob do
