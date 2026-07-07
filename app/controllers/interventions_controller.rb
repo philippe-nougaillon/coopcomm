@@ -236,9 +236,8 @@ class InterventionsController < ApplicationController
 
     respond_to do |format|
       if @intervention.save
-        unless Rails.env.development?
-          Events.instance.publish('intervention.updated', payload: { intervention_id: @intervention.id })
-        end
+        
+        Events.instance.publish('intervention.updated', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
         format.html do
           # Si c'est une modification du commentaire dans le pointage statut, on redirige vers home
           # 303 (see_other) obligatoire après un PATCH soumis par Turbo : en 302,
@@ -278,13 +277,13 @@ class InterventionsController < ApplicationController
 
   # def accepter
   #   @intervention.accepter!
-  #   # event_publish_workflow_changed
+  #   # Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id })
   #   redirect_to @intervention, notice: "Intervention acceptée"
   # end
 
   # def en_cours
   #   @intervention.en_cours!
-  #   # event_publish_workflow_changed
+  #   # Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id })
   #   redirect_to @intervention, notice: "Intervention en cours"
   # end
 
@@ -292,8 +291,12 @@ class InterventionsController < ApplicationController
     if @intervention.can_terminer?
       @intervention.terminer!
       @intervention.calculate_co2
-      event_publish_workflow_changed
-      event_publish_intervention_termine
+      
+      unless Rails.env.development?
+        Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id })
+        Events.instance.publish('intervention.done', payload: { intervention_id: @intervention.id })
+      end
+
       redirect_to @intervention, notice: 'Intervention terminée'
     else
       redirect_to @intervention, notice: "Impossible de terminer l'intervention"
@@ -303,7 +306,7 @@ class InterventionsController < ApplicationController
   def valider
     @intervention.valider!
 
-    event_publish_workflow_changed
+    Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
 
     redirect_to @intervention, notice: 'Intervention validée'
   end
@@ -311,7 +314,7 @@ class InterventionsController < ApplicationController
   def refuser
     @intervention.refuser!
 
-    event_publish_workflow_changed
+    Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
 
     redirect_to @intervention, notice: 'Intervention refusée'
   end
@@ -320,7 +323,9 @@ class InterventionsController < ApplicationController
     if @intervention.valid?
       if @intervention.can_archiver?
         @intervention.archiver!
-        event_publish_workflow_changed
+        
+        Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
+
         redirect_to @intervention, notice: 'Intervention archivée'
       elsif @intervention.archivé?
         redirect_to @intervention, alert: "L'intervention est déjà archivée"
@@ -330,7 +335,6 @@ class InterventionsController < ApplicationController
     else
       redirect_to @intervention, alert: "L'intervention n'est pas valide. Elle ne peut pas être archivée"
     end
-    # event_publish_workflow_changed
   end
 
   def purge
@@ -381,9 +385,8 @@ class InterventionsController < ApplicationController
       end
 
       flash[:notice] = message
-      unless Rails.env.development?
-        Events.instance.publish('intervention.pointage', payload: { intervention_id: current_intervention.id })
-      end
+      
+      Events.instance.publish('intervention.pointage', payload: { intervention_id: current_intervention.id }) unless Rails.env.development?
 
       redirect_to pointage_statut_intervention_path(current_intervention)
     else
@@ -518,18 +521,6 @@ class InterventionsController < ApplicationController
   #     }
   #   end
   # end
-
-  def event_publish_workflow_changed
-    return if Rails.env.development?
-
-    Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id })
-  end
-
-  def event_publish_intervention_termine
-    return if Rails.env.development?
-
-    Events.instance.publish('intervention.done', payload: { intervention_id: @intervention.id })
-  end
 
   # Use callbacks to share common setup or constraints between actions.
   def set_intervention
