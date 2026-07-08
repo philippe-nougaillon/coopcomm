@@ -25,8 +25,7 @@
   <% if @mail_log.statut %>
     <span class="text-success">OK</span>
   <% else %>
-    <%= @error_message %>
-    <span class="text-error break-words!">Erreur : {code : <%= @error_message["delivery-status"]["code"] %>, reason : <%= @error_message["reason"] %>, severity : <%= @error_message["severity"] %>, recipient : <%= @error_message["recipient"] %>, event : <%= @error_message["event"] %>, message : <%= @error_message["delivery-status"]["message"] %>}</span>
+    <span class="text-error break-words!">Erreur : {code : <%= @mail_log.error_message["delivery-status"]["code"] %>, reason : <%= @mail_log.error_message["reason"] %>, severity : <%= @mail_log.error_message["severity"] %>, recipient : <%= @mail_log.error_message["recipient"] %>, event : <%= @mail_log.error_message["event"] %>, message : <%= @mail_log.error_message["delivery-status"]["message"] %>}</span>
   <% end %>
 </p>
 <p class="mb-4">

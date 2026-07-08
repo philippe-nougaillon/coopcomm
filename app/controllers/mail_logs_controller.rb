@@ -23,9 +23,7 @@ class MailLogsController < ApplicationController
   end
 
   # GET /mail_logs/1 or /mail_logs/1.json
-  def show
-    @error_message = ActiveSupport::JSON.decode(@mail_log.error_message) unless @mail_log.statut
-  end
+  def show; end
 
   # # GET /mail_logs/new
   # def new
