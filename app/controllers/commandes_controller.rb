@@ -6,7 +6,7 @@ class CommandesController < ApplicationController
   # GET /commandes or /commandes.json
   def index
     # TODO : A l'avenir, la condition sur le current_user devrait être dans by_service; Même ligne dans l'index des factures
-    @services = current_user.administrateur? ? current_organisation.services.ordered : current_user.services
+    @services = current_user.get_services_by_role
     @adhérents = User.by_service(@services).adhérent
 
     @commandes = Commande
@@ -163,13 +163,9 @@ class CommandesController < ApplicationController
   end
 
   def set_form_collections
-    @adherents = if current_user.administrateur?
-                   current_organisation.users.adhérent.ordered
-                 else
-                   User.by_service(current_user.services).adhérent.ordered
-                 end
+    @services = current_user.get_services_by_role
 
-    @services = current_user.administrateur? ? current_organisation.services.ordered : current_user.services.ordered
+    @adherents = User.by_service(@services).adhérent.ordered
 
     @prestations = current_organisation.prestations.ordered
   end
