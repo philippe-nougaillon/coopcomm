@@ -1,7 +1,7 @@
 class CommandesController < ApplicationController
   before_action :set_commande, only: %i[ show edit update destroy pdf envoyer valider refuser create_facture ]
   before_action :is_user_authorized
-  before_action :set_form_collections, only: %i[edit]
+  before_action :set_form_collections, only: %i[edit update]
 
   # GET /commandes or /commandes.json
   def index

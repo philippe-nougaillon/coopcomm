@@ -31,11 +31,13 @@ class AdherentFacturePolicyTest < ActionDispatch::IntegrationTest
     refute policy.pdf?
   end
 
-  test 'scope : aucune facture visible pour un adhérent' do
-    skip 'Comportement à clarifier : FacturePolicy::Scope#resolve renvoie `scope` ' \
-         '(toutes les factures) au lieu de filtrer comme CotationPolicy::Scope ' \
-         '(visible_to). Cf. bug signalé dans les notes de session. Test à activer ' \
-         'une fois le comportement attendu du scope décidé.'
-    assert_empty FacturePolicy::Scope.new(@adherent, Facture.all).resolve
+  # Décision : le Scope des factures est un pass-through volontaire (il ne filtre
+  # PAS). Le périmètre est appliqué dans FacturesController#index et l'accès des
+  # adhérents est déjà verrouillé par index?/show? = false (tests ci-dessus).
+  # On épingle ce comportement pour éviter qu'on le "corrige" par erreur.
+  test 'scope : pass-through volontaire (ne filtre pas les factures)' do
+    scope = FacturePolicy::Scope.new(@adherent, Facture.all).resolve
+
+    assert_equal Facture.all.pluck(:id).sort, scope.pluck(:id).sort
   end
 end

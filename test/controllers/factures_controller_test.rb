@@ -40,11 +40,6 @@ class FacturesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update with invalid params renders edit (422)" do
-    skip "BUG PROD confirmé : sur échec de validation, #update rend `:edit` mais " \
-         "`set_form_collections` est déclaré `only: %i[edit]` → @services/@adherents/" \
-         "@prestations sont nil → _form.html.erb:35 lève `undefined method 'map' for nil` " \
-         "(500 au lieu de 422 + formulaire). Fix = ajouter :update au before_action " \
-         "set_form_collections (factures_controller.rb:4). Test à activer après correction."
     patch facture_url(@facture), params: { facture: { intitulé: "" } }
     assert_response :unprocessable_entity
   end
