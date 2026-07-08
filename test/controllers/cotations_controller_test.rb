@@ -333,4 +333,35 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_includes svcs, services(:informatique)
     assert_includes svcs, services(:secretariat)
   end
+
+  # --- Création de commande depuis une cotation (create_commande) ---
+  # CotationPolicy#create_commande? exige manage? ET une cotation à l'état « validé ».
+
+  test 'create_commande : depuis une cotation validée, crée la commande avec ses lignes et redirige' do
+    cotation = cotations(:cotation_paris)
+    cotation.update!(workflow_state: 'validé')
+
+    assert_difference -> { Commande.count } => 1, -> { CommandeLigne.count } => 1 do
+      post create_commande_cotation_url(cotation)
+    end
+
+    commande = Commande.order(:created_at).last
+    assert_redirected_to commande_path(commande)
+    assert_equal cotation.adherent_id, commande.adherent_id
+    assert_equal cotation.intitulé, commande.intitulé
+    assert_equal 'créé', commande.workflow_state
+  end
+
+  test 'create_commande : commande invalide -> aucune création et retour à la cotation avec une alerte' do
+    cotation = cotations(:cotation_paris)
+    cotation.update!(workflow_state: 'validé')
+    cotation.update_column(:intitulé, nil) # bypass : rend la commande copiée invalide
+
+    assert_no_difference 'Commande.count' do
+      post create_commande_cotation_url(cotation)
+    end
+
+    assert_redirected_to cotation_path(cotation)
+    assert_equal 'Impossible de créer la commande.', flash[:alert]
+  end
 end

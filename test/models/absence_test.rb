@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class AbsenceTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
   setup do
     @agent = users(:bond)
   end
@@ -93,6 +95,23 @@ class AbsenceTest < ActiveSupport::TestCase
 
     assert_not nouvelle_intervention.valid?
     assert_includes nouvelle_intervention.errors.full_messages[0], 'Agent(s) indisponible(s)'
+  end
+
+  # --- Notification des managers à la création (after_create_commit) ---
+  # Dates en 2030 : loin des fixtures d'absence (2024-11) et des interventions
+  # de bond, pour ne déclencher aucune validation de chevauchement.
+
+  test "la création d'une absence enqueue la notification aux managers avec l'absence en argument" do
+    absence = Absence.create!(user: @agent, du: Date.new(2030, 3, 4), au: Date.new(2030, 3, 5), motif: :formation)
+
+    assert_enqueued_with(job: NotifManagersNewAbsenceJob, args: [absence])
+  end
+
+  test "une absence invalide (fin avant début) n'enqueue aucune notification" do
+    assert_no_enqueued_jobs only: NotifManagersNewAbsenceJob do
+      absence = Absence.new(user: @agent, du: Date.new(2030, 3, 6), au: Date.new(2030, 3, 4), motif: :formation)
+      assert_not absence.save
+    end
   end
 
   def createOverlapsIntervention(debut = nil, fin = nil)

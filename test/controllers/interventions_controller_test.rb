@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class InterventionsControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
   setup do
     @intervention = interventions(:tonte_locaux)
     sign_in users(:hidalgo)
@@ -453,5 +455,65 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
     assert_includes ids, users(:martin_technique_paris).id
     assert_includes ids, users(:agent_whatsapp).id
     assert_not_includes ids, users(:agent_marseille).id
+  end
+
+  # --- Notification des managers à la création (after_create_commit du modèle,
+  # --- exercé via le contrôleur : l'auteur vient de l'audit de création) ---
+
+  test "création par un adhérent : enqueue la notification managers « nouvelle demande » avec les bons arguments" do
+    adherent = users(:weil)
+    sign_in adherent
+
+    assert_difference('Intervention.count') do
+      post interventions_url, params: { intervention: {
+        description: 'Demande de nettoyage des locaux',
+        adherent_id: adherent.id,
+        service_id: services(:informatique).id,
+        début_prévue: 2.days.from_now,
+        fin_prévue: 2.days.from_now + 2.hours
+      } }
+    end
+
+    intervention = Intervention.order(:id).last
+    assert_enqueued_with(job: NotifManagersNewInterventionFromAdherentJob, args: [intervention, adherent])
+  end
+
+  test "création par un agent « à postériori » (terminée d'emblée) : enqueue la notification managers « réalisée »" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+
+    # Milieu de journée : les "hours.ago" restent le même jour (cf. test à postériori ci-dessus).
+    travel_to Time.current.middle_of_day do
+      assert_difference('Intervention.count') do
+        post interventions_url, params: { intervention: {
+          début: 2.hours.ago,
+          fin: 1.hour.ago,
+          description: 'Tonte saisie le soir',
+          adherent_id: users(:patrick_adherent_paris).id,
+          service_id: services(:technique).id,
+          agent_ids: [agent.id]
+        } }
+      end
+    end
+
+    intervention = Intervention.order(:id).last
+    assert_equal Intervention::TERMINE, intervention.workflow_state
+    assert_enqueued_with(job: NotifManagersInterventionDoneByAgentJob, args: [intervention, agent])
+  end
+
+  test "création par un manager : aucune notification managers n'est enqueue" do
+    # hidalgo (manager) est connecté via le setup.
+    assert_no_enqueued_jobs only: [NotifManagersNewInterventionFromAdherentJob,
+                                   NotifManagersInterventionDoneByAgentJob] do
+      assert_difference('Intervention.count') do
+        post interventions_url, params: { intervention: {
+          description: 'Intervention planifiée par le manager',
+          adherent_id: users(:weil).id,
+          service_id: services(:informatique).id,
+          début_prévue: 2.days.from_now,
+          fin_prévue: 2.days.from_now + 2.hours
+        } }
+      end
+    end
   end
 end
