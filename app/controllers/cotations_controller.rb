@@ -204,13 +204,9 @@ class CotationsController < ApplicationController
 
   # Collections proposées dans le formulaire, scopées selon le rôle.
   def set_form_collections
-    @adherents = if current_user.administrateur?
-                   current_organisation.users.adhérent.ordered
-                 else
-                   User.by_service(current_user.services).adhérent.ordered
-                 end
+    @services = current_user.get_services_by_role
 
-    @services = current_user.administrateur? ? current_organisation.services.ordered : current_user.services.ordered
+    @adherents = User.by_service(@services).adhérent.ordered
 
     @prestations = current_organisation.prestations.ordered
   end

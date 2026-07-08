@@ -358,6 +358,14 @@ class User < ApplicationRecord
               .last # Prend l'intervention créée/modifiée la plus récente
   end
 
+  def get_services_by_role
+    if self.administrateur?
+      self.organisation.services.ordered
+    else
+      self.services
+    end
+  end
+
   private
 
   def slug_candidates

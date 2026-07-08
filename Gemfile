@@ -139,6 +139,8 @@ gem 'prawn-table', '~> 0.2.2'
 
 gem 'prawn-qrcode', '~> 0.5.2'
 
+gem "prawn-svg", "~> 0.40.3"
+
 gem 'pg_search', '~> 2.3'
 
 gem 'twilio-ruby', '~> 7.4'
