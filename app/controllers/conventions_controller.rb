@@ -116,16 +116,9 @@ class ConventionsController < ApplicationController
 
   # Collections (tous les adhérents / services du périmètre) pour les filtres de l'index
   def set_index_filter_collections
-    @adherents = if current_user.administrateur?
-                   current_organisation.users.adhérent.ordered
-                 else
-                   User.by_service(current_user.services).adhérent.ordered
-                 end
-    @services = if current_user.administrateur?
-                  current_organisation.services.ordered
-                else
-                  current_user.services.ordered
-                end
+    @services = current_user.get_services_by_role
+
+    @adherents = User.by_service(@services).adhérent.ordered
   end
 
   # TODO VU : Si ça reste tel quel, il y a peut-être moyen de mettre ça dans le model, voire de fusionner ça avec l'autre fonction "services_for_adherent" utilisé dans les interventions
