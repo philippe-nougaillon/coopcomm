@@ -182,4 +182,17 @@ class NotificationMailer < ApplicationMailer
       }
     end
   end
+
+  def cotations_a_signer_relance(adherent, cotations, title)
+    @adherent  = adherent
+    @cotations = cotations
+
+    mail(to: adherent.email,
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: title).tap do |message|
+      message.mailgun_options = {
+        'tag' => ['relance cotation à signer']
+      }
+    end
+  end
 end

@@ -1,6 +1,8 @@
 require "test_helper"
 
 class FacturesControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
   setup do
     @facture = factures(:facture_paris)       # service informatique, état « créé », modifiable
     @facture_validée = factures(:facture_validée) # service informatique, état « validé », non modifiable
@@ -84,6 +86,23 @@ class FacturesControllerTest < ActionDispatch::IntegrationTest
     post valider_facture_url(@facture)
     assert_redirected_to facture_url(@facture)
     assert @facture.reload.créé?
+  end
+
+  test "envoyer enqueue la notification de l'adhérent avec les bons arguments" do
+    post envoyer_facture_url(@facture)
+
+    assert_enqueued_with(job: NotifAdherentFactureEnvoyeeJob,
+                         args: [@facture, users(:weil), users(:hidalgo).id])
+  end
+
+  test "envoyer : adhérent sans email -> la transition a lieu mais aucune notification n'est enqueue" do
+    users(:weil).update_column(:email, '') # bypass : Devise valide la présence de l'email
+
+    assert_no_enqueued_jobs only: NotifAdherentFactureEnvoyeeJob do
+      post envoyer_facture_url(@facture)
+    end
+
+    assert @facture.reload.envoyé?
   end
 
   # --- Autorisation ---
