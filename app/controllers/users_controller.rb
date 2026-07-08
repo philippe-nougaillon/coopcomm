@@ -197,7 +197,7 @@ class UsersController < ApplicationController
 
   def import_do
     if params[:upload].present?
-      @mdp = ''
+      @mdp = +'' # String mutable (le fichier est en frozen_string_literal) : on y concatène les mots de passe générés
       @success_logs = [] # Utilisateurs traités avec succès
       @error_logs   = [] # Utilisateurs en erreur
 
