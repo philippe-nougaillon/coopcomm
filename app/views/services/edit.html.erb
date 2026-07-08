@@ -1,4 +1,4 @@
-<div class="mx-auto w-full max-w-md">
+<div class="mx-auto w-full max-w-xl">
   <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16 mb-4">
     <h1 class="text-primary font-bold text-4xl">
       <%= page_title!('Modifier ce service') %>
@@ -7,6 +7,6 @@
   <%= render "form", service: @service %>
   <div class="flex flex-wrap gap-2 mt-4">
     <%= link_to "Voir", @service, class: "btn" %>
-    <button type="button" onclick="history.back();" class="btn ">Annuler</button>      
+    <button type="button" onclick="history.back();" class="btn ">Annuler</button>
   </div>
 </div>

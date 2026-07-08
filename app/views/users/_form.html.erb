@@ -101,13 +101,16 @@
     </div>
     <hr class="border-slate-100 my-1" />
     <div class="form-control w-full">
-      <%= form.label :profile_picture, "Photo de profil", class: "label font-semibold text-slate-700" %>
-      <%= form.file_field :profile_picture, accept: 'image/png,image/jpeg,image/avif,image/webp', class: 'file-input file-input-bordered file-input-sm file-input-primary w-full' %>
-    </div>
-    <div class="form-control w-full">
       <%= form.label :memo, "Mémo", class: "label font-semibold text-slate-700" %>
       <%= form.text_area :memo, class: 'textarea textarea-bordered w-full h-24 focus:textarea-primary', placeholder: 'Notes concernant cet utilisateur...' %>
     </div>
+   <%= render "shared/file_dropzone", 
+           form: form, 
+           attribute: :profile_picture, 
+           accept: "image/png, image/jpeg, image/avif, image/webp", 
+           placeholder: "Glissez une photo de profil ici ou cliquez pour parcourir",
+           label: "Photo de profil" %>
+
     <div class="flex gap-2 mt-4 w-full">
       <% if current_user.manager_or_admin? %>
         <%= form.submit "Enregistrer", id: "enregistrer_utilisateur", class: "btn btn-primary flex-1" %>
