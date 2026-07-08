@@ -130,7 +130,10 @@ class PagesController < ApplicationController
     forecasts = MeteoConceptConnexion.call
     return render json: {} if forecasts.blank? || forecasts['forecast'].blank?
 
-    forecast = forecasts['forecast'][params[:day].to_i].third
+    day = forecasts['forecast'][params[:day].to_i]
+    return render json: {} if day.blank?
+
+    forecast = day.third
     render json: { forecast: forecast, weather: MeteoConceptConnexion.WEATHER[forecast['weather']] }
   end
 
