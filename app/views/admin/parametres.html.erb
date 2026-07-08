@@ -57,8 +57,9 @@
         <div class="flex justify-between items-center mb-4">
           <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats (<%= @services.size %>)</span>
           <% if policy(Service).new? %>
-            <%= link_to new_service_path(tab: current_tab), data: { testid: "ajouter_service" }, class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base" do %>
-              <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current", title: "Ajouter un service" %>
+            <%= link_to new_service_path(tab: current_tab), data: { testid: "ajouter_service" }, 
+                class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary" do %>
+              <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current transition-colors duration-200", title: "Ajouter un service" %>
               <span class="hidden md:block">Ajouter un service</span>
             <% end %>
           <% end %>
@@ -111,8 +112,9 @@
         <div class="flex justify-between items-center mb-4">
           <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats (<%= @warehouses.size %>)</span>
           <% if policy(Warehouse).new? %>
-            <%= link_to new_warehouse_path(tab: current_tab), data: { testid: "ajouter_warehouse" }, class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base" do %>
-              <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current", title: "Ajouter un site" %>
+            <%= link_to new_warehouse_path(tab: current_tab), data: { testid: "ajouter_warehouse" }, 
+                class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary" do %>
+              <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current transition-colors duration-200", title: "Ajouter un site" %>
               <span class="hidden md:block"> Ajouter un site</span>
             <% end %>
           <% end %>
@@ -161,8 +163,9 @@
         <div class="flex justify-between items-center mb-4">
           <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats (<%= @prestations.size %>)</span>
           <% if policy(Prestation).new? %>
-            <%= link_to new_prestation_path(tab: current_tab), data: { testid: "ajouter_prestation" }, class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base" do %>
-              <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current", title: "Ajouter une prestation" %>
+            <%= link_to new_prestation_path(tab: current_tab), data: { testid: "ajouter_prestation" }, 
+            class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary" do %>
+              <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current transition-colors duration-200", title: "Ajouter une prestation" %>
               <span class="hidden md:block">Ajouter une prestation</span>
             <% end %>
           <% end %>

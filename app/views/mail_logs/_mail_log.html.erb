@@ -30,12 +30,9 @@
     <% end %>
   </td>
   <td class="pr-4 py-3 text-sm">
-    <div class="group flex flex-row border border-[#007fcb] items-center rounded-xl px-2 md:w-16 md:px-2 gap-2 justify-center transition-colors duration-200 hover:bg-[#007fcb]">
-  
-  <%= link_to 'Voir', mail_log, class: 'text-primary transition-colors duration-200 group-hover:text-white group-hover:no-underline' %>
-  
-  <%= embedded_svg "icons/visibility.svg", class: "text-sm text-primary transition-colors duration-200 group-hover:text-white", title: "Aucun état" %>
-
-</div>
+    <%= link_to mail_log, class: 'group flex flex-row border border-[#007fcb] items-center rounded-xl p-2 w-16 gap-1 justify-center transition-colors duration-200 hover:bg-[#007fcb] text-primary hover:text-white no-underline' do %>
+      <span class="text-xs font-semibold">Voir</span>
+      <%= embedded_svg "icons/visibility.svg", class: "w-5 h-5 text-[#007fcb] group-hover:text-white transition-colors duration-200", title: "Aucun état" %>
+    <% end %>
   </td>
 </tr>

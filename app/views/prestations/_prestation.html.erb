@@ -3,59 +3,49 @@
     <%= prestation.code %>
   </td>
   <td class="px-4 py-1.5 text-sm font-semibold capitalize"><%= prestation.libellé %></td>
- 
- 
   <td class="px-4 py-1.5 text-sm text-center ">
     <% if prestation.catégorie.present? %>
-       <span class="text-success font-semibold whitespace-nowrap">
+      <span class="text-success font-semibold whitespace-nowrap">
         <%= prestation.catégorie %>
       </span>
     <% else %>
-     <span class="text-success font-semibold flex justify-center whitespace-nowrap">
-      <%= embedded_svg "icons/check_indeterminate_small.svg",
+      <span class="text-success font-semibold flex justify-center whitespace-nowrap">
+        <%= embedded_svg "icons/check_indeterminate_small.svg",
        title: "Aucun sous catégorie" %>
-    <% end %>
+      <% end %>
     </span>
-    </td>
-  
-  
-  
-  <td class="px-4 py-1.5 text-sm text-center "> 
+  </td>
+  <td class="px-4 py-1.5 text-sm text-center ">
     <% sous = prestation.sous_catégorie %>
     <% if sous.present? %>
       <span class="text-slate-600 whitespace-nowrap">
         <%= sous %>
       </span>
     <% else %>
-    <span class="text-slate-600 flex justify-center whitespace-nowrap">
-      <%= embedded_svg "icons/check_indeterminate_small.svg",
+      <span class="text-slate-600 flex justify-center whitespace-nowrap">
+        <%= embedded_svg "icons/check_indeterminate_small.svg",
        title: "Aucun sous catégorie" %>
-    <% end %>
+      <% end %>
     </span>
   </td>
-
-
   <td class="px-4 py-1.5 text-sm capitalize text-center"><%= prestation.unité %></td>
   <td class="px-4 py-1.5 text-sm text-center">
     <%= number_to_currency(prestation.tarif) %>
   </td>
   <td>
     <div class="px-4 py-1 flex flex-row items-center gap-2">
-      
       <% if policy(prestation).edit? %>
-        <%= link_to edit_prestation_path(prestation), class: "btn btn-sm" do %>
+        <%= link_to edit_prestation_path(prestation), class: "btn btn-sm btn-ghost hover:!border-gray-700" do %>
           <%= embedded_svg "icons/edit.svg", class: "w-4 h-4 fill-current transition-colors duration-200" %>
           Modifier
         <% end %>
       <% end %>
-      
       <% if policy(prestation).destroy? %>
         <button
-          class="btn btn-sm btn-soft btn-error" onclick="delete_prestation_modal_<%= prestation.id %>.showModal()">
+        class="btn btn-sm btn-ghost text-error border border-transparent hover:!bg-error/20 hover:!border-error/40" onclick="delete_prestation_modal_<%= prestation.id %>.showModal()">
           <%= embedded_svg "icons/delete.svg", class: "w-4 h-4 fill-current transition-colors duration-200" %>
           Supprimer
         </button>
-        
         <dialog id="delete_prestation_modal_<%= prestation.id %>" class="modal">
           <div class="modal-box">
             <form method="dialog">
@@ -76,8 +66,8 @@
                 <button class="btn btn-ghost">Annuler</button>
               </form>
               <%= button_to prestation_path(prestation),
-                    method: :delete,
-                    class: "btn btn-error text-white" do %>
+                  method: :delete,
+                  class: "btn btn-error text-white" do %>
                 Oui, supprimer
               <% end %>
             </div>
