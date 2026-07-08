@@ -1,0 +1,32 @@
+Bonjour,
+<br><br>
+<% if @cotations.size > 1 %>
+  Vous avez <b><%= @cotations.size %> cotations</b> en attente de votre signature :
+<% else %>
+  Vous avez une cotation en attente de votre signature :
+<% end %>
+<br><br>
+<table cellpadding="6" cellspacing="0" border="1" style="border-collapse: collapse;">
+  <thead>
+    <tr>
+      <th align="left">Référence</th>
+      <th align="left">Intitulé</th>
+      <th align="right">Total HT</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @cotations.each do |cotation| %>
+      <tr>
+        <td>n°<%= cotation.ref %></td>
+        <td><%= cotation.intitulé %></td>
+        <td align="right"><%= number_to_currency(cotation.total_ht, unit: '€', format: '%n %u') %></td>
+        <td><%= link_to 'Signer', signer_cotation_url(cotation) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+<br>
+Cordialement,
+<br>
+L'équipe COOPCOMM
