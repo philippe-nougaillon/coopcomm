@@ -19,7 +19,7 @@
   </td>
   <%# État %>
   <td class="px-4 py-3 text-sm">
-    <% if mail_log.etat == 'OUVERT' %>
+    <% if mail_log.etat && mail_log.statut %>
       <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
         <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Ouvert
       </span>
