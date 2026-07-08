@@ -1,7 +1,7 @@
 class FacturesController < ApplicationController
   before_action :set_facture, only: %i[ show edit update destroy pdf envoyer valider refuser ]
   before_action :is_user_authorized
-  before_action :set_form_collections, only: %i[edit]
+  before_action :set_form_collections, only: %i[edit update]
 
 
   # GET /factures or /factures.json
