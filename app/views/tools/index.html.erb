@@ -3,22 +3,22 @@
     <h1 class="text-4xl text-primary font-bold">
       <%= page_title!('Réservation de matériel') %></h1>
     <div class="flex gap-2">
-      <% if policy(Tool).new? %>
-        <%= link_to new_tool_path, 
-        data: { 'testid': "ajouter_outil_pc" }, 
-        class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-base ",
-         title: "Ajouter un matériel" do %>
-          <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
-          <span class="hidden md:block">Ajouter un matériel</span>
-        <% end %>
-      <% end %>
       <% if policy(Mouvement).new? %>
         <%= link_to new_mouvement_path(redirect_to: request.fullpath), 
             data: { 'testid': "Gestion panne" }, 
-            class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-base ",
+            class: "btn btn-info btn-outline btn-md rounded flex items-center justify-center gap-2 text-base",
             title: "Gestion panne" do %>
           <%= embedded_svg "icons/cone.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
           <span class="hidden md:block">Gestion panne</span>
+        <% end %>
+      <% end %>
+      <% if policy(Tool).new? %>
+        <%= link_to new_tool_path, 
+        data: { 'testid': "ajouter_outil_pc" }, 
+            class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary",
+         title: "Ajouter un matériel" do %>
+          <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+          <span class="hidden md:block">Ajouter un matériel</span>
         <% end %>
       <% end %>
     </div>

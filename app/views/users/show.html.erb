@@ -149,7 +149,7 @@
           <% end %>
         <% end %>
         <% if policy(@user).destroy? %>
-          <button class="btn btn-soft btn-error" onclick="delete_user_modal.showModal()">
+          <button class="btn btn-soft btn-error hover:!text-white" onclick="delete_user_modal.showModal()">
             <%= embedded_svg "icons/person_off.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
             Désactiver l'utilisateur
           </button>

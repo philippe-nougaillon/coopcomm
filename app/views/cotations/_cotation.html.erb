@@ -28,7 +28,9 @@
       verticalement d'une cotation à l'autre (cellule vide si l'action ne
       s'applique pas à l'état courant). %>
   <td class="px-2 py-3 text-center">
-    <%= link_to "Voir", cotation, class: "btn btn-sm" %>
+    <%= link_to cotation,  class: "btn btn-sm btn-ghost text-info hover:bg-info/20 gap-1" do %>
+      Voir <i class="ti ti-eye"></i>
+    <% end %>
   </td>
   <td class="px-2 py-3 text-center">
     <% if policy(cotation).envoyer? && cotation.can_envoyer? %>
@@ -53,13 +55,41 @@
       <% end %>
     <% end %>
   </td>
- 
   <td class="px-2 py-3 text-center">
     <% if policy(cotation).destroy? %>
-      <%= button_to cotation_path(cotation), method: :delete, class: "btn btn-sm", title: "Supprimer",
-            form: { data: { turbo_confirm: "Supprimer cette cotation ?" }, class: 'inline-block' } do %>
-        <span class="material-symbols-outlined">delete</span>
-      <% end %>
+      <button class="btn btn-sm btn-ghost text-error border border-transparent hover:!bg-error/20 hover:!border-error/40" 
+          onclick="delete_cotation_modal_<%= cotation.id %>.showModal()" 
+          title="Supprimer">
+            <%= embedded_svg "icons/delete.svg", title: "Supprimer la cotation" %>
+      </button>
+      <dialog id="delete_cotation_modal_<%= cotation.id %>" class="modal">
+        <div class="modal-box">
+          <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+          </form>
+          <h3 class="text-lg font-bold text-error flex items-center gap-2">
+            <%= embedded_svg "icons/warning.svg", title: "Supprimer la cotation" %>
+            Supprimer la cotation
+          </h3>
+          <p class="py-4 text-sm text-slate-600 text-left">
+            Êtes-vous certain(e) de vouloir supprimer cette cotation ?
+            Cette action est irréversible.
+          </p>
+          <div class="modal-action">
+            <form method="dialog">
+              <button class="btn btn-ghost">Annuler</button>
+            </form>
+            <%= button_to cotation_path(cotation),
+                      method: :delete,
+                      class: "btn btn-error text-white" do %>
+              Oui, supprimer
+            <% end %>
+          </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+          <button>Fermer</button>
+        </form>
+      </dialog>
     <% end %>
   </td>
 </tr>

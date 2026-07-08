@@ -5,7 +5,7 @@
     </h1>
     <%= link_to admin_create_new_user_path,
             data: { testid: "ajouter_utilisateur" },
-            class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-base ",
+            class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary",
             title: "Créer un nouvel agent" do %>
       <%= embedded_svg "icons/person_add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
       <span class="hidden md:block">Ajouter un utilisateur</span>

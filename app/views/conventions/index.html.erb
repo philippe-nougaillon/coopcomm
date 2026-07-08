@@ -4,7 +4,7 @@
      <%= page_title!("Conventions") %></h1>
     <% if policy(Convention).new? %>
       <%= link_to new_convention_path,
-              class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm",
+            class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary",
               title: "Créer une nouvelle convention" do %>
         <%= embedded_svg "icons/assignment_add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
         <span class="hidden md:block">Ajouter une convention</span>
