@@ -5,7 +5,6 @@ class CommandesController < ApplicationController
 
   # GET /commandes or /commandes.json
   def index
-    # TODO : A l'avenir, la condition sur le current_user devrait être dans by_service; Même ligne dans l'index des factures
     @services = current_user.get_services_by_role
     @adhérents = User.by_service(@services).adhérent
 

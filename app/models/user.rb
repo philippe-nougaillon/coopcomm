@@ -362,7 +362,7 @@ class User < ApplicationRecord
     if self.administrateur?
       self.organisation.services.ordered
     else
-      self.services
+      self.services.ordered
     end
   end
 
