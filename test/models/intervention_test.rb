@@ -3,6 +3,38 @@
 require 'test_helper'
 
 class InterventionTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
+  # --- Notification des managers à la création (send_manager_notification) ---
+  # Le créateur est déduit de l'audit de création : au niveau modèle, il faut
+  # `as_user` pour le poser (dans l'app, `audited` capte le current_user du contrôleur).
+
+  test "création par un agent NON terminée : aucune notification managers n'est enqueue" do
+    agent = users(:martin_technique_paris)
+
+    assert_no_enqueued_jobs only: [NotifManagersNewInterventionFromAdherentJob,
+                                   NotifManagersInterventionDoneByAgentJob] do
+      Audited.audit_class.as_user(agent) do
+        Intervention.create!(description: 'Brouillon agent',
+                             adherent_id: users(:patrick_adherent_paris).id,
+                             service: services(:technique),
+                             début_prévue: 1.day.from_now,
+                             fin_prévue: 1.day.from_now + 1.hour)
+      end
+    end
+  end
+
+  test "création sans utilisateur d'audit (système/console) : aucune notification managers n'est enqueue" do
+    assert_no_enqueued_jobs only: [NotifManagersNewInterventionFromAdherentJob,
+                                   NotifManagersInterventionDoneByAgentJob] do
+      Intervention.create!(description: 'Création système',
+                           adherent_id: users(:weil).id,
+                           service: services(:informatique),
+                           début_prévue: 1.day.from_now,
+                           fin_prévue: 1.day.from_now + 1.hour)
+    end
+  end
+
   # --- broadcast_channels : périmètre des destinataires du live-update Turbo ---
   # Cf. l'abonnement par rôle dans interventions/index.html.erb.
 
