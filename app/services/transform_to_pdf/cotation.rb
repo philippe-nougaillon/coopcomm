@@ -26,7 +26,8 @@ module TransformToPdf
       add_header
       add_metadata
       add_lignes
-      add_memo if @cotation.mémo.present?
+      add_memo
+      add_signature
       add_footer
       self
     end
@@ -91,10 +92,26 @@ module TransformToPdf
     end
 
     def add_memo
+      return if @cotation.mémo.blank?
       move_down 20
-      text 'Mémo', size: 12, style: :bold
+      text 'Mémo', size: 14, style: :bold
       move_down 5
       text @cotation.mémo.to_s, align: :justify, size: 10
+    end
+
+    def add_signature
+      return if @cotation.signature.blank?
+
+      move_down 25
+      text 'Signature', size: 14, style: :bold
+      move_down 5
+
+      svg Base64.decode64(@cotation.signature.split(',')[1]), width: 100
+
+      move_down 5
+      mention = "Signé par #{@cotation.adherent&.nom_prénom}"
+      mention += " le #{I18n.l(@cotation.signee_le.to_date, format: :long)}" if @cotation.signee_le.present?
+      text mention, size: 10, style: :italic
     end
 
     # Pied de page
