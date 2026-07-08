@@ -53,14 +53,7 @@
       <% end %>
     <% end %>
   </td>
-  <td class="px-2 py-3 text-center">
-    <% if policy(cotation).update? %>
-      <%= link_to edit_cotation_path(cotation), class: "btn btn-sm btn-primary", title: "Modifier" do %>
-        <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
-        <span class="hidden lg:inline">Modifier</span>
-      <% end %>
-    <% end %>
-  </td>
+ 
   <td class="px-2 py-3 text-center">
     <% if policy(cotation).destroy? %>
       <%= button_to cotation_path(cotation), method: :delete, class: "btn btn-sm", title: "Supprimer",

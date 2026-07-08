@@ -114,6 +114,10 @@ class InterventionsController < ApplicationController
     @interventions = @interventions.includes(:tags, :agents, :adherent, :service, :organisation,
                                              :tools).with_attached_photos
 
+    #  Avant la respond_to, nous nous assurons que si c'est la page d'accueil
+     # Ou l'index de base, utilisez le filtre par rôle 
+    @interventions = Intervention.by_role_for_home(current_user) if params[:vue].blank?
+    
     respond_to do |format|
       format.html do
         @pagy, @interventions = pagy(@interventions)
@@ -125,6 +129,9 @@ class InterventionsController < ApplicationController
       end
     end
   end
+
+
+
 
   # GET /interventions/1 or /interventions/1.json
   def show

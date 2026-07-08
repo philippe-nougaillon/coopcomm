@@ -53,6 +53,9 @@ class Intervention < ApplicationRecord
 
   scope :ordered, -> { order(updated_at: :desc) }
 
+  # montre tout action ou intervention qui ont ce status
+  scope :courantes, -> { where(workflow_state: ['nouveau', 'pointage activé', 'terminé']) }
+
   after_create :replace_description_with_id
   after_create :calculate_co2, if: proc(&:terminé?)
 
