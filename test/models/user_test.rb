@@ -60,4 +60,54 @@ class UserTest < ActiveSupport::TestCase
     # croissant stable est vérifiable sans dépendre de la collation SQL.
     assert_equal noms.sort, noms
   end
+
+  # --- User#find_current_intervention -------------------------------------
+  # Cœur du « re-scan » du QRCode : retrouve l'intervention fille EN COURS
+  # (état « nouveau ») de CET agent, datée d'AUJOURD'HUI, pour le modèle scanné.
+  # Les filles sont fabriquées via le modèle répété `intervention_repete`
+  # (create_next_intervention pose début = maintenant, état « nouveau »).
+
+  test 'find_current_intervention : renvoie la fille du jour de l agent, en état nouveau' do
+    mère = interventions(:intervention_repete)
+    agent = users(:martin_technique_paris)
+    fille = mère.create_next_intervention(mère, agent)
+
+    assert_equal fille, agent.find_current_intervention(mère.slug)
+  end
+
+  test 'find_current_intervention : ignore les filles d un autre agent' do
+    mère = interventions(:intervention_repete)
+    # Seul bond a pointé aujourd'hui.
+    mère.create_next_intervention(mère, users(:bond))
+
+    assert_nil users(:martin_technique_paris).find_current_intervention(mère.slug)
+  end
+
+  test 'find_current_intervention : ignore une fille qui n est pas datée d aujourd hui' do
+    mère = interventions(:intervention_repete)
+    agent = users(:martin_technique_paris)
+    fille = mère.create_next_intervention(mère, agent)
+    fille.update_columns(début: 1.day.ago) # hors du jour, sans repasser par les callbacks
+
+    assert_nil agent.find_current_intervention(mère.slug)
+  end
+
+  test 'find_current_intervention : ignore une fille déjà terminée' do
+    mère = interventions(:intervention_repete)
+    agent = users(:martin_technique_paris)
+    fille = mère.create_next_intervention(mère, agent)
+    fille.update_columns(workflow_state: 'terminé')
+
+    assert_nil agent.find_current_intervention(mère.slug)
+  end
+
+  test 'find_current_intervention : renvoie la plus récemment mise à jour parmi plusieurs' do
+    mère = interventions(:intervention_repete)
+    agent = users(:martin_technique_paris)
+    f_recente = mère.create_next_intervention(mère, agent)
+    mère.create_next_intervention(mère, agent)
+    f_recente.touch # force f_recente à devenir la dernière modifiée, sans ambiguïté
+
+    assert_equal f_recente, agent.find_current_intervention(mère.slug)
+  end
 end

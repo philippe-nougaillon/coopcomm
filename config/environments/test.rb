@@ -49,6 +49,12 @@ Rails.application.configure do
   # incoming request so you'll need to provide the :host parameter yourself.
   config.action_mailer.default_url_options = { host: 'www.example.com' }
 
+  # Certains services (ex. génération du QRCode de pointage) construisent des URL
+  # absolues via `config.default_url_options[:host]`. Défini en dev et prod, il
+  # manquait en test → le PDF de l'affiche QRCode y levait une erreur. On l'aligne
+  # sur l'hôte de test des mailers pour rendre ce parcours testable.
+  config.default_url_options = { host: 'www.example.com' }
+
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 
