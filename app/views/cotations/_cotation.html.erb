@@ -27,11 +27,7 @@
   <%# Une colonne par action : chaque bouton de même catégorie s'aligne
       verticalement d'une cotation à l'autre (cellule vide si l'action ne
       s'applique pas à l'état courant). %>
-  <td class="px-2 py-3 text-center">
-    <%= link_to cotation,  class: "btn btn-sm btn-ghost text-info hover:bg-info/20 gap-1" do %>
-      Voir <i class="ti ti-eye"></i>
-    <% end %>
-  </td>
+  
   <td class="px-2 py-3 text-center">
     <% if policy(cotation).envoyer? && cotation.can_envoyer? %>
       <%= button_to "Envoyer", envoyer_cotation_path(cotation), class: "btn btn-sm btn-info btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>

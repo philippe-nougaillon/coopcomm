@@ -16,7 +16,9 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <%# Adhérent : figé s'il est connu (création depuis sa fiche ou édition) %>
       <div class="form-control w-full">
-        <%= f.label :adherent_id, "Adhérent", class: "label font-semibold text-slate-700" %>
+        <%= f.label :adherent_id, "Adhérent", class: "label font-semibold text-slate-700" do %>
+          <span>Adhérent <span class="text-red-500">*</span></span>
+        <% end %>
         <% if @cotation.adherent %>
           <input type="text" value="<%= @cotation.adherent.nom_prénom %>" class="input input-bordered w-full focus:input-primary" disabled>
           <%= f.hidden_field :adherent_id %>
@@ -28,23 +30,25 @@
       </div>
       <%# Service : détermine l'organisation et le périmètre de visibilité %>
       <div class="form-control w-full">
-        <%= f.label :service_id, "Service", class: "label font-semibold text-slate-700" %>
+        <%= f.label :service_id, "Service", class: "label font-semibold text-slate-700" do %>
+          <span>Service <span class="text-red-500">*</span></span>
+        <% end %>
         <%= f.collection_select :service_id, @services, :id, :nom,
               { prompt: "Choisir un service" },
               { class: "slim-select w-full h-10", required: true, data: { controller: "slim-select" } } %>
       </div>
       <div class="form-control w-full">
-        <%= f.label :intitulé, "Intitulé", class: "label font-semibold text-slate-700" %>
+        <%= f.label :intitulé, "Intitulé", class: "label font-semibold text-slate-700" do%>
+          <span>Intitulé <span class="text-red-500">*</span></span>
+        <% end %>
         <%= f.text_field :intitulé, class: "input input-bordered w-full focus:input-primary ", required: true %>
       </div>
       <div class="form-control w-full">
         <%= f.label :date_livraison_souhaitée, "Livraison souhaitée", class: "label font-semibold text-slate-700" %>
-                <div class="flex items-center gap-2 bg-slate-50 p-1 rounded-lg border border-slate-200">
-
-        <%= f.date_field :date_livraison_souhaitée, class: "flex-1 bg-transparent border-none outline-hidden text-sm " %>
+        <div class="flex items-center gap-2 bg-slate-50 h-10 rounded-lg border border-slate-200">
+          <%= f.date_field :date_livraison_souhaitée, class: "flex-1 bg-transparent border-none outline-hidden text-sm " %>
+        </div>
       </div>
-            </div>
-
       <div class="form-control w-full sm:col-span-2">
         <%= f.label :mémo, "Mémo", class: "label font-semibold text-slate-700" %>
         <%= f.text_area :mémo, rows: 3, class: "textarea textarea-bordered w-full focus:textarea-primary" %>
@@ -54,28 +58,33 @@
     <div class="flex items-center gap-4 mt-8 mb-3">
       <h2 class="text-xl text-secondary font-semibold">Prestations</h2>
     </div>
-    <div>
+    <div class="flex flex-col gap-4">
       <%= f.fields_for :cotation_lignes do |ligne| %>
-        <%= render "prestation_form", f: ligne, prestations: @prestations %>
-      <% end %>
+        <%= render "prestation_form", f: ligne,  prestations: @prestations, first: ligne.index.zero? %>
+  <% end %>
       <div data-nested-form-target="target"></div>
+      <button type="button" data-action="nested-form#add" class="btn btn-outline btn-primary  w-60 hover:text-white!">
+  + Ajouter une prestation
+</button>
     </div>
     <template data-nested-form-target="template">
       <%= f.fields_for :cotation_lignes, CotationLigne.new, child_index: "NEW_RECORD" do |ligne| %>
         <%= render "prestation_form", f: ligne, prestations: @prestations %>
       <% end %>
     </template>
-    <div class="mt-6 flex justify-between gap-2">
-      <div class="flex gap-2">
-        <%= link_to "Annuler", (@cotation.persisted? ? cotation_path(@cotation) : cotations_path), class: "btn" %>
-        <%= f.submit "Enregistrer", class: "btn btn-primary" %>
+        <hr class="border-slate-100 my-6" />
+
+    <div class="flex gap-2 mt-4 w-full">
+        <%= link_to "Annuler", (@cotation.persisted? ? cotation_path(@cotation) : cotations_path), class: "btn flex-1" %>
+        <%= f.submit "Enregistrer", class: "btn btn-primary flex-1" %>
       </div>
-      <button type="button" data-action="nested-form#add" class="btn btn-outline btn-success hover:text-white!">
-        + Ajouter une prestation
-      </button>
     </div>
   <% end %>
 </div>
+
+
+
+
 <div class="pt-2 pb-6 max-w-3xl mx-auto px-4">
   <%= link_to cotations_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
     <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des cotations" %>

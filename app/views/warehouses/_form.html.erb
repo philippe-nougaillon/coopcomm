@@ -15,7 +15,7 @@
     <%= hidden_field_tag :tab, params[:tab] %>
     <div class="w-full">
       <%= form.label :name, class: "label font-semibold text-slate-700" do %>
-        <span>Name <span class="text-red-500">*</span></span>
+        <span>Nom <span class="text-red-500">*</span></span>
       <% end %>
       <%= form.text_field :name, class: ["input input-bordered w-full focus:input-primary", {"input-error": warehouse.errors[:name].any?}] %>
     </div>

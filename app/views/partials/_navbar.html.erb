@@ -110,7 +110,7 @@
         <% end %>
 
 
-        <%# --- 3. CRM / DOCUMENTS --- %>
+        <%# --- 3. CRM --- %>
         <% if policy(Convention).index? || policy(Cotation).index? || policy(Commande).index? || policy(Facture).index? %>
           <li class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if %w[conventions cotations commandes factures].include?(params[:controller])}" title="Documents">
@@ -147,6 +147,13 @@
                   <% end %>
                 </li>
               <% end %>
+              <% if policy(:pages).dashboard? %>
+              <li>
+                <%= link_to dashboard_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'dashboard'}", 'data-turbo': false do %>
+                  <%= embedded_svg "icons/bar_chart.svg", class: "w-5 h-5 inline mr-2" %> Tableau de bord
+                <% end %>
+              </li>
+            <% end %>
             </ul>
           </li>
         <% end %>
