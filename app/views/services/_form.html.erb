@@ -14,7 +14,9 @@
     <% end %>
     <%= hidden_field_tag :tab, params[:tab] %>
     <div class="w-full">
-      <%= form.label :nom, class:'label font-semibold text-slate-700', style: "display: block" %>
+      <%= form.label :nom, class:'label font-semibold text-slate-700', style: "display: block" do %>
+        <span>Nom <span class="text-red-500">*</span></span>
+      <% end %>
       <%= form.text_field :nom, class: 'input input-bordered w-full focus:input-primary', required: true %>
     </div>
     <div class="flex flex-col gap-2 mt-4">

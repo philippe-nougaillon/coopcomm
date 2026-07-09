@@ -42,12 +42,10 @@
     </div>
     <div class="w-full">
       <%= form.label :date, class: "label font-semibold text-slate-700" %>
-              <div class="flex items-center gap-2 bg-slate-50 p-1 rounded-lg border border-slate-200">
-
-      <%= form.datetime_field :date, value: @mouvement.date&.strftime('%Y-%m-%dT%H:%M'), class: 'flex-1 bg-transparent border-none outline-hidden text-sm', required: true %>
+      <div class="flex items-center gap-2 bg-slate-50 h-10 rounded-lg border border-slate-200">
+        <%= form.datetime_field :date, value: @mouvement.date&.strftime('%Y-%m-%dT%H:%M'), class: 'flex-1 bg-transparent border-none outline-hidden text-sm', required: true %>
+      </div>
     </div>
-        </div>
-
     <div class="w-full">
       <%= form.label :commentaires, class: "label font-semibold text-slate-700" %>
       <%= form.text_area :commentaires, class: 'textarea textarea-bordered textarea-sm w-full focus:input-primary', autofocus: true, 'data-controller': 'textarea-autogrow' %>
