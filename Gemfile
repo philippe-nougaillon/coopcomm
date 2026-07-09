@@ -117,7 +117,6 @@ gem 'aws-sdk-s3', require: false
 gem 'langchainrb', '~> 0.13.4'
 
 gem 'mistral-ai', '~> 1.2'
-gem 'ruby-openai', '~> 7.1'
 
 gem 'csv', '~> 3.3'
 gem 'tiktoken_ruby', '~> 0.0.9'
@@ -180,3 +179,7 @@ gem 'capture_stdout', '~> 0.0.1'
 gem 'devise_invitable', '~> 2.0'
 
 gem 'htmlbeautifier'
+
+gem 'boxcars'
+
+gem 'openai'
