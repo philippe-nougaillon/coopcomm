@@ -1,4 +1,6 @@
-<%= form_with(model: intervention, class: "contents") do |form| %>
+<%= form_with(model: intervention, class: "contents",
+              data: { controller: "verification-disponibilites",
+                      verification_disponibilites_intervention_id_value: (@intervention.id if @intervention.persisted?) }) do |form| %>
   <% if intervention.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
       <h2 class="font-black!">
@@ -39,7 +41,7 @@
       </h2>
       <div class="bg-indigo-50 rounded border border-indigo-100 p-4 shadow-xs">
         <div class="flex flex-wrap gap-5 sm:gap-8">
-          <div class="w-full sm:flex-1">
+          <div class="w-full sm:flex-1" data-verification-disponibilites-target="formAgents">
             <%= form.label :agent_ids, "Agents" %>
             <%= form.select :agent_ids,
                             options_for_select(
@@ -51,16 +53,18 @@
                             data: {
                               controller: 'slim-select',
                               'calc-temps-passe-target': 'agents',
+                              'verification-disponibilites-target': 'agents',
                               action: "change->calc-temps-passe#calc"
                             }
             %>
           </div>
-          <div class="w-full sm:flex-1">
+          <div class="w-full sm:flex-1" data-verification-disponibilites-target="formTools">
             <%= form.label :tool_ids, "Matériel(s)" %>
             <%= form.select :tool_ids,
                             options_from_collection_for_select(@tools, 'id', 'name', intervention.tool_ids.presence || params[:tool_ids]),
                             {},
-                            class: "slim-select w-full h-10", multiple: :true %>
+                            class: "slim-select w-full h-10", multiple: :true,
+                            'data-verification-disponibilites-target': "tools" %>
           </div>
           <div class="w-full sm:flex-1">
             <%= form.label :tags_intervenant, "Mots clés", style: "display: block" %>
@@ -95,13 +99,15 @@
                                       class: "input input-sm flex-1 w-full",
                                       value: (params[:début]&.to_date || @intervention.début&.to_date || (@intervention.new_record? ? Date.current : nil)),
                                       data: { 'calc-temps-passe-target': 'debut_date',
-                                              action: "change->calc-temps-passe#calc" },
+                                              'verification-disponibilites-target': 'debut',
+                                              action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" },
                                       required: true %>
                   <%= form.select :début_hour, (0..23).map { |h| [format('%02d', h), h] },
                                   {selected: params[:début_hour] || @intervention.début&.hour },
                                   class: "select select-sm w-16",
                                   data: { 'calc-temps-passe-target': 'debut_hour',
-                                          action: "change->calc-temps-passe#calc" },
+                                          'verification-disponibilites-target': 'debut_hour',
+                                          action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" },
                                   required: true %>
                   :
                   <%# ATTENTION : si on remet un step(5), il faudra modifier la date de fin sélectionnée dans le controller %>
@@ -109,7 +115,8 @@
                                   {selected: params[:début_minute] ||@intervention.début&.min },
                                   class: "select select-sm w-16",
                                   data: { 'calc-temps-passe-target': 'debut_minute',
-                                          action: "change->calc-temps-passe#calc" },
+                                          'verification-disponibilites-target': 'debut_minute',
+                                          action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" },
                                   required: true %>
                 </div>
               </div>
@@ -120,20 +127,23 @@
                                       class: "input input-sm flex-1 w-full",
                                       value: (params[:fin].try(:to_date) || @intervention.fin&.to_date),
                                       data: { 'calc-temps-passe-target': 'fin_date',
-                                              action: "change->calc-temps-passe#calc" },
+                                              'verification-disponibilites-target': 'fin',
+                                              action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" },
                                       required: true %>
                   <%= form.select :fin_hour, (0..23).map { |h| [format('%02d', h), h] },
                                   {selected: params[:fin_hour] || @intervention.fin&.hour },
                                   class: "select select-sm w-16",
                                   data: { 'calc-temps-passe-target': 'fin_hour',
-                                          action: "change->calc-temps-passe#calc" },
+                                          'verification-disponibilites-target': 'fin_hour',
+                                          action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" },
                                   required: true %>
                   :
                   <%= form.select :fin_minute, (0..59).map { |m| [format('%02d', m), m] },
                                   {selected: params[:fin_minute] || @intervention.fin&.min },
                                   class: "select select-sm w-16",
                                   data: { 'calc-temps-passe-target': 'fin_minute',
-                                          action: "change->calc-temps-passe#calc" },
+                                          'verification-disponibilites-target': 'fin_minute',
+                                          action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" },
                                   required: true %>
                 </div>
               </div>

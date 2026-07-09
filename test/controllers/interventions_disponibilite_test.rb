@@ -104,6 +104,37 @@ class InterventionsDisponibiliteTest < ActionDispatch::IntegrationTest
                   'intervention[début]', 'verification-disponibilites#verificationWithInput'
   end
 
+  # --- Câblage du check live dans le formulaire AGENT (_form_for_agents) --------
+  # Le partial agent n'a que des dates réelles (pas de prévues) : le contrôleur JS
+  # doit y être branché et fonctionner sans champs prévus.
+
+  test 'form agent (new) : contrôleur + cibles/action câblés sur les dates réelles et les agents' do
+    sign_in users(:martin_technique_paris) # agent
+
+    get new_intervention_url
+
+    assert_response :success
+    assert_select 'form[data-controller~=?]', 'verification-disponibilites'
+    assert_select 'input[name=?][data-verification-disponibilites-target=?]', 'intervention[début]', 'debut'
+    assert_select 'input[name=?][data-action*=?]',
+                  'intervention[début]', 'verification-disponibilites#verificationWithInput'
+    assert_select 'select[name=?][data-verification-disponibilites-target=?]',
+                  'intervention[agent_ids][]', 'agents'
+    # Aucun champ de date prévue dans le form agent : la JS doit rester robuste
+    # (cibles prévues absentes → lues avec garde has...Target).
+    assert_not_includes response.body, 'intervention[début_prévue]'
+  end
+
+  test 'form agent (edit) : contrôleur + cible sur la date de fin réelle' do
+    sign_in users(:martin_technique_paris) # agent
+
+    get edit_intervention_url(interventions(:nouvelle_intervention))
+
+    assert_response :success
+    assert_select 'form[data-controller~=?]', 'verification-disponibilites'
+    assert_select 'input[name=?][data-verification-disponibilites-target=?]', 'intervention[fin]', 'fin'
+  end
+
   test 'F5 aucune date fournie → réponse vide sans erreur' do
     creer_intervention(début: '2025-04-08 09:00', fin: '2025-04-08 12:00')
 

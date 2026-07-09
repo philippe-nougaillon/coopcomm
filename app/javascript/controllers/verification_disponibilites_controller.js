@@ -186,16 +186,18 @@ export default class extends Controller {
     return null
   }
 
+  // Toutes les cibles sont optionnelles : selon le formulaire, on peut avoir les
+  // dates prévues (planification), les dates réelles (saisie a posteriori), ou
+  // les deux. On lit chaque cible seulement si elle est présente.
   updateDatesFromInputs() {
-    this.date_debut_prevue = this.debut_prevueTarget.value
-    this.date_debut_prevue_hour = this.debut_prevue_hourTarget.value
-    this.date_debut_prevue_minute = this.debut_prevue_minuteTarget.value
+    this.date_debut_prevue = this.hasDebut_prevueTarget ? this.debut_prevueTarget.value : null
+    this.date_debut_prevue_hour = this.hasDebut_prevue_hourTarget ? this.debut_prevue_hourTarget.value : null
+    this.date_debut_prevue_minute = this.hasDebut_prevue_minuteTarget ? this.debut_prevue_minuteTarget.value : null
 
-    this.date_fin_prevue = this.fin_prevueTarget.value
-    this.date_fin_prevue_hour = this.fin_prevue_hourTarget.value
-    this.date_fin_prevue_minute = this.fin_prevue_minuteTarget.value
+    this.date_fin_prevue = this.hasFin_prevueTarget ? this.fin_prevueTarget.value : null
+    this.date_fin_prevue_hour = this.hasFin_prevue_hourTarget ? this.fin_prevue_hourTarget.value : null
+    this.date_fin_prevue_minute = this.hasFin_prevue_minuteTarget ? this.fin_prevue_minuteTarget.value : null
 
-    // Dates réelles (peuvent être absentes selon le rendu du formulaire).
     this.date_debut = this.hasDebutTarget ? this.debutTarget.value : null
     this.date_debut_hour = this.hasDebut_hourTarget ? this.debut_hourTarget.value : null
     this.date_debut_minute = this.hasDebut_minuteTarget ? this.debut_minuteTarget.value : null
