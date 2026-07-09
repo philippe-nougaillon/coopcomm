@@ -24,19 +24,19 @@
         <%= label_tag :adherent_id, "Adhérent", class: "block text-xs font-semibold text-slate-600 mb-1" %>
         <%= select_tag :adherent_id,
               options_from_collection_for_select(@adherents, :id, :nom_prénom, params[:adherent_id]),
-              include_blank: "Tous", class: "slim-select w-full", onchange: "this.form.submit()" %>
+              include_blank: "Tous", class: "slim-select w-full h-10", onchange: "this.form.submit()" %>
       </div>
 
       <div class="w-full md:flex-1">
         <%= label_tag :service_id, "Service", class: "block text-xs font-semibold text-slate-600 mb-1" %>
         <%= select_tag :service_id,
               options_from_collection_for_select(@services, :id, :nom, params[:service_id]),
-              include_blank: "Tous", class: "slim-select w-full", onchange: "this.form.submit()" %>
+              include_blank: "Tous", class: "slim-select w-full h-10", onchange: "this.form.submit()" %>
       </div>
 
       <div class="w-full md:flex-1">
         <%= label_tag :active_on, "Active au", class: "block text-xs font-semibold text-slate-600 mb-1" %>
-        <%= date_field_tag :active_on, params[:active_on], class: "input input-bordered input-md w-full",
+        <%= date_field_tag :active_on, params[:active_on], class: "input input-bordered input-md w-full h-10",
               onchange: "this.form.submit()" %>
       </div>
     </div>

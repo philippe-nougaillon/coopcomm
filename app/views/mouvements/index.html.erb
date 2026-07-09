@@ -37,7 +37,7 @@
         <!--
         <div class="w-full md:w-fit">
           <%= label_tag :date, "Date d'intervention" %>
-          <%= date_field_tag :date, params[:date], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full' %>
+          <%= date_field_tag :date, params[:date], include_blank:true, onchange:'this.form.submit()', class: 'input input-bordered w-full focus:input-primary' %>
         </div>
       -->
       <% end %>
@@ -98,6 +98,4 @@
         </div>
       <% end %>
     </div>
-
-    
   </div>

@@ -10,11 +10,11 @@
     <div class="flex flex-wrap items-start w-full gap-4 mt-8">
       <div class="w-full md:w-fit">
         <%= label_tag :search, "Rechercher" %>
-        <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full', placeholder: 'Nom' %>
+        <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-bordered w-full focus:input-primary', placeholder: 'Nom' %>
       </div>
       <div class="w-full md:w-1/7">
         <%= label_tag :user_id, "Utilisateur" %>
-        <%= select_tag :user_id, options_from_collection_for_select(@users, :id, :nom_prénom, params[:user_id]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
+        <%= select_tag :user_id, options_from_collection_for_select(@users, :id, :nom_prénom, params[:user_id]), include_blank: true, class: 'slim-select w-full h-10', onchange: 'this.form.submit()' %>
       </div>
     </div>
   <% end %>

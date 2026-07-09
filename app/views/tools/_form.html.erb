@@ -1,4 +1,4 @@
-<div class="max-w-3xl mx-auto my-6 bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+<div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
   <%= form_with(model: tool, class: "contents", html: { class: 'flex flex-col gap-2' }) do |form| %>
     <% if tool.errors.any? %>
       <div id="error_explanation" class="bg-red-50 text-red-500 px-4 py-3 font-medium rounded-lg mb-2 border border-red-200">
@@ -16,21 +16,21 @@
       <%= form.label :name, 'Nom', class: "label font-semibold text-slate-700 pt-0" do %>
         <span>Nom <span class="text-red-500">*</span></span>
       <% end %>
-      <%= form.text_field :name, class: 'input input-bordered input-sm w-full focus:input-primary', required: true, placeholder: 'Ex. Perceuse sans fil...' %>
+      <%= form.text_field :name, class: 'input input-bordered input-sm w-full focus:input-primary h-10', required: true, placeholder: 'Ex. Perceuse sans fil...' %>
     </div>
     <div class="form-control w-full">
       <%= form.label :icon_name, "Type", class: "label font-semibold text-slate-700" %>
       <%= form.select :icon_name, options_for_select(Tool.icons.sort, @tool.icon_name),
-        { include_blank: true }, class: 'slim-select w-full' %>
+        { include_blank: true }, class: 'slim-select w-full h-10' %>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
       <div class="form-control w-full">
         <%= form.label :marque, class: "label font-semibold text-slate-700" %>
-        <%= form.text_field :marque, class: 'input input-bordered input-sm w-full focus:input-primary' %>
+        <%= form.text_field :marque, class: 'input input-bordered input-sm w-full focus:input-primary h-10' %>
       </div>
       <div class="form-control w-full">
         <%= form.label :modèle, class: "label font-semibold text-slate-700 pt-0" %>
-        <%= form.text_field :modèle, class: 'input input-bordered input-sm w-full focus:input-primary' %>
+        <%= form.text_field :modèle, class: 'input input-bordered input-sm w-full focus:input-primary h-10' %>
       </div>
     </div>
     <div class="form-control w-full">
@@ -55,7 +55,6 @@
       </label>
     </div>
     <hr class="border-slate-100 my-1" />
-
     <div class="form-control w-full">
       <%= form.label :documents, 'Documents', class: "label font-semibold text-slate-700" %>
       <label class="flex flex-col items-center p-6 justify-center w-full border border-dashed border-zinc-700/40 rounded-lg cursor-pointer hover:bg-primary transition-colors duration-150 group px-4">
@@ -74,11 +73,9 @@
         <%= form.file_field :documents, accept: 'image/png,image/jpeg,.pdf,image/avif,image/webp', class: 'hidden' %>
       </label>
     </div>
-
-
     <div class="flex gap-2 mt-4 w-full">
+      <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>
       <%= form.submit "Enregistrer", id: "enregistrer_tool", class: "btn btn-primary flex-1" %>
-      <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>      
     </div>
   <% end %>
 </div>
