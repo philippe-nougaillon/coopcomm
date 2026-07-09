@@ -23,7 +23,7 @@
           <%= f.label :password, style: "display: block" %>
           <div data-controller="password-visibility" class="relative w-full">
             <%= f.password_field :password, 
-                  class: 'input input-sm w-full pr-10', 
+                  class: 'input input-bordered w-full focus:input-primary pr-10', 
                   required: true, 
                   autocomplete: "new-password",
                   data: { password_visibility_target: "input" } %>
@@ -40,7 +40,7 @@
         </div>
         <div class="field">
           <%= f.label :password_confirmation %><br />
-          <%= f.password_field :password_confirmation, class:'input input-sm w-full', required: true %>
+          <%= f.password_field :password_confirmation, class:'input input-bordered w-full focus:input-primary', required: true %>
         </div>
       <% end %>
       <div class="actions">

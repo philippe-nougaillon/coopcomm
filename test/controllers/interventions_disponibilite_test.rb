@@ -96,9 +96,12 @@ class InterventionsDisponibiliteTest < ActionDispatch::IntegrationTest
     get edit_intervention_url(intervention)
 
     assert_response :success
-    assert_select 'div[data-action=?] input[name=?]',
-                  'change->verification-disponibilites#verificationWithInput',
-                  'intervention[début]'
+    # Le champ de date réelle « début » est une cible ET déclenche le check live
+    # (l'action est ce qui recolore l'agent au changement), sans garde sur `passed`.
+    assert_select 'input[name=?][data-verification-disponibilites-target=?]',
+                  'intervention[début]', 'debut'
+    assert_select 'input[name=?][data-action*=?]',
+                  'intervention[début]', 'verification-disponibilites#verificationWithInput'
   end
 
   test 'F5 aucune date fournie → réponse vide sans erreur' do

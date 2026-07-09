@@ -9,17 +9,17 @@
             f.object.prestation_id
           ),
           { prompt: "" },
-          { class: "slim-select w-full", required: true,
+          { class: "slim-select w-full h-10", required: true,
             data: { controller: "slim-select", commande_ligne_target: "prestation", action: "change->commande-ligne#prestationChanged" } } %>
   </div>
   <div class="flex flex-col gap-1 flex-1 min-w-40">
     <%= f.label :intitulé, "Intitulé", class: "text-sm text-slate-500" %>
-    <%= f.text_field :intitulé, class: "input input-sm input-bordered w-full",
+    <%= f.text_field :intitulé, class: "input input-bordered w-full focus:input-primary",
           data: { commande_ligne_target: "intitule" } %>
   </div>
   <div class="flex flex-col gap-1 w-20">
     <%= f.label :qté, "Qté", class: "text-sm text-slate-500" %>
-    <%= f.number_field :qté, min: 0, class: "input input-sm input-bordered w-full",
+    <%= f.number_field :qté, min: 0, class: "input input-bordered w-full focus:input-primary",
           data: { commande_ligne_target: "qte", action: "input->commande-ligne#refresh" } %>
   </div>
   <%# Prix unitaire : non modifiable, dérivé de la prestation choisie (affiché avec €) %>

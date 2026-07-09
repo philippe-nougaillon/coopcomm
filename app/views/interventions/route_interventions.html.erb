@@ -18,11 +18,11 @@
   <div class="flex flex-wrap items-start w-full gap-4 mt-8">
     <div class="min-w-full md:min-w-36">
       <%= label_tag :search, "Rechercher" %>
-      <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full', placeholder: 'Nom / Description' %>
+      <%= text_field_tag :search, params[:search], include_blank:true, onchange:'this.form.submit()', class: 'input input-bordered w-full focus:input-primary', placeholder: 'Nom / Description' %>
     </div>
     <div class="min-w-full md:min-w-36">
       <%= label_tag :date %>
-      <%= datetime_field_tag :date, params[:date], onchange:'this.form.submit()', class: 'input input-sm w-full' %>
+      <%= datetime_field_tag :date, params[:date], onchange:'this.form.submit()', class: 'input input-bordered w-full focus:input-primary' %>
     </div>
     <div class="min-w-full md:min-w-36">
       <%= label_tag :workflow_state, "Statut" %>
@@ -34,7 +34,7 @@
     </div>
     <div class="min-w-full md:min-w-36">
       <%= label_tag :tool_ids, "Outil(s)" %>
-      <%= select_tag :tool_ids, options_from_collection_for_select(@tools, 'id', 'name', params[:tool_ids]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()', multiple: true %>
+      <%= select_tag :tool_ids, options_from_collection_for_select(@tools, 'id', 'name', params[:tool_ids]), include_blank: true, class: 'slim-select w-full h-10', onchange: 'this.form.submit()', multiple: true %>
     </div>
   </div>
   <div class="flex flex-wrap w-full items-end mt-4">
@@ -42,19 +42,19 @@
       <% if current_user.manager_or_admin? || current_user.agent? %>
         <div class="min-w-full md:min-w-36">
           <%= label_tag :adherent_id, "Adhérent" %>
-          <%= select_tag :adherent_id, options_from_collection_for_select(@adhérents, :id, :nom_prénom, params[:adherent_id]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
+          <%= select_tag :adherent_id, options_from_collection_for_select(@adhérents, :id, :nom_prénom, params[:adherent_id]), include_blank: true, class: 'slim-select w-full h-10', onchange: 'this.form.submit()' %>
         </div>
       <% end %>
       <% if current_user.manager_or_admin? || current_user.adhérent? %>
         <div class="min-w-full md:min-w-36">
           <%= label_tag :service %>
-          <%= select_tag :service, options_for_select(@services, params[:service]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
+          <%= select_tag :service, options_for_select(@services, params[:service]), include_blank: true, class: 'slim-select w-full h-10', onchange: 'this.form.submit()' %>
         </div>
       <% end %>
       <% if current_user.manager_or_admin? %>
         <div class="min-w-full md:min-w-36">
           <%= label_tag :agent_ids, "Agent(s)" %>
-          <%= select_tag :agent_ids, grouped_options_for_select(@grouped_agents, params[:agent_ids]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()', multiple: true %>
+          <%= select_tag :agent_ids, grouped_options_for_select(@grouped_agents, params[:agent_ids]), include_blank: true, class: 'slim-select w-full h-10', onchange: 'this.form.submit()', multiple: true %>
         </div>
       <% end %>
       <div class="flex flex-wrap gap-1 w-full">
