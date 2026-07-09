@@ -8,7 +8,9 @@ export default class extends Controller {
     "agents", "tools",
     "formAgents", "formTools",
     "debut_prevue", "debut_prevue_hour", "debut_prevue_minute",
-    "fin_prevue", "fin_prevue_hour", "fin_prevue_minute"
+    "fin_prevue", "fin_prevue_hour", "fin_prevue_minute",
+    "debut", "debut_hour", "debut_minute",
+    "fin", "fin_hour", "fin_minute"
   ]
 
   static values = {
@@ -52,9 +54,16 @@ export default class extends Controller {
     // Initialisation de l'intervention_id
     const intervention_id = this.interventionIdValue || null
 
-    // Initialisation des dates
-    const date_debut = this.createDate(this.date_debut_prevue, this.date_debut_prevue_hour, this.date_debut_prevue_minute)
-    const date_fin = this.createDate(this.date_fin_prevue, this.date_fin_prevue_hour, this.date_fin_prevue_minute)
+    // Initialisation des dates (prévues + réelles). Le serveur calcule la plage
+    // effective (réel prioritaire, repli sur prévu) ; on envoie donc les deux.
+    const date_debut_prevue = this.createDate(this.date_debut_prevue, this.date_debut_prevue_hour, this.date_debut_prevue_minute)
+    const date_fin_prevue = this.createDate(this.date_fin_prevue, this.date_fin_prevue_hour, this.date_fin_prevue_minute)
+    const date_debut_reel = this.createDate(this.date_debut, this.date_debut_hour, this.date_debut_minute)
+    const date_fin_reel = this.createDate(this.date_fin, this.date_fin_hour, this.date_fin_minute)
+
+    // Plage effective, uniquement pour décider de déclencher la requête.
+    const date_debut = date_debut_reel || date_debut_prevue
+    const date_fin = date_fin_reel || date_fin_prevue
 
     // Initialitation de l'id de tous les agents
     let options = [...this.agentsTarget.options]
@@ -68,7 +77,7 @@ export default class extends Controller {
 
     // Lancement de la requête UNIQUEMENT si on a des éléments ET au moins une date
     if ((agent_ids.length || tool_ids.length) && (date_debut || date_fin)) {
-      const url = this.getUnifiedUrl(intervention_id, agent_ids, tool_ids, date_debut, date_fin)
+      const url = this.getUnifiedUrl(intervention_id, agent_ids, tool_ids, date_debut_prevue, date_fin_prevue, date_debut_reel, date_fin_reel)
 
       this.fetchUnavailableElements(url).then(data => {
         if (!data) return
@@ -135,14 +144,16 @@ export default class extends Controller {
     }, 100)
   }
 
-  getUnifiedUrl(intervention_id, agent_ids, tool_ids, date_debut, date_fin) {
+  getUnifiedUrl(intervention_id, agent_ids, tool_ids, date_debut_prevue, date_fin_prevue, date_debut_reel, date_fin_reel) {
     const base = `${window.location.protocol}//${window.location.host}`
     const params = new URLSearchParams({
       intervention_id,
       agents_ids: agent_ids,
       tool_ids: tool_ids,
-      date_debut_prevue: date_debut,
-      date_fin_prevue: date_fin
+      date_debut_prevue: date_debut_prevue,
+      date_fin_prevue: date_fin_prevue,
+      date_debut: date_debut_reel,
+      date_fin: date_fin_reel
     })
     return `${base}/interventions/get_unavailable_elements?${params}`
   }
@@ -183,5 +194,14 @@ export default class extends Controller {
     this.date_fin_prevue = this.fin_prevueTarget.value
     this.date_fin_prevue_hour = this.fin_prevue_hourTarget.value
     this.date_fin_prevue_minute = this.fin_prevue_minuteTarget.value
+
+    // Dates réelles (peuvent être absentes selon le rendu du formulaire).
+    this.date_debut = this.hasDebutTarget ? this.debutTarget.value : null
+    this.date_debut_hour = this.hasDebut_hourTarget ? this.debut_hourTarget.value : null
+    this.date_debut_minute = this.hasDebut_minuteTarget ? this.debut_minuteTarget.value : null
+
+    this.date_fin = this.hasFinTarget ? this.finTarget.value : null
+    this.date_fin_hour = this.hasFin_hourTarget ? this.fin_hourTarget.value : null
+    this.date_fin_minute = this.hasFin_minuteTarget ? this.fin_minuteTarget.value : null
   }
 }

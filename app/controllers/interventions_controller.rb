@@ -413,6 +413,13 @@ class InterventionsController < ApplicationController
     intervention_id = params['intervention_id'] != 'null' ? params['intervention_id'] : nil
     date_debut_prevue = params['date_debut_prevue'] != 'null' ? params['date_debut_prevue'] : nil
     date_fin_prevue = params['date_fin_prevue'] != 'null' ? params['date_fin_prevue'] : nil
+    date_debut_reel = params['date_debut'] != 'null' ? params['date_debut'] : nil
+    date_fin_reel = params['date_fin'] != 'null' ? params['date_fin'] : nil
+
+    # Plage effective : dates réelles prioritaires, repli sur les prévues
+    # (cohérent avec Intervention#effective_début/fin et OVERLAP_SQL).
+    date_debut = date_debut_reel.presence || date_debut_prevue
+    date_fin = date_fin_reel.presence || date_fin_prevue
 
     agent_ids_string = params['agents_ids'] != 'null' ? params['agents_ids'] : nil
     # Transforme le string en liste d'agents id
@@ -423,10 +430,10 @@ class InterventionsController < ApplicationController
 
     if agent_ids
       # TODO VU : mettre le contenu dans "get_unavailable_agents_with_interventions". "get_unavailable_agents" doit appeler "get_unavailable_agents_with_interventions" et "get_unavailable_agents_with_absences"
-      conflicting_agents_ids = Intervention.get_unavailable_agents(intervention_id, agent_ids, date_debut_prevue,
-                                                                   date_fin_prevue)
-      conflicting_agents_ids += Intervention.get_unavailable_agents_with_absences(agent_ids, date_debut_prevue,
-                                                                                  date_fin_prevue)
+      conflicting_agents_ids = Intervention.get_unavailable_agents(intervention_id, agent_ids, date_debut,
+                                                                   date_fin)
+      conflicting_agents_ids += Intervention.get_unavailable_agents_with_absences(agent_ids, date_debut,
+                                                                                  date_fin)
       conflicting_agents_ids.uniq
     end
 
@@ -435,8 +442,8 @@ class InterventionsController < ApplicationController
     tool_ids = tool_ids_string.split(',').map(&:to_i) if params['tool_ids']
 
     if tool_ids
-      conflicting_tool_ids = Intervention.get_unavailable_tools(intervention_id, tool_ids, date_debut_prevue,
-                                                                date_fin_prevue)
+      conflicting_tool_ids = Intervention.get_unavailable_tools(intervention_id, tool_ids, date_debut,
+                                                                date_fin)
     end
 
     json = {

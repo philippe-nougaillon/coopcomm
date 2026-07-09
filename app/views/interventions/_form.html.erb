@@ -210,7 +210,10 @@
         <div class="rounded border border-grey-100 p-4 shadow-xs">
           <div class="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8 items-start">
             <div class="flex flex-col flex-wrap w-full flex-1">
-              <div class="flex flex-wrap gap-5 sm:gap-8 flex-1 mb-5">
+              <%# Pas de garde sur `passed` : les dates réelles sont toujours passées
+                  (saisie a posteriori) — la vérification live doit tourner quand même. %>
+              <div class="flex flex-wrap gap-5 sm:gap-8 flex-1 mb-5"
+                  data-action="change->verification-disponibilites#verificationWithInput">
                 <div class="w-full min-w-fit flex-1">
                   <%= form.label :début %>
                   <div class="flex items-center gap-1">
@@ -218,17 +221,20 @@
                           class: "input input-sm flex-1 w-full",
                           value: (params[:début].try(:to_date) || @intervention.début&.to_date),
                           data: { 'calc-temps-passe-target': 'debut_date',
+                          'verification-disponibilites-target': 'debut',
                           action: "change->calc-temps-passe#calc" } %>
                     <%= form.select :début_hour, (0..23).map { |h| [format('%02d', h), h] },
                           {selected: params[:début_hour] || @intervention.début&.hour },
                           class: "select select-sm w-16",
                           data: { 'calc-temps-passe-target': 'debut_hour',
+                          'verification-disponibilites-target': 'debut_hour',
                           action: "change->calc-temps-passe#calc" } %>
                     :
                     <%= form.select :début_minute, (0..59).map { |m| [format('%02d', m), m] },
                           {selected: params[:début_minute] ||@intervention.début&.min },
                           class: "select select-sm w-16",
                           data: { 'calc-temps-passe-target': 'debut_minute',
+                          'verification-disponibilites-target': 'debut_minute',
                           action: "change->calc-temps-passe#calc" } %>
                   </div>
                 </div>
@@ -239,11 +245,13 @@
                           class: "input input-sm flex-1 w-full",
                           value: (params[:fin].try(:to_date) || @intervention.fin&.to_date),
                           data: { 'calc-temps-passe-target': 'fin_date',
+                          'verification-disponibilites-target': 'fin',
                           action: "change->calc-temps-passe#calc" } %>
                     <%= form.select :fin_hour, (0..23).map { |h| [format('%02d', h), h] },
                           {selected: params[:fin_hour] || @intervention.fin&.hour },
                           class: "select select-sm w-16",
                           data: { 'calc-temps-passe-target': 'fin_hour',
+                          'verification-disponibilites-target': 'fin_hour',
                           action: "change->calc-temps-passe#calc" } %>
                     :
                     <%# ATTENTION : si on remet un step(5), il faudra modifier la date de fin sélectionnée dans le controller %>
@@ -251,6 +259,7 @@
                           {selected: params[:fin_minute] || @intervention.fin&.min },
                           class: "select select-sm w-16",
                           data: { 'calc-temps-passe-target': 'fin_minute',
+                          'verification-disponibilites-target': 'fin_minute',
                           action: "change->calc-temps-passe#calc" } %>
                   </div>
                 </div>
