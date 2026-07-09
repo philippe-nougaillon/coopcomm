@@ -516,4 +516,97 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
       end
     end
   end
+
+  # --- Affiche QRCode (show.pdf) : parcours 1, ce que l'agent scanne --------
+  # L'affiche est générée/imprimée par un manager ou un admin ; l'agent, lui,
+  # ne fait que la scanner (route GET `pointer`). La policy interdit donc le PDF
+  # à l'agent (`can_see_qrcode_pointage_pdf? = show? && !agent?`).
+
+  test "show.pdf : un manager peut générer l'affiche QRCode du modèle de pointage" do
+    # hidalgo (manager, service technique) est connecté via le setup.
+    get intervention_url(interventions(:intervention_repete), format: :pdf)
+
+    assert_response :success
+    assert_equal 'application/pdf', response.media_type
+  end
+
+  test 'show.pdf : un agent ne peut pas générer l\'affiche QRCode' do
+    sign_in users(:martin_technique_paris) # agent rattaché à l'intervention
+
+    get intervention_url(interventions(:intervention_repete), format: :pdf)
+
+    # Refus Pundit → redirection avec message d'alerte (cf. user_not_authorized)
+    assert_response :redirect
+    assert_match(/n'êtes pas autorisé/i, flash[:alert].to_s)
+  end
+
+  # --- pointage_statut : redirige vers le statut de la fille du pointeur ----
+
+  test 'pointage_statut sur un modèle répété redirige vers la fille du pointeur' do
+    sign_in users(:martin_technique_paris)
+    modele = interventions(:intervention_repete)
+
+    # On crée d'abord une fille (clock in) pour que la redirection ait une cible.
+    get pointer_intervention_url(modele)
+
+    get pointage_statut_intervention_url(modele)
+    assert_response :redirect
+  end
+
+  # --- Parcours 2 : saisie a posteriori, chemins d'échec -------------------
+
+  test "saisie a posteriori : fin antérieure au début est refusée (422)" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+
+    travel_to Time.current.middle_of_day do
+      assert_no_difference('Intervention.count') do
+        post interventions_url, params: { intervention: {
+          début: 1.hour.ago,
+          fin: 2.hours.ago, # fin AVANT le début → schedules_must_make_sense
+          description: 'Saisie incohérente',
+          adherent_id: users(:patrick_adherent_paris).id,
+          service_id: services(:technique).id,
+          agent_ids: [agent.id]
+        } }
+      end
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  test "saisie a posteriori : des dates dans le futur sont refusées (422)" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+
+    assert_no_difference('Intervention.count') do
+      post interventions_url, params: { intervention: {
+        début: 1.hour.from_now,
+        fin: 2.hours.from_now, # cohérentes entre elles mais dans le futur
+        description: 'Saisie dans le futur',
+        adherent_id: users(:patrick_adherent_paris).id,
+        service_id: services(:technique).id,
+        agent_ids: [agent.id]
+      } }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  # --- Parcours 1 : le second scan clôture la fille (état terminé + fin) ----
+
+  test 'pointer : le second scan termine la fille (état terminé, fin renseignée)' do
+    sign_in users(:martin_technique_paris)
+    modele = interventions(:intervention_repete)
+
+    get pointer_intervention_url(modele) # 1er scan : clock in
+    fille = Intervention.find_by(template_slug: modele.slug)
+    assert_nil fille.fin, 'la fille est ouverte après le premier scan'
+
+    get pointer_intervention_url(modele) # 2e scan : clock out
+
+    fille.reload
+    assert_equal Intervention::TERMINE, fille.workflow_state
+    assert_not_nil fille.fin, 'le second scan renseigne la fin'
+  end
 end

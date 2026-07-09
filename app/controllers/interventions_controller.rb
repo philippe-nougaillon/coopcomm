@@ -185,7 +185,7 @@ class InterventionsController < ApplicationController
         pdf = TransformToPdf::QrcodeModeleIntervention.call(@intervention)
 
         send_data pdf.render,
-                  filename: filename.concat('.pdf'),
+                  filename: filename + ('.pdf'),
                   type: 'application/pdf',
                   disposition: 'inline'
       end
