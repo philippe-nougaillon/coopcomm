@@ -47,9 +47,9 @@ class UserManagerFlowTest < ApplicationSystemTestCase
     user = users(:bond)
     visit users_url
     click_on user.nom_prénom
-    # La suppression passe désormais par une modale de confirmation HTML
-    click_on 'Supprimer'
-    click_on 'Oui, supprimer'
+    # La suppression est devenue une désactivation (soft-delete) via une modale HTML
+    click_on "Désactiver l'utilisateur"
+    click_on 'Oui, désactiver'
     sleep(1)
     visit users_url
     assert_no_text user.nom_prénom

@@ -1,39 +1,54 @@
-require "application_system_test_case"
+# frozen_string_literal: true
 
+require 'application_system_test_case'
+
+# Réécrit depuis le scaffold généré (qui ne se connectait pas et cliquait des
+# libellés anglais inexistants). Pas de test de création : `new`/`create` sont
+# volontairement désactivés dans le contrôleur — une facture naît d'une commande
+# (CreateFactureFromCommande), jamais d'un formulaire « New facture ».
 class FacturesTest < ApplicationSystemTestCase
   setup do
-    @facture = factures(:facture_paris)
+    # hidalgo gère le service « informatique », auquel facture_paris est rattachée.
+    login(users(:hidalgo))
+    @facture = factures(:facture_paris) # état « créé » → modifiable
   end
 
-  test "visiting the index" do
+  test 'visiting the index' do
     visit factures_url
-    assert_selector "h1", text: "Factures"
+
+    assert_selector 'h1', text: 'Factures'
+    assert_text @facture.ref
   end
 
-  test "should create facture" do
+  test 'showing a facture' do
+    visit facture_url(@facture)
+
+    assert_text @facture.ref
+    assert_text @facture.intitulé
+  end
+
+  test 'updating a Facture' do
+    visit facture_url(@facture)
+    click_on 'Modifier'
+
+    # « Intitulé » existe aussi sur les lignes de prestation → on cible le champ de la facture par son id.
+    fill_in 'facture_intitulé', with: 'Facture nettoyage révisée'
+    click_on 'Enregistrer'
+
+    # On vérifie l'état métier (le toast de flash est instable après navigation Turbo).
+    assert_text 'Facture nettoyage révisée'
+    assert_equal 'Facture nettoyage révisée', @facture.reload.intitulé
+  end
+
+  test 'destroying a Facture' do
     visit factures_url
-    click_on "New facture"
 
-    click_on "Create Facture"
+    within('tr', text: @facture.intitulé) do
+      find("button[title='Supprimer']").click
+    end
+    click_on 'Oui, supprimer'
 
-    assert_text "Facture was successfully created"
-    click_on "Back"
-  end
-
-  test "should update Facture" do
-    visit facture_url(@facture)
-    click_on "Edit this facture", match: :first
-
-    click_on "Update Facture"
-
-    assert_text "Facture was successfully updated"
-    click_on "Back"
-  end
-
-  test "should destroy Facture" do
-    visit facture_url(@facture)
-    accept_confirm { click_on "Destroy this facture", match: :first }
-
-    assert_text "Facture was successfully destroyed"
+    assert_no_selector 'tr', text: @facture.intitulé
+    assert @facture.reload.discarded?
   end
 end

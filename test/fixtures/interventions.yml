@@ -92,7 +92,12 @@ intervention_fille:
   workflow_state: nouveau
   slug: <%= SecureRandom.uuid %>
   service: technique
-  début: <%= DateTime.now %>
+  # Démarrée il y a 4h (et non « pile maintenant ») : une fixture ancrée sur
+  # l'instant courant entrait en collision avec les pointages créés « maintenant »
+  # par les tests → depuis #357 (contrôle de disponibilité sur dates réelles), ce
+  # chevauchement faisait échouer à raison le terminer! du pointage. `fin` nulle +
+  # début décalé de 4h ⇒ jamais de recouvrement avec [maintenant, maintenant].
+  début: <%= 4.hours.ago %>
 
 # Organisation Marseille
 nettoyage_port:
