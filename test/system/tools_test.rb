@@ -21,9 +21,7 @@ class ToolsTest < ApplicationSystemTestCase
     fill_in 'Description', with: 'Tondeuse professionnelle acier inox Marina Systems MX57SH3V moteur Honda GXV160'
     fill_in 'Modèle', with: 'MX57SH3V'
     fill_in 'Marque', with: 'Marina Systems'
-    within('#tool_icon_name') do
-      find('option', text: 'Tracteur').click
-    end
+    select_option('#tool_icon_name', 'Tracteur')
 
     click_on 'enregistrer_tool'
 

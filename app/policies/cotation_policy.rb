@@ -50,7 +50,7 @@ class CotationPolicy < ApplicationPolicy
   end
 
   def refuser?
-    manage?
+    manage? || signer?
   end
 
   def create_commande?

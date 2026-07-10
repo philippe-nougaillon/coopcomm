@@ -321,24 +321,31 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
 
     sign_in users(:martin_technique_paris)
 
+    # Les pointages sont horodatés à la minute : on simule des heures distinctes
+    # (journée passée fixe) pour reproduire un vrai parcours séquentiel. Sinon les
+    # 4 requêtes tomberaient dans la même minute → la 1re fille deviendrait un
+    # intervalle de durée nulle et entrerait en faux conflit avec la 2e.
+    jour = Time.zone.local(2025, 1, 6)
+
     # 1er pointage (début de journée) -> Création (Clock in)
     assert_difference('Intervention.count', 1) do
-      get pointer_intervention_url(intervention)
+      travel_to(jour + 8.hours) { get pointer_intervention_url(intervention) }
     end
 
     # 2eme pointage (début de pause) -> Clôture (Clock out)
     assert_no_difference('Intervention.count') do
-      get pointer_intervention_url(intervention)
+      travel_to(jour + 12.hours) { get pointer_intervention_url(intervention) }
     end
 
     # 3eme pointage (fin de pause, reprise d'activité) -> Nouvelle Création (Clock in)
     assert_difference('Intervention.count', 1) do
-      get pointer_intervention_url(intervention)
+      travel_to(jour + 13.hours) { get pointer_intervention_url(intervention) }
     end
+
 
     # 4eme pointage (fin de journée) -> Clôture (Clock out)
     assert_no_difference('Intervention.count') do
-      get pointer_intervention_url(intervention)
+      travel_to(jour + 17.hours) { get pointer_intervention_url(intervention) }
     end
 
     # Il y a eu 2 créations (matin et après-midi), donc 2 interventions filles au total
@@ -353,17 +360,12 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
     sign_in agent
 
     intervention = interventions(:intervention_repete)
-    # L'agent est déjà affecté au modèle ; on lui ajoute une fenêtre planifiée.
-    # L'intervention fille hérite de la même fenêtre et entre donc en conflit de
-    # disponibilité avec son propre modèle → le save échoue (id nil).
-
-    # --- DATES DYNAMIQUES BASÉES SUR L'ANNÉE EN COURS ---
-    current_year = Date.current.year
-    start_date = DateTime.new(current_year, 6, 1)
-    end_date = DateTime.new(current_year, 6, 30)
-
-
-    intervention.update_columns(début_prévue: start_date, fin_prévue: end_date)
+    # On force l'échec du save de la fille : create_next_intervention lui affecte
+    # l'adhérent du modèle ; sans adhérent, la validation de présence échoue et le
+    # save renvoie false (id nil). NB : les modèles/filles de pointage sont exclus
+    # du contrôle de disponibilité, donc on ne peut plus provoquer cet échec via
+    # un conflit fille↔modèle.
+    intervention.update_columns(adherent_id: nil)
 
     assert_no_difference('Intervention.count') do
       assert_no_enqueued_jobs only: NotifMailAdherentInterventionPointageJob do

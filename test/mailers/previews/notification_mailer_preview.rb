@@ -6,8 +6,8 @@ class NotificationMailerPreview < ActionMailer::Preview
     NotificationMailer.workflow_changed(Intervention.last, User.last.email)
   end
 
-  def commentaires_changed
-    NotificationMailer.commentaires_changed(Intervention.last, User.last.email)
+  def avis_changed
+    NotificationMailer.avis_changed(Intervention.last, User.last.email)
   end
 
   def relance

@@ -92,18 +92,29 @@ class CotationsTest < ApplicationSystemTestCase
 
   private
 
-  # Trace un petit trait sur le canvas SignaturePad via l'API d'actions Selenium.
-  # Le `pointerup` de fin déclenche `refreshSaveButton` (activation du bouton) et
-  # remplit le pad, si bien que `toDataURL` produit une vraie signature.
+  # Trace un petit trait sur le canvas SignaturePad.
+  # SignaturePad v4 écoute les *pointer events* : un drag souris synthétique de
+  # Selenium (`click_and_hold`/`move_by`) n'est PAS capté et laisse le pad vide.
+  # On dessine donc via de vrais PointerEvent. Le `pointerup` final déclenche
+  # `refreshSaveButton` (activation du bouton) et remplit le pad, si bien que
+  # `toDataURL` produit une vraie signature.
   def draw_signature
-    canvas = find('#signature-pad')
-    page.driver.browser.action
-        .move_to(canvas.native)
-        .click_and_hold
-        .move_by(25, 30)
-        .move_by(30, -20)
-        .move_by(-25, 25)
-        .release
-        .perform
+    page.execute_script(<<~JS)
+      (function () {
+        var c = document.getElementById('signature-pad');
+        var r = c.getBoundingClientRect();
+        function pe(type, x, y) {
+          return new PointerEvent(type, {
+            clientX: r.left + x, clientY: r.top + y,
+            bubbles: true, cancelable: true,
+            pointerId: 1, pointerType: 'pen', isPrimary: true
+          });
+        }
+        c.dispatchEvent(pe('pointerdown', 25, 25));
+        c.dispatchEvent(pe('pointermove', 60, 90));
+        c.dispatchEvent(pe('pointermove', 120, 45));
+        c.dispatchEvent(pe('pointerup', 120, 45));
+      })();
+    JS
   end
 end

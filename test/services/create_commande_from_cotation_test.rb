@@ -34,12 +34,11 @@ class CreateCommandeFromCotationTest < ActiveSupport::TestCase
     commande = CreateCommandeFromCotation.new(@cotation).call
 
     assert_equal @cotation.cotation_lignes.count, commande.commande_lignes.size
-    @cotation.cotation_lignes.order(:id).each_with_index do |source, i|
-      copie = commande.commande_lignes[i]
-      assert_equal source.prestation_id, copie.prestation_id
-      assert_equal source.intitulé, copie.intitulé
-      assert_equal source.qté, copie.qté
-    end
+    # L'association cotation_lignes n'a pas d'ordre garanti et le service la parcourt
+    # telle quelle : on compare donc les deux collections sans dépendre de la position.
+    attendus = @cotation.cotation_lignes.map { |l| [l.prestation_id, l.intitulé, l.qté] }.sort
+    obtenus  = commande.commande_lignes.map { |l| [l.prestation_id, l.intitulé, l.qté] }.sort
+    assert_equal attendus, obtenus
   end
 
   test 'la commande construite persiste et recalcule son total' do
