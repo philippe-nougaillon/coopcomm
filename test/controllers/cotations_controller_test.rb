@@ -311,11 +311,13 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'envoyé', autre.workflow_state
   end
 
-  # --- Index côté adhérent (voit TOUTES ses cotations, tous services confondus) ---
+  # --- Index côté adhérent (voit TOUTES ses cotations envoyées, tous services confondus) ---
   # weil est rattaché au seul service Informatique mais possède une cotation sur
   # Secrétariat : l'ancien filtre `.where(service: current_user.services)` la masquait.
+  # Les cotations encore à l'état « créé » (brouillons internes) restent invisibles.
 
-  test 'un adhérent voit toutes ses cotations, quel que soit le service prestataire' do
+  test 'un adhérent voit toutes ses cotations envoyées, quel que soit le service prestataire' do
+    cotations(:cotation_paris).update!(workflow_state: 'envoyé')
     sign_in @adherent
     get cotations_url
 
@@ -325,7 +327,23 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_includes listed, cotations(:cotation_secretariat) # service Secrétariat (non rattaché)
   end
 
-  test "le filtre Services d'un adhérent liste les services de ses cotations" do
+  test "un adhérent ne voit pas ses cotations non encore envoyées (créé)" do
+    sign_in @adherent
+    get cotations_url
+
+    assert_response :success
+    refute_includes assigns(:cotations), cotations(:cotation_paris) # créé, à weil
+  end
+
+  test "l'accès direct d'un adhérent à sa cotation non envoyée est refusé" do
+    sign_in @adherent
+    get cotation_url(cotations(:cotation_paris)) # créé, à weil
+
+    assert_redirected_to root_path
+  end
+
+  test "le filtre Services d'un adhérent liste les services de ses cotations envoyées" do
+    cotations(:cotation_paris).update!(workflow_state: 'envoyé')
     sign_in @adherent
     get cotations_url
 

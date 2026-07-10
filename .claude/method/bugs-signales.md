@@ -81,6 +81,41 @@
   2. N'importe quel utilisateur **modifie** une des 166 interventions dont le dernier audit n'a pas de user → **crash** de la mise à jour.
 - **Correctif à l'activation** : `User.find_by(id:)` + `return if user.nil?`.
 
+### B9 — Slug inconnu sur cotations/commandes/factures → erreur 500 au lieu de 404
+- **Où** : [commandes_controller.rb:149](app/controllers/commandes_controller.rb#L149), [factures_controller.rb:138](app/controllers/factures_controller.rb#L138), [cotations_controller.rb:187](app/controllers/cotations_controller.rb#L187)
+- **Cause** : `set_…` fait `find_by(slug:)` → `nil` sur un slug inconnu ; `is_user_authorized` fait alors `authorize(Commande)` sur la **classe**, et `CommandePolicy#manage?` évalue `record.organisation` → `NoMethodError` (**vérifié empiriquement le 2026-07-10** : `undefined method 'organisation' for class Commande`) → **500**. Même motif dans les trois contrôleurs.
+- **Parcours de reproduction** :
+  1. En tant que **manager**, j'ouvre une commande puis je modifie l'URL (`/commandes/nimporte-quoi`) — ou je suis un vieux lien vers une commande supprimée en dur / un slug régénéré.
+  2. → page d'erreur **500** au lieu d'un 404 « introuvable ».
+- **Impact** : erreur brute + bruit dans les logs pour un simple lien mort ; surface triviale à déclencher.
+- **Trace test** : test `skip` documenté dans `test/controllers/commandes_controller_test.rb` (« slug inconnu : devrait renvoyer 404 — bug B9 ») — passera au vert à la correction.
+- **Correctif proposé** : `find_by!(slug:)` (ou `friendly.find`) pour lever `ActiveRecord::RecordNotFound` → 404 standard, dans les trois contrôleurs.
+
+### B10 — Tests « création à postériori » échouent quand la suite tourne entre 14 h et 15 h (test uniquement)
+- **Où** : fixture `intervention_fille` ([interventions.yml:88](test/fixtures/interventions.yml#L88), `début: <%= 4.hours.ago %>`, `fin` NULL, agent **martin**) × les 2 tests « à postériori » de [interventions_controller_test.rb:164](test/controllers/interventions_controller_test.rb#L164) et [:483](test/controllers/interventions_controller_test.rb#L483)
+- **Cause** : la fixture est ancrée sur l'**heure réelle** (début = maintenant − 4 h), alors que les 2 tests se placent à **midi fixe** (`travel_to Time.current.middle_of_day`) et créent une intervention **[10 h, 11 h]** pour le **même agent martin**. Si la suite est lancée entre **14 h et 15 h**, `maintenant − 4 h` tombe dans [10 h, 11 h] → le contrôle de disponibilité **#357** refuse *à raison* → `Intervention.count` ne bouge pas → **2 échecs** (vérifié le 2026-07-10 à 14 h 57, échec reproduit **sans** aucune modification locale ; vert en dehors de la fenêtre). Le correctif du 2026-07-09 (« 4 h ago ») protégeait les pointages créés « maintenant », pas ces tests ancrés à midi.
+- **Reproduction** : lancer `bundle exec rails test test/controllers/interventions_controller_test.rb` entre 14 h 00 et 15 h 00.
+- **Impact** : test uniquement — flakiness dépendante de l'heure de lancement (CI ou local).
+- **Correctif proposé** : désolidariser les acteurs — utiliser un **autre agent que martin** dans les 2 tests à postériori — ou ancrer la fixture sur une **heure absolue** hors de la fenêtre (ex. `Time.current.middle_of_day - 5.hours`).
+
+---
+
+## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
+
+### R1 — Pointage : une fille de la veille non terminée ferait pointer une NOUVELLE intervention au lieu de terminer la sienne
+- **Signalé par** : PE, 2026-07-10 (point sensible vécu/craint sur la page d'accueil).
+- **Scénario redouté** : un agent oublie de clôturer son pointage ; la fille reste `nouveau` avec `fin` nil. Le lendemain, il re-scanne le QR de la mère → `User#find_current_intervention` ([user.rb:350](app/models/user.rb#L350)) filtre sur `DATE(début) = Date.today` → ne trouve **pas** la fille de la veille → `interventions_controller#pointer` ([interventions_controller.rb:365](app/controllers/interventions_controller.rb#L365)) crée une **nouvelle** fille (« Début de journée enregistré ! ») au lieu de terminer l'ancienne, qui reste ouverte à jamais.
+- **Statut 2026-07-10 : NON reproductible — vérifié empiriquement** (simulation en transaction annulée, cas avec et sans `fin_prévue` héritée de la mère) : la création de la nouvelle fille est **refusée** dans les deux cas. Deux gardes indépendantes :
+  1. **Clôture nocturne** : tâche Hatchbox `interventions:terminer_pointages` (22h) → `TerminerPointagesJob` termine toutes les filles `nouveau` avec `début` → normalement aucune fille ne survit à la nuit.
+  2. **Validation #357** (commit `89b12a76`) : `agents_must_not_have_open_pointage` ([intervention.rb:262](app/models/intervention.rb#L262)) interdit un 2e pointage ouvert pour l'agent → même si une fille survit, le scan du lendemain est **refusé avec un message explicite** au lieu de créer en silence.
+- **⚠ Conditions qui rendraient le bug à nouveau faisable — à re-vérifier si l'une survient** :
+  1. **Suppression/affaiblissement** de `agents_must_not_have_open_pointage` (tentant si des agents se plaignent d'être bloqués par une fille orpheline) **combiné** à une nuit sans clôture.
+  2. **Tâche Hatchbox bloquée** (précédent vécu : une seule expression cron invalide bloque TOUTES les tâches) — la garde 2 empêche alors le bug silencieux mais l'agent est **bloqué** (voir effet de bord ci-dessous).
+  3. `TerminerPointagesJob` **rescue par enregistrement** : si `terminer!` échoue sur une fille (ex. conflit #357 à 22h — cas déjà vu en test), elle survit à la nuit.
+  4. **Fille héritant `fin_prévue`** : `create_next_intervention` fait un `dup` de la mère **sans remettre `fin_prévue`/`début_prévue` à nil** → `pointage_ouvert?` (= `effective_fin.blank?`) devient faux et la garde dédiée est **contournée** ; seul `OVERLAP_SQL` bloque alors (vérifié bloquant aujourd'hui, mais via un intervalle inversé — protection moins intentionnelle). Toute retouche de `create_next_intervention`, `effective_fin` ou `OVERLAP_SQL` mérite un re-test de ce scénario.
+- **Effet de bord actuel (pas le bug signalé, mais à connaître)** : un agent avec une fille orpheline **ne peut plus pointer du tout** (le scan ne peut ni la terminer — filtre « aujourd'hui » — ni en créer une nouvelle — garde #357) jusqu'à la clôture de 22h ou une intervention manuelle du manager.
+- **Décision client 2026-07-10** : on ne code rien tant que le cas n'est pas reproductible ; l'agent doit **re-signaler ce risque** si un changement dans cette zone le rend faisable.
+
 ---
 
 ## ✅ Bugs corrigés (historique)

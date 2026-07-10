@@ -19,6 +19,10 @@
 - **Question** : quand (si) on active la notif « intervention mise à jour », valider le correctif préalable (`User.find_by` + garde nil) — 166 interventions crasheraient sinon.
 - **Contexte** : fonctionnalité dormante, décision client du 2026-06-23 de ne pas y toucher d'ici là.
 
+### D4 — Notifier quelqu'un quand un adhérent refuse une cotation ? (constat du 2026-07-10)
+- **Question** : aujourd'hui **personne n'est prévenu** au refus d'une cotation (`cotations_controller#refuser` fait la transition sans effet de bord, aucun job « cotation refusée » n'existe) — alors que la **signature** notifie le créateur (`NotifCotationSigneeJob`). Depuis #358, un adhérent peut refuser seul → le manager ne le découvre qu'en consultant l'index. Faut-il un mail au créateur (miroir de la signature) ?
+- **Correctif proposé si oui** : job `NotifCotationRefuseeJob` calqué sur `NotifCotationSigneeJob` (créateur retrouvé via l'audit `create`), déclenché depuis `refuser` via le bloc de `transition!`.
+
 ## 🔧 Actions à faire (infra / prod)
 
 ### A1 — Planifier la relance des cotations sur Hatchbox

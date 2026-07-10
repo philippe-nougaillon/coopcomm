@@ -85,14 +85,15 @@ class Cotation < ApplicationRecord
   end
 
   # Cotations visibles : un admin voit celles de son organisation,
-  # un manager celles de ses services, les autres rôles aucune.
+  # un manager celles de ses services, un adhérent les siennes déjà envoyées
+  # (une cotation « créé » est un brouillon interne), les autres rôles aucune.
   def self.visible_to(user)
     if user.administrateur?
       joins(:service).where(services: { organisation_id: user.organisation&.id })
     elsif user.manager?
       where(service_id: user.service_ids)
     elsif user.adhérent?
-      where(adherent_id: user.id)
+      where(adherent_id: user.id).where.not(workflow_state: CREE)
     else
       none
     end
