@@ -114,9 +114,6 @@ class InterventionsController < ApplicationController
     @interventions = @interventions.includes(:tags, :agents, :adherent, :service, :organisation,
                                              :tools).with_attached_photos
 
-    #  Avant la respond_to, nous nous assurons que si c'est la page d'accueil
-     # Ou l'index de base, utilisez le filtre par rôle 
-    @interventions = Intervention.by_role_for_home(current_user) if params[:vue].blank?
     
     respond_to do |format|
       format.html do
@@ -243,7 +240,6 @@ class InterventionsController < ApplicationController
     respond_to do |format|
       if @intervention.save
         
-        Events.instance.publish('intervention.updated', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
         format.html do
           # Si c'est une modification du commentaire dans le pointage statut, on redirige vers home
           # 303 (see_other) obligatoire après un PATCH soumis par Turbo : en 302,
