@@ -50,6 +50,8 @@ class Intervention < ApplicationRecord
 
   before_save -> { self.temps_de_pause = 0 if temps_de_pause.nil? }
   before_save :calc_temps_total
+  
+  after_commit :update_heures_consommees_convention, if: -> { self.temps_total.present? }
 
   scope :ordered, -> { order(updated_at: :desc) }
 
@@ -461,6 +463,33 @@ class Intervention < ApplicationRecord
 
   def intervention_mère
     Intervention.find_by(slug: template_slug)
+  end
+
+  def update_heures_consommees_convention
+    convention = Convention
+                        .where("date_début <= ? AND date_fin_prévue >= ?", self.début, self.début)
+                        .find_by(user_id: self.adherent_id, service_id: self.service_id)
+
+    last_audit = self.audits.last
+
+    temps_total_audit = last_audit.audited_changes["temps_total"]
+
+    # On détermine le temps total à ajouter en fonction de l'action en cours (un nombre pour create et destroy, un array pour un update)
+    new_temps_total = if temps_total_audit.is_a?(Numeric)
+                        if last_audit.action == "create"
+                          # Dans le cas d'un create, on ajoute la valeur
+                          temps_total_audit
+                        else
+                          # Dans le cas d'un destroy, on enleve la valeur
+                          temps_total_audit * (-1)
+                        end
+                      else
+                        # Dans le cas d'un update, on ajoute la différence entre l'ancienne (first) et la nouvelle valeur (last)
+                        (temps_total_audit.last - temps_total_audit.first)
+                      end
+
+    convention.heures_consommees += new_temps_total
+    convention.save(validate: false)
   end
 
   private
