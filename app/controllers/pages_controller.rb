@@ -94,19 +94,11 @@ class PagesController < ApplicationController
     @banner_image_name = "banner/banner_#{base_hour}h.png"
     @banner_background_color = BACKGROUND_COLORS[base_hour]
 
-    # 1. on consulte combien des interventions 
-    base_interventions = Intervention
-                           .filter_by_service(current_user.services)
-                           .by_role_for_home(current_user)
-
-    # 2. on garde le vrai compte                  
-    @interventions_count = base_interventions.count
-
-    # montre 2 uniquement en home 
-    @interventions = base_interventions
+    @interventions = Intervention
+                     .filter_by_service(current_user.services)
+                     .by_role_for_home(current_user)
                      .includes(:service, :organisation)
                      .first(2)
-
 
     @messages = current_user.messages
                             .where(read_at: nil)
