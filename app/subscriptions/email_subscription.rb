@@ -20,23 +20,6 @@ class EmailSubscription
     end
   end
 
-  # Notifier les agents qu'un avis a été ajouté par l'adhérent
-  def on_intervention_updated(event)
-    # Déclaration des variables pour tester si on doit lancer le job
-    intervention = Intervention.find(event[:payload][:intervention_id])
-    last_audit = intervention.audits.last
-    user = User.find(last_audit.user_id)
-    is_avis_changed = last_audit.audited_changes.include?('avis')
-
-    # Vérifie si on doit lancer le job
-    should_notify_agents = user.adhérent? && is_avis_changed && !intervention.avis.blank?
-
-    return unless should_notify_agents
-
-    agent_ids = intervention.agents.pluck(:id)
-    NotifAgentsAvisChangedJob.perform_later(intervention, agent_ids, user.id) if agent_ids.any?
-  end
-
   def on_intervention_pointage(event)
     # Un pointage dont le save a échoué publie un intervention_id nil : on ne
     # plante pas toute la requête web (find(nil) → RecordNotFound → 404) pour
