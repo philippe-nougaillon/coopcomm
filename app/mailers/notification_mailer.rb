@@ -13,18 +13,6 @@ class NotificationMailer < ApplicationMailer
     end
   end
 
-  def avis_changed(intervention, emails)
-    @intervention = intervention
-
-    mail(to: emails,
-         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
-         subject: '[COOPCOMM] Nouvel avis').tap do |message|
-      message.mailgun_options = {
-        'tag' => ['nouvel avis']
-      }
-    end
-  end
-
   def relance(intervention)
     @intervention = intervention
 

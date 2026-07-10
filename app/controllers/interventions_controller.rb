@@ -240,7 +240,6 @@ class InterventionsController < ApplicationController
     respond_to do |format|
       if @intervention.save
         
-        Events.instance.publish('intervention.updated', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
         format.html do
           # Si c'est une modification du commentaire dans le pointage statut, on redirige vers home
           # 303 (see_other) obligatoire après un PATCH soumis par Turbo : en 302,

@@ -212,11 +212,14 @@ class CotationTest < ActiveSupport::TestCase
     refute_includes Cotation.visible_to(users(:manager_marseille)), cotation
   end
 
-  test 'visible_to un adhérent : ses propres cotations, pas celles des autres' do
-    sienne = build_cotation # adhérent: weil
+  test 'visible_to un adhérent : ses propres cotations envoyées, pas celles des autres' do
+    sienne = build_cotation # adhérent: weil, état initial « créé »
     sienne.save!
     visibles = Cotation.visible_to(@adherent)
-    assert_includes visibles, sienne
+    # Tant qu'elle n'est pas envoyée, c'est un brouillon interne : invisible.
+    refute_includes visibles, sienne
+    sienne.envoyer!
+    assert_includes Cotation.visible_to(@adherent), sienne
     # Une cotation appartenant à un autre adhérent n'est pas visible.
     refute_includes visibles, cotations(:cotation_marseille) # adhérent: michael_jackson
   end
