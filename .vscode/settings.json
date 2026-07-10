@@ -43,7 +43,15 @@
   },
   "chat.viewSessions.orientation": "stacked",
   "cSpell.words": [
+    "evenodd",
+    "ILIKE",
+    "Langchain",
+    "linecap",
+    "linejoin",
+    "nowrap",
     "pagy",
+    "qrcode",
+    "testid",
     "twilio",
     "whatsapp"
   ]
