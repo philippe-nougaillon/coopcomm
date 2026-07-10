@@ -13,14 +13,14 @@ class NotificationMailer < ApplicationMailer
     end
   end
 
-  def commentaires_changed(intervention, emails)
+  def avis_changed(intervention, emails)
     @intervention = intervention
 
     mail(to: emails,
          bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
-         subject: '[COOPCOMM] Nouveau commentaire').tap do |message|
+         subject: '[COOPCOMM] Nouvel avis').tap do |message|
       message.mailgun_options = {
-        'tag' => ['nouveau commentaire']
+        'tag' => ['nouvel avis']
       }
     end
   end
