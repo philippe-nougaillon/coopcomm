@@ -18,43 +18,80 @@
 <div class="flex flex-wrap gap-8 lg:px-48">
   <%# Interventions + Messages %>
   <div class="flex-1 min-w-[300px] w-full">
-    <%# 1. Bloque Actions / Interventions %>
-    <div class="border shadow-sm p-4 rounded-2xl mb-8 bg-white">
-      <div>
-                
-      <h2 class="font-black text-xl mb-6 flex items-center gap-3">
-          <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#40b3db] via-[#72cfe8] via-[#a48ad5] to-[#681b98]"></span>
 
-          <%= current_user.agent? ? "Interventions récentes" : "Actions récentes" %>
-        </h2>
-      </div>
-      <% if @interventions.any? %>
-        <div class="border border-slate-200 rounded-xl p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
-          <% @interventions.each do |intervention| %>
-            <%= render partial: 'intervention', locals: {intervention: } %>
-          <% end %>
-          <span >
-            <%= link_to interventions_path, class: 'text-primary mt-8 hover:underline flex items-center flex-row justify-between gap-2' do %>
-              Voir toutes les interventions
-              <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
-            <% end %>
-          </span>
-        </div>
-      <% else %>
-        <p class="text-slate-500">Il n'y a rien en attente, vous pouvez vous reposer :)</p>
+
+
+
+
+
+   <%# 1. Bloque Actions / Interventions %>
+<div class="border shadow-sm p-4 rounded-2xl mb-8 bg-white">
+  <div>
+    <h2 class="font-black text-xl mb-6 flex items-center gap-3 uppercase">
+      <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#40b3db] via-[#72cfe8] via-[#a48ad5] to-[#681b98]"></span>
+      <%= current_user.agent? ? "Interventions récentes" : "Actions récentes" %>
+    </h2>
+  </div>
+
+ <% if current_user.adhérent? %>
+  <h2 class="font-black text-lg mb-4">Cotations à signer</h2>
+  <% if @cotations.any? %>
+    <div class="border border-slate-200 rounded-xl mb-4 p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
+      <% @cotations.each do |cotation| %>
+        <%= render partial: 'cotation', locals: {cotation: } %>
       <% end %>
-      <% if current_user.adhérent? && @cotations.any? %>
-        <div class="flex flex-col mt-8">
-          <h2 class="font-black text-lg mb-4">Cotations à signer</h2>
-          <% @cotations.each do |cotation| %>
-            <%= render partial: 'cotation', locals: {cotation: } %>
-          <% end %>
-        </div>
-      <% end %>
+      <span>
+        <%= link_to cotations_path, class: 'text-primary mt-8 hover:underline flex items-center flex-row justify-between gap-2' do %>
+          Voir toutes les cotations
+          <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
+        <% end %>
+      </span>
     </div>
+  <% else %>
+    <div class="border border-slate-200 rounded-xl mb-4 p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
+      <p class="text-slate-500">Pas de cotations à signer.</p>
+    </div>
+  <% end %>
+<% end %>
+
+  <% if current_user.adhérent? %>
+    <h2 class="font-black text-lg mb-4">Interventions</h2>
+  <% end %>
+
+  <% if @interventions.any? %>
+    <div class="border border-slate-200 rounded-xl p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
+      <% @interventions.each do |intervention| %>
+        <%= render partial: 'intervention', locals: {intervention: } %>
+      <% end %>
+      <span>
+        <%= link_to interventions_path, class: 'text-primary mt-8 hover:underline flex items-center flex-row justify-between gap-2' do %>
+          Voir toutes les interventions
+          <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
+        <% end %>
+      </span>
+    </div>
+  <% else %>
+    <div class="border border-slate-200 rounded-xl p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
+      <p class="text-slate-500">Il n'y a rien en attente, vous pouvez vous reposer :)</p>
+    </div>
+  <% end %>
+
+</div>
+
+
+
+
+
+
+
+
+
+
     <%# 2.  Messages de l'équipe %>
     <div class="border shadow-sm p-4 rounded-2xl  bg-white">
-      <h2 class="font-black text-lg mb-4">Messages de votre équipe</h2>
+      <h2 class="font-black text-xl mb-6 flex items-center gap-3 uppercase">
+        <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#40b3db] via-[#72cfe8] via-[#a48ad5] to-[#681b98]"></span>
+        Messages de votre équipe      </h2>
       <% if @messages.any? %>
         <% @messages.each do |message| %>
           <%= render partial: 'message', locals: {message: }%>
@@ -65,7 +102,7 @@
         </div>
       <% end %>
       <span >
-        <%= link_to messagerie_path, class: 'text-primary mt-8 ml-4 hover:underline flex items-center flex-row justify-between gap-2' do %>
+        <%= link_to messagerie_path, class: 'text-primary mt-8 hover:underline flex items-center flex-row justify-between gap-2' do %>
           Ouvrir la messagerie
           <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
         <% end %>
@@ -76,7 +113,7 @@
   <div class="flex-1 min-w-[300px] w-full">
     <%# 1. Bloque Actions Rapides %>
     <div class="border shadow-sm p-4 rounded-2xl mb-8 bg-white">
-      <h2 class="font-black text-xl mb-6 flex items-center gap-3">
+      <h2 class="font-black text-xl mb-6 flex items-center gap-3 uppercase">
         <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#40b3db] via-[#72cfe8] via-[#a48ad5] to-[#681b98]"></span>
         Actions rapides
       </h2>
@@ -166,7 +203,9 @@
     <%# 2.  Météo %>
     <div class="border shadow-sm p-4 rounded-2xl bg-white">
       <% if @forecasts && @forecasts["city"] && @forecasts["forecast"] %>
-        <h2 class="font-black text-lg">Météo à <%= @forecasts["city"]["name"] %></h2>
+        <h2 class="font-black text-xl mb-6 flex items-center gap-3 uppercase">
+          <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#40b3db] via-[#72cfe8] via-[#a48ad5] to-[#681b98]"></span>
+          Météo à <%= @forecasts["city"]["name"] %>    </h2>
         <small class="text-slate-400 block mb-2">Dernière mise à jour : <%= l(Time.zone.parse(@forecasts[:last_fetched_at])) %></small>
         <div class="flex flex-col md:flex-row flex-wrap justify-center gap-2 my-2 mb-8">
           <%= render partial: 'pages/meteo', collection: [@forecasts["forecast"].first.third, @forecasts["forecast"].second.third], as: :forecast %>
