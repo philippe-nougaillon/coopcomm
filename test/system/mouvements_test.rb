@@ -12,14 +12,16 @@ class MouvementsTest < ApplicationSystemTestCase
     visit mouvements_url
 
     assert_selector 'h1', text: 'Mouvements'
-    assert_text 'Tondeuse' # mouvement de la fixture mouvement_tondeuse
+    # Le nom du matériel est rendu en MAJUSCULES (CSS .uppercase) → Selenium renvoie
+    # le texte transformé, donc on asserte sans tenir compte de la casse.
+    assert_selector 'td', text: /tondeuse/i # mouvement de la fixture mouvement_tondeuse
   end
 
   test 'déclarer une panne via le formulaire' do
     visit new_mouvement_url
 
     select_option '#mouvement_tool_id', 'Tondeuse'
-    select 'Panne', from: 'mouvement_état'
+    select_option '#mouvement_état', 'Panne'
     page.execute_script("document.getElementById('mouvement_date').value = '#{Date.tomorrow}T10:00'")
     fill_in 'mouvement_commentaires', with: 'Courroie cassée'
     click_on 'Enregistrer'
@@ -35,7 +37,7 @@ class MouvementsTest < ApplicationSystemTestCase
 
     visit new_mouvement_url
     select_option '#mouvement_tool_id', 'Tondeuse'
-    select 'Panne', from: 'mouvement_état'
+    select_option '#mouvement_état', 'Panne'
     page.execute_script("document.getElementById('mouvement_date').value = '#{Date.tomorrow}T10:00'")
     click_on 'Enregistrer'
 
@@ -50,7 +52,7 @@ class MouvementsTest < ApplicationSystemTestCase
     assert_no_selector "select[name='mouvement[tool_id]']", visible: :all
     assert_selector "input[type=hidden][name='mouvement[tool_id]'][value='#{tools(:tondeuse).id}']", visible: :all
 
-    select 'Panne', from: 'mouvement_état'
+    select_option '#mouvement_état', 'Panne'
     page.execute_script("document.getElementById('mouvement_date').value = '#{Date.tomorrow}T10:00'")
     fill_in 'mouvement_commentaires', with: 'Lame émoussée'
     click_on 'Enregistrer'
@@ -67,7 +69,7 @@ class MouvementsTest < ApplicationSystemTestCase
     tools(:tondeuse).mouvements.create!(état: :panne, date: Time.current, user: @manager)
 
     visit new_mouvement_url(tool_id: tools(:tondeuse).id)
-    select 'Panne', from: 'mouvement_état'
+    select_option '#mouvement_état', 'Panne'
     page.execute_script("document.getElementById('mouvement_date').value = '#{Date.tomorrow}T10:00'")
     click_on 'Enregistrer'
 

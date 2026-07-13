@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_06_24_143620) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_10_125108) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -106,6 +106,38 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_24_143620) do
     t.index ["user_id", "user_type"], name: "user_index"
   end
 
+  create_table "commande_lignes", force: :cascade do |t|
+    t.bigint "commande_id", null: false
+    t.bigint "prestation_id", null: false
+    t.string "intitulé"
+    t.integer "qté"
+    t.decimal "prix_ht", precision: 8, scale: 2
+    t.virtual "total_ht", type: :decimal, precision: 10, scale: 2, as: "(prix_ht * (\"qté\")::numeric)", stored: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["commande_id"], name: "index_commande_lignes_on_commande_id"
+    t.index ["prestation_id"], name: "index_commande_lignes_on_prestation_id"
+  end
+
+  create_table "commandes", force: :cascade do |t|
+    t.bigint "adherent_id", null: false
+    t.bigint "service_id", null: false
+    t.string "ref"
+    t.string "intitulé"
+    t.text "mémo"
+    t.string "workflow_state", default: "créé"
+    t.date "date_livraison_souhaitée"
+    t.decimal "total_ht", precision: 10, scale: 2
+    t.datetime "discarded_at"
+    t.string "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["adherent_id"], name: "index_commandes_on_adherent_id"
+    t.index ["discarded_at"], name: "index_commandes_on_discarded_at"
+    t.index ["service_id"], name: "index_commandes_on_service_id"
+    t.index ["slug"], name: "index_commandes_on_slug", unique: true
+  end
+
   create_table "conventions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "service_id", null: false
@@ -114,6 +146,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_24_143620) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.text "mémo"
+    t.decimal "heures_conventionnees", precision: 10, scale: 2, default: "0.0"
+    t.decimal "heures_consommees", precision: 8, scale: 2, default: "0.0"
     t.index ["service_id"], name: "index_conventions_on_service_id"
     t.index ["user_id", "service_id"], name: "index_conventions_on_user_id_and_service_id", unique: true
     t.index ["user_id"], name: "index_conventions_on_user_id"
@@ -145,6 +179,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_24_143620) do
     t.datetime "updated_at", null: false
     t.string "slug"
     t.string "workflow_state", default: "créé"
+    t.string "signature"
+    t.datetime "signee_le"
+    t.string "ip"
     t.index ["adherent_id"], name: "index_cotations_on_adherent_id"
     t.index ["discarded_at"], name: "index_cotations_on_discarded_at"
     t.index ["service_id"], name: "index_cotations_on_service_id"
@@ -152,8 +189,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_24_143620) do
   end
 
   create_table "documents", force: :cascade do |t|
-    t.string "category"
-    t.string "workflow_state"
     t.bigint "tool_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -170,6 +205,38 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_24_143620) do
     t.datetime "updated_at", null: false
     t.index ["organisation_id"], name: "index_export_logs_on_organisation_id"
     t.index ["user_id"], name: "index_export_logs_on_user_id"
+  end
+
+  create_table "facture_lignes", force: :cascade do |t|
+    t.bigint "facture_id", null: false
+    t.bigint "prestation_id", null: false
+    t.string "intitulé"
+    t.integer "qté"
+    t.decimal "prix_ht", precision: 8, scale: 2
+    t.virtual "total_ht", type: :decimal, precision: 10, scale: 2, as: "(prix_ht * (\"qté\")::numeric)", stored: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["facture_id"], name: "index_facture_lignes_on_facture_id"
+    t.index ["prestation_id"], name: "index_facture_lignes_on_prestation_id"
+  end
+
+  create_table "factures", force: :cascade do |t|
+    t.bigint "adherent_id", null: false
+    t.bigint "service_id", null: false
+    t.string "ref"
+    t.string "intitulé"
+    t.text "mémo"
+    t.string "workflow_state", default: "créé"
+    t.date "date_livraison_souhaitée"
+    t.decimal "total_ht", precision: 10, scale: 2
+    t.datetime "discarded_at"
+    t.string "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["adherent_id"], name: "index_factures_on_adherent_id"
+    t.index ["discarded_at"], name: "index_factures_on_discarded_at"
+    t.index ["service_id"], name: "index_factures_on_service_id"
+    t.index ["slug"], name: "index_factures_on_slug", unique: true
   end
 
   create_table "interventions", force: :cascade do |t|
@@ -560,6 +627,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_24_143620) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "agent_interventions", "interventions"
   add_foreign_key "agent_interventions", "users", column: "agent_id"
+  add_foreign_key "commande_lignes", "commandes"
+  add_foreign_key "commande_lignes", "prestations"
+  add_foreign_key "commandes", "services"
+  add_foreign_key "commandes", "users", column: "adherent_id"
   add_foreign_key "conventions", "services"
   add_foreign_key "conventions", "users"
   add_foreign_key "cotation_lignes", "cotations"
@@ -569,6 +640,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_06_24_143620) do
   add_foreign_key "documents", "tools"
   add_foreign_key "export_logs", "organisations"
   add_foreign_key "export_logs", "users"
+  add_foreign_key "facture_lignes", "factures"
+  add_foreign_key "facture_lignes", "prestations"
+  add_foreign_key "factures", "services"
+  add_foreign_key "factures", "users", column: "adherent_id"
   add_foreign_key "interventions", "services"
   add_foreign_key "mail_logs", "cotations"
   add_foreign_key "mail_logs", "organisations"

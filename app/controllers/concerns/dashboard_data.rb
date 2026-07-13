@@ -17,10 +17,10 @@ module DashboardData
       temps_total_par_agent: temps_par_agent(users),
       data_workflow_chart: build_workflow_chart(stats, start_date, end_date),
       qte_interventions_par_service: stats.joins(:service).group('services.nom').sum(:nb),
-      temps_total_par_service: stats.joins(:service).group('services.nom').sum(:temps_total),
+      temps_total_par_service: stats.joins(:service).where("temps_total >= 0").group('services.nom').sum(:temps_total),
       co2_total_par_mois: co2,
       kpi_total_interventions: stats.sum(:nb),
-      kpi_temps_total: "#{stats.sum(:temps_total).round(1)}h",
+      kpi_temps_total: "#{stats.where("temps_total >= 0").sum(:temps_total).round(1)}h",
       kpi_agents_actifs: users.agent.count,
       kpi_co2_total: "#{co2.values.sum} kg"
     }
@@ -30,7 +30,7 @@ module DashboardData
     stats = DashboardInterventionStat.for_adherent(current_user)
                                      .for_services(current_user.services)
     temps_consommable = 100
-    temps_consomme = stats.sum(:temps_total)
+    temps_consomme = stats.where("temps_total >= 0").sum(:temps_total)
     co2 = build_co2_par_mois(stats, start_date, end_date)
 
     {
@@ -41,7 +41,7 @@ module DashboardData
       temps_total_par_mois: build_temps_par_mois(stats, start_date, end_date),
       data_workflow_chart: build_workflow_chart(stats, start_date, end_date),
       qte_interventions_par_service: stats.joins(:service).group('services.nom').sum(:nb),
-      temps_total_par_service: stats.joins(:service).group('services.nom').sum(:temps_total),
+      temps_total_par_service: stats.joins(:service).where("temps_total >= 0").group('services.nom').sum(:temps_total),
       co2_total_par_mois: co2,
       kpi_total_interventions: stats.sum(:nb),
       kpi_temps_total: "#{temps_consomme.round(1)}h",
@@ -52,14 +52,14 @@ module DashboardData
 
   def export_xls
     if current_user.manager_or_admin?
-      xls = DashboardManagerToXls.new(
+      xls = ExportToXls::DashboardManager.new(
         @temps_total_par_adherent, @temps_total_par_agent,
         @data_workflow_chart, @qte_interventions_par_service,
         @temps_total_par_service, @co2_total_par_mois
       ).call
       ExportLog.create!(user: current_user, organisation: current_organisation, export_type: 'dashboard_manager')
     else
-      xls = DashboardAdherentToXls.new(
+      xls = ExportToXls::DashboardAdherent.new(
         @proportion_temps_consomme, @temps_total_par_mois,
         @data_workflow_chart, @qte_interventions_par_service,
         @temps_total_par_service, @co2_total_par_mois
@@ -82,6 +82,7 @@ module DashboardData
     agents = users.agent
     # La vue dashboard_agent_stats porte déjà la répartition temps_total / nb d'agents.
     totals = DashboardAgentStat.where(agent_id: agents.select(:id))
+                               .where("temps_total >= 0")
                                .group(:agent_id).sum(:temps_total)
     agents.each_with_object({}) do |agent, hash|
       hash[agent.nom_prénom] = totals[agent.id] || 0
@@ -122,11 +123,10 @@ module DashboardData
   end
 
   def build_temps_par_mois(stats, start_date, end_date)
-    raw = stats.between_months(start_date, end_date)
+    raw = stats.between_months(start_date, end_date).where("temps_total >= 0")
                .group(:mois)
                .sum(:temps_total)
                .transform_keys { |m| m.to_date.strftime('%Y-%m') }
-
     fill_months(start_date, end_date, raw, nil, 0.0).sort.to_h
   end
 

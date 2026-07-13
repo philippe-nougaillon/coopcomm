@@ -1,62 +1,101 @@
-<div class="w-full mb-24">
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
-    <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Mouvements') %></h1>
+<div class="flex flex-col">
+  <div class="flex flex-row justify-between items-center my-4 gap-2">
+    <h1 class="text-4xl text-primary font-bold">
+      <%= page_title!('Mouvements') %>
+    </h1>
     <% if policy(Mouvement).new? %>
-      <%= link_to "Panne", new_mouvement_path, data: { 'testid': "ajouter_panne" }, class: 'inline-flex btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
+      <%= link_to new_mouvement_path(redirect_to: mouvements_path), 
+            data: { 'testid': "Gestion panne" }, 
+            class: "btn btn-info btn-outline btn-md rounded flex items-center justify-center gap-2 text-base",
+            title: "Gestion panne" do %>
+        <%= embedded_svg "icons/cone.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+        <span class="hidden md:block">Gestion panne</span>
+      <% end %>
     <% end %>
   </div>
-  <%= form_tag request.path, method: :get do %>
-    <div class="flex flex-wrap items-start w-full gap-4 mt-8">
-      <div class="w-full md:w-fit">
-        <%= label_tag :tool_ids, "Matériel" %>
-        <%= select_tag :tool_ids, options_from_collection_for_select(@tools, 'id', 'name', params[:tool_ids]), include_blank: true, class: 'slim-select w-full sm:min-w-96 max-w-screen', onchange: 'this.form.submit()', multiple: true %>
+  <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_frame: "tools_table", turbo_action: "advance" } do %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div class="w-full md:flex-1">
+        <%= label_tag :tool_ids, "Matériel",  class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
+        <%= select_tag :tool_ids, 
+        options_from_collection_for_select(@tools, 'id', 'name', params[:tool_ids]), 
+                multiple: true,
+                class: 'slim-select w-full h-10',
+                data: { placeholder: 'Tous les matériels' },
+                onchange: 'this.form.requestSubmit()' %>
       </div>
-      <div class="min-w-full md:min-w-36">
-        <%= label_tag :etats, "État" %>
-        <%= select_tag :etats, options_for_select(@états, params[:etats]), include_blank: true, class: 'slim-select w-full', onchange: 'this.form.submit()' %>
+      <div class="w-full md:flex-1">
+        <%= label_tag :etats, "État", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
+        <%= select_tag :etats, 
+            options_for_select(@états.map { |e| [field_label(e), e] }, params[:etats]), 
+            multiple: true,
+            class: 'slim-select w-full h-10',
+            data: { placeholder: 'Tous les états' },
+            onchange: 'this.form.requestSubmit()' %>
       </div>
       <% if false %>
         <!--
         <div class="w-full md:w-fit">
           <%= label_tag :date, "Date d'intervention" %>
-          <%= date_field_tag :date, params[:date], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full' %>
+          <%= date_field_tag :date, params[:date], include_blank:true, onchange:'this.form.submit()', class: 'input input-bordered w-full focus:input-primary' %>
         </div>
       -->
       <% end %>
     </div>
   <% end %>
-  <div class="divider"></div>
-  <div class="overflow-x-auto">
-    <table id="tools" class="table table-sm">
-      <thead class="bg-slate-100">
-        <tr>
-          <th><%= sort_link 'mouvements.updated_at', 'MÀJ'%></th>
-          <th><%= sort_link 'tools.name', 'Matériel'%></th>
-          <th><%= sort_link 'mouvements.état', 'État'%></th>
-          <th>Par</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        <%= render @mouvements %>
-      </tbody>
-      <tfoot>
-        <th></th>
-      </tfoot>
-    </table>
+  <hr class="mt-6 mb-6">
+  <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-none md:rounded-t-xl border-t border-x md:border-b-0 border-slate-200">
+    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
   </div>
-  <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
-    <% if @pagy.pages > 1 %>
-      <div class="hidden sm:block sm:flex-1"></div>
-      <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
-        <%= pagy_nav(@pagy).html_safe %>
+  <div class="flex flex-col bg-white border border-slate-200 rounded-b-xl rounded-t-none md:rounded-b-xl md:rounded-t-none shadow-sm overflow-visible">
+    <div class="overflow-visible">
+      <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+        <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+        <span>Faire glisser pour voir plus</span>
       </div>
-      <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
-        <%= pagy_info(@pagy, item_name: "mouvements").html_safe %>
+      <div class="overflow-x-auto">
+        <table id="tools" class="table table-sm w-full border-none">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-32">
+                <%= sort_link 'mouvements.updated_at', 'MÀJ'%>
+              </th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
+                <%= sort_link 'tools.name', 'Matériel'%>
+              </th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-36 text-center">
+                <%= sort_link 'mouvements.état', 'État'%>
+              </th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-48">
+                Par
+              </th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-44">
+                Date
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if @mouvements.present? %>
+              <%= render @mouvements %>
+            <% else %>
+              <tr>
+                <td colspan="8" class="text-left md:text-center py-8 text-slate-400 text-base italic">
+                  Aucun résultat trouvé pour cette recherche.
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
       </div>
-    <% else %>
-      <div >
-      </div>
-    <% end %>
+      <% if @pagy&.pages.to_i > 1 %>
+        <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
+          <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+            <%= pagy_nav(@pagy).html_safe %>
+          </div>
+          <div class=" text-slate-500 text-center text-sm w-full ">
+            <%= pagy_info(@pagy, item_name: "mouvements").html_safe %>
+          </div>
+        </div>
+      <% end %>
+    </div>
   </div>
-</div>

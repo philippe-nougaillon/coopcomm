@@ -97,6 +97,7 @@ class PagesController < ApplicationController
     @interventions = Intervention
                      .filter_by_service(current_user.services)
                      .by_role_for_home(current_user)
+                     .includes(:service, :organisation)
                      .first(2)
 
     @messages = current_user.messages
@@ -105,8 +106,13 @@ class PagesController < ApplicationController
                             .ordered
                             .first(3)
 
+    if current_user.adhérent?
+      @cotations = current_user.cotations_adherent.where(workflow_state: Cotation::ENVOYE)
+    end
+
     @forecasts = MeteoConceptConnexion.call
   end
+
 
   def meteo
     @forecasts = MeteoConceptConnexion.call
@@ -116,7 +122,10 @@ class PagesController < ApplicationController
     forecasts = MeteoConceptConnexion.call
     return render json: {} if forecasts.blank? || forecasts['forecast'].blank?
 
-    forecast = forecasts['forecast'][params[:day].to_i].third
+    day = forecasts['forecast'][params[:day].to_i]
+    return render json: {} if day.blank?
+
+    forecast = day.third
     render json: { forecast: forecast, weather: MeteoConceptConnexion.WEATHER[forecast['weather']] }
   end
 

@@ -48,9 +48,17 @@ class ApplicationPolicy
     user&.manager_or_admin?
   end
 
+  def adhérent?
+    user&.adhérent?
+  end
+
   def shared_service?(record_services = record.services)
     # "&" désigne l'intersection entre deux listes
     (record_services & user.services).any?
+  end
+
+  def manage?
+    organisation? && (administrateur? || (user.manager? && user.services.include?(record.service)))
   end
 
   class Scope

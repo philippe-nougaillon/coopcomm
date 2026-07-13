@@ -8,7 +8,7 @@ class CotationPolicy < ApplicationPolicy
   end
 
   def index?
-    user&.manager_or_admin?
+    user&.manager_or_admin? || adhérent?
   end
 
   # Ouverture du formulaire (niveau classe) : tout manager/admin.
@@ -22,8 +22,10 @@ class CotationPolicy < ApplicationPolicy
     manage?
   end
 
+  # Un adhérent ne voit une cotation à lui qu'une fois envoyée (pas les
+  # brouillons « créé »), même via une URL directe.
   def show?
-    manage?
+    manage? || (adhérent? && record.adherent_id == user.id && !record.créé?)
   end
 
   # Modification (et edit?, qui en hérite) : réservée aux états modifiables,
@@ -50,14 +52,18 @@ class CotationPolicy < ApplicationPolicy
   end
 
   def refuser?
-    manage?
+    manage? || signer?
   end
 
-  private
+  def create_commande?
+    manage? && record.validé?
+  end
 
-  def manage?
-    return false unless user
+  def signer?
+    adhérent? && record.adherent_id == user.id && record.can_signer?
+  end
 
-    organisation? && (administrateur? || (user.manager? && user.services.include?(record.service)))
+  def signer_do?
+    signer? 
   end
 end

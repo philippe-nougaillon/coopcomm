@@ -8,6 +8,8 @@ class Prestation < ApplicationRecord
 
   belongs_to :organisation
   has_many :cotation_lignes, dependent: :restrict_with_error
+  has_many :commande_lignes, dependent: :restrict_with_error
+  has_many :facture_lignes, dependent: :restrict_with_error
 
   # Unité facturée pré-remplie à « H » (heure) à la création ; reste modifiable.
   # Le défaut ne s'applique qu'aux nouveaux enregistrements ; les prestations

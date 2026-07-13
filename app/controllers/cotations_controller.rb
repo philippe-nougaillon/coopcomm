@@ -1,15 +1,37 @@
 # frozen_string_literal: true
 
 class CotationsController < ApplicationController
-  before_action :set_cotation, only: %i[show edit update destroy pdf envoyer valider refuser]
+  before_action :set_cotation, only: %i[show edit update destroy pdf envoyer valider refuser create_commande signer signer_do]
   before_action :is_user_authorized, except: :create
 
   # GET /cotations
   def index
-    @cotations = policy_scope(Cotation).kept.includes(:adherent, :service).ordered
+    base = policy_scope(Cotation)
+          .kept
+          .includes(:adherent, :service, :organisation)
+          .ordered
+
+    # Un adhérent doit voir toutes ses cotations, même si elles ne sont pas de son service
+    if current_user.adhérent?
+      @cotations = base
+      service_ids = base.reorder(nil).distinct.pluck(:service_id)
+      @services   = Service.where(id: service_ids).ordered
+    else
+      @services  = current_user.get_services_by_role
+      @adhérents = User.by_service(@services).adhérent
+      @cotations = base.where(service: @services)
+    end
 
     if params[:search].present?
       @cotations = @cotations.where('cotations.ref ILIKE :s OR cotations.intitulé ILIKE :s', s: "%#{params[:search]}%")
+    end
+
+    if params[:adhérent_ids].present?
+      @cotations = @cotations.where(adherent_id: params[:adhérent_ids])
+    end
+
+    if params[:service_ids].present?
+      @cotations = @cotations.where(service_id: params[:service_ids])
     end
 
     if params[:workflow_state].present?
@@ -80,8 +102,7 @@ class CotationsController < ApplicationController
 
   # GET /cotations/1/pdf
   def pdf
-    pdf = CotationPdf.new
-    pdf.devis(@cotation)
+    pdf = TransformToPdf::Cotation.call(@cotation)
 
     send_data pdf.render,
               filename: @cotation.pdf_filename,
@@ -104,6 +125,39 @@ class CotationsController < ApplicationController
     transition!(:refuser, 'Cotation refusée.')
   end
 
+  def create_commande
+    if @cotation.present?
+
+      @commande = CreateCommandeFromCotation.new(@cotation).call
+
+      if @commande.save
+        redirect_to @commande, notice: "Commande créée avec succès."
+      else
+        redirect_to @cotation, alert: "Impossible de créer la commande."
+      end
+    end
+  end
+
+  def signer
+  end
+
+  def signer_do
+    @cotation.ip = request.remote_ip
+    @cotation.signature = params[:cotation][:signature]
+    @cotation.signee_le = Time.current
+    
+    if @cotation.can_signer? && @cotation.signer!
+      #TODO : à mettre dans le pub/sub
+      creator = @cotation.audits.find_by(action: 'create')&.user
+      return if creator&.email.blank?
+
+      NotifCotationSigneeJob.perform_later(@cotation, creator.id, current_user.id)
+      redirect_to @cotation, notice: "Cotation signée avec succès."
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def transition!(event, notice)
@@ -122,6 +176,7 @@ class CotationsController < ApplicationController
   # Notifie l'adhérent (mail + PDF + copie à l'émetteur) que sa cotation est
   # envoyée. Sans email côté adhérent, on n'envoie rien.
   def notify_adherent_cotation_envoyee
+    # TODO : utiliser le pub/sub à la place
     adherent = @cotation.adherent
     return if adherent&.email.blank?
 
@@ -150,13 +205,9 @@ class CotationsController < ApplicationController
 
   # Collections proposées dans le formulaire, scopées selon le rôle.
   def set_form_collections
-    @adherents = if current_user.administrateur?
-                   current_organisation.users.adhérent.ordered
-                 else
-                   User.by_service(current_user.services).adhérent.ordered
-                 end
+    @services = current_user.get_services_by_role
 
-    @services = current_user.administrateur? ? current_organisation.services.ordered : current_user.services.ordered
+    @adherents = User.by_service(@services).adhérent.ordered
 
     @prestations = current_organisation.prestations.ordered
   end

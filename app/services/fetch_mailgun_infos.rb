@@ -19,6 +19,9 @@ class FetchMailgunInfos < ApplicationService
       end)
         mail_log.update!(statut: false, error_message: error_message)
         # puts "Mail_log #{mail_log.id} a une erreur : #{mail_log.error_message}"
+
+        # On arrête pour ce mail car il a une erreur
+        next
       end
 
       # Check lu

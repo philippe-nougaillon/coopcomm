@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class AbsencesController < ApplicationController
+
   def destroy
     @absence = Absence.find(params[:id])
     authorize @absence

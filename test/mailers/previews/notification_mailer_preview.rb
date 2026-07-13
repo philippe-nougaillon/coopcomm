@@ -6,10 +6,6 @@ class NotificationMailerPreview < ActionMailer::Preview
     NotificationMailer.workflow_changed(Intervention.last, User.last.email)
   end
 
-  def commentaires_changed
-    NotificationMailer.commentaires_changed(Intervention.last, User.last.email)
-  end
-
   def relance
     NotificationMailer.relance(Intervention.first)
   end
@@ -53,5 +49,9 @@ class NotificationMailerPreview < ActionMailer::Preview
     panne = Mouvement.last
     title = "[COOPCOMM] L'outil #{panne.tool.name} a été déclaré en panne"
     NotificationMailer.avertissement_reservation(réservation.user, panne.tool, réservation.date, panne.date, title)
+  end
+
+  def intervention_pointage_terminee_automatiquement
+    NotificationMailer.intervention_pointage_terminee_automatiquement(Intervention.last, User.last.email)
   end
 end

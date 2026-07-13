@@ -11,7 +11,7 @@ class MeteoConceptConnexion < ApplicationService
     # Appel des setters pour pouvoir charger uniquement la requete que l'on veut.
     @url = "#{api_url}forecast/daily/periods?insee=#{insee}"
 
-    puts '[METEO] Nouvelle instance de MeteoConceptConnexion créée !'
+    Rails.logger.debug '[METEO] Nouvelle instance de MeteoConceptConnexion créée !'
   end
 
   def call

@@ -130,22 +130,30 @@
                 </tr>
               </thead>
               <tbody>
-                <% @pointages.each do |pointage| %>
+                <% if @pointages.any? %>
+                  <% @pointages.each do |pointage| %>
+                    <tr>
+                      <td><%= time_ago_in_words pointage.début %></td>
+                      <% unless current_user.agent? %>
+                        <td><%= pointage.agents.first&.nom_prénom %></td>
+                      <% end %>
+                      <td><%= l pointage.début %></td>
+                      <td><%= l pointage.fin if pointage.fin %></td>
+                      <td><%= pointage.temps_total %></td>
+                      <td>
+                        <span class="badge h-fit font-bold <%= pointage.style %>">
+                          <%= pointage.workflow_state.humanize %>
+                        </span>
+                      </td>
+                      <td><%= truncate(pointage.commentaires, length: 15) %></td>
+                      <td><%= link_to "Voir", pointage, class: 'underline text-primary' %></td>
+                    </tr>
+                  <% end %>
+                <% else %>
                   <tr>
-                    <td><%= time_ago_in_words pointage.début %></td>
-                    <% unless current_user.agent? %>
-                      <td><%= pointage.agents.first&.nom_prénom %></td>
-                    <% end %>
-                    <td><%= l pointage.début %></td>
-                    <td><%= l pointage.fin if pointage.fin %></td>
-                    <td><%= pointage.temps_total %></td>
-                    <td>
-                      <span class="badge h-fit font-bold <%= pointage.style %>">
-                        <%= pointage.workflow_state.humanize %>
-                      </span>
+                    <td colspan="<%= current_user.agent? ? 7 : 8 %>" class="text-center py-8 text-slate-400 text-base italic">
+                      Aucun pointage enregistré pour le moment.
                     </td>
-                    <td><%= truncate(pointage.commentaires, length: 15) %></td>
-                    <td><%= link_to "Voir", pointage, class: 'underline text-primary' %></td>
                   </tr>
                 <% end %>
               </tbody>
@@ -271,36 +279,42 @@
     <% end %>
     <% if current_user.manager_or_admin? %>
       <h2 class="text-2xl text-secondary mt-8">Activité</h2>
-      <div class="overflow-x-auto mt-4">
-        <table class="table table-sm">
-          <thead class="bg-slate-100">
-            <tr>
-              <th>Date</th>
-              <th>Utilisateur</th>
-              <th>Type</th>
-              <th>Action</th>
-              <th>Modifications</th>
-            </tr>
-          </thead>
-          <tbody>
-            <%= render partial: 'audit', collection: @audits %>
-          </tbody>
-        </table>
-      </div>
-      <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
-        <% if @pagy.pages > 1 %>
-          <div class="hidden sm:block sm:flex-1"></div>
-          <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
-            <%= pagy_nav(@pagy).html_safe %>
-          </div>
-          <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
-            <%= pagy_info(@pagy, item_name: "interventions").html_safe %>
-          </div>
-        <% else %>
-          <div >
-          </div>
-        <% end %>
-      </div>
-    <% end %>
+      <div class="flex flex-col bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="table table-sm w-full border-none">
+            <thead class="bg-slate-100">
+              <tr>
+                <th>Date</th>
+                <th>Utilisateur</th>
+                <th>Type</th>
+                <th>Action</th>
+                <th>Modifications</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if @audits&.any? %>
+                <%= render partial: 'audit', collection: @audits %>
+              <% else %>
+                <tr>
+                  <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">
+                    Aucun historique d'activité disponible.
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+    <% if @pagy&.pages.to_i > 1 %>
+          <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
+            <div class="hidden sm:block sm:flex-1"></div>
+            <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
+              <%= pagy_nav(@pagy).html_safe %>
+            </div>
+            <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
+              <%= pagy_info(@pagy, item_name: "interventions").html_safe %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
   </div>
-</div>

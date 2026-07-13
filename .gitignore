@@ -41,15 +41,3 @@
 
 dump.rdb
 coverage
-
-# Configuration & méthode de l'agent Claude (perso, non partagé)
-/.claude/
-/CLAUDE.md
-/CLAUDE.minimal.md
-/journal-session.md
-/kit-prompting.md
-/generation-ia-synthese-approfondie.md
-/methode-evaluation-et-securite-agents.md
-/fiches/
-/golden-set/
-

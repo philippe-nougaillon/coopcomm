@@ -42,7 +42,8 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     select '16', from: 'intervention_fin_hour'
     select '00', from: 'intervention_fin_minute'
 
-    page.select '1,0', from: 'Temps de pause (h)'
+    # Le label « Pause (h) » n'a plus d'attribut `for` → on cible le select par son id.
+    page.select '1,0', from: 'intervention_temps_de_pause'
     fill_in 'Commentaires', with: 'Ceci est un commentaire !'
     click_on 'enregistrer_intervention'
 
@@ -157,9 +158,37 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     assert_text 'Intervention refusée'
   end
 
+  # Anti-régression (bug visuel) : sur l'index en vue « normale », chaque carte
+  # d'intervention est un composant DaisyUI `collapse`. Son <input type=checkbox>
+  # (z-index 1) recouvre tout l'en-tête pour capter le clic d'ouverture/fermeture
+  # et INTERCEPTE donc les clics sur les boutons d'action. Ceux-ci ne passent
+  # au-dessus que s'ils sont positionnés (`relative z-10`) — un `z-10` seul est
+  # inopérant sur un élément statique. Sans le correctif, Selenium lève
+  # ElementClickInterceptedError sur ce clic : ce test échoue si la régression revient.
+  # (Les tests Terminer/Valider/Refuser ci-dessus passent par la page `show`, qui
+  # n'est PAS un collapse, et ne couvrent donc pas ce cas.)
+  test "les boutons d'action d'une carte d'intervention sont cliquables sur l'index (collapse)" do
+    intervention = interventions(:nouvelle_intervention)
+    visit interventions_url(vue: 'normal')
+
+    # Garde anti-faux-positif : la carte et son bouton sont bien rendus.
+    assert_selector "#intervention_#{intervention.id}", text: 'Terminer'
+
+    within "#intervention_#{intervention.id}" do
+      click_on 'Terminer'
+    end
+
+    # Point de synchronisation : `button_to turbo:false` recharge la page (le flash
+    # est fiable en rechargement complet, contrairement à une navigation Turbo).
+    assert_text 'Intervention terminée'
+    # L'assertion qui compte reste l'état métier en base.
+    assert_equal 'terminé', intervention.reload.workflow_state
+  end
+
   # !!! Tests sur les filtres obsolètes !!!
 
-  # TODO: Rendre dynamique les assert_text
+  # TODO VU: Rendre dynamique les assert_text
+  # On s'en occupera avec l'US #332
   # test "Rechercher dans les interventions" do
   #   # Recherche sur les descriptions
   #   fill_in "Rechercher", with: "asser les feui"
@@ -214,7 +243,8 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
   #   assert_text "Affichage de 5 éléments"
   # end
 
-  # # TODO: à faire
+  # TODO VU: à faire
+  # On s'en occupera avec l'US #332
   # test "Filter les interventions sur les tags" do
   #   assert_text "Affichage de 4 éléments"
   #   assert_text "Affichage de 1 élément"

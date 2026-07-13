@@ -41,5 +41,18 @@
   "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "chat.viewSessions.orientation": "stacked"
+  "chat.viewSessions.orientation": "stacked",
+  "cSpell.words": [
+    "evenodd",
+    "ILIKE",
+    "Langchain",
+    "linecap",
+    "linejoin",
+    "nowrap",
+    "pagy",
+    "qrcode",
+    "testid",
+    "twilio",
+    "whatsapp"
+  ]
 }

@@ -13,6 +13,7 @@ class Convention < ApplicationRecord
   valide_piece_jointe :document, types: PieceJointeValidable::DOCUMENTS
 
   validates :date_début, presence: true
+  validates :date_fin_prévue, presence: true
   validate :one_convention_per_service
   validate :service_must_belong_to_adherent
   validate :end_date_after_start_date
@@ -33,8 +34,10 @@ class Convention < ApplicationRecord
     end
   end
 
-  def temps_total_interventions
-    Intervention.where(adherent_id: user_id, service_id: service_id).sum(:temps_total)
+  def interventions
+    Intervention
+        .where(adherent_id: user_id, service_id: service_id)
+        .where(début: date_début.beginning_of_day..date_fin_prévue.end_of_day)
   end
 
   private

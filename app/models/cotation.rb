@@ -24,6 +24,7 @@ class Cotation < ApplicationRecord
 
   CREE    = 'créé'
   ENVOYE  = 'envoyé'
+  SIGNE   = 'signé'
   VALIDE  = 'validé'
   REFUSE  = 'refusé'
   ARCHIVE = 'archivé'
@@ -33,6 +34,10 @@ class Cotation < ApplicationRecord
       event :envoyer, transitions_to: ENVOYE
     end
     state ENVOYE, meta: { style: 'badge-info text-white' } do
+      event :signer, transitions_to: SIGNE
+      event :refuser, transitions_to: REFUSE
+    end
+    state SIGNE, meta: { style: 'badge-accent text-white' } do
       event :valider, transitions_to: VALIDE
       event :refuser, transitions_to: REFUSE
     end
@@ -80,12 +85,15 @@ class Cotation < ApplicationRecord
   end
 
   # Cotations visibles : un admin voit celles de son organisation,
-  # un manager celles de ses services, les autres rôles aucune.
+  # un manager celles de ses services, un adhérent les siennes déjà envoyées
+  # (une cotation « créé » est un brouillon interne), les autres rôles aucune.
   def self.visible_to(user)
     if user.administrateur?
       joins(:service).where(services: { organisation_id: user.organisation&.id })
     elsif user.manager?
       where(service_id: user.service_ids)
+    elsif user.adhérent?
+      where(adherent_id: user.id).where.not(workflow_state: CREE)
     else
       none
     end
@@ -106,6 +114,6 @@ class Cotation < ApplicationRecord
     n = Cotation.where(service: org_services)
                 .where('EXTRACT(YEAR FROM cotations.created_at) = ?', year)
                 .count + 1
-    self.ref = "#{year}-#{n}"
+    self.ref = "CO-#{year}-#{n}"
   end
 end

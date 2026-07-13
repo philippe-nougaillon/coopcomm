@@ -1,0 +1,6 @@
+ligne_commande_paris:
+  commande: commande_paris
+  prestation: nettoyage_bureaux
+  intitulé: Nettoyage hebdomadaire
+  qté: 3
+  prix_ht: 25.50

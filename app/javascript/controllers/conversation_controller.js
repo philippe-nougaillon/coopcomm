@@ -1,3 +1,30 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="conversation"
@@ -5,10 +32,8 @@ import { Controller } from "@hotwired/stimulus"
 // Gère le fil de discussion de la messagerie : scroll automatique au chargement,
 // badge "Nouveau message", et accusés de lecture (mark_as_read).
 //
-// Implémenté en contrôleur Stimulus (et non en <script> inline) car Turbo ré-évalue
-// les <script> du <body> à chaque rendu/restauration de page : un script inline
-// redéclarait ses variables (SyntaxError au retour navigateur) et empilait des
-// écouteurs/observers. Stimulus gère proprement le cycle de vie via connect/disconnect.
+// Le scroll se fait sur containerTarget (et non sur window), car ce conteneur
+// possède son propre overflow-y-auto (layout flex avec header/footer fixes).
 export default class extends Controller {
   static targets = ["container", "badge", "input"]
   static values = { toId: Number }
@@ -19,28 +44,40 @@ export default class extends Controller {
     this.setupReadReceipts()
 
     this.onScroll = this.handleScroll.bind(this)
-    window.addEventListener("scroll", this.onScroll)
+    if (this.hasContainerTarget) {
+      this.containerTarget.addEventListener("scroll", this.onScroll)
+    }
+
+    this.setupViewportHandler()
   }
 
   disconnect() {
     if (this.messageObserver) this.messageObserver.disconnect()
     if (this.readObserver) this.readObserver.disconnect()
-    window.removeEventListener("scroll", this.onScroll)
+    if (this.hasContainerTarget) {
+      this.containerTarget.removeEventListener("scroll", this.onScroll)
+    }
+    this.teardownViewportHandler()
   }
 
   // Au chargement : on se positionne sur le premier message non lu, sinon tout en bas.
   scrollToCorrectPosition() {
+    if (!this.hasContainerTarget) return
+
     const unreadBanner = this.element.querySelector("#first-unread-banner")
     if (unreadBanner) {
-      const y = unreadBanner.getBoundingClientRect().top + window.scrollY - 100
-      window.scrollTo({ top: y, behavior: "instant" })
+      const containerRect = this.containerTarget.getBoundingClientRect()
+      const bannerRect = unreadBanner.getBoundingClientRect()
+      const offset = bannerRect.top - containerRect.top + this.containerTarget.scrollTop - 20
+      this.containerTarget.scrollTo({ top: offset, behavior: "instant" })
     } else {
       this.scrollToBottom("instant")
     }
   }
 
   scrollToBottom(behavior = "instant") {
-    window.scrollTo({ top: document.documentElement.scrollHeight, behavior })
+    if (!this.hasContainerTarget) return
+    this.containerTarget.scrollTo({ top: this.containerTarget.scrollHeight, behavior })
     this.hideBadge()
   }
 
@@ -50,8 +87,6 @@ export default class extends Controller {
   }
 
   // Action : envoi d'un message (soumission du formulaire / touche Entrée).
-  // Le message envoyé est affiché via le broadcast Turbo Stream du modèle Message ;
-  // on se contente ici de poster puis de vider le champ.
   send(event) {
     event.preventDefault()
 
@@ -88,21 +123,21 @@ export default class extends Controller {
           const isMyMessage =
             node.classList.contains("chat-end") || node.querySelector(".chat-end") !== null
           const newNodeHeight = node.offsetHeight || 0
-          const scrollPosition = window.innerHeight + window.scrollY
-          const distanceToBottom = document.documentElement.scrollHeight - scrollPosition
+          const container = this.containerTarget
+          const distanceToBottom =
+            container.scrollHeight - (container.scrollTop + container.clientHeight)
           const isNearBottom = distanceToBottom - newNodeHeight <= 150
 
           if (isMyMessage) {
             this.scrollToBottom("smooth")
           } else if (isNearBottom) {
-            const offsetPosition = node.getBoundingClientRect().top + window.scrollY - 120
-            window.scrollTo({ top: offsetPosition, behavior: "smooth" })
+            const nodeOffset = node.offsetTop - 20
+            container.scrollTo({ top: nodeOffset, behavior: "smooth" })
             this.hideBadge()
           } else {
             this.showBadge()
           }
 
-          // Message reçu en direct et non lu : on le surveille pour l'accusé de lecture.
           if (!isMyMessage && this.readObserver && node.dataset?.unread === "true") {
             this.readObserver.observe(node)
           }
@@ -138,8 +173,8 @@ export default class extends Controller {
           messageNode.dataset.unread = "false"
         })
       },
-      // Déclenche dès qu'une partie du message entre d'au moins 50px dans l'écran.
-      { threshold: 0, rootMargin: "0px 0px -50px 0px" }
+      // root: le conteneur scrollable lui-même, pas le viewport global
+      { root: this.hasContainerTarget ? this.containerTarget : null, threshold: 0, rootMargin: "0px 0px -50px 0px" }
     )
 
     this.element
@@ -149,8 +184,9 @@ export default class extends Controller {
 
   // Cache le badge quand on est déjà tout en bas du fil.
   handleScroll() {
-    const scrollPosition = window.innerHeight + window.scrollY
-    const distanceToBottom = document.documentElement.scrollHeight - scrollPosition
+    if (!this.hasContainerTarget) return
+    const container = this.containerTarget
+    const distanceToBottom = container.scrollHeight - (container.scrollTop + container.clientHeight)
     if (distanceToBottom <= 50) this.hideBadge()
   }
 
@@ -160,5 +196,48 @@ export default class extends Controller {
 
   hideBadge() {
     if (this.hasBadgeTarget) this.badgeTarget.classList.add("hidden")
+  }
+
+  // --- Gestion du clavier virtuel (mobile) ---
+  //
+  // Sans "interactive-widget=resizes-content" dans le meta viewport, "h-dvh" ne se
+  // recalcule pas toujours quand le clavier apparaît. On corrige ça manuellement via
+  // l'API visualViewport, en ajustant la hauteur du conteneur racine et en gardant
+  // le bas du fil visible.
+  setupViewportHandler() {
+    if (!window.visualViewport) return // navigateur trop ancien : on ignore silencieusement
+
+    this.rootElement = this.element.closest(".drawer-content")
+    if (!this.rootElement) return
+
+    this.baseHeight = null
+    this.viewportHandler = () => this.handleViewportResize()
+    window.visualViewport.addEventListener("resize", this.viewportHandler)
+  }
+
+  teardownViewportHandler() {
+    if (window.visualViewport && this.viewportHandler) {
+      window.visualViewport.removeEventListener("resize", this.viewportHandler)
+    }
+    if (this.rootElement) {
+      this.rootElement.style.height = ""
+    }
+  }
+
+  handleViewportResize() {
+    if (!this.rootElement) return
+
+    const vv = window.visualViewport
+    // Mémorise la hauteur "clavier fermé" au premier événement, pour comparer ensuite.
+    if (this.baseHeight === null) this.baseHeight = vv.height
+
+    const keyboardOpen = this.baseHeight - vv.height > 100 // seuil pour ignorer les micro-variations
+
+    if (keyboardOpen) {
+      this.rootElement.style.height = `${vv.height}px`
+      this.scrollToBottom("instant")
+    } else {
+      this.rootElement.style.height = ""
+    }
   }
 }

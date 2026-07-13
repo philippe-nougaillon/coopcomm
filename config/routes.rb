@@ -78,8 +78,8 @@ Rails.application.routes.draw do
       get :get_unavailable_elements
       get :services_for_adherent
       get :agents_for_service
-      get :new_intervention_pointage
-      post :create_intervention_pointage
+      get :new_intervention_modele_pointage
+      post :create_intervention_modele_pointage
     end
   end
 
@@ -106,8 +106,8 @@ Rails.application.routes.draw do
 
   resources :documents, only: %i[] do
     member do
-      post :valider
-      post :refuser
+      # post :valider
+      # post :refuser
     end
   end
 
@@ -124,6 +124,9 @@ Rails.application.routes.draw do
       post :envoyer
       post :valider
       post :refuser
+      post :create_commande
+      get  :signer
+      post :signer_do
     end
   end
   resources :prestations, except: %i[index show]
@@ -131,6 +134,25 @@ Rails.application.routes.draw do
   resources :conventions do
     collection do
       get :services_for_adherent
+    end
+  end
+
+  resources :commandes do
+    member do
+      get 'pdf(/*filename)', action: :pdf, as: :pdf, format: false
+      post :envoyer
+      post :valider
+      post :refuser
+      post :create_facture
+    end
+  end
+
+  resources :factures do
+    member do
+      get 'pdf(/*filename)', action: :pdf, as: :pdf, format: false
+      post :envoyer
+      post :valider
+      post :refuser
     end
   end
 

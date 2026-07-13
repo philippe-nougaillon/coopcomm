@@ -5,9 +5,11 @@ class TwilioController < ApplicationController
   skip_before_action :authenticate_user!, only: %i[whatsapp_reply]
   # Webhook machine-à-machine : l'autorisation est portée par la signature ci-dessous
   skip_after_action :verify_authorized
+  
   # CSRF et authentification étant désactivés, la signature Twilio est le SEUL
   # garde-fou : sans elle, n'importe qui peut forger des webhooks depuis Internet.
   before_action :validate_twilio_signature, only: %i[whatsapp_reply]
+
 
   def whatsapp_reply
     sender = params['From']

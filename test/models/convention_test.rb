@@ -11,7 +11,7 @@ class ConventionTest < ActiveSupport::TestCase
   end
 
   def build_convention(attrs = {})
-    Convention.new({ user: @adherent, service: @service, date_début: Date.new(2026, 1, 1) }.merge(attrs))
+    Convention.new({ user: @adherent, service: @service, date_début: Date.new(2026, 1, 1), date_fin_prévue: Date.new(2026, 12, 31) }.merge(attrs))
   end
 
   # --- Validations de base ---
@@ -20,10 +20,13 @@ class ConventionTest < ActiveSupport::TestCase
     assert build_convention.valid?
   end
 
-  test 'invalide sans date de début' do
-    convention = build_convention(date_début: nil)
+ 
+
+  test "invalide sans date de début ou fin" do
+    convention = Convention.new(date_début: nil, date_fin_prévue: nil)
     refute convention.valid?
     assert convention.errors[:date_début].any?
+    assert convention.errors[:date_fin_prévue].any?
   end
 
   test 'invalide sans user (belongs_to requis)' do
@@ -40,9 +43,6 @@ class ConventionTest < ActiveSupport::TestCase
     assert build_convention(date_fin_prévue: Date.new(2026, 12, 31)).valid?
   end
 
-  test "valide quand il n'y a pas de date de fin" do
-    assert build_convention(date_fin_prévue: nil).valid?
-  end
 
   test 'valide quand début et fin tombent le même jour' do
     same = Date.new(2026, 6, 1)
@@ -103,7 +103,8 @@ class ConventionTest < ActiveSupport::TestCase
   test 'ordered trie par date de début décroissante' do
     ancienne = build_convention(date_début: Date.new(2025, 1, 1))
     ancienne.save!
-    recente = build_convention(user: users(:hidalgo), service: services(:technique), date_début: Date.new(2030, 1, 1))
+    recente = build_convention(user: users(:hidalgo), service: services(:technique), 
+    date_début: Date.new(2030, 1, 1),date_fin_prévue: Date.new(2030, 12, 31))
     recente.save!
     ordered = Convention.ordered.to_a
     assert ordered.index(recente) < ordered.index(ancienne)
@@ -142,45 +143,13 @@ class ConventionTest < ActiveSupport::TestCase
     assert_equal 1, convention.audits.count
     assert_equal 'create', convention.audits.last.action
 
-    convention.update!(date_fin_prévue: Date.new(2026, 12, 31))
+   convention.update!(date_fin_prévue: Date.new(2026, 11, 30))
     assert_equal 2, convention.audits.count
     assert_equal 'update', convention.audits.last.action
     assert_includes convention.audits.last.audited_changes.keys, 'date_fin_prévue'
   end
 
-  # --- Somme du temps des interventions (temps_total_interventions) ---
-
-  def insert_intervention(attrs = {})
-    # insert_all : on écrit directement la ligne (temps_total figé) sans déclencher
-    # les callbacks d'Intervention (broadcast, friendly_id…) hors sujet ici.
-    now = Time.current
-    Intervention.insert_all([{ adherent_id: @adherent.id, service_id: @service.id,
-                               description: 'test', temps_total: 0,
-                               created_at: now, updated_at: now }.merge(attrs)])
-  end
-
-  test 'temps_total_interventions somme les interventions du même adhérent et service' do
-    insert_intervention(temps_total: 3)
-    insert_intervention(temps_total: 5)
-
-    assert_equal 8, build_convention.temps_total_interventions
-  end
-
-  test "temps_total_interventions exclut les interventions d'un autre service" do
-    insert_intervention(temps_total: 3)
-    insert_intervention(temps_total: 99, service_id: services(:service_marseille).id)
-
-    assert_equal 3, build_convention.temps_total_interventions
-  end
-
-  test "temps_total_interventions exclut les interventions d'un autre adhérent" do
-    insert_intervention(temps_total: 3)
-    insert_intervention(temps_total: 99, adherent_id: users(:michael_jackson).id)
-
-    assert_equal 3, build_convention.temps_total_interventions
-  end
-
-  test "temps_total_interventions vaut 0 sans intervention correspondante" do
-    assert_equal 0, build_convention.temps_total_interventions
-  end
+  # NB : les anciens tests de Convention#temps_total_interventions ont été déplacés dans
+  # test/models/intervention_test.rb (section « Heures consommées de la convention ») :
+  # la fonction est devenue Intervention#update_heures_consommees_convention (after_commit).
 end

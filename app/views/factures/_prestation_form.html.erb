@@ -1,0 +1,38 @@
+<div class="nested-form-wrapper bg-slate-100 p-4 rounded border border-slate-300 flex flex-wrap items-end gap-3 w-full mb-2 relative"
+     data-new-record="<%= f.object.new_record? %>"
+     data-controller="facture-ligne">
+  <div class="flex flex-col gap-1 flex-1 min-w-48">
+    <%= f.label :prestation_id, "Prestation", class: "text-sm text-slate-500" %>
+    <%= f.select :prestation_id,
+          options_for_select(
+            prestations.map { |p| [p.display_name, p.id, { "data-tarif" => p.tarif, "data-libelle" => p.libellé }] },
+            f.object.prestation_id
+          ),
+          { prompt: "" },
+          { class: "slim-select w-full h-10", required: true,
+            data: { controller: "slim-select", facture_ligne_target: "prestation", action: "change->facture-ligne#prestationChanged" } } %>
+  </div>
+  <div class="flex flex-col gap-1 flex-1 min-w-40">
+    <%= f.label :intitulé, "Intitulé", class: "text-sm text-slate-500" %>
+    <%= f.text_field :intitulé, class: "input input-bordered w-full h-10 focus:input-primary",
+          data: { facture_ligne_target: "intitule" } %>
+  </div>
+  <div class="flex flex-col gap-1 w-20">
+    <%= f.label :qté, "Qté", class: "text-sm text-slate-500" %>
+    <%= f.number_field :qté, min: 0, class: "input input-bordered w-full h-10 focus:input-primary",
+          data: { facture_ligne_target: "qte", action: "input->facture-ligne#refresh" } %>
+  </div>
+  <%# Prix unitaire : non modifiable, dérivé de la prestation choisie (affiché avec €) %>
+  <div class="flex flex-col gap-1 w-28">
+    <span class="text-sm text-slate-500">Prix HT</span>
+    <span class="font-medium py-1" data-facture-ligne-target="prix">—</span>
+  </div>
+  <div class="flex flex-col gap-1 w-28">
+    <span class="text-sm text-slate-500">Total HT</span>
+    <span class="font-medium py-1" data-facture-ligne-target="total">—</span>
+  </div>
+  <button type="button" data-action="nested-form#remove" class="btn btn-outline btn-error btn-sm" title="Retirer la ligne">
+    <span class="material-symbols-outlined">delete</span>
+  </button>
+  <%= f.hidden_field :_destroy %>
+</div>

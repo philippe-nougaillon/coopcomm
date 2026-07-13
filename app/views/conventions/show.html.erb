@@ -39,21 +39,18 @@
         <%= l(@convention.date_début, format: :long) if @convention.date_début %>
         <span class="text-slate-400">→</span>
         <%= @convention.date_fin_prévue ? l(@convention.date_fin_prévue, format: :long) : "—" %>
-        <% if prog %>
-          <div class="mt-1 max-w-xs">
-            <% if prog[:indeterminate] %>
-              <progress class="progress <%= prog[:color] %> w-full" value="100" max="100"></progress>
-            <% else %>
-              <progress class="progress <%= prog[:color] %> w-full" value="<%= prog[:percent] %>" max="100"></progress>
-            <% end %>
-            <span class="text-xs text-slate-400"><%= prog[:label] %></span>
+        <div class="mt-1" title="<%= "Du #{l(@convention.date_début, format: :long)}#{" au #{l(@convention.date_fin_prévue, format: :long)}"}" %>"> 
+          <div class="relative w-60 flex items-center h-6">
+            <progress class="progress <%=prog[:color] %> w-full h-4" value="<%= prog[:percent] %>" max="100"></progress>
+            <div class="absolute top-0 bottom-0 w-1 <%= prog[:indicateur_color] %> rounded dashed" style="left: <%= prog[:indicateur] %>%;" title="<%= prog[:indicateur_label] %>"></div>
           </div>
-        <% end %>
+          <span class="text-xs text-slate-400"><%= prog[:label] %></span>   
+        </div>
       </div>
       <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
         <span class="material-symbols-outlined text-base" title="Heures consommées">schedule</span> Heures consommées
       </div>
-      <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @convention.temps_total_interventions.round(1) %> h</div>
+      <div class="py-2.5 text-slate-800 border-b border-slate-100"><%= @convention.heures_consommees.round(1) %> h</div>
       <div class="flex items-center gap-2 py-2.5 text-slate-500<%= " border-b border-slate-100" if @convention.mémo.present? %>" style="padding-right: 2rem;">Document</div>
       <div class="py-2.5 text-slate-800<%= " border-b border-slate-100" if @convention.mémo.present? %>">
         <% if @convention.document.attached? %>
@@ -83,27 +80,44 @@
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary font-semibold">Activité</h2>
   </div>
-  <div class="overflow-x-auto border border-slate-200 shadow-sm bg-white rounded-xl">
-    <table class="table table-sm w-full border-none">
-      <thead class="bg-slate-100">
-        <tr>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Date</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Utilisateur</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Type</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Action</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Modifications</th>
-        </tr>
-      </thead>
-      <tbody>
-        <%= render partial: "audit", collection: @audits %>
-      </tbody>
-    </table>
-  </div>
-  <% if @pagy.pages > 1 %>
-    <div class="flex justify-center mt-4">
-      <%= pagy_nav(@pagy).html_safe %>
+
+  <div class="flex flex-col bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="table table-sm w-full border-none">
+        <thead class="bg-slate-100">
+          <tr>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Date</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Utilisateur</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Type</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Action</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Modifications</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if @audits&.any? %>
+            <%= render partial: "audit", collection: @audits %>
+          <% else %>
+            <tr>
+              <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">
+                Aucun historique d'activité disponible.
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
     </div>
-  <% end %>
+
+    <% if @pagy&.pages.to_i > 1 %>
+      <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full">
+        <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+          <%= pagy_nav(@pagy).html_safe %>
+        </div>
+        <div class="text-slate-500 text-center text-sm w-full mt-2">
+          <%= pagy_info(@pagy, item_name: "audits").html_safe %>
+        </div>
+      </div>
+    <% end %>
+  </div>
 
   <div class="my-10">
     <%= link_to conventions_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition" do %>

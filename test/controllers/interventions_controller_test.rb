@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class InterventionsControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
   setup do
     @intervention = interventions(:tonte_locaux)
     sign_in users(:hidalgo)
@@ -159,6 +161,33 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to intervention_url(Intervention.last)
   end
 
+  test "un agent crée une intervention à postériori : elle est terminée d'emblée" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+
+    # On se place à midi d'AUJOURD'HUI pour que "hours.ago" ne change jamais de jour ni d'année.
+    travel_to Time.current.middle_of_day do
+      assert_difference('Intervention.count') do
+        post interventions_url, params: {
+          intervention: {
+            début: 2.hours.ago,
+            fin: 1.hour.ago,
+            description: 'Tonte saisie le soir',
+            adherent_id: users(:patrick_adherent_paris).id,
+            service_id: services(:technique).id,
+            agent_ids: [agent.id],
+            # Le formulaire agent soumet un workflow_state caché : il ne doit PAS
+            # piloter l'état (mass assignment interdit). L'état terminé est forcé
+            # côté serveur, même si le param vaut 'nouveau'.
+            workflow_state: Intervention::NOUVEAU
+          }
+        }
+      end
+    end
+    
+    assert_equal Intervention::TERMINE, Intervention.last.workflow_state
+  end
+
   test 'should show intervention' do
     get intervention_url(@intervention)
     assert_response :success
@@ -287,31 +316,39 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal expected_nb_intervention_filles, actual_nb_intervention_filles
   end
 
-  test 'pointer intervention repete doit pouvoir créer plusieurs interventions dans la journée' do
+test 'pointer intervention repete doit pouvoir créer plusieurs interventions dans la journée' do
     intervention = interventions(:intervention_repete)
 
     sign_in users(:martin_technique_paris)
 
-    # 1er pointage (début de journée)
+    # Les pointages sont horodatés à la minute : on simule des heures distinctes
+    # (journée passée fixe) pour reproduire un vrai parcours séquentiel. Sinon les
+    # 4 requêtes tomberaient dans la même minute → la 1re fille deviendrait un
+    # intervalle de durée nulle et entrerait en faux conflit avec la 2e.
+    jour = Time.zone.local(2025, 1, 6)
+
+    # 1er pointage (début de journée) -> Création (Clock in)
     assert_difference('Intervention.count', 1) do
-      get pointer_intervention_url(intervention)
+      travel_to(jour + 8.hours) { get pointer_intervention_url(intervention) }
     end
 
-    # 2eme pointage (début de pause)
+    # 2eme pointage (début de pause) -> Clôture (Clock out)
     assert_no_difference('Intervention.count') do
-      get pointer_intervention_url(intervention)
+      travel_to(jour + 12.hours) { get pointer_intervention_url(intervention) }
     end
 
-    # 3eme pointage (fin de pause, reprise d'activité)
+    # 3eme pointage (fin de pause, reprise d'activité) -> Nouvelle Création (Clock in)
     assert_difference('Intervention.count', 1) do
-      get pointer_intervention_url(intervention)
+      travel_to(jour + 13.hours) { get pointer_intervention_url(intervention) }
     end
 
-    # 4eme pointage (fin de journée)
+
+    # 4eme pointage (fin de journée) -> Clôture (Clock out)
     assert_no_difference('Intervention.count') do
-      get pointer_intervention_url(intervention)
+      travel_to(jour + 17.hours) { get pointer_intervention_url(intervention) }
     end
 
+    # Il y a eu 2 créations (matin et après-midi), donc 2 interventions filles au total
     expected_nb_intervention_filles = 2
     actual_nb_intervention_filles = Intervention.where(template_slug: intervention.slug).last(2).count
 
@@ -323,10 +360,12 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     sign_in agent
 
     intervention = interventions(:intervention_repete)
-    # L'agent est déjà affecté au modèle ; on lui ajoute une fenêtre planifiée.
-    # L'intervention fille hérite de la même fenêtre et entre donc en conflit de
-    # disponibilité avec son propre modèle → le save échoue (id nil).
-    intervention.update_columns(début_prévue: DateTime.new(2026, 6, 1), fin_prévue: DateTime.new(2026, 6, 30))
+    # On force l'échec du save de la fille : create_next_intervention lui affecte
+    # l'adhérent du modèle ; sans adhérent, la validation de présence échoue et le
+    # save renvoie false (id nil). NB : les modèles/filles de pointage sont exclus
+    # du contrôle de disponibilité, donc on ne peut plus provoquer cet échec via
+    # un conflit fille↔modèle.
+    intervention.update_columns(adherent_id: nil)
 
     assert_no_difference('Intervention.count') do
       assert_no_enqueued_jobs only: NotifMailAdherentInterventionPointageJob do
@@ -418,5 +457,158 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes ids, users(:martin_technique_paris).id
     assert_includes ids, users(:agent_whatsapp).id
     assert_not_includes ids, users(:agent_marseille).id
+  end
+
+  # --- Notification des managers à la création (after_create_commit du modèle,
+  # --- exercé via le contrôleur : l'auteur vient de l'audit de création) ---
+
+  test "création par un adhérent : enqueue la notification managers « nouvelle demande » avec les bons arguments" do
+    adherent = users(:weil)
+    sign_in adherent
+
+    assert_difference('Intervention.count') do
+      post interventions_url, params: { intervention: {
+        description: 'Demande de nettoyage des locaux',
+        adherent_id: adherent.id,
+        service_id: services(:informatique).id,
+        début_prévue: 2.days.from_now,
+        fin_prévue: 2.days.from_now + 2.hours
+      } }
+    end
+
+    intervention = Intervention.order(:id).last
+    assert_enqueued_with(job: NotifManagersNewInterventionFromAdherentJob, args: [intervention, adherent])
+  end
+
+  test "création par un agent « à postériori » (terminée d'emblée) : enqueue la notification managers « réalisée »" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+
+    # Milieu de journée : les "hours.ago" restent le même jour (cf. test à postériori ci-dessus).
+    travel_to Time.current.middle_of_day do
+      assert_difference('Intervention.count') do
+        post interventions_url, params: { intervention: {
+          début: 2.hours.ago,
+          fin: 1.hour.ago,
+          description: 'Tonte saisie le soir',
+          adherent_id: users(:patrick_adherent_paris).id,
+          service_id: services(:technique).id,
+          agent_ids: [agent.id]
+        } }
+      end
+    end
+
+    intervention = Intervention.order(:id).last
+    assert_equal Intervention::TERMINE, intervention.workflow_state
+    assert_enqueued_with(job: NotifManagersInterventionDoneByAgentJob, args: [intervention, agent])
+  end
+
+  test "création par un manager : aucune notification managers n'est enqueue" do
+    # hidalgo (manager) est connecté via le setup.
+    assert_no_enqueued_jobs only: [NotifManagersNewInterventionFromAdherentJob,
+                                   NotifManagersInterventionDoneByAgentJob] do
+      assert_difference('Intervention.count') do
+        post interventions_url, params: { intervention: {
+          description: 'Intervention planifiée par le manager',
+          adherent_id: users(:weil).id,
+          service_id: services(:informatique).id,
+          début_prévue: 2.days.from_now,
+          fin_prévue: 2.days.from_now + 2.hours
+        } }
+      end
+    end
+  end
+
+  # --- Affiche QRCode (show.pdf) : parcours 1, ce que l'agent scanne --------
+  # L'affiche est générée/imprimée par un manager ou un admin ; l'agent, lui,
+  # ne fait que la scanner (route GET `pointer`). La policy interdit donc le PDF
+  # à l'agent (`can_see_qrcode_pointage_pdf? = show? && !agent?`).
+
+  test "show.pdf : un manager peut générer l'affiche QRCode du modèle de pointage" do
+    # hidalgo (manager, service technique) est connecté via le setup.
+    get intervention_url(interventions(:intervention_repete), format: :pdf)
+
+    assert_response :success
+    assert_equal 'application/pdf', response.media_type
+  end
+
+  test 'show.pdf : un agent ne peut pas générer l\'affiche QRCode' do
+    sign_in users(:martin_technique_paris) # agent rattaché à l'intervention
+
+    get intervention_url(interventions(:intervention_repete), format: :pdf)
+
+    # Refus Pundit → redirection avec message d'alerte (cf. user_not_authorized)
+    assert_response :redirect
+    assert_match(/n'êtes pas autorisé/i, flash[:alert].to_s)
+  end
+
+  # --- pointage_statut : redirige vers le statut de la fille du pointeur ----
+
+  test 'pointage_statut sur un modèle répété redirige vers la fille du pointeur' do
+    sign_in users(:martin_technique_paris)
+    modele = interventions(:intervention_repete)
+
+    # On crée d'abord une fille (clock in) pour que la redirection ait une cible.
+    get pointer_intervention_url(modele)
+
+    get pointage_statut_intervention_url(modele)
+    assert_response :redirect
+  end
+
+  # --- Parcours 2 : saisie a posteriori, chemins d'échec -------------------
+
+  test "saisie a posteriori : fin antérieure au début est refusée (422)" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+
+    travel_to Time.current.middle_of_day do
+      assert_no_difference('Intervention.count') do
+        post interventions_url, params: { intervention: {
+          début: 1.hour.ago,
+          fin: 2.hours.ago, # fin AVANT le début → schedules_must_make_sense
+          description: 'Saisie incohérente',
+          adherent_id: users(:patrick_adherent_paris).id,
+          service_id: services(:technique).id,
+          agent_ids: [agent.id]
+        } }
+      end
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  test "saisie a posteriori : des dates dans le futur sont refusées (422)" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+
+    assert_no_difference('Intervention.count') do
+      post interventions_url, params: { intervention: {
+        début: 1.hour.from_now,
+        fin: 2.hours.from_now, # cohérentes entre elles mais dans le futur
+        description: 'Saisie dans le futur',
+        adherent_id: users(:patrick_adherent_paris).id,
+        service_id: services(:technique).id,
+        agent_ids: [agent.id]
+      } }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  # --- Parcours 1 : le second scan clôture la fille (état terminé + fin) ----
+
+  test 'pointer : le second scan termine la fille (état terminé, fin renseignée)' do
+    sign_in users(:martin_technique_paris)
+    modele = interventions(:intervention_repete)
+
+    get pointer_intervention_url(modele) # 1er scan : clock in
+    fille = Intervention.find_by(template_slug: modele.slug)
+    assert_nil fille.fin, 'la fille est ouverte après le premier scan'
+
+    get pointer_intervention_url(modele) # 2e scan : clock out
+
+    fille.reload
+    assert_equal Intervention::TERMINE, fille.workflow_state
+    assert_not_nil fille.fin, 'le second scan renseigne la fin'
   end
 end

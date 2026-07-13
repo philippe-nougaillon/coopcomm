@@ -82,6 +82,8 @@ group :test do
   gem 'rails-controller-testing'
   gem 'selenium-webdriver'
   gem 'simplecov', require: false
+  gem 'minitest-mock'
+  gem 'webmock'
 end
 
 gem 'devise', '~> 4.9'
@@ -137,6 +139,8 @@ gem 'prawn-table', '~> 0.2.2'
 
 gem 'prawn-qrcode', '~> 0.5.2'
 
+gem "prawn-svg", "~> 0.40.3"
+
 gem 'pg_search', '~> 2.3'
 
 gem 'twilio-ruby', '~> 7.4'
@@ -178,4 +182,6 @@ gem 'capture_stdout', '~> 0.0.1'
 
 gem 'devise_invitable', '~> 2.0'
 
-gem 'htmlbeautifier'
+group :development do
+  gem 'htmlbeautifier'
+end

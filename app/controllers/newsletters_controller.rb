@@ -15,7 +15,7 @@ class NewslettersController < ApplicationController
       end
 
       format.xls do
-        xls_file = NewslettersToXls.new(@newsletters).call
+        xls_file = ExportToXls::Newsletters.call(@newsletters)
         send_data xls_file, filename: "Newsletters_#{l Date.today}.xls"
       end
     end
@@ -88,9 +88,8 @@ class NewslettersController < ApplicationController
       if newsletter.save
         result = 'Votre inscription a bien été effectuée.'
         valid = true
-        unless Rails.env.development?
-          Events.instance.publish('create.newsletter', payload: { newsletter_id: newsletter.id })
-        end
+
+        Events.instance.publish('create.newsletter', payload: { newsletter_id: newsletter.id }) unless Rails.env.development?
       else
         result = 'Oups ! Il existe déjà une inscription pour cette adresse mail...'
       end

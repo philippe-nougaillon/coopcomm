@@ -1,12 +1,9 @@
-<div class="mx-auto w-full max-w-md">
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16 mb-4">
-    <h1 class="text-primary font-bold text-4xl">
-      <%= page_title!('Modifier ce mouvement') %>
+<div class="mx-auto w-full max-w-xl ">
+  <div class="flex flex-wrap justify-center items-center min-h-12 sm:min-h-16">
+    <h1 class="text-primary font-bold text-3xl sm:text-4xl whitespace-nowrap text-center my-8">
+      <%# Concatenamos el texto estático con el nombre del material humanizado %>
+      <%= page_title!("Modifier le mouvement : #{@mouvement.tool&.name&.humanize}") %>
     </h1>
   </div>
   <%= render "form", mouvement: @mouvement %>
-  <div class="flex flex-wrap gap-2 mt-2">
-    <%= link_to "Voir", @mouvement, class: "btn" %>
-    <%= link_to "Annuler", mouvements_path, class: "btn" %>
-  </div>
 </div>

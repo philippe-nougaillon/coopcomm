@@ -1,10 +1,11 @@
-<div class="w-full">
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
-    <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= page_title!('Interventions') %></h1>
+<div class="flex flex-col">
+  <div class="flex flex-row justify-between items-center my-4 gap-2">
+    <h1 class="text-4xl text-primary font-bold">
+      <%= page_title!('Interventions') %></h1>
     <div class="flex gap-2">
-      <% if policy(Intervention).new_intervention_pointage? %>
-        <%= link_to new_intervention_pointage_interventions_path, 
-        class: "btn btn-secondary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm ",
+      <% if policy(Intervention).new_intervention_modele_pointage? %>
+        <%= link_to new_intervention_modele_pointage_interventions_path, 
+            class: "btn btn-info btn-outline btn-md rounded flex items-center justify-center gap-2 text-base",
         title: "Ajouter un modèle de pointage" do %>
           <%= embedded_svg "icons/qr_code_2_add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
           <span class="hidden md:block">Ajouter un modèle de pointage</span>
@@ -12,7 +13,7 @@
       <% end %>
       <%= link_to new_intervention_path, 
       data: { 'testid': "ajouter_intervention_pc" }, 
-      class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm ",
+            class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary",
       title: "Créer une nouvelle intervention " do %>
         <%= embedded_svg "icons/assignment_add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
         <span class="hidden md:block">Ajouter une Intervention</span>
@@ -21,13 +22,13 @@
   </div>
   <%= form_tag request.path, method: :get, class: "pt-6",data: { turbo_frame: "interventions", turbo_action: "advance" } do %>
     <div class="flex flex-col gap-3 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end w-full">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end w-full">
         <div class="w-full">
           <%= label_tag :search, "Rechercher", class: "block font-semibold text-slate-600 text-sm mb-1" %>
           <%= text_field_tag :search, params[:search], include_blank: true, 
               onchange: 'this.form.requestSubmit()',
               class: 'input input-bordered input-md w-full',
-              placeholder: 'Rechercher...' %> 
+              placeholder: 'Rechercher...' %>
         </div>
         <div class="w-full">
           <%= label_tag :workflow_state, "Statut", class: "block font-semibold text-slate-600 text-sm mb-1" %>
@@ -38,17 +39,19 @@
                 data: { placeholder: 'Tous les status' },
                 onchange: 'this.form.requestSubmit()' %>
         </div>
-        <div class="w-full">
-          <%= label_tag :du, 'Du', class: "block font-semibold text-slate-600 text-sm mb-1" %>
-          <%= date_field_tag :du, params[:du], 
+        <div class="flex flex-row gap-2 w-full">
+          <div class="flex-1">
+            <%= label_tag :du, 'Du', class: "block font-semibold text-slate-600 text-sm mb-1" %>
+            <%= date_field_tag :du, params[:du], 
               class: 'input input-bordered input-md w-full ', 
               onchange: 'this.form.requestSubmit()' %>
-        </div>
-        <div class="w-full">
-          <%= label_tag :au, 'Au', class: "block font-semibold text-slate-600 text-sm mb-1" %>
-          <%= date_field_tag :au, params[:au], 
+          </div>
+          <div class="flex-1">
+            <%= label_tag :au, 'Au', class: "block font-semibold text-slate-600 text-sm mb-1" %>
+            <%= date_field_tag :au, params[:au], 
               class: 'input input-bordered input-md w-full ', 
-              onchange: 'this.form.requestSubmit()' %>        
+              onchange: 'this.form.requestSubmit()' %>
+          </div>
         </div>
       </div>
       <% if current_user.manager_or_admin? || current_user.agent? || current_user.adhérent? %>
@@ -67,12 +70,12 @@
                   multiple: true,
                   data: { placeholder: 'Tous les adhérents' },
                   onchange: 'this.form.requestSubmit()',
-                  class: 'slim-select w-full h-10' %>              
+                  class: 'slim-select w-full h-10' %>
               </div>
               <div class="w-full">
                 <%= label_tag :tags, "Mots clés", class: "block font-semibold text-slate-600 text-sm mb-1" %>
                 <%= select_tag "tags[]", 
-                    options_from_collection_for_select(@tags, :name, :name, params[:tags]), 
+                    options_from_collection_for_select(@intervention_tags, :name, :name, params[:tags]), 
                     multiple: true,
                 class: 'slim-select w-full h-10', 
                 data: { placeholder: 'Tous les mots-clés' },
@@ -103,7 +106,7 @@
                   class: 'slim-select w-full h-10',
                   data: { placeholder: 'Tous les agents' },
                   onchange: 'this.form.requestSubmit()' %>
-              </div>              
+              </div>
             <% end %>
             <div class="w-full">
               <%= label_tag :tool_ids, "Matériel(s)", class: "block font-semibold text-slate-600 text-sm mb-1" %>
@@ -112,7 +115,7 @@
                   class: 'slim-select w-full h-10',
                   data: { placeholder: 'Tous les matériels' },
                   onchange: 'this.form.requestSubmit()' %>
-              </div>                
+            </div>
             <div class="flex justify-left items-center gap-2 pb-2 h-8 md:pl-1">
               <%= check_box_tag :archives, 1, params[:archives], class: 'checkbox checkbox-primary checkbox-sm', onchange: 'this.form.submit()' %>
               <%= label_tag :archives, "Archivées ?", class: "text-sm font-semibold text-slate-600 cursor-pointer select-none truncate" %>
@@ -148,10 +151,18 @@
         <span>Faire glisser pour voir plus</span>
       </div>
     <% end %>
+    <%# Abonnement Turbo Stream par rôle : reçoit le prepend live d'une nouvelle
+        intervention selon le périmètre du rôle. Cf. Intervention#broadcast_channels. %>
     <% if current_user.agent? %>
       <%= turbo_stream_from "interventions_user_#{current_user.id}" %>
-    <% else %>
-      <%= turbo_stream_from "interventions_organisation_#{current_user.id}" %>
+    <% elsif current_user.adhérent? %>
+      <%= turbo_stream_from "interventions_adherent_#{current_user.id}" %>
+    <% elsif current_user.administrateur? %>
+      <%= turbo_stream_from "interventions_organisation_#{current_organisation.id}" %>
+    <% elsif current_user.manager? %>
+      <% current_user.services.each do |service| %>
+        <%= turbo_stream_from "interventions_service_#{service.id}" %>
+      <% end %>
     <% end %>
     <% if params[:vue] == 'normal' %>
       <%= render @interventions, cached: true %>
@@ -170,7 +181,7 @@
       <% end %>
     </div>
     <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
-      <% if @pagy.pages > 1 %>
+      <% if @pagy&.pages.to_i > 1 %>
         <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
           <%= pagy_nav(@pagy).html_safe %>
         </div>

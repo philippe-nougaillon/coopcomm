@@ -1,0 +1,35 @@
+<script>
+  var canvas = document.getElementById('signature-pad');
+  var signaturePad = new SignaturePad(canvas);
+  var signatureField = document.getElementById('cotation_signature');
+  var saveButton = document.getElementById('save');
+  var cancelButton = document.getElementById('clear');
+
+  // Active le bouton dès qu'il y a un trait, le grise/désactive quand c'est vide
+  function refreshSaveButton() {
+    var empty = signaturePad.isEmpty();
+    saveButton.disabled = empty;
+    // Gris quand vide, vert quand une signature est présente
+    saveButton.classList.toggle('btn-success', !empty);
+    saveButton.classList.toggle('text-white', !empty);
+    saveButton.classList.toggle('bg-slate-300', empty);
+    saveButton.classList.toggle('text-slate-500', empty);
+  }
+  ['pointerup', 'mouseup', 'touchend'].forEach(function (evt) {
+    canvas.addEventListener(evt, refreshSaveButton);
+  });
+  refreshSaveButton(); // état initial : vide → désactivé
+
+  saveButton.addEventListener('click', function (event) {
+    if (signaturePad.isEmpty()) {
+      event.preventDefault();
+    } else {
+      signatureField.setAttribute('value', signaturePad.toDataURL("image/svg+xml"));
+    }
+  });
+
+  cancelButton.addEventListener('click', function (event) {
+    signaturePad.clear();
+    refreshSaveButton(); // ré-efface → re-désactive le bouton
+  });
+</script>

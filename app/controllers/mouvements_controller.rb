@@ -4,6 +4,9 @@ class MouvementsController < ApplicationController
   before_action :set_mouvement, only: %i[show edit update destroy]
   before_action :is_user_authorized
 
+  # Défini la route du redirect
+  before_action :set_redirect_path, only: %i[new edit create update]
+
   # GET /mouvements or /mouvements.json
   def index
     @mouvements = current_organisation.mouvements
@@ -45,7 +48,7 @@ class MouvementsController < ApplicationController
 
     respond_to do |format|
       if @mouvement.save
-        format.html { redirect_to @mouvement.tool, notice: 'Mouvement créé avec succès.' }
+        format.html { redirect_to @redirect_to, notice: 'Mouvement créé avec succès.' }
         format.json { render :show, status: :created, location: @mouvement }
       else
         @tools = current_organisation.tools.ordered
@@ -66,7 +69,7 @@ class MouvementsController < ApplicationController
 
     respond_to do |format|
       if @mouvement.update(safe_params)
-        format.html { redirect_to @mouvement.tool, notice: 'Mouvement modifié avec succès.', status: :see_other }
+        format.html { redirect_to @redirect_to, notice: 'Mouvement modifié avec succès.', status: :see_other }
         format.json { render :show, status: :ok, location: @mouvement }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -100,7 +103,6 @@ class MouvementsController < ApplicationController
     date = Date.parse(params[:date])
 
     @tool.mouvements.create!(état: :réservé, date: date, user: current_user)
-
     redirect_back fallback_location: tools_path, notice: "Outil réservé le #{l date} avec succès."
   end
 
@@ -108,14 +110,32 @@ class MouvementsController < ApplicationController
     if params[:tool_id] && params[:date] && params[:user_id]
       # Seul un manager/admin peut libérer la réservation d'un autre utilisateur
       user_id = current_user.manager_or_admin? ? params[:user_id] : current_user.id
-      if mouvement = current_organisation.mouvements.find_by(tool_id: params[:tool_id], date: params[:date], user_id: user_id, état: "réservé")
-        mouvement.destroy
+
+      mouvement = current_organisation.mouvements.find_by(
+        tool_id: params[:tool_id],
+        date: params[:date],
+        user_id: user_id,
+        état: "réservé"
+      )
+
+      if mouvement
+        if mouvement.destroy
+          redirect_to tools_path, notice: "Outil libéré pour le #{l params[:date].to_date}."
+        else
+          redirect_to tools_path, alert: "L'outil n'a pas pu être libéré : #{mouvement.errors.full_messages.to_sentence}."
+        end
+      else
+        redirect_to tools_path, alert: "Il n'existe pas de réservation ce jour-là pour cet utilisateur."
       end
-      redirect_to tools_path, notice: "Outil libéré pour le #{l params[:date].to_date}."
     end
   end
 
   private
+
+  # Détermine de manière fiable la page vers laquelle rediriger l'utilisateur après le traitement du formulaire
+  def set_redirect_path
+    @redirect_to = params[:redirect_to].present? ? params[:redirect_to] : mouvements_path
+  end
 
   # Use callbacks to share common setup or constraints between actions.
   def set_mouvement

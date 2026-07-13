@@ -1,0 +1,155 @@
+# Registre des bugs signalés — CoopComm
+
+> **Source de vérité unique** des bugs détectés par l'agent (sessions de tests/audit), signalés mais **non corrigés** sans décision explicite. Chaque bug a un **parcours de reproduction** (point de vue utilisateur quand c'est possible). Tenir à jour : quand un bug est corrigé, le déplacer dans la section « Corrigés » avec le commit. Dernière re-vérification dans le code : **2026-07-10**.
+
+---
+
+## 🔴 Bugs ouverts
+
+### B1 — `temps_total` jamais recalculé à la sauvegarde (`calc_temps_total` inopérant)
+- **Où** : [intervention.rb:363-373](app/models/intervention.rb#L363-L373) (+ `before_save :calc_temps_total` à la ligne 52)
+- **Cause** : la méthode assigne une variable **locale** `temps_total` au lieu de `self.temps_total = …` → le callback `before_save` ne persiste rien. Le pointage QRCode fonctionne par accident (le contrôleur assigne la valeur à la main).
+- **Parcours de reproduction** :
+  1. En tant qu'**agent**, j'ouvre une intervention et je fais une **saisie de temps a posteriori** (formulaire : date/heure de début, de fin, pause).
+  2. J'enregistre → le champ `temps_total` en base reste `nil` (ou garde son ancienne valeur), alors que début/fin sont bien remplis.
+  3. Ensuite, en tant que **manager/admin**, sur le **dashboard**, la répartition du temps par agent et les totaux d'heures sont faux (cette intervention compte pour 0).
+- **Impact** : statistiques de temps fausses pour toute intervention saisie a posteriori.
+- **Trace test** : test `skip` documenté dans `test/models/intervention_pointage_test.rb` (session 2026-07-08-c) — passera au vert à la correction.
+- **Correctif proposé** : `self.temps_total = …` (et retirer le calcul manuel du contrôleur, ou le garder comme redondance inoffensive).
+
+### B2 — Prix du devis écrasé par le tarif courant à la création de la commande (décision métier à prendre)
+- **Où** : [create_commande_from_cotation.rb:19](app/services/create_commande_from_cotation.rb#L19) + `CommandeLigne#set_prix_from_prestation` ; symétrique dans `create_facture_from_commande.rb:19`
+- **Cause** : le service copie bien `prix_ht`/`total_ht` du devis, mais le callback de `CommandeLigne` les **écrase avec le tarif actuel** de la prestation (`total_ht` est de toute façon une colonne générée).
+- **Parcours de reproduction** (confirmé empiriquement le 2026-07-08) :
+  1. En tant que **manager**, je crée une cotation avec une prestation à **25,50 € HT** (3 unités → devis à 76,50 €). Je l'envoie, l'**adhérent la signe**.
+  2. Entre-temps, le **tarif de la prestation** est modifié à **40 € HT** (admin, écran Prestations).
+  3. Je crée la **commande depuis la cotation signée** → les lignes de commande affichent **40 €** : commande à **120 €** pour un devis signé à **76,50 €**.
+  4. Même mécanique de la commande vers la **facture**.
+- **Impact** : l'adhérent est facturé à un prix différent de celui qu'il a signé.
+- **À trancher (client)** : le prix contractuel est-il celui du devis signé (probable) ou le tarif courant ? Correctif technique trivial une fois tranché (ne pas écraser si `prix_ht` déjà renseigné). **Statut 2026-07-10 : en réflexion** — suivi comme **D1** dans `points-a-trancher.md`.
+
+### B3 — `valider`/`refuser` une intervention hors état → erreur 500
+- **Où** : [interventions_controller.rb:312-326](app/controllers/interventions_controller.rb#L312-L326)
+- **Cause** : `valider!` et `refuser!` sont appelés **sans garde `can_valider?`/`can_refuser?`** ni `rescue Workflow::NoTransitionAllowed` (contrairement à `terminer` et `archiver` qui sont protégés).
+- **Parcours de reproduction** (déduit, non exécuté) :
+  1. En tant qu'**adhérent** (ou manager), j'ouvre une intervention à l'état **terminé** et je clique **« Valider »** → OK, elle passe à `validé`.
+  2. Je fais **retour arrière** navigateur (ou j'avais l'onglet ouvert en double) et je re-clique **« Valider »** ou **« Refuser »** alors qu'elle n'est plus `terminé`.
+  3. → `Workflow::NoTransitionAllowed` non rescué → **page d'erreur 500**.
+- **Impact** : erreur brute au lieu d'un message « action impossible » ; du bruit dans les logs.
+- **Correctif proposé** : même motif que `terminer`/`archiver` (`if @intervention.can_valider? … else redirect_to … notice: "Impossible…"`).
+
+### B4 — Sujet du mail de panne malformé : `{title: "…"}`
+- **Où** : [notif_panne_job.rb:12-18](app/jobs/notif_panne_job.rb#L12-L18) vs `NotificationMailer#avertissement_reservation`
+- **Cause** : le job passe `title:` en **argument nommé**, mais le mailer attend `title` en **positionnel** → le hash devient le dernier paramètre positionnel et l'objet du mail rend littéralement `{title: "[COOPCOMM] L'outil X a été déclaré en panne"}`.
+- **Parcours de reproduction** :
+  1. En tant qu'**adhérent A**, je **réserve un outil** dans le magasin (clic sur une case du planning matériel) pour une date à venir.
+  2. En tant qu'**agent/manager**, je **déclare ce même outil en panne** (clic sur la case panne) — zone sensible `Mouvement`.
+  3. → `NotifPanneJob` envoie le mail d'avertissement au réserviste A : le corps est correct, mais l'**objet** du mail est le hash brut au lieu du texte.
+- **Impact** : cosmétique mais très visible (mail réel envoyé au client avec un sujet cassé).
+- **Correctif proposé** : aligner l'appel sur la signature (passer `title` en positionnel, ou convertir la signature en kwargs partout).
+
+### B5 — Mails de bienvenue d'import jamais tracés dans MailLog
+- **Où** : [welcome_import_notification_job.rb:15-16](app/jobs/welcome_import_notification_job.rb#L15-L16)
+- **Cause** : `MailLog.create` sans `organisation_id` (colonne **NOT NULL**) → le `create` (non-bang) échoue **en silence** ; le mail part, le log n'est jamais persisté.
+- **Parcours de reproduction** :
+  1. En tant qu'**admin**, j'**importe des utilisateurs** (import fichier) → chaque nouvel utilisateur reçoit bien son mail de bienvenue avec mot de passe.
+  2. Je vais sur l'écran **MailLog** (affichage livré en #354) → **aucune trace** de ces envois.
+- **Impact** : trou dans l'audit des envois ; impossible de prouver/déboguer qu'un utilisateur importé a reçu son accès.
+- **Correctif proposé** : dériver `organisation_id` (via l'organisation du user importé) + envisager `create!` pour ne plus échouer en silence.
+
+### B6 — `user.organisation =` → NoMethodError (code mort, piège à la réactivation)
+- **Où** : [user.rb:188](app/models/user.rb#L188) (`User.from_omniauth`) et [registrations_controller.rb:16](app/controllers/users/registrations_controller.rb#L16)
+- **Cause** : `organisation` est dérivé (`has_many :organisations, through: :services`) → **pas de writer** `organisation=` (vérifié : `respond_to?(:organisation=)` → false).
+- **Parcours de reproduction** (conditionnel — code mort aujourd'hui : `:registerable` et `:omniauthable` sont commentés dans Devise) :
+  1. Un développeur **réactive** l'inscription publique ou la connexion **Google OAuth**.
+  2. Un nouvel utilisateur s'inscrit / se connecte via Google → **crash 500 NoMethodError** à la création du compte.
+- **Impact** : nul aujourd'hui ; bloquant le jour où on réactive ces flux.
+- **Correctif proposé** : supprimer ces lignes ou affecter via un service (`user.services << …`).
+
+### B7 — Fixture `intervention_validé` invalide (test uniquement)
+- **Où** : [interventions.yml:43](test/fixtures/interventions.yml#L43)
+- **Cause** : écrite `adherent_id: weil` (raccourci non résolu par les fixtures — il faut `adherent: weil`) → `adherent_id` reste nil → enregistrement invalide.
+- **Reproduction** (pas de parcours utilisateur — donnée de test) : tout nouveau test qui tente une **transition workflow** sur cette fixture lève `ActiveRecord::RecordInvalid`.
+- **Impact** : piège pour les prochains tests ; aucune conséquence en prod.
+- **Correctif proposé** : `adherent: weil`.
+
+### B8 — Risque différé : notif `EmailSubscription` crashe sur les audits sans user (dormant, décision client 2026-06-23)
+- **Où** : `EmailSubscription#on_intervention_updated` (`intervention.audits.last.user_id` sans garde)
+- **Cause** : mesuré en dev, **599/902 audits** d'intervention ont `user_id` nil (jobs/imports sans `current_user`) et **166 interventions** ont leur *dernier* audit à `user_id` nil → `User.find(nil)` → `RecordNotFound`.
+- **Parcours de reproduction** (conditionnel — la souscription est **dormante**, décision client de ne pas y toucher) :
+  1. Un développeur **active** la notification « intervention mise à jour ».
+  2. N'importe quel utilisateur **modifie** une des 166 interventions dont le dernier audit n'a pas de user → **crash** de la mise à jour.
+- **Correctif à l'activation** : `User.find_by(id:)` + `return if user.nil?`.
+
+### B9 — Slug inconnu sur cotations/commandes/factures → erreur 500 au lieu de 404
+- **Où** : [commandes_controller.rb:149](app/controllers/commandes_controller.rb#L149), [factures_controller.rb:138](app/controllers/factures_controller.rb#L138), [cotations_controller.rb:187](app/controllers/cotations_controller.rb#L187)
+- **Cause** : `set_…` fait `find_by(slug:)` → `nil` sur un slug inconnu ; `is_user_authorized` fait alors `authorize(Commande)` sur la **classe**, et `CommandePolicy#manage?` évalue `record.organisation` → `NoMethodError` (**vérifié empiriquement le 2026-07-10** : `undefined method 'organisation' for class Commande`) → **500**. Même motif dans les trois contrôleurs.
+- **Parcours de reproduction** :
+  1. En tant que **manager**, j'ouvre une commande puis je modifie l'URL (`/commandes/nimporte-quoi`) — ou je suis un vieux lien vers une commande supprimée en dur / un slug régénéré.
+  2. → page d'erreur **500** au lieu d'un 404 « introuvable ».
+- **Impact** : erreur brute + bruit dans les logs pour un simple lien mort ; surface triviale à déclencher.
+- **Trace test** : test `skip` documenté dans `test/controllers/commandes_controller_test.rb` (« slug inconnu : devrait renvoyer 404 — bug B9 ») — passera au vert à la correction.
+- **Correctif proposé** : `find_by!(slug:)` (ou `friendly.find`) pour lever `ActiveRecord::RecordNotFound` → 404 standard, dans les trois contrôleurs.
+
+### B10 — Tests « création à postériori » échouent quand la suite tourne entre 14 h et 15 h (test uniquement)
+- **Où** : fixture `intervention_fille` ([interventions.yml:88](test/fixtures/interventions.yml#L88), `début: <%= 4.hours.ago %>`, `fin` NULL, agent **martin**) × les 2 tests « à postériori » de [interventions_controller_test.rb:164](test/controllers/interventions_controller_test.rb#L164) et [:483](test/controllers/interventions_controller_test.rb#L483)
+- **Cause** : la fixture est ancrée sur l'**heure réelle** (début = maintenant − 4 h), alors que les 2 tests se placent à **midi fixe** (`travel_to Time.current.middle_of_day`) et créent une intervention **[10 h, 11 h]** pour le **même agent martin**. Si la suite est lancée entre **14 h et 15 h**, `maintenant − 4 h` tombe dans [10 h, 11 h] → le contrôle de disponibilité **#357** refuse *à raison* → `Intervention.count` ne bouge pas → **2 échecs** (vérifié le 2026-07-10 à 14 h 57, échec reproduit **sans** aucune modification locale ; vert en dehors de la fenêtre). Le correctif du 2026-07-09 (« 4 h ago ») protégeait les pointages créés « maintenant », pas ces tests ancrés à midi.
+- **Reproduction** : lancer `bundle exec rails test test/controllers/interventions_controller_test.rb` entre 14 h 00 et 15 h 00.
+- **Impact** : test uniquement — flakiness dépendante de l'heure de lancement (CI ou local).
+- **Correctif proposé** : désolidariser les acteurs — utiliser un **autre agent que martin** dans les 2 tests à postériori — ou ancrer la fixture sur une **heure absolue** hors de la fenêtre (ex. `Time.current.middle_of_day - 5.hours`).
+
+### B11 — Un pointage peut porter des dates prévues (héritées de la mère ou saisies au formulaire) — l'invariant « pointage = dates réelles uniquement » n'est pas garanti
+- **Signalé par** : PE, 2026-07-13 (« il ne faut pas que l'on puisse mettre des dates prévues sur une intervention de pointage ») ; instruit et confirmé par l'agent. Généralise la condition 4 de **R1**.
+- **Où** : [intervention.rb:342-357](app/models/intervention.rb#L342-L357) (`create_next_intervention` : `dup` de la mère sans remise à nil de `début_prévue`/`fin_prévue`) ; [_form.html.erb:63](app/views/interventions/_form.html.erb#L63) (les champs prévus s'affichent si `!repeter` — or une fille a `repeter: false`) ; [interventions_controller.rb:569-570](app/controllers/interventions_controller.rb#L569-L570) (`intervention_params` permet `début_prévue`/`fin_prévue` pour tous les rôles).
+- **Cause** : deux chemins indépendants. (1) **Héritage** : le `dup` copie les dates prévues de la mère — **vérifié empiriquement le 2026-07-13** (`m.dup.fin_prévue` non nil) ; 4 mères en base de dev en portent (dont la #311 « test pointage avec dates prévues » — aucune n'a encore de fille, d'où l'absence du cas en base). (2) **Édition** : le formulaire d'édition d'une fille affiche les champs prévus et le contrôleur les accepte.
+- **Précision 2026-07-13 (PE)** : la création d'une mère passe aujourd'hui par le **flux dédié** `new_intervention_modele_pointage` ([interventions_controller.rb:477-480](app/controllers/interventions_controller.rb#L477-L480)) qui force `repeter = true` avant le rendu → champs prévus masqués, et **aucune case « répéter »** ne subsiste dans les vues (vérifié). Donc **plus aucune mère neuve ne peut recevoir de dates prévues via l'UI**. Les vecteurs restants : (a) **mères historiques** créées avant ce flux — elles gardent leurs dates prévues et l'UI ne permet plus de les retirer (champs masqués à l'édition d'une mère) → à nettoyer en données (prod) ; (b) **édition d'une fille** (chemin formulaire ci-dessus) ; (c) requête forgée — `intervention_params` permet toujours `début_prévue`/`fin_prévue`/`repeter` sur tous les flux, y compris `create_intervention_modele_pointage`.
+- **Parcours de reproduction** (via une mère historique ou une fille éditée) :
+  1. Une **mère antérieure au flux dédié** porte encore des dates prévues (l'UI ne permet plus de les voir ni de les retirer).
+  2. En tant qu'**agent**, je **scanne le QR** de cette mère → la fille naît avec `fin_prévue` héritée.
+  3. Conséquences : (a) `pointage_ouvert?` (= `effective_fin.blank?`, [intervention.rb:99-101](app/models/intervention.rb#L99-L101)) est **faux** → la garde `agents_must_not_have_open_pointage` est **contournée** (à la fois comme déclencheur et comme conflit détectable — cf. R1.4) ; (b) `agents_must_be_available` (via `OVERLAP_SQL` sur les plages **effectives**) considère l'agent occupé de son **début réel** jusqu'à la **fin_prévue de la mère** — potentiellement des semaines (ex. mère #278 : 21/05 → 18/06) → toute autre intervention de l'agent sur la fenêtre est refusée.
+- **Impact** : garde anti-double-pointage neutralisée + faux conflits de disponibilité massifs, dès qu'une mère à dates prévues est scannée.
+- **Correctif proposé** : imposer l'invariant à la source — `début_prévue = nil` / `fin_prévue = nil` dans `create_next_intervention` ; en ceinture-bretelles, validation interdisant les dates prévues quand `template_slug` est présent (couvre aussi le chemin formulaire). **Une fois l'invariant garanti**, le `.where(fin_prévue: nil)` de `agents_must_not_have_open_pointage` ([intervention.rb:271](app/models/intervention.rb#L271)) devient effectivement redondant (le conserver reste inoffensif et cohérent avec `pointage_ouvert?`).
+- **Statut 2026-07-13 (mis à jour) : périmètre tranché par PE.**
+  - **Données prod nettoyées** (confirmé PE) : plus aucune mère historique avec dates prévues → le vecteur « héritage via `dup` » est neutralisé (flux dédié `new_intervention_modele_pointage` pour les mères neuves + données propres). Le reset dans `create_next_intervention` est jugé inutile.
+  - **Inventaire complet des écritures vérifié par l'agent** : aucune assignation programmatique de `début_prévue`/`fin_prévue` dans le code — seule voie = mass assignment `intervention_params`. Le **seul chemin restant** est donc le formulaire d'édition d'une fille.
+  - **Décision équipe (probable)** : retirer les champs prévus du formulaire d'édition d'une **fille** (`template_slug` présent — ⚠ la condition [_form.html.erb:63](app/views/interventions/_form.html.erb#L63) est `!repeter`, vraie pour une fille → ajouter `template_slug.blank?`). Les **params ne seront probablement pas filtrés** — risque « requête forgée » **accepté explicitement par PE** (utilisateurs internes non malveillants).
+  - **Conséquence sur `.where(fin_prévue: nil)`** ([intervention.rb:271](app/models/intervention.rb#L271)) : une fois les champs retirés du formulaire, la condition devient **morte en pratique** et pourra être retirée sans changement de comportement (`pointage_ouvert?` n'a pas besoin de bouger : `effective_fin` ≡ `fin` pour une fille sans dates prévues). Rappel : cette condition ne protégeait de rien — elle **excluait** au contraire des conflits une fille porteuse de `fin_prévue` (cohérence avec `pointage_ouvert?`, pas une garde).
+  - **Reste à faire** : le retrait effectif des champs (équipe) ; ce bug passera en « corrigé » à ce moment-là.
+
+---
+
+## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
+
+### R1 — Pointage : une fille de la veille non terminée ferait pointer une NOUVELLE intervention au lieu de terminer la sienne
+- **Signalé par** : PE, 2026-07-10 (point sensible vécu/craint sur la page d'accueil).
+- **Scénario redouté** : un agent oublie de clôturer son pointage ; la fille reste `nouveau` avec `fin` nil. Le lendemain, il re-scanne le QR de la mère → `User#find_current_intervention` ([user.rb:350](app/models/user.rb#L350)) filtre sur `DATE(début) = Date.today` → ne trouve **pas** la fille de la veille → `interventions_controller#pointer` ([interventions_controller.rb:365](app/controllers/interventions_controller.rb#L365)) crée une **nouvelle** fille (« Début de journée enregistré ! ») au lieu de terminer l'ancienne, qui reste ouverte à jamais.
+- **Statut 2026-07-10 : NON reproductible — vérifié empiriquement** (simulation en transaction annulée, cas avec et sans `fin_prévue` héritée de la mère) : la création de la nouvelle fille est **refusée** dans les deux cas. Deux gardes indépendantes :
+  1. **Clôture nocturne** : tâche Hatchbox `interventions:terminer_pointages` (22h) → `TerminerPointagesJob` termine toutes les filles `nouveau` avec `début` → normalement aucune fille ne survit à la nuit.
+  2. **Validation #357** (commit `89b12a76`) : `agents_must_not_have_open_pointage` ([intervention.rb:262](app/models/intervention.rb#L262)) interdit un 2e pointage ouvert pour l'agent → même si une fille survit, le scan du lendemain est **refusé avec un message explicite** au lieu de créer en silence.
+- **⚠ Conditions qui rendraient le bug à nouveau faisable — à re-vérifier si l'une survient** :
+  1. **Suppression/affaiblissement** de `agents_must_not_have_open_pointage` (tentant si des agents se plaignent d'être bloqués par une fille orpheline) **combiné** à une nuit sans clôture.
+  2. **Tâche Hatchbox bloquée** (précédent vécu : une seule expression cron invalide bloque TOUTES les tâches) — la garde 2 empêche alors le bug silencieux mais l'agent est **bloqué** (voir effet de bord ci-dessous).
+  3. `TerminerPointagesJob` **rescue par enregistrement** : si `terminer!` échoue sur une fille (ex. conflit #357 à 22h — cas déjà vu en test), elle survit à la nuit.
+  4. **Fille héritant `fin_prévue`** : `create_next_intervention` fait un `dup` de la mère **sans remettre `fin_prévue`/`début_prévue` à nil** → `pointage_ouvert?` (= `effective_fin.blank?`) devient faux et la garde dédiée est **contournée** ; seul `OVERLAP_SQL` bloque alors (vérifié bloquant aujourd'hui, mais via un intervalle inversé — protection moins intentionnelle). Toute retouche de `create_next_intervention`, `effective_fin` ou `OVERLAP_SQL` mérite un re-test de ce scénario.
+- **Effet de bord actuel (pas le bug signalé, mais à connaître)** : un agent avec une fille orpheline **ne peut plus pointer du tout** (le scan ne peut ni la terminer — filtre « aujourd'hui » — ni en créer une nouvelle — garde #357) jusqu'à la clôture de 22h ou une intervention manuelle du manager.
+- **Décision client 2026-07-10** : on ne code rien tant que le cas n'est pas reproductible ; l'agent doit **re-signaler ce risque** si un changement dans cette zone le rend faisable.
+
+---
+
+## ✅ Bugs corrigés (historique)
+
+| Bug | Corrigé | Référence |
+|---|---|---|
+| Filtre **Statut** de l'index interventions cassé (select multiple → `to_s.downcase` ne matchait rien) | 2026-06-23 | commit `a9f23e82` |
+| Fixture `tonte_locaux` : `workflow_state: "Validé"` (capitale) | 2026-06-23 | commit `a9f23e82` |
+| `NotifAdherentCommandeEnvoyeeJob` : `MailLog` avec `commande_id` inexistant → `UnknownAttributeError` | ~2026-07 | réécriture #330 (Alexandre Meunier) |
+| `notif_panne` : `MailLog.to` recevait un **ID** au lieu de l'email | ~2026-07 | commit `b32fbf28` (client) |
+| Jobs managers : `intervention.organisation_id` / `manager.organisation_id` inexistants (dérivation via service) | 2026-07-01 | 4 jobs corrigés, session `/tests` |
+| Pré-filtre services des index (#309/#311) + matrice finale admin/manager | 2026-06-23 | sessions filtres, committé côté client |
+
+---
+
+## Comment s'en servir
+- **Retrouver la liste** : ouvrir ce fichier, ou demander à l'agent « ressors-moi les bugs ouverts » (il connaît ce registre via sa mémoire).
+- **À chaque nouveau bug signalé** : l'ajouter ici avec son parcours de reproduction, et référencer `Bn` depuis CLAUDE.md.
+- **À chaque correction** : déplacer la ligne dans « Corrigés » avec le commit, et mettre à jour CLAUDE.md.

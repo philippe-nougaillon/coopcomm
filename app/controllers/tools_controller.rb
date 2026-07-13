@@ -7,8 +7,10 @@ class ToolsController < ApplicationController
   # GET /tools or /tools.json
   def index
     params[:date] = Date.today if params[:date].blank?
-    @date = params[:date].to_date
-    @date_fin = @date + 13.day
+    fecha_base = params[:date].to_date
+
+    @date = fecha_base.beginning_of_week # Ce sera toujours le lundi.
+    @date_fin = fecha_base.end_of_week   # Ce sera toujours le dimanche.
     @tools = current_organisation.tools.ordered
     @types = Tool.icons
     # @états = Mouvement.états.keys
@@ -100,7 +102,7 @@ class ToolsController < ApplicationController
   # Only allow a list of trusted parameters through.
   def tool_params
     params.require(:tool).permit(:name, :description, :icon_name, :modèle, :marque, :photo,
-                                 documents_attributes: %i[id category workflow_state fichier])
+                                 documents_attributes: %i[id category fichier _destroy])
   end
 
   def is_user_authorized

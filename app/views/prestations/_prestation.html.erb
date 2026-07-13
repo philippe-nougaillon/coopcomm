@@ -1,49 +1,51 @@
 <tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
-  <td class="px-4 py-3 uppercase text-primary font-semibold text-lg max-w-[120px] truncate">
-  <%= prestation.code %>
-</td>
-  <td class="px-4 py-3 text-sm font-semibold capitalize"><%= prestation.libellé %></td>
-  <td class="px-4 py-3 text-sm text-success font-semibold "><%= prestation.catégorie %></td>
-
-
-
-  <td class="px-4 py-3 text-sm">
-  <% sous = prestation.sous_catégorie %>
-
-  <% if sous.present? %>
-    <span class=" text-slate-600 whitespace-nowrap">
-      <%= sous %>
+  <td class="px-4 py-1.5 uppercase text-primary font-bold text-sm max-w-[180px] truncate">
+    <%= prestation.code %>
+  </td>
+  <td class="px-4 py-1.5 text-sm font-semibold capitalize"><%= prestation.libellé %></td>
+  <td class="px-4 py-1.5 text-sm text-center ">
+    <% if prestation.catégorie.present? %>
+      <span class="text-success font-semibold whitespace-nowrap">
+        <%= prestation.catégorie %>
+      </span>
+    <% else %>
+      <span class="text-success font-semibold flex justify-center whitespace-nowrap">
+        <%= embedded_svg "icons/check_indeterminate_small.svg",
+       title: "Aucun sous catégorie" %>
+      <% end %>
     </span>
-  <% else %>
-    <%= embedded_svg "icons/check_indeterminate_small.svg", title: "Aucun mot-clé" %>
-  <% end %>
-</td>
-
-
-  
-
-
-
-
-  <td class="px-4 py-3 text-sm capitalize"><%= prestation.unité %></td>
-  <td class="px-4 py-3 text-sm text-center">
+  </td>
+  <td class="px-4 py-1.5 text-sm text-center ">
+    <% sous = prestation.sous_catégorie %>
+    <% if sous.present? %>
+      <span class="text-slate-600 whitespace-nowrap">
+        <%= sous %>
+      </span>
+    <% else %>
+      <span class="text-slate-600 flex justify-center whitespace-nowrap">
+        <%= embedded_svg "icons/check_indeterminate_small.svg",
+       title: "Aucun sous catégorie" %>
+      <% end %>
+    </span>
+  </td>
+  <td class="px-4 py-1.5 text-sm capitalize text-center"><%= prestation.unité %></td>
+  <td class="px-4 py-1.5 text-sm text-center">
     <%= number_to_currency(prestation.tarif) %>
   </td>
   <td>
-    <div class="px-4 py-3 flex flex-row items-center gap-2 ">
+    <div class="px-4 py-1 flex flex-row items-center gap-2">
       <% if policy(prestation).edit? %>
-        <%= link_to edit_prestation_path(prestation), class: "btn" do %>
-          <%= embedded_svg "icons/edit.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
-            Modifier
-          <% end %>
+        <%= link_to edit_prestation_path(prestation), class: "btn btn-sm btn-ghost hover:!border-gray-700" do %>
+          <%= embedded_svg "icons/edit.svg", class: "w-4 h-4 fill-current transition-colors duration-200" %>
+          Modifier
+        <% end %>
       <% end %>
       <% if policy(prestation).destroy? %>
         <button
-          class="btn btn-soft btn-error" onclick="delete_prestation_modal_<%= prestation.id %>.showModal()">
-           <%= embedded_svg "icons/delete.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
-            Supprimer
-          </button>
-        <!-- MODAL -->
+        class="btn btn-sm btn-ghost text-error border border-transparent hover:!bg-error/20 hover:!border-error/40" onclick="delete_prestation_modal_<%= prestation.id %>.showModal()">
+          <%= embedded_svg "icons/delete.svg", class: "w-4 h-4 fill-current transition-colors duration-200" %>
+          Supprimer
+        </button>
         <dialog id="delete_prestation_modal_<%= prestation.id %>" class="modal">
           <div class="modal-box">
             <form method="dialog">
@@ -64,8 +66,8 @@
                 <button class="btn btn-ghost">Annuler</button>
               </form>
               <%= button_to prestation_path(prestation),
-                    method: :delete,
-                    class: "btn btn-error text-white" do %>
+                  method: :delete,
+                  class: "btn btn-error text-white" do %>
                 Oui, supprimer
               <% end %>
             </div>

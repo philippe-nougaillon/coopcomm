@@ -4,6 +4,7 @@ class UsersController < ApplicationController
   before_action :set_user, only: %i[show edit update destroy inviter edit_password update_password]
   # la méthode reactivate a tout de même un authorize
   before_action :is_user_authorized, except: %i[reactivate]
+  # Déclaré dans application_controller.rb
   before_action :set_users_tags, only: %i[new create edit update]
 
   require 'capture_stdout'
@@ -43,7 +44,7 @@ class UsersController < ApplicationController
       end
 
       format.xls do
-        xls_file = AgentsToXls.new(@users.agent).call
+        xls_file = ExportToXls::Agents.call(@users.agent)
         send_data xls_file, filename: "Agents_#{l Date.today}.xls"
       end
     end
@@ -54,11 +55,33 @@ class UsersController < ApplicationController
     # TODO : Stale à mettre au plus proche du render
     # if stale?(@user)
     @absences = @user.absences.ordered
-    @audits = @user.own_and_associated_audits.reorder(id: :desc)
+    
+    all_audits = @user.own_and_associated_audits.reorder(id: :desc).to_a
 
-    @pagy, @audits = pagy(@audits, items: 10)
-    # end
+    filtered_audits = all_audits.reject do |audit|
+      if audit.auditable_type == 'User'
+        changes = audit.audited_changes
+        
+        is_only_cookie = changes.keys == ['remember_created_at'] && changes['remember_created_at']&.first.nil?
+
+        is_technical_cleanup = changes.key?('discarded_at') && changes.key?('remember_created_at') && changes['remember_created_at']&.last.nil?
+
+        is_only_cookie || is_technical_cleanup
+      else
+        false
+      end
+    end
+
+    page_number = [params[:page].to_i, 1].max
+    items_per_page = 10
+    
+    @audits = filtered_audits.slice((page_number - 1) * items_per_page, items_per_page) || []
+    
+    @pagy = Pagy.new(count: filtered_audits.size, page: page_number, items: items_per_page)
   end
+
+
+
 
   # GET /users/new
   def new
@@ -79,6 +102,7 @@ class UsersController < ApplicationController
     respond_to do |format|
       if @user.save
         @user.invite!(current_user)
+        session.delete(:return_to)
         format.html { redirect_to user_url(@user), notice: 'Utilisateur créé avec succès.' }
         format.json { render :show, status: :created, location: @user }
       else
@@ -138,10 +162,14 @@ class UsersController < ApplicationController
   def agent_calendrier
     params[:vue] ||= 'calendrier'
     params[:date] = Date.today if params[:date].blank?
-    @date = params[:date].to_date
+    
+    fecha_base = params[:date].to_date
+    @date = fecha_base.beginning_of_week 
+    @date_fin = fecha_base.end_of_week   
+
     @services = current_user.services
     @agents = User.by_service(params[:service].presence || @services).agent
-
+    
     if params[:search].present?
       @agents = @agents.where('users.nom ILIKE :search OR users.prénom ILIKE :search OR users.email ILIKE :search',
                               { search: "%#{params[:search]}%" })
@@ -156,7 +184,7 @@ class UsersController < ApplicationController
     #   @agents = @agents.where(id: agent_ids)
     # end
 
-    @date_fin = @date + 13.day
+    @date_fin = @date + 6.day
 
     # ✅ V2 : optimisation N+1
     @agents = @agents.with_attached_profile_picture
@@ -169,7 +197,7 @@ class UsersController < ApplicationController
 
   def import_do
     if params[:upload].present?
-      @mdp = ''
+      @mdp = +'' # String mutable (le fichier est en frozen_string_literal) : on y concatène les mots de passe générés
       @success_logs = [] # Utilisateurs traités avec succès
       @error_logs   = [] # Utilisateurs en erreur
 
@@ -338,7 +366,7 @@ class UsersController < ApplicationController
 
   def update_password
     respond_to do |format|
-      if @user.update(user_params)
+      if @user.update(password_params)
         bypass_sign_in(@user) if @user == current_user
         format.html { redirect_to user_url(@user), notice: 'Mot de passe modifié avec succès.' }
         format.json { render :show, status: :ok, location: @user }
@@ -348,6 +376,7 @@ class UsersController < ApplicationController
       end
     end
   end
+
 
   def reactivate
     @user = User.unscoped.find_by(slug: params[:id])
@@ -390,6 +419,10 @@ class UsersController < ApplicationController
 
     permitted
 
+  end
+
+  def password_params
+    params.require(:user).permit(:password, :password_confirmation)
   end
 
   def is_user_authorized

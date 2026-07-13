@@ -1,4 +1,4 @@
-<div onclick="modal_<%= forecast_counter %>.showModal()" class="flex flex-col flex-1 justify-around items-center text-center bg-base-100 p-2 hover:cursor-pointer rounded-xl" title="Voir plus d'informations sur la météo du <%= l(forecast["datetime"].to_date, format: :day) %>">
+<div onclick="modal_<%= forecast_counter %>.showModal()" class="flex flex-col flex-1 justify-around items-center text-center border border-slate-200 bg-base-100 p-2 hover:cursor-pointer rounded-xl" title="Voir plus d'informations sur la météo du <%= l(forecast["datetime"].to_date, format: :day) %>">
   <div class="flex flex-col">
     <span class="text-md"><%= l(forecast["datetime"].to_date, format: :day) %></span>
     <span class="hidden sm:block text-gray-700 text-sm"><%= forecast["datetime"].to_time.strftime("%H:%M") %></span>
