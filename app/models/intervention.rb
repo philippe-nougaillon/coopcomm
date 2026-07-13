@@ -50,6 +50,8 @@ class Intervention < ApplicationRecord
 
   before_save -> { self.temps_de_pause = 0 if temps_de_pause.nil? }
   before_save :calc_temps_total
+  
+  after_commit :update_heures_consommees_convention, if: -> { self.temps_total.present? }
 
   scope :ordered, -> { order(updated_at: :desc) }
 
@@ -461,6 +463,42 @@ class Intervention < ApplicationRecord
 
   def intervention_mère
     Intervention.find_by(slug: template_slug)
+  end
+
+  def update_heures_consommees_convention
+    associated_convention = Convention
+                        .where("date_début <= ? AND date_fin_prévue >= ?", self.début, self.début)
+                        .find_by(user_id: self.adherent_id, service_id: self.service_id)
+
+    if associated_convention.present?
+      last_audit = self.audits.last
+
+      # Si la dernière modification contient le temps_total, on met à jour le nombre d'heures consommees de la convention associé à l'intervention
+      if last_audit.audited_changes["temps_total"]
+        new_temps_total = extract_temps_total_depending_on_audit(last_audit)
+
+        associated_convention.heures_consommees += new_temps_total
+        associated_convention.save(validate: false)
+      end
+    end
+  end
+
+  # Retourne le temps total à ajouter en fonction de l'action en cours (un nombre pour create et destroy, un array pour un update)
+  def extract_temps_total_depending_on_audit(last_audit)
+    temps_total_audit = last_audit.audited_changes["temps_total"]
+    
+    # Dans le cas d'un create, on ajoute la valeur
+    if last_audit.action == "create" && temps_total_audit.is_a?(Numeric)
+      temps_total_audit
+    # Dans le cas d'un destroy, on enleve la valeur
+    elsif last_audit.action == "destroy" && temps_total_audit.is_a?(Numeric)
+      temps_total_audit * (-1)
+    # Dans le cas d'un update, on ajoute la différence entre l'ancienne (first) et la nouvelle valeur (last)
+    elsif last_audit.action == "update" && temps_total_audit.is_a?(Array)
+      (temps_total_audit.last - temps_total_audit.first)
+    else
+      0
+    end
   end
 
   private

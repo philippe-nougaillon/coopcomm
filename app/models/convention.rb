@@ -34,14 +34,10 @@ class Convention < ApplicationRecord
     end
   end
 
-  def temps_total_interventions
-    # Si les dates sont vides dans les fixtures ou les tests, on retourne 0 immédiatement.
-    return 0 if date_début.blank? || date_fin_prévue.blank?
-
+  def interventions
     Intervention
-            .where(adherent_id: user_id, service_id: service_id)
-            .where(début: date_début.beginning_of_day..date_fin_prévue.end_of_day)
-            .sum(:temps_total)
+        .where(adherent_id: user_id, service_id: service_id)
+        .where(début: date_début.beginning_of_day..date_fin_prévue.end_of_day)
   end
 
   private
