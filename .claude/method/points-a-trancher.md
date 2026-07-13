@@ -19,10 +19,6 @@
 - **Question** : quand (si) on active la notif « intervention mise à jour », valider le correctif préalable (`User.find_by` + garde nil) — 166 interventions crasheraient sinon.
 - **Contexte** : fonctionnalité dormante, décision client du 2026-06-23 de ne pas y toucher d'ici là.
 
-### D4 — Notifier quelqu'un quand un adhérent refuse une cotation ? (constat du 2026-07-10)
-- **Question** : aujourd'hui **personne n'est prévenu** au refus d'une cotation (`cotations_controller#refuser` fait la transition sans effet de bord, aucun job « cotation refusée » n'existe) — alors que la **signature** notifie le créateur (`NotifCotationSigneeJob`). Depuis #358, un adhérent peut refuser seul → le manager ne le découvre qu'en consultant l'index. Faut-il un mail au créateur (miroir de la signature) ?
-- **Correctif proposé si oui** : job `NotifCotationRefuseeJob` calqué sur `NotifCotationSigneeJob` (créateur retrouvé via l'audit `create`), déclenché depuis `refuser` via le bloc de `transition!`.
-
 ### D5 — Workflow de validation des documents d'outil : supprimé ou en pause ? (constat du 2026-07-10)
 - **Question** : la refonte UX (Dani Isaza, commits `3ae4f02e` du 2026-07-02 « UX - corriger github actions » et `42085022` du 2026-07-03 « UX - solution github ») a **désactivé toute la fonctionnalité** valider/refuser des documents d'outil : actions commentées dans `documents_controller.rb`, routes commentées (`resources :documents, only: %i[]`), workflow commenté dans `document.rb`, boutons retirés du partial `_document.html.erb` (colonne État vide). Le formulaire outil est passé des nested attributes (fichier + état par document) à une **dropzone unique** `form.file_field :documents`. Est-ce une suppression **assumée** de la fonctionnalité, ou un débranchement **temporaire** pour faire passer la CI (les noms de commits le suggèrent) ?
 - **Conséquence immédiate** : les 3 system tests de `test/system/documents_test.rb` échouaient (ils testent l'UI disparue) → **commentés le 2026-07-13** (décision client : « pour l'instant on ne l'utilise pas ») avec renvoi vers ce point. À trancher avec Dani : si suppression assumée → supprimer le fichier de test ; si temporaire → réactiver la fonctionnalité et décommenter/adapter les tests.
@@ -56,4 +52,4 @@
 
 | Point | Décision | Date |
 |---|---|---|
-| — | — | — |
+| D4 — Notifier quelqu'un quand un adhérent refuse une cotation ? | **Non, personne pour l'instant** (décision équipe rapportée par PE) ; à revoir plus tard. Le correctif reste noté si ça change : job `NotifCotationRefuseeJob` miroir de `NotifCotationSigneeJob` (créateur via l'audit `create`), branché sur le bloc de `transition!` de `cotations_controller#refuser`. | 2026-07-13 |
