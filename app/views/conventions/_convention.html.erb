@@ -24,7 +24,7 @@
     </div>
  </td>
   <td class="px-4 py-3 text-nowrap text-sm">
-    <%= convention.temps_total_interventions.round(1) %> h / <%= convention.heures_conventionnees %> h (<%= prog[:indicateur] %>%)
+    <%= convention.heures_consommees.round(1) %> h / <%= convention.heures_conventionnees %> h (<%= prog[:indicateur] %>%)
   </td>
   <td class="px-4 py-3 text-base">
     <% if convention.document.attached? %>
