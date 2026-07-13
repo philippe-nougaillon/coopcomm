@@ -116,6 +116,18 @@
   - **Conséquence sur `.where(fin_prévue: nil)`** ([intervention.rb:271](app/models/intervention.rb#L271)) : une fois les champs retirés du formulaire, la condition devient **morte en pratique** et pourra être retirée sans changement de comportement (`pointage_ouvert?` n'a pas besoin de bouger : `effective_fin` ≡ `fin` pour une fille sans dates prévues). Rappel : cette condition ne protégeait de rien — elle **excluait** au contraire des conflits une fille porteuse de `fin_prévue` (cohérence avec `pointage_ouvert?`, pas une garde).
   - **Reste à faire** : le retrait effectif des champs (équipe) ; ce bug passera en « corrigé » à ce moment-là.
 
+### B13 — Branche `dashboard-scenic` : le filtre #292 opère sur les cellules pré-agrégées, pas par intervention (un négatif peut être « netté » au lieu d'exclu)
+- **Signalé le** : 2026-07-13 (même session). **Spécifique à `dashboard-scenic`** — staging filtre au grain intervention.
+- **Où** : tous les `where("temps_total >= 0")` de [dashboard_data.rb](app/controllers/concerns/dashboard_data.rb) — ils s'appliquent aux lignes des vues matérialisées : grain **(org, service, adhérent, mois, statut)** pour les stats interventions, grain **(org, agent)** pour le temps par agent.
+- **Cause** : une vue matérialisée ne stocke que des sommes par cellule. Si une cellule mélange +8 h et −3 h, elle vaut 5 ≥ 0 → elle **passe** le filtre et le −3 est compté (staging strict : 8). Si le net d'une cellule/d'un agent est négatif, **tout** est exclu, y compris la part positive (staging : la part positive reste).
+- **Statut de la décision** : le volet **grain agent** a été **acté par PE le 2026-07-13** (résolution du conflit de merge, « approximation au grain agent »). Le volet **grain cellule** (stats interventions) n'a pas été discuté explicitement — même nature, porté à connaissance ici.
+- **Parcours de reproduction** :
+  1. Un adhérent a, le **même mois**, sur le **même service** et au **même statut**, une intervention à +8 h et une à −3 h.
+  2. Dashboard manager → le KPI « temps total » compte **5 h** pour ce mois (au lieu de 8 h avec le #292 strict).
+- **Impact** : faible tant que les temps négatifs restent rares (un seul connu en prod) ; l'écart ne se voit que si positif et négatif cohabitent dans la même cellule.
+- **Trace test** : 2 tests « ÉPINGLAGE B13 » dans `test/controllers/dashboard_temps_negatif_test.rb` figent le comportement actuel (net agent 9−5=4 ; cellule 8−3=5) — **à inverser** si le grain intervention est finalement retenu.
+- **Correctif proposé (si l'exactitude est voulue)** : ajouter aux deux vues une colonne `temps_total_positif` (`SUM(CASE WHEN temps_total >= 0 THEN temps_total ELSE 0 END)` — au grain intervention, donc exact) et faire pointer les calculs de temps du concern dessus ; les `where` disparaissent. Migration Scenic `update_view` (⚠ piège connu : ne pas ré-ajouter les index à la main).
+
 ---
 
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
@@ -146,6 +158,7 @@
 | `notif_panne` : `MailLog.to` recevait un **ID** au lieu de l'email | ~2026-07 | commit `b32fbf28` (client) |
 | Jobs managers : `intervention.organisation_id` / `manager.organisation_id` inexistants (dérivation via service) | 2026-07-01 | 4 jobs corrigés, session `/tests` |
 | Pré-filtre services des index (#309/#311) + matrice finale admin/manager | 2026-06-23 | sessions filtres, committé côté client |
+| **B12** — filtre #292 absent de `temps_par_adherent` (un temps négatif entamait le total par adhérent du dashboard) | 2026-07-13 | branche `dashboard-scenic` (demande PE, session /tests) : `.where("temps_total >= 0")` ajouté — hérite de la limite de grain **B13** ; ⚠ `staging` reste bogué jusqu'à la fusion (son `dashboard_data.rb` sera remplacé par la version Scenic) ; test ex-`skip` passé au vert dans `dashboard_temps_negatif_test.rb` |
 
 ---
 

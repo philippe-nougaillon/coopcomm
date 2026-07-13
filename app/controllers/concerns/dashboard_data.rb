@@ -72,6 +72,7 @@ module DashboardData
   def temps_par_adherent(users)
     adherents = users.adhérent
     totals = DashboardInterventionStat.where(adherent_id: adherents.select(:id))
+                                      .where("temps_total >= 0")
                                       .group(:adherent_id).sum(:temps_total)
     adherents.each_with_object({}) do |adherent, hash|
       hash[adherent.nom_prénom] = totals[adherent.id] || 0
