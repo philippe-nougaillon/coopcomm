@@ -108,7 +108,7 @@
 
 **Périmètre de l'agent pour ce projet** —
 - Dossiers autorisés : tout le repo `coopcomm` (lecture/édition).
-- **Autonomie accordée** (session 2026-06-05) : édition de fichiers et `git commit` **en local** autorisés. **Interdits sans accord explicite** : `git push`, `reset --hard`, exécution de migration (`db:migrate`/`rollback`), déploiement, envoi réel de mail/SMS/WhatsApp, toute action touchant la base de prod ou les APIs tierces (Mailgun/Twilio/OpenAI/Mistral/AWS).
+- **Autonomie accordée** (session 2026-06-05, **révisée 2026-07-13**) : édition de fichiers autorisée. **`git commit` n'est plus exécuté par l'agent** : quand des modifications sont prêtes, il **propose un message de commit** (format `#<issue> : description`) et c'est PE qui committe. **Interdits sans accord explicite** : `git push`, `reset --hard`, exécution de migration (`db:migrate`/`rollback`), déploiement, envoi réel de mail/SMS/WhatsApp, toute action touchant la base de prod ou les APIs tierces (Mailgun/Twilio/OpenAI/Mistral/AWS).
 - Connecteurs MCP : aucun pour l'instant.
 - Voir `methode-evaluation-et-securite-agents.md` §B (app en prod).
 
