@@ -39,12 +39,12 @@
         <%= embedded_svg "icons/schedule.svg", class: "text-base", title: "Heures consommées" %>Heures consommées
       </div>
       <div class="py-4 text-slate-800 border-b border-slate-100">
-        <% depasse = prog[:indicateur_color] == 'bg-error' %>
         <%= @convention.heures_consommees.round(1) %> h sur <%= @convention.heures_conventionnees.to_f %> h
-        <% if depasse %>
+
+        <% if prog[:depassement] != 0 %>
           <div class="mt-2">
             <span class="badge badge-error badge-soft gap-1.5 !px-2 !py-4">        <%= embedded_svg "icons/warning.svg", class: "text-base" %>
-              Dépassement <%= (@convention.heures_consommees - @convention.heures_conventionnees.to_f).round(1) %> heures
+              Dépassement de <%= prog[:depassement].round(1) %> heures
             </span>
           </div>
         <% end %>
