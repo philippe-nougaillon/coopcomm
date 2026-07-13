@@ -2,17 +2,16 @@
   <% page_title!("Convention — #{@convention.user&.nom_prénom}") %>
   <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
     <h1 class="text-2xl sm:text-3xl text-primary font-bold">Convention — <%= @convention.user&.nom_prénom %></h1>
-    
   </div>
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary font-semibold">Informations</h2>
   </div>
-<div class=" bg-white border border-slate-200 rounded-xl  md:rounded-xl  shadow-sm ">
+  <div class=" bg-white border border-slate-200 rounded-xl  md:rounded-xl  shadow-sm ">
     <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
       <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
       <span>Faire glisser pour voir plus</span>
     </div>
-          <div class="grid text-sm overflow-x-auto p-4" style="grid-template-columns: 250px 1fr;">
+    <div class="grid text-sm overflow-x-auto p-4" style="grid-template-columns: 250px 1fr;">
       <div class="flex flex-row items-center gap-2 pb-4 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
         <%= embedded_svg "icons/account_circle.svg", class: "text-base", title: "Adhérent" %> Adhérent
       </div>
@@ -37,20 +36,19 @@
         </span>
       </div>
       <div class="flex items-center gap-2 py-4 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-  <%= embedded_svg "icons/schedule.svg", class: "text-base", title: "Heures consommées" %>Heures consommées
-</div>
-<div class="py-4 text-slate-800 border-b border-slate-100">
-  <% depasse = prog[:indicateur_color] == 'bg-error' %>
-  <%= @convention.heures_consommees.round(1) %> h sur <%= @convention.heures_conventionnees.to_f %> h
-
-  <% if depasse %>
-    <div class="mt-2">
-<span class="badge badge-error badge-soft gap-1.5 !px-2 !py-4">        <%= embedded_svg "icons/warning.svg", class: "text-base" %>
-        Dépassement <%= (@convention.heures_consommees - @convention.heures_conventionnees.to_f).round(1) %> heures
-      </span>
-    </div>
-  <% end %>
-</div>
+        <%= embedded_svg "icons/schedule.svg", class: "text-base", title: "Heures consommées" %>Heures consommées
+      </div>
+      <div class="py-4 text-slate-800 border-b border-slate-100">
+        <% depasse = prog[:indicateur_color] == 'bg-error' %>
+        <%= @convention.heures_consommees.round(1) %> h sur <%= @convention.heures_conventionnees.to_f %> h
+        <% if depasse %>
+          <div class="mt-2">
+            <span class="badge badge-error badge-soft gap-1.5 !px-2 !py-4">        <%= embedded_svg "icons/warning.svg", class: "text-base" %>
+              Dépassement <%= (@convention.heures_consommees - @convention.heures_conventionnees.to_f).round(1) %> heures
+            </span>
+          </div>
+        <% end %>
+      </div>
       <div class="flex items-center gap-2 py-4 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
         <%= embedded_svg "icons/article.svg", class: "text-base", title: "Document" %> Document
       </div>
@@ -87,8 +85,6 @@
         <span class="hidden lg:inline">Modifier</span>
       <% end %>
     <% end %>
-
-
     <% if policy(@convention).destroy? %>
       <button class="btn btn-soft btn-error hover:!text-white" onclick="delete_convention_modal_<%= @convention.id %>.showModal()" title="Supprimer">
         <%= embedded_svg "icons/delete.svg", class: "w-4 h-4 fill-current transition-colors duration-200" %>
@@ -124,7 +120,7 @@
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary font-semibold">Activité</h2>
   </div>
-<div class="flex flex-col bg-white border border-slate-200 rounded-xl  md:rounded-xl  shadow-sm overflow-visible">
+  <div class="flex flex-col bg-white border border-slate-200 rounded-xl  md:rounded-xl  shadow-sm overflow-visible">
     <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
       <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
       <span>Faire glisser pour voir plus</span>
