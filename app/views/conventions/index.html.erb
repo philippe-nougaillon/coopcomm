@@ -43,6 +43,27 @@
   <% end %>
 </div>
 <hr class="mt-6 mb-6">
+
+ <div class="flex flex-row items-center gap-4 mb-3 px-4 py-2 bg-slate-50 rounded-lg text-xs text-slate-500">
+    <div class="flex flex-col md:flex-row gap-2">
+      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-info"></span>À venir</span>
+      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-success"></span>En cours (< 80%)</span>
+    </div>
+    <div class="flex flex-col md:flex-row gap-2">
+       <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-warning"></span>Proche échéance (≥ 80%)</span>
+      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-error"></span>Expirée</span>
+    </div>
+    <div class="flex flex-col md:flex-row gap-2">
+    <span class="flex items-center gap-1.5">
+      <span class="w-[3px] h-3.5 bg-black rounded-full block"></span>
+      Aujourd'hui
+    </span></div>
+  </div>
+
+
+  
+
+  
 <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
   <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
 </div>
@@ -62,8 +83,8 @@
           <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Période</th>
           <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Heures consommées</th>
           <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Document</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Mémo</th>
-          <th class="px-4 py-3"></th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Mémo</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Actions</th>
         </tr>
       </thead>
       <tbody>

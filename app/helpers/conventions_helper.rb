@@ -33,13 +33,14 @@ module ConventionsHelper
     heures = convention.heures_conventionnees.to_f
     indicateur = heures.positive? ? (convention.temps_total_interventions / heures * 100).round(1) : 0
 
+
     # L'indicateur devient rouge si le temps total dans les interventions dépasse le nombre d'heures conventionnées.
     if indicateur > 100
-      indicateur_label = "Dépassement de #{(indicateur - 100)}%"
+      indicateur_label = "Aujourd'hui : Durée dépassée de #{((convention.temps_total_interventions)-heures).round(1)}%"
       indicateur = 100
       indicateur_color = 'bg-error'
     else
-      indicateur_label = "Indicateur : #{indicateur}% du temps utilisé"
+      indicateur_label = "Aujourd'hui (Temps écoulé : #{indicateur.round(1)}%)"
       indicateur_color = 'bg-neutral'
     end
 
