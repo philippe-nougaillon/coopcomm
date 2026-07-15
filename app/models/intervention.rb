@@ -5,6 +5,7 @@ class Intervention < ApplicationRecord
   friendly_id :slug_candidates, use: :slugged
   include Workflow
   include WorkflowActiverecord
+  include DashboardRefreshable
 
   acts_as_taggable_on :tags
 
@@ -104,6 +105,10 @@ class Intervention < ApplicationRecord
 
   after_create :replace_description_with_id
   after_create :calculate_co2, if: proc(&:terminé?)
+
+  # Rafraîchit (de façon coalescée) les vues matérialisées du dashboard.
+  after_commit :enqueue_dashboard_refresh, on: %i[create destroy]
+  after_commit :enqueue_dashboard_refresh, on: :update, if: :dashboard_relevant_change?
 
   # after_create_commit :broadcast_to_authorized_viewers
   # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable

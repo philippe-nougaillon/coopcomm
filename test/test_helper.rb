@@ -13,6 +13,7 @@ end
 ENV['RAILS_ENV'] ||= 'test'
 require_relative '../config/environment'
 require 'rails/test_help'
+require 'minitest/mock'
 require 'bcrypt'
 require 'capybara/rails'
 require 'capybara/dsl'
@@ -27,6 +28,13 @@ module ActiveSupport
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
+
+    # Rafraîchit les vues matérialisées du dashboard à partir des fixtures
+    # chargées. concurrently:false : les tests tournent dans une transaction,
+    # or REFRESH ... CONCURRENTLY y est interdit.
+    def refresh_dashboard_views!
+      RefreshDashboardViewsJob.refresh!(concurrently: false)
+    end
 
     # Peut servir par la suite : permet de nettoyer le cache après chaque test
     # teardown do
