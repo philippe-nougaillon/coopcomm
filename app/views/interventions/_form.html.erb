@@ -36,7 +36,9 @@
           <%= form.hidden_field :adherent_id, value: current_user.id %>
         <% else %>
           <div>
-            <%= form.label :adherent_id, "Adhérent", class: "label font-semibold text-slate-700" %>
+            <%= form.label :adherent_id,  class: "label font-semibold text-slate-700" do %>
+        <span>Adhérent <span class="text-red-500">*</span></span>
+      <% end %>
             <%= form.select :adherent_id,
                             options_from_collection_for_select(@adhérents, :id, :nom_prénom, intervention.adherent_id),
                             { include_blank: true, required: true },

@@ -4,16 +4,12 @@
     <span>Faire glisser pour voir plus</span>
   </div>
   <div class="overflow-x-auto">
-    <%# Añadimos border-separate y border-spacing-0 para que los bordes verticales no se corten %>
     <table id="tools" class="table table-sm w-full border-separate border-spacing-0 border-none">
       <thead class="bg-slate-100">
         <tr>
           <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 text-left"><%= sort_link 'tools.name', 'Nom' %></th>
-          
           <% (@date..@date_fin).each do |date| %>
             <% es_hoy = (date == Date.today) %>
-            
-            <%# Th con lógica de bordes morados para la cabecera si es el día actual %>
             <th class="text-center p-3 transition-all min-w-[90px]
                        <%= es_hoy ? 'text-purple-700 bg-purple-50/40 border-x-2 border-t border-purple-500 font-bold' : 'text-slate-500 bg-slate-100' %>">
               <div class="flex flex-col items-center">
@@ -34,10 +30,22 @@
         <% if @tools.present? %>
           <%= render @tools %>
         <% else %>
-          <tr>
-            <td colspan="<%= (@date..@date_fin).count + 1 %>" class="text-left md:text-center py-8 text-slate-400 text-base italic">
-              Aucun résultat trouvé pour cette recherche.
+          <%# La fila necesita position:relative para que el mensaje absoluto se posicione respecto a ELLA, no a la tabla entera %>
+          <tr class="relative h-24 bg-white">
+            <%# La primera celda lleva el mensaje flotante, que cubrirá toda la fila gracias al position:relative del <tr> %>
+            <td class="bg-white border-b border-slate-100">
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                <span class="text-slate-400 bg-white text-base italic px-6 py-3 max-w-md text-center pointer-events-auto">
+                  Aucun résultat trouvé pour cette recherche.
+                </span>
+              </div>
             </td>
+            <% (@date..@date_fin).each do |date| %>
+              <% es_hoy = (date == Date.today) %>
+              <td class="p-0 bg-white transition-all
+                         <%= es_hoy ? 'border-x-2 border-b-2 border-purple-500 bg-purple-50/10' : 'border-b border-slate-100' %>">
+              </td>
+            <% end %>
           </tr>
         <% end %>
       </tbody>

@@ -2,12 +2,12 @@
      data-new-record="<%= f.object.new_record? %>"
      data-controller="cotation-ligne">
   <% unless local_assigns[:first] %>
-  <button type="button" data-action="nested-form#remove"
+    <button type="button" data-action="nested-form#remove"
           class="btn   btn-ghost absolute btn-circle top-0 right-0 -bottom-2 z-10 text-slate-400 m-2 hover:text-error hover:bg-error/10 hover:!border-error/20"
           title="Retirer la prestation" aria-label="Retirer la prestation">
-        <%= embedded_svg "icons/close_small.svg", class: "text-sm", title: "Retirer la prestation" %>
-  </button>
-<% end %>
+      <%= embedded_svg "icons/close_small.svg", class: "text-sm", title: "Retirer la prestation" %>
+    </button>
+  <% end %>
   <div class="flex flex-row flex-1 w-full gap-4 pt-4">
     <div class="flex flex-col gap-1 flex-1 ">
       <%= f.label :prestation_id, "Prestation", class: "text-sm text-slate-500" do %>

@@ -62,6 +62,9 @@
                 data: { placeholder: 'Tous les mots-clés' },
                 onchange: 'this.form.requestSubmit()' %>
       </div>
+
+
+
       <div class="flex items-center gap-3 h-10 px-3 border border-slate-200 rounded-lg bg-slate-50 cursor-pointer"
        onclick="document.getElementById('absent').click()">
         <%= check_box_tag :absent, 1, params[:absent],
@@ -76,6 +79,8 @@
           Absents ?
         </span>
       </div>
+
+      
       <div class="flex items-center gap-3 h-10 px-3 border border-slate-200 rounded-lg bg-slate-50 cursor-pointer"
        onclick="document.getElementById('discarded').click()">
         <%= check_box_tag :discarded, 1, params[:discarded],
