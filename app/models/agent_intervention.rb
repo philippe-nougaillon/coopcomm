@@ -10,5 +10,5 @@ class AgentIntervention < ApplicationRecord
 
   # L'affectation/désaffectation d'un agent change la répartition du temps
   # par agent (vue dashboard_agent_stats).
-  after_commit :enqueue_dashboard_refresh, on: %i[create destroy]
+  after_commit :refresh_dashboard_views, on: %i[create destroy]
 end

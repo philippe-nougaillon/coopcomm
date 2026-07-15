@@ -107,8 +107,8 @@ class Intervention < ApplicationRecord
   after_create :calculate_co2, if: proc(&:terminé?)
 
   # Rafraîchit (de façon coalescée) les vues matérialisées du dashboard.
-  after_commit :enqueue_dashboard_refresh, on: %i[create destroy]
-  after_commit :enqueue_dashboard_refresh, on: :update, if: :dashboard_relevant_change?
+  after_commit :refresh_dashboard_views, on: %i[create destroy]
+  after_commit :refresh_dashboard_views, on: :update, if: :dashboard_relevant_change?
 
   # after_create_commit :broadcast_to_authorized_viewers
   # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable

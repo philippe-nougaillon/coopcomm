@@ -30,10 +30,9 @@ module ActiveSupport
     fixtures :all
 
     # Rafraîchit les vues matérialisées du dashboard à partir des fixtures
-    # chargées. concurrently:false : les tests tournent dans une transaction,
-    # or REFRESH ... CONCURRENTLY y est interdit.
+    # chargées.
     def refresh_dashboard_views!
-      RefreshDashboardViewsJob.refresh!(concurrently: false)
+      DashboardRefreshable.refresh_views!
     end
 
     # Peut servir par la suite : permet de nettoyer le cache après chaque test

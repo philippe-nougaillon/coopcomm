@@ -3,8 +3,9 @@
 require 'test_helper'
 
 # Vérifie le câblage du rafraîchissement des vues : callbacks after_commit posés,
-# détection des seules modifications pertinentes, et planification du job.
-class DashboardRefreshableTest < ActiveJob::TestCase
+# détection des seules modifications pertinentes, et refresh synchrone effectif
+# (depuis le 2026-07-15 le refresh est direct, sans passer par un job).
+class DashboardRefreshableTest < ActiveSupport::TestCase
   test 'Intervention et AgentIntervention incluent le concern' do
     assert Intervention.include?(DashboardRefreshable)
     assert AgentIntervention.include?(DashboardRefreshable)
@@ -12,12 +13,12 @@ class DashboardRefreshableTest < ActiveJob::TestCase
 
   test 'callback after_commit enregistré sur Intervention' do
     filters = Intervention._commit_callbacks.map(&:filter)
-    assert_includes filters, :enqueue_dashboard_refresh
+    assert_includes filters, :refresh_dashboard_views
   end
 
   test 'callback after_commit enregistré sur AgentIntervention' do
     filters = AgentIntervention._commit_callbacks.map(&:filter)
-    assert_includes filters, :enqueue_dashboard_refresh
+    assert_includes filters, :refresh_dashboard_views
   end
 
   test 'dashboard_relevant_change? vrai quand une colonne du dashboard change' do
@@ -34,9 +35,21 @@ class DashboardRefreshableTest < ActiveJob::TestCase
     end
   end
 
-  test 'enqueue_dashboard_refresh planifie le job de refresh' do
-    assert_enqueued_with(job: RefreshDashboardViewsJob) do
-      Intervention.new.send(:enqueue_dashboard_refresh)
+  test 'refresh_dashboard_views rafraîchit les deux vues matérialisées' do
+    refreshed = []
+    stub = ->(view, **) { refreshed << view }
+    Scenic.database.stub(:refresh_materialized_view, stub) do
+      Intervention.new.refresh_dashboard_views
+    end
+    assert_equal DashboardRefreshable::VIEWS, refreshed
+  end
+
+  test "un changement d'état est répercuté dans la vue sans autre action" do
+    iv = interventions(:tonte_locaux)
+    refresh_dashboard_views!
+
+    assert_difference -> { DashboardInterventionStat.where(workflow_state: 'archivé').sum(:nb) }, +1 do
+      iv.update!(workflow_state: 'archivé')
     end
   end
 end

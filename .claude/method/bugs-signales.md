@@ -128,6 +128,18 @@
 - **Trace test** : 2 tests « ÉPINGLAGE B13 » dans `test/controllers/dashboard_temps_negatif_test.rb` figent le comportement actuel (net agent 9−5=4 ; cellule 8−3=5) — **à inverser** si le grain intervention est finalement retenu.
 - **Correctif proposé (si l'exactitude est voulue)** : ajouter aux deux vues une colonne `temps_total_positif` (`SUM(CASE WHEN temps_total >= 0 THEN temps_total ELSE 0 END)` — au grain intervention, donc exact) et faire pointer les calculs de temps du concern dessus ; les `where` disparaissent. Migration Scenic `update_view` (⚠ piège connu : ne pas ré-ajouter les index à la main).
 
+### B14 — Éditer une intervention dont le service n'est plus proposé pour son adhérent **change le service silencieusement** (le formulaire ne sait pas conserver la valeur d'origine)
+- **Signalé le** : 2026-07-15 (découvert en écrivant les tests système du refresh dashboard).
+- **Où** : [interventions_controller.rb:455-461](app/controllers/interventions_controller.rb#L455-L461) (`services_for_adherent` : options = services de l'adhérent ∩ services du manager) + [dynamic_select_controller.js](app/javascript/controllers/dynamic_select_controller.js) (`updateServices` → `populateSelect` **remplace** les options au chargement de l'édition, la valeur d'origine est perdue si elle n'est pas dans la liste).
+- **Parcours de reproduction** :
+  1. En manager (hidalgo), ouvrir l'édition de `tonte_locaux` (service **Technique**, adhérent weil qui n'est rattaché qu'à **Informatique**).
+  2. Le select Service est repeuplé avec la seule option « Informatique » — « Technique » n'est plus proposé ; le champ est `required`.
+  3. Modifier n'importe quoi (la description) et enregistrer → obligé de choisir « Informatique » → **le service de l'intervention change** sans que l'utilisateur l'ait voulu (effets en cascade : périmètre des index filtrés par service, dashboard par service, agents proposés — la liste des agents est bornée au service choisi → les agents de l'ancien service disparaissent des options).
+- **Aggravant** : les données existantes (fixtures ET prod potentiellement) contiennent des interventions dont le service ∉ services de l'adhérent — créées avant cette règle ; elles sont toutes concernées à la première édition.
+- **Quirk lié (comportement, pas bug)** : quand la liste ne contient qu'une option, elle est auto-sélectionnée, et **re-cliquer dessus la désélectionne** (toggle slim-select) — un utilisateur peut se retrouver avec un champ vide sans comprendre.
+- **Correctif proposé** (décision métier à prendre) : inclure le service ACTUEL de l'intervention dans les options renvoyées à l'édition (union avec la valeur d'origine), ou avertir explicitement du changement.
+- **Trace test** : contrainte documentée dans l'en-tête de `test/system/manager/dashboard_refresh_manager_flow_test.rb` (les tests contournent en préparant des données cohérentes : agents ajoutés à Informatique ; ⚠ la fixture `bond_informatique` pointe en réalité vers **service_paris** — nom trompeur).
+
 ---
 
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)

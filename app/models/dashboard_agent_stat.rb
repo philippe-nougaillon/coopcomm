@@ -3,7 +3,7 @@
 # Modèle en LECTURE SEULE mappé sur la vue matérialisée `dashboard_agent_stats`.
 # Temps total imputé à chaque agent au grain (organisation, agent), répartition
 # du temps d'une intervention entre ses agents incluse (cf. db/views/*.sql).
-# Rafraîchie par RefreshDashboardViewsJob.
+# Rafraîchie par DashboardRefreshable.
 class DashboardAgentStat < ApplicationRecord
   belongs_to :organisation
   belongs_to :agent, class_name: 'User'

@@ -3,7 +3,7 @@
 # Modèle en LECTURE SEULE mappé sur la vue matérialisée `dashboard_intervention_stats`.
 # Pré-agrégat des interventions au grain (organisation, service, adhérent, mois, statut).
 # On ne fait que des where/group/sum par-dessus : les écritures sont interdites,
-# la donnée est rafraîchie par RefreshDashboardViewsJob (cf. db/views/*.sql).
+# la donnée est rafraîchie par DashboardRefreshable (cf. db/views/*.sql).
 class DashboardInterventionStat < ApplicationRecord
   belongs_to :organisation
   belongs_to :service
