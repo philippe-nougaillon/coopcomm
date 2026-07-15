@@ -295,6 +295,150 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 2, @intervention.reload.photos.count
   end
 
+  # --- Purge d'une photo -----------------------------------------------------
+  # `purge?` = `show?` : même organisation ET (manager/admin OU adhérent de
+  # l'intervention OU agent affecté). bond est l'agent affecté à tonte_locaux
+  # (fixture bond_tonte_locaux) ; martin est un agent de la même organisation
+  # NON affecté. Le manager (hidalgo) est déjà couvert par
+  # « should destroy photo with purge » plus haut.
+
+  test "purge : un agent affecté à l'intervention peut supprimer une photo" do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    sign_in users(:bond)
+
+    assert_difference('@intervention.photos.count', -1) do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos.first.id
+      }
+    end
+
+    assert_redirected_to @intervention
+  end
+
+  test 'purge : la photo est réellement supprimée (blob détruit et fichier effacé du stockage)' do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    blob = @intervention.photos.first.blob
+    sign_in users(:bond)
+
+    assert_difference('ActiveStorage::Blob.count', -1) do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos.first.id
+      }
+    end
+
+    assert_not ActiveStorage::Blob.exists?(blob.id), 'le blob doit être détruit en base'
+    assert_not ActiveStorage::Blob.service.exist?(blob.key),
+               'le fichier doit être effacé du service de stockage (purge synchrone)'
+  end
+
+  test "purge : la suppression est tracée dans l'audit trail" do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    photo_id = @intervention.photos.first.id
+
+    assert_difference('@intervention.audits.count', 1) do
+      delete purge_intervention_url(@intervention), params: { photo_id: photo_id }
+    end
+
+    assert_equal "Photo n°#{photo_id} supprimée", @intervention.audits.last.comment
+  end
+
+  test "purge : un agent NON affecté à l'intervention est refusé et la photo reste" do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    sign_in users(:martin_technique_paris)
+
+    assert_no_difference('ActiveStorage::Attachment.count') do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos.first.id
+      }
+    end
+
+    assert_redirected_to root_path # user_not_authorized (pas de referrer en test)
+  end
+
+  test "purge : un agent d'une autre organisation est refusé" do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    sign_in users(:agent_marseille)
+
+    assert_no_difference('ActiveStorage::Attachment.count') do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos.first.id
+      }
+    end
+
+    assert_redirected_to root_path
+  end
+
+  test "purge : l'adhérent de l'intervention peut supprimer une photo (épinglage : purge? = show?)" do
+    # Comportement ACTUEL épinglé : la policy autorise aussi l'adhérent (client)
+    # à supprimer les photos posées par les agents. À inverser si la décision
+    # métier retient un périmètre plus strict.
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    sign_in users(:weil)
+
+    assert_difference('@intervention.photos.count', -1) do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos.first.id
+      }
+    end
+  end
+
+  test 'purge : photo_id inexistant → 404, rien ne se passe' do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+
+    assert_no_difference('ActiveStorage::Attachment.count') do
+      delete purge_intervention_url(@intervention), params: { photo_id: 0 }
+    end
+
+    assert_response :not_found
+  end
+
+  test "purge : impossible de supprimer la photo d'une AUTRE intervention (find scopé)" do
+    autre = interventions(:nouvelle_intervention)
+    autre.photos.attach(file_fixture('exemple.png'))
+    autre.save
+    cible = autre.photos.first
+
+    assert_no_difference('ActiveStorage::Attachment.count') do
+      delete purge_intervention_url(@intervention), params: { photo_id: cible.id }
+    end
+
+    assert_response :not_found
+  end
+
+  test 'purge : non connecté → redirigé vers la connexion' do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    sign_out users(:hidalgo)
+
+    assert_no_difference('ActiveStorage::Attachment.count') do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos.first.id
+      }
+    end
+
+    assert_redirected_to new_user_session_path
+  end
+
+  test 'purge : la redirection après un DELETE Turbo est en 303 see_other' do
+    # Ex-B16 (corrigé 2026-07-15) : décision audit 2026-06-12 §4 — 303 après
+    # toute soumission destructrice Turbo, comme le reste de l'app.
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+
+    delete purge_intervention_url(@intervention), params: {
+      photo_id: @intervention.photos.first.id
+    }
+
+    assert_response :see_other
+  end
+
   # Pointage
 
   test 'pointer intervention repete doit créer une intervention' do
