@@ -91,13 +91,6 @@
 - **Trace test** : test `skip` documenté dans `test/controllers/commandes_controller_test.rb` (« slug inconnu : devrait renvoyer 404 — bug B9 ») — passera au vert à la correction.
 - **Correctif proposé** : `find_by!(slug:)` (ou `friendly.find`) pour lever `ActiveRecord::RecordNotFound` → 404 standard, dans les trois contrôleurs.
 
-### B10 — Tests « création à postériori » échouent quand la suite tourne entre 14 h et 15 h (test uniquement)
-- **Où** : fixture `intervention_fille` ([interventions.yml:88](test/fixtures/interventions.yml#L88), `début: <%= 4.hours.ago %>`, `fin` NULL, agent **martin**) × les 2 tests « à postériori » de [interventions_controller_test.rb:164](test/controllers/interventions_controller_test.rb#L164) et [:483](test/controllers/interventions_controller_test.rb#L483)
-- **Cause** : la fixture est ancrée sur l'**heure réelle** (début = maintenant − 4 h), alors que les 2 tests se placent à **midi fixe** (`travel_to Time.current.middle_of_day`) et créent une intervention **[10 h, 11 h]** pour le **même agent martin**. Si la suite est lancée entre **14 h et 15 h**, `maintenant − 4 h` tombe dans [10 h, 11 h] → le contrôle de disponibilité **#357** refuse *à raison* → `Intervention.count` ne bouge pas → **2 échecs** (vérifié le 2026-07-10 à 14 h 57, échec reproduit **sans** aucune modification locale ; vert en dehors de la fenêtre). Le correctif du 2026-07-09 (« 4 h ago ») protégeait les pointages créés « maintenant », pas ces tests ancrés à midi.
-- **Reproduction** : lancer `bundle exec rails test test/controllers/interventions_controller_test.rb` entre 14 h 00 et 15 h 00.
-- **Impact** : test uniquement — flakiness dépendante de l'heure de lancement (CI ou local).
-- **Correctif proposé** : désolidariser les acteurs — utiliser un **autre agent que martin** dans les 2 tests à postériori — ou ancrer la fixture sur une **heure absolue** hors de la fenêtre (ex. `Time.current.middle_of_day - 5.hours`).
-
 ### B11 — Un pointage peut porter des dates prévues (héritées de la mère ou saisies au formulaire) — l'invariant « pointage = dates réelles uniquement » n'est pas garanti
 - **Signalé par** : PE, 2026-07-13 (« il ne faut pas que l'on puisse mettre des dates prévues sur une intervention de pointage ») ; instruit et confirmé par l'agent. Généralise la condition 4 de **R1**.
 - **Où** : [intervention.rb:342-357](app/models/intervention.rb#L342-L357) (`create_next_intervention` : `dup` de la mère sans remise à nil de `début_prévue`/`fin_prévue`) ; [_form.html.erb:63](app/views/interventions/_form.html.erb#L63) (les champs prévus s'affichent si `!repeter` — or une fille a `repeter: false`) ; [interventions_controller.rb:569-570](app/controllers/interventions_controller.rb#L569-L570) (`intervention_params` permet `début_prévue`/`fin_prévue` pour tous les rôles).
@@ -171,6 +164,7 @@
 | Jobs managers : `intervention.organisation_id` / `manager.organisation_id` inexistants (dérivation via service) | 2026-07-01 | 4 jobs corrigés, session `/tests` |
 | Pré-filtre services des index (#309/#311) + matrice finale admin/manager | 2026-06-23 | sessions filtres, committé côté client |
 | **B12** — filtre #292 absent de `temps_par_adherent` (un temps négatif entamait le total par adhérent du dashboard) | 2026-07-13 | branche `dashboard-scenic` (demande PE, session /tests) : `.where("temps_total >= 0")` ajouté — hérite de la limite de grain **B13** ; ⚠ `staging` reste bogué jusqu'à la fusion (son `dashboard_data.rb` sera remplacé par la version Scenic) ; test ex-`skip` passé au vert dans `dashboard_temps_negatif_test.rb` |
+| **B10** — les 2 tests « création à postériori » échouaient entre 14 h et 15 h (fixture `intervention_fille` de **martin** ancrée sur l'heure réelle − 4 h recouvrait la plage [10 h, 11 h] créée à midi fixe pour le même agent → refus #357 légitime ; test uniquement) | 2026-07-15 | correctif « désolidariser les acteurs » : les 2 tests utilisent **john_wick** (aucune intervention de fixture → jamais de conflit) au lieu de martin ; la fixture `4.hours.ago` reste intacte (elle protège les tests de pointage, cf. 2026-07-09). Vérifié **en pleine fenêtre 14 h–15 h** : 42/42 verts + suite complète 1239 runs / 0 échec |
 
 ---
 

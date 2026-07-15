@@ -162,7 +162,11 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "un agent crée une intervention à postériori : elle est terminée d'emblée" do
-    agent = users(:martin_technique_paris)
+    # john_wick et pas martin : martin porte la fixture `intervention_fille` ancrée
+    # sur l'heure réelle (début = maintenant − 4 h), qui recouvre la plage [10 h, 11 h]
+    # créée ci-dessous quand la suite tourne entre 14 h et 15 h → #357 refusait à
+    # raison (B10). john_wick n'a aucune intervention de fixture : jamais de conflit.
+    agent = users(:john_wick)
     sign_in agent
 
     # On se place à midi d'AUJOURD'HUI pour que "hours.ago" ne change jamais de jour ni d'année.
@@ -481,7 +485,8 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
   end
 
   test "création par un agent « à postériori » (terminée d'emblée) : enqueue la notification managers « réalisée »" do
-    agent = users(:martin_technique_paris)
+    # john_wick et pas martin : cf. le test « à postériori » ci-dessus (B10).
+    agent = users(:john_wick)
     sign_in agent
 
     # Milieu de journée : les "hours.ago" restent le même jour (cf. test à postériori ci-dessus).
