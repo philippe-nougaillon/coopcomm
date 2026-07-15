@@ -36,6 +36,16 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
     assert intervention.errors[:photos].any?, 'au-delà de 10 Mo la photo doit être refusée'
   end
 
+  test "accepte une image AVIF comme photo d'intervention (format annoncé par les deux formulaires)" do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.photos = [{ io: File.open(Rails.root.join('test/fixtures/files/exemple.png')),
+                             filename: 'exemple.avif', content_type: 'image/avif' }]
+
+    intervention.valid?
+
+    assert_empty intervention.errors[:photos]
+  end
+
   test 'accepte un PDF comme document de convention' do
     convention = conventions(:convention_paris)
     convention.document.attach(io: File.open(Rails.root.join('test/fixtures/files/exemple.pdf')),

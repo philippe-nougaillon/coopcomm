@@ -257,6 +257,44 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to @intervention
   end
 
+  # --- Photos via le formulaire manager (dropzone) --------------------------
+  # Régressions : la dropzone appelait `attachment.blob` (méthode de
+  # Attached::One) sur le has_many_attached :photos → 500 sur edit dès qu'une
+  # photo était attachée ; et son input file sans `multiple` envoyait un param
+  # scalaire que `permit(photos: [])` rejetait silencieusement → photo jamais
+  # enregistrée depuis ce formulaire.
+
+  test 'edit affiche une intervention qui a déjà des photos' do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+
+    get edit_intervention_url(@intervention)
+
+    assert_response :success
+    # Sans `multiple`, le param redevient scalaire et la photo est perdue.
+    assert_select "input[type=file][name='intervention[photos][]'][multiple]"
+  end
+
+  test 'update ajoute une photo soumise en tableau (forme émise par la dropzone multiple)' do
+    assert_difference('@intervention.photos.count', 1) do
+      patch intervention_url(@intervention), params: {
+        intervention: { photos: [fixture_file_upload('exemple.png', 'image/png')] }
+      }
+    end
+  end
+
+  test 'update conserve les photos ré-émises en signed_id et ajoute la nouvelle' do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    existante = @intervention.photos.first
+
+    patch intervention_url(@intervention), params: {
+      intervention: { photos: [existante.signed_id, fixture_file_upload('exemple.png', 'image/png')] }
+    }
+
+    assert_equal 2, @intervention.reload.photos.count
+  end
+
   # Pointage
 
   test 'pointer intervention repete doit créer une intervention' do
