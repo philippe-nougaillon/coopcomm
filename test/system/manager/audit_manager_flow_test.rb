@@ -45,9 +45,25 @@ class AuditManagerFlowTest < ApplicationSystemTestCase
   # le clic d'activation du slim-select suivant. On clique à l'extérieur (le
   # titre) et on attend qu'aucune option ne soit plus visible avant de continuer.
   # La sélection robuste (recherche + clic) est dans le helper partagé `select_option`.
+  #
+  # Deux protections nées de flakiness observée (2026-07-15) :
+  # - la sélection soumet le formulaire (onchange) → re-rendu Turbo qui
+  #   ré-initialise les slim-selects : un menu peut transitoirement réapparaître
+  #   ouvert après le clic extérieur → on referme en boucle courte ;
+  # - sous forte charge, le clic d'option peut se perdre sans erreur (le select
+  #   reste sur « Tous les … » et la page reste non filtrée) → on vérifie que le
+  #   ss-main affiche bien la valeur choisie, sinon une seconde tentative.
   def choisir_filtre(id, value)
-    select_option(id, value)
-    find('h1', text: 'Activité').click
+    2.times do |tentative|
+      select_option(id, value)
+      3.times do
+        find('h1', text: 'Activité').click
+        break if has_no_selector?('.ss-option', visible: true, wait: 1)
+      end
+      break if find(id, visible: false).sibling('div.ss-main').has_text?(value, wait: 2)
+
+      flunk "La sélection « #{value} » dans #{id} n'a pas pris après 2 tentatives" if tentative == 1
+    end
     assert_no_selector('.ss-option', visible: true, wait: 5)
   end
 

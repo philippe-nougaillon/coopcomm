@@ -4,6 +4,12 @@ bond_tonte_locaux:
   agent: bond
   intervention: tonte_locaux
 
+# Agent supprimé co-affecté à tonte_locaux : doit être ignoré par les vues
+# dashboard (exclu du diviseur, aucune ligne agent pour lui).
+agent_discarded_tonte_locaux:
+  agent: agent_discarded_paris
+  intervention: tonte_locaux
+
 bond_nouvelle_intervention:
   agent: bond
   intervention: nouvelle_intervention

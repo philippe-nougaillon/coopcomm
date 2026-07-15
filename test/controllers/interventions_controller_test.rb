@@ -162,7 +162,11 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "un agent crée une intervention à postériori : elle est terminée d'emblée" do
-    agent = users(:martin_technique_paris)
+    # john_wick et pas martin : martin porte la fixture `intervention_fille` ancrée
+    # sur l'heure réelle (début = maintenant − 4 h), qui recouvre la plage [10 h, 11 h]
+    # créée ci-dessous quand la suite tourne entre 14 h et 15 h → #357 refusait à
+    # raison (B10). john_wick n'a aucune intervention de fixture : jamais de conflit.
+    agent = users(:john_wick)
     sign_in agent
 
     # On se place à midi d'AUJOURD'HUI pour que "hours.ago" ne change jamais de jour ni d'année.
@@ -251,6 +255,44 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to @intervention
+  end
+
+  # --- Photos via le formulaire manager (dropzone) --------------------------
+  # Régressions : la dropzone appelait `attachment.blob` (méthode de
+  # Attached::One) sur le has_many_attached :photos → 500 sur edit dès qu'une
+  # photo était attachée ; et son input file sans `multiple` envoyait un param
+  # scalaire que `permit(photos: [])` rejetait silencieusement → photo jamais
+  # enregistrée depuis ce formulaire.
+
+  test 'edit affiche une intervention qui a déjà des photos' do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+
+    get edit_intervention_url(@intervention)
+
+    assert_response :success
+    # Sans `multiple`, le param redevient scalaire et la photo est perdue.
+    assert_select "input[type=file][name='intervention[photos][]'][multiple]"
+  end
+
+  test 'update ajoute une photo soumise en tableau (forme émise par la dropzone multiple)' do
+    assert_difference('@intervention.photos.count', 1) do
+      patch intervention_url(@intervention), params: {
+        intervention: { photos: [fixture_file_upload('exemple.png', 'image/png')] }
+      }
+    end
+  end
+
+  test 'update conserve les photos ré-émises en signed_id et ajoute la nouvelle' do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    existante = @intervention.photos.first
+
+    patch intervention_url(@intervention), params: {
+      intervention: { photos: [existante.signed_id, fixture_file_upload('exemple.png', 'image/png')] }
+    }
+
+    assert_equal 2, @intervention.reload.photos.count
   end
 
   # Pointage
@@ -481,7 +523,8 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
   end
 
   test "création par un agent « à postériori » (terminée d'emblée) : enqueue la notification managers « réalisée »" do
-    agent = users(:martin_technique_paris)
+    # john_wick et pas martin : cf. le test « à postériori » ci-dessus (B10).
+    agent = users(:john_wick)
     sign_in agent
 
     # Milieu de journée : les "hours.ago" restent le même jour (cf. test à postériori ci-dessus).
