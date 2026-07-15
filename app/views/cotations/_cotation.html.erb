@@ -2,33 +2,27 @@
   <td class="px-4 py-3 text-lg font-semibold text-primary">
     <%= link_to cotation.ref, cotation, class: "hover:underline" %>
   </td>
-  
   <td class="px-4 py-3">
-    <span class="badge text-nowrap font-bold <%= cotation.style %>"><%= cotation.workflow_state.humanize %></span>
+    <span class="badge text-nowrap min-w-20 font-bold <%= cotation.style %>"><%= cotation.workflow_state.humanize %></span>
   </td>
-  
   <td class="px-4 py-3 text-base"><%= cotation.adherent&.nom_prénom %></td>
-  
   <td class="px-4 py-3 text-base">
     <% services = cotation.respond_to?(:services) ? cotation.services.pluck(:nom) : [cotation.service&.nom].compact %>
     <% shown = services.first(2) %>
     <% extra = services.size - shown.size %>
-    
     <div class="flex flex-wrap gap-1.5 items-center">
       <% shown.each do |s| %>
         <span class="inline-block bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full whitespace-nowrap shadow-sm">
           <%= s %>
         </span>
       <% end %>
-      
       <% if extra > 0 %>
         <div class="relative inline-block" data-controller="dropdown">
           <button type="button"
                   data-action="click->dropdown#togglePortal"
-                  class="inline-flex bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full shadow-sm select-none cursor-pointer hover:bg-slate-50">
+            class="inline-flex bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full shadow-sm select-none cursor-pointer hover:bg-slate-50">
             + <%= extra %>
           </button>
-          
           <div data-dropdown-target="menu"
                class="hidden absolute z-50 flex-col p-4 shadow-2xl bg-white border border-slate-200 rounded-xl w-58 max-h-60 overflow-y-auto mt-1 left-0">
             <span class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 px-1 block text-left">
@@ -44,15 +38,12 @@
           </div>
         </div>
       <% end %>
-      
       <% if services.empty? %>
         <span class="text-slate-400 italic text-sm">—</span>
       <% end %>
     </div>
   </td>
-  
-  <td class="px-4 py-3 text-base"><%= cotation.intitulé %></td>
-  
+  <td class="px-4 py-3 text-base capitalize"><%= cotation.intitulé %></td>
   <td class="px-4 py-3 text-nowrap text-center text-base">
     <% if cotation.date_livraison_souhaitée.present? %>
       <% formatted_date = l(cotation.date_livraison_souhaitée, format: :long) %>
@@ -63,9 +54,7 @@
       <span class="text-slate-400 flex justify-center">—</span>
     <% end %>
   </td>
-  
-  <td class="px-4 py-3 text-right font-medium"><%= number_to_currency(cotation.total_ht) %></td>
-  
+  <td class="px-4 py-3 text-center font-medium text-sm"><%= number_to_currency(cotation.total_ht) %></td>
   <td class="px-4 py-3 text-center">
     <% mail_log = last_mail_logs[cotation.id] %>
     <% if mail_log %>
