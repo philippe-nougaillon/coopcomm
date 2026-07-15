@@ -385,6 +385,13 @@
                   <% end %>
                 </li>
               <% end %>
+               <% if policy(:pages).dashboard? %>
+          <li>
+            <%= link_to dashboard_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'dashboard'}" do %>
+              <%= embedded_svg "icons/bar_chart.svg", class: "w-5 h-5 inline mr-2"  %> Tableau de bord
+            <% end %>
+          </li>
+        <% end %>
               <div class="divider my-1 opacity-50"></div>
             <% end %>
 

@@ -16,12 +16,12 @@
     <% elsif audit.auditable_type == "Absence" && audit.action == "destroy" %>
       <%= absence_period_badge(audit) %>
     <% elsif audit.auditable_type == "User" && audit.audited_changes.key?("invitation_token") %>
-                <div class="bg-slate-50/60 rounded-lg p-2 border border-slate-300 group-hover:bg-white transition-colors duration-150">
-      <%= invitation_changes_summary(audit) %>
+      <div class="bg-slate-50/60 rounded-lg p-2 border border-slate-300 group-hover:bg-white transition-colors duration-150">
+        <%= invitation_changes_summary(audit) %>
       </div>
     <% else %>
-          <div class="bg-slate-50/60 rounded-lg p-2 border border-slate-300 group-hover:bg-white transition-colors duration-150">
-      <%= audit_changes_list(audit, current_user) %>
+      <div class="bg-slate-50/60 rounded-lg p-2 border border-slate-300 group-hover:bg-white transition-colors duration-150">
+        <%= audit_changes_list(audit, current_user) %>
       </div>
     <% end %>
   </td>

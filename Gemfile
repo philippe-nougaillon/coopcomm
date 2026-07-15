@@ -179,4 +179,6 @@ gem 'capture_stdout', '~> 0.0.1'
 
 gem 'devise_invitable', '~> 2.0'
 
-gem 'htmlbeautifier'
+group :development do
+  gem 'htmlbeautifier'
+end
