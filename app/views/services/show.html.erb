@@ -1,26 +1,71 @@
-<div class="mx-auto lg:w-2/3 w-full">
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
-    <h1 class="text-2xl sm:text-4xl text-primary font-bold">
+<div class="mx-auto w-full max-w-xl">
+  <div class="flex flex-col justify-center items-center min-h-12 sm:min-h-16">
+    <h1 class="text-primary font-bold text-3xl sm:text-4xl uppercase whitespace-nowrap text-center mt-8">
       <%= page_title!(@service.nom) %>
     </h1>
+    <h2 class="text-base uppercase text-slate-600 mt-2 mb-8">Service 
+    </h2>
   </div>
-  <p class="my-2 hover:cursor-help" title="Calcul de distance sur les interventions du service à partir de l'équipe de l'adhérent">
-    <strong class="block text-slate-400 mb-1">Calcul distances ?</strong>
-    <% if @service.calculate_distance %>
-      <%= embedded_svg "icons/check_small.svg", class: "text-success", title: "Confirmer que la distance a été calculée" %>
-    <% else %>
-      <%= embedded_svg "icons/cancel.svg", class: "text-error", title: "Annuler que la distance n'a pas été calculée" %>
-    <% end %>
-  </p>
-  <div class="flex flex-wrap gap-2 mt-8">
-    <% if policy(@service).edit? %>
-      <%= link_to "Modifier", edit_service_path(@service), class: "btn" %>
-    <% end %>
-    <% if policy(@service).destroy? %>
-      <%= button_to service_path(@service), method: :delete, id: "supprimer_service", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer ce service ?" }, class: "btn", 'data-testid': "Supprimer le service" do %>
-        <%= embedded_svg "icons/delete.svg", title: "Supprimer le service" %>
+  <div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+    <div class="flex flex-col ">
+      <h3 class="block text-slate-700 uppercase font-semibold ">Calcul distances * </h3>
+      <p class="text-sm text-slate-500 pt-1">*Calcule la distance de chaque intervention par rapport à l'équipe de l'adhérent</p>
+      <% if @service.calculate_distance %>
+        <span class="inline-flex justify-center items-center mt-2 mb-6 w-44 border border-green-700 gap-1.5 bg-green-50 text-green-700 text-sm font-medium px-3 py-1 rounded-full">
+          <%= embedded_svg "icons/check_small.svg", class: "w-4 h-4" %>
+          Elle est calculée
+        </span>
+      <% else %>
+        <span class="inline-flex justify-center items-center mt-2 mb-6 w-44 border border-red-700 gap-1.5 bg-red-50 text-red-700 text-sm font-medium px-3 py-1 rounded-full">
+          <%= embedded_svg "icons/cancel.svg", class: "w-4 h-4", title: "La distance n'est pas calculée" %>
+          Non calculée
+         </span>
+<% end %>
+    </div>
+    <div class="flex gap-2 mt-4 w-full">
+      <% if policy(@service).edit? %>
+        <%= link_to edit_service_path(@service), class: "btn flex-1" do %>
+          <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
+          <span class="hidden lg:inline">Modifier</span>
+        <% end %>
       <% end %>
-    <% end %>
-    <%= link_to "Retour", admin_parametres_path, class: "btn" %>
+      <% if policy(@service).destroy? %>
+        <button type="button" class="btn btn-soft btn-error flex-1 hover:!text-white" onclick="delete_service_modal_<%= @service.id %>.showModal()" title="Supprimer">
+          <%= embedded_svg "icons/delete.svg", class: "w-4 h-4 fill-current transition-colors duration-200" %>
+          <span class="hidden lg:inline">Supprimer</span>
+        </button>
+        <dialog id="delete_service_modal_<%= @service.id %>" class="modal">
+          <div class="modal-box">
+            <form method="dialog">
+              <button type="submit" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="text-lg font-bold text-error flex items-center gap-2">
+              <%= embedded_svg "icons/warning.svg", title: "Supprimer le service" %>
+              Supprimer le service
+            </h3>
+            <p class="py-4 text-sm text-slate-600 text-left">
+              Êtes-vous certain(e) de vouloir supprimer ce service ? Cette action est irréversible.
+            </p>
+            <div class="modal-action">
+              <form method="dialog">
+                <button type="submit" class="btn btn-ghost">Annuler</button>
+              </form>
+              <%= button_to service_path(@service), method: :delete, class: "btn btn-error text-white" do %>
+                Oui, supprimer
+              <% end %>
+            </div>
+          </div>
+          <form method="dialog" class="modal-backdrop">
+            <button type="submit">Fermer</button>
+          </form>
+        </dialog>
+      <% end %>
+    </div>
+    <div class="pt-6">
+      <%= link_to admin_parametres_path(tab: params[:tab] || 'services'), class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+        <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des utilisateurs" %>
+        Retour à la liste
+      <% end %>
+    </div>
   </div>
 </div>

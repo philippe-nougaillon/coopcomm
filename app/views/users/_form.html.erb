@@ -109,13 +109,11 @@
            placeholder: "Glissez une photo de profil ici ou cliquez pour parcourir",
            label: "Photo de profil" %>
     <div class="flex gap-2 mt-4 w-full">
-      <% if current_user.manager_or_admin? %>
         <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>
         <%= form.submit "Enregistrer", id: "enregistrer_utilisateur", class: "btn btn-primary flex-1" %>
-      <% end %>
     </div>
   <% end %>
-  <div class="pt-6 max-w-3xl mx-auto px-4">
+  <div class="pt-6 max-w-3xl mx-auto ">
     <%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
       <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des utilisateurs" %>
       Retour à la liste des utilisateurs
