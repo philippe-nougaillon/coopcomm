@@ -135,6 +135,13 @@
 
 ---
 
+### B17 — `purge` : l'audit peut être silencieusement perdu si l'intervention est devenue invalide
+- **Signalé** : 2026-07-15, même session.
+- **Où** : [interventions_controller.rb:343](app/controllers/interventions_controller.rb#L343) — `@intervention.update(audit_comment: …)` sans bang ni branche d'échec.
+- **Cause/scénario (déduction, non reproduit)** : la photo est purgée **avant** l'update ; si les validations échouent (ex. `agents_must_be_available` #357 devenue fausse depuis la création), l'audit « Photo n°X supprimée » n'est **pas** écrit, mais l'utilisateur voit quand même la notice « Photo supprimée ». Le cas nominal est couvert par un test (« la suppression est tracée dans l'audit trail », vert).
+- **Impact** : trou ponctuel d'audit trail, faible.
+- **Correctif proposé** : à instruire — écrire l'audit sans dépendre des validations de l'intervention (ou au minimum logguer/alerter en cas d'échec de l'update).
+
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
 
 ### R1 — Pointage : une fille de la veille non terminée ferait pointer une NOUVELLE intervention au lieu de terminer la sienne
@@ -165,6 +172,7 @@
 | Pré-filtre services des index (#309/#311) + matrice finale admin/manager | 2026-06-23 | sessions filtres, committé côté client |
 | **B12** — filtre #292 absent de `temps_par_adherent` (un temps négatif entamait le total par adhérent du dashboard) | 2026-07-13 | branche `dashboard-scenic` (demande PE, session /tests) : `.where("temps_total >= 0")` ajouté — hérite de la limite de grain **B13** ; ⚠ `staging` reste bogué jusqu'à la fusion (son `dashboard_data.rb` sera remplacé par la version Scenic) ; test ex-`skip` passé au vert dans `dashboard_temps_negatif_test.rb` |
 | **B15** — photos d'intervention via le formulaire manager/admin (dropzone) : (a) **500 sur `edit`** dès que l'intervention a des photos (`attachment.blob` appelé sur un `Attached::Many`, `_file_dropzone.html.erb:29` — le partial était écrit pour `has_one_attached`) ; (b) **photo jamais enregistrée** depuis ce formulaire : input file sans `multiple` → param `intervention[photos]` **scalaire**, rejeté en silence par `permit(photos: [])` (le formulaire **agents** `_form_for_agents.erb` avait lui `multiple: true` → d'où le « des fois ça fonctionne » selon le rôle) ; (c) **AVIF** annoncé dans l'`accept` des deux formulaires mais refusé par `PieceJointeValidable::IMAGES` → échec de validation après coup | 2026-07-15 (signalé et corrigé le jour même, PE) | partial `_file_dropzone` généralisé has_one/has_many (détection `Attached::Many`, liste des blobs **persistés**, `multiple` auto sur l'input, hint « remplacera » réservé au has_one) ; `dropzone_controller.js` gère plusieurs fichiers (drop + change + libellé) ; `image/avif` ajouté à `IMAGES`. 4 tests : `edit` avec photos (**prouvé rouge sur l'ancien partial**) + assertion `input[multiple]`, update ajoute une photo, signed_ids ré-émis conservés + ajout, AVIF accepté |
+| **B16** — `purge` d'une photo : redirection **302** après un DELETE Turbo, au lieu du 303 imposé par la décision audit 2026-06-12 §4. Sévérité **rétrogradée faible** après test empirique de PE en dev (le scénario destructeur initialement déduit était faux : `button_to` émet POST+`_method=delete`, et fetch convertit POST→GET sur un 302 → pas de ré-émission de DELETE ; simple écart de cohérence) | 2026-07-15 (signalé, instruit et corrigé le jour même) | `status: :see_other` ajouté au `redirect_to` de `interventions_controller#purge` (une ligne, demande PE) ; test ex-`skip` passé au vert (« la redirection après un DELETE Turbo est en 303 see_other ») ; suite 1253 runs / 0 échec / 2 skips (retour à B1+B9) |
 | **B10** — les 2 tests « création à postériori » échouaient entre 14 h et 15 h (fixture `intervention_fille` de **martin** ancrée sur l'heure réelle − 4 h recouvrait la plage [10 h, 11 h] créée à midi fixe pour le même agent → refus #357 légitime ; test uniquement) | 2026-07-15 | correctif « désolidariser les acteurs » : les 2 tests utilisent **john_wick** (aucune intervention de fixture → jamais de conflit) au lieu de martin ; la fixture `4.hours.ago` reste intacte (elle protège les tests de pointage, cf. 2026-07-09). Vérifié **en pleine fenêtre 14 h–15 h** : 42/42 verts + suite complète 1239 runs / 0 échec |
 
 ---
