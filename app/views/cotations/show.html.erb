@@ -47,13 +47,12 @@
     </div>
     <div class="grid text-sm overflow-x-auto p-4" style="grid-template-columns: 250px 1fr;">
      
-      <%# ---  actions --- %>
      
     <%# ---  ADHÉRENT --- %>
     <div class="flex items-center gap-2 pb-4 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
       <%= embedded_svg "icons/account_circle.svg", class: "text-base", title: "Adhérent" %> Adhérent
     </div>
-    <div class="pb-4 text-slate-800 border-b border-slate-100 flex items-center ">
+    <div class="pb-4 text-slate-800 text-right border-b border-slate-100 flex items-center ">
       <%= link_to @cotation.adherent.nom_prénom, user_path(@cotation.adherent), class: "link" if @cotation.adherent %>
     </div>
     <%# ---  SERVICE --- %>
@@ -86,7 +85,7 @@
     </div>
     <%# ---  signature --- %>
     <% if @cotation.mémo.present? %>
-      <div class="flex items-start gap-2 py-2.5 text-slate-500" style="padding-right: 2rem;">Mémo</div>
+      <div class="flex items-start gap-2 py-2.5 text-slate-500 p-2">Mémo</div>
       <div class="py-2.5 text-slate-800 italic flex items-center"><%= simple_format(@cotation.mémo) %></div>
     <% end %>
     <% if @cotation.signee_le.present? %>
@@ -102,36 +101,35 @@
 
 
 
- <div class="flex flex-row bg-slate-100 m-2 p-2 justify-beetween border-b border-slate-100 gap-4  items-center py-4 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-        <h2>
-        Prochaine étape : 
-     </h2>
-     <div class="flex flex-row gap-2">
-        <% unless (policy(@cotation).envoyer? && @cotation.can_envoyer?) || 
-                  (policy(@cotation).valider? && @cotation.can_valider?) || 
-                  (policy(@cotation).refuser? && @cotation.can_refuser?) %>
-        <span class="badge text-nowrap min-w-20 font-bold <%= @cotation.style %>">
-          <%= @cotation.workflow_state.humanize %>
-        </span>
-      <% end %>
-      <% if policy(@cotation).envoyer? && @cotation.can_envoyer? %>
-        <%= button_to "Envoyer", envoyer_cotation_path(@cotation), class: "btn btn-sm btn-info btn-outline  min-w-20 hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
-      <% end %>
-      <% if policy(@cotation).valider? && @cotation.can_valider? %>
-        <%= button_to "Valider", valider_cotation_path(@cotation), class: "btn btn-sm btn-success btn-outline min-w-20 hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
-      <% end %>
-      <% if policy(@cotation).refuser? && @cotation.can_refuser? %>
-        <%= button_to "Refuser", refuser_cotation_path(@cotation), class: "btn btn-sm btn-error btn-outline min-w-20 hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
-      <% end %>
-      </div>
-    </div>
+<%# --- Prochaine étape --- %>
+<div class="flex flex-wrap justify-between shadow-sm bg-white rounded-b-xl items-center gap-3 mt-2 p-4 bg-slate-50 rounded-xl mb-8">
+  <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Prochaine étape</span>
 
+  <div class="flex flex-row gap-2 flex-wrap">
+    <% unless (policy(@cotation).envoyer? && @cotation.can_envoyer?) ||
+              (policy(@cotation).valider? && @cotation.can_valider?) ||
+              (policy(@cotation).refuser? && @cotation.can_refuser?) %>
+      <span class="badge text-nowrap min-w-20 font-bold <%= @cotation.style %>">
+        <%= @cotation.workflow_state.humanize %>
+      </span>
+    <% end %>
+    <% if policy(@cotation).envoyer? && @cotation.can_envoyer? %>
+      <%= button_to "Envoyer", envoyer_cotation_path(@cotation), class: "btn btn-sm btn-info btn-outline min-w-20 hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
+    <% end %>
+    <% if policy(@cotation).valider? && @cotation.can_valider? %>
+      <%= button_to "Valider", valider_cotation_path(@cotation), class: "btn btn-sm btn-success btn-outline min-w-20 hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
+    <% end %>
+    <% if policy(@cotation).refuser? && @cotation.can_refuser? %>
+      <%= button_to "Refuser", refuser_cotation_path(@cotation), class: "btn btn-sm btn-error btn-outline min-w-20 hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
+    <% end %>
+  </div>
+</div>
 
-<div class="flex pt-4 items-center justify-end">
- 
+<%# --- Supprimer--- %>
+<div class="flex pt-4 mt-2 border-t border-slate-100 items-center justify-end">
   <% if policy(@cotation).destroy? %>
-    <button class="btn btn-soft btn-error hover:!text-white" 
-              onclick="delete_cotation_modal_<%= @cotation.id %>.showModal()" 
+    <button class="btn btn-soft btn-error hover:!text-white"
+              onclick="delete_cotation_modal_<%= @cotation.id %>.showModal()"
               title="Supprimer">
       <%= embedded_svg "icons/delete.svg", title: "Supprimer la cotation" %>
       <span class="hidden lg:inline">Supprimer</span>

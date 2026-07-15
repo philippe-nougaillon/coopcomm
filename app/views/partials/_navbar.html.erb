@@ -67,7 +67,7 @@
         
         
         <%# --- 4. PLANIFICATION & RESSOURCES PARA ADMINISTRADOR --- %>
-        <% elsif current_user.rôle == 'administrateur' %>
+        <% elsif current_user.rôle == 'administrateur' || current_user.rôle == 'manager' %>
           <% if policy(Tool).index? || policy(User).agent_calendrier? %>
             <li class="dropdown dropdown-end">
               <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'tools' || params[:action] == 'agent_calendrier'}" title="Ressources">

@@ -28,19 +28,28 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     click_sur_boutton_ajouter('intervention')
 
     # « Bon d'intervention » agent : pas de description (générée automatiquement),
-    # service caché ; on saisit l'adhérent, le créneau réalisé (passé) et le commentaire
+    # service caché ; on saisit l'adhérent, le créneau réalisé (passé) et le commentaire.
+    # On évite un chevauchement avec les fixtures existantes en choisissant une journée
+    # distincte du créneau déjà présent dans la base de test.
+    date = Date.today - 3
     select_option('#intervention_adherent_id', 'Bruel Patrick') # adhérent du service de bond
 
-    fill_in 'Début', with: (Date.today - 1).strftime('%m%d%Y')
+    fill_in 'Début', with: date.strftime('%m%d%Y')
     select '08', from: 'intervention_début_hour'
     select '00', from: 'intervention_début_minute'
-    fill_in 'Fin', with: (Date.today - 1).strftime('%m%d%Y')
+    fill_in 'Fin', with: date.strftime('%m%d%Y')
     select '16', from: 'intervention_fin_hour'
     select '00', from: 'intervention_fin_minute'
     page.select '1,0', from: 'Temps de pause (h)'
     fill_in 'Commentaires', with: 'Ceci est un commentaire !'
-    click_on 'enregistrer_intervention'
-    assert_text 'Intervention créée avec succès.'
+
+    assert_difference -> { Intervention.count }, 1 do
+      click_on 'enregistrer_intervention'
+    end
+
+    intervention = Intervention.order(:created_at).last
+    assert_equal 'Ceci est un commentaire !', intervention.commentaires
+    assert_equal [@agent.id], intervention.agent_ids
   end
 
   test 'Modifier intervention' do
@@ -50,10 +59,15 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     sleep(1)
     click_on 'Modifier'
     # Le formulaire agent n'expose pas la description : on modifie le commentaire
-    fill_in 'Commentaires', with: 'Pelouse tondue, bordures faites'
-    click_on 'enregistrer_intervention'
-    assert_text 'Intervention modifiée avec succès'
-    assert_text 'Pelouse tondue, bordures faites'
+    commentaire = 'Pelouse tondue, bordures faites'
+    fill_in 'Commentaires', with: commentaire
+
+    assert_no_difference -> { Intervention.count } do
+      click_on 'enregistrer_intervention'
+    end
+
+    assert_equal commentaire, intervention.reload.commentaires
+    assert_text commentaire
   end
 
   test 'Ne pas pouvoir supprimer intervention' do

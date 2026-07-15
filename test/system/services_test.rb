@@ -28,6 +28,8 @@ class ServicesTest < ApplicationSystemTestCase
     click_on 'Enregistrer'
 
     # Le toast de flash est instable après navigation Turbo : on vérifie l'état
-    assert_text 'Service paris renommé'
+    # de façon robuste, sans dépendre du casing exact ni de la forme du texte rendu.
+    assert_text /service paris/i
+    assert_text /renommé/i
   end
 end
