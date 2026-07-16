@@ -18,75 +18,55 @@
 <div class="flex flex-wrap gap-8 lg:px-48">
   <%# Interventions + Messages %>
   <div class="flex-1 min-w-[300px] w-full">
-
-
-
-
-
-
-   <%# 1. Bloque Actions / Interventions %>
-<div class="border shadow-sm p-4 rounded-2xl mb-8 bg-white">
-  <div>
-    <h2 class="font-black text-xl mb-6 flex items-center gap-3 uppercase">
-      <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#40b3db] via-[#72cfe8] via-[#a48ad5] to-[#681b98]"></span>
-      <%= current_user.agent? ? "Interventions récentes" : "Actions récentes" %>
-    </h2>
-  </div>
-
- <% if current_user.adhérent? %>
-  <h2 class="font-black text-lg mb-4">Cotations à signer</h2>
-  <% if @cotations.any? %>
-    <div class="border border-slate-200 rounded-xl mb-4 p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
-      <% @cotations.each do |cotation| %>
-        <%= render partial: 'cotation', locals: {cotation: } %>
-      <% end %>
-      <span>
-        <%= link_to cotations_path, class: 'text-primary mt-8 hover:underline flex items-center flex-row justify-between gap-2' do %>
-          Voir toutes les cotations
-          <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
+    <%# 1. Bloque Actions / Interventions %>
+    <div class="border shadow-sm p-4 rounded-2xl mb-8 bg-white">
+      <div>
+        <h2 class="font-black text-xl mb-6 flex items-center gap-3 uppercase">
+          <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#40b3db] via-[#72cfe8] via-[#a48ad5] to-[#681b98]"></span>
+          <%= current_user.agent? ? "Interventions récentes" : "Actions récentes" %>
+        </h2>
+      </div>
+      <% if current_user.adhérent? %>
+        <h2 class="font-black text-lg mb-4">Cotations à signer</h2>
+        <% if @cotations.any? %>
+          <div class="border border-slate-200 rounded-xl mb-4 p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
+            <% @cotations.each do |cotation| %>
+              <%= render partial: 'cotation', locals: {cotation: } %>
+            <% end %>
+            <span>
+              <%= link_to cotations_path, class: 'text-primary mt-8 hover:underline flex items-center flex-row justify-between gap-2' do %>
+                Voir toutes les cotations
+                <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
+              <% end %>
+            </span>
+          </div>
+        <% else %>
+          <div class="border border-slate-200 rounded-xl mb-4 p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
+            <p class="text-slate-500">Pas de cotations à signer.</p>
+          </div>
         <% end %>
-      </span>
-    </div>
-  <% else %>
-    <div class="border border-slate-200 rounded-xl mb-4 p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
-      <p class="text-slate-500">Pas de cotations à signer.</p>
-    </div>
-  <% end %>
-<% end %>
-
-  <% if current_user.adhérent? %>
-    <h2 class="font-black text-lg mb-4">Interventions</h2>
-  <% end %>
-
-  <% if @interventions.any? %>
-    <div class="border border-slate-200 rounded-xl p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
-      <% @interventions.each do |intervention| %>
-        <%= render partial: 'intervention', locals: {intervention: } %>
       <% end %>
-      <span>
-        <%= link_to interventions_path, class: 'text-primary mt-8 hover:underline flex items-center flex-row justify-between gap-2' do %>
-          Voir toutes les interventions
-          <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
-        <% end %>
-      </span>
+      <% if current_user.adhérent? %>
+        <h2 class="font-black text-lg mb-4">Interventions</h2>
+      <% end %>
+      <% if @interventions.any? %>
+        <div class="border border-slate-200 rounded-xl p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
+          <% @interventions.each do |intervention| %>
+            <%= render partial: 'intervention', locals: {intervention: } %>
+          <% end %>
+          <span>
+            <%= link_to interventions_path, class: 'text-primary mt-8 hover:underline flex items-center flex-row justify-between gap-2' do %>
+              Voir toutes les interventions
+              <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
+            <% end %>
+          </span>
+        </div>
+      <% else %>
+        <div class="border border-slate-200 rounded-xl p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
+          <p class="text-slate-500">Il n'y a rien en attente, vous pouvez vous reposer :)</p>
+        </div>
+      <% end %>
     </div>
-  <% else %>
-    <div class="border border-slate-200 rounded-xl p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
-      <p class="text-slate-500">Il n'y a rien en attente, vous pouvez vous reposer :)</p>
-    </div>
-  <% end %>
-
-</div>
-
-
-
-
-
-
-
-
-
-
     <%# 2.  Messages de l'équipe %>
     <div class="border shadow-sm p-4 rounded-2xl  bg-white">
       <h2 class="font-black text-xl mb-6 flex items-center gap-3 uppercase">

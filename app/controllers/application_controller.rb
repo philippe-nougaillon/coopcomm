@@ -54,6 +54,7 @@ class ApplicationController < ActionController::Base
     @users_tags = User.by_service(current_user).tag_counts_on(:tags).order(:name)
   end
 
+  
   # Périmètre de services d'un index. Au premier affichage (filtre non soumis), le
   # filtre est laissé VIDE et on montre tout le périmètre (toute l'organisation pour
   # un admin si `admin_sees_all`, sinon les services du current_user) — sauf l'admin
@@ -90,6 +91,7 @@ class ApplicationController < ActionController::Base
     end
   end
 
- 
-
+  def after_sign_out_path_for(resource_or_scope)
+      root_path
+    end
 end
