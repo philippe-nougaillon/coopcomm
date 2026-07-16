@@ -296,12 +296,12 @@ class CotationTest < ActiveSupport::TestCase
 
   test "style renvoie la classe CSS du badge de l'état courant" do
     cotation = build_cotation
-    assert_equal 'badge-ghost', cotation.style # créé
+    assert_equal 'badge badge-secondary rounded-full', cotation.style # créé
     cotation.save!
     cotation.envoyer!
-    assert_equal 'badge-info text-white', cotation.style # envoyé
+    assert_equal 'badge badge-error text-white rounded-full', cotation.style # envoyé
     cotation.signer!
-    assert_equal 'badge-accent text-white', cotation.style # signé
+    assert_equal 'badge badge-outline badge-info rounded-full', cotation.style # signé
   end
 
   test "workflow_state_humanized liste les états humanisés dans l'ordre du workflow" do
