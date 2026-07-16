@@ -439,6 +439,8 @@ GEM
     raabro (1.4.0)
     racc (1.8.1)
     rack (3.2.6)
+    rack-attack (6.8.0)
+      rack (>= 1.0, < 4)
     rack-cors (2.0.2)
       rack (>= 2.0.0)
     rack-protection (4.2.1)
@@ -703,6 +705,7 @@ DEPENDENCIES
   prawn-table (~> 0.2.2)
   puma (>= 5.0)
   pundit (~> 2.3)
+  rack-attack (~> 6.8)
   rack-cors (~> 2.0)
   rails (~> 8.0)
   rails-controller-testing
