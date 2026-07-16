@@ -1,5 +1,6 @@
 <div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
   <%= form_with(model: user, id: dom_id(user), class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-4' }, data: { controller: 'nested-form toggle-role-info', nested_form_wrapper_selector_value: '.nested-form-wrapper' }) do |form| %>
+    
     <% if user.errors.any? %>
       <div id="error_explanation" class="bg-red-50 text-red-500 px-4 py-3 font-medium rounded-lg mb-2 border border-red-200">
         <h2 class="font-black mb-2 text-sm md:text-base">
@@ -12,12 +13,14 @@
         </ul>
       </div>
     <% end %>
+
     <div class="form-control w-full">
       <%= form.label :nom, class: "label font-semibold text-slate-700 pt-0" do %>
         <span>Nom <span class="text-red-500">*</span></span>
       <% end %>
       <%= form.text_field :nom, class: 'input input-bordered input-sm w-full focus:input-primary h-10', required: true %>
     </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
       <% if current_user.administrateur? %>
         <div class="form-control w-full">
@@ -27,31 +30,36 @@
                           { selected: user.rôle || 'agent' }, 
                           class: 'slim-select w-full h-10', 
                           data: { 'toggle-role-info-target': 'role',
-                            action: 'change->toggle-role-info#change'
+                                  action: 'change->toggle-role-info#change'
                           } %>
         </div>
       <% else %>
         <%= form.hidden_field :rôle, value: (user.new_record? ? 'agent' : user.rôle), data: { 'toggle-role-info-target': 'role' } %>
       <% end %>
+
       <div data-toggle-role-info-target="localisation" class="form-control w-full" data-controller="places" data-places-center-lat-value="<%= ENV['MAPS_CENTER_LAT'] %>" data-places-center-lng-value="<%= ENV['MAPS_CENTER_LNG'] %>">
         <%= form.label :address, class: "label font-semibold text-slate-700" do %>
           Localisation <span class="text-red-500">*</span>
         <% end %>
+        <%# Quitamos el required nativo aquí por si Stimulus oculta este campo temporalmente en base al rol %>
         <%= form.text_field :address, 
-        class: 'input input-bordered select-sm w-full focus:input-primary h-10', 
-        placeholder: 'Commencez à tapez une adresse...', 
-        data: { places_target: "address" } %>
+            class: 'input input-bordered select-sm w-full focus:input-primary h-10', 
+            placeholder: 'Commencez à tapez une adresse...', 
+            data: { places_target: "address" } %>
         <%= form.hidden_field :latitude, data: { places_target: "latitude" } %>
         <%= form.hidden_field :longitude, data: { places_target: "longitude" } %>
       </div>
+
       <div data-toggle-role-info-target='prenom' class="form-control w-full">
         <%= form.label :prénom, class: "label font-semibold text-slate-700" do %>
           <span>Prénom <span class="text-red-500">*</span></span>
         <% end %>
-        <%= form.text_field :prénom, class: 'input input-bordered input-sm w-full focus:input-primary h-10' %>
+        <%= form.text_field :prénom, class: 'input input-bordered input-sm w-full focus:input-primary h-10', required: true %>
       </div>
     </div>
+
     <hr class="border-slate-100 my-1" />
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
       <div class="form-control w-full">
         <%= form.label :téléphone, "Téléphone", class: "label font-semibold text-slate-700" %>
@@ -64,6 +72,7 @@
         <%= form.email_field :email, class: 'input input-bordered input-sm w-full focus:input-primary h-10', required: true %>
       </div>
     </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
       <% if current_user.manager_or_admin? %>
         <div class="form-control w-full">
@@ -81,8 +90,10 @@
           <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full h-10', data: { controller: 'slim-select' } } %>
         </div>
       <% end %>
+
       <% if current_user.manager_or_admin? %>
         <% if current_user.manager? && user.persisted? %>
+          <%# Si es manager y edita, enviamos los services actuales de forma segura %>
           <%= form.hidden_field :service_ids, value: user.services.ids %>
         <% else %>
           <div class="form-control w-full">
@@ -95,27 +106,39 @@
                             { multiple: true, class: 'slim-select w-full h-10' } %>
           </div>
         <% end %>
+      <% else %>
+        <%# ¡IMPORTANTE! Si el usuario no es admin/manager, enviamos sus service_ids asignados de forma oculta %>
+        <%# para que al guardar no falle la validación de presencia de servicios si existe en el modelo %>
+        <% user.services.ids.each do |service_id| %>
+          <%= hidden_field_tag "#{form.object_name}[service_ids][]", service_id %>
+        <% end %>
       <% end %>
     </div>
+
     <hr class="border-slate-100 my-1" />
+
     <div class="form-control w-full">
       <%= form.label :memo, "Mémo", class: "label font-semibold text-slate-700" %>
       <%= form.text_area :memo, class: 'textarea textarea-bordered w-full h-24 focus:textarea-primary', placeholder: 'Notes concernant cet utilisateur...' %>
     </div>
+
     <%= render "shared/file_dropzone", 
-           form: form, 
-           attribute: :profile_picture, 
-           accept: "image/png, image/jpeg, image/avif, image/webp", 
-           placeholder: "Glissez une photo de profil ici ou cliquez pour parcourir",
-           label: "Photo de profil" %>
+               form: form, 
+               attribute: :profile_picture, 
+               accept: "image/png, image/jpeg, image/avif, image/webp", 
+               placeholder: "Glissez une photo de profil ici ou cliquez pour parcourir",
+               label: "Photo de profil" %>
+
     <div class="flex gap-2 mt-4 w-full">
         <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>
         <%= form.submit "Enregistrer", id: "enregistrer_utilisateur", class: "btn btn-primary flex-1" %>
     </div>
   <% end %>
-  <div class="pt-6 max-w-3xl mx-auto ">
+
+  <div class="pt-6 max-w-3xl mx-auto">
     <%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
       <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des utilisateurs" %>
       Retour à la liste des utilisateurs
     <% end %>
   </div>
+</div>

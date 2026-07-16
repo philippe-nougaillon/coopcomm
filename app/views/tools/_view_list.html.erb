@@ -30,9 +30,7 @@
         <% if @tools.present? %>
           <%= render @tools %>
         <% else %>
-          <%# La fila necesita position:relative para que el mensaje absoluto se posicione respecto a ELLA, no a la tabla entera %>
           <tr class="relative h-24 bg-white">
-            <%# La primera celda lleva el mensaje flotante, que cubrirá toda la fila gracias al position:relative del <tr> %>
             <td class="bg-white border-b border-slate-100">
               <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                 <span class="text-slate-400 bg-white text-base italic px-6 py-3 max-w-md text-center pointer-events-auto">
@@ -51,14 +49,16 @@
       </tbody>
     </table>
   </div>
-  <% if @pagy&.pages.to_i > 1 %>
-    <div class="flex flex-col justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
-      <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
+  <% if @pagy.pages > 1 %>
+    <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
+      <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
         <%= pagy_nav(@pagy).html_safe %>
       </div>
-      <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
+      <div class=" text-slate-500 text-center text-sm w-full ">
         <%= pagy_info(@pagy).html_safe %>
       </div>
-    </div>
-  <% end %>
+    <% else %>
+      <div></div>
+    <% end %>
+  </div>
 </div>
