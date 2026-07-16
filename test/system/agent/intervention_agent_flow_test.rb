@@ -29,9 +29,12 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
 
     # « Bon d'intervention » agent : pas de description (générée automatiquement),
     # service caché ; on saisit l'adhérent, le créneau réalisé (passé) et le commentaire.
-    # On évite un chevauchement avec les fixtures existantes en choisissant une journée
-    # distincte du créneau déjà présent dans la base de test.
-    date = Date.today - 3
+    # On évite un chevauchement avec les fixtures existantes : la fixture tonte_locaux
+    # de bond occupe le lundi `(Date.today - 1).beginning_of_week` (8 h 30 – 17 h 30),
+    # donc une date relative à aujourd'hui (ex. Date.today - 3) retombe dessus certains
+    # jours de la semaine (le jeudi) ; on ancre sur le vendredi qui précède ce lundi —
+    # toujours passé, jamais en conflit, quel que soit le jour d'exécution.
+    date = (Date.today - 1).beginning_of_week - 3
     select_option('#intervention_adherent_id', 'Bruel Patrick') # adhérent du service de bond
 
     fill_in 'Début', with: date.strftime('%m%d%Y')
@@ -45,6 +48,10 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
 
     assert_difference -> { Intervention.count }, 1 do
       click_on 'enregistrer_intervention'
+      # Synchronisation : click_on rend la main dès le clic, AVANT que le serveur
+      # ait traité le POST — on attend la page show (redirection 303) qui affiche
+      # le commentaire, sinon le count est évalué trop tôt.
+      assert_text 'Ceci est un commentaire !'
     end
 
     intervention = Intervention.order(:created_at).last
@@ -64,10 +71,13 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
 
     assert_no_difference -> { Intervention.count } do
       click_on 'enregistrer_intervention'
+      # Synchronisation : attendre le rendu du commentaire sur la page show avant
+      # de relire la base (click_on ne bloque pas jusqu'à la fin du PATCH). Le
+      # textarea de l'edit ne compte pas comme texte visible → pas de faux positif.
+      assert_text commentaire
     end
 
     assert_equal commentaire, intervention.reload.commentaires
-    assert_text commentaire
   end
 
   test 'Ne pas pouvoir supprimer intervention' do
