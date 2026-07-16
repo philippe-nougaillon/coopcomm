@@ -93,6 +93,14 @@ Leçons payées (sessions 2026-06-17, 2026-07-09, bug B10) :
   flash (instables après navigation Turbo).
 - Les tests système ne rollbackent pas : nettoyer ce qu'on crée (résidus → échecs
   ordre-dépendants) ; lancer `test:system` dans un job CI **séparé**.
+- **En local, une seule commande : `bin/rails test:all`** — toute la suite, système inclus,
+  en un seul run (validé 3 seeds le 2026-07-16 : 1336 runs / 0 échec, ~5 min).
+  Ne **jamais** lancer deux runs de test en même temps sur la machine (`rails test` pendant
+  un `rails test:system`, deux terminaux, `guard` actif pendant un run manuel) : ils
+  partagent `coopcom_test` et le chargement de fixtures de l'un sabote l'autre — symptôme
+  typique : `PG::UniqueViolation … audits_pkey` en pleine suite (cf. R2 au registre des
+  bugs). Qui veut du vrai parallélisme utilise une base par processus (convention
+  `TEST_ENV_NUMBER` du gem parallel_tests).
 - Un test difficile à écrire révèle souvent un problème de conception : le signaler, pas le contourner.
 - **Symétrie** : si deux ressources sont miroir (Commande/Facture), livrer les tests des deux.
   Facture avait été testée, Commande livrée en scaffold vide — et le même bug (B2) vivait des deux côtés.
