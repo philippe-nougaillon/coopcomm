@@ -44,8 +44,8 @@ class ServicesController < ApplicationController
         format.html { redirect_to @service, notice: 'Service créé avec succès.' }
         format.json { render :show, status: :created, location: @service }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @service.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @service.errors, status: :unprocessable_content }
       end
     end
   end
@@ -57,8 +57,8 @@ class ServicesController < ApplicationController
         format.html { redirect_to @service, notice: 'Service modifié avec succès.', status: :see_other }
         format.json { render :show, status: :ok, location: @service }
       else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @service.errors, status: :unprocessable_entity }
+        format.html { render :edit, status: :unprocessable_content }
+        format.json { render json: @service.errors, status: :unprocessable_content }
       end
     end
   end

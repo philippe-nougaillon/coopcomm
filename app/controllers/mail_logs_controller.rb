@@ -43,8 +43,8 @@ class MailLogsController < ApplicationController
   #       format.html { redirect_to mail_log_url(@mail_log), notice: "Mail log was successfully created." }
   #       format.json { render :show, status: :created, location: @mail_log }
   #     else
-  #       format.html { render :new, status: :unprocessable_entity }
-  #       format.json { render json: @mail_log.errors, status: :unprocessable_entity }
+  #       format.html { render :new, status: :unprocessable_content }
+  #       format.json { render json: @mail_log.errors, status: :unprocessable_content }
   #     end
   #   end
   # end
@@ -56,8 +56,8 @@ class MailLogsController < ApplicationController
   #       format.html { redirect_to mail_log_url(@mail_log), notice: "Mail log was successfully updated." }
   #       format.json { render :show, status: :ok, location: @mail_log }
   #     else
-  #       format.html { render :edit, status: :unprocessable_entity }
-  #       format.json { render json: @mail_log.errors, status: :unprocessable_entity }
+  #       format.html { render :edit, status: :unprocessable_content }
+  #       format.json { render json: @mail_log.errors, status: :unprocessable_content }
   #     end
   #   end
   # end

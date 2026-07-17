@@ -59,8 +59,8 @@ class NewslettersController < ApplicationController
   #       format.html { redirect_to @newsletter, notice: "Newsletter was successfully updated." }
   #       format.json { render :show, status: :ok, location: @newsletter }
   #     else
-  #       format.html { render :edit, status: :unprocessable_entity }
-  #       format.json { render json: @newsletter.errors, status: :unprocessable_entity }
+  #       format.html { render :edit, status: :unprocessable_content }
+  #       format.json { render json: @newsletter.errors, status: :unprocessable_content }
   #     end
   #   end
   # end

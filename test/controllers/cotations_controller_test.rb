@@ -206,7 +206,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
         adherent_id: @adherent.id, service_id: @service.id, intitulé: ''
       } }
     end
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
   end
 
   # --- Signature (signer / signer_do) ---

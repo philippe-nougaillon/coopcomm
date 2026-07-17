@@ -55,7 +55,7 @@ class ConventionsController < ApplicationController
       redirect_to conventions_path, notice: 'Convention enregistrée.'
     else
       set_form_collections
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -70,7 +70,7 @@ class ConventionsController < ApplicationController
       redirect_to conventions_path, notice: 'Convention mise à jour.', status: :see_other
     else
       set_form_collections
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 

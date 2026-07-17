@@ -41,7 +41,7 @@ class FacturesControllerTest < ActionDispatch::IntegrationTest
 
   test "update with invalid params renders edit (422)" do
     patch facture_url(@facture), params: { facture: { intitulé: "" } }
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
   end
 
   test "update refusé sur une facture non modifiable (validé)" do

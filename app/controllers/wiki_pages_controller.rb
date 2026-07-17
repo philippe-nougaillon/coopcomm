@@ -51,8 +51,8 @@ class WikiPagesController < ApplicationController
         format.html { redirect_to wiki_page_url(@wiki_page), notice: 'Page wiki créée avec succès.' }
         format.json { render :show, status: :created, location: @wiki_page }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @wiki_page.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @wiki_page.errors, status: :unprocessable_content }
       end
     end
   end
@@ -64,8 +64,8 @@ class WikiPagesController < ApplicationController
         format.html { redirect_to wiki_page_url(@wiki_page), notice: 'Page wiki modifiée avec succès.' }
         format.json { render :show, status: :ok, location: @wiki_page }
       else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @wiki_page.errors, status: :unprocessable_entity }
+        format.html { render :edit, status: :unprocessable_content }
+        format.json { render json: @wiki_page.errors, status: :unprocessable_content }
       end
     end
   end

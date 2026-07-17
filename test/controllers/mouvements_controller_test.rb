@@ -41,7 +41,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
            params: { mouvement: { tool_id: @template_mouvement.tool_id, état: 'sortie', date: '' } }
     end
 
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
     assert_select 'select[name=?]', 'mouvement[tool_id]'
     assert_select 'input[type=hidden][name=?]', 'mouvement[tool_id]', false
   end
@@ -55,7 +55,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
                      mouvement: { tool_id: @template_mouvement.tool_id, état: 'sortie', date: '' } }
     end
 
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
     assert_select 'input[type=hidden][name=?]', 'mouvement[tool_id]'
     assert_select 'select[name=?]', 'mouvement[tool_id]', false
   end

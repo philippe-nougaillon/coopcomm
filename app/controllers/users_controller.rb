@@ -106,8 +106,8 @@ class UsersController < ApplicationController
         format.html { redirect_to user_url(@user), notice: 'Utilisateur créé avec succès.' }
         format.json { render :show, status: :created, location: @user }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @user.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @user.errors, status: :unprocessable_content }
       end
     end
   end
@@ -123,7 +123,7 @@ class UsersController < ApplicationController
         format.html { redirect_to user_url(@user), notice: 'Utilisateur modifié avec succès.' }
         format.json { render :show, status: :ok, location: @user }
       else
-        format.html { render :edit, status: :unprocessable_entity }
+        format.html { render :edit, status: :unprocessable_content }
 
         format.turbo_stream do
           if params[:from_absence_modal]
@@ -145,7 +145,7 @@ class UsersController < ApplicationController
           end
         end
 
-        format.json { render json: @user.errors, status: :unprocessable_entity }
+        format.json { render json: @user.errors, status: :unprocessable_content }
       end
     end
   end
@@ -372,8 +372,8 @@ class UsersController < ApplicationController
         format.html { redirect_to user_url(@user), notice: 'Mot de passe modifié avec succès.' }
         format.json { render :show, status: :ok, location: @user }
       else
-        format.html { render :edit_password, status: :unprocessable_entity }
-        format.json { render json: @user.errors, status: :unprocessable_entity }
+        format.html { render :edit_password, status: :unprocessable_content }
+        format.json { render json: @user.errors, status: :unprocessable_content }
       end
     end
   end
