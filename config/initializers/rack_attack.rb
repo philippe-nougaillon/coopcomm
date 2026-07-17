@@ -88,6 +88,33 @@ class Rack::Attack
     end
   end
 
+  ### Fail2Ban : bannissement automatique des scanners ###
+
+  # Block suspicious requests for '/etc/password' or wordpress specific paths.
+  # After 3 blocked requests in 10 minutes, block all requests from that IP.
+  #
+  # Chaque requête qui matche est bloquée immédiatement (403) ; à la 3e en
+  # 10 min, l'IP entière est bannie (compteurs/bans dans Solid Cache, donc
+  # persistants aux redémarrages). Débannir en console :
+  #   Rack::Attack::Fail2Ban.reset("pentesters-IP", findtime: 10.minutes)
+  #
+  # ⚠ bantime = 2 semaines : c'est le maximum que Solid Cache honore — son
+  # `max_age` (défaut 2.weeks, pas de config/cache.yml sur ce projet) purge
+  # toute entrée plus vieille, quel que soit l'expires_in demandé. Un scanner
+  # qui revient après la purge est re-banni à la 3e sonde. Pour un ban
+  # vraiment définitif : blocklist statique (ENV/en dur), pas le cache.
+  blocklist('fail2ban pentesters') do |req|
+    # `filter` returns truthy value if request fails, or if it's from a previously banned IP
+    # so the request is blocked
+    Rack::Attack::Fail2Ban.filter("pentesters-#{req.ip}", maxretry: 3, findtime: 10.minutes, bantime: 2.weeks) do
+      # The count for the IP is incremented if the return value is truthy
+      CGI.unescape(req.query_string) =~ %r{/etc/passwd} ||
+        req.path.include?('/etc/passwd') ||
+        req.path.include?('wp-admin') ||
+        req.path.include?('wp-login')
+    end
+  end
+
   ### Custom Throttle Response ###
 
   # By default, Rack::Attack returns an HTTP 429 for throttled responses,

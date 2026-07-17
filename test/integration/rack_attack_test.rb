@@ -182,6 +182,77 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_nil discriminant('req/ip', '/rails/active_storage/blobs/redirect/xyz/photo.jpg', method: 'GET')
   end
 
+  # ----- fail2ban pentesters : bannissement automatique des scanners -----
+  # (réponse = 403 Forbidden : c'est une blocklist, pas un throttle 429)
+
+  test 'fail2ban : la blocklist est déclarée' do
+    assert_includes Rack::Attack.blocklists.keys, 'fail2ban pentesters'
+  end
+
+  test 'fail2ban : une requête scanner est bloquée immédiatement, dès la première' do
+    get '/wp-admin/setup.php', headers: ip('66.66.66.66')
+
+    assert_equal 403, response.status,
+                 'un chemin wp-admin devrait être bloqué par la blocklist fail2ban'
+  end
+
+  test 'fail2ban : les quatre motifs du filtre matchent (wp-admin, wp-login, /etc/passwd en chemin et en query)' do
+    ['/wp-admin', '/wp-login.php', '/dossier/etc/passwd', "/?fichier=#{CGI.escape('/etc/passwd')}"].each do |cible|
+      Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new # compteur remis à zéro entre motifs
+
+      get cible, headers: ip('66.66.66.66')
+
+      assert_equal 403, response.status, "le motif #{cible} devrait être bloqué"
+    end
+  end
+
+  test "fail2ban : à la 3e requête scanner en 10 minutes, l'IP est bannie pour TOUT le site" do
+    2.times { get '/wp-admin', headers: ip('66.66.66.66') }
+    get root_path, headers: ip('66.66.66.66')
+
+    assert_not_equal 403, response.status, 'à 2 tentatives, les pages normales passent encore'
+
+    get '/wp-admin', headers: ip('66.66.66.66')
+    get root_path, headers: ip('66.66.66.66')
+
+    assert_equal 403, response.status, "après 3 tentatives, même les pages légitimes de l'IP sont bloquées"
+  end
+
+  test "fail2ban : le ban est par IP — une autre IP n'est pas affectée" do
+    3.times { get '/wp-admin', headers: ip('66.66.66.66') }
+
+    get root_path, headers: ip('9.9.9.9')
+
+    assert_not_equal 403, response.status
+  end
+
+  test 'fail2ban : le ban tient dans la durée (2 semaines, plafond du max_age Solid Cache)' do
+    3.times { get '/wp-admin', headers: ip('66.66.66.66') }
+
+    travel 13.days
+
+    get root_path, headers: ip('66.66.66.66')
+
+    assert_equal 403, response.status, 'le ban devrait encore tenir avant les 2 semaines'
+
+    travel 1.day + 1.second
+
+    get root_path, headers: ip('66.66.66.66')
+
+    assert_not_equal 403, response.status, 'le bantime de 2 semaines devrait avoir expiré'
+  end
+
+  test 'fail2ban : la commande console de débannissement lève le ban immédiatement' do
+    # C'est la commande à utiliser en prod (avec l'IP publique concernée).
+    3.times { get '/wp-admin', headers: ip('66.66.66.66') }
+
+    Rack::Attack::Fail2Ban.reset('pentesters-66.66.66.66', findtime: 10.minutes)
+
+    get root_path, headers: ip('66.66.66.66')
+
+    assert_not_equal 403, response.status, 'reset devrait débannir sans attendre le bantime'
+  end
+
   private
 
   def identifiants(email)
