@@ -41,8 +41,7 @@ class InterventionAdherentFlowTest < ApplicationSystemTestCase
     visit interventions_url
     intervention = interventions(:tonte_locaux)
     click_on intervention.description
-    sleep(1)
-    click_on 'Modifier'
+    click_on 'Modifier' # n'existe que sur le show : Capybara attend la navigation
     fill_in 'Description', with: 'Installer la fibre'
     # La refonte UX vide le select Service à l'édition (required) : il faut re-choisir
     select_option('#intervention_service_id', 'Informatique')
@@ -55,7 +54,9 @@ class InterventionAdherentFlowTest < ApplicationSystemTestCase
     visit interventions_url
     intervention = interventions(:tonte_locaux)
     click_on intervention.description
-    sleep(1)
+    # Ancrage positif d'abord : sans lui, l'assertion négative passerait
+    # trivialement sur l'index avant la fin de la navigation vers le show.
+    assert_current_path intervention_path(intervention)
     assert_no_selector "[data-testid=\"Supprimer l'intervention\"]"
   end
 
