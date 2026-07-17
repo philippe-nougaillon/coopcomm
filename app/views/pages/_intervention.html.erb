@@ -30,13 +30,13 @@
           <%= button_to 'Terminer',
             pointe ? pointer_intervention_path(Intervention.find_by(slug: intervention.template_slug)) : terminer_intervention_path(intervention),
             method: pointe ? :get : :post,
-            class: "btn btn-primary btn-outline w-24 text-sm btn-sm transition-all duration-300 hover:scale-105 hover:text-white!",
+            class: "btn btn-primary btn-outline w-24 text-sm transition-all duration-300 hover:scale-105 hover:text-white!",
             form: { data: { turbo: false } } %>
         <% end %>
         <% if policy(intervention).valider? && intervention.can_valider? %>
           <%= button_to 'Valider',
             valider_intervention_path(intervention),
-            class: "btn btn-success btn-outline w-24 text-sm btn-sm transition-all duration-300 hover:scale-105 hover:text-white!",
+            class: "btn btn-success btn-outline w-24 text-sm  transition-all duration-300 hover:scale-105 hover:text-white!",
             form: { data: { turbo: false } } %>
         <% end %>
         <% if policy(intervention).refuser? && intervention.can_refuser? %>
