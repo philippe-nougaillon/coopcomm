@@ -31,8 +31,8 @@ class WarehousesController < ApplicationController
         format.html { redirect_to admin_parametres_path, notice: 'Site créé avec succès.' }
         format.json { render :show, status: :created, location: @warehouse }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @warehouse.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @warehouse.errors, status: :unprocessable_content }
       end
     end
   end
@@ -44,8 +44,8 @@ class WarehousesController < ApplicationController
         format.html { redirect_to admin_parametres_path, notice: 'Site modifié avec succès.', status: :see_other }
         format.json { render :show, status: :ok, location: @warehouse }
       else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @warehouse.errors, status: :unprocessable_entity }
+        format.html { render :edit, status: :unprocessable_content }
+        format.json { render json: @warehouse.errors, status: :unprocessable_content }
       end
     end
   end

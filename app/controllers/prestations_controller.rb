@@ -19,7 +19,7 @@ class PrestationsController < ApplicationController
     if @prestation.save
       redirect_to admin_parametres_path, notice: 'Prestation créée.'
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -28,7 +28,7 @@ class PrestationsController < ApplicationController
     if @prestation.update(prestation_params)
       redirect_to admin_parametres_path, notice: 'Prestation mise à jour.', status: :see_other
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 

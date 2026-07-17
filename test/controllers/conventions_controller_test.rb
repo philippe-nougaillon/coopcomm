@@ -142,7 +142,7 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
         user_id: users(:weil).id, service_id: services(:informatique).id, date_début: @today.to_s
       } }
     end
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
   end
 
   test 'create invalide (date de fin antérieure à la date de début) : aucune création' do
@@ -153,7 +153,7 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
         date_fin_prévue: (@today - 1.month).to_s # Un mes ANTES de empezar (inválido)
       } }
     end
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
   end
 
   test "create invalide (service n'appartenant pas à l'adhérent) : aucune création" do
@@ -163,6 +163,6 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
         user_id: @adherent.id, service_id: services(:informatique).id, date_début: @today.to_s
       } }
     end
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
   end
 end

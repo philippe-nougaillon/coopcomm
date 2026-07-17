@@ -49,8 +49,8 @@ class AdminController < ApplicationController
         format.html { redirect_to users_url, notice: 'Utilisateur créé avec succès.' }
         format.json { render :show, status: :created, location: @user }
       else
-        format.html { render :create_new_user, status: :unprocessable_entity }
-        format.json { render json: @user.errors, status: :unprocessable_entity }
+        format.html { render :create_new_user, status: :unprocessable_content }
+        format.json { render json: @user.errors, status: :unprocessable_content }
       end
     end
   end

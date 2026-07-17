@@ -130,7 +130,7 @@ class CommandesControllerTest < ActionDispatch::IntegrationTest
 
   test "update with invalid params renders edit (422)" do
     patch commande_url(@commande), params: { commande: { intitulé: "" } }
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
   end
 
   test "update refusé sur une commande non modifiable (validé)" do

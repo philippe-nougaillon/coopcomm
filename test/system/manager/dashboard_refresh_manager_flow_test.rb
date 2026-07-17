@@ -52,8 +52,11 @@ class DashboardRefreshManagerFlowTest < ApplicationSystemTestCase
   end
 
   # Erreurs typiques d'une liste d'options reconstruite PENDANT l'interaction
-  # (dynamic-select re-fetch les services/agents en asynchrone).
-  RACE_SELECT = [Capybara::ElementNotFound, Selenium::WebDriver::Error::StaleElementReferenceError].freeze
+  # (dynamic-select re-fetch les services/agents en asynchrone), ou d'un menu
+  # slim-select voisin resté ouvert dont une option intercepte le clic.
+  RACE_SELECT = [Capybara::ElementNotFound,
+                 Selenium::WebDriver::Error::StaleElementReferenceError,
+                 Selenium::WebDriver::Error::ElementClickInterceptedError].freeze
 
   # select_option durci : si la repopulation frappe en plein clic (option
   # momentanément absente, élément recyclé), on referme et on réessaie.

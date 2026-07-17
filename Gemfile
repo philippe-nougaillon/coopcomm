@@ -185,3 +185,5 @@ gem 'devise_invitable', '~> 2.0'
 group :development do
   gem 'htmlbeautifier'
 end
+
+gem "rack-attack", "~> 6.8"

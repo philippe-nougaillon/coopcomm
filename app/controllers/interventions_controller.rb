@@ -226,8 +226,8 @@ class InterventionsController < ApplicationController
         format.html { redirect_to intervention_url(@intervention), notice: 'Intervention créée avec succès.', status: :see_other }
         format.json { render :show, status: :created, location: @intervention }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @intervention.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @intervention.errors, status: :unprocessable_content }
       end
     end
   end
@@ -253,8 +253,8 @@ class InterventionsController < ApplicationController
         end
         format.json { render :show, status: :ok, location: @intervention }
       else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @intervention.errors, status: :unprocessable_entity }
+        format.html { render :edit, status: :unprocessable_content }
+        format.json { render json: @intervention.errors, status: :unprocessable_content }
       end
     end
   end
@@ -395,7 +395,7 @@ class InterventionsController < ApplicationController
     if @intervention.update(localisation: "#{params[:latitude]}, #{params[:longitude]}")
       render json: { status: 'success' }, status: :ok
     else
-      render json: { errors: @intervention.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: @intervention.errors.full_messages }, status: :unprocessable_content
     end
   end
 
@@ -494,8 +494,8 @@ class InterventionsController < ApplicationController
         format.html { redirect_to intervention_url(@intervention), notice: 'Modèle de pointage créé avec succès.' }
         format.json { render :show, status: :created, location: @intervention }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @intervention.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @intervention.errors, status: :unprocessable_content }
       end
     end
   end

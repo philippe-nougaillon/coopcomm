@@ -5,7 +5,14 @@ require 'rake'
 
 class CotationsRelancerASignerTaskTest < ActiveJob::TestCase
   setup do
-    Rails.application.load_tasks if Rake::Task.tasks.empty?
+    # Charge uniquement la tâche testée (pas de `load_tasks` complet) : sous
+    # `rails test:all`, le `test:prepare` interne charge déjà les tâches railties
+    # dans une application Rake jetable — un second `load_tasks` rechargerait
+    # statistics.rake → warning « already initialized constant STATS_DIRECTORIES ».
+    unless Rake::Task.task_defined?('cotations:relancer_adherents')
+      Rake::Task.define_task(:environment) # stub du prérequis, l'app est déjà bootée
+      load Rails.root.join('lib/tasks/cotations.rake')
+    end
     @task = Rake::Task['cotations:relancer_adherents']
     @task.reenable
 

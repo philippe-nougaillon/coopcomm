@@ -21,7 +21,10 @@ class CotationsTest < ApplicationSystemTestCase
     fill_in 'Qté', with: 3, match: :first
 
     click_on 'Enregistrer'
-    assert_text 'Cotation créée'
+
+    # État métier durable : la show affiche la référence assignée à la création
+    # (les toasts de flash sont instables après navigation Turbo, cf. 2026-06-12 §7).
+    assert_text(/CO-\d{4}-\d+/)
 
     cotation = Cotation.order(:created_at).last
     assert_equal 'Devis système', cotation.intitulé

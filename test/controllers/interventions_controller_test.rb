@@ -761,7 +761,7 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
       end
     end
 
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
   end
 
   test "saisie a posteriori : des dates dans le futur sont refusées (422)" do
@@ -779,7 +779,7 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
       } }
     end
 
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
   end
 
   # --- Parcours 1 : le second scan clôture la fille (état terminé + fin) ----

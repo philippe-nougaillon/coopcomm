@@ -117,8 +117,7 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     visit interventions_url
     intervention = interventions(:tonte_locaux)
     click_on intervention.description
-    sleep(1)
-    click_on 'Modifier'
+    click_on 'Modifier' # n'existe que sur le show : Capybara attend la navigation
     fill_in 'Description', with: 'Installer la fibre'
     # La refonte UX vide le select Service à l'édition (required) : il faut re-choisir
     select_option('#intervention_service_id', 'Informatique')
@@ -209,12 +208,10 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
   # test "Filter les interventions par date" do
   #   fill_in "Du", with: Date.today.strftime("%d-%m-%Y")
   #   fill_in "Au", with: (Date.today + 30).strftime("%d-%m-%Y")
-  #   sleep(1)
   #   page.driver.browser.switch_to.active_element.send_keys(:enter)
   #   # assert_text "Affichage de 1 élément"
   #
   #   fill_in "Au", with: (Date.today + 7).strftime("%d-%m-%Y")
-  #   sleep(1)
   #   page.driver.browser.switch_to.active_element.send_keys(:enter)
   #   # assert_text "Aucun élément trouvé"
   # end

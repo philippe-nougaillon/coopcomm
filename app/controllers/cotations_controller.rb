@@ -74,7 +74,7 @@ class CotationsController < ApplicationController
       redirect_to @cotation, notice: 'Cotation créée.'
     else
       set_form_collections
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -90,7 +90,7 @@ class CotationsController < ApplicationController
       redirect_to @cotation, notice: 'Cotation mise à jour.', status: :see_other
     else
       set_form_collections
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -154,7 +154,7 @@ class CotationsController < ApplicationController
       NotifCotationSigneeJob.perform_later(@cotation, creator.id, current_user.id)
       redirect_to @cotation, notice: "Cotation signée avec succès."
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 

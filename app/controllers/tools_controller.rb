@@ -60,8 +60,8 @@ class ToolsController < ApplicationController
         format.html { redirect_to tool_url(@tool), notice: 'Outil créé avec succès.' }
         format.json { render :show, status: :created, location: @tool }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @tool.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @tool.errors, status: :unprocessable_content }
       end
     end
   end
@@ -73,8 +73,8 @@ class ToolsController < ApplicationController
         format.html { redirect_to tool_url(@tool), notice: 'Outil modifié avec succès.' }
         format.json { render :show, status: :ok, location: @tool }
       else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @tool.errors, status: :unprocessable_entity }
+        format.html { render :edit, status: :unprocessable_content }
+        format.json { render json: @tool.errors, status: :unprocessable_content }
       end
     end
   end
