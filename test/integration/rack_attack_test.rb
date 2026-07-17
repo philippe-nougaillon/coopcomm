@@ -189,37 +189,46 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_includes Rack::Attack.blocklists.keys, 'fail2ban pentesters'
   end
 
-  test 'fail2ban : une requête scanner est bloquée immédiatement, dès la première' do
+  test "fail2ban : dès la PREMIÈRE sonde scanner, la requête est bloquée ET l'IP bannie pour tout le site" do
     get '/wp-admin/setup.php', headers: ip('66.66.66.66')
 
     assert_equal 403, response.status,
                  'un chemin wp-admin devrait être bloqué par la blocklist fail2ban'
+
+    get root_path, headers: ip('66.66.66.66')
+
+    assert_equal 403, response.status, "une seule sonde doit suffire à bannir l'IP partout (maxretry: 1)"
   end
 
-  test 'fail2ban : les quatre motifs du filtre matchent (wp-admin, wp-login, /etc/passwd en chemin et en query)' do
-    ['/wp-admin', '/wp-login.php', '/dossier/etc/passwd', "/?fichier=#{CGI.escape('/etc/passwd')}"].each do |cible|
-      Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new # compteur remis à zéro entre motifs
-
-      get cible, headers: ip('66.66.66.66')
-
-      assert_equal 403, response.status, "le motif #{cible} devrait être bloqué"
+  test 'fail2ban : toutes les familles de motifs scanner sont reconnues' do
+    scanners = ['/wp-admin', '/blog/wp-login.php', '/xmlrpc.php', '/index.php', '/login.aspx',
+                '/cgi-bin/test-cgi', '/phpmyadmin/index', '/adminer', '/administrator/index',
+                '/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php',
+                '/actuator/health', '/telescope/requests', '/manager/html',
+                '/owa/auth/logon.aspx', '/autodiscover/autodiscover.xml',
+                '/boaform/admin/formlogin', '/HNAP1',
+                '/.env', '/.git/config', '/.aws/credentials', '/backup.sql', '/dump.bak',
+                '/dossier/etc/passwd', "/recherche?fichier=#{CGI.escape('/etc/passwd')}"]
+    scanners.each do |cible|
+      assert motif_scanner?(cible), "le motif #{cible} devrait être reconnu comme scanner"
     end
   end
 
-  test "fail2ban : à la 3e requête scanner en 10 minutes, l'IP est bannie pour TOUT le site" do
-    2.times { get '/wp-admin', headers: ip('66.66.66.66') }
-    get root_path, headers: ip('66.66.66.66')
-
-    assert_not_equal 403, response.status, 'à 2 tentatives, les pages normales passent encore'
-
-    get '/wp-admin', headers: ip('66.66.66.66')
-    get root_path, headers: ip('66.66.66.66')
-
-    assert_equal 403, response.status, "après 3 tentatives, même les pages légitimes de l'IP sont bloquées"
+  test "fail2ban : JAMAIS un chemin légitime de l'app (faux positif = IP d'une mairie bannie 2 semaines)" do
+    legitimes = ['/', '/users/sign_in', '/interventions', '/messagerie', '/cotations',
+                 '/admin/audits', '/admin/stats', '/admin/parametres', # routes réelles ≠ /adminer, /administrator
+                 '/jobs', # Mission Control ≠ /jenkins
+                 '/.well-known/security.txt', '/.well-known/acme-challenge/token',
+                 '/rails/active_storage/blobs/redirect/abc/rapport.php', # URL = nom du fichier uploadé !
+                 '/rails/active_storage/blobs/redirect/abc/sauvegarde.sql',
+                 '/assets/application-abc123.css']
+    legitimes.each do |cible|
+      assert_not motif_scanner?(cible), "#{cible} ne doit JAMAIS être traité comme scanner"
+    end
   end
 
   test "fail2ban : le ban est par IP — une autre IP n'est pas affectée" do
-    3.times { get '/wp-admin', headers: ip('66.66.66.66') }
+    get '/wp-admin', headers: ip('66.66.66.66')
 
     get root_path, headers: ip('9.9.9.9')
 
@@ -227,7 +236,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
   end
 
   test 'fail2ban : le ban tient dans la durée (2 semaines, plafond du max_age Solid Cache)' do
-    3.times { get '/wp-admin', headers: ip('66.66.66.66') }
+    get '/wp-admin', headers: ip('66.66.66.66')
 
     travel 13.days
 
@@ -244,7 +253,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
 
   test 'fail2ban : la commande console de débannissement lève le ban immédiatement' do
     # C'est la commande à utiliser en prod (avec l'IP publique concernée).
-    3.times { get '/wp-admin', headers: ip('66.66.66.66') }
+    get '/wp-admin', headers: ip('66.66.66.66')
 
     Rack::Attack::Fail2Ban.reset('pentesters-66.66.66.66', findtime: 10.minutes)
 
@@ -269,5 +278,14 @@ class RackAttackTest < ActionDispatch::IntegrationTest
   def discriminant(regle, chemin, method: 'POST', params: nil)
     env = Rack::MockRequest.env_for(chemin, method: method, params: params, 'REMOTE_ADDR' => '1.2.3.4')
     Rack::Attack.throttles.fetch(regle).block.call(Rack::Attack::Request.new(env))
+  end
+
+  # Évalue le filtre fail2ban sur une requête forgée. IP unique à chaque appel :
+  # avec maxretry: 1, un chemin scanner bannit son IP — une IP partagée entre
+  # appels ferait matcher les chemins légitimes suivants (déjà banni).
+  def motif_scanner?(chemin)
+    @ip_seq = (@ip_seq || 0) + 1
+    env = Rack::MockRequest.env_for(chemin, method: 'GET', 'REMOTE_ADDR' => "203.0.113.#{@ip_seq}")
+    !!Rack::Attack.blocklists.fetch('fail2ban pentesters').block.call(Rack::Attack::Request.new(env))
   end
 end

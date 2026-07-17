@@ -90,28 +90,59 @@ class Rack::Attack
 
   ### Fail2Ban : bannissement automatique des scanners ###
 
-  # Block suspicious requests for '/etc/password' or wordpress specific paths.
-  # After 3 blocked requests in 10 minutes, block all requests from that IP.
-  #
-  # Chaque requête qui matche est bloquée immédiatement (403) ; à la 3e en
-  # 10 min, l'IP entière est bannie (compteurs/bans dans Solid Cache, donc
-  # persistants aux redémarrages). Débannir en console :
+  # Toute requête vers un chemin « scanner » (technologies étrangères à une app
+  # Rails : WordPress/PHP/ASP, interfaces d'admin exotiques, fichiers sensibles)
+  # bannit l'IP DÈS LA PREMIÈRE sonde (maxretry: 1), pour tout le site.
+  # Compteurs/bans dans Solid Cache → persistants aux redémarrages.
+  # Débannir en console :
   #   Rack::Attack::Fail2Ban.reset("pentesters-IP", findtime: 10.minutes)
   #
   # ⚠ bantime = 2 semaines : c'est le maximum que Solid Cache honore — son
   # `max_age` (défaut 2.weeks, pas de config/cache.yml sur ce projet) purge
   # toute entrée plus vieille, quel que soit l'expires_in demandé. Un scanner
-  # qui revient après la purge est re-banni à la 3e sonde. Pour un ban
+  # qui revient après la purge est re-banni à sa prochaine sonde. Pour un ban
   # vraiment définitif : blocklist statique (ENV/en dur), pas le cache.
+  #
+  # ⚠⚠ Le ban 1re-tentative ne pardonne AUCUN faux positif (2 semaines pour
+  # toute l'IP, souvent partagée par un bureau de mairie). D'où :
+  # - exemption de /rails/ (l'URL ActiveStorage se termine par le NOM DU
+  #   FICHIER uploadé : un adhérent qui ouvre son « rapport.php » serait banni)
+  #   et /assets/ ;
+  # - exemption de /.well-known (ACME/security.txt, légitime) ;
+  # - préfixes stricts, vérifiés sans collision avec les routes réelles
+  #   (/admin/… de l'app ne matche NI /adminer NI /administrator — épinglé
+  #   par les tests « jamais un chemin légitime »).
+
+  # Extensions de fichiers qu'une app Rails ne sert jamais.
+  SCANNER_EXTENSIONS = %w[.php .php7 .phtml .asp .aspx .jsp .jspx .cgi .sql .bak].freeze
+
+  # Préfixes de chemins sondés par les scanners (comparés en minuscules) :
+  # WordPress/CMS, consoles BDD PHP, frameworks non-Ruby (Laravel, Spring,
+  # Tomcat), messageries Exchange, équipements réseau (routeurs Boa/GPON).
+  SCANNER_PREFIXES = %w[
+    /wp- /wordpress /xmlrpc /joomla /drupal /administrator /typo3 /magento
+    /phpmyadmin /pma /adminer /mysql /sqlite /webdav /phpinfo
+    /cgi-bin /vendor/phpunit /laravel /telescope /_ignition /_profiler
+    /actuator /manager/html /jenkins /solr /struts /wls-wsat /console/login
+    /owa/ /autodiscover /ews/ /remote/fgt_lang /boaform /hnap1 /gponform
+  ].freeze
+
   blocklist('fail2ban pentesters') do |req|
-    # `filter` returns truthy value if request fails, or if it's from a previously banned IP
-    # so the request is blocked
-    Rack::Attack::Fail2Ban.filter("pentesters-#{req.ip}", maxretry: 3, findtime: 10.minutes, bantime: 2.weeks) do
-      # The count for the IP is incremented if the return value is truthy
-      CGI.unescape(req.query_string) =~ %r{/etc/passwd} ||
-        req.path.include?('/etc/passwd') ||
-        req.path.include?('wp-admin') ||
-        req.path.include?('wp-login')
+    # `filter` retourne vrai si la requête matche OU si l'IP est déjà bannie →
+    # requête bloquée (403) dans les deux cas.
+    Rack::Attack::Fail2Ban.filter("pentesters-#{req.ip}", maxretry: 1, findtime: 10.minutes, bantime: 2.weeks) do
+      chemin = req.path.downcase
+      if chemin.start_with?('/rails/', '/assets/')
+        false # fichiers servis par l'app : jamais un motif de ban (cf. ⚠⚠)
+      else
+        chemin.end_with?(*SCANNER_EXTENSIONS) ||
+          chemin.start_with?(*SCANNER_PREFIXES) ||
+          (chemin.start_with?('/.') && !chemin.start_with?('/.well-known')) ||
+          chemin.include?('wp-admin') ||
+          chemin.include?('wp-login') ||
+          chemin.include?('/etc/passwd') ||
+          CGI.unescape(req.query_string) =~ %r{/etc/passwd}
+      end
     end
   end
 
