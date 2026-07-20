@@ -33,9 +33,11 @@ class FacturesTest < ApplicationSystemTestCase
 
     # « Intitulé » existe aussi sur les lignes de prestation → on cible le champ de la facture par son id.
     fill_in 'facture_intitulé', with: 'Facture nettoyage révisée'
-    click_on 'Enregistrer'
+    cliquer_bouton 'Enregistrer'
 
-    # On vérifie l'état métier (le toast de flash est instable après navigation Turbo).
+    # `update` redirige vers la show : on attend la navigation AVANT d'asserter le
+    # texte, sinon il est trouvé dans le champ du formulaire encore affiché.
+    assert_current_path facture_path(@facture)
     assert_text 'Facture nettoyage révisée'
     assert_equal 'Facture nettoyage révisée', @facture.reload.intitulé
   end

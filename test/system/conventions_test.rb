@@ -46,9 +46,11 @@ class ConventionsTest < ApplicationSystemTestCase
     # La zone passe en vert (couleur success daisyUI).
     assert_selector "[data-controller='dropzone'].border-success"
 
-    click_on 'Enregistrer'
+    cliquer_bouton 'Enregistrer'
 
-    assert_text 'Convention mise à jour'
+    # État métier plutôt que le toast (il s'auto-détruit au bout de 5 s) :
+    # `update` redirige vers l'index, c'est ça le signal fiable de succès.
+    assert_current_path conventions_path
     assert @convention.reload.document.attached?, 'le document aurait dû être attaché'
     assert_equal 'exemple.pdf', @convention.document.filename.to_s
   end

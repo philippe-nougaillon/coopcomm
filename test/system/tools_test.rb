@@ -23,21 +23,27 @@ class ToolsTest < ApplicationSystemTestCase
     fill_in 'Marque', with: 'Marina Systems'
     select_option('#tool_icon_name', 'Tracteur')
 
-    click_on 'enregistrer_tool'
+    # Destination inconnue d'avance (nouvel enregistrement) : on attend que le
+    # formulaire ait été quitté avant d'asserter le contenu de la page d'arrivée.
+    soumettre 'enregistrer_tool'
 
-    # On vérifie l'état (le toast de flash est instable après navigation Turbo)
     assert_text 'MX57SH3V'
     assert Tool.exists?(name: 'Tondeuse à gazon', marque: 'Marina Systems')
   end
 
   test 'Supprimer un outil' do
-    visit tool_url(tools(:outil_paris))
+    outil = tools(:outil_paris)
+    visit tool_url(outil)
 
     accept_confirm do
       click_on 'supprimer_outil'
     end
 
-    assert_text 'Outil supprimé avec succès.'
+    # État métier plutôt que le toast : celui-ci s'auto-détruit au bout de 5 s,
+    # l'asserter est un pile ou face (doctrine 2026-06-12 §7).
+    assert_current_path tools_path
+    assert_no_text outil.name
+    assert_not Tool.exists?(outil.id)
   end
 
   test 'Ne pas pouvoir supprimer un outil avec une intervention' do

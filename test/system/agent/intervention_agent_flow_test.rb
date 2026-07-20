@@ -47,10 +47,9 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     fill_in 'Commentaires', with: 'Ceci est un commentaire !'
 
     assert_difference -> { Intervention.count }, 1 do
-      click_on 'enregistrer_intervention'
-      # Synchronisation : click_on rend la main dès le clic, AVANT que le serveur
-      # ait traité le POST — on attend la page show (redirection 303) qui affiche
-      # le commentaire, sinon le count est évalué trop tôt.
+      # Destination inconnue d'avance : on attend que le formulaire ait été quitté
+      # (le commentaire seul ne suffit pas — il est aussi dans le textarea).
+      soumettre 'enregistrer_intervention'
       assert_text 'Ceci est un commentaire !'
     end
 
@@ -69,10 +68,8 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     fill_in 'Commentaires', with: commentaire
 
     assert_no_difference -> { Intervention.count } do
-      click_on 'enregistrer_intervention'
-      # Synchronisation : attendre le rendu du commentaire sur la page show avant
-      # de relire la base (click_on ne bloque pas jusqu'à la fin du PATCH). Le
-      # textarea de l'edit ne compte pas comme texte visible → pas de faux positif.
+      # Attend que le formulaire ait été quitté avant de lire la page d'arrivée.
+      soumettre 'enregistrer_intervention'
       assert_text commentaire
     end
 
