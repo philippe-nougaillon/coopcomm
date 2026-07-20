@@ -42,7 +42,7 @@
         <% if policy(intervention).refuser? && intervention.can_refuser? %>
           <%= button_to 'Refuser',
             refuser_intervention_path(intervention),
-            class: "btn btn-error btn-outline w-32 transition-all duration-300 hover:scale-105 hover:text-white!",
+            class: "btn btn-error btn-outline w-24 transition-all duration-300 hover:scale-105 hover:text-white!",
             form: { data: { turbo: false } } %>
         <% end %>
       </div>

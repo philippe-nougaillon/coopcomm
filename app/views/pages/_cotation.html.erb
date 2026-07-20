@@ -18,12 +18,12 @@
   <div class="flex flex-wrap gap-3 mt-5">
     <% if policy(cotation).signer? && cotation.can_signer? %>
       <%= link_to 'Signer', signer_cotation_path(cotation), 
-            class: "btn btn-accent btn-outline w-32 transition-all duration-300 hover:scale-105 hover:text-white!",
+            class: "btn btn-accent btn-outline w-24 transition-all duration-300 hover:scale-105 hover:text-white!",
             data: { turbo: false } %>
     <% end %>
     <% if policy(cotation).signer? && cotation.can_refuser? %>
       <%= button_to 'Refuser', refuser_cotation_path(cotation), 
-            class: "btn btn-error btn-outline w-32 transition-all duration-300 hover:scale-105 hover:text-white!",
+            class: "btn btn-error btn-outline w-24 transition-all duration-300 hover:scale-105 hover:text-white!",
         form: { data: { turbo: false }, class: 'w-[100px]' } %>
     <% end %>
   </div>

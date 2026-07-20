@@ -60,15 +60,15 @@
     </div>
   </td>
   <td class="px-4 py-3 text-nowrap text-sm">
-    <% depasse = convention.heures_consommees > convention.heures_conventionnees %>
-    <span class="<%= depasse ? 'text-error font-semibold' : 'text-slate-700' %>">
-      <%= convention.heures_consommees.round(1) %> h
-    </span>
-    / <%= convention.heures_conventionnees %> h
-    <span class="<%= depasse ? 'text-error font-semibold' : '' %>">
-      (<%= depasse ? ((convention.heures_consommees / convention.heures_conventionnees) * 100).round : prog[:indicateur] %>%)
-    </span>
-  </td>
+  <% depasse = convention.heures_consommees > convention.heures_conventionnees %>
+  <span class="<%= depasse ? 'text-error font-semibold' : 'text-slate-700' %>">
+    <%= convention.heures_consommees.round(1) %> h
+  </span>
+  / <%= convention.heures_conventionnees %> h
+  <span class="<%= depasse ? 'text-error font-semibold' : '' %>">
+    (<%= depasse ? ((convention.heures_consommees / convention.heures_conventionnees) * 100).round : prog[:indicateur] %>%)
+  </span>
+</td>
   <td class="px-4 py-3 text-base text-center">
     <% if convention.document.attached? %>
       <%= link_to rails_blob_path(convention.document, disposition: "inline"), target: "_blank", title: convention.document.filename.to_s, class: "inline-block" do %>
