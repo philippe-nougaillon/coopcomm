@@ -19,13 +19,12 @@
   <td class="px-4 py-3"><%= audit.auditable_type %></td>
   <td class="px-4 py-3"><%= audit.action.humanize %></td>
   <td class="px-4 py-3">
-    <% unless audit.comment %>
-      <% changes = prettify(audit, current_user) %>
-      <% if changes.any? %>
-        <%= sanitize changes.join('<br>') %>
-      <% end %>
-    <% else %>
-      <%= audit.comment %>
-    <% end %>
-  </td>
+  <% unless audit.comment %>
+    <%= audit_changes_list(audit, current_user) %>
+  <% else %>
+    <%= audit.comment %>
+  <% end %>
+</td>
 </tr>
+
+

@@ -20,7 +20,7 @@
   <td class="px-4 py-3"><%= audit.action.humanize %></td>
   <td class="px-4 py-3">
     <% unless audit.comment %>
-      <% changes = prettify(audit, current_user) %>
+      <%= audit_changes_list(audit, current_user) %>
       <% if changes.any? %>
         <%= sanitize changes.join('<br>') %>
       <% end %>

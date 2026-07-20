@@ -14,6 +14,8 @@ module AuditsHelper
     last_sign_in_ip
     failed_attempts
     otp_secret
+    signature 
+    ip
     consumed_timestep
     otp_required_for_login
     uid
@@ -25,7 +27,8 @@ module AuditsHelper
     tag_list
   ].freeze
 
-  def field_label(key)
+def field_label(key)
+  key = key.to_s
     {
       'discarded_at' => 'Statut du compte',
       'locked_at' => 'Verrouillage',
@@ -44,8 +47,8 @@ module AuditsHelper
       'telephone' => 'Téléphone',
       'memo' => 'Mémo',
       'warehouse_id' => 'Entrepôt',
-      'workflow_state' => 'Statut',
       'adherent_id' => 'Adhérent',
+      'workflow_state' => 'Statut',
       'description' => 'Description',
       'temps_total' => 'Temps total',
       'temps_de_pause' => 'Temps de pause',
@@ -119,8 +122,13 @@ module AuditsHelper
   end
 
   def humanize_changes(changes)
-    changes.filter_map do |key, value|
-      next if FILTERED_FIELDS.include?(key)
+  changes.filter_map do |key, value|
+    Rails.logger.info "KEY = #{key.inspect}"
+    Rails.logger.info "LABEL = #{field_label(key)}"
+
+    next if FILTERED_FIELDS.include?(key)
+
+    
 
       old_val, new_val = value.is_a?(Array) ? value : [nil, value]
       
@@ -136,41 +144,53 @@ module AuditsHelper
     end
   end
 
+
   def format_audit_value(key, value)
-    case key
-    when 'discarded_at'
-      return (value.present? && value != '—') ? 'Désactivé' : 'Réactivé'
-    when 'locked_at'
-      return (value.present? && value != '—') ? 'Verrouillé' : 'Ouvert'
-    end
+  case key
+  when 'discarded_at'
+    return (value.present? && value != '—') ? 'Désactivé' : 'Réactivé'
 
-    # 2. Regla general para el resto de los campos (si es nil, muestra un guión)
-    return '—' if value.nil? || value.to_s.strip.empty? || value.to_s == '—'
-
-    case key
-    when 'apres_midi', 'matin', 'journee'
-      value.to_s.match?(/true|1/) ? 'Oui' : 'Non'
-    when 'motif'
-      { '0' => 'Congé annuel', '1' => 'Maladie', '2' => 'RTT' }.fetch(value.to_s, value)
-    when 'warehouse_id'
-      warehouse_label(value)
-    when 'adherent_id'
-      User.find_by(id: value)&.email || "Utilisateur ##{value}"
-    when /at$|_prevue$/
-      if value.respond_to?(:strftime)
-        l(value, format: :short)
-      else
-        begin
-          parsed = Time.zone.parse(value.to_s)
-          parsed ? l(parsed, format: :short) : value.to_s
-        rescue
-          value.to_s.sub(/ \+\d+/, '')
-        end
-      end
-    else
-      value.to_s
-    end
+  when 'locked_at'
+    return (value.present? && value != '—') ? 'Verrouillé' : 'Ouvert'
   end
+
+  # 2. Regla general para el resto de los campos (si es nil, muestra un guión)
+  return '—' if value.nil? || value.to_s.strip.empty? || value.to_s == '—'
+
+  case key
+  when 'workflow_state'
+    value.to_s.humanize
+
+  when 'apres_midi', 'matin', 'journee'
+    value.to_s.match?(/true|1/) ? 'Oui' : 'Non'
+
+  when 'motif'
+    { '0' => 'Congé annuel', '1' => 'Maladie', '2' => 'RTT' }
+      .fetch(value.to_s, value)
+
+  when 'warehouse_id'
+    warehouse_label(value)
+
+  when 'adherent_id'
+    User.find_by(id: value)&.email || "Utilisateur ##{value}"
+
+  when /at$|_prevue$|^signee_le$/
+    if value.respond_to?(:strftime)
+      l(value, format: "%d/%m/%Y à %H:%M")
+    else
+      begin
+        parsed = Time.zone.parse(value.to_s)
+        parsed ? l(parsed, format: "%d/%m/%Y à %H:%M") : value.to_s
+      rescue
+        value.to_s.sub(/\s\+\d{4}/, '')
+      end
+    end
+
+  else
+    value.to_s
+  end
+end
+ 
 
   def warehouse_label(id)
     Warehouse.find_by(id: id)&.name || deleted_warehouse_name(id) || id.to_s
