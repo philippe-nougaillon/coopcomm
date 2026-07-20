@@ -17,10 +17,10 @@ class UserManagerFlowTest < ApplicationSystemTestCase
     # (mot de passe généré + invitation ; rôle réservé aux administrateurs)
     select_option('#user_service_ids', 'Technique')
 
-    click_on 'enregistrer_utilisateur'
+    # Destination inconnue d'avance : on attend que le formulaire ait été quitté
+    # avant de lire la page d'arrivée puis la base.
+    soumettre 'enregistrer_utilisateur'
 
-    # Synchronisation : attendre le rendu de la page show (redirect 303) avant
-    # de lire la base — click_on rend la main dès le clic, avant la fin du POST.
     assert_text 'THOMAS Didier'
     créé = User.find_by(email: 'thomas.didier@gmail.commmm')
     assert créé, "l'utilisateur n'a pas été créé"
@@ -36,8 +36,13 @@ class UserManagerFlowTest < ApplicationSystemTestCase
     fill_in 'Prénom', with: 'Didier'
     fill_in 'Adresse email', with: 'thomas.didier@gmail.commmm'
     # (le changement de rôle est désormais réservé aux administrateurs)
-    click_on 'enregistrer_utilisateur'
-    assert_text 'Utilisateur modifié avec succès.'
+    # `cliquer_bouton` recentre le bouton : en largeur mobile le dock fixe du bas
+    # recouvrait le submit et interceptait le clic sous forte charge.
+    cliquer_bouton 'enregistrer_utilisateur'
+
+    # `update` redirige vers la show : on attend la navigation, puis l'état métier
+    # (le toast s'auto-détruit au bout de 5 s — l'asserter est un pile ou face).
+    assert_current_path user_path(user)
     assert_text 'THOMAS Didier'
     assert_text 'thomas.didier@gmail.commmm'
   end

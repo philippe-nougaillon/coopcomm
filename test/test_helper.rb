@@ -39,8 +39,24 @@ module ActiveSupport
   class TestCase
     include Devise::Test::IntegrationHelpers
 
-    # Run tests in parallel with specified workers
-    # parallelize(workers: :number_of_processors)
+    # Tests en parallèle, EN OPT-IN : séquentiel par défaut, parallèle si
+    # PARALLEL_WORKERS est posé — ex. `PARALLEL_WORKERS=4 bin/rails test:all`
+    # (12 workers = tests système saturés, cf. décision 2026-07-17-d).
+    if ENV['PARALLEL_WORKERS']
+      # Rails lit lui-même PARALLEL_WORKERS et ignore la valeur ci-dessous.
+      parallelize(workers: :number_of_processors)
+
+      # SimpleCov : chaque worker forké doit écrire son résultat sous un nom
+      # distinct pour que la couverture finale soit fusionnée (sinon rapport
+      # partiel/écrasé).
+      parallelize_setup do |worker|
+        SimpleCov.command_name "#{SimpleCov.command_name}-#{worker}"
+      end
+
+      parallelize_teardown do |_worker|
+        SimpleCov.result
+      end
+    end
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
