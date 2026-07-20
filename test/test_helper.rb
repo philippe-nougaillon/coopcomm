@@ -137,16 +137,46 @@ module ActiveSupport
       ss_main.click
     end
 
+    # Courses connues sur les slim-select des formulaires dynamiques.
+    RACE_SLIM_SELECT = [Capybara::ElementNotFound,
+                        Selenium::WebDriver::Error::StaleElementReferenceError,
+                        Selenium::WebDriver::Error::ElementClickInterceptedError].freeze
+
+    # Plusieurs de nos selects sont repeuplés EN CASCADE par `dynamic-select` :
+    # choisir l'adhérent relance le chargement des services, choisir le service
+    # relance celui des agents. Chaque repopulation vide puis reconstruit la
+    # liste. Si on tombe pendant ce trou, l'option cherchée n'existe pas encore
+    # (`ElementNotFound`) ou l'élément trouvé vient d'être recyclé
+    # (`StaleElementReference`) — d'autant plus probable sous parallélisation,
+    # où les fetchs sont plus lents. On réessaie donc, après avoir refermé les
+    # menus (un menu multiple resté ouvert intercepte le clic suivant).
     def select_option(id, value)
-      activate_dropdown_slimSelect(id)
-      # On filtre d'abord via la recherche du slim-select, puis on clique :
-      # pendant l'animation d'ouverture, un clic direct par texte atteint
-      # parfois la mauvaise option (la liste défile encore). En tapant la
-      # valeur, il ne reste que l'option voulue → sélection déterministe.
-      find('.ss-search input', visible: true).set(value)
-      within('.ss-list') do
-        find('div.ss-option', text: value, match: :first).click
+      tentatives = 0
+      begin
+        activate_dropdown_slimSelect(id)
+        # On filtre d'abord via la recherche du slim-select, puis on clique :
+        # pendant l'animation d'ouverture, un clic direct par texte atteint
+        # parfois la mauvaise option (la liste défile encore). En tapant la
+        # valeur, il ne reste que l'option voulue → sélection déterministe.
+        find('.ss-search input', visible: true).set(value)
+        within('.ss-list') do
+          find('div.ss-option', text: value, match: :first).click
+        end
+      rescue *RACE_SLIM_SELECT
+        tentatives += 1
+        raise if tentatives >= 3
+
+        fermer_menus_slim_select
+        sleep 0.4 # backoff délibéré : laisse retomber la repopulation en vol
+        retry
       end
+    end
+
+    # Referme tout menu slim-select ouvert, sans dépendre de la page : on émet un
+    # clic sur `body` (le gestionnaire « clic extérieur » de slim-select le capte).
+    def fermer_menus_slim_select
+      page.execute_script('document.body.click()')
+      has_no_selector?('.ss-option', visible: true, wait: 2)
     end
 
     # Add more helper methods to be used by all tests here...
