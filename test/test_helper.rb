@@ -19,6 +19,22 @@ require 'capybara/rails'
 require 'capybara/dsl'
 require 'webmock/minitest' # Permet de stopper les requêtes en dehors du serveur (Ex: API météo)
 
+# Correctif R3 (détail : `.claude/method/bugs-signales.md`) : le hook global posé
+# par `sign_in` est drainé par la 1re requête venue — sous `test:all`, une requête
+# navigateur retardée volait le login du test d'intégration suivant (302 vers
+# /users/sign_in). La file est donc rendue invisible hors du thread de test.
+module Warden
+  module Test
+    module WardenHelpers
+      def _on_next_request
+        return [] unless Thread.current == Thread.main
+
+        @_on_next_request ||= []
+      end
+    end
+  end
+end
+
 module ActiveSupport
   class TestCase
     include Devise::Test::IntegrationHelpers
