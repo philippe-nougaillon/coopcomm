@@ -24,8 +24,7 @@
   <td class="px-4 py-3 align-middle">
     <%= audit_badge(audit) %>
   </td>
-
- <td class="px-4 py-3 text-sm max-w-xs md:max-w-md">
+  <td class="px-4 py-3 text-sm max-w-xs md:max-w-md">
     <% if audit.comment.present? %>
       <span class="italic text-slate-500">"<%= audit.comment %>"</span>
     <% elsif audit.auditable_type == "Absence" && audit.action == "destroy" %>
@@ -40,5 +39,4 @@
       </div>
     <% end %>
   </td>
-
 </tr>
