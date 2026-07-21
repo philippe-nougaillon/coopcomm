@@ -4,6 +4,8 @@ Votre cotation <b>n°<%= @cotation.ref %></b> — « <%= @cotation.intitulé %> 
 <br><br>
 Vous trouverez le devis détaillé en pièce jointe.
 <br><br>
+Vous pouvez également la signer en vous connectant sur votre espace : « <%= link_to "Signer ma cotation n°#{@cotation.ref}", signer_cotation_url(@cotation) %> »
+<br><br>
 Cordialement,
 <br>
 L'équipe COOPCOMM
