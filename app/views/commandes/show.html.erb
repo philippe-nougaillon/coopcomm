@@ -1,5 +1,5 @@
 <div class="mx-auto lg:w-2/3 w-full mt-8">
-  <% page_title!("Cotation #{@commande.ref}") %>
+  <% page_title!("Commande #{@commande.ref}") %>
   <div class="flex flex-row  justify-between items-start gap-3 mb-8">
     <div>
       <h1 class="flex flex-col md:flex-row md:gap-2 text-2xl sm:text-3xl text-primary font-bold sm:whitespace-nowrap">
@@ -8,17 +8,27 @@
       </h1>
       <div class="mt-3 flex items-center gap-2">
         <span class="inline-flex items-center gap-1.5 badge text-nowrap min-w-20 font-bold rounded-full <%= @commande.style %>">
-                   <%= @commande.workflow_state.humanize %>
-                   </span>
+          <%= @commande.workflow_state.humanize %>
+        </span>
       </div>
     </div>
-
     <div class="flex justify-end  md:w-full gap-2 ">
-
-
-     
-
-   <%# --- INFORMATIONS --- %>
+      <% if policy(@commande).update? %>
+        <%= link_to edit_commande_path(@commande), class: "btn flex-1 sm:flex-none" do %>
+          <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
+          <span class="hidden md:block">Modifier</span>
+        <% end %>
+      <% end %>
+      <% if policy(@commande).create_facture? %>
+        <%= link_to create_facture_commande_path(@commande), class: "btn btn-outline btn-info flex-1 sm:flex-none", target: "_blank", data: { turbo: false } do %>
+          <%= embedded_svg "icons/receipt.svg", class: "w-6 h-6 fill-current transition-colors duration-200 hidden md:block" %>
+          <span class="block md:hidden">Facture</span>
+          <span class="hidden md:block">Convertir en facture</span>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+  <%# --- INFORMATIONS --- %>
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="hidden md:block text-2xl text-secondary font-semibold">Informations & Aperçu</h2>
     <h2 class="block md:hidden text-2xl text-secondary font-semibold">Informations</h2>
@@ -33,14 +43,15 @@
         </div>
         <div class="p-4">
           <div class="flex flex-col gap-0">
-<div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
+                        <%# --- ADHÉRENT --- %>
+            <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
               <div class="flex items-center gap-3 text-slate-500 shrink-0">
                 <%= embedded_svg "icons/account_circle.svg", class: "w-5 h-5 fill-current" %>
                 <span class="text-base">Adhérent</span>
               </div>
-              <div class="text-base text-slate-800 font-medium text-right truncate">
-    <%= link_to @commande.adherent.nom_prénom, user_path(@commande.adherent), class: "link" if @commande.adherent %>
-       </div>
+               <div class="text-base text-slate-800 font-medium text-right truncate">
+                <%= link_to @commande.adherent&.nom, user_path(@commande.adherent), class: "text-primary hover:underline" if @commande.adherent %>
+              </div>
             </div>
             <%# --- SERVICE --- %>
             <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
@@ -49,7 +60,7 @@
                 <span class="text-base">Service</span>
               </div>
               <div class="text-base text-slate-800 font-medium text-right capitalize truncate">
-               <%= @commande.service&.nom %> </div>
+                <%= @commande.service&.nom %> </div>
             </div>
             <%# --- INTITULÉ --- %>
             <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
@@ -58,7 +69,7 @@
                 <span class="text-base">Intitulé</span>
               </div>
               <div class="text-base text-slate-800 font-medium text-right capitalize truncate">
-               <%= @commande.intitulé %></div>
+                <%= @commande.intitulé %></div>
             </div>
             <%# --- LIVRAISON SOUHAITÉE --- %>
             <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
@@ -67,12 +78,12 @@
                 <span class="text-base">Livraison souhaitée</span>
               </div>
               <div class="text-base text-slate-800 font-medium text-right">
-                 <% if @commande.date_livraison_souhaitée %>
-          <%= l(@commande.date_livraison_souhaitée, format: :long) %>
-        <% else %>
-          <span class="text-slate-400 italic">Non renseignée</span>
-        <% end %>
-       </div>
+                <% if @commande.date_livraison_souhaitée %>
+                  <%= l(@commande.date_livraison_souhaitée, format: :long) %>
+                <% else %>
+                  <span class="text-slate-400 italic">Non renseignée</span>
+                <% end %>
+              </div>
             </div>
             <%# --- TOTAL HT --- %>
             <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
@@ -81,139 +92,236 @@
                 <span class="text-base">Service total HT</span>
               </div>
               <div class="text-base text-slate-800 font-bold text-right whitespace-nowrap">
-               <%= number_to_currency(@commande.total_ht) %></span>
-               </div>
+                <%= number_to_currency(@commande.total_ht) %></span>
             </div>
-            <%# --- Mémo --- %>
-      <%=  if @commande.mémo.present? %>">
-       <div class="flex flex-col sm:flex-row sm:items-start justify-between py-3 border-b border-slate-100 last:border-0 gap-2">
-                <div class="flex items-center gap-3 text-slate-500 shrink-0">
-                  <div class="w-5 h-5"></div>
-                  <span class="text-base">Mémo</span>
-                </div>
-                <div class="text-base text-slate-800 italic text-right max-w-md">
-     <%= simple_format(@commande.mémo) %></div>
-       </div>
+          </div>
+          <%# --- Mémo --- %>
+          <% if @commande.mémo.present? %>
+            <div class="flex flex-col sm:flex-row sm:items-start justify-between py-3 border-b border-slate-100 last:border-0 gap-2">
+              <div class="flex items-center gap-3 text-slate-500 shrink-0">
+                <div class="w-5 h-5"></div>
+                <span class="text-base">Mémo</span>
               </div>
-            <% end %>
-             </div>
+              <div class="text-base text-slate-800 italic text-right max-w-md">
+                <%= simple_format(@commande.mémo) %>
+              </div>
+            </div>
+          <% end %>
         </div>
       </div>
-
-  <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
-    <h2 class="text-2xl text-secondary font-semibold">Prestations</h2>
-  </div>
-  <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
-    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
-  </div>
-  <div class="overflow-x-auto border-x border-b border-slate-200 shadow-sm bg-white rounded-b-xl">
-    <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-      <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
-      <span>Faire glisser pour voir plus</span>
     </div>
+    <%# --- PROCHAINE ÉTAPE --- %>
+    <% has_workflow_action = (policy(@commande).envoyer? && @commande.can_envoyer?) ||
+                           (policy(@commande).valider? && @commande.can_valider?) ||
+                           (policy(@commande).refuser? && @commande.can_refuser?) %>
+    <% if has_workflow_action %>
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4  mb:mb-6 mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="text-base text-slate-600 uppercase font-semibold shrink-0">
+          Prochaine étape
+        </div>
+        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <% if policy(@commande).envoyer? && @commande.can_envoyer? %>
+            <%= button_to "Envoyer", envoyer_commande_path(@commande), class: "btn  btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
+          <% end %>
+          <% if policy(@commande).valider? && @commande.can_valider? %>
+            <%= button_to "Valider", valider_commande_path(@commande), class: "btn  btn-success btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
+          <% end %>
+          <% if policy(@commande).refuser? && @commande.can_refuser? %>
+            <%= button_to "Refuser", refuser_commande_path(@commande), class: "btn  btn-error btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <%# ---  APERÇU PDF --- %>
+  <div class="hidden md:block w-full h-full min-h-40 lg:h-96 border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white">
+    <iframe 
+      src="<%= pdf_commande_path(@commande, filename: @commande.pdf_filename) %>#toolbar=0" 
+      class="w-full h-full border-none"
+      title="Aperçu de la commande PDF">
+    </iframe>
+  </div>
+</div>
+<%# --- PRESTATIONS --- %>
+<div class="flex justify-between flex-wrap items-center mt-8 mb-4">
+  <h2 class="text-2xl text-secondary font-semibold">Prestations</h2>
+</div>
+<% commande_lignes = @commande.commande_lignes.includes(:prestation) %>
+<% if commande_lignes.any? %>
+  <%# ======= Movil ===== %>
+  <div class="block md:hidden space-y-3 mb-8">
+    <% commande_lignes.each do |ligne| %>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-sm font-semibold text-slate-400  tracking-wider">
+              <%= ligne.prestation&.code %>
+            </span>
+            <h3 class="text-sm text-primary font-bold capitalize mt-0.5">
+              <%= ligne.intitulé.presence || ligne.prestation&.libellé %>
+            </h3>
+          </div>
+          <div class="text-right font-bold text-slate-900 text-sm">
+            <%= number_to_currency(ligne.total_ht) %>
+          </div>
+        </div>
+        <div class="border-t border-slate-100 mt-3 pt-2 text-sm text-slate-500 font-medium">
+          <%= number_to_currency(ligne.prix_ht) %> × <%= ligne.qté %>
+        </div>
+      </div>
+    <% end %>
+    <%# Total móvil %>
+    <div class="rounded-xl flex justify-between items-stretch shadow-md bg-slate-50 border border-slate-200 overflow-hidden">
+      <div class="text-left text-sm font-bold uppercase tracking-wider text-slate-500 p-4 flex items-center">
+        Total HT
+      </div>
+      <div class="text-right text-base font-extrabold text-primary bg-blue-50/50 border-l border-slate-200/60 p-4 min-w-[120px] flex items-center justify-end">
+        <%= number_to_currency(@commande.total_ht) %>
+      </div>
+    </div>
+  </div>
+  <%# ======= desktop  ========= %>
+  <div class="hidden md:block overflow-x-auto border-x border-b border-slate-200 shadow-sm bg-white rounded-b-xl md:rounded-xl mb-8">
     <table class="table table-sm w-full border-none">
       <thead class="bg-slate-100">
-      <tr>
-        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Code</th>
-        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Intitulé</th>
-        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-right">Prix HT</th>
-        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-right">Qté</th>
-        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-right">Total HT</th>
-      </tr>
+        <tr>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left w-30">Code</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left w-full">Intitulé</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-right w-40 ">Prix HT</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center w-20">Qté</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center w-32">Total HT</th>
+        </tr>
       </thead>
       <tbody>
-      <% commande_lignes = @commande.commande_lignes.includes(:prestation) %>
-      <% if commande_lignes.any? %>
-        <% commande_lignes.each do |ligne| %>
-          <tr class="border-b border-slate-100">
-            <td class="px-4 py-3 font-medium"><%= ligne.prestation&.code %></td>
-            <td class="px-4 py-3"><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
-            <td class="px-4 py-3 text-right"><%= number_to_currency(ligne.prix_ht) %></td>
-            <td class="px-4 py-3 text-right"><%= ligne.qté %></td>
-            <td class="px-4 py-3 text-right"><%= number_to_currency(ligne.total_ht) %></td>
+        <% commande_lignes = @commande.commande_lignes.includes(:prestation) %>
+        <% if commande_lignes.any? %>
+          <% commande_lignes.each do |ligne| %>
+            <tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
+              <td class="px-4 py-3 font-semibold text-sm text-center"><%= ligne.prestation&.code %></td>
+              <td class="px-4 py-3 text-sm text-primary font-bold capitalize"><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
+              <td class="px-4 py-3 text-right text-sm whitespace-nowrap"><%= number_to_currency(ligne.prix_ht) %></td>
+              <td class="px-6 py-4 text-center font-medium">
+                <span class="bg-slate-100 px-2 py-1 rounded font-semibold text-sm text-slate-600"><%= ligne.qté %></span>
+              </td>
+              <td class="px-4 py-3 text-center text-sm"><%= number_to_currency(ligne.total_ht) %></td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">Aucune prestation enregistrée.</td>
           </tr>
         <% end %>
-      <% else %>
-        <tr>
-          <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">Aucune prestation enregistrée.</td>
-        </tr>
-      <% end %>
       </tbody>
       <% if commande_lignes.any? %>
         <tfoot>
-          <tr class="bg-slate-50/50">
-            <th colspan="4" class="px-4 py-3 text-right">Total HT</th>
-            <th class="px-4 py-3 text-right"><%= number_to_currency(@commande.total_ht) %></th>
+          <tr class="bg-slate-50/50 border-t-2 border-slate-200">
+            <td colspan="3"></td>
+            <td class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">
+              Total HT
+            </td>
+            <td class="px-6 py-4 text-right text-base font-bold text-primary bg-blue-50/30 border-l border-slate-200/60">
+              <%= number_to_currency(@commande.total_ht) %>
+            </td>
           </tr>
         </tfoot>
       <% end %>
     </table>
   </div>
-
-  <% if current_user.manager_or_admin? %>
-    <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
-      <h2 class="text-2xl text-secondary font-semibold">Activité</h2>
+<% else %>
+  <div class="text-center py-12 bg-white border border-slate-200 rounded-xl shadow-sm mb-8 text-slate-400 text-base italic">
+    Aucune prestation enregistrée.
+  </div>
+<% end %>
+<%# --- ACTIVITÉ --- %>
+<% if current_user.manager_or_admin? %>
+  <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
+    <h2 class="text-2xl text-secondary font-semibold">Activité</h2>
+  </div>
+  <div class="block md:hidden flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
+    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
+  </div>
+  <div class="overflow-x-auto border-x border-b border-slate-200 shadow-sm bg-white rounded-b-xl md:rounded-xl mb-8">
+    <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+      <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+      <span>Faire glisser pour voir plus</span>
     </div>
-
-    <div class="flex flex-col bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="table table-sm w-full border-none">
-          <thead class="bg-slate-100">
+    <table class="table text-sm w-full">
+      <thead class="bg-slate-100 text-slate-600 font-semibold">
+        <tr>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Date</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Utilisateur</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Action</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Modifications</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if @audits&.any? %>
+          <%= render partial: "audit", collection: @audits %>
+        <% else %>
           <tr>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Date</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Utilisateur</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Type</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Action</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Modifications</th>
+            <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">
+              Aucun historique d'activité disponible.
+            </td>
           </tr>
-          </thead>
-          <tbody>
-          <% if @audits&.any? %>
-            <%= render partial: "audit", collection: @audits %>
-          <% else %>
-            <tr>
-              <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">
-                Aucun historique d'activité disponible.
-              </td>
-            </tr>
-          <% end %>
-          </tbody>
-        </table>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <% if @pagy&.pages.to_i > 1 %>
+    <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full">
+      <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+        <%= pagy_nav(@pagy).html_safe %>
       </div>
-
-      <% if @pagy&.pages.to_i > 1 %>
-        <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full">
-          <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
-            <%= pagy_nav(@pagy).html_safe %>
-          </div>
-          <div class="text-slate-500 text-center text-sm w-full mt-2">
-            <%= pagy_info(@pagy, item_name: "audits").html_safe %>
-          </div>
-        </div>
-      <% end %>
+      <div class="text-slate-500 text-center text-sm w-full mt-2">
+        <%= pagy_info(@pagy, item_name: "audits").html_safe %>
+      </div>
     </div>
   <% end %>
-
-  <div class="my-10">
-    <%= link_to commandes_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
-      <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste" %>
-      Retour à la liste
-    <% end %>
+<% end %>
+<%# --- SUPPRIMER --- %>
+<% if policy(@commande).destroy? %>
+  <div class="flex justify-end mb-10 mt-6 pt-4 border-t border-slate-200">
+    <button class="btn btn-soft btn-error hover:!text-white"
+              onclick="delete_commande_modal_<%= @commande.id %>.showModal()" 
+              title="Supprimer">
+      <%= embedded_svg "icons/delete.svg", title: "Supprimer la commande" %>
+      <span>Supprimer la commande</span>
+    </button>
+    <dialog id="delete_commande_modal_<%= @commande.id %>" class="modal">
+      <div class="modal-box">
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 class="text-lg font-bold text-error flex items-center gap-2">
+          <%= embedded_svg "icons/warning.svg", title: "Supprimer la commande" %>
+          Supprimer la commande
+        </h3>
+        <p class="py-4 text-sm text-slate-600 text-left">
+          Êtes-vous certain(e) de vouloir supprimer cette commande ?
+          Cette action est irréversible.
+        </p>
+        <div class="modal-action">
+          <form method="dialog">
+            <button class="btn btn-ghost">Annuler</button>
+          </form>
+          <%= button_to commande_path(@commande),
+                        method: :delete,
+                        class: "btn btn-error text-white" do %>
+            Oui, supprimer
+          <% end %>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>Fermer</button>
+      </form>
+    </dialog>
   </div>
+<% end %>
+<%# --- RETOUR À LA LISTE --- %>
+<div class="my-10">
+  <%= link_to commandes_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+    <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste" %>
+    Retour à la liste
+  <% end %>
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+</div>
