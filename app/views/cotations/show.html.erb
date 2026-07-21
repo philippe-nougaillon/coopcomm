@@ -104,7 +104,7 @@
             </div>
             <%# --- Mémo --- %>
             <% if @cotation.mémo.present? %>
-              <div class="flex flex-col sm:flex-row sm:items-start justify-between py-3 border-b border-slate-100 last:border-0 gap-2">
+              <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
                 <div class="flex items-center gap-3 text-slate-500 shrink-0">
                   <div class="w-5 h-5"></div>
                   <span class="text-base">Mémo</span>
@@ -116,7 +116,7 @@
             <% end %>
             <%# --- Signature --- %>
             <% if @cotation.signee_le.present? %>
-              <div class="flex flex-col sm:flex-row sm:items-start justify-between py-3 border-b border-slate-100 last:border-0 gap-2">
+              <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
                 <div class="flex items-center gap-3 text-slate-500 shrink-0">
                   <%= embedded_svg "icons/signature.svg", class: "w-5 h-5 fill-current", title: "Signature" %>
                   <span class="text-base">Signature</span>
@@ -138,15 +138,15 @@
           <div class="text-base text-slate-600 uppercase font-semibold shrink-0">
             Prochaine étape
           </div>
-          <div class="flex flex-row items-center gap-2 w-full sm:w-auto">
+          <div class="flex flex-wrap  items-center gap-2 w-full sm:w-auto">
             <% if policy(@cotation).envoyer? && @cotation.can_envoyer? %>
-              <%= button_to "Envoyer", envoyer_cotation_path(@cotation), class: "btn  btn-info btn-outline min-w-20 flex-1  hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 ' } %>
+              <%= button_to "Envoyer", envoyer_cotation_path(@cotation), class: "btn  btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
             <% end %>
             <% if policy(@cotation).valider? && @cotation.can_valider? %>
-              <%= button_to "Valider", valider_cotation_path(@cotation), class: "btn  btn-success btn-outline min-w-20 flex-1  hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 ' } %>
+              <%= button_to "Valider", valider_cotation_path(@cotation), class: "btn  btn-success btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
             <% end %>
             <% if policy(@cotation).refuser? && @cotation.can_refuser? %>
-              <%= button_to "Refuser", refuser_cotation_path(@cotation), class: "btn  btn-error btn-outline min-w-20 flex-1  hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 ' } %>
+              <%= button_to "Refuser", refuser_cotation_path(@cotation), class: "btn  btn-error btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
             <% end %>
           </div>
         </div>
@@ -177,7 +177,7 @@
                 <%= ligne.intitulé.presence || ligne.prestation&.libellé %>
               </h3>
               <span class="text-sm font-semibold text-slate-400  tracking-wider">
-                CODE  <%= ligne.prestation&.code %>
+                CODE : <%= ligne.prestation&.code %>
               </span>
             </div>
             <div class="text-right font-bold text-slate-900 text-sm">
