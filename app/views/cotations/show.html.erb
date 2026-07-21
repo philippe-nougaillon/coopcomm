@@ -49,7 +49,7 @@
                 <span class="text-base">Adhérent</span>
               </div>
               <div class="text-base text-slate-800 font-medium text-right truncate">
-                <%= link_to @cotation.adherent&.nom, user_path(@cotation.adherent), class: "text-primary hover:underline" if @cotation.adherent %>
+                <%= link_to "#{@cotation.adherent.prénom} #{@cotation.adherent.nom}", user_path(@cotation.adherent), class: "text-primary hover:underline" if @cotation.adherent %>
               </div>
             </div>
             <%# --- SERVICE --- %>
