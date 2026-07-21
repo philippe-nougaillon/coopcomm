@@ -3,7 +3,6 @@
     <h1 class="text-4xl text-primary font-bold">
       <%= page_title!("Factures") %></h1>
   </div>
-
   <%= form_tag factures_path, method: :get, class: "pt-6" do %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
@@ -54,15 +53,14 @@
     <table class="table table-sm w-full border-none">
       <thead class="bg-slate-100">
       <tr>
-        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Réf</th>
-        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
-        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Adhérent</th>
-        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
-        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Intitulé</th>
-        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Livraison</th>
-        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-right">Total HT</th>
-        
-      </tr>
+         <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Réf</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Adhérent</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Intitulé</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Livraison</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-right">Total HT</th>
+        </tr>
       </thead>
       <tbody>
       <% if @factures.any? %>

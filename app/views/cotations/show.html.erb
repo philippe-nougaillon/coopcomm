@@ -19,6 +19,12 @@
           <span class="hidden md:block">Modifier</span>
         <% end %>
       <% end %>
+      <% if policy(@cotation).create_commande? %>
+        <%= button_to "Convertir en commande", create_commande_cotation_path(@cotation),
+       class: "btn btn-success btn-outline hover:text-white!", 
+       form: { data: { turbo_confirm: "Êtes-vous certain(e) de vouloir transformer cette cotation en commande  ? 
+       Cette action est irréversible." }, class: 'contents', turbo_method: :post} %>
+      <% end %>
       <%= link_to pdf_cotation_path(@cotation, filename: @cotation.pdf_filename),
                   class: "btn btn-outline btn-info flex-1 sm:flex-none", target: "_blank", data: { turbo: false } do %>
         <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200 hidden md:block" %>
@@ -132,15 +138,15 @@
           <div class="text-base text-slate-600 uppercase font-semibold shrink-0">
             Prochaine étape
           </div>
-          <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <div class="flex flex-row items-center gap-2 w-full sm:w-auto">
             <% if policy(@cotation).envoyer? && @cotation.can_envoyer? %>
-              <%= button_to "Envoyer", envoyer_cotation_path(@cotation), class: "btn  btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
+              <%= button_to "Envoyer", envoyer_cotation_path(@cotation), class: "btn  btn-info btn-outline min-w-20 flex-1  hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 ' } %>
             <% end %>
             <% if policy(@cotation).valider? && @cotation.can_valider? %>
-              <%= button_to "Valider", valider_cotation_path(@cotation), class: "btn  btn-success btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
+              <%= button_to "Valider", valider_cotation_path(@cotation), class: "btn  btn-success btn-outline min-w-20 flex-1  hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 ' } %>
             <% end %>
             <% if policy(@cotation).refuser? && @cotation.can_refuser? %>
-              <%= button_to "Refuser", refuser_cotation_path(@cotation), class: "btn  btn-error btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
+              <%= button_to "Refuser", refuser_cotation_path(@cotation), class: "btn  btn-error btn-outline min-w-20 flex-1  hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 ' } %>
             <% end %>
           </div>
         </div>
@@ -167,19 +173,20 @@
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <div class="flex justify-between items-start">
             <div>
-              <span class="text-sm font-semibold text-slate-400  tracking-wider">
-                <%= ligne.prestation&.code %>
-              </span>
-              <h3 class="text-sm text-primary font-bold capitalize mt-0.5">
+              <h3 class="text-sm text-primary font-bold uppercase mt-0.5">
                 <%= ligne.intitulé.presence || ligne.prestation&.libellé %>
               </h3>
+              <span class="text-sm font-semibold text-slate-400  tracking-wider">
+                CODE  <%= ligne.prestation&.code %>
+              </span>
             </div>
             <div class="text-right font-bold text-slate-900 text-sm">
               <%= number_to_currency(ligne.total_ht) %>
             </div>
           </div>
           <div class="border-t border-slate-100 mt-3 pt-2 text-sm text-slate-500 font-medium">
-            <%= number_to_currency(ligne.prix_ht) %> × <%= ligne.qté %>
+            Prix HT <span class="underline decoration-slate-500 underline-offset-2"><%= number_to_currency(ligne.prix_ht) %></span>
+            × Qté <span class="underline decoration-slate-500 underline-offset-2"><%= ligne.qté %></span>
           </div>
         </div>
       <% end %>
