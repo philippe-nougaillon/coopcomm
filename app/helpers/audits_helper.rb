@@ -157,6 +157,24 @@ module AuditsHelper
     # 2. Règle générale pour le reste des champs (si nil, affiche un tiret)
     return '—' if value.nil? || value.to_s.strip.empty? || value.to_s == '—'
 
+    # Détection générique des dates/heures — indépendante du nom de la clé,
+    # évite les bugs d'accents (ex: "prévue" vs "prevue")
+    if value.respond_to?(:strftime)
+      return value.is_a?(Date) && !value.is_a?(DateTime) ? l(value, format: '%d/%m/%Y') : l(value, format: '%d/%m/%Y à %H:%M')
+    elsif value.to_s.match?(/\A\d{4}-\d{2}-\d{2}([ T]\d{2}:\d{2})?/)
+      begin
+        if value.to_s.length > 10
+          parsed = Time.zone.parse(value.to_s)
+          return parsed ? l(parsed, format: '%d/%m/%Y à %H:%M') : value.to_s
+        else
+          parsed = Date.parse(value.to_s)
+          return parsed ? l(parsed, format: '%d/%m/%Y') : value.to_s
+        end
+      rescue StandardError
+        return value.to_s.sub(/\s?\+\d{4}\z/, '')
+      end
+    end
+
     case key
     when 'apres_midi', 'matin', 'journee'
       value.to_s.match?(/true|1/) ? 'Oui' : 'Non'
@@ -178,24 +196,10 @@ module AuditsHelper
 
     when 'état'
       {
-        '0' => 'Entrée',
-        '1' => 'Sortie',
         '2' => 'Panne',
         '3' => 'Fin de la panne',
         '4' => 'Réservé'
       }.fetch(value.to_s, value)
-
-    when /at$|_prevue$|^signee_le$/
-      if value.respond_to?(:strftime)
-        l(value, format: '%d/%m/%Y à %H:%M')
-      else
-        begin
-          parsed = Time.zone.parse(value.to_s)
-          parsed ? l(parsed, format: '%d/%m/%Y à %H:%M') : value.to_s
-        rescue StandardError
-          value.to_s.sub(/\s\+\d{4}/, '')
-        end
-      end
 
     else
       value.to_s

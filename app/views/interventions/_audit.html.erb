@@ -29,9 +29,6 @@
   <td class="whitespace-nowrap">
     <% unless audit.comment %>
       <%= audit_changes_list(audit, current_user) %>
-      <% if changes.any? %>
-        <%= sanitize changes.join('<br>') %>
-      <% end %>
     <% else %>
       <%= audit.comment %>
     <% end %>

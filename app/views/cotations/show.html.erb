@@ -2,8 +2,9 @@
   <% page_title!("Cotation #{@cotation.ref}") %>
   <div class="flex flex-row  justify-between items-start gap-3 mb-8">
     <div>
-      <h1 class="text-2xl sm:text-3xl text-primary font-bold sm:whitespace-nowrap">
-        Cotation <%= @cotation.ref %>
+      <h1 class="flex flex-col md:flex-row md:gap-2 text-2xl sm:text-3xl text-primary font-bold sm:whitespace-nowrap">
+        Cotation 
+        <span class="flex"> <%= @cotation.ref %> </span>
       </h1>
       <div class="mt-3 flex items-center gap-2">
         <span class="inline-flex items-center gap-1.5 badge text-nowrap min-w-20 font-bold rounded-full <%= @cotation.style %>">
