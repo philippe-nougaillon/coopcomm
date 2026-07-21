@@ -191,7 +191,7 @@ class FactureTest < ActiveSupport::TestCase
 
   test 'style renvoie la classe CSS de létat courant' do
     facture = build_facture
-    assert_equal 'badge-ghost', facture.style
+    assert_equal 'badge badge-secondary rounded-full', facture.style
     facture.save!
     facture.envoyer!
     assert_equal 'badge-info text-white', facture.style

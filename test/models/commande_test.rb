@@ -192,7 +192,7 @@ class CommandeTest < ActiveSupport::TestCase
 
   test 'style renvoie la classe CSS de létat courant' do
     commande = build_commande
-    assert_equal 'badge-ghost', commande.style
+    assert_equal 'badge badge-secondary rounded-full', commande.style
     commande.save!
     commande.envoyer!
     assert_equal 'badge-info text-white', commande.style
