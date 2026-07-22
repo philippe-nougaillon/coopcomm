@@ -28,6 +28,8 @@ class Absence < ApplicationRecord
   # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
   after_create_commit :send_manager_notification
 
+  Absence::MOTIF_LABELS
+
   def en_cours?
     (du..au).include?(Date.today)
   end

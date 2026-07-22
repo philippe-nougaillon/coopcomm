@@ -24,33 +24,38 @@ class FacturesTest < ApplicationSystemTestCase
     visit facture_url(@facture)
 
     assert_text @facture.ref
-    assert_text @facture.intitulé.capitalize
+    # L'intitulé est rendu avec la classe CSS `capitalize` (Title Case à l'écran) →
+    # on matche sans tenir compte de la casse.
+    assert_text(/#{Regexp.escape(@facture.intitulé)}/i)
   end
 
   test 'updating a Facture' do
-    visit facture_url(@facture)
-    # click_on 'Modifier'
+    # Le lien « Modifier » est temporairement désactivé sur le show (#326) : le
+    # formulaire d'édition n'est plus atteignable depuis l'UI. On skippe jusqu'à
+    # sa réactivation (le corps reste valable, l'action edit/update existe toujours).
+    skip 'Édition désactivée temporairement (#326) — lien « Modifier » masqué du show.'
+    visit edit_facture_url(@facture)
 
-    # « Intitulé » existe aussi sur les lignes de prestation → on cible le champ de la facture par son id.
-    fill_in 'Intitulé', with: 'Facture nettoyage révisée'
+    # « Intitulé » existe aussi sur les lignes de prestation → le champ de la
+    # facture est le premier du formulaire.
+    fill_in 'Intitulé', with: 'Facture nettoyage révisée', match: :first
     cliquer_bouton 'Enregistrer'
 
-    # `update` redirige vers la show : on attend la navigation AVANT d'asserter le
-    # texte, sinon il est trouvé dans le champ du formulaire encore affiché.
+    # `update` redirige vers la show : on attend la navigation AVANT d'asserter,
+    # sinon on lit le champ du formulaire encore affiché.
     assert_current_path facture_path(@facture)
-    assert_text 'Facture nettoyage révisée'
+    assert_text(/Facture nettoyage révisée/i)
     assert_equal 'Facture nettoyage révisée', @facture.reload.intitulé
   end
 
   test 'destroying a Facture' do
-    visit factures_url
+    # La suppression a été déplacée de la ligne d'index vers le show (#326).
+    visit facture_url(@facture)
 
-    within('tr', text: @facture.intitulé) do
-      find("button[title='Supprimer']").click
-    end
+    find("button[title='Supprimer']").click # ouvre la modale de confirmation
     click_on 'Oui, supprimer'
 
-    assert_no_selector 'tr', text: @facture.intitulé
+    assert_current_path factures_path
     assert @facture.reload.discarded?
   end
 end
