@@ -31,7 +31,7 @@ class ToolsController < ApplicationController
 
     @forecasts = MeteoConceptConnexion.call
 
-    @tools = @tools.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
+    @tools = @tools.reorder(Arel.sql("#{sort_column} #{sort_direction}, tools.id #{sort_direction}"))
     @pagy, @tools = pagy(@tools, items: 10)
   end
 
@@ -114,7 +114,8 @@ class ToolsController < ApplicationController
   end
 
   def sort_column
-    sortable_columns.include?(params[:column]) ? params[:column] : 'tools.name'
+    base = sortable_columns.include?(params[:column]) ? params[:column] : 'tools.name'
+    base == 'tools.name' ? 'LOWER(unaccent(tools.name))' : base
   end
 
   def sort_direction

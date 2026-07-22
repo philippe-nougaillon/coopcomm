@@ -194,7 +194,7 @@ class FactureTest < ActiveSupport::TestCase
     assert_equal 'badge-ghost', facture.style
     facture.save!
     facture.envoyer!
-    assert_equal 'badge-info text-white', facture.style
+    assert_equal "badge badge-primary rounded-full", facture.style
   end
 
   test 'workflow_state_humanized liste les états humanisés' do
