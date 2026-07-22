@@ -25,8 +25,8 @@ class Tool < ApplicationRecord
 
   after_create :create_mouvement
 
-  scope :ordered, -> { order(:name, :description) }
-
+  scope :ordered, -> { order(Arel.sql("LOWER(unaccent(name)), LOWER(unaccent(description))")) }
+  
   def self.icons
     { 'Brouette': 'garden_cart', 'Camionette': 'local_shipping', 'Tracteur': 'agriculture', 'Échelle': 'tools_ladder',
       'Perceuse': 'tools_power_drill' }

@@ -294,6 +294,8 @@
             <tbody>
               <% if @audits&.any? %>
                 <%= render partial: 'audit', collection: @audits %>
+                            <%= render partial: "audit", collection: @audits %>
+
               <% else %>
                 <tr>
                   <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">
