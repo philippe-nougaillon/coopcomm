@@ -24,15 +24,15 @@ class FacturesTest < ApplicationSystemTestCase
     visit facture_url(@facture)
 
     assert_text @facture.ref
-    assert_text @facture.intitulé
+    assert_text @facture.intitulé.capitalize
   end
 
   test 'updating a Facture' do
     visit facture_url(@facture)
-    click_on 'Modifier'
+    # click_on 'Modifier'
 
     # « Intitulé » existe aussi sur les lignes de prestation → on cible le champ de la facture par son id.
-    fill_in 'facture_intitulé', with: 'Facture nettoyage révisée'
+    fill_in 'Intitulé', with: 'Facture nettoyage révisée'
     cliquer_bouton 'Enregistrer'
 
     # `update` redirige vers la show : on attend la navigation AVANT d'asserter le

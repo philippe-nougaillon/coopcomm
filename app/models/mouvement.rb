@@ -13,6 +13,7 @@ class Mouvement < ApplicationRecord
 
   scope :ordered, -> { order(date: :desc) }
 
+  # TODO : Retirer les états "entrée" et "sortie"
   enum :état, {
     entrée: 0,
     sortie: 1,

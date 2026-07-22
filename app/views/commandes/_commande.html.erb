@@ -1,86 +1,58 @@
 <tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
-  <td class="px-4 py-3 text-lg font-semibold text-primary">
+  <td class="pl-4 whitespace-nowrap py-3 text-lg font-semibold text-primary">
     <%= link_to commande.ref, commande, class: "hover:underline" %>
   </td>
   <td class="px-4 py-3">
-    <span class="badge text-nowrap font-bold <%= commande.style %>"><%= commande.workflow_state.humanize %></span>
+    <span class="badge text-nowrap min-w-20 font-bold <%= commande.style %>"><%= commande.workflow_state.humanize %></span>
   </td>
-  <td class="px-4 py-3"><%= commande.adherent&.nom_prénom %></td>
-  <td class="px-4 py-3"><%= commande.service&.nom %></td>
-  <td class="px-4 py-3"><%= commande.intitulé %></td>
-  <td class="px-4 py-3 text-nowrap"><%= l(commande.date_livraison_souhaitée, format: :long) if commande.date_livraison_souhaitée %></td>
-  <td class="px-4 py-3 text-right font-medium"><%= number_to_currency(commande.total_ht) %></td>
-  <td class="px-2 py-3 text-center">
-    <%= link_to commande, class: "btn btn-sm btn-ghost text-info hover:bg-info/20 gap-1" do %>
-      Voir <i class="ti ti-eye"></i>
-    <% end %>
-  </td>
-  <td class="px-2 py-3 text-center">
-    <% if policy(commande).envoyer? && commande.can_envoyer? %>
-      <%= button_to "Envoyer", envoyer_commande_path(commande), class: "btn btn-sm btn-info btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
-    <% end %>
-  </td>
-  <td class="px-2 py-3 text-center">
-    <% if policy(commande).valider? && commande.can_valider? %>
-      <%= button_to "Valider", valider_commande_path(commande), class: "btn btn-sm btn-success btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
-    <% end %>
-  </td>
-  <td class="px-2 py-3 text-center">
-    <% if policy(commande).refuser? && commande.can_refuser? %>
-      <%= button_to "Refuser", refuser_commande_path(commande), class: "btn btn-sm btn-error btn-outline hover:text-white!", form: { data: { turbo: false }, class: 'inline-block' } %>
-    <% end %>
-  </td>
-  <td class="px-2 py-3 text-center">
-    <% if policy(commande).pdf? %>
-      <%= link_to pdf_commande_path(commande, filename: commande.pdf_filename),
-                  class: "btn btn-sm", target: "_blank", title: "Générer le PDF", data: { turbo: false } do %>
-        <span class="material-symbols-outlined">picture_as_pdf</span>
+  <td class="px-4 py-3 text-base"><%= commande.adherent&.nom_prénom %></td>
+  <td class="px-4 py-3 text-base">
+    <% services = commande.respond_to?(:services) ? commande.services.pluck(:nom) : [commande.service&.nom].compact %>
+    <% shown = services.first(2) %>
+    <% extra = services.size - shown.size %>
+    <div class="flex flex-wrap gap-1.5 items-center">
+      <% shown.each do |s| %>
+        <span class="inline-block bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full whitespace-nowrap shadow-sm">
+          <%= s %>
+        </span>
       <% end %>
-    <% end %>
-  </td>
-  <td class="px-2 py-3 text-center">
-    <% if policy(commande).update? %>
-      <%= link_to edit_commande_path(commande), class: "btn btn-sm btn-ghost hover:!border-gray-700", title: "Modifier" do %>
-        <%= embedded_svg "icons/edit.svg", class: "w-4 h-4 fill-current transition-colors duration-200" %>
-        <span class="hidden lg:inline">Modifier</span>
-      <% end %>
-    <% end %>
-  </td>
-  <td class="px-2 py-3 text-center">
-    <% if policy(commande).destroy? %>
-      <button class="btn btn-sm btn-ghost text-error border border-transparent hover:!bg-error/20 hover:!border-error/40" 
-          onclick="delete_commande_modal_<%= commande.id %>.showModal()" 
-          title="Supprimer">
-            <%= embedded_svg "icons/delete.svg", title: "Supprimer la commande" %>
-      </button>
-      <dialog id="delete_commande_modal_<%= commande.id %>" class="modal">
-        <div class="modal-box">
-          <form method="dialog">
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-          </form>
-          <h3 class="text-lg font-bold text-error flex items-center gap-2">
-            <%= embedded_svg "icons/warning.svg", title: "Supprimer la commande" %>
-            Supprimer la commande
-          </h3>
-          <p class="py-4 text-sm text-slate-600 text-left">
-            Êtes-vous certain(e) de vouloir supprimer cette commande ?
-            Cette action est irréversible.
-          </p>
-          <div class="modal-action">
-            <form method="dialog">
-              <button class="btn btn-ghost">Annuler</button>
-            </form>
-            <%= button_to commande_path(commande),
-                      method: :delete,
-                      class: "btn btn-error text-white" do %>
-              Oui, supprimer
-            <% end %>
+      <% if extra > 0 %>
+        <div class="relative inline-block" data-controller="dropdown">
+          <button type="button"
+                  data-action="click->dropdown#togglePortal"
+            class="inline-flex bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full shadow-sm select-none cursor-pointer hover:bg-slate-50">
+            + <%= extra %>
+          </button>
+          <div data-dropdown-target="menu"
+               class="hidden absolute z-50 flex-col p-4 shadow-2xl bg-white border border-slate-200 rounded-xl w-58 max-h-60 overflow-y-auto mt-1 left-0">
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 px-1 block text-left">
+              Autres services (<%= extra %>)
+            </span>
+            <div class="flex flex-col gap-1">
+              <% services.drop(2).each do |extra_service| %>
+                <span class="text-sm text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-lg whitespace-normal break-words text-left">
+                  <%= extra_service %>
+                </span>
+              <% end %>
+            </div>
           </div>
         </div>
-        <form method="dialog" class="modal-backdrop">
-          <button>Fermer</button>
-        </form>
-      </dialog>
+      <% end %>
+      <% if services.empty? %>
+        <span class="text-slate-400 italic text-sm">—</span>
+      <% end %>
+    </div>
+  </td>
+  <td class="px-4 py-3 text-base capitalize"><%= commande.intitulé %></td>
+  <td class="px-4 py-3 text-nowrap text-center text-base">
+    <% if commande.date_livraison_souhaitée.present? %>
+      <% formatted_date = l(commande.date_livraison_souhaitée, format: :long) %>
+      <span class="block max-w-48 truncate text-slate-500 cursor-help" title="<%= formatted_date %>">
+        <%= formatted_date %>
+      </span>
+    <% else %>
+      <span class="text-slate-400 flex justify-center">—</span>
     <% end %>
   </td>
+  <td class="px-4 py-3 text-center font-medium text-sm"><%= number_to_currency(commande.total_ht) %></td>
 </tr>

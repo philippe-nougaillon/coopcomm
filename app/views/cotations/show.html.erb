@@ -2,8 +2,9 @@
   <% page_title!("Cotation #{@cotation.ref}") %>
   <div class="flex flex-row  justify-between items-start gap-3 mb-8">
     <div>
-      <h1 class="text-2xl sm:text-3xl text-primary font-bold sm:whitespace-nowrap">
-        Cotation <%= @cotation.ref %>
+      <h1 class="flex flex-col md:flex-row md:gap-2 text-2xl sm:text-3xl text-primary font-bold sm:whitespace-nowrap">
+        Cotation 
+        <span class="flex"> <%= @cotation.ref %> </span>
       </h1>
       <div class="mt-3 flex items-center gap-2">
         <span class="inline-flex items-center gap-1.5 badge text-nowrap min-w-20 font-bold rounded-full <%= @cotation.style %>">
@@ -17,6 +18,12 @@
           <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
           <span class="hidden md:block">Modifier</span>
         <% end %>
+      <% end %>
+      <% if policy(@cotation).create_commande? %>
+        <%= button_to "Convertir en commande", create_commande_cotation_path(@cotation),
+       class: "btn btn-success btn-outline hover:text-white!", 
+       form: { data: { turbo_confirm: "Êtes-vous certain(e) de vouloir transformer cette cotation en commande  ? 
+       Cette action est irréversible." }, class: 'contents', turbo_method: :post} %>
       <% end %>
       <%= link_to pdf_cotation_path(@cotation, filename: @cotation.pdf_filename),
                   class: "btn btn-outline btn-info flex-1 sm:flex-none", target: "_blank", data: { turbo: false } do %>
@@ -48,7 +55,7 @@
                 <span class="text-base">Adhérent</span>
               </div>
               <div class="text-base text-slate-800 font-medium text-right truncate">
-                <%= link_to @cotation.adherent&.nom, user_path(@cotation.adherent), class: "text-primary hover:underline" if @cotation.adherent %>
+                <%= link_to "#{@cotation.adherent.prénom} #{@cotation.adherent.nom}", user_path(@cotation.adherent), class: "text-primary hover:underline" if @cotation.adherent %>
               </div>
             </div>
             <%# --- SERVICE --- %>
@@ -97,7 +104,7 @@
             </div>
             <%# --- Mémo --- %>
             <% if @cotation.mémo.present? %>
-              <div class="flex flex-col sm:flex-row sm:items-start justify-between py-3 border-b border-slate-100 last:border-0 gap-2">
+              <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
                 <div class="flex items-center gap-3 text-slate-500 shrink-0">
                   <div class="w-5 h-5"></div>
                   <span class="text-base">Mémo</span>
@@ -109,7 +116,7 @@
             <% end %>
             <%# --- Signature --- %>
             <% if @cotation.signee_le.present? %>
-              <div class="flex flex-col sm:flex-row sm:items-start justify-between py-3 border-b border-slate-100 last:border-0 gap-2">
+              <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
                 <div class="flex items-center gap-3 text-slate-500 shrink-0">
                   <%= embedded_svg "icons/signature.svg", class: "w-5 h-5 fill-current", title: "Signature" %>
                   <span class="text-base">Signature</span>
@@ -131,7 +138,7 @@
           <div class="text-base text-slate-600 uppercase font-semibold shrink-0">
             Prochaine étape
           </div>
-          <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <div class="flex flex-wrap  items-center gap-2 w-full sm:w-auto">
             <% if policy(@cotation).envoyer? && @cotation.can_envoyer? %>
               <%= button_to "Envoyer", envoyer_cotation_path(@cotation), class: "btn  btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
             <% end %>
@@ -166,19 +173,20 @@
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <div class="flex justify-between items-start">
             <div>
-              <span class="text-sm font-semibold text-slate-400  tracking-wider">
-                <%= ligne.prestation&.code %>
-              </span>
-              <h3 class="text-sm text-primary font-bold capitalize mt-0.5">
+              <h3 class="text-sm text-primary font-bold uppercase mt-0.5">
                 <%= ligne.intitulé.presence || ligne.prestation&.libellé %>
               </h3>
+              <span class="text-sm font-semibold text-slate-400  tracking-wider">
+                CODE : <%= ligne.prestation&.code %>
+              </span>
             </div>
             <div class="text-right font-bold text-slate-900 text-sm">
               <%= number_to_currency(ligne.total_ht) %>
             </div>
           </div>
           <div class="border-t border-slate-100 mt-3 pt-2 text-sm text-slate-500 font-medium">
-            <%= number_to_currency(ligne.prix_ht) %> × <%= ligne.qté %>
+            Prix HT <span class="underline decoration-slate-500 underline-offset-2"><%= number_to_currency(ligne.prix_ht) %></span>
+            × Qté <span class="underline decoration-slate-500 underline-offset-2"><%= ligne.qté %></span>
           </div>
         </div>
       <% end %>

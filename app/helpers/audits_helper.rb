@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module AuditsHelper
- FILTERED_FIELDS = %w[
+  FILTERED_FIELDS = %w[
     invitation_token
     encrypted_password
     reset_password_token
@@ -14,7 +14,7 @@ module AuditsHelper
     last_sign_in_ip
     failed_attempts
     otp_secret
-    signature 
+    signature
     ip
     consumed_timestep
     otp_required_for_login
@@ -27,8 +27,7 @@ module AuditsHelper
     tag_list
   ].freeze
 
-def field_label(key)
-  key = key.to_s
+  def audit_field_label(key)
     {
       'discarded_at' => 'Statut du compte',
       'locked_at' => 'Verrouillage',
@@ -49,13 +48,18 @@ def field_label(key)
       'warehouse_id' => 'Entrepôt',
       'adherent_id' => 'Adhérent',
       'workflow_state' => 'Statut',
+      'tool_id' => 'Outil',
+      'user_id' => 'Utilisateur',
+      'état' => 'État',
+      'date' => 'Date',
+      'intervention_id' => 'Intervention',
       'description' => 'Description',
       'temps_total' => 'Temps total',
       'temps_de_pause' => 'Temps de pause',
       'commentaires' => 'Commentaires',
       'note' => 'Note / Évaluation',
       'avis' => 'Avis',
-      'repeter' => 'Répéter l\'action',
+      'repeter' => "Répéter l'action",
       'debut_prevue' => 'Début prévu',
       'fin_prevue' => 'Fin prévue',
       'meteo' => 'Météo',
@@ -67,16 +71,19 @@ def field_label(key)
 
   def audit_badge(audit)
     label, color_classes = badge_config(audit)
-    content_tag(:span,
-               class: "flex items-center justify-center gap-1.5 w-36 py-1 rounded-md text-xs font-medium #{color_classes}") do badge_icon(audit).to_s.html_safe + label
+    content_tag(:span, class: "flex items-center justify-center gap-1.5 w-36 py-1 rounded-md text-xs font-medium #{color_classes}") do
+      badge_icon(audit).to_s.html_safe + label
     end
   end
 
   def absence_period_badge(audit)
     du = audit.audited_changes['du']
     au = audit.audited_changes['au']
-    content_tag(:span, "#{du} → #{au}",
-                class: 'inline-flex items-center text-xs bg-slate-50/60 rounded-lg border border-slate-300  transition-colors duration-150 border text-slate-600 px-2 py-1 font-mono group-hover:bg-white ')
+    content_tag(
+      :span,
+      "#{du} → #{au}",
+      class: 'inline-flex items-center text-xs bg-slate-50/60 rounded-lg border border-slate-300 transition-colors duration-150 text-slate-600 px-2 py-1 font-mono group-hover:bg-white'
+    )
   end
 
   def invitation_changes_summary(audit)
@@ -88,14 +95,13 @@ def field_label(key)
 
   def audit_changes_list(audit, _current_user)
     if audit.audited_changes.blank? || humanize_changes(audit.audited_changes).blank?
-      
       if audit.auditable_type == 'User'
-        # Prioridad: Control de desactivación/reactivación por descarte lógico
+        # Priorité : Contrôle de désactivation/réhabilitation par suppression logique
         if audit.audited_changes.key?('discarded_at')
           if audit.audited_changes['discarded_at']&.last.present?
-            return content_tag(:span, "Désactivation du compte par un administrateur", class: 'text-red-600 font-medium text-xs')
+            return content_tag(:span, 'Désactivation du compte par un administrateur', class: 'text-red-600 font-medium text-xs')
           else
-            return content_tag(:span, "Réhabilitation du compte par un administrateur", class: 'text-emerald-600 font-medium text-xs')
+            return content_tag(:span, 'Réhabilitation du compte par un administrateur', class: 'text-emerald-600 font-medium text-xs')
           end
         end
 
@@ -107,11 +113,11 @@ def field_label(key)
         elsif audit.audited_changes['remember_created_at']&.last.nil?
           return content_tag(:span, "Déconnexion de l'application", class: 'text-slate-600 font-medium text-xs')
 
-        elsif audit.audited_changes['remember_created_at'] &.first.nil?
-          return content_tag(:span, "Maintien de la connexion (Cookie)", class: 'text-slate-600 font-medium text-xs')
-        
+        elsif audit.audited_changes['remember_created_at']&.first.nil?
+          return content_tag(:span, 'Maintien de la connexion (Cookie)', class: 'text-slate-600 font-medium text-xs')
+
         elsif audit.audited_changes.key?('warehouse_id')
-          return content_tag(:span, "Mise à jour de l'affectation logistique (Entrepôt)", class: 'text-slate-600 font-medium text-xs')  
+          return content_tag(:span, "Mise à jour de l'affectation logistique (Entrepôt)", class: 'text-slate-600 font-medium text-xs')
         end
       end
 
@@ -122,75 +128,83 @@ def field_label(key)
   end
 
   def humanize_changes(changes)
-  changes.filter_map do |key, value|
-    Rails.logger.info "KEY = #{key.inspect}"
-    Rails.logger.info "LABEL = #{field_label(key)}"
-
-    next if FILTERED_FIELDS.include?(key)
-
-    
+    changes.filter_map do |key, value|
+      next if FILTERED_FIELDS.include?(key)
 
       old_val, new_val = value.is_a?(Array) ? value : [nil, value]
-      
-      # Forzar formato legible antes de validar si están vacíos
+
+      # Force le format lisible avant de vérifier s'ils sont vides
       formatted_old = format_audit_value(key, old_val)
       formatted_new = format_audit_value(key, new_val)
 
-      # FILTRO ESTRICTO: Si el campo no cambió nada real o está vacío/guión, se ignora por completo
+      # FILTRE STRICT : Si le champ n'a rien changé de réel ou est vide/tiret, il est totalement ignoré
       next if formatted_old == formatted_new
       next if (formatted_old.blank? || formatted_old == '—') && (formatted_new.blank? || formatted_new == '—')
 
-      { label: field_label(key), from: formatted_old, to: formatted_new }
+      { label: audit_field_label(key), from: formatted_old, to: formatted_new }
     end
   end
 
-
   def format_audit_value(key, value)
-  case key
-  when 'discarded_at'
-    return (value.present? && value != '—') ? 'Désactivé' : 'Réactivé'
+    case key
+    when 'discarded_at'
+      return (value.present? && value != '—') ? 'Désactivé' : 'Réactivé'
 
-  when 'locked_at'
-    return (value.present? && value != '—') ? 'Verrouillé' : 'Ouvert'
-  end
+    when 'locked_at'
+      return (value.present? && value != '—') ? 'Verrouillé' : 'Ouvert'
+    end
 
-  # 2. Regla general para el resto de los campos (si es nil, muestra un guión)
-  return '—' if value.nil? || value.to_s.strip.empty? || value.to_s == '—'
+    # 2. Règle générale pour le reste des champs (si nil, affiche un tiret)
+    return '—' if value.nil? || value.to_s.strip.empty? || value.to_s == '—'
 
-  case key
-  when 'workflow_state'
-    value.to_s.humanize
-
-  when 'apres_midi', 'matin', 'journee'
-    value.to_s.match?(/true|1/) ? 'Oui' : 'Non'
-
-  when 'motif'
-    { '0' => 'Congé annuel', '1' => 'Maladie', '2' => 'RTT' }
-      .fetch(value.to_s, value)
-
-  when 'warehouse_id'
-    warehouse_label(value)
-
-  when 'adherent_id'
-    User.find_by(id: value)&.email || "Utilisateur ##{value}"
-
-  when /at$|_prevue$|^signee_le$/
+    # Détection générique des dates/heures — indépendante du nom de la clé,
+    # évite les bugs d'accents (ex: "prévue" vs "prevue")
     if value.respond_to?(:strftime)
-      l(value, format: "%d/%m/%Y à %H:%M")
-    else
+      return value.is_a?(Date) && !value.is_a?(DateTime) ? l(value, format: '%d/%m/%Y') : l(value, format: '%d/%m/%Y à %H:%M')
+    elsif value.to_s.match?(/\A\d{4}-\d{2}-\d{2}([ T]\d{2}:\d{2})?/)
       begin
-        parsed = Time.zone.parse(value.to_s)
-        parsed ? l(parsed, format: "%d/%m/%Y à %H:%M") : value.to_s
-      rescue
-        value.to_s.sub(/\s\+\d{4}/, '')
+        if value.to_s.length > 10
+          parsed = Time.zone.parse(value.to_s)
+          return parsed ? l(parsed, format: '%d/%m/%Y à %H:%M') : value.to_s
+        else
+          parsed = Date.parse(value.to_s)
+          return parsed ? l(parsed, format: '%d/%m/%Y') : value.to_s
+        end
+      rescue StandardError
+        return value.to_s.sub(/\s?\+\d{4}\z/, '')
       end
     end
 
-  else
-    value.to_s
+    case key
+    when 'apres_midi', 'matin', 'journee'
+      value.to_s.match?(/true|1/) ? 'Oui' : 'Non'
+
+    when 'motif'
+      { '0' => 'Congé annuel', '1' => 'Maladie', '2' => 'RTT' }.fetch(value.to_s, value)
+
+    when 'warehouse_id'
+      warehouse_label(value)
+
+    when 'adherent_id'
+      User.find_by(id: value)&.email || "Utilisateur ##{value}"
+
+    when 'tool_id'
+      Tool.find_by(id: value)&.name || "Outil ##{value}"
+
+    when 'user_id'
+      User.find_by(id: value)&.nom_prénom || "Utilisateur ##{value}"
+
+    when 'état'
+      {
+        '2' => 'Panne',
+        '3' => 'Fin de la panne',
+        '4' => 'Réservé'
+      }.fetch(value.to_s, value)
+
+    else
+      value.to_s
+    end
   end
-end
- 
 
   def warehouse_label(id)
     Warehouse.find_by(id: id)&.name || deleted_warehouse_name(id) || id.to_s
@@ -213,16 +227,20 @@ end
 
     content_tag(:ul, class: 'space-y-1.5') do
       items.map do |item|
-        content_tag(:li, class: 'flex flex-wrap items-baseline gap-1 text-xs') do
+        content_tag(:li, class: 'flex flex-wrap items-center gap-1.5 text-xs') do
           label = content_tag(:span, "#{item[:label]} :", class: 'text-slate-400 font-medium shrink-0')
-          body  = if item[:from].present? && item[:from] != '—'
-                    content_tag(:span, item[:from], class: 'line-through text-slate-400') +
-                      content_tag(:span, ' → ', class: 'text-slate-300') +
-                      content_tag(:span, item[:to], class: 'text-slate-700 font-bold')
-                  else
-                    content_tag(:span, item[:to], class: 'text-slate-700 font-bold')
-                  end
-          label + ' '.html_safe + body
+
+          body = if item[:from].present? && item[:from] != '—'
+                   content_tag(:div, class: 'inline-flex items-center gap-1') do
+                     content_tag(:span, item[:from], class: 'line-through text-slate-400') +
+                       embedded_svg('icons/arrow_forward.svg', class: 'w-3 h-3 fill-current text-neutral shrink-0') +
+                       content_tag(:span, item[:to], class: 'text-slate-700 font-bold')
+                   end
+                 else
+                   content_tag(:span, item[:to], class: 'text-slate-700 font-bold')
+                 end
+
+          label + body
         end
       end.join.html_safe
     end
@@ -239,23 +257,23 @@ end
                   when 'destroy' then 'delete'
                   end
                 when 'User'
-                  # 1. Prioridad absoluta: Control de desactivación / reactivación
+                  # 1. Priorité absolue : Contrôle de désactivation / réhabilitation
                   if audit.action == 'update' && audit.audited_changes.key?('discarded_at')
                     if audit.audited_changes['discarded_at']&.last.present?
-                      'no_accounts' 
+                      'no_accounts'
                     else
                       'account_circle'
                     end
 
-                  # 2. Invitaciones de Devise
+                  # 2. Invitations Devise
                   elsif audit.audited_changes.key?('invitation_token')
                     'mail'
 
-                  # 3. Login legítimo
+                  # 3. Connexion légitime
                   elsif audit.action == 'update' && (audit.audited_changes.keys & %w[current_sign_in_at sign_in_count]).any?
                     'login'
 
-                  # 4. Logout legítimo
+                  # 4. Déconnexion légitime
                   elsif audit.action == 'update' && audit.audited_changes.key?('remember_created_at') && audit.audited_changes['remember_created_at']&.last.nil?
                     'logout'
 
@@ -292,7 +310,7 @@ end
       else                ['Absence',           'bg-slate-100 text-slate-600']
       end
     when 'User'
-     # 1. Cas de désactivation / suppression logique
+      # 1. Cas de désactivation / suppression logique
       if audit.action == 'update' && audit.audited_changes.key?('discarded_at')
         if audit.audited_changes['discarded_at']&.last.present?
           ['Compte désactivé', 'bg-red-50 text-red-700 border border-red-200']
@@ -308,26 +326,26 @@ end
           ['Compte débloqué', 'bg-emerald-50 text-emerald-700 border border-emerald-200']
         end
 
-      # 3. Login legítimo
+      # 3. Connexion légitime
       elsif audit.action == 'update' && (audit.audited_changes.keys & %w[current_sign_in_at sign_in_count]).any?
         ['Connexion', 'bg-indigo-50 text-indigo-700 border border-indigo-200']
-        
-      # 4. Logout legítimo (Solo si NO se modificó al mismo tiempo el estado del usuario)
+
+      # 4. Déconnexion légitime (Seulement si l'état de l'utilisateur n'a pas changé en même temps)
       elsif audit.action == 'update' && audit.audited_changes.key?('remember_created_at') && audit.audited_changes['remember_created_at']&.last.nil?
         ['Déconnexion', 'bg-slate-100 text-slate-600 border border-slate-200']
-        
+
       # 5. Copie / persistance technique du cookie de session
       elsif audit.action == 'update' && audit.audited_changes.keys == ['remember_created_at'] && audit.audited_changes['remember_created_at']&.first.nil?
         ['Session', 'bg-slate-50 text-slate-400 border border-slate-200']
 
-      # 6. Invitations de Devise
+      # 6. Invitations Devise
       elsif audit.audited_changes.key?('invitation_token')
-        ['Invitation relancée', 'bg-blue-50 text-blue-700 border border-bleu-200']
-        
+        ['Invitation relancée', 'bg-blue-50 text-blue-700 border border-blue-200']
+
       # 7. Vrai changement d'entrepôt / logistique
       elsif audit.audited_changes.key?('warehouse_id')
         ['Logistique', 'bg-orange-50 text-orange-700 border border-orange-200']
-        
+
       else
         case audit.action
         when 'create'  then ['Compte créé',    'bg-emerald-50 text-emerald-700 border border-emerald-200']
@@ -343,9 +361,9 @@ end
       end
     else
       case audit.action
-      when 'create'  then ["Création", 'bg-emerald-50 text-emerald-700 border border-emerald-200']
-      when 'update'  then ["Modification", 'bg-amber-50 text-amber-700 border border-amber-200']
-      when 'destroy' then ["Suppression", 'bg-red-50 text-red-600 border border-red-200']
+      when 'create'  then ['Création', 'bg-emerald-50 text-emerald-700 border border-emerald-200']
+      when 'update'  then ['Modification', 'bg-amber-50 text-amber-700 border border-amber-200']
+      when 'destroy' then ['Suppression', 'bg-red-50 text-red-600 border border-red-200']
       else                [audit.action.humanize, 'bg-slate-100 text-slate-500 border border-slate-200']
       end
     end

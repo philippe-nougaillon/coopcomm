@@ -21,12 +21,20 @@
             <% end %>
           </li>
         <% end %>
+        <% if policy(Intervention).index? %>
+            <li>
+              <%= link_to interventions_path, class: "h-16 py-0 px-3 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
+                <%= embedded_svg "icons/construction.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+              <% end %>
+            </li>
+          <% end %>
         <% if policy(:pages).dashboard? %>
           <li>
             <%= link_to dashboard_path, class: "h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! ' + (demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!') + ' border-b-2' if params[:action] == 'dashboard'}", 'data-turbo': false do %>
               <%= embedded_svg "icons/bar_chart.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
             <% end %>
           </li>
+          
         <% end %>
         <%# --- VISTA PARA OTROS ROLES (ADMIN, AGENT, ETC.) --- %>
       <% else %>
@@ -114,7 +122,7 @@
               <% if policy(Cotation).index? %>
                 <li>
                   <%= link_to cotations_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'cotations'}" do %>
-                    <%= embedded_svg "icons/request_quote.svg", class: "w-4 h-4 inline mr-2" %> Cotations / Devis
+                    <%= embedded_svg "icons/request_quote.svg", class: "w-4 h-4 inline mr-2" %> Cotations 
                   <% end %>
                 </li>
               <% end %>
@@ -256,7 +264,7 @@
             <% if policy(Cotation).index? %>
               <li>
                 <%= link_to cotations_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'cotations'}" do %>
-                  <%= embedded_svg "icons/request_quote.svg", class: "w-5 h-5 inline mr-2" %> Cotations / Devis
+                  <%= embedded_svg "icons/request_quote.svg", class: "w-5 h-5 inline mr-2" %> Cotations 
                 <% end %>
               </li>
             <% end %>
@@ -267,7 +275,7 @@
                 <% end %>
               </li>
             <% end %>
-          <%# AGENT %>
+            <%# AGENT %>
           <% elsif current_user.rôle == 'agent' %>
             <% if policy(Tool).index? %>
               <li>
@@ -281,8 +289,7 @@
                 <%= embedded_svg "icons/menu_book.svg", class: "w-5 h-5 inline mr-2" %> Wiki / Guides
               <% end %>
             </li>
-
-          <%#  ADMIN / MANAGEMENT  %>
+            <%#  ADMIN / MANAGEMENT  %>
           <% elsif current_user.rôle == 'administrateur' || current_user.rôle == 'manager' %>
             <% if policy(:admin).parametres? || policy(User).index? || policy(:admin).audits? %>
               <li class="menu-title px-4 py-1 text-xs uppercase font-bold text-slate-400">Admin</li>
@@ -323,7 +330,6 @@
               <% end %>
               <div class="divider my-1 opacity-50"></div>
             <% end %>
-
             <%# --- CRM --- %>
             <% if policy(Convention).index? || policy(Cotation).index? || policy(Commande).index? || policy(Facture).index? %>
               <li class="menu-title px-4 py-2 text-xs uppercase font-bold text-slate-400">CRM</li>
@@ -355,7 +361,7 @@
                   <% end %>
                 </li>
               <% end %>
-               <% if policy(:pages).dashboard? %>
+              <% if policy(:pages).dashboard? %>
                 <li>
                   <%= link_to dashboard_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'dashboard'}" do %>
                     <%= embedded_svg "icons/bar_chart.svg", class: "w-5 h-5 inline mr-2"  %> Tableau de bord
@@ -364,7 +370,6 @@
               <% end %>
               <div class="divider my-1 opacity-50"></div>
             <% end %>
-
             <%# ---  RESSOURCES --- %>
             <% if policy(Tool).index? || policy(User).agent_calendrier? || policy(Mouvement).index? %>
               <li class="menu-title px-4 py-1 text-xs uppercase font-bold text-slate-400">Ressources</li>
@@ -391,7 +396,6 @@
               <% end %>
               <div class="divider my-1 opacity-50"></div>
             <% end %>
-
             <%# --- guide --- %>
             <li class="menu-title px-4 py-1 text-xs uppercase font-bold text-slate-400">Guides</li>
             <li>

@@ -142,6 +142,15 @@
 - **Impact** : trou ponctuel d'audit trail, faible.
 - **Correctif proposé** : à instruire — écrire l'audit sans dépendre des validations de l'intervention (ou au minimum logguer/alerter en cas d'échec de l'update).
 
+### B18 — ✅ CORRIGÉ (2026-07-21) — Le filtre Services de l'index interventions était sans effet pour l'adhérent
+- **Signalé par** : PE, 2026-07-21 (« en tant qu'adhérent, je choisis un service et rien n'est restreint »).
+- **Parcours de repro** : se connecter comme adhérent membre de ≥2 services → index interventions → choisir un service dans le filtre → la liste n'est pas restreinte.
+- **Où** : [interventions_controller.rb:30](app/controllers/interventions_controller.rb#L30) — `Intervention.filter_by_service(selected_services).by_role_for(current_user)`.
+- **Cause racine (prouvée empiriquement, SQL généré)** : `by_role_for` ([intervention.rb:187](app/models/intervention.rb#L187)) est une méthode de classe qui, pour l'**adhérent** (et l'agent), repart d'une association fraîche (`user.interventions_adherent` / `user.interventions`), **jetant** le `filter_by_service` chaîné avant → le SQL adhérent ne gardait que `WHERE adherent_id`, jamais `WHERE service_id`. Manager/admin non touchés (`by_role_for` y renvoie `ordered`, chaîné).
+- **Piège du correctif naïf** : inverser simplement les deux appels masquerait par défaut toutes les interventions d'un adhérent situées dans des services dont il n'est pas membre (cf. fixture `weil` : membre `informatique`, interventions en `technique`).
+- **Correctif appliqué (sensible au rôle)** : périmètre de rôle d'abord, puis `filter_by_service` **seulement si** `manager_or_admin?` (chez qui le filtre borne le périmètre, indispensable) **ou** si un service est explicitement choisi (`@selected_service_ids.present?`). L'agent n'a pas ce filtre dans l'UI → inchangé. 2 tests de régression adhérent dans `interventions_index_service_filter_test.rb`, prouvés rouges sur l'ordre bogué.
+- **Reste ouvert (hors périmètre)** : le menu propose à l'adhérent ses services **membres** (`@services`), pas les services de ses interventions — s'ils divergent, un choix peut donner 0 résultat. À trancher si le client le remonte.
+
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
 
 ### R1 — Pointage : une fille de la veille non terminée ferait pointer une NOUVELLE intervention au lieu de terminer la sienne

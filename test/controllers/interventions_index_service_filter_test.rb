@@ -86,4 +86,43 @@ class InterventionsIndexServiceFilterTest < ActionDispatch::IntegrationTest
     assert_select "select[name='service[]']", false,
                   'le filtre service doit être masqué pour un manager mono-service'
   end
+
+  # --- Adhérent (régression) -------------------------------------------------
+  # Bug signalé : un adhérent choisissait un service, rien n'était restreint.
+  # Cause : `by_role_for` repartait de `user.interventions_adherent`, écrasant le
+  # `filter_by_service` appliqué avant lui → filtre mort. Ces tests figent le
+  # comportement corrigé (filtre appliqué APRÈS le périmètre de rôle).
+
+  test 'adhérent : par défaut voit toutes ses interventions, même hors de ses services membres' do
+    weil = users(:weil) # membre d'informatique ; interventions en technique
+    UserService.create!(user: weil, service: services(:technique))
+    a = interventions(:nouvelle_intervention) # weil / technique
+    b = interventions(:tonte_locaux)          # weil / technique → informatique
+    b.update_columns(service_id: services(:informatique).id)
+
+    sign_in weil
+    get interventions_url # aucun service soumis
+
+    assert_response :success
+    assert_select 'a[href=?]', intervention_path(a), { minimum: 1 }
+    assert_select 'a[href=?]', intervention_path(b), { minimum: 1 },
+                  'sans filtre, l\'adhérent voit toutes ses interventions'
+  end
+
+  test 'adhérent : choisir un service restreint bien ses interventions' do
+    weil = users(:weil)
+    UserService.create!(user: weil, service: services(:technique))
+    a = interventions(:nouvelle_intervention) # reste en technique
+    b = interventions(:tonte_locaux)          # déplacée en informatique
+    b.update_columns(service_id: services(:informatique).id)
+
+    sign_in weil
+    get interventions_url, params: { service: [services(:technique).id] }
+
+    assert_response :success
+    assert_select 'a[href=?]', intervention_path(a), { minimum: 1 },
+                  'l\'intervention du service choisi reste visible'
+    assert_select 'a[href=?]', intervention_path(b), { count: 0 },
+                  'choisir un service doit masquer les interventions des autres services'
+  end
 end
