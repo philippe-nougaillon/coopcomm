@@ -77,6 +77,7 @@ export default class extends Controller {
 
     // Lancement de la requête UNIQUEMENT si on a des éléments ET au moins une date
     if ((agent_ids.length || tool_ids.length) && (date_debut || date_fin)) {
+      // # TODO : Pourquoi ça utilise les champs réelles et prévues, alors que plus haut, on déclare date_debut
       const url = this.getUnifiedUrl(intervention_id, agent_ids, tool_ids, date_debut_prevue, date_fin_prevue, date_debut_reel, date_fin_reel)
 
       this.fetchUnavailableElements(url).then(data => {

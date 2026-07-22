@@ -412,6 +412,7 @@ class InterventionsController < ApplicationController
 
     # Plage effective : dates réelles prioritaires, repli sur les prévues
     # (cohérent avec Intervention#effective_début/fin et OVERLAP_SQL).
+    # TODO : Ne prendre en compte qu'une seule date (date_réelle || date_prévue)
     date_debut = date_debut_reel.presence || date_debut_prevue
     date_fin = date_fin_reel.presence || date_fin_prevue
 
