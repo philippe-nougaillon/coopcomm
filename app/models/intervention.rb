@@ -31,6 +31,7 @@ class Intervention < ApplicationRecord
 
   has_many_attached :photos
 
+  # TODO : mettre tous les include PieceJointeValidable en haut des fichiers
   include PieceJointeValidable
   valide_piece_jointe :photos, types: PieceJointeValidable::IMAGES
 
