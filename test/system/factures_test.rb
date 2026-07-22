@@ -35,8 +35,8 @@ class FacturesTest < ApplicationSystemTestCase
     fill_in 'facture_intitulé', with: 'Facture nettoyage révisée'
     cliquer_bouton 'Enregistrer'
 
-    # `update` redirige vers la show : on attend la navigation AVANT d'asserter le
-    # texte, sinon il est trouvé dans le champ du formulaire encore affiché.
+    # `update` redirige vers la show : on attend la navigation AVANT d'asserter,
+    # sinon on lit le champ du formulaire encore affiché.
     assert_current_path facture_path(@facture)
     assert_text css_capitalize('Facture nettoyage révisée')
     assert_equal 'Facture nettoyage révisée', @facture.reload.intitulé

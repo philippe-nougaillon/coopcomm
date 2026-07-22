@@ -195,7 +195,7 @@ class CommandeTest < ActiveSupport::TestCase
     assert_equal 'badge badge-secondary rounded-full', commande.style
     commande.save!
     commande.envoyer!
-    assert_equal "badge badge-primary rounded-full", commande.style
+    assert_equal 'badge badge-primary rounded-full', commande.style
   end
 
   test 'workflow_state_humanized liste les états humanisés' do
