@@ -24,33 +24,32 @@ class FacturesTest < ApplicationSystemTestCase
     visit facture_url(@facture)
 
     assert_text @facture.ref
-    assert_text @facture.intitulé.capitalize
+    assert_text css_capitalize(@facture.intitulé)
   end
 
   test 'updating a Facture' do
     visit facture_url(@facture)
-    # click_on 'Modifier'
+    click_on 'Modifier'
 
     # « Intitulé » existe aussi sur les lignes de prestation → on cible le champ de la facture par son id.
-    fill_in 'Intitulé', with: 'Facture nettoyage révisée'
+    fill_in 'facture_intitulé', with: 'Facture nettoyage révisée'
     cliquer_bouton 'Enregistrer'
 
     # `update` redirige vers la show : on attend la navigation AVANT d'asserter le
     # texte, sinon il est trouvé dans le champ du formulaire encore affiché.
     assert_current_path facture_path(@facture)
-    assert_text 'Facture nettoyage révisée'
+    assert_text css_capitalize('Facture nettoyage révisée')
     assert_equal 'Facture nettoyage révisée', @facture.reload.intitulé
   end
 
   test 'destroying a Facture' do
-    visit factures_url
+    visit facture_url(@facture)
 
-    within('tr', text: @facture.intitulé) do
-      find("button[title='Supprimer']").click
-    end
+    find("button[title='Supprimer']").click
     click_on 'Oui, supprimer'
 
-    assert_no_selector 'tr', text: @facture.intitulé
+    assert_current_path factures_path
+    assert_no_selector 'tr', text: css_capitalize(@facture.intitulé)
     assert @facture.reload.discarded?
   end
 end

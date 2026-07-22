@@ -24,31 +24,30 @@ class CommandesTest < ApplicationSystemTestCase
     visit commande_url(@commande)
 
     assert_text @commande.ref
-    assert_text @commande.intitulé.capitalize
+    assert_text css_capitalize(@commande.intitulé)
   end
 
   test 'updating a Commande' do
     visit commande_url(@commande)
-     # click_on 'Modifier'
+    click_on 'Modifier'
 
     # « Intitulé » existe aussi sur les lignes de prestation → on cible le champ de la commande par son id.
-    fill_in 'Intitulé', with: 'Devis nettoyage révisé'
+    fill_in 'commande_intitulé', with: 'Devis nettoyage révisé'
     click_on 'Enregistrer'
 
     # On vérifie l'état métier (le toast de flash est instable après navigation Turbo).
-    assert_text 'Devis Nettoyage Révisé'
+    assert_text css_capitalize('Devis nettoyage révisé')
     assert_equal 'Devis nettoyage révisé', @commande.reload.intitulé
   end
 
   test 'destroying a Commande' do
-    visit commandes_url
+    visit commande_url(@commande)
 
-    within('tr', text: @commande.intitulé) do
-      find("button[title='Supprimer']").click
-    end
+    find("button[title='Supprimer']").click
     click_on 'Oui, supprimer'
 
-    assert_no_selector 'tr', text: @commande.intitulé
+    assert_current_path commandes_path
+    assert_no_selector 'tr', text: css_capitalize(@commande.intitulé)
     assert @commande.reload.discarded?
   end
 end

@@ -102,4 +102,12 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     # c'est-à-dire quand le navigateur a rendu la page d'arrivée. C'est ce qu'on veut.
     assert_no_button locator, disabled: :all, wait: 10
   end
+
+  # Reproduit la transformation CSS `text-transform: capitalize` (majuscule
+  # en début de chaque mot, sans toucher au reste) pour comparer avec le
+  # texte tel qu'il est réellement affiché à l'écran.
+  def css_capitalize(str)
+    str.split(' ').map { |word| word.sub(/\A\p{L}/) { |c| c.upcase } }.join(' ')
+  end
+
 end
