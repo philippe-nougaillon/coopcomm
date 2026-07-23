@@ -118,13 +118,15 @@ class Tool < ApplicationRecord
       current_state = "L"
 
       # Arrête la période de panne si fin_panne, pour éviter d'entrer dans la condition est_en_panne
-      est_en_panne = false if etats.include?("fin_panne")
+      if etats.include?("fin_panne")
+        est_en_panne = false
+      end
 
       # Si l'outil est toujours en panne aujourd'hui
       if est_en_panne
         # Si l'outil est en panne, mais que le jour J est en fin de panne
         current_state = "P"
-      elsif etats.any?
+      else
         # Si des mouvements existent au jour J
         if etats["panne"].present? && etats["fin_panne"].blank?
           current_state = "R" 
@@ -137,7 +139,7 @@ class Tool < ApplicationRecord
       results << current_state
     end
 
-    results
+    return results
   end
 
   # On récupère la dernière panne en cours à la date donnée
@@ -145,7 +147,7 @@ class Tool < ApplicationRecord
     mouvements.where('date <= ?', date)
               .where(état: ["panne", "fin_panne"])
               .order(date: :desc, id: :desc)
-              .pick(:état) == "panne"
+              .pick(:état) == "panne" # Prend la première panne trouvée
   end
 
   private
