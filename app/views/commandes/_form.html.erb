@@ -50,27 +50,27 @@
     <div class="flex items-center gap-4 mt-8 mb-3">
       <h2 class="text-xl text-secondary font-semibold">Prestations</h2>
     </div>
-    <div>
+    <div class="flex flex-col items-start gap-4">
       <%= f.fields_for :commande_lignes do |ligne| %>
         <%= render "prestation_form", f: ligne, prestations: @prestations %>
       <% end %>
       <div data-nested-form-target="target"></div>
+       <button type="button" data-action="nested-form#add" class="btn btn-outline btn-success hover:text-white!">
+        + Ajouter une prestation
+      </button>
     </div>
     <template data-nested-form-target="template">
       <%= f.fields_for :commande_lignes, CommandeLigne.new, child_index: "NEW_RECORD" do |ligne| %>
         <%= render "prestation_form", f: ligne, prestations: @prestations %>
       <% end %>
     </template>
-    <div class="mt-6 flex justify-between gap-2">
-      <div class="flex gap-2">
-        <%= link_to "Annuler", (@commande.persisted? ? commande_path(@commande) : commandes_path), class: "btn" %>
-        <%= f.submit "Enregistrer", class: "btn btn-primary" %>
-      </div>
-      <button type="button" data-action="nested-form#add" class="btn btn-outline btn-success hover:text-white!">
-        + Ajouter une prestation
-      </button>
+    <hr class="border-slate-300 my-6" />
+    <div class="flex gap-2 mt-4 w-full">
+      <%= link_to "Annuler", (@commande.persisted? ? commande_path(@commande) : commandes_path), class: "btn flex-1" %>
+        <%= f.submit "Enregistrer", class: "btn btn-primary flex-1" %>
     </div>
-  <% end %>
+  </div>
+<% end %>
 </div>
 <div class="pt-2 pb-6 max-w-3xl mx-auto px-4">
   <%= link_to commandes_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>

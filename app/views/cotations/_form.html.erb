@@ -54,19 +54,18 @@
         <%= f.text_area :mémo, rows: 3, class: "textarea textarea-bordered w-full focus:textarea-primary" %>
       </div>
     </div>
-    <%# Lignes de la cotation (formulaire imbriqué) %>
     <div class="flex items-center gap-4 mt-8 mb-3">
       <h2 class="text-xl text-secondary font-semibold">Prestations</h2>
     </div>
     <div class="flex flex-col items-start gap-4">
-  <%= f.fields_for :cotation_lignes do |ligne| %>
-    <%= render "prestation_form", f: ligne, prestations: @prestations, first: ligne.index.zero? %>
-  <% end %>
-  <div data-nested-form-target="target"></div>
-  <button type="button" data-action="nested-form#add" class="btn btn-outline btn-success w-60 hover:text-white!">
-    + Ajouter une prestation
-  </button>
-</div>
+      <%= f.fields_for :cotation_lignes do |ligne| %>
+        <%= render "prestation_form", f: ligne, prestations: @prestations, first: ligne.index.zero? %>
+      <% end %>
+      <div data-nested-form-target="target"></div>
+      <button type="button" data-action="nested-form#add" class="btn btn-outline btn-success w-60 hover:text-white!">
+        + Ajouter une prestation
+      </button>
+    </div>
     <template data-nested-form-target="template">
       <%= f.fields_for :cotation_lignes, CotationLigne.new, child_index: "NEW_RECORD" do |ligne| %>
         <%= render "prestation_form", f: ligne, prestations: @prestations %>

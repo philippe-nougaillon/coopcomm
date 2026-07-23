@@ -4,7 +4,7 @@
       <%= page_title!('Paramètres') %>
     </h1>
   </div>
-  <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_frame: "parametres_table", turbo_action: "advance" } do %>
+  <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_action: "advance" } do %>
     <%= hidden_field_tag :tab, params[:tab] || 'services' %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
