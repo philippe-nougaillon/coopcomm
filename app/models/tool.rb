@@ -139,7 +139,7 @@ class Tool < ApplicationRecord
         .where('date <= ?', date)
         .where(état: ["panne", "fin_panne"])
         .order(date: :desc, id: :desc)
-        .pick(:état) == "panne" # Permet de prendre
+        .pick(:état) == "panne" # Prend la première panne trouvée
   end
 
   private
