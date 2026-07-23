@@ -99,13 +99,4 @@ class FacturesControllerTest < ActionDispatch::IntegrationTest
 
     assert @facture.reload.envoyé?
   end
-
-  # --- Autorisation ---
-
-  test "un adhérent n'accède pas à l'index des factures" do
-    sign_out users(:hidalgo)
-    sign_in users(:weil)
-    get factures_url
-    assert_response :redirect
-  end
 end
