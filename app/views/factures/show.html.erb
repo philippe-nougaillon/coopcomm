@@ -13,7 +13,7 @@
       </div>
     </div>
     <div class="flex justify-end  md:w-full gap-2 ">
-      <% if policy(@facture).update? && @facture.modifiable? %>
+      <% if policy(@facture).update? %>
         <%= link_to edit_facture_path(@facture), class: "btn flex-1 sm:flex-none" do %>
           <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
           <span class="hidden md:block">Modifier</span>
