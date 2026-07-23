@@ -4,36 +4,30 @@
       <%= page_title!('CRM') %>
     </h1>
   </div>
-
   <% current_tab = params[:tab] || 'cotations' %>
-
-  <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_frame: "crm_table", turbo_action: "advance" } do %>
-    <%= hidden_field_tag :tab, current_tab %>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-      <div class="w-full md:flex-1">
-        <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
-        <%= text_field_tag :search, params[:search],
+  <%= turbo_frame_tag "crm_table" do %>
+    <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_frame: "crm_table", turbo_action: "advance" } do %>
+      <%= hidden_field_tag :tab, current_tab %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div class="w-full md:flex-1">
+          <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
+          <%= text_field_tag :search, params[:search],
                             onchange: 'this.form.requestSubmit()',
                             class: 'input input-bordered input-md w-full',
                             placeholder: 'Rechercher...' %>
+        </div>
       </div>
-    </div>
-  <% end %>
-
-  <%= turbo_frame_tag "crm_table" do %>
-
+    <% end %>
     <div class="mt-4 border-b border-slate-200">
       <nav class="flex gap-1" aria-label="adherent_crm">
         <%= link_to adherent_crm_path(tab: 'cotations', search: params[:search]),
                     class: "px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors #{@tab == 'cotations' ? 'text-primary border-primary' : 'text-slate-500 hover:text-slate-800 border-transparent'}" do %>
           Mes Cotations
         <% end %>
-
         <%= link_to adherent_crm_path(tab: 'commandes', search: params[:search]),
                     class: "px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors #{@tab == 'commandes' ? 'text-primary border-primary' : 'text-slate-500 hover:text-slate-800 border-transparent'}" do %>
           Mes Commandes
         <% end %>
-
         <%= link_to adherent_crm_path(tab: 'factures', search: params[:search]),
                     class: "px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors #{@tab == 'factures' ? 'text-primary border-primary' : 'text-slate-500 hover:text-slate-800 border-transparent'}" do %>
           Mes Factures
@@ -66,7 +60,9 @@
                   <% if @cotations.any? %>
                     <%= render partial: "cotations/cotation", collection: @cotations, locals: { last_mail_logs: @last_mail_logs } %>
                   <% else %>
-                    <tr><td colspan="8" class="text-center py-8 text-slate-400 text-base italic">Aucune cotation.</td></tr>
+                    <tr>
+                      <td colspan="8" class="text-center py-8 text-slate-400 text-base italic">Aucune cotation.</td>
+                    </tr>
                   <% end %>
                 </tbody>
               </table>
@@ -79,7 +75,6 @@
             <% end %>
           </div>
         </section>
-
       <% when 'commandes' %>
         <section id="commandes" class="animate-fade-in">
           <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
@@ -103,7 +98,9 @@
                   <% if @commandes.any? %>
                     <%= render partial: "commandes/commande", collection: @commandes %>
                   <% else %>
-                    <tr><td colspan="7" class="text-center py-8 text-slate-400 text-base italic">Aucune commande.</td></tr>
+                    <tr>
+                      <td colspan="7" class="text-center py-8 text-slate-400 text-base italic">Aucune commande.</td>
+                    </tr>
                   <% end %>
                 </tbody>
               </table>
@@ -116,7 +113,6 @@
             <% end %>
           </div>
         </section>
-
       <% when 'factures' %>
         <section id="factures" class="animate-fade-in">
           <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
@@ -140,7 +136,9 @@
                   <% if @factures.any? %>
                     <%= render partial: "factures/facture", collection: @factures %>
                   <% else %>
-                    <tr><td colspan="7" class="text-center py-8 text-slate-400 text-base italic">Aucune facture.</td></tr>
+                    <tr>
+                      <td colspan="7" class="text-center py-8 text-slate-400 text-base italic">Aucune facture.</td>
+                    </tr>
                   <% end %>
                 </tbody>
               </table>
@@ -155,6 +153,5 @@
         </section>
       <% end %>
     </div>
-
   <% end %>
 </div>
