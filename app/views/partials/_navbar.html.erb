@@ -275,8 +275,7 @@
                 <% end %>
               </li>
             <% end %>
-            <%# ---  (Commandes/Factures/Cotations) --- %>
-            <% if policy(Commande).index? || policy(Facture).index? || policy(Cotation).index? %>
+            <% if policy(:crm).index? %>
               <li>
                 <%= link_to adherent_crm_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'adherent_crm'}", title: "Adhérent CRM" do %>
                   <%= embedded_svg "icons/contract.svg", class: "w-5 h-5 inline mr-2" %> CRM
