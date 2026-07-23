@@ -3,12 +3,12 @@
 class CommandePolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
-      scope
+      Commande.visible_to(user)
     end
   end
 
   def index?
-    manager_or_admin?
+    user&.manager_or_admin? || adhérent?
   end
 
   # def new?
@@ -19,8 +19,10 @@ class CommandePolicy < ApplicationPolicy
   #   manager_or_admin?
   # end
 
+  # Un adhérent ne voit une commande à lui qu'une fois envoyée (pas les
+  # brouillons « créé »), même via une URL directe.
   def show?
-    manage?
+    manage? || (adhérent? && record.adherent_id == user.id && !record.créé?)
   end
 
   # Modification (et edit?, qui en hérite) : réservée aux états modifiables,

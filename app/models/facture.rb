@@ -76,6 +76,21 @@ class Facture < ApplicationRecord
     "Facture-#{ref}.pdf"
   end
 
+  # factures visibles : un admin voit celles de son organisation,
+  # un manager celles de ses services, un adhérent les siennes déjà envoyées
+  # (une commande/facture « créé » est un brouillon interne), les autres rôles aucune.
+  def self.visible_to(user)
+    if user.administrateur?
+      joins(:service).where(services: { organisation_id: user.organisation&.id })
+    elsif user.manager?
+      where(service_id: user.service_ids)
+    elsif user.adhérent?
+      where(adherent_id: user.id).where.not(workflow_state: CREE)
+    else
+      none
+    end
+  end
+
   private
 
   def slug_candidates

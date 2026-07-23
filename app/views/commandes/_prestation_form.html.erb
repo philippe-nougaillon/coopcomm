@@ -18,7 +18,7 @@
           data: { commande_ligne_target: "intitule" } %>
   </div>
   <div class="flex flex-col gap-1 w-20">
-    <%= f.label :qté, "Qté", class: "text-sm text-slate-500" %>
+    <%= f.label :qté, "Qté", class: "text-sm text-slate-500", required: true %>
     <%= f.number_field :qté, min: 0, class: "input input-bordered w-full focus:input-primary",
           data: { commande_ligne_target: "qte", action: "input->commande-ligne#refresh" } %>
   </div>

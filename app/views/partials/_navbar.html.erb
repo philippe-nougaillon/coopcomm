@@ -14,27 +14,34 @@
       </li>
       <%# --- VISTA PARA EL ROL ADHÉRENT --- %>
       <% if current_user.rôle == 'adhérent' %>
-        <% if policy(Cotation).index? %>
+        <% if policy(Intervention).index? %>
           <li>
-            <%= link_to cotations_path, class: "h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{'menu-active text-primary!' + (demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!') + ' border-b-2' if params[:action] == 'cotations'}" do %>
-              <%= embedded_svg "icons/request_quote.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
+            <%= link_to interventions_path, class: "h-16 py-0 px-3 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
+              <%= embedded_svg "icons/construction.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
             <% end %>
           </li>
         <% end %>
-        <% if policy(Intervention).index? %>
-            <li>
-              <%= link_to interventions_path, class: "h-16 py-0 px-3 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
-                <%= embedded_svg "icons/construction.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
-              <% end %>
-            </li>
-          <% end %>
+        <% if policy(Convention).index? %>
+          <li>
+            <%= link_to conventions_path, class: "h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! ' + (demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!') + ' border-b-2' if params[:controller] == 'conventions'}", title: "Liste des conventions" do %>
+              <%= embedded_svg "icons/order_approve.svg",  class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
+            <% end %>
+          </li>
+        <% end %>
+        <%# ---  (Commandes/Factures/Cotations) --- %>
+        <% if policy(Commande).index? || policy(Facture).index? || policy(Cotation).index? %>
+          <li>
+            <%= link_to adherent_crm_path, class: "h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! ' + (demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!') + ' border-b-2' if params[:controller] == 'adherent_crm'}", title: "Adhérent CRM" do %>
+              <%= embedded_svg "icons/contract.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
+            <% end %>
+          </li>
+        <% end %>
         <% if policy(:pages).dashboard? %>
           <li>
-            <%= link_to dashboard_path, class: "h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! ' + (demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!') + ' border-b-2' if params[:action] == 'dashboard'}", 'data-turbo': false do %>
+            <%= link_to dashboard_path, class: "h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! ' + (demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!') + ' border-b-2' if params[:action] == 'dashboard'}",title: "Dashboard", 'data-turbo': false do %>
               <%= embedded_svg "icons/bar_chart.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
             <% end %>
           </li>
-          
         <% end %>
         <%# --- VISTA PARA OTROS ROLES (ADMIN, AGENT, ETC.) --- %>
       <% else %>
@@ -261,10 +268,18 @@
         <ul class="menu p-0 text-slate-700 w-full">
           <%# ADHÉRENT %>
           <% if current_user.rôle == 'adhérent' %>
-            <% if policy(Cotation).index? %>
+            <% if policy(Convention).index? %>
               <li>
-                <%= link_to cotations_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'cotations'}" do %>
-                  <%= embedded_svg "icons/request_quote.svg", class: "w-5 h-5 inline mr-2" %> Cotations 
+                <%= link_to conventions_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'conventions'}" do %>
+                  <%= embedded_svg "icons/order_approve.svg", class: "w-5 h-5 inline mr-2" %> Conventions
+                <% end %>
+              </li>
+            <% end %>
+            <%# ---  (Commandes/Factures/Cotations) --- %>
+            <% if policy(Commande).index? || policy(Facture).index? || policy(Cotation).index? %>
+              <li>
+                <%= link_to adherent_crm_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'adherent_crm'}", title: "Adhérent CRM" do %>
+                  <%= embedded_svg "icons/contract.svg", class: "w-5 h-5 inline mr-2" %> CRM
                 <% end %>
               </li>
             <% end %>
