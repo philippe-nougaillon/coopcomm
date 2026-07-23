@@ -13,7 +13,7 @@ class Tool < ApplicationRecord
   has_many :mouvements, dependent: :destroy
   
   has_one_attached :photo
-  has_many_attached :documents
+  has_one_attached :document
 
   DOCUMENTS = %w[
     application/pdf
@@ -33,7 +33,7 @@ class Tool < ApplicationRecord
 
   include PieceJointeValidable
   valide_piece_jointe :photo, types: IMAGES
-  valide_piece_jointe :documents, types: DOCUMENTS
+  valide_piece_jointe :document, types: DOCUMENTS
 
   validates :name, presence: true
   validates_uniqueness_of :name, scope: :organisation_id

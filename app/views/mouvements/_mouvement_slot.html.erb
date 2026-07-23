@@ -1,4 +1,4 @@
-<% if mouvement && mouvement.sortie? %>
+<% if mouvement && mouvement.réservé? %>
   <%# --- CAS ROUGE / BLEU : L'OUTIL EST SORTI --- %>
   <%# On définit la couleur selon l'utilisateur (bleu si c'est le mien, rouge sinon) %>
   <% bg_color = (mouvement.user == current_user) ? '#3b82f6' : '#db2767' %>
