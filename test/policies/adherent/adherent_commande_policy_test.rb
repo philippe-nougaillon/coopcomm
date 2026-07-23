@@ -21,9 +21,7 @@ class AdherentCommandePolicyTest < ActionDispatch::IntegrationTest
   end
 
   test "un adhérent n'a pas accès aux commandes d'un autre adhérent" do
-    autre_commande = commandes(:commande_paris) # remplace par une fixture appartenant à un autre adhérent
-    policy = CommandePolicy.new(@adherent, autre_commande)
-    refute policy.show? unless autre_commande.adherent_id == @adherent.id
+    assert_not AdherentCommandePolicy.new(user, commande_autre_adherent).show?
   end
 
   test "un agent n'a aucun accès aux commandes" do

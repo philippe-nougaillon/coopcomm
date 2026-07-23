@@ -11,6 +11,7 @@ class Tool < ApplicationRecord
   has_many :tool_interventions, dependent: :destroy
   has_many :interventions, through: :tool_interventions
   has_many :mouvements, dependent: :destroy
+  has_many :documents, dependent: :destroy  
   
   has_one_attached :photo
   has_one_attached :document
@@ -129,7 +130,7 @@ class Tool < ApplicationRecord
           current_state = "R" 
           est_en_panne = true
         elsif (mouvement_user_id = etats["réservé"].presence)
-          current_state = movimiento_user_id == current_user_id ? "R" : "I"
+          current_state = mouvement_user_id == current_user_id ? "R" : "I"
         end
       end
 

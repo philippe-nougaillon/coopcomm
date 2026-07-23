@@ -3,13 +3,7 @@
 class CommandePolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
-      if user&.adhérent?
-        # Un adhérent voit toutes ses propres commandes, quel que soit l'état
-        # (créé, envoyé, refusé, validé, etc.)
-        scope.where(adherent_id: user.id)
-      else
-        Commande.visible_to(user)
-      end
+      Commande.visible_to(user)
     end
   end
 
@@ -30,7 +24,7 @@ class CommandePolicy < ApplicationPolicy
   # Un adhérent voit le détail de n'importe laquelle de ses commandes,
   # quel que soit son état.
   def show?
-    manage? || (adhérent? && record.adherent_id == user.id)
+    manage? || (adhérent? && record.adherent_id == user.id && !record.créé?)
   end
 
   # Modification (et edit?, qui en hérite) : réservée aux états modifiables,
