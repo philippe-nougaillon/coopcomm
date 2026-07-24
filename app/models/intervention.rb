@@ -442,23 +442,12 @@ class Intervention < ApplicationRecord
   end
 
   def calculate_co2
-    return if Rails.env.test?
-    # Les vérifications de base
-    return unless service&.calculate_distance?
-    return unless adherent && adherent.latitude.present? && adherent.longitude.present?
+    response = self.get_routes_info_from_location
 
-    origine = origin_location
-    return unless origine.present?
+    return if response['errors'].present? && response['data_response']['routes'].blank?
 
-    destination = { lat: adherent.latitude, lng: adherent.longitude }
-
-    request = FetchRoutesInfos.new(origine, destination)
-    request.call
-
-    return unless request.errors.blank? && request.data_response['routes'].present?
-
-    self.trajet = request.routes_info
-    self.co2 = request.co2_consumption_by_route(request.data_response['routes'][0])
+    self.trajet = response['routes_info']
+    self.co2 = FetchRoutesInfos.co2_consumption_by_route(response['data_response']['routes'][0])
     save
   end
 
@@ -515,7 +504,7 @@ class Intervention < ApplicationRecord
     localisation_depart = self.origin_location
 
     # On vérifie que l'intervention possède un adhérent localisé ET que le service nécessite le calcul
-    if localisation_depart && self.adherent.present? && self.adherent.latitude.present? && self.adherent.longitude.present? && self.service&.calculate_distance? && (self.trajet.blank? || self.nouveau?)
+    if localisation_depart && self.adherent.present? && self.adherent.latitude.present? && self.adherent.longitude.present? && self.service&.calculate_distance?
 
       localisation_arrivee = { lat: self.adherent.latitude, lng: self.adherent.longitude }
 
