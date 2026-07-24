@@ -147,8 +147,9 @@ class InterventionsController < ApplicationController
       @pointages = @pointages.ordered
     end
 
-    # TODO : Vérifier dans les tests qu'une réponse est bien renvoyée et traitable par la vue, sans retourner d'erreur
-    @routes_response = @intervention.get_routes_info_from_location
+    if (@intervention.nouveau? || @intervention.trajet.blank?)
+      @routes_response = @intervention.get_routes_info_from_location
+    end
 
     respond_to do |format|
       format.html do
@@ -280,7 +281,7 @@ class InterventionsController < ApplicationController
 
       redirect_to @intervention, notice: 'Intervention terminée'
     else
-      redirect_to @intervention, notice: "Impossible de terminer l'intervention"
+      redirect_to @intervention, alert: "Impossible de terminer l'intervention"
     end
   end
 

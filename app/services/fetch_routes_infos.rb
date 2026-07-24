@@ -90,7 +90,7 @@ class FetchRoutesInfos < ApplicationService
 
       duree = (route['duration'].to_f * 2 / 60).to_i
       essence = (route['travelAdvisory']['fuelConsumptionMicroliters'].to_f * 2 / 1_000_000).round(2)
-      co2 = co2_consumption_by_route(route)
+      co2 = FetchRoutesInfos.co2_consumption_by_route(route)
 
       "#{msg_distance}, Durée: #{duree} min, Essence: #{essence} L, CO₂: #{co2} kg"
     else
@@ -98,7 +98,9 @@ class FetchRoutesInfos < ApplicationService
     end
   end
 
-  def co2_consumption_by_route(route)
+  def self.co2_consumption_by_route(route)
+    return 0 if route.blank?
+    
     # 💡 Consommation de carburant
     fuel_microliters = route.dig('travelAdvisory', 'fuelConsumptionMicroliters')
     fuel_liters = fuel_microliters.to_f / 1_000_000 if fuel_microliters
