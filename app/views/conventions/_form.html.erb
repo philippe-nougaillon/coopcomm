@@ -49,7 +49,7 @@
         <%= f.label :date_début, class: "label font-semibold text-slate-700" do %>
           Date de début <span class="text-red-500">*</span>
         <% end %>
-        <div class="flex items-center gap-2 bg-slate-50 h-10 rounded-lg border border-slate-200">
+        <div class="flex items-center gap-2 h-10 rounded-lg border border-slate-200">
           <%= f.date_field :date_début, class: "flex-1 bg-transparent border-none outline-hidden text-sm", required: true %>
         </div>
       </div>
@@ -57,7 +57,7 @@
         <%= f.label :date_fin_prévue, "Date de fin prévue", class: "label font-semibold text-slate-700" do %>
           Date de fin prévue <span class="text-red-500">*</span>
         <% end %>
-        <div class="flex items-center gap-2 bg-slate-50 h-10 rounded-lg border border-slate-200">
+        <div class="flex items-center gap-2 h-10 rounded-lg border border-slate-200">
           <%= f.date_field :date_fin_prévue, class: "flex-1 bg-transparent border-none outline-hidden text-sm", required: true  %>
         </div>
       </div>

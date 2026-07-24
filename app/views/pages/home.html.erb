@@ -55,9 +55,9 @@
             <%= render partial: 'intervention', locals: {intervention: } %>
           <% end %>
           <span>
-            <%= link_to interventions_path, class: 'text-primary mt-8 hover:underline flex items-center flex-row justify-between gap-2' do %>
-              Voir toutes les interventions
-              <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
+            <%= link_to interventions_path, class: "inline-flex items-center gap-2 text-primary font-medium hover:underline transition group mt-8" do %>
+              <span>Voir toutes les interventions</span>
+              <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-transform duration-200 ease-out group-hover:translate-x-1" %>
             <% end %>
           </span>
         </div>
@@ -82,9 +82,9 @@
         </div>
       <% end %>
       <span >
-        <%= link_to messagerie_path, class: 'text-primary mt-8 hover:underline flex items-center flex-row justify-between gap-2' do %>
-          Ouvrir la messagerie
-          <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
+        <%= link_to messagerie_path, class: "inline-flex items-center gap-2 text-primary font-medium hover:underline transition group mt-8" do %>
+          <span> Ouvrir la messagerie</span>
+          <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-transform duration-200 ease-out group-hover:translate-x-1" %>
         <% end %>
       </span>
     </div>
@@ -191,9 +191,11 @@
           <%= render partial: 'pages/meteo', collection: [@forecasts["forecast"].first.third, @forecasts["forecast"].second.third], as: :forecast %>
         </div>
         <span >
-          <%= link_to meteo_path, class: 'text-primary mt-8 hover:underline flex items-center flex-row justify-between gap-2' do %>
-            Prévision pour les jours à venir
-            <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
+          <%= link_to meteo_path, class: "inline-flex items-center gap-2 text-primary font-medium hover:underline transition group mt-8" do %>
+            <span>
+              Prévision pour les jours à venir
+            </span>
+            <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-transform duration-200 ease-out group-hover:translate-x-1" %>
           <% end %>
         </span>
       <% else %>
