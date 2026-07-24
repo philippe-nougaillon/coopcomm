@@ -13,7 +13,7 @@
       </div>
     </div>
     <div class="flex justify-end  md:w-full gap-2 ">
-      <% if policy(@facture).update? && @facture.modifiable? %>
+      <% if policy(@facture).update? %>
         <%= link_to edit_facture_path(@facture), class: "btn flex-1 sm:flex-none" do %>
           <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
           <span class="hidden md:block">Modifier</span>
@@ -318,10 +318,19 @@
   </div>
 <% end %>
 <%# --- RETOUR À LA LISTE --- %>
-<div class="my-10">
-  <%= link_to factures_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
-    <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste" %>
-    Retour à la liste
-  <% end %>
-</div>
-</div>
+<% if current_user.manager_or_admin? %>
+  <div class="my-10">
+    <%= link_to factures_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+      <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste" %>
+      Retour à la liste
+    <% end %>
+  </div>
+<% else %>
+  <div class="my-10">
+    <%= link_to adherent_crm_path(tab: 'factures'),
+    class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+      <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste" %>
+      Retour à la liste
+    <% end %>
+  </div>
+<% end %>

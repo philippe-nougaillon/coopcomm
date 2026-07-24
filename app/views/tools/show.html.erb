@@ -169,12 +169,25 @@
             <th></th>
           </thead>
           <tbody>
-            <% if @documents.any? %>
-              <%= render @documents %>
+            <% if @tool.document.attached? %>
+              <tr>
+                <td class="font-medium">
+                  <%= @tool.document.filename.to_s %>
+                </td>
+                <td>
+                  <%= number_to_human_size(@tool.document.byte_size) %>
+                </td>
+                <td>
+                  <%= l(@tool.document.created_at, format: :short) %>
+                </td>
+                <td>
+                  <%= link_to "Télécharger", rails_blob_path(@tool.document, disposition: "attachment"), class: "btn btn-xs btn-ghost text-primary" %>
+                </td>
+              </tr>
             <% else %>
               <tr>
-                <td colspan=6>
-                  <i>Ce matériel n'a pas encore de document</i>
+                <td colspan="4" class="text-center italic py-4">
+                  Ce matériel n'a pas encore de document
                 </td>
               </tr>
             <% end %>

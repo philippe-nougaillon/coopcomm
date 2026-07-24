@@ -11,12 +11,15 @@ class AdherentConventionPolicyTest < ActionDispatch::IntegrationTest
     @convention = conventions(:convention_paris)
   end
 
-  test "un adhérent n'a aucun accès aux conventions" do
+  test "un adhérent a accès à l'index des conventions" do
     policy = ConventionPolicy.new(@adherent, @convention)
-    refute policy.index?
+    assert policy.index?
+  end
+
+  test "un adhérent n'a pas d'accès aux actions de gestion des conventions" do
+    policy = ConventionPolicy.new(@adherent, @convention)
     refute policy.new?
     refute policy.services_for_adherent?
-    refute policy.show?
     refute policy.create?
     refute policy.update?
     refute policy.destroy?

@@ -511,6 +511,21 @@ class Intervention < ApplicationRecord
     User.find_by(id: audits.first&.user_id)&.agent?
   end
 
+  def get_routes_info_from_location
+    localisation_depart = self.origin_location
+
+    # On vérifie que l'intervention possède un adhérent localisé ET que le service nécessite le calcul
+    if localisation_depart && self.adherent.present? && self.adherent.latitude.present? && self.adherent.longitude.present? && self.service&.calculate_distance? && (self.trajet.blank? || self.nouveau?)
+
+      localisation_arrivee = { lat: self.adherent.latitude, lng: self.adherent.longitude }
+
+      # Création du service avec le départ et l'arrivée
+      FetchRoutesInfos.call(localisation_depart, localisation_arrivee)
+    else
+      {}
+    end
+  end
+
   private
 
   def slug_candidates

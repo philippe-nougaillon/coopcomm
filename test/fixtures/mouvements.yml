@@ -6,4 +6,10 @@ mouvement_tondeuse:
   état: 1
   slug: mouvement_tondeuse
   intervention: tonte_locaux
-  date: <%= DateTime.now %>
+  date: <%= 2.days.ago %>
+
+mouvement_tondeuse_fin:
+  tool: tondeuse
+  user: bond
+  état: 2
+  date: <%= 1.day.ago %>

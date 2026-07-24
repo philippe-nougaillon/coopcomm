@@ -22,6 +22,7 @@ class ToolsTest < ApplicationSystemTestCase
     fill_in 'Modèle', with: 'MX57SH3V'
     fill_in 'Marque', with: 'Marina Systems'
     select_option('#tool_icon_name', 'Tracteur')
+  
 
     # Destination inconnue d'avance (nouvel enregistrement) : on attend que le
     # formulaire ait été quitté avant d'asserter le contenu de la page d'arrivée.

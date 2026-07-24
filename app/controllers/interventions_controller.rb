@@ -147,27 +147,8 @@ class InterventionsController < ApplicationController
       @pointages = @pointages.ordered
     end
 
-    # TODO VU: déplacer ce bloc dans un service
-    # OK, mais dans les tests, comme pour la météo, il faudra aussi simuler la réponse de l'API google
-    unless Rails.env.test?
-      # On vérifie que l'intervention possède un adhérent localisé ET que le service nécessite le calcul
-      @localisation_depart = @intervention.origin_location
-      if @localisation_depart && @intervention.adherent.present? && @intervention.adherent.latitude.present? && @intervention.adherent.longitude.present? && @intervention.service&.calculate_distance? && (@intervention.trajet.blank? || @intervention.nouveau?)
-
-        #TODO VU : supprimer les variables inutiles et créer directement @localisation_arrivee si c'est utile
-        localisation_arrivee = { lat: @intervention.adherent.latitude, lng: @intervention.adherent.longitude }
-
-        # Création du service avec le départ et la destination
-        request = FetchRoutesInfos.new(@localisation_depart, localisation_arrivee)
-        request.call
-
-        # Récupération des données via les getters du service
-        @localisation_arrivee = localisation_arrivee
-        @errors = request.errors
-        @routes_info = request.routes_info
-        @response = request.data_response
-      end
-    end
+    # TODO : Vérifier dans les tests qu'une réponse est bien renvoyée et traitable par la vue, sans retourner d'erreur
+    @routes_response = @intervention.get_routes_info_from_location
 
     respond_to do |format|
       format.html do

@@ -21,7 +21,7 @@ class ConventionsTest < ApplicationSystemTestCase
     visit edit_convention_path(@convention)
 
     assert_selector "[data-controller='dropzone']"
-    assert_text 'Glissez un fichier PDF ici ou cliquez pour parcourir'
+    assert_text 'Glissez un document (PDF, Word, Excel) ici ou cliquez pour parcourir'
   end
 
   test 'déposer un fichier non PDF affiche une erreur et ne retient pas le fichier' do

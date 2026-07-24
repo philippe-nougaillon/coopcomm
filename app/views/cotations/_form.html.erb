@@ -54,38 +54,32 @@
         <%= f.text_area :mémo, rows: 3, class: "textarea textarea-bordered w-full focus:textarea-primary" %>
       </div>
     </div>
-    <%# Lignes de la cotation (formulaire imbriqué) %>
     <div class="flex items-center gap-4 mt-8 mb-3">
       <h2 class="text-xl text-secondary font-semibold">Prestations</h2>
     </div>
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col items-start gap-4">
       <%= f.fields_for :cotation_lignes do |ligne| %>
-        <%= render "prestation_form", f: ligne,  prestations: @prestations, first: ligne.index.zero? %>
-  <% end %>
+        <%= render "prestation_form", f: ligne, prestations: @prestations, first: ligne.index.zero? %>
+      <% end %>
       <div data-nested-form-target="target"></div>
-      <button type="button" data-action="nested-form#add" class="btn btn-outline btn-primary  w-60 hover:text-white!">
-  + Ajouter une prestation
-</button>
+      <button type="button" data-action="nested-form#add" class="btn btn-outline btn-success w-60 hover:text-white!">
+        + Ajouter une prestation
+      </button>
     </div>
     <template data-nested-form-target="template">
       <%= f.fields_for :cotation_lignes, CotationLigne.new, child_index: "NEW_RECORD" do |ligne| %>
         <%= render "prestation_form", f: ligne, prestations: @prestations %>
       <% end %>
     </template>
-        <hr class="border-slate-100 my-6" />
-
+    <hr class="border-slate-300 my-6" />
     <div class="flex gap-2 mt-4 w-full">
-        <%= link_to "Annuler", (@cotation.persisted? ? cotation_path(@cotation) : cotations_path), class: "btn flex-1" %>
-        <%= f.submit "Enregistrer", class: "btn btn-primary flex-1" %>
-      </div>
+      <%= link_to "Annuler", (@cotation.persisted? ? cotation_path(@cotation) : cotations_path), class: "btn flex-1" %>
+      <%= f.submit "Enregistrer", class: "btn btn-primary flex-1" %>
     </div>
-  <% end %>
+  </div>
+<% end %>
 </div>
-
-
-
-
-<div class="pt-2 pb-6 max-w-3xl mx-auto px-4">
+<div class="pt-6 pb-6 max-w-3xl mx-auto px-4">
   <%= link_to cotations_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
     <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des cotations" %>
     Retour à la liste des cotations

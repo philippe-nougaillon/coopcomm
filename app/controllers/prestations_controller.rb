@@ -1,14 +1,18 @@
 # frozen_string_literal: true
 
 class PrestationsController < ApplicationController
-  before_action :set_prestation, only: %i[edit update destroy]
+  before_action :set_prestation, only: %i[show edit update destroy]
   before_action :is_user_authorized
 
+  
+  def show; end
+  
   # GET /prestations/new
   def new
     @prestation = Prestation.new
   end
 
+  
   # GET /prestations/1/edit
   def edit; end
 

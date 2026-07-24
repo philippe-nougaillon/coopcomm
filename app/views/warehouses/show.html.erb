@@ -1,37 +1,92 @@
-<div class="mx-auto lg:w-2/3 w-full">
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
-    <h1 class="text-2xl sm:text-4xl text-primary font-bold">
-      <%= page_title!(@warehouse.name) %>
+<div class="mx-auto w-full max-w-xl">
+  <div class="flex flex-col justify-center items-center min-h-12 sm:min-h-16">
+    <h1 class="text-primary font-bold text-3xl sm:text-4xl uppercase whitespace-nowrap text-center mt-8">
+       <%= page_title!(@warehouse.name) %>
     </h1>
+  <h2 class="text-base uppercase text-slate-600 mt-2 mb-8">Site 
+    </h2>
   </div>
-
-  <p class="mt-4">
-    <strong class="block text-slate-400 mb-1">Équipes</strong>
-    <% if @warehouse.users.any? %>
-      <ul>
-        <% @warehouse.users.each do |user| %>
-          <li><%= user.nom_prénom %></li> <%# Change :email par le champ que tu veux afficher %>
+  <div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+    <div class="flex flex-col gap-8">
+      <div>
+        <h3 class="flex items-center gap-2 text-slate-700 uppercase font-semibold mb-4">
+          <%= embedded_svg "icons/group.svg", class: "w-5 h-5 fill-current shrink-0" %>
+          Équipes
+        </h3>
+        <% if @warehouse.users.any? %>
+          <ul class="flex flex-col gap-2">
+            <% @warehouse.users.each do |user| %>
+              <li>
+                <%= link_to user_path(user), class: "flex items-center justify-between gap-3 px-4 py-3 bg-slate-50 hover:bg-primary border border-slate-100 rounded-xl transition-colors group" do %>
+                  <span class="text-slate-800 font-medium truncate group-hover:text-white "><%= user.nom_prénom %></span>
+                  <%= embedded_svg "icons/arrow_forward.svg", class: "w-4 h-4 fill-current text-slate-400 group-hover:text-white transition-transform group-hover:translate-x-2 transition-colors shrink-0" %>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="text-slate-400 italic text-sm">Aucun utilisateur rattaché à ce site pour le moment.</p>
         <% end %>
-      </ul>
-    <% else %>
-      <p>Aucun utilisateur rattaché à ce site pour le moment.</p>
-    <% end %>
-  </p>
-
-  <p class="mt-4">
-    <strong class="block text-slate-400 mb-1">Localisation</strong>
-    <%= @warehouse.address %>
-  </p>
-
-  <div class="flex flex-wrap gap-2 mt-8">
+      </div>
+      <div>
+        <h3 class="flex items-center gap-2 text-slate-700 uppercase font-semibold mb-4">
+          <%= embedded_svg "icons/pin_drop.svg", class: "w-5 h-5 fill-current shrink-0" %>
+          Localisation
+        </h3>
+        <div class="text-slate-800 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
+          <div><%= @warehouse.address %></div>
+      <div><%= link_to "Voir sur la carte", 
+        "https://maps.google.com/?q=#{CGI.escape(@warehouse.address.to_s)}", 
+        target: "_blank",
+        class: "text-xs text-blue-600 hover:underline flex items-center gap-1 mt-0.5" %>
+        </div>
+        </div>
+      </div>
+  <div class="flex gap-2 w-full">
     <% if policy(@warehouse).edit? %>
-      <%= link_to "Modifier", edit_warehouse_path(@warehouse), class: "btn" %>
-    <% end %>
-    <% if policy(@warehouse).destroy? %>
-      <%= button_to warehouse_path(@warehouse), method: :delete, id: "supprimer_warehouse", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer ce site ?" }, class: "btn", 'data-testid': "Supprimer le site" do %>
-            <%= embedded_svg "icons/delete.svg", title: "Suppression de ce site" %>   
+      <%= link_to edit_warehouse_path(@warehouse), class: "btn flex-1 gap-2" do %>
+        <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current shrink-0" %>
+        <span>Modifier</span>
       <% end %>
     <% end %>
-    <%= link_to "Retour", admin_parametres_path, class: "btn" %>
+    <% if policy(@warehouse).destroy? %>
+      <button type="button" class="btn btn-soft btn-error flex-1 gap-2 hover:!text-white" onclick="delete_warehouse_modal_<%= @warehouse.id %>.showModal()" title="Supprimer">
+        <%= embedded_svg "icons/delete.svg", class: "w-4 h-4 fill-current transition-colors duration-200 shrink-0" %>
+        <span>Supprimer</span>
+      </button>
+      <dialog id="delete_warehouse_modal_<%= @warehouse.id %>" class="modal">
+        <div class="modal-box">
+          <form method="dialog">
+            <button type="submit" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+          </form>
+          <h3 class="text-lg font-bold text-error flex items-center gap-2">
+            <%= embedded_svg "icons/warning.svg", title: "Supprimer le site" %>
+            Supprimer le site
+          </h3>
+          <p class="py-4 text-sm text-slate-600 text-left">
+            Êtes-vous certain(e) de vouloir supprimer ce site ? Cette action est irréversible.
+          </p>
+          <div class="modal-action">
+            <form method="dialog">
+              <button type="submit" class="btn btn-ghost">Annuler</button>
+            </form>
+            <%= button_to warehouse_path(@warehouse), method: :delete, class: "btn btn-error text-white" do %>
+              Oui, supprimer
+            <% end %>
+          </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+          <button type="submit">Fermer</button>
+        </form>
+      </dialog>
+    <% end %>
   </div>
+</div>
+<div class="pt-6">
+  <%= link_to admin_parametres_path(tab: params[:tab] || 'sites'), class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+    <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des utilisateurs" %>
+    Retour à la liste
+  <% end %>
+</div>
+</div>
 </div>

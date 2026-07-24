@@ -174,15 +174,6 @@ class CommandesControllerTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
-  # --- Autorisation ---
-
-  test "un adhérent n'accède pas à l'index des commandes" do
-    sign_out users(:hidalgo)
-    sign_in users(:weil)
-    get commandes_url
-    assert_response :redirect
-  end
-
   # --- Robustesse ---
 
   test "slug inconnu : devrait renvoyer 404 — bug B9, comportement actuel : 500" do

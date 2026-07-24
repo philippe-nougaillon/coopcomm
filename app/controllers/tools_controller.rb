@@ -39,7 +39,7 @@ class ToolsController < ApplicationController
   def show
     params[:vue] ||= 'calendrier'
 
-    @documents = @tool.documents.with_attached_fichier
+    @documents = @documents = @tool.documents
   end
 
   # GET /tools/new
@@ -101,8 +101,7 @@ class ToolsController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def tool_params
-    params.require(:tool).permit(:name, :description, :icon_name, :modèle, :marque, :photo,
-                                 documents_attributes: %i[id category fichier _destroy])
+    params.require(:tool).permit(:name, :description, :icon_name, :modèle, :marque, :photo, :document)
   end
 
   def is_user_authorized

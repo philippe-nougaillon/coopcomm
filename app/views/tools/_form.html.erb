@@ -40,44 +40,26 @@
     </div>
     <hr class="border-slate-100 my-1" />
     <div class="form-control w-full">
-      <%= form.label :photo, 'Photo', class: "label font-semibold text-slate-700" %>
-      <label class="flex flex-col items-center p-6 justify-center w-full border border-dashed border-zinc-700/40 rounded-lg cursor-pointer hover:bg-primary transition-colors duration-150 group px-4">
-        <div class="flex items-center justify-center gap-2 text-sm font-medium">
-          <%= embedded_svg "icons/upload.svg", class: "w-5 h-5 text-slate-400 group-hover:text-white transition-colors duration-150", title: "Parcourir" %>
-          <span class="text-sm text-slate-500 font-semibold group-hover:text-white transition-colors duration-150">
-            Glisser une image ou cliquer pour parcourir  
-            <span class="text-xs block pt-1 text-center text-zinc-400 font-normal group-hover:text-white/90 transition-colors duration-150">
-              PNG, JPEG, WEBP, PDF
-            </span>
-          </span>
-        </div>
-        <%= form.file_field :photo, accept: 'image/png,image/jpeg,.pdf,image/avif,image/webp', class: 'hidden' %>
-      </label>
+      <%= render "shared/file_dropzone", 
+               form: form, 
+               attribute: :photo, 
+               accept: "image/*",
+               placeholder: "Glisser une image ou cliquer pour parcourir " %>
     </div>
     <hr class="border-slate-100 my-1" />
     <div class="form-control w-full">
-      <%= form.label :documents, 'Documents', class: "label font-semibold text-slate-700" %>
-      <label class="flex flex-col items-center p-6 justify-center w-full border border-dashed border-zinc-700/40 rounded-lg cursor-pointer hover:bg-primary transition-colors duration-150 group px-4">
-        <div class="flex items-center justify-center gap-2 text-sm font-medium">
-          <%= embedded_svg "icons/upload.svg", class: "w-8 h-8 text-slate-400 group-hover:text-white transition-colors duration-150", title: "Parcourir" %>
-          <span class="text-sm text-slate-500 font-semibold text-center group-hover:text-white transition-colors duration-150">
-            Glisser un document ou cliquer pour parcourir  
-            <span class="text-xs block pt-1 text-center text-zinc-400 font-normal group-hover:text-white/90 transition-colors duration-150">
-              PNG, JPEG, WEBP, PDF
-            </span>
-            <span class="text-xs block pt-4 text-center text-zinc-400 font-normal group-hover:text-white/90 transition-colors duration-150">
-              Exemple de document : Contrôle technique, Notice, Carte grise, Certificat d'assurance...
-            </span>
-          </span>
-        </div>
-        <%= form.file_field :documents, accept: 'image/png,image/jpeg,.pdf,image/avif,image/webp', class: 'hidden' %>
-      </label>
+      <%= render "shared/file_dropzone", 
+             form: form, 
+             attribute: :document, 
+             accept: ".pdf, .doc, .docx, .xls, .xlsx",
+             placeholder: "Glissez un document (PDF, Notice, Carte grise, etc.) ici ou cliquez pour parcourir" %>
     </div>
-    <div class="flex gap-2 mt-4 w-full">
-      <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>
-      <%= form.submit "Enregistrer", id: "enregistrer_tool", class: "btn btn-primary flex-1" %>
-    </div>
-  <% end %>
+  </div>
+  <div class="flex gap-2 mt-4 w-full">
+    <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>
+    <%= form.submit "Enregistrer", id: "enregistrer_tool", class: "btn btn-primary flex-1" %>
+  </div>
+<% end %>
 </div>
 <div class="pt-6 max-w-3xl mx-auto ">
   <%= link_to tools_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>

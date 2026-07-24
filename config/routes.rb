@@ -116,6 +116,8 @@ Rails.application.routes.draw do
   resources :services, except: %i[index]
   resources :warehouses, except: %i[index], path: 'sites'
 
+  get 'adherent_crm', to: 'adherent_crm#index', as: :adherent_crm
+
   resources :cotations do
     member do
       # Le nom de fichier termine l'URL (ex. .../Cotation-2026-1.pdf) pour que la
@@ -128,8 +130,8 @@ Rails.application.routes.draw do
       get  :signer
       post :signer_do
     end
-  end
-  resources :prestations, except: %i[index show]
+  end 
+  resources :prestations, except: %i[index]
 
   resources :conventions do
     collection do

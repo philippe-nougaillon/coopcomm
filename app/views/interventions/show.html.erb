@@ -194,15 +194,15 @@
                   <strong class="block text-slate-400 mb-1">Trajet (AR)</strong>
                   <% if @intervention.trajet.present? && !@intervention.nouveau? %>
                     <p><%= @intervention.trajet %></p>
-                  <% elsif @intervention.nouveau? && @localisation_depart && @localisation_arrivee %>
+                  <% elsif @intervention.nouveau? && @routes_response.present? %>
                     <div id="map" 
                         class="w-full h-56 rounded border"
                         data-controller="map"
-                        data-map-depart-value="<%= @localisation_depart.to_json %>"
-                        data-map-arrivee-value="<%= @localisation_arrivee.to_json %>"
-                        data-map-polyline-value="<%= @response && @response["routes"] ? @response.dig("routes", 0, "polyline", "encodedPolyline") : '' %>">
+                        data-map-depart-value="<%= @routes_response["localisation_depart"].to_json %>"
+                        data-map-arrivee-value="<%= @routes_response["localisation_arrivee"].to_json %>"
+                        data-map-polyline-value="<%= @routes_response["data_response"] ? @routes_response.dig("data_response","routes", 0, "polyline", "encodedPolyline") : '' %>">
                     </div>
-                    <p class="mt-2 text-sm text-gray-600"><%= @routes_info %></p>
+                    <p class="mt-2 text-sm text-gray-600"><%= @routes_response["routes_info"] %></p>
                   <% end %>
                 </div>
               <% else %>

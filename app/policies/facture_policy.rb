@@ -3,12 +3,12 @@
 class FacturePolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
-      scope
+      Facture.visible_to(user)
     end
   end
 
   def index?
-    manager_or_admin?
+    user&.manager_or_admin? || adhérent?
   end
 
   # def new?
@@ -20,9 +20,9 @@ class FacturePolicy < ApplicationPolicy
   # end
 
   def show?
-    manage?
+    manage? || (adhérent? && record.adherent_id == user.id && !record.créé?)
   end
-
+  
   # Modification (et edit?, qui en hérite) : réservée aux états modifiables,
   # c.-à-d. tant que la cotation n'a pas été envoyée, ou après un refus.
   def update?
@@ -50,3 +50,5 @@ class FacturePolicy < ApplicationPolicy
     manage?
   end
 end
+
+AdherentFacturePolicy = FacturePolicy

@@ -2,8 +2,6 @@
 
 require 'test_helper'
 
-# Rôles sans aucun droit de gestion des commandes (adhérent et agent regroupés).
-# Miroir de adherent_facture_policy_test.rb.
 class AdherentCommandePolicyTest < ActionDispatch::IntegrationTest
   def setup
     @adherent = users(:weil)
@@ -11,17 +9,28 @@ class AdherentCommandePolicyTest < ActionDispatch::IntegrationTest
     @commande = commandes(:commande_paris)
   end
 
-  test "un adhérent n'a aucun accès aux commandes" do
+  test "un adhérent a accès à l'index des commandes" do
     policy = CommandePolicy.new(@adherent, @commande)
-    refute policy.index?
+    assert policy.index?
+  end
+
+  test "un adhérent voit le détail de ses propres commandes quel que soit l'état" do
+    @commande.update!(adherent_id: @adherent.id, workflow_state: 'envoyé')
+    policy = CommandePolicy.new(@adherent, @commande)
+    assert policy.show?
+  end
+
+  test "un adhérent ne voit pas le détail de ses propres commandes à l'état créé" do
+    @commande.update!(adherent_id: @adherent.id, workflow_state: 'créé')
+    policy = CommandePolicy.new(@adherent, @commande)
     refute policy.show?
-    refute policy.update?
-    refute policy.destroy?
-    refute policy.pdf?
-    refute policy.envoyer?
-    refute policy.valider?
-    refute policy.refuser?
-    refute policy.create_facture?
+  end
+
+  test "un adhérent n'a pas accès aux commandes d'un autre adhérent" do
+    autre_adherent = users(:patrick_adherent_paris)
+    @commande.update!(adherent_id: autre_adherent.id, workflow_state: 'envoyé')
+    policy = CommandePolicy.new(@adherent, @commande)
+    refute policy.show?
   end
 
   test "un agent n'a aucun accès aux commandes" do
@@ -38,9 +47,10 @@ class AdherentCommandePolicyTest < ActionDispatch::IntegrationTest
   # PAS). Le périmètre est appliqué dans CommandesController#index et l'accès des
   # adhérents est déjà verrouillé par index?/show? = false (tests ci-dessus).
   # On épingle ce comportement pour éviter qu'on le "corrige" par erreur.
-  test 'scope : pass-through volontaire (ne filtre pas les commandes)' do
+  test 'scope : un adhérent ne voit que ses propres commandes hors état créé' do
     scope = CommandePolicy::Scope.new(@adherent, Commande.all).resolve
 
-    assert_equal Commande.all.pluck(:id).sort, scope.pluck(:id).sort
+    expected_ids = Commande.where(adherent_id: @adherent.id).where.not(workflow_state: 'créé').pluck(:id).sort
+    assert_equal expected_ids, scope.pluck(:id).sort
   end
 end

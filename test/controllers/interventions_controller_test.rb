@@ -196,6 +196,12 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     get intervention_url(@intervention)
     assert_response :success
   end
+  
+  test 'should show intervention with location' do
+    get intervention_url(interventions(:intervention_with_location))
+    assert_response :success
+    assert_select "#map"
+  end
 
   test 'should get edit' do
     get edit_intervention_url(@intervention)
