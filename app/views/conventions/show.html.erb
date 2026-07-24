@@ -1,8 +1,29 @@
 <div class="mx-auto lg:w-2/3 w-full mt-8">
   <% page_title!("Convention — #{@convention.user&.nom_prénom}") %>
   <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
-    <h1 class="text-2xl sm:text-3xl text-primary font-bold">Convention — <%= @convention.user&.nom_prénom %></h1>
-  </div>
+<h1 class="text-2xl sm:text-3xl text-primary font-bold">
+        <% if current_user.manager_or_admin? %>
+          Convention — <%= @convention.user&.nom_prénom %>
+        <% else %>
+          Convention — <%= @convention.user&.nom_prénom %>
+          <%# faire REF cote back %>
+        <% end %>
+      </h1>
+        </div>
+        <div class="flex justify-end w-full sm:w-auto gap-2">
+      <% if current_user.adhérent? %>
+        <% if @convention.document.attached? %>
+          <%= link_to rails_blob_path(@convention.document, disposition: "attachment"),
+                      class: "btn btn-outline btn-primary flex-1 sm:flex-none", 
+                      target: "_blank", 
+                      data: { turbo: false } do %>
+            <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200 hidden md:block" %>
+            <span class="block md:hidden">PDF</span>
+            <span class="hidden md:block">Télécharger la convention</span>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary font-semibold">Informations</h2>
   </div>
