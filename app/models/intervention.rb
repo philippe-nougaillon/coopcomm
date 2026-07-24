@@ -52,7 +52,7 @@ class Intervention < ApplicationRecord
 
   before_save -> { self.temps_de_pause = 0 if temps_de_pause.nil? }
   before_save :calc_temps_total
-  before_save :photos, :audit_photo_added, if: -> { photos.attachments.any?(&:new_record?) }
+  before_save :audit_photo_added, if: -> { photos.attachments.any?(&:new_record?) }
   
   after_commit :update_heures_consommees_convention, if: -> { self.temps_total.present? }
 
