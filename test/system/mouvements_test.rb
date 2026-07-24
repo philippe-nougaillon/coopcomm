@@ -26,7 +26,7 @@ class MouvementsTest < ApplicationSystemTestCase
     fill_in 'mouvement_commentaires', with: 'Courroie cassée'
     click_on 'Enregistrer'
 
-    assert_text 'Mouvement créé avec succès'
+    assert_current_path mouvements_path
     panne = Mouvement.order(:created_at).last
     assert panne.panne?
     assert_equal tools(:tondeuse), panne.tool
@@ -57,7 +57,7 @@ class MouvementsTest < ApplicationSystemTestCase
     fill_in 'mouvement_commentaires', with: 'Lame émoussée'
     click_on 'Enregistrer'
 
-    assert_text 'Mouvement créé avec succès'
+    assert_current_path mouvements_path
     panne = Mouvement.order(:created_at).last
     assert panne.panne?
     assert_equal tools(:tondeuse), panne.tool

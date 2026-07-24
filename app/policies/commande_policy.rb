@@ -58,3 +58,5 @@ class CommandePolicy < ApplicationPolicy
     manage? && record.validé?
   end
 end
+
+AdherentCommandePolicy = CommandePolicy

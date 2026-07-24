@@ -50,3 +50,5 @@ class FacturePolicy < ApplicationPolicy
     manage?
   end
 end
+
+AdherentFacturePolicy = FacturePolicy

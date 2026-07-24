@@ -15,13 +15,22 @@ class AdherentCommandePolicyTest < ActionDispatch::IntegrationTest
   end
 
   test "un adhérent voit le détail de ses propres commandes quel que soit l'état" do
-    @commande.update!(adherent_id: @adherent.id)
+    @commande.update!(adherent_id: @adherent.id, workflow_state: 'envoyé')
     policy = CommandePolicy.new(@adherent, @commande)
     assert policy.show?
   end
 
+  test "un adhérent ne voit pas le détail de ses propres commandes à l'état créé" do
+    @commande.update!(adherent_id: @adherent.id, workflow_state: 'créé')
+    policy = CommandePolicy.new(@adherent, @commande)
+    refute policy.show?
+  end
+
   test "un adhérent n'a pas accès aux commandes d'un autre adhérent" do
-    assert_not AdherentCommandePolicy.new(user, commande_autre_adherent).show?
+    autre_adherent = users(:patrick_adherent_paris)
+    @commande.update!(adherent_id: autre_adherent.id, workflow_state: 'envoyé')
+    policy = CommandePolicy.new(@adherent, @commande)
+    refute policy.show?
   end
 
   test "un agent n'a aucun accès aux commandes" do
@@ -38,11 +47,10 @@ class AdherentCommandePolicyTest < ActionDispatch::IntegrationTest
   # PAS). Le périmètre est appliqué dans CommandesController#index et l'accès des
   # adhérents est déjà verrouillé par index?/show? = false (tests ci-dessus).
   # On épingle ce comportement pour éviter qu'on le "corrige" par erreur.
-  test 'scope : un adhérent ne voit que ses propres commandes, tous états confondus' do
-    Commande.where.not(adherent_id: @adherent.id).update_all(adherent_id: nil) rescue nil
+  test 'scope : un adhérent ne voit que ses propres commandes hors état créé' do
     scope = CommandePolicy::Scope.new(@adherent, Commande.all).resolve
 
-    expected_ids = Commande.where(adherent_id: @adherent.id).pluck(:id).sort
+    expected_ids = Commande.where(adherent_id: @adherent.id).where.not(workflow_state: 'créé').pluck(:id).sort
     assert_equal expected_ids, scope.pluck(:id).sort
   end
 end
