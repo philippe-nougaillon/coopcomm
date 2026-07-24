@@ -25,6 +25,8 @@ class Convention < ApplicationRecord
   validate :one_convention_per_service
   validate :service_must_belong_to_adherent
   validate :end_date_after_start_date
+  
+  before_create :assign_ref
 
   scope :ordered, -> { order(date_début: :desc) }
 
@@ -75,5 +77,17 @@ class Convention < ApplicationRecord
     return unless date_fin_prévue < date_début
 
     errors.add(:date_fin_prévue, 'ne peut pas être antérieure à la date de début.')
+  end
+
+  # Référence auto incrémentée par année et par organisation
+  def assign_ref
+    return if ref.present?
+
+    year = Date.current.year
+    org_services = Service.where(organisation_id: service&.organisation_id)
+    n = Convention.where(service: org_services)
+                .where('EXTRACT(YEAR FROM conventions.created_at) = ?', year)
+                .count + 1
+    self.ref = "CONV-#{year}-#{n}"
   end
 end
