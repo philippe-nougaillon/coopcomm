@@ -5,8 +5,7 @@
         <% if current_user.manager_or_admin? %>
           Convention — <%= @convention.user&.nom_prénom %>
         <% else %>
-          Convention — <%= @convention.user&.nom_prénom %>
-          <%# faire REF cote back %>
+          Convention — <%= @convention.ref %>
         <% end %>
       </h1>
         </div>
