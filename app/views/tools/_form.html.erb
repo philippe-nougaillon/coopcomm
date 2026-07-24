@@ -54,12 +54,11 @@
              accept: ".pdf, .doc, .docx, .xls, .xlsx",
              placeholder: "Glissez un document (PDF, Notice, Carte grise, etc.) ici ou cliquez pour parcourir" %>
     </div>
-  </div>
-  <div class="flex gap-2 mt-4 w-full">
-    <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>
-    <%= form.submit "Enregistrer", id: "enregistrer_tool", class: "btn btn-primary flex-1" %>
-  </div>
-<% end %>
+    <div class="flex gap-2 mt-4 w-full">
+      <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>
+      <%= form.submit "Enregistrer", id: "enregistrer_tool", class: "btn btn-primary flex-1" %>
+    </div>
+  <% end %>
 </div>
 <div class="pt-6 max-w-3xl mx-auto ">
   <%= link_to tools_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
