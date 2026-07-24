@@ -87,6 +87,16 @@ module ActiveSupport
             'Date' => Time.now.httpdate
           }
         )
+
+      # Simule les données pour l'API de Google routes
+      stub_request(:post, /routes.googleapis.com/)
+        .to_return(
+          status: 200,
+          body: File.read('test/fixtures/files/responseRoutesInfos.json'),
+          headers: { 
+            'Content-Type' => 'application/json',
+          }
+        )
     end
 
     def login(user)

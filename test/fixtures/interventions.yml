@@ -99,6 +99,23 @@ intervention_fille:
   # début décalé de 4h ⇒ jamais de recouvrement avec [maintenant, maintenant].
   début: <%= 4.hours.ago %>
 
+intervention_with_location:
+  adherent: adherent_with_location
+  début: <%= (Date.today - 1).beginning_of_week + 8.hours + 30.minutes %>
+  fin: <%= (Date.today - 1).beginning_of_week + 17.hours + 30.minutes %>
+  temps_de_pause: 1
+  description: Tonte 
+  workflow_state: nouveau
+  temps_total: 9
+  commentaires: Mal tondre sur le bord des routes
+  note: 4
+  avis: Ça s'est très mal passé
+  repeter: false
+  slug: 0286beb1-7249-4a29-96c7-f7fd9196c1dc
+  début_prévue: <%= (Date.today + 14).beginning_of_week + 8.hours + 35.minutes %>
+  fin_prévue: <%= (Date.today + 14).beginning_of_week + 17.hours + 15.minutes %>
+  service: service_with_location
+
 # Organisation Marseille
 nettoyage_port:
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:nettoyeur_marseille) %>
