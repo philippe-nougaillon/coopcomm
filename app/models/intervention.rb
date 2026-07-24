@@ -444,10 +444,10 @@ class Intervention < ApplicationRecord
   def calculate_co2
     response = self.get_routes_info_from_location
 
-    return if response['errors'].present? && response['data_response']['routes'].blank?
+    return if response['errors'].present? && response.dig('data_response', 'routes').blank?
 
     self.trajet = response['routes_info']
-    self.co2 = FetchRoutesInfos.co2_consumption_by_route(response['data_response']['routes'][0])
+    self.co2 = FetchRoutesInfos.co2_consumption_by_route(response.dig('data_response', 'routes', 0))
     save
   end
 

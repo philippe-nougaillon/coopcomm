@@ -36,6 +36,8 @@ class Tool < ApplicationRecord
   valide_piece_jointe :photo, types: IMAGES
   valide_piece_jointe :document, types: DOCUMENTS
 
+  normalizes :name, with: ->(name) { name.humanize.strip }
+
   validates :name, presence: true
   validates_uniqueness_of :name, scope: :organisation_id
 
