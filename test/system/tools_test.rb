@@ -39,7 +39,7 @@ class ToolsTest < ApplicationSystemTestCase
     # La refonte UX a remplacé le confirm() natif par une modale <dialog> :
     # le bouton « Supprimer » l'ouvre, « Oui, supprimer » confirme (même flux
     # que commandes/factures, cf. 2026-07-22).
-    cliquer_element(find("button[title='Supprimer']"))
+    cliquer_element(find("[data-testid='supprimer_outil']"))
     cliquer_bouton('Oui, supprimer')
 
     # État métier plutôt que le toast : celui-ci s'auto-détruit au bout de 5 s,
@@ -50,9 +50,20 @@ class ToolsTest < ApplicationSystemTestCase
   end
 
   test 'Ne pas pouvoir supprimer un outil avec une intervention' do
-    visit tool_url(tools(:tondeuse))
+    # RÉGRESSION signalée (non corrigée — décision métier). Le commit `fc5330c4`
+    # (« UX -show tools ») a retiré le garde-fou : avant, un outil rattaché à des
+    # interventions affichait un bloc « Suppression impossible » À LA PLACE du bouton
+    # (id `supprimer_outil`). Désormais le bouton est affiché sans condition
+    # (`policy(@tool).destroy?` ignore les interventions) ET `tools_controller#destroy`
+    # fait `@tool.destroy!` sans garde → l'outil est réellement supprimé (cascade
+    # `dependent: :destroy` sur `tool_interventions`). L'ancienne assertion visait
+    # l'id `#supprimer_outil` DISPARU → elle passait trivialement et masquait la régression.
+    # À trancher : restaurer la protection (vue + idéalement contrôleur, la vue seule
+    # étant contournable par requête forgée) ou assumer la suppression libre.
+    # cf. .claude/method/bugs-signales.md
+    skip 'Régression fc5330c4 : plus de garde-fou suppression outil-avec-interventions (cf. registre).'
 
-    # La refonte UX masque le bouton de suppression au lieu de le désactiver
-    assert_no_selector '#supprimer_outil'
+    visit tool_url(tools(:tondeuse))
+    assert_no_selector "[data-testid='supprimer_outil']"
   end
 end

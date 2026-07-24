@@ -14,7 +14,7 @@
         <% end %>
       <% end %>
       <% if policy(@tool).destroy? %>
-        <button type="button" class="btn btn-soft btn-error hover:!text-white" onclick="delete_tool_modal_<%= @tool.id %>.showModal()" title="Supprimer">
+        <button type="button" class="btn btn-soft btn-error hover:!text-white" onclick="delete_tool_modal_<%= @tool.id %>.showModal()" title="Supprimer" data-testid="supprimer_outil">
           <%= embedded_svg "icons/delete.svg", class: "w-5 h-5 fill-current" %>
           <span class="hidden md:block">Supprimer</span>
         </button>

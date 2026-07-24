@@ -323,8 +323,9 @@
 <% if policy(@commande).destroy? %>
   <div class="flex justify-end mb-10 mt-6 pt-4 border-t border-slate-200">
     <button class="btn btn-soft btn-error hover:!text-white"
-              onclick="delete_commande_modal_<%= @commande.id %>.showModal()" 
-              title="Supprimer">
+              onclick="delete_commande_modal_<%= @commande.id %>.showModal()"
+              title="Supprimer"
+              data-testid="supprimer_commande">
       <%= embedded_svg "icons/delete.svg", title: "Supprimer la commande" %>
       <span>Supprimer la commande</span>
     </button>

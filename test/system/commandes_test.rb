@@ -43,7 +43,7 @@ class CommandesTest < ApplicationSystemTestCase
   test 'destroying a Commande' do
     visit commande_url(@commande)
 
-    find("button[title='Supprimer']").click
+    find("[data-testid='supprimer_commande']").click # ouvre la modale de confirmation
     click_on 'Oui, supprimer'
 
     assert_current_path commandes_path

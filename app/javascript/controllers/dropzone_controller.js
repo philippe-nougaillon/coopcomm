@@ -83,12 +83,16 @@ export default class extends Controller {
 
   markValid(files) {
     this.swapState({ add: this.validClasses, remove: [...this.invalidClasses, ...this.neutralClasses] })
+    // Marqueur d'état inerte (aucun code applicatif ne le lit) : donne aux tests
+    // système un point d'ancrage stable, indépendant des noms de classes CSS.
+    this.element.dataset.dropzoneState = "success"
     this.hideError()
     if (this.hasFilenameTarget) this.filenameTarget.textContent = files.map(file => file.name).join(", ")
   }
 
   markInvalid(file) {
     this.swapState({ add: this.invalidClasses, remove: [...this.validClasses, ...this.neutralClasses] })
+    this.element.dataset.dropzoneState = "error" // marqueur d'état inerte (cf. markValid)
     if (this.hasFilenameTarget) this.filenameTarget.textContent = this.defaultLabel
     if (this.hasErrorTarget) {
       this.errorTarget.textContent = this.errorText(file)
@@ -98,6 +102,7 @@ export default class extends Controller {
 
   markNeutral() {
     this.swapState({ add: this.neutralClasses, remove: [...this.validClasses, ...this.invalidClasses] })
+    this.element.dataset.dropzoneState = "neutral" // marqueur d'état inerte (cf. markValid)
     this.hideError()
     if (this.hasFilenameTarget) this.filenameTarget.textContent = this.defaultLabel
   }
