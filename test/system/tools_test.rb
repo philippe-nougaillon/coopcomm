@@ -36,9 +36,11 @@ class ToolsTest < ApplicationSystemTestCase
     outil = tools(:outil_paris)
     visit tool_url(outil)
 
-    accept_confirm do
-      click_on 'supprimer_outil'
-    end
+    # La refonte UX a remplacé le confirm() natif par une modale <dialog> :
+    # le bouton « Supprimer » l'ouvre, « Oui, supprimer » confirme (même flux
+    # que commandes/factures, cf. 2026-07-22).
+    cliquer_element(find("button[title='Supprimer']"))
+    cliquer_bouton('Oui, supprimer')
 
     # État métier plutôt que le toast : celui-ci s'auto-détruit au bout de 5 s,
     # l'asserter est un pile ou face (doctrine 2026-06-12 §7).
