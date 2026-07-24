@@ -15,9 +15,9 @@ class FetchRoutesInfos < ApplicationService
     response = {}
     response["data_response"] = get_response
 
-    if response["data_response"]['error']
+    if response.dig('data_response','error').present?
       # Pas utilisé
-      response["errors"] = { position: @localisation_arrivee, message: response["data_response"]['error']['message'] }
+      response["errors"] = { position: @localisation_arrivee, message: response.dig('data_response', 'error', 'message') }
     else
       response["routes_info"] = get_trajet_from_response(response["data_response"])
     end
