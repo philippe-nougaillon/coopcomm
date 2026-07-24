@@ -23,12 +23,12 @@
       <%= form.label :calculate_distance, "Ajout du calcul de distance sur les interventions de ce service à partir de l'équipe de l'adhérent ?", class: "text-sm font-semibold text-slate-700" %>
       <label class="flex items-center gap-3 mt-2 h-10 px-3 border border-slate-200 rounded-lg bg-slate-50 
               cursor-pointer justify-center select-none hover:bg-slate-100/50 transition-colors"
-       title="Cocher pour activer le pointage ?">
+       title="Cocher pour activer la localisation ?">
         <input type="hidden" name="service[calculate_distance]" value="0" />
         <%= check_box_tag "service[calculate_distance]", "1", service.calculate_distance,
       class: "toggle toggle-primary pointer-events-none" %>
         <span class="text-sm font-medium text-slate-600 whitespace-nowrap">
-          Cocher pour activer le pointage
+          Cocher pour activer la localisation
         </span>
       </label>
     </div>

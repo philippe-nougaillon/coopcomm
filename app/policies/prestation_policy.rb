@@ -10,6 +10,10 @@ class PrestationPolicy < ApplicationPolicy
     end
   end
 
+  def show?
+    administrateur? && organisation?
+  end
+  
   def new?
     administrateur?
   end

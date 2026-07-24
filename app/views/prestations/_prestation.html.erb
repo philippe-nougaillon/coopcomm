@@ -1,82 +1,37 @@
 <tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
-  <td class="px-4 py-1.5 uppercase text-primary font-bold text-sm max-w-[180px] truncate">
-    <%= prestation.code %>
+  <td class="px-4 py-3.5 uppercase text-primary font-bold text-lg max-w-[180px] truncate">
+    <%= link_to prestation.code, prestation_path(prestation), class: 'hover:underline', title: prestation.code %>
   </td>
-  <td class="px-4 py-1.5 text-sm font-semibold capitalize"><%= prestation.libellé %></td>
-  <td class="px-4 py-1.5 text-sm text-center ">
+  <td class="px-4 py-3.5 text-base font-semibold capitalize">
+    <%= prestation.libellé %>
+  </td>
+  <td class="px-4 py-3.5 text-base text-center">
     <% if prestation.catégorie.present? %>
       <span class="text-success font-semibold whitespace-nowrap">
         <%= prestation.catégorie %>
       </span>
     <% else %>
       <span class="text-success font-semibold flex justify-center whitespace-nowrap">
-        <%= embedded_svg "icons/check_indeterminate_small.svg",
-       title: "Aucun sous catégorie" %>
-      <% end %>
-    </span>
+        <%= embedded_svg "icons/check_indeterminate_small.svg", title: "Aucune catégorie" %>
+      </span>
+    <% end %>
   </td>
-  <td class="px-4 py-1.5 text-sm text-center ">
+  <td class="px-4 py-3.5 text-base text-center">
     <% sous = prestation.sous_catégorie %>
     <% if sous.present? %>
       <span class="text-slate-600 whitespace-nowrap">
         <%= sous %>
       </span>
     <% else %>
-      <span class="text-slate-600 flex justify-center whitespace-nowrap">
-        <%= embedded_svg "icons/check_indeterminate_small.svg",
-       title: "Aucun sous catégorie" %>
-      <% end %>
-    </span>
+      <span class="text-success font-semibold flex justify-center whitespace-nowrap">
+        <%= embedded_svg "icons/check_indeterminate_small.svg", title: "Aucune sous-catégorie" %>
+      </span>
+    <% end %>
   </td>
-  <td class="px-4 py-1.5 text-sm capitalize text-center"><%= prestation.unité %></td>
-  <td class="px-4 py-1.5 text-sm text-center">
+  <td class="px-4 py-3.5 text-base capitalize text-center">
+    <%= prestation.unité %>
+  </td>
+  <td class="px-4 py-3.5 text-base text-center font-medium">
     <%= number_to_currency(prestation.tarif) %>
-  </td>
-  <td>
-    <div class="px-4 py-1 flex flex-row items-center gap-2">
-      <% if policy(prestation).edit? %>
-        <%= link_to edit_prestation_path(prestation), class: "btn btn-sm btn-ghost hover:!border-gray-700" do %>
-          <%= embedded_svg "icons/edit.svg", class: "w-4 h-4 fill-current transition-colors duration-200" %>
-          Modifier
-        <% end %>
-      <% end %>
-      <% if policy(prestation).destroy? %>
-        <button
-        class="btn btn-sm btn-ghost text-error border border-transparent hover:!bg-error/20 hover:!border-error/40" onclick="delete_prestation_modal_<%= prestation.id %>.showModal()">
-          <%= embedded_svg "icons/delete.svg", class: "w-4 h-4 fill-current transition-colors duration-200" %>
-          Supprimer
-        </button>
-        <dialog id="delete_prestation_modal_<%= prestation.id %>" class="modal">
-          <div class="modal-box">
-            <form method="dialog">
-              <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-                ✕
-              </button>
-            </form>
-            <h3 class="text-lg font-bold text-error flex items-center gap-2">
-              <%= embedded_svg "icons/warning.svg", title: "Supprimer la prestation" %>
-              Supprimer la prestation
-            </h3>
-            <p class="py-4 text-sm text-slate-600">
-              Êtes-vous certain(e) de vouloir supprimer cette prestation ?
-              Cette action est irréversible.
-            </p>
-            <div class="modal-action">
-              <form method="dialog">
-                <button class="btn btn-ghost">Annuler</button>
-              </form>
-              <%= button_to prestation_path(prestation),
-                  method: :delete,
-                  class: "btn btn-error text-white" do %>
-                Oui, supprimer
-              <% end %>
-            </div>
-          </div>
-          <form method="dialog" class="modal-backdrop">
-            <button>Fermer</button>
-          </form>
-        </dialog>
-      <% end %>
-    </div>
   </td>
 </tr>

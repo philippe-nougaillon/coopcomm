@@ -1,0 +1,110 @@
+<div class="mx-auto w-full max-w-xl">
+  <div class="flex flex-col justify-center items-center min-h-12 sm:min-h-16">
+    <h1 class="text-primary font-bold text-3xl sm:text-4xl uppercase whitespace-nowrap text-center mt-8">
+      <%= page_title!(@prestation.code) %>
+    </h1>
+  <h2 class="text-base uppercase text-slate-600 mt-2 mb-8">Prestation 
+    </h2>
+  </div>
+
+  <div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+    <div class="flex flex-col gap-8">
+
+      <%# --- INFORMATIONS --- %>
+      <div>
+        <h3 class="flex items-center gap-2 text-slate-700 uppercase font-semibold mb-4">
+          <%= embedded_svg "icons/label.svg", class: "w-5 h-5 fill-current shrink-0" %>
+          Informations
+        </h3>
+        <div class="flex flex-col divide-y divide-slate-100 border border-slate-100 rounded-xl overflow-hidden">
+
+          <div class="flex items-center justify-between px-4 py-3 gap-3">
+            <span class="text-slate-500 text-sm shrink-0">Libellé</span>
+            <span class="text-slate-800 font-medium text-right capitalize truncate"><%= @prestation.libellé %></span>
+          </div>
+
+          <div class="flex items-center justify-between px-4 py-3 gap-3">
+            <span class="text-slate-500 text-sm shrink-0">Catégorie</span>
+            <span class="text-right">
+              <% if @prestation.catégorie.present? %>
+                <span class="text-success font-semibold"><%= @prestation.catégorie %></span>
+              <% else %>
+                <%= embedded_svg "icons/check_indeterminate_small.svg", title: "Aucune catégorie" %>
+              <% end %>
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between px-4 py-3 gap-3">
+            <span class="text-slate-500 text-sm shrink-0">Sous-catégorie</span>
+            <span class="text-right">
+              <% if @prestation.sous_catégorie.present? %>
+                <span class="text-slate-600"><%= @prestation.sous_catégorie %></span>
+              <% else %>
+                <%= embedded_svg "icons/check_indeterminate_small.svg", title: "Aucune sous-catégorie" %>
+              <% end %>
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between px-4 py-3 gap-3">
+            <span class="text-slate-500 text-sm shrink-0">Unité</span>
+            <span class="text-slate-800 font-medium text-right capitalize"><%= @prestation.unité %></span>
+          </div>
+
+          <div class="flex items-center justify-between px-4 py-3 gap-3">
+            <span class="text-slate-500 text-sm shrink-0">Tarif HT</span>
+            <span class="text-slate-800 font-bold text-right whitespace-nowrap"><%= number_to_currency(@prestation.tarif) %></span>
+          </div>
+
+        </div>
+      </div>
+
+      <%# --- ACTIONS --- %>
+      <div class="flex gap-2 w-full">
+        <% if policy(@prestation).edit? %>
+          <%= link_to edit_prestation_path(@prestation), class: "btn flex-1 gap-2" do %>
+            <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current shrink-0" %>
+            <span>Modifier</span>
+          <% end %>
+        <% end %>
+        <% if policy(@prestation).destroy? %>
+          <button type="button" class="btn btn-soft btn-error flex-1 gap-2 hover:!text-white" onclick="delete_prestation_modal_<%= @prestation.id %>.showModal()" title="Supprimer">
+            <%= embedded_svg "icons/delete.svg", class: "w-4 h-4 fill-current transition-colors duration-200 shrink-0" %>
+            <span>Supprimer</span>
+          </button>
+          <dialog id="delete_prestation_modal_<%= @prestation.id %>" class="modal">
+            <div class="modal-box">
+              <form method="dialog">
+                <button type="submit" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+              </form>
+              <h3 class="text-lg font-bold text-error flex items-center gap-2">
+                <%= embedded_svg "icons/warning.svg", title: "Supprimer la prestation" %>
+                Supprimer la prestation
+              </h3>
+              <p class="py-4 text-sm text-slate-600 text-left">
+                Êtes-vous certain(e) de vouloir supprimer cette prestation ? Cette action est irréversible.
+              </p>
+              <div class="modal-action">
+                <form method="dialog">
+                  <button type="submit" class="btn btn-ghost">Annuler</button>
+                </form>
+                <%= button_to prestation_path(@prestation), method: :delete, class: "btn btn-error text-white" do %>
+                  Oui, supprimer
+                <% end %>
+              </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+              <button type="submit">Fermer</button>
+            </form>
+          </dialog>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="pt-6">
+      <%= link_to admin_parametres_path(tab: params[:tab] || 'prestations'), class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+        <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des prestations" %>
+        Retour à la liste
+      <% end %>
+    </div>
+  </div>
+</div>

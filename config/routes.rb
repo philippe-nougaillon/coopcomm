@@ -130,8 +130,8 @@ Rails.application.routes.draw do
       get  :signer
       post :signer_do
     end
-  end
-  resources :prestations, except: %i[index show]
+  end 
+  resources :prestations, except: %i[index]
 
   resources :conventions do
     collection do
