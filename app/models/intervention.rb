@@ -507,6 +507,10 @@ class Intervention < ApplicationRecord
     end
   end
 
+  def bon?
+    User.find_by(id: audits.first&.user_id)&.agent?
+  end
+
   private
 
   def slug_candidates
