@@ -45,7 +45,7 @@ class FacturesTest < ApplicationSystemTestCase
   test 'destroying a Facture' do
     visit facture_url(@facture)
 
-    find("button[title='Supprimer']").click
+    find("[data-testid='supprimer_facture']").click # ouvre la modale de confirmation
     click_on 'Oui, supprimer'
 
     assert_current_path factures_path

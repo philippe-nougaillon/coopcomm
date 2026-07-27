@@ -43,7 +43,7 @@ class CotationsTest < ApplicationSystemTestCase
     assert_selector '.nested-form-wrapper', count: 2
 
     within all('.nested-form-wrapper').last do
-      find("button[data-action='nested-form#remove']").click
+      find("[data-testid='retirer_ligne']").click
     end
     assert_selector '.nested-form-wrapper', count: 1
   end

@@ -14,7 +14,7 @@
         <% end %>
       <% end %>
       <% if policy(@tool).destroy? %>
-        <button type="button" class="btn btn-soft btn-error hover:!text-white" onclick="delete_tool_modal_<%= @tool.id %>.showModal()" title="Supprimer">
+        <button type="button" class="btn btn-soft btn-error hover:!text-white" onclick="delete_tool_modal_<%= @tool.id %>.showModal()" title="Supprimer" data-testid="supprimer_outil">
           <%= embedded_svg "icons/delete.svg", class: "w-5 h-5 fill-current" %>
           <span class="hidden md:block">Supprimer</span>
         </button>
@@ -46,7 +46,6 @@
       <% end %>
     </div>
   </div>
-
   <%# --- INFORMATIONS & APERÇU --- %>
   <h2 class="text-2xl text-secondary mt-8 mb-4">Informations & aperçu</h2>
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
@@ -89,7 +88,6 @@
       <% end %>
     </div>
   </div>
-
   <%# --- DISPONIBILITÉS --- %>
   <div class="flex justify-between flex-wrap items-center mt-10 mb-4">
     <h2 class="text-2xl text-secondary">Disponibilités</h2>
@@ -104,7 +102,6 @@
       </label>
     <% end %>
   </div>
-
   <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 overflow-hidden">
     <% if params[:vue] != 'liste' %>
       <div class="flex flex-row items-center gap-4 px-4 py-3 bg-slate-50 text-xs text-slate-500 border-b border-slate-100">
@@ -118,7 +115,6 @@
         </div>
       </div>
     <% end %>
-
     <% case params[:vue] %>
     <% when 'calendrier' %>
       <%= month_calendar do |date| %>
@@ -154,7 +150,6 @@
                     new_title: "Réserver le #{date.day} après-midi" %>
         </div>
       <% end %>
-
     <% when 'liste' %>
       <div class="overflow-x-auto">
         <table class="table table-sm w-full border-collapse">
@@ -182,13 +177,14 @@
       </div>
     <% end %>
   </div>
-
   <%# --- MOUVEMENTS --- %>
   <div class="flex justify-between flex-wrap items-center mt-10 mb-4">
     <h2 class="text-2xl text-secondary">Mouvements</h2>
-    <%= link_to new_mouvement_path(tool_id: @tool.id), data: { 'testid': "ajouter_panne" }, class: 'btn btn-info btn-outline btn-md rounded flex items-center justify-center gap-2 text-base' do %>
-      <%= embedded_svg "icons/cone.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
-          <span class="hidden md:block">Gestion panne</span>
+    <% if policy(Mouvement).new? %>
+      <%= link_to new_mouvement_path(tool_id: @tool.id), data: { 'testid': "ajouter_panne" }, class: 'btn btn-info btn-outline btn-md rounded flex items-center justify-center gap-2 text-base' do %>
+        <%= embedded_svg "icons/cone.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+        <span class="hidden md:block">Gestion panne</span>
+      <% end %>
     <% end %>
   </div>
   <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 overflow-hidden">
@@ -217,7 +213,6 @@
       </table>
     </div>
   </div>
-
   <%# --- DOCUMENTS --- %>
   <% if current_user.manager_or_admin? %>
     <div class="flex justify-between flex-wrap items-center mt-10 mb-4">
@@ -254,7 +249,6 @@
       <% end %>
     </div>
   <% end %>
-
   <div class="pt-6">
     <%= link_to tools_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
       <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des utilisateurs" %>
