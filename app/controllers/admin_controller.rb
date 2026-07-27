@@ -16,8 +16,14 @@ class AdminController < ApplicationController
 
     @audits = @audits.where('audited_changes ILIKE ?', "%#{params[:search]}%") if params[:search].present?
 
-    if params[:start_date].present? && params[:end_date].present?
-      @audits = @audits.where('DATE(created_at) BETWEEN (?) AND (?)', params[:start_date], params[:end_date])
+    if params[:start_date].present?
+      start_date = Time.zone.parse(params[:start_date])&.beginning_of_day
+      @audits = @audits.where('audits.created_at >= ?', start_date) if start_date
+    end
+
+    if params[:end_date].present?
+      end_date = Time.zone.parse(params[:end_date])&.end_of_day
+      @audits = @audits.where('audits.created_at <= ?', end_date) if end_date
     end
 
     @audits = @audits.where(user_id: params[:user_id]) if params[:user_id].present?

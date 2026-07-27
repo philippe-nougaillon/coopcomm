@@ -157,6 +157,18 @@ module AuditsHelper
     # 2. Règle générale pour le reste des champs (si nil, affiche un tiret)
     return '—' if value.nil? || value.to_s.strip.empty? || value.to_s == '—'
 
+    # Traitement des Arrays de Ruby ou des Strings JSON "[\"email1\", \"email2\"]"
+    if value.is_a?(Array)
+      return value.compact_blank.join(',<br/>').html_safe
+    elsif value.to_s.strip.start_with?('[')
+      begin
+        parsed = JSON.parse(value.to_s)
+        return parsed.compact_blank.join(',<br/>').html_safe if parsed.is_a?(Array)
+      rescue JSON::ParserError
+        return value.to_s.gsub(/,\s*/, ',<br/>').html_safe
+      end
+    end
+
     # Détection générique des dates/heures — indépendante du nom de la clé,
     # évite les bugs d'accents (ex: "prévue" vs "prevue")
     if value.respond_to?(:strftime)
