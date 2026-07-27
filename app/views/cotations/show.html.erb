@@ -171,16 +171,16 @@
     <div class="block md:hidden space-y-3 mb-8">
       <% cotation_lignes.each do |ligne| %>
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="text-sm text-primary font-bold uppercase mt-0.5">
+          <div class="flex justify-between items-start gap-2">
+            <div class="min-w-0 flex-1">
+              <h3 class="text-sm text-primary font-bold uppercase mt-0.5 truncate" title="<%= ligne.intitulé.presence || ligne.prestation&.libellé %>">
                 <%= ligne.intitulé.presence || ligne.prestation&.libellé %>
               </h3>
-              <span class="text-sm font-semibold text-slate-400  tracking-wider">
+              <span class="block text-sm font-semibold text-slate-400 tracking-wider truncate cursor-help" title="<%= ligne.prestation&.code %>">
                 CODE : <%= ligne.prestation&.code %>
               </span>
             </div>
-            <div class="text-right font-bold text-slate-900 text-sm">
+            <div class="text-right font-bold text-slate-900 text-sm shrink-0">
               <%= number_to_currency(ligne.total_ht) %>
             </div>
           </div>
@@ -217,7 +217,9 @@
           <% if cotation_lignes.any? %>
             <% cotation_lignes.each do |ligne| %>
               <tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
-                <td class="px-4 py-3 font-semibold text-sm text-center"><%= ligne.prestation&.code %></td>
+                <td class="px-4 py-3 font-semibold text-sm text-left max-w-48 truncate cursor-help" title="<%= ligne.prestation&.code %>">
+                  <%= ligne.prestation&.code %>
+                </td>
                 <td class="px-4 py-3 text-sm text-primary font-bold capitalize"><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
                 <td class="px-4 py-3 text-right text-sm whitespace-nowrap"><%= number_to_currency(ligne.prix_ht) %></td>
                 <td class="px-6 py-4 text-center font-medium">
@@ -375,12 +377,12 @@
       <% end %>
     </div>
   <% else %>
-  <div class="my-10">
-    <%= link_to adherent_crm_path(tab: 'cotations'),
+    <div class="my-10">
+      <%= link_to adherent_crm_path(tab: 'cotations'),
      class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
-      <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste" %>
-      Retour à la liste
-     <% end %>
-  </div>
-<% end %>
+        <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste" %>
+        Retour à la liste
+      <% end %>
+    </div>
+  <% end %>
 </div>

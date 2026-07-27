@@ -25,7 +25,7 @@
                   options_from_collection_for_select(@adhérents, 'id', 'nom_prénom', params[:adhérent_ids]),
                   multiple: true,
                   class: 'slim-select w-full h-10',
-                  data: { placeholder: 'Tous les adhérents' },
+                  data: { placeholder: 'Tous les adhérents', turbo: false },
                   onchange: 'this.form.requestSubmit()' %>
         </div>
       <% end %>
