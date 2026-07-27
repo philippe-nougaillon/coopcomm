@@ -11,12 +11,26 @@ class MailLogsController < ApplicationController
 
     @emails = User.by_service(current_user.services).pluck(:email).sort
 
-    unless params[:search].blank?
-      @mail_logs = @mail_logs.where('LOWER(mail_logs.to) like :search', { search: "%#{params[:search]}%".downcase })
+    # 1. Búsqueda por Destinataire (Maneja arrays provenientes de SlimSelect múltiple)
+    if params[:search].present?
+      # Convertimos params[:search] a un Array limpio de Strings
+      selected_emails = Array(params[:search]).flatten.reject(&:blank?)
+
+      if selected_emails.any?
+        # Genera condiciones ILIKE para cada email seleccionado (ej: to ILIKE '%email1%' OR to ILIKE '%email2%')
+        conditions = selected_emails.map { 'LOWER(mail_logs.to) LIKE ?' }.join(' OR ')
+        values = selected_emails.map { |email| "%#{email.downcase}%" }
+
+        @mail_logs = @mail_logs.where(conditions, *values)
+      end
     end
 
-    @mail_logs = @mail_logs.where(subject: params[:search_subject]) unless params[:search_subject].blank?
-
+    # 2. Búsqueda por Sujet (también aseguramos soporte para selección múltiple)
+    if params[:search_subject].present?
+      subjects = Array(params[:search_subject]).flatten.reject(&:blank?)
+      @mail_logs = @mail_logs.where(subject: subjects) if subjects.any?
+    end
+    
     @mail_logs = @mail_logs.where(statut: false) if params[:ko].present?
 
     @pagy, @mail_logs = pagy(@mail_logs)

@@ -3,7 +3,7 @@
   <td class="px-4 py-3 text-sm font-semibold"><%= mail_log.channel.humanize %></td>
   <td class="px-4 py-3 whitespace-nowrap text-sm text-primary font-bold"><%= mail_log.user_id == 0 ? "Système" : User.with_discarded.find(mail_log.user_id).nom_prénom %></td>
   <td class="px-4 py-3  text-base font-mono text-slate-400 ">
-    <%= mail_log.to %></td>
+    <%= format_mail_recipients(mail_log.to) %></td>
   <td class="px-4 py-3 text-sm">
     <%= mail_log.subject %></td>
   <td class="px-4 py-3 text-sm">
