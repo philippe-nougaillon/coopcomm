@@ -31,7 +31,7 @@ class ToolsController < ApplicationController
 
     @forecasts = MeteoConceptConnexion.call
 
-    @tools = @tools.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
+    @tools = @tools.reorder(Arel.sql("#{sort_column} #{sort_direction}, tools.id #{sort_direction}"))
     @pagy, @tools = pagy(@tools, items: 10)
   end
 
@@ -39,7 +39,7 @@ class ToolsController < ApplicationController
   def show
     params[:vue] ||= 'calendrier'
 
-    @documents = @tool.documents.with_attached_fichier
+    @documents = @documents = @tool.documents
   end
 
   # GET /tools/new
@@ -60,8 +60,8 @@ class ToolsController < ApplicationController
         format.html { redirect_to tool_url(@tool), notice: 'Outil créé avec succès.' }
         format.json { render :show, status: :created, location: @tool }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @tool.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @tool.errors, status: :unprocessable_content }
       end
     end
   end
@@ -73,8 +73,8 @@ class ToolsController < ApplicationController
         format.html { redirect_to tool_url(@tool), notice: 'Outil modifié avec succès.' }
         format.json { render :show, status: :ok, location: @tool }
       else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @tool.errors, status: :unprocessable_entity }
+        format.html { render :edit, status: :unprocessable_content }
+        format.json { render json: @tool.errors, status: :unprocessable_content }
       end
     end
   end
@@ -101,8 +101,7 @@ class ToolsController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def tool_params
-    params.require(:tool).permit(:name, :description, :icon_name, :modèle, :marque, :photo,
-                                 documents_attributes: %i[id category fichier _destroy])
+    params.require(:tool).permit(:name, :description, :icon_name, :modèle, :marque, :photo, :document)
   end
 
   def is_user_authorized
@@ -114,7 +113,8 @@ class ToolsController < ApplicationController
   end
 
   def sort_column
-    sortable_columns.include?(params[:column]) ? params[:column] : 'tools.name'
+    base = sortable_columns.include?(params[:column]) ? params[:column] : 'tools.name'
+    base == 'tools.name' ? 'LOWER(unaccent(tools.name))' : base
   end
 
   def sort_direction

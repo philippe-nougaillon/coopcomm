@@ -11,16 +11,17 @@ class UserManagerFlowTest < ApplicationSystemTestCase
   test 'créer un utilisateur' do
     visit users_url
     click_sur_boutton_ajouter('utilisateur')
-    sleep(1)
     fill_in 'Nom', with: 'Thomas'
     fill_in 'Prénom', with: 'Didier'
     fill_in 'Adresse email', with: 'thomas.didier@gmail.commmm'
     # (mot de passe généré + invitation ; rôle réservé aux administrateurs)
     select_option('#user_service_ids', 'Technique')
 
-    click_on 'enregistrer_utilisateur'
+    # Destination inconnue d'avance : on attend que le formulaire ait été quitté
+    # avant de lire la page d'arrivée puis la base.
+    soumettre 'enregistrer_utilisateur'
 
-    sleep(1)
+    assert_text 'THOMAS Didier'
     créé = User.find_by(email: 'thomas.didier@gmail.commmm')
     assert créé, "l'utilisateur n'a pas été créé"
     assert créé.agent?, 'un manager ne crée que des agents'
@@ -30,15 +31,18 @@ class UserManagerFlowTest < ApplicationSystemTestCase
     user = users(:bond)
     visit users_url
     click_on user.nom_prénom
-    sleep(1)
     click_on 'Modifier', match: :first
     fill_in 'Nom', with: 'Thomas'
     fill_in 'Prénom', with: 'Didier'
     fill_in 'Adresse email', with: 'thomas.didier@gmail.commmm'
     # (le changement de rôle est désormais réservé aux administrateurs)
-    click_on 'enregistrer_utilisateur'
-    sleep(1)
-    assert_text 'Utilisateur modifié avec succès.'
+    # `cliquer_bouton` recentre le bouton : en largeur mobile le dock fixe du bas
+    # recouvrait le submit et interceptait le clic sous forte charge.
+    cliquer_bouton 'enregistrer_utilisateur'
+
+    # `update` redirige vers la show : on attend la navigation, puis l'état métier
+    # (le toast s'auto-détruit au bout de 5 s — l'asserter est un pile ou face).
+    assert_current_path user_path(user)
     assert_text 'THOMAS Didier'
     assert_text 'thomas.didier@gmail.commmm'
   end
@@ -47,11 +51,12 @@ class UserManagerFlowTest < ApplicationSystemTestCase
     user = users(:bond)
     visit users_url
     click_on user.nom_prénom
-    # La suppression passe désormais par une modale de confirmation HTML
-    click_on 'Supprimer'
-    click_on 'Oui, supprimer'
-    sleep(1)
-    visit users_url
+    # La suppression est devenue une désactivation (soft-delete) via une modale HTML
+    click_on "Désactiver l'utilisateur"
+    click_on 'Oui, désactiver'
+    # La désactivation redirige vers l'index (users#destroy → users_url) : le nom
+    # est affiché sur le show courant, donc cette assertion attend de fait la fin
+    # du soft-delete ET l'arrivée sur l'index qui ne liste plus l'utilisateur.
     assert_no_text user.nom_prénom
   end
 

@@ -1,38 +1,56 @@
-<div class="nested-form-wrapper bg-slate-100 p-4 rounded border border-slate-300 flex flex-wrap items-end gap-3 w-full mb-2 relative"
+<div class="nested-form-wrapper bg-slate-100 p-4 rounded border border-slate-300  w-full relative"
      data-new-record="<%= f.object.new_record? %>"
      data-controller="cotation-ligne">
-  <div class="flex flex-col gap-1 flex-1 min-w-48">
-    <%= f.label :prestation_id, "Prestation", class: "text-sm text-slate-500" %>
-    <%= f.select :prestation_id,
-          options_for_select(
-            prestations.map { |p| [p.display_name, p.id, { "data-tarif" => p.tarif, "data-libelle" => p.libellé }] },
-            f.object.prestation_id
-          ),
-          { prompt: "" },
-          { class: "slim-select w-full", required: true,
-            data: { controller: "slim-select", cotation_ligne_target: "prestation", action: "change->cotation-ligne#prestationChanged" } } %>
-  </div>
-  <div class="flex flex-col gap-1 flex-1 min-w-40">
-    <%= f.label :intitulé, "Intitulé", class: "text-sm text-slate-500" %>
-    <%= f.text_field :intitulé, class: "input input-sm input-bordered w-full",
+  <% unless local_assigns[:first] %>
+    <button type="button" data-action="nested-form#remove"
+          class="btn   btn-ghost absolute btn-circle top-0 right-0 -bottom-2 z-10 text-slate-400 m-2 hover:text-error hover:bg-error/10 hover:!border-error/20"
+          title="Retirer la prestation" aria-label="Retirer la prestation"
+          data-testid="retirer_ligne">
+      <%= embedded_svg "icons/close_small.svg", class: "text-sm", title: "Retirer la prestation" %>
+    </button>
+  <% end %>
+  <div class="flex flex-row flex-1 w-full gap-4 pt-4">
+    <div class="flex flex-col gap-1 flex-1 min-w-0 
+            [&_.ss-main]:!w-full [&_.ss-main]:!max-w-full
+            [&_.ss-single-select]:!flex [&_.ss-single-select]:!items-center [&_.ss-single-select]:!w-full [&_.ss-single-select]:!overflow-hidden
+            [&_.ss-values]:!flex-1 [&_.ss-values]:!min-w-0 [&_.ss-values]:!overflow-hidden
+            [&_.ss-value]:!truncate [&_.ss-value]:!block [&_.ss-value]:!max-w-full
+            [&_.ss-deselect]:!flex-shrink-0 [&_.ss-arrow]:!flex-shrink-0">
+      <%= f.label :prestation_id, "Prestation", class: "text-sm text-slate-500" do %>
+        <span>Prestation <span class="text-red-500">*</span></span>
+      <% end %>
+      <%= f.select :prestation_id,
+      options_for_select(
+        prestations.map { |p| [p.display_name, p.id, { "data-tarif" => p.tarif, "data-libelle" => p.libellé }] },
+        f.object.prestation_id
+      ),
+      { prompt: "" },
+      { class: "slim-select w-full h-10 focus:input-primary", required: true,
+        data: { controller: "slim-select", cotation_ligne_target: "prestation", action: "change->cotation-ligne#prestationChanged" } } %>
+    </div>
+    <div class="flex flex-col gap-1 flex-1 ">
+      <%= f.label :intitulé, "Intitulé", class: "text-sm text-slate-500" %>
+      <%= f.text_field :intitulé, class: "input input-bordered w-full h-10 focus:input-primary",
           data: { cotation_ligne_target: "intitule" } %>
+    </div>
   </div>
-  <div class="flex flex-col gap-1 w-20">
-    <%= f.label :qté, "Qté", class: "text-sm text-slate-500" %>
-    <%= f.number_field :qté, min: 0, class: "input input-sm input-bordered w-full",
+  <div class="flex flex-row flex-1 w-full gap-4 py-4">
+    <div class="flex flex-col gap-1 min-w-[80px] w-[80px]">
+      <%= f.label :qté, "Qté", class: "text-sm text-slate-500" do %>
+        <span>Qté <span class="text-red-500">*</span></span>
+      <% end %>
+      <%= f.number_field :qté, min: 0, class: "input input-bordered w-full h-10 focus:input-primary", required: true,
           data: { cotation_ligne_target: "qte", action: "input->cotation-ligne#refresh" } %>
+    </div>
+    <%# Prix unitaire : non modifiable, dérivé de la prestation choisie (affiché avec €) %>
+    <div class="flex flex-col gap-1 ">
+      <span class="text-sm text-slate-500">Prix HT</span>
+      <span class="font-medium py-1" data-cotation-ligne-target="prix">—</span>
+    </div>
+    <div class="flex flex-col gap-1 ">
+      <span class="text-sm text-slate-500">Total HT</span>
+      <span class="font-medium py-1" data-cotation-ligne-target="total">—</span>
+    </div>
   </div>
-  <%# Prix unitaire : non modifiable, dérivé de la prestation choisie (affiché avec €) %>
-  <div class="flex flex-col gap-1 w-28">
-    <span class="text-sm text-slate-500">Prix HT</span>
-    <span class="font-medium py-1" data-cotation-ligne-target="prix">—</span>
-  </div>
-  <div class="flex flex-col gap-1 w-28">
-    <span class="text-sm text-slate-500">Total HT</span>
-    <span class="font-medium py-1" data-cotation-ligne-target="total">—</span>
-  </div>
-  <button type="button" data-action="nested-form#remove" class="btn btn-outline btn-error btn-sm" title="Retirer la ligne">
-    <span class="material-symbols-outlined">delete</span>
-  </button>
   <%= f.hidden_field :_destroy %>
 </div>

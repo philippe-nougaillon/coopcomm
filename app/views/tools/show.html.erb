@@ -1,186 +1,258 @@
-<div class="mx-auto lg:w-2/3 w-full">
-  <%= link_to "<", tools_path, title:"Revenir en arrière", class: 'text-xl font-black sm:hidden' %>
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
-    <h1 class="text-2xl sm:text-4xl text-primary font-bold">
-      <%= page_title!(@tool.name) %>
-    </h1>
-  </div>
-  <div class="flex flex-wrap gap-8 mt-8">
-    <% if @tool.photo.present? %>
-      <img src="<%= url_for(@tool.photo) %>" class="h-60">
-    <% elsif @tool.icon_name.present? %>
-      <%# <span class="material-symbols-outlined text-warning !text-6xl">
-        <%= @tool.icon_name %>
-      <%= embedded_svg "icons/#{@tool.icon_name}.svg", class: "w-24 h-24 fill-current text-warning shrink-0" %>
-    <% end %>
-    <div class="flex flex-col flex-wrap">
-      <% if false %>
-      <% end %>
-      <p class="my-2">
-        <strong class="block text-slate-400 mb-1">Modèle</strong>
-        <b><%= @tool.modèle %></b>
-      </p>
-      <p class="my-2">
-        <strong class="block text-slate-400 mb-1">Marque</strong>
-        <b><%= @tool.marque %></b>
-      </p>
-      <p class="my-2">
-        <strong class="block text-slate-400 mb-1">Description</strong>
-        <b><%= @tool.description %></b>
-      </p>
+<div class="mx-auto lg:w-2/3 w-full mt-8">
+  <% page_title!(@tool.name) %>
+  <div class="flex flex-row justify-between items-start gap-3 mb-8">
+    <div>
+      <h1 class="flex flex-col md:flex-row md:gap-2 text-2xl sm:text-3xl text-primary font-bold sm:whitespace-nowrap">
+        <%= (@tool.name) %>
+      </h1>
     </div>
-  </div>
-  <div class="flex flex-wrap gap-2 mt-8">
-    <% if policy(@tool).edit? %>
-      <%= link_to "Modifier", edit_tool_path(@tool), class: "btn" %>
-    <% end %>
-    <% if policy(@tool).destroy? %>
-      <% if @tool.interventions.any? %>
-        <div class="btn cursor-not-allowed" title="Suppression impossible, l'outil est utilisé dans des interventions">
-          <%= embedded_svg "icons/delete.svg", class: "text-gray-500", title: "Supprimer l'intervention" %>
-        </div>
-      <% else %>
-        <%= button_to tool_path(@tool), method: :delete, id: "supprimer_outil", data: {turbo_confirm: "Êtes-vous certain(e) de vouloir supprimer cet outil ?" }, class: "btn", 'data-testid': "Supprimer l'outil" do %>
-          <%= embedded_svg "icons/delete.svg", title: "Supprimer l'intervention" %>
+    <div class="flex justify-end md:w-full gap-2 ">
+      <% if policy(@tool).edit? %>
+        <%= link_to edit_tool_path(@tool), class: "btn flex-1 sm:flex-none" do %>
+          <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
+          <span class="hidden md:block">Modifier</span>
         <% end %>
       <% end %>
-    <% end %>
-    <%= link_to "Retour", tools_path, class: "hidden sm:inline-flex btn" %>
+      <% if policy(@tool).destroy? %>
+        <button type="button" class="btn btn-soft btn-error hover:!text-white" onclick="delete_tool_modal_<%= @tool.id %>.showModal()" title="Supprimer" data-testid="supprimer_outil">
+          <%= embedded_svg "icons/delete.svg", class: "w-5 h-5 fill-current" %>
+          <span class="hidden md:block">Supprimer</span>
+        </button>
+        <dialog id="delete_tool_modal_<%= @tool.id %>" class="modal">
+          <div class="modal-box">
+            <form method="dialog">
+              <button type="submit" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="text-lg font-bold text-error flex items-center gap-2">
+              <%= embedded_svg "icons/warning.svg", title: "Supprimer le matériel" %>
+              Supprimer le matériel
+            </h3>
+            <p class="py-4 text-sm text-slate-600 text-left">
+              Êtes-vous certain(e) de vouloir supprimer ce matériel ? Cette action est irréversible.
+            </p>
+            <div class="modal-action">
+              <form method="dialog">
+                <button type="submit" class="btn btn-ghost">Annuler</button>
+              </form>
+              <%= button_to tool_path(@tool), method: :delete, class: "btn btn-error text-white" do %>
+                Oui, supprimer
+              <% end %>
+            </div>
+          </div>
+          <form method="dialog" class="modal-backdrop">
+            <button type="submit">Fermer</button>
+          </form>
+        </dialog>
+      <% end %>
+    </div>
   </div>
-  <h2 class="text-2xl text-secondary mt-12">
-    Disponibilités
-  </h2>
-  <%= form_tag tool_path(@tool), method: :get, class:'mb-2 mt-4' do %>
-    <div class="flex gap-2">
-      <label class="cursor-pointer flex items-center gap-1">
-        <%= radio_button_tag :vue, 'calendrier', params[:vue] == 'calendrier', { id: 'vue_calendrier', class: 'radio radio-accent radio-sm', onchange: "this.form.submit();" } %>
+  <%# --- INFORMATIONS & APERÇU --- %>
+  <h2 class="text-2xl text-secondary mt-8 mb-4">Informations & aperçu</h2>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6">
+      <div class="flex flex-col gap-0">
+        <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 gap-3">
+          <div class="flex items-center gap-3 text-slate-500 shrink-0">
+            <span class="text-base">Modèle</span>
+          </div>
+          <div class="text-base text-slate-800 font-medium text-right truncate">
+            <%= @tool.modèle.presence || "—" %>
+          </div>
+        </div>
+        <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 gap-3">
+          <div class="flex items-center gap-3 text-slate-500 shrink-0">
+            <span class="text-base">Marque</span>
+          </div>
+          <div class="text-base text-slate-800 font-medium text-right truncate">
+            <%= @tool.marque.presence || "—" %>
+          </div>
+        </div>
+        <div class="flex flex-row items-start justify-between py-3 last:border-0 gap-3">
+          <div class="flex items-center gap-3 text-slate-500 shrink-0 mt-0.5">
+            <%= embedded_svg "icons/description.svg", class: "w-5 h-5 fill-current" %>
+            <span class="text-base">Description</span>
+          </div>
+          <div class="text-base text-slate-800 font-medium text-right max-w-xs">
+            <%= @tool.description.presence || "—" %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-center min-h-40 p-6">
+      <% if @tool.photo.present? %>
+        <img src="<%= url_for(@tool.photo) %>" class="h-40 rounded-xl object-cover">
+      <% elsif @tool.icon_name.present? %>
+        <%= embedded_svg "icons/#{@tool.icon_name}.svg", class: "w-24 h-24 fill-current text-warning shrink-0" %>
+      <% else %>
+        <span class="text-slate-300 text-sm italic">Aucune image</span>
+      <% end %>
+    </div>
+  </div>
+  <%# --- DISPONIBILITÉS --- %>
+  <div class="flex justify-between flex-wrap items-center mt-10 mb-4">
+    <h2 class="text-2xl text-secondary">Disponibilités</h2>
+    <%= form_tag tool_path(@tool), method: :get, class: 'flex gap-4' do %>
+      <label class="cursor-pointer flex items-center gap-1.5 text-sm text-slate-600">
+        <%= radio_button_tag :vue, 'calendrier', params[:vue] == 'calendrier', { id: 'vue_calendrier', class: 'radio radio-primary radio-sm', onchange: "this.form.submit();" } %>
         Calendrier
       </label>
-      <label class="cursor-pointer flex items-center gap-1">
-        <%= radio_button_tag :vue, 'liste', params[:vue] == 'liste', { id: 'vue_liste', class: 'radio radio-accent radio-sm', onchange: "this.form.submit();" } %>
+      <label class="cursor-pointer flex items-center gap-1.5 text-sm text-slate-600">
+        <%= radio_button_tag :vue, 'liste', params[:vue] == 'liste', { id: 'vue_liste', class: 'radio radio-primary radio-sm', onchange: "this.form.submit();" } %>
         Liste des interventions
       </label>
-    </div>
-  <% end %>
-  <% case params[:vue] %>
-  <% when 'calendrier' %>
-    <%= month_calendar do |date| %>
-      <div class="flex justify-center items-center h-6 mb-1">
-        <p class="inline-flex items-center justify-center px-2.5 py-1 rounded-full <%= date == Date.today ? 'bg-primary text-primary-content font-black' : '' %>">
-          <%= date.day %>
-        </p>
+    <% end %>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 overflow-hidden">
+    <% if params[:vue] != 'liste' %>
+      <div class="flex flex-row items-center gap-4 px-4 py-3 bg-slate-50 text-xs text-slate-500 border-b border-slate-100">
+        <div class="flex flex-col md:flex-row gap-2">
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>Disponible</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>En panne</span>
+        </div>
+        <div class="flex flex-col md:flex-row gap-2">
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>Réservé</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-300"></span>Réservé par un autre</span>
+        </div>
       </div>
-      <% 
+    <% end %>
+    <% case params[:vue] %>
+    <% when 'calendrier' %>
+      <%= month_calendar do |date| %>
+        <div class="flex justify-center items-center h-6 mb-1">
+          <p class="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-sm <%= date == Date.today ? 'text-center text-purple-700 font-bold' : 'text-slate-400' %>">
+            <%= date.day %>
+          </p>
+        </div>
+        <%
           heure_matin = Time.zone.parse("#{date} 08:00:00")
           heure_soir = Time.zone.parse("#{date} 13:05:00")
 
           mouvement_matin = @tool.dernier_mouvement_a(heure_matin)
           mouvement_soir = @tool.dernier_mouvement_a(heure_soir)
         %>
-      <div class="flex flex-nowrap justify-center gap-1 px-1">
-        <%= render 'mouvements/mouvement_slot', 
-                  mouvement: mouvement_matin, 
-                  tool_id: @tool.id, 
-                  date: date, 
-                  margin_style: '', 
-                  start_hour: 8, 
-                  end_hour: 13, 
-                  new_title: "Réserver le #{date.day} au matin" %>
-        <%= render 'mouvements/mouvement_slot', 
-                  mouvement: mouvement_soir, 
-                  tool_id: @tool.id, 
-                  date: date, 
-                  margin_style: '', 
-                  start_hour: 13, 
-                  start_minute: 5, 
-                  end_hour: 18, 
-                  new_title: "Réserver le #{date.day} après-midi" %>
-      </div>
-    <% end %>
-  <% when 'liste' %>
-    <div class="overflow-x-auto mt-8">
-      <table class="table table-sm">
-        <thead class="bg-slate-100">
-          <tr>
-            <th></th>
-            <th>Intervention</th>
-            <th>Du</th>
-            <th>Au</th>
-            <th>Adhérent</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% if @tool.interventions.any? %>
-            <%= render partial: 'intervention', collection: @tool.interventions.ordered, cached: true %>
-          <% else %>
-            <tr>
-              <td colspan=6>
-                <i>L'outil n'est pas encore attribué à une intervention</i>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
-  <% end %>
-  <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
-    <h2 class="text-2xl text-secondary">
-      Mouvements
-    </h2>
-    <%= link_to "Panne", new_mouvement_path(tool_id: @tool.id), data: { 'testid': "ajouter_panne" }, class: 'inline-flex btn btn-sm sm:btn-lg btn-outline btn-neutral' %>
-  </div>
-  <div class="mx-auto w-full">
-    <div class="overflow-x-auto">
-      <table class="table table-xs shadow">
-        <thead class="bg-slate-100">
-          <th>Il y a</th>
-          <th>État</th>
-          <th>Par</th>
-          <th>Date</th>
-          <th></th>
-        </thead>
-        <tbody>
-          <% if @tool.mouvements.any? %>
-            <%= render @tool.mouvements.includes(:user).ordered %>
-          <% else %>
-            <tr>
-              <td colspan=3>
-                <i>Ce matériel n'a pas encore de mouvement</i>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <% if current_user.manager_or_admin? %>
-    <h2 class="text-2xl text-secondary mt-8 mb-4">
-      Documents
-    </h2>
-    <div class="mx-auto w-full">
+        <div class="flex flex-nowrap justify-center gap-1 px-1">
+          <%= render 'mouvements/mouvement_slot',
+                    mouvement: mouvement_matin,
+                    tool_id: @tool.id,
+                    date: date,
+                    margin_style: '',
+                    start_hour: 8,
+                    end_hour: 13,
+                    new_title: "Réserver le #{date.day} au matin" %>
+          <%= render 'mouvements/mouvement_slot',
+                    mouvement: mouvement_soir,
+                    tool_id: @tool.id,
+                    date: date,
+                    margin_style: '',
+                    start_hour: 13,
+                    start_minute: 5,
+                    end_hour: 18,
+                    new_title: "Réserver le #{date.day} après-midi" %>
+        </div>
+      <% end %>
+    <% when 'liste' %>
       <div class="overflow-x-auto">
-        <table class="table table-xs shadow">
+        <table class="table table-sm w-full border-collapse">
           <thead class="bg-slate-100">
-            <th>Type</th>
-            <th>Fichier</th>
-            <th>État</th>
-            <th>Version</th>
-            <th>MàJ il y a</th>
-            <th></th>
+            <tr>
+              <th></th>
+              <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Intervention</th>
+              <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Du</th>
+              <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Au</th>
+              <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Adhérent</th>
+            </tr>
           </thead>
           <tbody>
-            <% if @documents.any? %>
-              <%= render @documents %>
+            <% if @tool.interventions.any? %>
+              <%= render partial: 'intervention', collection: @tool.interventions.ordered, cached: true %>
             <% else %>
               <tr>
-                <td colspan=6>
-                  <i>Ce matériel n'a pas encore de document</i>
+                <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">
+                  L'outil n'est pas encore attribué à une intervention
                 </td>
               </tr>
             <% end %>
           </tbody>
         </table>
       </div>
+    <% end %>
+  </div>
+  <%# --- MOUVEMENTS --- %>
+  <div class="flex justify-between flex-wrap items-center mt-10 mb-4">
+    <h2 class="text-2xl text-secondary">Mouvements</h2>
+    <% if policy(Mouvement).new? %>
+      <%= link_to new_mouvement_path(tool_id: @tool.id), data: { 'testid': "ajouter_panne" }, class: 'btn btn-info btn-outline btn-md rounded flex items-center justify-center gap-2 text-base' do %>
+        <%= embedded_svg "icons/cone.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+        <span class="hidden md:block">Gestion panne</span>
+      <% end %>
+    <% end %>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="table table-sm w-full">
+        <thead class="bg-slate-100">
+          <tr>
+            <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Il y a</th>
+            <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">État</th>
+            <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Par</th>
+            <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Date</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if @tool.mouvements.any? %>
+            <%= render @tool.mouvements.includes(:user).ordered %>
+          <% else %>
+            <tr>
+              <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">
+                Ce matériel n'a pas encore de mouvement
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <%# --- DOCUMENTS --- %>
+  <% if current_user.manager_or_admin? %>
+    <div class="flex justify-between flex-wrap items-center mt-10 mb-4">
+      <h2 class="text-2xl text-secondary">Documents</h2>
+      <div></div>
+    </div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 overflow-hidden">
+      <% if @tool.document.attached? %>
+        <div class="flex items-center justify-between gap-3 p-4">
+          <div class="flex items-center gap-3">
+            <%= embedded_svg "icons/description.svg", class: "w-6 h-6 fill-current text-slate-400 shrink-0" %>
+            <div>
+              <p class="font-medium text-slate-800 text-sm">
+                <%= @tool.document.filename.to_s %>
+              </p>
+              <p class="text-xs text-slate-400">
+                <%= number_to_human_size(@tool.document.byte_size) %> ·
+                mis à jour <%= time_ago_in_words(@tool.document.created_at) %>
+              </p>
+            </div>
+          </div>
+          <%= link_to rails_blob_path(@tool.document, disposition: "attachment"),
+                    class: "btn btn-sm btn-ghost text-primary gap-2" do %>
+            <%= embedded_svg "icons/download.svg", class: "w-4 h-4 fill-current" %>
+            Télécharger
+          <% end %>
+        </div>
+      <% else %>
+        <div class="p-8">
+          <p class="text-center italic text-slate-400">
+            Ce matériel n'a pas encore de document
+          </p>
+        </div>
+      <% end %>
     </div>
   <% end %>
+  <div class="pt-6">
+    <%= link_to tools_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+      <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des utilisateurs" %>
+      Retour à la liste
+    <% end %>
+  </div>
 </div>

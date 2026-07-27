@@ -38,10 +38,10 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
   test 'create invalide sans tool_id imposé : le select reste affiché' do
     assert_no_difference('Mouvement.count') do
       post mouvements_url,
-           params: { mouvement: { tool_id: @template_mouvement.tool_id, état: 'sortie', date: '' } }
+           params: { mouvement: { tool_id: @template_mouvement.tool_id, état: 'réservé', date: '' } }
     end
 
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
     assert_select 'select[name=?]', 'mouvement[tool_id]'
     assert_select 'input[type=hidden][name=?]', 'mouvement[tool_id]', false
   end
@@ -52,10 +52,10 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference('Mouvement.count') do
       post mouvements_url,
            params: { tool_id: @template_mouvement.tool_id,
-                     mouvement: { tool_id: @template_mouvement.tool_id, état: 'sortie', date: '' } }
+                     mouvement: { tool_id: @template_mouvement.tool_id, état: 'réservé', date: '' } }
     end
 
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
     assert_select 'input[type=hidden][name=?]', 'mouvement[tool_id]'
     assert_select 'select[name=?]', 'mouvement[tool_id]', false
   end

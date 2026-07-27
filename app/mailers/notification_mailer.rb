@@ -13,18 +13,6 @@ class NotificationMailer < ApplicationMailer
     end
   end
 
-  def commentaires_changed(intervention, emails)
-    @intervention = intervention
-
-    mail(to: emails,
-         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
-         subject: '[COOPCOMM] Nouveau commentaire').tap do |message|
-      message.mailgun_options = {
-        'tag' => ['nouveau commentaire']
-      }
-    end
-  end
-
   def relance(intervention)
     @intervention = intervention
 
@@ -179,6 +167,19 @@ class NotificationMailer < ApplicationMailer
          subject: '[COOPCOMM] Pointage terminé automatiquement').tap do |message|
       message.mailgun_options = {
         'tag' => ['pointage terminé']
+      }
+    end
+  end
+
+  def cotations_a_signer_relance(adherent, cotations, title)
+    @adherent  = adherent
+    @cotations = cotations
+
+    mail(to: adherent.email,
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: title).tap do |message|
+      message.mailgun_options = {
+        'tag' => ['relance cotation à signer']
       }
     end
   end

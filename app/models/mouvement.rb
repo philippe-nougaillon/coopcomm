@@ -14,11 +14,9 @@ class Mouvement < ApplicationRecord
   scope :ordered, -> { order(date: :desc) }
 
   enum :état, {
-    entrée: 0,
-    sortie: 1,
-    panne: 2,
-    fin_panne: 3,
-    réservé: 4
+    réservé: 0,
+    panne: 1,
+    fin_panne: 2
   }
 
   validates :date, presence: true
@@ -30,16 +28,12 @@ class Mouvement < ApplicationRecord
 
   def style
     case état
-    when 'début'
+    when 'réservé'
       'primary'
-    when 'fin'
-      'secondary'
-    when 'entrée'
-      'success'
-    when 'sortie'
-      'error'
-    when 'révision', 'panne'
+    when 'panne'
       'warning'
+    when 'fin_panne'
+      'secondary'
     else
       'info'
     end
@@ -107,7 +101,6 @@ class Mouvement < ApplicationRecord
   end
 
   def avertir_reservations_futures
-    # On cherche toutes les "sorties" (débuts de réservation) prévues APRÈS cette panne
     # On inclut les utilisateurs pour éviter les requêtes N+1
     reservations_futures = tool.mouvements
                                .includes(:user)

@@ -15,9 +15,10 @@ class ApplicationController < ActionController::Base
   helper_method :sort_column, :sort_direction
   helper_method :current_organisation
 
-  rate_limit to: 20, within: 1.minute,
-             by: -> { request.ip },
-             if: -> { devise_controller? }
+  # logique déplacée dans config/initializers/rack_attack.rb
+  # rate_limit to: 20, within: 1.minute,
+  #            by: -> { request.ip },
+  #            if: -> { devise_controller? }
 
   BACKGROUND_COLORS = {
     8 => '#c7c375',
@@ -54,6 +55,7 @@ class ApplicationController < ActionController::Base
     @users_tags = User.by_service(current_user).tag_counts_on(:tags).order(:name)
   end
 
+  
   # Périmètre de services d'un index. Au premier affichage (filtre non soumis), le
   # filtre est laissé VIDE et on montre tout le périmètre (toute l'organisation pour
   # un admin si `admin_sees_all`, sinon les services du current_user) — sauf l'admin
@@ -90,6 +92,7 @@ class ApplicationController < ActionController::Base
     end
   end
 
- 
-
+  def after_sign_out_path_for(resource_or_scope)
+      root_path
+    end
 end

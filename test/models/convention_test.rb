@@ -149,42 +149,7 @@ class ConventionTest < ActiveSupport::TestCase
     assert_includes convention.audits.last.audited_changes.keys, 'date_fin_prévue'
   end
 
-  # --- Somme du temps des interventions (temps_total_interventions) ---
-
-  def insert_intervention(attrs = {})
-    # insert_all : on écrit directement la ligne (temps_total figé) sans déclencher
-    # les callbacks d'Intervention (broadcast, friendly_id…) hors sujet ici.
-    now = Time.current # <--- C'est ici ! 'now' correspond à l'année en cours (2026), mais...
-    Intervention.insert_all([{ adherent_id: @adherent.id, service_id: @service.id,
-                               description: 'test', temps_total: 0, début: now,
-                               created_at: now, updated_at: now }.merge(attrs)])
-  end
-
-  test 'temps_total_interventions somme les interventions du même adhérent et service' do
-    # On se déplace dans le temps jusqu'à une date comprise dans la convention (par exemple, juin 2026).
-    travel_to Time.zone.parse("2026-06-01 12:00:00") do
-      insert_intervention(temps_total: 3)
-      insert_intervention(temps_total: 5)
-
-      assert_equal 8, build_convention.temps_total_interventions
-    end # Al salir del bloque, Rails vuelve al tiempo real automáticamente
-  end
-
-  test "temps_total_interventions exclut les interventions d'un autre service" do
-    insert_intervention(temps_total: 3)
-    insert_intervention(temps_total: 99, service_id: services(:service_marseille).id)
-
-    assert_equal 3, build_convention.temps_total_interventions
-  end
-
-  test "temps_total_interventions exclut les interventions d'un autre adhérent" do
-    insert_intervention(temps_total: 3)
-    insert_intervention(temps_total: 99, adherent_id: users(:michael_jackson).id)
-
-    assert_equal 3, build_convention.temps_total_interventions
-  end
-
-  test "temps_total_interventions vaut 0 sans intervention correspondante" do
-    assert_equal 0, build_convention.temps_total_interventions
-  end
+  # NB : les anciens tests de Convention#temps_total_interventions ont été déplacés dans
+  # test/models/intervention_test.rb (section « Heures consommées de la convention ») :
+  # la fonction est devenue Intervention#update_heures_consommees_convention (after_commit).
 end

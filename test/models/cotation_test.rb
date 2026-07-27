@@ -212,11 +212,14 @@ class CotationTest < ActiveSupport::TestCase
     refute_includes Cotation.visible_to(users(:manager_marseille)), cotation
   end
 
-  test 'visible_to un adhérent : ses propres cotations, pas celles des autres' do
-    sienne = build_cotation # adhérent: weil
+  test 'visible_to un adhérent : ses propres cotations envoyées, pas celles des autres' do
+    sienne = build_cotation # adhérent: weil, état initial « créé »
     sienne.save!
     visibles = Cotation.visible_to(@adherent)
-    assert_includes visibles, sienne
+    # Tant qu'elle n'est pas envoyée, c'est un brouillon interne : invisible.
+    refute_includes visibles, sienne
+    sienne.envoyer!
+    assert_includes Cotation.visible_to(@adherent), sienne
     # Une cotation appartenant à un autre adhérent n'est pas visible.
     refute_includes visibles, cotations(:cotation_marseille) # adhérent: michael_jackson
   end
@@ -293,12 +296,12 @@ class CotationTest < ActiveSupport::TestCase
 
   test "style renvoie la classe CSS du badge de l'état courant" do
     cotation = build_cotation
-    assert_equal 'badge-ghost', cotation.style # créé
+    assert_equal 'badge badge-secondary rounded-full', cotation.style # créé
     cotation.save!
     cotation.envoyer!
-    assert_equal 'badge-info text-white', cotation.style # envoyé
+    assert_equal 'badge badge-primary rounded-full', cotation.style # envoyé
     cotation.signer!
-    assert_equal 'badge-accent text-white', cotation.style # signé
+    assert_equal 'badge badge-outline badge-info rounded-full ', cotation.style # signé
   end
 
   test "workflow_state_humanized liste les états humanisés dans l'ordre du workflow" do

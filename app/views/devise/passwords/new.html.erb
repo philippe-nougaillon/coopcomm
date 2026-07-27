@@ -7,7 +7,7 @@
       <%= render "devise/shared/error_messages", resource: resource %>
       <div class="field mb-4">
         <%= f.label :email %><br />
-        <%= f.email_field :email, autofocus: true, autocomplete: "email", class:'input input-sm w-full' %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class:'input input-bordered w-full focus:input-primary' %>
       </div>
       <div class="actions">
         <%= f.submit "Changer de mot de passe", class: 'btn btn-outline btn-primary btn-lg rounded hover:text-white! w-full mt-4 mb-8' %>

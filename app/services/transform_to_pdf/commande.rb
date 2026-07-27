@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-
+# TODO : Unifier ce fichier avec celui des cotations et des factures
 module TransformToPdf
   # Génère un PDF de la commande
   class Commande < ApplicationService

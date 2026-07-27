@@ -97,11 +97,17 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # --- Filtres de l'index (convention_paris : service Informatique, début 2026-01-01, fin ouverte, sans document) ---
-  # On assertit sur le lien d'édition propre à la ligne du tableau ; le nom de l'adhérent
-  # apparaît aussi dans les <option> des menus déroulants et n'est donc pas discriminant.
+  # On assertit sur le lien vers le show propre à la ligne du tableau (seul lien de la ligne
+  # depuis que #326 a déplacé les actions dans le show) ; le nom de l'adhérent apparaît aussi
+  # dans les <option> des menus déroulants et n'est donc pas discriminant. Le href est cité en
+  # entier pour éviter qu'un id préfixe (/conventions/1) ne matche un autre (/conventions/12).
+
+  def convention_row_marker(convention)
+    %(href="#{convention_path(convention)}")
+  end
 
   test 'filtre par service inclut le service correspondant et exclut les autres' do
-    row = edit_convention_path(@convention)
+    row = convention_row_marker(@convention)
 
     get conventions_url(service_id: services(:informatique).id)
     assert_includes response.body, row
@@ -113,18 +119,18 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
   test 'filtre active_on inclut une convention active à la date' do
     # On utilise la date de début de l'année en cours, à laquelle on sait que la convention de la fixture est active.
     get conventions_url(active_on: @start_of_year.to_s)
-    assert_includes response.body, edit_convention_path(@convention)
+    assert_includes response.body, convention_row_marker(@convention)
   end
 
   test 'filtre active_on exclut une convention pas encore commencée à la date' do
     # Un año antes del inicio del año actual
     get conventions_url(active_on: (@start_of_year - 1.year).to_s)
-    assert_not_includes response.body, edit_convention_path(@convention)
+    assert_not_includes response.body, convention_row_marker(@convention)
   end
 
   test 'recherche par nom de document exclut une convention sans document correspondant' do
     get conventions_url(search: 'inexistant.pdf')
-    assert_not_includes response.body, edit_convention_path(@convention)
+    assert_not_includes response.body, convention_row_marker(@convention)
   end
 
   # --- Créations invalides (les 3 validations métier du model) ---
@@ -136,7 +142,7 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
         user_id: users(:weil).id, service_id: services(:informatique).id, date_début: @today.to_s
       } }
     end
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
   end
 
   test 'create invalide (date de fin antérieure à la date de début) : aucune création' do
@@ -147,7 +153,7 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
         date_fin_prévue: (@today - 1.month).to_s # Un mes ANTES de empezar (inválido)
       } }
     end
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
   end
 
   test "create invalide (service n'appartenant pas à l'adhérent) : aucune création" do
@@ -157,6 +163,6 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
         user_id: @adherent.id, service_id: services(:informatique).id, date_début: @today.to_s
       } }
     end
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
   end
 end

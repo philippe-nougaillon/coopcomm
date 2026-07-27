@@ -4,7 +4,7 @@
       <%= page_title!("Cotations") %></h1>
     <% if policy(Cotation).new? %>
       <%= link_to new_cotation_path,
-              class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm",
+            class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary",
               title: "Créer une nouvelle cotation" do %>
         <%= embedded_svg "icons/assignment_add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
         <span class="hidden md:block">Ajouter une cotation</span>
@@ -25,7 +25,7 @@
                   options_from_collection_for_select(@adhérents, 'id', 'nom_prénom', params[:adhérent_ids]),
                   multiple: true,
                   class: 'slim-select w-full h-10',
-                  data: { placeholder: 'Tous les adhérents' },
+                  data: { placeholder: 'Tous les adhérents', turbo: false },
                   onchange: 'this.form.requestSubmit()' %>
         </div>
       <% end %>
@@ -66,16 +66,9 @@
           <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Adhérent</th>
           <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
           <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Intitulé</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Livraison</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-right">Total HT</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Dernier mail</th>
-          <th class="px-2 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Voir</th>
-          <th class="px-2 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Envoyer</th>
-          <th class="px-2 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Valider</th>
-          <th class="px-2 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Refuser</th>
-          <th class="px-2 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">PDF</th>
-          <th class="px-2 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Modifier</th>
-          <th class="px-2 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Suppr.</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Livraison</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Total HT</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Dernier mail</th>
         </tr>
       </thead>
       <tbody>

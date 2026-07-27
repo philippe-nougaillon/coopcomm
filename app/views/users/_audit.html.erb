@@ -1,27 +1,27 @@
 <tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
-  <td class="py-4 pl-4 pr-2 text-sm whitespace-nowrap">
+  <td class="py-4 pl-4 text-sm whitespace-nowrap">
     <div class="font-semibold text-slate-700 text-xs sm:text-sm leading-tight">
       <%= time_tag(audit.created_at, format: :long) { "Il y a #{time_ago_in_words(audit.created_at)}" } %>
     </div>
-    <div class="py-4 px-4 text-sm whitespace-nowrap">
+    <div class="text-slate-400 text-xs mt-1">
       <%= l(audit.created_at, format: :long) %>
     </div>
   </td>
-  <td class="py-3 px-4 ">
+  <td class="py-4 px-3 ">
     <%= audit_badge(audit) %>
   </td>
-  <td class="py-4 px-6 text-sm whitespace-nowrap ">
+  <td class="py-4 px-3 text-sm whitespace-nowrap ">
     <% if audit.comment.present? %>
       <span class="italic text-slate-500">"<%= audit.comment %>"</span>
     <% elsif audit.auditable_type == "Absence" && audit.action == "destroy" %>
       <%= absence_period_badge(audit) %>
     <% elsif audit.auditable_type == "User" && audit.audited_changes.key?("invitation_token") %>
-                <div class="bg-slate-50/60 rounded-lg p-2 border border-slate-300 group-hover:bg-white transition-colors duration-150">
-      <%= invitation_changes_summary(audit) %>
+      <div class="bg-slate-50/60 rounded-lg p-2 border border-slate-300 group-hover:bg-white transition-colors duration-150">
+        <%= invitation_changes_summary(audit) %>
       </div>
     <% else %>
-          <div class="bg-slate-50/60 rounded-lg p-2 border border-slate-300 group-hover:bg-white transition-colors duration-150">
-      <%= audit_changes_list(audit, current_user) %>
+      <div class="bg-slate-50/60 rounded-lg p-2 border border-slate-300 group-hover:bg-white transition-colors duration-150">
+        <%= audit_changes_list(audit, current_user) %>
       </div>
     <% end %>
   </td>

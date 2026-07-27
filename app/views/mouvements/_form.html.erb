@@ -1,9 +1,7 @@
-<div class="max-w-3xl mx-auto my-6 bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+<div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
   <%= form_with(model: mouvement, class:'flex flex-col gap-4') do |form| %>
-
-  <%# Changement 1 : on enregistre le redirect_to dans le formulaire au cas où les validations échouent. %>
+    <%# Changement 1 : on enregistre le redirect_to dans le formulaire au cas où les validations échouent. %>
     <%= hidden_field_tag :redirect_to, @redirect_to %>
-
     <% if mouvement.errors.any? %>
       <div id="error_explanation" class="bg-red-50 text-red-500 px-4 py-3 font-medium rounded-lg mb-2 border border-red-200">
         <h2 class="font-black mb-2 text-sm md:text-base">
@@ -16,7 +14,6 @@
         </ul>
       </div>
     <% end %>
-
     <% if (@mouvement.tool && @mouvement.persisted?) || params[:tool_id] %>
       <%# Deux champs volontairement : ils n'ont PAS le même name, donc pas le même rôle. %>
       <%# 1) la donnée enregistrée — name="mouvement[tool_id]", lue par mouvement_params %>
@@ -33,38 +30,34 @@
         <%= form.select :tool_id, 
             options_from_collection_for_select(@tools, :id, :name, @mouvement.tool_id),
             {include_blank: true, required: true}, 
-            class: "slim-select w-full" %>
-      </div> 
+            class: "slim-select w-full h-10" %>
+      </div>
     <% end %>
-
     <div class="w-full">
       <%= form.label :état, class: "label font-semibold text-slate-700"  do%>
         <span>État <span class="text-red-500">*</span></span>
       <% end %>
       <%= form.select :état, options_for_select([['Panne', 'panne'], ['Fin de panne', 'fin_panne']], mouvement.état), 
-          {include_blank: true}, class: 'slim-select w-full', required: true %>
+          {include_blank: true}, class: 'slim-select w-full h-10', required: true %>
     </div>
-
     <div class="w-full">
       <%= form.label :date, class: "label font-semibold text-slate-700" %>
-      <%= form.datetime_field :date, value: @mouvement.date&.strftime('%Y-%m-%dT%H:%M'), class: 'input input-bordered input-sm w-full', required: true %>
+      <div class="flex items-center gap-2 bg-slate-50 h-10 rounded-lg border border-slate-200">
+        <%= form.datetime_field :date, value: @mouvement.date&.strftime('%Y-%m-%dT%H:%M'), class: 'flex-1 bg-transparent border-none outline-hidden text-sm', required: true %>
+      </div>
     </div>
-
     <div class="w-full">
       <%= form.label :commentaires, class: "label font-semibold text-slate-700" %>
-      <%= form.text_area :commentaires, class: 'textarea textarea-bordered textarea-sm w-full', autofocus: true, 'data-controller': 'textarea-autogrow' %>
+      <%= form.text_area :commentaires, class: 'textarea textarea-bordered textarea-sm w-full focus:input-primary', autofocus: true, 'data-controller': 'textarea-autogrow' %>
     </div>
-
     <div class="flex gap-2 mt-4 w-full">
+      <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>
       <%= form.submit "Enregistrer", class: "btn btn-primary flex-1" %>
-      <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>      
     </div>
   <% end %>
-
-  <div class="pt-6 max-w-3xl mx-auto px-4">
+  <div class="pt-6 max-w-3xl mx-auto ">
     <%= link_to @redirect_to, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
       <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour" %>
-      
       <% if @redirect_to.include?('tool') %>
         Retour aux réservations
       <% else %>

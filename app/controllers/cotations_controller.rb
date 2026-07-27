@@ -11,12 +11,13 @@ class CotationsController < ApplicationController
           .includes(:adherent, :service, :organisation)
           .ordered
 
+    # Un adhérent doit voir toutes ses cotations, même si elles ne sont pas de son service
     if current_user.adhérent?
       @cotations = base
       service_ids = base.reorder(nil).distinct.pluck(:service_id)
       @services   = Service.where(id: service_ids).ordered
     else
-      @services  = current_user.administrateur? ? current_organisation.services.ordered : current_user.services
+      @services  = current_user.get_services_by_role
       @adhérents = User.by_service(@services).adhérent
       @cotations = base.where(service: @services)
     end
@@ -73,7 +74,7 @@ class CotationsController < ApplicationController
       redirect_to @cotation, notice: 'Cotation créée.'
     else
       set_form_collections
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -89,7 +90,7 @@ class CotationsController < ApplicationController
       redirect_to @cotation, notice: 'Cotation mise à jour.', status: :see_other
     else
       set_form_collections
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -153,7 +154,7 @@ class CotationsController < ApplicationController
       NotifCotationSigneeJob.perform_later(@cotation, creator.id, current_user.id)
       redirect_to @cotation, notice: "Cotation signée avec succès."
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -204,13 +205,9 @@ class CotationsController < ApplicationController
 
   # Collections proposées dans le formulaire, scopées selon le rôle.
   def set_form_collections
-    @adherents = if current_user.administrateur?
-                   current_organisation.users.adhérent.ordered
-                 else
-                   User.by_service(current_user.services).adhérent.ordered
-                 end
+    @services = current_user.get_services_by_role
 
-    @services = current_user.administrateur? ? current_organisation.services.ordered : current_user.services.ordered
+    @adherents = User.by_service(@services).adhérent.ordered
 
     @prestations = current_organisation.prestations.ordered
   end

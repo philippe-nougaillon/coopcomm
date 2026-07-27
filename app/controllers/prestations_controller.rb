@@ -1,14 +1,18 @@
 # frozen_string_literal: true
 
 class PrestationsController < ApplicationController
-  before_action :set_prestation, only: %i[edit update destroy]
+  before_action :set_prestation, only: %i[show edit update destroy]
   before_action :is_user_authorized
 
+  
+  def show; end
+  
   # GET /prestations/new
   def new
     @prestation = Prestation.new
   end
 
+  
   # GET /prestations/1/edit
   def edit; end
 
@@ -19,7 +23,7 @@ class PrestationsController < ApplicationController
     if @prestation.save
       redirect_to admin_parametres_path, notice: 'Prestation créée.'
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -28,7 +32,7 @@ class PrestationsController < ApplicationController
     if @prestation.update(prestation_params)
       redirect_to admin_parametres_path, notice: 'Prestation mise à jour.', status: :see_other
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 

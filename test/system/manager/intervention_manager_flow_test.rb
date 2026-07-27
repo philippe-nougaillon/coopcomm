@@ -42,7 +42,8 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     select '16', from: 'intervention_fin_hour'
     select '00', from: 'intervention_fin_minute'
 
-    page.select '1,0', from: 'Temps de pause (h)'
+    # Le label « Pause (h) » n'a plus d'attribut `for` → on cible le select par son id.
+    page.select '1,0', from: 'intervention_temps_de_pause'
     fill_in 'Commentaires', with: 'Ceci est un commentaire !'
     click_on 'enregistrer_intervention'
 
@@ -115,13 +116,12 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
   test 'Modifier intervention' do
     visit interventions_url
     intervention = interventions(:tonte_locaux)
-    click_on intervention.description
-    sleep(1)
-    click_on 'Modifier'
+    cliquer_lien intervention.description # recentré : le dock fixe interceptait le clic
+    click_on 'Modifier' # n'existe que sur le show : Capybara attend la navigation
     fill_in 'Description', with: 'Installer la fibre'
     # La refonte UX vide le select Service à l'édition (required) : il faut re-choisir
     select_option('#intervention_service_id', 'Informatique')
-    click_on 'enregistrer_intervention'
+    soumettre 'enregistrer_intervention'
     assert_no_text 'Modifier intervention'
     assert_text 'Installer la fibre'
   end
@@ -131,29 +131,32 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     # une intervention supprimable
     visit intervention_url(interventions(:nouvelle_intervention))
     delete_button = find("[data-testid=\"Supprimer l'intervention\"]")
+    scroll_to(delete_button, align: :center) # le dock fixe intercepte le clic en bas d'écran
     page.accept_confirm do
       delete_button.click
     end
-    # On vérifie l'état métier (le toast de flash est instable après un DELETE Turbo)
+    # `destroy` redirige vers l'index : on attend la navigation AVANT l'assertion
+    # négative, sinon elle s'évalue alors qu'on est encore sur la show.
+    assert_current_path interventions_path
     assert_no_text 'Ramasser les feuilles'
     assert_not Intervention.exists?(interventions(:nouvelle_intervention).id)
   end
 
   test 'Terminer une intervention' do
     visit intervention_url(interventions(:nouvelle_intervention))
-    click_button 'Terminer'
+    cliquer_bouton 'Terminer'
     assert_text 'Intervention terminée'
   end
 
   test 'Valider une intervention' do
     visit intervention_url(interventions(:intervention_terminée))
-    click_button 'Valider'
+    cliquer_bouton 'Valider'
     assert_text 'Intervention validée'
   end
 
   test 'Refuser une intervention' do
     visit intervention_url(interventions(:intervention_terminée))
-    click_button 'Refuser'
+    cliquer_bouton 'Refuser'
     assert_text 'Intervention refusée'
   end
 
@@ -174,7 +177,10 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     assert_selector "#intervention_#{intervention.id}", text: 'Terminer'
 
     within "#intervention_#{intervention.id}" do
-      click_on 'Terminer'
+      # On recentre pour écarter l'interception par le DOCK (bas d'écran), sans
+      # masquer celle que ce test traque : la checkbox du collapse recouvre
+      # l'en-tête de la carte quelle que soit la position de défilement.
+      cliquer_bouton 'Terminer'
     end
 
     # Point de synchronisation : `button_to turbo:false` recharge la page (le flash
@@ -208,12 +214,10 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
   # test "Filter les interventions par date" do
   #   fill_in "Du", with: Date.today.strftime("%d-%m-%Y")
   #   fill_in "Au", with: (Date.today + 30).strftime("%d-%m-%Y")
-  #   sleep(1)
   #   page.driver.browser.switch_to.active_element.send_keys(:enter)
   #   # assert_text "Affichage de 1 élément"
   #
   #   fill_in "Au", with: (Date.today + 7).strftime("%d-%m-%Y")
-  #   sleep(1)
   #   page.driver.browser.switch_to.active_element.send_keys(:enter)
   #   # assert_text "Aucun élément trouvé"
   # end

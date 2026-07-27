@@ -22,6 +22,7 @@ class NotifWhatsappAdherentInterventionPointageJobTest < ActiveJob::TestCase
   setup do
     @intervention = interventions(:tonte_locaux)
     @adherent     = users(:weil)
+    @agent        = users(:bond)
     @fake_client  = FakeTwilioClient.new
   end
 
@@ -45,6 +46,8 @@ class NotifWhatsappAdherentInterventionPointageJobTest < ActiveJob::TestCase
     assert_equal 'Intervention pointage', log.subject
     assert_equal 'SM_TEST_SID', log.message_id
     assert_equal @intervention.organisation.id, log.organisation_id
+    # L'émetteur tracé est l'agent qui a pointé (agent de l'intervention).
+    assert_equal @agent.id, log.user_id
   end
 
   test 'envoie un WhatsApp de départ quand l\'intervention a une date de fin' do

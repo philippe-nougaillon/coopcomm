@@ -1,6 +1,8 @@
 require "test_helper"
 
 class FacturesControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
   setup do
     @facture = factures(:facture_paris)       # service informatique, état « créé », modifiable
     @facture_validée = factures(:facture_validée) # service informatique, état « validé », non modifiable
@@ -38,13 +40,8 @@ class FacturesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "update with invalid params renders edit (422)" do
-    skip "BUG PROD confirmé : sur échec de validation, #update rend `:edit` mais " \
-         "`set_form_collections` est déclaré `only: %i[edit]` → @services/@adherents/" \
-         "@prestations sont nil → _form.html.erb:35 lève `undefined method 'map' for nil` " \
-         "(500 au lieu de 422 + formulaire). Fix = ajouter :update au before_action " \
-         "set_form_collections (factures_controller.rb:4). Test à activer après correction."
     patch facture_url(@facture), params: { facture: { intitulé: "" } }
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
   end
 
   test "update refusé sur une facture non modifiable (validé)" do
@@ -86,12 +83,20 @@ class FacturesControllerTest < ActionDispatch::IntegrationTest
     assert @facture.reload.créé?
   end
 
-  # --- Autorisation ---
+  test "envoyer enqueue la notification de l'adhérent avec les bons arguments" do
+    post envoyer_facture_url(@facture)
 
-  test "un adhérent n'accède pas à l'index des factures" do
-    sign_out users(:hidalgo)
-    sign_in users(:weil)
-    get factures_url
-    assert_response :redirect
+    assert_enqueued_with(job: NotifAdherentFactureEnvoyeeJob,
+                         args: [@facture, users(:weil), users(:hidalgo).id])
+  end
+
+  test "envoyer : adhérent sans email -> la transition a lieu mais aucune notification n'est enqueue" do
+    users(:weil).update_column(:email, '') # bypass : Devise valide la présence de l'email
+
+    assert_no_enqueued_jobs only: NotifAdherentFactureEnvoyeeJob do
+      post envoyer_facture_url(@facture)
+    end
+
+    assert @facture.reload.envoyé?
   end
 end

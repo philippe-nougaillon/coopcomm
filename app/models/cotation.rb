@@ -30,21 +30,21 @@ class Cotation < ApplicationRecord
   ARCHIVE = 'archivé'
 
   workflow do
-    state CREE, meta: { style: 'badge-ghost' } do
+    state CREE, meta: { style: 'badge badge-secondary rounded-full' } do
       event :envoyer, transitions_to: ENVOYE
     end
-    state ENVOYE, meta: { style: 'badge-info text-white' } do
+    state ENVOYE, meta: { style: 'badge badge-primary rounded-full' } do
       event :signer, transitions_to: SIGNE
       event :refuser, transitions_to: REFUSE
     end
-    state SIGNE, meta: { style: 'badge-accent text-white' } do
+    state SIGNE, meta: { style: 'badge badge-outline badge-info rounded-full ' } do
       event :valider, transitions_to: VALIDE
       event :refuser, transitions_to: REFUSE
     end
-    state VALIDE, meta: { style: 'badge-success text-white' } do
+    state VALIDE, meta: { style: 'badge badge-success rounded-full' } do
       event :archiver, transitions_to: ARCHIVE
     end
-    state REFUSE, meta: { style: 'badge-error text-white' } do
+    state REFUSE, meta: { style: 'badge badge-error text-white rounded-full' } do
       # Une cotation refusée peut être corrigée puis renvoyée (retour à « envoyé »).
       event :envoyer, transitions_to: ENVOYE
       event :archiver, transitions_to: ARCHIVE
@@ -85,14 +85,15 @@ class Cotation < ApplicationRecord
   end
 
   # Cotations visibles : un admin voit celles de son organisation,
-  # un manager celles de ses services, les autres rôles aucune.
+  # un manager celles de ses services, un adhérent les siennes déjà envoyées
+  # (une cotation « créé » est un brouillon interne), les autres rôles aucune.
   def self.visible_to(user)
     if user.administrateur?
       joins(:service).where(services: { organisation_id: user.organisation&.id })
     elsif user.manager?
       where(service_id: user.service_ids)
     elsif user.adhérent?
-      where(adherent_id: user.id)
+      where(adherent_id: user.id).where.not(workflow_state: CREE)
     else
       none
     end

@@ -46,9 +46,8 @@ class NotifPanneJobTest < ActiveJob::TestCase
     assert_equal "{title: #{titre_propre.inspect}}", mail.subject
     refute_equal log.subject, mail.subject
 
-    # QUIRK (non corrigé) : le job stocke `to: réservation.user_id` (un ID),
-    # et non l'email du réserviste comme les autres jobs. Documenté tel quel.
-    assert_equal @reservation.user_id.to_s, log.to
+    # Le MailLog trace l'EMAIL du réserviste destinataire (et non son ID).
+    assert_equal @reserviste.email, log.to
   end
 end
 
@@ -66,7 +65,6 @@ end
 #    Correctif : passer le titre en positionnel (retirer le `title:`), OU déclarer
 #    le mailer avec un kwarg `title:`.
 #
-# 2. MailLog.to CONTIENT UN ID, PAS UN EMAIL. Le job écrit
-#    `to: réservation.user_id` (entier) au lieu de `réservation.user.email`.
-#    Le journal des envois affiche un identifiant numérique illisible.
+# 2. [CORRIGÉ le 2026-07-08] MailLog.to contenait un ID, pas un email :
+#    `to: réservation.user_id` → remplacé par `réservation.user.email`.
 # =============================================================================

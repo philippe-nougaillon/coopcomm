@@ -1,32 +1,37 @@
 class FacturesController < ApplicationController
-  before_action :set_facture, only: %i[ show edit update destroy pdf envoyer valider refuser ]
+  before_action :set_facture, only: %i[show edit update destroy pdf envoyer valider refuser]
   before_action :is_user_authorized
-  before_action :set_form_collections, only: %i[edit]
-
+  before_action :set_form_collections, only: %i[edit update]
 
   # GET /factures or /factures.json
   def index
-    @services = current_user.administrateur? ? current_organisation.services.ordered : current_user.services
-    @adhérents = User.by_service(@services).adhérent
+    base = policy_scope(Facture)
+             .kept
+             .includes(:adherent, :service, :organisation)
+             .ordered
 
-    @factures = Facture
-                   .kept
-                   .includes(:adherent, :service, :organisation)
-                   .where(service: @services)
-                   .ordered
+    if current_user.adhérent?
+      @factures = base
+      service_ids = base.reorder(nil).distinct.pluck(:service_id)
+      @services  = Service.where(id: service_ids).ordered
+    else
+      @services  = current_user.get_services_by_role
+      @adhérents = User.by_service(@services).adhérent
+      @factures  = base.where(service: @services)
+    end
 
     if params[:search].present?
       @factures = @factures.where('factures.ref ILIKE :s OR factures.intitulé ILIKE :s', s: "%#{params[:search]}%")
     end
 
-    if params[:adhérent_ids].present?
+   if params[:adhérent_ids].present?
       @factures = @factures.where(adherent_id: params[:adhérent_ids])
     end
 
     if params[:service_ids].present?
       @factures = @factures.where(service_id: params[:service_ids])
     end
-
+    
     if params[:workflow_state].present?
       @factures = @factures.where('factures.workflow_state = ?', params[:workflow_state].to_s.downcase)
     end
@@ -151,14 +156,8 @@ class FacturesController < ApplicationController
   end
 
   def set_form_collections
-    @adherents = if current_user.administrateur?
-                   current_organisation.users.adhérent.ordered
-                 else
-                   User.by_service(current_user.services).adhérent.ordered
-                 end
-
-    @services = current_user.administrateur? ? current_organisation.services.ordered : current_user.services.ordered
-
+    @services = current_user.get_services_by_role
+    @adherents = User.by_service(@services).adhérent.ordered
     @prestations = current_organisation.prestations.ordered
   end
 end

@@ -1,35 +1,40 @@
 <tr id="absence_<%= absence.id %>" 
-    class="transition-colors border-b border-slate-100 <% if absence.en_cours? %>bg-amber-50/60 hover:bg-amber-50 text-amber-900<% else %>hover:bg-slate-50/80 text-slate-700<% end %>">
-  <td class="py-4 px-6 text-sm whitespace-nowrap">
-    <div class="flex items-center gap-2.5">
+    class="transition-colors  duration-150 border-b border-slate-100 align-middle text-slate-700 <% if absence.en_cours? %>bg-amber-50/60 hover:bg-amber-50 text-amber-900<% else %>hover:bg-base-200/60 <% end %>">
+  <td class="py-4 pl-4 text-sm whitespace-nowrap flex-1">
+  <div class="grid items-center gap-2.5" style="grid-template-columns: 120px 1fr;">
+    <span class="flex items-center gap-2.5 font-semibold">
       <% if absence.en_cours? %>
         <span class="relative flex h-2 w-2 shrink-0">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75"></span>
           <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
         </span>
       <% end %>
-      <span class="font-semibold"><%= l(absence.du.to_date, format: "%e %B %Y") %></span>
-      <% if absence.matin || absence.après_midi %>
-        <span class="flex items-center justify-center w-28 rounded-md text-xs font-medium py-0.5 shrink-0 <%= absence.en_cours? ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600' %>">
-          <%= absence.matin ? 'Matin' : 'Après-midi' %>
-        </span>
-      <% else %>
-        <span class="text-slate-400 mx-0.5">→</span>
-        <span class="font-semibold"><%= l(absence.du.to_date, format: "%e %B %Y") %></span>
-      <% end %>
-    </div>
-  </td>
-  <td class="py-4 px-6 text-sm capitalize font-medium">
+      <%= l(absence.du.to_date, format: "%e %B %Y") %>
+    </span>
+
+    <% if absence.matin || absence.après_midi %>
+      <span class="inline-flex justify-center items-center w-28 rounded-md text-xs border font-medium py-1 <%= absence.en_cours? ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-slate-100 text-slate-600 border-slate-300' %>">
+        <%= absence.matin ? 'Matin' : 'Après-midi' %>
+      </span>
+    <% else %>
+      <span class="flex items-center gap-2 text-slate-500">
+        <%= embedded_svg "icons/arrow_forward.svg", class: "w-4 h-4 text-slate-400" %>
+        <span class="font-semibold text-slate-700"><%= l(absence.au.to_date, format: "%e %B %Y") %></span>
+      </span>
+    <% end %>
+  </div>
+</td>
+  <td class="py-3 px-4 text-sm capitalize font-medium">
     <%= Absence::MOTIF_LABELS[absence.motif] %>
   </td>
-  <td class="py-4 px-6 text-sm <%= absence.en_cours? ? 'text-amber-800/80' : 'text-slate-500' %>">
+  <td class="py-3 px-4 text-sm <%= absence.en_cours? ? 'text-amber-800/80' : 'text-slate-500' %>">
     <% if absence.observation.present? %>
-  <%= absence.observation %>
-<% else %>
-  <%= embedded_svg "icons/check_indeterminate_small.svg", title: "Aucun mot-clé" %>
-<% end %>
+      <%= absence.observation %>
+    <% else %>
+      <%= embedded_svg "icons/check_indeterminate_small.svg", title: "Aucun mot-clé" %>
+    <% end %>
   </td>
-  <td class="py-4 px-6 text-left">
+  <td class="py-3 px-4 text-left">
     <% if current_user.manager_or_admin? %>
       <% if absence.en_cours? %>
         <button class="btn btn-soft bg-amber-600 hover:bg-amber-700 text-white border-none shadow-sm" onclick="edit_modal_<%= absence.id %>.showModal()">

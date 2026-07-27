@@ -55,8 +55,8 @@ class MouvementsController < ApplicationController
         # Pas de params[:tool_id] = ... ici : le formulaire renvoie lui-même un tool_id
         # de premier niveau quand l'outil est imposé (cf. _form.html.erb). Le réécrire
         # cacherait à tort le select quand l'outil avait été librement choisi.
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @mouvement.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @mouvement.errors, status: :unprocessable_content }
       end
     end
   end
@@ -72,8 +72,8 @@ class MouvementsController < ApplicationController
         format.html { redirect_to @redirect_to, notice: 'Mouvement modifié avec succès.', status: :see_other }
         format.json { render :show, status: :ok, location: @mouvement }
       else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @mouvement.errors, status: :unprocessable_entity }
+        format.html { render :edit, status: :unprocessable_content }
+        format.json { render json: @mouvement.errors, status: :unprocessable_content }
       end
     end
   end

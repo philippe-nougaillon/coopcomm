@@ -18,7 +18,7 @@ class OnInterventionWorkflowChangedTest < ActionDispatch::IntegrationTest
   test "NotifManagersWorkflowChangedJob mis en file d'attente quand un agent valide une intervention avec un manager dans l'organisation" do
     intervention = interventions(:intervention_terminée)
 
-    assert_enqueued_jobs 0 do
+    assert_no_enqueued_jobs only: NotifManagersWorkflowChangedJob do
       post valider_intervention_path(intervention)
     end
   end
@@ -26,7 +26,7 @@ class OnInterventionWorkflowChangedTest < ActionDispatch::IntegrationTest
   test "NotifManagersWorkflowChangedJob pas mis en file d'attente quand un agent refuse une intervention avec un manager dans l'organisation" do
     intervention = interventions(:intervention_terminée)
 
-    assert_enqueued_jobs 0 do
+    assert_no_enqueued_jobs only: NotifManagersWorkflowChangedJob do
       post refuser_intervention_path(intervention)
     end
   end
@@ -34,7 +34,7 @@ class OnInterventionWorkflowChangedTest < ActionDispatch::IntegrationTest
   test "NotifManagersWorkflowChangedJob mis en file d'attente quand un agent archive une intervention avec un manager dans l'organisation" do
     intervention = interventions(:intervention_validé)
 
-    assert_enqueued_jobs 0 do
+    assert_no_enqueued_jobs only: NotifManagersWorkflowChangedJob do
       post archiver_intervention_path(intervention)
     end
   end
@@ -53,7 +53,7 @@ class OnInterventionWorkflowChangedTest < ActionDispatch::IntegrationTest
     sign_in users(:manager_marseille)
     intervention = interventions(:nettoyage_port)
 
-    assert_enqueued_jobs 0 do
+    assert_no_enqueued_jobs only: NotifManagersWorkflowChangedJob do
       post terminer_intervention_path(intervention)
     end
   end

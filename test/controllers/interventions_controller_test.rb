@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class InterventionsControllerTest < ActionDispatch::IntegrationTest
+  include ActiveJob::TestHelper
+
   setup do
     @intervention = interventions(:tonte_locaux)
     sign_in users(:hidalgo)
@@ -160,7 +162,11 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "un agent crée une intervention à postériori : elle est terminée d'emblée" do
-    agent = users(:martin_technique_paris)
+    # john_wick et pas martin : martin porte la fixture `intervention_fille` ancrée
+    # sur l'heure réelle (début = maintenant − 4 h), qui recouvre la plage [10 h, 11 h]
+    # créée ci-dessous quand la suite tourne entre 14 h et 15 h → #357 refusait à
+    # raison (B10). john_wick n'a aucune intervention de fixture : jamais de conflit.
+    agent = users(:john_wick)
     sign_in agent
 
     # On se place à midi d'AUJOURD'HUI pour que "hours.ago" ne change jamais de jour ni d'année.
@@ -189,6 +195,12 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   test 'should show intervention' do
     get intervention_url(@intervention)
     assert_response :success
+  end
+  
+  test 'should show intervention with location' do
+    get intervention_url(interventions(:intervention_with_location))
+    assert_response :success
+    assert_select "#map"
   end
 
   test 'should get edit' do
@@ -249,6 +261,188 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to @intervention
+  end
+
+  # --- Photos via le formulaire manager (dropzone) --------------------------
+  # Régressions : la dropzone appelait `attachment.blob` (méthode de
+  # Attached::One) sur le has_many_attached :photos → 500 sur edit dès qu'une
+  # photo était attachée ; et son input file sans `multiple` envoyait un param
+  # scalaire que `permit(photos: [])` rejetait silencieusement → photo jamais
+  # enregistrée depuis ce formulaire.
+
+  test 'edit affiche une intervention qui a déjà des photos' do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+
+    get edit_intervention_url(@intervention)
+
+    assert_response :success
+    # Sans `multiple`, le param redevient scalaire et la photo est perdue.
+    assert_select "input[type=file][name='intervention[photos][]'][multiple]"
+  end
+
+  test 'update ajoute une photo soumise en tableau (forme émise par la dropzone multiple)' do
+    assert_difference('@intervention.photos.count', 1) do
+      patch intervention_url(@intervention), params: {
+        intervention: { photos: [fixture_file_upload('exemple.png', 'image/png')] }
+      }
+    end
+  end
+
+  test 'update conserve les photos ré-émises en signed_id et ajoute la nouvelle' do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    existante = @intervention.photos.first
+
+    patch intervention_url(@intervention), params: {
+      intervention: { photos: [existante.signed_id, fixture_file_upload('exemple.png', 'image/png')] }
+    }
+
+    assert_equal 2, @intervention.reload.photos.count
+  end
+
+  # --- Purge d'une photo -----------------------------------------------------
+  # `purge?` = `show?` : même organisation ET (manager/admin OU adhérent de
+  # l'intervention OU agent affecté). bond est l'agent affecté à tonte_locaux
+  # (fixture bond_tonte_locaux) ; martin est un agent de la même organisation
+  # NON affecté. Le manager (hidalgo) est déjà couvert par
+  # « should destroy photo with purge » plus haut.
+
+  test "purge : un agent affecté à l'intervention peut supprimer une photo" do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    sign_in users(:bond)
+
+    assert_difference('@intervention.photos.count', -1) do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos.first.id
+      }
+    end
+
+    assert_redirected_to @intervention
+  end
+
+  test 'purge : la photo est réellement supprimée (blob détruit et fichier effacé du stockage)' do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    blob = @intervention.photos.first.blob
+    sign_in users(:bond)
+
+    assert_difference('ActiveStorage::Blob.count', -1) do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos.first.id
+      }
+    end
+
+    assert_not ActiveStorage::Blob.exists?(blob.id), 'le blob doit être détruit en base'
+    assert_not ActiveStorage::Blob.service.exist?(blob.key),
+               'le fichier doit être effacé du service de stockage (purge synchrone)'
+  end
+
+  test "purge : la suppression est tracée dans l'audit trail" do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    photo_id = @intervention.photos.first.id
+
+    assert_difference('@intervention.audits.count', 1) do
+      delete purge_intervention_url(@intervention), params: { photo_id: photo_id }
+    end
+
+    assert_equal "Photo n°#{photo_id} supprimée", @intervention.audits.last.comment
+  end
+
+  test "purge : un agent NON affecté à l'intervention est refusé et la photo reste" do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    sign_in users(:martin_technique_paris)
+
+    assert_no_difference('ActiveStorage::Attachment.count') do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos.first.id
+      }
+    end
+
+    assert_redirected_to root_path # user_not_authorized (pas de referrer en test)
+  end
+
+  test "purge : un agent d'une autre organisation est refusé" do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    sign_in users(:agent_marseille)
+
+    assert_no_difference('ActiveStorage::Attachment.count') do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos.first.id
+      }
+    end
+
+    assert_redirected_to root_path
+  end
+
+  test "purge : l'adhérent de l'intervention peut supprimer une photo (épinglage : purge? = show?)" do
+    # Comportement ACTUEL épinglé : la policy autorise aussi l'adhérent (client)
+    # à supprimer les photos posées par les agents. À inverser si la décision
+    # métier retient un périmètre plus strict.
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    sign_in users(:weil)
+
+    assert_difference('@intervention.photos.count', -1) do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos.first.id
+      }
+    end
+  end
+
+  test 'purge : photo_id inexistant → 404, rien ne se passe' do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+
+    assert_no_difference('ActiveStorage::Attachment.count') do
+      delete purge_intervention_url(@intervention), params: { photo_id: 0 }
+    end
+
+    assert_response :not_found
+  end
+
+  test "purge : impossible de supprimer la photo d'une AUTRE intervention (find scopé)" do
+    autre = interventions(:nouvelle_intervention)
+    autre.photos.attach(file_fixture('exemple.png'))
+    autre.save
+    cible = autre.photos.first
+
+    assert_no_difference('ActiveStorage::Attachment.count') do
+      delete purge_intervention_url(@intervention), params: { photo_id: cible.id }
+    end
+
+    assert_response :not_found
+  end
+
+  test 'purge : non connecté → redirigé vers la connexion' do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    sign_out users(:hidalgo)
+
+    assert_no_difference('ActiveStorage::Attachment.count') do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos.first.id
+      }
+    end
+
+    assert_redirected_to new_user_session_path
+  end
+
+  test 'purge : la redirection après un DELETE Turbo est en 303 see_other' do
+    # Ex-B16 (corrigé 2026-07-15) : décision audit 2026-06-12 §4 — 303 après
+    # toute soumission destructrice Turbo, comme le reste de l'app.
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+
+    delete purge_intervention_url(@intervention), params: {
+      photo_id: @intervention.photos.first.id
+    }
+
+    assert_response :see_other
   end
 
   # Pointage
@@ -319,24 +513,31 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
 
     sign_in users(:martin_technique_paris)
 
+    # Les pointages sont horodatés à la minute : on simule des heures distinctes
+    # (journée passée fixe) pour reproduire un vrai parcours séquentiel. Sinon les
+    # 4 requêtes tomberaient dans la même minute → la 1re fille deviendrait un
+    # intervalle de durée nulle et entrerait en faux conflit avec la 2e.
+    jour = Time.zone.local(2025, 1, 6)
+
     # 1er pointage (début de journée) -> Création (Clock in)
     assert_difference('Intervention.count', 1) do
-      get pointer_intervention_url(intervention)
+      travel_to(jour + 8.hours) { get pointer_intervention_url(intervention) }
     end
 
     # 2eme pointage (début de pause) -> Clôture (Clock out)
     assert_no_difference('Intervention.count') do
-      get pointer_intervention_url(intervention)
+      travel_to(jour + 12.hours) { get pointer_intervention_url(intervention) }
     end
 
     # 3eme pointage (fin de pause, reprise d'activité) -> Nouvelle Création (Clock in)
     assert_difference('Intervention.count', 1) do
-      get pointer_intervention_url(intervention)
+      travel_to(jour + 13.hours) { get pointer_intervention_url(intervention) }
     end
+
 
     # 4eme pointage (fin de journée) -> Clôture (Clock out)
     assert_no_difference('Intervention.count') do
-      get pointer_intervention_url(intervention)
+      travel_to(jour + 17.hours) { get pointer_intervention_url(intervention) }
     end
 
     # Il y a eu 2 créations (matin et après-midi), donc 2 interventions filles au total
@@ -351,17 +552,12 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
     sign_in agent
 
     intervention = interventions(:intervention_repete)
-    # L'agent est déjà affecté au modèle ; on lui ajoute une fenêtre planifiée.
-    # L'intervention fille hérite de la même fenêtre et entre donc en conflit de
-    # disponibilité avec son propre modèle → le save échoue (id nil).
-
-    # --- DATES DYNAMIQUES BASÉES SUR L'ANNÉE EN COURS ---
-    current_year = Date.current.year
-    start_date = DateTime.new(current_year, 6, 1)
-    end_date = DateTime.new(current_year, 6, 30)
-
-
-    intervention.update_columns(début_prévue: start_date, fin_prévue: end_date)
+    # On force l'échec du save de la fille : create_next_intervention lui affecte
+    # l'adhérent du modèle ; sans adhérent, la validation de présence échoue et le
+    # save renvoie false (id nil). NB : les modèles/filles de pointage sont exclus
+    # du contrôle de disponibilité, donc on ne peut plus provoquer cet échec via
+    # un conflit fille↔modèle.
+    intervention.update_columns(adherent_id: nil)
 
     assert_no_difference('Intervention.count') do
       assert_no_enqueued_jobs only: NotifMailAdherentInterventionPointageJob do
@@ -453,5 +649,159 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
     assert_includes ids, users(:martin_technique_paris).id
     assert_includes ids, users(:agent_whatsapp).id
     assert_not_includes ids, users(:agent_marseille).id
+  end
+
+  # --- Notification des managers à la création (after_create_commit du modèle,
+  # --- exercé via le contrôleur : l'auteur vient de l'audit de création) ---
+
+  test "création par un adhérent : enqueue la notification managers « nouvelle demande » avec les bons arguments" do
+    adherent = users(:weil)
+    sign_in adherent
+
+    assert_difference('Intervention.count') do
+      post interventions_url, params: { intervention: {
+        description: 'Demande de nettoyage des locaux',
+        adherent_id: adherent.id,
+        service_id: services(:informatique).id,
+        début_prévue: 2.days.from_now,
+        fin_prévue: 2.days.from_now + 2.hours
+      } }
+    end
+
+    intervention = Intervention.order(:id).last
+    assert_enqueued_with(job: NotifManagersNewInterventionFromAdherentJob, args: [intervention, adherent])
+  end
+
+  test "création par un agent « à postériori » (terminée d'emblée) : enqueue la notification managers « réalisée »" do
+    # john_wick et pas martin : cf. le test « à postériori » ci-dessus (B10).
+    agent = users(:john_wick)
+    sign_in agent
+
+    # Milieu de journée : les "hours.ago" restent le même jour (cf. test à postériori ci-dessus).
+    travel_to Time.current.middle_of_day do
+      assert_difference('Intervention.count') do
+        post interventions_url, params: { intervention: {
+          début: 2.hours.ago,
+          fin: 1.hour.ago,
+          description: 'Tonte saisie le soir',
+          adherent_id: users(:patrick_adherent_paris).id,
+          service_id: services(:technique).id,
+          agent_ids: [agent.id]
+        } }
+      end
+    end
+
+    intervention = Intervention.order(:id).last
+    assert_equal Intervention::TERMINE, intervention.workflow_state
+    assert_enqueued_with(job: NotifManagersInterventionDoneByAgentJob, args: [intervention, agent])
+  end
+
+  test "création par un manager : aucune notification managers n'est enqueue" do
+    # hidalgo (manager) est connecté via le setup.
+    assert_no_enqueued_jobs only: [NotifManagersNewInterventionFromAdherentJob,
+                                   NotifManagersInterventionDoneByAgentJob] do
+      assert_difference('Intervention.count') do
+        post interventions_url, params: { intervention: {
+          description: 'Intervention planifiée par le manager',
+          adherent_id: users(:weil).id,
+          service_id: services(:informatique).id,
+          début_prévue: 2.days.from_now,
+          fin_prévue: 2.days.from_now + 2.hours
+        } }
+      end
+    end
+  end
+
+  # --- Affiche QRCode (show.pdf) : parcours 1, ce que l'agent scanne --------
+  # L'affiche est générée/imprimée par un manager ou un admin ; l'agent, lui,
+  # ne fait que la scanner (route GET `pointer`). La policy interdit donc le PDF
+  # à l'agent (`can_see_qrcode_pointage_pdf? = show? && !agent?`).
+
+  test "show.pdf : un manager peut générer l'affiche QRCode du modèle de pointage" do
+    # hidalgo (manager, service technique) est connecté via le setup.
+    get intervention_url(interventions(:intervention_repete), format: :pdf)
+
+    assert_response :success
+    assert_equal 'application/pdf', response.media_type
+  end
+
+  test 'show.pdf : un agent ne peut pas générer l\'affiche QRCode' do
+    sign_in users(:martin_technique_paris) # agent rattaché à l'intervention
+
+    get intervention_url(interventions(:intervention_repete), format: :pdf)
+
+    # Refus Pundit → redirection avec message d'alerte (cf. user_not_authorized)
+    assert_response :redirect
+    assert_match(/n'êtes pas autorisé/i, flash[:alert].to_s)
+  end
+
+  # --- pointage_statut : redirige vers le statut de la fille du pointeur ----
+
+  test 'pointage_statut sur un modèle répété redirige vers la fille du pointeur' do
+    sign_in users(:martin_technique_paris)
+    modele = interventions(:intervention_repete)
+
+    # On crée d'abord une fille (clock in) pour que la redirection ait une cible.
+    get pointer_intervention_url(modele)
+
+    get pointage_statut_intervention_url(modele)
+    assert_response :redirect
+  end
+
+  # --- Parcours 2 : saisie a posteriori, chemins d'échec -------------------
+
+  test "saisie a posteriori : fin antérieure au début est refusée (422)" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+
+    travel_to Time.current.middle_of_day do
+      assert_no_difference('Intervention.count') do
+        post interventions_url, params: { intervention: {
+          début: 1.hour.ago,
+          fin: 2.hours.ago, # fin AVANT le début → schedules_must_make_sense
+          description: 'Saisie incohérente',
+          adherent_id: users(:patrick_adherent_paris).id,
+          service_id: services(:technique).id,
+          agent_ids: [agent.id]
+        } }
+      end
+    end
+
+    assert_response :unprocessable_content
+  end
+
+  test "saisie a posteriori : des dates dans le futur sont refusées (422)" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+
+    assert_no_difference('Intervention.count') do
+      post interventions_url, params: { intervention: {
+        début: 1.hour.from_now,
+        fin: 2.hours.from_now, # cohérentes entre elles mais dans le futur
+        description: 'Saisie dans le futur',
+        adherent_id: users(:patrick_adherent_paris).id,
+        service_id: services(:technique).id,
+        agent_ids: [agent.id]
+      } }
+    end
+
+    assert_response :unprocessable_content
+  end
+
+  # --- Parcours 1 : le second scan clôture la fille (état terminé + fin) ----
+
+  test 'pointer : le second scan termine la fille (état terminé, fin renseignée)' do
+    sign_in users(:martin_technique_paris)
+    modele = interventions(:intervention_repete)
+
+    get pointer_intervention_url(modele) # 1er scan : clock in
+    fille = Intervention.find_by(template_slug: modele.slug)
+    assert_nil fille.fin, 'la fille est ouverte après le premier scan'
+
+    get pointer_intervention_url(modele) # 2e scan : clock out
+
+    fille.reload
+    assert_equal Intervention::TERMINE, fille.workflow_state
+    assert_not_nil fille.fin, 'le second scan renseigne la fin'
   end
 end

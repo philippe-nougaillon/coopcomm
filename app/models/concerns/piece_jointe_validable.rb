@@ -7,7 +7,7 @@
 module PieceJointeValidable
   extend ActiveSupport::Concern
 
-  IMAGES = %w[image/png image/jpeg image/gif image/webp image/heic image/heif].freeze
+  IMAGES = %w[image/png image/jpeg image/gif image/webp image/avif image/heic image/heif].freeze
   DOCUMENTS = (IMAGES + %w[application/pdf]).freeze
 
   class_methods do

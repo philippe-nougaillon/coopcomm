@@ -31,18 +31,27 @@ module ConventionsHelper
 
     # On évite la division par zéro si heures_conventionnees est nil ou égal à zéro.
     heures = convention.heures_conventionnees.to_f
-    indicateur = heures.positive? ? (convention.temps_total_interventions / heures * 100).round(1) : 0
+    depasse= convention.heures_consommees
+    indicateur = heures.positive? ? (convention.heures_consommees / heures * 100).round(1) : 0
+
 
     # L'indicateur devient rouge si le temps total dans les interventions dépasse le nombre d'heures conventionnées.
     if indicateur > 100
-      indicateur_label = "Dépassement de #{(indicateur - 100)}%"
+      depassement = depasse - heures
+      indicateur_label = "Aujourd'hui : Durée dépassée de #{depassement.round(1)}h"
       indicateur = 100
       indicateur_color = 'bg-error'
+    elsif indicateur < 0
+      depassement = depasse
+      indicateur_label = "Aujourd'hui : Durée inférieur de #{depassement.round(1)}h. Veuillez mettre à jour les interventions avec un temps total négatif"
+      indicateur = 0
+      indicateur_color = 'bg-error'
     else
-      indicateur_label = "Indicateur : #{indicateur}% du temps utilisé"
+      depassement = 0
+      indicateur_label = "Aujourd'hui (Temps écoulé : #{indicateur.round(1)}%)"
       indicateur_color = 'bg-neutral'
     end
 
-    { percent: percent, label: label, color: color,indeterminate: false, indicateur: indicateur, indicateur_label: indicateur_label, indicateur_color: indicateur_color }
+    { percent: percent, label: label, color: color,indeterminate: false, indicateur: indicateur, indicateur_label: indicateur_label, indicateur_color: indicateur_color, depassement: depassement }
   end
 end

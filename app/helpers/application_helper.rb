@@ -30,7 +30,13 @@ module ApplicationHelper
 
     audit.audited_changes.each do |c|
       raw_key = c.first
-      key = raw_key.humanize
+      key =
+        case raw_key
+        when 'workflow_state'
+          'Statut'
+        else
+          raw_key.humanize
+        end
 
       case key
       when 'Agent', 'Adherent', 'Agent binome'
@@ -62,8 +68,8 @@ module ApplicationHelper
             pretty_changes << "#{key} initialisé à '#{ids}' (Utilisateur supprimé)"
           end
         end
-      when 'Workflow state'
-        if audit.action == 'update'
+          when 'Statut'
+          if audit.action == 'update'
           unless c.last.first.blank? && c.last.last.blank?
             pretty_changes << "Statut modifié de '#{c.last.first.humanize}' à '#{c.last.last.humanize}'"
           end

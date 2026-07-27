@@ -179,12 +179,13 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_user_session_url
   end
 
-  test 'meteo_by_day avec un jour hors bornes' do
-    skip 'Comportement à clarifier : forecasts["forecast"][99].third lève NoMethodError (cf. bug §5). Attendu non spécifié.'
-
+  test 'meteo_by_day avec un jour hors bornes rend un JSON vide' do
     sign_in users(:hidalgo)
 
     get meteo_by_day_url(day: 99)
+
+    assert_response :success
+    assert_equal({}, JSON.parse(response.body))
   end
 
   # ---------------------------------------------------------------------------

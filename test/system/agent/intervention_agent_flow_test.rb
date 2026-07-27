@@ -28,39 +28,61 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     click_sur_boutton_ajouter('intervention')
 
     # « Bon d'intervention » agent : pas de description (générée automatiquement),
-    # service caché ; on saisit l'adhérent, le créneau réalisé (passé) et le commentaire
+    # service caché ; on saisit l'adhérent, le créneau réalisé (passé) et le commentaire.
+    # On évite un chevauchement avec les fixtures existantes : la fixture tonte_locaux
+    # de bond occupe le lundi `(Date.today - 1).beginning_of_week` (8 h 30 – 17 h 30),
+    # donc une date relative à aujourd'hui (ex. Date.today - 3) retombe dessus certains
+    # jours de la semaine (le jeudi) ; on ancre sur le vendredi qui précède ce lundi —
+    # toujours passé, jamais en conflit, quel que soit le jour d'exécution.
+    date = (Date.today - 1).beginning_of_week - 3
     select_option('#intervention_adherent_id', 'Bruel Patrick') # adhérent du service de bond
 
-    fill_in 'Début', with: (Date.today - 1).strftime('%m%d%Y')
+    fill_in 'Début', with: date.strftime('%m%d%Y')
     select '08', from: 'intervention_début_hour'
     select '00', from: 'intervention_début_minute'
-    fill_in 'Fin', with: (Date.today - 1).strftime('%m%d%Y')
+    fill_in 'Fin', with: date.strftime('%m%d%Y')
     select '16', from: 'intervention_fin_hour'
     select '00', from: 'intervention_fin_minute'
     page.select '1,0', from: 'Temps de pause (h)'
     fill_in 'Commentaires', with: 'Ceci est un commentaire !'
-    click_on 'enregistrer_intervention'
-    assert_text 'Intervention créée avec succès.'
+
+    assert_difference -> { Intervention.count }, 1 do
+      # Destination inconnue d'avance : on attend que le formulaire ait été quitté
+      # (le commentaire seul ne suffit pas — il est aussi dans le textarea).
+      soumettre 'enregistrer_intervention'
+      assert_text 'Ceci est un commentaire !'
+    end
+
+    intervention = Intervention.order(:created_at).last
+    assert_equal 'Ceci est un commentaire !', intervention.commentaires
+    assert_equal [@agent.id], intervention.agent_ids
   end
 
   test 'Modifier intervention' do
     visit interventions_url
     intervention = interventions(:tonte_locaux)
     click_on intervention.description
-    sleep(1)
-    click_on 'Modifier'
+    click_on 'Modifier' # n'existe que sur le show : Capybara attend la navigation
     # Le formulaire agent n'expose pas la description : on modifie le commentaire
-    fill_in 'Commentaires', with: 'Pelouse tondue, bordures faites'
-    click_on 'enregistrer_intervention'
-    assert_text 'Intervention modifiée avec succès'
-    assert_text 'Pelouse tondue, bordures faites'
+    commentaire = 'Pelouse tondue, bordures faites'
+    fill_in 'Commentaires', with: commentaire
+
+    assert_no_difference -> { Intervention.count } do
+      # Attend que le formulaire ait été quitté avant de lire la page d'arrivée.
+      soumettre 'enregistrer_intervention'
+      assert_text commentaire
+    end
+
+    assert_equal commentaire, intervention.reload.commentaires
   end
 
   test 'Ne pas pouvoir supprimer intervention' do
     visit interventions_url
     intervention = interventions(:tonte_locaux)
     click_on intervention.description
-    sleep(1)
+    # Ancrage positif d'abord : sans lui, l'assertion négative passerait
+    # trivialement sur l'index avant la fin de la navigation vers le show.
+    assert_current_path intervention_path(intervention)
     assert_no_selector "[data-testid=\"Supprimer l'intervention\"]"
   end
 

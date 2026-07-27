@@ -6,9 +6,11 @@ class NotifMailAdherentInterventionPointageJobTest < ActiveJob::TestCase
   include ActionMailer::TestHelper
 
   setup do
-    # tonte_locaux porte un adherent_id (weil) et une organisation (via service).
+    # tonte_locaux porte un adherent_id (weil), une organisation (via service)
+    # et un agent (bond).
     @intervention = interventions(:tonte_locaux)
     @adherent     = users(:weil)
+    @agent        = users(:bond)
   end
 
   test 'envoie un mail de pointage à l\'adhérent et crée un MailLog tracé' do
@@ -22,8 +24,8 @@ class NotifMailAdherentInterventionPointageJobTest < ActiveJob::TestCase
     assert_equal @adherent.email, log.to
     assert_equal 'Intervention pointage', log.subject
     assert_equal @intervention.organisation.id, log.organisation_id
-    # Le job ne connaît pas d'émetteur : user_id figé à 0 (système).
-    assert_equal 0, log.user_id
+    # L'émetteur tracé est l'agent qui a pointé (agent de l'intervention).
+    assert_equal @agent.id, log.user_id
     assert_equal 'mail', log.channel
     assert_equal ActionMailer::Base.deliveries.last.message_id, log.message_id
   end

@@ -26,8 +26,16 @@ class User < ApplicationRecord
 
   has_one_attached :profile_picture
 
+  IMAGES = %w[
+    image/png
+    image/jpeg
+    image/jpg
+    image/webp
+    image/avif
+  ].freeze
+
   include PieceJointeValidable
-  valide_piece_jointe :profile_picture, types: PieceJointeValidable::IMAGES
+  valide_piece_jointe :profile_picture, types: IMAGES
 
   belongs_to :warehouse, optional: true
 
@@ -356,6 +364,14 @@ class User < ApplicationRecord
               .where(workflow_state: 'nouveau') # Seul les nouvelles interventions nous intéresse
               .order(updated_at: :asc) # Trie du plus ancien au plus récent
               .last # Prend l'intervention créée/modifiée la plus récente
+  end
+
+  def get_services_by_role
+    if self.administrateur?
+      self.organisation.services.ordered
+    else
+      self.services.ordered
+    end
   end
 
   private

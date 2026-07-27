@@ -25,11 +25,11 @@
   <div class="flex flex-wrap gap-4">
     <div class="flex-1 flex flex-col">
       <%= f.label :du, class: "text-sm text-slate-500 mb-1" %>
-      <%= f.date_field :du, class: "du-input input input-sm input-bordered w-full", required: true, onchange: "syncDates(this)" %>
+      <%= f.date_field :du, class: "du-input input input-bordered w-full focus:input-primary", required: true, onchange: "syncDates(this)" %>
     </div>
     <div class="au-container flex-1 flex flex-col <%= 'hidden' if is_half_day %>">
       <%= f.label :au, class: "text-sm text-slate-500 mb-1" %>
-      <%= f.date_field :au, class: "au-input input input-sm input-bordered w-full", required: true %>
+      <%= f.date_field :au, class: "au-input input input-bordered w-full focus:input-primary", required: true %>
     </div>
   </div>
   <%# MATIN / APRÈS-MIDI %>

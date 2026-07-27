@@ -67,6 +67,6 @@ class PrestationsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference -> { Prestation.count } do
       post prestations_url, params: { prestation: { libellé: 'Sans code', tarif: 10 } }
     end
-    assert_response :unprocessable_entity
+    assert_response :unprocessable_content
   end
 end

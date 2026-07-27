@@ -79,6 +79,18 @@ martin_technique_paris:
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 7133b68a-1386-4f68-9243-10a8a4241191
 
+# Agent supprimé (soft-delete discard) : sert à vérifier que les vues du dashboard
+# l'excluent (aucune ligne pour lui, et il ne compte pas dans le diviseur du temps
+# par agent). Co-affecté à tonte_locaux aux côtés de bond (agent kept).
+agent_discarded_paris:
+  nom: Spectre
+  prénom: Ancien
+  email: ancien.spectre@gmail.commmmm
+  rôle: agent
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
+  slug: 9f1c2d3e-4a5b-6c7d-8e9f-0a1b2c3d4e5f
+  discarded_at: <%= 1.month.ago %>
+
 patrick_adherent_paris:
   nom: Bruel
   prénom: Patrick
@@ -119,6 +131,26 @@ agent_whatsapp:
   téléphone: +330606060606
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: f0595980-a28d-4424-82db-ee89e6eadc7e
+
+adherent_with_location:
+  nom: Adherent
+  prénom: Localisé
+  email: adherent_localise@gmail.commmmm
+  rôle: adhérent
+  téléphone: 0123456789
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
+  slug: fba70284-7004-405d-8afa-153355373125
+  latitude: 48.85685812374327
+  longitude: 2.351386343078722
+
+agent_with_location:
+  nom: Agent
+  prénom: Localisé
+  email: agent_localise@gmail.commmmm
+  rôle: agent
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
+  slug: 17ede8b8-ff8f-4a48-966e-4ef3186cae7d
+  warehouse: entrepot_paris
 
 # Organisation marseille
 manager_marseille:

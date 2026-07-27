@@ -20,7 +20,9 @@ class WarehousesTest < ApplicationSystemTestCase
     page.execute_script("document.querySelector('[data-places-target=\"longitude\"]').value = '6.05'")
     click_on 'Enregistrer'
 
-    assert_text 'Site créé avec succès'
+    # État durable plutôt que le toast (volatil + couplé au wording) : create
+    # redirige vers les paramètres, et le check en base ci-dessous prouve le succès.
+    assert_current_path admin_parametres_path
     assert Warehouse.exists?(name: 'Atelier municipal')
   end
 
@@ -31,7 +33,10 @@ class WarehousesTest < ApplicationSystemTestCase
     fill_in 'warehouse_name', with: 'Site sans adresse'
     click_on 'Enregistrer'
 
-    assert_no_text 'Site créé avec succès'
+    # Create refusé → le formulaire est re-rendu en conservant la valeur saisie
+    # (point de synchro indépendant du wording du message d'erreur). Un `assert_no_text`
+    # sur le message de succès passerait trivialement si son libellé changeait.
+    assert_field 'warehouse_name', with: 'Site sans adresse'
     assert_not Warehouse.exists?(name: 'Site sans adresse')
   end
 end

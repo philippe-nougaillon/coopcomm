@@ -1,11 +1,11 @@
 <div class="flex flex-col">
   <div class="flex flex-row justify-between items-center my-4 gap-2">
     <h1 class="text-4xl text-primary font-bold">
-       <%= page_title!('Utilisateurs') %>
+      <%= page_title!('Utilisateurs') %>
     </h1>
     <%= link_to admin_create_new_user_path,
             data: { testid: "ajouter_utilisateur" },
-            class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-base ",
+            class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary",
             title: "Créer un nouvel agent" do %>
       <%= embedded_svg "icons/person_add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
       <span class="hidden md:block">Ajouter un utilisateur</span>
@@ -62,6 +62,9 @@
                 data: { placeholder: 'Tous les mots-clés' },
                 onchange: 'this.form.requestSubmit()' %>
       </div>
+
+
+
       <div class="flex items-center gap-3 h-10 px-3 border border-slate-200 rounded-lg bg-slate-50 cursor-pointer"
        onclick="document.getElementById('absent').click()">
         <%= check_box_tag :absent, 1, params[:absent],
@@ -76,6 +79,8 @@
           Absents ?
         </span>
       </div>
+
+      
       <div class="flex items-center gap-3 h-10 px-3 border border-slate-200 rounded-lg bg-slate-50 cursor-pointer"
        onclick="document.getElementById('discarded').click()">
         <%= check_box_tag :discarded, 1, params[:discarded],
@@ -143,7 +148,7 @@
     <% if @users.any? %>
       <%= link_to url_for(params.permit(:search, :role, :services, :absent, :discarded).merge(format: :xls)),
               class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base w-full sm:w-auto" do %>
-        <%= embedded_svg "icons/upload.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+        <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
         <span>Exporter en XLS</span>
       <% end %>
     <% end %>
@@ -151,17 +156,17 @@
             data: { testid: "import_users" },
             'data-turbo': false,
             class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base w-full sm:w-auto" do %>
-      <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+      <%= embedded_svg "icons/upload.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
       <span>Importer des agents</span>
     <% end %>
   </div>
-  <% if @pagy.pages > 1 %>
+ <% if @pagy.pages > 1 %>
     <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
       <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
         <%= pagy_nav(@pagy).html_safe %>
       </div>
       <div class=" text-slate-500 text-center text-sm w-full ">
-        <%= pagy_info(@pagy, item_name: "utilisateurs").html_safe %>
+        <%= pagy_info(@pagy, item_name: "interventions").html_safe %>
       </div>
     <% else %>
       <div></div>

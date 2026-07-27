@@ -1,17 +1,16 @@
 <div class="flex flex-col">
   <div class="flex flex-row justify-between items-center my-4 gap-2">
     <h1 class="text-4xl text-primary font-bold">
-     <%= page_title!("Conventions") %></h1>
+      <%= page_title!("Conventions") %></h1>
     <% if policy(Convention).new? %>
       <%= link_to new_convention_path,
-              class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm",
+            class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary",
               title: "Créer une nouvelle convention" do %>
         <%= embedded_svg "icons/assignment_add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
         <span class="hidden md:block">Ajouter une convention</span>
       <% end %>
     <% end %>
   </div>
-
   <%= form_tag conventions_path, method: :get, class: "pt-6" do %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
@@ -19,76 +18,89 @@
         <%= text_field_tag :search, params[:search], class: "input input-bordered input-md w-full",
               placeholder: "Nom du document", onchange: "this.form.submit()" %>
       </div>
-
-      <div class="w-full md:flex-1">
-        <%= label_tag :adherent_id, "Adhérent", class: "block text-xs font-semibold text-slate-600 mb-1" %>
-        <%= select_tag :adherent_id,
+      <% if current_user.manager_or_admin? %>
+        <div class="w-full md:flex-1">
+          <%= label_tag :adherent_id, "Adhérent", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+          <%= select_tag :adherent_id,
               options_from_collection_for_select(@adherents, :id, :nom_prénom, params[:adherent_id]),
-              include_blank: "Tous", class: "slim-select w-full", onchange: "this.form.submit()" %>
-      </div>
-
+              include_blank: "Tous", class: "slim-select w-full h-10", onchange: "this.form.submit()" %>
+        </div>
+      <% end %>
       <div class="w-full md:flex-1">
         <%= label_tag :service_id, "Service", class: "block text-xs font-semibold text-slate-600 mb-1" %>
         <%= select_tag :service_id,
               options_from_collection_for_select(@services, :id, :nom, params[:service_id]),
-              include_blank: "Tous", class: "slim-select w-full", onchange: "this.form.submit()" %>
+              include_blank: "Tous", class: "slim-select w-full h-10", onchange: "this.form.submit()" %>
       </div>
-
       <div class="w-full md:flex-1">
         <%= label_tag :active_on, "Active au", class: "block text-xs font-semibold text-slate-600 mb-1" %>
-        <%= date_field_tag :active_on, params[:active_on], class: "input input-bordered input-md w-full",
+        <%= date_field_tag :active_on, params[:active_on], class: "input input-bordered input-md w-full h-10",
               onchange: "this.form.submit()" %>
       </div>
     </div>
   <% end %>
 </div>
 <hr class="mt-6 mb-6">
-<div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
-  <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
-</div>
-
-<div class="flex flex-col bg-white border-x border-b border-slate-200 shadow-sm overflow-hidden <%= 'rounded-b-xl' unless @pagy&.pages.to_i > 1 %>">
-  <div class="overflow-x-auto">
-    <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-      <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
-      <span>Faire glisser pour voir plus</span>
-    </div>
-    
-    <table class="table table-sm w-full border-none">
-      <thead class="bg-slate-100">
-        <tr>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Adhérent</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Période</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Heures consommées</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Document</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Mémo</th>
-          <th class="px-4 py-3"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if @conventions.any? %>
-          <%= render partial: "convention", collection: @conventions %>
-        <% else %>
-          <tr>
-            <td colspan="7" class="text-center py-8 text-slate-400 text-base italic">
-              Aucune convention.
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  </div>
-
-
-  <% if @pagy&.pages.to_i > 1 %>
-    <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
-      <div class="w-full sm:w-auto sm:flex-1 order-1 flex justify-center">
-        <%= pagy_nav(@pagy).html_safe %>
+<div class="flex flex-row items-center gap-4 mb-3 px-4 py-2 bg-slate-50 rounded-lg text-xs text-slate-500">
+  <div class="flex flex-col md:flex-row gap-2">
+    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-info"></span>À venir</span>
+    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-success"></span>En cours (< 80%)</span>
       </div>
-      <div class="text-slate-500 text-center text-sm w-full mt-2">
-        <%= pagy_info(@pagy, item_name: "conventions").html_safe %>
+      <div class="flex flex-col md:flex-row gap-2">
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-warning"></span>Proche échéance (≥ 80%)</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-error"></span>Expirée</span>
       </div>
+      <div class="flex flex-col md:flex-row gap-2">
+        <span class="flex items-center gap-1.5">
+          <span class="w-[3px] h-3.5 bg-black rounded-full block"></span>
+          Aujourd'hui
+        </span></div>
     </div>
-  <% end %>
-</div>
+    <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
+      <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
+    </div>
+    <div class="flex flex-col bg-white border-x border-b border-slate-200 shadow-sm overflow-hidden <%= 'rounded-b-xl' unless @pagy&.pages.to_i > 1 %>">
+      <div class="overflow-x-auto">
+        <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+          <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+          <span>Faire glisser pour voir plus</span>
+        </div>
+        <table class="table table-sm w-full border-none">
+          <thead class="bg-slate-100">
+            <tr>
+              <% if current_user.manager_or_admin? %>
+                <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Adhérent</th>
+              <% else %>
+                <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Réf</th>
+              <% end %>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Période</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Heures consommées</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Document</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Mémo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if @conventions.any? %>
+              <%= render partial: "convention", collection: @conventions %>
+            <% else %>
+              <tr>
+                <td colspan="7" class="text-center py-8 text-slate-400 text-base italic">
+                  Aucune convention.
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <% if @pagy&.pages.to_i > 1 %>
+        <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
+          <div class="w-full sm:w-auto sm:flex-1 order-1 flex justify-center">
+            <%= pagy_nav(@pagy).html_safe %>
+          </div>
+          <div class="text-slate-500 text-center text-sm w-full mt-2">
+            <%= pagy_info(@pagy, item_name: "conventions").html_safe %>
+          </div>
+        </div>
+      <% end %>
+    </div>

@@ -10,7 +10,7 @@
         <%= f.label :password, "Nouveau mot de passe" %>
         <div data-controller="password-visibility" class="relative w-full">
           <%= f.password_field :password, 
-                class: 'input input-sm w-full pr-10', 
+                class: 'input input-bordered w-full focus:input-primary pr-10', 
                 required: true,
                 autofocus: true,
                 autocomplete: "new-password",
@@ -28,7 +28,7 @@
       </div>
       <div class="field">
         <%= f.label :password_confirmation, "Confirmation mot de passe" %><br />
-        <%= f.password_field :password_confirmation, autocomplete: "new-password", class:'input input-sm w-full', required: true %>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password", class:'input input-bordered w-full focus:input-primary', required: true %>
       </div>
       <div class="actions">
         <%= f.submit "Changer mon mot de passe", class: 'btn btn-outline lg:btn-lg rounded btn-primary hover:text-white! w-full my-4' %>

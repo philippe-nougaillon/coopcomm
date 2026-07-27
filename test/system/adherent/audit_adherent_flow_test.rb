@@ -14,7 +14,6 @@ class AuditAdherentFlowTest < ApplicationSystemTestCase
 
     # Cliquer sur le bouton 'audit trail' de la navbar
     find("[data-testid='audit_trail']").click
-    sleep(1)
   end
 
   test 'Ne peut pas visiter la liste des activités (audits)' do

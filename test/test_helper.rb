@@ -13,20 +13,59 @@ end
 ENV['RAILS_ENV'] ||= 'test'
 require_relative '../config/environment'
 require 'rails/test_help'
+require 'minitest/mock'
 require 'bcrypt'
 require 'capybara/rails'
 require 'capybara/dsl'
 require 'webmock/minitest' # Permet de stopper les requêtes en dehors du serveur (Ex: API météo)
 
+# Correctif R3 (détail : `.claude/method/bugs-signales.md`) : le hook global posé
+# par `sign_in` est drainé par la 1re requête venue — sous `test:all`, une requête
+# navigateur retardée volait le login du test d'intégration suivant (302 vers
+# /users/sign_in). La file est donc rendue invisible hors du thread de test.
+module Warden
+  module Test
+    module WardenHelpers
+      def _on_next_request
+        return [] unless Thread.current == Thread.main
+
+        @_on_next_request ||= []
+      end
+    end
+  end
+end
+
 module ActiveSupport
   class TestCase
     include Devise::Test::IntegrationHelpers
 
-    # Run tests in parallel with specified workers
-    # parallelize(workers: :number_of_processors)
+    # Tests en parallèle, EN OPT-IN : séquentiel par défaut, parallèle si
+    # PARALLEL_WORKERS est posé — ex. `PARALLEL_WORKERS=4 bin/rails test:all`
+    # (12 workers = tests système saturés, cf. décision 2026-07-17-d).
+    if ENV['PARALLEL_WORKERS']
+      # Rails lit lui-même PARALLEL_WORKERS et ignore la valeur ci-dessous.
+      parallelize(workers: :number_of_processors)
+
+      # SimpleCov : chaque worker forké doit écrire son résultat sous un nom
+      # distinct pour que la couverture finale soit fusionnée (sinon rapport
+      # partiel/écrasé).
+      parallelize_setup do |worker|
+        SimpleCov.command_name "#{SimpleCov.command_name}-#{worker}"
+      end
+
+      parallelize_teardown do |_worker|
+        SimpleCov.result
+      end
+    end
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
+
+    # Rafraîchit les vues matérialisées du dashboard à partir des fixtures
+    # chargées.
+    def refresh_dashboard_views!
+      DashboardRefreshable.refresh_views!
+    end
 
     # Peut servir par la suite : permet de nettoyer le cache après chaque test
     # teardown do
@@ -46,6 +85,16 @@ module ActiveSupport
           headers: { 
             'Content-Type' => 'application/json',
             'Date' => Time.now.httpdate
+          }
+        )
+
+      # Simule les données pour l'API de Google routes
+      stub_request(:post, /routes.googleapis.com/)
+        .to_return(
+          status: 200,
+          body: File.read('test/fixtures/files/responseRoutesInfos.json'),
+          headers: { 
+            'Content-Type' => 'application/json',
           }
         )
     end
@@ -98,16 +147,46 @@ module ActiveSupport
       ss_main.click
     end
 
+    # Courses connues sur les slim-select des formulaires dynamiques.
+    RACE_SLIM_SELECT = [Capybara::ElementNotFound,
+                        Selenium::WebDriver::Error::StaleElementReferenceError,
+                        Selenium::WebDriver::Error::ElementClickInterceptedError].freeze
+
+    # Plusieurs de nos selects sont repeuplés EN CASCADE par `dynamic-select` :
+    # choisir l'adhérent relance le chargement des services, choisir le service
+    # relance celui des agents. Chaque repopulation vide puis reconstruit la
+    # liste. Si on tombe pendant ce trou, l'option cherchée n'existe pas encore
+    # (`ElementNotFound`) ou l'élément trouvé vient d'être recyclé
+    # (`StaleElementReference`) — d'autant plus probable sous parallélisation,
+    # où les fetchs sont plus lents. On réessaie donc, après avoir refermé les
+    # menus (un menu multiple resté ouvert intercepte le clic suivant).
     def select_option(id, value)
-      activate_dropdown_slimSelect(id)
-      # On filtre d'abord via la recherche du slim-select, puis on clique :
-      # pendant l'animation d'ouverture, un clic direct par texte atteint
-      # parfois la mauvaise option (la liste défile encore). En tapant la
-      # valeur, il ne reste que l'option voulue → sélection déterministe.
-      find('.ss-search input', visible: true).set(value)
-      within('.ss-list') do
-        find('div.ss-option', text: value, match: :first).click
+      tentatives = 0
+      begin
+        activate_dropdown_slimSelect(id)
+        # On filtre d'abord via la recherche du slim-select, puis on clique :
+        # pendant l'animation d'ouverture, un clic direct par texte atteint
+        # parfois la mauvaise option (la liste défile encore). En tapant la
+        # valeur, il ne reste que l'option voulue → sélection déterministe.
+        find('.ss-search input', visible: true).set(value)
+        within('.ss-list') do
+          find('div.ss-option', text: value, match: :first).click
+        end
+      rescue *RACE_SLIM_SELECT
+        tentatives += 1
+        raise if tentatives >= 3
+
+        fermer_menus_slim_select
+        sleep 0.4 # backoff délibéré : laisse retomber la repopulation en vol
+        retry
       end
+    end
+
+    # Referme tout menu slim-select ouvert, sans dépendre de la page : on émet un
+    # clic sur `body` (le gestionnaire « clic extérieur » de slim-select le capte).
+    def fermer_menus_slim_select
+      page.execute_script('document.body.click()')
+      has_no_selector?('.ss-option', visible: true, wait: 2)
     end
 
     # Add more helper methods to be used by all tests here...

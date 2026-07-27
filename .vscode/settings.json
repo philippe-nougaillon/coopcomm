@@ -9,6 +9,7 @@
   "liveServer.settings.donotShowInfoMsg": true,
   "redhat.telemetry.enabled": false,
   "git.openRepositoryInParentFolders": "always",
+  "git.autoStash": true,
   "terminal.integrated.defaultProfile.windows": "Git Bash",
   "diffEditor.ignoreTrimWhitespace": false,
   "rubyLsp.rubyVersionManager": "none",
@@ -43,7 +44,15 @@
   },
   "chat.viewSessions.orientation": "stacked",
   "cSpell.words": [
+    "evenodd",
+    "ILIKE",
+    "Langchain",
+    "linecap",
+    "linejoin",
+    "nowrap",
     "pagy",
+    "qrcode",
+    "testid",
     "twilio",
     "whatsapp"
   ]

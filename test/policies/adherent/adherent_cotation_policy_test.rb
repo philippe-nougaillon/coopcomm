@@ -3,7 +3,8 @@
 require 'test_helper'
 
 # Droits d'un adhérent sur les cotations : il consulte les SIENNES (index, show,
-# pdf) et peut signer une cotation qui lui a été envoyée ; aucun droit de gestion.
+# pdf) — mais seulement une fois envoyées, jamais les brouillons « créé » — et
+# peut signer une cotation qui lui a été envoyée ; aucun droit de gestion.
 # Un agent, lui, n'a aucun accès.
 class AdherentCotationPolicyTest < ActionDispatch::IntegrationTest
   def setup
@@ -14,8 +15,8 @@ class AdherentCotationPolicyTest < ActionDispatch::IntegrationTest
     @autre = cotations(:cotation_marseille)            # adhérent: michael_jackson
   end
 
-  test 'un adhérent consulte ses propres cotations mais ne les gère pas' do
-    policy = CotationPolicy.new(@adherent, @sienne)
+  test 'un adhérent consulte ses propres cotations envoyées mais ne les gère pas' do
+    policy = CotationPolicy.new(@adherent, @sienne_envoyee)
     assert policy.index?
     assert policy.show?
     assert policy.pdf?
@@ -25,7 +26,18 @@ class AdherentCotationPolicyTest < ActionDispatch::IntegrationTest
     refute policy.destroy?
     refute policy.envoyer?
     refute policy.valider?
+  end
+
+  test "un adhérent ne voit pas sa cotation non encore envoyée (créé), même par URL directe" do
+    policy = CotationPolicy.new(@adherent, @sienne)
+    refute policy.show?
+    refute policy.pdf?
     refute policy.refuser?
+  end
+
+  test 'un adhérent peut refuser une cotation qui lui a été envoyée (#358)' do
+    policy = CotationPolicy.new(@adherent, @sienne_envoyee)
+    assert policy.refuser?
   end
 
   test "un adhérent ne voit pas la cotation d'un autre adhérent" do
@@ -53,10 +65,10 @@ class AdherentCotationPolicyTest < ActionDispatch::IntegrationTest
     refute policy.signer_do?
   end
 
-  test 'scope : un adhérent ne voit que ses propres cotations' do
+  test 'scope : un adhérent ne voit que ses propres cotations déjà envoyées' do
     resolved = CotationPolicy::Scope.new(@adherent, Cotation.all).resolve
-    assert_includes resolved, @sienne
     assert_includes resolved, @sienne_envoyee
+    refute_includes resolved, @sienne # créé : brouillon non encore envoyé
     refute_includes resolved, @autre
   end
 

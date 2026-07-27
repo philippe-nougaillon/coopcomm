@@ -21,15 +21,18 @@ class InterventionsController < ApplicationController
     session[:vue] ||= 'normal'
     params[:vue] ||= session[:vue]
 
+    # Filtre en fonction du rôle de l'utilisateur
+    @interventions = Intervention.by_role_for(current_user)
+
     # Périmètre de services filtré (menu + pré-filtre admin), cf. ApplicationController.
     # admin_sees_all : un administrateur voit par défaut TOUTES les interventions de
     # son organisation (filtre vide, services non présélectionnés).
     selected_services = scoped_services(:service, admin_sees_all: true)
 
-    # Récupère les interventions à partir des services sélectionnés
-    @interventions = Intervention.filter_by_service(selected_services)
-
-    @interventions = @interventions.by_role_for(current_user)
+    # Filtre sur les services
+    if current_user.manager_or_admin? || @selected_service_ids.present?
+      @interventions = @interventions.filter_by_service(selected_services)
+    end
 
     # Le select « Statut » est `multiple` → params[:workflow_state] est un tableau
     # de libellés humanisés (ex. ["Nouveau", "Validé"]). On le ramène aux valeurs
@@ -114,6 +117,7 @@ class InterventionsController < ApplicationController
     @interventions = @interventions.includes(:tags, :agents, :adherent, :service, :organisation,
                                              :tools).with_attached_photos
 
+    
     respond_to do |format|
       format.html do
         @pagy, @interventions = pagy(@interventions)
@@ -125,6 +129,9 @@ class InterventionsController < ApplicationController
       end
     end
   end
+
+
+
 
   # GET /interventions/1 or /interventions/1.json
   def show
@@ -140,26 +147,8 @@ class InterventionsController < ApplicationController
       @pointages = @pointages.ordered
     end
 
-    # TODO VU: déplacer ce bloc dans un service
-    # OK, mais dans les tests, comme pour la météo, il faudra aussi simuler la réponse de l'API google
-    unless Rails.env.test?
-      # On vérifie que l'intervention possède un adhérent localisé ET que le service nécessite le calcul
-      @localisation_depart = @intervention.origin_location
-      if @localisation_depart && @intervention.adherent.present? && @intervention.adherent.latitude.present? && @intervention.adherent.longitude.present? && @intervention.service&.calculate_distance? && (@intervention.trajet.blank? || @intervention.nouveau?)
-
-        #TODO VU : supprimer les variables inutiles et créer directement @localisation_arrivee si c'est utile
-        localisation_arrivee = { lat: @intervention.adherent.latitude, lng: @intervention.adherent.longitude }
-
-        # Création du service avec le départ et la destination
-        request = FetchRoutesInfos.new(@localisation_depart, localisation_arrivee)
-        request.call
-
-        # Récupération des données via les getters du service
-        @localisation_arrivee = localisation_arrivee
-        @errors = request.errors
-        @routes_info = request.routes_info
-        @response = request.data_response
-      end
+    if (@intervention.nouveau? || @intervention.trajet.blank?)
+      @routes_response = @intervention.get_routes_info_from_location
     end
 
     respond_to do |format|
@@ -171,19 +160,14 @@ class InterventionsController < ApplicationController
       format.pdf do
         authorize @intervention, :can_see_qrcode_pointage_pdf?
 
-        # TODO VU : déplacer ce bloc dans un service
-        # Pas possible car la fonction send_data n'est appelable que par les controllers. De plus, le service QrcodeModeleIntervention contient déjà toute la logique métier.
-
-        filename = "QRCode_Pointeuse_#{@intervention.description}"
         pdf = TransformToPdf::QrcodeModeleIntervention.call(@intervention)
 
         send_data pdf.render,
-                  filename: filename.concat('.pdf'),
+                  filename: "QRCode_Pointeuse_#{@intervention.description}.pdf",
                   type: 'application/pdf',
                   disposition: 'inline'
       end
     end
-    # end
   end
 
   # GET /interventions/new
@@ -222,8 +206,8 @@ class InterventionsController < ApplicationController
         format.html { redirect_to intervention_url(@intervention), notice: 'Intervention créée avec succès.', status: :see_other }
         format.json { render :show, status: :created, location: @intervention }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @intervention.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @intervention.errors, status: :unprocessable_content }
       end
     end
   end
@@ -236,7 +220,6 @@ class InterventionsController < ApplicationController
     respond_to do |format|
       if @intervention.save
         
-        Events.instance.publish('intervention.updated', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
         format.html do
           # Si c'est une modification du commentaire dans le pointage statut, on redirige vers home
           # 303 (see_other) obligatoire après un PATCH soumis par Turbo : en 302,
@@ -250,8 +233,8 @@ class InterventionsController < ApplicationController
         end
         format.json { render :show, status: :ok, location: @intervention }
       else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @intervention.errors, status: :unprocessable_entity }
+        format.html { render :edit, status: :unprocessable_content }
+        format.json { render json: @intervention.errors, status: :unprocessable_content }
       end
     end
   end
@@ -298,7 +281,7 @@ class InterventionsController < ApplicationController
 
       redirect_to @intervention, notice: 'Intervention terminée'
     else
-      redirect_to @intervention, notice: "Impossible de terminer l'intervention"
+      redirect_to @intervention, alert: "Impossible de terminer l'intervention"
     end
   end
 
@@ -339,7 +322,7 @@ class InterventionsController < ApplicationController
   def purge
     @intervention.photos.find(params[:photo_id]).purge
     @intervention.update(audit_comment: "Photo n°#{params[:photo_id]} supprimée")
-    redirect_to @intervention, notice: 'Photo supprimée'
+    redirect_to @intervention, notice: 'Photo supprimée', status: :see_other
   end
 
   def pointer
@@ -392,7 +375,7 @@ class InterventionsController < ApplicationController
     if @intervention.update(localisation: "#{params[:latitude]}, #{params[:longitude]}")
       render json: { status: 'success' }, status: :ok
     else
-      render json: { errors: @intervention.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: @intervention.errors.full_messages }, status: :unprocessable_content
     end
   end
 
@@ -406,6 +389,14 @@ class InterventionsController < ApplicationController
     intervention_id = params['intervention_id'] != 'null' ? params['intervention_id'] : nil
     date_debut_prevue = params['date_debut_prevue'] != 'null' ? params['date_debut_prevue'] : nil
     date_fin_prevue = params['date_fin_prevue'] != 'null' ? params['date_fin_prevue'] : nil
+    date_debut_reel = params['date_debut'] != 'null' ? params['date_debut'] : nil
+    date_fin_reel = params['date_fin'] != 'null' ? params['date_fin'] : nil
+
+    # Plage effective : dates réelles prioritaires, repli sur les prévues
+    # (cohérent avec Intervention#effective_début/fin et OVERLAP_SQL).
+    # TODO : Ne prendre en compte qu'une seule date (date_réelle || date_prévue)
+    date_debut = date_debut_reel.presence || date_debut_prevue
+    date_fin = date_fin_reel.presence || date_fin_prevue
 
     agent_ids_string = params['agents_ids'] != 'null' ? params['agents_ids'] : nil
     # Transforme le string en liste d'agents id
@@ -416,10 +407,10 @@ class InterventionsController < ApplicationController
 
     if agent_ids
       # TODO VU : mettre le contenu dans "get_unavailable_agents_with_interventions". "get_unavailable_agents" doit appeler "get_unavailable_agents_with_interventions" et "get_unavailable_agents_with_absences"
-      conflicting_agents_ids = Intervention.get_unavailable_agents(intervention_id, agent_ids, date_debut_prevue,
-                                                                   date_fin_prevue)
-      conflicting_agents_ids += Intervention.get_unavailable_agents_with_absences(agent_ids, date_debut_prevue,
-                                                                                  date_fin_prevue)
+      conflicting_agents_ids = Intervention.get_unavailable_agents(intervention_id, agent_ids, date_debut,
+                                                                   date_fin)
+      conflicting_agents_ids += Intervention.get_unavailable_agents_with_absences(agent_ids, date_debut,
+                                                                                  date_fin)
       conflicting_agents_ids.uniq
     end
 
@@ -428,8 +419,8 @@ class InterventionsController < ApplicationController
     tool_ids = tool_ids_string.split(',').map(&:to_i) if params['tool_ids']
 
     if tool_ids
-      conflicting_tool_ids = Intervention.get_unavailable_tools(intervention_id, tool_ids, date_debut_prevue,
-                                                                date_fin_prevue)
+      conflicting_tool_ids = Intervention.get_unavailable_tools(intervention_id, tool_ids, date_debut,
+                                                                date_fin)
     end
 
     json = {
@@ -484,8 +475,8 @@ class InterventionsController < ApplicationController
         format.html { redirect_to intervention_url(@intervention), notice: 'Modèle de pointage créé avec succès.' }
         format.json { render :show, status: :created, location: @intervention }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @intervention.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @intervention.errors, status: :unprocessable_content }
       end
     end
   end

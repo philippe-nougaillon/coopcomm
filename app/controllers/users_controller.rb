@@ -80,9 +80,6 @@ class UsersController < ApplicationController
     @pagy = Pagy.new(count: filtered_audits.size, page: page_number, items: items_per_page)
   end
 
-
-
-
   # GET /users/new
   def new
     @user = User.new
@@ -94,7 +91,10 @@ class UsersController < ApplicationController
   # POST /users or /users.json
   def create
     @user = User.new(user_params)
-    @user.password = User.generate_random_password
+    generated_password = User.generate_random_password
+
+    @user.password = generated_password
+    @user.password_confirmation = generated_password
 
     # Force le rôle à agent si l'utilisateur courant est un manager
     @user.rôle = 'agent' if current_user.manager?
@@ -106,11 +106,12 @@ class UsersController < ApplicationController
         format.html { redirect_to user_url(@user), notice: 'Utilisateur créé avec succès.' }
         format.json { render :show, status: :created, location: @user }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @user.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @user.errors, status: :unprocessable_content }
       end
     end
   end
+
 
   # PATCH/PUT /users/1 or /users/1.json
   def update
@@ -122,7 +123,7 @@ class UsersController < ApplicationController
         format.html { redirect_to user_url(@user), notice: 'Utilisateur modifié avec succès.' }
         format.json { render :show, status: :ok, location: @user }
       else
-        format.html { render :edit, status: :unprocessable_entity }
+        format.html { render :edit, status: :unprocessable_content }
 
         format.turbo_stream do
           if params[:from_absence_modal]
@@ -144,7 +145,7 @@ class UsersController < ApplicationController
           end
         end
 
-        format.json { render json: @user.errors, status: :unprocessable_entity }
+        format.json { render json: @user.errors, status: :unprocessable_content }
       end
     end
   end
@@ -197,7 +198,7 @@ class UsersController < ApplicationController
 
   def import_do
     if params[:upload].present?
-      @mdp = ''
+      @mdp = +'' # String mutable (le fichier est en frozen_string_literal) : on y concatène les mots de passe générés
       @success_logs = [] # Utilisateurs traités avec succès
       @error_logs   = [] # Utilisateurs en erreur
 
@@ -346,7 +347,7 @@ class UsersController < ApplicationController
             flash.now[:notice] = "L'importation a bien été exécutée."
           end
         end
-      end
+      end 
     else
       flash[:alert] = "Manque le fichier source pour pouvoir lancer l'importation !"
       redirect_to action: 'import'
@@ -371,12 +372,11 @@ class UsersController < ApplicationController
         format.html { redirect_to user_url(@user), notice: 'Mot de passe modifié avec succès.' }
         format.json { render :show, status: :ok, location: @user }
       else
-        format.html { render :edit_password, status: :unprocessable_entity }
-        format.json { render json: @user.errors, status: :unprocessable_entity }
+        format.html { render :edit_password, status: :unprocessable_content }
+        format.json { render json: @user.errors, status: :unprocessable_content }
       end
     end
   end
-
 
   def reactivate
     @user = User.unscoped.find_by(slug: params[:id])
@@ -391,6 +391,7 @@ class UsersController < ApplicationController
 
   private
 
+
   def set_user
     @user = User.find_by(slug: params[:id])
     return unless @user.nil?
@@ -402,10 +403,13 @@ class UsersController < ApplicationController
   # :rôle n'est accepté que d'un administrateur (seul à voir le sélecteur dans le
   # formulaire) ; service_ids est borné aux services de l'organisation courante.
   def user_params
-    permitted = params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :password_confirmation, :memo,
-                                             :address, :longitude, :latitude, :profile_picture, :color, tag_list: [], absences_attributes: %i[id du au motif observation matin après_midi _destroy], service_ids: [])
+    permitted = params.require(:user).permit(
+      :nom, :prénom, :téléphone, :email, :password, :password_confirmation, :memo,
+      :address, :longitude, :latitude, :profile_picture, :color,
+      tag_list: [], absences_attributes: %i[id du au motif observation matin après_midi _destroy], service_ids: []
+    )
 
-    rôle = params[:user][:rôle]
+    rôle = params[:user][:rôle] || params[:user][:role]
     permitted[:rôle] = rôle if current_user.administrateur? && User.rôles.key?(rôle.to_s)
 
     # service_ids= écrit immédiatement en base (has_many through) : on ne garde
@@ -418,7 +422,6 @@ class UsersController < ApplicationController
     end
 
     permitted
-
   end
 
   def password_params

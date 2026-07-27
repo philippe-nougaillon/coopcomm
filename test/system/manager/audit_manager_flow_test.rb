@@ -24,13 +24,13 @@ class AuditManagerFlowTest < ApplicationSystemTestCase
 
     # Le lien navbar n'existe plus en largeur mobile (dock simplifie par la refonte UX)
     visit admin_audits_path
-    sleep(1)
+    assert_selector 'h1', text: 'Activité' # attendre le chargement effectif de la page
   end
 
   # Recharge la page (état propre) sans tenter de refermer une notification déjà fermée.
   def recharger_audits
     visit admin_audits_path
-    sleep(1)
+    assert_selector 'h1', text: 'Activité'
   end
 
   # Les filtres Utilisateur/Type/Action sont dans un <details> replié par défaut
@@ -45,9 +45,25 @@ class AuditManagerFlowTest < ApplicationSystemTestCase
   # le clic d'activation du slim-select suivant. On clique à l'extérieur (le
   # titre) et on attend qu'aucune option ne soit plus visible avant de continuer.
   # La sélection robuste (recherche + clic) est dans le helper partagé `select_option`.
+  #
+  # Deux protections nées de flakiness observée (2026-07-15) :
+  # - la sélection soumet le formulaire (onchange) → re-rendu Turbo qui
+  #   ré-initialise les slim-selects : un menu peut transitoirement réapparaître
+  #   ouvert après le clic extérieur → on referme en boucle courte ;
+  # - sous forte charge, le clic d'option peut se perdre sans erreur (le select
+  #   reste sur « Tous les … » et la page reste non filtrée) → on vérifie que le
+  #   ss-main affiche bien la valeur choisie, sinon une seconde tentative.
   def choisir_filtre(id, value)
-    select_option(id, value)
-    find('h1', text: 'Activité').click
+    2.times do |tentative|
+      select_option(id, value)
+      3.times do
+        find('h1', text: 'Activité').click
+        break if has_no_selector?('.ss-option', visible: true, wait: 1)
+      end
+      break if find(id, visible: false).sibling('div.ss-main').has_text?(value, wait: 2)
+
+      flunk "La sélection « #{value} » dans #{id} n'a pas pris après 2 tentatives" if tentative == 1
+    end
     assert_no_selector('.ss-option', visible: true, wait: 5)
   end
 
@@ -81,7 +97,8 @@ class AuditManagerFlowTest < ApplicationSystemTestCase
     # champ misparse et, en réécriture, produit une date invalide non soumise.
     fill_in 'Du', with: (Date.today - 14).strftime('%m%d%Y')
     fill_in 'Au', with: Date.today.strftime('%m%d%Y')
-    sleep(1)
+    # Attendre que le widget date ait bien assemblé la valeur avant de soumettre
+    assert has_field?('Au', with: Date.today.strftime('%Y-%m-%d'), wait: 5)
     page.driver.browser.switch_to.active_element.send_keys(:enter)
     assert_text @manager.email # l'audit du login (aujourd'hui) est dans la plage
 
@@ -90,7 +107,7 @@ class AuditManagerFlowTest < ApplicationSystemTestCase
     # On revient au 1er segment (mois) via des flèches gauche avant de retaper MMJJAAAA.
     champ_au = find_field('Au')
     champ_au.send_keys(:arrow_left, :arrow_left, :arrow_left, (Date.today - 1).strftime('%m%d%Y'))
-    sleep(1)
+    assert has_field?('Au', with: (Date.today - 1).strftime('%Y-%m-%d'), wait: 5)
     champ_au.send_keys(:enter)
     assert_text 'Aucun résultat trouvé' # plage se terminant hier : exclut l'audit d'aujourd'hui
   end

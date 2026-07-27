@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '3.4.9'
+ruby '3.4.10'
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem 'rails', '~> 8.0'
@@ -139,6 +139,8 @@ gem 'prawn-table', '~> 0.2.2'
 
 gem 'prawn-qrcode', '~> 0.5.2'
 
+gem "prawn-svg", "~> 0.40.3"
+
 gem 'pg_search', '~> 2.3'
 
 gem 'twilio-ruby', '~> 7.4'
@@ -159,6 +161,9 @@ gem 'page_title_helper', '~> 9.1'
 
 gem 'solid_cache', '~> 1.0'
 
+# Vues (matérialisées) PostgreSQL versionnées via migrations — alimentent le dashboard
+gem 'scenic', '~> 1.8'
+
 gem 'solid_cable', '~> 3.0'
 
 gem 'seed_dump', '~> 3.3'
@@ -177,4 +182,8 @@ gem 'capture_stdout', '~> 0.0.1'
 
 gem 'devise_invitable', '~> 2.0'
 
-gem 'htmlbeautifier'
+group :development do
+  gem 'htmlbeautifier'
+end
+
+gem "rack-attack", "~> 6.8"

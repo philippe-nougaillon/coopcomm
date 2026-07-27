@@ -3,7 +3,8 @@ import { Controller } from "@hotwired/stimulus"
 // Zone de glisser-déposer générique et réutilisable autour d'un <input type="file">.
 //
 // L'input réel reste dans le formulaire (donc soumis normalement) ; on le masque
-// et on lui injecte le fichier déposé via DataTransfer. Le type de fichier accepté
+// et on lui injecte le(s) fichier(s) déposé(s) via DataTransfer — plusieurs si
+// l'input porte l'attribut `multiple`, un seul sinon. Le type de fichier accepté
 // est piloté par l'attribut `accept` de l'input — un fichier non conforme est
 // refusé (drop comme sélecteur natif) avec un retour visuel.
 //
@@ -45,45 +46,53 @@ export default class extends Controller {
     event.preventDefault()
     this.unhighlight()
 
-    const file = event.dataTransfer?.files?.[0]
-    if (!file) return
+    // Un input non-multiple ne garde que le premier fichier déposé (comme le sélecteur natif).
+    let files = Array.from(event.dataTransfer?.files || [])
+    if (this.inputTarget.multiple === false) files = files.slice(0, 1)
+    if (files.length === 0) return
 
-    if (!this.accepts(file)) {
-      this.markInvalid(file)
+    const rejected = files.find(file => !this.accepts(file))
+    if (rejected) {
+      this.markInvalid(rejected)
       return
     }
 
     // Reconstruit une liste de fichiers et l'assigne à l'input réel.
     const dataTransfer = new DataTransfer()
-    dataTransfer.items.add(file)
+    files.forEach(file => dataTransfer.items.add(file))
     this.inputTarget.files = dataTransfer.files
 
-    this.markValid(file)
+    this.markValid(files)
   }
 
   // Sélecteur natif : l'attribut accept n'est pas garanti par tous les OS, on revalide.
   change() {
-    const file = this.inputTarget.files[0]
-    if (!file) {
+    const files = Array.from(this.inputTarget.files)
+    const rejected = files.find(file => !this.accepts(file))
+    if (files.length === 0) {
       this.markNeutral()
-    } else if (this.accepts(file)) {
-      this.markValid(file)
-    } else {
+    } else if (rejected) {
       this.inputTarget.value = ""
-      this.markInvalid(file)
+      this.markInvalid(rejected)
+    } else {
+      this.markValid(files)
     }
   }
 
   // États visuels de la zone -------------------------------------------------
 
-  markValid(file) {
+  markValid(files) {
     this.swapState({ add: this.validClasses, remove: [...this.invalidClasses, ...this.neutralClasses] })
+    // Marqueur d'état inerte (aucun code applicatif ne le lit) : donne aux tests
+    // système un point d'ancrage stable, indépendant des noms de classes CSS.
+    this.element.dataset.dropzoneState = "success"
     this.hideError()
-    if (this.hasFilenameTarget) this.filenameTarget.textContent = file.name
+    if (this.hasFilenameTarget) this.filenameTarget.textContent = files.map(file => file.name).join(", ")
   }
 
   markInvalid(file) {
     this.swapState({ add: this.invalidClasses, remove: [...this.validClasses, ...this.neutralClasses] })
+    this.element.dataset.dropzoneState = "error" // marqueur d'état inerte (cf. markValid)
     if (this.hasFilenameTarget) this.filenameTarget.textContent = this.defaultLabel
     if (this.hasErrorTarget) {
       this.errorTarget.textContent = this.errorText(file)
@@ -93,6 +102,7 @@ export default class extends Controller {
 
   markNeutral() {
     this.swapState({ add: this.neutralClasses, remove: [...this.validClasses, ...this.invalidClasses] })
+    this.element.dataset.dropzoneState = "neutral" // marqueur d'état inerte (cf. markValid)
     this.hideError()
     if (this.hasFilenameTarget) this.filenameTarget.textContent = this.defaultLabel
   }

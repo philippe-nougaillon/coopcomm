@@ -26,17 +26,17 @@ class Facture < ApplicationRecord
   ARCHIVE = 'archivé'
 
   workflow do
-    state CREE, meta: { style: 'badge-ghost' } do
+    state CREE, meta: { style: 'badge badge-secondary rounded-full' } do
       event :envoyer, transitions_to: ENVOYE
     end
-    state ENVOYE, meta: { style: 'badge-info text-white' } do
+    state ENVOYE, meta: { style: 'badge badge-primary rounded-full' } do
       event :valider, transitions_to: VALIDE
       event :refuser, transitions_to: REFUSE
     end
-    state VALIDE, meta: { style: 'badge-success text-white' } do
+    state VALIDE, meta: { style: 'badge badge-success rounded-full' } do
       event :archiver, transitions_to: ARCHIVE
     end
-    state REFUSE, meta: { style: 'badge-error text-white' } do
+    state REFUSE, meta: { style: 'badge badge-error text-white rounded-full' } do
       # Une facture refusée peut être corrigée puis renvoyée (retour à « envoyé »).
       event :envoyer, transitions_to: ENVOYE
       event :archiver, transitions_to: ARCHIVE
@@ -74,6 +74,21 @@ class Facture < ApplicationRecord
   # Nom du fichier PDF (utilisé dans l'URL et l'en-tête Content-Disposition)
   def pdf_filename
     "Facture-#{ref}.pdf"
+  end
+
+  # factures visibles : un admin voit celles de son organisation,
+  # un manager celles de ses services, un adhérent les siennes déjà envoyées
+  # (une commande/facture « créé » est un brouillon interne), les autres rôles aucune.
+  def self.visible_to(user)
+    if user.administrateur?
+      joins(:service).where(services: { organisation_id: user.organisation&.id })
+    elsif user.manager?
+      where(service_id: user.service_ids)
+    elsif user.adhérent?
+      where(adherent_id: user.id).where.not(workflow_state: CREE)
+    else
+      none
+    end
   end
 
   private

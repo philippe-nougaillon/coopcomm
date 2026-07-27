@@ -5,7 +5,7 @@
     <div class="flex gap-2">
       <% if policy(Intervention).new_intervention_modele_pointage? %>
         <%= link_to new_intervention_modele_pointage_interventions_path, 
-        class: "btn btn-secondary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base ",
+            class: "btn btn-info btn-outline btn-md rounded flex items-center justify-center gap-2 text-base",
         title: "Ajouter un modèle de pointage" do %>
           <%= embedded_svg "icons/qr_code_2_add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
           <span class="hidden md:block">Ajouter un modèle de pointage</span>
@@ -13,7 +13,7 @@
       <% end %>
       <%= link_to new_intervention_path, 
       data: { 'testid': "ajouter_intervention_pc" }, 
-      class: "btn btn-success btn-outline btn-md rounded flex items-center justify-center gap-2 text-base ",
+            class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary",
       title: "Créer une nouvelle intervention " do %>
         <%= embedded_svg "icons/assignment_add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
         <span class="hidden md:block">Ajouter une Intervention</span>
@@ -55,18 +55,24 @@
         </div>
       </div>
       <% if current_user.manager_or_admin? || current_user.agent? || current_user.adhérent? %>
-        <details class="group w-full" <%= 'open' if params[:adherent_id].present? || params[:tags].present? || params[:service].present? || params[:agent_ids].present? || params[:tool_ids].present? || params[:archives].present? %>>
-          <summary class="flex items-center gap-2 text-primary font-semibold text-sm cursor-pointer select-none list-none w-fit pt-2 hover:underline">
+        <% filtros_avanzados_activos = params[:adherent_id].present? ||
+                                params[:tags].present? ||
+                                params[:service].to_a.reject(&:blank?).present? ||
+                                params[:agent_ids].present? ||
+                                params[:tool_ids].present? ||
+                                params[:archives].present? %>
+        <details class="group w-full" <%= 'open' if filtros_avanzados_activos %>>          <summary class="flex items-center gap-2 text-primary font-semibold text-sm cursor-pointer select-none list-none w-fit pt-2 hover:underline">
             <%= embedded_svg "icons/tune.svg", class: "text-[18px] transition-transform group-open:rotate-180", title: "Fermer" %>
             <span class="group-open:hidden">Plus de critères de filtrage</span>
             <span class="hidden group-open:inline">Moins de critères de filtrage</span>
           </summary>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end w-full pt-4 mt-2 border-t border-slate-200/60 dynamic-filters">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end w-full pt-4 mt-2 border-t border-slate-200/60 dynamic-filters">
             <% if current_user.manager_or_admin? || current_user.agent? %>
               <div class="w-full">
                 <%= label_tag :adherent_id, "Adhérent", class: "block font-semibold text-slate-600 text-sm mb-1" %>
                 <%= select_tag :adherent_id, 
                 options_from_collection_for_select(@adhérents, :id, :nom_prénom, params[:adherent_id]), 
+                
                   multiple: true,
                   data: { placeholder: 'Tous les adhérents' },
                   onchange: 'this.form.requestSubmit()',
@@ -116,9 +122,18 @@
                   data: { placeholder: 'Tous les matériels' },
                   onchange: 'this.form.requestSubmit()' %>
             </div>
-            <div class="flex justify-left items-center gap-2 pb-2 h-8 md:pl-1">
-              <%= check_box_tag :archives, 1, params[:archives], class: 'checkbox checkbox-primary checkbox-sm', onchange: 'this.form.submit()' %>
-              <%= label_tag :archives, "Archivées ?", class: "text-sm font-semibold text-slate-600 cursor-pointer select-none truncate" %>
+            <div class="flex items-center gap-3 h-10 px-3 border border-slate-200 rounded-lg bg-slate-50 cursor-pointer"
+     onclick="document.getElementById('archives').click()">
+              <%= check_box_tag :archives, 1, params[:archives],
+      id: 'archives',
+      class: 'hidden',
+      onchange: 'this.form.requestSubmit()' %>
+              <div id="toggle-track" class="w-8 h-4 rounded-full transition-colors duration-200 flex items-center px-0.5 flex-shrink-0 <%= params[:archives].present? ? 'bg-[#007fcb]' : 'bg-slate-300' %>">
+                <div class="w-3 h-3 rounded-full bg-white transition-transform duration-200 <%= params[:archives].present? ? 'translate-x-4' : 'translate-x-0' %>"></div>
+              </div>
+              <span class="text-sm font-medium text-slate-600 whitespace-nowrap">
+                Archivées ?
+              </span>
             </div>
           </div>
         </details>
@@ -164,32 +179,41 @@
         <%= turbo_stream_from "interventions_service_#{service.id}" %>
       <% end %>
     <% end %>
-    <% if params[:vue] == 'normal' %>
-      <%= render @interventions, cached: true %>
+    <% if @interventions.present? %>
+      <% if params[:vue] == 'normal' %>
+        <%= render @interventions, cached: true %>
+      <% else %>
+        <%= render partial: 'view_compact' %>
+      <% end %>
     <% else %>
-      <%= render partial: 'view_compact' %>
+      <div class="flex items-center justify-center py-12">
+        <span class="text-slate-400 text-base italic">
+          Aucun résultat trouvé pour cette recherche.
+        </span>
+      </div>
     <% end %>
   </div>
   <div class="flex flex-col bg-white border-x border-b border-slate-200 rounded-b-xl">
-    <div class="flex flex-wrap justify-end items-center gap-2 p-4">
-      <% if @interventions.any? %>
+    <% if @interventions.any? %>
+      <div class="flex flex-wrap justify-end items-center gap-2 p-4">
         <%= link_to url_for(intervention_filter_params.merge(format: :xls)), 
-              class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto" do %>
+            class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-sm w-full sm:w-auto" do %>
           <%= embedded_svg "icons/upload.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
           <span>Exporter en XLS</span>
         <% end %>
-      <% end %>
-    </div>
+      </div>
+    <% end %>
+      </div>
+     <% if @pagy.pages > 1 %>
     <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
-      <% if @pagy&.pages.to_i > 1 %>
-        <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
-          <%= pagy_nav(@pagy).html_safe %>
-        </div>
-        <div class=" text-slate-500 text-center text-sm w-full ">
-          <%= pagy_info(@pagy, item_name: "interventions").html_safe %>
-        </div>
-      <% else %>
-        <div></div>
-      <% end %>
-    </div>
+      <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+        <%= pagy_nav(@pagy).html_safe %>
+      </div>
+      <div class=" text-slate-500 text-center text-sm w-full ">
+        <%= pagy_info(@pagy, item_name: "interventions").html_safe %>
+      </div>
+    <% else %>
+      <div></div>
+    <% end %>
   </div>
+</div>

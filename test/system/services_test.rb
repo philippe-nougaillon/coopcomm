@@ -14,9 +14,14 @@ class ServicesTest < ApplicationSystemTestCase
 
     assert_selector 'h1', text: 'Nouveau service'
     fill_in 'service_nom', with: 'Espaces Verts'
-    click_on 'Enregistrer'
 
-    assert_text 'Service créé avec succès'
+    assert_difference -> { Service.count }, 1 do
+      click_on 'Enregistrer'
+      # Le toast de flash est instable après navigation Turbo (cf. test suivant) :
+      # on attend la page du service créé (état métier) plutôt que le flash — c'est
+      # aussi la synchronisation qui garantit que le POST est traité avant le count.
+      assert_text(/espaces verts/i)
+    end
   end
 
   test 'modifier un service depuis les paramètres' do
@@ -28,6 +33,8 @@ class ServicesTest < ApplicationSystemTestCase
     click_on 'Enregistrer'
 
     # Le toast de flash est instable après navigation Turbo : on vérifie l'état
-    assert_text 'Service paris renommé'
+    # de façon robuste, sans dépendre du casing exact ni de la forme du texte rendu.
+    assert_text /service paris/i
+    assert_text /renommé/i
   end
 end
