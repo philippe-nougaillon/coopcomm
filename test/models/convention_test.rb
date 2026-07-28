@@ -127,8 +127,11 @@ class ConventionTest < ActiveSupport::TestCase
     refute_includes Convention.visible_to(users(:manager_marseille)), conventions(:convention_paris)
   end
 
-  test 'aucune convention visible pour un adhérent' do
-    assert_empty Convention.visible_to(users(:weil))
+  test "conventions du propre usuario visibles pour un adhérent" do
+    conventions = Convention.visible_to(@adherent)
+    
+    assert_includes conventions, @adherent_convention
+    refute_includes conventions, @other_user_convention
   end
 
   test 'aucune convention visible pour un agent' do
