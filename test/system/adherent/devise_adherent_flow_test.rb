@@ -13,12 +13,11 @@ class DeviseAdherentFlowTest < ApplicationSystemTestCase
     fermer_notification
 
     # Le lien de déconnexion visible est dans le dropdown du dock mobile (replié) :
-    # on stube le window.confirm de Turbo et on dispatche le clic en JS sur l'ancre
-    # (testid), ce qui rend la déconnexion déterministe (cf. devise_agent_flow_test).
-    page.execute_script('window.confirm = () => true')
-    page.execute_script("document.querySelector(\"[data-testid='fermer_session']\").click()")
-    # Le layout public n'affiche pas le flash : on vérifie l'état déconnecté
-    assert_text 'Mutualisez mieux', wait: 10
+    # le helper stube le confirm de Turbo, dispatche le clic en JS et re-tente si
+    # besoin (cf. application_system_test_case). Le layout public n'affiche pas le
+    # flash : l'état déconnecté se vérifie sur la landing puis sur une page privée.
+    se_deconnecter
+
     visit interventions_url
     assert_current_path new_user_session_path
   end
