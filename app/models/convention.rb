@@ -37,7 +37,7 @@ class Convention < ApplicationRecord
   def self.visible_to(user)
     if user.administrateur?
       joins(:service).where(services: { organisation_id: user.organisation&.id })
-    elsif user.manager?
+    elsif user.manager? || user.adhérent?
       where(service_id: user.service_ids)
     else
       none
