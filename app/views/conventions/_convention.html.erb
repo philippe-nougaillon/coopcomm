@@ -5,8 +5,7 @@
     </td>
   <% else %>
     <td class="px-4 py-3 text-lg font-semibold text-primary">
-      <%# AJOUTER REF %>
-      <%= link_to convention.user.nom_prénom, convention, class: "hover:underline" %>
+      <%= link_to convention.ref, convention, class: "hover:underline" %>
     </td>
   <% end %>
   <td class="px-4 py-3 text-base">
