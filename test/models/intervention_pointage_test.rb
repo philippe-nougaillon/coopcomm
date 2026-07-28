@@ -152,6 +152,37 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_equal mère, fille.intervention_mère
   end
 
+  # === Intervention#pointage_de? ==========================================
+  # Discriminant du bouton « Terminer » (helper terminer_destination) : c'est
+  # l'AFFECTATION au modèle qui compte, jamais le rôle.
+
+  test 'pointage_de? : vrai pour un agent affecté au modèle' do
+    mère = interventions(:intervention_repete)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+
+    assert fille.pointage_de?(users(:martin_technique_paris))
+  end
+
+  test 'pointage_de? : vrai pour un manager choisi comme agent du modèle' do
+    mère = interventions(:intervention_repete)
+    manager = users(:manager_paris)
+    AgentIntervention.create!(agent: manager, intervention: mère)
+    fille = mère.create_next_intervention(mère, manager)
+
+    assert fille.pointage_de?(manager)
+  end
+
+  test 'pointage_de? : faux pour qui n’est pas affecté au modèle' do
+    mère = interventions(:intervention_repete)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+
+    assert_not fille.pointage_de?(users(:manager_paris))
+  end
+
+  test 'pointage_de? : faux hors pointage (aucun modèle)' do
+    assert_not interventions(:tonte_locaux).pointage_de?(users(:bond))
+  end
+
   # === Intervention#en_cours? =============================================
 
   test 'en_cours? : vrai quand maintenant est dans la fenêtre' do

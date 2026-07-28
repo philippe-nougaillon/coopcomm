@@ -461,6 +461,10 @@ class Intervention < ApplicationRecord
     Intervention.find_by(slug: template_slug)
   end
 
+  def pointage_de?(user)
+    template_slug.present? && intervention_mère&.agents&.include?(user)
+  end
+
   def update_heures_consommees_convention
     associated_convention = Convention
                         .where("date_début <= ? AND date_fin_prévue >= ?", self.début, self.début)
