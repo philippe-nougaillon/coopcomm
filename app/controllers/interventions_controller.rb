@@ -124,7 +124,7 @@ class InterventionsController < ApplicationController
       end
 
       format.xls do
-        xls_file = ExportToXls::Interventions.call(@interventions)
+        xls_file = ExportToXls::Interventions.call(@interventions, include_evaluation: !current_user.agent?)
         send_data xls_file, filename: "Interventions_#{l Date.today}.xls"
       end
     end

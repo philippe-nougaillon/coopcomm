@@ -9,6 +9,40 @@ class CommandesControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:hidalgo)
   end
 
+  # ==================== TESTS CRITIQUES ====================
+  # L'argent (fiche contexte 2026-07-28 : « catastrophique = tout ce qui touche
+  # à l'argent ») : le prix d'une ligne ne se manipule jamais par la requête,
+  # et un lien mort ne fait jamais un 500.
+
+  # Test critique — le prix d'une ligne ne peut pas être forcé via les
+  # paramètres (miroir du test cotation ; scénario compte volé/malveillant).
+  test "critique : le prix d'une ligne de commande ne peut pas être forcé via les paramètres" do
+    ligne = commande_lignes(:ligne_commande_paris)
+    prix_initial = ligne.prix_ht
+
+    patch commande_url(@commande), params: {
+      commande: {
+        intitulé: @commande.intitulé,
+        commande_lignes_attributes: { '0' => { id: ligne.id, qté: ligne.qté, prix_ht: 999.99 } }
+      }
+    }
+
+    assert_redirected_to commande_url(@commande)
+    assert_equal prix_initial, ligne.reload.prix_ht, 'le prix forgé doit être ignoré'
+  end
+
+  # Test critique — un lien mort (vieux mail, slug régénéré) est un cas du
+  # quotidien : redirection propre, jamais un 500 (ex-bug B9, corrigé 2026-07-28
+  # sur le motif du contrôleur cotations : « introuvable → redirection »).
+  test "critique : slug inconnu → redirection vers l'index avec alerte (ex-bug B9)" do
+    get commande_url('slug-inexistant')
+
+    assert_redirected_to commandes_path
+    assert_equal 'Commande introuvable', flash[:alert]
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
   test "should get index" do
     get commandes_url
     assert_response :success
@@ -175,17 +209,5 @@ class CommandesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # --- Robustesse ---
-
-  test "slug inconnu : devrait renvoyer 404 — bug B9, comportement actuel : 500" do
-    # Bug B9 (.claude/method/bugs-signales.md) : set_commande fait find_by(slug:)
-    # → nil sur un slug inconnu, puis is_user_authorized appelle authorize(Commande)
-    # sur la CLASSE → CommandePolicy#manage? évalue record.organisation →
-    # NoMethodError (vérifié empiriquement le 2026-07-10) → erreur 500.
-    # Comportement attendu à la correction : 404 (RecordNotFound).
-    # Même motif dans factures_controller. À réactiver quand set_commande lèvera
-    # ActiveRecord::RecordNotFound (find_by! ou friendly.find).
-    skip "Bug B9 : slug inconnu → NoMethodError 500 au lieu de 404 — à réactiver à la correction"
-    get commande_url('slug-inexistant')
-    assert_response :not_found
-  end
+  # (le test « slug inconnu » vit dans les TESTS CRITIQUES en tête de fichier)
 end

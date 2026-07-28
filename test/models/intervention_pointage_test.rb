@@ -7,6 +7,11 @@ require 'test_helper'
 # On couvre ici le cœur métier des deux parcours agent les plus courants
 # (scan du QRCode / saisie a posteriori) indépendamment du contrôleur.
 class InterventionPointageTest < ActiveSupport::TestCase
+  # ==================== TESTS CRITIQUES ====================
+  # Le temps total EST l'argent (fiche contexte 2026-07-28 : le temps facturé
+  # aux communes en dépend directement). Tout le bloc calc_temps_total ci-dessous
+  # est critique, y compris le skip B1 (before_save inopérant).
+
   # === Intervention#calc_temps_total (pur calculateur) ====================
   # Contrat : renvoie 0 si une date manque ou si fin <= début ; sinon
   # (fin - début, en heures) - temps_de_pause, multiplié par le nombre d'agents.

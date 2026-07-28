@@ -37,6 +37,7 @@
   3. → `Workflow::NoTransitionAllowed` non rescué → **page d'erreur 500**.
 - **Impact** : erreur brute au lieu d'un message « action impossible » ; du bruit dans les logs.
 - **Correctif proposé** : même motif que `terminer`/`archiver` (`if @intervention.can_valider? … else redirect_to … notice: "Impossible…"`).
+- **Trace test (2026-07-28)** : test `skip` documenté dans les TESTS CRITIQUES en tête de `interventions_controller_test.rb` (« re-valider une intervention déjà validée… ») — passera au vert à la correction.
 
 ### B4 — Sujet du mail de panne malformé : `{title: "…"}`
 - **Où** : [notif_panne_job.rb:12-18](app/jobs/notif_panne_job.rb#L12-L18) vs `NotificationMailer#avertissement_reservation`
@@ -80,16 +81,6 @@
   1. Un développeur **active** la notification « intervention mise à jour ».
   2. N'importe quel utilisateur **modifie** une des 166 interventions dont le dernier audit n'a pas de user → **crash** de la mise à jour.
 - **Correctif à l'activation** : `User.find_by(id:)` + `return if user.nil?`.
-
-### B9 — Slug inconnu sur cotations/commandes/factures → erreur 500 au lieu de 404
-- **Où** : [commandes_controller.rb:149](app/controllers/commandes_controller.rb#L149), [factures_controller.rb:138](app/controllers/factures_controller.rb#L138), [cotations_controller.rb:187](app/controllers/cotations_controller.rb#L187)
-- **Cause** : `set_…` fait `find_by(slug:)` → `nil` sur un slug inconnu ; `is_user_authorized` fait alors `authorize(Commande)` sur la **classe**, et `CommandePolicy#manage?` évalue `record.organisation` → `NoMethodError` (**vérifié empiriquement le 2026-07-10** : `undefined method 'organisation' for class Commande`) → **500**. Même motif dans les trois contrôleurs.
-- **Parcours de reproduction** :
-  1. En tant que **manager**, j'ouvre une commande puis je modifie l'URL (`/commandes/nimporte-quoi`) — ou je suis un vieux lien vers une commande supprimée en dur / un slug régénéré.
-  2. → page d'erreur **500** au lieu d'un 404 « introuvable ».
-- **Impact** : erreur brute + bruit dans les logs pour un simple lien mort ; surface triviale à déclencher.
-- **Trace test** : test `skip` documenté dans `test/controllers/commandes_controller_test.rb` (« slug inconnu : devrait renvoyer 404 — bug B9 ») — passera au vert à la correction.
-- **Correctif proposé** : `find_by!(slug:)` (ou `friendly.find`) pour lever `ActiveRecord::RecordNotFound` → 404 standard, dans les trois contrôleurs.
 
 ### B11 — Un pointage peut porter des dates prévues (héritées de la mère ou saisies au formulaire) — l'invariant « pointage = dates réelles uniquement » n'est pas garanti
 - **Signalé par** : PE, 2026-07-13 (« il ne faut pas que l'on puisse mettre des dates prévues sur une intervention de pointage ») ; instruit et confirmé par l'agent. Généralise la condition 4 de **R1**.
@@ -159,6 +150,48 @@
 - **Cause racine (prouvée par git)** : le commit `fc5330c4` (« UX -show tools ») a retiré la branche `<% if @tool.interventions.any? %>` qui, avant, remplaçait le bouton (`id="supprimer_outil"`) par un bloc inerte « Suppression impossible, l'outil est utilisé dans des interventions ». `ToolPolicy#destroy?` = `manager_or_admin? && organisation?` **n'a jamais** regardé les interventions ; la protection était uniquement dans la vue (donc déjà contournable par requête forgée — le contrôleur `destroy` n'a aucune garde).
 - **Impact** : perte de données potentielle (rattachements outil↔interventions) déclenchable en 2 clics ; historique des interventions faussé.
 - **Correctif proposé (décision métier à trancher)** : soit **restaurer la protection** — re-masquer/désactiver le bouton pour `@tool.interventions.any?` **ET** ajouter une garde dans `tools_controller#destroy` (redirection + message si l'outil est utilisé), la vue seule étant contournable ; soit **assumer** la suppression libre (et alors supprimer le test `Ne pas pouvoir supprimer un outil avec une intervention`). Test correspondant en `skip` documenté jusqu'à décision.
+
+### B20 — Import XLS : un agent peut être rattaché au service d'une **autre organisation**
+- **Signalé par** : agent, 2026-07-27 (session `/tests` « import des utilisateurs »).
+- **Parcours de repro** : se connecter en manager/admin de la commune A → *Utilisateurs → Import agents* → fichier dont la colonne `Service` porte le nom d'un service qui n'existe que dans la commune B (ex. `Voirie`) → « Oui (Appliquer) » → l'agent est créé et rattaché au service de B ; comme l'organisation dérive des services, **le nouvel agent appartient à l'organisation B**.
+- **Où** : [users_controller.rb:259](app/controllers/users_controller.rb#L259) — `Service.find_by(nom: service_name)`, sans filtre d'organisation.
+- **Cause racine (prouvée par test)** : l'unicité de `Service#nom` est scopée à l'organisation ([service.rb:21](app/models/service.rb#L21)) — deux communes peuvent donc avoir un service homonyme, et `find_by` renvoie arbitrairement le premier. Le reste du contrôleur borne pourtant bien les services à `current_organisation` (cf. `service_ids` des `user_params`, l.416-420).
+- **Impact** : fuite de périmètre multi-organisations (vision produit) ; agent invisible pour sa propre commune, visible chez l'autre.
+- **Correctif proposé** : `current_organisation.services.find_by(nom: service_name)` (une ligne), et faire remonter « service introuvable dans votre organisation » dans le message d'erreur existant.
+- **Test** : `users_import_test.rb` — « un service d'une autre organisation est accepté par l'import » (ÉPINGLAGE : fige le comportement actuel, **à inverser** à la correction).
+
+### B21 — Import XLS : rétrogradation silencieuse d'un manager/administrateur en agent, y compris hors de son organisation
+- **Signalé par** : agent, 2026-07-27 (même session).
+- **Parcours de repro** : se connecter en manager/admin de la commune A → *Import agents* → fichier contenant l'email d'un **manager** (de A ou de B) → « Oui (Appliquer) » → ce manager devient `agent` et se retrouve rattaché à un service de A. Aucun avertissement, la ligne est comptée comme « importée ».
+- **Où** : [users_controller.rb:242](app/controllers/users_controller.rb#L242) (`User.where('lower(email) = ?', …).first_or_initialize` — recherche **globale**, aucun `authorize` sur l'enregistrement retrouvé) + [l.256](app/controllers/users_controller.rb#L256) (`user.rôle = 'agent'` inconditionnel).
+- **Cause racine (prouvée par test)** : l'import réutilise n'importe quel compte existant partageant l'email, sans vérifier ni l'organisation ni la hiérarchie — alors que `UserPolicy#update?` interdit précisément à un manager de modifier un manager/admin (`hierarchy_violation?`).
+- **Impact** : perte de privilèges (le manager visé ne peut plus administrer), et modification d'un compte d'une autre commune — le pendant « écriture » de l'IDOR corrigé sur la messagerie.
+- **Correctif proposé** : borner la recherche au périmètre (`current_organisation`), et **ne pas toucher au rôle** d'un enregistrement existant (ne poser `rôle = 'agent'` que sur `new_record`) ; idéalement passer l'enregistrement retrouvé par `authorize user, :update?` et compter un refus en erreur de ligne.
+- **Test** : `users_import_test.rb` — 2 ÉPINGLAGES (autre organisation / propre organisation), **à inverser** à la correction.
+
+### B22 — Import XLS : une colonne optionnelle absente **efface** la donnée existante
+- **Signalé par** : agent, 2026-07-27 (même session).
+- **Parcours de repro** : un agent a un téléphone et un mémo renseignés → importer un fichier **sans** les colonnes `Téléphone`/`Mémo` (elles sont facultatives : seules Nom/Prénom/Email/Service sont obligatoires) en mode « Oui (Appliquer) » → le téléphone et le mémo de cet agent passent à vide.
+- **Où** : [users_controller.rb:248-249](app/controllers/users_controller.rb#L248-L249) — `user.téléphone = idx_telephone ? … : nil`.
+- **Impact** : perte de données silencieuse (le bilan affiche « importée »).
+- **Correctif proposé** : ne rien assigner quand la colonne est absente (`user.téléphone = row[idx_telephone]… if idx_telephone`).
+- **Test** : `users_import_test.rb` — « un fichier sans colonne Téléphone conserve le téléphone existant », en `skip` documenté (passera au vert à la correction).
+
+### B23 — Import XLS : un fichier qui n'est pas un XLS 97-2003 provoque une erreur 500
+- **Signalé par** : agent, 2026-07-27 (même session).
+- **Parcours de repro** : *Import agents* → téléverser un `.xlsx`, un PDF, une image renommée, ou un `.xls` corrompu (le `accept=".xls"` et le script de contrôle sont **côté client**, contournables) → page d'erreur serveur.
+- **Où** : [users_controller.rb:216](app/controllers/users_controller.rb#L216) — `Spreadsheet.open` sans `rescue`.
+- **Preuve empirique** : téléversement d'un PNG → `Ole::Storage::FormatError: OLE2 signature is invalid`, non rattrapée.
+- **Impact** : faible techniquement, mauvais côté utilisateur (une erreur de format est un cas nominal, pas une panne) ; remonte en alerte via l'exception notifier.
+- **Correctif proposé** : entourer la lecture d'un `rescue` (Ole/Spreadsheet + `StandardError`) → `flash.now[:alert]` « Fichier illisible : le format attendu est Excel 97-2003 (.xls) ».
+- **Test** : `users_import_test.rb` — « un fichier qui n'est pas un XLS est refusé proprement », en `skip` documenté.
+
+### B24 — Import XLS : le bilan de fin d'import n'est pas fiable
+- **Signalé par** : agent, 2026-07-27 (même session). Trois défauts distincts, même conséquence : l'utilisateur croit son fichier intégralement traité.
+- **(a) Lignes silencieusement ignorées** — [users_controller.rb:237](app/controllers/users_controller.rb#L237) et [l.240](app/controllers/users_controller.rb#L240) : une ligne sans `Nom` ou sans `Email` fait `next` **sans** incrémenter ni `@importes` ni `@errors` et sans trace. *Repro* : fichier de 10 lignes dont 3 sans email → bilan « Lignes importées: 7 | Lignes ignorées: 0 » + message vert « L'importation a bien été exécutée. ». *Correctif proposé* : compter ces lignes en erreur avec leur numéro.
+- **(b) Retour de `save` ignoré** — [l.309](app/controllers/users_controller.rb#L309) : `user.save` sans `!` ni test ; un échec (course sur l'unicité, échec d'`invite!`) est compté « importée ». *Correctif proposé* : `if user.save … else` (ou `save!` + rescue par ligne). Même famille que **B17**.
+- **(c) Utilisateur désactivé irrécupérable** — [l.242](app/controllers/users_controller.rb#L242) : la recherche subit le `default_scope :kept`, un compte soft-deleté n'est donc jamais retrouvé ; la création échoue sur l'unicité de l'email avec le message opaque « email est déjà utilisé(e) », alors que l'utilisateur ne voit ce compte nulle part dans l'interface (prouvé par test). *Correctif proposé* : chercher avec `User.unscoped` (ou `with_discarded`) et proposer une réactivation explicite, ou au minimum un message « compte désactivé, à réactiver depuis la liste des utilisateurs désactivés ».
+- **Test** : `users_import_test.rb` — 3 ÉPINGLAGES (ligne sans nom, ligne sans email, utilisateur désactivé) figent le comportement actuel.
 
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
 
@@ -235,6 +268,8 @@
 | **B12** — filtre #292 absent de `temps_par_adherent` (un temps négatif entamait le total par adhérent du dashboard) | 2026-07-13 | branche `dashboard-scenic` (demande PE, session /tests) : `.where("temps_total >= 0")` ajouté — hérite de la limite de grain **B13** ; ⚠ `staging` reste bogué jusqu'à la fusion (son `dashboard_data.rb` sera remplacé par la version Scenic) ; test ex-`skip` passé au vert dans `dashboard_temps_negatif_test.rb` |
 | **B15** — photos d'intervention via le formulaire manager/admin (dropzone) : (a) **500 sur `edit`** dès que l'intervention a des photos (`attachment.blob` appelé sur un `Attached::Many`, `_file_dropzone.html.erb:29` — le partial était écrit pour `has_one_attached`) ; (b) **photo jamais enregistrée** depuis ce formulaire : input file sans `multiple` → param `intervention[photos]` **scalaire**, rejeté en silence par `permit(photos: [])` (le formulaire **agents** `_form_for_agents.erb` avait lui `multiple: true` → d'où le « des fois ça fonctionne » selon le rôle) ; (c) **AVIF** annoncé dans l'`accept` des deux formulaires mais refusé par `PieceJointeValidable::IMAGES` → échec de validation après coup | 2026-07-15 (signalé et corrigé le jour même, PE) | partial `_file_dropzone` généralisé has_one/has_many (détection `Attached::Many`, liste des blobs **persistés**, `multiple` auto sur l'input, hint « remplacera » réservé au has_one) ; `dropzone_controller.js` gère plusieurs fichiers (drop + change + libellé) ; `image/avif` ajouté à `IMAGES`. 4 tests : `edit` avec photos (**prouvé rouge sur l'ancien partial**) + assertion `input[multiple]`, update ajoute une photo, signed_ids ré-émis conservés + ajout, AVIF accepté |
 | **B16** — `purge` d'une photo : redirection **302** après un DELETE Turbo, au lieu du 303 imposé par la décision audit 2026-06-12 §4. Sévérité **rétrogradée faible** après test empirique de PE en dev (le scénario destructeur initialement déduit était faux : `button_to` émet POST+`_method=delete`, et fetch convertit POST→GET sur un 302 → pas de ré-émission de DELETE ; simple écart de cohérence) | 2026-07-15 (signalé, instruit et corrigé le jour même) | `status: :see_other` ajouté au `redirect_to` de `interventions_controller#purge` (une ligne, demande PE) ; test ex-`skip` passé au vert (« la redirection après un DELETE Turbo est en 303 see_other ») ; suite 1253 runs / 0 échec / 2 skips (retour à B1+B9) |
+| **B9** — slug inconnu sur commandes/factures → **500** au lieu d'un refus propre (`find_by(slug:)` nil → `authorize` sur la classe → `CommandePolicy#manage?` évalue `record.organisation` → NoMethodError, vérifié empiriquement le 2026-07-10 ; cotations avait déjà son garde) | 2026-07-28 (autorisation PE « je te laisse corriger la policy des commandes ») | garde ajouté dans `set_commande`/`set_facture` sur le motif du contrôleur cotations et de la checklist CONTRIBUTING (« introuvable → redirection ») : `redirect_to <index>_path, alert: '… introuvable'` ; la chaîne de filtres s'arrête avant `authorize` (comportement identique à cotations, déjà en prod). Test ex-`skip` réécrit et passé au vert (redirection + alerte, dans les TESTS CRITIQUES de `commandes_controller_test`) + miroir facture |
+| **B25** — **fuite des évaluations dans l'export XLS** : l'export de l'index interventions (`format.xls`, bouton visible de tous les rôles, `index?` = tout connecté) incluait les colonnes **Évaluation (note)** et **Avis** sans restriction → un **agent** exportant ses propres interventions lisait ses évaluations, en violation du CCTP (« visibles uniquement des gestionnaires ») et du garde de la vue show. Découvert par exploration le 2026-07-28, **confirmé par PE** le jour même | 2026-07-28 (correction autorisée par PE) | `ExportToXls::Interventions` prend `include_evaluation:` (en-têtes ET valeurs conditionnels) ; le contrôleur passe `include_evaluation: !current_user.agent?` (même règle que la section Compte-rendu de la show). ⚠ Au passage, `ApplicationService.call` forwarde désormais les **kwargs** (`**kwargs`, requis en Ruby 3, rétro-compatible). 3 tests critiques : export agent sans note/avis (avec garde anti-faux-positif : l'intervention figure bien dans le fichier), export manager avec, show HTML agent sans avis |
 | **B10** — les 2 tests « création à postériori » échouaient entre 14 h et 15 h (fixture `intervention_fille` de **martin** ancrée sur l'heure réelle − 4 h recouvrait la plage [10 h, 11 h] créée à midi fixe pour le même agent → refus #357 légitime ; test uniquement) | 2026-07-15 | correctif « désolidariser les acteurs » : les 2 tests utilisent **john_wick** (aucune intervention de fixture → jamais de conflit) au lieu de martin ; la fixture `4.hours.ago` reste intacte (elle protège les tests de pointage, cf. 2026-07-09). Vérifié **en pleine fenêtre 14 h–15 h** : 42/42 verts + suite complète 1239 runs / 0 échec |
 
 ---

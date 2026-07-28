@@ -5,9 +5,10 @@ module ExportToXls
   class Interventions < ExportToXls::Base
     attr_reader :interventions
 
-    def initialize(interventions)
+    def initialize(interventions, include_evaluation: true)
       super()
       @interventions = interventions
+      @include_evaluation = include_evaluation
     end
 
     def call
@@ -17,8 +18,9 @@ module ExportToXls
       base_headers_start = ['ID', 'Description', 'Mots clés', 'Statut', 'Adhérent', 'Service']
       agent_headers = (1..max_agents).map { |i| "Agent #{i}" }
       tool_headers = (1..max_tools).map { |i| "Outil #{i}" }
-      base_headers_end = ['Début', 'Fin', 'Pause (H)', 'Temps total passé (H)', 'Commentaires', 'Évaluation', 'Avis', 'Créé le',
-                          'Modifié le']
+      base_headers_end = ['Début', 'Fin', 'Pause (H)', 'Temps total passé (H)', 'Commentaires']
+      base_headers_end += ['Évaluation', 'Avis'] if @include_evaluation
+      base_headers_end += ['Créé le', 'Modifié le']
 
       headers = base_headers_start + agent_headers + tool_headers + base_headers_end
 
@@ -44,12 +46,10 @@ module ExportToXls
           intervention.fin ? I18n.l(intervention.fin) : '',
           intervention.temps_de_pause,
           intervention.temps_total,
-          intervention.commentaires,
-          intervention.note,
-          intervention.avis,
-          I18n.l(intervention.created_at),
-          I18n.l(intervention.updated_at)
+          intervention.commentaires
       ].flatten
+        row += [intervention.note, intervention.avis] if @include_evaluation
+        row += [I18n.l(intervention.created_at), I18n.l(intervention.updated_at)]
 
         data << row
       end
