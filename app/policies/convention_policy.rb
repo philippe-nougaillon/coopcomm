@@ -24,7 +24,7 @@ class ConventionPolicy < ApplicationPolicy
   end
 
   def show?
-    create?
+    create? || (adhérent? && record.user==user)
   end
 
   def update?
