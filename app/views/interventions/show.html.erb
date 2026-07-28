@@ -295,7 +295,8 @@
                   <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Actions de validation</span>
                   <div class="flex flex-wrap gap-2">
                     <% if policy(@intervention).terminer? %>
-                      <%= button_to 'Terminer', terminer_intervention_path(@intervention), class: 'btn btn-sm sm:btn-md bg-sky-50 text-sky-700 hover:bg-sky-100 border-none font-medium', title: 'Cliquez pour passer cette intervention en statut Terminée', form: { data: { turbo: false }, class: 'contents' }, disabled: !@intervention.can_terminer? %>
+                      <% lien, methode = terminer_destination(@intervention) %>
+                      <%= button_to 'Terminer', lien, method: methode, class: 'btn btn-sm sm:btn-md bg-sky-50 text-sky-700 hover:bg-sky-100 border-none font-medium', title: 'Cliquez pour passer cette intervention en statut Terminée', form: { data: { turbo: false }, class: 'contents' }, disabled: !@intervention.can_terminer? %>
                     <% end %>
                     <% if policy(@intervention).valider? %>
                       <%= button_to 'Valider', valider_intervention_path(@intervention), class: 'btn btn-sm sm:btn-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-none font-medium', title: 'Cliquez pour passer cette intervention en statut Validée', form: { data: { turbo: false }, class: 'contents' }, disabled: !@intervention.can_valider? %>

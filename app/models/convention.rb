@@ -88,10 +88,10 @@ class Convention < ApplicationRecord
     return if ref.present?
 
     year = Date.current.year
-    org_services = Service.where(organisation_id: service&.organisation_id)
+    org_services = Service.where(organisation_id: c.service&.organisation_id)
     n = Convention.where(service: org_services)
                 .where('EXTRACT(YEAR FROM conventions.created_at) = ?', year)
                 .count + 1
-    self.ref = "CONV-#{year}-#{n}"
+    c.ref = "CONV-#{year}-#{n}"
   end
 end
