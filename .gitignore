@@ -41,3 +41,6 @@
 
 dump.rdb
 coverage
+
+# Fiche de contexte projet locale (contient le CCTP anonymisé et des détails client)
+.claude/method/fiches/contexte-projet.md
