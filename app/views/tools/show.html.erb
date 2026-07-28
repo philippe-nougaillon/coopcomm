@@ -2,7 +2,7 @@
   <% page_title!(@tool.name) %>
   <div class="flex flex-row justify-between items-start gap-3 mb-8">
     <div>
-      <h1 class="flex flex-col md:flex-row md:gap-2 text-2xl sm:text-3xl text-primary font-bold sm:whitespace-nowrap">
+      <h1 class="flex flex-col capitalize md:flex-row md:gap-2 text-2xl sm:text-3xl text-primary font-bold sm:whitespace-nowrap">
         <%= (@tool.name) %>
       </h1>
     </div>
@@ -102,9 +102,9 @@
       </label>
     <% end %>
   </div>
-  <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 overflow-hidden">
+  <div class="flex flex-col bg-white rounded-xl  shadow-sm overflow-hidden">
     <% if params[:vue] != 'liste' %>
-      <div class="flex flex-row items-center gap-4 px-4 py-3 bg-slate-50 text-xs text-slate-500 border-b border-slate-100">
+      <div class="flex flex-row items-center gap-4 px-4 py-3 bg-slate-50 text-xs text-slate-500 shadow-sm">
         <div class="flex flex-col md:flex-row gap-2">
           <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>Disponible</span>
           <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>En panne</span>
@@ -151,15 +151,19 @@
         </div>
       <% end %>
     <% when 'liste' %>
+    <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+      <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+      <span>Faire glisser pour voir plus</span>
+    </div>
       <div class="overflow-x-auto">
-        <table class="table table-sm w-full border-collapse">
+        <table class="table table-sm w-full border-none">
           <thead class="bg-slate-100">
             <tr>
               <th></th>
-              <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Intervention</th>
-              <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Du</th>
-              <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Au</th>
-              <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Adhérent</th>
+                          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Intervention</th>
+                          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Du</th>
+                          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Au</th>
+                          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Adhérent</th>
             </tr>
           </thead>
           <tbody>
@@ -187,15 +191,19 @@
       <% end %>
     <% end %>
   </div>
-  <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 overflow-hidden">
+    <div class="flex flex-col bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+  <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+      <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+      <span>Faire glisser pour voir plus</span>
+    </div>
     <div class="overflow-x-auto">
-      <table class="table table-sm w-full">
+      <table class="table table-sm w-full border-none">
         <thead class="bg-slate-100">
           <tr>
-            <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Il y a</th>
-            <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">État</th>
-            <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Par</th>
-            <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Date</th>
+                        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Il y a</th>
+                        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">État</th>
+                        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Par</th>
+                        <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Date</th>
             <th></th>
           </tr>
         </thead>

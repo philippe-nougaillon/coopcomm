@@ -1,36 +1,40 @@
 <% if current_user&.agent? && audit.audited_changes.keys.map(&:to_s) == ['note'] %>
   <% return %>
 <% end %>
-<tr class="hover:bg-base-300">
-  <td class="whitespace-nowrap">
-    <%= time_tag(audit.created_at, format: :long) { "Il y a #{time_ago_in_words(audit.created_at)}" } %>
-    <br>
-    (<%= l(audit.created_at, format: :long) %>)
+<tr class=" hover:bg-base-200/60 transition-colors duration-150 align-top">
+  <td class="py-4 pl-4 pr-2 text-sm whitespace-nowrap flex-1">
+    <div class="font-semibold text-slate-700 text-xs sm:text-sm leading-tight">
+      Il y a <%= time_ago_in_words(audit.created_at) %>
+    </div>
+    <div class="py-4 px-4 text-sm whitespace-nowrap">
+      <%= l(audit.created_at, format: :long) %>
+    </div>
   </td>
-  <td>
+  <td class="px-4 py-3flex-1">
     <% if audit.user_id %>
       <% if audit.user %>
         <%= audit.user.email %>
         (#<%= audit.user.id %>)
         <br>
-        <%= audit.user.rôle.humanize %>
-        <br>
-      <% end %>
+        <span class="text-slate-400 text-xs"><%= audit.user.rôle.humanize %></span>
+        <% end %>
     <% else %>
       SYSTEM CONSOLE
     <% end %>
   </td>
-  <td>
-    <%= audit.auditable_type %>
+  
+  <td class="px-4 py-4 whitespace-nowrap flex-1">
+        <div class="inline-block">
+      <%= audit_badge(audit) %>
+ </div>
   </td>
-  <td>
-    <%= audit.action.humanize %>
-  </td>
-  <td class="whitespace-nowrap">
-    <% unless audit.comment %>
-      <%= audit_changes_list(audit, current_user) %>
-    <% else %>
-      <%= audit.comment %>
-    <% end %>
+  <td class="px-4 py-4 flex-1">
+        <div class="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-600 shadow-sm max-w-xl group">
+    <% if audit.comment.present? %>
+        <%= audit.comment %>
+      <% else %>
+        <%= audit_changes_list(audit, current_user) %>
+      <% end %>
+    </div>
   </td>
 </tr>
