@@ -27,10 +27,6 @@
     <%= audit.action.humanize %>
   </td>
   <td class="whitespace-nowrap">
-    <% unless audit.comment %>
-      <%= audit_changes_list(audit, current_user) %>
-    <% else %>
-      <%= audit.comment %>
-    <% end %>
+    <%= audit_details(audit, current_user) %>
   </td>
 </tr>

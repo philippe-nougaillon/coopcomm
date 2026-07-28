@@ -193,6 +193,13 @@
 - **(c) Utilisateur désactivé irrécupérable** — [l.242](app/controllers/users_controller.rb#L242) : la recherche subit le `default_scope :kept`, un compte soft-deleté n'est donc jamais retrouvé ; la création échoue sur l'unicité de l'email avec le message opaque « email est déjà utilisé(e) », alors que l'utilisateur ne voit ce compte nulle part dans l'interface (prouvé par test). *Correctif proposé* : chercher avec `User.unscoped` (ou `with_discarded`) et proposer une réactivation explicite, ou au minimum un message « compte désactivé, à réactiver depuis la liste des utilisateurs désactivés ».
 - **Test** : `users_import_test.rb` — 3 ÉPINGLAGES (ligne sans nom, ligne sans email, utilisateur désactivé) figent le comportement actuel.
 
+### B26 — Show intervention : toutes les actions sont affichées **en double** (ancienne barre d'actions non retirée à la refonte `12da1055`)
+- **Signalé par** : agent, 2026-07-28 (découvert en lançant la suite système après le concern `PieceJointeAuditable` — 8 tests système en `Capybara::Ambiguous`, aucun lien avec le concern).
+- **Parcours de reproduction** : se connecter en manager → ouvrir une intervention (`/interventions/<slug>`) → la barre d'actions de l'ancien en-tête ([show.html.erb:23-40](app/views/interventions/show.html.erb#L23)) **et** la nouvelle barre issue de la refonte ([l.374-396](app/views/interventions/show.html.erb#L374), puis [l.650](app/views/interventions/show.html.erb#L650)) sont toutes deux rendues et visibles → « Modifier », « Supprimer », « Terminer », « Valider », « Refuser » et le QR Code apparaissent chacun **deux fois** sur la page.
+- **Cause** : le commit `12da1055` (#390 « show interventions ») a ajouté la nouvelle barre sans supprimer l'ancienne (compté sur le fichier : `Terminer'` 1× avant, 2× après). Aucune classe responsive ne masque l'une des deux.
+- **Portée** : purement visuelle/UX en prod (les deux boutons pointent vers la même action, rien n'est cassé fonctionnellement), mais **8 tests système échouent** : `intervention_manager_flow_test` (Modifier, Supprimer, Terminer, Valider, Refuser), `intervention_agent_flow_test` (Modifier), `intervention_adherent_flow_test` (Modifier), `dashboard_refresh_manager_flow_test` (transition d'état).
+- **Correctif proposé** : retirer le bloc d'actions de l'ancien en-tête (l.23-40) — la refonte l'a manifestement déplacé plus bas. Les tests système repassent au vert sans modification (ils ciblent le libellé / le `data-testid`, qui redeviennent uniques).
+
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
 
 ### R1 — Pointage : une fille de la veille non terminée ferait pointer une NOUVELLE intervention au lieu de terminer la sienne
