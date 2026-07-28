@@ -313,7 +313,8 @@
                   <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Actions de validation</span>
                   <div class="flex flex-wrap gap-2">
                     <% if policy(@intervention).terminer? %>
-                      <%= button_to 'Terminer', terminer_intervention_path(@intervention), class: "btn btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", title: "Terminer l'intervention", form: { data: { turbo: false }, class: 'contents' }, disabled: !@intervention.can_terminer? %>
+                    <% lien, methode = terminer_destination(@intervention) %>
+                      <%= button_to 'Terminer', lien, method: methode, class: "btn btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", title:"Terminer l'intervention", form: { data: { turbo: false }, class: 'contents' }, disabled: !@intervention.can_terminer? %>
                     <% end %>
                     <% if policy(@intervention).valider? %>
                       <%= button_to 'Valider', valider_intervention_path(@intervention), class:"btn  btn-success btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", title: "Valider l'intervention", form: { data: { turbo: false }, class: 'contents' }, disabled: !@intervention.can_valider? %>

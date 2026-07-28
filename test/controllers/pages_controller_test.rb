@@ -149,6 +149,24 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal ApplicationController::BACKGROUND_COLORS[12], assigns(:banner_background_color)
   end
 
+  # La home d'un agent ne liste QUE des interventions de pointage
+  # (`by_role_for_home` : état nouveau + template_slug non nul). Son bouton
+  # « Terminer » doit donc toujours passer par l'action `pointer` de
+  # l'intervention modèle — c'est le comportement de référence sur lequel
+  # l'index et le show ont été alignés (helper `terminer_destination`).
+  test 'home : le bouton Terminer d\'un agent pointe vers `pointer` de l\'intervention modèle' do
+    mère  = interventions(:intervention_repete)
+    fille = interventions(:intervention_fille)
+    fille.update_columns(template_slug: mère.slug)
+    sign_in users(:martin_technique_paris)
+
+    get home_url
+
+    assert_response :success
+    assert_select "form[action=?][method=?]", pointer_intervention_path(mère), 'get'
+    assert_select "form[action=?]", terminer_intervention_path(fille), count: 0
+  end
+
   # ---------------------------------------------------------------------------
   # meteo / meteo_by_day (API météo stubbée globalement par WebMock)
   # ---------------------------------------------------------------------------

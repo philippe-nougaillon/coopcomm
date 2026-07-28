@@ -33,10 +33,11 @@
         <% if !(intervention.validé? || intervention.refusé?) %>
           <div class="my-2 flex flex-row gap-2">
             <% if !defined?(from_turbo_stream) && policy(intervention).terminer? && intervention.can_terminer? %>
-              <%= button_to 'Terminer', terminer_intervention_path(intervention), 
-                  class: 'relative z-10 btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white! w-[100px] justify-center', 
-                  form: { data: { turbo: false }, class: 'w-[100px]' }, 
-                  disabled: !intervention.can_terminer? || current_user.adhérent? %>              
+              <% lien, methode = terminer_destination(intervention) %>
+              <%= button_to 'Terminer', lien, method: methode,
+                  class: 'relative z-10 btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white! w-[100px] justify-center',
+                  form: { data: { turbo: false }, class: 'w-[100px]' },
+                  disabled: !intervention.can_terminer? || current_user.adhérent? %>
                   <% end %>
             <% if !defined?(from_turbo_stream) && policy(intervention).valider? && intervention.can_valider? %>
               <%= button_to 'Valider', valider_intervention_path(intervention), 

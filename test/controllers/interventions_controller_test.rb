@@ -103,6 +103,59 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert intervention.reload.validé?, 'le double-clic ne doit rien casser'
   end
 
+  # Test critique — parcours quotidien de l'agent : terminer son intervention.
+  # Une transition passe par `persist_workflow_state` → `save!`, qui rejoue
+  # TOUTES les validations : sur une intervention déjà en conflit de
+  # disponibilité (#357), l'exception remontait en erreur 500 et l'intervention
+  # était définitivement figée (bug B28, signalé en prod par PE le 2026-07-28).
+  test 'critique : terminer une intervention en conflit de disponibilité redirige au lieu de planter' do
+    agent = users(:john_wick)
+    intervention = cree_intervention_en_conflit(agent)
+    sign_in agent
+
+    post terminer_intervention_url(intervention)
+
+    assert_redirected_to intervention_url(intervention)
+    assert_match(/pas valide/, flash[:alert])
+    assert_match(/Conflit/, flash[:alert], "le motif du refus doit être affiché à l'utilisateur")
+    assert intervention.reload.nouveau?, "l'état ne doit pas avoir changé"
+  end
+
+  # Même filet côté adhérent, sur les deux transitions qu'il déclenche.
+  test 'critique : valider une intervention en conflit de disponibilité redirige au lieu de planter' do
+    intervention = cree_intervention_en_conflit(users(:john_wick), workflow_state: 'terminé')
+    sign_in users(:weil)
+
+    post valider_intervention_url(intervention)
+
+    assert_redirected_to intervention_url(intervention)
+    assert_match(/pas valide/, flash[:alert])
+    assert intervention.reload.terminé?, "l'état ne doit pas avoir changé"
+  end
+
+  test 'critique : refuser une intervention en conflit de disponibilité redirige au lieu de planter' do
+    intervention = cree_intervention_en_conflit(users(:john_wick), workflow_state: 'terminé')
+    sign_in users(:weil)
+
+    post refuser_intervention_url(intervention)
+
+    assert_redirected_to intervention_url(intervention)
+    assert_match(/pas valide/, flash[:alert])
+    assert intervention.reload.terminé?, "l'état ne doit pas avoir changé"
+  end
+
+  # Garde anti-faux-positif : sans conflit, la transition passe toujours — le
+  # filet ne doit pas bloquer le parcours nominal.
+  test 'terminer une intervention saine reste possible' do
+    agent = users(:john_wick)
+    intervention = cree_intervention_en_conflit(agent, avec_conflit: false)
+    sign_in agent
+
+    post terminer_intervention_url(intervention)
+
+    assert intervention.reload.terminé?
+  end
+
   # Sentinelle distinctive : détecter la fuite par la donnée, pas par le wording
   # des libellés (robustesse aux refontes UX, doctrine 2026-07-24).
   AVIS_SENTINELLE = /AVIS-RESERVE-AUX-GESTIONNAIRES/
@@ -125,6 +178,30 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
       avis: 'AVIS-RESERVE-AUX-GESTIONNAIRES : prestation décevante',
       slug: SecureRandom.uuid
     )
+  end
+
+  # Une intervention de +agent+ que la règle de disponibilité #357 rend
+  # invalide : une SECONDE intervention du même agent recouvre sa plage. Elle
+  # est créée en contournant les validations — c'est justement ce chevauchement
+  # qu'elles refusent — comme le fait la donnée réelle héritée d'avant #357.
+  def cree_intervention_en_conflit(agent, workflow_state: 'nouveau', avec_conflit: true)
+    intervention = Intervention.create!(
+      description: 'Intervention à terminer', adherent: users(:weil), service: services(:comptabilite),
+      agent_ids: [agent.id], début: DateTime.new(2024, 3, 12, 9, 0), fin: DateTime.new(2024, 3, 12, 11, 0),
+      temps_de_pause: 0, workflow_state: workflow_state, slug: SecureRandom.uuid
+    )
+    return intervention unless avec_conflit
+
+    conflit = Intervention.new(
+      description: 'Intervention qui recouvre la plage', adherent: users(:weil), service: services(:comptabilite),
+      début: DateTime.new(2024, 3, 12, 8, 0), fin: DateTime.new(2024, 3, 12, 12, 0),
+      temps_de_pause: 0, workflow_state: 'nouveau', slug: SecureRandom.uuid
+    )
+    conflit.save!(validate: false)
+    AgentIntervention.create!(agent: agent, intervention: conflit)
+
+    assert_not intervention.reload.valid?, 'garde : le montage doit bien rendre l’intervention invalide'
+    intervention
   end
 
   # ==================== /TESTS CRITIQUES ====================

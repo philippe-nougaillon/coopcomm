@@ -270,10 +270,12 @@ class InterventionsController < ApplicationController
   # end
 
   def terminer
+    return if redirect_si_invalide('terminée')
+
     if @intervention.can_terminer?
       @intervention.terminer!
       @intervention.calculate_co2
-      
+
       unless Rails.env.development?
         Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id })
         Events.instance.publish('intervention.done', payload: { intervention_id: @intervention.id })
@@ -286,6 +288,8 @@ class InterventionsController < ApplicationController
   end
 
   def valider
+    return if redirect_si_invalide('validée')
+
     @intervention.valider!
 
     Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
@@ -294,6 +298,8 @@ class InterventionsController < ApplicationController
   end
 
   def refuser
+    return if redirect_si_invalide('refusée')
+
     @intervention.refuser!
 
     Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
@@ -580,5 +586,20 @@ class InterventionsController < ApplicationController
 
   def sort_direction
     %w[asc desc].include?(params[:direction]) ? params[:direction] : 'desc'
+  end
+
+  # Une transition de workflow passe par `persist_workflow_state`, qui fait un
+  # `save!` : toutes les validations sont rejouées, y compris celles qui ne
+  # concernent pas la transition (conflit d'agents #357, dates…). Sur une
+  # intervention déjà invalide, l'exception remontait en erreur 500 — on
+  # redirige avec le motif, comme le fait `archiver` depuis toujours.
+  # Renvoie true quand la redirection a été émise (l'action doit s'arrêter).
+  def redirect_si_invalide(etat)
+    return false if @intervention.valid?
+
+    motifs = @intervention.errors.full_messages.map(&:strip).to_sentence
+    redirect_to @intervention,
+                alert: "L'intervention n'est pas valide, elle ne peut pas être #{etat} : #{motifs}"
+    true
   end
 end

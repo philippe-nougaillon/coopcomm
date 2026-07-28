@@ -205,7 +205,7 @@ class Intervention < ApplicationRecord
     when 'adhérent'
       user.interventions_adherent.where(workflow_state: ['terminé']).ordered
     when 'agent'
-      user.interventions.where(workflow_state: ['nouveau']).where.not(template_slug: nil).ordered
+      user.interventions.where(workflow_state: ['nouveau']).ordered
     end
   end
 
@@ -459,6 +459,10 @@ class Intervention < ApplicationRecord
 
   def intervention_mère
     Intervention.find_by(slug: template_slug)
+  end
+
+  def pointage_de?(user)
+    template_slug.present? && intervention_mère&.agents&.include?(user)
   end
 
   def update_heures_consommees_convention
