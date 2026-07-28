@@ -160,6 +160,48 @@
 - **Impact** : perte de données potentielle (rattachements outil↔interventions) déclenchable en 2 clics ; historique des interventions faussé.
 - **Correctif proposé (décision métier à trancher)** : soit **restaurer la protection** — re-masquer/désactiver le bouton pour `@tool.interventions.any?` **ET** ajouter une garde dans `tools_controller#destroy` (redirection + message si l'outil est utilisé), la vue seule étant contournable ; soit **assumer** la suppression libre (et alors supprimer le test `Ne pas pouvoir supprimer un outil avec une intervention`). Test correspondant en `skip` documenté jusqu'à décision.
 
+### B20 — Import XLS : un agent peut être rattaché au service d'une **autre organisation**
+- **Signalé par** : agent, 2026-07-27 (session `/tests` « import des utilisateurs »).
+- **Parcours de repro** : se connecter en manager/admin de la commune A → *Utilisateurs → Import agents* → fichier dont la colonne `Service` porte le nom d'un service qui n'existe que dans la commune B (ex. `Voirie`) → « Oui (Appliquer) » → l'agent est créé et rattaché au service de B ; comme l'organisation dérive des services, **le nouvel agent appartient à l'organisation B**.
+- **Où** : [users_controller.rb:259](app/controllers/users_controller.rb#L259) — `Service.find_by(nom: service_name)`, sans filtre d'organisation.
+- **Cause racine (prouvée par test)** : l'unicité de `Service#nom` est scopée à l'organisation ([service.rb:21](app/models/service.rb#L21)) — deux communes peuvent donc avoir un service homonyme, et `find_by` renvoie arbitrairement le premier. Le reste du contrôleur borne pourtant bien les services à `current_organisation` (cf. `service_ids` des `user_params`, l.416-420).
+- **Impact** : fuite de périmètre multi-organisations (vision produit) ; agent invisible pour sa propre commune, visible chez l'autre.
+- **Correctif proposé** : `current_organisation.services.find_by(nom: service_name)` (une ligne), et faire remonter « service introuvable dans votre organisation » dans le message d'erreur existant.
+- **Test** : `users_import_test.rb` — « un service d'une autre organisation est accepté par l'import » (ÉPINGLAGE : fige le comportement actuel, **à inverser** à la correction).
+
+### B21 — Import XLS : rétrogradation silencieuse d'un manager/administrateur en agent, y compris hors de son organisation
+- **Signalé par** : agent, 2026-07-27 (même session).
+- **Parcours de repro** : se connecter en manager/admin de la commune A → *Import agents* → fichier contenant l'email d'un **manager** (de A ou de B) → « Oui (Appliquer) » → ce manager devient `agent` et se retrouve rattaché à un service de A. Aucun avertissement, la ligne est comptée comme « importée ».
+- **Où** : [users_controller.rb:242](app/controllers/users_controller.rb#L242) (`User.where('lower(email) = ?', …).first_or_initialize` — recherche **globale**, aucun `authorize` sur l'enregistrement retrouvé) + [l.256](app/controllers/users_controller.rb#L256) (`user.rôle = 'agent'` inconditionnel).
+- **Cause racine (prouvée par test)** : l'import réutilise n'importe quel compte existant partageant l'email, sans vérifier ni l'organisation ni la hiérarchie — alors que `UserPolicy#update?` interdit précisément à un manager de modifier un manager/admin (`hierarchy_violation?`).
+- **Impact** : perte de privilèges (le manager visé ne peut plus administrer), et modification d'un compte d'une autre commune — le pendant « écriture » de l'IDOR corrigé sur la messagerie.
+- **Correctif proposé** : borner la recherche au périmètre (`current_organisation`), et **ne pas toucher au rôle** d'un enregistrement existant (ne poser `rôle = 'agent'` que sur `new_record`) ; idéalement passer l'enregistrement retrouvé par `authorize user, :update?` et compter un refus en erreur de ligne.
+- **Test** : `users_import_test.rb` — 2 ÉPINGLAGES (autre organisation / propre organisation), **à inverser** à la correction.
+
+### B22 — Import XLS : une colonne optionnelle absente **efface** la donnée existante
+- **Signalé par** : agent, 2026-07-27 (même session).
+- **Parcours de repro** : un agent a un téléphone et un mémo renseignés → importer un fichier **sans** les colonnes `Téléphone`/`Mémo` (elles sont facultatives : seules Nom/Prénom/Email/Service sont obligatoires) en mode « Oui (Appliquer) » → le téléphone et le mémo de cet agent passent à vide.
+- **Où** : [users_controller.rb:248-249](app/controllers/users_controller.rb#L248-L249) — `user.téléphone = idx_telephone ? … : nil`.
+- **Impact** : perte de données silencieuse (le bilan affiche « importée »).
+- **Correctif proposé** : ne rien assigner quand la colonne est absente (`user.téléphone = row[idx_telephone]… if idx_telephone`).
+- **Test** : `users_import_test.rb` — « un fichier sans colonne Téléphone conserve le téléphone existant », en `skip` documenté (passera au vert à la correction).
+
+### B23 — Import XLS : un fichier qui n'est pas un XLS 97-2003 provoque une erreur 500
+- **Signalé par** : agent, 2026-07-27 (même session).
+- **Parcours de repro** : *Import agents* → téléverser un `.xlsx`, un PDF, une image renommée, ou un `.xls` corrompu (le `accept=".xls"` et le script de contrôle sont **côté client**, contournables) → page d'erreur serveur.
+- **Où** : [users_controller.rb:216](app/controllers/users_controller.rb#L216) — `Spreadsheet.open` sans `rescue`.
+- **Preuve empirique** : téléversement d'un PNG → `Ole::Storage::FormatError: OLE2 signature is invalid`, non rattrapée.
+- **Impact** : faible techniquement, mauvais côté utilisateur (une erreur de format est un cas nominal, pas une panne) ; remonte en alerte via l'exception notifier.
+- **Correctif proposé** : entourer la lecture d'un `rescue` (Ole/Spreadsheet + `StandardError`) → `flash.now[:alert]` « Fichier illisible : le format attendu est Excel 97-2003 (.xls) ».
+- **Test** : `users_import_test.rb` — « un fichier qui n'est pas un XLS est refusé proprement », en `skip` documenté.
+
+### B24 — Import XLS : le bilan de fin d'import n'est pas fiable
+- **Signalé par** : agent, 2026-07-27 (même session). Trois défauts distincts, même conséquence : l'utilisateur croit son fichier intégralement traité.
+- **(a) Lignes silencieusement ignorées** — [users_controller.rb:237](app/controllers/users_controller.rb#L237) et [l.240](app/controllers/users_controller.rb#L240) : une ligne sans `Nom` ou sans `Email` fait `next` **sans** incrémenter ni `@importes` ni `@errors` et sans trace. *Repro* : fichier de 10 lignes dont 3 sans email → bilan « Lignes importées: 7 | Lignes ignorées: 0 » + message vert « L'importation a bien été exécutée. ». *Correctif proposé* : compter ces lignes en erreur avec leur numéro.
+- **(b) Retour de `save` ignoré** — [l.309](app/controllers/users_controller.rb#L309) : `user.save` sans `!` ni test ; un échec (course sur l'unicité, échec d'`invite!`) est compté « importée ». *Correctif proposé* : `if user.save … else` (ou `save!` + rescue par ligne). Même famille que **B17**.
+- **(c) Utilisateur désactivé irrécupérable** — [l.242](app/controllers/users_controller.rb#L242) : la recherche subit le `default_scope :kept`, un compte soft-deleté n'est donc jamais retrouvé ; la création échoue sur l'unicité de l'email avec le message opaque « email est déjà utilisé(e) », alors que l'utilisateur ne voit ce compte nulle part dans l'interface (prouvé par test). *Correctif proposé* : chercher avec `User.unscoped` (ou `with_discarded`) et proposer une réactivation explicite, ou au minimum un message « compte désactivé, à réactiver depuis la liste des utilisateurs désactivés ».
+- **Test** : `users_import_test.rb` — 3 ÉPINGLAGES (ligne sans nom, ligne sans email, utilisateur désactivé) figent le comportement actuel.
+
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
 
 ### R1 — Pointage : une fille de la veille non terminée ferait pointer une NOUVELLE intervention au lieu de terminer la sienne
