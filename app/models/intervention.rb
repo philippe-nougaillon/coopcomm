@@ -205,7 +205,7 @@ class Intervention < ApplicationRecord
     when 'adhérent'
       user.interventions_adherent.where(workflow_state: ['terminé']).ordered
     when 'agent'
-      user.interventions.where(workflow_state: ['nouveau']).where.not(template_slug: nil).ordered
+      user.interventions.where(workflow_state: ['nouveau']).ordered
     end
   end
 
