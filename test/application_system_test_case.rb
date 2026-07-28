@@ -110,4 +110,24 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     str.split(' ').map { |word| word.sub(/\A\p{L}/) { |c| c.upcase } }.join(' ')
   end
 
+  # Déconnexion, rendue déterministe. Trois pièges se combinent :
+  # 1) le clic Selenium natif sur le lien du dock mobile tombe sur le SVG enfant
+  #    et n'atteint pas l'ancre → le DELETE Turbo n'est jamais émis ;
+  # 2) Turbo déclenche un window.confirm que `page.accept_confirm` capte de façon
+  #    instable → on le stube ;
+  # 3) sous parallélisation, le clic dispatché en JS peut malgré tout se perdre
+  #    (page pas encore pilotée par Turbo, ou DELETE + rendu de la landing plus
+  #    lents que le budget d'attente) → on re-tente. L'ancre n'existant pas sur la
+  #    page publique, un clic surnuméraire est sans effet (`?.`), et un second
+  #    sign_out alors que le premier est en vol redirige lui aussi vers la landing.
+  def se_deconnecter(temoin_page_publique = 'Mutualisez mieux')
+    page.execute_script('window.confirm = () => true')
+
+    3.times do
+      page.execute_script("document.querySelector(\"[data-testid='fermer_session']\")?.click()")
+      return if has_text?(temoin_page_publique, wait: 10)
+    end
+
+    flunk "Déconnexion : #{temoin_page_publique.inspect} toujours absent après 3 tentatives de clic"
+  end
 end
