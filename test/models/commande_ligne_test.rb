@@ -3,6 +3,11 @@
 require 'test_helper'
 
 # Miroir de test/models/facture_ligne_test.rb (models symétriques, #330/#333).
+# ==================== TESTS CRITIQUES ====================
+# L'argent (fiche contexte 2026-07-28) : mêmes invariants que facture_ligne —
+# prix dérivé du tarif, total généré, recalcul du total de la commande.
+# Contient aussi l'épinglage du bug B2 (prix du devis écrasé par le tarif
+# courant), à inverser quand la décision métier D1 sera prise.
 class CommandeLigneTest < ActiveSupport::TestCase
   setup do
     @commande = commandes(:commande_secretariat) # total_ht initial 0, sans ligne

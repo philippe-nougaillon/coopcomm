@@ -10,6 +10,125 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:hidalgo)
   end
 
+  # ==================== TESTS CRITIQUES ====================
+  # Zones où une défaillance est inacceptable (fiche contexte 2026-07-28) :
+  # - évaluations (note/avis) jamais visibles de l'agent noté (CCTP : réservées
+  #   aux gestionnaires ; menace réaliste = le curieux qui regarde ce qui le
+  #   concerne via l'UI normale) ;
+  # - validation/refus par l'adhérent (parcours critique n°5, déclencheur de
+  #   la facturation).
+
+  # Test critique — l'agent affecté ouvre SA propre intervention validée :
+  # la page ne doit contenir ni l'avis ni la section Évaluation.
+  test "critique : un agent ne voit pas son évaluation sur la page de son intervention" do
+    agent = users(:john_wick)
+    intervention = cree_intervention_evaluee(agent)
+    sign_in agent
+
+    get intervention_url(intervention)
+
+    assert_response :success, "garde anti-faux-positif : l'agent doit accéder à la page"
+    assert_no_match AVIS_SENTINELLE, response.body
+  end
+
+  # Test critique — même exigence sur l'export XLS de l'index, accessible à
+  # tous les rôles (fuite corrigée le 2026-07-28, ex-bug B25 : les colonnes
+  # Évaluation/Avis partaient telles quelles chez l'agent noté).
+  test "critique : l'export XLS d'un agent ne contient ni évaluation ni avis" do
+    agent = users(:john_wick)
+    intervention = cree_intervention_evaluee(agent)
+    sign_in agent
+
+    get interventions_url(format: :xls)
+
+    assert_response :success
+    sheet = Spreadsheet.open(StringIO.new(response.body)).worksheet(0)
+    en_tetes = sheet.row(0).to_a
+    assert_not_includes en_tetes, 'Évaluation'
+    assert_not_includes en_tetes, 'Avis'
+    contenu = sheet.rows.map { |r| r.to_a.join(' ') }.join(' ')
+    assert_includes contenu, intervention.description,
+                    "garde anti-faux-positif : l'intervention doit figurer dans l'export"
+    assert_no_match AVIS_SENTINELLE, contenu
+  end
+
+  # Test critique — le manager, lui, garde les évaluations dans son export
+  # (la correction B25 ne doit pas les faire disparaître pour tout le monde).
+  test "critique : l'export XLS d'un manager contient les évaluations et avis" do
+    get interventions_url(format: :xls) # hidalgo (manager) connecté par le setup
+
+    assert_response :success
+    sheet = Spreadsheet.open(StringIO.new(response.body)).worksheet(0)
+    en_tetes = sheet.row(0).to_a
+    assert_includes en_tetes, 'Évaluation'
+    assert_includes en_tetes, 'Avis'
+    contenu = sheet.rows.map { |r| r.to_a.join(' ') }.join(' ')
+    assert_includes contenu, interventions(:tonte_locaux).avis
+  end
+
+  # Test critique — parcours quotidien : l'adhérent valide le travail terminé.
+  test "critique : l'adhérent valide une intervention terminée" do
+    intervention = interventions(:intervention_terminée)
+    sign_in users(:weil)
+
+    post valider_intervention_url(intervention)
+
+    assert_redirected_to intervention_url(intervention)
+    assert intervention.reload.validé?, "l'intervention doit passer à l'état validé"
+  end
+
+  # Test critique — parcours quotidien : l'adhérent refuse le travail terminé.
+  test "critique : l'adhérent refuse une intervention terminée" do
+    intervention = interventions(:intervention_terminée)
+    sign_in users(:weil)
+
+    post refuser_intervention_url(intervention)
+
+    assert_redirected_to intervention_url(intervention)
+    assert intervention.reload.refusé?, "l'intervention doit passer à l'état refusé"
+  end
+
+  # Test critique — cas du quotidien (double-clic, retour navigateur, onglet
+  # en double) : re-valider une intervention déjà validée.
+  # Bug B3 (registre) : valider!/refuser! sans garde can_…? ni rescue → 500.
+  test "critique : re-valider une intervention déjà validée redirige avec un message (bug B3)" do
+    skip 'Bug B3 : valider hors état → Workflow::NoTransitionAllowed non rescué (500) — à réactiver à la correction'
+    intervention = interventions(:intervention_terminée)
+    sign_in users(:weil)
+    post valider_intervention_url(intervention)
+
+    post valider_intervention_url(intervention) # 2e clic : plus en état terminé
+
+    assert_redirected_to intervention_url(intervention)
+    assert intervention.reload.validé?, 'le double-clic ne doit rien casser'
+  end
+
+  # Sentinelle distinctive : détecter la fuite par la donnée, pas par le wording
+  # des libellés (robustesse aux refontes UX, doctrine 2026-07-24).
+  AVIS_SENTINELLE = /AVIS-RESERVE-AUX-GESTIONNAIRES/
+
+  # Une intervention validée, notée et commentée, dont +agent+ est l'agent
+  # affecté (john_wick : aucune intervention de fixture → jamais de conflit
+  # de disponibilité #357, leçon B10).
+  def cree_intervention_evaluee(agent)
+    Intervention.create!(
+      description: 'Intervention évaluée du test critique',
+      adherent: users(:weil),
+      service: services(:comptabilite),
+      agent_ids: [agent.id],
+      début: DateTime.new(2024, 3, 11, 9, 0),
+      fin: DateTime.new(2024, 3, 11, 11, 0),
+      temps_de_pause: 0,
+      temps_total: 2,
+      workflow_state: 'validé',
+      note: 1,
+      avis: 'AVIS-RESERVE-AUX-GESTIONNAIRES : prestation décevante',
+      slug: SecureRandom.uuid
+    )
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
   test 'should get index' do
     get interventions_url
     assert_response :success
@@ -121,14 +240,10 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
                   'pour un manager, la liste des adhérents suit les services sélectionnés'
   end
 
-  test 'should get index with export xls' do
-    get users_url,  params: {
-      format: :xls
-    }
-
-    assert_response :success
-    assert_equal 'application/xls', response.content_type
-  end
+  # NOTE : l'ancien test « should get index with export xls » appelait users_url
+  # (copier-coller) — l'export des interventions n'était donc testé nulle part.
+  # Il est remplacé par les tests critiques XLS en tête de fichier ; l'export
+  # des users reste couvert par users_controller_test.
 
   test 'should get new' do
     get new_intervention_url

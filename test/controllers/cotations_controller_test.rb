@@ -13,6 +13,22 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     sign_in @admin
   end
 
+  # ==================== TESTS CRITIQUES ====================
+  # L'argent (fiche contexte 2026-07-28) : le prix d'un devis vient TOUJOURS du
+  # tarif des prestations, jamais de la requête (scénario compte volé/malveillant).
+
+  # Test critique — déplacé en tête de fichier le 2026-07-28.
+  test "critique : le prix d'une ligne ne peut pas être forcé via les paramètres" do
+    post cotations_url, params: { cotation: {
+      adherent_id: @adherent.id, service_id: @service.id, intitulé: 'Devis',
+      cotation_lignes_attributes: { '0' => { prestation_id: @prestation.id, qté: 1, prix_ht: 1 } }
+    } }
+    ligne = Cotation.order(:created_at).last.cotation_lignes.first
+    assert_equal @prestation.tarif, ligne.prix_ht
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
   test 'index accessible à un admin' do
     get cotations_url
     assert_response :success
@@ -58,15 +74,6 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 136.5, cotation.total_ht.to_f
     assert_equal 'créé', cotation.workflow_state
     assert_match(/\ACO-#{Date.current.year}-\d+\z/, cotation.ref)
-  end
-
-  test "le prix d'une ligne ne peut pas être forcé via les paramètres" do
-    post cotations_url, params: { cotation: {
-      adherent_id: @adherent.id, service_id: @service.id, intitulé: 'Devis',
-      cotation_lignes_attributes: { '0' => { prestation_id: @prestation.id, qté: 1, prix_ht: 1 } }
-    } }
-    ligne = Cotation.order(:created_at).last.cotation_lignes.first
-    assert_equal @prestation.tarif, ligne.prix_ht
   end
 
   # --- Modification & verrou d'édition ---
