@@ -4,13 +4,15 @@ class Document < ApplicationRecord
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
 
+  include PieceJointeValidable
+  include PieceJointeAuditable
+
   audited associated_with: :tool
 
   belongs_to :tool
 
   has_one_attached :fichier
 
-  include PieceJointeValidable
   valide_piece_jointe :fichier, types: PieceJointeValidable::DOCUMENTS
 
   # validates :category, uniqueness: { scope: %i[tool_id version] }

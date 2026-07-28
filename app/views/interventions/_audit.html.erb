@@ -17,24 +17,17 @@
         (#<%= audit.user.id %>)
         <br>
         <span class="text-slate-400 text-xs"><%= audit.user.rôle.humanize %></span>
-        <% end %>
+      <% end %>
     <% else %>
       SYSTEM CONSOLE
     <% end %>
   </td>
-  
   <td class="px-4 py-4 whitespace-nowrap flex-1">
-        <div class="inline-block">
+    <div class="inline-block">
       <%= audit_badge(audit) %>
- </div>
+    </div>
   </td>
   <td class="px-4 py-4 flex-1">
-        <div class="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-600 shadow-sm max-w-xl group">
-    <% if audit.comment.present? %>
-        <%= audit.comment %>
-      <% else %>
-        <%= audit_changes_list(audit, current_user) %>
-      <% end %>
-    </div>
+    <%= audit_details(audit, current_user) %>
   </td>
 </tr>

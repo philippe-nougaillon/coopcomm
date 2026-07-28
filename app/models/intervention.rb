@@ -3,9 +3,12 @@
 class Intervention < ApplicationRecord
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
+
   include Workflow
   include WorkflowActiverecord
   include DashboardRefreshable
+  include PieceJointeValidable
+  include PieceJointeAuditable
 
   acts_as_taggable_on :tags
 
@@ -31,8 +34,6 @@ class Intervention < ApplicationRecord
 
   has_many_attached :photos
 
-  # TODO : mettre tous les include PieceJointeValidable en haut des fichiers
-  include PieceJointeValidable
   valide_piece_jointe :photos, types: PieceJointeValidable::IMAGES
 
   before_validation -> { combine_datetime(:début_prévue) }
@@ -52,8 +53,7 @@ class Intervention < ApplicationRecord
 
   before_save -> { self.temps_de_pause = 0 if temps_de_pause.nil? }
   before_save :calc_temps_total
-  before_save :audit_photo_added, if: -> { photos.attachments.any?(&:new_record?) }
-  
+
   after_commit :update_heures_consommees_convention, if: -> { self.temps_total.present? }
 
   scope :ordered, -> { order(updated_at: :desc) }
@@ -595,9 +595,5 @@ class Intervention < ApplicationRecord
     elsif repeter? && workflow_state != 'pointage activé'
       self.workflow_state = 'pointage activé'
     end
-  end
-  
-  def audit_photo_added
-    self.audit_comment = "#{photos.attachments.count(&:new_record?)} photo(s) ajoutée(s)"
   end
 end

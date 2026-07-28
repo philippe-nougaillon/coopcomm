@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 class Convention < ApplicationRecord
+  include PieceJointeValidable
+  include PieceJointeAuditable
+
   audited associated_with: :user
 
   belongs_to :user
@@ -17,7 +20,6 @@ class Convention < ApplicationRecord
     application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
   ].freeze
 
-  include PieceJointeValidable
   valide_piece_jointe :document, types: DOCUMENTS
 
   validates :date_début, presence: true

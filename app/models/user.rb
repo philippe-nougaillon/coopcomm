@@ -5,6 +5,8 @@ class User < ApplicationRecord
   friendly_id :slug_candidates, use: :slugged
 
   include Discard::Model
+  include PieceJointeValidable
+  include PieceJointeAuditable
 
   acts_as_taggable_on :tags
 
@@ -34,7 +36,6 @@ class User < ApplicationRecord
     image/avif
   ].freeze
 
-  include PieceJointeValidable
   valide_piece_jointe :profile_picture, types: IMAGES
 
   belongs_to :warehouse, optional: true

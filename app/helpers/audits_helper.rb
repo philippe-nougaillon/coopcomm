@@ -246,6 +246,33 @@ module AuditsHelper
     end
   end
 
+  def audit_details(audit, current_user)
+    if audit.comment.present?
+      return audit_comment_tag(audit) if humanize_changes(audit.audited_changes).blank?
+
+      return safe_join([audit_comment_tag(audit), audit_changes_block(audit, current_user)])
+    end
+
+    return absence_period_badge(audit) if audit.auditable_type == 'Absence' && audit.action == 'destroy'
+
+    audit_changes_block(audit, current_user)
+  end
+
+  def audit_comment_tag(audit)
+    content_tag(:span, "\"#{audit.comment}\"", class: 'italic text-slate-500 block')
+  end
+
+  def audit_changes_block(audit, current_user)
+    contenu =
+      if audit.auditable_type == 'User' && audit.audited_changes.key?('invitation_token')
+        invitation_changes_summary(audit)
+      else
+        audit_changes_list(audit, current_user)
+      end
+
+    content_tag(:div, contenu, class: 'bg-slate-50/60 rounded-lg p-2 border border-slate-300 group-hover:bg-white transition-colors duration-150')
+  end
+
   private
 
   def badge_icon(audit)

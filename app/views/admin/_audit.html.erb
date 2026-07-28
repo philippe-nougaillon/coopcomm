@@ -27,14 +27,6 @@
     </td>
     <%# modifications %>
     <td class="py-3 px-4 text-sm align-center min-w-[280px]">
-      <% if audit.comment.present? %>
-        <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-50/50 text-blue-700 text-xs italic border border-blue-100">
-          "<%= audit.comment %>"
-        </span>
-      <% else %>
-        <div class="bg-slate-50/60 rounded-lg p-2 border border-slate-300 group-hover:bg-white transition-colors duration-150">
-          <%= audit_changes_list(audit, current_user) %>
-        </div>
-      <% end %>
+      <%= audit_details(audit, current_user) %>
     </td>
   </tr>
