@@ -36,10 +36,20 @@ class ToolsController < ApplicationController
   end
 
   # GET /tools/1 or /tools/1.json
+  # GET /tools/1 or /tools/1.json
   def show
     params[:vue] ||= 'calendrier'
+    @documents = @tool.documents
 
-    @documents = @documents = @tool.documents
+    params[:date] = Date.today if params[:date].blank?
+    fecha_base = params[:date].to_date
+
+    @date = fecha_base.beginning_of_month
+    @date_fin = fecha_base.end_of_month
+
+    @date_inicio_grid = @date.beginning_of_week
+    @date_fin_grid = @date_fin.end_of_week
+
   end
 
   # GET /tools/new

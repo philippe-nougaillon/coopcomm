@@ -1,5 +1,5 @@
+
 <% if mouvement && mouvement.réservé? %>
-  <%# --- CAS BLEU : L'OUTIL EST RÉSERVÉ (bleu foncé = vous, bleu clair = un autre) --- %>
   <% bg_class = (mouvement.user == current_user) ? 'bg-blue-500' : 'bg-blue-300' %>
   <% span_content = capture do %>
     <span class="border border-slate-400 inline-block w-4 h-4 rounded-sm shadow-sm hover:scale-110 transition-transform <%= bg_class %>"
@@ -7,18 +7,17 @@
     </span>
   <% end %>
   <%= link_to_if policy(mouvement).destroy?, span_content, mouvement_path(mouvement), data: { turbo_method: :delete } %>
+
 <% elsif mouvement && mouvement.panne? %>
-  <%# --- CAS ROUGE : L'OUTIL EST EN PANNE --- %>
   <% panne_est_resolue = mouvement.resolue? %>
   <% span_content = capture do %>
     <span class="bg-red-500 border border-slate-400 inline-block w-4 h-4 rounded-sm shadow-sm"
           title="Panne déclarée le <%= mouvement.date.strftime('%d/%m à %H:%M') %><%= ' (Déjà réparé depuis)' if panne_est_resolue %>">
     </span>
   <% end %>
-  <%# On affiche le lien SEULEMENT si la panne n'est pas encore résolue %>
+
   <% if policy(Mouvement).new? && !panne_est_resolue %>
     <% datetime_debut = Time.zone.parse("#{date} #{start_hour}:#{local_assigns[:start_minute] || '00'}:00") %>
-    <%# On recule d'une minute le début théorique pour éviter la collision avec une future réservation %>
     <% datetime_fin_panne = [(datetime_debut - 1.minute), (mouvement.date + 1.minute)].max %>
     <%= link_to mouvements_path(mouvement: { tool_id: tool_id, état: 'fin_panne', date: datetime_fin_panne }),
                 data: {
@@ -29,11 +28,10 @@
       <%= span_content %>
     <% end %>
   <% else %>
-    <%# Si c'est résolu, c'est juste un span rouge, pas de curseur cliquable %>
     <%= span_content %>
   <% end %>
+
 <% else %>
-  <%# --- CAS VERT : L'OUTIL EST DISPONIBLE (Entrée ou Aucun mouvement) --- %>
   <%= link_to reserve_tool_mouvements_path(
         tool_id: tool_id,
         date: date,

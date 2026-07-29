@@ -128,35 +128,22 @@
     <% when 'calendrier' %>
       <%= month_calendar do |date| %>
         <div class="flex justify-center items-center h-6 mb-1">
-          <p class="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-sm <%= date == Date.today ? 'text-center text-purple-700 font-bold' : 'text-slate-400' %>">
+          <p class="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-sm <%= date == Date.today ? 'text-purple-700 font-bold' : 'text-slate-400' %>">
             <%= date.day %>
           </p>
         </div>
-        <%
-          heure_matin = Time.zone.parse("#{date} 08:00:00")
-          heure_soir = Time.zone.parse("#{date} 13:05:00")
-
-          mouvement_matin = @tool.dernier_mouvement_a(heure_matin)
-          mouvement_soir = @tool.dernier_mouvement_a(heure_soir)
-        %>
-        <div class="flex flex-nowrap justify-center gap-1 px-1">
+        <% 
+      heure_ref = Time.zone.parse("#{date} 12:00:00")
+      mouvement_jour = @tool.dernier_mouvement_a(heure_ref)
+    %>
+        <div class="flex justify-center items-center px-1 my-1">
           <%= render 'mouvements/mouvement_slot',
-                    mouvement: mouvement_matin,
-                    tool_id: @tool.id,
-                    date: date,
-                    margin_style: '',
-                    start_hour: 8,
-                    end_hour: 13,
-                    new_title: "Réserver le #{date.day} au matin" %>
-          <%= render 'mouvements/mouvement_slot',
-                    mouvement: mouvement_soir,
-                    tool_id: @tool.id,
-                    date: date,
-                    margin_style: '',
-                    start_hour: 13,
-                    start_minute: 5,
-                    end_hour: 18,
-                    new_title: "Réserver le #{date.day} après-midi" %>
+                mouvement: mouvement_jour,
+                tool_id: @tool.id,
+                date: date,
+                start_hour: 8,
+                end_hour: 18,
+                new_title: "Réserver le #{date.day}" %>
         </div>
       <% end %>
     <% when 'liste' %>
@@ -164,7 +151,6 @@
         <table class="table table-sm w-full border-collapse">
           <thead class="bg-slate-100">
             <tr>
-              <th></th>
               <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Intervention</th>
               <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Du</th>
               <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Au</th>
