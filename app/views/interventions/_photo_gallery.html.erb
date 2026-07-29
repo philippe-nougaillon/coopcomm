@@ -1,0 +1,26 @@
+<%# locals: (photos:, compact: false) %>
+<span class="block text-xs font-bold text-slate-400 uppercase tracking-wider <%= compact ? 'mb-2' : 'mb-3' %>">
+  Photos
+</span>
+
+<% if photos.attached? %>
+  <div class="flex flex-wrap gap-3 <%= 'max-h-48 overflow-y-auto p-1' if compact %>">
+    <% photos.each do |photo| %>
+      <div class="relative group flex-shrink-0">
+        <div class="w-28 h-28 rounded-xl border border-slate-200 overflow-hidden bg-white shadow-xs hover:shadow-md transition-all">
+          <%= link_to image_tag(photo, loading: 'lazy', class: "w-full h-full object-cover"), photo, target: "_blank", rel: "noopener" %>
+        </div>
+        <%= button_to purge_intervention_path(photo_id: photo.id),
+                    method: :delete,
+                    form: { data: {'turbo-confirm': "Êtes-vous bien certain.e de vouloir supprimer définitivement cette photo ?"} },
+                    class: "absolute -top-2 -right-2 bg-white text-red-500 rounded-full p-1.5 shadow-md border border-slate-200 hover:bg-red-50 hover:text-red-600 transition-all z-10" do %>
+          <%= embedded_svg "icons/delete.svg", class: "w-3.5 h-3.5", title: "Supprimer" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <p class="text-slate-400 italic text-sm <%= 'pt-2' unless compact %>">
+    Aucune photo n'est attachée<%= compact ? '.' : ' à cette intervention.' %>
+  </p>
+<% end %>
