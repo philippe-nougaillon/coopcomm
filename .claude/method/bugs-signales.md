@@ -224,6 +224,46 @@
 - **Correctif proposé** : afficher un message explicite quand les coordonnées manquent, ou re-remplir le champ avec la valeur saisie. **Non corrigé** (front, non demandé).
 - **Effet de bord constaté sur les tests** : les tests système du formulaire Sites font désormais de **vraies requêtes réseau à `maps.googleapis.com`** (clé d'API présente en test) — dépendance externe + quota consommé à chaque run. `warehouses_test` a été réécrit pour poser adresse et coordonnées comme le fait l'autocomplétion (chemin nominal réel), donc il passe avec ou sans réseau.
 
+### B30 — Météo : `get_title` plante sur une date hors de la fenêtre de prévision
+- **Signalé par** : agent, 2026-07-29 (session /tests lot D), **prouvé empiriquement** : `MeteoConceptConnexion.get_title(Date.today + 20, forecasts)` → `NoMethodError: undefined method '[]' for nil`.
+- **Parcours de reproduction** : aucun aujourd'hui **depuis l'UI** — le seul appelant ([tools/_view_list.html.erb:18](app/views/tools/_view_list.html.erb#L18)) est gardé par `if @forecasts && icon_meteo = get_icon_meteo_by_date(date, …)`, qui renvoie nil hors plage et court-circuite l'appel. Le bug se déclenche dès qu'un futur appelant oublie cette garde, ou si la garde est déplacée.
+- **Cause** : `get_title` ([meteo_concept_connexion.rb:68](app/services/meteo_concept_connexion.rb#L68)) interpole `forecast["weather"]` **sans la garde `return unless day_forecast`** que possède son jumeau `get_icon_meteo_by_date` (l.51).
+- **Correctif proposé** : `return if forecast.nil?` en tête, symétrique de `get_icon_meteo_by_date`. **Non corrigé** (méthode /tests). Test `skip` documenté dans `meteo_concept_connexion_test.rb`, qui passera au vert à la correction.
+
+### B31 — Météo : une réponse tronquée de l'API fait planter la recherche de prévision
+- **Signalé par** : agent, 2026-07-29 (session /tests lot D), **prouvé empiriquement** : `get_forecast_for_date(Date.today + 5, forecasts.first(3))` → `NoMethodError: undefined method 'third' for nil`.
+- **Parcours de reproduction** : l'API Météo Concept renvoie moins de 14 jours (dégradation partielle, changement d'offre, quota) → ouvrir la page d'accueil ou la réservation de matériel → **erreur 500** sur une page qui n'a pourtant besoin de la météo que pour décorer.
+- **Cause** : `get_forecast_for_date` ([meteo_concept_connexion.rb:64](app/services/meteo_concept_connexion.rb#L64)) borne l'index sur la **constante 14** (`difference_of_day < 14`) au lieu de la taille réelle du tableau reçu, puis appelle `.third` sur `forecasts[index]` sans garde.
+- **Portée** : contredit l'intention explicite du `rescue` de `fetch_response` (« une API météo en panne ne doit jamais faire tomber la page d'accueil ») — la garde protège l'appel HTTP mais pas l'exploitation d'une réponse partielle.
+- **Correctif proposé** : `return unless difference_of_day >= 0 && difference_of_day < forecasts_for_14_days.size`, puis `forecasts_for_14_days[difference_of_day]&.third`. **Non corrigé** (méthode /tests). Test `skip` documenté.
+
+### B32 — `Absence` : une absence sans dates est enregistrable et casse ensuite l'affichage
+- **Signalé par** : agent, 2026-07-29 (hors périmètre de la session, découvert en analysant la couverture), **prouvé empiriquement** en environnement de test : `Absence.new(user: u).valid?` → `true`, puis `nb_jours` → `NoMethodError: undefined method '-' for nil` et `en_cours?` → `TypeError: cannot determine inclusion in beginless/endless ranges`.
+- **Parcours de reproduction** : aucun depuis le formulaire (les champs date sont requis côté HTML) ; atteignable par requête forgée ou par tout code créant une `Absence` sans dates. La fiche utilisateur affichant l'absence lèverait alors une 500.
+- **Cause** : `Absence` ([absence.rb:24-26](app/models/absence.rb#L24)) n'a **aucune validation de présence** sur `du`/`au` ; les trois validations métier commencent toutes par `return if du.blank? || au.blank?`, donc une absence sans dates les traverse toutes.
+- **Correctif proposé** : `validates :du, :au, presence: true`. ⚠️ À vérifier avant application : cela rendrait invalides d'éventuelles absences existantes sans dates en prod (un `Absence.where(du: nil).or(...)` avant migration).
+- **Non corrigé** (méthode /tests, et lot `Absence` non retenu par PE pour cette session — aucun test écrit dessus).
+
+### B33 — CRM adhérent : le filtre Statut n'offre jamais l'état « Signé » sur l'onglet Cotations
+- **Signalé par** : agent, 2026-07-29 (session /tests lot B).
+- **Parcours de reproduction** : se connecter en adhérent (ou manager) → CRM → onglet « Mes Cotations » → dérouler le filtre **Statut** → les états proposés sont Créé / Envoyé / Validé / Refusé / Archivé. **« Signé » est absent**, alors que c'est un état propre à `Cotation` et une étape centrale de son workflow : un adhérent ne peut pas filtrer ses devis signés.
+- **Cause** : la vue ([adherent_crm/index.html.erb:29](app/views/adherent_crm/index.html.erb#L29)) alimente le menu avec `Commande.workflow_state_humanized` **quel que soit l'onglet**. Or `Commande` n'a pas l'état `SIGNE` ([commande.rb:22-26](app/models/commande.rb#L22)), contrairement à `Cotation` ([cotation.rb:25-30](app/models/cotation.rb#L25)).
+- **Correctif proposé** : choisir la classe selon `@tab` (`{'cotations' => Cotation, 'commandes' => Commande, 'factures' => Facture}[@tab]`). **Non corrigé** (modification de vue avec effet sur le comportement → hors du périmètre /tests).
+
+### B34 — CRM adhérent : le terme de recherche n'est pas échappé (jokers SQL actifs)
+- **Signalé par** : agent, 2026-07-29 (session /tests lot B).
+- **Parcours de reproduction** : CRM → champ « Rechercher » → saisir `%` (ou `_`) → **tous** les documents du périmètre remontent, au lieu de ceux contenant littéralement ce caractère.
+- **Cause** : `apply_filters` ([adherent_crm_controller.rb:29](app/controllers/adherent_crm_controller.rb#L29)) construit `"%#{params[:search]}%"` sans échapper `%` ni `_`, qui sont les jokers de `ILIKE`.
+- **Portée** : **pas une faille** — la valeur passe par un paramètre lié (`s:`), donc aucune injection SQL, et le filtre ne peut que restreindre `policy_scope`. Simple gêne fonctionnelle. Sévérité faible.
+- **Correctif proposé** : `ActiveRecord::Base.sanitize_sql_like(params[:search])` avant interpolation. **Non corrigé** (méthode /tests). Comportement actuel **épinglé** par un test, à inverser à la correction.
+
+### B35 — CRM adhérent : le filtre `adherent_id` est ignoré sur l'onglet Cotations
+- **Signalé par** : agent, 2026-07-29 (session /tests lot B).
+- **Parcours de reproduction** : en manager, appeler `/adherent_crm?adherent_id=<id>` → les onglets Commandes et Factures sont bien restreints à cet adhérent ([adherent_crm_controller.rb:95](app/controllers/adherent_crm_controller.rb#L95) et l.118), l'onglet Cotations ne l'est **pas**.
+- **Cause** : asymétrie entre les trois `prepare_variables_of_*_for_view` — `adherent_id` (sans accent) n'est appliqué qu'aux commandes et factures ; seul `adhérent_ids` (avec accent, dans `apply_filters`) vaut pour les trois. Deux paramètres différents pour la même intention, dont aucun n'est aujourd'hui émis par le formulaire de la vue.
+- **Portée** : incohérence, pas une fuite (`policy_scope` borne les trois onglets de la même manière).
+- **Correctif proposé** : unifier sur un seul paramètre et l'appliquer dans `apply_filters`. **Non corrigé** (méthode /tests). Comportement actuel **épinglé** par un test.
+
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
 
 ### R1 — Pointage : une fille de la veille non terminée ferait pointer une NOUVELLE intervention au lieu de terminer la sienne
