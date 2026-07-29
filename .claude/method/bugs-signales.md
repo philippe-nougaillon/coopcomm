@@ -312,6 +312,43 @@
 - **Impact** : 500 sur une page agent, déclenchable par une URL forgée ou un paramètre corrompu.
 - **Correctif proposé** : le même garde que `ToolsController#date_valide?` (une méthode privée de 5 lignes, à mutualiser si un troisième contrôleur en a besoin). **Non appliqué** : hors du périmètre autorisé ce jour (l'autorisation portait sur les trois autres emplacements).
 
+### B42 — L'historique d'un utilisateur annonce « Déconnexion de l'application » pour une modification de profil quelconque
+- **Signalé par** : agent, 2026-07-29 (session `/tests` « helpers », reproduit par sonde puis par test).
+- **Parcours de repro** : ouvrir l'historique d'un utilisateur (`/users/…`, onglet Activité, ou `/admin/audits`) sur un audit dont **aucun** changement n'est affichable — soit `audited_changes` vide, soit uniquement des champs techniques filtrés (`otp_secret`, `signature`, `failed_attempts`, `ip`, `uid`…). **Observé** : la colonne détail affiche « Déconnexion de l'application », alors que le **badge du même audit** dit « Profil modifié ».
+- **Où** : [app/helpers/audits_helper.rb:113](app/helpers/audits_helper.rb#L113) — `audit.audited_changes['remember_created_at']&.last.nil?` est **vrai quand la clé est absente** (`nil&.last` → `nil`, puis `.nil?` → `true`).
+- **Cause racine** : il manque la garde `key?('remember_created_at') &&` que la fonction jumelle [audits_helper.rb:361](app/helpers/audits_helper.rb#L361) applique correctement pour le badge. Les deux fonctions décrivent le même évènement et divergent.
+- **Impact** : traçabilité trompeuse — un manager lit « déconnexion » là où il y a eu une modification de compte. Exigence CCTP.
+- **Correctif proposé** : ajouter `audit.audited_changes.key?('remember_created_at') &&` (une ligne, aligne le détail sur le badge). Test `skip` documenté prêt à passer au vert : `BUG H1 : un changement de profil invisible ne doit pas être présenté comme une déconnexion` (`audits_helper_test.rb`).
+
+### B43 — Trois branches mortes dans le repli de `audit_changes_list`
+- **Signalé par** : agent, 2026-07-29 (découvert en écrivant les tests : les assertions attendues échouaient).
+- **Parcours de repro** : aucun — c'est précisément le problème. Les messages « Désactivation / Réhabilitation du compte par un administrateur » et « Mise à jour de l'affectation logistique (Entrepôt) » ne peuvent **jamais** s'afficher.
+- **Où** : [app/helpers/audits_helper.rb:100-106](app/helpers/audits_helper.rb#L100) et [audits_helper.rb:119-120](app/helpers/audits_helper.rb#L119).
+- **Cause racine** : on n'entre dans ce bloc de repli que si `humanize_changes` est vide, c'est-à-dire si **tous** les champs modifiés sont dans `FILTERED_FIELDS`. Or ni `discarded_at` ni `warehouse_id` n'y figurent → ils produisent toujours une ligne de changement, et le repli n'est jamais atteint. Vérifié : une désactivation affiche « Statut du compte : Réactivé → Désactivé » (comportement correct, mais pas celui que le code croit produire).
+- **Impact** : nul pour l'utilisateur (le rendu de repli est moins bon que celui qui s'applique), mais 5 lignes de code trompeuses qui font croire à un comportement inexistant.
+- **Correctif proposé** : supprimer les deux branches, ou — si les messages sont voulus — les déplacer **avant** le test `humanize_changes.blank?`. Décision d'affichage à prendre.
+
+### B44 — `/mail_logs` tombe en 500 si la colonne `to` contient une liste de nombres
+- **Signalé par** : agent, 2026-07-29 (reproduit par sonde : `NoMethodError: undefined method 'strip' for an instance of Integer`).
+- **Parcours de repro** : un `MailLog` dont `to` vaut `"[1, 2]"` (JSON valide, contenu non textuel) → ouvrir `/mail_logs` → 500.
+- **Où** : [app/helpers/mail_logs_helper.rb:15](app/helpers/mail_logs_helper.rb#L15) — `Array(emails).map(&:strip)` suppose que `JSON.parse` a rendu des chaînes.
+- **Cause racine** : `MailLog#to` n'a aucune forme garantie (adresse, CSV, tableau, JSON) et a **déjà porté des ID** en production (`notif_panne`, corrigé par `b32fbf28`) — rien n'empêche que ça se reproduise.
+- **Impact** : page des logs d'emails inaccessible tant que la ligne fautive est dans la page. Écran d'administration.
+- **Correctif proposé** : `map { |e| e.to_s.strip }` (une ligne). Test `skip` documenté prêt à passer au vert (`mail_logs_helper_test.rb`).
+
+### B45 — `format_mail_recipients` rend du HTML non échappé
+- **Signalé par** : agent, 2026-07-29 (reproduit : `format_mail_recipients('<b>x</b>@paris.fr')` rend le `<b>` comme balise).
+- **Où** : [app/helpers/mail_logs_helper.rb:15](app/helpers/mail_logs_helper.rb#L15) — `.join(',<br/>').html_safe` sur des valeurs jamais échappées.
+- **Impact** : XSS stocké par construction. Portée **faible** aujourd'hui (la colonne est alimentée par l'application, à partir d'emails validés), mais toute nouvelle source d'écriture dans `MailLog#to` devient un vecteur.
+- **Correctif proposé** : échapper chaque adresse (`ERB::Util.h`) avant le `join`, en gardant le `<br/>` comme seul HTML délibéré. Comportement actuel **épinglé** par `ÉPINGLAGE H4` (`mail_logs_helper_test.rb`), à inverser à la correction.
+
+### B46 — Code mort : `prettify` et `audited_view_path`
+- **Signalé par** : agent, 2026-07-29.
+- **Où** : [app/helpers/application_helper.rb:28-119](app/helpers/application_helper.rb#L28) — ~80 lignes.
+- **Cause racine** : les 7 partials `_audit` sont passés à `audit_details` le 2026-07-28-c ; plus aucune vue n'appelle ces deux méthodes (vérifié par grep sur `app/`). Elles représentent 44 des 88 lignes non couvertes du fichier.
+- **Impact** : aucun à l'exécution ; charge de maintenance et bruit dans la mesure de couverture.
+- **Correctif proposé** : suppression. Non testées délibérément (on ne fige pas du code voué à disparaître).
+
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
 
 ### R1 — Pointage : une fille de la veille non terminée ferait pointer une NOUVELLE intervention au lieu de terminer la sienne
