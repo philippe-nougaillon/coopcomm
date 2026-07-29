@@ -124,11 +124,8 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     # tonte_locaux a des mouvements rattachés (bouton désactivé) : on prend
     # une intervention supprimable
     visit intervention_url(interventions(:nouvelle_intervention))
-    delete_button = find("[data-testid=\"Supprimer l'intervention\"]")
-    scroll_to(delete_button, align: :center) # le dock fixe intercepte le clic en bas d'écran
-    page.accept_confirm do
-      delete_button.click
-    end
+    cliquer_element(find("[data-testid=\"Supprimer l'intervention\"]"))
+    cliquer_bouton 'Oui, supprimer'
     # `destroy` redirige vers l'index : on attend la navigation AVANT l'assertion
     # négative, sinon elle s'évalue alors qu'on est encore sur la show.
     assert_current_path interventions_path
