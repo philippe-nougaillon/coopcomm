@@ -10,8 +10,8 @@ class FacturesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==================== TESTS CRITIQUES ====================
-  # L'argent (fiche contexte 2026-07-28) : le prix d'une facture ne se manipule
-  # jamais par la requête, et un lien mort ne fait jamais un 500.
+  # Le prix d'une facture ne se manipule jamais par la requête, et un lien mort ne
+  # fait jamais un 500.
 
   # Test critique — le prix d'une ligne de facture ne peut pas être forcé via
   # les paramètres (miroir du test cotation ; scénario compte volé/malveillant).
@@ -30,9 +30,8 @@ class FacturesControllerTest < ActionDispatch::IntegrationTest
     assert_equal prix_initial, ligne.reload.prix_ht, 'le prix forgé doit être ignoré'
   end
 
-  # Test critique — un lien mort (vieux mail, slug régénéré) est un cas du
-  # quotidien : redirection propre, jamais un 500 (ex-bug B9, corrigé 2026-07-28
-  # sur le motif du contrôleur cotations : « introuvable → redirection »).
+  # Test critique — un lien mort (vieux mail, slug régénéré) est un cas du quotidien :
+  # redirection propre, jamais un 500.
   test "critique : slug inconnu → redirection vers l'index avec alerte (ex-bug B9)" do
     get facture_url('slug-inexistant')
 

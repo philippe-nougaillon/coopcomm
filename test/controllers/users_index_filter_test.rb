@@ -3,14 +3,11 @@
 require 'test_helper'
 
 # Filtre Services de l'index utilisateurs (#311) : services du current_user
-# présélectionnés au premier affichage, mais vidables — un administrateur qui
-# retire ses services voit alors TOUS les utilisateurs de son organisation.
-# Même mécanisme que l'index interventions (champ caché `services[]`).
+# présélectionnés au premier affichage, mais vidables.
 class UsersIndexFilterTest < ActionDispatch::IntegrationTest
   setup do
-    # administrateur_paris (org mairie_paris) services : service_paris /
-    # informatique / technique. john_wick est dans `comptabilite` (même org,
-    # hors de ses services) → témoin « hors périmètre personnel ».
+    # administrateur_paris (org mairie_paris) services : service_paris / informatique /
+    # technique.
     sign_in users(:administrateur_paris)
     @temoin = users(:john_wick)
   end
@@ -24,9 +21,8 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
   end
 
   test 'admin : filtre vidé (services[] soumis vide) → tous les utilisateurs de l\'organisation' do
-    # L'index /users pagine (10/page) : on cible la recherche sur le témoin pour
-    # un résultat déterministe, indépendant de la page. john_wick (comptabilite)
-    # n'apparaît QUE si le périmètre est élargi à toute l'organisation (filtre vidé).
+    # L'index /users pagine (10/page) : on cible la recherche sur le témoin pour un
+    # résultat déterministe, indépendant de la page.
     get users_url, params: { services: [''], search: @temoin.nom }
 
     assert_response :success

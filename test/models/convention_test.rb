@@ -158,6 +158,5 @@ class ConventionTest < ActiveSupport::TestCase
   end
 
   # NB : les anciens tests de Convention#temps_total_interventions ont été déplacés dans
-  # test/models/intervention_test.rb (section « Heures consommées de la convention ») :
-  # la fonction est devenue Intervention#update_heures_consommees_convention (after_commit).
+  # test/models/intervention_test.rb.
 end

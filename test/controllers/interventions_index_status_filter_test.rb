@@ -3,8 +3,7 @@
 require 'test_helper'
 
 # Filtre Statut de l'index interventions (#309) : le select est `multiple` →
-# params[:workflow_state] est un TABLEAU de libellés humanisés (ex. ["Nouveau",
-# "Validé"]) ; #index les ramène aux valeurs stockées (minuscules) avant de filtrer.
+# params[:workflow_state] est un TABLEAU de libellés humanisés.
 class InterventionsIndexStatusFilterTest < ActionDispatch::IntegrationTest
   setup do
     sign_in users(:hidalgo) # manager, services : service_paris / informatique / technique

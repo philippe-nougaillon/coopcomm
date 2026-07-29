@@ -21,9 +21,8 @@ class Rack::Attack
   # counted by rack-attack and this throttle may be activated too
   # quickly. If so, enable the condition to exclude them from tracking.
   #
-  # Les assets et les fichiers ActiveStorage (photos d'interventions) passent
-  # par la pile Rack : on les exclut du compteur, sinon un bureau de mairie
-  # derrière une IP partagée épuiserait la limite en chargeant quelques pages.
+  # Assets et fichiers ActiveStorage exclus du compteur : une IP de mairie
+  # partagée épuiserait la limite en chargeant quelques pages.
 
   # Throttle all requests by IP (60rpm)
   #
@@ -66,8 +65,8 @@ class Rack::Attack
     end
   end
 
-  # Throttle POST requests to /users/password (demande de reset de mot de passe)
-  # by IP address — chaque demande part en mail réel via Mailgun.
+  # Throttle POST requests to /users/password by IP address — chaque demande
+  # part en mail réel.
   #
   # Key: "rack::attack:#{Time.now.to_i/:period}:password_resets/ip:#{req.ip}"
   throttle('password_resets/ip', limit: 5, period: 15.minutes) do |req|
@@ -78,8 +77,7 @@ class Rack::Attack
 
   ### Throttle Devise Pages (anti-bots) ###
 
-  # Reprend le `rate_limit to: 20, within: 1.minute, if: devise_controller?`
-  # historique d'ApplicationController
+  # Reprend le `rate_limit` historique d'ApplicationController.
   #
   # Key: "rack::attack:#{Time.now.to_i/:period}:devise/ip:#{req.ip}"
   throttle('devise/ip', limit: 20, period: 1.minute) do |req|
@@ -90,35 +88,19 @@ class Rack::Attack
 
   ### Fail2Ban : bannissement automatique des scanners ###
 
-  # Toute requête vers un chemin « scanner » (technologies étrangères à une app
-  # Rails : WordPress/PHP/ASP, interfaces d'admin exotiques, fichiers sensibles)
-  # bannit l'IP DÈS LA PREMIÈRE sonde (maxretry: 1), pour tout le site.
-  # Compteurs/bans dans Solid Cache → persistants aux redémarrages.
-  # Débannir en console :
+  # Une seule sonde bannit l'IP pour tout le site. Débannir en console :
   #   Rack::Attack::Fail2Ban.reset("pentesters-IP", findtime: 10.minutes)
   #
-  # ⚠ bantime = 2 semaines : c'est le maximum que Solid Cache honore — son
-  # `max_age` (défaut 2.weeks, pas de config/cache.yml sur ce projet) purge
-  # toute entrée plus vieille, quel que soit l'expires_in demandé. Un scanner
-  # qui revient après la purge est re-banni à sa prochaine sonde. Pour un ban
-  # vraiment définitif : blocklist statique (ENV/en dur), pas le cache.
+  # bantime = 2 semaines = le maximum que Solid Cache honore (son `max_age`).
   #
-  # ⚠⚠ Le ban 1re-tentative ne pardonne AUCUN faux positif (2 semaines pour
-  # toute l'IP, souvent partagée par un bureau de mairie). D'où :
-  # - exemption de /rails/ (l'URL ActiveStorage se termine par le NOM DU
-  #   FICHIER uploadé : un adhérent qui ouvre son « rapport.php » serait banni)
-  #   et /assets/ ;
-  # - exemption de /.well-known (ACME/security.txt, légitime) ;
-  # - préfixes stricts, vérifiés sans collision avec les routes réelles
-  #   (/admin/… de l'app ne matche NI /adminer NI /administrator — épinglé
-  #   par les tests « jamais un chemin légitime »).
+  # ⚠ Ce ban ne pardonne aucun faux positif, et l'URL ActiveStorage se termine
+  # par le nom du fichier uploadé : un adhérent ouvrant son « rapport.php »
+  # serait banni. D'où les exemptions /rails/, /assets/ et /.well-known.
 
   # Extensions de fichiers qu'une app Rails ne sert jamais.
   SCANNER_EXTENSIONS = %w[.php .php7 .phtml .asp .aspx .jsp .jspx .cgi .sql .bak].freeze
 
-  # Préfixes de chemins sondés par les scanners (comparés en minuscules) :
-  # WordPress/CMS, consoles BDD PHP, frameworks non-Ruby (Laravel, Spring,
-  # Tomcat), messageries Exchange, équipements réseau (routeurs Boa/GPON).
+  # Préfixes sondés par les scanners, en minuscules.
   SCANNER_PREFIXES = %w[
     /wp- /wordpress /xmlrpc /joomla /drupal /administrator /typo3 /magento
     /phpmyadmin /pma /adminer /mysql /sqlite /webdav /phpinfo
@@ -128,12 +110,10 @@ class Rack::Attack
   ].freeze
 
   blocklist('fail2ban pentesters') do |req|
-    # `filter` retourne vrai si la requête matche OU si l'IP est déjà bannie →
-    # requête bloquée (403) dans les deux cas.
     Rack::Attack::Fail2Ban.filter("pentesters-#{req.ip}", maxretry: 1, findtime: 10.minutes, bantime: 2.weeks) do
       chemin = req.path.downcase
       if chemin.start_with?('/rails/', '/assets/')
-        false # fichiers servis par l'app : jamais un motif de ban (cf. ⚠⚠)
+        false
       else
         chemin.end_with?(*SCANNER_EXTENSIONS) ||
           chemin.start_with?(*SCANNER_PREFIXES) ||

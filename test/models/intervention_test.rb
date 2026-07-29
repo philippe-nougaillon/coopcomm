@@ -6,8 +6,8 @@ class InterventionTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
   # --- Notification des managers à la création (send_manager_notification) ---
-  # Le créateur est déduit de l'audit de création : au niveau modèle, il faut
-  # `as_user` pour le poser (dans l'app, `audited` capte le current_user du contrôleur).
+  # Le créateur est déduit de l'audit de création : au niveau modèle, il faut `as_user`
+  # pour le poser (dans l'app, `audited` capte le current_user du contrôleur).
 
   test "création par un agent NON terminée : aucune notification managers n'est enqueue" do
     agent = users(:martin_technique_paris)
@@ -103,15 +103,8 @@ class InterventionTest < ActiveSupport::TestCase
   # end
 
   # --- Heures consommées de la convention (update_heures_consommees_convention) ---
-  # Remplace Convention#temps_total_interventions (tests déplacés depuis convention_test.rb).
-  # Le cumul est entretenu incrémentalement par un after_commit, à partir du dernier
-  # audit de l'intervention : création → + temps_total ; update → + (nouveau − ancien) ;
-  # destroy → − temps_total. Convention de fixture : convention_paris (weil / informatique,
-  # année 2026, heures_consommees: 0). Ancrage temporel fixe (travel_to) pour rester
-  # dans la période de la convention quelle que soit la date d'exécution.
-  # NB : temps_total est assigné explicitement — le before_save calc_temps_total est
-  # aujourd'hui inopérant (bug B1 du registre) ; s'il est corrigé, prévoir début/fin/agents
-  # cohérents avec la valeur attendue.
+  # Remplace Convention#temps_total_interventions (tests déplacés depuis
+  # convention_test.rb).
 
   def create_intervention_conventionnee(attrs = {})
     Intervention.create!({ description: 'intervention conventionnée',
@@ -178,5 +171,67 @@ class InterventionTest < ActiveSupport::TestCase
 
       assert_equal 0, conventions(:convention_paris).reload.heures_consommees
     end
+  end
+
+  # --- by_role_for_home : ce que chaque rôle voit sur /home ---
+  # Côté agent le périmètre n'est plus restreint aux filles de pointage :
+  # toutes ses interventions « nouveau » sont listées.
+
+  test 'home agent : une intervention ordinaire à l\'état nouveau est listée' do
+    agent = users(:martin_technique_paris)
+    intervention = interventions(:nouvelle_intervention)
+
+    assert_nil intervention.template_slug
+    assert_includes intervention.agents, agent
+
+    assert_includes Intervention.by_role_for_home(agent), intervention
+  end
+
+  test 'home agent : une fille de pointage à l\'état nouveau reste listée' do
+    agent = users(:martin_technique_paris)
+    fille = interventions(:intervention_fille)
+    fille.update_columns(template_slug: interventions(:intervention_repete).slug)
+
+    assert_includes Intervention.by_role_for_home(agent), fille
+  end
+
+  test 'home agent : les interventions qui ont quitté l\'état nouveau sont exclues' do
+    listees = Intervention.by_role_for_home(users(:martin_technique_paris))
+
+    assert_not_includes listees, interventions(:intervention_terminée)
+    assert_not_includes listees, interventions(:intervention_validé)
+  end
+
+  test 'home agent : l\'intervention nouveau d\'un autre agent est exclue' do
+    agent = users(:martin_technique_paris)
+    intervention = interventions(:intervention_with_location)
+
+    assert_equal 'nouveau', intervention.workflow_state
+    assert_not_includes intervention.agents, agent
+
+    assert_not_includes Intervention.by_role_for_home(agent), intervention
+  end
+
+  test 'home agent : les interventions sont triées par mise à jour décroissante' do
+    agent = users(:martin_technique_paris)
+    interventions(:intervention_paris).update_columns(updated_at: 1.minute.from_now)
+
+    assert_equal interventions(:intervention_paris), Intervention.by_role_for_home(agent).first
+  end
+
+  test 'home adhérent : seules ses interventions terminées sont listées' do
+    listees = Intervention.by_role_for_home(users(:weil))
+
+    assert_includes listees, interventions(:intervention_terminée)
+    assert_not_includes listees, interventions(:nouvelle_intervention)
+    assert_not_includes listees, interventions(:intervention_autre_adhérent)
+  end
+
+  test 'home manager : les interventions validées, refusées et archivées sont exclues' do
+    listees = Intervention.by_role_for_home(users(:hidalgo))
+
+    assert_includes listees, interventions(:nouvelle_intervention)
+    assert_includes listees, interventions(:intervention_terminée)
+    assert_not_includes listees, interventions(:tonte_locaux)
   end
 end

@@ -2,13 +2,8 @@
 
 require 'application_system_test_case'
 
-# ⚠ Tests commentés le 2026-07-13 (décision client) : le workflow de validation
-# des documents d'outil a été débranché par la refonte UX (commits 3ae4f02e et
-# 42085022 — actions/routes/workflow commentés, boutons retirés, formulaire
-# passé en dropzone unique). La fonctionnalité sera peut-être retirée ou refaite
-# autrement → point D5 de .claude/method/points-a-trancher.md.
-# À la décision : réactiver/adapter ces tests si la fonctionnalité revient,
-# ou supprimer ce fichier si elle est abandonnée.
+# ⚠ Tests commentés (décision client) : le workflow de validation des
+# documents d'outil a été débranché par la refonte UX.
 class DocumentsTest < ApplicationSystemTestCase
   # setup do
   #   @tool = tools(:tondeuse)

@@ -2,9 +2,8 @@
 
 require 'test_helper'
 
-# Vérifie le câblage de l'action live `get_unavailable_elements` après la bascule
-# des disponibilités sur les dates réelles (plage effective : réel prioritaire,
-# repli sur prévu).
+# Vérifie le câblage de l'action live `get_unavailable_elements` après la bascule des
+# disponibilités sur les dates réelles (plage effective : réel prioritaire, repli sur
 class InterventionsDisponibiliteTest < ActionDispatch::IntegrationTest
   setup do
     sign_in users(:administrateur_paris)
@@ -89,8 +88,7 @@ class InterventionsDisponibiliteTest < ActionDispatch::IntegrationTest
 
   test 'édition : les dates réelles déclenchent la vérification live même si l’intervention est passée' do
     # Les dates réelles sont toujours passées (saisie a posteriori) : le listener
-    # change->verificationWithInput doit être présent malgré `passed` — sinon la
-    # couleur des agents ne se met à jour qu'à l'enregistrement.
+    # change->verificationWithInput doit être présent malgré `passed`.
     intervention = creer_intervention(début: '2025-04-08 09:00', fin: '2025-04-08 12:00')
 
     get edit_intervention_url(intervention)
@@ -105,8 +103,8 @@ class InterventionsDisponibiliteTest < ActionDispatch::IntegrationTest
   end
 
   # --- Câblage du check live dans le formulaire AGENT (_form_for_agents) --------
-  # Le partial agent n'a que des dates réelles (pas de prévues) : le contrôleur JS
-  # doit y être branché et fonctionner sans champs prévus.
+  # Le partial agent n'a que des dates réelles (pas de prévues) : le contrôleur JS doit y
+  # être branché et fonctionner sans champs prévus.
 
   test 'form agent (new) : contrôleur + cibles/action câblés sur les dates réelles et les agents' do
     sign_in users(:martin_technique_paris) # agent
@@ -172,9 +170,7 @@ class InterventionsDisponibiliteTest < ActionDispatch::IntegrationTest
     JSON.parse(response.body)
   end
 
-  # Le JS envoie les dates en UTC ISO (toISOString) ; les colonnes sont stockées
-  # en UTC. On convertit donc l'heure locale des tests comme le ferait le vrai
-  # appelant — des chaînes locales naïves ne matcheraient pas la base.
+  # Le JS envoie les dates en UTC ISO (toISOString) ; les colonnes sont stockées en UTC.
   def en_utc(valeur)
     return valeur if valeur == 'null'
 

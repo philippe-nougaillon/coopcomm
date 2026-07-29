@@ -6,10 +6,7 @@ class MouvementTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
   # --- Notification des réservations futures à la déclaration d'une panne ---
-  # (after_create :avertir_reservations_futures, if: :panne?)
-  # ⚠ Zone sensible (cf. CLAUDE.md « Pièges connus ») : on ne teste ICI que
-  # l'enqueue de NotifPanneJob, pas la logique de validation panne/fin_panne.
-  # L'outil `rateau` n'a aucun mouvement en fixture : chaque test construit son état.
+  # 
 
   setup do
     @tool       = tools(:rateau)

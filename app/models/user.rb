@@ -127,10 +127,7 @@ class User < ApplicationRecord
     h.sort_by { |k, _| I18n.transliterate(k) }.to_h
   end
 
-  # Liste PLATE (sans groupe) des intervenants appartenant à au moins un des
-  # services fournis, au format [["NOM Prénom", id], …], triée par nom puis prénom.
-  # Sert au rendu initial des formulaires d'intervention et à l'endpoint
-  # `agents_for_service` (mise à jour dynamique selon le service sélectionné).
+  # Liste plate au format [["NOM Prénom", id], …].
   def self.agents_for_services(services)
     intervenants
       .by_service(services)

@@ -85,11 +85,8 @@ class CreateCommandeFromCotationTest < ActiveSupport::TestCase
   end
 
   test 'BUG documenté : le prix du devis est écrasé par le tarif ACTUEL de la prestation à la sauvegarde' do
-    # La copie `prix_ht:`/`total_ht:` du service (create_commande_from_cotation.rb:19)
-    # est illusoire : CommandeLigne#set_prix_from_prestation (before_validation)
-    # remplace le prix par prestation.tarif, et total_ht est une colonne générée
-    # PostgreSQL (prix_ht × qté). Si le tarif change entre le devis et la commande,
-    # la commande ne respecte PAS le prix du devis (potentiellement signé).
+    # La copie `prix_ht:`/`total_ht:` du service (create_commande_from_cotation.rb:19) est
+    # illusoire : CommandeLigne#set_prix_from_prestation.
     ligne_devis = @cotation.cotation_lignes.first
     assert_equal 25.5, ligne_devis.prix_ht.to_f # prix au moment du devis
 

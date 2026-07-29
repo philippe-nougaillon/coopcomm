@@ -3,15 +3,6 @@
 require 'test_helper'
 
 # Disponibilité ↔ ABSENCES, dans les deux sens, avec des dates partielles.
-#
-# ⚠ Incohérence CONNUE et ASSUMÉE (les absences restent sur les dates prévues,
-# chantier reporté) : les deux gardes absence ne regardent QUE début_prévue /
-# fin_prévue des interventions —
-#   - Intervention#check_absence (intervention créée pendant une absence) ;
-#   - Absence#no_overlapping_interventions (absence créée pendant une intervention).
-# Une intervention n'ayant QUE des dates réelles passe donc au travers, dans les
-# deux sens. Ces tests VERROUILLENT ce comportement actuel : s'ils cassent, c'est
-# que la sémantique absences a changé — mettre à jour ces tests en conséquence.
 class InterventionAbsenceDisponibiliteTest < ActiveSupport::TestCase
   setup do
     @agent = users(:bond)

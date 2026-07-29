@@ -33,9 +33,8 @@ class WarehousesTest < ApplicationSystemTestCase
     fill_in 'warehouse_name', with: 'Site sans adresse'
     click_on 'Enregistrer'
 
-    # Create refusé → le formulaire est re-rendu en conservant la valeur saisie
-    # (point de synchro indépendant du wording du message d'erreur). Un `assert_no_text`
-    # sur le message de succès passerait trivialement si son libellé changeait.
+    # Create refusé → le formulaire est re-rendu en conservant la valeur saisie (point de
+    # synchro indépendant du wording du message d'erreur).
     assert_field 'warehouse_name', with: 'Site sans adresse'
     assert_not Warehouse.exists?(name: 'Site sans adresse')
   end

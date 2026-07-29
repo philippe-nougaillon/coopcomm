@@ -16,8 +16,7 @@ class MeteoConceptConnexion < ApplicationService
 
   def call
     # Cache de la réponse de l'api MeteoConcept pendant 10 minutes, après cela elle est refresh.
-    # skip_nil : un échec de l'API ne doit pas être mis en cache (sinon la météo
-    # reste « cassée » 10 minutes alors que l'API est peut-être déjà revenue).
+    # skip_nil : un échec de l'API ne doit pas être mis en cache.
     Rails.cache.fetch('daily_forecast', expires_in: 10.minutes, skip_nil: true) do
       Rails.logger.debug '[Meteo] Mise à jour du cache de la réponse pour la météo sur 14 jours'
 

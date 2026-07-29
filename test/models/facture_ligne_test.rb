@@ -3,10 +3,8 @@
 require 'test_helper'
 
 # ==================== TESTS CRITIQUES ====================
-# L'argent (fiche contexte 2026-07-28) : le prix d'une ligne est TOUJOURS dérivé
-# du tarif de la prestation (jamais saisi), total_ht est une colonne générée, et
-# le total de la facture est recalculé à chaque ajout/suppression de ligne.
-# Tout ce fichier est critique : une régression ici fausse la facturation.
+# Le prix d'une ligne est toujours dérivé du tarif
+# de la prestation (jamais saisi), total_ht est une colonne générée.
 class FactureLigneTest < ActiveSupport::TestCase
   setup do
     @facture = factures(:facture_secretariat) # total_ht initial 0, sans ligne

@@ -32,10 +32,6 @@ class Convention < ApplicationRecord
 
   scope :ordered, -> { order(date_début: :desc) }
 
-  # Filtre les conventions visibles par l'utilisateur courant :
-  # - administrateur : celles de son organisation
-  # - manager : uniquement celles des services qu'il gère
-  # - autres : aucune
   def self.visible_to(user)
     if user.administrateur?
       joins(:service).where(services: { organisation_id: user.organisation&.id })

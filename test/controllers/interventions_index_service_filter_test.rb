@@ -2,13 +2,8 @@
 
 require 'test_helper'
 
-# Filtre Services de l'index interventions (#309/#311) :
-#  - ADMIN : voit TOUTES les interventions de son organisation par défaut, filtre
-#    vide (services non présélectionnés) ;
-#  - MANAGER : filtre vide par défaut, voit tous les records de SES services (non
-#    présélectionnés) ; filtre masqué s'il n'a qu'un seul service.
-# `comptabilite` est dans l'organisation de administrateur_paris (mairie_paris)
-# mais PAS dans ses services → témoin « hors de mon périmètre personnel ».
+# Filtre Services de l'index interventions (#309/#311) : - ADMIN : voit TOUTES les
+# interventions de son organisation par défaut, filtre vide (services non présélectionnés)
 class InterventionsIndexServiceFilterTest < ActionDispatch::IntegrationTest
   # --- Administrateur --------------------------------------------------------
 
@@ -89,9 +84,6 @@ class InterventionsIndexServiceFilterTest < ActionDispatch::IntegrationTest
 
   # --- Adhérent (régression) -------------------------------------------------
   # Bug signalé : un adhérent choisissait un service, rien n'était restreint.
-  # Cause : `by_role_for` repartait de `user.interventions_adherent`, écrasant le
-  # `filter_by_service` appliqué avant lui → filtre mort. Ces tests figent le
-  # comportement corrigé (filtre appliqué APRÈS le périmètre de rôle).
 
   test 'adhérent : par défaut voit toutes ses interventions, même hors de ses services membres' do
     weil = users(:weil) # membre d'informatique ; interventions en technique

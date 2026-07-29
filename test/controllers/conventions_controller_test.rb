@@ -97,10 +97,8 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # --- Filtres de l'index (convention_paris : service Informatique, début 2026-01-01, fin ouverte, sans document) ---
-  # On assertit sur le lien vers le show propre à la ligne du tableau (seul lien de la ligne
-  # depuis que #326 a déplacé les actions dans le show) ; le nom de l'adhérent apparaît aussi
-  # dans les <option> des menus déroulants et n'est donc pas discriminant. Le href est cité en
-  # entier pour éviter qu'un id préfixe (/conventions/1) ne matche un autre (/conventions/12).
+  # On assertit sur le lien vers le show propre à la ligne du tableau (seul lien de la
+  # ligne depuis que #326 a déplacé les actions dans le show)
 
   def convention_row_marker(convention)
     %(href="#{convention_path(convention)}")

@@ -19,10 +19,9 @@ require 'capybara/rails'
 require 'capybara/dsl'
 require 'webmock/minitest' # Permet de stopper les requêtes en dehors du serveur (Ex: API météo)
 
-# Correctif R3 (détail : `.claude/method/bugs-signales.md`) : le hook global posé
-# par `sign_in` est drainé par la 1re requête venue — sous `test:all`, une requête
-# navigateur retardée volait le login du test d'intégration suivant (302 vers
-# /users/sign_in). La file est donc rendue invisible hors du thread de test.
+# Le hook global posé par `sign_in` est drainé par la 1re requête venue : sous
+# `test:all`, une requête navigateur retardataire volait le login du test
+# d'intégration suivant. La file est rendue invisible hors du thread de test.
 module Warden
   module Test
     module WardenHelpers
@@ -39,16 +38,13 @@ module ActiveSupport
   class TestCase
     include Devise::Test::IntegrationHelpers
 
-    # Tests en parallèle, EN OPT-IN : séquentiel par défaut, parallèle si
-    # PARALLEL_WORKERS est posé — ex. `PARALLEL_WORKERS=4 bin/rails test:all`
-    # (12 workers = tests système saturés, cf. décision 2026-07-17-d).
+    # Parallélisation en opt-in : `PARALLEL_WORKERS=4 bin/rails test:all`.
+    # Au-delà de 4, les tests système saturent.
     if ENV['PARALLEL_WORKERS']
       # Rails lit lui-même PARALLEL_WORKERS et ignore la valeur ci-dessous.
       parallelize(workers: :number_of_processors)
 
-      # SimpleCov : chaque worker forké doit écrire son résultat sous un nom
-      # distinct pour que la couverture finale soit fusionnée (sinon rapport
-      # partiel/écrasé).
+      # Un nom distinct par worker, sinon la couverture fusionnée est partielle.
       parallelize_setup do |worker|
         SimpleCov.command_name "#{SimpleCov.command_name}-#{worker}"
       end
@@ -61,8 +57,6 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
-    # Rafraîchit les vues matérialisées du dashboard à partir des fixtures
-    # chargées.
     def refresh_dashboard_views!
       DashboardRefreshable.refresh_views!
     end
@@ -76,8 +70,7 @@ module ActiveSupport
       # Pour accepter les requêtes vers le serveur lui-même
       WebMock.disable_net_connect!(allow_localhost: true)
 
-      # Dès qu'un test système tente d'appeler l'API météo,
-      # WebMock intercepte l'appel et renvoie une réponse vide.
+      # WebMock intercepte les appels à l'API météo.
       stub_request(:get, /api.meteo-concept.com/)
         .to_return(
           status: 200,
@@ -101,8 +94,7 @@ module ActiveSupport
 
     def login(user)
       visit new_user_session_path
-      # Filet anti-flake : si la session du test précédent subsiste (reset
-      # incomplet), la page de connexion redirige vers l'accueil connecté.
+      # Si la session du test précédent subsiste, la page de connexion redirige.
       unless page.has_css?('#user_email', wait: 3)
         Capybara.reset_sessions!
         visit new_user_session_path
@@ -112,10 +104,8 @@ module ActiveSupport
       fill_in 'user_password', with: 'qtDug$d843sqACz?V' # équivalent à encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q", généré avec Devise::Encryptor.digest(User, "password123")
       # Le bouton du FORMULAIRE (la navbar publique a aussi un « Se connecter »)
       find('input[type="submit"][value="Se connecter"]').click
-      # Anti-flake : attendre la fin EFFECTIVE du login (on a quitté la page de
-      # connexion → le champ email a disparu) plutôt qu'un sleep fixe. Sinon la
-      # navigation suivante peut survenir avant que la session soit posée et
-      # retomber sur l'écran de connexion.
+      # Attendre la fin effective du login : sans ça, la navigation suivante peut
+      # survenir avant que la session soit posée.
       assert_no_selector('#user_email', wait: 10)
     end
 
@@ -152,22 +142,15 @@ module ActiveSupport
                         Selenium::WebDriver::Error::StaleElementReferenceError,
                         Selenium::WebDriver::Error::ElementClickInterceptedError].freeze
 
-    # Plusieurs de nos selects sont repeuplés EN CASCADE par `dynamic-select` :
-    # choisir l'adhérent relance le chargement des services, choisir le service
-    # relance celui des agents. Chaque repopulation vide puis reconstruit la
-    # liste. Si on tombe pendant ce trou, l'option cherchée n'existe pas encore
-    # (`ElementNotFound`) ou l'élément trouvé vient d'être recyclé
-    # (`StaleElementReference`) — d'autant plus probable sous parallélisation,
-    # où les fetchs sont plus lents. On réessaie donc, après avoir refermé les
-    # menus (un menu multiple resté ouvert intercepte le clic suivant).
+    # `dynamic-select` repeuple les selects en cascade (adhérent → services →
+    # agents) : chaque repopulation vide puis reconstruit la liste, d'où les
+    # retries. Un menu resté ouvert intercepterait le clic suivant.
     def select_option(id, value)
       tentatives = 0
       begin
         activate_dropdown_slimSelect(id)
-        # On filtre d'abord via la recherche du slim-select, puis on clique :
-        # pendant l'animation d'ouverture, un clic direct par texte atteint
-        # parfois la mauvaise option (la liste défile encore). En tapant la
-        # valeur, il ne reste que l'option voulue → sélection déterministe.
+        # Filtrer avant de cliquer : pendant l'animation d'ouverture, un clic
+        # direct par texte atteint parfois la mauvaise option.
         find('.ss-search input', visible: true).set(value)
         within('.ss-list') do
           find('div.ss-option', text: value, match: :first).click
@@ -182,8 +165,7 @@ module ActiveSupport
       end
     end
 
-    # Referme tout menu slim-select ouvert, sans dépendre de la page : on émet un
-    # clic sur `body` (le gestionnaire « clic extérieur » de slim-select le capte).
+    # Le gestionnaire « clic extérieur » de slim-select capte le clic sur body.
     def fermer_menus_slim_select
       page.execute_script('document.body.click()')
       has_no_selector?('.ss-option', visible: true, wait: 2)

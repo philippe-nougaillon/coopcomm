@@ -4,16 +4,6 @@ require 'test_helper'
 require 'spreadsheet'
 
 # Import XLS des agents — `users#import` (formulaire) et `users#import_do` (traitement).
-#
-# Toute la logique métier vit dans le contrôleur (app/controllers/users_controller.rb:199-355) :
-# mapping dynamique des en-têtes, recherche/création par email, rattachement au service,
-# mode simulation (`save != 'true'`) vs enregistrement, bilan textuel capturé sur stdout.
-# La vue `import_do.html.erb` n'affiche QUE `@stream` (le stdout capturé) : les assertions
-# sur le bilan portent donc sur le corps de la réponse.
-#
-# Fabrication des fichiers : chaque test construit son propre .xls (Spreadsheet), pour que
-# les données testées soient lisibles dans le test — la fixture `files/import_users.xls`
-# reste réservée au test de non-régression sécurité (`securite_regressions_test.rb`).
 class UsersImportTest < ActionDispatch::IntegrationTest
   # En-têtes du modèle officiel téléchargeable (= User.xls_headers, épinglé plus bas).
   ENTETES = %w[Nom Prénom Email Téléphone Service Mémo].freeze
@@ -405,10 +395,8 @@ class UsersImportTest < ActionDispatch::IntegrationTest
   # --- G. Cloisonnement multi-organisations (défauts épinglés) ------------
 
   test 'un service d’une autre organisation est accepté par l’import' do
-    # ÉPINGLAGE B20 : `Service.find_by(nom:)` (users_controller.rb:259) n'est pas
-    # borné à l'organisation courante, alors que l'unicité du nom l'est
-    # (service.rb:21). L'agent créé par un administrateur de Paris atterrit dans
-    # l'organisation de Marseille. À inverser quand le défaut sera corrigé.
+    # ÉPINGLAGE B20 : `Service.find_by(nom:)` (users_controller.rb:259) n'est pas borné à
+    # l'organisation courante, alors que l'unicité du nom l'est (service.rb:21).
     service_marseille = Service.create!(nom: 'Voirie', organisation: organisations(:mairie_marseille))
 
     importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test',
@@ -422,9 +410,7 @@ class UsersImportTest < ActionDispatch::IntegrationTest
 
   test 'l’import peut rétrograder un manager d’une autre organisation en agent' do
     # ÉPINGLAGE B21 : la recherche par email (users_controller.rb:242) est globale et
-    # aucun `authorize` ne porte sur l'enregistrement retrouvé ; `rôle = 'agent'`
-    # (l.256) est inconditionnel. Un administrateur de Paris modifie donc un manager
-    # de Marseille et l'aspire dans un de ses services.
+    # aucun `authorize` ne porte sur l'enregistrement retrouvé ; `rôle = 'agent'`.
     manager_marseille = users(:manager_marseille)
 
     importer([ENTETES, ligne(nom: 'Payan', prénom: 'Benoit', email: manager_marseille.email,

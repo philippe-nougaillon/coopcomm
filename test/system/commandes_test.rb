@@ -2,10 +2,8 @@
 
 require 'application_system_test_case'
 
-# Réécrit depuis le scaffold généré (qui ne se connectait pas et cliquait des
-# libellés anglais inexistants). La création n'est PAS testée : `new`/`create`
-# sont volontairement désactivés dans le contrôleur — une commande naît d'une
-# cotation (CreateCommandeFromCotation), jamais d'un formulaire « New commande ».
+# Réécrit depuis le scaffold généré (qui ne se connectait pas et cliquait des libellés
+# anglais inexistants).
 class CommandesTest < ApplicationSystemTestCase
   setup do
     # hidalgo gère le service « informatique », auquel commande_paris est rattachée.

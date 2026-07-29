@@ -52,7 +52,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
 
   # ---------------------------------------------------------------------------
   # Pages vitrine publiques (welcome, mentions_legales, solution, tarifs, contact)
-  # ---------------------------------------------------------------------------
 
   test 'la page welcome est accessible sans être connecté' do
     get welcome_url
@@ -91,8 +90,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ---------------------------------------------------------------------------
-  # home — authentification + couleur de bannière selon l'heure
-  # ---------------------------------------------------------------------------
+  # home — authentification + couleur de bannière selon l'heure.
 
   test 'home redirige vers la connexion si anonyme' do
     get home_url
@@ -149,15 +147,12 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal ApplicationController::BACKGROUND_COLORS[12], assigns(:banner_background_color)
   end
 
-  # La home d'un agent ne liste QUE des interventions de pointage
-  # (`by_role_for_home` : état nouveau + template_slug non nul). Son bouton
-  # « Terminer » doit donc toujours passer par l'action `pointer` de
-  # l'intervention modèle — c'est le comportement de référence sur lequel
-  # l'index et le show ont été alignés (helper `terminer_destination`).
+  # La home n'affiche que les 2 interventions les plus récemment mises à jour, or
+  # les fixtures partagent toutes le même updated_at : d'où le décalage explicite.
   test 'home : le bouton Terminer d\'un agent pointe vers `pointer` de l\'intervention modèle' do
     mère  = interventions(:intervention_repete)
     fille = interventions(:intervention_fille)
-    fille.update_columns(template_slug: mère.slug)
+    fille.update_columns(template_slug: mère.slug, updated_at: 1.minute.from_now)
     sign_in users(:martin_technique_paris)
 
     get home_url
@@ -167,9 +162,20 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?]", terminer_intervention_path(fille), count: 0
   end
 
+  test 'home : le bouton Terminer d\'une intervention hors pointage poste vers `terminer`' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.update_columns(updated_at: 1.minute.from_now)
+    sign_in users(:martin_technique_paris)
+
+    get home_url
+
+    assert_response :success
+    assert_nil intervention.template_slug
+    assert_select "form[action=?][method=?]", terminer_intervention_path(intervention), 'post'
+  end
+
   # ---------------------------------------------------------------------------
   # meteo / meteo_by_day (API météo stubbée globalement par WebMock)
-  # ---------------------------------------------------------------------------
 
   test 'meteo est accessible à un utilisateur connecté' do
     sign_in users(:hidalgo)
@@ -207,8 +213,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ---------------------------------------------------------------------------
-  # dashboard — bords d'autorisation
-  # ---------------------------------------------------------------------------
+  # dashboard — bords d'autorisation.
 
   test 'dashboard redirige vers la connexion si anonyme' do
     get dashboard_url
@@ -217,8 +222,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ---------------------------------------------------------------------------
-  # assistant — réservé aux administrateurs
-  # ---------------------------------------------------------------------------
+  # assistant — réservé aux administrateurs.
 
   test 'assistant est refusé à un non-administrateur' do
     sign_in users(:hidalgo) # manager

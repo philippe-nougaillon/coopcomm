@@ -14,10 +14,9 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==================== TESTS CRITIQUES ====================
-  # L'argent (fiche contexte 2026-07-28) : le prix d'un devis vient TOUJOURS du
-  # tarif des prestations, jamais de la requête (scénario compte volé/malveillant).
+  # Le prix d'un devis vient toujours du tarif des prestations, jamais de la requête.
 
-  # Test critique — déplacé en tête de fichier le 2026-07-28.
+  # Test critique.
   test "critique : le prix d'une ligne ne peut pas être forcé via les paramètres" do
     post cotations_url, params: { cotation: {
       adherent_id: @adherent.id, service_id: @service.id, intitulé: 'Devis',
@@ -270,13 +269,8 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     # sans destinataire à notifier.
     assert_equal 'signé', cotation.reload.workflow_state
 
-    # ⚠ RÉGRESSION signalée (non corrigée) : `signer_do` exécute
-    # `return if creator&.email.blank?` AVANT le `redirect_to`. Quand le créateur
-    # n'a pas d'email (ou n'est pas identifiable), l'action ne rend rien → 204 No
-    # Content. Via Turbo, l'adhérent signe sans aucun retour visuel (ni redirection
-    # ni flash). Avant le refactor, `redirect_to root_path` s'exécutait toujours.
-    # Correctif proposé : sortir le `redirect_to` de la garde (p. ex. remettre la
-    # notification dans une méthode privée dédiée, comme `notify_adherent_cotation_envoyee`).
+    # ⚠ Régression signalée, non corrigée : sans email côté créateur, `signer_do`
+    # sort avant le `redirect_to` → 204, l'adhérent signe sans aucun retour.
     assert_response :no_content
   end
 
@@ -319,9 +313,8 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # --- Index côté adhérent (voit TOUTES ses cotations envoyées, tous services confondus) ---
-  # weil est rattaché au seul service Informatique mais possède une cotation sur
-  # Secrétariat : l'ancien filtre `.where(service: current_user.services)` la masquait.
-  # Les cotations encore à l'état « créé » (brouillons internes) restent invisibles.
+  # weil n'est rattaché qu'à Informatique mais possède une cotation sur
+  # Secrétariat : l'ancien filtre par service la masquait.
 
   test 'un adhérent voit toutes ses cotations envoyées, quel que soit le service prestataire' do
     cotations(:cotation_paris).update!(workflow_state: 'envoyé')

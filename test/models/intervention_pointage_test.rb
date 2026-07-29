@@ -2,25 +2,16 @@
 
 require 'test_helper'
 
-# Tests unitaires du « moteur » de pointage de l'Intervention : le calcul du
-# temps, la duplication mère → fille au scan, et les helpers d'état associés.
-# On couvre ici le cœur métier des deux parcours agent les plus courants
-# (scan du QRCode / saisie a posteriori) indépendamment du contrôleur.
+# Tests unitaires du « moteur » de pointage de l'Intervention : le calcul du temps, la
+# duplication mère → fille au scan, et les helpers d'état associés.
 class InterventionPointageTest < ActiveSupport::TestCase
   # ==================== TESTS CRITIQUES ====================
-  # Le temps total EST l'argent (fiche contexte 2026-07-28 : le temps facturé
-  # aux communes en dépend directement). Tout le bloc calc_temps_total ci-dessous
-  # est critique, y compris le skip B1 (before_save inopérant).
+  # Le temps total est facturé aux communes
+  # en dépend directement).
 
   # === Intervention#calc_temps_total (pur calculateur) ====================
-  # Contrat : renvoie 0 si une date manque ou si fin <= début ; sinon
-  # (fin - début, en heures) - temps_de_pause, multiplié par le nombre d'agents.
-  #
-  # NB : on part de fixtures PERSISTÉES pour que `agents.count` (qui interroge
-  # la base) reflète un nombre d'agents déterministe (tonte_locaux : 1 agent ;
-  # intervention_repete : 2 agents), puis on surcharge les dates EN MÉMOIRE.
-  # Aucune sauvegarde : la méthode est un calculateur pur, on l'isole des
-  # validations et des callbacks.
+  # Contrat : renvoie 0 si une date manque ou si fin <= début ; sinon (fin - début, en
+  # heures) - temps_de_pause, multiplié par le nombre d'agents.
 
   test 'calc_temps_total : durée simple sans pause, un agent' do
     i = interventions(:tonte_locaux) # 1 agent (bond)
@@ -70,16 +61,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_equal 0, i.calc_temps_total
   end
 
-  # BUG confirmé (NON corrigé, cf. règle /tests). Le callback
-  # `before_save :calc_temps_total` (app/models/intervention.rb:52) appelle une
-  # méthode qui n'assigne qu'une VARIABLE LOCALE `temps_total`
-  # (app/models/intervention.rb:363-373) sans jamais écrire `self.temps_total`.
-  # Conséquence : une intervention sauvegardée avec début/fin ne voit PAS son
-  # temps_total recalculé automatiquement. Le pointage-terminer s'en sort car le
-  # contrôleur assigne explicitement (interventions_controller.rb:364), mais la
-  # « saisie a posteriori » (parcours 2) dépend entièrement du champ envoyé par
-  # le formulaire. Ce test décrit le comportement ATTENDU ; il passera au vert à
-  # la correction (assigner `self.temps_total = ...` dans calc_temps_total).
+  # BUG confirmé.
   test 'BUG : temps_total devrait être recalculé automatiquement à la sauvegarde' do
     skip 'Bug connu : before_save calc_temps_total ne persiste pas self.temps_total (intervention.rb:52,363)'
 
@@ -99,8 +81,8 @@ class InterventionPointageTest < ActiveSupport::TestCase
   end
 
   # === Intervention#create_next_intervention (scan → clock in) ============
-  # Duplique le modèle répété en une intervention « fille » du jour, rattachée
-  # au seul agent qui vient de scanner.
+  # Duplique le modèle répété en une intervention « fille » du jour, rattachée au seul
+  # agent qui vient de scanner.
 
   test 'create_next_intervention : duplique le modèle en une fille datée du jour' do
     mère = interventions(:intervention_repete)

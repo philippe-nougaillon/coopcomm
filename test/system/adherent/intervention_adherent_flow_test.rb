@@ -79,8 +79,6 @@ class InterventionAdherentFlowTest < ApplicationSystemTestCase
 
   test 'Refuser une intervention' do
     # Depuis #291, l'adhérent refuse depuis « Actions en attente » sur l'accueil.
-    # Depuis #358, les cotations à signer (rendues au-dessus) ont aussi un bouton
-    # « Refuser » → on cible le formulaire de refus d'une INTERVENTION, pas le 1er bouton.
     fermer_notification
     find("form[action^='/interventions/'][action$='/refuser'] button", match: :first).click
     assert_text 'Intervention refusée'

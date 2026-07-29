@@ -33,9 +33,8 @@ class WelcomeImportNotificationJobTest < ActiveJob::TestCase
   end
 
   test 'QUIRK : le MailLog n\'est pas tracé (organisation_id manquant)' do
-    # Le job appelle MailLog.create SANS organisation_id ; la colonne est NOT NULL
-    # → l'enregistrement échoue silencieusement (create, pas create!). L'accès
-    # import n'est donc jamais journalisé. Comportement constaté, non corrigé.
+    # Le job appelle MailLog.create SANS organisation_id ; la colonne est NOT NULL →
+    # l'enregistrement échoue silencieusement (create, pas create!).
     assert_no_difference -> { MailLog.count } do
       WelcomeImportNotificationJob.perform_now(@user, @current_user.id, @encrypted)
     end

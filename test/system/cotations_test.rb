@@ -10,8 +10,6 @@ class CotationsTest < ApplicationSystemTestCase
   end
 
   # Parcours bout-en-bout : slim_select (service + prestation) et ligne imbriquée.
-  # On vérifie en base que le JS a bien produit les bons paramètres et que le
-  # serveur a calculé le total à partir du tarif de la prestation.
   test "création d'une cotation avec une ligne via le formulaire" do
     visit new_cotation_path(adherent_id: @adherent.slug) # adhérent figé
 
@@ -23,7 +21,7 @@ class CotationsTest < ApplicationSystemTestCase
     click_on 'Enregistrer'
 
     # État métier durable : la show affiche la référence assignée à la création
-    # (les toasts de flash sont instables après navigation Turbo, cf. 2026-06-12 §7).
+    # (les toasts de flash sont instables après navigation Turbo).
     assert_text(/CO-\d{4}-\d+/)
 
     cotation = Cotation.order(:created_at).last
@@ -53,9 +51,6 @@ class CotationsTest < ApplicationSystemTestCase
   # administrateur_paris (créateur notifiable → chemin nominal avec redirection).
 
   # Parcours bout-en-bout : l'adhérent trace une signature sur le pad puis signe.
-  # Le workflow transite vers « signé », la signature/date/IP sont persistées et
-  # l'on est redirigé vers la cotation. Non atteignable par un test de contrôleur
-  # (le pad de signature est du JS pur : SignaturePad + toDataURL).
   test 'un adhérent signe une cotation en traçant sa signature' do
     login(@adherent)
     cotation = cotations(:cotation_secretariat) # envoyé, à weil
@@ -78,8 +73,7 @@ class CotationsTest < ApplicationSystemTestCase
   end
 
   # Câblage JS pur ajouté au pad (`refreshSaveButton`) : le bouton « Signer » est
-  # désactivé tant que le cadre est vide, activé dès un trait, et « Effacer » le
-  # re-désactive. Invisible aux tests de contrôleur.
+  # désactivé tant que le cadre est vide, activé dès un trait, et « Effacer » le re-
   test 'le bouton Signer est désactivé tant que le cadre de signature est vide' do
     login(@adherent)
 
@@ -96,11 +90,6 @@ class CotationsTest < ApplicationSystemTestCase
   private
 
   # Trace un petit trait sur le canvas SignaturePad.
-  # SignaturePad v4 écoute les *pointer events* : un drag souris synthétique de
-  # Selenium (`click_and_hold`/`move_by`) n'est PAS capté et laisse le pad vide.
-  # On dessine donc via de vrais PointerEvent. Le `pointerup` final déclenche
-  # `refreshSaveButton` (activation du bouton) et remplit le pad, si bien que
-  # `toDataURL` produit une vraie signature.
   def draw_signature
     page.execute_script(<<~JS)
       (function () {

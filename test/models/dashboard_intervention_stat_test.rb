@@ -2,9 +2,8 @@
 
 require 'test_helper'
 
-# La vue matérialisée dashboard_intervention_stats doit refléter EXACTEMENT les
-# requêtes live qu'elle remplace (parité), être en lecture seule, et répondre
-# correctement à ses scopes de filtrage.
+# La vue matérialisée dashboard_intervention_stats doit refléter EXACTEMENT les requêtes
+# live qu'elle remplace (parité), être en lecture seule.
 class DashboardInterventionStatTest < ActiveSupport::TestCase
   setup { refresh_dashboard_views! }
 

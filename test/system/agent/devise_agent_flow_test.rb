@@ -12,10 +12,7 @@ class DeviseAgentFlowTest < ApplicationSystemTestCase
     # Fermer la notification de connexion
     fermer_notification
 
-    # Anti-flake (déconnexion) : clic JS sur l'ancre + confirm stubé + re-essai,
-    # cf. le helper dans application_system_test_case. Le layout public n'affiche
-    # pas le flash : on vérifie l'état déconnecté sur la landing, puis en visitant
-    # une page privée.
+    # Anti-flake (déconnexion) : clic JS sur l'ancre + confirm stubé + re-essai, cf.
     se_deconnecter
 
     visit interventions_url

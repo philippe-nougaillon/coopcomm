@@ -61,10 +61,8 @@ class Intervention < ApplicationRecord
   # montre tout action ou intervention qui ont ce status
   scope :courantes, -> { where(workflow_state: ['nouveau', 'pointage activé', 'terminé']) }
 
-  # Prédicat SQL générique : l'intervalle [debut_expr, fin_expr] chevauche-t-il
-  # [:debut, :fin] ? Les bornes qui se touchent sont couvertes par les BETWEEN
-  # inclusifs ; pas de clause d'égalité pure (elle créerait de faux conflits entre
-  # intervalles ouverts). Décliné pour les interventions ET les absences.
+  # Pas de clause d'égalité pure : elle créerait de faux conflits entre
+  # intervalles ouverts.
   def self.overlap_sql(debut_expr, fin_expr)
     # <<-SQL...SQL = chaîne multi-ligne (heredoc) ; #squish l'aplatit en une seule
     # ligne (retire retours à la ligne et espaces superflus) pour l'écrire lisiblement.
@@ -88,9 +86,7 @@ class Intervention < ApplicationRecord
   # Chevauchement d'une absence (colonnes du/au) avec [:debut, :fin].
   ABSENCE_OVERLAP_SQL = overlap_sql('absences.du', 'absences.au').freeze
 
-  # Plage effective de CETTE intervention (côté OBJET chargé) : réel prioritaire,
-  # repli sur prévu. Équivalent Ruby de EFFECTIVE_DEBUT_SQL / EFFECTIVE_FIN_SQL —
-  # garder les deux en phase.
+  # Équivalent Ruby de EFFECTIVE_DEBUT_SQL / EFFECTIVE_FIN_SQL, à garder en phase.
   def effective_début
     début || début_prévue
   end
@@ -265,9 +261,8 @@ class Intervention < ApplicationRecord
     end
   end
 
-  # Interdit un 2e pointage ouvert pour un agent (oubli de clôture + scan d'un
-  # autre QR). Deux intervalles ouverts ne se chevauchant pas au sens SQL, ce cas
-  # échappe à OVERLAP_SQL → règle dédiée.
+  # Deux intervalles ouverts ne se chevauchent pas au sens SQL : ce cas échappe
+  # à OVERLAP_SQL.
   def agents_must_not_have_open_pointage
     return unless pointage_ouvert?
 

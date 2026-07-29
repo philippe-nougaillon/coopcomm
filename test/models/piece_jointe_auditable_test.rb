@@ -2,15 +2,8 @@
 
 require 'test_helper'
 
-# Le concern PieceJointeAuditable généralise à tous les modèles ce qui n'existait
-# que pour les photos d'intervention (cf. intervention_audit_photo_test.rb, qui
-# couvre le cas has_many et la ré-émission des signed_id).
-#
-# Ce fichier couvre ce que la généralisation apporte en plus : le cas has_one,
-# plusieurs attachements dans un même save, l'accord du libellé, et l'absence de
-# commentaire quand aucune pièce jointe n'est ajoutée. On n'asserte jamais le
-# libellé exact — seulement les mots porteurs de sens — pour rester robuste à
-# une reformulation.
+# Le concern PieceJointeAuditable généralise à tous les modèles ce qui n'existait que pour
+# les photos d'intervention.
 class PieceJointeAuditableTest < ActiveSupport::TestCase
   include ActionDispatch::TestProcess::FixtureFile
 

@@ -3,8 +3,7 @@
 require 'test_helper'
 
 # Vérifie le câblage du rafraîchissement des vues : callbacks after_commit posés,
-# détection des seules modifications pertinentes, et refresh synchrone effectif
-# (depuis le 2026-07-15 le refresh est direct, sans passer par un job).
+# détection des seules modifications pertinentes, et refresh synchrone effectif.
 class DashboardRefreshableTest < ActiveSupport::TestCase
   test 'Intervention et AgentIntervention incluent le concern' do
     assert Intervention.include?(DashboardRefreshable)

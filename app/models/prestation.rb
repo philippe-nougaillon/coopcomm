@@ -11,9 +11,7 @@ class Prestation < ApplicationRecord
   has_many :commande_lignes, dependent: :restrict_with_error
   has_many :facture_lignes, dependent: :restrict_with_error
 
-  # Unité facturée pré-remplie à « H » (heure) à la création ; reste modifiable.
-  # Le défaut ne s'applique qu'aux nouveaux enregistrements ; les prestations
-  # déjà en base conservent leur valeur (y compris vide).
+  # Défaut appliqué aux seuls nouveaux enregistrements.
   attribute :unité, :string, default: "H"
 
   validates :code, :libellé, :tarif, presence: true

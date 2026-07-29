@@ -2,13 +2,12 @@
 
 require 'test_helper'
 
-# Tests de non-régression des failles corrigées (audit sécurité 2026-06).
+# Tests de non-régression des failles corrigées.
 # Chaque test matérialise une attaque qui était possible avant correctif.
 class SecuriteRegressionsTest < ActionDispatch::IntegrationTest
   # ==================== TESTS CRITIQUES — isolation inter-organisations ====================
-  # Menace réaliste (fiche contexte 2026-07-28) : un curieux qui suit une URL vers
-  # les données d'une autre commune (lien recopié, historique partagé, essai d'ID).
-  # Un refus Pundit = redirection avec alerte, jamais la page demandée.
+  # Menace réaliste : un curieux qui suit une URL vers les
+  # données d'une autre commune (lien recopié, historique partagé, essai d'ID).
 
   # Test critique — la fiche d'une intervention d'une autre organisation est inaccessible.
   test "critique : un manager ne peut pas ouvrir l'intervention d'une autre organisation" do

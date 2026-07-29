@@ -3,24 +3,6 @@
 require 'test_helper'
 
 # Tests de la configuration rack-attack (config/initializers/rack_attack.rb).
-#
-# Objectif : détecter une casse SILENCIEUSE de la protection. Les throttles
-# matchent des chemins en dur ('/users/sign_in', '/users/password') : si la
-# route de connexion change (2FA, session unique, renommage du devise_for),
-# la règle devient du code mort sans aucune erreur. Les tests full-stack
-# passent donc par les helpers de routes (user_session_path…) : si la route
-# bouge, le helper suit, le throttle ne matche plus et le test échoue en
-# pointant l'initializer à mettre à jour.
-#
-# Plomberie : l'environnement de test est en :null_store, ce qui rend
-# rack-attack inerte pour tout le reste de la suite (aucun 429 parasite,
-# voulu). Ici on branche un MemoryStore dédié, remplacé à chaque test.
-# freeze_time : les compteurs sont fenêtrés sur Time.now / période — sans
-# gel, 6 requêtes peuvent chevaucher deux fenêtres de 20 s (test flaky).
-#
-# Attribution des 429 : logins/ip et logins/email se déclenchent ensemble si
-# on répète le même couple (IP, email). Pour tester une règle, on fait
-# varier le discriminant de l'autre (emails variés à IP fixe, et vice versa).
 class RackAttackTest < ActionDispatch::IntegrationTest
   ROUTE_HINT = "— le throttle ne s'est pas déclenché : la route ou le nom du " \
                'paramètre a-t-il changé sans mettre à jour ' \
@@ -159,16 +141,15 @@ class RackAttackTest < ActionDispatch::IntegrationTest
   end
 
   test "devise/ip : ne couvre PAS la ressource User de l'admin (/users)" do
-    # Un manager qui navigue dans la liste des utilisateurs ne doit pas être
-    # limité à 20 pages/min — c'est le 429 sur vrais utilisateurs qui avait
-    # fait restreindre le rate_limit natif en février (d1dbb960).
+    # Un manager qui navigue dans la liste des utilisateurs ne doit pas être limité à 20
+    # pages/min.
     assert_nil discriminant('devise/ip', '/users', method: 'GET')
     assert_nil discriminant('devise/ip', '/users/42', method: 'GET')
   end
 
   # ----- req/ip : throttle global (discriminant seul : 301 requêtes full-stack
-  # seraient prohibitives ; le moteur de comptage est déjà prouvé full-stack
-  # par les règles login, qui partagent le même mécanisme) -----
+  # seraient prohibitives ; le moteur de comptage est déjà prouvé full-stack par les
+  # règles login, qui partagent le même mécanisme)
 
   test 'req/ip : une requête applicative est comptée par IP' do
     assert_equal '1.2.3.4', discriminant('req/ip', '/', method: 'GET')
@@ -272,17 +253,14 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     { 'REMOTE_ADDR' => adresse }
   end
 
-  # Applique le bloc discriminant d'une règle à une requête forgée, sans
-  # traverser la pile — pour tester le filtrage (chemin, méthode, param)
-  # indépendamment du comptage.
+  # Applique le bloc discriminant d'une règle à une requête forgée, sans traverser la pile
+  # — pour tester le filtrage (chemin, méthode, param) indépendamment du comptage.
   def discriminant(regle, chemin, method: 'POST', params: nil)
     env = Rack::MockRequest.env_for(chemin, method: method, params: params, 'REMOTE_ADDR' => '1.2.3.4')
     Rack::Attack.throttles.fetch(regle).block.call(Rack::Attack::Request.new(env))
   end
 
-  # Évalue le filtre fail2ban sur une requête forgée. IP unique à chaque appel :
-  # avec maxretry: 1, un chemin scanner bannit son IP — une IP partagée entre
-  # appels ferait matcher les chemins légitimes suivants (déjà banni).
+  # Évalue le filtre fail2ban sur une requête forgée.
   def motif_scanner?(chemin)
     @ip_seq = (@ip_seq || 0) + 1
     env = Rack::MockRequest.env_for(chemin, method: 'GET', 'REMOTE_ADDR' => "203.0.113.#{@ip_seq}")

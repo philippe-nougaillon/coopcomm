@@ -11,12 +11,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==================== TESTS CRITIQUES ====================
-  # Zones où une défaillance est inacceptable (fiche contexte 2026-07-28) :
-  # - évaluations (note/avis) jamais visibles de l'agent noté (CCTP : réservées
-  #   aux gestionnaires ; menace réaliste = le curieux qui regarde ce qui le
-  #   concerne via l'UI normale) ;
-  # - validation/refus par l'adhérent (parcours critique n°5, déclencheur de
-  #   la facturation).
+  # Évaluations (note/avis) jamais visibles de l'agent noté, et validation ou
+  # refus par l'adhérent.
 
   # Test critique — l'agent affecté ouvre SA propre intervention validée :
   # la page ne doit contenir ni l'avis ni la section Évaluation.
@@ -31,9 +27,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_no_match AVIS_SENTINELLE, response.body
   end
 
-  # Test critique — même exigence sur l'export XLS de l'index, accessible à
-  # tous les rôles (fuite corrigée le 2026-07-28, ex-bug B25 : les colonnes
-  # Évaluation/Avis partaient telles quelles chez l'agent noté).
+  # Test critique — même exigence sur l'export XLS de l'index, accessible à tous les
+  # rôles.
   test "critique : l'export XLS d'un agent ne contient ni évaluation ni avis" do
     agent = users(:john_wick)
     intervention = cree_intervention_evaluee(agent)
@@ -88,9 +83,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert intervention.reload.refusé?, "l'intervention doit passer à l'état refusé"
   end
 
-  # Test critique — cas du quotidien (double-clic, retour navigateur, onglet
-  # en double) : re-valider une intervention déjà validée.
-  # Bug B3 (registre) : valider!/refuser! sans garde can_…? ni rescue → 500.
+  # Test critique — cas du quotidien (double-clic, retour navigateur, onglet en double) :
+  # re-valider une intervention déjà validée.
   test "critique : re-valider une intervention déjà validée redirige avec un message (bug B3)" do
     skip 'Bug B3 : valider hors état → Workflow::NoTransitionAllowed non rescué (500) — à réactiver à la correction'
     intervention = interventions(:intervention_terminée)
@@ -104,10 +98,6 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Test critique — parcours quotidien de l'agent : terminer son intervention.
-  # Une transition passe par `persist_workflow_state` → `save!`, qui rejoue
-  # TOUTES les validations : sur une intervention déjà en conflit de
-  # disponibilité (#357), l'exception remontait en erreur 500 et l'intervention
-  # était définitivement figée (bug B28, signalé en prod par PE le 2026-07-28).
   test 'critique : terminer une intervention en conflit de disponibilité redirige au lieu de planter' do
     agent = users(:john_wick)
     intervention = cree_intervention_en_conflit(agent)
@@ -157,12 +147,10 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Sentinelle distinctive : détecter la fuite par la donnée, pas par le wording
-  # des libellés (robustesse aux refontes UX, doctrine 2026-07-24).
+  # des libellés, pour rester robuste aux refontes UX.
   AVIS_SENTINELLE = /AVIS-RESERVE-AUX-GESTIONNAIRES/
 
-  # Une intervention validée, notée et commentée, dont +agent+ est l'agent
-  # affecté (john_wick : aucune intervention de fixture → jamais de conflit
-  # de disponibilité #357, leçon B10).
+  # Une intervention validée, notée et commentée, dont +agent+ est l'agent affecté.
   def cree_intervention_evaluee(agent)
     Intervention.create!(
       description: 'Intervention évaluée du test critique',
@@ -180,10 +168,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
-  # Une intervention de +agent+ que la règle de disponibilité #357 rend
-  # invalide : une SECONDE intervention du même agent recouvre sa plage. Elle
-  # est créée en contournant les validations — c'est justement ce chevauchement
-  # qu'elles refusent — comme le fait la donnée réelle héritée d'avant #357.
+  # Une intervention de +agent+ que la règle de disponibilité #357 rend invalide : une
+  # SECONDE intervention du même agent recouvre sa plage.
   def cree_intervention_en_conflit(agent, workflow_state: 'nouveau', avec_conflit: true)
     intervention = Intervention.create!(
       description: 'Intervention à terminer', adherent: users(:weil), service: services(:comptabilite),
@@ -212,9 +198,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # --- Pré-filtrage par service de l'index --------------------------------
-  # administrateur_paris (org mairie_paris) a pour services service_paris /
-  # informatique / technique. `comptabilite` est dans son organisation mais
-  # PAS dans ses services → sert de témoin « hors périmètre personnel ».
+  # administrateur_paris (org mairie_paris) a pour services service_paris / informatique /
+  # technique.
 
   test 'index : un administrateur voit toute son organisation par défaut' do
     sign_in users(:administrateur_paris)
@@ -295,8 +280,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # --- Liste des adhérents et filtre service ------------------------------
-  # weil est un adhérent du service `informatique`. En filtrant sur `service_paris`,
-  # il ne doit rester proposé QUE pour un administrateur (liste complète).
+  # weil est un adhérent du service `informatique`. En filtrant sur `service_paris`, il ne
+  # doit rester proposé QUE pour un administrateur (liste complète).
 
   test 'index : la liste des adhérents ne suit pas le filtre service pour un administrateur' do
     sign_in users(:administrateur_paris)
@@ -317,10 +302,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
                   'pour un manager, la liste des adhérents suit les services sélectionnés'
   end
 
-  # NOTE : l'ancien test « should get index with export xls » appelait users_url
-  # (copier-coller) — l'export des interventions n'était donc testé nulle part.
-  # Il est remplacé par les tests critiques XLS en tête de fichier ; l'export
-  # des users reste couvert par users_controller_test.
+  # NOTE : l'ancien test « should get index with export xls » appelait users_url (copier-
+  # coller) — l'export des interventions n'était donc testé nulle part.
 
   test 'should get new' do
     get new_intervention_url
@@ -354,10 +337,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "un agent crée une intervention à postériori : elle est terminée d'emblée" do
-    # john_wick et pas martin : martin porte la fixture `intervention_fille` ancrée
-    # sur l'heure réelle (début = maintenant − 4 h), qui recouvre la plage [10 h, 11 h]
-    # créée ci-dessous quand la suite tourne entre 14 h et 15 h → #357 refusait à
-    # raison (B10). john_wick n'a aucune intervention de fixture : jamais de conflit.
+    # john_wick n'a aucune intervention de fixture, donc jamais de conflit d'horaire
+    # avec la plage créée ici.
     agent = users(:john_wick)
     sign_in agent
 
@@ -456,11 +437,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # --- Photos via le formulaire manager (dropzone) --------------------------
-  # Régressions : la dropzone appelait `attachment.blob` (méthode de
-  # Attached::One) sur le has_many_attached :photos → 500 sur edit dès qu'une
-  # photo était attachée ; et son input file sans `multiple` envoyait un param
-  # scalaire que `permit(photos: [])` rejetait silencieusement → photo jamais
-  # enregistrée depuis ce formulaire.
+  # Régressions : la dropzone appelait `attachment.blob` (méthode de Attached::One) sur le
+  # has_many_attached :photos → 500 sur edit dès qu'une photo était attachée.
 
   test 'edit affiche une intervention qui a déjà des photos' do
     @intervention.photos.attach(file_fixture('exemple.png'))
@@ -494,11 +472,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # --- Purge d'une photo -----------------------------------------------------
-  # `purge?` = `show?` : même organisation ET (manager/admin OU adhérent de
-  # l'intervention OU agent affecté). bond est l'agent affecté à tonte_locaux
-  # (fixture bond_tonte_locaux) ; martin est un agent de la même organisation
-  # NON affecté. Le manager (hidalgo) est déjà couvert par
-  # « should destroy photo with purge » plus haut.
+  # `purge?` = `show?` : même organisation ET (manager/admin OU adhérent de l'intervention
+  # OU agent affecté).
 
   test "purge : un agent affecté à l'intervention peut supprimer une photo" do
     @intervention.photos.attach(file_fixture('exemple.png'))
@@ -572,9 +547,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "purge : l'adhérent de l'intervention peut supprimer une photo (épinglage : purge? = show?)" do
-    # Comportement ACTUEL épinglé : la policy autorise aussi l'adhérent (client)
-    # à supprimer les photos posées par les agents. À inverser si la décision
-    # métier retient un périmètre plus strict.
+    # Comportement ACTUEL épinglé : la policy autorise aussi l'adhérent (client) à
+    # supprimer les photos posées par les agents.
     @intervention.photos.attach(file_fixture('exemple.png'))
     @intervention.save
     sign_in users(:weil)
@@ -625,7 +599,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'purge : la redirection après un DELETE Turbo est en 303 see_other' do
-    # Ex-B16 (corrigé 2026-07-15) : décision audit 2026-06-12 §4 — 303 après
+    # 303 après
     # toute soumission destructrice Turbo, comme le reste de l'app.
     @intervention.photos.attach(file_fixture('exemple.png'))
     @intervention.save
@@ -705,10 +679,8 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
 
     sign_in users(:martin_technique_paris)
 
-    # Les pointages sont horodatés à la minute : on simule des heures distinctes
-    # (journée passée fixe) pour reproduire un vrai parcours séquentiel. Sinon les
-    # 4 requêtes tomberaient dans la même minute → la 1re fille deviendrait un
-    # intervalle de durée nulle et entrerait en faux conflit avec la 2e.
+    # Les pointages sont horodatés à la minute : on simule des heures distinctes (journée
+    # passée fixe) pour reproduire un vrai parcours séquentiel.
     jour = Time.zone.local(2025, 1, 6)
 
     # 1er pointage (début de journée) -> Création (Clock in)
@@ -744,11 +716,8 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
     sign_in agent
 
     intervention = interventions(:intervention_repete)
-    # On force l'échec du save de la fille : create_next_intervention lui affecte
-    # l'adhérent du modèle ; sans adhérent, la validation de présence échoue et le
-    # save renvoie false (id nil). NB : les modèles/filles de pointage sont exclus
-    # du contrôle de disponibilité, donc on ne peut plus provoquer cet échec via
-    # un conflit fille↔modèle.
+    # On force l'échec du save de la fille : sans adhérent, la validation de
+    # présence échoue et le save renvoie false.
     intervention.update_columns(adherent_id: nil)
 
     assert_no_difference('Intervention.count') do
@@ -802,9 +771,8 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
   end
 
   # --- GET agents_for_service ---------------------------------------------
-  # Endpoint JSON alimentant la mise à jour dynamique de la liste des agents
-  # en fonction du service sélectionné. hidalgo (manager) a accès aux services
-  # service_paris / informatique / technique.
+  # Endpoint JSON alimentant la mise à jour dynamique de la liste des agents en fonction
+  # du service sélectionné.
 
   test 'agents_for_service renvoie les agents du service en JSON' do
     get agents_for_service_interventions_url(service_id: services(:technique).id), as: :json
@@ -905,9 +873,8 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
   end
 
   # --- Affiche QRCode (show.pdf) : parcours 1, ce que l'agent scanne --------
-  # L'affiche est générée/imprimée par un manager ou un admin ; l'agent, lui,
-  # ne fait que la scanner (route GET `pointer`). La policy interdit donc le PDF
-  # à l'agent (`can_see_qrcode_pointage_pdf? = show? && !agent?`).
+  # L'affiche est générée/imprimée par un manager ou un admin ; l'agent, lui, ne fait que
+  # la scanner (route GET `pointer`).
 
   test "show.pdf : un manager peut générer l'affiche QRCode du modèle de pointage" do
     # hidalgo (manager, service technique) est connecté via le setup.

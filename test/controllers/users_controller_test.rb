@@ -15,9 +15,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   # --- Pré-filtrage par service de l'index --------------------------------
-  # Le setup signe administrateur_paris (services : service_paris / informatique
-  # / technique). john_wick est un agent du service `comptabilite`, dans la même
-  # organisation mais hors des services de l'administrateur → témoin.
+  # Le setup signe administrateur_paris (services : service_paris / informatique /
+  # technique).
 
   test 'index : un administrateur ne voit que ses services par défaut' do
     hors_perimetre = users(:john_wick) # service comptabilite

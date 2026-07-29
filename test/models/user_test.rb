@@ -4,8 +4,8 @@ require 'test_helper'
 
 class UserTest < ActiveSupport::TestCase
   # --- User.agents_for_services -------------------------------------------
-  # Liste PLATE (sans groupe) des intervenants d'un ou plusieurs services,
-  # au format [["NOM Prénom", id], …], triée par nom puis prénom.
+  # Liste PLATE (sans groupe) des intervenants d'un ou plusieurs services, au format
+  # [["NOM Prénom", id], …], triée par nom puis prénom.
 
   test 'agents_for_services ne renvoie que les intervenants du service' do
     agents = User.agents_for_services([services(:technique)])
@@ -62,10 +62,8 @@ class UserTest < ActiveSupport::TestCase
   end
 
   # --- User#find_current_intervention -------------------------------------
-  # Cœur du « re-scan » du QRCode : retrouve l'intervention fille EN COURS
-  # (état « nouveau ») de CET agent, datée d'AUJOURD'HUI, pour le modèle scanné.
-  # Les filles sont fabriquées via le modèle répété `intervention_repete`
-  # (create_next_intervention pose début = maintenant, état « nouveau »).
+  # Cœur du « re-scan » du QRCode : retrouve l'intervention fille EN COURS (état « nouveau
+  # ») de CET agent, datée d'AUJOURD'HUI, pour le modèle scanné.
 
   test 'find_current_intervention : renvoie la fille du jour de l agent, en état nouveau' do
     mère = interventions(:intervention_repete)

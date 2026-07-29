@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
-# Validation de type et de taille des pièces jointes Active Storage — Rails ne
-# valide rien par défaut : sans cela, n'importe quel fichier (HTML, exécutable…)
-# peut être stocké puis servi. Ne valide que les NOUVELLES pièces jointes, pour
-# ne pas bloquer la modification d'enregistrements anciens.
+# Rails ne valide rien par défaut sur les pièces jointes Active Storage. Ne
+# valide que les nouvelles, pour ne pas bloquer les enregistrements anciens.
 module PieceJointeValidable
   extend ActiveSupport::Concern
 

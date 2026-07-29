@@ -29,12 +29,11 @@
   replace_hint  = local_assigns.fetch(:replace_hint, true)
   attachment    = form.object.public_send(attribute)
   multiple      = attachment.is_a?(ActiveStorage::Attached::Many)
-  # Un fichier fraîchement uploadé mais non sauvegardé (ré-affichage après échec de
-  # validation) est « attached? » sans être persisté → pas de signed_id, donc pas de
-  # rails_blob_path possible. On ne lie que vers des blobs réellement en base.
+  # Un fichier uploadé mais non sauvegardé est « attached? » sans signed_id : on
+  # ne lie que vers des blobs réellement en base.
   saved_blobs   = (multiple ? attachment.blobs : [attachment.blob]).compact.select(&:persisted?)
 
-  # Liste lisible des formats acceptés (".pdf,.docx" → "PDF, DOCX" ; "image/*" → "IMAGE")
+  # Formats acceptés en lisible (".pdf,.docx" → "PDF, DOCX")
   formats       = accept.split(",").map { |a| a.strip.delete_prefix(".").sub(%r{/\*\z}, "").upcase }.join(", ")
   placeholder   = local_assigns.fetch(:placeholder, "Glissez un fichier #{formats} ici ou cliquez pour parcourir")
   error_message = local_assigns.fetch(:error_message, "Format non accepté. Formats autorisés : #{formats}.")

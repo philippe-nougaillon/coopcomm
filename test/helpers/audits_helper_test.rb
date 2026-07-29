@@ -2,10 +2,7 @@
 
 require 'test_helper'
 
-# `audit_details` est le rendu unifié de la colonne « détails » des 7 tableaux
-# d'audit. On y vérifie la cascade (commentaire, période d'absence, invitation,
-# liste des changements) sans jamais asserter de classe CSS : seuls comptent le
-# texte rendu et l'échappement.
+# `audit_details` est le rendu unifié de la colonne « détails » des 7 tableaux d'audit.
 class AuditsHelperTest < ActionView::TestCase
   # render_changes_list rend une icône via embedded_svg (ApplicationHelper) :
   # ActionView::TestCase ne charge que le helper testé.

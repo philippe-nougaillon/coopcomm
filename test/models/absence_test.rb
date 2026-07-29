@@ -98,8 +98,8 @@ class AbsenceTest < ActiveSupport::TestCase
   end
 
   # --- Notification des managers à la création (after_create_commit) ---
-  # Dates en 2030 : loin des fixtures d'absence (2024-11) et des interventions
-  # de bond, pour ne déclencher aucune validation de chevauchement.
+  # Dates en 2030 : loin des fixtures d'absence (2024-11) et des interventions de bond,
+  # pour ne déclencher aucune validation de chevauchement.
 
   test "la création d'une absence enqueue la notification aux managers avec l'absence en argument" do
     absence = Absence.create!(user: @agent, du: Date.new(2030, 3, 4), au: Date.new(2030, 3, 5), motif: :formation)

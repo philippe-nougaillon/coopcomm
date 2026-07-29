@@ -2,13 +2,7 @@
 
 require 'test_helper'
 
-# `terminer_destination` donne au bouton « Terminer » la même destination sur la
-# home, l'index et le show : une intervention issue d'un pointage se termine par
-# l'action `pointer` de l'intervention modèle (qui pose la fin réelle et
-# recalcule le temps), pas par `terminer` (qui ne change que l'état).
-#
-# Le discriminant est l'AFFECTATION, pas le rôle : un manager ou un
-# administrateur peut être choisi comme agent d'une intervention.
+# `terminer_destination` donne au bouton « Terminer » la même destination sur la home.
 class InterventionsHelperTest < ActionView::TestCase
   # Le helper interroge `current_user`, fourni par le contrôleur en temps normal.
   attr_accessor :current_user

@@ -70,9 +70,6 @@ class TerminerPointagesJobTest < ActiveJob::TestCase
     mère = interventions(:intervention_repete)
 
     # Créé EN PREMIER → id le plus bas → traité en premier par find_each.
-    # terminer! le fera planter : une date de début dans le futur, posée en base
-    # sans validation (update_column), rend le save! invalide dès que le job
-    # fixe fin = maintenant (début > fin).
     pointage_ko = mère.create_next_intervention(mère, users(:bond))
     pointage_ko.update_column(:début, 1.day.from_now)
 

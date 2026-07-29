@@ -2,10 +2,8 @@
 
 require 'application_system_test_case'
 
-# Réécrit depuis le scaffold généré (qui ne se connectait pas et cliquait des
-# libellés anglais inexistants). Pas de test de création : `new`/`create` sont
-# volontairement désactivés dans le contrôleur — une facture naît d'une commande
-# (CreateFactureFromCommande), jamais d'un formulaire « New facture ».
+# Réécrit depuis le scaffold généré (qui ne se connectait pas et cliquait des libellés
+# anglais inexistants).
 class FacturesTest < ApplicationSystemTestCase
   setup do
     # hidalgo gère le service « informatique », auquel facture_paris est rattachée.

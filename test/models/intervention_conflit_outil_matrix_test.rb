@@ -2,15 +2,8 @@
 
 require 'test_helper'
 
-# Matrice EXHAUSTIVE du conflit de disponibilité OUTIL sur les dates
-# d'intervention (miroir de InterventionConflitAgentMatrixTest).
-#
-# Prouve que la détection de conflit d'outil repose sur la PLAGE EFFECTIVE
-# (dates réelles prioritaires, repli sur les dates prévues), identiquement quel
-# que soit le type de date porté par chaque intervention.
-#
-# 13 relations d'intervalles d'Allen × 4 combinaisons de types (réel/prévu) = 52
-# cas. L'intervention existante occupe toujours [10:00, 12:00] le même jour.
+# Matrice EXHAUSTIVE du conflit de disponibilité OUTIL sur les dates d'intervention
+# (miroir de InterventionConflitAgentMatrixTest).
 class InterventionConflitOutilMatrixTest < ActiveSupport::TestCase
   setup do
     @tool = tools(:tondeuse)
