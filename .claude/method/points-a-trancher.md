@@ -24,6 +24,12 @@
 - **Conséquence immédiate** : les 3 system tests de `test/system/documents_test.rb` échouaient (ils testent l'UI disparue) → **commentés le 2026-07-13** (décision client : « pour l'instant on ne l'utilise pas ») avec renvoi vers ce point. À trancher avec Dani : si suppression assumée → supprimer le fichier de test ; si temporaire → réactiver la fonctionnalité et décommenter/adapter les tests.
 - **Incohérence à signaler au passage** : `tools_controller#tool_params` permet toujours `documents_attributes` alors que le formulaire n'envoie plus que `documents` (fichier simple) — l'upload de documents depuis le formulaire est probablement cassé aussi côté serveur (non vérifié).
 
+### D6 — Refaire la fiche outil (`tools#show`) sur le même système de cases que l'index (PE, 2026-07-29 — « plus tard »)
+- **Quoi** : la fiche outil affiche encore son calendrier via `Tool#dernier_mouvement_a` + le partial `mouvements/_mouvement_slot` (une case par créneau horaire, un objet `Mouvement` par case), alors que l'index `/tools` est passé au système de lettres `L/R/I/P` de `Tool#get_etats_from_mouvements` + `tools/_mouvement` (#411). PE : « le show de l'outil n'a pas encore été refait, tu peux faire le même système de case que dans l'index » → **à faire plus tard**, hors du lot de tests du 2026-07-29.
+- **Ce que ça résout au passage** : `dernier_mouvement_a` porte **B37** (500 latent dès que l'association est chargée) et est explicitement marqué « devrait disparaître quand tools/show sera refait comme l'index » par un TODO dans le code ([tool.rb:79](app/models/tool.rb#L79)). `_mouvement_slot` est aussi le seul chemin qui propose « déclarer la fin de panne » d'un clic — à ne pas perdre dans la bascule.
+- **Attention** : zone « très sensible » des Pièges connus (réservation / panne). Corriger **B36** (lettre `P` le jour de la panne) **avant** la bascule, sinon le défaut se propage de l'index au show.
+- **Couverture existante** : `tool_test.rb` verrouille déjà la sémantique des 4 lettres, y compris les cycles panne/réparation — la bascule pourra s'appuyer dessus.
+
 ## 🔧 Actions à faire (infra / prod)
 
 ### A1 — Planifier la relance des cotations sur Hatchbox

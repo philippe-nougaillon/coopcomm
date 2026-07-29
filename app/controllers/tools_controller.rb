@@ -6,7 +6,7 @@ class ToolsController < ApplicationController
 
   # GET /tools or /tools.json
   def index
-    params[:date] = Date.today if params[:date].blank?
+    params[:date] = Date.today unless date_valide?(params[:date])
     fecha_base = params[:date].to_date
 
     @date = fecha_base.beginning_of_week # Ce sera toujours le lundi.
@@ -41,7 +41,7 @@ class ToolsController < ApplicationController
     params[:vue] ||= 'calendrier'
     @documents = @tool.documents
 
-    params[:date] = Date.today if params[:date].blank?
+    params[:date] = Date.today unless date_valide?(params[:date])
     fecha_base = params[:date].to_date
 
     @date = fecha_base.beginning_of_month
@@ -129,5 +129,12 @@ class ToolsController < ApplicationController
 
   def sort_direction
     %w[asc desc].include?(params[:direction]) ? params[:direction] : 'asc'
+  end
+
+  # to_date renvoie nil sur une chaîne vide et lève sur une chaîne illisible.
+  def date_valide?(valeur)
+    valeur.to_s.to_date.present?
+  rescue Date::Error
+    false
   end
 end

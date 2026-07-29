@@ -150,6 +150,39 @@
 - **Cause racine (prouvée par git)** : le commit `fc5330c4` (« UX -show tools ») a retiré la branche `<% if @tool.interventions.any? %>` qui, avant, remplaçait le bouton (`id="supprimer_outil"`) par un bloc inerte « Suppression impossible, l'outil est utilisé dans des interventions ». `ToolPolicy#destroy?` = `manager_or_admin? && organisation?` **n'a jamais** regardé les interventions ; la protection était uniquement dans la vue (donc déjà contournable par requête forgée — le contrôleur `destroy` n'a aucune garde).
 - **Impact** : perte de données potentielle (rattachements outil↔interventions) déclenchable en 2 clics ; historique des interventions faussé.
 - **Correctif proposé (décision métier à trancher)** : soit **restaurer la protection** — re-masquer/désactiver le bouton pour `@tool.interventions.any?` **ET** ajouter une garde dans `tools_controller#destroy` (redirection + message si l'outil est utilisé), la vue seule étant contournable ; soit **assumer** la suppression libre (et alors supprimer le test `Ne pas pouvoir supprimer un outil avec une intervention`). Test correspondant en `skip` documenté jusqu'à décision.
+- **⚠️ MISE À JOUR 2026-07-29 — corrigé À MOITIÉ** : le commit `756dfdcd` (#412, Dani) a **restauré la garde côté vue** (bloc « Suppression impossible, l'outil est utilisé dans des interventions » à la place du bouton). Le `skip` du test système est donc **levé** (`test/system/tools_test.rb`, assertion réelle au vert). **La garde contrôleur manque toujours** : [tools_controller.rb:94](app/controllers/tools_controller.rb#L94) fait `@tool.destroy!` sans rien vérifier — vérifié empiriquement, un `DELETE /tools/:slug` direct supprime l'outil `tondeuse` et ses `tool_interventions`. Comportement épinglé par le test `un outil utilisé par une intervention est quand même supprimé` (`tools_controller_test.rb`), **à inverser à la correction**.
+
+### B36 — Grille des disponibilités : le jour où une panne est déclarée s'affiche « réservé par vous » au lieu de « en panne »
+- **Signalé par** : agent, 2026-07-29 (session `/tests` « matériel », reproduit par test).
+- **Parcours de repro** : se connecter en manager → *Réservation de matériel* (`/tools`) → repérer un outil **libre toute la semaine** → cliquer sur *Gestion panne* (ou `/mouvements/new?tool_id=…`) → déclarer une panne à une date **de la semaine affichée**, par exemple le mercredi → revenir à `/tools`. **Observé** : la case du **mercredi** est **bleu foncé** avec l'infobulle « Réservé par vous (cliquez pour libérer) », alors que jeudi→dimanche sont bien en **rouge** « En panne ». Cliquer sur la case bleue déclenche `libere`, qui ne trouve aucune réservation et affiche l'alerte trompeuse « Il n'existe pas de réservation ce jour-là pour cet utilisateur ». *(Le décalage se voit mieux en déclarant la panne en milieu de semaine ; une panne déclarée avant le lundi affiché est correctement rouge sur toute la semaine.)*
+- **Où** : [app/models/tool.rb:136](app/models/tool.rb#L136) — `current_state = "R"` dans la branche `if etats["panne"].present? && etats["fin_panne"].blank?`.
+- **Cause racine (prouvée par test)** : `est_en_panne` est initialisé par `est_encore_en_panne_le(first_date)`, qui ne regarde que les mouvements **antérieurs ou égaux au premier jour** de l'intervalle. Une panne déclarée *dans* l'intervalle n'est donc pas encore connue le jour même : on tombe dans la branche `else`, qui pose `"R"` (la lettre de « réservé par moi ») avant de basculer `est_en_panne = true` pour les jours suivants. La lettre attendue est `"P"`.
+- **Impact** : un outil hors service est présenté comme réservé par l'utilisateur courant le jour de la panne ; le clic propose une action impossible. Sur le mois affiché par `tools#show` le même calcul sera utilisé si la vue est refaite comme l'index (cf. `points-a-trancher.md`).
+- **Correctif proposé** : `current_state = "P"` au lieu de `"R"` (une ligne). Tests correspondants : `tool_test.rb` → `le jour de déclaration dune panne est marqué en panne` (en `skip`, passera au vert à la correction) et `un cycle panne puis réparation puis nouvelle panne est retracé` (épingle le `R` actuel, à passer en `P`).
+
+### B37 — `Tool#dernier_mouvement_a` lève `NoMethodError` dès que les mouvements sont déjà chargés
+- **Signalé par** : agent, 2026-07-29 (session `/tests` « matériel », reproduit par test).
+- **Parcours de repro** : fiche d'un outil (`tools#show`, vue calendrier) après que l'association `mouvements` a été chargée en mémoire dans la même requête (une itération `@tool.mouvements.each`, un `includes(:mouvements)`, un `render` de collection…). La branche « déjà chargés » du tri lève alors `NoMethodError: undefined method 'to_i' for an instance of Date` → **erreur 500**. Aujourd'hui la vue appelle la méthode sans avoir chargé l'association, donc c'est la branche SQL qui s'exécute et le bug reste dormant.
+- **Où** : [app/models/tool.rb:84](app/models/tool.rb#L84) — `sort_by { |m| -m.date.to_i }`.
+- **Cause racine (prouvée par test)** : `mouvements.date` est une colonne **`date`** (cf. `db/schema.rb`, `t.date "date"`), pas `datetime` → `m.date` est un `Date`, qui n'a pas de `#to_i` (contrairement à `Time`/`DateTime`). La branche SQL, elle, trie en base et ne rencontre jamais le problème — d'où l'asymétrie.
+- **Impact** : 500 latent sur la fiche outil, qui se déclenchera au premier `includes(:mouvements)` ajouté pour corriger un N+1 (donc typiquement lors d'une optimisation).
+- **Correctif proposé** : trier sur la date elle-même (`sort_by(&:date).reverse`, ou `min_by`/`max_by`) plutôt que sur `-date.to_i`. Test correspondant : `tool_test.rb` → `dernier_mouvement_a répond la même chose que les mouvements soient chargés ou non` (en `skip`).
+
+### B38 — Créer un outil ne pose aucun mouvement : le `after_create` échoue en silence
+- **Signalé par** : agent, 2026-07-29 (session `/tests` « matériel », reproduit par test).
+- **Parcours de repro** : se connecter en manager → *Réservation de matériel* → *Ajouter un outil* → enregistrer. **Observé** : l'outil est créé mais aucun mouvement ne lui est associé (`SELECT count(*) FROM mouvements WHERE tool_id = …` → 0), alors que le code prétend en poser un.
+- **Où** : [app/models/tool.rb:160](app/models/tool.rb#L160) — `mouvements.create(état: 0, date: DateTime.now)`.
+- **Cause racine (prouvée par test)** : `Mouvement` déclare `belongs_to :user` et l'application charge `config.load_defaults 7.1` → l'appartenance est **obligatoire** ; la colonne `mouvements.user_id` est d'ailleurs `null: false`. L'appel ne fournit aucun utilisateur → la validation échoue, et comme il s'agit d'un `create` **sans bang** l'échec est avalé. Piège de lecture : `tool.mouvements` renvoie quand même l'objet non persisté (une association `has_many` ajoute au tableau en mémoire même quand la sauvegarde échoue) — d'où l'illusion que ça fonctionne.
+- **Impact** : faible aujourd'hui (personne ne dépend de ce mouvement initial), mais le code ment sur ce qu'il fait. **Question métier ouverte** : un outil neuf doit-il vraiment naître « réservé » par personne ? Si oui il faut un utilisateur ; sinon la ligne est à supprimer.
+- **Correctif proposé** : trancher l'intention, puis soit supprimer le `after_create`, soit lui passer un utilisateur explicite et passer en `create!` pour que l'échec ne soit plus silencieux. Test correspondant : `tool_test.rb` → `créer un outil ne pose aucun mouvement` (**épinglage** du comportement actuel, à inverser).
+
+### B39 — `Tool.indisponibles_ids` interroge une colonne qui n'existe pas (code mort)
+- **Signalé par** : agent, 2026-07-29 (session `/tests` « matériel »).
+- **Parcours de repro** : aucun — la méthode n'a **aucun appelant** dans `app/`. Elle lèverait `ActiveRecord::StatementInvalid` au premier usage.
+- **Où** : [app/models/tool.rb:60](app/models/tool.rb#L60) — `Intervention.joins(:tools).where(organisation_id:)`.
+- **Cause racine** : la table `interventions` n'a pas de colonne `organisation_id` (l'organisation dérive du service) — même famille que les quatre bugs `organisation_id` des jobs corrigés le 2026-07-01.
+- **Impact** : nul aujourd'hui, piège à la première réutilisation. `Tool#disponible?` (l.68) est également sans appelant, mais lui fonctionne.
+- **Correctif proposé** : supprimer les deux méthodes mortes, ou corriger le filtre en passant par `services`. Non testé (code mort).
 
 ### B20 — Import XLS : un agent peut être rattaché au service d'une **autre organisation**
 - **Signalé par** : agent, 2026-07-27 (session `/tests` « import des utilisateurs »).
@@ -263,6 +296,21 @@
 - **Cause** : asymétrie entre les trois `prepare_variables_of_*_for_view` — `adherent_id` (sans accent) n'est appliqué qu'aux commandes et factures ; seul `adhérent_ids` (avec accent, dans `apply_filters`) vaut pour les trois. Deux paramètres différents pour la même intention, dont aucun n'est aujourd'hui émis par le formulaire de la vue.
 - **Portée** : incohérence, pas une fuite (`policy_scope` borne les trois onglets de la même manière).
 - **Correctif proposé** : unifier sur un seul paramètre et l'appliquer dans `apply_filters`. **Non corrigé** (méthode /tests). Comportement actuel **épinglé** par un test.
+
+### B40 — Deux personnes peuvent réserver le même outil le même jour, et l'une des deux réservations devient invisible
+- **Signalé par** : agent, 2026-07-29 (session `/tests` « matériel », reproduit par test).
+- **Parcours de repro** : deux comptes non-adhérents de la même commune (ex. le manager `hidalgo` et l'agent `bond`) → chacun ouvre `/tools` et clique la case verte du **même outil au même jour** → les deux clics réussissent (« Outil réservé le … avec succès »). **Observé** : deux lignes `réservé` existent en base pour ce couple (outil, jour) ; dans la grille, un seul état est retenu et c'est le **dernier créé** qui gagne. Le premier réservataire voit donc une case bleu clair « Réservé par qqn d'autre », sans lien pour libérer **sa propre** réservation.
+- **Où** : [app/controllers/mouvements_controller.rb:101](app/controllers/mouvements_controller.rb#L101) (`reserve`, aucune vérification d'existence) + [app/models/tool.rb:119](app/models/tool.rb#L119) (`pluck(:état, :user_id).to_h` — la conversion en Hash écrase les doublons d'état).
+- **Cause racine** : `Mouvement` n'a aucune validation d'unicité sur (`tool`, `date`, `état: réservé`), et la grille agrège par état, pas par utilisateur.
+- **Impact** : deux agents peuvent partir avec le même matériel le même jour en croyant l'avoir réservé — cas typique du service technique. Le premier ne peut même pas annuler depuis la grille.
+- **Correctif proposé (décision métier)** : refuser la seconde réservation (validation model + message dans `reserve`), ou l'assumer et afficher les deux. Comportement actuel épinglé par `réserver deux fois le même jour crée deux réservations` (`mouvements_controller_test.rb`) et `deux réservations le même jour : seule la dernière compte` (`tool_test.rb`), **à inverser à la décision**.
+
+### B41 — `users#agent_calendrier` : une date illisible en paramètre provoque une erreur 500
+- **Signalé par** : agent, 2026-07-29 (même famille que les crashes corrigés ce jour dans `tools#index`/`#show`/`mouvements#reserve`).
+- **Parcours de repro** : ouvrir `/users/…/agent_calendrier?date=nawak` (ou laisser un lien/marque-page porter une date malformée) → `Date::Error`.
+- **Où** : [app/controllers/users_controller.rb:165-167](app/controllers/users_controller.rb#L165) — `params[:date] = Date.today if params[:date].blank?` puis `params[:date].to_date`, exactement le motif corrigé ailleurs.
+- **Impact** : 500 sur une page agent, déclenchable par une URL forgée ou un paramètre corrompu.
+- **Correctif proposé** : le même garde que `ToolsController#date_valide?` (une méthode privée de 5 lignes, à mutualiser si un troisième contrôleur en a besoin). **Non appliqué** : hors du périmètre autorisé ce jour (l'autorisation portait sur les trois autres emplacements).
 
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
 
