@@ -21,13 +21,13 @@ class AgentWorkflowStateInterventionPolicyTest < ActionDispatch::IntegrationTest
     refute @policy.valider?
   end
 
-  # Refuser
+  # Refuser : interdit à l'agent même s'il est affecté à l'intervention.
   test "should'nt get refuser" do
     refute @policy.refuser?
   end
 
-  # Archiver
-  test 'should get archiver' do
-    assert @policy.archiver?
+  # Archiver : réservé aux manager/administrateur.
+  test "should'nt get archiver" do
+    refute @policy.archiver?
   end
 end

@@ -82,6 +82,28 @@ class FetchRoutesInfosServiceTest < ActiveSupport::TestCase
     assert_equal 'Distance: 3 km, Durée: 22 min, Essence: 0.37 L, CO₂: 0.86 kg', resume
   end
 
+  # Les durées sont doublées (aller-retour) avant d'être mises en forme :
+  # 1770 s de trajet simple donnent 59 min de trajet compté.
+  test 'une durée de moins dune heure est donnée en minutes' do
+    assert_includes duree_affichee(1770), 'Durée: 59 min'
+  end
+
+  test 'une durée dune heure pile est donnée en heures et minutes' do
+    assert_includes duree_affichee(1800), 'Durée: 1h 00min'
+  end
+
+  test 'les minutes dune durée en heures sont sur deux chiffres' do
+    assert_includes duree_affichee(1860), 'Durée: 1h 02min'
+  end
+
+  test 'une durée de plusieurs heures est donnée en heures et minutes' do
+    assert_includes duree_affichee(3630), 'Durée: 2h 01min'
+  end
+
+  test 'une durée absente est donnée à zéro minute' do
+    assert_includes duree_affichee(nil), 'Durée: 0 min'
+  end
+
   test 'un résumé de trajet est vide sans aucune route' do
     service = FetchRoutesInfos.new(DEPART, ARRIVEE)
 
@@ -171,6 +193,12 @@ class FetchRoutesInfosServiceTest < ActiveSupport::TestCase
   end
 
   private
+
+  def duree_affichee(secondes)
+    route = ROUTE.merge('duration' => secondes.nil? ? nil : "#{secondes}s")
+
+    FetchRoutesInfos.new(DEPART, ARRIVEE).get_trajet_from_response({ 'routes' => [route] })
+  end
 
   def stub_google(corps)
     stub_request(:post, /routes.googleapis.com/)
