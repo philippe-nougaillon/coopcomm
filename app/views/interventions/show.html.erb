@@ -36,7 +36,6 @@
         <% end %>
       </div>
     </div>
-
     <%# --- DEMANDE + ASSIGNATION --- %>
     <div class="grid grid-cols-1 <%= current_user.adhérent? ? '' : 'lg:grid-cols-2 gap-8' %> mb-10">
       <%# SECCIÓN DEMANDE %>
@@ -68,29 +67,41 @@
             <div class="space-y-4 flex flex-col justify-start">
               <div>
                 <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Météo</span>
-                <p class="text-slate-700 text-sm"><%= @intervention.meteo.presence || "Non renseignée" %></p>
+                <% if @intervention.meteo.present? %>
+                  <div class="flex flex-wrap gap-1.5">
+                    <% @intervention.meteo.split('|').each do |info| %>
+                      <li class="flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+                        <span><%= info.strip %></span>
+                      </li>
+                    <% end %>
+                  </div>
+                <% else %>
+                  <p class="text-slate-400 italic text-sm">Non renseignée</p>
+                <% end %>
               </div>
             </div>
-            <% if @intervention.début_prévue || @intervention.fin_prévue %>
-              <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-100 flex flex-col justify-center space-y-4 h-full">
-                <% if @intervention.début_prévue %>
-                  <div>
-                    <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Début prévu</span>
-                    <p class="text-slate-800 font-medium text-sm"><%= l(@intervention.début_prévue, format: :long) %></p>
-                  </div>
-                <% end %>
-                <% if @intervention.fin_prévue %>
-                  <div>
-                    <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Fin prévue</span>
-                    <p class="text-slate-800 font-medium text-sm"><%= l(@intervention.fin_prévue, format: :long) %></p>
-                  </div>
+            <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-100 flex flex-col justify-center space-y-3 h-full">
+              <div>
+                <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Début</span>
+                <% if @intervention.début.present? %>
+                  <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(@intervention.début, format: :long) %></p>
+                <% else %>
+                  <span class="text-slate-400 italic text-sm">Non renseigné</span>
                 <% end %>
               </div>
-            <% end %>
+              <div class="border-t border-slate-200/60 pt-3">
+                <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Fin</span>
+                <% if @intervention.fin.present? %>
+                  <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(@intervention.fin, format: :long) %></p>
+                <% else %>
+                  <span class="text-slate-400 italic text-sm">Non renseignée</span>
+                <% end %>
+              </div>
+            </div>
           </div>
         </div>
       </section>
-
       <%# SECCIÓN ASSIGNATION (Solo si no es adhérent) %>
       <% unless current_user.adhérent? %>
         <section class="flex flex-col">
@@ -135,7 +146,7 @@
                 <% if @intervention.tags.any? %>
                   <div class="flex flex-wrap gap-1.5">
                     <% @intervention.tags.each do |tag| %>
-                      <span class="inline-flex items-center text-sm font-semibold text-slate-600">
+                      <span class="inline-flex items-center font-semibold text-slate-600">
                         <span class="text-slate-400 mr-0.5">#</span><%= tag.name.humanize %>
                       </span>
                     <% end %>
@@ -149,7 +160,6 @@
         </section>
       <% end %>
     </div>
-
     <%# --- SECCIÓN INTERVENTION / POINTAGES / COMPTE-RENDU --- %>
     <% unless current_user.adhérent? %>
       <% if @intervention.repeter %>
@@ -218,7 +228,6 @@
         </section>
       <% else %>
         <% has_map = @intervention.service&.calculate_distance? && (@routes_response.present? || @intervention.trajet.present?) %>
-        
         <section class="mb-10">
           <div class="flex items-center gap-2 mb-4">
             <span class="w-1.5 h-6 rounded-full bg-gradient-to-b from-[#681b98] via-[#9fd9ec] to-[#40b3db]"></span>
@@ -226,53 +235,53 @@
           </div>
           <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
             <!-- GRILLE SUPÉRIEURE -->
-            <div class="p-6 grid grid-cols-1 gap-6 <%= has_map ? 'lg:grid-cols-[1fr_1.3fr] lg:grid-rows-2' : 'md:grid-cols-2 lg:grid-cols-3' %>">
-  
-              <!-- 1. Bloc Dates -->
+            <div class="p-6 grid grid-cols-1 gap-6 items-start <%= has_map ? 'lg:grid-cols-[1fr_1.3fr] lg:grid-rows-2' : 'md:grid-cols-2 lg:grid-cols-3' %>">
+              <!-- 1. Bloc Dates (Actualizado igual a Demande) -->
               <div class="<%= 'lg:col-start-1 lg:row-start-1' if has_map %> bg-slate-50/70 p-4 rounded-xl border border-slate-100 space-y-3">
                 <div>
                   <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Début</span>
-                  <p class="text-slate-800 font-semibold text-sm mt-0.5">
-                    <%= l(@intervention.début, format: :long) if @intervention.début %>
-                  </p>
+                  <% if @intervention.début.present? %>
+                    <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(@intervention.début, format: :long) %></p>
+                  <% else %>
+                    <span class="text-slate-400 italic text-sm">Non renseigné</span>
+                  <% end %>
                 </div>
                 <div class="border-t border-slate-200/60 pt-3">
                   <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Fin</span>
-                  <p class="text-slate-800 font-semibold text-sm mt-0.5">
-                    <%= l(@intervention.fin, format: :long) if @intervention.fin %>
-                  </p>
+                  <% if @intervention.fin.present? %>
+                    <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(@intervention.fin, format: :long) %></p>
+                  <% else %>
+                    <span class="text-slate-400 italic text-sm">Non renseignée</span>
+                  <% end %>
                 </div>
               </div>
-
               <!-- 2. Bloc Temps -->
               <div class="<%= 'lg:col-start-1 lg:row-start-2' if has_map %> bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col justify-between space-y-2">
                 <div class="flex items-center justify-between">
                   <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Temps passé</span>
-                  <span class="text-sm font-bold text-slate-800 bg-white px-2.5 py-1 rounded-md border border-slate-200 shadow-xs">
+                  <span class="w-24 text-center text-sm font-bold text-slate-800 bg-white py-1 rounded-md border border-slate-200 shadow-xs">
                     <%= @intervention.temps_par_agent %> h
                   </span>
                 </div>
                 <div class="flex items-center justify-between border-t border-slate-200/60 pt-2">
                   <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Temps total</span>
-                  <span class="text-sm font-bold text-slate-800 bg-white px-2.5 py-1 rounded-md border border-slate-200 shadow-xs">
+                  <span class="w-24 text-center text-sm font-bold text-slate-800 bg-white py-1 rounded-md border border-slate-200 shadow-xs">
                     <%= @intervention.temps_total %> h
                   </span>
                 </div>
                 <div class="flex items-center justify-between border-t border-slate-200/60 pt-2">
                   <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pause</span>
-                  <span class="text-sm font-medium text-slate-500 bg-white px-2.5 py-1 rounded-md border border-slate-200 shadow-xs">
+                  <span class="w-24 text-center text-sm font-medium text-slate-500 bg-white py-1 rounded-md border border-slate-200 shadow-xs">
                     <%= @intervention.temps_de_pause %> h
                   </span>
                 </div>
               </div>
-
               <!-- 3. Trajet / Photos -->
-              <div class="<%= has_map ? 'lg:col-start-2 lg:row-start-1 lg:row-span-2' : '' %> bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col h-full min-h-[14rem]">
+              <div class="<%= has_map ? 'lg:col-start-2 lg:row-start-1 lg:row-span-2' : '' %> bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col h-full <%= @intervention.photos.any? || has_map ? 'min-h-[12rem]' : 'min-h-0' %>">
                 <% if has_map %>
                   <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                     Trajet (AR)
                   </span>
-
                   <% if @intervention.trajet.present? && !@intervention.nouveau? %>
                     <p class="text-slate-800 font-semibold text-sm bg-white p-3 rounded-lg border border-slate-200">
                       <%= @intervention.trajet %>
@@ -285,25 +294,22 @@
                          data-map-arrivee-value="<%= @routes_response["localisation_arrivee"].to_json %>"
                          data-map-polyline-value="<%= @routes_response["data_response"] ? @routes_response.dig("data_response","routes",0,"polyline","encodedPolyline") : '' %>">
                     </div>
-                    <p class="mt-2 text-sm text-slate-600">
+                    <p class="mt-8 text-sm text-slate-600">
                       <%= @routes_response["routes_info"] %>
                     </p>
                   <% end %>
                 <% else %>
-                  <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Photos</span>
                   <%= render "photo_gallery", photos: @intervention.photos, compact: true %>
                 <% end %>
               </div>
-
             </div>
-
             <!-- SECTION INFÉRIEURE -->
             <div class="p-6 border-t border-slate-100 bg-white">
               <div class="grid grid-cols-1 <%= has_map ? 'md:grid-cols-2 gap-6' : 'w-full' %>">
                 <!-- COMMENTAIRES -->
                 <div class="<%= 'md:border-r md:border-slate-100 md:pr-6' if has_map %> space-y-2">
                   <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Commentaires</span>
-                  <div class="bg-slate-50/60 rounded-xl p-4 border border-slate-100 min-h-[5rem]">
+                  <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-100 <%= @intervention.commentaires.present? ? 'min-h-[4rem]' : '' %>">
                     <p class="text-slate-700 text-left text-sm leading-relaxed break-all">
                       <% if @intervention.commentaires.present? %>
                         <%= @intervention.commentaires %>
@@ -313,20 +319,16 @@
                     </p>
                   </div>
                 </div>
-
                 <!-- PHOTOS COMPLÈTES -->
                 <% if has_map %>
                   <div class="mt-6 md:mt-0">
-                    <div class="bg-slate-50/70 p-4 rounded-xl border border-slate-100 min-w-0">
-                      <%= render "photo_gallery", photos: @intervention.photos %>
-                    </div>
+                    <%= render "photo_gallery", photos: @intervention.photos %>
                   </div>
                 <% end %>
               </div>
             </div>
           </div>
         </section>
-
         <%# --- COMPTE-RENDU --- %>
         <% if current_user.adhérent? || current_user.manager_or_admin? %>
           <section class="mb-10">
@@ -375,7 +377,6 @@
         <% end %>
       <% end %>
     <% end %>
-
     <%# --- ACTIVITÉ --- %>
     <% if current_user.manager_or_admin? %>
       <section class="mb-10">
@@ -422,7 +423,6 @@
         <% end %>
       </section>
     <% end %>
-
     <%# --- ACCIONES INFERIORES Y VOLVER --- %>
     <div class="flex justify-end mt-6 pt-4 border-t border-slate-200">
       <% if policy(@intervention).destroy? %>
@@ -435,40 +435,40 @@
             <%= embedded_svg "icons/delete.svg", class: "w-4 h-4" %>
             Supprimer l'intervention
           </button>
-          <dialog id="delete_intervention_modal_<%= @intervention.id %>" class="modal">
-            <div class="modal-box">
-              <form method="dialog">
-                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-              </form>
-              <h3 class="text-lg font-bold text-error flex items-center gap-2">
-                <%= embedded_svg "icons/warning.svg", title: "Supprimer l'intervention" %>
-                Supprimer l'intervention
-              </h3>
-              <p class="py-4 text-base text-slate-600 text-left">
-                Êtes-vous certain(e) de vouloir supprimer cette intervention ?
-                Cette action est irréversible.
-              </p>
-              <div class="modal-action">
+            <dialog id="delete_intervention_modal_<%= @intervention.id %>" class="modal">
+              <div class="modal-box">
                 <form method="dialog">
-                  <button class="btn btn-ghost">Annuler</button>
+                  <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                 </form>
-                <%= button_to intervention_path(@intervention), method: :delete, class: "btn btn-error text-white" do %>
-                  Oui, supprimer
-                <% end %>
+                <h3 class="text-lg font-bold text-error flex items-center gap-2">
+                  <%= embedded_svg "icons/warning.svg", title: "Supprimer l'intervention" %>
+                  Supprimer l'intervention
+                </h3>
+                <p class="py-4 text-base text-slate-600 text-left">
+                  Êtes-vous certain(e) de vouloir supprimer cette intervention ?
+                  Cette action est irréversible.
+                </p>
+                <div class="modal-action">
+                  <form method="dialog">
+                    <button class="btn btn-ghost">Annuler</button>
+                  </form>
+                  <%= button_to intervention_path(@intervention), method: :delete, class: "btn btn-error text-white" do %>
+                    Oui, supprimer
+                  <% end %>
+                </div>
               </div>
-            </div>
-            <form method="dialog" class="modal-backdrop">
-              <button>Fermer</button>
-            </form>
-          </dialog>
-        </span>
-      <% end %>
-    </div>
-    <div class="py-10">
-      <%= link_to interventions_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
-        <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste" %>
-        Retour à la liste
-      <% end %>
+              <form method="dialog" class="modal-backdrop">
+                <button>Fermer</button>
+              </form>
+            </dialog>
+          </span>
+        <% end %>
+      </div>
+      <div class="py-10">
+        <%= link_to interventions_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+          <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste" %>
+          Retour à la liste
+        <% end %>
+      </div>
     </div>
   </div>
-</div>
