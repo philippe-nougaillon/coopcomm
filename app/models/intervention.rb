@@ -123,7 +123,7 @@ class Intervention < ApplicationRecord
   ARCHIVE   = 'archivé'
 
   workflow do
-    state NOUVEAU, meta: { style: 'badge-primary text-white', rgba: '0,181,255,255' } do
+    state NOUVEAU, meta: { style: 'badge-secondary text-white ', rgba: '0,181,255,255' } do
       # event :accepter, transitions_to: ACCEPTE
       event :terminer, transitions_to: TERMINE
     end
@@ -137,21 +137,21 @@ class Intervention < ApplicationRecord
     #   event :terminer, transitions_to: TERMINE
     # end
 
-    state TERMINE, meta: { style: 'badge-accent text-white' } do
+    state TERMINE, meta: { style: ' badge-primary text-white ' } do
       event :valider, transitions_to: VALIDE
       event :refuser, transitions_to: REFUSE
     end
 
-    state VALIDE, meta: { style: 'badge-success text-white' } do
+    state VALIDE, meta: { style: ' badge-success text-white ' } do
       event :archiver, transitions_to: ARCHIVE
     end
 
-    state REFUSE, meta: { style: 'badge-error text-white' } do
+    state REFUSE, meta: { style: ' badge-error text-white ' } do
       # event :accepter, transitions_to: ACCEPTE
       event :archiver, transitions_to: ARCHIVE
     end
 
-    state ARCHIVE, meta: { style: 'badge-ghost' }
+    state ARCHIVE, meta: { style: 'badge-neutral' }
   end
 
   # pour que le changement de 'workflow_state' se voit dans l'audit trail

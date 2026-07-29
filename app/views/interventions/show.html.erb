@@ -109,7 +109,13 @@
                 <% else %>
                   <div class="space-y-1">
                     <% @intervention.agents.each do |agent| %>
-                      <p class="text-slate-700 font-medium"><%= agent.nom_prénom %></p>
+                      <p class="font-medium">
+                          <% if current_user.manager_or_admin? %>
+                            <%= link_to agent.nom_prénom, user_path(agent), class: "text-primary hover:underline" %>
+                          <% else %>
+                            <span class="text-slate-700"><%= agent.nom_prénom %></span>
+                          <% end %>
+                        </p>
                     <% end %>
                   </div>
                 <% end %>
@@ -157,23 +163,23 @@
               <table class="table w-full text-left border-collapse">
                 <thead class="bg-slate-200/60 border-b border-slate-100 text-xs uppercase font-semibold text-slate-400 tracking-wider">
                   <tr>
-                    <th class="py-3 px-4">Il y a</th>
+                    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Il y a</th>
                     <% unless current_user.agent? %>
-                      <th class="py-3 px-4">Agent</th>
+                      <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Agent</th>
                     <% end %>
-                    <th class="py-3 px-4">Début</th>
-                    <th class="py-3 px-4">Fin</th>
-                    <th class="py-3 px-4">Temps total</th>
-                    <th class="py-3 px-4 text-center">Statut</th>
-                    <th class="py-3 px-4">Commentaires</th>
-                    <th class="py-3 px-4"></th>
+                    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Début</th>
+                    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Fin</th>
+                    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Temps total</th>
+                    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Statut</th>
+                    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Commentaires</th>
+                    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider"></th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-sm text-slate-600">
                   <% if @pointages.any? %>
                     <% @pointages.each do |pointage| %>
                       <tr class="hover:bg-base-200/60 transition-colors duration-150 align-middle">
-                        <td class="py-3 px-4"><%= time_ago_in_words pointage.début %></td>
+                        <td class="py-3 px-4 "><%= time_ago_in_words pointage.début %></td>
                         <% unless current_user.agent? %>
                           <td class="py-3 px-4 font-medium text-slate-700"><%= pointage.agents.first&.nom_prénom %></td>
                         <% end %>
@@ -185,7 +191,15 @@
                             <%= pointage.workflow_state.humanize %>
                           </span>
                         </td>
-                        <td class="py-3 px-4 text-slate-500"><%= truncate(pointage.commentaires, length: 25) %></td>
+                        <td class="py-3 px-4 text-slate-500">
+                          <% if pointage.commentaires.present? %>
+                            <%= truncate(pointage.commentaires, length: 25) %>
+                          <% else %>
+                            <div class="flex items-center justify-center">
+                              <%= embedded_svg "icons/check_indeterminate_small.svg", class: "w-5 h-5 text-slate-400", title: "Aucun horaire" %>
+                            </div>
+                          <% end %>
+                        </td>
                         <td class="py-3 px-4 text-right">
                           <%= link_to "Voir", pointage, class: 'font-medium text-sky-600 hover:text-sky-700 hover:underline' %>
                         </td>
