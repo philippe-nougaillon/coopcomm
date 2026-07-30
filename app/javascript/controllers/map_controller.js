@@ -80,6 +80,12 @@ export default class extends Controller {
     bounds.extend(arriveeCoords);
     map.fitBounds(bounds);
 
+    google.maps.event.addListenerOnce(map, "idle", () => {
+      if (map.getZoom() > 14) { 
+        map.setZoom(14); // Bromea el zoom inicial a nivel 14 para mostrar las calles y ciudad alrededor
+      }
+    });
+
     // Ajout de la route
     if (this.polylineValue && this.polylineValue !== "") {
       const decodedPath = encoding.decodePath(this.polylineValue);

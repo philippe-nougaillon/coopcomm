@@ -1,0 +1,24 @@
+<%# locals: (intervention:, routes_response:) %>
+<% mode = trajet_mode(intervention, routes_response) %>
+
+<span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Trajet (AR)</span>
+
+<% case mode %>
+<% when :mapa %>
+  <div id="map"
+       class="w-full h-56 rounded-lg border border-slate-200 overflow-hidden"
+       data-controller="map"
+       data-map-depart-value="<%= routes_response["localisation_depart"].to_json %>"
+       data-map-arrivee-value="<%= routes_response["localisation_arrivee"].to_json %>"
+       data-map-polyline-value="<%= routes_response.dig("data_response", "routes", 0, "polyline", "encodedPolyline") %>">
+  </div>
+  <p class="mt-2 text-sm text-slate-600"><%= routes_response["routes_info"] %></p>
+
+<% when :texte %>
+  <p class="text-slate-800 font-semibold text-sm bg-white p-3 rounded-lg border border-slate-200">
+    <%= trajet_texte(intervention, routes_response) %>
+  </p>
+
+<% when :vide %>
+  <p class="text-slate-400 italic text-sm">Trajet non disponible.</p>
+<% end %>
