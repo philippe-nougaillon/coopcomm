@@ -2,7 +2,6 @@
 <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider <%= compact ? 'mb-2' : 'mb-3' %>">
   Photos
 </span>
-
 <% if photos.attached? %>
   <div class="flex flex-wrap gap-3 <%= 'max-h-48 overflow-y-auto p-1' if compact %>">
     <% photos.each do |photo| %>
