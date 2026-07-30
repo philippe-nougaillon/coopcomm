@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-# SimpleCov boot est optionnel : utilisé par bin/coverage en local, pas en CI/tests normaux
-require_relative 'simplecov_boot' if ENV['SIMPLECOV'].present?
+# SimpleCov boot : désactiver en CI (GitHub Actions définit CI=true automatiquement)
+require_relative 'simplecov_boot' unless ENV['CI'].present?
 
 ENV['RAILS_ENV'] ||= 'test'
 require_relative '../config/environment'
@@ -54,13 +54,15 @@ module ActiveSupport
       # Rails lit lui-même PARALLEL_WORKERS et ignore la valeur ci-dessous.
       parallelize(workers: :number_of_processors)
 
-      # Un nom distinct par worker, sinon la couverture fusionnée est partielle.
-      parallelize_setup do |worker|
-        SimpleCov.command_name "#{SimpleCov.command_name}-#{worker}"
-      end
+      # SimpleCov setup : seulement si requireé (local avec bin/coverage)
+      if defined?(SimpleCov)
+        parallelize_setup do |worker|
+          SimpleCov.command_name "#{SimpleCov.command_name}-#{worker}"
+        end
 
-      parallelize_teardown do |_worker|
-        SimpleCov.result
+        parallelize_teardown do |_worker|
+          SimpleCov.result
+        end
       end
     end
 
