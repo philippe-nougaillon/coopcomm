@@ -31,7 +31,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -51,9 +51,7 @@ jobs:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           PG_USER: postgres
           PARALLEL_WORKERS: 2
-        run: |
-          bin/rails db:test:prepare
-          bin/rails test
+        run: PARALLEL_WORKERS=2 bin/rails test
 
   # system-test:
   #   runs-on: ubuntu-latest
@@ -75,7 +73,7 @@ jobs:
 
   #   steps:
   #     - name: Checkout code
-  #       uses: actions/checkout@v2
+  #       uses: actions/checkout@v4
 
   #     - name: Set up Ruby
   #       uses: ruby/setup-ruby@v1
