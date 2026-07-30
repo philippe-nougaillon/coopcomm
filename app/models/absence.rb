@@ -28,6 +28,10 @@ class Absence < ApplicationRecord
   # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
   after_create_commit :send_manager_notification
 
+  after_create_commit  -> { notifier_personne_concernée('créée') }
+  after_update_commit  -> { notifier_personne_concernée('modifiée') }
+  after_destroy_commit -> { notifier_personne_concernée('supprimée') }
+
   Absence::MOTIF_LABELS
 
   def en_cours?
@@ -42,6 +46,22 @@ class Absence < ApplicationRecord
     NotifManagersNewAbsenceJob.perform_later(self)
   end
 
+  def résumé(attributs = {})
+    source = attributes.merge(attributs)
+
+    {
+      'du' => source['du'],
+      'au' => source['au'],
+      'période' => période_libellé(source['matin'], source['après_midi']),
+      'motif' => MOTIF_LABELS[source['motif']] || source['motif'],
+      'observation' => source['observation']
+    }
+  end
+
+  def résumé_avant
+    résumé(saved_changes.transform_values(&:first))
+  end
+
   def takes_morning?
     matin || (!matin && !après_midi) || (matin && après_midi)
   end
@@ -50,7 +70,59 @@ class Absence < ApplicationRecord
     après_midi || (!matin && !après_midi) || (matin && après_midi)
   end
 
+  def début_datetime
+    après_midi && !matin ? du.middle_of_day : du.beginning_of_day
+  end
+
+  def fin_datetime
+    matin && !après_midi ? au.middle_of_day : au.end_of_day
+  end
+
+  def demi_journée?
+    matin ^ après_midi
+  end
+
+  # Affine un chevauchement déjà établi au jour près ; 12:00 appartient à l'après-midi.
+  def couvre?(debut, fin)
+    return true unless demi_journée?
+
+    debut = en_datetime(debut) || en_datetime(fin)
+    fin   = en_datetime(fin) || debut
+    return false if debut.blank? || du.blank? || au.blank?
+    return debut >= début_datetime && debut < fin_datetime if debut == fin
+
+    debut < fin_datetime && fin > début_datetime
+  end
+
   private
+
+  def période_libellé(matin, après_midi)
+    return 'Matin' if matin && !après_midi
+    return 'Après-midi' if après_midi && !matin
+
+    'Journée entière'
+  end
+
+  # L'auteur se lit dans l'audit trail ; la suppression y écrit aussi sa ligne.
+  def auteur_id
+    audits.reorder(:created_at).last&.user_id
+  end
+
+  def notifier_personne_concernée(action)
+    return if user.blank? || user.email.blank?
+
+    auteur = auteur_id
+    return if auteur == user_id
+
+    NotifAgentAbsenceJob.perform_later(action, résumé, (résumé_avant if action == 'modifiée'),
+                                       user.email, user.organisation&.id, auteur)
+  end
+
+  def en_datetime(valeur)
+    return nil if valeur.blank?
+
+    valeur.to_time
+  end
 
   def dates_must_make_sense
     return unless du && au && (du > au)
@@ -87,26 +159,21 @@ class Absence < ApplicationRecord
   def no_overlapping_interventions
     return if du.blank? || au.blank? || user.blank?
 
-    absence_start = du.beginning_of_day
-    absence_end   = au.end_of_day
-
-    if matin && !après_midi
-      absence_end = au.middle_of_day
-    elsif après_midi && !matin
-      absence_start = du.middle_of_day
-    end
-    # Si les deux sont à false (ou les deux à true), les bornes par défaut
-    # couvrent toute la journée, ce qui correspond à ton besoin.
-
     interventions_en_conflit = user.interventions.where(
-      'début_prévue < ? AND fin_prévue > ?',
-      absence_end,
-      absence_start
+      "#{Intervention::EFFECTIVE_DEBUT_SQL} < ? AND #{Intervention::EFFECTIVE_FIN_SQL} > ?",
+      fin_datetime,
+      début_datetime
     )
 
-    return unless interventions_en_conflit.exists?
+    return if interventions_en_conflit.empty?
 
-    errors.add(:base, "Impossible de créer l'absence : la personne est déjà en intervention sur ce créneau horaire.")
+    messages = interventions_en_conflit.map do |intervention|
+      "« #{intervention.description} » du #{intervention.effective_début&.strftime('%d/%m/%Y %H:%M')} " \
+        "au #{intervention.effective_fin&.strftime('%d/%m/%Y %H:%M')}"
+    end
+
+    errors.add(:base,
+               "Impossible d'enregistrer l'absence : la personne est déjà en intervention sur ce créneau horaire — #{messages.to_sentence}.")
   end
 
   def genuinely_overlaps?(other)
