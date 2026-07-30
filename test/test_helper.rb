@@ -30,6 +30,23 @@ module ActiveSupport
   class TestCase
     include Devise::Test::IntegrationHelpers
 
+    # L'environnement de test désactive le cache de fragments : sans ce bloc, un
+    # test ne peut pas voir ce que la prod sert depuis le cache.
+    # `collection_cache` est figé au démarrage : le remplacer est indispensable
+    # pour qu'un `render collection:, cached:` écrive quoi que ce soit.
+    def avec_cache
+      store_initial = ActionView::PartialRenderer.collection_cache
+      store = ActiveSupport::Cache::MemoryStore.new
+      ActionView::PartialRenderer.collection_cache = store
+      ActionController::Base.cache_store = store
+      ActionController::Base.perform_caching = true
+      yield store
+    ensure
+      ActionController::Base.perform_caching = false
+      ActionController::Base.cache_store = store_initial
+      ActionView::PartialRenderer.collection_cache = store_initial
+    end
+
     # Parallélisation en opt-in : `PARALLEL_WORKERS=4 bin/rails test:all`.
     # Au-delà de 4, les tests système saturent.
     if ENV['PARALLEL_WORKERS']
