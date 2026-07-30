@@ -66,8 +66,7 @@
         </div>
       </div>
        <% if !@intervention.repeter %>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-dashed border-slate-100"
-             <%= "data-controller=\"meteo-intervention\" data-action=\"change->verification-disponibilites#verificationWithInput\"".html_safe if !@intervention.passed %>>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-dashed border-slate-100"<%= " data-controller=\"meteo-intervention\" data-action=\"change->verification-disponibilites#verificationWithInput\"".html_safe if !@intervention.passed %>>
           <div data-action="change->verification-disponibilites#verificationWithInput" class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:col-span-1">
             <div data-action='change->meteo-intervention#afficher_meteo' class="col-span-1 sm:col-span-2">
               <%= form.label :début_prévue, class: "label font-semibold text-slate-700" %>
@@ -204,12 +203,11 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200/80">
               <div>
                 <label class="label font-semibold text-slate-600 text-xs uppercase tracking-wider p-0 mb-1">Pause (h)</label>
-                <%= form.select :temps_de_pause, 
+                <%= form.select :temps_de_pause,
                                 options_for_select([0.0, 0.5, 1.0].map { |v| [v.to_s.tr('.', ','), v] }, intervention.temps_de_pause),
                                 { include_blank: true },
                                 class: "select select-bordered select-sm w-full bg-white h-10 focus:input-primary",
-                                data: { 'calc-temps-passe-target': 'pause', action: "change->calc-temps-passe#calc" },
-                              %>
+                                data: { 'calc-temps-passe-target': 'pause', action: "change->calc-temps-passe#calc" } %>
               </div>
 
               <div>
