@@ -10,4 +10,4 @@ set -e
 
 cd "$(dirname "$0")/.."
 rm -rf coverage
-SIMPLECOV=true RUBYOPT="-r$(pwd)/test/simplecov_boot ${RUBYOPT}" exec bundle exec rails test:all "$@"
+RUBYOPT="-r$(pwd)/test/simplecov_boot ${RUBYOPT}" exec bundle exec rails test:all "$@"
