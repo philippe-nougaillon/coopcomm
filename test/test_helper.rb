@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require_relative 'simplecov_boot'
+# SimpleCov boot est optionnel : utilisé par bin/coverage en local, pas en CI/tests normaux
+require_relative 'simplecov_boot' if ENV['SIMPLECOV'].present?
 
 ENV['RAILS_ENV'] ||= 'test'
 require_relative '../config/environment'
