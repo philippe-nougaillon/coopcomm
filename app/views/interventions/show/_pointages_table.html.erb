@@ -1,0 +1,64 @@
+<%# locals: (intervention:, pointages:) %>
+<section class="mb-10">
+  <div class="flex justify-between flex-wrap items-center mb-3 pt-3">
+    <h2 class="text-2xl text-secondary font-semibold">Pointages</h2>
+  </div>
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="table w-full text-left border-collapse">
+        <thead class="bg-slate-200/60 border-b border-slate-100 text-xs uppercase font-semibold text-slate-400 tracking-wider">
+          <tr>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Il y a</th>
+            <% unless current_user.agent? %>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Agent</th>
+            <% end %>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Début</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Fin</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Temps total</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Statut</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Commentaires</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-sm text-slate-600">
+          <% if pointages.any? %>
+            <% pointages.each do |pointage| %>
+              <tr class="hover:bg-base-200/60 transition-colors duration-150 align-middle">
+                <td class="py-3 px-4"><%= time_ago_in_words pointage.début %></td>
+                <% unless current_user.agent? %>
+                  <td class="py-3 px-4 font-medium text-slate-700"><%= pointage.agents.first&.nom_prénom %></td>
+                <% end %>
+                <td class="py-3 px-4"><%= l pointage.début %></td>
+                <td class="py-3 px-4"><%= l pointage.fin if pointage.fin %></td>
+                <td class="py-3 px-4 font-medium"><%= pointage.temps_total %></td>
+                <td class="py-3 px-4 text-center">
+                  <span class="badge font-medium text-xs px-2.5 py-1 rounded-full <%= pointage.style %>">
+                    <%= pointage.workflow_state.humanize %>
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-slate-500">
+                  <% if pointage.commentaires.present? %>
+                    <%= truncate(pointage.commentaires, length: 25) %>
+                  <% else %>
+                    <div class="flex items-center justify-center">
+                      <%= embedded_svg "icons/check_indeterminate_small.svg", class: "w-5 h-5 text-slate-400", title: "Aucun commentaire" %>
+                    </div>
+                  <% end %>
+                </td>
+                <td class="py-3 px-4 text-right">
+                  <%= link_to "Voir", pointage, class: 'font-medium text-sky-600 hover:text-sky-700 hover:underline' %>
+                </td>
+              </tr>
+            <% end %>
+          <% else %>
+            <tr>
+              <td colspan="<%= current_user.agent? ? 7 : 8 %>" class="text-center py-10 text-slate-400 italic">
+                Aucun pointage enregistré pour le moment.
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
