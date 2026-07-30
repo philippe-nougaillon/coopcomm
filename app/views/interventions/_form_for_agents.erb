@@ -85,7 +85,9 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
           <div>
-            <%= form.label :début, class: "label font-semibold text-slate-700" %>
+            <%= form.label :début, class: "label font-semibold text-slate-700" do %>
+              Début <span class="text-red-500">*</span>
+                      <% end %>
             <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200">
               <%= form.date_field :début,
                                   class: "flex-1 bg-transparent border-none outline-hidden text-sm",
@@ -114,7 +116,9 @@
             </div>
           </div>
           <div>
-            <%= form.label :fin, class: "label font-semibold text-slate-700" %>
+            <%= form.label :fin, class: "label font-semibold text-slate-700" do %>
+            Fin <span class="text-red-500">*</span>
+                      <% end %>
             <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200">
               <%= form.date_field :fin,
                                   class: "flex-1 bg-transparent border-none outline-hidden text-sm",
@@ -145,7 +149,7 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200/80">
           <div>
-            <label class='label font-semibold text-slate-600 text-xs uppercase tracking-wider p-0 mb-1'>Pause (h)</label>
+            <label class='label font-semibold text-slate-600 text-xs uppercase tracking-wider p-0 mb-1'>Pause (h) <span class="text-red-500">*</span></label>
             <%= form.select :temps_de_pause, options_for_select([0.0, 0.5, 1.0].map { |v| [v.to_s.tr('.', ','), v] }, intervention.temps_de_pause),
                             { include_blank: true },
                             class: "select select-bordered select-sm w-full bg-white h-10",
