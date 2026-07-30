@@ -24,6 +24,7 @@ nouvelle_intervention:
 #  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
   début: 2024-04-19 8:30:00
+  fin: 2024-04-19 17:30:00
   description: Ramasser les feuilles
   workflow_state: nouveau
   slug: caa0d044-03c2-4533-abb7-0fc807051335
@@ -33,7 +34,8 @@ intervention_terminée:
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
 #  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
-  début: 2024-04-19 8:30:00
+  début: 2024-04-15 8:30:00
+  fin: 2024-04-15 17:30:00
   description: Tailler les arbres
   workflow_state: terminé
   slug: 7a2bff56-19e4-44aa-891a-441be6b62d6f
@@ -51,7 +53,8 @@ intervention_autre_agent:
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
 #  agent_id: <%#= ActiveRecord::FixtureSet.identify(:martin) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
-  début: 2024-04-19 8:30:00
+  début: 2024-04-16 8:30:00
+  fin: 2024-04-16 17:30:00
   description: L'intervetion d'un autre agent
   workflow_state: terminé
   slug: effe9850-4218-4f61-99df-a89b82a97de8
@@ -61,7 +64,8 @@ intervention_autre_adhérent:
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
 #  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:berthout) %>
-  début: 2024-04-19 8:30:00
+  début: 2024-04-17 8:30:00
+  fin: 2024-04-17 17:30:00
   description: L'intervetion d'un autre adhérent
   workflow_state: terminé
   slug: 49ff96b4-6e36-4636-a652-0f71b5888b12

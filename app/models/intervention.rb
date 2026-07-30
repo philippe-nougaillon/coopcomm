@@ -19,6 +19,9 @@ class Intervention < ApplicationRecord
   attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute, :début_hour,
                 :début_minute, :fin_hour, :fin_minute
 
+  # Neutralise les publications d'événements de #apres_terminaison (clôture automatique).
+  attr_accessor :sans_notification
+
   before_destroy :must_not_have_any_mouvements
 
   belongs_to :service
@@ -50,6 +53,7 @@ class Intervention < ApplicationRecord
   validate :tools_must_be_available
   validate :agents_must_be_available
   validate :dates_cannot_be_in_the_future
+  validate :dates_obligatoires_si_terminé
 
   before_save -> { self.temps_de_pause = 0 if temps_de_pause.nil? }
   before_save :calc_temps_total
@@ -102,7 +106,6 @@ class Intervention < ApplicationRecord
   end
 
   after_create :replace_description_with_id
-  after_create :calculate_co2, if: proc(&:terminé?)
 
   # Rafraîchit (de façon coalescée) les vues matérialisées du dashboard.
   after_commit :refresh_dashboard_views, on: %i[create destroy]
@@ -111,6 +114,10 @@ class Intervention < ApplicationRecord
   # after_create_commit :broadcast_to_authorized_viewers
   # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
   after_create_commit :send_manager_notification
+
+  # Déclaré en dernier : le `save` de #calculate_co2 fait perdre aux callbacks
+  # suivants l'information « on sort d'une création ».
+  after_commit :apres_terminaison, on: %i[create update], if: :vient_de_terminer?
 
   # WORKFLOW
   NOUVEAU = 'nouveau'
@@ -368,7 +375,7 @@ class Intervention < ApplicationRecord
     if !fin || !début
       temps_total = 0
     elsif fin > début
-      temps_total = (fin - début).seconds.in_hours - temps_de_pause
+      temps_total = (fin - début).seconds.in_hours - temps_de_pause.to_f
       temps_total *= agents.count
     else
       temps_total = 0
@@ -574,6 +581,13 @@ class Intervention < ApplicationRecord
     errors.add(:fin, 'ne peut pas être dans le futur')
   end
 
+  def dates_obligatoires_si_terminé
+    return unless terminé?
+
+    errors.add(:début, "est obligatoire pour terminer l'intervention") if début.blank?
+    errors.add(:fin, "est obligatoire pour terminer l'intervention") if fin.blank?
+  end
+
   def set_temporary_description
     # Si la description est vide, on lui donne une valeur bouchon pour passer la validation
     self.description = 'en_attente_id' if description.blank?
@@ -585,6 +599,21 @@ class Intervention < ApplicationRecord
     return unless description == 'en_attente_id'
 
     update_column(:description, "##{id}")
+  end
+
+  def vient_de_terminer?
+    terminé? && saved_change_to_workflow_state?
+  end
+
+  def apres_terminaison
+    calculate_co2
+
+    return if Rails.env.development? || sans_notification
+
+    Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: id })
+
+    # Un pointage a son propre événement, publié par interventions#pointer.
+    Events.instance.publish('intervention.done', payload: { intervention_id: id }) if template_slug.blank?
   end
 
   # Ajoute ou enlève l'état 'pointage activé' selon si c'est un modèle de pointage.

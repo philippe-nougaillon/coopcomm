@@ -134,6 +134,58 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert intervention.reload.terminé?, "l'état ne doit pas avoir changé"
   end
 
+  # Test critique — bouton « Terminer » sans dates : l'agent est renvoyé au
+  # formulaire, et l'enregistrement termine l'intervention.
+  test 'critique : update avec la demande de terminaison termine l’intervention' do
+    intervention = interventions(:intervention_paris)
+
+    patch intervention_url(intervention), params: {
+      terminer: 1,
+      intervention: { début: 2.hours.ago, fin: 1.hour.ago, description: intervention.description }
+    }
+
+    assert_redirected_to intervention_url(intervention)
+    assert intervention.reload.terminé?
+    assert_equal 'Intervention terminée', flash[:notice]
+  end
+
+  test 'critique : update avec la demande de terminaison est refusé sans date de fin' do
+    intervention = interventions(:intervention_paris)
+
+    patch intervention_url(intervention), params: {
+      terminer: 1,
+      intervention: { début: 2.hours.ago, fin: '', description: intervention.description }
+    }
+
+    assert_response :unprocessable_content
+    assert intervention.reload.nouveau?, "l'état ne doit pas avoir changé"
+    assert_match(/Statut\s*:\s*Nouveau/, response.body, "le formulaire ne doit pas annoncer un état non enregistré")
+  end
+
+  # La demande de terminaison ne doit pas contourner la policy : un adhérent peut
+  # modifier une intervention, mais jamais la terminer.
+  test 'critique : un adhérent ne peut pas terminer une intervention via le paramètre' do
+    intervention = interventions(:intervention_paris)
+    sign_in users(:patrick_adherent_paris)
+
+    patch intervention_url(intervention), params: {
+      terminer: 1,
+      intervention: { début: 2.hours.ago, fin: 1.hour.ago, description: intervention.description }
+    }
+
+    assert intervention.reload.nouveau?, "l'état ne doit pas avoir changé"
+  end
+
+  test 'update sans demande de terminaison laisse l’état inchangé' do
+    intervention = interventions(:intervention_paris)
+
+    patch intervention_url(intervention), params: {
+      intervention: { début: 2.hours.ago, fin: 1.hour.ago, description: intervention.description }
+    }
+
+    assert intervention.reload.nouveau?
+  end
+
   # Garde anti-faux-positif : sans conflit, la transition passe toujours — le
   # filet ne doit pas bloquer le parcours nominal.
   test 'terminer une intervention saine reste possible' do

@@ -328,4 +328,84 @@ class InterventionTest < ActiveSupport::TestCase
 
     assert_equal 'pointage activé', intervention.workflow_state
   end
+
+  # --- Passage à l'état terminé : dates obligatoires et événements publiés ---
+
+  test 'terminé sans date de début : invalide' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.assign_attributes(workflow_state: Intervention::TERMINE, début: nil)
+
+    assert_not intervention.valid?
+    assert_includes intervention.errors.full_messages.join, 'obligatoire pour terminer'
+  end
+
+  test 'terminé sans date de fin : invalide' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.assign_attributes(workflow_state: Intervention::TERMINE, fin: nil)
+
+    assert_not intervention.valid?
+    assert_includes intervention.errors.full_messages.join, 'obligatoire pour terminer'
+  end
+
+  test 'terminé avec les deux dates : valide' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.workflow_state = Intervention::TERMINE
+
+    assert_predicate intervention, :valid?
+  end
+
+  test 'un état autre que terminé n’exige pas les dates' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.assign_attributes(début: nil, fin: nil)
+
+    assert_predicate intervention, :valid?
+  end
+
+  # Les événements sont observés par les jobs qu'ils déclenchent : les mêmes
+  # sondes que test/subscription.
+  test 'terminer publie workflow_changed et done' do
+    intervention = interventions(:nouvelle_intervention)
+
+    assert_enqueued_with(job: NotifManagersWorkflowChangedJob) do
+      assert_enqueued_with(job: NotifAdherentInterventionTermineeJob) do
+        Audited.audit_class.as_user(users(:martin_technique_paris)) { intervention.terminer! }
+      end
+    end
+  end
+
+  test 'terminer un pointage ne publie pas done' do
+    pointage = cree_pointage_termine_par(users(:martin_technique_paris))
+
+    assert_no_enqueued_jobs only: NotifAdherentInterventionTermineeJob do
+      assert_enqueued_with(job: NotifManagersWorkflowChangedJob) do
+        Audited.audit_class.as_user(users(:martin_technique_paris)) { pointage.terminer! }
+      end
+    end
+  end
+
+  test 'sans_notification : la terminaison ne publie aucun événement' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.sans_notification = true
+
+    assert_no_enqueued_jobs only: [NotifManagersWorkflowChangedJob, NotifAdherentInterventionTermineeJob] do
+      Audited.audit_class.as_user(users(:martin_technique_paris)) { intervention.terminer! }
+    end
+  end
+
+  test 'une modification sans changement d’état ne publie rien' do
+    intervention = interventions(:intervention_terminée)
+
+    assert_no_enqueued_jobs only: [NotifManagersWorkflowChangedJob, NotifAdherentInterventionTermineeJob] do
+      Audited.audit_class.as_user(users(:martin_technique_paris)) { intervention.update!(commentaires: 'Relu') }
+    end
+  end
+
+  private
+
+  def cree_pointage_termine_par(agent)
+    mère = interventions(:intervention_repete)
+    pointage = mère.create_next_intervention(mère, agent)
+    pointage.fin = Time.current
+    pointage
+  end
 end

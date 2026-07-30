@@ -209,20 +209,29 @@ class InterventionsController < ApplicationController
     @intervention.assign_attributes(intervention_params)
     update_tag_list
 
+    terminaison_demandée = params[:terminer].present? && @intervention.can_terminer? &&
+                           policy(@intervention).terminer?
+    @intervention.workflow_state = Intervention::TERMINE if terminaison_demandée
+
     respond_to do |format|
       if @intervention.save
-        
+
         format.html do
           # Si c'est une modification du commentaire dans le pointage statut, on redirige vers home
           # 303 obligatoire après un PATCH Turbo : en 302 la page reste figée sur le formulaire.
           if params[:commit] == 'Enregistrer le commentaire'
             redirect_to root_path, notice: 'Votre commentaire a été enregistré', status: :see_other
+          elsif terminaison_demandée
+            redirect_to intervention_url(@intervention), notice: 'Intervention terminée', status: :see_other
           else
             redirect_to intervention_url(@intervention), notice: 'Intervention modifiée avec succès.', status: :see_other
           end
         end
         format.json { render :show, status: :ok, location: @intervention }
       else
+        # L'état n'a pas été enregistré : le formulaire ne doit pas afficher « Terminé ».
+        @intervention.restore_attributes([:workflow_state]) if terminaison_demandée
+
         format.html { render :edit, status: :unprocessable_content }
         format.json { render json: @intervention.errors, status: :unprocessable_content }
       end
@@ -264,12 +273,6 @@ class InterventionsController < ApplicationController
 
     if @intervention.can_terminer?
       @intervention.terminer!
-      @intervention.calculate_co2
-
-      unless Rails.env.development?
-        Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id })
-        Events.instance.publish('intervention.done', payload: { intervention_id: @intervention.id })
-      end
 
       redirect_to @intervention, notice: 'Intervention terminée'
     else
