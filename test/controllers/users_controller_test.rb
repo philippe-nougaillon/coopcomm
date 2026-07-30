@@ -235,6 +235,132 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_not_equal unauthorized_role, new_user.rôle
   end
 
+  # --- show : filtrage de l'historique ---
+
+  # Les audits d'un autre auditable que User (ici une absence, auditée
+  # `associated_with: :user`) traversent le filtre sans être écartés.
+  test 'show conserve les audits associés qui ne portent pas sur le compte' do
+    Absence.create!(user: @user, du: Date.new(2030, 7, 1), au: Date.new(2030, 7, 2), motif: :formation)
+
+    get user_url(@user)
+
+    assert_response :success
+    assert assigns(:audits).any? { |audit| audit.auditable_type == 'Absence' }
+  end
+
+  # --- create : branches d'échec ---
+
+  test 'create invalide réaffiche le formulaire en 422' do
+    assert_no_difference('User.count') do
+      post users_url, params: { user: { nom: 'SANS', prénom: 'Email', email: '' } }
+    end
+
+    assert_response :unprocessable_content
+  end
+
+  test 'create invalide en JSON renvoie les erreurs' do
+    post users_url, params: { user: { nom: 'SANS', prénom: 'Email', email: '' } }, as: :json
+
+    assert_response :unprocessable_content
+    assert_includes response.parsed_body.to_s, 'doit être rempli'
+  end
+
+  # --- update : branches d'échec ---
+
+  test 'update invalide réaffiche le formulaire en 422' do
+    patch user_url(@user), params: { user: { email: '' } }
+
+    assert_response :unprocessable_content
+    assert_not_equal '', @user.reload.email
+  end
+
+  test 'update invalide en JSON renvoie les erreurs' do
+    patch user_url(@user), params: { user: { email: '' } }, as: :json
+
+    assert_response :unprocessable_content
+    assert_includes response.parsed_body.to_s, 'doit être rempli'
+  end
+
+  test 'update invalide en turbo_stream remplace le formulaire utilisateur' do
+    patch user_url(@user), params: { user: { email: '' } }, as: :turbo_stream
+
+    assert_response :success
+    assert_match(/turbo-stream/, response.body)
+  end
+
+  test 'update invalide depuis la modale d\'absence remplace le formulaire d\'absence' do
+    patch user_url(@user),
+          params: { user: { absences_attributes: { '0' => { du: '2030-08-10', au: '2030-08-01',
+                                                            motif: 'formation' } } },
+                    from_absence_modal: '1' },
+          as: :turbo_stream
+
+    assert_response :success
+    assert_match(/absence_form/, response.body)
+  end
+
+  # --- inviter / mot de passe / réactivation ---
+
+  test 'inviter renvoie le lien d\'accès' do
+    post inviter_user_url(@user)
+
+    assert_redirected_to user_path(@user)
+    assert_match(/renvoyé avec succès/i, flash[:notice].to_s)
+  end
+
+  # `edit_password?`/`update_password?` = `is_myself?` : seul le titulaire du
+  # compte peut changer son mot de passe.
+  test 'should get edit_password' do
+    sign_in @user
+    get edit_password_user_url(@user)
+
+    assert_response :success
+  end
+
+  test 'update_password enregistre un nouveau mot de passe' do
+    sign_in @user
+    patch update_password_user_url(@user),
+          params: { user: { password: 'Nouveau-MotDePasse-42!', password_confirmation: 'Nouveau-MotDePasse-42!' } }
+
+    assert_redirected_to user_url(@user)
+    assert @user.reload.valid_password?('Nouveau-MotDePasse-42!')
+  end
+
+  test 'update_password avec une confirmation qui diffère est refusé en 422' do
+    sign_in @user
+    patch update_password_user_url(@user),
+          params: { user: { password: 'Nouveau-MotDePasse-42!', password_confirmation: 'autre-chose' } }
+
+    assert_response :unprocessable_content
+    assert_not @user.reload.valid_password?('Nouveau-MotDePasse-42!')
+  end
+
+  test 'update_password en JSON renvoie les erreurs' do
+    sign_in @user
+    patch update_password_user_url(@user),
+          params: { user: { password: 'court', password_confirmation: 'court' } },
+          as: :json
+
+    assert_response :unprocessable_content
+  end
+
+  test 'reactivate réhabilite un compte désactivé' do
+    desactive = users(:agent_whatsapp) # service_paris, donc dans le périmètre de l'administrateur
+    desactive.discard
+
+    patch reactivate_user_url(desactive)
+
+    assert_redirected_to users_path
+    assert_not desactive.reload.discarded?
+  end
+
+  test 'reactivate échoue proprement si le compte est déjà actif' do
+    patch reactivate_user_url(@user)
+
+    assert_redirected_to users_path(discarded: true)
+    assert_match(/Impossible de réactiver/i, flash[:alert].to_s)
+  end
+
   # test "should import xls with param upload" do
   #   headers = ["Nom", "Prénom", "Email", "Téléphone", "Service", "Mémo"]
   #   data = [

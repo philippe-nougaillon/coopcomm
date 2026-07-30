@@ -150,6 +150,39 @@
 - **Cause racine (prouvée par git)** : le commit `fc5330c4` (« UX -show tools ») a retiré la branche `<% if @tool.interventions.any? %>` qui, avant, remplaçait le bouton (`id="supprimer_outil"`) par un bloc inerte « Suppression impossible, l'outil est utilisé dans des interventions ». `ToolPolicy#destroy?` = `manager_or_admin? && organisation?` **n'a jamais** regardé les interventions ; la protection était uniquement dans la vue (donc déjà contournable par requête forgée — le contrôleur `destroy` n'a aucune garde).
 - **Impact** : perte de données potentielle (rattachements outil↔interventions) déclenchable en 2 clics ; historique des interventions faussé.
 - **Correctif proposé (décision métier à trancher)** : soit **restaurer la protection** — re-masquer/désactiver le bouton pour `@tool.interventions.any?` **ET** ajouter une garde dans `tools_controller#destroy` (redirection + message si l'outil est utilisé), la vue seule étant contournable ; soit **assumer** la suppression libre (et alors supprimer le test `Ne pas pouvoir supprimer un outil avec une intervention`). Test correspondant en `skip` documenté jusqu'à décision.
+- **⚠️ MISE À JOUR 2026-07-29 — corrigé À MOITIÉ** : le commit `756dfdcd` (#412, Dani) a **restauré la garde côté vue** (bloc « Suppression impossible, l'outil est utilisé dans des interventions » à la place du bouton). Le `skip` du test système est donc **levé** (`test/system/tools_test.rb`, assertion réelle au vert). **La garde contrôleur manque toujours** : [tools_controller.rb:94](app/controllers/tools_controller.rb#L94) fait `@tool.destroy!` sans rien vérifier — vérifié empiriquement, un `DELETE /tools/:slug` direct supprime l'outil `tondeuse` et ses `tool_interventions`. Comportement épinglé par le test `un outil utilisé par une intervention est quand même supprimé` (`tools_controller_test.rb`), **à inverser à la correction**.
+
+### B36 — Grille des disponibilités : le jour où une panne est déclarée s'affiche « réservé par vous » au lieu de « en panne »
+- **Signalé par** : agent, 2026-07-29 (session `/tests` « matériel », reproduit par test).
+- **Parcours de repro** : se connecter en manager → *Réservation de matériel* (`/tools`) → repérer un outil **libre toute la semaine** → cliquer sur *Gestion panne* (ou `/mouvements/new?tool_id=…`) → déclarer une panne à une date **de la semaine affichée**, par exemple le mercredi → revenir à `/tools`. **Observé** : la case du **mercredi** est **bleu foncé** avec l'infobulle « Réservé par vous (cliquez pour libérer) », alors que jeudi→dimanche sont bien en **rouge** « En panne ». Cliquer sur la case bleue déclenche `libere`, qui ne trouve aucune réservation et affiche l'alerte trompeuse « Il n'existe pas de réservation ce jour-là pour cet utilisateur ». *(Le décalage se voit mieux en déclarant la panne en milieu de semaine ; une panne déclarée avant le lundi affiché est correctement rouge sur toute la semaine.)*
+- **Où** : [app/models/tool.rb:136](app/models/tool.rb#L136) — `current_state = "R"` dans la branche `if etats["panne"].present? && etats["fin_panne"].blank?`.
+- **Cause racine (prouvée par test)** : `est_en_panne` est initialisé par `est_encore_en_panne_le(first_date)`, qui ne regarde que les mouvements **antérieurs ou égaux au premier jour** de l'intervalle. Une panne déclarée *dans* l'intervalle n'est donc pas encore connue le jour même : on tombe dans la branche `else`, qui pose `"R"` (la lettre de « réservé par moi ») avant de basculer `est_en_panne = true` pour les jours suivants. La lettre attendue est `"P"`.
+- **Impact** : un outil hors service est présenté comme réservé par l'utilisateur courant le jour de la panne ; le clic propose une action impossible. Sur le mois affiché par `tools#show` le même calcul sera utilisé si la vue est refaite comme l'index (cf. `points-a-trancher.md`).
+- **Correctif proposé** : `current_state = "P"` au lieu de `"R"` (une ligne). Tests correspondants : `tool_test.rb` → `le jour de déclaration dune panne est marqué en panne` (en `skip`, passera au vert à la correction) et `un cycle panne puis réparation puis nouvelle panne est retracé` (épingle le `R` actuel, à passer en `P`).
+
+### B37 — `Tool#dernier_mouvement_a` lève `NoMethodError` dès que les mouvements sont déjà chargés
+- **Signalé par** : agent, 2026-07-29 (session `/tests` « matériel », reproduit par test).
+- **Parcours de repro** : fiche d'un outil (`tools#show`, vue calendrier) après que l'association `mouvements` a été chargée en mémoire dans la même requête (une itération `@tool.mouvements.each`, un `includes(:mouvements)`, un `render` de collection…). La branche « déjà chargés » du tri lève alors `NoMethodError: undefined method 'to_i' for an instance of Date` → **erreur 500**. Aujourd'hui la vue appelle la méthode sans avoir chargé l'association, donc c'est la branche SQL qui s'exécute et le bug reste dormant.
+- **Où** : [app/models/tool.rb:84](app/models/tool.rb#L84) — `sort_by { |m| -m.date.to_i }`.
+- **Cause racine (prouvée par test)** : `mouvements.date` est une colonne **`date`** (cf. `db/schema.rb`, `t.date "date"`), pas `datetime` → `m.date` est un `Date`, qui n'a pas de `#to_i` (contrairement à `Time`/`DateTime`). La branche SQL, elle, trie en base et ne rencontre jamais le problème — d'où l'asymétrie.
+- **Impact** : 500 latent sur la fiche outil, qui se déclenchera au premier `includes(:mouvements)` ajouté pour corriger un N+1 (donc typiquement lors d'une optimisation).
+- **Correctif proposé** : trier sur la date elle-même (`sort_by(&:date).reverse`, ou `min_by`/`max_by`) plutôt que sur `-date.to_i`. Test correspondant : `tool_test.rb` → `dernier_mouvement_a répond la même chose que les mouvements soient chargés ou non` (en `skip`).
+
+### B38 — Créer un outil ne pose aucun mouvement : le `after_create` échoue en silence
+- **Signalé par** : agent, 2026-07-29 (session `/tests` « matériel », reproduit par test).
+- **Parcours de repro** : se connecter en manager → *Réservation de matériel* → *Ajouter un outil* → enregistrer. **Observé** : l'outil est créé mais aucun mouvement ne lui est associé (`SELECT count(*) FROM mouvements WHERE tool_id = …` → 0), alors que le code prétend en poser un.
+- **Où** : [app/models/tool.rb:160](app/models/tool.rb#L160) — `mouvements.create(état: 0, date: DateTime.now)`.
+- **Cause racine (prouvée par test)** : `Mouvement` déclare `belongs_to :user` et l'application charge `config.load_defaults 7.1` → l'appartenance est **obligatoire** ; la colonne `mouvements.user_id` est d'ailleurs `null: false`. L'appel ne fournit aucun utilisateur → la validation échoue, et comme il s'agit d'un `create` **sans bang** l'échec est avalé. Piège de lecture : `tool.mouvements` renvoie quand même l'objet non persisté (une association `has_many` ajoute au tableau en mémoire même quand la sauvegarde échoue) — d'où l'illusion que ça fonctionne.
+- **Impact** : faible aujourd'hui (personne ne dépend de ce mouvement initial), mais le code ment sur ce qu'il fait. **Question métier ouverte** : un outil neuf doit-il vraiment naître « réservé » par personne ? Si oui il faut un utilisateur ; sinon la ligne est à supprimer.
+- **Correctif proposé** : trancher l'intention, puis soit supprimer le `after_create`, soit lui passer un utilisateur explicite et passer en `create!` pour que l'échec ne soit plus silencieux. Test correspondant : `tool_test.rb` → `créer un outil ne pose aucun mouvement` (**épinglage** du comportement actuel, à inverser).
+
+### B39 — `Tool.indisponibles_ids` interroge une colonne qui n'existe pas (code mort)
+- **Signalé par** : agent, 2026-07-29 (session `/tests` « matériel »).
+- **Parcours de repro** : aucun — la méthode n'a **aucun appelant** dans `app/`. Elle lèverait `ActiveRecord::StatementInvalid` au premier usage.
+- **Où** : [app/models/tool.rb:60](app/models/tool.rb#L60) — `Intervention.joins(:tools).where(organisation_id:)`.
+- **Cause racine** : la table `interventions` n'a pas de colonne `organisation_id` (l'organisation dérive du service) — même famille que les quatre bugs `organisation_id` des jobs corrigés le 2026-07-01.
+- **Impact** : nul aujourd'hui, piège à la première réutilisation. `Tool#disponible?` (l.68) est également sans appelant, mais lui fonctionne.
+- **Correctif proposé** : supprimer les deux méthodes mortes, ou corriger le filtre en passant par `services`. Non testé (code mort).
 
 ### B20 — Import XLS : un agent peut être rattaché au service d'une **autre organisation**
 - **Signalé par** : agent, 2026-07-27 (session `/tests` « import des utilisateurs »).
@@ -223,6 +256,146 @@
 - **Portée** : cosmétique/UX — la création aurait de toute façon été refusée (`latitude`/`longitude` vides, validation model). Le message ne dit pas ce qu'il faut faire (« choisissez une adresse dans la liste ») et la saisie est perdue.
 - **Correctif proposé** : afficher un message explicite quand les coordonnées manquent, ou re-remplir le champ avec la valeur saisie. **Non corrigé** (front, non demandé).
 - **Effet de bord constaté sur les tests** : les tests système du formulaire Sites font désormais de **vraies requêtes réseau à `maps.googleapis.com`** (clé d'API présente en test) — dépendance externe + quota consommé à chaque run. `warehouses_test` a été réécrit pour poser adresse et coordonnées comme le fait l'autocomplétion (chemin nominal réel), donc il passe avec ou sans réseau.
+
+### B30 — Météo : `get_title` plante sur une date hors de la fenêtre de prévision
+- **Signalé par** : agent, 2026-07-29 (session /tests lot D), **prouvé empiriquement** : `MeteoConceptConnexion.get_title(Date.today + 20, forecasts)` → `NoMethodError: undefined method '[]' for nil`.
+- **Parcours de reproduction** : aucun aujourd'hui **depuis l'UI** — le seul appelant ([tools/_view_list.html.erb:18](app/views/tools/_view_list.html.erb#L18)) est gardé par `if @forecasts && icon_meteo = get_icon_meteo_by_date(date, …)`, qui renvoie nil hors plage et court-circuite l'appel. Le bug se déclenche dès qu'un futur appelant oublie cette garde, ou si la garde est déplacée.
+- **Cause** : `get_title` ([meteo_concept_connexion.rb:68](app/services/meteo_concept_connexion.rb#L68)) interpole `forecast["weather"]` **sans la garde `return unless day_forecast`** que possède son jumeau `get_icon_meteo_by_date` (l.51).
+- **Correctif proposé** : `return if forecast.nil?` en tête, symétrique de `get_icon_meteo_by_date`. **Non corrigé** (méthode /tests). Test `skip` documenté dans `meteo_concept_connexion_test.rb`, qui passera au vert à la correction.
+
+### B31 — Météo : une réponse tronquée de l'API fait planter la recherche de prévision
+- **Signalé par** : agent, 2026-07-29 (session /tests lot D), **prouvé empiriquement** : `get_forecast_for_date(Date.today + 5, forecasts.first(3))` → `NoMethodError: undefined method 'third' for nil`.
+- **Parcours de reproduction** : l'API Météo Concept renvoie moins de 14 jours (dégradation partielle, changement d'offre, quota) → ouvrir la page d'accueil ou la réservation de matériel → **erreur 500** sur une page qui n'a pourtant besoin de la météo que pour décorer.
+- **Cause** : `get_forecast_for_date` ([meteo_concept_connexion.rb:64](app/services/meteo_concept_connexion.rb#L64)) borne l'index sur la **constante 14** (`difference_of_day < 14`) au lieu de la taille réelle du tableau reçu, puis appelle `.third` sur `forecasts[index]` sans garde.
+- **Portée** : contredit l'intention explicite du `rescue` de `fetch_response` (« une API météo en panne ne doit jamais faire tomber la page d'accueil ») — la garde protège l'appel HTTP mais pas l'exploitation d'une réponse partielle.
+- **Correctif proposé** : `return unless difference_of_day >= 0 && difference_of_day < forecasts_for_14_days.size`, puis `forecasts_for_14_days[difference_of_day]&.third`. **Non corrigé** (méthode /tests). Test `skip` documenté.
+
+### B32 — `Absence` : une absence sans dates est enregistrable et casse ensuite l'affichage
+- **Signalé par** : agent, 2026-07-29 (hors périmètre de la session, découvert en analysant la couverture), **prouvé empiriquement** en environnement de test : `Absence.new(user: u).valid?` → `true`, puis `nb_jours` → `NoMethodError: undefined method '-' for nil` et `en_cours?` → `TypeError: cannot determine inclusion in beginless/endless ranges`.
+- **Parcours de reproduction** : aucun depuis le formulaire (les champs date sont requis côté HTML) ; atteignable par requête forgée ou par tout code créant une `Absence` sans dates. La fiche utilisateur affichant l'absence lèverait alors une 500.
+- **Cause** : `Absence` ([absence.rb:24-26](app/models/absence.rb#L24)) n'a **aucune validation de présence** sur `du`/`au` ; les trois validations métier commencent toutes par `return if du.blank? || au.blank?`, donc une absence sans dates les traverse toutes.
+- **Correctif proposé** : `validates :du, :au, presence: true`. ⚠️ À vérifier avant application : cela rendrait invalides d'éventuelles absences existantes sans dates en prod (un `Absence.where(du: nil).or(...)` avant migration).
+- **Non corrigé** (méthode /tests, et lot `Absence` non retenu par PE pour cette session — aucun test écrit dessus).
+
+### B33 — CRM adhérent : le filtre Statut n'offre jamais l'état « Signé » sur l'onglet Cotations
+- **Signalé par** : agent, 2026-07-29 (session /tests lot B).
+- **Parcours de reproduction** : se connecter en adhérent (ou manager) → CRM → onglet « Mes Cotations » → dérouler le filtre **Statut** → les états proposés sont Créé / Envoyé / Validé / Refusé / Archivé. **« Signé » est absent**, alors que c'est un état propre à `Cotation` et une étape centrale de son workflow : un adhérent ne peut pas filtrer ses devis signés.
+- **Cause** : la vue ([adherent_crm/index.html.erb:29](app/views/adherent_crm/index.html.erb#L29)) alimente le menu avec `Commande.workflow_state_humanized` **quel que soit l'onglet**. Or `Commande` n'a pas l'état `SIGNE` ([commande.rb:22-26](app/models/commande.rb#L22)), contrairement à `Cotation` ([cotation.rb:25-30](app/models/cotation.rb#L25)).
+- **Correctif proposé** : choisir la classe selon `@tab` (`{'cotations' => Cotation, 'commandes' => Commande, 'factures' => Facture}[@tab]`). **Non corrigé** (modification de vue avec effet sur le comportement → hors du périmètre /tests).
+
+### B34 — CRM adhérent : le terme de recherche n'est pas échappé (jokers SQL actifs)
+- **Signalé par** : agent, 2026-07-29 (session /tests lot B).
+- **Parcours de reproduction** : CRM → champ « Rechercher » → saisir `%` (ou `_`) → **tous** les documents du périmètre remontent, au lieu de ceux contenant littéralement ce caractère.
+- **Cause** : `apply_filters` ([adherent_crm_controller.rb:29](app/controllers/adherent_crm_controller.rb#L29)) construit `"%#{params[:search]}%"` sans échapper `%` ni `_`, qui sont les jokers de `ILIKE`.
+- **Portée** : **pas une faille** — la valeur passe par un paramètre lié (`s:`), donc aucune injection SQL, et le filtre ne peut que restreindre `policy_scope`. Simple gêne fonctionnelle. Sévérité faible.
+- **Correctif proposé** : `ActiveRecord::Base.sanitize_sql_like(params[:search])` avant interpolation. **Non corrigé** (méthode /tests). Comportement actuel **épinglé** par un test, à inverser à la correction.
+
+### B35 — CRM adhérent : le filtre `adherent_id` est ignoré sur l'onglet Cotations
+- **Signalé par** : agent, 2026-07-29 (session /tests lot B).
+- **Parcours de reproduction** : en manager, appeler `/adherent_crm?adherent_id=<id>` → les onglets Commandes et Factures sont bien restreints à cet adhérent ([adherent_crm_controller.rb:95](app/controllers/adherent_crm_controller.rb#L95) et l.118), l'onglet Cotations ne l'est **pas**.
+- **Cause** : asymétrie entre les trois `prepare_variables_of_*_for_view` — `adherent_id` (sans accent) n'est appliqué qu'aux commandes et factures ; seul `adhérent_ids` (avec accent, dans `apply_filters`) vaut pour les trois. Deux paramètres différents pour la même intention, dont aucun n'est aujourd'hui émis par le formulaire de la vue.
+- **Portée** : incohérence, pas une fuite (`policy_scope` borne les trois onglets de la même manière).
+- **Correctif proposé** : unifier sur un seul paramètre et l'appliquer dans `apply_filters`. **Non corrigé** (méthode /tests). Comportement actuel **épinglé** par un test.
+
+### B40 — Deux personnes peuvent réserver le même outil le même jour, et l'une des deux réservations devient invisible
+- **Signalé par** : agent, 2026-07-29 (session `/tests` « matériel », reproduit par test).
+- **Parcours de repro** : deux comptes non-adhérents de la même commune (ex. le manager `hidalgo` et l'agent `bond`) → chacun ouvre `/tools` et clique la case verte du **même outil au même jour** → les deux clics réussissent (« Outil réservé le … avec succès »). **Observé** : deux lignes `réservé` existent en base pour ce couple (outil, jour) ; dans la grille, un seul état est retenu et c'est le **dernier créé** qui gagne. Le premier réservataire voit donc une case bleu clair « Réservé par qqn d'autre », sans lien pour libérer **sa propre** réservation.
+- **Où** : [app/controllers/mouvements_controller.rb:101](app/controllers/mouvements_controller.rb#L101) (`reserve`, aucune vérification d'existence) + [app/models/tool.rb:119](app/models/tool.rb#L119) (`pluck(:état, :user_id).to_h` — la conversion en Hash écrase les doublons d'état).
+- **Cause racine** : `Mouvement` n'a aucune validation d'unicité sur (`tool`, `date`, `état: réservé`), et la grille agrège par état, pas par utilisateur.
+- **Impact** : deux agents peuvent partir avec le même matériel le même jour en croyant l'avoir réservé — cas typique du service technique. Le premier ne peut même pas annuler depuis la grille.
+- **Correctif proposé (décision métier)** : refuser la seconde réservation (validation model + message dans `reserve`), ou l'assumer et afficher les deux. Comportement actuel épinglé par `réserver deux fois le même jour crée deux réservations` (`mouvements_controller_test.rb`) et `deux réservations le même jour : seule la dernière compte` (`tool_test.rb`), **à inverser à la décision**.
+
+### B41 — `users#agent_calendrier` : une date illisible en paramètre provoque une erreur 500
+- **Signalé par** : agent, 2026-07-29 (même famille que les crashes corrigés ce jour dans `tools#index`/`#show`/`mouvements#reserve`).
+- **Parcours de repro** : ouvrir `/users/…/agent_calendrier?date=nawak` (ou laisser un lien/marque-page porter une date malformée) → `Date::Error`.
+- **Où** : [app/controllers/users_controller.rb:165-167](app/controllers/users_controller.rb#L165) — `params[:date] = Date.today if params[:date].blank?` puis `params[:date].to_date`, exactement le motif corrigé ailleurs.
+- **Impact** : 500 sur une page agent, déclenchable par une URL forgée ou un paramètre corrompu.
+- **Correctif proposé** : le même garde que `ToolsController#date_valide?` (une méthode privée de 5 lignes, à mutualiser si un troisième contrôleur en a besoin). **Non appliqué** : hors du périmètre autorisé ce jour (l'autorisation portait sur les trois autres emplacements).
+
+### B42 — L'historique d'un utilisateur annonce « Déconnexion de l'application » pour une modification de profil quelconque
+- **Signalé par** : agent, 2026-07-29 (session `/tests` « helpers », reproduit par sonde puis par test).
+- **Parcours de repro** : ouvrir l'historique d'un utilisateur (`/users/…`, onglet Activité, ou `/admin/audits`) sur un audit dont **aucun** changement n'est affichable — soit `audited_changes` vide, soit uniquement des champs techniques filtrés (`otp_secret`, `signature`, `failed_attempts`, `ip`, `uid`…). **Observé** : la colonne détail affiche « Déconnexion de l'application », alors que le **badge du même audit** dit « Profil modifié ».
+- **Où** : [app/helpers/audits_helper.rb:113](app/helpers/audits_helper.rb#L113) — `audit.audited_changes['remember_created_at']&.last.nil?` est **vrai quand la clé est absente** (`nil&.last` → `nil`, puis `.nil?` → `true`).
+- **Cause racine** : il manque la garde `key?('remember_created_at') &&` que la fonction jumelle [audits_helper.rb:361](app/helpers/audits_helper.rb#L361) applique correctement pour le badge. Les deux fonctions décrivent le même évènement et divergent.
+- **Impact** : traçabilité trompeuse — un manager lit « déconnexion » là où il y a eu une modification de compte. Exigence CCTP.
+- **Correctif proposé** : ajouter `audit.audited_changes.key?('remember_created_at') &&` (une ligne, aligne le détail sur le badge). Test `skip` documenté prêt à passer au vert : `BUG H1 : un changement de profil invisible ne doit pas être présenté comme une déconnexion` (`audits_helper_test.rb`).
+
+### B43 — Trois branches mortes dans le repli de `audit_changes_list`
+- **Signalé par** : agent, 2026-07-29 (découvert en écrivant les tests : les assertions attendues échouaient).
+- **Parcours de repro** : aucun — c'est précisément le problème. Les messages « Désactivation / Réhabilitation du compte par un administrateur » et « Mise à jour de l'affectation logistique (Entrepôt) » ne peuvent **jamais** s'afficher.
+- **Où** : [app/helpers/audits_helper.rb:100-106](app/helpers/audits_helper.rb#L100) et [audits_helper.rb:119-120](app/helpers/audits_helper.rb#L119).
+- **Cause racine** : on n'entre dans ce bloc de repli que si `humanize_changes` est vide, c'est-à-dire si **tous** les champs modifiés sont dans `FILTERED_FIELDS`. Or ni `discarded_at` ni `warehouse_id` n'y figurent → ils produisent toujours une ligne de changement, et le repli n'est jamais atteint. Vérifié : une désactivation affiche « Statut du compte : Réactivé → Désactivé » (comportement correct, mais pas celui que le code croit produire).
+- **Impact** : nul pour l'utilisateur (le rendu de repli est moins bon que celui qui s'applique), mais 5 lignes de code trompeuses qui font croire à un comportement inexistant.
+- **Correctif proposé** : supprimer les deux branches, ou — si les messages sont voulus — les déplacer **avant** le test `humanize_changes.blank?`. Décision d'affichage à prendre.
+
+### B44 — `/mail_logs` tombe en 500 si la colonne `to` contient une liste de nombres
+- **Signalé par** : agent, 2026-07-29 (reproduit par sonde : `NoMethodError: undefined method 'strip' for an instance of Integer`).
+- **Parcours de repro** : un `MailLog` dont `to` vaut `"[1, 2]"` (JSON valide, contenu non textuel) → ouvrir `/mail_logs` → 500.
+- **Où** : [app/helpers/mail_logs_helper.rb:15](app/helpers/mail_logs_helper.rb#L15) — `Array(emails).map(&:strip)` suppose que `JSON.parse` a rendu des chaînes.
+- **Cause racine** : `MailLog#to` n'a aucune forme garantie (adresse, CSV, tableau, JSON) et a **déjà porté des ID** en production (`notif_panne`, corrigé par `b32fbf28`) — rien n'empêche que ça se reproduise.
+- **Impact** : page des logs d'emails inaccessible tant que la ligne fautive est dans la page. Écran d'administration.
+- **Correctif proposé** : `map { |e| e.to_s.strip }` (une ligne). Test `skip` documenté prêt à passer au vert (`mail_logs_helper_test.rb`).
+
+### B45 — `format_mail_recipients` rend du HTML non échappé
+- **Signalé par** : agent, 2026-07-29 (reproduit : `format_mail_recipients('<b>x</b>@paris.fr')` rend le `<b>` comme balise).
+- **Où** : [app/helpers/mail_logs_helper.rb:15](app/helpers/mail_logs_helper.rb#L15) — `.join(',<br/>').html_safe` sur des valeurs jamais échappées.
+- **Impact** : XSS stocké par construction. Portée **faible** aujourd'hui (la colonne est alimentée par l'application, à partir d'emails validés), mais toute nouvelle source d'écriture dans `MailLog#to` devient un vecteur.
+- **Correctif proposé** : échapper chaque adresse (`ERB::Util.h`) avant le `join`, en gardant le `<br/>` comme seul HTML délibéré. Comportement actuel **épinglé** par `ÉPINGLAGE H4` (`mail_logs_helper_test.rb`), à inverser à la correction.
+
+### B46 — Code mort : `prettify` et `audited_view_path`
+- **Signalé par** : agent, 2026-07-29.
+- **Où** : [app/helpers/application_helper.rb:28-119](app/helpers/application_helper.rb#L28) — ~80 lignes.
+- **Cause racine** : les 7 partials `_audit` sont passés à `audit_details` le 2026-07-28-c ; plus aucune vue n'appelle ces deux méthodes (vérifié par grep sur `app/`). Elles représentent 44 des 88 lignes non couvertes du fichier.
+- **Impact** : aucun à l'exécution ; charge de maintenance et bruit dans la mesure de couverture.
+- **Correctif proposé** : suppression. Non testées délibérément (on ne fige pas du code voué à disparaître).
+
+### B47 — Le filtre « Équipe » de l'index des interventions provoque une erreur 500
+- **Signalé par** : agent, 2026-07-30 (reproduit par test : `NoMethodError` sur `nil`).
+- **Parcours** : index des interventions → sélectionner une valeur dans le filtre **Équipe** (tag posé sur un adhérent) → 500.
+- **Où** : [app/controllers/interventions_controller.rb:71](app/controllers/interventions_controller.rb#L71) — `@users_in_same_services.tagged_with(...)`, variable d'instance **jamais assignée** ; la variable **locale** du même nom n'est créée qu'à la ligne 97, après ce bloc.
+- **Impact** : le filtre est inutilisable. Un filtre vide (`equipe=['']`) passe, d'où l'absence de remontée jusqu'ici.
+- **Correctif proposé** : une ligne — utiliser `User.by_service(selected_services)` (ou remonter l'affectation de la locale avant le bloc de filtres). Comportement actuel **épinglé** dans `interventions_index_filters_test.rb`, à inverser à la correction.
+
+### B48 — La tâche `interventions:relancer` ne relance jamais personne (condition de date inversée)
+- **Signalé par** : agent, 2026-07-30 (reproduit par test : une intervention terminée depuis 10 jours n'est pas sélectionnée ; une intervention datée 10 jours dans le futur l'est).
+- **Où** : [lib/tasks/interventions.rake:6](lib/tasks/interventions.rake#L6) — `where('updated_at::DATE - NOW()::DATE >= ?', 3)` sélectionne les interventions modifiées **dans plus de 3 jours**, pas depuis.
+- **Impact** : fonctionnalité de relance silencieusement morte. Aucune erreur, aucun log.
+- **Correctif proposé** : inverser la soustraction (`NOW()::DATE - updated_at::DATE >= 3`). Comportement actuel **épinglé** dans `test/tasks/interventions_relancer_test.rb`.
+
+### B49 — `interventions:relancer` plante sur `intervention.organisation_id`, après avoir envoyé le mail
+- **Signalé par** : agent, 2026-07-30 (reproduit ; `Intervention#respond_to?(:organisation_id)` renvoie `false`, vérifié en console).
+- **Où** : [lib/tasks/interventions.rake:14](lib/tasks/interventions.rake#L14) — la table `interventions` n'a pas de colonne `organisation_id` (l'organisation dérive du service via `has_one through:`).
+- **Impact** : le jour où B48 sera corrigé, la tâche enverra le premier mail puis lèvera `NoMethodError` — l'adhérent est relancé, le `MailLog` n'est jamais tracé et les suivants ne sont pas traités.
+- **Correctif proposé** : `intervention.organisation&.id`, comme les 4 jobs corrigés le 2026-07-01. Comportement actuel **épinglé**.
+
+### B50 — La suppression d'une absence en turbo_stream lève sur un partial introuvable
+- **Signalé par** : agent, 2026-07-30 (reproduit par test).
+- **Parcours** : fiche utilisateur → supprimer une absence depuis la modale (réponse Turbo Stream) → erreur de rendu.
+- **Où** : [app/controllers/absences_controller.rb:19-23](app/controllers/absences_controller.rb#L19) — rend `users/_absences_section`, qui inclut `absence_form` ; la recherche part de `absences/` et non de `users/`.
+- **Impact** : la branche turbo_stream de `absences#destroy` est inutilisable (la variante HTML, elle, fonctionne).
+- **Correctif proposé** : préfixer le partial (`users/absence_form`) dans `users/_absences_section.html.erb`. Comportement actuel **épinglé** dans `absences_controller_test.rb`.
+
+### B51 — Les réponses JSON des pages wiki lèvent sur un attribut inexistant
+- **Signalé par** : agent, 2026-07-30 (reproduit par test).
+- **Où** : [app/views/wiki_pages/_wiki_page.json.jbuilder:3](app/views/wiki_pages/_wiki_page.json.jbuilder#L3) — la vue générée interroge `nom`, absent de `WikiPage`.
+- **Impact** : toute requête JSON sur la ressource lève. Aucun appelant connu aujourd'hui.
+- **Correctif proposé** : aligner la vue sur les attributs réels (`titre`, `sous_titre`…) ou supprimer les vues jbuilder si le format JSON n'est pas utilisé. Comportement actuel **épinglé**.
+
+### B52 — Code mort : `TagCloudComponent` est appelé avec un mot-clé qui n'existe pas
+- **Signalé par** : agent, 2026-07-30.
+- **Où** : [app/components/tag_cloud_component.rb:4](app/components/tag_cloud_component.rb#L4) attend `intervention_tags:`, mais les deux seules vues qui l'utilisent (`carte_interventions`, `route_interventions`) passent `tags:` → `ArgumentError` au rendu.
+- **Impact** : nul aujourd'hui — **aucune route** ne mène à ces deux vues (vérifié par `rails routes`). L'erreur apparaîtrait au premier branchement.
+- **Correctif proposé** : supprimer les deux vues mortes et le composant, ou aligner le mot-clé avant de les rebrancher.
+
+### B53 — Code mort exécutable : méthodes qui lèveraient si elles étaient appelées
+- **Signalé par** : agent, 2026-07-30 (analyse de couverture).
+- **Où** :
+  - [app/controllers/twilio_controller.rb:60-75](app/controllers/twilio_controller.rb#L60) — `terminer_intervention` référence un `sender` inexistant → `NameError`. `send_options` (l. 48-58) n'est appelée par personne.
+  - [app/models/user.rb:260-266](app/models/user.rb#L260) — `nb_bad_words` itère sur `Notification`, **classe absente du projet** → `NameError`.
+  - [app/controllers/users_controller.rb:362](app/controllers/users_controller.rb#L362) — `interventions_average` appelle `interventions` (méthode de modèle) depuis un contrôleur → `NameError`. Action non routée.
+  - [app/models/user.rb:178-204](app/models/user.rb#L178) — `from_omniauth` : `:omniauthable` et la route sont commentés ; contient par ailleurs le bug `user.organisation=` déjà signalé.
+- **Impact** : nul tant que rien ne les appelle ; pièges à la réactivation.
+- **Correctif proposé** : suppression (voir aussi B46 et le récapitulatif de code mort du 2026-07-30 dans CLAUDE.md).
 
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
 

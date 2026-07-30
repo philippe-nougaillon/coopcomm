@@ -168,6 +168,21 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
+  # Une intervention validée, saine, dans un service du manager connecté.
+  def cree_intervention_validee
+    Intervention.create!(
+      description: 'Intervention validée du test',
+      adherent: users(:weil),
+      service: services(:technique),
+      agent_ids: [users(:john_wick).id],
+      début: DateTime.new(2024, 5, 6, 9, 0),
+      fin: DateTime.new(2024, 5, 6, 11, 0),
+      temps_de_pause: 0,
+      workflow_state: 'validé',
+      slug: SecureRandom.uuid
+    )
+  end
+
   # Une intervention de +agent+ que la règle de disponibilité #357 rend invalide : une
   # SECONDE intervention du même agent recouvre sa plage.
   def cree_intervention_en_conflit(agent, workflow_state: 'nouveau', avec_conflit: true)
@@ -747,6 +762,172 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
 
     intervention_fille.reload
     assert_not_nil intervention_fille.localisation, 'La localisation doit être mise à jour après pointage'
+  end
+
+  # --- update : branches de retour ---
+
+  test 'update depuis le pointage statut redirige vers la home' do
+    intervention = interventions(:intervention_fille)
+
+    patch intervention_url(intervention),
+          params: { intervention: { commentaires: 'Terminé côté agent' },
+                    commit: 'Enregistrer le commentaire' }
+
+    assert_redirected_to root_path
+    assert_equal 'Terminé côté agent', intervention.reload.commentaires
+  end
+
+  test 'update invalide réaffiche le formulaire en 422' do
+    patch intervention_url(@intervention), params: { intervention: { description: '' } }
+
+    assert_response :unprocessable_content
+    assert_not_equal '', @intervention.reload.description
+  end
+
+  test 'update invalide en JSON renvoie les erreurs' do
+    patch intervention_url(@intervention),
+          params: { intervention: { description: '' } },
+          as: :json
+
+    assert_response :unprocessable_content
+    assert_includes response.parsed_body['description'].to_s, 'doit être rempli'
+  end
+
+  # --- terminer / archiver : branches de refus ---
+
+  test 'terminer une intervention déjà validée est refusé' do
+    intervention = cree_intervention_validee
+
+    post terminer_intervention_url(intervention)
+
+    assert_redirected_to intervention_url(intervention)
+    assert_match(/Impossible de terminer/i, flash[:alert].to_s)
+    assert_equal 'validé', intervention.reload.workflow_state
+  end
+
+  test 'archiver une intervention validée l\'archive' do
+    intervention = cree_intervention_validee
+
+    post archiver_intervention_url(intervention)
+
+    assert_redirected_to intervention_url(intervention)
+    assert_equal 'archivé', intervention.reload.workflow_state
+  end
+
+  test 'archiver une intervention déjà archivée le signale' do
+    intervention = cree_intervention_validee
+    intervention.update_columns(workflow_state: 'archivé')
+
+    post archiver_intervention_url(intervention)
+
+    assert_match(/déjà archivée/i, flash[:alert].to_s)
+  end
+
+  test 'archiver une intervention qui n\'est pas au bon état est refusé' do
+    intervention = interventions(:nouvelle_intervention)
+
+    post archiver_intervention_url(intervention)
+
+    assert_match(/ne peut pas se archiver/i, flash[:alert].to_s)
+    assert_equal 'nouveau', intervention.reload.workflow_state
+  end
+
+  test 'archiver une intervention invalide est refusé avec son motif' do
+    intervention = cree_intervention_en_conflit(users(:john_wick), workflow_state: 'validé')
+
+    post archiver_intervention_url(intervention)
+
+    assert_match(/n'est pas valide/i, flash[:alert].to_s)
+    assert_equal 'validé', intervention.reload.workflow_state
+  end
+
+  # --- pointer : reprise d'activité ---
+
+  # Branche défensive : une fille porte une `fin` tout en restant à l'état
+  # « nouveau ». Le parcours normal les pose ensemble (`fin` + « terminé »), donc
+  # `find_current_intervention` (qui ne cherche que « nouveau ») ne la retrouve
+  # pas ; l'état est ici reconstitué à la main.
+  test 'pointer sur une fille close mais restée nouveau enregistre une reprise d\'activité' do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+    modele = interventions(:intervention_repete)
+
+    get pointer_intervention_url(modele)
+    fille = Intervention.where(template_slug: modele.slug).last
+    # Créneau déjà refermé et passé : la nouvelle fille démarrera « maintenant »
+    # sans recouvrir celle-ci.
+    fille.update_columns(début: 3.hours.ago, fin: 2.hours.ago, workflow_state: 'nouveau')
+
+    assert_difference('Intervention.count', 1) do
+      get pointer_intervention_url(modele)
+    end
+    assert_match(/Reprise d'activité/i, flash[:notice].to_s)
+  end
+
+  test 'pointer sur une intervention qui n\'est pas un modèle est refusé' do
+    intervention = interventions(:nouvelle_intervention) # bond y est agent affecté
+    sign_in users(:bond)
+
+    get pointer_intervention_url(intervention)
+
+    assert_match(/n'est pas un modèle de pointage/i, flash[:alert].to_s)
+  end
+
+  # --- update_location : branche d'échec ---
+
+  test 'update_location sur une intervention invalide renvoie les erreurs en 422' do
+    sign_in users(:martin_technique_paris)
+    get pointer_intervention_url(interventions(:intervention_repete))
+    fille = Intervention.where(template_slug: interventions(:intervention_repete).slug).last
+    fille.update_columns(adherent_id: nil) # rend le save suivant impossible
+
+    patch update_location_intervention_url(fille),
+          params: { latitude: 48.8566, longitude: 2.3522 },
+          as: :json
+
+    assert_response :unprocessable_content
+    assert_includes response.parsed_body['errors'].to_s, 'Adherent'
+  end
+
+  # --- Modèle de pointage : new / create ---
+
+  test 'new_intervention_modele_pointage prépare une intervention répétée' do
+    get new_intervention_modele_pointage_interventions_url
+
+    assert_response :success
+    assert assigns(:intervention).repeter
+  end
+
+  test 'create_intervention_modele_pointage crée un modèle à l\'état pointage activé' do
+    assert_difference('Intervention.count', 1) do
+      post create_intervention_modele_pointage_interventions_url,
+           params: { intervention: { description: 'Modèle de pointage du test',
+                                     adherent_id: users(:weil).id,
+                                     service_id: services(:technique).id } }
+    end
+
+    modele = Intervention.order(:created_at).last
+    assert_equal 'pointage activé', modele.workflow_state
+    assert modele.repeter
+    assert_redirected_to intervention_url(modele)
+  end
+
+  test 'create_intervention_modele_pointage invalide réaffiche le formulaire en 422' do
+    assert_no_difference('Intervention.count') do
+      post create_intervention_modele_pointage_interventions_url,
+           params: { intervention: { description: '' } }
+    end
+
+    assert_response :unprocessable_content
+  end
+
+  test 'create_intervention_modele_pointage invalide en JSON renvoie les erreurs' do
+    post create_intervention_modele_pointage_interventions_url,
+         params: { intervention: { description: '' } },
+         as: :json
+
+    assert_response :unprocessable_content
+    assert_includes response.parsed_body.to_s, 'doit être rempli'
   end
 
   test 'new (form manager) : liste des agents PLATE (sans optgroup) et câblée au service' do

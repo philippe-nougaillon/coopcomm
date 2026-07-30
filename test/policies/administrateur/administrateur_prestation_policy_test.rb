@@ -18,6 +18,11 @@ class AdministrateurPrestationPolicyTest < ActionDispatch::IntegrationTest
     assert @policy.create?
   end
 
+  test 'show autorisé sur une prestation de son organisation, refusé sur celle d\'une autre' do
+    assert @policy.show?
+    assert_not @policy_autre_org.show?
+  end
+
   test 'edit / update / destroy autorisés dans son organisation' do
     assert @policy.edit?
     assert @policy.update?

@@ -242,4 +242,8 @@ class FactureTest < ActiveSupport::TestCase
     end
     assert_includes facture.audits.last.audited_changes.keys, 'workflow_state'
   end
+
+  test 'un agent ne voit aucune facture' do
+    assert_empty Facture.visible_to(users(:bond))
+  end
 end

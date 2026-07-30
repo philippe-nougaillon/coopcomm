@@ -52,4 +52,27 @@ class WarehousesControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to admin_parametres_url
   end
+
+  # --- update : branches d'échec / slug inconnu ---
+
+  test 'update invalide réaffiche le formulaire en 422' do
+    patch warehouse_url(@warehouse), params: { warehouse: { address: '' } }
+
+    assert_response :unprocessable_content
+    assert_not_equal '', @warehouse.reload.address
+  end
+
+  test 'update invalide en JSON renvoie les erreurs' do
+    patch warehouse_url(@warehouse), params: { warehouse: { address: '' } }, as: :json
+
+    assert_response :unprocessable_content
+    assert_includes response.parsed_body.to_s, 'doit être rempli'
+  end
+
+  test 'un slug de site inconnu redirige au lieu de planter' do
+    get edit_warehouse_url('site-inexistant')
+
+    assert_redirected_to root_path
+    assert_match(/introuvable/i, flash[:alert].to_s)
+  end
 end

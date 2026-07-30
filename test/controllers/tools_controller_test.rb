@@ -8,6 +8,96 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:hidalgo)
   end
 
+  # ==========================================================================
+  # ==================== TESTS CRITIQUES =====================================
+  # ==========================================================================
+
+  test 'un outil utilisé par une intervention est quand même supprimé' do
+    # ÉPINGLAGE d'un BUG SIGNALÉ (B19) : la vue masque bien le bouton depuis #412,
+    # mais tools#destroy ne garde rien — une requête directe passe et emporte
+    # les tool_interventions en cascade. À inverser à la correction.
+    assert_predicate @tool.interventions, :any?
+
+    delete tool_url(@tool)
+
+    assert_not Tool.exists?(@tool.id)
+  end
+
+  test "l'index ne montre pas le matériel d'une autre organisation" do
+    get tools_url
+
+    assert_not_includes assigns(:tools), tools(:camion)
+  end
+
+  # ==========================================================================
+  # A. Fenêtre de dates de l'index et du show
+  # ==========================================================================
+
+  test "l'index affiche par défaut la semaine en cours" do
+    get tools_url
+
+    assert_equal Date.today.beginning_of_week, assigns(:date)
+    assert_equal Date.today.end_of_week, assigns(:date_fin)
+  end
+
+  test "l'index cadre la semaine de la date demandée" do
+    jeudi = Date.new(2026, 6, 4)
+
+    get tools_url(date: jeudi.to_s)
+
+    assert_equal jeudi.beginning_of_week, assigns(:date)
+    assert_equal jeudi.end_of_week, assigns(:date_fin)
+  end
+
+  test "l'index retombe sur la semaine en cours quand la date est illisible" do
+    get tools_url(date: 'pas-une-date')
+
+    assert_response :success
+    assert_equal Date.today.beginning_of_week, assigns(:date)
+  end
+
+  test 'le show cadre le mois de la date demandée et la grille qui lentoure' do
+    quinze = Date.new(2026, 6, 15)
+
+    get tool_url(@tool, date: quinze.to_s)
+
+    assert_equal quinze.beginning_of_month, assigns(:date)
+    assert_equal quinze.end_of_month, assigns(:date_fin)
+    assert_equal quinze.beginning_of_month.beginning_of_week, assigns(:date_inicio_grid)
+    assert_equal quinze.end_of_month.end_of_week, assigns(:date_fin_grid)
+  end
+
+  test 'le show retombe sur le mois en cours quand la date est illisible' do
+    get tool_url(@tool, date: 'pas-une-date')
+
+    assert_response :success
+    assert_equal Date.today.beginning_of_month, assigns(:date)
+  end
+
+  # ==========================================================================
+  # B. Recherche et filtres de l'index
+  # ==========================================================================
+
+  test "la recherche de l'index restreint la liste" do
+    get tools_url(search: 'Rateau')
+
+    assert_includes assigns(:tools), tools(:rateau)
+    assert_not_includes assigns(:tools), tools(:cisaille)
+  end
+
+  test "le filtre par type de l'index restreint la liste" do
+    get tools_url(type: @tool.icon_name)
+
+    assert_includes assigns(:tools), @tool
+    assert_not_includes assigns(:tools), tools(:rateau)
+  end
+
+  test 'un slug doutil inconnu redirige sans planter' do
+    get tool_url(id: 'slug-inexistant')
+
+    assert_redirected_to root_path
+  end
+
   test 'should get index' do
     # Appel du service MeteoConceptConnexion limité pour éviter l'appel de l'API MeteoConcept dans les tests
     MeteoConceptConnexion.stub :call, nil do
@@ -77,5 +167,36 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
 
   def generate_name
     "#{@tool.name}-#{SecureRandom.hex(4)}"
+  end
+
+  # --- create / update : branches d'échec ---
+
+  test 'create invalide réaffiche le formulaire en 422' do
+    assert_no_difference('Tool.count') do
+      post tools_url, params: { tool: { name: '' } }
+    end
+
+    assert_response :unprocessable_content
+  end
+
+  test 'create invalide en JSON renvoie les erreurs' do
+    post tools_url, params: { tool: { name: '' } }, as: :json
+
+    assert_response :unprocessable_content
+    assert_includes response.parsed_body.to_s, 'doit être rempli'
+  end
+
+  test 'update invalide réaffiche le formulaire en 422' do
+    patch tool_url(@tool), params: { tool: { name: '' } }
+
+    assert_response :unprocessable_content
+    assert_not_equal '', @tool.reload.name
+  end
+
+  test 'update invalide en JSON renvoie les erreurs' do
+    patch tool_url(@tool), params: { tool: { name: '' } }, as: :json
+
+    assert_response :unprocessable_content
+    assert_includes response.parsed_body.to_s, 'doit être rempli'
   end
 end

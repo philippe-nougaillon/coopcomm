@@ -243,4 +243,8 @@ class CommandeTest < ActiveSupport::TestCase
     end
     assert_includes commande.audits.last.audited_changes.keys, 'workflow_state'
   end
+
+  test 'un agent ne voit aucune commande' do
+    assert_empty Commande.visible_to(users(:bond))
+  end
 end

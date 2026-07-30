@@ -234,4 +234,98 @@ class InterventionTest < ActiveSupport::TestCase
     assert_includes listees, interventions(:intervention_terminée)
     assert_not_includes listees, interventions(:tonte_locaux)
   end
+
+  # --- Présentation : couleur, comptage par état, QRCode ---
+
+  test 'rgba expose la couleur déclarée sur l\'état courant' do
+    assert_equal '0,181,255,255', interventions(:nouvelle_intervention).rgba
+  end
+
+  test 'workflow_states_count compte chaque état, y compris ceux à zéro' do
+    comptes = Intervention.workflow_states_count(Intervention.where(id: interventions(:tonte_locaux).id))
+
+    assert_equal 1, comptes['Validé']
+    assert_equal 0, comptes['Nouveau']
+    assert_equal Intervention.workflow_state_humanized.sort, comptes.keys.sort
+  end
+
+  test 'qrcode produit un SVG à partir de l\'URL fournie' do
+    svg = interventions(:intervention_repete).qrcode('https://example.test/pointer')
+
+    assert_includes svg, '<svg'
+  end
+
+  # --- dernière_en_cours ---
+
+  test 'dernière_en_cours retient l\'intervention qui recouvre l\'instant présent' do
+    agent = users(:john_wick)
+    en_cours = Intervention.create!(
+      description: 'En cours maintenant', adherent: users(:weil), service: services(:technique),
+      workflow_state: 'nouveau', début_prévue: 1.hour.ago, fin_prévue: 1.hour.from_now,
+      agents: [agent], slug: SecureRandom.uuid
+    )
+
+    assert_equal en_cours, Intervention.dernière_en_cours(agent.interventions)
+  end
+
+  test 'dernière_en_cours ignore les interventions sans date prévue' do
+    assert_nil Intervention.dernière_en_cours(Intervention.where(id: interventions(:nouvelle_intervention).id))
+  end
+
+  # --- extract_temps_total_depending_on_audit ---
+
+  test 'un audit sans variation de temps total ne compte pour rien' do
+    intervention = interventions(:tonte_locaux)
+    audit = intervention.audits.build(action: 'update', audited_changes: { 'description' => %w[avant après] })
+
+    assert_equal 0, intervention.send(:extract_temps_total_depending_on_audit, audit)
+  end
+
+  test 'un audit de création ajoute le temps total enregistré' do
+    intervention = interventions(:tonte_locaux)
+    audit = intervention.audits.build(action: 'create', audited_changes: { 'temps_total' => 5 })
+
+    assert_equal 5, intervention.send(:extract_temps_total_depending_on_audit, audit)
+  end
+
+  # --- Diffusion temps réel (callback actuellement commenté) ---
+
+  test 'broadcast_channels couvre l\'organisation, le service, l\'adhérent et les agents' do
+    intervention = interventions(:tonte_locaux)
+
+    channels = intervention.send(:broadcast_channels)
+
+    assert_includes channels, "interventions_organisation_#{intervention.organisation.id}"
+    assert_includes channels, "interventions_service_#{intervention.service_id}"
+    assert_includes channels, "interventions_adherent_#{intervention.adherent_id}"
+    assert_includes channels, "interventions_user_#{users(:bond).id}"
+  end
+
+  test 'broadcast_channels n\'ajoute pas de canal adhérent quand il n\'y en a pas' do
+    intervention = interventions(:tonte_locaux)
+    intervention.update_columns(adherent_id: nil)
+
+    assert_empty intervention.send(:broadcast_channels).grep(/adherent/)
+  end
+
+  # --- État « pointage activé » tenu à jour ---
+
+  test 'un modèle de pointage qui cesse de se répéter repasse à nouveau' do
+    intervention = interventions(:intervention_repete)
+    intervention.update_columns(workflow_state: 'pointage activé')
+
+    intervention.repeter = false
+    intervention.valid?
+
+    assert_equal 'nouveau', intervention.workflow_state
+  end
+
+  test 'une intervention qui devient un modèle passe à pointage activé' do
+    intervention = interventions(:nouvelle_intervention)
+
+    intervention.repeter = true
+    intervention.valid?
+
+    assert_equal 'pointage activé', intervention.workflow_state
+  end
 end

@@ -69,4 +69,11 @@ class PrestationsControllerTest < ActionDispatch::IntegrationTest
     end
     assert_response :unprocessable_content
   end
+
+  test 'update invalide réaffiche le formulaire en 422' do
+    patch prestation_url(@prestation), params: { prestation: { libellé: '' } }
+
+    assert_response :unprocessable_content
+    assert_not_equal '', @prestation.reload.libellé
+  end
 end

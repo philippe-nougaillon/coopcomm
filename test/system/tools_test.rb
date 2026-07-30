@@ -49,10 +49,9 @@ class ToolsTest < ApplicationSystemTestCase
   end
 
   test 'Ne pas pouvoir supprimer un outil avec une intervention' do
-    # RÉGRESSION signalée (non corrigée — décision métier).
-    skip 'Régression fc5330c4 : plus de garde-fou suppression outil-avec-interventions (cf. registre).'
-
     visit tool_url(tools(:tondeuse))
+
+    assert_selector 'h1', text: tools(:tondeuse).name
     assert_no_selector "[data-testid='supprimer_outil']"
   end
 end

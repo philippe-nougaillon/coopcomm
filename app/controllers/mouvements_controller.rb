@@ -100,10 +100,12 @@ class MouvementsController < ApplicationController
 
   def reserve
     @tool = current_organisation.tools.find(params[:tool_id])
-    date = Date.parse(params[:date])
+    date = Date.parse(params[:date].to_s)
 
     @tool.mouvements.create!(état: :réservé, date: date, user: current_user)
     redirect_back fallback_location: tools_path, notice: "Outil réservé le #{l date} avec succès."
+  rescue Date::Error
+    redirect_back fallback_location: tools_path, alert: 'Date de réservation invalide.'
   end
 
   def libere
