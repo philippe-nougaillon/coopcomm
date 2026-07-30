@@ -51,6 +51,7 @@ jobs:
           RAILS_ENV: test
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           PARALLEL_WORKERS: 2
+          CI: true
         run: PARALLEL_WORKERS=2 bin/rails test
 
   # system-test:
