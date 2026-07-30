@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'simplecov_boot' unless ENV['CI'].present?
+require_relative 'simplecov_boot'
 
 ENV['RAILS_ENV'] ||= 'test'
 require_relative '../config/environment'

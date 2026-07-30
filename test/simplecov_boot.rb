@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# Désactiver SimpleCov en CI (couverture non nécessaire, cause des problèmes)
+return if ENV['CI'].present?
+
 require 'simplecov'
 
 # Tout fichier chargé avant `SimpleCov.start` est invisible pour Coverage et
