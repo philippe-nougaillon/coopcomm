@@ -279,4 +279,9 @@ class MeteoConceptConnexionTest < ActiveSupport::TestCase
   ensure
     ENV[nom] = ancienne
   end
+
+  test 'un code de nuages couvre les valeurs 6 et 7 du second aiguillage' do
+    assert_equal 'meteo/animated/cloudy.svg', MeteoConceptConnexion.get_icon_meteo(6)
+    assert_equal 'meteo/animated/cloudy.svg', MeteoConceptConnexion.get_icon_meteo(7)
+  end
 end

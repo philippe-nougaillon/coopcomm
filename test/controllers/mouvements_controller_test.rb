@@ -246,4 +246,20 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
   def reservation(qui, jour = JOUR)
     Mouvement.create!(tool: @outil, user: qui, état: :réservé, date: jour)
   end
+
+  # --- update : branches d'échec ---
+
+  test 'update invalide réaffiche le formulaire en 422' do
+    patch mouvement_url(@template_mouvement), params: { mouvement: { date: '' } }
+
+    assert_response :unprocessable_content
+    assert_not_nil @template_mouvement.reload.date
+  end
+
+  test 'update invalide en JSON renvoie les erreurs' do
+    patch mouvement_url(@template_mouvement), params: { mouvement: { date: '' } }, as: :json
+
+    assert_response :unprocessable_content
+    assert_includes response.parsed_body.to_s, 'doit être rempli'
+  end
 end

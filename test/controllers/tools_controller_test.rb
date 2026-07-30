@@ -168,4 +168,35 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
   def generate_name
     "#{@tool.name}-#{SecureRandom.hex(4)}"
   end
+
+  # --- create / update : branches d'échec ---
+
+  test 'create invalide réaffiche le formulaire en 422' do
+    assert_no_difference('Tool.count') do
+      post tools_url, params: { tool: { name: '' } }
+    end
+
+    assert_response :unprocessable_content
+  end
+
+  test 'create invalide en JSON renvoie les erreurs' do
+    post tools_url, params: { tool: { name: '' } }, as: :json
+
+    assert_response :unprocessable_content
+    assert_includes response.parsed_body.to_s, 'doit être rempli'
+  end
+
+  test 'update invalide réaffiche le formulaire en 422' do
+    patch tool_url(@tool), params: { tool: { name: '' } }
+
+    assert_response :unprocessable_content
+    assert_not_equal '', @tool.reload.name
+  end
+
+  test 'update invalide en JSON renvoie les erreurs' do
+    patch tool_url(@tool), params: { tool: { name: '' } }, as: :json
+
+    assert_response :unprocessable_content
+    assert_includes response.parsed_body.to_s, 'doit être rempli'
+  end
 end

@@ -52,4 +52,44 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to admin_parametres_url
   end
+
+  # --- create / update : branches d'échec ---
+
+  # Le seul motif de refus du modèle est l'unicité du nom dans l'organisation.
+  test 'create d\'un service au nom déjà pris réaffiche le formulaire en 422' do
+    assert_no_difference('Service.count') do
+      post services_url, params: { service: { nom: services(:technique).nom } }
+    end
+
+    assert_response :unprocessable_content
+  end
+
+  test 'create d\'un service au nom déjà pris en JSON renvoie les erreurs' do
+    post services_url, params: { service: { nom: services(:technique).nom } }, as: :json
+
+    assert_response :unprocessable_content
+    assert_includes response.parsed_body.to_s, 'déjà'
+  end
+
+  test 'update vers un nom déjà pris réaffiche le formulaire en 422' do
+    patch service_url(@service), params: { service: { nom: services(:technique).nom } }
+
+    assert_response :unprocessable_content
+    assert_not_equal services(:technique).nom, @service.reload.nom
+  end
+
+  test 'update vers un nom déjà pris en JSON renvoie les erreurs' do
+    patch service_url(@service), params: { service: { nom: services(:technique).nom } }, as: :json
+
+    assert_response :unprocessable_content
+    assert_includes response.parsed_body.to_s, 'déjà'
+  end
+
+  test 'un slug de service inconnu redirige au lieu de planter' do
+    get service_url('service-inexistant')
+
+    assert_redirected_to root_path
+    assert_match(/introuvable/i, flash[:alert].to_s)
+  end
+
 end

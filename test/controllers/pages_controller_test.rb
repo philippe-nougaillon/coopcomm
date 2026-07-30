@@ -273,4 +273,73 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
       Response.new('# Proposition\nContenu généré')
     end
   end
+
+  # --- assistant : génération de tâches par le LLM ---
+
+  test 'assistant sans soumission ne génère rien' do
+    sign_in users(:administrateur_paris)
+
+    get assistant_url
+
+    assert_response :success
+    assert_nil assigns(:results)
+  end
+
+  test 'assistant refuse de générer en dessous du minimum d\'interventions' do
+    sign_in users(:administrateur_paris)
+
+    get assistant_url(commit: 'Générer')
+
+    assert_response :success
+    assert_match(/pas encore assez d'interventions/i, assigns(:results))
+  end
+
+  test 'assistant met en forme la proposition du LLM' do
+    sign_in users(:administrateur_paris)
+    cree_interventions_planifiees(10)
+    stub_request(:post, %r{api\.mistral\.ai})
+      .to_return(status: 200,
+                 headers: { 'Content-Type' => 'application/json' },
+                 body: {
+                   id: 'cmpl-test', object: 'chat.completion', created: 1, model: 'mistral-large-latest',
+                   choices: [{ index: 0, message: { role: 'assistant', content: '**Tailler les haies**' },
+                               finish_reason: 'stop' }],
+                   usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 }
+                 }.to_json)
+
+    get assistant_url(commit: 'Générer')
+
+    assert_response :success
+    assert_match(/Tailler les haies/, assigns(:results))
+    assert_match(%r{<strong>}, assigns(:results))
+    assert_nil assigns(:is_failed)
+  end
+
+  test 'assistant signale un échec du LLM sans planter' do
+    sign_in users(:administrateur_paris)
+    cree_interventions_planifiees(10)
+    stub_request(:post, %r{api\.mistral\.ai}).to_return(status: 500, body: 'boom')
+
+    get assistant_url(commit: 'Générer')
+
+    assert_response :success
+    assert assigns(:is_failed)
+    assert_match(/Veuillez attendre/i, assigns(:results))
+  end
+
+  # Le seuil de l'assistant est de 10 interventions planifiées (hors pointages).
+  def cree_interventions_planifiees(nombre)
+    nombre.times do |i|
+      jour = Date.new(2024, 2, 1) + i
+      Intervention.create!(
+        description: "Intervention planifiée #{i}",
+        adherent: users(:weil),
+        service: services(:technique),
+        workflow_state: 'nouveau',
+        début_prévue: jour + 8.hours,
+        fin_prévue: jour + 10.hours,
+        slug: SecureRandom.uuid
+      )
+    end
+  end
 end

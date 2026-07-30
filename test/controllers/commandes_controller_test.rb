@@ -208,4 +208,51 @@ class CommandesControllerTest < ActionDispatch::IntegrationTest
 
   # --- Robustesse ---
   # (le test « slug inconnu » vit dans les TESTS CRITIQUES en tête de fichier)
+
+  # --- index : périmètre de l'adhérent et filtres ---
+
+  # L'adhérent ne voit pas les brouillons (état « créé ») ; ses services sont
+  # déduits des commandes visibles et non de ses rattachements.
+  test 'index d\'un adhérent liste ses commandes envoyées et déduit ses services' do
+    envoyée = commandes(:commande_secretariat)
+    sign_in users(:weil)
+
+    get commandes_url
+
+    assert_response :success
+    assert_includes assigns(:commandes), envoyée
+    assert_not_includes assigns(:commandes), @commande
+    assert_includes assigns(:services), envoyée.service
+  end
+
+  test 'index filtre sur les adhérents sélectionnés' do
+    get commandes_url(adhérent_ids: [@commande.adherent_id])
+
+    assert_response :success
+    assert_includes assigns(:commandes), @commande
+  end
+
+  test 'index filtre sur les services sélectionnés' do
+    get commandes_url(service_ids: [@commande.service_id])
+
+    assert_response :success
+    assert_includes assigns(:commandes), @commande
+  end
+
+  test 'index filtre sur le statut quelle que soit la casse' do
+    get commandes_url(workflow_state: @commande.workflow_state.capitalize)
+
+    assert_response :success
+    assert_includes assigns(:commandes), @commande
+  end
+
+  # --- refuser ---
+
+  test 'refuser une commande envoyée la passe à refusé' do
+    @commande.update_columns(workflow_state: Commande::ENVOYE)
+
+    post refuser_commande_url(@commande)
+
+    assert_equal Commande::REFUSE, @commande.reload.workflow_state
+  end
 end

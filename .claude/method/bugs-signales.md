@@ -349,6 +349,54 @@
 - **Impact** : aucun à l'exécution ; charge de maintenance et bruit dans la mesure de couverture.
 - **Correctif proposé** : suppression. Non testées délibérément (on ne fige pas du code voué à disparaître).
 
+### B47 — Le filtre « Équipe » de l'index des interventions provoque une erreur 500
+- **Signalé par** : agent, 2026-07-30 (reproduit par test : `NoMethodError` sur `nil`).
+- **Parcours** : index des interventions → sélectionner une valeur dans le filtre **Équipe** (tag posé sur un adhérent) → 500.
+- **Où** : [app/controllers/interventions_controller.rb:71](app/controllers/interventions_controller.rb#L71) — `@users_in_same_services.tagged_with(...)`, variable d'instance **jamais assignée** ; la variable **locale** du même nom n'est créée qu'à la ligne 97, après ce bloc.
+- **Impact** : le filtre est inutilisable. Un filtre vide (`equipe=['']`) passe, d'où l'absence de remontée jusqu'ici.
+- **Correctif proposé** : une ligne — utiliser `User.by_service(selected_services)` (ou remonter l'affectation de la locale avant le bloc de filtres). Comportement actuel **épinglé** dans `interventions_index_filters_test.rb`, à inverser à la correction.
+
+### B48 — La tâche `interventions:relancer` ne relance jamais personne (condition de date inversée)
+- **Signalé par** : agent, 2026-07-30 (reproduit par test : une intervention terminée depuis 10 jours n'est pas sélectionnée ; une intervention datée 10 jours dans le futur l'est).
+- **Où** : [lib/tasks/interventions.rake:6](lib/tasks/interventions.rake#L6) — `where('updated_at::DATE - NOW()::DATE >= ?', 3)` sélectionne les interventions modifiées **dans plus de 3 jours**, pas depuis.
+- **Impact** : fonctionnalité de relance silencieusement morte. Aucune erreur, aucun log.
+- **Correctif proposé** : inverser la soustraction (`NOW()::DATE - updated_at::DATE >= 3`). Comportement actuel **épinglé** dans `test/tasks/interventions_relancer_test.rb`.
+
+### B49 — `interventions:relancer` plante sur `intervention.organisation_id`, après avoir envoyé le mail
+- **Signalé par** : agent, 2026-07-30 (reproduit ; `Intervention#respond_to?(:organisation_id)` renvoie `false`, vérifié en console).
+- **Où** : [lib/tasks/interventions.rake:14](lib/tasks/interventions.rake#L14) — la table `interventions` n'a pas de colonne `organisation_id` (l'organisation dérive du service via `has_one through:`).
+- **Impact** : le jour où B48 sera corrigé, la tâche enverra le premier mail puis lèvera `NoMethodError` — l'adhérent est relancé, le `MailLog` n'est jamais tracé et les suivants ne sont pas traités.
+- **Correctif proposé** : `intervention.organisation&.id`, comme les 4 jobs corrigés le 2026-07-01. Comportement actuel **épinglé**.
+
+### B50 — La suppression d'une absence en turbo_stream lève sur un partial introuvable
+- **Signalé par** : agent, 2026-07-30 (reproduit par test).
+- **Parcours** : fiche utilisateur → supprimer une absence depuis la modale (réponse Turbo Stream) → erreur de rendu.
+- **Où** : [app/controllers/absences_controller.rb:19-23](app/controllers/absences_controller.rb#L19) — rend `users/_absences_section`, qui inclut `absence_form` ; la recherche part de `absences/` et non de `users/`.
+- **Impact** : la branche turbo_stream de `absences#destroy` est inutilisable (la variante HTML, elle, fonctionne).
+- **Correctif proposé** : préfixer le partial (`users/absence_form`) dans `users/_absences_section.html.erb`. Comportement actuel **épinglé** dans `absences_controller_test.rb`.
+
+### B51 — Les réponses JSON des pages wiki lèvent sur un attribut inexistant
+- **Signalé par** : agent, 2026-07-30 (reproduit par test).
+- **Où** : [app/views/wiki_pages/_wiki_page.json.jbuilder:3](app/views/wiki_pages/_wiki_page.json.jbuilder#L3) — la vue générée interroge `nom`, absent de `WikiPage`.
+- **Impact** : toute requête JSON sur la ressource lève. Aucun appelant connu aujourd'hui.
+- **Correctif proposé** : aligner la vue sur les attributs réels (`titre`, `sous_titre`…) ou supprimer les vues jbuilder si le format JSON n'est pas utilisé. Comportement actuel **épinglé**.
+
+### B52 — Code mort : `TagCloudComponent` est appelé avec un mot-clé qui n'existe pas
+- **Signalé par** : agent, 2026-07-30.
+- **Où** : [app/components/tag_cloud_component.rb:4](app/components/tag_cloud_component.rb#L4) attend `intervention_tags:`, mais les deux seules vues qui l'utilisent (`carte_interventions`, `route_interventions`) passent `tags:` → `ArgumentError` au rendu.
+- **Impact** : nul aujourd'hui — **aucune route** ne mène à ces deux vues (vérifié par `rails routes`). L'erreur apparaîtrait au premier branchement.
+- **Correctif proposé** : supprimer les deux vues mortes et le composant, ou aligner le mot-clé avant de les rebrancher.
+
+### B53 — Code mort exécutable : méthodes qui lèveraient si elles étaient appelées
+- **Signalé par** : agent, 2026-07-30 (analyse de couverture).
+- **Où** :
+  - [app/controllers/twilio_controller.rb:60-75](app/controllers/twilio_controller.rb#L60) — `terminer_intervention` référence un `sender` inexistant → `NameError`. `send_options` (l. 48-58) n'est appelée par personne.
+  - [app/models/user.rb:260-266](app/models/user.rb#L260) — `nb_bad_words` itère sur `Notification`, **classe absente du projet** → `NameError`.
+  - [app/controllers/users_controller.rb:362](app/controllers/users_controller.rb#L362) — `interventions_average` appelle `interventions` (méthode de modèle) depuis un contrôleur → `NameError`. Action non routée.
+  - [app/models/user.rb:178-204](app/models/user.rb#L178) — `from_omniauth` : `:omniauthable` et la route sont commentés ; contient par ailleurs le bug `user.organisation=` déjà signalé.
+- **Impact** : nul tant que rien ne les appelle ; pièges à la réactivation.
+- **Correctif proposé** : suppression (voir aussi B46 et le récapitulatif de code mort du 2026-07-30 dans CLAUDE.md).
+
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
 
 ### R1 — Pointage : une fille de la veille non terminée ferait pointer une NOUVELLE intervention au lieu de terminer la sienne

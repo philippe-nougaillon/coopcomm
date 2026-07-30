@@ -250,4 +250,40 @@ class ToolTest < ActiveSupport::TestCase
   def reservation(jour, qui, outil = @outil)
     Mouvement.create!(tool: outil, user: qui, état: :réservé, date: t(jour))
   end
+
+  # --- Disponibilité ---
+
+  test 'disponible? est vrai hors de toute intervention planifiée' do
+    assert @outil.disponible?(Time.zone.local(2030, 1, 1, 10))
+  end
+
+  test 'disponible? est faux pendant une intervention planifiée' do
+    quand = Time.zone.local(2030, 1, 2, 10)
+    Intervention.create!(
+      description: 'Chantier avec outil', adherent: users(:weil), service: services(:technique),
+      workflow_state: 'nouveau', début_prévue: quand - 1.hour, fin_prévue: quand + 1.hour,
+      tools: [@outil], slug: SecureRandom.uuid
+    )
+
+    assert_not @outil.disponible?(quand)
+  end
+
+  # ÉPINGLAGE B39 — `indisponibles_ids` filtre sur `interventions.organisation_id`,
+  # colonne qui n'existe pas (l'organisation dérive du service). À inverser à la
+  # correction.
+  test 'indisponibles_ids échoue sur une colonne organisation_id inexistante' do
+    assert_raises(ActiveRecord::StatementInvalid) do
+      Tool.indisponibles_ids(organisations(:mairie_paris).id, '2030-01-02 10:00')
+    end
+  end
+
+  # ÉPINGLAGE B37 — `dernier_mouvement_a` trie par `m.date.to_i`, or `mouvements.date`
+  # est une colonne `date` : dès que l'association est chargée (un `includes`
+  # suffirait), la méthode lève. À inverser à la correction.
+  test 'dernier_mouvement_a lève quand les mouvements sont déjà chargés' do
+    outil = tools(:tondeuse)
+    outil.mouvements.load
+
+    assert_raises(NoMethodError) { outil.dernier_mouvement_a(Time.current) }
+  end
 end

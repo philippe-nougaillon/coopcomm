@@ -108,4 +108,111 @@ class UserTest < ActiveSupport::TestCase
 
     assert_equal f_recente, agent.find_current_intervention(mère.slug)
   end
+
+  # --- Absences imbriquées : lignes vides ignorées ---
+
+  test 'une absence imbriquée sans dates est ignorée à l\'enregistrement' do
+    agent = users(:bond)
+
+    assert_no_difference('Absence.count') do
+      agent.update(absences_attributes: { '0' => { du: '', au: '', motif: 'formation' } })
+    end
+  end
+
+  # --- dispatch_email_to_nom_prénom ---
+
+  test 'dispatch_email_to_nom_prénom déduit le nom et le prénom de l\'adresse' do
+    utilisateur = User.new(email: 'dupont.jeanne@mairie.fr')
+
+    utilisateur.dispatch_email_to_nom_prénom
+
+    assert_equal 'DUPONT', utilisateur.nom
+    assert_equal 'Jeanne', utilisateur.prénom
+  end
+
+  test 'dispatch_email_to_nom_prénom laisse le prénom vide sans séparateur' do
+    utilisateur = User.new(email: 'accueil@mairie.fr')
+
+    utilisateur.dispatch_email_to_nom_prénom
+
+    assert_equal 'ACCUEIL', utilisateur.nom
+    assert_nil utilisateur.prénom
+  end
+
+  # --- current_absence : demi-journées ---
+
+  test 'current_absence sans période demandée renvoie l\'absence du jour' do
+    agent = users(:john_wick)
+    absence = Absence.create!(user: agent, du: Date.new(2030, 9, 2), au: Date.new(2030, 9, 2), motif: :formation)
+
+    assert_equal absence, agent.current_absence(Date.new(2030, 9, 2))
+  end
+
+  test 'current_absence renvoie nil quand aucune absence ne couvre la date' do
+    assert_nil users(:john_wick).current_absence(Date.new(2030, 9, 3))
+  end
+
+  test 'une absence journée entière répond à n\'importe quelle période demandée' do
+    agent = users(:john_wick)
+    absence = Absence.create!(user: agent, du: Date.new(2030, 9, 4), au: Date.new(2030, 9, 4), motif: :formation)
+
+    assert_equal absence, agent.current_absence(Date.new(2030, 9, 4), :matin)
+    assert_equal absence, agent.current_absence(Date.new(2030, 9, 4), :apres_midi)
+  end
+
+  test 'une absence du matin ne répond qu\'à la période matin' do
+    agent = users(:john_wick)
+    absence = Absence.create!(user: agent, du: Date.new(2030, 9, 5), au: Date.new(2030, 9, 5),
+                              motif: :formation, matin: true, après_midi: false)
+
+    assert_equal absence, agent.current_absence(Date.new(2030, 9, 5), :matin)
+    assert_nil agent.current_absence(Date.new(2030, 9, 5), :apres_midi)
+  end
+
+  test 'une absence de l\'après-midi ne répond qu\'à la période après-midi' do
+    agent = users(:john_wick)
+    absence = Absence.create!(user: agent, du: Date.new(2030, 9, 6), au: Date.new(2030, 9, 6),
+                              motif: :formation, matin: false, après_midi: true)
+
+    assert_equal absence, agent.current_absence(Date.new(2030, 9, 6), :apres_midi)
+    assert_nil agent.current_absence(Date.new(2030, 9, 6), :matin)
+  end
+
+  test 'absent? suit la période demandée' do
+    agent = users(:john_wick)
+    Absence.create!(user: agent, du: Date.new(2030, 9, 7), au: Date.new(2030, 9, 7),
+                    motif: :formation, matin: true, après_midi: false)
+
+    assert agent.absent?(Date.new(2030, 9, 7), :matin)
+    assert_not agent.absent?(Date.new(2030, 9, 7), :apres_midi)
+  end
+
+  # --- intervention_en_cours / assignable_roles ---
+
+  test 'intervention_en_cours remonte le pointage ouvert de l\'agent' do
+    agent = users(:martin_technique_paris)
+    en_cours = Intervention.create!(
+      description: 'Pointage ouvert', adherent: users(:weil), service: services(:technique),
+      workflow_state: 'nouveau', début_prévue: 1.hour.ago, fin_prévue: 1.hour.from_now,
+      agents: [agent], slug: SecureRandom.uuid
+    )
+
+    assert_equal en_cours, agent.intervention_en_cours
+  end
+
+  test 'intervention_en_cours est nil sans intervention sur le créneau courant' do
+    assert_nil users(:john_wick).intervention_en_cours
+  end
+
+  test 'un manager ne peut attribuer que le rôle agent' do
+    assert_equal ['agent'], users(:hidalgo).assignable_roles
+  end
+
+  test 'un agent ne peut attribuer que le rôle agent' do
+    assert_equal ['agent'], users(:bond).assignable_roles
+  end
+
+  test 'un administrateur peut attribuer tous les rôles' do
+    assert_equal User.rôles.keys, users(:administrateur_paris).assignable_roles
+  end
 end

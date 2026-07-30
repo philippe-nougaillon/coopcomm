@@ -382,4 +382,63 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to cotation_path(cotation)
     assert_equal 'Impossible de créer la commande.', flash[:alert]
   end
+
+  # --- Filtres de l'index ---
+
+  test 'index filtre sur la référence ou l\'intitulé' do
+    cotation = cotations(:cotation_paris)
+
+    get cotations_url(search: cotation.intitulé)
+
+    assert_response :success
+    assert_includes assigns(:cotations), cotation
+  end
+
+  test 'index filtre sur les adhérents sélectionnés' do
+    cotation = cotations(:cotation_paris)
+
+    get cotations_url(adhérent_ids: [cotation.adherent_id])
+
+    assert_response :success
+    assert_includes assigns(:cotations), cotation
+  end
+
+  test 'index filtre sur les services sélectionnés' do
+    cotation = cotations(:cotation_paris)
+
+    get cotations_url(service_ids: [cotation.service_id])
+
+    assert_response :success
+    assert_includes assigns(:cotations), cotation
+  end
+
+  test 'index filtre sur le statut, quelle que soit la casse du libellé' do
+    cotation = cotations(:cotation_paris)
+
+    get cotations_url(workflow_state: cotation.workflow_state.capitalize)
+
+    assert_response :success
+    assert_includes assigns(:cotations), cotation
+  end
+
+  # --- edit / update / signature ---
+
+  test 'edit amorce une ligne vide quand la cotation n\'en a aucune' do
+    cotation = Cotation.create!(intitulé: 'Cotation sans ligne', adherent: @adherent, service: @service,
+                                organisation: organisations(:mairie_paris))
+
+    get edit_cotation_url(cotation)
+
+    assert_response :success
+    assert_equal 1, assigns(:cotation).cotation_lignes.size
+  end
+
+  test 'update invalide réaffiche le formulaire en 422' do
+    cotation = cotations(:cotation_paris)
+
+    patch cotation_url(cotation), params: { cotation: { intitulé: '' } }
+
+    assert_response :unprocessable_content
+    assert_not_equal '', cotation.reload.intitulé
+  end
 end

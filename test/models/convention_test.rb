@@ -159,4 +159,25 @@ class ConventionTest < ActiveSupport::TestCase
 
   # NB : les anciens tests de Convention#temps_total_interventions ont été déplacés dans
   # test/models/intervention_test.rb.
+
+  test 'une convention retrouve les interventions de son adhérent sur sa période' do
+    convention = conventions(:convention_paris)
+    dans_la_période = Intervention.create!(
+      description: 'Intervention sous convention',
+      adherent_id: convention.user_id, service_id: convention.service_id,
+      workflow_state: 'nouveau', début: convention.date_début.beginning_of_day + 9.hours,
+      slug: SecureRandom.uuid
+    )
+    hors_période = Intervention.create!(
+      description: 'Intervention hors convention',
+      adherent_id: convention.user_id, service_id: convention.service_id,
+      workflow_state: 'nouveau', début: convention.date_début.beginning_of_day - 2.days,
+      slug: SecureRandom.uuid
+    )
+
+    interventions = convention.interventions
+
+    assert_includes interventions, dans_la_période
+    assert_not_includes interventions, hors_période
+  end
 end

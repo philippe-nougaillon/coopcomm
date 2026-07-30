@@ -300,4 +300,8 @@ class MouvementTest < ActiveSupport::TestCase
   def reservation(outil, jour, qui)
     Mouvement.create!(tool: outil, user: qui, état: :réservé, date: t(jour))
   end
+
+  test 'un mouvement sans état retombe sur le style neutre' do
+    assert_equal 'info', Mouvement.new.style
+  end
 end

@@ -163,4 +163,25 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     end
     assert_response :unprocessable_content
   end
+
+  # --- update : branche d'échec, et collections du formulaire côté manager ---
+
+  test 'update invalide réaffiche le formulaire en 422' do
+    patch convention_url(@convention), params: { convention: { date_début: '' } }
+
+    assert_response :unprocessable_content
+    assert_not_nil @convention.reload.date_début
+  end
+
+  # Pour un manager (et non un administrateur), la liste des adhérents proposée
+  # est bornée à ses services et non à toute l'organisation.
+  test 'edit par un manager ne propose que les adhérents de ses services' do
+    sign_in users(:hidalgo)
+
+    get edit_convention_url(@convention)
+
+    assert_response :success
+    assert_includes assigns(:adherents), users(:weil)
+    assert_not_includes assigns(:adherents), users(:adherent_marseille)
+  end
 end

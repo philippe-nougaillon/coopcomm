@@ -131,4 +131,51 @@ class FacturesControllerTest < ActionDispatch::IntegrationTest
 
     assert @facture.reload.envoyé?
   end
+
+  # --- index : périmètre de l'adhérent et filtres ---
+
+  # L'adhérent ne voit pas les brouillons (état « créé ») ; ses services sont
+  # déduits des factures visibles et non de ses rattachements.
+  test 'index d\'un adhérent liste ses factures envoyées et déduit ses services' do
+    envoyée = factures(:facture_secretariat)
+    sign_in users(:weil)
+
+    get factures_url
+
+    assert_response :success
+    assert_includes assigns(:factures), envoyée
+    assert_not_includes assigns(:factures), @facture
+    assert_includes assigns(:services), services(:secretariat)
+  end
+
+  test 'index filtre sur les adhérents sélectionnés' do
+    get factures_url(adhérent_ids: [@facture.adherent_id])
+
+    assert_response :success
+    assert_includes assigns(:factures), @facture
+  end
+
+  test 'index filtre sur les services sélectionnés' do
+    get factures_url(service_ids: [@facture.service_id])
+
+    assert_response :success
+    assert_includes assigns(:factures), @facture
+  end
+
+  test 'index filtre sur le statut quelle que soit la casse' do
+    get factures_url(workflow_state: @facture.workflow_state.capitalize)
+
+    assert_response :success
+    assert_includes assigns(:factures), @facture
+  end
+
+  # --- refuser ---
+
+  test 'refuser une facture envoyée la passe à refusé' do
+    @facture.update_columns(workflow_state: Facture::ENVOYE)
+
+    post refuser_facture_url(@facture)
+
+    assert_equal Facture::REFUSE, @facture.reload.workflow_state
+  end
 end

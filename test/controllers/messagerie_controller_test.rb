@@ -52,4 +52,60 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
   end
+
+  # --- mark_as_read ---
+
+  test 'mark_as_read marque comme lu un message qui m\'est destiné' do
+    message = Message.create!(message: 'Bonjour', from_id: @interlocutor_user.id, to_id: @current_user.id)
+
+    post messagerie_mark_as_read_url, params: { id: message.id }
+
+    assert_response :success
+    assert_not_nil message.reload.read_at
+  end
+
+  test 'mark_as_read ne touche pas au message d\'un autre destinataire' do
+    message = Message.create!(message: 'Pas pour moi', from_id: @current_user.id, to_id: @interlocutor_user.id)
+
+    post messagerie_mark_as_read_url, params: { id: message.id }
+
+    assert_response :success
+    assert_nil message.reload.read_at
+  end
+
+  test 'mark_as_read est idempotent sur un message déjà lu' do
+    message = Message.create!(message: 'Déjà lu', from_id: @interlocutor_user.id, to_id: @current_user.id,
+                              read_at: 2.days.ago)
+    lu_le = message.read_at
+
+    post messagerie_mark_as_read_url, params: { id: message.id }
+
+    assert_response :success
+    assert_equal lu_le.to_i, message.reload.read_at.to_i
+  end
+
+  # --- search_contact ---
+
+  test 'search_contact liste les contacts du périmètre sans moi-même' do
+    post messagerie_search_contact_url
+
+    assert_response :success
+    assert_includes assigns(:users), @interlocutor_user
+    assert_not_includes assigns(:users), @current_user
+  end
+
+  test 'search_contact filtre sur le nom' do
+    post messagerie_search_contact_url, params: { query: 'Bond' }
+
+    assert_response :success
+    assert_includes assigns(:users), @interlocutor_user
+    assert_not_includes assigns(:users), users(:martin_technique_paris)
+  end
+
+  test 'search_contact filtre aussi sur le prénom' do
+    post messagerie_search_contact_url, params: { query: 'James' }
+
+    assert_response :success
+    assert_includes assigns(:users), @interlocutor_user
+  end
 end
