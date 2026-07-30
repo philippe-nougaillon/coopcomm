@@ -18,7 +18,7 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_DB: test_db
+          POSTGRES_DB: coopcom_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
         ports:
@@ -45,11 +45,11 @@ jobs:
 
       - name: Set up database and run tests
         env:
-          DATABASE_URL: postgres://postgres:password@localhost:5432/test
-          REDIS_URL: redis://localhost:6379/0
+          PGHOST: localhost
+          PGUSER: postgres
+          PGPASSWORD: password
           RAILS_ENV: test
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-          PG_USER: postgres
           PARALLEL_WORKERS: 2
         run: PARALLEL_WORKERS=2 bin/rails test
 
