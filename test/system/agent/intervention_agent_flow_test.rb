@@ -40,7 +40,7 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     fill_in 'Fin', with: date.strftime('%m%d%Y')
     select '16', from: 'intervention_fin_hour'
     select '00', from: 'intervention_fin_minute'
-    page.select '1,0', from: 'Temps de pause (h)'
+    page.select '1,0', from: 'intervention_temps_de_pause'
     fill_in 'Commentaires', with: 'Ceci est un commentaire !'
 
     assert_difference -> { Intervention.count }, 1 do
