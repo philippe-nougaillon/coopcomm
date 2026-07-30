@@ -53,9 +53,13 @@ development:
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
+#
+# Parallelization: when PARALLEL_WORKERS is set, Rails creates a unique database
+# for each worker (coopcom_test-0, coopcom_test-1, etc.) to avoid race conditions
+# on sequences and fixture contamination. Single-run tests use coopcom_test.
 test:
   <<: *default
-  database: coopcom_test
+  database: <%= "coopcom_test#{ENV.fetch('TEST_ENV_NUMBER', '')}" %>
 
 # As with config/credentials.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is
