@@ -263,7 +263,7 @@
     <% end %>
   </div>
 
-  <% if intervention.persisted? && (current_user.adhérent? || current_user.manager_or_admin?) %>
+  <% if (intervention.persisted? || params[:terminer].present?) && (current_user.adhérent? || current_user.manager_or_admin?) %>
     <section class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6">
       <div class="border-b border-slate-100 pb-3 flex flex-wrap justify-between items-center gap-2">
         <div class="flex items-center gap-2">

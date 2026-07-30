@@ -151,6 +151,22 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     assert_text 'Intervention refusée'
   end
 
+  test 'Terminer une intervention via édition avec compte-rendu' do
+    intervention = interventions(:nouvelle_intervention)
+    visit edit_intervention_path(intervention, terminer: 1)
+
+    assert_text 'COMPTE-RENDU'
+    assert_text 'Avis de l\'adhérent'
+    assert_text 'Évaluation des agents'
+
+    fill_in 'Avis de l\'adhérent', with: 'Travail bien fait'
+    find('.rating input[value="5"]').click
+
+    cliquer_bouton 'Enregistrer'
+    assert_text 'Intervention terminée'
+    assert_equal 'terminé', intervention.reload.workflow_state
+  end
+
   # Anti-régression (bug visuel) : sur l'index en vue « normale », chaque carte
   # d'intervention est un composant DaisyUI `collapse`. Son <input type=checkbox>.
   test "les boutons d'action d'une carte d'intervention sont cliquables sur l'index (collapse)" do

@@ -55,7 +55,7 @@
       <% end %>
     <% end %>
 
-    <% if peut_voir_compte_rendu?(@intervention, current_user) %>
+    <% if current_user.adhérent? || current_user.manager_or_admin? %>
       <%= render "interventions/show/compte_rendu", intervention: @intervention %>
     <% end %>
 
