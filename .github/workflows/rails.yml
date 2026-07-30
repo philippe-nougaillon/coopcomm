@@ -31,7 +31,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@latest
+        uses: actions/checkout@v4
       
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -74,7 +74,7 @@ jobs:
 
   #   steps:
   #     - name: Checkout code
-  #       uses: actions/checkout@latest
+  #       uses: actions/checkout@v4
 
   #     - name: Set up Ruby
   #       uses: ruby/setup-ruby@v1
@@ -114,4 +114,4 @@ jobs:
     if: success() # Ne s'exécute que si les tests réussissent
 
     steps:
-    - uses: actions/checkout@latest
+    - uses: actions/checkout@v4
