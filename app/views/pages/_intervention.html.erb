@@ -26,8 +26,8 @@
       <!-- Boutons -->
       <div class="flex flex-wrap gap-3 mt-5">
         <% if policy(intervention).terminer? && intervention.can_terminer? %>
-          <% lien, methode = terminer_destination(intervention) %>
-          <%= button_to 'Terminer', lien, method: methode,
+          <% lien, methode, params_terminer = terminer_destination(intervention) %>
+          <%= button_to 'Terminer', lien, method: methode, params: params_terminer,
             class: "btn btn-primary btn-outline w-24 text-sm transition-all duration-300 hover:scale-105 hover:text-white!",
             form: { data: { turbo: false } } %>
         <% end %>

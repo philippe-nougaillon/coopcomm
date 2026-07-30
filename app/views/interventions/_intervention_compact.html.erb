@@ -50,8 +50,8 @@
       <div class="my-2">
         <div class="flex justify-center gap-2">
           <% if policy(intervention).terminer? %>
-            <% lien, methode = terminer_destination(intervention) %>
-            <%= button_to 'Terminer', lien, method: methode, class: 'z-10 btn btn-primary border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', form: { data: { turbo: false }, class: 'contents' }, disabled: !intervention.can_terminer? || current_user.adhérent? %>
+            <% lien, methode, params_terminer = terminer_destination(intervention) %>
+            <%= button_to 'Terminer', lien, method: methode, params: params_terminer, class: 'z-10 btn btn-primary border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', form: { data: { turbo: false }, class: 'contents' }, disabled: !intervention.can_terminer? || current_user.adhérent? %>
           <% end %>
           <% if policy(intervention).valider? %>
             <%= button_to 'Valider', valider_intervention_path(intervention), class: 'z-10 btn btn-success border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Validé\'', form: { data: { turbo: false }, class: 'contents' }, disabled: !intervention.can_valider?  %>

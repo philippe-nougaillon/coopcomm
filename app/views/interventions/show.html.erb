@@ -356,8 +356,8 @@
                   <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Actions de validation</span>
                   <div class="flex flex-wrap gap-2">
                     <% if policy(@intervention).terminer? %>
-                      <% lien, methode = terminer_destination(@intervention) %>
-                      <%= button_to 'Terminer', lien, method: methode, class: "btn btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", title:"Terminer l'intervention", form: { data: { turbo: false }, class: 'contents' }, disabled: !@intervention.can_terminer? %>
+                      <% lien, methode, params_terminer = terminer_destination(@intervention) %>
+                      <%= button_to 'Terminer', lien, method: methode, params: params_terminer, class: "btn btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", title:"Terminer l'intervention", form: { data: { turbo: false }, class: 'contents' }, disabled: !@intervention.can_terminer? %>
                     <% end %>
                     <% if policy(@intervention).valider? %>
                       <%= button_to 'Valider', valider_intervention_path(@intervention), class:"btn btn-success btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", title: "Valider l'intervention", form: { data: { turbo: false }, class: 'contents' }, disabled: !@intervention.can_valider? %>
@@ -434,40 +434,40 @@
             <%= embedded_svg "icons/delete.svg", class: "w-4 h-4" %>
             Supprimer l'intervention
           </button>
-            <dialog id="delete_intervention_modal_<%= @intervention.id %>" class="modal">
-              <div class="modal-box">
-                <form method="dialog">
-                  <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-                </form>
-                <h3 class="text-lg font-bold text-error flex items-center gap-2">
-                  <%= embedded_svg "icons/warning.svg", title: "Supprimer l'intervention" %>
-                  Supprimer l'intervention
-                </h3>
-                <p class="py-4 text-base text-slate-600 text-left">
-                  Êtes-vous certain(e) de vouloir supprimer cette intervention ?
-                  Cette action est irréversible.
-                </p>
-                <div class="modal-action">
-                  <form method="dialog">
-                    <button class="btn btn-ghost">Annuler</button>
-                  </form>
-                  <%= button_to intervention_path(@intervention), method: :delete, class: "btn btn-error text-white" do %>
-                    Oui, supprimer
-                  <% end %>
-                </div>
-              </div>
-              <form method="dialog" class="modal-backdrop">
-                <button>Fermer</button>
+          <dialog id="delete_intervention_modal_<%= @intervention.id %>" class="modal">
+            <div class="modal-box">
+              <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
               </form>
-            </dialog>
-          </span>
-        <% end %>
-      </div>
-      <div class="py-10">
-        <%= link_to interventions_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
-          <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste" %>
-          Retour à la liste
-        <% end %>
-      </div>
+              <h3 class="text-lg font-bold text-error flex items-center gap-2">
+                <%= embedded_svg "icons/warning.svg", title: "Supprimer l'intervention" %>
+                Supprimer l'intervention
+              </h3>
+              <p class="py-4 text-base text-slate-600 text-left">
+                Êtes-vous certain(e) de vouloir supprimer cette intervention ?
+                Cette action est irréversible.
+              </p>
+              <div class="modal-action">
+                <form method="dialog">
+                  <button class="btn btn-ghost">Annuler</button>
+                </form>
+                <%= button_to intervention_path(@intervention), method: :delete, class: "btn btn-error text-white" do %>
+                  Oui, supprimer
+                <% end %>
+              </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+              <button>Fermer</button>
+            </form>
+          </dialog>
+        </span>
+      <% end %>
+    </div>
+    <div class="py-10">
+      <%= link_to interventions_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+        <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste" %>
+        Retour à la liste
+      <% end %>
     </div>
   </div>
+</div>

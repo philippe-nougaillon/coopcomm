@@ -1,6 +1,7 @@
 <%= form_with(model: intervention, class: "max-w-5xl mx-auto space-y-8 pb-12",
               data: { controller: "verification-disponibilites",
                       verification_disponibilites_intervention_id_value: (@intervention.id if @intervention.persisted?) }) do |form| %>
+  <%= hidden_field_tag :terminer, 1 if params[:terminer].present? %>
   <% if intervention.errors.any? %>
     <div id="error_explanation" class="alert alert-error bg-red-50 border border-red-200 text-error-content rounded-xl p-4 mb-6 shadow-sm">
       <div class="flex flex-col gap-1">

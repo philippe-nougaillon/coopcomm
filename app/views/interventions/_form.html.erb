@@ -6,6 +6,7 @@
                 dynamic_select_agents_url_value: agents_for_service_interventions_path
               })
     ) do |form| %>
+  <%= hidden_field_tag :terminer, 1 if params[:terminer].present? %>
   <% if intervention.errors.any? %>
     <div id="error_explanation" class="alert alert-error bg-red-50 border border-red-200 text-error-content rounded-xl p-4 mb-6 shadow-sm">
       <div class="flex flex-col gap-1">

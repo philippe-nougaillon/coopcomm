@@ -46,6 +46,14 @@ class TerminerPointagesJobTest < ActiveJob::TestCase
     assert_equal mail.message_id, log.message_id
   end
 
+  test 'la clôture automatique ne notifie pas les managers' do
+    assert_no_enqueued_jobs only: NotifManagersWorkflowChangedJob do
+      TerminerPointagesJob.perform_now
+    end
+
+    assert @pointage.reload.terminé?, 'garde : la clôture doit bien avoir eu lieu'
+  end
+
   test 'ignore les interventions « nouveau » sans template_slug' do
     cible = interventions(:nouvelle_intervention)
     assert cible.nouveau?

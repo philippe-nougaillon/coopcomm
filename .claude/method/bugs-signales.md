@@ -463,6 +463,7 @@
 
 | Bug | Corrigé | Référence |
 |---|---|---|
+| **B30** — `Intervention#calc_temps_total` plante (`TypeError: nil can't be coerced into Float`) dès qu'une intervention a `début` **et** `fin` mais un `temps_de_pause` **nil** (colonne nullable sans défaut, et le `before_save` censé le mettre à 0 est inerte — cf. **B1**) → **export XLS des agents en 500** (`ExportToXls::Agents` appelle la méthode sur chaque intervention) | 2026-07-29 (découvert en donnant une `fin` aux fixtures pour la validation « terminé ⇒ dates », corrigé le jour même) | `temps_de_pause.to_f` ([intervention.rb:378](app/models/intervention.rb#L378)) ; couvert par `export_to_xls_agents_service_test` et `users_controller_test` (export), qui étaient rouges sans le correctif |
 | Filtre **Statut** de l'index interventions cassé (select multiple → `to_s.downcase` ne matchait rien) | 2026-06-23 | commit `a9f23e82` |
 | Fixture `tonte_locaux` : `workflow_state: "Validé"` (capitale) | 2026-06-23 | commit `a9f23e82` |
 | `NotifAdherentCommandeEnvoyeeJob` : `MailLog` avec `commande_id` inexistant → `UnknownAttributeError` | ~2026-07 | réécriture #330 (Alexandre Meunier) |

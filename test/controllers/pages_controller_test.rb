@@ -174,6 +174,22 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?][method=?]", terminer_intervention_path(intervention), 'post'
   end
 
+  # Le paramètre voyage en champ caché : un formulaire GET perd la query string
+  # de son action.
+  test 'home : sans date de fin, le bouton Terminer renvoie au formulaire' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.update_columns(fin: nil, updated_at: 1.minute.from_now)
+    sign_in users(:martin_technique_paris)
+
+    get home_url
+
+    assert_response :success
+    assert_select "form[action=?][method=?]", edit_intervention_path(intervention), 'get' do
+      assert_select "input[type=hidden][name=terminer][value=?]", '1'
+    end
+    assert_select "form[action=?]", terminer_intervention_path(intervention), count: 0
+  end
+
   # ---------------------------------------------------------------------------
   # meteo / meteo_by_day (API météo stubbée globalement par WebMock)
 
