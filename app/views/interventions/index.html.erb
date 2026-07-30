@@ -181,7 +181,8 @@
     <% end %>
     <% if @interventions.present? %>
       <% if params[:vue] == 'normal' %>
-        <%= render @interventions, cached: true %>
+        <%= render partial: 'intervention', collection: @interventions, as: :intervention,
+                   cached: ->(intervention) { [intervention, current_user] } %>
       <% else %>
         <%= render partial: 'view_compact' %>
       <% end %>

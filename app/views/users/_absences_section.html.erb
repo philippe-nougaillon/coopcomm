@@ -30,7 +30,8 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            <%= render partial: 'users/absence', collection: @absences, cached: true %>
+            <%= render partial: 'users/absence', collection: @absences,
+                       cached: ->(absence) { [absence, current_user.rôle] } %>
           </tbody>
         </table>
       </div>

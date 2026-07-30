@@ -28,6 +28,16 @@ class TerminerPointagesJobTest < ActiveJob::TestCase
     assert_in_delta Time.current, @pointage.fin, 1.minute
   end
 
+  test 'clôture le pointage même si une absence a été posée après son ouverture' do
+    Absence.create!(user: @agent, du: Date.today, au: Date.today, motif: 0)
+
+    TerminerPointagesJob.perform_now
+
+    @pointage.reload
+    assert @pointage.terminé?
+    assert @pointage.fin.present?
+  end
+
   test 'envoie un mail à l’unique agent et crée un MailLog' do
     assert_difference -> { ActionMailer::Base.deliveries.size } => 1,
                       -> { MailLog.count } => 1 do

@@ -214,18 +214,18 @@ class Intervention < ApplicationRecord
 
   def check_absence
     return unless agents.any?
+    return if clôture_de_pointage?
 
-    absence_ids = agents.flat_map do |agent|
-      agent.absences.where(
+    absences = agents.flat_map do |agent|
+      agent.absences.includes(:user).where(
         ABSENCE_OVERLAP_SQL,
-        debut: début_prévue.try(:to_date), fin: fin_prévue.try(:to_date)
-      ).pluck(:id)
+        debut: effective_début.try(:to_date), fin: effective_fin.try(:to_date)
+      ).select { |absence| absence.couvre?(effective_début, effective_fin) }
     end.uniq
 
-    return if absence_ids.empty?
+    return if absences.empty?
 
-    absences = Absence.where(id: absence_ids.uniq.flatten)
-    messages = absences.includes(:user).map do |absence|
+    messages = absences.map do |absence|
       "#{absence.user.nom_prénom} (du #{absence.du&.strftime('%d/%m/%Y')} au #{absence.au&.strftime('%d/%m/%Y')}, motif : '#{absence.motif}')"
     end
     errors.add(:interventions, ": Agent(s) indisponible(s) : #{messages.to_sentence}")
@@ -242,7 +242,8 @@ class Intervention < ApplicationRecord
                               ABSENCE_OVERLAP_SQL,
                               debut: debut.try(:to_date), fin: fin.try(:to_date)
                             )
-                            .pluck(:user_id)
+                            .select { |absence| absence.couvre?(debut, fin) }
+                            .map(&:user_id)
     end
 
     conflicting_agents.uniq
@@ -614,6 +615,12 @@ class Intervention < ApplicationRecord
 
     # Un pointage a son propre événement, publié par interventions#pointer.
     Events.instance.publish('intervention.done', payload: { intervention_id: id }) if template_slug.blank?
+  end
+
+  # Fermer un pointage déjà ouvert reste toujours possible, sinon une absence
+  # posée en cours de journée le figerait ouvert (clôture nocturne comprise).
+  def clôture_de_pointage?
+    persisted? && template_slug.present? && will_save_change_to_fin? && !will_save_change_to_début?
   end
 
   # Ajoute ou enlève l'état 'pointage activé' selon si c'est un modèle de pointage.

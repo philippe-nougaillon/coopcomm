@@ -107,6 +107,58 @@ class AbsenceTest < ActiveSupport::TestCase
     assert_enqueued_with(job: NotifManagersNewAbsenceJob, args: [absence])
   end
 
+  # --- Notification de la personne concernée (création / modification / suppression) ---
+
+  test 'la création enqueue une notification à la personne concernée' do
+    absence = nil
+
+    assert_enqueued_with(job: NotifAgentAbsenceJob) do
+      absence = Absence.create!(user: @agent, du: Date.new(2030, 4, 2), au: Date.new(2030, 4, 2), motif: :formation)
+    end
+
+    action, resume, resume_avant, email, = enqueued_jobs.find { |j| j['job_class'] == 'NotifAgentAbsenceJob' }['arguments']
+
+    assert_equal 'créée', action
+    assert_equal 'Journée entière', resume['période']
+    assert_nil resume_avant
+    assert_equal @agent.email, email
+    assert absence.persisted?
+  end
+
+  test 'la modification enqueue une notification avec les valeurs avant et après' do
+    absence = Absence.create!(user: @agent, du: Date.new(2030, 4, 3), au: Date.new(2030, 4, 3), motif: :formation)
+    clear_enqueued_jobs
+
+    absence.update!(matin: true, motif: :congés_payés)
+
+    action, resume, resume_avant, = enqueued_jobs.find { |j| j['job_class'] == 'NotifAgentAbsenceJob' }['arguments']
+
+    assert_equal 'modifiée', action
+    assert_equal 'Matin', resume['période']
+    assert_equal 'Congés payés', resume['motif']
+    assert_equal 'Journée entière', resume_avant['période']
+    assert_equal 'Formation', resume_avant['motif']
+  end
+
+  test 'la suppression enqueue une notification à la personne concernée' do
+    absence = Absence.create!(user: @agent, du: Date.new(2030, 4, 4), au: Date.new(2030, 4, 4), motif: :formation)
+    clear_enqueued_jobs
+
+    absence.destroy
+
+    action, = enqueued_jobs.find { |j| j['job_class'] == 'NotifAgentAbsenceJob' }['arguments']
+
+    assert_equal 'supprimée', action
+  end
+
+  test 'aucune notification si la personne concernée est elle-même l’auteur' do
+    assert_no_enqueued_jobs only: NotifAgentAbsenceJob do
+      Audited.audit_class.as_user(@agent) do
+        Absence.create!(user: @agent, du: Date.new(2030, 4, 5), au: Date.new(2030, 4, 5), motif: :formation)
+      end
+    end
+  end
+
   test "une absence invalide (fin avant début) n'enqueue aucune notification" do
     assert_no_enqueued_jobs only: NotifManagersNewAbsenceJob do
       absence = Absence.new(user: @agent, du: Date.new(2030, 3, 6), au: Date.new(2030, 3, 4), motif: :formation)
