@@ -299,6 +299,28 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_match(/absence_form/, response.body)
   end
 
+  test 'un agent ne peut pas se créer une absence depuis son propre profil' do
+    agent = users(:bond)
+    sign_in agent
+
+    assert_no_difference('Absence.count') do
+      patch user_url(agent),
+            params: { user: { absences_attributes: { '0' => { du: '2030-09-10', au: '2030-09-10',
+                                                              motif: 'formation' } } } }
+    end
+  end
+
+  test 'un agent ne peut pas supprimer une absence via les paramètres de son profil' do
+    agent = users(:bond)
+    absence = absences(:one)
+    sign_in agent
+
+    assert_no_difference('Absence.count') do
+      patch user_url(agent),
+            params: { user: { absences_attributes: { '0' => { id: absence.id, _destroy: '1' } } } }
+    end
+  end
+
   # --- inviter / mot de passe / réactivation ---
 
   test 'inviter renvoie le lien d\'accès' do

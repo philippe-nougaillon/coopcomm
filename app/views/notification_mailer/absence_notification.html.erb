@@ -1,0 +1,19 @@
+<% formater = ->(valeur) { valeur.is_a?(Date) ? l(valeur, format: :long) : valeur.presence || 'Aucune' } %>
+Bonjour,
+<br>
+<br>
+Une absence vous concernant vient d'être <%= @action %> par votre gestionnaire.
+<br>
+<br>
+<% @resume.each do |champ, valeur| %>
+  <% ancienne = @resume_avant && @resume_avant[champ] %>
+  <%= champ.capitalize %> :
+  <% if @resume_avant && ancienne != valeur %>
+    <s><%= formater.call(ancienne) %></s> → <strong><%= formater.call(valeur) %></strong>
+  <% else %>
+    <%= formater.call(valeur) %>
+  <% end %>
+  <br>
+<% end %>
+<br>
+En cas d'erreur, rapprochez-vous de votre gestionnaire.

@@ -7,8 +7,18 @@ class AbsencePolicyTest < ActionDispatch::IntegrationTest
     @absence = absences(:one) # appartient à bond (agent, Mairie de Paris)
   end
 
-  test 'le propriétaire peut supprimer sa propre absence' do
-    assert AbsencePolicy.new(users(:bond), @absence).destroy?
+  test 'un agent ne peut pas supprimer sa propre absence' do
+    refute AbsencePolicy.new(users(:bond), @absence).destroy?
+  end
+
+  test 'un agent ne peut ni créer ni modifier une absence le concernant' do
+    refute AbsencePolicy.new(users(:bond), @absence).create?
+    refute AbsencePolicy.new(users(:bond), @absence).update?
+  end
+
+  test 'un manager de la même équipe peut créer et modifier une absence' do
+    assert AbsencePolicy.new(users(:hidalgo), @absence).create?
+    assert AbsencePolicy.new(users(:hidalgo), @absence).update?
   end
 
   test 'un manager de la même équipe peut supprimer une absence' do

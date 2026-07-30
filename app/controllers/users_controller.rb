@@ -412,6 +412,9 @@ class UsersController < ApplicationController
     rôle = params[:user][:rôle] || params[:user][:role]
     permitted[:rôle] = rôle if current_user.administrateur? && User.rôles.key?(rôle.to_s)
 
+    permitted.delete(:absences_attributes) unless current_user.manager_or_admin?
+
+
     # service_ids= écrit immédiatement en base (has_many through) : on ne garde
     # que les services de l'organisation courante, et on ne touche à rien si la
     # demande est entièrement hors organisation (tentative de forgerie).

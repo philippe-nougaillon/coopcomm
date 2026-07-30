@@ -159,7 +159,8 @@
           </thead>
           <tbody>
             <% if @tool.interventions.any? %>
-              <%= render partial: 'intervention', collection: @tool.interventions.ordered, cached: true %>
+              <%= render partial: 'intervention', collection: @tool.interventions.ordered,
+                         cached: ->(intervention) { [intervention, current_user] } %>
             <% else %>
               <tr>
                 <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">

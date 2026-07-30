@@ -31,7 +31,8 @@
 </thead>
     <tbody class="divide-y divide-slate-200">
       <% if @interventions.any? %>
-        <%= render partial: 'intervention_compact', collection: @interventions, as: :intervention, cached: true %>
+        <%= render partial: 'intervention_compact', collection: @interventions, as: :intervention,
+                   cached: ->(intervention) { [intervention, current_user] } %>
       <% else %>
         <tr>
           <td colspan="8" class="text-left md:text-center py-8 text-slate-400 text-base italic">

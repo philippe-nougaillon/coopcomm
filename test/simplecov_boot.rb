@@ -2,9 +2,6 @@
 
 require 'simplecov'
 
-# Tout fichier chargé avant `SimpleCov.start` est invisible pour Coverage et
-# rapporté à 0 %. `rails test:all` boote l'application avant les tests : ce
-# fichier doit donc être préchargé (`bin/coverage`) pour mesurer le boot.
 unless SimpleCov.running
   SimpleCov.start 'rails' do
     add_group 'Components', 'app/components'

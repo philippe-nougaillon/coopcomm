@@ -691,6 +691,31 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'pointer alors que l agent est absent aujourd hui est refusé avec le motif' do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+    Absence.create!(user: agent, du: Date.today, au: Date.today, motif: 0)
+
+    assert_no_difference('Intervention.count') do
+      get pointer_intervention_url(interventions(:intervention_repete))
+    end
+
+    assert_redirected_to intervention_path(interventions(:intervention_repete))
+    assert_match 'Agent(s) indisponible(s)', flash[:alert]
+  end
+
+  test 'pointer l après-midi alors que l agent est absent le matin reste possible' do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+    Absence.create!(user: agent, du: Date.today, au: Date.today, motif: 0, matin: true)
+
+    travel_to Time.current.change(hour: 14) do
+      assert_difference('Intervention.count', 1) do
+        get pointer_intervention_url(interventions(:intervention_repete))
+      end
+    end
+  end
+
   test 'pointer intervention repete doit mettre fin à une intervention' do
     # Le sign_in gère tout seul la déconnexion du premier sign_in dans le setup
     sign_in users(:martin_technique_paris)
