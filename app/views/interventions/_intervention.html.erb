@@ -1,24 +1,21 @@
 <div id="<%= dom_id intervention %>" class="border-b border-slate-200 collapse collapse-arrow rounded-none <%= 'collapse-open' if !defined?(from_turbo_stream) && intervention.id == @interventions.first.id %>">
   <input type="checkbox" class="h-full min-h-[3rem]"/>
-  
-  <%# Header de la carte %>
+
   <div class="collapse-title p-4 sm:p-6">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pr-6">
-      
-      <%# Section Titre + Badges %>
-     <div class="flex flex-col  lg:justify-end lg:items-center lg:gap-2 text-xl sm:text-2xl text-<%= intervention.style.split.first.split('-').last %>">
-          <div class="flex items-center gap-1">
-          <span class="badge font-bold text-xs uppercase <%= intervention.style %>">
+    <div class="flex flex-col md:flex-row md:items-start justify-between gap-3 md:gap-4 pr-6">
+
+      <div class="flex flex-col items-start gap-1.5 min-w-0">
+        <div class="flex items-center flex-wrap gap-1.5 text-lg sm:text-xl md:text-2xl text-<%= intervention.style.split.first.split('-').last %>">
+          <span class="badge font-bold text-xs uppercase shrink-0 <%= intervention.style %>">
             <%= intervention.workflow_state.humanize %>
           </span>
-          <%= link_to intervention.description.humanize, intervention, class: 'z-10 hover:underline' %>
+          <%= link_to intervention.description.humanize, intervention, class: 'z-10 hover:underline break-words' %>
 
           <% if intervention.repeter %>
-            <%= embedded_svg "icons/event_repeat.svg", title: "Modèle pour le pointage", class: "w-5 h-5 text-slate-500" %>
+            <%= embedded_svg "icons/event_repeat.svg", title: "Modèle pour le pointage", class: "w-5 h-5 text-slate-500 shrink-0" %>
           <% elsif intervention.template_slug %>
-            <%= embedded_svg "icons/qr_code_2.svg", title: "Pointage", class: "w-5 h-5 text-slate-500" %>
+            <%= embedded_svg "icons/qr_code_2.svg", title: "Pointage", class: "w-5 h-5 text-slate-500 shrink-0" %>
           <% end %>
-
         </div>
 
         <div class="text-xs text-slate-400">
@@ -27,36 +24,37 @@
           </i>
         </div>
 
-          <div class="flex flex-wrap gap-1 pt-1">
+        <% if intervention.tags.any? %>
+          <div class="flex flex-wrap gap-1">
             <% intervention.tags.each do |tag| %>
               <span class="badge badge-primary badge-outline text-[11px] h-auto py-0.5"><%= tag.name.humanize %></span>
             <% end %>
           </div>
+        <% end %>
       </div>
 
-      <%# Section Boutons d'actions %>
       <% if !(intervention.validé? || intervention.refusé?) %>
-        <div class="flex flex-wrap items-center gap-2 z-10 shrink-0">
+        <div class="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-2 z-10 shrink-0 w-full md:w-auto">
           <% if !defined?(from_turbo_stream) && policy(intervention).terminer? && intervention.can_terminer? %>
             <% lien, methode, params_terminer = terminer_destination(intervention) %>
             <%= button_to 'Terminer', lien, method: methode, params: params_terminer,
-                class: 'btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white! w-24 justify-center',
-                form: { data: { turbo: false } },
+                class: 'btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white! w-full sm:w-24 justify-center',
+                form: { data: { turbo: false }, class: 'contents sm:block' },
                 disabled: !intervention.can_terminer? || current_user.adhérent? %>
           <% end %>
 
           <% if !defined?(from_turbo_stream) && policy(intervention).valider? && intervention.can_valider? %>
-            <%= button_to 'Valider', valider_intervention_path(intervention), 
-                class: 'btn btn-success btn-outline btn-xs sm:btn-sm hover:text-white! w-24 justify-center', 
-                form: { data: { turbo: false } }, 
-                disabled: !intervention.can_valider? %>              
+            <%= button_to 'Valider', valider_intervention_path(intervention),
+                class: 'btn btn-success btn-outline btn-xs sm:btn-sm hover:text-white! w-full sm:w-24 justify-center',
+                form: { data: { turbo: false }, class: 'contents sm:block' },
+                disabled: !intervention.can_valider? %>
           <% end %>
 
           <% if !defined?(from_turbo_stream) && policy(intervention).refuser? && intervention.can_refuser? %>
-            <%= button_to 'Refuser', refuser_intervention_path(intervention), 
-                class: 'btn btn-error btn-outline btn-xs sm:btn-sm hover:text-white! w-24 justify-center', 
-                form: { data: { turbo: false } }, 
-                disabled: !intervention.can_refuser? %>              
+            <%= button_to 'Refuser', refuser_intervention_path(intervention),
+                class: 'btn btn-error btn-outline btn-xs sm:btn-sm hover:text-white! w-full sm:w-24 justify-center',
+                form: { data: { turbo: false }, class: 'contents sm:block' },
+                disabled: !intervention.can_refuser? %>
           <% end %>
         </div>
       <% end %>
@@ -64,11 +62,8 @@
     </div>
   </div>
 
-  <%# Contenu dépliant %>
   <div class="collapse-content px-4 sm:px-6 pb-6">
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 pt-4 border-t border-slate-100 text-sm">
-      
-      <%# Adhérent & Service %>
       <div class="space-y-3 min-w-0">
         <div>
           <strong class="block text-xs font-bold text-slate-400 uppercase">Adhérent</strong>
@@ -80,7 +75,6 @@
         </div>
       </div>
 
-      <%# Agents %>
       <div class="space-y-2 min-w-0">
         <% if !intervention.agents.any? %>
           <div>
@@ -97,7 +91,6 @@
         <% end %>
       </div>
 
-      <%# Dates & Temps %>
       <div class="space-y-2 min-w-0">
         <div>
           <strong class="block text-xs font-bold text-slate-400 uppercase">Début / Fin</strong>
@@ -110,7 +103,6 @@
         </div>
       </div>
 
-      <%# Temps %>
       <div class="space-y-1 min-w-0">
         <div>
           <strong class="block text-xs font-bold text-slate-400 uppercase">Temps passé</strong>
@@ -126,7 +118,6 @@
         </div>
       </div>
 
-      <%# Matériel %>
       <div class="space-y-2 min-w-0">
         <% if !intervention.tools.any? %>
           <div>
@@ -143,7 +134,6 @@
         <% end %>
       </div>
 
-      <%# Commentaires & Photos %>
       <div class="space-y-3 min-w-0 lg:col-span-1">
         <div>
           <strong class="block text-xs font-bold text-slate-400 uppercase mb-1">Commentaires</strong>
@@ -179,7 +169,6 @@
 
     </div>
 
-    <%# Évaluation si disponible %>
     <% if (intervention.validé? || intervention.refusé?) && !current_user.agent? %>
       <div class="mt-4 pt-3 border-t border-slate-100 flex flex-col gap-1">
         <strong class="block text-xs font-bold text-slate-400 uppercase">Évaluation</strong>
@@ -194,7 +183,6 @@
       </div>
     <% end %>
 
-    <%# Modal Galerie %>
     <% if intervention.photos.attached? %>
       <dialog id="my_modal_<%= intervention.id %>" class="modal">
         <div class="modal-box max-w-3xl bg-slate-900/90 text-white p-6">

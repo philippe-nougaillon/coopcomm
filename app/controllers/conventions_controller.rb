@@ -12,10 +12,14 @@ class ConventionsController < ApplicationController
                    .includes(:user, :service, document_attachment: :blob)
                    .ordered
 
-    # Recherche sur le nom du document attaché
+    # Recherche sur le nom du document attaché, mémo et heures conventionnées 
     if params[:search].present?
-      @conventions = @conventions.joins(document_attachment: :blob)
-                                 .where('active_storage_blobs.filename ILIKE :s', s: "%#{params[:search]}%")
+      search_term = "%#{params[:search].strip}%"
+      @conventions = @conventions.left_joins(document_attachment: :blob)
+                                .where(
+                                  'conventions.mémo ILIKE :s OR CAST(conventions.heures_conventionnees AS TEXT) ILIKE :s OR active_storage_blobs.filename ILIKE :s',
+                                  s: search_term
+                                )
     end
 
     @conventions = @conventions.where(user_id: params[:adherent_id]) if params[:adherent_id].present?
