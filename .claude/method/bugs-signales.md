@@ -1,22 +1,21 @@
 # Registre des bugs signalés — CoopComm
 
-> **Source de vérité unique** des bugs détectés par l'agent (sessions de tests/audit), signalés mais **non corrigés** sans décision explicite. Chaque bug a un **parcours de reproduction** (point de vue utilisateur quand c'est possible). Tenir à jour : quand un bug est corrigé, le déplacer dans la section « Corrigés » avec le commit. Dernière re-vérification dans le code : **2026-07-10**.
+> **Source de vérité unique** des bugs détectés par l'agent (sessions de tests/audit), signalés mais **non corrigés** sans décision explicite. Chaque bug a un **parcours de reproduction** (point de vue utilisateur quand c'est possible). Tenir à jour : quand un bug est corrigé, le déplacer dans la section « Corrigés » avec le commit. Dernière re-vérification dans le code : **2026-07-31** (balayage complet des 43 bugs ouverts : un seul corrigé depuis, **B12**, par la fusion de `dashboard-scenic` ; tous les autres re-prouvés ouverts).
 
 ---
 
 ## 🔴 Bugs ouverts
 
 ### B1 — `temps_total` jamais recalculé à la sauvegarde (`calc_temps_total` inopérant)
-- **Où** : [intervention.rb:375-384](app/models/intervention.rb#L375-L384) (+ `before_save :calc_temps_total` à la ligne 52)
+- **Où** : [intervention.rb:375-385](app/models/intervention.rb#L375-L385) (+ `before_save :calc_temps_total` à la ligne 59)
 - **Cause** : la méthode assigne une variable **locale** `temps_total` au lieu de `self.temps_total = …` → le callback `before_save` ne persiste rien. Le pointage QRCode fonctionne par accident (le contrôleur assigne la valeur à la main).
-- **État empirique (re-vérifié 2026-07-30)** : les fixtures `nouvelle_intervention`, `intervention_terminée`, `intervention_validé`, `intervention_autre_agent`, `intervention_autre_adhérent` n'ont **tous pas** de `temps_total` renseigné. Seul `tonte_locaux` en a un. Donc dès qu'une intervention est créée sans `temps_total` (ni dans la fixture ni via formulaire), elle reste à nil pour toujours — même si on modifie ses dates, le callback s'exécute mais ne change rien.
 - **Parcours de reproduction** :
   1. En tant qu'**agent**, j'ouvre une intervention et je fais une **saisie de temps a posteriori** (formulaire : date/heure de début, de fin, pause).
   2. J'enregistre → le champ `temps_total` en base reste `nil` (ou garde son ancienne valeur), alors que début/fin sont bien remplis.
   3. Ensuite, en tant que **manager/admin**, sur le **dashboard**, la répartition du temps par agent et les totaux d'heures sont faux (cette intervention compte pour 0).
 - **Impact** : statistiques de temps fausses pour toute intervention saisie a posteriori.
 - **Trace test** : test `skip` documenté dans `test/models/intervention_pointage_test.rb` (session 2026-07-08-c) — passera au vert à la correction.
-- **Correctif proposé** : `self.temps_total = …` (une ligne, chaque assignation locale doit devenir `self.temps_total =`). Le calcul manuel du contrôleur peut être retiré ou conservé comme redondance inoffensive.
+- **Correctif proposé** : `self.temps_total = …` (et retirer le calcul manuel du contrôleur, ou le garder comme redondance inoffensive).
 
 ### B2 — Prix du devis écrasé par le tarif courant à la création de la commande (décision métier à prendre)
 - **Où** : [create_commande_from_cotation.rb:19](app/services/create_commande_from_cotation.rb#L19) + `CommandeLigne#set_prix_from_prestation` ; symétrique dans `create_facture_from_commande.rb:19`
@@ -29,21 +28,40 @@
 - **Impact** : l'adhérent est facturé à un prix différent de celui qu'il a signé.
 - **À trancher (client)** : le prix contractuel est-il celui du devis signé (probable) ou le tarif courant ? Correctif technique trivial une fois tranché (ne pas écraser si `prix_ht` déjà renseigné). **Statut 2026-07-10 : en réflexion** — suivi comme **D1** dans `points-a-trancher.md`.
 
-### B3 — ✅ CORRIGÉ (2026-07-28) — `valider`/`refuser` une intervention hors état → erreur 500
-- **Correctif appliqué** : `redirect_si_invalide` ajouté en tête des actions (valider, refuser, terminer). Retourne les erreurs de validation au lieu de lever une 500.
-- **Tests** : test critique « re-valider une intervention déjà validée » dans `interventions_controller_test.rb`, prouvé rouge sans la garde, vert avec.
+### B3 — `valider`/`refuser` une intervention hors état → erreur 500
+- **Où** : [interventions_controller.rb:312-326](app/controllers/interventions_controller.rb#L312-L326)
+- **Cause** : `valider!` et `refuser!` sont appelés **sans garde `can_valider?`/`can_refuser?`** ni `rescue Workflow::NoTransitionAllowed` (contrairement à `terminer` et `archiver` qui sont protégés).
+- **Parcours de reproduction** (déduit, non exécuté) :
+  1. En tant qu'**adhérent** (ou manager), j'ouvre une intervention à l'état **terminé** et je clique **« Valider »** → OK, elle passe à `validé`.
+  2. Je fais **retour arrière** navigateur (ou j'avais l'onglet ouvert en double) et je re-clique **« Valider »** ou **« Refuser »** alors qu'elle n'est plus `terminé`.
+  3. → `Workflow::NoTransitionAllowed` non rescué → **page d'erreur 500**.
+- **Impact** : erreur brute au lieu d'un message « action impossible » ; du bruit dans les logs.
+- **Correctif proposé** : même motif que `terminer`/`archiver` (`if @intervention.can_valider? … else redirect_to … notice: "Impossible…"`).
+- **Trace test (2026-07-28)** : test `skip` documenté dans les TESTS CRITIQUES en tête de `interventions_controller_test.rb` (« re-valider une intervention déjà validée… ») — passera au vert à la correction.
+- ⚠️ **Re-vérifié ouvert le 2026-07-31 — ne pas confondre avec B28.** `redirect_si_invalide` ([interventions_controller.rb:565](app/controllers/interventions_controller.rb#L565)) ne teste que `@intervention.valid?`, c'est-à-dire les **validations du modèle** — pas la **transition de workflow**. Une intervention déjà `validé` est parfaitement valide : le filet la laisse passer, puis `valider!` ([l.286](app/controllers/interventions_controller.rb#L286)) lève `Workflow::NoTransitionAllowed`. `terminer` est protégé par `can_terminer?` ([l.274](app/controllers/interventions_controller.rb#L274)), `valider` et `refuser` **ne le sont toujours pas**. Le `skip` B3 est toujours actif dans la suite.
 
-### B4 — ✅ CORRIGÉ (~2026-07) — Sujet du mail de panne malformé : `{title: "…"}`
-- **Correctif appliqué** : la signature du mailer `avertissement_reservation` a été réalignée pour accepter `title` en **positional argument** (ou le job a été adapté pour le passer en positional).
-- **Vérification** : `NotificationMailer#avertissement_reservation` actuellement en positional ; mail envoyé avec un sujet correct.
+### B4 — Sujet du mail de panne malformé : `{title: "…"}`
+- **Où** : [notif_panne_job.rb:12-18](app/jobs/notif_panne_job.rb#L12-L18) vs `NotificationMailer#avertissement_reservation`
+- **Cause** : le job passe `title:` en **argument nommé**, mais le mailer attend `title` en **positionnel** → le hash devient le dernier paramètre positionnel et l'objet du mail rend littéralement `{title: "[COOPCOMM] L'outil X a été déclaré en panne"}`.
+- **Parcours de reproduction** :
+  1. En tant qu'**adhérent A**, je **réserve un outil** dans le magasin (clic sur une case du planning matériel) pour une date à venir.
+  2. En tant qu'**agent/manager**, je **déclare ce même outil en panne** (clic sur la case panne) — zone sensible `Mouvement`.
+  3. → `NotifPanneJob` envoie le mail d'avertissement au réserviste A : le corps est correct, mais l'**objet** du mail est le hash brut au lieu du texte.
+- **Impact** : cosmétique mais très visible (mail réel envoyé au client avec un sujet cassé).
+- **Correctif proposé** : aligner l'appel sur la signature (passer `title` en positionnel, ou convertir la signature en kwargs partout).
+- ✅ **Re-vérifié ouvert le 2026-07-31, preuve empirique** : `notif_panne_job.rb:16` passe toujours `title: title` (mot-clé) et `notification_mailer.rb:84` déclare toujours `def avertissement_reservation(user, tool, date_reservation, date_panne, title)` (positionnel). Le test `test/jobs/notif_panne_job_test.rb` est **vert** alors qu'il asserte `assert_equal "{title: …}", mail.subject` — le sujet cassé est donc bien celui qui part aujourd'hui.
 
-### B5 — TOUJOURS OUVERT (re-vérifié 2026-07-30) — Mails de bienvenue d'import jamais tracés dans MailLog
-- **Où** : [welcome_import_notification_job.rb:15-19](app/jobs/welcome_import_notification_job.rb#L15-L19) — `MailLog.create` sans `organisation_id`
-- **Cause** : colonne NOT NULL, `create` non-bang échoue silencieusement → mail part, log jamais persisté.
-- **Correctif proposé** : `create!` (lève) ou dériver `organisation_id` via l'organisation du user importé.
+### B5 — Mails de bienvenue d'import jamais tracés dans MailLog
+- **Où** : [welcome_import_notification_job.rb:15-16](app/jobs/welcome_import_notification_job.rb#L15-L16)
+- **Cause** : `MailLog.create` sans `organisation_id` (colonne **NOT NULL**) → le `create` (non-bang) échoue **en silence** ; le mail part, le log n'est jamais persisté.
+- **Parcours de reproduction** :
+  1. En tant qu'**admin**, j'**importe des utilisateurs** (import fichier) → chaque nouvel utilisateur reçoit bien son mail de bienvenue avec mot de passe.
+  2. Je vais sur l'écran **MailLog** (affichage livré en #354) → **aucune trace** de ces envois.
+- **Impact** : trou dans l'audit des envois ; impossible de prouver/déboguer qu'un utilisateur importé a reçu son accès.
+- **Correctif proposé** : dériver `organisation_id` (via l'organisation du user importé) + envisager `create!` pour ne plus échouer en silence.
 
 ### B6 — `user.organisation =` → NoMethodError (code mort, piège à la réactivation)
-- **Où** : [user.rb:188](app/models/user.rb#L188) (`User.from_omniauth`) et [registrations_controller.rb:16](app/controllers/users/registrations_controller.rb#L16)
+- **Où** : [user.rb:194](app/models/user.rb#L194) (`User.from_omniauth`) et [registrations_controller.rb:16](app/controllers/users/registrations_controller.rb#L16)
 - **Cause** : `organisation` est dérivé (`has_many :organisations, through: :services`) → **pas de writer** `organisation=` (vérifié : `respond_to?(:organisation=)` → false).
 - **Parcours de reproduction** (conditionnel — code mort aujourd'hui : `:registerable` et `:omniauthable` sont commentés dans Devise) :
   1. Un développeur **réactive** l'inscription publique ou la connexion **Google OAuth**.
@@ -58,10 +76,14 @@
 - **Impact** : piège pour les prochains tests ; aucune conséquence en prod.
 - **Correctif proposé** : `adherent: weil`.
 
-### B8 — TOUJOURS OUVERT (re-vérifié 2026-07-30) — Notif `EmailSubscription` crashe sur les audits sans user
-- **Où** : [app/subscriptions/email_subscription.rb:7](app/subscriptions/email_subscription.rb#L7) — `on_intervention_workflow_changed` fait `intervention.audits.last.user_id` **sans garde**
-- **Cause** : 599/902 audits en prod ont `user_id` nil (jobs/imports sans `current_user`) → `find_by(id: nil)` → potentiellement un crash.
-- **Correctif proposé** : `User.find_by(id: intervention.audits.last&.user_id)` + `return if user.nil?`.
+### B8 — Risque différé : notif `EmailSubscription` crashe sur les audits sans user (dormant, décision client 2026-06-23)
+- **Où (relocalisé le 2026-07-31)** : `on_intervention_updated` **n'existe plus**. Le handler non gardé restant est [email_subscription.rb:7](app/subscriptions/email_subscription.rb#L7), `on_intervention_workflow_changed` → `intervention.audits.last.user_id`. Celui-ci n'est **pas** dormant : il est publié par `interventions_controller#valider`/`#refuser`/`#archiver` et par `Intervention#apres_terminaison`.
+- **Cause** : deux crashs distincts sur la même ligne. ① `audits.last` peut être **nil** (intervention sans aucun audit — fixtures, création programmatique hors contexte web) → `NoMethodError: undefined method 'user_id' for nil`. ② mesuré en dev, **599/902 audits** d'intervention ont `user_id` nil et **166 interventions** ont leur *dernier* audit à `user_id` nil → le `user_id` propagé au job est nil (pas de crash immédiat, mais notification attribuée à personne).
+- **Parcours de reproduction** :
+  1. Créer une intervention **sans passer par le web** (tâche rake, console, import) → aucun audit n'est écrit.
+  2. Un manager la **valide** depuis l'interface → `on_intervention_workflow_changed` → `audits.last` nil → **500**.
+- **Précédent** : la même ligne existait dans `on_intervention_done` et a été **gardée le 2026-07-29-h** (`User.find_by(id: intervention.audits.last&.user_id)` + `return unless user&.agent?`, [l.15](app/subscriptions/email_subscription.rb#L15)) — le correctif est donc déjà écrit juste en dessous, il reste à l'appliquer ligne 7.
+- **Correctif proposé** : `last_audit = intervention.audits.last` + `return if last_audit.nil?` (le suivi **D3** de `points-a-trancher.md` ne concernait que la partie dormante ; cette partie-ci est active).
 
 ### B11 — Un pointage peut porter des dates prévues (héritées de la mère ou saisies au formulaire) — l'invariant « pointage = dates réelles uniquement » n'est pas garanti
 - **Signalé par** : PE, 2026-07-13 (« il ne faut pas que l'on puisse mettre des dates prévues sur une intervention de pointage ») ; instruit et confirmé par l'agent. Généralise la condition 4 de **R1**.
@@ -81,9 +103,9 @@
   - **Conséquence sur `.where(fin_prévue: nil)`** ([intervention.rb:271](app/models/intervention.rb#L271)) : une fois les champs retirés du formulaire, la condition devient **morte en pratique** et pourra être retirée sans changement de comportement (`pointage_ouvert?` n'a pas besoin de bouger : `effective_fin` ≡ `fin` pour une fille sans dates prévues). Rappel : cette condition ne protégeait de rien — elle **excluait** au contraire des conflits une fille porteuse de `fin_prévue` (cohérence avec `pointage_ouvert?`, pas une garde).
   - **Reste à faire** : le retrait effectif des champs (équipe) ; ce bug passera en « corrigé » à ce moment-là.
 
-### B13 — Branche `dashboard-scenic` : le filtre #292 opère sur les cellules pré-agrégées, pas par intervention (un négatif peut être « netté » au lieu d'exclu)
-- **Signalé le** : 2026-07-13 (même session). **Spécifique à `dashboard-scenic`** — staging filtre au grain intervention.
-- **Où** : tous les `where("temps_total >= 0")` de [dashboard_data.rb](app/controllers/concerns/dashboard_data.rb) — ils s'appliquent aux lignes des vues matérialisées : grain **(org, service, adhérent, mois, statut)** pour les stats interventions, grain **(org, agent)** pour le temps par agent.
+### B13 — Le filtre #292 opère sur les cellules pré-agrégées du dashboard, pas par intervention (un négatif peut être « netté » au lieu d'exclu)
+- **Signalé le** : 2026-07-13. ⚠️ **N'est plus spécifique à une branche : c'est désormais un bug de `staging`** (constaté le 2026-07-31) — `dashboard-scenic` **a été fusionnée** (commit `0fb76419 #297`, `db/views/` et les modèles `DashboardAgentStat`/`DashboardInterventionStat` sont sur staging, `dashboard_data.rb` a disparu). La mention « staging filtre au grain intervention » est **caduque**.
+- **Où** : les `where("temps_total >= 0")` appliqués aux vues matérialisées : grain **(org, service, adhérent, mois, statut)** pour les stats interventions, grain **(org, agent)** pour le temps par agent.
 - **Cause** : une vue matérialisée ne stocke que des sommes par cellule. Si une cellule mélange +8 h et −3 h, elle vaut 5 ≥ 0 → elle **passe** le filtre et le −3 est compté (staging strict : 8). Si le net d'une cellule/d'un agent est négatif, **tout** est exclu, y compris la part positive (staging : la part positive reste).
 - **Statut de la décision** : le volet **grain agent** a été **acté par PE le 2026-07-13** (résolution du conflit de merge, « approximation au grain agent »). Le volet **grain cellule** (stats interventions) n'a pas été discuté explicitement — même nature, porté à connaissance ici.
 - **Parcours de reproduction** :
@@ -133,9 +155,14 @@
 - **Correctif proposé (décision métier à trancher)** : soit **restaurer la protection** — re-masquer/désactiver le bouton pour `@tool.interventions.any?` **ET** ajouter une garde dans `tools_controller#destroy` (redirection + message si l'outil est utilisé), la vue seule étant contournable ; soit **assumer** la suppression libre (et alors supprimer le test `Ne pas pouvoir supprimer un outil avec une intervention`). Test correspondant en `skip` documenté jusqu'à décision.
 - **⚠️ MISE À JOUR 2026-07-29 — corrigé À MOITIÉ** : le commit `756dfdcd` (#412, Dani) a **restauré la garde côté vue** (bloc « Suppression impossible, l'outil est utilisé dans des interventions » à la place du bouton). Le `skip` du test système est donc **levé** (`test/system/tools_test.rb`, assertion réelle au vert). **La garde contrôleur manque toujours** : [tools_controller.rb:94](app/controllers/tools_controller.rb#L94) fait `@tool.destroy!` sans rien vérifier — vérifié empiriquement, un `DELETE /tools/:slug` direct supprime l'outil `tondeuse` et ses `tool_interventions`. Comportement épinglé par le test `un outil utilisé par une intervention est quand même supprimé` (`tools_controller_test.rb`), **à inverser à la correction**.
 
-### B36 — ✅ CORRIGÉ (2026-07-29) — Grille des disponibilités : le jour où une panne est déclarée s'affiche « réservé par vous » au lieu de « en panne »
-- **Correctif appliqué** : `current_state = "P"` au lieu de `"R"` (une ligne, [app/models/tool.rb:132](app/models/tool.rb#L132)).
-- **Tests** : `tool_test.rb` — « le jour de déclaration d'une panne est marqué en panne » (ex-skip, vert) + « un cycle panne puis réparation puis nouvelle panne est retracé ».
+### B36 — Grille des disponibilités : le jour où une panne est déclarée s'affiche « réservé par vous » au lieu de « en panne »
+- **Signalé par** : agent, 2026-07-29 (session `/tests` « matériel », reproduit par test).
+- **Parcours de repro** : se connecter en manager → *Réservation de matériel* (`/tools`) → repérer un outil **libre toute la semaine** → cliquer sur *Gestion panne* (ou `/mouvements/new?tool_id=…`) → déclarer une panne à une date **de la semaine affichée**, par exemple le mercredi → revenir à `/tools`. **Observé** : la case du **mercredi** est **bleu foncé** avec l'infobulle « Réservé par vous (cliquez pour libérer) », alors que jeudi→dimanche sont bien en **rouge** « En panne ». Cliquer sur la case bleue déclenche `libere`, qui ne trouve aucune réservation et affiche l'alerte trompeuse « Il n'existe pas de réservation ce jour-là pour cet utilisateur ». *(Le décalage se voit mieux en déclarant la panne en milieu de semaine ; une panne déclarée avant le lundi affiché est correctement rouge sur toute la semaine.)*
+- **Où** : [app/models/tool.rb:136](app/models/tool.rb#L136) — `current_state = "R"` dans la branche `if etats["panne"].present? && etats["fin_panne"].blank?`.
+- **Cause racine (prouvée par test)** : `est_en_panne` est initialisé par `est_encore_en_panne_le(first_date)`, qui ne regarde que les mouvements **antérieurs ou égaux au premier jour** de l'intervalle. Une panne déclarée *dans* l'intervalle n'est donc pas encore connue le jour même : on tombe dans la branche `else`, qui pose `"R"` (la lettre de « réservé par moi ») avant de basculer `est_en_panne = true` pour les jours suivants. La lettre attendue est `"P"`.
+- **Impact** : un outil hors service est présenté comme réservé par l'utilisateur courant le jour de la panne ; le clic propose une action impossible. Sur le mois affiché par `tools#show` le même calcul sera utilisé si la vue est refaite comme l'index (cf. `points-a-trancher.md`).
+- ⚠️ **Re-vérifié ouvert le 2026-07-31.** [tool.rb:136](app/models/tool.rb#L136) porte toujours `current_state = "R"` dans la branche `if etats["panne"].present? && etats["fin_panne"].blank?`. Le `current_state = "P"` que l'on voit quelques lignes plus haut est la branche **pré-existante** `if est_en_panne` (les jours *suivants* la panne) — ce n'est pas le correctif. Le `skip` de `tool_test.rb` est toujours actif.
+- **Correctif proposé** : `current_state = "P"` au lieu de `"R"` (une ligne). Tests correspondants : `tool_test.rb` → `le jour de déclaration dune panne est marqué en panne` (en `skip`, passera au vert à la correction) et `un cycle panne puis réparation puis nouvelle panne est retracé` (épingle le `R` actuel, à passer en `P`).
 
 ### B37 — `Tool#dernier_mouvement_a` lève `NoMethodError` dès que les mouvements sont déjà chargés
 - **Signalé par** : agent, 2026-07-29 (session `/tests` « matériel », reproduit par test).
@@ -219,10 +246,12 @@
 - **Portée** : **la page show est inaccessible en dev/prod** dès le déploiement de ce commit ; **3 tests en erreur** (`should show intervention`, `should show intervention with location`, le test critique « un agent ne voit pas son évaluation »). Vérifié : en retirant le bloc (l.66-99), les 3 tests repassent au vert (61 runs / 0 échec).
 - **Correctif proposé** : côté auteur du commit — soit retirer le bloc (rien ne le rendait, le nom du service est déjà affiché l.64), soit le terminer sur la bonne source de données (les services de l'**adhérent** ou de l'**agent** ? l'intervention n'en a qu'un). **Non corrigé par l'agent** : travail en cours d'un collègue.
 
-### B28 — ✅ CORRIGÉ (2026-07-28) — Terminer/valider/refuser une intervention en conflit de disponibilité → erreur 500
-- **Correctif appliqué** : `redirect_si_invalide` en tête de terminer/valider/refuser. Retourne l'erreur de validation proprement au lieu de lever un 500.
-- **Tests** : 3 tests critiques (les 3 transitions + garde anti-faux-positif), prouvés rouges sans la garde.
-- **Note** : l'intervention en conflit reste inaccessible tant que le conflit existe (données mal formées). Le correctif de fond (ne rejouer validations que si dates/agents changent) est écarté.
+### B28 — ⚠️ PARTIELLEMENT CORRIGÉ (2026-07-28) — Terminer/valider/refuser une intervention en conflit de disponibilité → erreur 500, et intervention définitivement figée
+- **Signalé par** : PE, 2026-07-28, **rencontré en usage réel** (agent voulant terminer une intervention ordinaire) : `ActiveRecord::RecordInvalid` — « Conflit(s) détecté(s) sur un agent : MARTIN déjà sur l'intervention « #217 » du 19/03/2026 15:15 au 24/03/2026 16:25 ».
+- **Parcours de reproduction** : une intervention A dont un agent est aussi affecté à une intervention B qui recouvre sa plage effective (cas fréquent sur les données antérieures à #357) → se connecter en agent affecté (ou en manager) → ouvrir A → cliquer « Terminer » → **erreur 500** à [intervention.rb:164](app/models/intervention.rb#L164). Reproduit en base de dev sur l'intervention #191 (`début_prévue` 20/03/2026, **aucune `fin_prévue`**, agents MARTIN + LEFEBVRE) contre #217 (réel 19/03 15:15 → 24/03 16:25).
+- **Cause** : une transition passe par `persist_workflow_state` ([intervention.rb:162](app/models/intervention.rb#L162)) qui fait un **`save!`** → toutes les validations sont rejouées, dont `agents_must_be_available` (#357), alors que la transition ne touche **ni les dates ni les agents**. Les actions `terminer`/`valider`/`refuser` ne gardaient que la transition (`can_terminer?`) ou rien du tout, contrairement à `archiver` qui testait `valid?` depuis toujours.
+- **Correction (décision PE : filet contrôleur seul)** : `redirect_si_invalide(participe)` dans `interventions_controller`, appelé en tête de `terminer`, `valider` et `refuser` → redirection avec le **motif exact** au lieu d'une erreur 500. **4 tests critiques** dans `interventions_controller_test.rb` (les 3 transitions + garde anti-faux-positif « une intervention saine se termine toujours »), **prouvés rouges** sans le filet.
+- **Ce qui reste ouvert (assumé par PE)** : l'intervention en conflit reste **impossible à faire avancer** tant que le conflit existe — il faut corriger la donnée (poser une `fin_prévue`, retirer l'agent, raccourcir l'intervention qui recouvre). Le correctif de fond écarté : ne rejouer les validations de disponibilité que si les dates ou les agents changent. **Constat métier de PE** : « une intervention ne dure qu'une journée » — or #217 s'étale sur 5 jours et #191 a un début prévu sans fin ; **aucune validation n'interdit ni l'un ni l'autre** aujourd'hui.
 
 ### B29 — Créer un site : l'adresse tapée au clavier n'est **pas envoyée** si l'utilisateur ne choisit pas de suggestion Google → message d'erreur trompeur
 - **Signalé par** : agent, 2026-07-29 (découvert en réparant `warehouses_test`, **prouvé empiriquement** : à l'événement `submit`, `#warehouse_address` est `disabled: true` et absent du `FormData`).
@@ -324,15 +353,18 @@
 - **Impact** : aucun à l'exécution ; charge de maintenance et bruit dans la mesure de couverture.
 - **Correctif proposé** : suppression. Non testées délibérément (on ne fige pas du code voué à disparaître).
 
-### B47 — TOUJOURS OUVERT (re-vérifié 2026-07-30) — Filtre « Équipe » de l'index interventions → erreur 500
-- **Où** : [interventions_controller.rb:71](app/controllers/interventions_controller.rb#L71) — `@users_in_same_services.tagged_with(...)`, variable **jamais assignée**
-- **Impact** : filtre inutilisable. Cas rare car défaut = pas de filtre.
-- **Correctif proposé** : assigner `@users_in_same_services` avant usage, ou utiliser `User.by_service(selected_services)` directement.
+### B47 — Le filtre « Équipe » de l'index des interventions provoque une erreur 500
+- **Signalé par** : agent, 2026-07-30 (reproduit par test : `NoMethodError` sur `nil`).
+- **Parcours** : index des interventions → sélectionner une valeur dans le filtre **Équipe** (tag posé sur un adhérent) → 500.
+- **Où** : [app/controllers/interventions_controller.rb:71](app/controllers/interventions_controller.rb#L71) — `@users_in_same_services.tagged_with(...)`, variable d'instance **jamais assignée** ; la variable **locale** du même nom n'est créée qu'à la ligne 97, après ce bloc.
+- **Impact** : le filtre est inutilisable. Un filtre vide (`equipe=['']`) passe, d'où l'absence de remontée jusqu'ici.
+- **Correctif proposé** : une ligne — utiliser `User.by_service(selected_services)` (ou remonter l'affectation de la locale avant le bloc de filtres). Comportement actuel **épinglé** dans `interventions_index_filters_test.rb`, à inverser à la correction.
 
-### B48 — TOUJOURS OUVERT (re-vérifié 2026-07-30) — Tâche `interventions:relancer` ne relance jamais personne
-- **Où** : [lib/tasks/interventions.rake:6](lib/tasks/interventions.rake#L6) — condition inversée : `updated_at - NOW() >= 3` (futur) au lieu de `NOW() - updated_at >= 3` (passé)
-- **Impact** : fonctionnalité silencieusement morte. Aucune erreur, aucun log.
-- **Correctif proposé** : inverser l'opérande dans le SQL.
+### B48 — La tâche `interventions:relancer` ne relance jamais personne (condition de date inversée)
+- **Signalé par** : agent, 2026-07-30 (reproduit par test : une intervention terminée depuis 10 jours n'est pas sélectionnée ; une intervention datée 10 jours dans le futur l'est).
+- **Où** : [lib/tasks/interventions.rake:6](lib/tasks/interventions.rake#L6) — `where('updated_at::DATE - NOW()::DATE >= ?', 3)` sélectionne les interventions modifiées **dans plus de 3 jours**, pas depuis.
+- **Impact** : fonctionnalité de relance silencieusement morte. Aucune erreur, aucun log.
+- **Correctif proposé** : inverser la soustraction (`NOW()::DATE - updated_at::DATE >= 3`). Comportement actuel **épinglé** dans `test/tasks/interventions_relancer_test.rb`.
 
 ### B49 — `interventions:relancer` plante sur `intervention.organisation_id`, après avoir envoyé le mail
 - **Signalé par** : agent, 2026-07-30 (reproduit ; `Intervention#respond_to?(:organisation_id)` renvoie `false`, vérifié en console).
@@ -350,8 +382,16 @@
 - **Filet permanent** : `test/integration/cache_fragments_test.rb` (6 tests). Une **sentinelle** parcourt `app/views/**/*.erb` et échoue si un `cached:` ne mentionne pas `current_user` — elle couvre donc aussi les vues à venir, y compris celles écrites par un collègue. Une **garde anti-faux-positif** vérifie que `avec_cache` écrit réellement des entrées (sans elle, une régression du helper rendrait tous les tests de fuite verts sans rien prouver). Puis un test de fuite par vue : absences, index interventions normal et compact, fiche outil. Les 5 tests concernés **prouvés rouges** en remettant `cached: true` sur les 4 vues.
 
 ### B50 — ✅ CORRIGÉ (2026-07-30) — La suppression d'une absence en turbo_stream levait sur un partial introuvable
-- **Correctif appliqué** : `render "users/absence_form"` avec préfixe `"users/"` ([users/_absence.html.erb:72](app/views/users/_absence.html.erb#L72)).
-- **Tests** : test contrôleur (section remise à jour, ligne supprimée) + système `absence_suppression_test.rb`, prouvé rouge sans le préfixe.
+- **Correctif** : `users/_absence.html.erb:72` → `render "users/absence_form"` (préfixe ajouté). Test contrôleur retourné (il attendait l'exception, il vérifie désormais que la section est bien remise à jour et que la ligne supprimée a disparu) + nouveau test **système** `absence_suppression_test.rb` qui rejoue le parcours navigateur complet, **prouvé rouge** sur la version non préfixée.
+- **Ci-dessous, l'analyse qui a servi au diagnostic** (conservée : elle explique pourquoi le bug paraissait fantôme).
+- **Deux conditions cumulatives, isolées par sonde le 2026-07-30** (matrice exécutée) : ① il doit rester **au moins une autre absence** après la suppression (sinon la collection est vide et le seul `render` restant, celui de la modale « Déclarer une absence », est correctement préfixé) **et** ② cette absence restante doit être un **cache miss** pour le couple (absence, rôle). Résultats : cache froid + 1 restante → `ActionView::MissingTemplate` ; cache chaud + 1 restante → **aucune erreur** ; cache froid + 0 restante → **aucune erreur**.
+- **Recette de reproduction fiable** : `bin/rails runner "Rails.cache.clear"` juste avant de cliquer « Oui, supprimer », sur un agent qui a **au moins 2 absences**. Sans le vidage, la ligne restante est presque toujours en cache (elle vient d'être affichée) → c'est pourquoi PE n'a rien vu le 2026-07-30. Le test système, lui, tourne sans cache : il échoue à tous les coups.
+- **Fréquence en hausse depuis le 2026-07-30** : la clé de cache inclut désormais le rôle (B55), donc les miss sont mécaniquement plus nombreux.
+- **Signalé par** : agent, 2026-07-30 (reproduit par test).
+- **Parcours de reproduction (confirmé en navigateur le 2026-07-30)** : se connecter en manager → fiche d'un agent ayant au moins une absence → section Absences → « Modifier » sur la ligne → dans la modale, « Supprimer » → « Oui, supprimer ». Le lien porte `data-turbo-method="delete"`, donc Turbo demande du `text/vnd.turbo-stream.html` et le contrôleur prend la branche turbo_stream → **500**.
+- **Où (corrigé le 2026-07-30 : la note désignait le mauvais fichier)** : le `render` fautif est [app/views/users/_absence.html.erb:72](app/views/users/_absence.html.erb#L72) — `render "absence_form"` **sans préfixe**. Dans `users#show` le contexte de recherche est `users/` et le partial est trouvé ; appelé depuis `AbsencesController`, il est cherché dans `absences/` puis `application/` → `ActionView::MissingTemplate`. Chaîne complète : `absences_controller.rb:20` → `users/_absences_section.html.erb:33` → `users/_absence.html.erb:72`.
+- **Impact réel** : `@absence.destroy` a lieu **avant** le rendu ([absences_controller.rb:10](app/controllers/absences_controller.rb#L10)) → **l'absence est bien supprimée**, mais le manager reçoit un écran d'erreur (et un mail `exception_notification` part en prod). Il ne sait qu'après rechargement que l'opération a réussi. La variante HTML, elle, fonctionne de bout en bout.
+- **Correctif proposé** : préfixer le partial → `render "users/absence_form", absence: absence` dans `users/_absence.html.erb`. Comportement actuel **épinglé** dans `absences_controller_test.rb`.
 
 ### B51 — Les réponses JSON des pages wiki lèvent sur un attribut inexistant
 - **Signalé par** : agent, 2026-07-30 (reproduit par test).
@@ -459,17 +499,12 @@
 | `notif_panne` : `MailLog.to` recevait un **ID** au lieu de l'email | ~2026-07 | commit `b32fbf28` (client) |
 | Jobs managers : `intervention.organisation_id` / `manager.organisation_id` inexistants (dérivation via service) | 2026-07-01 | 4 jobs corrigés, session `/tests` |
 | Pré-filtre services des index (#309/#311) + matrice finale admin/manager | 2026-06-23 | sessions filtres, committé côté client |
-| **B12** — filtre #292 absent de `temps_par_adherent` (un temps négatif entamait le total par adhérent du dashboard) | 2026-07-13 | branche `dashboard-scenic` (demande PE, session /tests) : `.where("temps_total >= 0")` ajouté — hérite de la limite de grain **B13** ; ⚠ `staging` reste bogué jusqu'à la fusion (son `dashboard_data.rb` sera remplacé par la version Scenic) ; test ex-`skip` passé au vert dans `dashboard_temps_negatif_test.rb` |
+| **B12** — filtre #292 absent de `temps_par_adherent` (un temps négatif entamait le total par adhérent du dashboard) | 2026-07-13 | branche `dashboard-scenic` (demande PE, session /tests) : `.where("temps_total >= 0")` ajouté — hérite de la limite de grain **B13** ; test ex-`skip` passé au vert dans `dashboard_temps_negatif_test.rb`. ✅ **Effectif sur `staging` depuis la fusion de `dashboard-scenic`** (constaté le 2026-07-31, commit `0fb76419 #297` — la mention « staging reste bogué jusqu'à la fusion » est caduque). ⚠ Hérite de la limite de grain **B13**, qui devient du même coup un bug de staging |
 | **B15** — photos d'intervention via le formulaire manager/admin (dropzone) : (a) **500 sur `edit`** dès que l'intervention a des photos (`attachment.blob` appelé sur un `Attached::Many`, `_file_dropzone.html.erb:29` — le partial était écrit pour `has_one_attached`) ; (b) **photo jamais enregistrée** depuis ce formulaire : input file sans `multiple` → param `intervention[photos]` **scalaire**, rejeté en silence par `permit(photos: [])` (le formulaire **agents** `_form_for_agents.erb` avait lui `multiple: true` → d'où le « des fois ça fonctionne » selon le rôle) ; (c) **AVIF** annoncé dans l'`accept` des deux formulaires mais refusé par `PieceJointeValidable::IMAGES` → échec de validation après coup | 2026-07-15 (signalé et corrigé le jour même, PE) | partial `_file_dropzone` généralisé has_one/has_many (détection `Attached::Many`, liste des blobs **persistés**, `multiple` auto sur l'input, hint « remplacera » réservé au has_one) ; `dropzone_controller.js` gère plusieurs fichiers (drop + change + libellé) ; `image/avif` ajouté à `IMAGES`. 4 tests : `edit` avec photos (**prouvé rouge sur l'ancien partial**) + assertion `input[multiple]`, update ajoute une photo, signed_ids ré-émis conservés + ajout, AVIF accepté |
 | **B16** — `purge` d'une photo : redirection **302** après un DELETE Turbo, au lieu du 303 imposé par la décision audit 2026-06-12 §4. Sévérité **rétrogradée faible** après test empirique de PE en dev (le scénario destructeur initialement déduit était faux : `button_to` émet POST+`_method=delete`, et fetch convertit POST→GET sur un 302 → pas de ré-émission de DELETE ; simple écart de cohérence) | 2026-07-15 (signalé, instruit et corrigé le jour même) | `status: :see_other` ajouté au `redirect_to` de `interventions_controller#purge` (une ligne, demande PE) ; test ex-`skip` passé au vert (« la redirection après un DELETE Turbo est en 303 see_other ») ; suite 1253 runs / 0 échec / 2 skips (retour à B1+B9) |
 | **B9** — slug inconnu sur commandes/factures → **500** au lieu d'un refus propre (`find_by(slug:)` nil → `authorize` sur la classe → `CommandePolicy#manage?` évalue `record.organisation` → NoMethodError, vérifié empiriquement le 2026-07-10 ; cotations avait déjà son garde) | 2026-07-28 (autorisation PE « je te laisse corriger la policy des commandes ») | garde ajouté dans `set_commande`/`set_facture` sur le motif du contrôleur cotations et de la checklist CONTRIBUTING (« introuvable → redirection ») : `redirect_to <index>_path, alert: '… introuvable'` ; la chaîne de filtres s'arrête avant `authorize` (comportement identique à cotations, déjà en prod). Test ex-`skip` réécrit et passé au vert (redirection + alerte, dans les TESTS CRITIQUES de `commandes_controller_test`) + miroir facture |
 | **B25** — **fuite des évaluations dans l'export XLS** : l'export de l'index interventions (`format.xls`, bouton visible de tous les rôles, `index?` = tout connecté) incluait les colonnes **Évaluation (note)** et **Avis** sans restriction → un **agent** exportant ses propres interventions lisait ses évaluations, en violation du CCTP (« visibles uniquement des gestionnaires ») et du garde de la vue show. Découvert par exploration le 2026-07-28, **confirmé par PE** le jour même | 2026-07-28 (correction autorisée par PE) | `ExportToXls::Interventions` prend `include_evaluation:` (en-têtes ET valeurs conditionnels) ; le contrôleur passe `include_evaluation: !current_user.agent?` (même règle que la section Compte-rendu de la show). ⚠ Au passage, `ApplicationService.call` forwarde désormais les **kwargs** (`**kwargs`, requis en Ruby 3, rétro-compatible). 3 tests critiques : export agent sans note/avis (avec garde anti-faux-positif : l'intervention figure bien dans le fichier), export manager avec, show HTML agent sans avis |
 | **B10** — les 2 tests « création à postériori » échouaient entre 14 h et 15 h (fixture `intervention_fille` de **martin** ancrée sur l'heure réelle − 4 h recouvrait la plage [10 h, 11 h] créée à midi fixe pour le même agent → refus #357 légitime ; test uniquement) | 2026-07-15 | correctif « désolidariser les acteurs » : les 2 tests utilisent **john_wick** (aucune intervention de fixture → jamais de conflit) au lieu de martin ; la fixture `4.hours.ago` reste intacte (elle protège les tests de pointage, cf. 2026-07-09). Vérifié **en pleine fenêtre 14 h–15 h** : 42/42 verts + suite complète 1239 runs / 0 échec |
-| **B3** — `valider`/`refuser` sans garde → 500 | 2026-07-28 | `redirect_si_invalide` en tête (retourne error proprement) |
-| **B4** — sujet mail panne = hash brut | ~2026-07 | signature mailer alignée : `title` en positional |
-| **B28** — terminer en conflit → 500 | 2026-07-28 | `redirect_si_invalide` (même motif que B3) |
-| **B36** — jour de panne = « réservé » au lieu de « panne » | 2026-07-29 | `current_state = "P"` au lieu de `"R"` |
-| **B50** — suppression absence en turbo_stream → 500 | 2026-07-30 | render avec préfixe `"users/"` |
 
 ---
 

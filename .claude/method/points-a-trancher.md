@@ -11,13 +11,10 @@
 - **Contexte** : aujourd'hui le tarif courant écrase silencieusement le prix du devis (confirmé : commande à 120 € pour un devis signé à 76,50 €). Correctif technique trivial une fois tranché.
 - **Statut** : **en réflexion** (2026-07-10 : « je ne sais pas encore »). **Éclairage 2026-07-28** (fiche contexte) : PE décrit le cycle voulu par « **le tarif est stocké dans la commande** » et « on ne peut pas modifier le prix d'une facture » — ce qui suggère la sémantique *prix figé au moment du devis signé* ; le CCTP (§5.5.7) va dans le même sens : facturation « aux temps réels » mais **comparée au devis initial avec explication des écarts** (donc le devis reste la référence). Confirmation explicite demandée à PE ; si oui, correctif = ne pas appliquer `set_prix_from_prestation` quand la ligne porte déjà un prix hérité d'une cotation/commande.
 
-### D2 — Fusion de la branche `dashboard-scenic` dans `staging`
-- **Question** : intégrer ou non les vues matérialisées Scenic (dashboard rapide, décision de conception du 2026-06-18) ?
-- **Contexte** : branche poussée, non fusionnée ; `staging` vit sa vie depuis → prévoir un test de fusion. L'alternative (cache + index) avait été steelmanée le 2026-06-18, le choix Scenic reste cohérent avec la vision multi-organisations à fort volume.
-
 ### D3 — Activation future des notifications `EmailSubscription` (= bug **B8**)
 - **Question** : quand (si) on active la notif « intervention mise à jour », valider le correctif préalable (`User.find_by` + garde nil) — 166 interventions crasheraient sinon.
 - **Contexte** : fonctionnalité dormante, décision client du 2026-06-23 de ne pas y toucher d'ici là.
+- ⚠️ **Requalifié le 2026-07-31** : `on_intervention_updated` n'existe plus, mais la même ligne non gardée subsiste dans `on_intervention_workflow_changed` ([email_subscription.rb:7](app/subscriptions/email_subscription.rb#L7)), qui lui est **bien actif** (publié par valider/refuser/archiver et par `Intervention#apres_terminaison`). Ce n'est donc plus un risque conditionné à une activation future : voir B8 au registre. Le handler voisin `on_intervention_done` a déjà reçu le garde le 2026-07-29-h.
 
 ### D5 — Workflow de validation des documents d'outil : supprimé ou en pause ? (constat du 2026-07-10)
 - **Question** : la refonte UX (Dani Isaza, commits `3ae4f02e` du 2026-07-02 « UX - corriger github actions » et `42085022` du 2026-07-03 « UX - solution github ») a **désactivé toute la fonctionnalité** valider/refuser des documents d'outil : actions commentées dans `documents_controller.rb`, routes commentées (`resources :documents, only: %i[]`), workflow commenté dans `document.rb`, boutons retirés du partial `_document.html.erb` (colonne État vide). Le formulaire outil est passé des nested attributes (fichier + état par document) à une **dropzone unique** `form.file_field :documents`. Est-ce une suppression **assumée** de la fonctionnalité, ou un débranchement **temporaire** pour faire passer la CI (les noms de commits le suggèrent) ?
@@ -75,4 +72,5 @@
 
 | Point | Décision | Date |
 |---|---|---|
+| D2 — Fusionner la branche `dashboard-scenic` (vues matérialisées Scenic) dans `staging` ? | **Fusionnée** — constaté le 2026-07-31 : `origin/dashboard-scenic` (`11ddebfe`) est un ancêtre de `staging`, `db/views/` et les modèles `DashboardAgentStat`/`DashboardInterventionStat` y sont, `dashboard_data.rb` a disparu (commit `0fb76419 #297`). Conséquences : **B12 corrigé** sur staging, et **B13 n'est plus un bug de branche mais un bug de staging** (le filtre `temps_total >= 0` opère sur les cellules pré-agrégées). | ≤ 2026-07-31 |
 | D4 — Notifier quelqu'un quand un adhérent refuse une cotation ? | **Non, personne pour l'instant** (décision équipe rapportée par PE) ; à revoir plus tard. Le correctif reste noté si ça change : job `NotifCotationRefuseeJob` miroir de `NotifCotationSigneeJob` (créateur via l'audit `create`), branché sur le bloc de `transition!` de `cotations_controller#refuser`. | 2026-07-13 |
