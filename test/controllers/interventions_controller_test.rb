@@ -1221,4 +1221,63 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
     assert_equal Intervention::TERMINE, fille.workflow_state
     assert_not_nil fille.fin, 'le second scan renseigne la fin'
   end
+
+  # --- L'adhérent d'une fille de pointage est figé pour l'agent --------------
+
+  test "un agent ne peut pas changer l'adhérent d'une fille de pointage" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+    modele = interventions(:intervention_repete)
+    get pointer_intervention_url(modele)
+    fille = Intervention.find_by(template_slug: modele.slug)
+    adherent_initial = fille.adherent
+
+    patch intervention_url(fille), params: {
+      intervention: { adherent_id: users(:patrick_adherent_paris).id, description: 'Pointage modifié' }
+    }
+
+    fille.reload
+    assert_equal adherent_initial, fille.adherent
+    assert_equal 'Pointage modifié', fille.description, 'le reste de la modification doit passer'
+  end
+
+  test "le formulaire d'édition d'une fille de pointage n'offre pas de choix d'adhérent" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+    modele = interventions(:intervention_repete)
+    get pointer_intervention_url(modele)
+    fille = Intervention.find_by(template_slug: modele.slug)
+
+    get edit_intervention_url(fille)
+
+    assert_response :success
+    assert_select 'select#intervention_adherent_id', false
+    assert_select 'input#intervention_adherent_id[disabled]'
+  end
+
+  test "un agent change toujours l'adhérent d'une intervention hors pointage" do
+    agent = users(:martin_technique_paris)
+    intervention = interventions(:nouvelle_intervention)
+    sign_in agent
+
+    patch intervention_url(intervention), params: {
+      intervention: { adherent_id: users(:patrick_adherent_paris).id, description: intervention.description }
+    }
+
+    assert_equal users(:patrick_adherent_paris), intervention.reload.adherent
+  end
+
+  test "un manager change toujours l'adhérent d'une fille de pointage" do
+    sign_in users(:martin_technique_paris)
+    modele = interventions(:intervention_repete)
+    get pointer_intervention_url(modele)
+    fille = Intervention.find_by(template_slug: modele.slug)
+
+    sign_in users(:hidalgo)
+    patch intervention_url(fille), params: {
+      intervention: { adherent_id: users(:patrick_adherent_paris).id, description: fille.description }
+    }
+
+    assert_equal users(:patrick_adherent_paris), fille.reload.adherent
+  end
 end
