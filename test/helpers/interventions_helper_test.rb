@@ -69,4 +69,18 @@ class InterventionsHelperTest < ActionView::TestCase
 
     assert_equal [pointer_intervention_path(@mère), :get, nil], terminer_destination(@fille)
   end
+
+  test 'le bouton Terminer ouvre le modal via l’ID du dialogue' do
+    intervention = interventions(:tonte_locaux)
+
+    assert_equal "document.getElementById('terminer_modal_#{intervention.id}').showModal()", js_ouvrir_modal_terminer(intervention)
+    assert_equal "terminer_modal_#{intervention.id}", modal_id_terminer(intervention)
+  end
+
+  test 'le helper renvoie le message de dates manquantes quand il faut terminer' do
+    intervention = interventions(:tonte_locaux)
+    intervention.update_columns(début: nil, fin: nil)
+
+    assert_equal 'Les dates de début et de fin sont obligatoires pour terminer cette intervention.', message_dates_manquantes(intervention)
+  end
 end
