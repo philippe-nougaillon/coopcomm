@@ -68,7 +68,9 @@ class UserPolicy < ApplicationPolicy
 
   # Vérifie si l'utilisateur peut manager le record
   def can_manage_record?
-    manager_or_admin? && organisation? && shared_service?
+    # Un administrateur peut gérer tout utilisateur de son organisation,
+    # peu importe le service. Un manager reste limité aux services partagés.
+    manager_or_admin? && organisation? && (administrateur? || shared_service?)
   end
 
   # Vérifie si un manager tente d'agir sur un grade égal ou supérieur
