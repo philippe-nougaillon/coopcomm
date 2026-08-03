@@ -25,7 +25,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
                                 organisation_id: organisations(:mairie_paris).id } }
     end
 
-    assert_redirected_to service_url(Service.last)
+    assert_redirected_to admin_parametres_path(tab: "services")
   end
 
   test 'should show service' do
@@ -42,7 +42,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     patch service_url(@service),
           params: { service: { nom: @service.nom + SecureRandom.uuid,
                                organisation_id: organisations(:mairie_paris).id } }
-    assert_redirected_to service_url(@service)
+    assert_redirected_to admin_parametres_path(tab: "services")
   end
 
   test 'should destroy service' do
@@ -50,7 +50,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
       delete service_url(@service)
     end
 
-    assert_redirected_to admin_parametres_url
+    assert_redirected_to admin_parametres_path(tab: "services")
   end
 
   # --- create / update : branches d'échec ---
