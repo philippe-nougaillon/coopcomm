@@ -32,6 +32,31 @@ class CacheFragmentsTest < ActionDispatch::IntegrationTest
     MESSAGE
   end
 
+  # `cached:` ne couvre que les collections. Un bloc `<% cache … do %>` met en
+  # cache n'importe quel morceau de vue et échappait à la sentinelle ci-dessus.
+  test 'aucun bloc cache ne pose une clé sans current_user' do
+    fautifs = []
+
+    Dir.glob(Rails.root.join('app/views/**/*.erb')).sort.each do |chemin|
+      contenu = File.read(chemin)
+
+      contenu.to_enum(:scan, /<%=?-?\s*cache[( ]/).each do
+        début = Regexp.last_match.end(0)
+        expression = contenu[début, 300].to_s.split(/ do|%>/).first.to_s
+        next if expression.include?('current_user')
+
+        fautifs << "#{chemin.sub("#{Rails.root}/", '')} → cache #{expression.strip}"
+      end
+    end
+
+    assert_empty fautifs, <<~MESSAGE
+      Ces blocs de vue sont mis en cache sous une clé qui ne dépend pas de l'utilisateur.
+      Le premier rendu sera servi à tous les rôles.
+
+      #{fautifs.join("\n")}
+    MESSAGE
+  end
+
   # --- Garde anti-faux-positif ------------------------------------------------
 
   # Sans cette garde, une régression du helper rendrait tous les tests ci-dessous
@@ -91,6 +116,66 @@ class CacheFragmentsTest < ActionDispatch::IntegrationTest
       sign_in users(:bond)
       get interventions_url(vue: 'compact')
       assert_no_match(/#{Regexp.escape(valider_intervention_path(intervention))}/, response.body)
+    end
+  end
+
+  # Les cases de disponibilité dépendent de l'utilisateur à deux titres : la
+  # couleur (ma réservation en bleu foncé, celle d'un autre en bleu clair) et
+  # l'action (seul un manager peut libérer celle d'un autre). Les lignes de
+  # l'index ne sont pas mises en cache aujourd'hui : ces deux tests sont là pour
+  # que l'ajout d'un `cached:` sur cette collection ne passe pas inaperçu.
+  test 'index outils : l’agent ne reçoit pas le lien de libération du manager' do
+    outil = tools(:cisaille)
+    Mouvement.create!(tool: outil, user: users(:bond), état: :réservé, date: Date.today)
+    liberer = libere_tool_mouvements_path(tool_id: outil.id, date: Date.today, user_id: users(:bond).id)
+
+    avec_cache do
+      sign_in users(:hidalgo)
+      get tools_url
+      assert_select 'a[href=?]', liberer
+
+      sign_in users(:martin_technique_paris)
+      get tools_url
+      assert_select 'a[href=?]', liberer, count: 0
+    end
+  end
+
+  # bond voit sa réservation en « R » (cliquable pour libérer), martin la voit
+  # en « I » (carré inerte, il n'est pas manager). Deux HTML différents pour la
+  # même case, le même jour.
+  test 'index outils : la case de ma réservation n’est pas celle du voisin' do
+    outil = tools(:cisaille)
+    Mouvement.create!(tool: outil, user: users(:bond), état: :réservé, date: Date.today)
+    liberer = libere_tool_mouvements_path(tool_id: outil.id, date: Date.today, user_id: users(:bond).id)
+
+    avec_cache do
+      sign_in users(:bond)
+      get tools_url
+      assert_select 'a[href=?]', liberer
+      assert_select 'span[title=?]', "Réservé par qqn d'autre", count: 0
+
+      sign_in users(:martin_technique_paris)
+      get tools_url
+      assert_select 'a[href=?]', liberer, count: 0
+      assert_select 'span[title=?]', "Réservé par qqn d'autre"
+    end
+  end
+
+  test 'fiche outil : l’agent ne reçoit pas le lien de libération du manager' do
+    outil = tools(:cisaille)
+    Mouvement.create!(tool: outil, user: users(:bond), état: :réservé,
+                      date: Time.zone.parse('2026-06-15 09:00'))
+    liberer = libere_tool_mouvements_path(tool_id: outil.id, date: Date.new(2026, 6, 15),
+                                          user_id: users(:bond).id)
+
+    avec_cache do
+      sign_in users(:hidalgo)
+      get tool_url(outil, date: '2026-06-15')
+      assert_select 'a[href=?]', liberer
+
+      sign_in users(:martin_technique_paris)
+      get tool_url(outil, date: '2026-06-15')
+      assert_select 'a[href=?]', liberer, count: 0
     end
   end
 

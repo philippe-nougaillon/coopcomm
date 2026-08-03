@@ -34,15 +34,11 @@ class MouvementPolicy < ApplicationPolicy
     edit?
   end
 
-  def destroy?
-    (manager_or_admin? || record.user == user) && organisation?
-  end
-
   def reserve?
     !user.adhérent?
   end
 
   def libere?
-    !user.adhérent?
+    organisation? && (manager_or_admin? || record.user == user)
   end
 end

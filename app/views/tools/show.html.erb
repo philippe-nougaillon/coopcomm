@@ -115,35 +115,32 @@
     <% if params[:vue] != 'liste' %>
       <div class="flex flex-row items-center gap-4 px-4 py-3 bg-slate-50 text-xs text-slate-500 border-b border-slate-100">
         <div class="flex flex-col md:flex-row gap-2">
-          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>Disponible</span>
-          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>En panne</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-green-500"></span>Disponible</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span>En panne</span>
         </div>
         <div class="flex flex-col md:flex-row gap-2">
-          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>Réservé</span>
-          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-300"></span>Réservé par un autre</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-blue-500"></span>Réservé</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-blue-300"></span>Réservé par un autre</span>
         </div>
       </div>
     <% end %>
     <% case params[:vue] %>
     <% when 'calendrier' %>
-      <%= month_calendar do |date| %>
+      <% etats = @tool.get_etats_from_mouvements(@date_inicio_grid, @date_fin_grid, current_user.id) %>
+      <%= month_calendar(start_date: @date) do |date| %>
         <div class="flex justify-center items-center h-6 mb-1">
           <p class="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-sm <%= date == Date.today ? 'text-purple-700 font-bold' : 'text-slate-400' %>">
             <%= date.day %>
           </p>
         </div>
-        <% 
-      heure_ref = Time.zone.parse("#{date} 12:00:00")
-      mouvement_jour = @tool.dernier_mouvement_a(heure_ref)
-    %>
-        <div class="flex justify-center items-center px-1 my-1">
-          <%= render 'mouvements/mouvement_slot',
-                mouvement: mouvement_jour,
-                tool_id: @tool.id,
-                date: date,
-                start_hour: 8,
-                end_hour: 18,
-                new_title: "Réserver le #{date.day}" %>
+        <% index = (date - @date_inicio_grid).to_i %>
+        <div class="flex justify-center items-center gap-1 px-1 my-1">
+          <%= render 'tools/mouvement',
+                     etat: etats[index].etat,
+                     reservataire_id: etats[index].reservataire_id,
+                     tool: @tool,
+                     index:,
+                     date: date %>
         </div>
       <% end %>
     <% when 'liste' %>

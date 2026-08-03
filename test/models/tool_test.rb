@@ -56,25 +56,31 @@ class ToolTest < ActiveSupport::TestCase
     assert_equal %w[L L L L], grille[3..]
   end
 
-  # Le « R » du vendredi est le bug signalé ci-dessous : c'est le jour de la
-  # seconde panne. À passer en « P » le jour où tool.rb:136 sera corrigé.
   test 'un cycle panne puis réparation puis nouvelle panne est retracé' do
     panne('2026-06-01')
     fin_panne('2026-06-03')
     panne('2026-06-05')
 
-    assert_equal %w[P P L L R P P], grille
+    assert_equal %w[P P L L P P P], grille
   end
 
-  # BUG SIGNALÉ (non corrigé) : le jour où une panne est déclarée s'affiche « R »
-  # (réservé par moi, cliquable pour libérer) au lieu de « P ».
-  # tool.rb:136 pose current_state = "R" au lieu de "P". Cf. registre des bugs.
   test 'le jour de déclaration dune panne est marqué en panne' do
-    skip 'Bug signalé : le jour de la panne est marqué « R » au lieu de « P » (tool.rb:136).'
-
     panne('2026-06-02')
 
     assert_equal 'P', grille[1]
+  end
+
+  test 'la grille nomme le réservataire des journées réservées' do
+    reservation('2026-06-02', @moi)
+    reservation('2026-06-04', @autre)
+
+    assert_equal [nil, @moi.id, nil, @autre.id, nil, nil, nil], reservataires
+  end
+
+  test 'la grille ne nomme aucun réservataire pour les journées libres ou en panne' do
+    panne('2026-06-02')
+
+    assert_equal [nil] * 7, reservataires
   end
 
   test 'la grille ne tient compte que des mouvements de son propre outil' do
@@ -124,49 +130,6 @@ class ToolTest < ActiveSupport::TestCase
     panne('2026-06-06')
 
     assert_not @outil.est_encore_en_panne_le(Date.new(2026, 6, 4))
-  end
-
-  # ==========================================================================
-  # B. dernier_mouvement_a
-  # ==========================================================================
-
-  test 'une panne en cours prime sur la dernière réservation' do
-    en_panne = panne('2026-06-02')
-    reservation('2026-06-03', @moi)
-
-    assert_equal en_panne, @outil.dernier_mouvement_a(t('2026-06-04'))
-  end
-
-  test 'le dernier mouvement ignore ce qui vient après la date demandée' do
-    ancienne = reservation('2026-06-02', @moi)
-    reservation('2026-06-06', @autre)
-
-    assert_equal ancienne, @outil.dernier_mouvement_a(t('2026-06-04'))
-  end
-
-  test 'une panne réparée ne prime plus sur la dernière réservation' do
-    panne('2026-06-02')
-    fin_panne('2026-06-03')
-    derniere = reservation('2026-06-04', @moi)
-
-    assert_equal derniere, @outil.dernier_mouvement_a(t('2026-06-05'))
-  end
-
-  # BUG SIGNALÉ (non corrigé) : la branche « mouvements déjà chargés » trie par
-  # `m.date.to_i`, or mouvements.date est une colonne `date` → NoMethodError.
-  # tool.rb:84. Cf. registre des bugs.
-  test 'dernier_mouvement_a répond la même chose que les mouvements soient chargés ou non' do
-    skip 'Bug signalé : dernier_mouvement_a lève NoMethodError sur une association chargée (tool.rb:84).'
-
-    en_panne = panne('2026-06-02')
-    reservation('2026-06-03', @moi)
-
-    depuis_sql = @outil.dernier_mouvement_a(t('2026-06-04'))
-    @outil.mouvements.load
-    depuis_memoire = @outil.dernier_mouvement_a(t('2026-06-04'))
-
-    assert_equal en_panne, depuis_sql
-    assert_equal depuis_sql, depuis_memoire
   end
 
   # ==========================================================================
@@ -232,7 +195,11 @@ class ToolTest < ActiveSupport::TestCase
   private
 
   def grille
-    @outil.reload.get_etats_from_mouvements(LUNDI, DIMANCHE, @moi.id)
+    @outil.reload.get_etats_from_mouvements(LUNDI, DIMANCHE, @moi.id).map(&:etat)
+  end
+
+  def reservataires
+    @outil.reload.get_etats_from_mouvements(LUNDI, DIMANCHE, @moi.id).map(&:reservataire_id)
   end
 
   def t(jour)
@@ -275,15 +242,5 @@ class ToolTest < ActiveSupport::TestCase
     assert_raises(ActiveRecord::StatementInvalid) do
       Tool.indisponibles_ids(organisations(:mairie_paris).id, '2030-01-02 10:00')
     end
-  end
-
-  # ÉPINGLAGE B37 — `dernier_mouvement_a` trie par `m.date.to_i`, or `mouvements.date`
-  # est une colonne `date` : dès que l'association est chargée (un `includes`
-  # suffirait), la méthode lève. À inverser à la correction.
-  test 'dernier_mouvement_a lève quand les mouvements sont déjà chargés' do
-    outil = tools(:tondeuse)
-    outil.mouvements.load
-
-    assert_raises(NoMethodError) { outil.dernier_mouvement_a(Time.current) }
   end
 end

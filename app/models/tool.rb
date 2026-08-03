@@ -74,34 +74,11 @@ class Tool < ApplicationRecord
     interventions.where(':quand BETWEEN interventions.début_prévue AND interventions.fin_prévue', quand:).first
   end
 
-  def dernier_mouvement_a(heure)
-    # TODO VU : kezako loaded ??
-    # La fonction devrait disparaitre quand tools/show sera refait comme l'index
-    # "loaded?" répond simplement à la question : « les mouvements ont-ils déjà été chargés en mémoire (dans un tableau Ruby), ou pas encore ? »
-
-    if mouvements.loaded?
-      # On filtre et on trie du plus récent au plus ancien
-      mvs = mouvements.select { |m| m.date <= heure }.sort_by { |m| -m.date.to_i }
-
-      # On cherche le dernier événement lié à une panne
-      dernier_panne_event = mvs.find { |m| m.panne? || m.fin_panne? }
-
-    # Si l'outil est cassé, on renvoie ce mouvement. Sinon, le mouvement classique.
-    else
-      # --- VERSION SQL (Fallback de sécurité) ---
-      mvs = mouvements.where('date <= ?', heure).order(date: :desc)
-
-      # On optimise la requête SQL pour chercher directement la dernière panne/fin_panne
-      dernier_panne_event = mvs.where(état: %i[panne fin_panne]).first
-    end
-
-    return dernier_panne_event if dernier_panne_event&.panne?
-
-    mvs.first
-  end
+  # etat : L = Libre, P = Panne, R = Réservé par current_user, I = réservé par un autre.
+  # reservataire_id n'est renseigné que pour R et I.
+  EtatJour = Struct.new(:etat, :reservataire_id)
 
   def get_etats_from_mouvements(first_date, last_date, current_user_id)
-    # Stocke les lettres correspondants à l'état de l'outil sur l'intervalle de temps (L = Libre, P = Panne, R = Réservé, I = Indisponible)
     results = []
 
     # Liste des dates entre la date de début et de fin
@@ -120,6 +97,7 @@ class Tool < ApplicationRecord
       
       # Valeur par défaut (Correspondant à rien)
       current_state = "L"
+      reservataire_id = nil
 
       # Arrête la période de panne si fin_panne, pour éviter d'entrer dans la condition est_en_panne
       if etats.include?("fin_panne")
@@ -133,14 +111,15 @@ class Tool < ApplicationRecord
       else
         # Si des mouvements existent au jour J
         if etats["panne"].present? && etats["fin_panne"].blank?
-          current_state = "R" 
+          current_state = "P"
           est_en_panne = true
         elsif (mouvement_user_id = etats["réservé"].presence)
+          reservataire_id = mouvement_user_id
           current_state = mouvement_user_id == current_user_id ? "R" : "I"
         end
       end
 
-      results << current_state
+      results << EtatJour.new(current_state, reservataire_id)
     end
 
     return results

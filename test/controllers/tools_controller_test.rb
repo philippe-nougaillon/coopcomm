@@ -74,6 +74,110 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_equal Date.today.beginning_of_month, assigns(:date)
   end
 
+  # Les flèches du calendrier émettent start_date sans effacer un date= plus
+  # ancien : la grille d'états doit suivre le mois réellement affiché.
+  test 'le show suit la navigation par start_date du calendrier' do
+    get tool_url(@tool, date: '2026-01-05', start_date: '2026-06-15')
+
+    assert_equal Date.new(2026, 6, 1), assigns(:date)
+    assert_equal Date.new(2026, 6, 1).beginning_of_week, assigns(:date_inicio_grid)
+  end
+
+  # ==========================================================================
+  # A bis. Cases de disponibilité du show (mêmes états que l'index)
+  # ==========================================================================
+
+  test 'le calendrier du show propose de réserver une journée libre' do
+    outil = tools(:cisaille)
+
+    get tool_url(outil, date: '2026-06-15')
+
+    assert_select 'a[href=?]', reserve_tool_mouvements_path(
+      tool_id: outil.id, date: Date.new(2026, 6, 15), user_id: users(:hidalgo).id
+    )
+  end
+
+  test 'le calendrier du show propose de libérer ma propre réservation' do
+    outil = tools(:cisaille)
+    Mouvement.create!(tool: outil, user: users(:hidalgo), état: :réservé,
+                      date: Time.zone.parse('2026-06-15 09:00'))
+
+    get tool_url(outil, date: '2026-06-15')
+
+    assert_select 'a[href=?]', libere_tool_mouvements_path(
+      tool_id: outil.id, date: Date.new(2026, 6, 15), user_id: users(:hidalgo).id
+    )
+  end
+
+  test 'le calendrier du show marque en panne dès le jour de la déclaration' do
+    outil = tools(:cisaille)
+    Mouvement.create!(tool: outil, user: users(:hidalgo), état: :panne,
+                      date: Time.zone.parse('2026-06-15 09:00'))
+
+    get tool_url(outil, date: '2026-06-15')
+
+    assert_select 'span[title=?]', 'En panne'
+    assert_select 'a[href=?]', reserve_tool_mouvements_path(
+      tool_id: outil.id, date: Date.new(2026, 6, 15), user_id: users(:hidalgo).id
+    ), count: 0
+    assert_select 'a[href=?]', libere_tool_mouvements_path(
+      tool_id: outil.id, date: Date.new(2026, 6, 15), user_id: users(:hidalgo).id
+    ), count: 0
+  end
+
+  # ==========================================================================
+  # A ter. Libérer la réservation d'un autre (manager / admin)
+  # ==========================================================================
+
+  test "l'index propose à un manager de libérer la réservation d'un autre" do
+    outil = tools(:cisaille)
+    Mouvement.create!(tool: outil, user: users(:bond), état: :réservé, date: Date.today)
+
+    get tools_url
+
+    assert_select 'a[href=?]', libere_tool_mouvements_path(
+      tool_id: outil.id, date: Date.today, user_id: users(:bond).id
+    )
+  end
+
+  test "le show propose à un manager de libérer la réservation d'un autre" do
+    outil = tools(:cisaille)
+    Mouvement.create!(tool: outil, user: users(:bond), état: :réservé,
+                      date: Time.zone.parse('2026-06-15 09:00'))
+
+    get tool_url(outil, date: '2026-06-15')
+
+    assert_select 'a[href=?]', libere_tool_mouvements_path(
+      tool_id: outil.id, date: Date.new(2026, 6, 15), user_id: users(:bond).id
+    )
+  end
+
+  test "un agent ne se voit pas proposer de libérer la réservation d'un autre" do
+    outil = tools(:cisaille)
+    Mouvement.create!(tool: outil, user: users(:bond), état: :réservé, date: Date.today)
+    sign_in users(:martin_technique_paris)
+
+    get tools_url
+
+    assert_select 'a[href=?]', libere_tool_mouvements_path(
+      tool_id: outil.id, date: Date.today, user_id: users(:bond).id
+    ), count: 0
+    assert_select 'span[title=?]', "Réservé par qqn d'autre"
+  end
+
+  # La fin de panne d'un clic sur la case a été abandonnée avec la bascule du
+  # show sur les cases de l'index : elle passe par « Gestion panne ».
+  test 'une case en panne du show ne déclare plus la fin de panne' do
+    outil = tools(:cisaille)
+    Mouvement.create!(tool: outil, user: users(:hidalgo), état: :panne,
+                      date: Time.zone.parse('2026-06-15 09:00'))
+
+    get tool_url(outil, date: '2026-06-15')
+
+    assert_not_includes response.body, 'fin_panne'
+    assert_select 'a[href=?]', new_mouvement_path(tool_id: outil.id)
+  end
+
   # ==========================================================================
   # B. Recherche et filtres de l'index
   # ==========================================================================
