@@ -25,7 +25,7 @@ class WarehousesControllerTest < ActionDispatch::IntegrationTest
                                   longitude: '5.678' } }
     end
 
-    assert_redirected_to admin_parametres_url
+    assert_redirected_to admin_parametres_path(tab: "sites")
   end
 
   test 'should show warehouse' do
@@ -42,7 +42,7 @@ class WarehousesControllerTest < ActionDispatch::IntegrationTest
     patch warehouse_url(@warehouse),
           params: { warehouse: { address: '7 Rue Francis de Pressensé, 75014 Paris', name: 'Entrepôt de Paris',
                                  latitude: '2.345', longitude: '6.789' } }
-    assert_redirected_to admin_parametres_url
+    assert_redirected_to admin_parametres_path(tab: "sites")
   end
 
   test 'should destroy warehouse' do
@@ -50,6 +50,29 @@ class WarehousesControllerTest < ActionDispatch::IntegrationTest
       delete warehouse_url(@warehouse)
     end
 
-    assert_redirected_to admin_parametres_url
+    assert_redirected_to admin_parametres_path(tab: "sites")
+  end
+
+  # --- update : branches d'échec / slug inconnu ---
+
+  test 'update invalide réaffiche le formulaire en 422' do
+    patch warehouse_url(@warehouse), params: { warehouse: { address: '' } }
+
+    assert_response :unprocessable_content
+    assert_not_equal '', @warehouse.reload.address
+  end
+
+  test 'update invalide en JSON renvoie les erreurs' do
+    patch warehouse_url(@warehouse), params: { warehouse: { address: '' } }, as: :json
+
+    assert_response :unprocessable_content
+    assert_includes response.parsed_body.to_s, 'doit être rempli'
+  end
+
+  test 'un slug de site inconnu redirige au lieu de planter' do
+    get edit_warehouse_url('site-inexistant')
+
+    assert_redirected_to root_path
+    assert_match(/introuvable/i, flash[:alert].to_s)
   end
 end

@@ -2,18 +2,8 @@
 
 require 'test_helper'
 
-# Couverture du filtre #292 : « les interventions avec un temps négatif ne sont
-# plus prises en compte lors des calculs de temps ». Sur cette branche, le
-# filtre (`temps_total >= 0`) est appliqué dans DashboardData PAR-DESSUS les
-# vues matérialisées — donc au grain des CELLULES pré-agrégées, pas au grain
-# intervention comme le #292 d'origine (staging). Les écarts sont épinglés
-# ci-dessous (B13, cf. .claude/method/bugs-signales.md) ; l'oubli de
-# temps_par_adherent (ex-B12) est corrigé sur cette branche depuis le 2026-07-13.
-#
-# Repères fixtures : dans le périmètre de hidalgo (manager Paris), seule
-# tonte_locaux porte du temps (9 h, adhérent weil, agent bond — le co-agent
-# discarded ne compte pas dans le diviseur) ; toutes les autres interventions
-# sont au défaut de colonne (0.0).
+# Couverture du filtre #292 : « les interventions avec un temps négatif ne sont plus
+# prises en compte lors des calculs de temps ».
 class DashboardTempsNegatifTest < ActionDispatch::IntegrationTest
   setup do
     # Ancrage à midi : pas de dérive d'heure/de mois pendant le test (cf. B10).
@@ -22,7 +12,6 @@ class DashboardTempsNegatifTest < ActionDispatch::IntegrationTest
 
   # ---------------------------------------------------------------------------
   # Dashboard manager (hidalgo — services technique/informatique/service_paris)
-  # ---------------------------------------------------------------------------
 
   test 'manager : kpi_temps_total ignore une intervention à temps négatif' do
     cree_intervention_avec_temps(-5, adherent: users(:weil), service: services(:technique), debut: mois(3))
@@ -69,9 +58,7 @@ class DashboardTempsNegatifTest < ActionDispatch::IntegrationTest
 
     get dashboard_url
 
-    # Comportement ACTUEL (approximation au grain agent, actée le 2026-07-13) :
-    # 9 - 5 = 4. Le #292 strict (grain intervention, comme staging) afficherait 9.
-    # À inverser si la décision B13 retient le grain intervention.
+    # Comportement actuel : approximation au grain agent, 9 - 5 = 4.
     assert_in_delta 4.0, assigns(:temps_total_par_agent)['Bond James']
   end
 
@@ -103,10 +90,7 @@ class DashboardTempsNegatifTest < ActionDispatch::IntegrationTest
   end
 
   # ---------------------------------------------------------------------------
-  # Dashboard adhérent (weil — son dashboard est scopé sur SON service,
-  # informatique : ses interventions de fixtures, toutes sur technique, n'y
-  # apparaissent pas ; seules celles créées ici comptent)
-  # ---------------------------------------------------------------------------
+  # Dashboard adhérent.
 
   test 'adhérent : le temps consommé exclut une intervention à temps négatif' do
     cree_donnees_adherent_weil
@@ -151,10 +135,7 @@ class DashboardTempsNegatifTest < ActionDispatch::IntegrationTest
   private
 
   # Crée une intervention persistée puis force temps_total via update_columns :
-  # indépendant du before_save calc_temps_total (B1, inopérant aujourd'hui) et
-  # robuste au jour où B1 sera corrigé (le callback recalculerait depuis début/fin).
-  # L'agent est rattaché APRÈS la création : on teste le dashboard, pas les
-  # contrôles de disponibilité (#357).
+  # temps_total est forcé par update_columns, indépendamment de calc_temps_total.
   def cree_intervention_avec_temps(temps, adherent:, service:, debut:, agent: nil)
     intervention = Intervention.create!(
       adherent: adherent,
@@ -168,9 +149,7 @@ class DashboardTempsNegatifTest < ActionDispatch::IntegrationTest
     intervention
   end
 
-  # Le 15 du mois d'il y a n mois à 9 h : toujours passé (validation
-  # dates_cannot_be_in_the_future) et chaque n tombe dans un mois distinct
-  # (cellules de vue séparées).
+  # Le 15 du mois d'il y a n mois : toujours passé, et un mois distinct par n.
   def mois(n)
     n.months.ago.beginning_of_month.change(hour: 9) + 14.days
   end

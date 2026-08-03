@@ -3,16 +3,6 @@
 require 'test_helper'
 
 # Matrice de COMPLÉTUDE des dates pour la détection de conflit (agents + outils).
-#
-# Complète les matrices de topologie (intervention_conflit_agent/outil_matrix_test)
-# qui n'exercent que des paires COMPLÈTES (début ET fin des deux côtés). Ici on
-# verrouille les cas partiels :
-#   - une seule borne renseignée (début seul, fin seule), réelle ou prévue ;
-#   - bornes MIXTES (le repli réel→prévu se fait PAR BORNE : une intervention
-#     peut avoir un début réel et une fin prévue) ;
-#   - aucune date (la validation est sautée) ;
-#   - borne effective NULL = borne INCONNUE, pas l'infini : une intervention
-#     « ouverte » ne conflicte que si sa borne connue tombe DANS l'autre plage.
 class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
   setup do
     @agent = users(:bond)

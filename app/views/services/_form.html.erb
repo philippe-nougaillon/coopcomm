@@ -1,5 +1,5 @@
 <div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
-  <%= form_with(model: service, class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-2' }) do |form| %>
+  <%= form_with(model: service, class: "flex flex-col gap-2", html: { autocomplete: "off" }) do |form| %>
     <% if service.errors.any? %>
       <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
         <h2 class="font-black!">
@@ -12,18 +12,22 @@
         </ul>
       </div>
     <% end %>
+
+    <%# Envía el parámetro 'tab' actual al controlador %>
     <%= hidden_field_tag :tab, params[:tab] %>
+
     <div class="w-full">
       <%= form.label :nom, class:'label font-semibold text-slate-700', style: "display: block" do %>
         <span>Nom <span class="text-red-500">*</span></span>
       <% end %>
       <%= form.text_field :nom, class: 'input input-bordered w-full focus:input-primary', required: true %>
     </div>
+
     <div class="flex flex-col gap-2 mt-4">
       <%= form.label :calculate_distance, "Ajout du calcul de distance sur les interventions de ce service à partir de l'équipe de l'adhérent ?", class: "text-sm font-semibold text-slate-700" %>
       <label class="flex items-center gap-3 mt-2 h-10 px-3 border border-slate-200 rounded-lg bg-slate-50 
               cursor-pointer justify-center select-none hover:bg-slate-100/50 transition-colors"
-       title="Cocher pour activer la localisation ?">
+        title="Cocher pour activer la localisation ?">
         <input type="hidden" name="service[calculate_distance]" value="0" />
         <%= check_box_tag "service[calculate_distance]", "1", service.calculate_distance,
       class: "toggle toggle-primary pointer-events-none" %>
@@ -32,14 +36,17 @@
         </span>
       </label>
     </div>
+
     <div class="flex gap-2 mt-4 w-full">
       <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>
-      <%= form.submit "Enregistrer",  class: "btn btn-primary flex-1" %>
+      <%= form.submit "Enregistrer", class: "btn btn-primary flex-1" %>
     </div>
   <% end %>
-  <div class="pt-6 max-w-3xl mx-auto">
-    <%= link_to admin_parametres_path(tab: params[:tab] || 'prestations'), class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
-      <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des utilisateurs" %>
+
+  <div class="pt-6">
+    <%= link_to admin_parametres_path(tab: params[:tab] || 'services'), class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+      <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour" %>
       Retour aux paramètres
     <% end %>
   </div>
+</div>

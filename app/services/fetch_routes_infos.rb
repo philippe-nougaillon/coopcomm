@@ -88,11 +88,20 @@ class FetchRoutesInfos < ApplicationService
                        'Distance: 0km'
                      end
 
-      duree = (route['duration'].to_f * 2 / 60).to_i
+      total_minutes = (route['duration'].to_f * 2 / 60).to_i
+      heures = total_minutes / 60
+      minutes = total_minutes % 60
+
+      msg_duree = if heures > 0
+                    "#{heures}h #{minutes.to_s.rjust(2, '0')}min"
+                  else
+                    "#{minutes} min"
+                  end
+
       essence = (route['travelAdvisory']['fuelConsumptionMicroliters'].to_f * 2 / 1_000_000).round(2)
       co2 = FetchRoutesInfos.co2_consumption_by_route(route)
 
-      "#{msg_distance}, Durée: #{duree} min, Essence: #{essence} L, CO₂: #{co2} kg"
+      "#{msg_distance}, Durée: #{msg_duree}, Essence: #{essence} L, CO₂: #{co2} kg"
     else
       ''
     end

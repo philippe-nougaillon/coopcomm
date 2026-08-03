@@ -2,10 +2,8 @@
 
 require 'test_helper'
 
-# Droits d'un adhérent sur les cotations : il consulte les SIENNES (index, show,
-# pdf) — mais seulement une fois envoyées, jamais les brouillons « créé » — et
-# peut signer une cotation qui lui a été envoyée ; aucun droit de gestion.
-# Un agent, lui, n'a aucun accès.
+# Droits d'un adhérent sur les cotations : il consulte les SIENNES (index, show, pdf) —
+# mais seulement une fois envoyées, jamais les brouillons « créé »
 class AdherentCotationPolicyTest < ActionDispatch::IntegrationTest
   def setup
     @adherent = users(:weil)

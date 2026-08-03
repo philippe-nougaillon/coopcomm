@@ -9,6 +9,38 @@ class FacturesControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:hidalgo)                    # manager de mairie_paris, gère informatique
   end
 
+  # ==================== TESTS CRITIQUES ====================
+  # Le prix d'une facture ne se manipule jamais par la requête, et un lien mort ne
+  # fait jamais un 500.
+
+  # Test critique — le prix d'une ligne de facture ne peut pas être forcé via
+  # les paramètres (miroir du test cotation ; scénario compte volé/malveillant).
+  test "critique : le prix d'une ligne de facture ne peut pas être forcé via les paramètres" do
+    ligne = facture_lignes(:ligne_facture_paris)
+    prix_initial = ligne.prix_ht
+
+    patch facture_url(@facture), params: {
+      facture: {
+        intitulé: @facture.intitulé,
+        facture_lignes_attributes: { '0' => { id: ligne.id, qté: ligne.qté, prix_ht: 999.99 } }
+      }
+    }
+
+    assert_redirected_to facture_url(@facture)
+    assert_equal prix_initial, ligne.reload.prix_ht, 'le prix forgé doit être ignoré'
+  end
+
+  # Test critique — un lien mort (vieux mail, slug régénéré) est un cas du quotidien :
+  # redirection propre, jamais un 500.
+  test "critique : slug inconnu → redirection vers l'index avec alerte (ex-bug B9)" do
+    get facture_url('slug-inexistant')
+
+    assert_redirected_to factures_path
+    assert_equal 'Facture introuvable', flash[:alert]
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
   # --- Lecture ---
 
   test "should get index" do
@@ -98,5 +130,52 @@ class FacturesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert @facture.reload.envoyé?
+  end
+
+  # --- index : périmètre de l'adhérent et filtres ---
+
+  # L'adhérent ne voit pas les brouillons (état « créé ») ; ses services sont
+  # déduits des factures visibles et non de ses rattachements.
+  test 'index d\'un adhérent liste ses factures envoyées et déduit ses services' do
+    envoyée = factures(:facture_secretariat)
+    sign_in users(:weil)
+
+    get factures_url
+
+    assert_response :success
+    assert_includes assigns(:factures), envoyée
+    assert_not_includes assigns(:factures), @facture
+    assert_includes assigns(:services), services(:secretariat)
+  end
+
+  test 'index filtre sur les adhérents sélectionnés' do
+    get factures_url(adhérent_ids: [@facture.adherent_id])
+
+    assert_response :success
+    assert_includes assigns(:factures), @facture
+  end
+
+  test 'index filtre sur les services sélectionnés' do
+    get factures_url(service_ids: [@facture.service_id])
+
+    assert_response :success
+    assert_includes assigns(:factures), @facture
+  end
+
+  test 'index filtre sur le statut quelle que soit la casse' do
+    get factures_url(workflow_state: @facture.workflow_state.capitalize)
+
+    assert_response :success
+    assert_includes assigns(:factures), @facture
+  end
+
+  # --- refuser ---
+
+  test 'refuser une facture envoyée la passe à refusé' do
+    @facture.update_columns(workflow_state: Facture::ENVOYE)
+
+    post refuser_facture_url(@facture)
+
+    assert_equal Facture::REFUSE, @facture.reload.workflow_state
   end
 end

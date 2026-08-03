@@ -83,3 +83,39 @@ michael_jackson_service_marseille2:
 emmanuel_valls_service_marseille2:
   user: emmanuel_valls
   service: service_marseille2
+
+berthout_technique:
+  user: berthout
+  service: technique
+
+agent_discarded_paris_service_paris:
+  user: agent_discarded_paris
+  service: service_paris
+
+user_paris_service_paris:
+  user: user_paris
+  service: service_paris
+
+philippe_super_admin_comptabilite:
+  user: philippe_super_admin
+  service: comptabilite
+
+adhérent_sans_intervention_informatique:
+  user: adhérent_sans_intervention
+  service: informatique
+
+adherent_with_location_service_with_location:
+  user: adherent_with_location
+  service: service_with_location
+
+agent_with_location_service_with_location:
+  user: agent_with_location
+  service: service_with_location
+
+adherent_marseille_service_marseille:
+  user: adherent_marseille
+  service: service_marseille
+
+george_lucas_comptabilite:
+  user: george_lucas
+  service: comptabilite

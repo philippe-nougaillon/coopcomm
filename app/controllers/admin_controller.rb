@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class AdminController < ApplicationController
+  include UserParamsPermis
+
   before_action :is_user_authorized
   before_action :set_users_tags, only: %i[create_new_user create_new_user_do]
 
@@ -16,8 +18,14 @@ class AdminController < ApplicationController
 
     @audits = @audits.where('audited_changes ILIKE ?', "%#{params[:search]}%") if params[:search].present?
 
-    if params[:start_date].present? && params[:end_date].present?
-      @audits = @audits.where('DATE(created_at) BETWEEN (?) AND (?)', params[:start_date], params[:end_date])
+    if params[:start_date].present?
+      start_date = Time.zone.parse(params[:start_date])&.beginning_of_day
+      @audits = @audits.where('audits.created_at >= ?', start_date) if start_date
+    end
+
+    if params[:end_date].present?
+      end_date = Time.zone.parse(params[:end_date])&.end_of_day
+      @audits = @audits.where('audits.created_at <= ?', end_date) if end_date
     end
 
     @audits = @audits.where(user_id: params[:user_id]) if params[:user_id].present?
@@ -31,23 +39,33 @@ class AdminController < ApplicationController
   end
 
   def create_new_user
-    @user = User.new
+    @user = User.new(rôle: :agent)
   end
 
+  # `POST /users` est réservé par Devise dès que :registerable est réactivé, d'où
+  # cette route dédiée. Les paramètres passent par UserParamsPermis, partagé avec
+  # UsersController#update : les deux doivent permettre exactement la même chose.
   def create_new_user_do
-    @user = User.new(params.require(:user).permit(:nom, :prénom, :téléphone, :email, :password, :service,
-                                                  :address, :latitude, :longitude))
+    attributs = user_params
+    @user = User.new(attributs)
+    mot_de_passe = User.generate_random_password
 
-    # Un manager ne peut créer que des rôles non privilégiés ; seul un
-    # administrateur peut attribuer manager/administrateur (anti-escalade).
-    rôle = params[:user][:rôle].to_s
-    rôles_attribuables = current_user.administrateur? ? User.rôles.keys : %w[adhérent agent]
-    @user.rôle = rôle if rôles_attribuables.include?(rôle)
+    @user.password = mot_de_passe
+    @user.password_confirmation = mot_de_passe
+
+    @user.rôle = 'agent' if current_user.manager?
+
+    # Filet indépendant des validations du modèle : sans service, le compte n'a
+    # pas d'organisation, il n'apparaît dans aucune liste et l'invitation échoue.
+    sans_service = Array(attributs[:service_ids]).compact_blank.empty?
+    @user.errors.add(:services, 'doit comporter au moins un service') if sans_service
 
     respond_to do |format|
-      if @user.save
-        format.html { redirect_to users_url, notice: 'Utilisateur créé avec succès.' }
-        format.json { render :show, status: :created, location: @user }
+      if !sans_service && @user.save
+        @user.invite!(current_user)
+        session.delete(:return_to)
+        format.html { redirect_to user_url(@user), notice: 'Utilisateur créé avec succès.' }
+        format.json { render 'users/show', status: :created, location: @user }
       else
         format.html { render :create_new_user, status: :unprocessable_content }
         format.json { render json: @user.errors, status: :unprocessable_content }
@@ -62,8 +80,8 @@ class AdminController < ApplicationController
 
   def parametres
   # 1. Definir los Scopes Base
-  services_scope = current_user.services
-  warehouses_scope = current_organisation.warehouses
+  services_scope = current_organisation.services.ordered
+  warehouses_scope = current_organisation.warehouses.ordered
   prestations_scope = current_organisation.prestations.ordered
   
   # Lista completa de usuarios para cargar el select del formulario

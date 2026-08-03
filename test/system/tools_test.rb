@@ -36,34 +36,22 @@ class ToolsTest < ApplicationSystemTestCase
     outil = tools(:outil_paris)
     visit tool_url(outil)
 
-    # La refonte UX a remplacé le confirm() natif par une modale <dialog> :
-    # le bouton « Supprimer » l'ouvre, « Oui, supprimer » confirme (même flux
-    # que commandes/factures, cf. 2026-07-22).
+    # La refonte UX a remplacé le confirm() natif par une modale <dialog> : le bouton «
+    # Supprimer » l'ouvre, « Oui, supprimer » confirme.
     cliquer_element(find("[data-testid='supprimer_outil']"))
     cliquer_bouton('Oui, supprimer')
 
     # État métier plutôt que le toast : celui-ci s'auto-détruit au bout de 5 s,
-    # l'asserter est un pile ou face (doctrine 2026-06-12 §7).
+    # l'asserter est un pile ou face.
     assert_current_path tools_path
     assert_no_text outil.name
     assert_not Tool.exists?(outil.id)
   end
 
   test 'Ne pas pouvoir supprimer un outil avec une intervention' do
-    # RÉGRESSION signalée (non corrigée — décision métier). Le commit `fc5330c4`
-    # (« UX -show tools ») a retiré le garde-fou : avant, un outil rattaché à des
-    # interventions affichait un bloc « Suppression impossible » À LA PLACE du bouton
-    # (id `supprimer_outil`). Désormais le bouton est affiché sans condition
-    # (`policy(@tool).destroy?` ignore les interventions) ET `tools_controller#destroy`
-    # fait `@tool.destroy!` sans garde → l'outil est réellement supprimé (cascade
-    # `dependent: :destroy` sur `tool_interventions`). L'ancienne assertion visait
-    # l'id `#supprimer_outil` DISPARU → elle passait trivialement et masquait la régression.
-    # À trancher : restaurer la protection (vue + idéalement contrôleur, la vue seule
-    # étant contournable par requête forgée) ou assumer la suppression libre.
-    # cf. .claude/method/bugs-signales.md
-    skip 'Régression fc5330c4 : plus de garde-fou suppression outil-avec-interventions (cf. registre).'
-
     visit tool_url(tools(:tondeuse))
+
+    assert_selector 'h1', text: tools(:tondeuse).name
     assert_no_selector "[data-testid='supprimer_outil']"
   end
 end

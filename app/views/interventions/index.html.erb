@@ -123,11 +123,11 @@
                   onchange: 'this.form.requestSubmit()' %>
             </div>
             <div class="flex items-center gap-3 h-10 px-3 border border-slate-200 rounded-lg bg-slate-50 cursor-pointer"
-     onclick="document.getElementById('archives').click()">
-              <%= check_box_tag :archives, 1, params[:archives],
-      id: 'archives',
-      class: 'hidden',
-      onchange: 'this.form.requestSubmit()' %>
+              onclick="document.getElementById('archives').click()">
+                        <%= check_box_tag :archives, 1, params[:archives],
+                id: 'archives',
+                class: 'hidden',
+                onchange: 'this.form.requestSubmit()' %>
               <div id="toggle-track" class="w-8 h-4 rounded-full transition-colors duration-200 flex items-center px-0.5 flex-shrink-0 <%= params[:archives].present? ? 'bg-[#007fcb]' : 'bg-slate-300' %>">
                 <div class="w-3 h-3 rounded-full bg-white transition-transform duration-200 <%= params[:archives].present? ? 'translate-x-4' : 'translate-x-0' %>"></div>
               </div>
@@ -181,7 +181,8 @@
     <% end %>
     <% if @interventions.present? %>
       <% if params[:vue] == 'normal' %>
-        <%= render @interventions, cached: true %>
+        <%= render partial: 'intervention', collection: @interventions, as: :intervention,
+                   cached: ->(intervention) { [intervention, current_user] } %>
       <% else %>
         <%= render partial: 'view_compact' %>
       <% end %>
@@ -203,8 +204,8 @@
         <% end %>
       </div>
     <% end %>
-      </div>
-     <% if @pagy.pages > 1 %>
+  </div>
+  <% if @pagy.pages > 1 %>
     <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
       <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
         <%= pagy_nav(@pagy).html_safe %>

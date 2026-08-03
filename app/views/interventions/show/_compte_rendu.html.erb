@@ -1,0 +1,86 @@
+<%# locals: (intervention:) %>
+<section class="mb-10">
+  <div class="flex items-center gap-2 mb-3 pt-3">
+    <span class="w-2 h-6 rounded-full bg-gradient-to-b from-[#40b3db] via-[#9fd9ec] to-[#681b98]"></span>
+    <h2 class="text-xl text-slate-800 font-black tracking-tight uppercase">Compte-rendu</h2>
+  </div>
+  <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+    <% if compte_rendu_est_avis?(intervention, current_user) %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div>
+          <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Avis</span>
+          <p class="text-slate-700"><%= intervention.avis.presence || "Aucun avis renseigné." %></p>
+        </div>
+        <div>
+          <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Évaluation</span>
+          <div class="rating gap-1 mt-1">
+            <% 5.times do |index| %>
+              <input type="radio" class="mask mask-star-2 bg-amber-400 cursor-default" <%= 'checked' if intervention.note == index + 1 %> disabled/>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% else %>
+      <div>
+        <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Actions de validation</span>
+        <div class="flex flex-wrap gap-2">
+          <% if policy(intervention).terminer? %>
+            <%
+              lien, methode, _params_terminer = terminer_destination(intervention)
+              msg = message_dates_manquantes(intervention)
+            %>
+            <% if msg.present? %>
+              <button type="button"
+                      class="btn btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!"
+                      onclick="<%= js_ouvrir_modal_terminer(intervention) %>"
+                      title="Terminer l'intervention"
+                      <%= 'disabled' unless intervention.can_terminer? %>>
+                Terminer
+              </button>
+
+              <dialog id="<%= modal_id_terminer(intervention) %>" class="modal">
+                <div class="modal-box">
+                  <form method="dialog">
+                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                  </form>
+                  <h3 class="text-lg font-bold text-amber-600 flex items-center gap-2">
+                    <%= embedded_svg "icons/warning.svg", title: "Dates manquantes" %>
+                    Dates manquantes
+                  </h3>
+                  <p class="py-4 text-sm text-slate-600 text-left">
+                    <%= msg %>
+                    Vous allez être redirigé(e) vers le formulaire de modification pour renseigner ces dates.
+                  </p>
+                  <div class="modal-action">
+                    <form method="dialog">
+                      <button class="btn btn-ghost">Annuler</button>
+                    </form>
+                    <%= link_to "Continuer vers le formulaire", lien, class: "btn btn-info text-white" %>
+                  </div>
+                </div>
+                <form method="dialog" class="modal-backdrop">
+                  <button>Fermer</button>
+                </form>
+              </dialog>
+            <% else %>
+              <%= button_to 'Terminer', lien, method: methode,
+                  class: "btn btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!",
+                  title: "Terminer l'intervention",
+                  form: { data: { turbo: false }, class: 'contents' },
+                  disabled: !intervention.can_terminer? %>
+            <% end %>
+          <% end %>
+          <% if policy(intervention).valider? %>
+            <%= button_to 'Valider', valider_intervention_path(intervention), class: "btn btn-success btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", title: "Valider l'intervention", form: { data: { turbo: false }, class: 'contents' }, disabled: !intervention.can_valider? %>
+          <% end %>
+          <% if policy(intervention).refuser? %>
+            <%= button_to 'Refuser', refuser_intervention_path(intervention), class: "btn btn-error btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", title: "Refuser l'intervention", form: { data: { turbo: false }, class: 'contents' }, disabled: !intervention.can_refuser? %>
+          <% end %>
+          <% if !policy(intervention).terminer? && !policy(intervention).valider? && !policy(intervention).refuser? %>
+            <p class="text-sm text-slate-400 italic">Aucune action disponible pour le moment.</p>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</section>

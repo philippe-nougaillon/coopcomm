@@ -3,10 +3,7 @@
 require 'test_helper'
 
 # La vue dashboard_agent_stats doit reproduire le calcul historique NON FILTRÉ de
-# DashboardData#temps_par_agent : temps d'une intervention réparti entre ses
-# agents NON SUPPRIMÉS (gem discard), et aucune ligne pour un agent supprimé.
-# Le filtre #292 (temps_total >= 0) n'est PAS dans la vue : le concern l'applique
-# par-dessus, au grain agent (cf. dashboard_temps_negatif_test.rb et B13).
+# DashboardData#temps_par_agent : temps d'une intervention réparti entre ses agents NON…
 class DashboardAgentStatTest < ActiveSupport::TestCase
   setup { refresh_dashboard_views! }
 

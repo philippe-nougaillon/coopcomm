@@ -24,7 +24,10 @@ Rails.application.routes.draw do
 
   resources :absences, only: [:destroy]
 
-  resources :users do
+  # `POST /users` est réservé par Devise dès que :registerable est réactivé
+  # (devise_for est déclaré plus haut, il gagne) : la création d'un utilisateur
+  # passe par admin#create_new_user (formulaire) et admin#create_new_user_do.
+  resources :users, except: %i[new create] do
     member do
       post :inviter
       get :edit_password

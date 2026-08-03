@@ -29,10 +29,6 @@
     "editor.defaultFormatter": "testdouble.vscode-standard-ruby",
     "editor.formatOnSave": true
   },
-  "[erb]": {
-    "editor.defaultFormatter": "aliariff.vscode-erb-beautify",
-    "editor.formatOnSave": true
-  },
   "files.associations": {
     "*.html.erb": "erb"
   },

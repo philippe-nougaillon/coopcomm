@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 class UsersController < ApplicationController
+  include UserParamsPermis
+
   before_action :set_user, only: %i[show edit update destroy inviter edit_password update_password]
   # la méthode reactivate a tout de même un authorize
   before_action :is_user_authorized, except: %i[reactivate]
   # Déclaré dans application_controller.rb
-  before_action :set_users_tags, only: %i[new create edit update]
+  before_action :set_users_tags, only: %i[edit update]
 
   require 'capture_stdout'
 
@@ -80,38 +82,8 @@ class UsersController < ApplicationController
     @pagy = Pagy.new(count: filtered_audits.size, page: page_number, items: items_per_page)
   end
 
-  # GET /users/new
-  def new
-    @user = User.new
-  end
-
   # GET /users/1/edit
   def edit; end
-
-  # POST /users or /users.json
-  def create
-    @user = User.new(user_params)
-    generated_password = User.generate_random_password
-
-    @user.password = generated_password
-    @user.password_confirmation = generated_password
-
-    # Force le rôle à agent si l'utilisateur courant est un manager
-    @user.rôle = 'agent' if current_user.manager?
-
-    respond_to do |format|
-      if @user.save
-        @user.invite!(current_user)
-        session.delete(:return_to)
-        format.html { redirect_to user_url(@user), notice: 'Utilisateur créé avec succès.' }
-        format.json { render :show, status: :created, location: @user }
-      else
-        format.html { render :new, status: :unprocessable_content }
-        format.json { render json: @user.errors, status: :unprocessable_content }
-      end
-    end
-  end
-
 
   # PATCH/PUT /users/1 or /users/1.json
   def update
@@ -397,31 +369,6 @@ class UsersController < ApplicationController
     return unless @user.nil?
 
     redirect_to root_path, alert: 'Utilisateur introuvable'
-  end
-
-  # Only allow a list of trusted parameters through.
-  # :rôle n'est accepté que d'un administrateur (seul à voir le sélecteur dans le
-  # formulaire) ; service_ids est borné aux services de l'organisation courante.
-  def user_params
-    permitted = params.require(:user).permit(
-      :nom, :prénom, :téléphone, :email, :password, :password_confirmation, :memo,
-      :address, :longitude, :latitude, :profile_picture, :color,
-      tag_list: [], absences_attributes: %i[id du au motif observation matin après_midi _destroy], service_ids: []
-    )
-
-    rôle = params[:user][:rôle] || params[:user][:role]
-    permitted[:rôle] = rôle if current_user.administrateur? && User.rôles.key?(rôle.to_s)
-
-    # service_ids= écrit immédiatement en base (has_many through) : on ne garde
-    # que les services de l'organisation courante, et on ne touche à rien si la
-    # demande est entièrement hors organisation (tentative de forgerie).
-    demandés = Array(permitted[:service_ids]).compact_blank
-    if demandés.any?
-      valides = current_organisation.services.where(id: demandés).ids
-      valides.any? ? permitted[:service_ids] = valides : permitted.delete(:service_ids)
-    end
-
-    permitted
   end
 
   def password_params

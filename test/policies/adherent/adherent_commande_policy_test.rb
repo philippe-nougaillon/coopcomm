@@ -43,10 +43,7 @@ class AdherentCommandePolicyTest < ActionDispatch::IntegrationTest
     refute policy.create_facture?
   end
 
-  # Décision : le Scope des commandes est un pass-through volontaire (il ne filtre
-  # PAS). Le périmètre est appliqué dans CommandesController#index et l'accès des
-  # adhérents est déjà verrouillé par index?/show? = false (tests ci-dessus).
-  # On épingle ce comportement pour éviter qu'on le "corrige" par erreur.
+  # Décision : le Scope des commandes est un pass-through volontaire (il ne filtre PAS).
   test 'scope : un adhérent ne voit que ses propres commandes hors état créé' do
     scope = CommandePolicy::Scope.new(@adherent, Commande.all).resolve
 

@@ -24,9 +24,6 @@ class InterventionsController < ApplicationController
     # Filtre en fonction du rôle de l'utilisateur
     @interventions = Intervention.by_role_for(current_user)
 
-    # Périmètre de services filtré (menu + pré-filtre admin), cf. ApplicationController.
-    # admin_sees_all : un administrateur voit par défaut TOUTES les interventions de
-    # son organisation (filtre vide, services non présélectionnés).
     selected_services = scoped_services(:service, admin_sees_all: true)
 
     # Filtre sur les services
@@ -34,9 +31,7 @@ class InterventionsController < ApplicationController
       @interventions = @interventions.filter_by_service(selected_services)
     end
 
-    # Le select « Statut » est `multiple` → params[:workflow_state] est un tableau
-    # de libellés humanisés (ex. ["Nouveau", "Validé"]). On le ramène aux valeurs
-    # stockées en base (minuscules) avant de filtrer ; un scalaire reste géré.
+    # Le select est `multiple` : tableau de libellés humanisés (ex. ["Nouveau"]).
     selected_states = Array(params[:workflow_state]).reject(&:blank?).map(&:downcase)
 
     @interventions = if params[:archives].present?
@@ -101,8 +96,6 @@ class InterventionsController < ApplicationController
 
     users_in_same_services = User.by_service(selected_services)
 
-    # Adhérents : pour un administrateur, la liste reste complète (indépendante du
-    # filtre de services) ; pour les autres rôles, elle suit les services sélectionnés.
     adherents_services = current_user.administrateur? ? @services : selected_services
     @adhérents = User.by_service(adherents_services).adhérent.order(:nom)
 
@@ -124,7 +117,7 @@ class InterventionsController < ApplicationController
       end
 
       format.xls do
-        xls_file = ExportToXls::Interventions.call(@interventions)
+        xls_file = ExportToXls::Interventions.call(@interventions, include_evaluation: !current_user.agent?)
         send_data xls_file, filename: "Interventions_#{l Date.today}.xls"
       end
     end
@@ -202,7 +195,6 @@ class InterventionsController < ApplicationController
 
     respond_to do |format|
       if @intervention.save
-        # 303 : cf. commentaire de #update (Turbo + redirection post-formulaire)
         format.html { redirect_to intervention_url(@intervention), notice: 'Intervention créée avec succès.', status: :see_other }
         format.json { render :show, status: :created, location: @intervention }
       else
@@ -217,22 +209,29 @@ class InterventionsController < ApplicationController
     @intervention.assign_attributes(intervention_params)
     update_tag_list
 
+    terminaison_demandée = params[:terminer].present? && @intervention.can_terminer? &&
+                           policy(@intervention).terminer?
+    @intervention.workflow_state = Intervention::TERMINE if terminaison_demandée
+
     respond_to do |format|
       if @intervention.save
-        
+
         format.html do
           # Si c'est une modification du commentaire dans le pointage statut, on redirige vers home
-          # 303 (see_other) obligatoire après un PATCH soumis par Turbo : en 302,
-          # le fetch suit la redirection en gardant l'Accept turbo-stream et la
-          # page reste figée sur le formulaire (cf. ServicesController#update).
+          # 303 obligatoire après un PATCH Turbo : en 302 la page reste figée sur le formulaire.
           if params[:commit] == 'Enregistrer le commentaire'
             redirect_to root_path, notice: 'Votre commentaire a été enregistré', status: :see_other
+          elsif terminaison_demandée
+            redirect_to intervention_url(@intervention), notice: 'Intervention terminée', status: :see_other
           else
             redirect_to intervention_url(@intervention), notice: 'Intervention modifiée avec succès.', status: :see_other
           end
         end
         format.json { render :show, status: :ok, location: @intervention }
       else
+        # L'état n'a pas été enregistré : le formulaire ne doit pas afficher « Terminé ».
+        @intervention.restore_attributes([:workflow_state]) if terminaison_demandée
+
         format.html { render :edit, status: :unprocessable_content }
         format.json { render json: @intervention.errors, status: :unprocessable_content }
       end
@@ -270,14 +269,10 @@ class InterventionsController < ApplicationController
   # end
 
   def terminer
+    return if redirect_si_invalide('terminée')
+
     if @intervention.can_terminer?
       @intervention.terminer!
-      @intervention.calculate_co2
-      
-      unless Rails.env.development?
-        Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id })
-        Events.instance.publish('intervention.done', payload: { intervention_id: @intervention.id })
-      end
 
       redirect_to @intervention, notice: 'Intervention terminée'
     else
@@ -286,6 +281,8 @@ class InterventionsController < ApplicationController
   end
 
   def valider
+    return if redirect_si_invalide('validée')
+
     @intervention.valider!
 
     Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
@@ -294,6 +291,8 @@ class InterventionsController < ApplicationController
   end
 
   def refuser
+    return if redirect_si_invalide('refusée')
+
     @intervention.refuser!
 
     Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
@@ -347,9 +346,6 @@ class InterventionsController < ApplicationController
         message = 'Début de journée enregistré !'
       end
 
-      # Le pointage crée/modifie une intervention : si une validation échoue, le
-      # save renvoie false et l'id reste nil. On ne publie alors aucun event
-      # (sinon find(nil) → RecordNotFound → 404) et on remonte l'erreur métier.
       unless current_intervention.persisted? && current_intervention.errors.empty?
         return redirect_to @intervention,
                            alert: "Le pointage n'a pas pu être enregistré : #{current_intervention.errors.full_messages.to_sentence}"
@@ -392,8 +388,6 @@ class InterventionsController < ApplicationController
     date_debut_reel = params['date_debut'] != 'null' ? params['date_debut'] : nil
     date_fin_reel = params['date_fin'] != 'null' ? params['date_fin'] : nil
 
-    # Plage effective : dates réelles prioritaires, repli sur les prévues
-    # (cohérent avec Intervention#effective_début/fin et OVERLAP_SQL).
     # TODO : Ne prendre en compte qu'une seule date (date_réelle || date_prévue)
     date_debut = date_debut_reel.presence || date_debut_prevue
     date_fin = date_fin_reel.presence || date_fin_prevue
@@ -441,16 +435,11 @@ class InterventionsController < ApplicationController
     render json: @services.select(:id, :nom)
   end
 
-  # Renvoie la liste PLATE des agents pour le service sélectionné (mise à jour
-  # dynamique du select agents dans le formulaire d'intervention).
-  # Si aucun service n'est fourni, on liste les agents de tous les services du
-  # current_user. Le périmètre est toujours borné aux services du current_user.
   def agents_for_service
     service = current_user.services.find_by(id: params[:service_id]) if params[:service_id].present?
 
     agents = User.agents_for_services(service ? [service] : current_user.services)
 
-    # Format aligné sur agents_for_services : [nom_complet, id] → {id, nom}
     render json: agents.map { |nom, id| { id: id, nom: nom } }
   end
 
@@ -517,19 +506,12 @@ class InterventionsController < ApplicationController
 
     @adhérents = users_in_same_services.adhérent.order(:nom)
 
-    # Liste PLATE des agents (sans groupe par service). Si un service est
-    # pré-sélectionné (édition, ou ?service_id en création), on restreint à ce
-    # service ; sinon on liste tous les agents des services du current_user.
     selected_service = preselected_form_service
     @agents = User.agents_for_services(selected_service ? [selected_service] : services)
 
     @tools = current_organisation.tools.ordered
   end
 
-  # Service pré-sélectionné du formulaire : celui de l'intervention en cours
-  # d'édition, ou passé en paramètre, restreint au périmètre du current_user.
-  # Côté agent (`_form_for_agents`), le service est figé sur le premier service
-  # de l'agent (champ caché) : on s'aligne dessus pour la liste des agents.
   def preselected_form_service
     service_id = @intervention&.service_id || params[:service_id]
     service_id ||= current_user.services.first&.id if current_user.agent?
@@ -543,12 +525,11 @@ class InterventionsController < ApplicationController
   end
 
   # Only allow a list of trusted parameters through.
-  # :workflow_state ne passe JAMAIS par le mass assignment (transitions par les
-  # actions dédiées) ; :note/:avis sont réservés à ceux qui voient la section
-  # « Compte-rendu » du formulaire (adhérent, manager, admin) — pas à l'agent noté.
+  # :workflow_state, :note et :avis sont volontairement exclus du mass assignment.
   def intervention_params
     permitted = params.require(:intervention).permit(:adherent_id, :service_id, :début, :début_hour, :début_minute, :fin,
                                                      :fin_hour, :fin_minute, :temps_de_pause, :temps_total, :description, :commentaires, :tag_list, :repeter, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute, :meteo, photos: [], agent_ids: [], tool_ids: [])
+    permitted.delete(:adherent_id) if current_user.agent? && @intervention&.template_slug.present?
     permitted.merge!(params.require(:intervention).permit(:note, :avis)) if current_user.adhérent? || current_user.manager_or_admin?
     permitted
   end
@@ -580,5 +561,14 @@ class InterventionsController < ApplicationController
 
   def sort_direction
     %w[asc desc].include?(params[:direction]) ? params[:direction] : 'desc'
+  end
+
+  def redirect_si_invalide(etat)
+    return false if @intervention.valid?
+
+    motifs = @intervention.errors.full_messages.map(&:strip).to_sentence
+    redirect_to @intervention,
+                alert: "L'intervention n'est pas valide, elle ne peut pas être #{etat} : #{motifs}"
+    true
   end
 end

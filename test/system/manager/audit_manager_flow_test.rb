@@ -3,15 +3,7 @@
 require 'application_system_test_case'
 
 class AuditManagerFlowTest < ApplicationSystemTestCase
-  # Les system tests ne rollback pas entre eux (le navigateur a sa propre
-  # connexion) : les audits créés par `audited` au fil des autres tests
-  # persistent et rendraient ces filtres non déterministes (ex. un login d'agent
-  # laisse un audit attribué à `bond`). On repart donc d'une table d'audits vide.
-  #
-  # Ensuite, au login, Devise (trackable) met à jour le manager → `audited` crée
-  # UN unique audit (action `update`, type `User`, attribué au manager, dont
-  # `audited_changes` contient les colonnes `sign_in_*`). C'est sur cet unique
-  # audit que reposent toutes les assertions ci-dessous.
+  # Les system tests ne rollback pas entre eux.
   setup do
     Audited::Audit.delete_all
     @manager = users(:hidalgo)
@@ -40,19 +32,8 @@ class AuditManagerFlowTest < ApplicationSystemTestCase
     sleep(0.3)
   end
 
-  # Sélectionne une option dans un slim-select `multiple` puis referme le menu :
-  # en mode multiple SlimSelect le laisse ouvert, et ses options intercepteraient
-  # le clic d'activation du slim-select suivant. On clique à l'extérieur (le
-  # titre) et on attend qu'aucune option ne soit plus visible avant de continuer.
-  # La sélection robuste (recherche + clic) est dans le helper partagé `select_option`.
-  #
-  # Deux protections nées de flakiness observée (2026-07-15) :
-  # - la sélection soumet le formulaire (onchange) → re-rendu Turbo qui
-  #   ré-initialise les slim-selects : un menu peut transitoirement réapparaître
-  #   ouvert après le clic extérieur → on referme en boucle courte ;
-  # - sous forte charge, le clic d'option peut se perdre sans erreur (le select
-  #   reste sur « Tous les … » et la page reste non filtrée) → on vérifie que le
-  #   ss-main affiche bien la valeur choisie, sinon une seconde tentative.
+  # Sélectionne une option dans un slim-select `multiple` puis referme le menu : en mode
+  # multiple SlimSelect le laisse ouvert.
   def choisir_filtre(id, value)
     2.times do |tentative|
       select_option(id, value)
@@ -92,9 +73,8 @@ class AuditManagerFlowTest < ApplicationSystemTestCase
 
   test 'Filter les audits par date' do
     go_to_audit_page
-    # `<input type="date">` natif : on saisit une séquence de chiffres MMJJAAAA
-    # (ordre des segments du widget), pas une chaîne à tirets DMY — sinon le
-    # champ misparse et, en réécriture, produit une date invalide non soumise.
+    # `<input type="date">` natif : on saisit une séquence de chiffres MMJJAAAA (ordre des
+    # segments du widget), pas une chaîne à tirets DMY — sinon le champ misparse et.
     fill_in 'Du', with: (Date.today - 14).strftime('%m%d%Y')
     fill_in 'Au', with: Date.today.strftime('%m%d%Y')
     # Attendre que le widget date ait bien assemblé la valeur avant de soumettre
@@ -104,7 +84,6 @@ class AuditManagerFlowTest < ApplicationSystemTestCase
 
     # Réécriture d'un champ date déjà rempli (le champ persiste hors du turbo-frame
     # rechargé, focus resté sur le segment année) : `fill_in` taperait dans l'année.
-    # On revient au 1er segment (mois) via des flèches gauche avant de retaper MMJJAAAA.
     champ_au = find_field('Au')
     champ_au.send_keys(:arrow_left, :arrow_left, :arrow_left, (Date.today - 1).strftime('%m%d%Y'))
     assert has_field?('Au', with: (Date.today - 1).strftime('%Y-%m-%d'), wait: 5)

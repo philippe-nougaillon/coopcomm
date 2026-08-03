@@ -2,30 +2,13 @@
 
 require 'application_system_test_case'
 
-# Vérifie EN CONDITIONS RÉELLES (navigateur + serveur + vrais commits) que les
-# vues matérialisées du dashboard se rafraîchissent — ou non — selon les cas.
-# Depuis le 2026-07-15 le refresh est SYNCHRONE dans l'after_commit (concern
-# DashboardRefreshable, plus de job) : le dashboard doit donc être juste dès la
-# navigation qui suit l'écriture, sans attente ni action manuelle.
-#
-# Sondes : les tuiles KPI (texte brut : « Total Interventions » = sum(:nb) de la
-# vue, « Temps Cumulé » = somme des temps de la vue) pour le niveau UI ; la
-# répartition par agent s'asserte sur l'état métier (DashboardAgentStat), les
-# graphiques étant du Chart.js (convention 2026-06-12 : état métier plutôt que
-# rendu instable).
-#
-# Contraintes du formulaire découvertes en écrivant ces tests (dynamic-select) :
-# les services proposés = services de l'adhérent ∩ services du manager, et les
-# agents proposés = agents DU service choisi. D'où la préparation de données
-# (Martin ajouté au service Informatique) : aucun service des fixtures n'a deux
-# agents, une intervention à deux agents serait impossible via l'UI réelle.
+# Vérifie EN CONDITIONS RÉELLES (navigateur + serveur + vrais commits) que les vues
+# matérialisées du dashboard se rafraîchissent — ou non — selon les cas.
 class DashboardRefreshManagerFlowTest < ApplicationSystemTestCase
   setup do
     @manager = users(:hidalgo)
-    # Informatique compte ainsi 2 agents (Bond + Martin) : nécessaire pour
-    # affecter deux agents via le formulaire (cf. en-tête ; ⚠ la fixture
-    # `bond_informatique` pointe en réalité vers service_paris — nom trompeur).
-    # Table de fixtures → re-semée à chaque test, pas de résidu.
+    # Informatique compte ainsi 2 agents (Bond + Martin) : nécessaire pour affecter deux
+    # agents via le formulaire.
     UserService.create!(user: users(:bond), service: services(:informatique))
     UserService.create!(user: users(:martin_technique_paris), service: services(:informatique))
     # Base connue : les vues reflètent exactement les fixtures (leur insertion
@@ -51,9 +34,8 @@ class DashboardRefreshManagerFlowTest < ApplicationSystemTestCase
     flunk message
   end
 
-  # Erreurs typiques d'une liste d'options reconstruite PENDANT l'interaction
-  # (dynamic-select re-fetch les services/agents en asynchrone), ou d'un menu
-  # slim-select voisin resté ouvert dont une option intercepte le clic.
+  # Erreurs typiques d'une liste d'options reconstruite PENDANT l'interaction (dynamic-
+  # select re-fetch les services/agents en asynchrone)
   RACE_SELECT = [Capybara::ElementNotFound,
                  Selenium::WebDriver::Error::StaleElementReferenceError,
                  Selenium::WebDriver::Error::ElementClickInterceptedError].freeze
@@ -75,16 +57,14 @@ class DashboardRefreshManagerFlowTest < ApplicationSystemTestCase
   end
 
   # Referme un menu slim-select resté ouvert (un menu multi ouvert intercepte
-  # les clics suivants — piège connu 2026-06-17).
+  # les clics suivants).
   def fermer_menus_slim_select
     find('label', text: 'Description', match: :first).click
     assert_no_selector '.ss-option', visible: true
   end
 
-  # Pose le service et les agents puis VÉRIFIE que les valeurs ont survécu :
-  # dynamic-select repeuple service et agents en cascade (fetch asynchrones),
-  # une sélection posée trop tôt peut être écrasée. On repose ce qui manque
-  # jusqu'à stabilité, en lisant la vérité du <select> sous-jacent.
+  # Pose le service et les agents puis VÉRIFIE que les valeurs ont survécu : dynamic-
+  # select repeuple service et agents en cascade (fetch asynchrones)
   def fixer_service_et_agents(service_record, agents)
     attendus = agents.map { |a| a.id.to_s }
     5.times do
@@ -119,9 +99,8 @@ class DashboardRefreshManagerFlowTest < ApplicationSystemTestCase
     select_option('#intervention_adherent_id', 'Weil Ariel')
     fixer_service_et_agents(services(:informatique), [users(:bond), users(:martin_technique_paris)])
 
-    # Créneau passé à J-10 : hors de portée des fixtures (tonte_locaux occupe
-    # Bond au plus 7 jours en arrière) → jamais de conflit #357, quel que soit
-    # le jour où la suite tourne.
+    # Créneau passé à J-10 : hors de portée des fixtures (tonte_locaux occupe Bond au plus
+    # 7 jours en arrière) → jamais de conflit #357.
     jour = (Date.today - 10).strftime('%m%d%Y')
     fill_in 'Début', with: jour
     select '08', from: 'intervention_début_hour'
@@ -162,9 +141,8 @@ class DashboardRefreshManagerFlowTest < ApplicationSystemTestCase
     assert_in_delta tonte.temps_total, DashboardAgentStat.find_by(agent: users(:bond)).temps_total, 0.01
 
     visit edit_intervention_url(tonte)
-    # dynamic-select ne propose que les services de l'adhérent : pour weil,
-    # seul Informatique est disponible (le Technique de la fixture n'est pas
-    # reproductible via l'UI — le service change donc au passage).
+    # dynamic-select ne propose que les services de l'adhérent : pour weil, seul
+    # Informatique est disponible.
     fixer_service_et_agents(services(:informatique), [users(:bond), users(:martin_technique_paris)])
     click_on 'enregistrer_intervention'
 
@@ -202,9 +180,8 @@ class DashboardRefreshManagerFlowTest < ApplicationSystemTestCase
       iv.reload.description == 'Modif sans impact dashboard'
     end
 
-    # La description n'est pas une colonne du dashboard → aucun refresh : le
-    # marqueur 5 h n'apparaît pas, le dashboard affiche toujours le seul temps
-    # des fixtures (tonte_locaux).
+    # La description n'est pas une colonne du dashboard → aucun refresh : le marqueur 5 h
+    # n'apparaît pas, le dashboard affiche toujours le seul temps des fixtures.
     visit dashboard_path
     assert_equal "#{interventions(:tonte_locaux).temps_total.round(1)}h", kpi('Temps Cumulé')
   end

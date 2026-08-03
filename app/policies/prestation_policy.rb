@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
-# Le catalogue de prestations est géré dans la page Paramètres, réservée aux
-# administrateurs (cf. AdminPolicy#parametres?). On aligne donc la gestion des
-# prestations sur les administrateurs uniquement, comme pour les services.
+# Le catalogue est géré dans la page Paramètres, réservée aux administrateurs.
 class PrestationPolicy < ApplicationPolicy
   class Scope < Scope
     def resolve

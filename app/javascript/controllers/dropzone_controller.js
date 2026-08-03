@@ -1,20 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Zone de glisser-déposer générique et réutilisable autour d'un <input type="file">.
+// Zone de glisser-déposer autour d'un <input type="file"> masqué, qui reste dans
+// le formulaire : les fichiers déposés lui sont injectés via DataTransfer, en
+// respectant ses attributs `multiple` et `accept`.
 //
-// L'input réel reste dans le formulaire (donc soumis normalement) ; on le masque
-// et on lui injecte le(s) fichier(s) déposé(s) via DataTransfer — plusieurs si
-// l'input porte l'attribut `multiple`, un seul sinon. Le type de fichier accepté
-// est piloté par l'attribut `accept` de l'input — un fichier non conforme est
-// refusé (drop comme sélecteur natif) avec un retour visuel.
-//
-// Cibles : input (requis), filename (libellé), error (message d'erreur).
-// Classes : active (survol pendant un drag), neutral (bordure au repos),
-//           valid (fichier accepté), invalid (fichier refusé).
-//   La bordure neutre est retirée quand un état valid/invalid est posé : ainsi
-//   une seule classe `border-color` est présente à la fois et la couleur
-//   s'applique sans dépendre de l'ordre de cascade Tailwind.
-// Valeur  : errorMessage (message custom ; défaut générique sinon).
+// Cibles : input (requis), filename, error.
+// Classes : active, neutral, valid, invalid — neutral est retirée dès qu'un état
+// valid/invalid est posé, pour ne jamais avoir deux `border-color` en cascade.
+// Valeur : errorMessage.
 export default class extends Controller {
   static targets = ["input", "filename", "error"]
   static classes = ["active", "neutral", "valid", "invalid"]
@@ -25,8 +18,7 @@ export default class extends Controller {
   }
 
   open(event) {
-    // Ignore le clic sur un lien interne (ex. « document actuel ») et le clic
-    // synthétique remonté par input.click() (sinon : ouverture en boucle).
+    // Ignore le clic sur un lien interne et celui remonté par input.click() (boucle).
     if (event.target.closest("a")) return
     if (event.target === this.inputTarget) return
     this.inputTarget.click()
@@ -46,7 +38,6 @@ export default class extends Controller {
     event.preventDefault()
     this.unhighlight()
 
-    // Un input non-multiple ne garde que le premier fichier déposé (comme le sélecteur natif).
     let files = Array.from(event.dataTransfer?.files || [])
     if (this.inputTarget.multiple === false) files = files.slice(0, 1)
     if (files.length === 0) return
@@ -57,7 +48,6 @@ export default class extends Controller {
       return
     }
 
-    // Reconstruit une liste de fichiers et l'assigne à l'input réel.
     const dataTransfer = new DataTransfer()
     files.forEach(file => dataTransfer.items.add(file))
     this.inputTarget.files = dataTransfer.files
@@ -65,7 +55,7 @@ export default class extends Controller {
     this.markValid(files)
   }
 
-  // Sélecteur natif : l'attribut accept n'est pas garanti par tous les OS, on revalide.
+  // L'attribut accept n'est pas garanti par tous les OS, on revalide.
   change() {
     const files = Array.from(this.inputTarget.files)
     const rejected = files.find(file => !this.accepts(file))
@@ -83,8 +73,7 @@ export default class extends Controller {
 
   markValid(files) {
     this.swapState({ add: this.validClasses, remove: [...this.invalidClasses, ...this.neutralClasses] })
-    // Marqueur d'état inerte (aucun code applicatif ne le lit) : donne aux tests
-    // système un point d'ancrage stable, indépendant des noms de classes CSS.
+    // Marqueur inerte : point d'ancrage des tests système, stable au renommage CSS.
     this.element.dataset.dropzoneState = "success"
     this.hideError()
     if (this.hasFilenameTarget) this.filenameTarget.textContent = files.map(file => file.name).join(", ")

@@ -26,10 +26,8 @@
       <!-- Boutons -->
       <div class="flex flex-wrap gap-3 mt-5">
         <% if policy(intervention).terminer? && intervention.can_terminer? %>
-          <% pointe = current_user.agent? && intervention.template_slug %>
-          <%= button_to 'Terminer',
-            pointe ? pointer_intervention_path(Intervention.find_by(slug: intervention.template_slug)) : terminer_intervention_path(intervention),
-            method: pointe ? :get : :post,
+          <% lien, methode, params_terminer = terminer_destination(intervention) %>
+          <%= button_to 'Terminer', lien, method: methode, params: params_terminer,
             class: "btn btn-primary btn-outline w-24 text-sm transition-all duration-300 hover:scale-105 hover:text-white!",
             form: { data: { turbo: false } } %>
         <% end %>

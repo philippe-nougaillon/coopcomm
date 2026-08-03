@@ -14,35 +14,44 @@
         <% end %>
       <% end %>
       <% if policy(@tool).destroy? %>
-        <button type="button" class="btn btn-soft btn-error hover:!text-white" onclick="delete_tool_modal_<%= @tool.id %>.showModal()" title="Supprimer" data-testid="supprimer_outil">
-          <%= embedded_svg "icons/delete.svg", class: "w-5 h-5 fill-current" %>
-          <span class="hidden md:block">Supprimer</span>
-        </button>
-        <dialog id="delete_tool_modal_<%= @tool.id %>" class="modal">
-          <div class="modal-box">
-            <form method="dialog">
-              <button type="submit" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-            </form>
-            <h3 class="text-lg font-bold text-error flex items-center gap-2">
-              <%= embedded_svg "icons/warning.svg", title: "Supprimer le matériel" %>
-              Supprimer le matériel
-            </h3>
-            <p class="py-4 text-sm text-slate-600 text-left">
-              Êtes-vous certain(e) de vouloir supprimer ce matériel ? Cette action est irréversible.
-            </p>
-            <div class="modal-action">
-              <form method="dialog">
-                <button type="submit" class="btn btn-ghost">Annuler</button>
-              </form>
-              <%= button_to tool_path(@tool), method: :delete, class: "btn btn-error text-white" do %>
-                Oui, supprimer
-              <% end %>
+        <% if @tool.interventions.any? %>
+          <div title="Suppression impossible, l'outil est utilisé dans des interventions" class="cursor-not-allowed flex-1 sm:flex-none">
+            <div class="btn btn-soft btn-disabled opacity-50 pointer-events-none w-full">
+              <%= embedded_svg "icons/delete.svg", class: "w-5 h-5 fill-current text-gray-400" %>
+              <span class="hidden md:block">Supprimer</span>
             </div>
           </div>
-          <form method="dialog" class="modal-backdrop">
-            <button type="submit">Fermer</button>
-          </form>
-        </dialog>
+        <% else %>
+          <button type="button" class="btn btn-soft btn-error hover:!text-white flex-1 sm:flex-none" onclick="delete_tool_modal_<%= @tool.id %>.showModal()" title="Supprimer" data-testid="supprimer_outil">
+            <%= embedded_svg "icons/delete.svg", class: "w-5 h-5 fill-current" %>
+            <span class="hidden md:block">Supprimer</span>
+          </button>
+          <dialog id="delete_tool_modal_<%= @tool.id %>" class="modal">
+            <div class="modal-box">
+              <form method="dialog">
+                <button type="submit" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+              </form>
+              <h3 class="text-lg font-bold text-error flex items-center gap-2">
+                <%= embedded_svg "icons/warning.svg", title: "Supprimer le matériel" %>
+                Supprimer le matériel
+              </h3>
+              <p class="py-4 text-sm text-slate-600 text-left">
+                Êtes-vous certain(e) de vouloir supprimer ce matériel ? Cette action est irréversible.
+              </p>
+              <div class="modal-action">
+                <form method="dialog">
+                  <button type="submit" class="btn btn-ghost">Annuler</button>
+                </form>
+                <%= button_to tool_path(@tool), method: :delete, class: "btn btn-error text-white" do %>
+                  Oui, supprimer
+                <% end %>
+              </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+              <button type="submit">Fermer</button>
+            </form>
+          </dialog>
+        <% end %>
       <% end %>
     </div>
   </div>
@@ -119,35 +128,22 @@
     <% when 'calendrier' %>
       <%= month_calendar do |date| %>
         <div class="flex justify-center items-center h-6 mb-1">
-          <p class="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-sm <%= date == Date.today ? 'text-center text-purple-700 font-bold' : 'text-slate-400' %>">
+          <p class="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-sm <%= date == Date.today ? 'text-purple-700 font-bold' : 'text-slate-400' %>">
             <%= date.day %>
           </p>
         </div>
-        <%
-          heure_matin = Time.zone.parse("#{date} 08:00:00")
-          heure_soir = Time.zone.parse("#{date} 13:05:00")
-
-          mouvement_matin = @tool.dernier_mouvement_a(heure_matin)
-          mouvement_soir = @tool.dernier_mouvement_a(heure_soir)
-        %>
-        <div class="flex flex-nowrap justify-center gap-1 px-1">
+        <% 
+      heure_ref = Time.zone.parse("#{date} 12:00:00")
+      mouvement_jour = @tool.dernier_mouvement_a(heure_ref)
+    %>
+        <div class="flex justify-center items-center px-1 my-1">
           <%= render 'mouvements/mouvement_slot',
-                    mouvement: mouvement_matin,
-                    tool_id: @tool.id,
-                    date: date,
-                    margin_style: '',
-                    start_hour: 8,
-                    end_hour: 13,
-                    new_title: "Réserver le #{date.day} au matin" %>
-          <%= render 'mouvements/mouvement_slot',
-                    mouvement: mouvement_soir,
-                    tool_id: @tool.id,
-                    date: date,
-                    margin_style: '',
-                    start_hour: 13,
-                    start_minute: 5,
-                    end_hour: 18,
-                    new_title: "Réserver le #{date.day} après-midi" %>
+                mouvement: mouvement_jour,
+                tool_id: @tool.id,
+                date: date,
+                start_hour: 8,
+                end_hour: 18,
+                new_title: "Réserver le #{date.day}" %>
         </div>
       <% end %>
     <% when 'liste' %>
@@ -155,7 +151,6 @@
         <table class="table table-sm w-full border-collapse">
           <thead class="bg-slate-100">
             <tr>
-              <th></th>
               <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Intervention</th>
               <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Du</th>
               <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Au</th>
@@ -164,7 +159,8 @@
           </thead>
           <tbody>
             <% if @tool.interventions.any? %>
-              <%= render partial: 'intervention', collection: @tool.interventions.ordered, cached: true %>
+              <%= render partial: 'intervention', collection: @tool.interventions.ordered,
+                         cached: ->(intervention) { [intervention, current_user] } %>
             <% else %>
               <tr>
                 <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">
@@ -180,11 +176,9 @@
   <%# --- MOUVEMENTS --- %>
   <div class="flex justify-between flex-wrap items-center mt-10 mb-4">
     <h2 class="text-2xl text-secondary">Mouvements</h2>
-    <% if policy(Mouvement).new? %>
-      <%= link_to new_mouvement_path(tool_id: @tool.id), data: { 'testid': "ajouter_panne" }, class: 'btn btn-info btn-outline btn-md rounded flex items-center justify-center gap-2 text-base' do %>
-        <%= embedded_svg "icons/cone.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
-        <span class="hidden md:block">Gestion panne</span>
-      <% end %>
+    <%= link_to new_mouvement_path(tool_id: @tool.id), data: { 'testid': "ajouter_panne" }, class: 'btn btn-info btn-outline btn-md rounded flex items-center justify-center gap-2 text-base' do %>
+      <%= embedded_svg "icons/cone.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+      <span class="hidden md:block">Gestion panne</span>
     <% end %>
   </div>
   <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 overflow-hidden">

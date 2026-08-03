@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 class Convention < ApplicationRecord
+  include PieceJointeValidable
+  include PieceJointeAuditable
+
   audited associated_with: :user
 
   belongs_to :user
@@ -17,7 +20,6 @@ class Convention < ApplicationRecord
     application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
   ].freeze
 
-  include PieceJointeValidable
   valide_piece_jointe :document, types: DOCUMENTS
 
   validates :date_début, presence: true
@@ -30,15 +32,13 @@ class Convention < ApplicationRecord
 
   scope :ordered, -> { order(date_début: :desc) }
 
-  # Filtre les conventions visibles par l'utilisateur courant :
-  # - administrateur : celles de son organisation
-  # - manager : uniquement celles des services qu'il gère
-  # - autres : aucune
   def self.visible_to(user)
     if user.administrateur?
       joins(:service).where(services: { organisation_id: user.organisation&.id })
     elsif user.manager?
       where(service_id: user.service_ids)
+    elsif user.adhérent?
+      where(user_id: user.id)
     else
       none
     end

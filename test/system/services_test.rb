@@ -17,9 +17,7 @@ class ServicesTest < ApplicationSystemTestCase
 
     assert_difference -> { Service.count }, 1 do
       click_on 'Enregistrer'
-      # Le toast de flash est instable après navigation Turbo (cf. test suivant) :
-      # on attend la page du service créé (état métier) plutôt que le flash — c'est
-      # aussi la synchronisation qui garantit que le POST est traité avant le count.
+      # Le toast de flash est instable après navigation Turbo.
       assert_text(/espaces verts/i)
     end
   end

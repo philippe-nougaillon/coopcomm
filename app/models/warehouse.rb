@@ -11,6 +11,8 @@ class Warehouse < ApplicationRecord
 
   validates :address, :latitude, :longitude, presence: true
 
+  scope :ordered, -> { order(:name) }
+
   private
 
   def slug_candidates

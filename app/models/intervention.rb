@@ -3,9 +3,12 @@
 class Intervention < ApplicationRecord
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
+
   include Workflow
   include WorkflowActiverecord
   include DashboardRefreshable
+  include PieceJointeValidable
+  include PieceJointeAuditable
 
   acts_as_taggable_on :tags
 
@@ -15,6 +18,9 @@ class Intervention < ApplicationRecord
   attr_accessor :tags_manager
   attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute, :début_hour,
                 :début_minute, :fin_hour, :fin_minute
+
+  # Neutralise les publications d'événements de #apres_terminaison (clôture automatique).
+  attr_accessor :sans_notification
 
   before_destroy :must_not_have_any_mouvements
 
@@ -31,8 +37,6 @@ class Intervention < ApplicationRecord
 
   has_many_attached :photos
 
-  # TODO : mettre tous les include PieceJointeValidable en haut des fichiers
-  include PieceJointeValidable
   valide_piece_jointe :photos, types: PieceJointeValidable::IMAGES
 
   before_validation -> { combine_datetime(:début_prévue) }
@@ -49,11 +53,11 @@ class Intervention < ApplicationRecord
   validate :tools_must_be_available
   validate :agents_must_be_available
   validate :dates_cannot_be_in_the_future
+  validate :dates_obligatoires_si_terminé
 
   before_save -> { self.temps_de_pause = 0 if temps_de_pause.nil? }
   before_save :calc_temps_total
-  before_save :audit_photo_added, if: -> { photos.attachments.any?(&:new_record?) }
-  
+
   after_commit :update_heures_consommees_convention, if: -> { self.temps_total.present? }
 
   scope :ordered, -> { order(updated_at: :desc) }
@@ -61,10 +65,8 @@ class Intervention < ApplicationRecord
   # montre tout action ou intervention qui ont ce status
   scope :courantes, -> { where(workflow_state: ['nouveau', 'pointage activé', 'terminé']) }
 
-  # Prédicat SQL générique : l'intervalle [debut_expr, fin_expr] chevauche-t-il
-  # [:debut, :fin] ? Les bornes qui se touchent sont couvertes par les BETWEEN
-  # inclusifs ; pas de clause d'égalité pure (elle créerait de faux conflits entre
-  # intervalles ouverts). Décliné pour les interventions ET les absences.
+  # Pas de clause d'égalité pure : elle créerait de faux conflits entre
+  # intervalles ouverts.
   def self.overlap_sql(debut_expr, fin_expr)
     # <<-SQL...SQL = chaîne multi-ligne (heredoc) ; #squish l'aplatit en une seule
     # ligne (retire retours à la ligne et espaces superflus) pour l'écrire lisiblement.
@@ -88,9 +90,7 @@ class Intervention < ApplicationRecord
   # Chevauchement d'une absence (colonnes du/au) avec [:debut, :fin].
   ABSENCE_OVERLAP_SQL = overlap_sql('absences.du', 'absences.au').freeze
 
-  # Plage effective de CETTE intervention (côté OBJET chargé) : réel prioritaire,
-  # repli sur prévu. Équivalent Ruby de EFFECTIVE_DEBUT_SQL / EFFECTIVE_FIN_SQL —
-  # garder les deux en phase.
+  # Équivalent Ruby de EFFECTIVE_DEBUT_SQL / EFFECTIVE_FIN_SQL, à garder en phase.
   def effective_début
     début || début_prévue
   end
@@ -106,7 +106,6 @@ class Intervention < ApplicationRecord
   end
 
   after_create :replace_description_with_id
-  after_create :calculate_co2, if: proc(&:terminé?)
 
   # Rafraîchit (de façon coalescée) les vues matérialisées du dashboard.
   after_commit :refresh_dashboard_views, on: %i[create destroy]
@@ -115,6 +114,10 @@ class Intervention < ApplicationRecord
   # after_create_commit :broadcast_to_authorized_viewers
   # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
   after_create_commit :send_manager_notification
+
+  # Déclaré en dernier : le `save` de #calculate_co2 fait perdre aux callbacks
+  # suivants l'information « on sort d'une création ».
+  after_commit :apres_terminaison, on: %i[create update], if: :vient_de_terminer?
 
   # WORKFLOW
   NOUVEAU = 'nouveau'
@@ -127,7 +130,7 @@ class Intervention < ApplicationRecord
   ARCHIVE   = 'archivé'
 
   workflow do
-    state NOUVEAU, meta: { style: 'badge-primary text-white', rgba: '0,181,255,255' } do
+    state NOUVEAU, meta: { style: 'badge-secondary text-white ', rgba: '0,181,255,255' } do
       # event :accepter, transitions_to: ACCEPTE
       event :terminer, transitions_to: TERMINE
     end
@@ -141,21 +144,21 @@ class Intervention < ApplicationRecord
     #   event :terminer, transitions_to: TERMINE
     # end
 
-    state TERMINE, meta: { style: 'badge-accent text-white' } do
+    state TERMINE, meta: { style: ' badge-primary text-white ' } do
       event :valider, transitions_to: VALIDE
       event :refuser, transitions_to: REFUSE
     end
 
-    state VALIDE, meta: { style: 'badge-success text-white' } do
+    state VALIDE, meta: { style: ' badge-success text-white ' } do
       event :archiver, transitions_to: ARCHIVE
     end
 
-    state REFUSE, meta: { style: 'badge-error text-white' } do
+    state REFUSE, meta: { style: ' badge-error text-white ' } do
       # event :accepter, transitions_to: ACCEPTE
       event :archiver, transitions_to: ARCHIVE
     end
 
-    state ARCHIVE, meta: { style: 'badge-ghost' }
+    state ARCHIVE, meta: { style: 'badge-neutral' }
   end
 
   # pour que le changement de 'workflow_state' se voit dans l'audit trail
@@ -205,24 +208,24 @@ class Intervention < ApplicationRecord
     when 'adhérent'
       user.interventions_adherent.where(workflow_state: ['terminé']).ordered
     when 'agent'
-      user.interventions.where(workflow_state: ['nouveau']).where.not(template_slug: nil).ordered
+      user.interventions.where(workflow_state: ['nouveau']).ordered
     end
   end
 
   def check_absence
     return unless agents.any?
+    return if clôture_de_pointage?
 
-    absence_ids = agents.flat_map do |agent|
-      agent.absences.where(
+    absences = agents.flat_map do |agent|
+      agent.absences.includes(:user).where(
         ABSENCE_OVERLAP_SQL,
-        debut: début_prévue.try(:to_date), fin: fin_prévue.try(:to_date)
-      ).pluck(:id)
+        debut: effective_début.try(:to_date), fin: effective_fin.try(:to_date)
+      ).select { |absence| absence.couvre?(effective_début, effective_fin) }
     end.uniq
 
-    return if absence_ids.empty?
+    return if absences.empty?
 
-    absences = Absence.where(id: absence_ids.uniq.flatten)
-    messages = absences.includes(:user).map do |absence|
+    messages = absences.map do |absence|
       "#{absence.user.nom_prénom} (du #{absence.du&.strftime('%d/%m/%Y')} au #{absence.au&.strftime('%d/%m/%Y')}, motif : '#{absence.motif}')"
     end
     errors.add(:interventions, ": Agent(s) indisponible(s) : #{messages.to_sentence}")
@@ -239,7 +242,8 @@ class Intervention < ApplicationRecord
                               ABSENCE_OVERLAP_SQL,
                               debut: debut.try(:to_date), fin: fin.try(:to_date)
                             )
-                            .pluck(:user_id)
+                            .select { |absence| absence.couvre?(debut, fin) }
+                            .map(&:user_id)
     end
 
     conflicting_agents.uniq
@@ -265,9 +269,8 @@ class Intervention < ApplicationRecord
     end
   end
 
-  # Interdit un 2e pointage ouvert pour un agent (oubli de clôture + scan d'un
-  # autre QR). Deux intervalles ouverts ne se chevauchant pas au sens SQL, ce cas
-  # échappe à OVERLAP_SQL → règle dédiée.
+  # Deux intervalles ouverts ne se chevauchent pas au sens SQL : ce cas échappe
+  # à OVERLAP_SQL.
   def agents_must_not_have_open_pointage
     return unless pointage_ouvert?
 
@@ -373,7 +376,7 @@ class Intervention < ApplicationRecord
     if !fin || !début
       temps_total = 0
     elsif fin > début
-      temps_total = (fin - début).seconds.in_hours - temps_de_pause
+      temps_total = (fin - début).seconds.in_hours - temps_de_pause.to_f
       temps_total *= agents.count
     else
       temps_total = 0
@@ -459,6 +462,10 @@ class Intervention < ApplicationRecord
 
   def intervention_mère
     Intervention.find_by(slug: template_slug)
+  end
+
+  def pointage_de?(user)
+    template_slug.present? && intervention_mère&.agents&.include?(user)
   end
 
   def update_heures_consommees_convention
@@ -575,6 +582,13 @@ class Intervention < ApplicationRecord
     errors.add(:fin, 'ne peut pas être dans le futur')
   end
 
+  def dates_obligatoires_si_terminé
+    return unless terminé?
+
+    errors.add(:début, "est obligatoire pour terminer l'intervention") if début.blank?
+    errors.add(:fin, "est obligatoire pour terminer l'intervention") if fin.blank?
+  end
+
   def set_temporary_description
     # Si la description est vide, on lui donne une valeur bouchon pour passer la validation
     self.description = 'en_attente_id' if description.blank?
@@ -588,6 +602,27 @@ class Intervention < ApplicationRecord
     update_column(:description, "##{id}")
   end
 
+  def vient_de_terminer?
+    terminé? && saved_change_to_workflow_state?
+  end
+
+  def apres_terminaison
+    calculate_co2
+
+    return if Rails.env.development? || sans_notification
+
+    Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: id })
+
+    # Un pointage a son propre événement, publié par interventions#pointer.
+    Events.instance.publish('intervention.done', payload: { intervention_id: id }) if template_slug.blank?
+  end
+
+  # Fermer un pointage déjà ouvert reste toujours possible, sinon une absence
+  # posée en cours de journée le figerait ouvert (clôture nocturne comprise).
+  def clôture_de_pointage?
+    persisted? && template_slug.present? && will_save_change_to_fin? && !will_save_change_to_début?
+  end
+
   # Ajoute ou enlève l'état 'pointage activé' selon si c'est un modèle de pointage.
   def check_workflow_pointage_mère
     if !repeter? && workflow_state == 'pointage activé'
@@ -595,9 +630,5 @@ class Intervention < ApplicationRecord
     elsif repeter? && workflow_state != 'pointage activé'
       self.workflow_state = 'pointage activé'
     end
-  end
-  
-  def audit_photo_added
-    self.audit_comment = "#{photos.attachments.count(&:new_record?)} photo(s) ajoutée(s)"
   end
 end

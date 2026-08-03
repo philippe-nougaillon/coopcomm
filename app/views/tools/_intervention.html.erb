@@ -1,12 +1,11 @@
 <tr class="hover:bg-base-300">
-  <td>
-    <% if intervention.en_cours? %>
-      <%= embedded_svg "icons/cancel.svg", class: "text-error", title: "Annuler l'intervention en cours" %>
-    <% end %>
-  </td>
-  <td class="text-xl">
-    <%= link_to_if policy(intervention).edit?, intervention.description.humanize, intervention, class: 'font-black text-primary hover:underline' %>
-  </td>
+  <td class="text-base">
+  <% color_class = "text-#{intervention.style.split.first.split('-').last}" %>
+  <%= link_to_if policy(intervention).edit?, 
+                 intervention.description.humanize, 
+                 intervention, 
+                 class: "font-black #{color_class} hover:underline" %>
+</td>
   <td><%= l(intervention.début, format: :long) if intervention.début %></td>
   <td><%= l(intervention.fin, format: :long) if intervention.fin %></td>
   <td><%= intervention.adherent.try(:nom_prénom) %></td>

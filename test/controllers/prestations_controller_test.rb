@@ -18,7 +18,7 @@ class PrestationsControllerTest < ActionDispatch::IntegrationTest
     assert_difference('Prestation.count') do
       post prestations_url, params: { prestation: { code: 'ABC99', libellé: 'Nouvelle', tarif: 42 } }
     end
-    assert_redirected_to admin_parametres_path
+    assert_redirected_to admin_parametres_path(tab: "prestations")
     assert_equal @admin.organisation, Prestation.order(:created_at).last.organisation
   end
 
@@ -29,7 +29,7 @@ class PrestationsControllerTest < ActionDispatch::IntegrationTest
 
   test 'update' do
     patch prestation_url(@prestation), params: { prestation: { libellé: 'Modifié' } }
-    assert_redirected_to admin_parametres_path
+    assert_redirected_to admin_parametres_path(tab: "prestations")
     assert_equal 'Modifié', @prestation.reload.libellé
   end
 
@@ -38,7 +38,7 @@ class PrestationsControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference('Prestation.count') do
       delete prestation_url(@prestation)
     end
-    assert_redirected_to admin_parametres_path
+    assert_redirected_to admin_parametres_path(tab: "prestations")
   end
 
   test "destroy d'une prestation inutilisée" do
@@ -46,7 +46,7 @@ class PrestationsControllerTest < ActionDispatch::IntegrationTest
     assert_difference('Prestation.count', -1) do
       delete prestation_url(presta)
     end
-    assert_redirected_to admin_parametres_path
+    assert_redirected_to admin_parametres_path(tab: "prestations")
   end
 
   test 'un manager ne peut pas gérer le catalogue' do
@@ -68,5 +68,12 @@ class PrestationsControllerTest < ActionDispatch::IntegrationTest
       post prestations_url, params: { prestation: { libellé: 'Sans code', tarif: 10 } }
     end
     assert_response :unprocessable_content
+  end
+
+  test 'update invalide réaffiche le formulaire en 422' do
+    patch prestation_url(@prestation), params: { prestation: { libellé: '' } }
+
+    assert_response :unprocessable_content
+    assert_not_equal '', @prestation.reload.libellé
   end
 end

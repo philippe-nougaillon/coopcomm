@@ -55,4 +55,13 @@ class AdministrateurInterventionPolicyTest < ActionDispatch::IntegrationTest
   test 'should get get_unavailable_elements' do
     assert @policy.get_unavailable_elements?
   end
+
+  # Modèle de pointage
+  test 'should get new_intervention_modele_pointage' do
+    assert @policy.new_intervention_modele_pointage?
+  end
+
+  test 'create_intervention_modele_pointage délègue à new_intervention_modele_pointage' do
+    assert @policy.create_intervention_modele_pointage?
+  end
 end

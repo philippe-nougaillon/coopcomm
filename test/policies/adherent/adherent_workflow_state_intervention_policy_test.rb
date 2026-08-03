@@ -26,8 +26,8 @@ class AdherentWorkflowStateInterventionPolicyTest < ActionDispatch::IntegrationT
     assert @policy.refuser?
   end
 
-  # Archiver
-  test 'should get archiver' do
-    assert @policy.archiver?
+  # Archiver : réservé aux manager/administrateur.
+  test "should'nt get archiver" do
+    refute @policy.archiver?
   end
 end

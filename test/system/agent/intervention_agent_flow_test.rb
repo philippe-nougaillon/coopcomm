@@ -27,13 +27,10 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     visit interventions_url
     click_sur_boutton_ajouter('intervention')
 
-    # « Bon d'intervention » agent : pas de description (générée automatiquement),
-    # service caché ; on saisit l'adhérent, le créneau réalisé (passé) et le commentaire.
-    # On évite un chevauchement avec les fixtures existantes : la fixture tonte_locaux
-    # de bond occupe le lundi `(Date.today - 1).beginning_of_week` (8 h 30 – 17 h 30),
-    # donc une date relative à aujourd'hui (ex. Date.today - 3) retombe dessus certains
-    # jours de la semaine (le jeudi) ; on ancre sur le vendredi qui précède ce lundi —
-    # toujours passé, jamais en conflit, quel que soit le jour d'exécution.
+    # « Bon d'intervention » agent : pas de description (générée automatiquement), service
+    # caché ; on saisit l'adhérent, le créneau réalisé (passé) et le commentaire.
+    # Date ancrée sur le vendredi précédant le lundi de la fixture tonte_locaux :
+    # toujours passée, jamais en conflit, quel que soit le jour d'exécution.
     date = (Date.today - 1).beginning_of_week - 3
     select_option('#intervention_adherent_id', 'Bruel Patrick') # adhérent du service de bond
 
@@ -43,7 +40,7 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     fill_in 'Fin', with: date.strftime('%m%d%Y')
     select '16', from: 'intervention_fin_hour'
     select '00', from: 'intervention_fin_minute'
-    page.select '1,0', from: 'Temps de pause (h)'
+    page.select '1,0', from: 'intervention_temps_de_pause'
     fill_in 'Commentaires', with: 'Ceci est un commentaire !'
 
     assert_difference -> { Intervention.count }, 1 do

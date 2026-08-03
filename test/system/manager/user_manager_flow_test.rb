@@ -35,9 +35,8 @@ class UserManagerFlowTest < ApplicationSystemTestCase
     fill_in 'Nom', with: 'Thomas'
     fill_in 'Prénom', with: 'Didier'
     fill_in 'Adresse email', with: 'thomas.didier@gmail.commmm'
-    # (le changement de rôle est désormais réservé aux administrateurs)
-    # `cliquer_bouton` recentre le bouton : en largeur mobile le dock fixe du bas
-    # recouvrait le submit et interceptait le clic sous forte charge.
+    # (le changement de rôle est désormais réservé aux administrateurs) `cliquer_bouton`
+    # recentre le bouton : en largeur mobile le dock fixe du bas recouvrait le submit et…
     cliquer_bouton 'enregistrer_utilisateur'
 
     # `update` redirige vers la show : on attend la navigation, puis l'état métier
@@ -54,9 +53,8 @@ class UserManagerFlowTest < ApplicationSystemTestCase
     # La suppression est devenue une désactivation (soft-delete) via une modale HTML
     click_on "Désactiver l'utilisateur"
     click_on 'Oui, désactiver'
-    # La désactivation redirige vers l'index (users#destroy → users_url) : le nom
-    # est affiché sur le show courant, donc cette assertion attend de fait la fin
-    # du soft-delete ET l'arrivée sur l'index qui ne liste plus l'utilisateur.
+    # La désactivation redirige vers l'index (users#destroy → users_url) : le nom est
+    # affiché sur le show courant.
     assert_no_text user.nom_prénom
   end
 

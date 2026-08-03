@@ -4,13 +4,15 @@ class WikiPage < ApplicationRecord
   extend FriendlyId
   friendly_id :titre, use: :slugged
 
+  include PieceJointeValidable
+  include PieceJointeAuditable
+
   audited
 
   belongs_to :user
   has_rich_text :contenu
   has_one_attached :document
 
-  include PieceJointeValidable
   valide_piece_jointe :document, types: PieceJointeValidable::DOCUMENTS
 
   include PgSearch::Model

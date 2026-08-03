@@ -3,14 +3,11 @@
 require 'test_helper'
 
 # Filtre Services de l'index utilisateurs (#311) : services du current_user
-# présélectionnés au premier affichage, mais vidables — un administrateur qui
-# retire ses services voit alors TOUS les utilisateurs de son organisation.
-# Même mécanisme que l'index interventions (champ caché `services[]`).
+# présélectionnés au premier affichage, mais vidables.
 class UsersIndexFilterTest < ActionDispatch::IntegrationTest
   setup do
-    # administrateur_paris (org mairie_paris) services : service_paris /
-    # informatique / technique. john_wick est dans `comptabilite` (même org,
-    # hors de ses services) → témoin « hors périmètre personnel ».
+    # administrateur_paris (org mairie_paris) services : service_paris / informatique /
+    # technique.
     sign_in users(:administrateur_paris)
     @temoin = users(:john_wick)
   end
@@ -24,9 +21,8 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
   end
 
   test 'admin : filtre vidé (services[] soumis vide) → tous les utilisateurs de l\'organisation' do
-    # L'index /users pagine (10/page) : on cible la recherche sur le témoin pour
-    # un résultat déterministe, indépendant de la page. john_wick (comptabilite)
-    # n'apparaît QUE si le périmètre est élargi à toute l'organisation (filtre vidé).
+    # L'index /users pagine (10/page) : on cible la recherche sur le témoin pour un
+    # résultat déterministe, indépendant de la page.
     get users_url, params: { services: [''], search: @temoin.nom }
 
     assert_response :success
@@ -51,6 +47,29 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'a[href=?]', user_path(@temoin), { minimum: 1 } # john_wick est dans comptabilite
+  end
+
+  test 'admin : tous les services sélectionnés → tous les utilisateurs de l\'organisation' do
+    tous = organisations(:mairie_paris).services.ids
+
+    get users_url, params: { services: tous, search: @temoin.nom }
+
+    assert_response :success
+    assert_select 'a[href=?]', user_path(@temoin), { minimum: 1 },
+                  'tous les services cochés → l\'admin voit toute son organisation'
+  end
+
+  # Un administrateur peut créer un compte dans n'importe quel service de son
+  # organisation : ce compte doit être atteignable depuis l'index.
+  test 'admin : un compte créé dans un service qui n\'est pas le sien est retrouvable' do
+    créé = User.create!(nom: 'Neuf', prénom: 'Venu', email: 'neuf.venu@example.test',
+                        rôle: 'agent', password: 'qtDug$d843sqACz?V',
+                        service_ids: [services(:comptabilite).id])
+
+    get users_url, params: { services: [''], search: 'Neuf' }
+
+    assert_response :success
+    assert_select 'a[href=?]', user_path(créé), { minimum: 1 }
   end
 
   test 'le formulaire /users fournit le champ caché services[] (permet de vider le filtre)' do

@@ -32,10 +32,7 @@ class CommandeLigneTest < ActiveSupport::TestCase
 
   # --- Dérivation du prix ---
 
-  # ⚠ Ce test fige le comportement ACTUEL, qui est aussi le bug B2 du registre
-  # (.claude/method/bugs-signales.md) : le prix copié depuis la cotation signée
-  # est écrasé par le tarif courant de la prestation. Si la décision métier
-  # « respecter le prix du devis » est prise, ce test devra être inversé.
+  # ⚠ Ce test fige le comportement ACTUEL, qui est aussi le bug B2 du registre.
   test 'le prix HT est dérivé de la prestation (jamais saisi) — comportement actuel, cf. bug B2' do
     ligne = CommandeLigne.create!(commande: @commande, prestation: @prestation, qté: 1, prix_ht: 9999)
     assert_equal @prestation.tarif, ligne.reload.prix_ht

@@ -3,13 +3,6 @@
 require 'test_helper'
 
 # Disponibilité et POINTAGE.
-#
-# Un pointage (intervention fille) est une intervention comme une autre vis-à-vis
-# des conflits de chevauchement. Règle dédiée en plus : un agent ne peut pas avoir
-# deux POINTAGES OUVERTS simultanés (fille de pointage sans fin). Donc s'il oublie
-# de clôturer un pointage et en démarre un autre (scan d'un autre QR), c'est bloqué.
-# Le flux séquentiel normal (on clôture avant d'ouvrir le suivant) n'a jamais deux
-# pointages ouverts à la fois et n'est donc pas gêné.
 class InterventionPointageDisponibiliteTest < ActiveSupport::TestCase
   setup do
     @agent = users(:bond)

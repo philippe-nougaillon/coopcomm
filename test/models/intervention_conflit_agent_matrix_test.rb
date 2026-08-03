@@ -2,22 +2,7 @@
 
 require 'test_helper'
 
-# Matrice EXHAUSTIVE du conflit de disponibilité AGENT sur les dates
-# d'intervention.
-#
-# Objectif : prouver que la détection de conflit repose sur la PLAGE EFFECTIVE
-# (dates réelles prioritaires, repli sur les dates prévues), et que le résultat
-# est IDENTIQUE quel que soit le type de date porté par chaque intervention.
-#
-# On croise :
-#   - les 13 relations d'intervalles d'Allen (toutes les positions relatives
-#     possibles de deux intervalles : avant, après, qui se touchent, qui se
-#     chevauchent, qui partagent une borne, l'un dans l'autre, égaux) ;
-#   - les 4 combinaisons de types de dates (réel/prévu) entre l'intervention
-#     EXISTANTE et la NOUVELLE.
-#
-# Soit 13 × 4 = 52 cas. L'intervention existante occupe toujours [10:00, 12:00]
-# le même jour ; on fait varier la fenêtre de la nouvelle.
+# Matrice EXHAUSTIVE du conflit de disponibilité AGENT sur les dates d'intervention.
 class InterventionConflitAgentMatrixTest < ActiveSupport::TestCase
   setup do
     @agent = users(:bond)

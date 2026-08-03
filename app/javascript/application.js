@@ -41,3 +41,10 @@ const reprocessHtmx = () => {
 document.addEventListener("turbo:load", reprocessHtmx);
 document.addEventListener("turbo:render", reprocessHtmx);
 document.addEventListener("turbo:frame-load", reprocessHtmx);
+
+// Turbo guarda una "foto" del DOM antes de navegar, para poder restaurarla
+// al volver atrás. Si un <dialog> quedó abierto en esa foto, se restaura
+// abierto y bloquea la página. Lo cerramos justo antes de que Turbo tome esa foto.
+document.addEventListener("turbo:before-cache", () => {
+  document.querySelectorAll("dialog[open]").forEach((dialog) => dialog.close())
+})

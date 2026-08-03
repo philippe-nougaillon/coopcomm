@@ -72,4 +72,22 @@ class NewslettersControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to root_url
   end
+
+  test 'index exporte les inscrits au format XLS' do
+    sign_in @super_admin
+
+    get newsletters_url(format: :xls)
+
+    assert_response :success
+    assert_equal 'application/xls', response.content_type
+  end
+
+  test 'une inscription avec une adresse déjà connue est signalée sans doublon' do
+    assert_no_difference('Newsletter.count') do
+      get new_newsletter_url(email: @newsletter.email)
+    end
+
+    assert_response :success
+    assert_match(/existe déjà une inscription/i, response.body)
+  end
 end

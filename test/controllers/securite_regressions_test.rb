@@ -2,9 +2,57 @@
 
 require 'test_helper'
 
-# Tests de non-régression des failles corrigées (audit sécurité 2026-06).
+# Tests de non-régression des failles corrigées.
 # Chaque test matérialise une attaque qui était possible avant correctif.
 class SecuriteRegressionsTest < ActionDispatch::IntegrationTest
+  # ==================== TESTS CRITIQUES — isolation inter-organisations ====================
+  # Menace réaliste : un curieux qui suit une URL vers les
+  # données d'une autre commune (lien recopié, historique partagé, essai d'ID).
+
+  # Test critique — la fiche d'une intervention d'une autre organisation est inaccessible.
+  test "critique : un manager ne peut pas ouvrir l'intervention d'une autre organisation" do
+    sign_in users(:hidalgo) # manager mairie_paris
+
+    get intervention_url(interventions(:nettoyage_port)) # mairie_marseille
+
+    assert_response :redirect, "la fiche d'une autre organisation ne doit pas se rendre"
+  end
+
+  # Test critique — la commande d'une autre organisation est inaccessible (argent).
+  test "critique : un manager ne peut pas ouvrir la commande d'une autre organisation" do
+    sign_in users(:hidalgo)
+
+    get commande_url(commandes(:commande_marseille))
+
+    assert_response :redirect
+  end
+
+  # Test critique — la facture d'une autre organisation est inaccessible (argent).
+  test "critique : un manager ne peut pas ouvrir la facture d'une autre organisation" do
+    sign_in users(:hidalgo)
+
+    get facture_url(factures(:facture_marseille))
+
+    assert_response :redirect
+  end
+
+  # Test critique — l'export XLS des interventions est borné à l'organisation :
+  # aucune ligne d'une autre commune ne doit partir dans le fichier.
+  test "critique : l'export XLS d'un manager ne contient aucune intervention d'une autre organisation" do
+    sign_in users(:hidalgo)
+
+    get interventions_url(format: :xls)
+
+    assert_response :success
+    sheet = Spreadsheet.open(StringIO.new(response.body)).worksheet(0)
+    contenu = sheet.rows.map { |r| r.to_a.join(' ') }.join(' ')
+    assert_includes contenu, interventions(:tonte_locaux).description,
+                    'garde anti-faux-positif : les interventions de sa propre organisation sont exportées'
+    assert_not_includes contenu, interventions(:nettoyage_port).description
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
   # --- Mass assignment : rôle ---
 
   test "un agent ne peut pas s'auto-promouvoir administrateur via update" do
@@ -25,13 +73,12 @@ class SecuriteRegressionsTest < ActionDispatch::IntegrationTest
     assert bond.reload.agent?
   end
 
-  test 'un manager ne peut pas créer un administrateur via admin/create_new_user_do' do
+  test 'un manager ne peut pas créer un administrateur' do
     sign_in users(:hidalgo)
 
     post admin_create_new_user_do_url, params: {
       user: { nom: 'Forgé', prénom: 'Compte', email: 'forge@example.com',
-              password: 'Px9!aZk2#mQ7', rôle: 'administrateur',
-              address: 'Mairie', latitude: 1.0, longitude: 1.0 }
+              rôle: 'administrateur', service_ids: [services(:informatique).id] }
     }
 
     créé = User.find_by(email: 'forge@example.com')

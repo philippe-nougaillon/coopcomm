@@ -76,8 +76,8 @@ class CotationLigneTest < ActiveSupport::TestCase
   end
 
   # --- Cohérence des fixtures (valeurs dérivées figées en dur) ---
-  # Ces deux gardes transforment une dérive silencieuse (tarif modifié sans
-  # mettre à jour les fixtures) en échec de test explicite.
+  # Ces deux gardes transforment une dérive silencieuse (tarif modifié sans mettre à jour
+  # les fixtures) en échec de test explicite.
 
   test 'fixtures cohérentes : prix_ht de la ligne = tarif de la prestation' do
     ligne = cotation_lignes(:ligne_cotation_paris)

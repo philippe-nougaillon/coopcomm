@@ -17,7 +17,9 @@
       <%= form.label :name, class: "label font-semibold text-slate-700" do %>
         <span>Nom <span class="text-red-500">*</span></span>
       <% end %>
-      <%= form.text_field :name, class: ["input input-bordered w-full focus:input-primary", {"input-error": warehouse.errors[:name].any?}] %>
+      <%= form.text_field :name,       
+      required: true,
+      class: ["input input-bordered w-full focus:input-primary", {"input-error": warehouse.errors[:name].any?}] %>
     </div>
     <div class="w-full">
       <%= form.label :user_ids, class: "label font-semibold text-slate-700 " do %>
@@ -27,14 +29,19 @@
       Note: Remplace `User.all` par la variable de ton contrôleur (ex: @users) si tu veux filtrer.
       Remplace `:email` par `:nom_complet` ou l'attribut que tu veux afficher dans la liste déroulante.
     %>
-      <%= form.collection_select :user_ids, @users, :id, :nom_prénom, {}, { multiple: true, class: 'w-full h-10', data: { controller: 'slim-select' } } %>
+      <%= form.collection_select :user_ids, @users, :id, :nom_prénom, {}, { 
+        multiple: true, 
+        class: 'w-full h-10 slim-select', 
+        required: true} 
+        %>
     </div>
-    <div class="w-full">
+    <div class="w-full" data-controller="places" data-places-center-lat-value="<%= ENV['MAPS_CENTER_LAT'] %>" data-places-center-lng-value="<%= ENV['MAPS_CENTER_LNG'] %>">
       <%= form.label :address, class: "label font-semibold text-slate-700" do %>
         <span>Localisation <span class="text-red-500">*</span></span>
       <% end %>
       <%# Le champ visible par l'utilisateur pour chercher l'adresse %>
       <%= form.text_field :address, 
+          required: true, 
           class: 'input input-bordered w-full focus:input-primary', 
           placeholder: 'Commencez à taper une adresse...', 
           data: { places_target: "address" } %>
@@ -48,7 +55,7 @@
     </div>
   <% end %>
   <div class="pt-6 max-w-3xl mx-auto ">
-    <%= link_to admin_parametres_path(tab: params[:tab] || 'prestations'), class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+    <%= link_to admin_parametres_path(tab: params[:tab] || 'sites'), class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
       <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des utilisateurs" %>
       Retour aux paramètres
     <% end %>

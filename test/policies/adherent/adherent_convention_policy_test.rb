@@ -35,8 +35,9 @@ class AdherentConventionPolicyTest < ActionDispatch::IntegrationTest
     refute policy.destroy?
   end
 
-  test 'scope : aucune convention visible pour un adhérent' do
-    assert_empty ConventionPolicy::Scope.new(@adherent, Convention.all).resolve
+  test 'scope : un adhérent ne voit que ses propres conventions' do
+    scoped_conventions = ConventionPolicy::Scope.new(@adherent, Convention.all).resolve
+    assert_equal [@convention], scoped_conventions.to_a # convention_paris appartient à weil
   end
 
   test 'scope : aucune convention visible pour un agent' do

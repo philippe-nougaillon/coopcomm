@@ -37,9 +37,8 @@ class NotifMailAdherentInterventionPointageJobTest < ActiveJob::TestCase
   end
 
   test 'une intervention sans adhérent fait échouer le job (User.find(nil))' do
-    # adherent_id nullable en base : le job fait User.find(intervention.adherent_id)
-    # sans garde → User.find(nil) lève RecordNotFound, aucun mail n'est envoyé.
-    # (Même fragilité dans NotifWhatsappAdherentInterventionPointageJob.)
+    # adherent_id nullable en base : le job fait User.find(intervention.adherent_id) sans
+    # garde → User.find(nil) lève RecordNotFound, aucun mail n'est envoyé.
     @intervention.update_column(:adherent_id, nil)
 
     assert_no_emails do

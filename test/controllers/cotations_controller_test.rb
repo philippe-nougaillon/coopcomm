@@ -13,6 +13,21 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     sign_in @admin
   end
 
+  # ==================== TESTS CRITIQUES ====================
+  # Le prix d'un devis vient toujours du tarif des prestations, jamais de la requête.
+
+  # Test critique.
+  test "critique : le prix d'une ligne ne peut pas être forcé via les paramètres" do
+    post cotations_url, params: { cotation: {
+      adherent_id: @adherent.id, service_id: @service.id, intitulé: 'Devis',
+      cotation_lignes_attributes: { '0' => { prestation_id: @prestation.id, qté: 1, prix_ht: 1 } }
+    } }
+    ligne = Cotation.order(:created_at).last.cotation_lignes.first
+    assert_equal @prestation.tarif, ligne.prix_ht
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
   test 'index accessible à un admin' do
     get cotations_url
     assert_response :success
@@ -58,15 +73,6 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 136.5, cotation.total_ht.to_f
     assert_equal 'créé', cotation.workflow_state
     assert_match(/\ACO-#{Date.current.year}-\d+\z/, cotation.ref)
-  end
-
-  test "le prix d'une ligne ne peut pas être forcé via les paramètres" do
-    post cotations_url, params: { cotation: {
-      adherent_id: @adherent.id, service_id: @service.id, intitulé: 'Devis',
-      cotation_lignes_attributes: { '0' => { prestation_id: @prestation.id, qté: 1, prix_ht: 1 } }
-    } }
-    ligne = Cotation.order(:created_at).last.cotation_lignes.first
-    assert_equal @prestation.tarif, ligne.prix_ht
   end
 
   # --- Modification & verrou d'édition ---
@@ -263,13 +269,8 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     # sans destinataire à notifier.
     assert_equal 'signé', cotation.reload.workflow_state
 
-    # ⚠ RÉGRESSION signalée (non corrigée) : `signer_do` exécute
-    # `return if creator&.email.blank?` AVANT le `redirect_to`. Quand le créateur
-    # n'a pas d'email (ou n'est pas identifiable), l'action ne rend rien → 204 No
-    # Content. Via Turbo, l'adhérent signe sans aucun retour visuel (ni redirection
-    # ni flash). Avant le refactor, `redirect_to root_path` s'exécutait toujours.
-    # Correctif proposé : sortir le `redirect_to` de la garde (p. ex. remettre la
-    # notification dans une méthode privée dédiée, comme `notify_adherent_cotation_envoyee`).
+    # ⚠ Régression signalée, non corrigée : sans email côté créateur, `signer_do`
+    # sort avant le `redirect_to` → 204, l'adhérent signe sans aucun retour.
     assert_response :no_content
   end
 
@@ -312,9 +313,8 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # --- Index côté adhérent (voit TOUTES ses cotations envoyées, tous services confondus) ---
-  # weil est rattaché au seul service Informatique mais possède une cotation sur
-  # Secrétariat : l'ancien filtre `.where(service: current_user.services)` la masquait.
-  # Les cotations encore à l'état « créé » (brouillons internes) restent invisibles.
+  # weil n'est rattaché qu'à Informatique mais possède une cotation sur
+  # Secrétariat : l'ancien filtre par service la masquait.
 
   test 'un adhérent voit toutes ses cotations envoyées, quel que soit le service prestataire' do
     cotations(:cotation_paris).update!(workflow_state: 'envoyé')
@@ -381,5 +381,64 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to cotation_path(cotation)
     assert_equal 'Impossible de créer la commande.', flash[:alert]
+  end
+
+  # --- Filtres de l'index ---
+
+  test 'index filtre sur la référence ou l\'intitulé' do
+    cotation = cotations(:cotation_paris)
+
+    get cotations_url(search: cotation.intitulé)
+
+    assert_response :success
+    assert_includes assigns(:cotations), cotation
+  end
+
+  test 'index filtre sur les adhérents sélectionnés' do
+    cotation = cotations(:cotation_paris)
+
+    get cotations_url(adhérent_ids: [cotation.adherent_id])
+
+    assert_response :success
+    assert_includes assigns(:cotations), cotation
+  end
+
+  test 'index filtre sur les services sélectionnés' do
+    cotation = cotations(:cotation_paris)
+
+    get cotations_url(service_ids: [cotation.service_id])
+
+    assert_response :success
+    assert_includes assigns(:cotations), cotation
+  end
+
+  test 'index filtre sur le statut, quelle que soit la casse du libellé' do
+    cotation = cotations(:cotation_paris)
+
+    get cotations_url(workflow_state: cotation.workflow_state.capitalize)
+
+    assert_response :success
+    assert_includes assigns(:cotations), cotation
+  end
+
+  # --- edit / update / signature ---
+
+  test 'edit amorce une ligne vide quand la cotation n\'en a aucune' do
+    cotation = Cotation.create!(intitulé: 'Cotation sans ligne', adherent: @adherent, service: @service,
+                                organisation: organisations(:mairie_paris))
+
+    get edit_cotation_url(cotation)
+
+    assert_response :success
+    assert_equal 1, assigns(:cotation).cotation_lignes.size
+  end
+
+  test 'update invalide réaffiche le formulaire en 422' do
+    cotation = cotations(:cotation_paris)
+
+    patch cotation_url(cotation), params: { cotation: { intitulé: '' } }
+
+    assert_response :unprocessable_content
+    assert_not_equal '', cotation.reload.intitulé
   end
 end

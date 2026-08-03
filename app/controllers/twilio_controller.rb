@@ -62,8 +62,9 @@ class TwilioController < ApplicationController
 
     if agent && (last_intervention_today = agent.intervention_en_cours)
       puts last_intervention_today.inspect
-      if last_intervention_today.can_terminer?
-        last_intervention_today.terminer!
+      last_intervention_today.fin = Time.current
+
+      if last_intervention_today.can_terminer? && terminer_sans_erreur(last_intervention_today)
         render xml: Twilio::TwiML::MessagingResponse.new.message(body: "L'intervention #{last_intervention_today.description} a été terminé avec succès.").to_s
       else
         render xml: Twilio::TwiML::MessagingResponse.new.message(body: "L'intervention #{last_intervention_today.description} n'a pas pu être terminé.").to_s
@@ -72,5 +73,12 @@ class TwilioController < ApplicationController
       render xml: Twilio::TwiML::MessagingResponse.new.message(body: "Aucune intervention n'a été trouvé.").to_s
     end
     puts 'Réponse twilio envoyé'
+  end
+
+  def terminer_sans_erreur(intervention)
+    intervention.terminer!
+    true
+  rescue ActiveRecord::RecordInvalid
+    false
   end
 end

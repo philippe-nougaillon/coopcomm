@@ -140,13 +140,13 @@
           </div>
           <div class="flex flex-wrap  items-center gap-2 w-full sm:w-auto">
             <% if policy(@cotation).envoyer? && @cotation.can_envoyer? %>
-              <%= button_to "Envoyer", envoyer_cotation_path(@cotation), class: "btn  btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
+              <%= button_to "Envoyer", envoyer_cotation_path(@cotation), class: "btn btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
             <% end %>
             <% if policy(@cotation).valider? && @cotation.can_valider? %>
-              <%= button_to "Valider", valider_cotation_path(@cotation), class: "btn  btn-success btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
+              <%= button_to "Valider", valider_cotation_path(@cotation), class: "btn btn-success btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
             <% end %>
             <% if policy(@cotation).refuser? && @cotation.can_refuser? %>
-              <%= button_to "Refuser", refuser_cotation_path(@cotation), class: "btn  btn-error btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
+              <%= button_to "Refuser", refuser_cotation_path(@cotation), class: "btn btn-error btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
             <% end %>
           </div>
         </div>
@@ -216,7 +216,7 @@
           <% cotation_lignes = @cotation.cotation_lignes.includes(:prestation) %>
           <% if cotation_lignes.any? %>
             <% cotation_lignes.each do |ligne| %>
-              <tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
+              <tr class="hover:bg-base-200/60 transition-colors duration-150 align-middle">
                 <td class="px-4 py-3 font-semibold text-sm text-left max-w-48 truncate cursor-help" title="<%= ligne.prestation&.code %>">
                   <%= ligne.prestation&.code %>
                 </td>

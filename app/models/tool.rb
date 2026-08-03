@@ -4,6 +4,9 @@ class Tool < ApplicationRecord
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
 
+  include PieceJointeValidable
+  include PieceJointeAuditable
+
   audited
   
   belongs_to :organisation
@@ -32,7 +35,6 @@ class Tool < ApplicationRecord
     image/avif
   ].freeze
 
-  include PieceJointeValidable
   valide_piece_jointe :photo, types: IMAGES
   valide_piece_jointe :document, types: DOCUMENTS
 

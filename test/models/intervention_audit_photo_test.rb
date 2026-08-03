@@ -2,18 +2,7 @@
 
 require 'test_helper'
 
-# L'ajout de photo(s) sur une intervention doit laisser une trace dans l'audit
-# (cf. before_save :audit_photo_added dans Intervention). Deux garanties non
-# évidentes sont protégées ici — on n'asserte PAS le libellé exact, pour rester
-# robuste à une reformulation du message :
-#   1. un audit AVEC message est créé alors qu'attacher une photo ne change
-#      aucune colonne (dépend du comportement `update_with_comment_only` d'audited) ;
-#   2. ré-émettre une photo existante (comportement du formulaire) ne déclenche
-#      PAS un faux « photo ajoutée » (c'est tout l'intérêt de la garde new_record?).
-#
-# ⚠ Les photos sont assignées via le WRITER `photos=` (comme le formulaire), PAS
-# via `.attach` : sur un record persisté, `.attach` écrit l'attachement sans
-# repasser par le `save`, donc sans déclencher le callback.
+# L'ajout de photo(s) sur une intervention doit laisser une trace dans l'audit.
 class InterventionAuditPhotoTest < ActiveSupport::TestCase
   include ActionDispatch::TestProcess::FixtureFile
 

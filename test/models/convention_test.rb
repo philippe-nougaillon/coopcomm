@@ -127,8 +127,16 @@ class ConventionTest < ActiveSupport::TestCase
     refute_includes Convention.visible_to(users(:manager_marseille)), conventions(:convention_paris)
   end
 
-  test 'aucune convention visible pour un adhérent' do
-    assert_empty Convention.visible_to(users(:weil))
+  test 'un adhérent voit ses propres conventions et pas celles des autres adhérents' do
+    # patrick (@adherent) et weil sont deux adhérents de la même organisation :
+    # chacun ne doit voir que la sienne.
+    convention_de_patrick = build_convention
+    convention_de_patrick.save!
+
+    visibles = Convention.visible_to(users(:weil))
+
+    assert_includes visibles, conventions(:convention_paris) # convention de weil
+    refute_includes visibles, convention_de_patrick
   end
 
   test 'aucune convention visible pour un agent' do
@@ -150,6 +158,26 @@ class ConventionTest < ActiveSupport::TestCase
   end
 
   # NB : les anciens tests de Convention#temps_total_interventions ont été déplacés dans
-  # test/models/intervention_test.rb (section « Heures consommées de la convention ») :
-  # la fonction est devenue Intervention#update_heures_consommees_convention (after_commit).
+  # test/models/intervention_test.rb.
+
+  test 'une convention retrouve les interventions de son adhérent sur sa période' do
+    convention = conventions(:convention_paris)
+    dans_la_période = Intervention.create!(
+      description: 'Intervention sous convention',
+      adherent_id: convention.user_id, service_id: convention.service_id,
+      workflow_state: 'nouveau', début: convention.date_début.beginning_of_day + 9.hours,
+      slug: SecureRandom.uuid
+    )
+    hors_période = Intervention.create!(
+      description: 'Intervention hors convention',
+      adherent_id: convention.user_id, service_id: convention.service_id,
+      workflow_state: 'nouveau', début: convention.date_début.beginning_of_day - 2.days,
+      slug: SecureRandom.uuid
+    )
+
+    interventions = convention.interventions
+
+    assert_includes interventions, dans_la_période
+    assert_not_includes interventions, hors_période
+  end
 end

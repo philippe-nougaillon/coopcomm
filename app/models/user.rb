@@ -5,6 +5,8 @@ class User < ApplicationRecord
   friendly_id :slug_candidates, use: :slugged
 
   include Discard::Model
+  include PieceJointeValidable
+  include PieceJointeAuditable
 
   acts_as_taggable_on :tags
 
@@ -34,7 +36,6 @@ class User < ApplicationRecord
     image/avif
   ].freeze
 
-  include PieceJointeValidable
   valide_piece_jointe :profile_picture, types: IMAGES
 
   belongs_to :warehouse, optional: true
@@ -81,7 +82,8 @@ class User < ApplicationRecord
   validates :prénom, :rôle, presence: true, if: -> { rôle == 'agent' }
   validates_uniqueness_of :email
   validates :address, :latitude, :longitude, presence: true, if: -> { rôle == 'adhérent' }
-  validate :must_have_at_least_one_service, if: -> { rôle == 'agent' }
+  validate :must_have_at_least_one_service
+  validate :agent_must_have_exactly_one_service, if: -> { rôle == 'agent' }
 
   default_scope -> { kept }
   scope :ordered, -> { order(:nom) }
@@ -126,10 +128,7 @@ class User < ApplicationRecord
     h.sort_by { |k, _| I18n.transliterate(k) }.to_h
   end
 
-  # Liste PLATE (sans groupe) des intervenants appartenant à au moins un des
-  # services fournis, au format [["NOM Prénom", id], …], triée par nom puis prénom.
-  # Sert au rendu initial des formulaires d'intervention et à l'endpoint
-  # `agents_for_service` (mise à jour dynamique selon le service sélectionné).
+  # Liste plate au format [["NOM Prénom", id], …].
   def self.agents_for_services(services)
     intervenants
       .by_service(services)
@@ -318,6 +317,10 @@ class User < ApplicationRecord
     initiator_id = try(:invited_by_id) || 0
 
     # 4. On crée le log pour Mailgun
+    # L'organisation dérive des services : un compte qui n'en a plus aucun ne
+    # doit pas faire échouer l'envoi du mail, seulement sa traçabilité.
+    return if organisation.nil?
+
     MailLog.create(
       user_id: initiator_id,
       message_id: mailer_response.message_id,
@@ -380,11 +383,21 @@ class User < ApplicationRecord
     [SecureRandom.uuid]
   end
 
+  # Les rattachements marqués pour destruction ne comptent pas : on valide l'état
+  # d'après la sauvegarde, pas celui d'avant.
+  def services_restants
+    user_services.reject(&:marked_for_destruction?)
+  end
+
   def must_have_at_least_one_service
-    # On rejette les services qui sont sur le point d'être détruits en mémoire
-    # pour s'assurer qu'il en restera bien au moins un après la sauvegarde.
-    return unless user_services.reject(&:marked_for_destruction?).empty?
+    return unless services_restants.empty?
 
     errors.add(:services, 'doit comporter au moins un service')
+  end
+
+  def agent_must_have_exactly_one_service
+    return if services_restants.size <= 1
+
+    errors.add(:services, 'ne doit comporter qu\'un seul service pour un agent')
   end
 end

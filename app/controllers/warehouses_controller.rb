@@ -28,7 +28,10 @@ class WarehousesController < ApplicationController
 
     respond_to do |format|
       if @warehouse.save
-        format.html { redirect_to admin_parametres_path, notice: 'Site créé avec succès.' }
+        format.html do 
+          redirect_to admin_parametres_path(tab: target_tab), 
+                      notice: 'Site créé avec succès.' 
+        end        
         format.json { render :show, status: :created, location: @warehouse }
       else
         format.html { render :new, status: :unprocessable_content }
@@ -41,7 +44,10 @@ class WarehousesController < ApplicationController
   def update
     respond_to do |format|
       if @warehouse.update(warehouse_params)
-        format.html { redirect_to admin_parametres_path, notice: 'Site modifié avec succès.', status: :see_other }
+        format.html do
+          redirect_to admin_parametres_path(tab: target_tab), 
+          notice: 'Site modifié avec succès.', status: :see_other 
+        end
         format.json { render :show, status: :ok, location: @warehouse }
       else
         format.html { render :edit, status: :unprocessable_content }
@@ -55,7 +61,10 @@ class WarehousesController < ApplicationController
     @warehouse.destroy!
 
     respond_to do |format|
-      format.html { redirect_to admin_parametres_path, notice: 'Site supprimé avec succès.', status: :see_other }
+      format.html do
+        redirect_to admin_parametres_path(tab: target_tab),
+         notice: 'Site supprimé avec succès.', status: :see_other 
+      end  
       format.json { head :no_content }
     end
   end
@@ -73,6 +82,10 @@ class WarehousesController < ApplicationController
   # Only allow a list of trusted parameters through.
   def warehouse_params
     params.expect(warehouse: [:name, :address, :longitude, :latitude, { user_ids: [] }])
+  end
+
+  def target_tab
+    params[:tab].presence || 'sites'
   end
 
   def is_user_authorized

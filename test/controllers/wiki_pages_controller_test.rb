@@ -65,4 +65,62 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
 
     assert @wiki_page.reload.discarded?
   end
+
+  # --- index : catégories et recherche ---
+
+  # Les fixtures ne renseignent pas `catégorie` : on la pose ici, sinon les scopes
+  # d'enum ne remontent rien.
+  test 'index sur la catégorie blog ne liste que les billets' do
+    wiki_pages(:blog).update!(catégorie: :blog, publiée: true)
+    wiki_pages(:guide).update!(catégorie: :guide, publiée: true)
+
+    get wiki_pages_url(catégorie: 'blog')
+
+    assert_response :success
+    assert_includes assigns(:wiki_pages), wiki_pages(:blog)
+    assert_not_includes assigns(:wiki_pages), wiki_pages(:guide)
+  end
+
+  test 'index sur la catégorie guide ne liste que les guides' do
+    wiki_pages(:blog).update!(catégorie: :blog, publiée: true)
+    wiki_pages(:guide).update!(catégorie: :guide, publiée: true)
+
+    get wiki_pages_url(catégorie: 'guide')
+
+    assert_response :success
+    assert_includes assigns(:wiki_pages), wiki_pages(:guide)
+    assert_not_includes assigns(:wiki_pages), wiki_pages(:blog)
+  end
+
+  test 'index sur la catégorie faq ne liste que les fiches' do
+    wiki_pages(:fiche).update!(catégorie: :faq, publiée: true)
+
+    get wiki_pages_url(catégorie: 'faq')
+
+    assert_response :success
+    assert_includes assigns(:wiki_pages), wiki_pages(:fiche)
+  end
+
+  test 'index avec une recherche interroge titre et contenu' do
+    get wiki_pages_url(search: wiki_pages(:blog).titre)
+
+    assert_response :success
+    assert_includes assigns(:wiki_pages), wiki_pages(:blog)
+  end
+
+  # ÉPINGLAGE BUG — les vues jbuilder générées interrogent `nom`, attribut absent
+  # de WikiPage : toute requête JSON sur la ressource lève. À inverser à la
+  # correction des vues.
+  test 'la réponse JSON d\'une page wiki lève sur un attribut inexistant' do
+    assert_raises(ActionView::Template::Error) do
+      get wiki_page_url(@wiki_page, format: :json)
+    end
+  end
+
+  test 'un slug de page wiki inconnu redirige au lieu de planter' do
+    get wiki_page_url('page-inexistante')
+
+    assert_redirected_to root_path
+    assert_match(/introuvable/i, flash[:alert].to_s)
+  end
 end

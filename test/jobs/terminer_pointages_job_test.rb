@@ -28,6 +28,16 @@ class TerminerPointagesJobTest < ActiveJob::TestCase
     assert_in_delta Time.current, @pointage.fin, 1.minute
   end
 
+  test 'clôture le pointage même si une absence a été posée après son ouverture' do
+    Absence.create!(user: @agent, du: Date.today, au: Date.today, motif: 0)
+
+    TerminerPointagesJob.perform_now
+
+    @pointage.reload
+    assert @pointage.terminé?
+    assert @pointage.fin.present?
+  end
+
   test 'envoie un mail à l’unique agent et crée un MailLog' do
     assert_difference -> { ActionMailer::Base.deliveries.size } => 1,
                       -> { MailLog.count } => 1 do
@@ -44,6 +54,14 @@ class TerminerPointagesJobTest < ActiveJob::TestCase
     assert_equal 'mail', log.channel
     assert_equal @pointage.organisation.id, log.organisation_id
     assert_equal mail.message_id, log.message_id
+  end
+
+  test 'la clôture automatique ne notifie pas les managers' do
+    assert_no_enqueued_jobs only: NotifManagersWorkflowChangedJob do
+      TerminerPointagesJob.perform_now
+    end
+
+    assert @pointage.reload.terminé?, 'garde : la clôture doit bien avoir eu lieu'
   end
 
   test 'ignore les interventions « nouveau » sans template_slug' do
@@ -70,9 +88,6 @@ class TerminerPointagesJobTest < ActiveJob::TestCase
     mère = interventions(:intervention_repete)
 
     # Créé EN PREMIER → id le plus bas → traité en premier par find_each.
-    # terminer! le fera planter : une date de début dans le futur, posée en base
-    # sans validation (update_column), rend le save! invalide dès que le job
-    # fixe fin = maintenant (début > fin).
     pointage_ko = mère.create_next_intervention(mère, users(:bond))
     pointage_ko.update_column(:début, 1.day.from_now)
 

@@ -6,8 +6,8 @@ class InterventionTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
   # --- Notification des managers à la création (send_manager_notification) ---
-  # Le créateur est déduit de l'audit de création : au niveau modèle, il faut
-  # `as_user` pour le poser (dans l'app, `audited` capte le current_user du contrôleur).
+  # Le créateur est déduit de l'audit de création : au niveau modèle, il faut `as_user`
+  # pour le poser (dans l'app, `audited` capte le current_user du contrôleur).
 
   test "création par un agent NON terminée : aucune notification managers n'est enqueue" do
     agent = users(:martin_technique_paris)
@@ -103,15 +103,8 @@ class InterventionTest < ActiveSupport::TestCase
   # end
 
   # --- Heures consommées de la convention (update_heures_consommees_convention) ---
-  # Remplace Convention#temps_total_interventions (tests déplacés depuis convention_test.rb).
-  # Le cumul est entretenu incrémentalement par un after_commit, à partir du dernier
-  # audit de l'intervention : création → + temps_total ; update → + (nouveau − ancien) ;
-  # destroy → − temps_total. Convention de fixture : convention_paris (weil / informatique,
-  # année 2026, heures_consommees: 0). Ancrage temporel fixe (travel_to) pour rester
-  # dans la période de la convention quelle que soit la date d'exécution.
-  # NB : temps_total est assigné explicitement — le before_save calc_temps_total est
-  # aujourd'hui inopérant (bug B1 du registre) ; s'il est corrigé, prévoir début/fin/agents
-  # cohérents avec la valeur attendue.
+  # Remplace Convention#temps_total_interventions (tests déplacés depuis
+  # convention_test.rb).
 
   def create_intervention_conventionnee(attrs = {})
     Intervention.create!({ description: 'intervention conventionnée',
@@ -178,5 +171,241 @@ class InterventionTest < ActiveSupport::TestCase
 
       assert_equal 0, conventions(:convention_paris).reload.heures_consommees
     end
+  end
+
+  # --- by_role_for_home : ce que chaque rôle voit sur /home ---
+  # Côté agent le périmètre n'est plus restreint aux filles de pointage :
+  # toutes ses interventions « nouveau » sont listées.
+
+  test 'home agent : une intervention ordinaire à l\'état nouveau est listée' do
+    agent = users(:martin_technique_paris)
+    intervention = interventions(:nouvelle_intervention)
+
+    assert_nil intervention.template_slug
+    assert_includes intervention.agents, agent
+
+    assert_includes Intervention.by_role_for_home(agent), intervention
+  end
+
+  test 'home agent : une fille de pointage à l\'état nouveau reste listée' do
+    agent = users(:martin_technique_paris)
+    fille = interventions(:intervention_fille)
+    fille.update_columns(template_slug: interventions(:intervention_repete).slug)
+
+    assert_includes Intervention.by_role_for_home(agent), fille
+  end
+
+  test 'home agent : les interventions qui ont quitté l\'état nouveau sont exclues' do
+    listees = Intervention.by_role_for_home(users(:martin_technique_paris))
+
+    assert_not_includes listees, interventions(:intervention_terminée)
+    assert_not_includes listees, interventions(:intervention_validé)
+  end
+
+  test 'home agent : l\'intervention nouveau d\'un autre agent est exclue' do
+    agent = users(:martin_technique_paris)
+    intervention = interventions(:intervention_with_location)
+
+    assert_equal 'nouveau', intervention.workflow_state
+    assert_not_includes intervention.agents, agent
+
+    assert_not_includes Intervention.by_role_for_home(agent), intervention
+  end
+
+  test 'home agent : les interventions sont triées par mise à jour décroissante' do
+    agent = users(:martin_technique_paris)
+    interventions(:intervention_paris).update_columns(updated_at: 1.minute.from_now)
+
+    assert_equal interventions(:intervention_paris), Intervention.by_role_for_home(agent).first
+  end
+
+  test 'home adhérent : seules ses interventions terminées sont listées' do
+    listees = Intervention.by_role_for_home(users(:weil))
+
+    assert_includes listees, interventions(:intervention_terminée)
+    assert_not_includes listees, interventions(:nouvelle_intervention)
+    assert_not_includes listees, interventions(:intervention_autre_adhérent)
+  end
+
+  test 'home manager : les interventions validées, refusées et archivées sont exclues' do
+    listees = Intervention.by_role_for_home(users(:hidalgo))
+
+    assert_includes listees, interventions(:nouvelle_intervention)
+    assert_includes listees, interventions(:intervention_terminée)
+    assert_not_includes listees, interventions(:tonte_locaux)
+  end
+
+  # --- Présentation : couleur, comptage par état, QRCode ---
+
+  test 'rgba expose la couleur déclarée sur l\'état courant' do
+    assert_equal '0,181,255,255', interventions(:nouvelle_intervention).rgba
+  end
+
+  test 'workflow_states_count compte chaque état, y compris ceux à zéro' do
+    comptes = Intervention.workflow_states_count(Intervention.where(id: interventions(:tonte_locaux).id))
+
+    assert_equal 1, comptes['Validé']
+    assert_equal 0, comptes['Nouveau']
+    assert_equal Intervention.workflow_state_humanized.sort, comptes.keys.sort
+  end
+
+  test 'qrcode produit un SVG à partir de l\'URL fournie' do
+    svg = interventions(:intervention_repete).qrcode('https://example.test/pointer')
+
+    assert_includes svg, '<svg'
+  end
+
+  # --- dernière_en_cours ---
+
+  test 'dernière_en_cours retient l\'intervention qui recouvre l\'instant présent' do
+    agent = users(:john_wick)
+    en_cours = Intervention.create!(
+      description: 'En cours maintenant', adherent: users(:weil), service: services(:technique),
+      workflow_state: 'nouveau', début_prévue: 1.hour.ago, fin_prévue: 1.hour.from_now,
+      agents: [agent], slug: SecureRandom.uuid
+    )
+
+    assert_equal en_cours, Intervention.dernière_en_cours(agent.interventions)
+  end
+
+  test 'dernière_en_cours ignore les interventions sans date prévue' do
+    assert_nil Intervention.dernière_en_cours(Intervention.where(id: interventions(:nouvelle_intervention).id))
+  end
+
+  # --- extract_temps_total_depending_on_audit ---
+
+  test 'un audit sans variation de temps total ne compte pour rien' do
+    intervention = interventions(:tonte_locaux)
+    audit = intervention.audits.build(action: 'update', audited_changes: { 'description' => %w[avant après] })
+
+    assert_equal 0, intervention.send(:extract_temps_total_depending_on_audit, audit)
+  end
+
+  test 'un audit de création ajoute le temps total enregistré' do
+    intervention = interventions(:tonte_locaux)
+    audit = intervention.audits.build(action: 'create', audited_changes: { 'temps_total' => 5 })
+
+    assert_equal 5, intervention.send(:extract_temps_total_depending_on_audit, audit)
+  end
+
+  # --- Diffusion temps réel (callback actuellement commenté) ---
+
+  test 'broadcast_channels couvre l\'organisation, le service, l\'adhérent et les agents' do
+    intervention = interventions(:tonte_locaux)
+
+    channels = intervention.send(:broadcast_channels)
+
+    assert_includes channels, "interventions_organisation_#{intervention.organisation.id}"
+    assert_includes channels, "interventions_service_#{intervention.service_id}"
+    assert_includes channels, "interventions_adherent_#{intervention.adherent_id}"
+    assert_includes channels, "interventions_user_#{users(:bond).id}"
+  end
+
+  test 'broadcast_channels n\'ajoute pas de canal adhérent quand il n\'y en a pas' do
+    intervention = interventions(:tonte_locaux)
+    intervention.update_columns(adherent_id: nil)
+
+    assert_empty intervention.send(:broadcast_channels).grep(/adherent/)
+  end
+
+  # --- État « pointage activé » tenu à jour ---
+
+  test 'un modèle de pointage qui cesse de se répéter repasse à nouveau' do
+    intervention = interventions(:intervention_repete)
+    intervention.update_columns(workflow_state: 'pointage activé')
+
+    intervention.repeter = false
+    intervention.valid?
+
+    assert_equal 'nouveau', intervention.workflow_state
+  end
+
+  test 'une intervention qui devient un modèle passe à pointage activé' do
+    intervention = interventions(:nouvelle_intervention)
+
+    intervention.repeter = true
+    intervention.valid?
+
+    assert_equal 'pointage activé', intervention.workflow_state
+  end
+
+  # --- Passage à l'état terminé : dates obligatoires et événements publiés ---
+
+  test 'terminé sans date de début : invalide' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.assign_attributes(workflow_state: Intervention::TERMINE, début: nil)
+
+    assert_not intervention.valid?
+    assert_includes intervention.errors.full_messages.join, 'obligatoire pour terminer'
+  end
+
+  test 'terminé sans date de fin : invalide' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.assign_attributes(workflow_state: Intervention::TERMINE, fin: nil)
+
+    assert_not intervention.valid?
+    assert_includes intervention.errors.full_messages.join, 'obligatoire pour terminer'
+  end
+
+  test 'terminé avec les deux dates : valide' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.workflow_state = Intervention::TERMINE
+
+    assert_predicate intervention, :valid?
+  end
+
+  test 'un état autre que terminé n’exige pas les dates' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.assign_attributes(début: nil, fin: nil)
+
+    assert_predicate intervention, :valid?
+  end
+
+  # Les événements sont observés par les jobs qu'ils déclenchent : les mêmes
+  # sondes que test/subscription.
+  test 'terminer publie workflow_changed et done' do
+    intervention = interventions(:nouvelle_intervention)
+
+    assert_enqueued_with(job: NotifManagersWorkflowChangedJob) do
+      assert_enqueued_with(job: NotifAdherentInterventionTermineeJob) do
+        Audited.audit_class.as_user(users(:martin_technique_paris)) { intervention.terminer! }
+      end
+    end
+  end
+
+  test 'terminer un pointage ne publie pas done' do
+    pointage = cree_pointage_termine_par(users(:martin_technique_paris))
+
+    assert_no_enqueued_jobs only: NotifAdherentInterventionTermineeJob do
+      assert_enqueued_with(job: NotifManagersWorkflowChangedJob) do
+        Audited.audit_class.as_user(users(:martin_technique_paris)) { pointage.terminer! }
+      end
+    end
+  end
+
+  test 'sans_notification : la terminaison ne publie aucun événement' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.sans_notification = true
+
+    assert_no_enqueued_jobs only: [NotifManagersWorkflowChangedJob, NotifAdherentInterventionTermineeJob] do
+      Audited.audit_class.as_user(users(:martin_technique_paris)) { intervention.terminer! }
+    end
+  end
+
+  test 'une modification sans changement d’état ne publie rien' do
+    intervention = interventions(:intervention_terminée)
+
+    assert_no_enqueued_jobs only: [NotifManagersWorkflowChangedJob, NotifAdherentInterventionTermineeJob] do
+      Audited.audit_class.as_user(users(:martin_technique_paris)) { intervention.update!(commentaires: 'Relu') }
+    end
+  end
+
+  private
+
+  def cree_pointage_termine_par(agent)
+    mère = interventions(:intervention_repete)
+    pointage = mère.create_next_intervention(mère, agent)
+    pointage.fin = Time.current
+    pointage
   end
 end

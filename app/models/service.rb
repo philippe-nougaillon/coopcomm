@@ -17,6 +17,7 @@ class Service < ApplicationRecord
   has_many :factures, dependent: :destroy
   has_many :managers, -> { manager }, through: :user_services, source: :user
 
+  validates :nom, presence: true
   validates_uniqueness_of :nom, scope: :organisation_id
 
   normalizes :nom, with: ->(nom) { nom.humanize.strip }

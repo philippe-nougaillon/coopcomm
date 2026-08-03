@@ -1,12 +1,11 @@
-<tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
+<tr class="hover:bg-base-200/60 transition-colors duration-150 align-middle">
   <% if current_user.manager_or_admin? %>
     <td class="px-4 py-3 text-lg font-semibold text-primary">
       <%= link_to convention.user.nom_prénom, convention, class: "hover:underline" %>
     </td>
   <% else %>
     <td class="px-4 py-3 text-lg font-semibold text-primary">
-      <%# AJOUTER REF %>
-      <%= link_to convention.user.nom_prénom, convention, class: "hover:underline" %>
+      <%= link_to convention.ref, convention, class: "hover:underline" %>
     </td>
   <% end %>
   <td class="px-4 py-3 text-base">
@@ -115,7 +114,7 @@
       <span class="text-slate-400 text-sm">Aucun document</span>
     <% end %>
   </td>
-  <td class="px-4 py-3 text-base">
+  <td class="px-4 py-3 text-base text-center">
     <% if convention.mémo.present? %>
       <span class="block max-w-48 truncate text-sm text-slate-500 cursor-help" title="<%= convention.mémo %>"><%= convention.mémo %></span>
     <% else %>

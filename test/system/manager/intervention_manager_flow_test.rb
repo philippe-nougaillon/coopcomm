@@ -62,10 +62,7 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
   end
 
   # Anti-régression : la recherche SlimSelect (réglage `showSearch`, actif par défaut)
-  # avait été désactivée par `showSearch: false` (commit 1f3dc709), empêchant de filtrer
-  # en tapant. On la teste sur le slim-select le plus important du projet : l'assignation
-  # des agents (#intervention_agent_ids, partial _form_for_agents) — un select groupé et
-  # multiple.
+  # avait été désactivée par `showSearch.
   test 'le slim-select des agents propose une recherche qui filtre les options' do
     visit new_intervention_url
 
@@ -88,10 +85,7 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
   end
 
   # Anti-régression : un select `required` masqué par SlimSelect doit rester FOCUSABLE,
-  # sinon la validation HTML5 ne peut pas l'atteindre au submit (« An invalid form
-  # control ... is not focusable ») et l'erreur passe inaperçue pour l'utilisateur.
-  # La régression venait d'un `visibility: hidden` ajouté au CSS (commit 1f3dc709) ;
-  # `opacity: 0` masque déjà le champ tout en le laissant focusable.
+  # sinon la validation HTML5 ne peut pas l'atteindre au submit.
   test 'un slim-select requis reste focusable pour la validation HTML5' do
     visit new_intervention_url
 
@@ -130,11 +124,8 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     # tonte_locaux a des mouvements rattachés (bouton désactivé) : on prend
     # une intervention supprimable
     visit intervention_url(interventions(:nouvelle_intervention))
-    delete_button = find("[data-testid=\"Supprimer l'intervention\"]")
-    scroll_to(delete_button, align: :center) # le dock fixe intercepte le clic en bas d'écran
-    page.accept_confirm do
-      delete_button.click
-    end
+    cliquer_element(find("[data-testid=\"Supprimer l'intervention\"]"))
+    cliquer_bouton 'Oui, supprimer'
     # `destroy` redirige vers l'index : on attend la navigation AVANT l'assertion
     # négative, sinon elle s'évalue alors qu'on est encore sur la show.
     assert_current_path interventions_path
@@ -160,15 +151,24 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     assert_text 'Intervention refusée'
   end
 
+  test 'Terminer une intervention via édition avec compte-rendu' do
+    intervention = interventions(:nouvelle_intervention)
+    visit edit_intervention_path(intervention, terminer: 1)
+
+    assert_text 'COMPTE-RENDU'
+    assert_text 'Avis de l\'adhérent'
+    assert_text 'Évaluation des agents'
+
+    fill_in 'Avis de l\'adhérent', with: 'Travail bien fait'
+    find('.rating input[value="5"]').click
+
+    cliquer_bouton 'Enregistrer'
+    assert_text 'Intervention terminée'
+    assert_equal 'terminé', intervention.reload.workflow_state
+  end
+
   # Anti-régression (bug visuel) : sur l'index en vue « normale », chaque carte
-  # d'intervention est un composant DaisyUI `collapse`. Son <input type=checkbox>
-  # (z-index 1) recouvre tout l'en-tête pour capter le clic d'ouverture/fermeture
-  # et INTERCEPTE donc les clics sur les boutons d'action. Ceux-ci ne passent
-  # au-dessus que s'ils sont positionnés (`relative z-10`) — un `z-10` seul est
-  # inopérant sur un élément statique. Sans le correctif, Selenium lève
-  # ElementClickInterceptedError sur ce clic : ce test échoue si la régression revient.
-  # (Les tests Terminer/Valider/Refuser ci-dessus passent par la page `show`, qui
-  # n'est PAS un collapse, et ne couvrent donc pas ce cas.)
+  # d'intervention est un composant DaisyUI `collapse`. Son <input type=checkbox>.
   test "les boutons d'action d'une carte d'intervention sont cliquables sur l'index (collapse)" do
     intervention = interventions(:nouvelle_intervention)
     visit interventions_url(vue: 'normal')
@@ -177,9 +177,7 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     assert_selector "#intervention_#{intervention.id}", text: 'Terminer'
 
     within "#intervention_#{intervention.id}" do
-      # On recentre pour écarter l'interception par le DOCK (bas d'écran), sans
-      # masquer celle que ce test traque : la checkbox du collapse recouvre
-      # l'en-tête de la carte quelle que soit la position de défilement.
+      # On recentre pour écarter l'interception par le DOCK (bas d'écran)
       cliquer_bouton 'Terminer'
     end
 

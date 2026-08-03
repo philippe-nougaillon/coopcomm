@@ -2,6 +2,9 @@
 
 require 'test_helper'
 
+# ==================== TESTS CRITIQUES ====================
+# Le prix d'une ligne est toujours dérivé du tarif
+# de la prestation (jamais saisi), total_ht est une colonne générée.
 class FactureLigneTest < ActiveSupport::TestCase
   setup do
     @facture = factures(:facture_secretariat) # total_ht initial 0, sans ligne
