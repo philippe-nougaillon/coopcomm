@@ -231,17 +231,18 @@ class UsersImportTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'un service supplémentaire s’ajoute sans retirer les précédents' do
+  test 'un second service met la ligne en erreur : un agent n’en a qu’un seul' do
     martin = users(:martin_technique_paris)
 
-    assert_difference 'UserService.count', 1 do
+    assert_no_difference 'UserService.count' do
       importer([ENTETES, ligne(nom: 'Martin', prénom: 'Michel', email: martin.email, service: 'Informatique')],
                save: 'true')
     end
 
     martin.reload
-    assert_includes martin.services, services(:informatique)
+    assert_not_includes martin.services, services(:informatique)
     assert_includes martin.services, services(:technique)
+    assert_match(/un seul service/, response.body)
   end
 
   test 'un fichier sans colonne Téléphone conserve le téléphone existant' do
@@ -408,9 +409,7 @@ class UsersImportTest < ActionDispatch::IntegrationTest
     assert_equal organisations(:mairie_marseille), créé.organisation
   end
 
-  test 'l’import peut rétrograder un manager d’une autre organisation en agent' do
-    # ÉPINGLAGE B21 : la recherche par email (users_controller.rb:242) est globale et
-    # aucun `authorize` ne porte sur l'enregistrement retrouvé ; `rôle = 'agent'`.
+  test 'un manager d’une autre organisation n’est plus rétrogradé : le second service invalide la ligne' do
     manager_marseille = users(:manager_marseille)
 
     importer([ENTETES, ligne(nom: 'Payan', prénom: 'Benoit', email: manager_marseille.email,
@@ -418,19 +417,32 @@ class UsersImportTest < ActionDispatch::IntegrationTest
              save: 'true')
 
     manager_marseille.reload
-    assert manager_marseille.agent?, 'le rôle est écrasé sans contrôle'
-    assert_includes manager_marseille.services, services(:informatique)
+    assert manager_marseille.manager?
+    assert_not_includes manager_marseille.services, services(:informatique)
   end
 
-  test 'l’import rétrograde un manager de sa propre organisation en agent' do
-    # ÉPINGLAGE B21 (variante intra-organisation) : perte de privilèges silencieuse
-    # dès qu'un manager figure par mégarde dans le fichier d'agents.
+  test 'un manager multi-services de l’organisation n’est plus rétrogradé' do
     hidalgo = users(:hidalgo)
 
     importer([ENTETES, ligne(nom: 'Hidalgo', prénom: 'Anne', email: hidalgo.email, service: 'Informatique')],
              save: 'true')
 
-    assert hidalgo.reload.agent?
+    assert hidalgo.reload.manager?
+  end
+
+  test 'ÉPINGLAGE B21 : un manager mono-service est encore rétrogradé en agent' do
+    # La validation « un agent n'a qu'un seul service » bloque désormais la plupart des
+    # rétrogradations, mais pas celle d'un manager dont l'unique service est justement
+    # celui de la ligne importée : le compte reste valide et `rôle = 'agent'` passe.
+    # À inverser à la correction de B21 (borner la recherche par email + authorize).
+    manager = User.create!(nom: 'Mono', prénom: 'Service', email: 'mono.service@example.test',
+                           rôle: 'manager', password: 'qtDug$d843sqACz?V',
+                           service_ids: [services(:informatique).id])
+
+    importer([ENTETES, ligne(nom: 'Mono', prénom: 'Service', email: manager.email, service: 'Informatique')],
+             save: 'true')
+
+    assert manager.reload.agent?, 'B21 corrigé ? inverser cet épinglage'
   end
 
   # --- H. Effets de bord --------------------------------------------------

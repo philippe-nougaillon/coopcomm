@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class UserTest < ActiveSupport::TestCase
+  include ActionMailer::TestHelper
+
   # --- User.agents_for_services -------------------------------------------
   # Liste PLATE (sans groupe) des intervenants d'un ou plusieurs services, au format
   # [["NOM Prénom", id], …], triée par nom puis prénom.
@@ -215,4 +217,80 @@ class UserTest < ActiveSupport::TestCase
   test 'un administrateur peut attribuer tous les rôles' do
     assert_equal User.rôles.keys, users(:administrateur_paris).assignable_roles
   end
+
+  # ==== TESTS CRITIQUES : rattachement aux services ====
+  # L'organisation d'un utilisateur dérive de ses services : un compte sans service
+  # n'appartient à aucune organisation, n'apparaît dans aucune liste (`by_service`
+  # joint `user_services`) et fait échouer tout ce qui lit `current_organisation`.
+
+  def nouveau(rôle:, service_ids: [])
+    User.new(nom: 'Essai', prénom: 'Service', email: "essai-#{SecureRandom.hex(4)}@example.test",
+             rôle: rôle, password: 'qtDug$d843sqACz?V', service_ids: service_ids,
+             address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35)
+  end
+
+  User.rôles.each_key do |rôle|
+    test "un #{rôle} sans service est invalide" do
+      user = nouveau(rôle: rôle)
+
+      assert_not user.valid?
+      assert_includes user.errors[:services], 'doit comporter au moins un service'
+    end
+
+    test "un #{rôle} avec un service est valide" do
+      assert nouveau(rôle: rôle, service_ids: [services(:informatique).id]).valid?
+    end
+  end
+
+  test 'un agent avec deux services est invalide' do
+    agent = nouveau(rôle: 'agent', service_ids: [services(:informatique).id, services(:technique).id])
+
+    assert_not agent.valid?
+    assert_includes agent.errors[:services], "ne doit comporter qu'un seul service pour un agent"
+  end
+
+  test 'un adhérent, un manager et un administrateur peuvent porter plusieurs services' do
+    %w[adhérent manager administrateur].each do |rôle|
+      user = nouveau(rôle: rôle, service_ids: [services(:informatique).id, services(:technique).id])
+
+      assert user.valid?, "#{rôle} devrait pouvoir porter deux services : #{user.errors.full_messages}"
+    end
+  end
+
+  test 'un agent existant ne peut pas recevoir un second service' do
+    agent = users(:martin_technique_paris)
+
+    agent.user_services.build(service: services(:informatique))
+
+    assert_not agent.valid?
+    assert_includes agent.errors[:services], "ne doit comporter qu'un seul service pour un agent"
+  end
+
+  test 'retirer le dernier service d’un utilisateur le rend invalide' do
+    agent = users(:martin_technique_paris)
+
+    agent.user_services.each { |us| us.mark_for_destruction }
+
+    assert_not agent.valid?
+    assert_includes agent.errors[:services], 'doit comporter au moins un service'
+  end
+
+  test 'un service marqué pour destruction ne compte pas dans le total de l’agent' do
+    agent = users(:martin_technique_paris)
+
+    agent.user_services.load # sinon `first` renvoie une instance hors du target
+    agent.user_services.first.mark_for_destruction
+    agent.user_services.build(service: services(:informatique))
+
+    assert agent.valid?, agent.errors.full_messages.to_s
+  end
+
+  test 'changer un adhérent en agent avec deux services devient invalide' do
+    adhérent = users(:hidalgo) # manager multi-services
+    adhérent.rôle = 'agent'
+
+    assert_not adhérent.valid?
+    assert_includes adhérent.errors[:services], "ne doit comporter qu'un seul service pour un agent"
+  end
+
 end

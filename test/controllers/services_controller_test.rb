@@ -55,7 +55,26 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
 
   # --- create / update : branches d'échec ---
 
-  # Le seul motif de refus du modèle est l'unicité du nom dans l'organisation.
+  # Un service sans nom se retrouve en entrée VIDE dans le sélecteur de services du
+  # formulaire utilisateur ; les comptes qu'on y rattache paraissent sans service.
+  test 'critique : un service sans nom n’est pas créé' do
+    assert_no_difference('Service.count') do
+      post services_url, params: { service: { nom: '' } }
+    end
+
+    assert_response :unprocessable_content
+    assert_includes response.body, 'doit être rempli'
+  end
+
+  test 'critique : un service existant ne peut pas être renommé en vide' do
+    service = services(:technique)
+
+    patch service_url(service), params: { service: { nom: '  ' } }
+
+    assert_response :unprocessable_content
+    assert_equal 'Technique', service.reload.nom
+  end
+
   test 'create d\'un service au nom déjà pris réaffiche le formulaire en 422' do
     assert_no_difference('Service.count') do
       post services_url, params: { service: { nom: services(:technique).nom } }

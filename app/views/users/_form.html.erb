@@ -1,5 +1,6 @@
 <div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
-  <%= form_with(model: user, id: dom_id(user), class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-4' }, data: { controller: 'nested-form toggle-role-info', nested_form_wrapper_selector_value: '.nested-form-wrapper' }) do |form| %>
+  <%# La création ne passe pas par POST /users : cette route appartient à Devise. %>
+  <%= form_with(model: user, url: (user.new_record? ? admin_create_new_user_do_path : user_path(user)), id: dom_id(user), class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-4' }, data: { controller: 'nested-form toggle-role-info', nested_form_wrapper_selector_value: '.nested-form-wrapper' }) do |form| %>
     <% if user.errors.any? %>
       <div id="error_explanation" class="bg-red-50 text-red-500 px-4 py-3 font-medium rounded-lg mb-2 border border-red-200">
         <h2 class="font-black mb-2 text-sm md:text-base">
@@ -84,16 +85,25 @@
       <% end %>
       <% if current_user.manager_or_admin? %>
         <% if current_user.manager? && user.persisted? %>
-          <%# Si es manager y edita, enviamos los services actuales de forma segura %>
-          <%= form.hidden_field :service_ids, value: user.services.ids %>
+          <%# Un manager ne réaffecte pas les services d'une fiche existante : on renvoie
+              les siens à l'identique. Un champ par service, sinon le tableau part en
+              une seule chaîne que `permit(service_ids: [])` rejette. %>
+          <% user.services.ids.each do |service_id| %>
+            <%= hidden_field_tag "#{form.object_name}[service_ids][]", service_id, id: nil %>
+          <% end %>
         <% else %>
           <div class="form-control w-full">
             <%= form.label :service_ids, class: "label font-semibold text-slate-700" do %>
               <span>Service <span class="text-red-500">*</span></span>
             <% end %>
+            <%
+              services_assignables = services_assignables_par(current_user)
+              services_sélectionnés = user.services.ids
+              services_sélectionnés = services_assignables.ids if services_sélectionnés.empty? && services_assignables.size == 1
+            %>
             <%= form.select :service_ids,
-                            options_from_collection_for_select(current_user.organisation.services, 'id', 'nom', user.services.ids),
-                            { include_blank: true, required: true },
+                            options_from_collection_for_select(services_assignables, 'id', 'nom', services_sélectionnés),
+                            { required: true },
                             { multiple: true, class: 'slim-select w-full h-10' } %>
           </div>
         <% end %>
