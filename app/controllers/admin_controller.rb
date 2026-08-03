@@ -80,8 +80,8 @@ class AdminController < ApplicationController
 
   def parametres
   # 1. Definir los Scopes Base
-  services_scope = current_user.services
-  warehouses_scope = current_organisation.warehouses
+  services_scope = current_organisation.services.ordered
+  warehouses_scope = current_organisation.warehouses.ordered
   prestations_scope = current_organisation.prestations.ordered
   
   # Lista completa de usuarios para cargar el select del formulario
