@@ -41,19 +41,19 @@ class AgentMouvementPolicyTest < ActionDispatch::IntegrationTest
     refute @policy.update?
   end
 
-  # destroy
-  test "accès autorisé pour un agent sur la page destroy d'un mouvement si c'est lui qui l'a créé" do
-    assert @policy.destroy?
-  end
-
-  test "accès interdit pour un agent sur la page destroy d'un mouvement si ce n'est pas lui qui l'a créé" do
-    policy = MouvementPolicy.new(users(:martin_technique_paris), @mouvement)
-
-    refute policy.destroy?
-  end
-
   # reserve
   test "accès autorisé pour un administrateur sur la page reserve d'un mouvement" do
     assert @policy.reserve?
+  end
+
+  # libere
+  test "un agent peut libérer sa propre réservation" do
+    assert @policy.libere?
+  end
+
+  test "un agent ne peut pas libérer la réservation d'un autre" do
+    policy = MouvementPolicy.new(users(:martin_technique_paris), @mouvement)
+
+    refute policy.libere?
   end
 end

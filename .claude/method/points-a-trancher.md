@@ -21,12 +21,6 @@
 - **Conséquence immédiate** : les 3 system tests de `test/system/documents_test.rb` échouaient (ils testent l'UI disparue) → **commentés le 2026-07-13** (décision client : « pour l'instant on ne l'utilise pas ») avec renvoi vers ce point. À trancher avec Dani : si suppression assumée → supprimer le fichier de test ; si temporaire → réactiver la fonctionnalité et décommenter/adapter les tests.
 - **Incohérence à signaler au passage** : `tools_controller#tool_params` permet toujours `documents_attributes` alors que le formulaire n'envoie plus que `documents` (fichier simple) — l'upload de documents depuis le formulaire est probablement cassé aussi côté serveur (non vérifié).
 
-### D6 — Refaire la fiche outil (`tools#show`) sur le même système de cases que l'index (PE, 2026-07-29 — « plus tard »)
-- **Quoi** : la fiche outil affiche encore son calendrier via `Tool#dernier_mouvement_a` + le partial `mouvements/_mouvement_slot` (une case par créneau horaire, un objet `Mouvement` par case), alors que l'index `/tools` est passé au système de lettres `L/R/I/P` de `Tool#get_etats_from_mouvements` + `tools/_mouvement` (#411). PE : « le show de l'outil n'a pas encore été refait, tu peux faire le même système de case que dans l'index » → **à faire plus tard**, hors du lot de tests du 2026-07-29.
-- **Ce que ça résout au passage** : `dernier_mouvement_a` porte **B37** (500 latent dès que l'association est chargée) et est explicitement marqué « devrait disparaître quand tools/show sera refait comme l'index » par un TODO dans le code ([tool.rb:79](app/models/tool.rb#L79)). `_mouvement_slot` est aussi le seul chemin qui propose « déclarer la fin de panne » d'un clic — à ne pas perdre dans la bascule.
-- **Attention** : zone « très sensible » des Pièges connus (réservation / panne). Corriger **B36** (lettre `P` le jour de la panne) **avant** la bascule, sinon le défaut se propage de l'index au show.
-- **Couverture existante** : `tool_test.rb` verrouille déjà la sémantique des 4 lettres, y compris les cycles panne/réparation — la bascule pourra s'appuyer dessus.
-
 ### D7 — Absences : les 3 écarts restants après le lot du 2026-07-30 (`#419`, `eaa5ac86`, `967781b7`)
 - **Contexte** : le CCTP ne contient **aucune exigence** sur les absences (vérifié dans le digest anonymisé de `fiches/contexte-projet.md` ; PE n'a pas transmis le PDF complet, à recouper si un doute contractuel apparaît). La fonctionnalité est un *moyen* du planning, pas un livrable exigé → rien de bloquant pour septembre. Les 5 demandes de PE du 2026-07-30 sont livrées ; ce qui suit ne l'est pas.
 - **① Motifs incomplets** — l'enum ne connaît que `congés_payés`, `congé_parental`, `formation`, `congé_sans_solde` ([absence.rb:10](app/models/absence.rb#L10)). Il manque **maladie / arrêt de travail**, statistiquement le premier motif d'absence sur ~115 agents, et probablement RTT et autorisation exceptionnelle. **Aucune migration nécessaire** (ajout de valeurs d'enum + `MOTIF_LABELS`) ; ~5 min. *Décision attendue : la liste exacte des motifs voulus par le client.*
@@ -74,6 +68,13 @@
 ---
 
 ## ✅ Tranchés (historique)
+
+### D6 — ✅ TRANCHÉ (2026-08-03) — Refaire la fiche outil (`tools#show`) sur le même système de cases que l'index
+- **Décision PE (2026-08-03)** : bascule faite. La fiche outil **garde sa grille mensuelle** (et le choix Calendrier / Liste des interventions) mais rend ses cases avec `Tool#get_etats_from_mouvements` + `tools/_mouvement`, exactement comme l'index. Légende alignée (carrés au lieu de pastilles).
+- **Fin de panne d'un clic sur la case rouge : abandonnée** (décision PE). Elle n'existait que dans le show via `_mouvement_slot` ; la fin de panne passe désormais par le bouton « Gestion panne », présent sur les deux pages. Une case rouge est inerte partout. L'index n'a pas été touché.
+- **Ferme au passage** : **B36** (corrigé, prérequis à la bascule) et **B37** (`Tool#dernier_mouvement_a` supprimée avec `mouvements/_mouvement_slot.html.erb`, son unique appelant).
+- **Défaut corrigé en chemin** : `tools#show` calculait sa fenêtre sur `params[:date]` alors que `month_calendar` navigue avec `params[:start_date]` — les couleurs se seraient décalées d'un mois dès la première flèche. Le contrôleur lit maintenant `start_date` en priorité et le passe explicitement au calendrier.
+
 
 | Point | Décision | Date |
 |---|---|---|

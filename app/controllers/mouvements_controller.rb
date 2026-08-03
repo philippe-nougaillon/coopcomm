@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 class MouvementsController < ApplicationController
-  before_action :set_mouvement, only: %i[show edit update destroy]
+  before_action :set_mouvement, only: %i[show edit update]
+  before_action :set_reservation_a_liberer, only: %i[libere]
   before_action :is_user_authorized
 
   # Défini la route du redirect
@@ -78,57 +79,21 @@ class MouvementsController < ApplicationController
     end
   end
 
-  # DELETE /mouvements/1 or /mouvements/1.json
-  def destroy
-    # On retrouve la paire (sortie + entrée) grâce au timestamp de création exact
-    mouvements_lies = Mouvement.where(
-      tool_id: @mouvement.tool_id,
-      user_id: @mouvement.user_id,
-      created_at: @mouvement.created_at
-    )
-
-    mouvement_date = mouvements_lies.first.date.to_date
-    # On supprime l'ensemble dans une transaction sécurisée
-    Mouvement.transaction do
-      mouvements_lies.destroy_all
-    end
-
-    redirect_back fallback_location: tools_path, notice: "La réservation du #{l mouvement_date} a bien été annulée."
-  rescue ActiveRecord::RecordNotDestroyed
-    redirect_back fallback_location: tools_path, alert: "Erreur lors de l'annulation de la réservation."
-  end
-
   def reserve
     @tool = current_organisation.tools.find(params[:tool_id])
     date = Date.parse(params[:date].to_s)
 
     @tool.mouvements.create!(état: :réservé, date: date, user: current_user)
-    redirect_back fallback_location: tools_path, notice: "Outil réservé le #{l date} avec succès."
+    redirect_back fallback_location: tools_path, notice: "#{@tool.name} réservé.e le #{l date} avec succès."
   rescue Date::Error
     redirect_back fallback_location: tools_path, alert: 'Date de réservation invalide.'
   end
 
   def libere
-    if params[:tool_id] && params[:date] && params[:user_id]
-      # Seul un manager/admin peut libérer la réservation d'un autre utilisateur
-      user_id = current_user.manager_or_admin? ? params[:user_id] : current_user.id
-
-      mouvement = current_organisation.mouvements.find_by(
-        tool_id: params[:tool_id],
-        date: params[:date],
-        user_id: user_id,
-        état: "réservé"
-      )
-
-      if mouvement
-        if mouvement.destroy
-          redirect_back fallback_location: tools_path, notice: "Outil libéré pour le #{l params[:date].to_date}."
-        else
-          redirect_back fallback_location: tools_path, alert: "L'outil n'a pas pu être libéré : #{mouvement.errors.full_messages.to_sentence}."
-        end
-      else
-        redirect_back fallback_location: tools_path, alert: "Il n'existe pas de réservation ce jour-là pour cet utilisateur."
-      end
+    if @mouvement.destroy
+      redirect_back fallback_location: tools_path, notice: "#{@mouvement.tool.name} libéré.e pour le #{l params[:date].to_date}."
+    else
+      redirect_back fallback_location: tools_path, alert: "#{@mouvement.tool.name} n'a pas pu être libéré.e : #{@mouvement.errors.full_messages.to_sentence}."
     end
   end
 
@@ -139,12 +104,27 @@ class MouvementsController < ApplicationController
     @redirect_to = params[:redirect_to].present? ? params[:redirect_to] : mouvements_path
   end
 
+  # Charge la réservation visée avant l'autorisation, pour que la policy statue
+  # sur l'enregistrement et non sur la classe.
+  def set_reservation_a_liberer
+    @mouvement = current_organisation.mouvements.find_by(
+      tool_id: params[:tool_id],
+      date: params[:date],
+      user_id: params[:user_id],
+      état: 'réservé'
+    )
+    return unless @mouvement.nil?
+
+    redirect_back fallback_location: tools_path,
+                  alert: "Il n'existe pas de réservation ce jour-là pour cet utilisateur."
+  end
+
   # Use callbacks to share common setup or constraints between actions.
   def set_mouvement
     @mouvement = Mouvement.find_by(slug: params[:id])
     return unless @mouvement.nil?
 
-    redirect_to root_path, alert: 'Mouvement introuvable'
+    redirect_back fallback_location: root_path, alert: 'Mouvement introuvable'
   end
 
   # Only allow a list of trusted parameters through.

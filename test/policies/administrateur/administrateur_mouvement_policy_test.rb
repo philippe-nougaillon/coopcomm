@@ -41,13 +41,14 @@ class AdministrateurMouvementPolicyTest < ActionDispatch::IntegrationTest
     assert @policy.update?
   end
 
-  # destroy
-  test "accès autorisé pour un administrateur sur la page destroy d'un mouvement" do
-    assert @policy.destroy?
-  end
 
   # reserve
   test "accès autorisé pour un administrateur sur la page reserve d'un mouvement" do
     assert @policy.reserve?
+  end
+
+  # libere
+  test "un administrateur peut libérer la réservation de n'importe qui" do
+    assert @policy.libere?
   end
 end

@@ -7,10 +7,10 @@ class ToolsController < ApplicationController
   # GET /tools or /tools.json
   def index
     params[:date] = Date.today unless date_valide?(params[:date])
-    fecha_base = params[:date].to_date
+    start_date = params[:date].to_date
 
-    @date = fecha_base.beginning_of_week # Ce sera toujours le lundi.
-    @date_fin = fecha_base.end_of_week   # Ce sera toujours le dimanche.
+    @date = start_date.beginning_of_week # Ce sera toujours le lundi.
+    @date_fin = start_date.end_of_week   # Ce sera toujours le dimanche.
     @tools = current_organisation.tools.ordered
     @types = Tool.icons
     # @états = Mouvement.états.keys
@@ -41,15 +41,15 @@ class ToolsController < ApplicationController
     params[:vue] ||= 'calendrier'
     @documents = @tool.documents
 
-    params[:date] = Date.today unless date_valide?(params[:date])
-    fecha_base = params[:date].to_date
+    # start_date est le paramètre de navigation de simple_calendar
+    start_date = params[:start_date].presence || params[:date]
+    start_date = Date.today unless date_valide?(start_date)
 
-    @date = fecha_base.beginning_of_month
-    @date_fin = fecha_base.end_of_month
+    @date = start_date.to_date.beginning_of_month
+    @date_fin = @date.end_of_month
 
     @date_inicio_grid = @date.beginning_of_week
     @date_fin_grid = @date_fin.end_of_week
-
   end
 
   # GET /tools/new

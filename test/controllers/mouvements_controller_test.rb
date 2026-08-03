@@ -111,6 +111,29 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
          params: { date: JOUR.to_s, user_id: users(:martin_technique_paris).id }
 
     assert Mouvement.exists?(celle_dun_autre.id)
+    assert_equal "Vous n'êtes pas autorisé à effectuer cette action.", flash[:alert]
+  end
+
+  test "un agent qui forge la requête ne libère pas sa propre réservation à la place" do
+    sign_in users(:bond)
+    la_mienne = reservation(users(:bond))
+    celle_dun_autre = reservation(users(:martin_technique_paris), JOUR + 1)
+
+    post libere_tool_mouvements_url(tool_id: @outil.id),
+         params: { date: (JOUR + 1).to_s, user_id: users(:martin_technique_paris).id }
+
+    assert Mouvement.exists?(la_mienne.id)
+    assert Mouvement.exists?(celle_dun_autre.id)
+  end
+
+  test 'un agent peut libérer sa propre réservation' do
+    sign_in users(:bond)
+    la_mienne = reservation(users(:bond))
+
+    post libere_tool_mouvements_url(tool_id: @outil.id),
+         params: { date: JOUR.to_s, user_id: users(:bond).id }
+
+    assert_not Mouvement.exists?(la_mienne.id)
   end
 
   test "libérer une réservation inexistante prévient sans rien détruire" do
@@ -140,62 +163,27 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert Mouvement.exists?(ailleurs.id)
   end
 
-  # ÉPINGLAGE : sans paramètre, l'action ne rend rien (204, page blanche).
-  test 'libérer sans paramètre ne répond rien' do
+  test 'libérer sans paramètre prévient au lieu de rendre une page blanche' do
     post libere_tool_mouvements_url(tool_id: @outil.id)
 
-    assert_response :no_content
-  end
-
-  # ==========================================================================
-  # A. Suppression d'un mouvement
-  # ==========================================================================
-
-  # ÉPINGLAGE : destroy supprime tout le groupe créé au même instant (la paire
-  # sortie + entrée), pas seulement le mouvement visé.
-  test 'supprimer un mouvement supprime le groupe créé au même instant' do
-    premier = reservation(users(:administrateur_paris))
-    second = reservation(users(:administrateur_paris), JOUR + 1)
-    second.update_columns(created_at: premier.created_at)
-
-    delete mouvement_url(premier)
-
-    assert_not Mouvement.exists?(premier.id)
-    assert_not Mouvement.exists?(second.id)
-  end
-
-  test "supprimer un mouvement épargne ceux créés à un autre instant" do
-    cible = reservation(users(:administrateur_paris))
-    autre = reservation(users(:administrateur_paris), JOUR + 1)
-    autre.update_columns(created_at: cible.created_at + 1.second)
-
-    delete mouvement_url(cible)
-
-    assert Mouvement.exists?(autre.id)
-  end
-
-  test "un agent ne peut pas supprimer la réservation d'un autre" do
-    celle_dun_autre = reservation(users(:martin_technique_paris))
-    sign_in users(:bond)
-
-    delete mouvement_url(celle_dun_autre)
-
-    assert Mouvement.exists?(celle_dun_autre.id)
-  end
-
-  test 'un agent peut supprimer sa propre réservation' do
-    mienne = reservation(users(:bond))
-    sign_in users(:bond)
-
-    delete mouvement_url(mienne)
-
-    assert_not Mouvement.exists?(mienne.id)
+    assert_redirected_to tools_path
+    assert_equal "Il n'existe pas de réservation ce jour-là pour cet utilisateur.", flash[:alert]
   end
 
   test 'un slug de mouvement inconnu redirige sans planter' do
-    delete mouvement_url(id: 'slug-inexistant')
+    get edit_mouvement_url(id: 'slug-inexistant')
 
     assert_redirected_to root_path
+    assert_equal 'Mouvement introuvable', flash[:alert]
+  end
+
+  test 'un slug de mouvement inconnu ramène à la page précédente' do
+    precedente = tools_url(search: 'cisaille')
+
+    get edit_mouvement_url(id: 'slug-inexistant'), headers: { 'HTTP_REFERER' => precedente }
+
+    assert_redirected_to precedente
+    assert_equal 'Mouvement introuvable', flash[:alert]
   end
 
   test 'should get index' do

@@ -41,13 +41,24 @@ class AdherentMouvementPolicyTest < ActionDispatch::IntegrationTest
     refute @policy.update?
   end
 
-  # destroy
-  test "accès interdit pour un adherent sur la page destroy d'un mouvement" do
-    refute @policy.destroy?
-  end
 
   # reserve
   test "accès interdit pour un adherent sur la page reserve d'un mouvement" do
     refute @policy.reserve?
+  end
+
+  # libere
+  test "accès interdit pour un adherent sur la page libere d'un mouvement" do
+    refute @policy.libere?
+  end
+
+  # ÉPINGLAGE : un adhérent ne peut pas réserver (reserve? l'exclut), donc il ne
+  # possède une réservation que s'il l'a créée avant de passer adhérent. Il peut
+  # alors libérer la sienne, et elle seule. À inverser si le métier le refuse.
+  test "un adherent peut libérer une réservation dont il est propriétaire" do
+    adherent = users(:weil)
+    sienne = Mouvement.create!(tool: tools(:cisaille), user: adherent, état: :réservé, date: Date.today)
+
+    assert MouvementPolicy.new(adherent, sienne).libere?
   end
 end
