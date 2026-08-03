@@ -13,45 +13,46 @@
         </ul>
       </div>
     <% end %>
+    <% if current_user.administrateur? %>
+      <div class="form-control w-full">
+        <%= form.label :rôle, "Rôle", class: "label font-semibold text-slate-700 pt-0" do %>
+          <span>Rôle <span class="text-red-500">*</span></span>
+        <% end %>
+        <%= form.select :rôle,
+                        User.rôles.keys,
+                        { selected: user.rôle, required: true },
+                        class: 'slim-select w-full h-10',
+                        data: { 'toggle-role-info-target': 'role',
+                                action: 'change->toggle-role-info#change'
+                        } %>
+      </div>
+    <% else %>
+      <%= form.hidden_field :rôle, value: (user.new_record? ? 'agent' : user.rôle), data: { 'toggle-role-info-target': 'role' } %>
+    <% end %>
     <div class="form-control w-full">
-      <%= form.label :nom, class: "label font-semibold text-slate-700 pt-0" do %>
+      <%= form.label :nom, class: "label font-semibold text-slate-700" do %>
         <span>Nom <span class="text-red-500">*</span></span>
       <% end %>
       <%= form.text_field :nom, class: 'input input-bordered input-sm w-full focus:input-primary h-10', required: true %>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-      <% if current_user.administrateur? %>
-        <div class="form-control w-full">
-          <%= form.label :rôle, "Rôle", class: "label font-semibold text-slate-700" %>
-          <%= form.select :rôle, 
-                          User.rôles.keys, 
-                          { selected: user.rôle || 'agent' }, 
-                          class: 'slim-select w-full h-10', 
-                          data: { 'toggle-role-info-target': 'role',
-                                  action: 'change->toggle-role-info#change'
-                          } %>
-        </div>
-      <% else %>
-        <%= form.hidden_field :rôle, value: (user.new_record? ? 'agent' : user.rôle), data: { 'toggle-role-info-target': 'role' } %>
+    <%# Pleine largeur : toggle-role-info n'affiche qu'un seul de ces deux champs à la fois. %>
+    <div data-toggle-role-info-target="localisation" class="form-control w-full" data-controller="places" data-places-center-lat-value="<%= ENV['MAPS_CENTER_LAT'] %>" data-places-center-lng-value="<%= ENV['MAPS_CENTER_LNG'] %>">
+      <%= form.label :address, class: "label font-semibold text-slate-700" do %>
+        Localisation <span class="text-red-500">*</span>
       <% end %>
-      <div data-toggle-role-info-target="localisation" class="form-control w-full" data-controller="places" data-places-center-lat-value="<%= ENV['MAPS_CENTER_LAT'] %>" data-places-center-lng-value="<%= ENV['MAPS_CENTER_LNG'] %>">
-        <%= form.label :address, class: "label font-semibold text-slate-700" do %>
-          Localisation <span class="text-red-500">*</span>
-        <% end %>
-        <%# Quitamos el required nativo aquí por si Stimulus oculta este campo temporalmente en base al rol %>
-        <%= form.text_field :address, 
-            class: 'input input-bordered select-sm w-full focus:input-primary h-10', 
-            placeholder: 'Commencez à tapez une adresse...', 
-            data: { places_target: "address" } %>
-        <%= form.hidden_field :latitude, data: { places_target: "latitude" } %>
-        <%= form.hidden_field :longitude, data: { places_target: "longitude" } %>
-      </div>
-      <div data-toggle-role-info-target='prenom' class="form-control w-full">
-        <%= form.label :prénom, class: "label font-semibold text-slate-700" do %>
-          <span>Prénom <span class="text-red-500">*</span></span>
-        <% end %>
-        <%= form.text_field :prénom, class: 'input input-bordered input-sm w-full focus:input-primary h-10', required: true %>
-      </div>
+      <%# Quitamos el required nativo aquí por si Stimulus oculta este campo temporalmente en base al rol %>
+      <%= form.text_field :address,
+          class: 'input input-bordered select-sm w-full focus:input-primary h-10',
+          placeholder: 'Commencez à tapez une adresse...',
+          data: { places_target: "address" } %>
+      <%= form.hidden_field :latitude, data: { places_target: "latitude" } %>
+      <%= form.hidden_field :longitude, data: { places_target: "longitude" } %>
+    </div>
+    <div data-toggle-role-info-target='prenom' class="form-control w-full">
+      <%= form.label :prénom, class: "label font-semibold text-slate-700" do %>
+        <span>Prénom <span class="text-red-500">*</span></span>
+      <% end %>
+      <%= form.text_field :prénom, class: 'input input-bordered input-sm w-full focus:input-primary h-10', required: true %>
     </div>
     <hr class="border-slate-100 my-1" />
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">

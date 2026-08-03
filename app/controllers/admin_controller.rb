@@ -39,7 +39,7 @@ class AdminController < ApplicationController
   end
 
   def create_new_user
-    @user = User.new
+    @user = User.new(rôle: :agent)
   end
 
   # `POST /users` est réservé par Devise dès que :registerable est réactivé, d'où

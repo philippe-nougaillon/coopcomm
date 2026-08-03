@@ -287,6 +287,20 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # --- Formulaire ---
 
+  test 'le formulaire s’ouvre sur le rôle agent' do
+    get admin_create_new_user_url
+
+    assert_response :success
+    assert_select 'select#user_rôle option[selected][value=?]', 'agent'
+  end
+
+  test 'critique : le rôle est le premier champ du formulaire' do
+    get admin_create_new_user_url
+
+    champs = response.body.scan(/(?:name|id)="user(?:\[)?(rôle|nom)/).flatten
+    assert_equal 'rôle', champs.first, 'le rôle doit être demandé avant le nom'
+  end
+
   test 'un manager ne se voit proposer que ses propres services' do
     sign_in users(:hidalgo)
 

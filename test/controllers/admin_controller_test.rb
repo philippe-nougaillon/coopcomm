@@ -34,6 +34,14 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?][method=?]", admin_create_new_user_do_path, 'post'
   end
 
+  test 'create_new_user prépare un agent par défaut' do
+    sign_in users(:administrateur_paris)
+
+    get admin_create_new_user_url
+
+    assert_equal 'agent', assigns(:user).rôle
+  end
+
   # --- stats : réservé au super administrateur ---
 
   test 'stats est accessible au super administrateur et liste les organisations' do
