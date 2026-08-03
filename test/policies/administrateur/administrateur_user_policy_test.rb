@@ -9,9 +9,25 @@ class AdministrateurUserPolicyTest < ActionDispatch::IntegrationTest
     user_paris = users(:bond)
     user_marseille_service_different = users(:agent_marseille)
 
+    # john_wick est rattaché à comptabilite : même organisation que l'administrateur,
+    # mais hors de SES services (service_paris / informatique / technique).
+    user_paris_hors_de_ses_services = users(:john_wick)
+
     @policy = UserPolicy.new(administrateur_paris, user_paris)
     @policy_user_myself = UserPolicy.new(administrateur_paris, administrateur_paris)
     @policy_organisation_differente = UserPolicy.new(administrateur_paris, user_marseille_service_different)
+    @policy_hors_de_ses_services = UserPolicy.new(administrateur_paris, user_paris_hors_de_ses_services)
+  end
+
+  # Un administrateur porte TOUTE son organisation, pas seulement ses propres services :
+  # sans quoi il crée des comptes qu'il ne peut ensuite ni ouvrir, ni modifier, ni relancer.
+  test "un administrateur gère un user de son organisation hors de ses propres services" do
+    assert @policy_hors_de_ses_services.show?
+    assert @policy_hors_de_ses_services.edit?
+    assert @policy_hors_de_ses_services.update?
+    assert @policy_hors_de_ses_services.destroy?
+    assert @policy_hors_de_ses_services.inviter?
+    assert @policy_hors_de_ses_services.reactivate?
   end
 
   # Index

@@ -66,11 +66,10 @@ class UserPolicy < ApplicationPolicy
 
   private
 
-  # Vérifie si l'utilisateur peut manager le record
+  # Un administrateur porte toute son organisation, un manager ses seuls services
+  # (même découpage que ApplicationPolicy#manage?, qui vise un record mono-service).
   def can_manage_record?
-    # Un administrateur peut gérer tout utilisateur de son organisation,
-    # peu importe le service. Un manager reste limité aux services partagés.
-    manager_or_admin? && organisation? && (administrateur? || shared_service?)
+    organisation? && (administrateur? || (user.manager? && shared_service?))
   end
 
   # Vérifie si un manager tente d'agir sur un grade égal ou supérieur

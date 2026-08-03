@@ -49,6 +49,29 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
     assert_select 'a[href=?]', user_path(@temoin), { minimum: 1 } # john_wick est dans comptabilite
   end
 
+  test 'admin : tous les services sélectionnés → tous les utilisateurs de l\'organisation' do
+    tous = organisations(:mairie_paris).services.ids
+
+    get users_url, params: { services: tous, search: @temoin.nom }
+
+    assert_response :success
+    assert_select 'a[href=?]', user_path(@temoin), { minimum: 1 },
+                  'tous les services cochés → l\'admin voit toute son organisation'
+  end
+
+  # Un administrateur peut créer un compte dans n'importe quel service de son
+  # organisation : ce compte doit être atteignable depuis l'index.
+  test 'admin : un compte créé dans un service qui n\'est pas le sien est retrouvable' do
+    créé = User.create!(nom: 'Neuf', prénom: 'Venu', email: 'neuf.venu@example.test',
+                        rôle: 'agent', password: 'qtDug$d843sqACz?V',
+                        service_ids: [services(:comptabilite).id])
+
+    get users_url, params: { services: [''], search: 'Neuf' }
+
+    assert_response :success
+    assert_select 'a[href=?]', user_path(créé), { minimum: 1 }
+  end
+
   test 'le formulaire /users fournit le champ caché services[] (permet de vider le filtre)' do
     get users_url
 

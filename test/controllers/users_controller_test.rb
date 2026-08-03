@@ -136,6 +136,35 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_equal [services(:technique)], créé.services.to_a
   end
 
+  test 'critique : un administrateur rattache à n’importe quel service de son organisation et garde la main dessus' do
+    hors_de_ses_services = services(:comptabilite)
+
+    créé = créer(rôle: 'agent', service_ids: [hors_de_ses_services.id])
+
+    assert_not_nil créé
+    assert_equal [hors_de_ses_services], créé.services.to_a
+
+    # Le compte doit rester accessible : sinon l'administrateur le voit dans la liste
+    # sans pouvoir l'ouvrir, le modifier ni relancer son invitation.
+    follow_redirect!
+    assert_response :success
+    assert_nil flash[:alert]
+
+    get edit_user_url(créé)
+    assert_response :success
+  end
+
+  test 'critique : un administrateur ne touche pas à un utilisateur d’une autre organisation' do
+    autre_org = users(:agent_marseille)
+
+    get user_url(autre_org)
+    assert_redirected_to root_path
+
+    patch user_url(autre_org), params: { user: { nom: 'FORGE' } }
+    assert_redirected_to root_path
+    assert_not_equal 'FORGE', autre_org.reload.nom
+  end
+
   # Bornage silencieux : les identifiants hors périmètre sont retirés, les valides gardés.
   test 'un service hors périmètre soumis avec un service valide est ignoré' do
     créé = créer(connecté: users(:hidalgo), rôle: 'adhérent',
