@@ -72,6 +72,27 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to tools_path
   end
 
+  test 'libérer une réservation revient à la page filtrée' do
+    reservation(users(:administrateur_paris))
+    filtres = tools_url(search: 'cisaille', type: 'wrench', date: JOUR.to_s)
+
+    post libere_tool_mouvements_url(tool_id: @outil.id),
+         params: { date: JOUR.to_s, user_id: users(:administrateur_paris).id },
+         headers: { 'HTTP_REFERER' => filtres }
+
+    assert_redirected_to filtres
+  end
+
+  test 'libérer une réservation inexistante revient à la page filtrée' do
+    filtres = tools_url(search: 'cisaille', type: 'wrench', date: JOUR.to_s)
+
+    post libere_tool_mouvements_url(tool_id: @outil.id),
+         params: { date: JOUR.to_s, user_id: users(:administrateur_paris).id },
+         headers: { 'HTTP_REFERER' => filtres }
+
+    assert_redirected_to filtres
+  end
+
   test "un manager peut libérer la réservation d'un autre" do
     sign_in users(:hidalgo)
     celle_dun_autre = reservation(users(:bond))
