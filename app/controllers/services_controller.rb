@@ -41,7 +41,10 @@ class ServicesController < ApplicationController
       if @service.save
         # Attribution du nouveau service à l'utilisateur courant pour qu'il ait accès.
         current_user.services << @service
-        format.html { redirect_to @service, notice: 'Service créé avec succès.' }
+        format.html do 
+          redirect_to admin_parametres_path(tab: params[:tab] || 'services'), 
+                      notice: 'Service créé avec succès.' 
+        end
         format.json { render :show, status: :created, location: @service }
       else
         format.html { render :new, status: :unprocessable_content }
@@ -49,12 +52,17 @@ class ServicesController < ApplicationController
       end
     end
   end
+  
 
   # PATCH/PUT /services/1 or /services/1.json
   def update
     respond_to do |format|
       if @service.update(service_params)
-        format.html { redirect_to @service, notice: 'Service modifié avec succès.', status: :see_other }
+        format.html do 
+                  redirect_to admin_parametres_path(tab: params[:tab] || 'services'), 
+                              notice: 'Service modifié avec succès.', 
+                              status: :see_other 
+        end        
         format.json { render :show, status: :ok, location: @service }
       else
         format.html { render :edit, status: :unprocessable_content }
@@ -68,7 +76,7 @@ class ServicesController < ApplicationController
     @service.destroy!
 
     respond_to do |format|
-      format.html { redirect_to admin_parametres_path, notice: 'Service supprimé avec succès.', status: :see_other }
+      format.html { redirect_to admin_parametres_path(tab: params[:tab] || 'services'), notice: 'Service supprimé avec succès.', status: :see_other }
       format.json { head :no_content }
     end
   end
