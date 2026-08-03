@@ -32,7 +32,11 @@ class NotifManagersNewInterventionFromAdherentJobTest < ActiveJob::TestCase
   end
 
   test 'un adhérent sans service ne déclenche aucune notification' do
-    sans_service = users(:berthout) # aucune entrée user_services
+    # Un compte sans service ne peut plus être créé (User#must_have_at_least_one_service)
+    # mais peut subsister en base pour les comptes antérieurs à la validation.
+    sans_service = User.new(nom: 'Sans', prénom: 'Service', email: 'sans.service.adherent@example.test',
+                            rôle: 'adhérent', password: 'qtDug$d843sqACz?V')
+    sans_service.save(validate: false)
     assert_empty sans_service.services
 
     assert_no_emails do

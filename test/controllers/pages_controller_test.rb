@@ -106,6 +106,24 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # Toute la création d'utilisateur passe par admin#create_new_user : `users#new` ne
+  # doit être proposé nulle part.
+  test 'home : l’action rapide « nouvel utilisateur » mène au formulaire admin' do
+    sign_in users(:hidalgo)
+
+    get home_url
+
+    assert_select "a[href=?]", admin_create_new_user_path
+  end
+
+  test 'home : aucune action rapide de gestion pour un agent' do
+    sign_in users(:bond)
+
+    get home_url
+
+    assert_select "a[href=?]", admin_create_new_user_path, count: 0
+  end
+
   test 'la nuit (heure < 7) la bannière utilise le créneau 20h' do
     sign_in users(:hidalgo)
 

@@ -73,13 +73,12 @@ class SecuriteRegressionsTest < ActionDispatch::IntegrationTest
     assert bond.reload.agent?
   end
 
-  test 'un manager ne peut pas créer un administrateur via admin/create_new_user_do' do
+  test 'un manager ne peut pas créer un administrateur' do
     sign_in users(:hidalgo)
 
     post admin_create_new_user_do_url, params: {
       user: { nom: 'Forgé', prénom: 'Compte', email: 'forge@example.com',
-              password: 'Px9!aZk2#mQ7', rôle: 'administrateur',
-              address: 'Mairie', latitude: 1.0, longitude: 1.0 }
+              rôle: 'administrateur', service_ids: [services(:informatique).id] }
     }
 
     créé = User.find_by(email: 'forge@example.com')

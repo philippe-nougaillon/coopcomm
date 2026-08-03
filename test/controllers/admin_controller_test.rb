@@ -24,41 +24,22 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test 'should create new user do' do
-    assert_difference('User.count') do
-      post admin_create_new_user_do_url, params: {
-        user: {
-          nom: 'Foo',
-          prénom: 'Bar',
-          email: 'email@example.com',
-          password: '0DcPIZIq0+f5SvCf',
-          rôle: 'adhérent',
-          téléphone: '0123456789',
-          address: 'Mairie de Paris',
-          latitude: 123.123,
-          longitude: 432.120398
-        }
-      }
-    end
+  # `POST /users` appartient à Devise dès que :registerable est réactivé : le
+  # formulaire doit viser le chemin dédié, sans quoi la création est captée par
+  # l'inscription publique et aucun compte n'est créé.
+  test 'le formulaire de création poste sur le chemin dédié, pas sur POST /users' do
+    get admin_create_new_user_url
 
-    assert_redirected_to users_url
+    assert_response :success
+    assert_select "form[action=?][method=?]", admin_create_new_user_do_path, 'post'
   end
 
-  test 'create_new_user_do invalide réaffiche le formulaire en 422' do
-    assert_no_difference('User.count') do
-      post admin_create_new_user_do_url, params: { user: { nom: 'Foo', prénom: 'Bar', email: '', rôle: 'adhérent' } }
-    end
+  test 'create_new_user prépare un agent par défaut' do
+    sign_in users(:administrateur_paris)
 
-    assert_response :unprocessable_content
-  end
+    get admin_create_new_user_url
 
-  test 'create_new_user_do invalide en JSON renvoie les erreurs' do
-    post admin_create_new_user_do_url,
-         params: { user: { nom: 'Foo', prénom: 'Bar', email: '', rôle: 'adhérent' } },
-         as: :json
-
-    assert_response :unprocessable_content
-    assert_includes response.parsed_body.to_s, 'doit être rempli'
+    assert_equal 'agent', assigns(:user).rôle
   end
 
   # --- stats : réservé au super administrateur ---

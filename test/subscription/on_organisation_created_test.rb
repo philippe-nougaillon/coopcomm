@@ -18,8 +18,11 @@ class OnOrganisationCreatedTest < ActiveSupport::TestCase
 
   test 'user sans service : NewOrganisationNotificationJob est enqueue avec nil (comportement actuel documenté)' do
     # L'organisation d'un User est dérivée de ses services : sans service, elle est nil.
-    user = User.create!(nom: 'Sans-Service', email: 'sans-service@aikku.eu',
-                        rôle: 'manager', password: 'qtDug$d843sqACz?V')
+    # Un tel compte ne peut plus être créé (User#must_have_at_least_one_service), mais
+    # il peut subsister en base pour les comptes antérieurs à la validation.
+    user = User.new(nom: 'Sans-Service', email: 'sans-service@aikku.eu',
+                    rôle: 'manager', password: 'qtDug$d843sqACz?V')
+    user.save(validate: false)
 
     EmailSubscription.new.on_organisation_created({ payload: { user_id: user.id } })
 
