@@ -1,30 +1,48 @@
 <div class="flex flex-col">
+  <!-- En-tête -->
   <div class="flex flex-row justify-between items-center my-4 gap-2">
     <h1 class="text-4xl text-primary font-bold">
       <%= page_title!('Paramètres') %>
     </h1>
   </div>
+
+  <% current_tab = params[:tab] || 'services' %>
+
+  <!-- Formulaire de filtres en HAUT (Comme avant) -->
   <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_action: "advance" } do %>
-    <%= hidden_field_tag :tab, params[:tab] || 'services' %>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+    <%= hidden_field_tag :tab, current_tab %>
+    <div class="grid grid-cols-1 <%= 'sm:grid-cols-2 lg:flex lg:items-end' if current_tab.in?(%w[services sites]) %> gap-4 w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      
+      <!-- Champ de recherche adapte -->
       <div class="w-full md:flex-1">
         <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
         <%= text_field_tag :search, params[:search], include_blank: true,
                     onchange: 'this.form.requestSubmit()',
                     class: 'input input-bordered input-md w-full',
-                    placeholder: 'Rechercher...' %>
+                    placeholder: case current_tab
+                                 when 'services' then 'Rechercher un service...'
+                                 when 'sites' then 'Rechercher un site...'
+                                 when 'prestations' then 'Rechercher par code, libellé...'
+                                 else 'Rechercher...'
+                                 end %>
       </div>
-      <div class="w-full md:flex-1">
-        <%= label_tag :user_id, "Utilisateur", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
-        <%= select_tag :user_id, options_from_collection_for_select(@users, :id, :nom_prénom, params[:user_id]),
-                    multiple: true,
-                    class: 'slim-select w-full h-10',
-                    data: { placeholder: 'Tous les utilisateurs' },
-                    onchange: 'this.form.requestSubmit()' %>
-      </div>
+
+      <!-- Filtre Utilisateur : Uniquement si pertinent pour l'onglet -->
+      <% if current_tab.in?(%w[services sites]) %>
+        <div class="w-full md:flex-1">
+          <%= label_tag :user_id, "Utilisateur", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
+          <%= select_tag :user_id, options_from_collection_for_select(@users, :id, :nom_prénom, params[:user_id]),
+                      multiple: true,
+                      class: 'slim-select w-full h-10',
+                      data: { placeholder: 'Tous les utilisateurs' },
+                      onchange: 'this.form.requestSubmit()' %>
+        </div>
+      <% end %>
+
     </div>
   <% end %>
-  <% current_tab = params[:tab] || 'services' %>
+
+  <!-- Navigation par Onglets sous les filtres (Comme avant) -->
   <div class="mt-6 border-b border-slate-200">
     <nav class="flex gap-1" aria-label="Sections des paramètres">
       <%= link_to url_for(safe_params.merge(tab: 'services')), 
@@ -34,6 +52,7 @@
           <%= @services_count %>
         </span>
       <% end %>
+
       <%= link_to url_for(safe_params.merge(tab: 'sites')), 
                   class: "px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors #{current_tab == 'sites' ? 'text-primary border-primary' : 'text-slate-500 hover:text-slate-800 border-transparent'}" do %>
         Sites
@@ -41,6 +60,7 @@
           <%= @warehouses_count %>
         </span>
       <% end %>
+
       <%= link_to url_for(safe_params.merge(tab: 'prestations')), 
                   class: "px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors #{current_tab == 'prestations' ? 'text-primary border-primary' : 'text-slate-500 hover:text-slate-800 border-transparent'}" do %>
         Prestations
@@ -50,6 +70,8 @@
       <% end %>
     </nav>
   </div>
+
+  <!-- Contenu des onglets -->
   <div class="mt-6">
     <% case current_tab %>
     <% when 'services' %>
@@ -64,48 +86,50 @@
             <% end %>
           <% end %>
         </div>
+
         <div class="flex flex-col bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-            <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-              <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
-              <span>Faire glisser pour voir plus</span>
-              </div>
-            <div class="overflow-x-auto">
-              <table id="parametres" class="table table-sm w-full border-none">
-                <thead class="bg-slate-100">
+          <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+            <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+            <span>Faire glisser pour voir plus</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table id="parametres" class="table table-sm w-full border-none">
+              <thead class="bg-slate-100">
+                <tr>
+                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Services</th>
+                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Utilisateurs</th>
+                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase text-center tracking-wider">Nombre d'utilisateurs</th>
+                  <th class="px-4 py-3 gap-1 items-center justify-center font-semibold flex flex-row text-slate-500 uppercase tracking-wider text-center cursor-help" title="Calcul de distance sur les interventions du service à partir de l'équipe de l'adhérent">
+                    Calcul distances
+                    <%= embedded_svg "icons/error.svg", class: "w-6 h-6 fill-current", title: "Info" %>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if @services.any? %>
+                  <%= render @services %>
+                <% else %>
                   <tr>
-                    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Services</th>
-                    <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Utilisateurs</th>
-                    <th class="px-4 py-3 font-semibold text-slate-500 uppercase text-center tracking-wider">Nombre d'utilisateurs</th>
-                    <th class="px-4 py-3  gap-1 items-center justify-center font-semibold flex flex-row text-slate-500 uppercase tracking-wider text-center cursor-help" title="Calcul de distance sur les interventions du service à partir de l'équipe de l'adhérent">
-                      Calcul distances
-                      <%= embedded_svg "icons/error.svg", class: "w-6 h-6 fill-current", title: "Info" %>
-                    </th>
+                    <td colspan="4" class="text-center py-8 text-slate-400 text-base italic">Aucun service pour le moment.</td>
                   </tr>
-                </thead>
-                <tbody>
-                  <% if @services.any? %>
-                    <%= render @services %>
-                  <% else %>
-                    <tr>
-                      <td colspan="4" class="text-center py-8 text-slate-400 text-base italic">Aucun service pour le moment.</td>
-                    </tr>
-                  <% end %>
-                </tbody>
-              </table>
-            </div>
+                <% end %>
+              </tbody>
+            </table>
           </div>
         </div>
-          <% if @pagy&.pages.to_i > 1 %>
-        <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full mt-4 rounded-b-xl">
+
+        <% if @pagy&.pages.to_i > 1 %>
+          <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full mt-4 rounded-b-xl">
             <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
               <%= pagy_nav(@pagy).html_safe %>
             </div>
             <div class="text-slate-500 text-center text-sm w-full">
               <%= pagy_info(@pagy, item_name: "service").html_safe %>
             </div>
-         </div>
-          <% end %>
+          </div>
+        <% end %>
       </section>
+
     <% when 'sites' %>
       <section id="sites" class="animate-fade-in">
         <div class="flex justify-between items-center mb-4">
@@ -114,16 +138,17 @@
             <%= link_to new_warehouse_path(tab: current_tab), data: { testid: "ajouter_warehouse" }, 
                 class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary" do %>
               <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current transition-colors duration-200", title: "Ajouter un site" %>
-              <span class="hidden md:block"> Ajouter un site</span>
+              <span class="hidden md:block">Ajouter un site</span>
             <% end %>
           <% end %>
         </div>
-         <div class="flex flex-col bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-            <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-              <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
-              <span>Faire glisser pour voir plus</span>
-              </div>
-            <div class="overflow-x-auto">
+
+        <div class="flex flex-col bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+          <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+            <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+            <span>Faire glisser pour voir plus</span>
+          </div>
+          <div class="overflow-x-auto">
             <table id="warehouses-table" class="table table-sm w-full">
               <thead class="bg-slate-100">
                 <tr>
@@ -144,45 +169,47 @@
             </table>
           </div>
         </div>
-        </div> 
-          <% if @pagy&.pages.to_i > 1 %>
-        <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full mt-4 rounded-b-xl">
+
+        <% if @pagy&.pages.to_i > 1 %>
+          <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full mt-4 rounded-b-xl">
             <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
               <%= pagy_nav(@pagy).html_safe %>
             </div>
             <div class="text-slate-500 text-center text-sm w-full">
-              <%= pagy_info(@pagy, item_name: "service").html_safe %>
+              <%= pagy_info(@pagy, item_name: "site").html_safe %>
             </div>
-         </div>
-          <% end %>
+          </div>
+        <% end %>
       </section>
+
     <% when 'prestations' %>
       <section id="prestations" class="mb-8 animate-fade-in">
         <div class="flex justify-between items-center mb-4">
           <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats (<%= @prestations.size %>)</span>
           <% if policy(Prestation).new? %>
             <%= link_to new_prestation_path(tab: current_tab), data: { testid: "ajouter_prestation" }, 
-            class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary" do %>
+                class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary" do %>
               <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current transition-colors duration-200", title: "Ajouter une prestation" %>
               <span class="hidden md:block">Ajouter une prestation</span>
             <% end %>
           <% end %>
         </div>
+
         <div class="flex flex-col bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-            <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-              <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
-              <span>Faire glisser pour voir plus</span>
-            </div>
-            <div class="overflow-x-auto">
+          <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+            <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+            <span>Faire glisser pour voir plus</span>
+          </div>
+          <div class="overflow-x-auto">
             <table id="prestations-table" class="table table-sm w-full">
               <thead class="bg-slate-100">
                 <tr>
                   <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-32">Code</th>
-                  <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider">Libellé</th>
-                  <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider text-center ">Catégorie</th>
-                  <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider text-center ">Sous-catégorie</th>
-                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider  text-center">Unité</th>
-                  <th class="px-4 py-3  font-semibold text-slate-500 uppercase tracking-wider text-center ">Tarif HT</th>
+                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Libellé</th>
+                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Catégorie</th>
+                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Sous-catégorie</th>
+                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Unité</th>
+                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Tarif HT</th>
                 </tr>
               </thead>
               <tbody>
@@ -197,17 +224,17 @@
             </table>
           </div>
         </div>
-         </div>
+
         <% if @pagy&.pages.to_i > 1 %>
-        <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full mt-4 rounded-b-xl">
+          <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full mt-4 rounded-b-xl">
             <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
               <%= pagy_nav(@pagy).html_safe %>
             </div>
             <div class="text-slate-500 text-center text-sm w-full">
-              <%= pagy_info(@pagy, item_name: "service").html_safe %>
+              <%= pagy_info(@pagy, item_name: "prestation").html_safe %>
             </div>
-         </div>
-          <% end %>
+          </div>
+        <% end %>
       </section>
     <% end %>
   </div>

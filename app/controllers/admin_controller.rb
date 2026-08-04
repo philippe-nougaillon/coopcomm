@@ -80,19 +80,19 @@ class AdminController < ApplicationController
 
   def parametres
   # 1. Definir los Scopes Base
-  services_scope = current_organisation.services.ordered
-  warehouses_scope = current_organisation.warehouses.ordered
-  prestations_scope = current_organisation.prestations.ordered
+  services_scope = current_organisation.services.reorder(Arel.sql('LOWER(services.nom) ASC'))
+  warehouses_scope = current_organisation.warehouses.reorder(Arel.sql('LOWER(warehouses.name) ASC'))
+  prestations_scope = current_organisation.prestations.reorder(Arel.sql('LOWER(prestations.libellé) ASC'))
   
   # Lista completa de usuarios para cargar el select del formulario
-  @users = User.by_service(services_scope)
+  @users = User.by_service(current_organisation.services)
 
   # 2. Aplicar Filtro de Búsqueda por Texto (`:search`)
   if params[:search].present?
     search_term = "%#{params[:search]}%"
-    services_scope = services_scope.where('nom ILIKE :search', search: search_term)
-    warehouses_scope = warehouses_scope.where('name ILIKE :search', search: search_term)
-    prestations_scope = prestations_scope.where('code ILIKE :search OR libellé ILIKE :search OR catégorie ILIKE :search', search: search_term)
+    services_scope = services_scope.where('services.nom ILIKE :search', search: search_term)
+    warehouses_scope = warehouses_scope.where('warehouses.name ILIKE :search', search: search_term)
+    prestations_scope = prestations_scope.where('prestations.code ILIKE :search OR prestations.libellé ILIKE :search OR prestations.catégorie ILIKE :search', search: search_term)
   end
 
   # 3. Aplicar Filtro por Selección de Usuarios (`:user_id`)
