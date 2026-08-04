@@ -1304,23 +1304,6 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
 
   # --- L'adhérent d'une fille de pointage est figé pour l'agent --------------
 
-  test "un agent ne peut pas changer l'adhérent d'une fille de pointage" do
-    agent = users(:martin_technique_paris)
-    sign_in agent
-    modele = interventions(:intervention_repete)
-    get pointer_intervention_url(modele)
-    fille = Intervention.find_by(template_slug: modele.slug)
-    adherent_initial = fille.adherent
-
-    patch intervention_url(fille), params: {
-      intervention: { adherent_id: users(:patrick_adherent_paris).id, description: 'Pointage modifié' }
-    }
-
-    fille.reload
-    assert_equal adherent_initial, fille.adherent
-    assert_equal 'Pointage modifié', fille.description, 'le reste de la modification doit passer'
-  end
-
   test "le formulaire d'édition d'une fille de pointage n'offre pas de choix d'adhérent" do
     agent = users(:martin_technique_paris)
     sign_in agent
@@ -1359,5 +1342,111 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
     }
 
     assert_equal users(:patrick_adherent_paris), fille.reload.adherent
+  end
+
+  # --- Une fille de pointage n'a qu'un seul agent ---------------------------
+
+  test "un second agent est refusé sur une fille de pointage" do
+    sign_in users(:martin_technique_paris)
+    modele = interventions(:intervention_repete)
+    get pointer_intervention_url(modele)
+    fille = Intervention.find_by(template_slug: modele.slug)
+    agents_initiaux = fille.agent_ids
+
+    sign_in users(:hidalgo)
+    patch intervention_url(fille), params: {
+      intervention: { agent_ids: ['', users(:martin_technique_paris).id, users(:john_wick).id],
+                      description: 'Pointage à deux' }
+    }
+
+    assert_response :unprocessable_content
+    fille.reload
+    assert_equal agents_initiaux, fille.agent_ids, "les lignes de jointure ne doivent pas être écrites"
+    assert_not_equal 'Pointage à deux', fille.description
+  end
+
+  test 'le formulaire réaffiché après ce refus conserve la saisie' do
+    sign_in users(:martin_technique_paris)
+    modele = interventions(:intervention_repete)
+    get pointer_intervention_url(modele)
+    fille = Intervention.find_by(template_slug: modele.slug)
+
+    sign_in users(:hidalgo)
+    patch intervention_url(fille), params: {
+      intervention: { agent_ids: ['', users(:martin_technique_paris).id, users(:john_wick).id],
+                      description: 'Pointage à deux', commentaires: 'Commentaire saisi' }
+    }
+
+    assert_response :unprocessable_content
+    assert_select "input#intervention_description[value=?]", 'Pointage à deux'
+    assert_select 'textarea#intervention_commentaires', text: /Commentaire saisi/
+  end
+
+  test "le formulaire d'une fille de pointage désactive le champ Agents pour l'agent" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+    modele = interventions(:intervention_repete)
+    get pointer_intervention_url(modele)
+    fille = Intervention.find_by(template_slug: modele.slug)
+
+    get edit_intervention_url(fille)
+
+    assert_response :success
+    assert_select 'select#intervention_agent_ids[disabled]'
+  end
+
+  test "un agent garde le choix des agents hors pointage" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+
+    get edit_intervention_url(interventions(:nouvelle_intervention))
+
+    assert_response :success
+    assert_select 'select#intervention_agent_ids[disabled]', false
+  end
+
+  test 'le formulaire réaffiché après un refus garde les agents et outils soumis' do
+    sign_in users(:martin_technique_paris)
+    modele = interventions(:intervention_repete)
+    get pointer_intervention_url(modele)
+    fille = Intervention.find_by(template_slug: modele.slug)
+    outil = tools(:tondeuse)
+
+    sign_in users(:hidalgo)
+    patch intervention_url(fille), params: {
+      intervention: { agent_ids: ['', users(:martin_technique_paris).id, users(:électricité).id],
+                      tool_ids: ['', outil.id], description: 'Pointage à deux' }
+    }
+
+    assert_response :unprocessable_content
+    assert_select "select#intervention_agent_ids option[selected][value=?]", users(:martin_technique_paris).id.to_s
+    assert_select "select#intervention_agent_ids option[selected][value=?]", users(:électricité).id.to_s
+    assert_select "select#intervention_tool_ids option[selected][value=?]", outil.id.to_s
+  end
+
+  test "l'agent d'une fille de pointage reste remplaçable" do
+    sign_in users(:martin_technique_paris)
+    modele = interventions(:intervention_repete)
+    get pointer_intervention_url(modele)
+    fille = Intervention.find_by(template_slug: modele.slug)
+
+    sign_in users(:hidalgo)
+    patch intervention_url(fille), params: {
+      intervention: { agent_ids: ['', users(:john_wick).id], description: fille.description }
+    }
+
+    assert_equal [users(:john_wick).id], fille.reload.agent_ids
+  end
+
+  test 'une intervention hors pointage accepte toujours plusieurs agents' do
+    sign_in users(:hidalgo)
+    intervention = interventions(:nouvelle_intervention)
+
+    patch intervention_url(intervention), params: {
+      intervention: { agent_ids: ['', users(:bond).id, users(:john_wick).id],
+                      description: intervention.description }
+    }
+
+    assert_equal [users(:bond).id, users(:john_wick).id].sort, intervention.reload.agent_ids.sort
   end
 end

@@ -206,15 +206,25 @@ class InterventionsController < ApplicationController
 
   # PATCH/PUT /interventions/1 or /interventions/1.json
   def update
-    @intervention.assign_attributes(intervention_params)
-    update_tag_list
+    terminaison_demandée = false
+    enregistrée = false
 
-    terminaison_demandée = params[:terminer].present? && @intervention.can_terminer? &&
-                           policy(@intervention).terminer?
-    @intervention.workflow_state = Intervention::TERMINE if terminaison_demandée
+    # agent_ids= et tool_ids= écrivent les lignes de jointure dès l'assignation :
+    # sans transaction, un refus de validation les laisserait en base.
+    ActiveRecord::Base.transaction do
+      @intervention.assign_attributes(intervention_params)
+      update_tag_list
+
+      terminaison_demandée = params[:terminer].present? && @intervention.can_terminer? &&
+                             policy(@intervention).terminer?
+      @intervention.workflow_state = Intervention::TERMINE if terminaison_demandée
+
+      enregistrée = @intervention.save
+      raise ActiveRecord::Rollback unless enregistrée
+    end
 
     respond_to do |format|
-      if @intervention.save
+      if enregistrée
 
         format.html do
           # Si c'est une modification du commentaire dans le pointage statut, on redirige vers home
@@ -528,7 +538,6 @@ class InterventionsController < ApplicationController
   def intervention_params
     permitted = params.require(:intervention).permit(:adherent_id, :service_id, :début, :début_hour, :début_minute, :fin,
                                                      :fin_hour, :fin_minute, :temps_de_pause, :temps_total, :description, :commentaires, :tag_list, :repeter, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute, :meteo, photos: [], agent_ids: [], tool_ids: [])
-    permitted.delete(:adherent_id) if current_user.agent? && @intervention&.template_slug.present?
     permitted.merge!(params.require(:intervention).permit(:note, :avis)) if current_user.adhérent? || current_user.manager_or_admin?
     permitted
   end

@@ -39,6 +39,9 @@ class Intervention < ApplicationRecord
 
   valide_piece_jointe :photos, types: PieceJointeValidable::IMAGES
 
+  MESSAGE_AGENT_UNIQUE = "Une intervention de pointage n'accepte qu'un seul agent"
+
+
   before_validation -> { combine_datetime(:début_prévue) }
   before_validation -> { combine_datetime(:fin_prévue) }
   before_validation -> { combine_datetime(:début) }
@@ -56,6 +59,7 @@ class Intervention < ApplicationRecord
   validate :dates_cannot_be_in_the_future
   validate :dates_obligatoires_si_terminé
   validate :agent_obligatoire_si_terminé
+  validate :agent_unique_si_pointage
 
   before_save :calc_temps_total
 
@@ -594,6 +598,14 @@ class Intervention < ApplicationRecord
     return if agents.size.positive?
 
     errors.add(:base, "Au moins un agent est obligatoire pour terminer l'intervention")
+  end
+
+  def agent_unique_si_pointage
+    return if template_slug.blank?
+    # size et non count : sur un enregistrement neuf, count interroge la base avec un owner_id nil.
+    return if agents.size == 1
+
+    errors.add(:base, MESSAGE_AGENT_UNIQUE)
   end
 
   def set_temporary_description

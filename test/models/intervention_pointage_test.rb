@@ -248,4 +248,43 @@ class InterventionPointageTest < ActiveSupport::TestCase
 
     assert_nil i.en_cours?
   end
+
+  # === Un seul agent sur une fille de pointage ============================
+  # Une fille naît toujours avec l'unique agent qui a scanné ; seul le formulaire
+  # d'édition peut lui en ajouter d'autres.
+
+  test 'une fille de pointage à deux agents est refusée' do
+    mère = interventions(:intervention_repete)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+
+    fille.agents = [users(:martin_technique_paris), users(:john_wick)]
+
+    assert_not fille.valid?
+    assert_includes fille.errors.full_messages, Intervention::MESSAGE_AGENT_UNIQUE
+  end
+
+  test 'une fille de pointage sans agent est refusée' do
+    mère = interventions(:intervention_repete)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+
+    fille.agents = []
+
+    assert_not fille.valid?
+    assert_includes fille.errors.full_messages, Intervention::MESSAGE_AGENT_UNIQUE
+  end
+
+  test 'une fille de pointage à un seul agent reste valide' do
+    mère = interventions(:intervention_repete)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+
+    assert fille.valid?, fille.errors.full_messages.to_sentence
+  end
+
+  test 'une intervention hors pointage accepte toujours plusieurs agents' do
+    intervention = interventions(:intervention_repete) # martin + bond
+
+    assert_nil intervention.template_slug
+    assert_operator intervention.agents.size, :>, 1
+    assert intervention.valid?, intervention.errors.full_messages.to_sentence
+  end
 end

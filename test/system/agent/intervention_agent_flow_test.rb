@@ -111,4 +111,23 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
 
   # test "Export XLS des interventions" do
   # end
+  test "Modifier une fille de pointage ne change ni l'adhérent ni les agents" do
+    modele = interventions(:intervention_repete)
+
+    visit pointer_intervention_path(modele) # scan de début de journée
+    fille = Intervention.find_by(template_slug: modele.slug)
+    visit pointer_intervention_path(modele) # scan de fin : la fille porte ses deux dates
+    fille.reload
+    adherent_initial = fille.adherent_id
+    agents_initiaux = fille.agent_ids
+
+    visit edit_intervention_path(fille)
+    fill_in 'Commentaires', with: 'Compte-rendu du pointage'
+    soumettre 'Enregistrer'
+
+    fille.reload
+    assert_equal 'Compte-rendu du pointage', fille.commentaires
+    assert_equal adherent_initial, fille.adherent_id
+    assert_equal agents_initiaux, fille.agent_ids
+  end
 end
