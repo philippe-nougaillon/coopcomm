@@ -16,28 +16,28 @@ module InterventionsHelper
   def terminer_destination(intervention)
     return [pointer_intervention_path(intervention.intervention_mère), :get, nil] if intervention.pointage_de?(current_user)
 
-    if dates_manquantes_pour_terminer?(intervention)
-      return [edit_intervention_path(intervention), :get, { terminer: 1 }]
-    end
+    return [edit_intervention_path(intervention), :get, { terminer: 1 }] if champs_manquants_pour_terminer(intervention).any?
 
     [terminer_intervention_path(intervention), :post, nil]
   end
 
-  def dates_manquantes_pour_terminer?(intervention)
-    intervention.début.blank? || intervention.fin.blank?
-  end
-
-  def message_dates_manquantes(intervention)
-    return nil unless dates_manquantes_pour_terminer?(intervention)
-
+  def champs_manquants_pour_terminer(intervention)
     champs = []
-    champs << 'début' if intervention.début.blank?
-    champs << 'fin' if intervention.fin.blank?
-
-    "Les dates de #{champs.join(' et de ')} sont obligatoires pour terminer cette intervention."
+    champs << 'la date de début' if intervention.début.blank?
+    champs << 'la date de fin' if intervention.fin.blank?
+    champs << 'le temps de pause' if intervention.temps_de_pause.blank?
+    champs << 'au moins un agent' if intervention.agents.empty?
+    champs
   end
 
-  
+  def message_terminaison_incomplete(intervention)
+    champs = champs_manquants_pour_terminer(intervention)
+    return nil if champs.empty?
+
+    "#{champs.to_sentence.upcase_first} #{champs.one? ? 'est obligatoire' : 'sont obligatoires'} pour terminer cette intervention."
+  end
+
+
   # --- Trajet ---
 
   def trajet_affichable?(intervention)

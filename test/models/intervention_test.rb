@@ -366,6 +366,44 @@ class InterventionTest < ActiveSupport::TestCase
     assert_predicate intervention, :valid?
   end
 
+  test 'terminé sans agent : invalide' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.agents.destroy_all
+    intervention.reload.workflow_state = Intervention::TERMINE
+
+    assert_not intervention.valid?
+    assert_includes intervention.errors.full_messages.join, "Au moins un agent est obligatoire pour terminer l'intervention"
+  end
+
+  test 'terminé avec un agent : valide' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.workflow_state = Intervention::TERMINE
+
+    assert_predicate intervention.agents, :any?
+    assert_predicate intervention, :valid?
+  end
+
+  test 'un état autre que terminé n’exige pas d’agent' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.agents.destroy_all
+
+    assert_predicate intervention.reload, :valid?
+  end
+
+  test 'une intervention déjà terminée sans agent ne peut plus être enregistrée' do
+    intervention = interventions(:intervention_terminée)
+    intervention.agents.destroy_all
+
+    assert_not intervention.reload.update(commentaires: 'peu importe')
+  end
+
+  test 'agents retirés d’une intervention terminée : invalide' do
+    intervention = interventions(:intervention_terminée)
+    intervention.agent_ids = []
+
+    assert_not intervention.valid?
+  end
+
   # Les événements sont observés par les jobs qu'ils déclenchent : les mêmes
   # sondes que test/subscription.
   test 'terminer publie workflow_changed et done' do

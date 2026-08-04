@@ -51,7 +51,7 @@
         <div class="flex justify-center gap-2">
           <% if policy(intervention).terminer? %>
             <% lien, methode, params_terminer = terminer_destination(intervention) %>
-            <% msg = message_dates_manquantes(intervention) %>
+            <% msg = message_terminaison_incomplete(intervention) %>
             <% if msg.present? %>
               <button type="button"
                     class="z-10 btn btn-primary border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!", 
@@ -66,12 +66,12 @@
                     <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                   </form>
                   <h3 class="text-lg font-bold text-amber-600 flex items-center gap-2">
-                    <%= embedded_svg "icons/warning.svg", title: "Dates manquantes" %>
-                    Dates manquantes
+                    <%= embedded_svg "icons/warning.svg", title: "Informations manquantes" %>
+                    Informations manquantes
                   </h3>
                   <p class="py-4 text-sm text-slate-600 text-left">
                     <%= msg %>
-                    Vous allez être redirigé(e) vers le formulaire de modification pour renseigner ces dates.
+                    Vous allez être redirigé(e) vers le formulaire de modification pour les renseigner.
                   </p>
                   <div class="modal-action">
                     <form method="dialog">

@@ -92,6 +92,17 @@ class TerminerPointagesJobTest < ActiveJob::TestCase
     end
   end
 
+  # Décision : un pointage privé de son agent n'est pas clôturé de force, il reste
+  # ouvert jusqu'à correction manuelle (l'erreur est journalisée par le job).
+  test 'un pointage sans agent reste ouvert' do
+    @pointage.agents.destroy_all
+
+    TerminerPointagesJob.perform_now
+
+    assert @pointage.reload.nouveau?
+    assert_nil @pointage.fin
+  end
+
   test 'un pointage en échec n’interrompt pas le traitement des suivants' do
     # On isole le scénario sur deux pointages maîtrisés et ordonnés.
     @pointage.destroy!
