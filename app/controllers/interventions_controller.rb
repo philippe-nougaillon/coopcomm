@@ -269,7 +269,7 @@ class InterventionsController < ApplicationController
   # end
 
   def terminer
-    return if redirect_si_invalide('terminée')
+    return if redirect_si_invalide('terminée', etat_cible: Intervention::TERMINE)
 
     if @intervention.can_terminer?
       @intervention.terminer!
@@ -562,8 +562,11 @@ class InterventionsController < ApplicationController
     %w[asc desc].include?(params[:direction]) ? params[:direction] : 'desc'
   end
 
-  def redirect_si_invalide(etat)
-    return false if @intervention.valid?
+  def redirect_si_invalide(etat, etat_cible: nil)
+    @intervention.workflow_state = etat_cible if etat_cible
+    valide = @intervention.valid?
+    @intervention.restore_attributes([:workflow_state]) if etat_cible
+    return false if valide
 
     motifs = @intervention.errors.full_messages.map(&:strip).to_sentence
     redirect_to @intervention,

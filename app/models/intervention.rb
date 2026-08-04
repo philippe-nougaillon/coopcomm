@@ -55,6 +55,7 @@ class Intervention < ApplicationRecord
   validate :agents_must_be_available
   validate :dates_cannot_be_in_the_future
   validate :dates_obligatoires_si_terminé
+  validate :agent_obligatoire_si_terminé
 
   before_save :calc_temps_total
 
@@ -585,6 +586,14 @@ class Intervention < ApplicationRecord
 
     errors.add(:début, "est obligatoire pour terminer l'intervention") if début.blank?
     errors.add(:fin, "est obligatoire pour terminer l'intervention") if fin.blank?
+  end
+
+  def agent_obligatoire_si_terminé
+    return unless terminé?
+    # size et non count : sur un enregistrement neuf, count interroge la base avec un owner_id nil.
+    return if agents.size.positive?
+
+    errors.add(:base, "Au moins un agent est obligatoire pour terminer l'intervention")
   end
 
   def set_temporary_description

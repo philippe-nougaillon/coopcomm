@@ -223,6 +223,51 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'select#intervention_temps_de_pause[required]'
   end
 
+  # Test critique — le temps facturé se calcule par agent : une intervention
+  # terminée sans agent vaut 0 heure et ne doit pas pouvoir être enregistrée.
+  test 'critique : update avec la demande de terminaison est refusé sans agent' do
+    intervention = interventions(:intervention_paris)
+
+    patch intervention_url(intervention), params: {
+      terminer: 1,
+      intervention: { début: 2.hours.ago, fin: 1.hour.ago, description: intervention.description, agent_ids: [''] }
+    }
+
+    assert_response :unprocessable_content
+    assert intervention.reload.nouveau?, "l'état ne doit pas avoir changé"
+    assert_match(/Au moins un agent est obligatoire/, response.body)
+  end
+
+  test 'critique : terminer via le bouton est refusé sans agent' do
+    intervention = interventions(:intervention_paris)
+    intervention.agents.destroy_all
+
+    post terminer_intervention_url(intervention)
+
+    assert_redirected_to intervention_url(intervention)
+    assert_match(/Au moins un agent est obligatoire/, flash[:alert])
+    assert intervention.reload.nouveau?, "l'état ne doit pas avoir changé"
+  end
+
+  test 'critique : le formulaire de terminaison rend les agents obligatoires' do
+    intervention = interventions(:intervention_paris)
+
+    get edit_intervention_url(intervention, terminer: 1)
+
+    assert_response :success
+    assert_select 'label[for=intervention_agent_ids] span.text-red-500'
+  end
+
+  test 'le formulaire ordinaire laisse les agents facultatifs' do
+    intervention = interventions(:intervention_paris)
+
+    get edit_intervention_url(intervention)
+
+    assert_response :success
+    assert_select 'select#intervention_agent_ids'
+    assert_select 'label[for=intervention_agent_ids] span.text-red-500', false
+  end
+
   test 'le formulaire ordinaire laisse la pause facultative' do
     intervention = interventions(:intervention_paris)
 

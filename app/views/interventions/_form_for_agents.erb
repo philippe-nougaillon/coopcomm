@@ -51,7 +51,10 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div data-verification-disponibilites-target="formAgents">
-            <%= form.label :agent_ids, "Agents", class: "label font-semibold text-slate-700" %>
+            <% agents_obligatoires = params[:terminer].present? || intervention.terminé? %>
+            <%= form.label :agent_ids, class: "label font-semibold text-slate-700" do %>
+              Agents <%= raw('<span class="text-red-500">*</span>') if agents_obligatoires %>
+            <% end %>
             <%= form.select :agent_ids,
                             options_for_select(
                               @agents.map { |nom, id| id == current_user.id ? [nom, id, { data: { mandatory: true } }] : [nom, id] },

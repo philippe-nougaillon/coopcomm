@@ -10,7 +10,7 @@ class InterventionsHelperTest < ActionView::TestCase
   setup do
     @mère  = interventions(:intervention_repete) # agents de fixture : bond, martin
     @fille = interventions(:intervention_fille)
-    @fille.update_columns(template_slug: @mère.slug, fin: 1.hour.ago)
+    @fille.update_columns(template_slug: @mère.slug, fin: 1.hour.ago, temps_de_pause: 0)
   end
 
   test "affecté à l'intervention modèle : on passe par `pointer` de ce modèle" do
@@ -77,10 +77,30 @@ class InterventionsHelperTest < ActionView::TestCase
     assert_equal "terminer_modal_#{intervention.id}", modal_id_terminer(intervention)
   end
 
-  test 'le helper renvoie le message de dates manquantes quand il faut terminer' do
+  test 'sans agent : renvoie vers le formulaire avec la demande de terminaison' do
+    self.current_user = users(:manager_paris)
+    @fille.agents.destroy_all
+
+    assert_equal [edit_intervention_path(@fille), :get, { terminer: 1 }], terminer_destination(@fille.reload)
+  end
+
+  test 'le helper renvoie le message des informations manquantes quand il faut terminer' do
     intervention = interventions(:tonte_locaux)
     intervention.update_columns(début: nil, fin: nil)
 
-    assert_equal 'Les dates de début et de fin sont obligatoires pour terminer cette intervention.', message_dates_manquantes(intervention)
+    assert_equal 'La date de début et la date de fin sont obligatoires pour terminer cette intervention.',
+                 message_terminaison_incomplete(intervention)
+  end
+
+  test "le message nomme l'agent manquant" do
+    intervention = interventions(:tonte_locaux)
+    intervention.agents.destroy_all
+
+    assert_equal 'Au moins un agent est obligatoire pour terminer cette intervention.',
+                 message_terminaison_incomplete(intervention.reload)
+  end
+
+  test 'aucun message quand tout est renseigné' do
+    assert_nil message_terminaison_incomplete(interventions(:tonte_locaux))
   end
 end

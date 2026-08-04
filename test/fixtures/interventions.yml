@@ -25,6 +25,7 @@ nouvelle_intervention:
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
   début: 2024-04-19 8:30:00
   fin: 2024-04-19 17:30:00
+  temps_de_pause: 0
   description: Ramasser les feuilles
   workflow_state: nouveau
   slug: caa0d044-03c2-4533-abb7-0fc807051335

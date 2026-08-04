@@ -13,8 +13,8 @@
     <div class="alert bg-sky-50 border border-sky-200 text-sky-800 rounded-xl p-4 flex items-start gap-3">
       <%= embedded_svg "icons/info.svg", class: "w-5 h-5 shrink-0 mt-0.5" rescue nil %>
       <div>
-        <p class="font-semibold">Renseignez les dates pour terminer cette intervention</p>
-        <p class="text-sm mt-1">Les champs <strong>Début</strong>, <strong>Fin</strong> et <strong>Pause</strong> ci-dessous sont obligatoires. Une fois enregistrés, l'intervention passera automatiquement au statut « Terminé ».</p>
+        <p class="font-semibold">Complétez les informations pour terminer cette intervention</p>
+        <p class="text-sm mt-1">Les champs <strong>Agents</strong>, <strong>Début</strong>, <strong>Fin</strong> et <strong>Pause</strong> ci-dessous sont obligatoires. Une fois enregistrés, l'intervention passera automatiquement au statut « Terminé ».</p>
       </div>
     </div>
   <% end %>
@@ -152,11 +152,14 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div data-verification-disponibilites-target="formAgents">
-            <%= form.label :agent_ids, "Agents", class: "label font-semibold text-slate-700" %>
+            <% agents_obligatoires = params[:terminer].present? || intervention.terminé? %>
+            <%= form.label :agent_ids, class: "label font-semibold text-slate-700" do %>
+              Agents <%= raw('<span class="text-red-500">*</span>') if agents_obligatoires %>
+            <% end %>
             <%= form.select :agent_ids,
                             options_for_select(@agents, selected: intervention.agent_ids),
                             {},
-                            class: "w-full h-10", multiple: true,
+                            class: "w-full h-10 #{'rounded-lg border border-amber-300 bg-amber-50' if agents_obligatoires && intervention.agents.empty?}", multiple: true,
                             data: {
                               controller: 'slim-select',
                               'calc-temps-passe-target': 'agents',
