@@ -55,14 +55,14 @@
       <% interventions = agent.interventions.where(" ? BETWEEN DATE(interventions.début_prévue) AND DATE(interventions.fin_prévue) ", date) %>
       <% absence_matin = agent.current_absence(date, :matin) %>
       <% absence_soir = agent.current_absence(date, :apres_midi) %>
-      <% interventions_matin = interventions.where("début_prévue < ?", Time.parse(date.to_s + " 13:00")) %>
+      <% interventions_matin = interventions.where("début_prévue < ?", Time.parse(date.to_s + " 12:00")) %>
       <% interventions_soir = interventions.where("fin_prévue > ?", Time.parse(date.to_s + " 13:00")) %>
       
       <div class="flex justify-center items-center gap-1">
         <% if interventions_matin.any? || absence_matin %>
           <span class="inline-block w-4 h-4 bg-[#db2767] border border-slate-400 rounded-sm shadow-sm" title="<%= absence_matin&.motif || interventions_matin.pluck(:description) %>"></span>
         <% else %>
-          <%= link_to new_intervention_path(agent_id: agent.id, début_prévue: date, début_prévue_hour: 8, fin_prévue: date, fin_prévue_hour: 13), class: "inline-flex items-center justify-center" do %>
+          <%= link_to new_intervention_path(agent_id: agent.id, début_prévue: date, début_prévue_hour: 8, début_prévue_minute: 0, fin_prévue: date, fin_prévue_hour: 12), class: "inline-flex items-center justify-center" do %>
             <span class="inline-block w-4 h-4 border border-slate-400 bg-green-500 rounded-sm hover:scale-110 transition-transform shadow-sm" title="Créer une intervention pour réserver cet agent"></span>
           <% end %>
         <% end %>
@@ -70,7 +70,7 @@
         <% if interventions_soir.any? || absence_soir %>
           <span class="inline-block w-4 h-4 bg-[#db2767] border border-slate-400 rounded-sm shadow-sm" title="<%= absence_soir&.motif || interventions_soir.pluck(:description) %>"></span>
         <% else %>
-          <%= link_to new_intervention_path(agent_id: agent.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 5, fin_prévue: date, fin_prévue_hour: 18), class: "inline-flex items-center justify-center" do %>
+          <%= link_to new_intervention_path(agent_id: agent.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 0, fin_prévue: date, fin_prévue_hour: 16), class: "inline-flex items-center justify-center" do %>
             <span class="inline-block w-4 h-4 border border-slate-400 bg-green-500 rounded-sm hover:scale-110 transition-transform shadow-sm" title="Créer une intervention pour réserver cet agent"></span>
           <% end %>
         <% end %>
