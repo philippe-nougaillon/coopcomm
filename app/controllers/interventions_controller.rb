@@ -336,7 +336,6 @@ class InterventionsController < ApplicationController
           message = "Reprise d'activité enregistrée !"
         else
           current_intervention.fin = DateTime.now
-          current_intervention.temps_total = current_intervention.calc_temps_total
           current_intervention.workflow_state = 'terminé'
           current_intervention.save
           message = 'Pointage de fin enregistré !'

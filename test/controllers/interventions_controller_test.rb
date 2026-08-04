@@ -198,6 +198,41 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert intervention.reload.terminé?
   end
 
+  # Test critique — le temps facturé aux communes doit être enregistré quel que soit
+  # le chemin de terminaison, sans qu'aucun formulaire ne le fournisse.
+  test 'critique : terminer via le bouton enregistre le temps total et une pause à 0' do
+    agent = users(:john_wick)
+    intervention = cree_intervention_en_conflit(agent, avec_conflit: false)
+    intervention.update_columns(temps_de_pause: nil, temps_total: nil)
+    sign_in agent
+
+    post terminer_intervention_url(intervention)
+
+    intervention.reload
+    assert intervention.terminé?
+    assert_equal 0, intervention.temps_de_pause
+    assert_in_delta 2.0, intervention.temps_total, 1e-6
+  end
+
+  test 'critique : le formulaire de terminaison rend la pause obligatoire' do
+    intervention = interventions(:intervention_paris)
+
+    get edit_intervention_url(intervention, terminer: 1)
+
+    assert_response :success
+    assert_select 'select#intervention_temps_de_pause[required]'
+  end
+
+  test 'le formulaire ordinaire laisse la pause facultative' do
+    intervention = interventions(:intervention_paris)
+
+    get edit_intervention_url(intervention)
+
+    assert_response :success
+    assert_select 'select#intervention_temps_de_pause'
+    assert_select 'select#intervention_temps_de_pause[required]', false
+  end
+
   # Sentinelle distinctive : détecter la fuite par la donnée, pas par le wording
   # des libellés, pour rester robuste aux refontes UX.
   AVIS_SENTINELLE = /AVIS-RESERVE-AUX-GESTIONNAIRES/

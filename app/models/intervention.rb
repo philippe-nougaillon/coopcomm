@@ -46,6 +46,7 @@ class Intervention < ApplicationRecord
   before_validation :check_absence
   before_validation :set_temporary_description, on: :create
   before_validation :check_workflow_pointage_mère
+  before_validation -> { self.temps_de_pause = 0 if temps_de_pause.nil? }
 
   validates :description, :adherent_id, :service_id, presence: true
 
@@ -55,7 +56,6 @@ class Intervention < ApplicationRecord
   validate :dates_cannot_be_in_the_future
   validate :dates_obligatoires_si_terminé
 
-  before_save -> { self.temps_de_pause = 0 if temps_de_pause.nil? }
   before_save :calc_temps_total
 
   after_commit :update_heures_consommees_convention, if: -> { self.temps_total.present? }
@@ -373,15 +373,13 @@ class Intervention < ApplicationRecord
   end
 
   def calc_temps_total
-    if !fin || !début
-      temps_total = 0
-    elsif fin > début
-      temps_total = (fin - début).seconds.in_hours - temps_de_pause.to_f
-      temps_total *= agents.count
-    else
-      temps_total = 0
-    end
-    temps_total
+    self.temps_total = if fin && début && fin > début
+                         # size et non count : sur un enregistrement neuf, count interroge la base
+                         # avec un owner_id nil et renvoie 0.
+                         ((fin - début).seconds.in_hours - temps_de_pause.to_f) * agents.size
+                       else
+                         0
+                       end
   end
 
   def en_cours?
@@ -498,7 +496,7 @@ class Intervention < ApplicationRecord
       temps_total_audit * (-1)
     # Dans le cas d'un update, on ajoute la différence entre l'ancienne (first) et la nouvelle valeur (last)
     elsif last_audit.action == "update" && temps_total_audit.is_a?(Array)
-      (temps_total_audit.last - temps_total_audit.first)
+      (temps_total_audit.last.to_f - temps_total_audit.first.to_f)
     else
       0
     end

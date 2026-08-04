@@ -14,7 +14,7 @@
       <%= embedded_svg "icons/info.svg", class: "w-5 h-5 shrink-0 mt-0.5" rescue nil %>
       <div>
         <p class="font-semibold">Renseignez les dates pour terminer cette intervention</p>
-        <p class="text-sm mt-1">Les champs <strong>Début</strong> et <strong>Fin</strong> ci-dessous sont obligatoires. Une fois enregistrés, l'intervention passera automatiquement au statut « Terminé ».</p>
+        <p class="text-sm mt-1">Les champs <strong>Début</strong>, <strong>Fin</strong> et <strong>Pause</strong> ci-dessous sont obligatoires. Une fois enregistrés, l'intervention passera automatiquement au statut « Terminé ».</p>
       </div>
     </div>
   <% end %>
@@ -233,12 +233,16 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+              <% pause_obligatoire = params[:terminer].present? || intervention.terminé? %>
               <div>
-                <label class="label font-semibold text-slate-600 text-xs uppercase tracking-wider p-0 mb-1">Pause (h)</label>
+                <label class="label font-semibold text-slate-600 text-xs uppercase tracking-wider p-0 mb-1">
+                  Pause (h) <%= raw('<span class="text-red-500">*</span>') if pause_obligatoire %>
+                </label>
                 <%= form.select :temps_de_pause,
                                 options_for_select([0.0, 0.5, 1.0].map { |v| [v.to_s.tr('.', ','), v] }, intervention.temps_de_pause),
                                 { include_blank: true },
-                                class: "select select-bordered select-sm w-full bg-white h-10 focus:input-primary",
+                                class: "select select-bordered select-sm w-full h-10 focus:input-primary #{pause_obligatoire && intervention.temps_de_pause.blank? ? 'bg-amber-50 border-amber-300' : 'bg-white'}",
+                                required: pause_obligatoire,
                                 data: { 'calc-temps-passe-target': 'pause', action: "change->calc-temps-passe#calc" } %>
               </div>
 

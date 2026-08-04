@@ -61,10 +61,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_equal 0, i.calc_temps_total
   end
 
-  # BUG confirmé.
-  test 'BUG : temps_total devrait être recalculé automatiquement à la sauvegarde' do
-    skip 'Bug connu : before_save calc_temps_total ne persiste pas self.temps_total (intervention.rb:52,363)'
-
+  test 'temps_total est recalculé et persisté à la sauvegarde' do
     i = Intervention.new(
       description: 'Saisie a posteriori',
       adherent: users(:weil),
@@ -78,6 +75,67 @@ class InterventionPointageTest < ActiveSupport::TestCase
     i.save!
 
     assert_in_delta 2.0, i.reload.temps_total, 1e-6
+  end
+
+  # Régression : sur un enregistrement neuf, agents.count interroge la base avec un
+  # owner_id nil et renvoie 0, ce qui enregistrerait un temps_total nul à la création.
+  test 'temps_total est multiplié par le nombre d agents dès la création' do
+    i = Intervention.new(
+      description: "Bon d'intervention à deux",
+      adherent: users(:weil),
+      service: services(:technique),
+      début: 3.hours.ago,
+      fin: 1.hour.ago,
+      temps_de_pause: 0,
+      workflow_state: 'terminé'
+    )
+    i.agents = [users(:john_wick), users(:nettoyage)]
+    i.save!
+
+    assert_in_delta 4.0, i.reload.temps_total, 1e-6
+  end
+
+  test 'temps_total est recalculé quand les dates changent' do
+    i = interventions(:tonte_locaux)
+    i.update!(début: 4.hours.ago, fin: 1.hour.ago, temps_de_pause: 0)
+
+    assert_in_delta 3.0, i.reload.temps_total, 1e-6
+
+    i.update!(fin: i.début + 1.hour)
+
+    assert_in_delta 1.0, i.reload.temps_total, 1e-6
+  end
+
+  test 'la pause est déduite du temps_total persisté' do
+    i = interventions(:tonte_locaux)
+    i.update!(début: 4.hours.ago, fin: 1.hour.ago, temps_de_pause: 0.5)
+
+    assert_in_delta 2.5, i.reload.temps_total, 1e-6
+  end
+
+  # === temps_de_pause : toujours renseigné ================================
+  # Aucun chemin de terminaison (tâche rake, bouton « Terminer », Twilio) ne fournit de
+  # pause : à défaut, elle vaut 0 et le temps total reste calculable.
+
+  test 'une pause absente vaut 0 dès la validation' do
+    i = interventions(:tonte_locaux)
+    i.temps_de_pause = nil
+
+    i.valid?
+
+    assert_equal 0, i.temps_de_pause
+  end
+
+  test 'terminer une intervention sans pause renseignée enregistre une pause à 0' do
+    i = interventions(:nouvelle_intervention) # 2 agents
+    # 3 jours en arrière : hors du pointage ouvert de martin (fixture intervention_fille).
+    i.update_columns(temps_de_pause: nil, temps_total: nil,
+                     début: 3.days.ago, fin: 3.days.ago + 3.hours)
+
+    i.reload.terminer!
+
+    assert_equal 0, i.reload.temps_de_pause
+    assert_in_delta 6.0, i.temps_total, 1e-6
   end
 
   # === Intervention#create_next_intervention (scan → clock in) ============

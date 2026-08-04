@@ -6,17 +6,6 @@
 
 ## 🔴 Bugs ouverts
 
-### B1 — `temps_total` jamais recalculé à la sauvegarde (`calc_temps_total` inopérant)
-- **Où** : [intervention.rb:375-385](app/models/intervention.rb#L375-L385) (+ `before_save :calc_temps_total` à la ligne 59)
-- **Cause** : la méthode assigne une variable **locale** `temps_total` au lieu de `self.temps_total = …` → le callback `before_save` ne persiste rien. Le pointage QRCode fonctionne par accident (le contrôleur assigne la valeur à la main).
-- **Parcours de reproduction** :
-  1. En tant qu'**agent**, j'ouvre une intervention et je fais une **saisie de temps a posteriori** (formulaire : date/heure de début, de fin, pause).
-  2. J'enregistre → le champ `temps_total` en base reste `nil` (ou garde son ancienne valeur), alors que début/fin sont bien remplis.
-  3. Ensuite, en tant que **manager/admin**, sur le **dashboard**, la répartition du temps par agent et les totaux d'heures sont faux (cette intervention compte pour 0).
-- **Impact** : statistiques de temps fausses pour toute intervention saisie a posteriori.
-- **Trace test** : test `skip` documenté dans `test/models/intervention_pointage_test.rb` (session 2026-07-08-c) — passera au vert à la correction.
-- **Correctif proposé** : `self.temps_total = …` (et retirer le calcul manuel du contrôleur, ou le garder comme redondance inoffensive).
-
 ### B2 — Prix du devis écrasé par le tarif courant à la création de la commande (décision métier à prendre)
 - **Où** : [create_commande_from_cotation.rb:19](app/services/create_commande_from_cotation.rb#L19) + `CommandeLigne#set_prix_from_prestation` ; symétrique dans `create_facture_from_commande.rb:19`
 - **Cause** : le service copie bien `prix_ht`/`total_ht` du devis, mais le callback de `CommandeLigne` les **écrase avec le tarif actuel** de la prestation (`total_ht` est de toute façon une colonne générée).
@@ -552,6 +541,7 @@
 | Bug | Corrigé | Référence |
 |---|---|---|
 | **B30** — `Intervention#calc_temps_total` plante (`TypeError: nil can't be coerced into Float`) dès qu'une intervention a `début` **et** `fin` mais un `temps_de_pause` **nil** (colonne nullable sans défaut, et le `before_save` censé le mettre à 0 est inerte — cf. **B1**) → **export XLS des agents en 500** (`ExportToXls::Agents` appelle la méthode sur chaque intervention) | 2026-07-29 (découvert en donnant une `fin` aux fixtures pour la validation « terminé ⇒ dates », corrigé le jour même) | `temps_de_pause.to_f` ([intervention.rb:378](app/models/intervention.rb#L378)) ; couvert par `export_to_xls_agents_service_test` et `users_controller_test` (export), qui étaient rouges sans le correctif |
+| **B1** — `temps_total` jamais recalculé à la sauvegarde : `calc_temps_total` assignait une variable **locale**, donc le `before_save` ne persistait rien. Toute terminaison sans formulaire (tâche rake `interventions:terminer_pointages`, bouton « Terminer » de l'index et du show, webhook SMS) laissait le temps à `nil` → dashboard et heures de convention faux. Le pointage QRCode ne marchait que par accident (le contrôleur assignait la valeur à la main) | 2026-08-03 (demande PE) | `self.temps_total = …` ([intervention.rb:376](app/models/intervention.rb#L376)) et surtout **`agents.size` et non `agents.count`** : sur un enregistrement neuf, `count` interroge la base avec un `owner_id` nil et renvoie **0**, donc un correctif naïf aurait enregistré `temps_total = 0` à **chaque création**, dont le bon d'intervention agent (prouvé par sonde). Normalisation `temps_de_pause` nil → 0 remontée en `before_validation` (le formulaire manager la rend obligatoire quand on termine ; ailleurs elle vaut 0). Calcul manuel retiré de `interventions_controller#pointer`. Accumulateur de conventions durci (`to_f` des deux côtés) : sans lui, un audit `nil → 0` levait `NoMethodError` dès qu'une convention correspondait. 8 tests, prouvés rouges par sabotage des 4 correctifs ; `skip` levé ; les 7 tests d'heures de convention rebranchés sur de vraies dates (ils fixaient `temps_total` à la main, et 4 d'entre eux étaient devenus vacuous) |
 | Filtre **Statut** de l'index interventions cassé (select multiple → `to_s.downcase` ne matchait rien) | 2026-06-23 | commit `a9f23e82` |
 | Fixture `tonte_locaux` : `workflow_state: "Validé"` (capitale) | 2026-06-23 | commit `a9f23e82` |
 | `NotifAdherentCommandeEnvoyeeJob` : `MailLog` avec `commande_id` inexistant → `UnknownAttributeError` | ~2026-07 | réécriture #330 (Alexandre Meunier) |

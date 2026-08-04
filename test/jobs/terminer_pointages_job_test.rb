@@ -28,6 +28,16 @@ class TerminerPointagesJobTest < ActiveJob::TestCase
     assert_in_delta Time.current, @pointage.fin, 1.minute
   end
 
+  test 'la clôture automatique enregistre le temps total et une pause à 0' do
+    @pointage.update_columns(début: 3.hours.ago, temps_de_pause: nil, temps_total: nil)
+
+    TerminerPointagesJob.perform_now
+
+    @pointage.reload
+    assert_equal 0, @pointage.temps_de_pause
+    assert_in_delta 3.0, @pointage.temps_total, 0.05
+  end
+
   test 'clôture le pointage même si une absence a été posée après son ouverture' do
     Absence.create!(user: @agent, du: Date.today, au: Date.today, motif: 0)
 

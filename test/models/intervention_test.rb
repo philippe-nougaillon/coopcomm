@@ -106,17 +106,22 @@ class InterventionTest < ActiveSupport::TestCase
   # Remplace Convention#temps_total_interventions (tests déplacés depuis
   # convention_test.rb).
 
-  def create_intervention_conventionnee(attrs = {})
+  # temps_total est dérivé des dates et du nombre d'agents, jamais fixé à la main.
+  def create_intervention_conventionnee(heures: 3, **attrs)
+    début = attrs.delete(:début) || 10.hours.ago
     Intervention.create!({ description: 'intervention conventionnée',
                            adherent_id: users(:weil).id,
                            service: services(:informatique),
-                           début: 2.hours.ago }.merge(attrs))
+                           agents: [users(:john_wick)],
+                           temps_de_pause: 0,
+                           début: début,
+                           fin: début + heures.hours }.merge(attrs))
   end
 
   test "création : le temps_total s'ajoute aux heures consommées de la convention couvrant l'intervention" do
     travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      create_intervention_conventionnee(temps_total: 3)
-      create_intervention_conventionnee(temps_total: 5)
+      create_intervention_conventionnee(heures: 3)
+      create_intervention_conventionnee(heures: 5, début: 6.hours.ago)
 
       assert_equal 8, conventions(:convention_paris).reload.heures_consommees
     end
@@ -124,7 +129,7 @@ class InterventionTest < ActiveSupport::TestCase
 
   test "création : une intervention d'un autre service ne modifie pas les heures consommées" do
     travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      create_intervention_conventionnee(temps_total: 99, service: services(:service_marseille))
+      create_intervention_conventionnee(heures: 4, service: services(:service_marseille))
 
       assert_equal 0, conventions(:convention_paris).reload.heures_consommees
     end
@@ -132,7 +137,7 @@ class InterventionTest < ActiveSupport::TestCase
 
   test "création : une intervention d'un autre adhérent ne modifie pas les heures consommées" do
     travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      create_intervention_conventionnee(temps_total: 99, adherent_id: users(:michael_jackson).id)
+      create_intervention_conventionnee(heures: 4, adherent_id: users(:michael_jackson).id)
 
       assert_equal 0, conventions(:convention_paris).reload.heures_consommees
     end
@@ -140,7 +145,7 @@ class InterventionTest < ActiveSupport::TestCase
 
   test "création : une intervention hors période de la convention ne modifie pas les heures consommées" do
     travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      create_intervention_conventionnee(temps_total: 99, début: Time.zone.parse('2025-06-01 12:00:00'))
+      create_intervention_conventionnee(heures: 4, début: Time.zone.parse('2025-06-01 06:00:00'))
 
       assert_equal 0, conventions(:convention_paris).reload.heures_consommees
     end
@@ -148,8 +153,8 @@ class InterventionTest < ActiveSupport::TestCase
 
   test "modification du temps_total : seule la différence s'ajoute aux heures consommées" do
     travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      intervention = create_intervention_conventionnee(temps_total: 3)
-      intervention.update!(temps_total: 5)
+      intervention = create_intervention_conventionnee(heures: 3)
+      intervention.update!(fin: intervention.début + 5.hours)
 
       assert_equal 5, conventions(:convention_paris).reload.heures_consommees
     end
@@ -157,7 +162,7 @@ class InterventionTest < ActiveSupport::TestCase
 
   test 'modification sans changement du temps_total : heures consommées inchangées' do
     travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      intervention = create_intervention_conventionnee(temps_total: 3)
+      intervention = create_intervention_conventionnee(heures: 3)
       intervention.update!(description: 'description modifiée')
 
       assert_equal 3, conventions(:convention_paris).reload.heures_consommees
@@ -166,7 +171,7 @@ class InterventionTest < ActiveSupport::TestCase
 
   test 'suppression : le temps_total est retranché des heures consommées' do
     travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      intervention = create_intervention_conventionnee(temps_total: 3)
+      intervention = create_intervention_conventionnee(heures: 3)
       intervention.destroy!
 
       assert_equal 0, conventions(:convention_paris).reload.heures_consommees
