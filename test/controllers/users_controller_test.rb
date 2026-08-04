@@ -621,11 +621,16 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.parsed_body.to_s, 'doit être rempli'
   end
 
-  test 'update invalide en turbo_stream remplace le formulaire utilisateur' do
+  # Un turbo-stream n'émet ni turbo:load ni turbo:render : les slim-select du
+  # formulaire n'y seraient pas recâblés, et la CSS de `select.slim-select[required]`
+  # les laisserait invisibles. Seule la modale d'absence reste en turbo-stream.
+  test 'update invalide réaffiche le formulaire complet en HTML, pas en turbo-stream' do
     patch user_url(@user), params: { user: { email: '' } }, as: :turbo_stream
 
-    assert_response :success
-    assert_match(/turbo-stream/, response.body)
+    assert_response :unprocessable_content
+    assert_no_match(/turbo-stream/, response.body)
+    assert_select "form##{ActionView::RecordIdentifier.dom_id(@user)}"
+    assert_select 'select#user_service_ids[data-controller~=?]', 'slim-select'
   end
 
   test 'update invalide depuis la modale d\'absence remplace le formulaire d\'absence' do
