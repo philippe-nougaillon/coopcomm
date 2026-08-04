@@ -300,40 +300,49 @@
     <% end %>
 
     <!-- COMPTE-RENDU -->
-    <% estados_sin_compte_rendu = %w[nouveau pointage_activé] %>
-    
-    <% if intervention.persisted? && !@intervention.repeter && !estados_sin_compte_rendu.include?(intervention.workflow_state) && (current_user.adhérent? || current_user.manager_or_admin?) %>
-      <section class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6">
-        <div class="border-b border-slate-100 pb-3 flex flex-wrap justify-between items-center gap-2">
-          <div class="flex items-center gap-2">
-            <span class="w-2 h-6 rounded-full bg-gradient-to-b from-[#40b3db] via-[#9fd9ec] to-[#681b98]"></span>
-            <h2 class="text-xl text-slate-800 font-black tracking-tight uppercase">Compte-rendu</h2>
-          </div>
-          <span class="badge badge-lg py-3 font-bold shadow-2xs <%= intervention.style %>">
-            Statut : <%= intervention.workflow_state.humanize %>
-          </span>
+  <% etats_avec_compte_rendu = %w[terminé validé refusé] %>
+
+  <% if !@intervention.repeter &&
+        (etats_avec_compte_rendu.include?(intervention.workflow_state) ||
+        (intervention.workflow_state == 'nouveau' && params[:terminer].present?)) &&
+        (current_user.adhérent? || current_user.manager_or_admin?) %>
+
+    <section class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6">
+      <div class="border-b border-slate-100 pb-3 flex flex-wrap justify-between items-center gap-2">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-6 rounded-full bg-gradient-to-b from-[#40b3db] via-[#9fd9ec] to-[#681b98]"></span>
+          <h2 class="text-xl text-slate-800 font-black tracking-tight uppercase">Compte-rendu</h2>
+        </div>
+        <span class="badge badge-lg py-3 font-bold shadow-2xs <%= intervention.style %>">
+          Statut : <%= intervention.workflow_state.humanize %>
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+        <div>
+          <%= form.label :avis, "Avis de l'adhérent", class: "label font-semibold text-slate-700 mb-1" %>
+          <%= form.text_area :avis,
+                              class: "textarea textarea-bordered w-full text-sm focus:textarea-primary",
+                              rows: 3,
+                              'data-controller': 'textarea-autoresize' %>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-          <div>
-            <%= form.label :avis, "Avis de l'adhérent", class: "label font-semibold text-slate-700 mb-1" %>
-            <%= form.text_area :avis, class: "textarea textarea-bordered w-full text-sm focus:textarea-primary", rows: 3, 'data-controller': 'textarea-autoresize' %>
-          </div>
-
-          <div class="flex flex-col gap-3 bg-emerald-50/50 md:mt-6 p-4 rounded-xl border border-emerald-100/60 justify-center">
-            <%= form.label :note, 'Évaluation des agents :', class: "font-semibold text-slate-700 text-sm p-0" %>
-            <div class="rating rating-md gap-0.5">
-              <% if intervention.note.zero? %>
-                <%= form.radio_button :note, 0, class:"rating-hidden", style: "background-color: transparent; border: none; --tw-ring-shadow: none;" %>
-              <% end %>
-              <% 1.upto(5) do |i| %>
-                <%= form.radio_button :note, i, class:"mask mask-star-2 bg-amber-400" %>
-              <% end %>
-            </div>
+        <div class="flex flex-col gap-3 bg-emerald-50/50 md:mt-6 p-4 rounded-xl border border-emerald-100/60 justify-center">
+          <%= form.label :note, 'Évaluation des agents :', class: "font-semibold text-slate-700 text-sm p-0" %>
+          <div class="rating rating-md gap-0.5">
+            <% if intervention.note.zero? %>
+              <%= form.radio_button :note, 0,
+                                    class: "rating-hidden",
+                                    style: "background-color: transparent; border: none; --tw-ring-shadow: none;" %>
+            <% end %>
+            <% 1.upto(5) do |i| %>
+              <%= form.radio_button :note, i, class: "mask mask-star-2 bg-amber-400" %>
+            <% end %>
           </div>
         </div>
-      </section>
-    <% end %>
+      </div>
+    </section>
+  <% end %>
 
     <!-- BOUTONS D'ACTION DU FORMULAIRE -->
     <div class="flex flex-col sm:flex-row gap-3 mt-4 pt-4">
@@ -341,9 +350,9 @@
       <%= form.submit "Enregistrer", id: "enregistrer_intervention", class: "btn btn-primary flex-1" %>
     </div>
 
-  </div> <!-- Fermeture du div principal (avec grid / space-y-8) -->
+  </div> 
 
-<% end %> <!-- Fermeture du form_with -->
+<% end %> 
 
 <!-- BOUTON DE RETOUR (HORS FORMULAIRE) -->
 <div class="max-w-5xl mx-auto pt-6 pb-12">

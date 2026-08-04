@@ -132,7 +132,8 @@
       <%# --- PROCHAINE ÉTAPE --- %>
       <% has_workflow_action = (policy(@cotation).envoyer? && @cotation.can_envoyer?) ||
                            (policy(@cotation).valider? && @cotation.can_valider?) ||
-                           (policy(@cotation).refuser? && @cotation.can_refuser?) %>
+                           (policy(@cotation).refuser? && @cotation.can_refuser?) ||
+                            policy(@cotation).signer? %>
       <% if has_workflow_action %>
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4  mb:mb-6 mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="text-base text-slate-600 uppercase font-semibold shrink-0">
@@ -141,6 +142,9 @@
           <div class="flex flex-wrap  items-center gap-2 w-full sm:w-auto">
             <% if policy(@cotation).envoyer? && @cotation.can_envoyer? %>
               <%= button_to "Envoyer", envoyer_cotation_path(@cotation), class: "btn btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
+            <% end %>
+            <% if policy(@cotation).signer? %>
+              <%= link_to "Signer", signer_cotation_path(@cotation), class: "btn btn-accent btn-outline w-24 transition-all duration-300 hover:scale-105 hover:text-white!"%>
             <% end %>
             <% if policy(@cotation).valider? && @cotation.can_valider? %>
               <%= button_to "Valider", valider_cotation_path(@cotation), class: "btn btn-success btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>

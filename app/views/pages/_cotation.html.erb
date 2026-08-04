@@ -6,7 +6,7 @@
               title: "Cotation à signer " %>
     </div>
     <div class="flex-1 min-w-0">
-      <b><%= link_to cotation.ref, cotation_path(cotation.slug), class: "font-bold text-lg leading-6  text-#{cotation.style.split.first.split('-').last}  group-hover/title:underline break-words" %></b>
+      <b><%= link_to cotation.ref, cotation_path(cotation.slug), class: "font-bold text-primary hover:underline text-lg leading-6  text-#{cotation.style.split.first.split('-').last}  group-hover/title:underline break-words" %></b>
       <br>
       <%= cotation.service.nom %>
       (<%= number_to_currency(cotation.total_ht) %> HT)
