@@ -10,20 +10,24 @@
     form        - le form builder (ex. f)
     attribute   - le nom du champ attaché (ex. :document)
 
+  Formats acceptés et taille maximale sont ceux déclarés par `valide_image` /
+  `valide_document` sur le modèle (cf. PieceJointeValidable) : ils sont affichés
+  sous la zone et l'input les fait respecter dès le choix du fichier.
+
   Locals optionnels :
-    accept        - types acceptés par l'input file (défaut ".pdf" ; ex. "image/*", ".pdf,.docx")
+    types         - liste de types MIME acceptés (défaut : celle du modèle)
+    max_octets    - taille maximale (défaut : celle du modèle)
     label         - libellé du champ (défaut : humanize de l'attribut)
-    placeholder   - texte affiché dans la zone (défaut généré depuis accept)
-    error_message - message d'erreur custom (défaut généré depuis accept)
+    placeholder   - texte affiché dans la zone (défaut généré depuis les types)
+    error_message - message d'erreur custom (défaut généré depuis les types)
     wrapper_class - classes du conteneur (ex. "sm:col-span-2" dans une grille)
     replace_hint  - bool : afficher l'avertissement de remplacement si déjà attaché (défaut true)
 
   Exemples :
-    render "shared/file_dropzone", form: f, attribute: :document, accept: ".pdf", wrapper_class: "sm:col-span-2"
-    render "shared/file_dropzone", form: f, attribute: :logo, accept: "image/*", label: "Logo"
+    render "shared/file_dropzone", form: f, attribute: :document, wrapper_class: "sm:col-span-2"
+    render "shared/file_dropzone", form: f, attribute: :photo, label: "Photo de l'outil"
 %>
 <%
-  accept        = local_assigns.fetch(:accept, ".pdf")
   label         = local_assigns.fetch(:label, attribute.to_s.humanize)
   wrapper_class = local_assigns.fetch(:wrapper_class, "")
   replace_hint  = local_assigns.fetch(:replace_hint, true)
@@ -33,10 +37,15 @@
   # ne lie que vers des blobs réellement en base.
   saved_blobs   = (multiple ? attachment.blobs : [attachment.blob]).compact.select(&:persisted?)
 
-  # Formats acceptés en lisible (".pdf,.docx" → "PDF, DOCX")
-  formats       = accept.split(",").map { |a| a.strip.delete_prefix(".").sub(%r{/\*\z}, "").upcase }.join(", ")
+  règle         = form.object.class.regles_pieces_jointes.fetch(attribute.to_s, {})
+  types         = local_assigns.fetch(:types) { règle[:types] }
+  max_octets    = local_assigns.fetch(:max_octets) { règle[:max_octets] }
+  accept        = PieceJointeValidable.accept(types)
+  formats       = PieceJointeValidable.libellé_formats(types)
+  taille_max    = PieceJointeValidable.libellé_taille(max_octets)
   placeholder   = local_assigns.fetch(:placeholder, "Glissez un fichier #{formats} ici ou cliquez pour parcourir")
   error_message = local_assigns.fetch(:error_message, "Format non accepté. Formats autorisés : #{formats}.")
+  size_message  = "Fichier trop volumineux. Taille maximale : #{taille_max}."
 %>
 <div class="flex flex-col gap-1 <%= wrapper_class %>">
   <%= form.label attribute, label, class: "label font-semibold text-slate-700"  %>
@@ -48,20 +57,24 @@
     </p>
   <% end %>
   <div data-controller="dropzone"
-       data-dropzone-active-class="border-slate-500 bg-slate-50"
+       data-dropzone-active-class="border-primary border-2 bg-primary/10 scale-[1.02] shadow-lg"
        data-dropzone-neutral-class="border-slate-300"
        data-dropzone-valid-class="border-success bg-success/10"
        data-dropzone-invalid-class="border-error bg-error/10"
        data-dropzone-error-message-value="<%= error_message %>"
-       data-action="click->dropzone#open dragover->dropzone#highlight dragleave->dropzone#unhighlight drop->dropzone#drop"
-    class="flex flex-col items-center p-6 justify-center w-full border border-dashed border-zinc-700/40 rounded-lg cursor-pointer hover:bg-primary transition-colors duration-150 group px-4">
+       data-dropzone-size-message-value="<%= size_message %>"
+       data-dropzone-max-size-value="<%= max_octets %>"
+       data-dropzone-drop-label-value="Déposez le fichier ici"
+       data-action="dragenter->dropzone#highlight dragover->dropzone#highlight dragleave->dropzone#unhighlight drop->dropzone#drop click->dropzone#open"
+    class="flex flex-col items-center p-6 justify-center w-full border border-dashed border-zinc-700/40 rounded-lg cursor-pointer hover:bg-primary transition-all duration-150 group px-4">
     <%= form.file_field attribute, accept: accept, multiple: multiple, class: "hidden",
           data: { dropzone_target: "input", action: "change->dropzone#change" } %>
-              <%= embedded_svg "icons/upload.svg", class: "w-8 h-8 text-slate-400 group-hover:text-white transition-colors duration-150", title: "Parcourir" %>
+              <%= embedded_svg "icons/upload.svg", class: "w-8 h-8 text-slate-400 group-hover:text-white group-data-[dropzone-dragging]:text-primary group-data-[dropzone-dragging]:-translate-y-1 transition-all duration-150", title: "Parcourir" %>
 
-    <span data-dropzone-target="filename" class="text-base mt-2 text-slate-500 font-semibold text-center group-hover:text-white transition-colors duration-150 break-words w-full"><%= placeholder %></span>
+    <span data-dropzone-target="filename" class="text-base mt-2 text-slate-500 font-semibold text-center group-hover:text-white group-data-[dropzone-dragging]:text-primary transition-colors duration-150 break-words w-full"><%= placeholder %></span>
     <span data-dropzone-target="error" class="hidden text-sm text-error font-medium"></span>
   </div>
+  <span class="text-xs text-slate-400">Formats acceptés : <%= formats %> — <%= taille_max %> maximum par fichier.</span>
   <% if saved_blobs.any? && replace_hint && !multiple %>
     <span class="text-xs text-slate-400">Déposer un nouveau fichier remplacera le document actuel.</span>
   <% end %>

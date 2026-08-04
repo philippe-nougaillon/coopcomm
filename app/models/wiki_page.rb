@@ -13,7 +13,7 @@ class WikiPage < ApplicationRecord
   has_rich_text :contenu
   has_one_attached :document
 
-  valide_piece_jointe :document, types: PieceJointeValidable::DOCUMENTS
+  valide_document :document
 
   include PgSearch::Model
   include Discard::Model

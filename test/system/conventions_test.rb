@@ -17,23 +17,73 @@ class ConventionsTest < ApplicationSystemTestCase
     Rails.root.join('test/fixtures/files/exemple.png').to_s
   end
 
+  def fichier_refusé_path
+    Rails.root.join('test/fixtures/files/responseMeteoConcept.json').to_s
+  end
+
   test "la zone de dépôt s'affiche sur le formulaire d'édition" do
     visit edit_convention_path(@convention)
 
     assert_selector "[data-controller='dropzone']"
-    assert_text 'Glissez un document (PDF, Word, Excel) ici ou cliquez pour parcourir'
+    assert_text 'Glissez un document (PDF, Word, Excel, photo) ici ou cliquez pour parcourir'
   end
 
-  test 'déposer un fichier non PDF affiche une erreur et ne retient pas le fichier' do
+  test 'déposer un fichier au mauvais format affiche une erreur et ne retient pas le fichier' do
     visit edit_convention_path(@convention)
 
-    attach_file 'convention_document', image_path, make_visible: true
+    attach_file 'convention_document', fichier_refusé_path, make_visible: true
 
     assert_text 'Format non accepté'
     # La zone passe en rouge (couleur error daisyUI).
     assert_selector "[data-controller='dropzone'][data-dropzone-state='error']"
     # Le nom du fichier refusé ne remplace pas le libellé de la zone.
-    assert_no_text 'exemple.png'
+    assert_no_text 'responseMeteoConcept.json'
+  end
+
+  test 'survoler la zone avec un fichier annonce visuellement le dépôt' do
+    visit edit_convention_path(@convention)
+
+    survoler_avec_un_fichier
+    assert_selector "[data-controller='dropzone'][data-dropzone-dragging]"
+    assert_text 'Déposez le fichier ici'
+
+    # Passer d'un enfant à l'autre ne doit pas faire clignoter l'effet.
+    quitter_vers "document.querySelector(\"[data-controller='dropzone'] svg\")"
+    assert_selector "[data-controller='dropzone'][data-dropzone-dragging]"
+
+    quitter_vers 'document.body'
+    assert_no_selector "[data-controller='dropzone'][data-dropzone-dragging]"
+    assert_text 'Glissez un document (PDF, Word, Excel, photo) ici ou cliquez pour parcourir'
+  end
+
+  test 'la zone annonce les formats acceptés et la taille maximale' do
+    visit edit_convention_path(@convention)
+
+    assert_text 'Formats acceptés : PDF, DOC, DOCX'
+    assert_text '20 Mo maximum par fichier'
+  end
+
+  test 'un fichier de plus de 20 Mo est refusé sans être envoyé' do
+    visit edit_convention_path(@convention)
+
+    gros = Tempfile.new(['gros', '.pdf'])
+    gros.write('0' * 21.megabytes)
+    gros.flush
+    attach_file 'convention_document', gros.path, make_visible: true
+
+    assert_text 'Fichier trop volumineux. Taille maximale : 20 Mo.'
+    assert_selector "[data-controller='dropzone'][data-dropzone-state='error']"
+    # Le champ est vidé : rien ne part au serveur.
+    assert_equal 0, evaluate_script("document.querySelector('#convention_document').files.length")
+  end
+
+  test 'déposer la photo du document signé est accepté' do
+    visit edit_convention_path(@convention)
+
+    attach_file 'convention_document', image_path, make_visible: true
+
+    assert_no_text 'Format non accepté'
+    assert_selector "[data-controller='dropzone'][data-dropzone-state='success']"
   end
 
   test "déposer un PDF affiche son nom et l'enregistre" do
@@ -58,7 +108,7 @@ class ConventionsTest < ApplicationSystemTestCase
   test "déposer un PDF après une erreur efface le message d'erreur" do
     visit edit_convention_path(@convention)
 
-    attach_file 'convention_document', image_path, make_visible: true
+    attach_file 'convention_document', fichier_refusé_path, make_visible: true
     assert_text 'Format non accepté'
     assert_selector "[data-controller='dropzone'][data-dropzone-state='error']"
 
@@ -80,5 +130,27 @@ class ConventionsTest < ApplicationSystemTestCase
 
     # le JS appelle services_for_adherent et injecte les <option> dans le select (caché par slim_select)
     assert_selector '#convention_service_id option', text: 'Service_Paris', visible: false, wait: 5
+  end
+
+  private
+
+  # Selenium ne sait pas glisser un fichier du bureau vers la page : on émet les
+  # évènements de survol que le navigateur enverrait, depuis un enfant de la zone.
+  def survoler_avec_un_fichier
+    execute_script(<<~JS)
+      const enfant = document.querySelector("[data-dropzone-target='filename']");
+      const dt = new DataTransfer();
+      ['dragenter', 'dragover'].forEach(nom => {
+        enfant.dispatchEvent(new DragEvent(nom, { bubbles: true, cancelable: true, dataTransfer: dt }));
+      });
+    JS
+  end
+
+  def quitter_vers(cible_js)
+    execute_script(<<~JS)
+      document.querySelector("[data-dropzone-target='filename']").dispatchEvent(
+        new DragEvent('dragleave', { bubbles: true, cancelable: true, relatedTarget: #{cible_js} })
+      );
+    JS
   end
 end

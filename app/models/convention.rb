@@ -12,15 +12,7 @@ class Convention < ApplicationRecord
 
   has_one_attached :document
 
-  DOCUMENTS = %w[
-    application/pdf
-    application/msword
-    application/vnd.openxmlformats-officedocument.wordprocessingml.document
-    application/vnd.ms-excel
-    application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-  ].freeze
-
-  valide_piece_jointe :document, types: DOCUMENTS
+  valide_document :document
 
   validates :date_début, presence: true
   validates :date_fin_prévue, presence: true

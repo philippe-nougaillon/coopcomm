@@ -28,15 +28,7 @@ class User < ApplicationRecord
 
   has_one_attached :profile_picture
 
-  IMAGES = %w[
-    image/png
-    image/jpeg
-    image/jpg
-    image/webp
-    image/avif
-  ].freeze
-
-  valide_piece_jointe :profile_picture, types: IMAGES
+  valide_image :profile_picture
 
   belongs_to :warehouse, optional: true
 

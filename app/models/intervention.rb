@@ -37,7 +37,7 @@ class Intervention < ApplicationRecord
 
   has_many_attached :photos
 
-  valide_piece_jointe :photos, types: PieceJointeValidable::IMAGES
+  valide_image :photos
 
   MESSAGE_AGENT_UNIQUE = "Une intervention de pointage n'accepte qu'un seul agent"
 

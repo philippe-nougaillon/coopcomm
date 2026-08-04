@@ -45,8 +45,10 @@
       <%= form.number_field :poids, class: "input input-bordered w-full focus:input-primary" %>
     </div>
     <div class="my-5">
-      <%= form.label :document %>
-      <%= form.file_field :document, class: "file-input file-input-sm w-full max-w-md" %>
+      <%= render "shared/file_dropzone",
+                 form: form,
+                 attribute: :document,
+                 placeholder: "Glissez un document (PDF, Word, Excel, photo) ici ou cliquez pour parcourir" %>
     </div>
   </div>
   <div class="inline">

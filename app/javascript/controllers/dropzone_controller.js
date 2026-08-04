@@ -7,11 +7,11 @@ import { Controller } from "@hotwired/stimulus"
 // Cibles : input (requis), filename, error.
 // Classes : active, neutral, valid, invalid — neutral est retirée dès qu'un état
 // valid/invalid est posé, pour ne jamais avoir deux `border-color` en cascade.
-// Valeur : errorMessage.
+// Valeurs : errorMessage, sizeMessage, maxSize, dropLabel.
 export default class extends Controller {
   static targets = ["input", "filename", "error"]
   static classes = ["active", "neutral", "valid", "invalid"]
-  static values = { errorMessage: String }
+  static values = { errorMessage: String, sizeMessage: String, maxSize: Number, dropLabel: String }
 
   connect() {
     this.defaultLabel = this.hasFilenameTarget ? this.filenameTarget.textContent.trim() : ""
@@ -26,12 +26,32 @@ export default class extends Controller {
 
   highlight(event) {
     event.preventDefault()
+    if (this.element.dataset.dropzoneDragging) return
+
+    this.element.dataset.dropzoneDragging = "true"
     this.activeClasses.forEach(c => this.element.classList.add(c))
+
+    if (this.hasFilenameTarget && this.dropLabelValue) {
+      this.labelBeforeDrag = this.filenameTarget.textContent
+      this.filenameTarget.textContent = this.dropLabelValue
+    }
   }
 
+  // dragleave se déclenche aussi en passant sur un enfant de la zone : sans ce
+  // filtre, l'effet clignote pendant tout le survol.
   unhighlight(event) {
-    if (event) event.preventDefault()
+    if (event) {
+      event.preventDefault()
+      if (event.relatedTarget && this.element.contains(event.relatedTarget)) return
+    }
+
+    delete this.element.dataset.dropzoneDragging
     this.activeClasses.forEach(c => this.element.classList.remove(c))
+
+    if (this.hasFilenameTarget && this.labelBeforeDrag !== undefined) {
+      this.filenameTarget.textContent = this.labelBeforeDrag
+      this.labelBeforeDrag = undefined
+    }
   }
 
   drop(event) {
@@ -42,7 +62,7 @@ export default class extends Controller {
     if (this.inputTarget.multiple === false) files = files.slice(0, 1)
     if (files.length === 0) return
 
-    const rejected = files.find(file => !this.accepts(file))
+    const rejected = files.find(file => this.motifDeRefus(file))
     if (rejected) {
       this.markInvalid(rejected)
       return
@@ -58,7 +78,7 @@ export default class extends Controller {
   // L'attribut accept n'est pas garanti par tous les OS, on revalide.
   change() {
     const files = Array.from(this.inputTarget.files)
-    const rejected = files.find(file => !this.accepts(file))
+    const rejected = files.find(file => this.motifDeRefus(file))
     if (files.length === 0) {
       this.markNeutral()
     } else if (rejected) {
@@ -108,8 +128,18 @@ export default class extends Controller {
   }
 
   errorText(file) {
+    if (this.motifDeRefus(file) === "taille") {
+      return this.sizeMessageValue || `« ${file.name} » dépasse la taille maximale.`
+    }
     if (this.errorMessageValue) return this.errorMessageValue
     return `« ${file.name} » n'est pas dans un format accepté.`
+  }
+
+  // Doublon assumé de la validation du modèle : évite d'envoyer 20 Mo pour rien.
+  motifDeRefus(file) {
+    if (!this.accepts(file)) return "format"
+    if (this.hasMaxSizeValue && this.maxSizeValue > 0 && file.size > this.maxSizeValue) return "taille"
+    return null
   }
 
   // Respecte l'attribut accept de l'input (ex. ".pdf", "image/*", ".pdf,.docx").
