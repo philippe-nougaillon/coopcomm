@@ -97,8 +97,12 @@ class UsersController < ApplicationController
       else
         format.html { render :edit, status: :unprocessable_content }
 
-        format.turbo_stream do
-          if params[:from_absence_modal]
+        # Seule la modale d'absence est réaffichée par turbo-stream : le format
+        # n'est déclaré que pour elle, sinon la négociation le préférerait au HTML
+        # pour le formulaire principal. Un turbo-stream n'émet ni turbo:load ni
+        # turbo:render, donc les slim-select réinjectés n'y sont pas recâblés.
+        if params[:from_absence_modal]
+          format.turbo_stream do
             absence_en_erreur = @user.absences.to_a.find(&:new_record?) || @user.absences.last
             render turbo_stream: turbo_stream.replace(
               'absence_form',
@@ -107,12 +111,6 @@ class UsersController < ApplicationController
                 user: @user,
                 absence: absence_en_erreur
               }
-            )
-          else
-            render turbo_stream: turbo_stream.replace(
-              @user,
-              partial: 'users/form',
-              locals: { user: @user }
             )
           end
         end
