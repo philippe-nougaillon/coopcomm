@@ -1422,6 +1422,19 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
     assert_select "select#intervention_agent_ids option[selected][value=?]", users(:martin_technique_paris).id.to_s
     assert_select "select#intervention_agent_ids option[selected][value=?]", users(:électricité).id.to_s
     assert_select "select#intervention_tool_ids option[selected][value=?]", outil.id.to_s
+    assert_empty fille.reload.tool_ids, "les outils soumis ne doivent pas être écrits en base"
+  end
+
+  test 'un update réussi enregistre bien les outils' do
+    sign_in users(:hidalgo)
+    intervention = interventions(:nouvelle_intervention)
+    outil = tools(:outil_paris)
+
+    patch intervention_url(intervention), params: {
+      intervention: { description: intervention.description, tool_ids: ['', outil.id] }
+    }
+
+    assert_equal [outil.id], intervention.reload.tool_ids
   end
 
   test "l'agent d'une fille de pointage reste remplaçable" do

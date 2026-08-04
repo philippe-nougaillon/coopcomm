@@ -189,6 +189,28 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_equal adhérent.services.ids.sort, sélectionnés.sort
   end
 
+  test 'un refus de validation ne laisse pas les services modifiés en base' do
+    agent = users(:bond)
+    services_avant = agent.services.ids
+    ajout = services(:technique).id
+
+    patch user_url(agent), params: {
+      user: { nom: agent.nom, service_ids: (services_avant + [ajout]).map(&:to_s) }
+    }
+
+    assert_response :unprocessable_content
+    assert_equal services_avant, agent.reload.services.ids
+  end
+
+  test 'changer le service d un agent est enregistré' do
+    agent = users(:bond)
+    nouveau = services(:technique)
+
+    patch user_url(agent), params: { user: { nom: agent.nom, service_ids: ['', nouveau.id.to_s] } }
+
+    assert_equal [nouveau.id], agent.reload.services.ids
+  end
+
   test 'enregistrer une fiche sans toucher aux services les conserve' do
     agent = users(:bond)
     services_avant = agent.services.ids

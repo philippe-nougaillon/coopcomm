@@ -87,10 +87,19 @@ class UsersController < ApplicationController
 
   # PATCH/PUT /users/1 or /users/1.json
   def update
-    @user.assign_attributes(user_params)
+    enregistré = false
+
+    # service_ids= écrit les user_services dès l'assignation : sans transaction,
+    # un refus de validation les laisserait en base.
+    ActiveRecord::Base.transaction do
+      @user.assign_attributes(user_params)
+
+      enregistré = @user.save
+      raise ActiveRecord::Rollback unless enregistré
+    end
 
     respond_to do |format|
-      if @user.save
+      if enregistré
         bypass_sign_in(@user) if @user == current_user
         format.html { redirect_to user_url(@user), notice: 'Utilisateur modifié avec succès.' }
         format.json { render :show, status: :ok, location: @user }
