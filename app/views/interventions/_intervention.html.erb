@@ -81,8 +81,6 @@
             <%= button_to 'Refuser', refuser_intervention_path(intervention), class: 'z-10 btn btn-error border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', form: { data: { turbo: false }, class: 'contents' }, disabled: !intervention.can_refuser? %>
           <% end %>
         </div>
-    <% else %>
-      <span class="text-xs italic text-slate-400 font-medium">Aucune action</span>
     <% end %>
     </div>
   </div>
