@@ -78,11 +78,15 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # Clic JS : le clic Selenium natif tombe sur le SVG enfant du lien et n'émet
   # jamais le DELETE. Le confirm est stubé, et le clic re-tenté s'il se perd.
   def se_deconnecter(temoin_page_publique = 'Mutualisez mieux')
-    page.execute_script('window.confirm = () => true')
-
     3.times do
+      # Stub reposé à chaque tour : une navigation entre deux tentatives (redirection
+      # de connexion encore en vol sous charge) rend son `window.confirm` natif au
+      # document, Chrome écarte alors la boîte et le DELETE n'est jamais émis.
+      page.execute_script('window.confirm = () => true')
       page.execute_script("document.querySelector(\"[data-testid='fermer_session']\")?.click()")
       return if has_text?(temoin_page_publique, wait: 10)
+    rescue Selenium::WebDriver::Error::UnexpectedAlertOpenError
+      next
     end
 
     flunk "Déconnexion : #{temoin_page_publique.inspect} toujours absent après 3 tentatives de clic"
