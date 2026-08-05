@@ -122,9 +122,10 @@ class MouvementsController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_mouvement
     @mouvement = Mouvement.find_by(slug: params[:id])
-    return unless @mouvement.nil?
-
-    redirect_back fallback_location: root_path, alert: 'Mouvement introuvable'
+    
+    if @mouvement.nil?
+      redirect_back fallback_location: root_path, alert: 'Mouvement introuvable'
+    end
   end
 
   # Only allow a list of trusted parameters through.

@@ -85,7 +85,7 @@ class ServicesController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_service
-    @service = Service.find_by(slug: params.expect(:id))
+    @service = Service.find_by(slug: params[:id])
     return unless @service.nil?
 
     redirect_to root_path, alert: 'Service introuvable'

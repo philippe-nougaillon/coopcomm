@@ -97,9 +97,10 @@ class MailLogsController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_mail_log
     @mail_log = MailLog.find_by(slug: params[:id])
-    return unless @mail_log.nil?
-
-    redirect_to root_path, alert: 'Notification introuvable'
+    
+    if @mail_log.nil?
+      redirect_to root_path, alert: 'Notification introuvable'
+    end
   end
 
   # Only allow a list of trusted parameters through.

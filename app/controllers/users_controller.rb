@@ -373,9 +373,10 @@ class UsersController < ApplicationController
 
   def set_user
     @user = User.find_by(slug: params[:id])
-    return unless @user.nil?
-
-    redirect_to root_path, alert: 'Utilisateur introuvable'
+    
+    if @user.nil?
+      redirect_to root_path, alert: 'Utilisateur introuvable'
+    end
   end
 
   def password_params
