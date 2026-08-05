@@ -49,7 +49,7 @@ class Intervention < ApplicationRecord
   before_validation :check_absence
   before_validation :set_temporary_description, on: :create
   before_validation :check_workflow_pointage_mère
-  before_validation -> { self.temps_de_pause = 0 if temps_de_pause.nil? }
+  before_validation -> { self.temps_de_pause = 0 if temps_de_pause.nil? && terminé? }
 
   validates :description, :adherent_id, :service_id, presence: true
 
