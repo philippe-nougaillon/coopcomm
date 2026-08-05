@@ -24,11 +24,9 @@
       <div>
         <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Actions de validation</span>
         <div class="flex flex-wrap gap-2">
-          <% if policy(intervention).terminer? %>
-            <%
-              lien, methode, _params_terminer = terminer_destination(intervention)
-              msg = message_terminaison_incomplete(intervention)
-            %>
+          <% if policy(intervention).terminer? && intervention.can_terminer? %>
+            <% lien, methode, params_terminer = terminer_destination(intervention) %>
+            <% msg = message_terminaison_incomplete(intervention) %>
             <% if msg.present? %>
               <button type="button"
                       class="btn btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!"
@@ -55,7 +53,7 @@
                     <form method="dialog">
                       <button class="btn btn-ghost">Annuler</button>
                     </form>
-                    <%= link_to "Continuer vers le formulaire", lien, class: "btn btn-info text-white" %>
+                    <%= button_to "Continuer vers le formulaire", lien, method: methode, params: params_terminer, class: "btn btn-info text-white" %>
                   </div>
                 </div>
                 <form method="dialog" class="modal-backdrop">
@@ -63,11 +61,11 @@
                 </form>
               </dialog>
             <% else %>
-              <%= button_to 'Terminer', lien, method: methode,
+              <%= button_to 'Terminer', lien, method: methode, params: params_terminer, 
                   class: "btn btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!",
                   title: "Terminer l'intervention",
-                  form: { data: { turbo: false }, class: 'contents' },
-                  disabled: !intervention.can_terminer? %>
+                  form: { data: { turbo: false }, class: 'contents', onsubmit: (msg.present? ? "return confirm(#{msg.to_json});" : nil) },
+                  disabled: !intervention.can_terminer?  || current_user.adhérent? %>
             <% end %>
           <% end %>
           <% if policy(intervention).valider? %>
