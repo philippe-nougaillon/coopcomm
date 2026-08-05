@@ -84,6 +84,15 @@ class InterventionsHelperTest < ActionView::TestCase
     assert_equal [edit_intervention_path(@fille), :get, { terminer: 1 }], terminer_destination(@fille.reload)
   end
 
+  # Cette branche était inatteignable tant que le modèle posait une pause à 0 à chaque
+  # sauvegarde : 0 n'est pas `blank?`, donc la pause n'était jamais réclamée.
+  test 'sans temps de pause : renvoie vers le formulaire avec la demande de terminaison' do
+    self.current_user = users(:manager_paris)
+    @fille.update_columns(temps_de_pause: nil)
+
+    assert_equal [edit_intervention_path(@fille), :get, { terminer: 1 }], terminer_destination(@fille.reload)
+  end
+
   test 'le helper renvoie le message des informations manquantes quand il faut terminer' do
     intervention = interventions(:tonte_locaux)
     intervention.update_columns(début: nil, fin: nil)

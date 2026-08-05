@@ -113,17 +113,40 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_in_delta 2.5, i.reload.temps_total, 1e-6
   end
 
-  # === temps_de_pause : toujours renseigné ================================
-  # Aucun chemin de terminaison (tâche rake, bouton « Terminer », Twilio) ne fournit de
-  # pause : à défaut, elle vaut 0 et le temps total reste calculable.
+  # === temps_de_pause : renseigné à la terminaison, et à elle seule =======
+  # Aucun chemin de terminaison (tâche rake, bouton « Terminer », webhook SMS) ne fournit
+  # de pause : à défaut elle vaut 0, et le temps total reste calculable. Hors terminaison
+  # elle reste vide : une pause à 0 doit être un choix, jamais un effet de bord.
 
-  test 'une pause absente vaut 0 dès la validation' do
+  test 'une pause absente vaut 0 dès la validation quand l intervention est terminée' do
     i = interventions(:tonte_locaux)
+    i.workflow_state = Intervention::TERMINE
     i.temps_de_pause = nil
 
     i.valid?
 
     assert_equal 0, i.temps_de_pause
+  end
+
+  test 'une pause absente reste vide hors terminaison' do
+    i = interventions(:tonte_locaux)
+    i.temps_de_pause = nil
+
+    i.valid?
+
+    assert_nil i.temps_de_pause
+  end
+
+  test "la création d'une intervention planifiée n'invente pas de temps de pause" do
+    i = Intervention.create!(
+      description: 'Intervention planifiée',
+      adherent: users(:weil),
+      service: services(:technique),
+      début_prévue: 2.days.from_now,
+      fin_prévue: 2.days.from_now + 2.hours
+    )
+
+    assert_nil i.reload.temps_de_pause
   end
 
   test 'terminer une intervention sans pause renseignée enregistre une pause à 0' do

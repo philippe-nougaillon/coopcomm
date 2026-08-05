@@ -214,6 +214,25 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_in_delta 2.0, intervention.temps_total, 1e-6
   end
 
+  # Le formulaire manager laisse la pause vide : l'enregistrement ne doit pas la
+  # transformer en 0, qui se lirait comme un choix de l'utilisateur.
+  test "la création par un manager n'invente pas de temps de pause" do
+    post interventions_url, params: {
+      intervention: {
+        description: 'Élagage à planifier',
+        adherent_id: users(:patrick_adherent_paris).id,
+        service_id: services(:technique).id,
+        début_prévue: 2.days.from_now,
+        fin_prévue: 2.days.from_now + 2.hours,
+        temps_de_pause: ''
+      }
+    }
+
+    intervention = Intervention.find_by(description: 'Élagage à planifier')
+    assert intervention, 'garde : la création doit avoir abouti'
+    assert_nil intervention.temps_de_pause
+  end
+
   test 'critique : le formulaire de terminaison rend la pause obligatoire' do
     intervention = interventions(:intervention_paris)
 
