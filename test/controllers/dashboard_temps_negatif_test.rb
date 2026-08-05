@@ -50,16 +50,18 @@ class DashboardTempsNegatifTest < ActionDispatch::IntegrationTest
   end
 
   test "manager : ÉPINGLAGE B13 — le filtre agent opère sur le NET de l'agent, pas par intervention" do
-    # bond porte déjà +9 h (tonte_locaux) ; on lui impute -5 h.
-    cree_intervention_avec_temps(-5, adherent: users(:weil), service: services(:technique),
+    # bond porte déjà +4,5 h (sa moitié de tonte_locaux, partagée avec un agent
+    # désactivé) ; on lui impute -2 h.
+    cree_intervention_avec_temps(-2, adherent: users(:weil), service: services(:technique),
                                      debut: mois(3), agent: users(:bond))
     refresh_dashboard_views!
     sign_in users(:hidalgo)
 
     get dashboard_url
 
-    # Comportement actuel : approximation au grain agent, 9 - 5 = 4.
-    assert_in_delta 4.0, assigns(:temps_total_par_agent)['Bond James']
+    # Comportement actuel : approximation au grain agent, 4,5 - 2 = 2,5. Au grain
+    # intervention, le -2 serait écarté et bond garderait 4,5.
+    assert_in_delta 2.5, assigns(:temps_total_par_agent)['Bond James']
   end
 
   test "manager : ÉPINGLAGE B13 — un négatif est absorbé par une cellule positive du même mois" do

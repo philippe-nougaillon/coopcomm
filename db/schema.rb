@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_24_103818) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_05_150001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -675,13 +675,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_24_103818) do
       agent_interventions.agent_id,
       COALESCE(sum((interventions.temps_total / (nb_agents.cnt)::numeric)), (0)::numeric) AS temps_total
      FROM ((((agent_interventions
-       JOIN users ON (((users.id = agent_interventions.agent_id) AND (users.discarded_at IS NULL))))
+       JOIN users ON ((users.id = agent_interventions.agent_id)))
        JOIN interventions ON ((interventions.id = agent_interventions.intervention_id)))
        JOIN services ON ((services.id = interventions.service_id)))
        JOIN ( SELECT ai.intervention_id,
               count(*) AS cnt
              FROM (agent_interventions ai
-               JOIN users u ON (((u.id = ai.agent_id) AND (u.discarded_at IS NULL))))
+               JOIN users u ON ((u.id = ai.agent_id)))
             GROUP BY ai.intervention_id) nb_agents ON ((nb_agents.intervention_id = agent_interventions.intervention_id)))
     GROUP BY services.organisation_id, agent_interventions.agent_id;
   SQL

@@ -28,7 +28,9 @@ class Intervention < ApplicationRecord
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
 
   has_many :agent_interventions, dependent: :destroy
-  has_many :agents, through: :agent_interventions, class_name: 'User'
+  # dependent: :destroy — sans lui, retirer un agent supprime la jointure en
+  # delete_all, sans callback, et la vue dashboard_agent_stats reste périmée.
+  has_many :agents, through: :agent_interventions, class_name: 'User', dependent: :destroy
   has_many :tool_interventions, dependent: :destroy
   has_many :tools, through: :tool_interventions
   has_many :mouvements

@@ -51,4 +51,21 @@ class DashboardRefreshableTest < ActiveSupport::TestCase
       iv.update!(workflow_state: 'archivé')
     end
   end
+
+  test "retirer un agent est répercuté dans la vue agent, sans sauvegarde de l'intervention" do
+    iv = interventions(:tonte_locaux)
+    martin = users(:martin_technique_paris)
+    iv.agents << martin
+    refresh_dashboard_views!
+
+    bond = -> { DashboardAgentStat.find_by(agent: users(:bond)).temps_total }
+    part = -> { iv.temps_total / AgentIntervention.where(intervention_id: iv.id).count }
+    assert_in_delta part.call, bond.call, 0.01, 'préalable : le temps est partagé avec Martin'
+
+    # Retrait pur : aucune colonne de l'intervention ne change, seul le callback
+    # de la jointure peut déclencher le refresh.
+    iv.agents.delete(martin)
+
+    assert_in_delta part.call, bond.call, 0.01, 'la part de Bond doit remonter après le retrait'
+  end
 end
