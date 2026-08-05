@@ -140,8 +140,11 @@ class FacturesController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_facture
-    @facture = Facture.find_by(slug: params.expect(:id))
-    redirect_to factures_path, alert: 'Facture introuvable' if @facture.nil?
+    @facture = Facture.find_by(slug: params[:id])
+
+    if @facture.nil?
+      redirect_to root_path, alert: 'Facture introuvable'
+    end
   end
 
   # Only allow a list of trusted parameters through.

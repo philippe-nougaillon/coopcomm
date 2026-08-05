@@ -185,7 +185,10 @@ class CotationsController < ApplicationController
 
   def set_cotation
     @cotation = Cotation.find_by(slug: params[:id])
-    redirect_to cotations_path, alert: 'Cotation introuvable' if @cotation.nil?
+
+    if @cotation.nil?
+      redirect_to root_path, alert: 'Cotation introuvable'
+    end
   end
 
   def is_user_authorized

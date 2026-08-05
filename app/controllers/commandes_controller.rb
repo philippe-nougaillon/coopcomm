@@ -152,8 +152,11 @@ class CommandesController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_commande
-    @commande = Commande.find_by(slug: params.expect(:id))
-    redirect_to commandes_path, alert: 'Commande introuvable' if @commande.nil?
+    @commande = Commande.find_by(slug: params[:id])
+
+    if @commande.nil?
+      redirect_to root_path, alert: 'Commande introuvable'
+    end
   end
 
   # Only allow a list of trusted parameters through.

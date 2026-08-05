@@ -104,9 +104,10 @@ class ToolsController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_tool
     @tool = Tool.find_by(slug: params[:id])
-    return unless @tool.nil?
-
-    redirect_to root_path, alert: 'Matériel introuvable'
+    
+    if @tool.nil?
+      redirect_to root_path, alert: 'Matériel introuvable'
+    end
   end
 
   # Only allow a list of trusted parameters through.

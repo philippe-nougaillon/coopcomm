@@ -73,7 +73,7 @@ class WarehousesController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_warehouse
-    @warehouse = Warehouse.find_by(slug: params.expect(:id))
+    @warehouse = Warehouse.find_by(slug: params[:id])
     return unless @warehouse.nil?
 
     redirect_to root_path, alert: 'Site introuvable'
