@@ -2,8 +2,9 @@
 """Auto-approbation PreToolUse des fichiers de suivi de l'agent.
 
 PE a accordé (2026-07-13, élargi 2026-07-27) l'écriture SANS demander dans
-`.claude/method/` (registre `bugs-signales.md`, `points-a-trancher.md`,
-journal, fiches…) et dans le répertoire de mémoire de l'agent. Cet accord
+`suivi/` (registre `bugs-signales.md`, `points-a-trancher.md`), dans
+`.claude/method/` (journal, fiches…) et dans le répertoire de mémoire de
+l'agent. Cet accord
 tenait dans les instructions, donc l'agent le « savait » — mais c'est le
 harnais, pas l'agent, qui affiche « make this edit to bugs-signales.md? ».
 Une consigne en langage naturel ne peut pas éteindre ce prompt ; seul un hook
@@ -13,7 +14,7 @@ Reçoit le JSON du hook sur stdin. Si le chemin visé est dans un des dossiers
 autorisés, écrit une décision "allow" sur stdout ; sinon ne dit rien (la
 chaîne de permissions normale décide). Aucune dépendance externe (pas de jq).
 
-  echo '{"tool_input":{"file_path":".claude/method/bugs-signales.md"}}' \
+  echo '{"tool_input":{"file_path":"suivi/bugs-signales.md"}}' \
       | python3 allow-notes.py
 
 Fail-open : si le JSON est illisible ou le chemin absent, on se tait et on
@@ -27,6 +28,7 @@ PROJET = os.environ.get("CLAUDE_PROJECT_DIR", "/home/pedacquet/aikku/coopcomm")
 
 # Dossiers dont TOUT le contenu est éditable sans confirmation.
 DOSSIERS_AUTORISES = (
+    os.path.join(PROJET, "suivi"),
     os.path.join(PROJET, ".claude"),
     "/home/pedacquet/.claude/projects/-home-pedacquet-aikku-coopcomm/memory",
 )
@@ -80,7 +82,7 @@ def main() -> None:
                     "permissionDecision": "allow",
                     "permissionDecisionReason": (
                         "Fichier de suivi de l'agent : écriture accordée "
-                        "d'avance par PE (CLAUDE.md / .claude/ / mémoire)."
+                        "d'avance par PE (suivi/ / CLAUDE.md / .claude/ / mémoire)."
                     ),
                 }
             },
