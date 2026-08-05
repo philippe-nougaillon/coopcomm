@@ -502,7 +502,15 @@
 - **Correctif** : `User.new(rôle: :agent)` dans `users#new` et `admin#create_new_user`. Le champ **Rôle a aussi été remonté en tête du formulaire**, avant le Nom, puisque c'est lui qui pilote l'affichage des autres champs (demande de PE).
 - **Vérifié au passage, sans changement nécessaire** : un manager ne peut créer que des agents (rôle forcé dans le contrôleur, sélecteur masqué dans la vue), un administrateur peut créer les quatre rôles, un agent et un adhérent ne peuvent créer aucun compte (`UserPolicy#create?` = `manager_or_admin?`).
 
-### B72 — Le temps d'une intervention est multiplié par les agents **actifs** mais réparti entre **tous** les agents
+### B72 — ✅ CORRIGÉ (2026-08-05) — Le temps d'une intervention est multiplié par les agents **actifs** mais réparti entre **tous** les agents
+- **Correctif (accord PE)** : `calc_temps_total` multiplie désormais par `agent_interventions.size` — le nombre d'**affectations** — et non plus par `agents.size`, qui exclut les comptes désactivés. Multiplicateur et diviseur de la vue comptent enfin la même chose.
+- **`size` et non `count`, ni une requête** : mesuré sur les trois cas — enregistrement **neuf** avec `agent_ids` assignés (2), persisté avec 1 actif + 1 désactivé (2), persisté après retrait d'un agent (1, non périmé). `AgentIntervention.where(intervention_id: id).count` aurait renvoyé 0 à la création (id nil), donc un `temps_total` nul sur tout bon d'intervention.
+- **Effet principal** : désactiver un agent ne **réduit plus** le temps enregistré de ses interventions à la sauvegarde suivante. C'était le vrai enjeu — un chiffre proche de la facturation qui diminuait parce que quelqu'un avait quitté la collectivité.
+- **Effet de bord non traité** : les interventions déjà sauvegardées après une désactivation portent encore un `temps_total` diminué ; il ne remontera qu'à leur prochaine sauvegarde. Aucun rattrapage en masse n'a été fait.
+- **Tests** : 2 ajoutés dans `intervention_pointage_test` (un agent désactivé compte toujours dans le multiplicateur ; une désactivation ne change pas `temps_total` à la sauvegarde suivante), **prouvés rouges** en revenant à `agents.size` (6 échecs). 4 tests existants corrigeaient une prémisse fausse : ils annonçaient « 1 agent (bond) » pour `tonte_locaux`, qui a toujours eu **deux affectations** dont une désactivée — leur valeur attendue était juste par compensation.
+
+<details><summary>Description d'origine</summary>
+
 - **Signalé par** : agent, 2026-08-05 (reproduit par sonde, pas déduit). **La cause racine est PRÉEXISTANTE** et ne vient pas de la v03 : elle touche `temps_total` lui-même, pas seulement le graphique.
 - **Où** : `calc_temps_total` ([intervention.rb](app/models/intervention.rb)) multiplie la durée par `agents.size`, **kept-scopé** (`User` a `default_scope :kept`) → un agent désactivé disparaît du multiplicateur. La vue `dashboard_agent_stats` v03, elle, divise par le nombre de **lignes de jointure**, agents désactivés compris. Multiplicateur et diviseur ne comptent pas la même chose.
 - **Parcours de reproduction (mesuré)** — intervention de 8 h avec les agents A et B :
@@ -514,6 +522,7 @@
 - **Le graphique utilise bien `temps_par_agent`** (`@temps_total_par_agent` ← `DashboardData#temps_par_agent`) : l'écart n'est pas dans le choix de la fonction mais dans sa source, la vue, dont le diviseur ne correspond pas au multiplicateur du modèle.
 - **Correctif recommandé** : `calc_temps_total` compte les **lignes de jointure** (`AgentIntervention.where(intervention_id: id).count`) au lieu d'`agents.size`. Une ligne. À l'étape 3, `temps_total` resterait à 16 et chacun garderait ses 8 h. Cela rend `temps_total` **stable à la désactivation d'un agent**, ce qui est la bonne règle métier : le travail a bien été fait par deux personnes, le départ de l'une ne l'efface pas.
 - **Effet de bord à accepter** : les interventions déjà sauvegardées après une désactivation ont aujourd'hui un `temps_total` diminué ; il ne remontera qu'à leur prochaine sauvegarde. Un rattrapage en masse est possible mais n'a pas été fait.
+</details>
 - **Non tranché** : aucune modification faite. Le comportement actuel est **épinglé** par `dashboard_agent_stat_test` et le test système du refresh, qui expriment tous deux le diviseur (`AgentIntervention…count`) au lieu de coder un nombre en dur.
 
 ### B68 — ✅ CORRIGÉ (2026-08-05) — Retirer un agent d'une intervention **sans en ajouter** ne rafraîchit pas la vue agent du dashboard

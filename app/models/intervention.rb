@@ -376,9 +376,11 @@ class Intervention < ApplicationRecord
 
   def calc_temps_total
     self.temps_total = if fin && début && fin > début
-                         # size et non count : sur un enregistrement neuf, count interroge la base
-                         # avec un owner_id nil et renvoie 0.
-                         ((fin - début).seconds.in_hours - temps_de_pause.to_f) * agents.size
+                         # Les jointures, et non `agents` : ce dernier exclut les agents
+                         # désactivés, dont le temps resterait pourtant à répartir.
+                         # size et non count : sur un enregistrement neuf, count interroge la
+                         # base avec un owner_id nil et renvoie 0.
+                         ((fin - début).seconds.in_hours - temps_de_pause.to_f) * agent_interventions.size
                        else
                          0
                        end
