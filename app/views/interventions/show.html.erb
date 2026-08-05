@@ -59,10 +59,6 @@
       <%= render "interventions/show/compte_rendu", intervention: @intervention %>
     <% end %>
 
-    <% if current_user.adhérent? || current_user.manager_or_admin? %>
-      <%= render "interventions/show/compte_rendu", intervention: @intervention %>
-    <% end %>
-
     <% unless @intervention.repeter %>
       <%= render "interventions/show/actions", intervention: @intervention %>
     <% end %>
