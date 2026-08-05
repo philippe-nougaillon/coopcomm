@@ -166,6 +166,10 @@ class InterventionsController < ApplicationController
   # GET /interventions/new
   def new
     @intervention = Intervention.new
+    @intervention.début_prévue_hour = 8
+    @intervention.début_prévue_minute = 0
+    @intervention.fin_prévue_hour = 16
+    @intervention.fin_prévue_minute = 0
 
     if current_user.agent?
       @intervention.agent_ids = current_user.id

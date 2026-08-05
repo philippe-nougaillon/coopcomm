@@ -17,7 +17,7 @@ module InterventionsHelper
     return [pointer_intervention_path(intervention.intervention_mère), :get, nil] if intervention.pointage_de?(current_user)
 
     if champs_manquants_pour_terminer(intervention).any?
-      return [edit_intervention_path(intervention, terminer: 1), :get, nil] 
+      return [edit_intervention_path(intervention), :get, { terminer: 1 }]
     end
 
     [terminer_intervention_path(intervention), :post, nil]

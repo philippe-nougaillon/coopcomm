@@ -159,11 +159,12 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     assert_text 'Avis de l\'adhérent'
     assert_text 'Évaluation des agents'
 
+    page.select '0,0', from: 'intervention_temps_de_pause'
     fill_in 'Avis de l\'adhérent', with: 'Travail bien fait'
     find('.rating input[value="5"]').click
 
     cliquer_bouton 'Enregistrer'
-    assert_text 'Intervention terminée'
+    assert_text 'Terminé'
     assert_equal 'terminé', intervention.reload.workflow_state
   end
 

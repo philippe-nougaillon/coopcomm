@@ -80,10 +80,18 @@ class AdminController < ApplicationController
 
   def parametres
   # 1. Definir los Scopes Base
-  services_scope = current_organisation.services.reorder(Arel.sql('LOWER(services.nom) ASC'))
-  warehouses_scope = current_organisation.warehouses.reorder(Arel.sql('LOWER(warehouses.name) ASC'))
-  prestations_scope = current_organisation.prestations.reorder(Arel.sql('LOWER(prestations.libellé) ASC'))
-  
+  services_scope = current_organisation.services
+                                       .select('services.*, LOWER(services.nom) AS nom_lower')
+                                       .reorder(Arel.sql('LOWER(services.nom) ASC'))
+
+  warehouses_scope = current_organisation.warehouses
+                                         .select('warehouses.*, LOWER(warehouses.name) AS name_lower')
+                                         .reorder(Arel.sql('LOWER(warehouses.name) ASC'))
+
+  prestations_scope = current_organisation.prestations
+                                           .select('prestations.*, LOWER(prestations.libellé) AS libelle_lower')
+                                           .reorder(Arel.sql('LOWER(prestations.libellé) ASC'))
+                                           
   # Lista completa de usuarios para cargar el select del formulario
   @users = User.by_service(current_organisation.services)
 

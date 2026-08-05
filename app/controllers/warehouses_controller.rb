@@ -29,7 +29,7 @@ class WarehousesController < ApplicationController
     respond_to do |format|
       if @warehouse.save
         format.html do 
-          redirect_to admin_parametres_path(tab: target_tab), 
+          redirect_to admin_parametres_path(tab: 'sites'), 
                       notice: 'Site créé avec succès.' 
         end        
         format.json { render :show, status: :created, location: @warehouse }
@@ -45,7 +45,7 @@ class WarehousesController < ApplicationController
     respond_to do |format|
       if @warehouse.update(warehouse_params)
         format.html do
-          redirect_to admin_parametres_path(tab: target_tab), 
+          redirect_to admin_parametres_path(tab: 'sites'), 
           notice: 'Site modifié avec succès.', status: :see_other 
         end
         format.json { render :show, status: :ok, location: @warehouse }
@@ -62,7 +62,7 @@ class WarehousesController < ApplicationController
 
     respond_to do |format|
       format.html do
-        redirect_to admin_parametres_path(tab: target_tab),
+        redirect_to admin_parametres_path(tab: 'sites'),
          notice: 'Site supprimé avec succès.', status: :see_other 
       end  
       format.json { head :no_content }

@@ -22,7 +22,7 @@ class Service < ApplicationRecord
 
   normalizes :nom, with: ->(nom) { nom.humanize.strip }
 
-  scope :ordered, -> { order(:nom) }
+  scope :ordered, -> { order(Arel.sql('LOWER(services.nom) ASC')) }
 
   def managers_and_admin
     users.where(rôle: %i[manager administrateur])

@@ -27,9 +27,44 @@
       <div class="flex flex-wrap gap-3 mt-5">
         <% if policy(intervention).terminer? && intervention.can_terminer? %>
           <% lien, methode, params_terminer = terminer_destination(intervention) %>
-          <%= button_to 'Terminer', lien, method: methode, params: params_terminer,
-            class: "btn btn-primary btn-outline w-24 text-sm transition-all duration-300 hover:scale-105 hover:text-white!",
-            form: { data: { turbo: false } } %>
+          <% msg = message_terminaison_incomplete(intervention) %>
+          <% if msg.present? %>
+            <button type="button"
+                    class="btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white! w-full sm:w-24 justify-center"
+                    onclick="<%= js_ouvrir_modal_terminer(intervention) %>"
+                    title="Terminer l'intervention"
+                    <%= 'disabled' unless intervention.can_terminer? %>>
+              Terminer
+            </button>
+            <dialog id="<%= modal_id_terminer(intervention) %>" class="modal">
+              <div class="modal-box">
+                <form method="dialog">
+                  <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                </form>
+                <h3 class="text-lg font-bold text-amber-600 flex items-center gap-2">
+                  <%= embedded_svg "icons/warning.svg", title: "Informations manquantes" %>
+                  Informations manquantes
+                </h3>
+                <p class="py-4 text-sm text-slate-600 text-left">
+                  <%= msg %>
+                  Vous allez être redirigé(e) vers le formulaire de modification pour les renseigner.
+                </p>
+                <div class="modal-action">
+                  <form method="dialog">
+                    <button class="btn btn-ghost">Annuler</button>
+                  </form>
+                  <%= button_to "Continuer vers le formulaire", lien, method: methode, params: params_terminer, class: "btn btn-info text-white" %>
+                </div>
+              </div>
+              <form method="dialog" class="modal-backdrop">
+                <button>Fermer</button>
+              </form>
+            </dialog>
+          <% else %>
+            <%= button_to 'Terminer', lien, method: methode, params: params_terminer,
+              class: "btn btn-primary btn-outline w-24 text-sm transition-all duration-300 hover:scale-105 hover:text-white!",
+              form: { data: { turbo: false } } %>
+          <% end %>
         <% end %>
         <% if policy(intervention).valider? && intervention.can_valider? %>
           <%= button_to 'Valider',

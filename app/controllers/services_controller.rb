@@ -42,7 +42,7 @@ class ServicesController < ApplicationController
         # Attribution du nouveau service à l'utilisateur courant pour qu'il ait accès.
         current_user.services << @service
         format.html do 
-          redirect_to admin_parametres_path(tab: target_tab), 
+          redirect_to admin_parametres_path(tab: 'services'), 
                       notice: 'Service créé avec succès.' 
         end
         format.json { render :show, status: :created, location: @service }
@@ -59,7 +59,7 @@ class ServicesController < ApplicationController
     respond_to do |format|
       if @service.update(service_params)
         format.html do 
-          redirect_to admin_parametres_path(tab: target_tab),
+          redirect_to admin_parametres_path(tab: 'services'),
                       notice: 'Service modifié avec succès.', 
                       status: :see_other 
         end
@@ -76,7 +76,7 @@ class ServicesController < ApplicationController
     @service.destroy!
 
     respond_to do |format|
-      format.html { redirect_to admin_parametres_path(tab: target_tab), notice: 'Service supprimé avec succès.', status: :see_other }
+      format.html { redirect_to admin_parametres_path(tab: 'services'), notice: 'Service supprimé avec succès.', status: :see_other }
       format.json { head :no_content }
     end
   end

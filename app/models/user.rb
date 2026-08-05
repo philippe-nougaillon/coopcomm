@@ -352,13 +352,13 @@ class User < ApplicationRecord
 
   def find_current_intervention(slug_intervention_pointage)
     Intervention
-              .joins(:agent_interventions)
-              .where(template_slug: slug_intervention_pointage)
-              .where(agent_interventions: { agent_id: self.id })
-              .where('DATE(début) = ?', Date.today)
-              .where(workflow_state: 'nouveau') # Seul les nouvelles interventions nous intéresse
-              .order(updated_at: :asc) # Trie du plus ancien au plus récent
-              .last # Prend l'intervention créée/modifiée la plus récente
+      .joins(:agent_interventions)
+      .where(template_slug: slug_intervention_pointage)
+      .where(agent_interventions: { agent_id: id })
+      .where(début: Time.zone.today.all_day)
+      .where(workflow_state: 'nouveau') # Seules les interventions nouvelles sont pertinentes
+      .order(updated_at: :desc)
+      .first # Prend la plus récemment modifiée
   end
 
   def get_services_by_role
