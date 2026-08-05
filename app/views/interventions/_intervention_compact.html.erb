@@ -49,7 +49,7 @@
     <% if !(intervention.validé? || intervention.refusé?) %>
       <div class="my-2">
         <div class="flex justify-center gap-2">
-          <% if policy(intervention).terminer? %>
+          <% if policy(intervention).terminer? && intervention.can_terminer? %>
             <% lien, methode, params_terminer = terminer_destination(intervention) %>
             <% msg = message_terminaison_incomplete(intervention) %>
             <% if msg.present? %>
