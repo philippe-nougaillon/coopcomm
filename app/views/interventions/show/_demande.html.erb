@@ -43,17 +43,17 @@
       </div>
       <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-100 flex flex-col justify-center space-y-3 h-full">
         <div>
-          <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Début</span>
-          <% if intervention.début.present? %>
-            <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(intervention.début, format: :long) %></p>
+          <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Début prévue</span>
+          <% if intervention.début_prévue.present? %>
+            <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(intervention.début_prévue, format: :long) %></p>
           <% else %>
             <span class="text-slate-400 italic text-sm">Non renseigné</span>
           <% end %>
         </div>
         <div class="border-t border-slate-200/60 pt-3">
-          <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Fin</span>
-          <% if intervention.fin.present? %>
-            <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(intervention.fin, format: :long) %></p>
+          <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Fin prévue</span>
+          <% if intervention.fin_prévue.present? %>
+            <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(intervention.fin_prévue, format: :long) %></p>
           <% else %>
             <span class="text-slate-400 italic text-sm">Non renseignée</span>
           <% end %>
