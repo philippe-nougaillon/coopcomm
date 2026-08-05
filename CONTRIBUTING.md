@@ -117,7 +117,7 @@ Règles :
   (`ApplicationService`) ; effet de bord asynchrone (mail, notif) → job via le pub/sub ;
   le contrôleur ne fait que : autoriser, appeler, répondre.
 - Un TODO qu'on écrit quand même = **une issue GitHub** avec le numéro dans le commentaire
-  (`# TODO(#342) : ...`). Un TODO sans issue n'existe pas pour personne.
+  (`# TODO(#XXX) : ...`). Un TODO sans issue n'existe pas pour personne.
 - Divers Rails : redirection **303** (`status: :see_other`) après create/update/destroy
   soumis par Turbo ; les `<label>` ont un `for=` (accessibilité + testabilité).
 
