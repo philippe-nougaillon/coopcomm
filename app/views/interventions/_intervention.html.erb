@@ -7,7 +7,7 @@
           <span class="badge font-bold text-xs uppercase shrink-0 <%= intervention.style %>">
             <%= intervention.workflow_state.humanize %>
           </span>
-          <%= link_to intervention.description.humanize, intervention, class: 'z-10 hover:underline break-words' %>
+          <%= link_to intervention.description.humanize, intervention, class: 'z-10 hover:underline break-words font-semibold' %>
           <% if intervention.repeter %>
             <%= embedded_svg "icons/event_repeat.svg", title: "Modèle pour le pointage", class: "w-5 h-5 text-slate-500 shrink-0" %>
           <% elsif intervention.template_slug %>

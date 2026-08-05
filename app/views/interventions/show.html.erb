@@ -59,6 +59,12 @@
       <%= render "interventions/show/compte_rendu", intervention: @intervention %>
     <% end %>
 
+    <% if current_user.adhérent? || current_user.manager_or_admin? %>
+      <%= render "interventions/show/compte_rendu", intervention: @intervention %>
+    <% end %>
+
+    <%= render "interventions/show/actions", intervention: @intervention %>
+
     <%# --- ACTIVITÉ --- %>
     <% if current_user.manager_or_admin? %>
       <%= render "interventions/show/activite", audits: @audits, pagy: @pagy %>
