@@ -8,6 +8,18 @@ class AgentInterventionTest < ActiveSupport::TestCase
     @template_adherent = users(:weil)
   end
 
+  # Retirer un agent doit DÉTRUIRE la jointure et non la supprimer en delete_all,
+  # sans quoi le retrait ne laisserait aucune trace dans l'historique.
+  test "le retrait d'un agent est tracé dans l'audit" do
+    intervention = createDefaultIntervention
+    jointure = intervention.agent_interventions.first
+
+    assert_difference -> { Audited::Audit.where(auditable_type: 'AgentIntervention', action: 'destroy').count }, +1 do
+      intervention.agents.delete(@agent)
+    end
+    assert_empty AgentIntervention.where(id: jointure.id)
+  end
+
   test "Intervention créée si l'agent est disponible" do
     intervention = createDefaultIntervention
 

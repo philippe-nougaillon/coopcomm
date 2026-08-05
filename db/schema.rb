@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_05_150001) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_05_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -702,4 +702,25 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_05_150001) do
   SQL
   add_index "dashboard_intervention_stats", ["organisation_id", "service_id", "adherent_id", "mois", "workflow_state"], name: "idx_dashboard_intervention_stats_unique", unique: true
 
+
+  create_function :refresh_dashboard_views, sql_definition: <<-'SQL'
+      CREATE OR REPLACE FUNCTION public.refresh_dashboard_views()
+       RETURNS trigger
+       LANGUAGE plpgsql
+      AS $function$
+      BEGIN
+        REFRESH MATERIALIZED VIEW dashboard_intervention_stats;
+        REFRESH MATERIALIZED VIEW dashboard_agent_stats;
+        RETURN NULL;
+      END;
+      $function$
+  SQL
+
+  create_trigger :agent_interventions_refresh_dashboard, sql_definition: <<-SQL
+      CREATE TRIGGER agent_interventions_refresh_dashboard AFTER INSERT OR DELETE OR UPDATE OF agent_id, intervention_id ON public.agent_interventions FOR EACH STATEMENT EXECUTE FUNCTION refresh_dashboard_views()
+  SQL
+
+  create_trigger :interventions_refresh_dashboard, sql_definition: <<-SQL
+      CREATE TRIGGER interventions_refresh_dashboard AFTER INSERT OR DELETE OR UPDATE OF workflow_state, temps_total, co2, service_id, adherent_id, "début" ON public.interventions FOR EACH STATEMENT EXECUTE FUNCTION refresh_dashboard_views()
+  SQL
 end

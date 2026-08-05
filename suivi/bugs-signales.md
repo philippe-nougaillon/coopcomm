@@ -538,13 +538,29 @@
 - **Correctif proposé** : inclure le concern dans `User` (refresh si `discarded_at` change) et dans `Service` (si `organisation_id` change). Coût : un refresh synchrone de plus sur ces écritures, rares.
 </details>
 
-### B70 — `DASHBOARD_COLUMNS` est une liste tenue à la main : une colonne oubliée fait taire le refresh en silence
+### B70 — ✅ CORRIGÉ (2026-08-05) — `DASHBOARD_COLUMNS` est une liste tenue à la main : une colonne oubliée fait taire le refresh en silence
+- **Correctif** : la liste n'a pas disparu, elle a **déménagé du Ruby vers le SQL** (le `UPDATE OF …` des triggers, cf. B71) — mais elle est désormais **couverte par une sentinelle**. `dashboard_refreshable_test` compare les colonnes réellement lues par les vues matérialisées (`pg_matviews.definition`) à celles surveillées par chaque trigger (`pg_trigger.tgattr`), et échoue en nommant la colonne manquante et le fichier à corriger. Prouvée rouge en recréant le trigger sans `temps_total` → `manquantes=["temps_total"]`.
+- **Ce qui rendait le défaut dangereux** — une colonne oubliée ne produisait ni erreur ni trace, juste un chiffre faux — est donc levé : c'est maintenant un test rouge.
+
+<details><summary>Description d'origine</summary>
+
 - **Signalé par** : agent, 2026-08-05.
 - **Où** : [dashboard_refreshable.rb:11](app/models/concerns/dashboard_refreshable.rb#L11) — `DASHBOARD_COLUMNS = %w[workflow_state temps_total co2 service_id adherent_id début]`. Le callback `on: :update` ne se déclenche que si l'une de ces colonnes change.
 - **Impact** : aujourd'hui la liste coïncide exactement avec les colonnes lues par les deux fichiers `db/views/*.sql` (vérifié). Le jour où une vue est modifiée pour dépendre d'une colonne supplémentaire sans que la liste soit mise à jour, les modifications de cette colonne **n'apparaîtront jamais** au dashboard : pas d'erreur, pas de trace, juste un chiffre faux.
 - **Correctif proposé** : une sentinelle de test qui extrait les colonnes `interventions.*` référencées dans `db/views/*.sql` et échoue si l'une manque à `DASHBOARD_COLUMNS` — même esprit que la sentinelle de `cache_fragments_test.rb`. Elle passerait au vert aujourd'hui.
+</details>
 
-### B71 — Toute écriture SQL directe (console, rake, migration) est invisible du dashboard
+### B71 — ✅ CORRIGÉ (2026-08-05) — Toute écriture SQL directe (console, rake, migration) est invisible du dashboard
+- **Correctif (décision PE, qui a validé l'ajout de la gem)** : le rafraîchissement passe des callbacks Rails à des **triggers Postgres** — `db/functions/refresh_dashboard_views_v01.sql` et deux triggers `FOR EACH STATEMENT` sur `interventions` et `agent_interventions`, versionnés par la gem **`fx`** (companion de Scenic, même auteur).
+- **L'obstacle est levé** : `fx` écrit `create_function`/`create_trigger` dans `db/schema.rb`, donc la base de test — et **chaque base de worker parallèle**, vérifié une par une — les reçoit au chargement du schéma. La CI n'a rien de particulier à faire : le job actif s'appuie sur `maintain_test_schema!`, le job système commenté sur `db:test:prepare`, les deux chargent `schema.rb`.
+- **Couverture mesurée** : `update_all`, `update_columns`, SQL brut et `delete_all` sur les affectations sont désormais **tous rattrapés** ; `update_all(description:)` ne déclenche toujours rien (voulu).
+- **Coût mesuré** (second trigger compteur posé aux conditions identiques) : 1 refresh pour `update(workflow_state)`, **0** pour une description, 1 pour un retrait d'agent, 2 pour une création avec un agent, et **1 seul** pour un `update_all` touchant 7 lignes — là où les anciens callbacks en faisaient 7. Le bilan est donc meilleur qu'avant, pas seulement plus complet.
+- **Remplacement, pas ajout** : les `after_commit`, `DASHBOARD_COLUMNS` et `dashboard_relevant_change?` sont supprimés (sinon double refresh). `DashboardRefreshable` se réduit à `refresh_views!`, encore utilisé par les tests et la console. `dependent: :destroy` (B68) est **conservé pour une autre raison** : `AgentIntervention` est `audited`, et un `delete_all` retirerait un agent sans laisser de trace dans l'historique — verrouillé par un test dans `agent_intervention_test`.
+- **Vérifié** : `bundle exec rails test:all` **2199 runs / 0 échec / 7 skips** (3 min 58) ; un second passage n'a laissé qu'un flake connu et sans rapport (`DeviseManagerFlowTest#Se déconnecter`, vert 2/2 en isolation).
+- ⚠️ **Contrepartie, à surveiller** : voir **R4** — le `REFRESH` a désormais lieu **dans** la transaction qui écrit et non après le commit.
+
+<details><summary>Description d'origine</summary>
+
 - **Signalé par** : agent, 2026-08-05 (mesuré, un cas par méthode).
 - **Ce qui rafraîchit bien**, y compris **depuis `rails console` en production** (le refresh est synchrone, dans le processus qui écrit) : `create`, `update` d'une colonne du dashboard, `destroy`, `destroy_all`, ajout/remplacement d'agent, `agent_interventions.destroy_all`.
 - **Ce qui ne rafraîchit rien** : `update_column`, `update_columns`, `update_all`, `delete`, `delete_all`, `touch`, et tout SQL brut — par construction, ces méthodes ne passent par aucun callback. Un `update` **refusé par une validation** et une transaction **annulée** ne rafraîchissent pas non plus, ce qui est correct.
@@ -557,6 +573,7 @@
   - **Obstacle décisif aujourd'hui** : `db/schema.rb` (format Ruby) **ne sait pas représenter une fonction ni un trigger** — Scenic n'apporte ce dumper que pour les vues (vérifié : 0 occurrence dans `schema.rb`). La base de test étant chargée depuis `schema.rb`, les triggers seraient **absents en test** : jamais exercés, et un filet qu'on croirait posé. Il faudrait soit passer en `structure.sql` (lourd pour l'équipe et la CI), soit ajouter la gem **`fx`** (companion officiel de Scenic, même auteur, qui ajoute `create_function`/`create_trigger` et leur dumper) — donc une dépendance à valider.
   - **Autres réserves** : le refresh devient invisible côté Ruby (une écriture lente devient mystérieuse), et la surface du deadlock **R4** augmente.
   - **Recommandation** : pas avant la mise en prod de septembre. À reconsidérer ensuite, avec `fx`, pour supprimer d'un coup B70, B71 et la subtilité de B68.
+</details>
 
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
 
@@ -616,7 +633,8 @@
 - **Fait nouveau vs 2026-07-16** : le deadlock `REFRESH` avait été attribué au lancement **simultané** de deux runs ; ici **un seul run** était en cours (sauf run parallèle de PE non signalé). Le serveur Capybara est multi-threads : deux requêtes navigateur concurrentes suffisent — T1 committe une écriture d'intervention puis son `after_commit` lance `refresh_views!` (`concurrently: false` = verrou exclusif sur la vue, puis lecture des tables sources) pendant que T2 fait `DELETE agent_interventions` puis attend à son tour le refresh → étreinte mortelle.
 - **Portée prod (déduction)** : le refresh synchrone en prod est `CONCURRENTLY` (pas de verrou de lecture) mais deux écritures simultanées d'interventions par deux utilisateurs peuvent toujours se disputer vues + tables sources ; à volumétrie actuelle, probabilité faible ; un deadlock y ferait échouer la requête web de l'utilisateur (500).
 - **Pistes si récurrent** (trade-offs actés par PE le 2026-07-15 « volume faible, code minimal ») : (a) `rescue ActiveRecord::Deadlocked` + retry unique autour du refresh ; (b) sérialiser les refresh via un verrou consultatif Postgres ; (c) rebrancher le `RefreshDashboardViewsJob` dormant (coalescé, un seul refresh en vol — la conception 2026-06-18 éliminait ce deadlock par construction).
-- **Statut : risque surveillé, non corrigé** — re-signaler chaque occurrence pour suivre la fréquence.
+- ⚠️ **La surface du risque a AUGMENTÉ le 2026-08-05** (passage aux triggers Postgres, cf. B71). Avant, le `REFRESH` avait lieu dans un `after_commit`, donc **après** la libération des verrous de la transaction. Désormais il s'exécute **dans** la transaction de la requête qui écrit : celle-ci détient ses verrous de lignes sur `interventions`/`agent_interventions` **pendant** qu'elle demande le verrou exclusif sur la vue matérialisée — exactement la configuration d'étreinte mortelle décrite ci-dessus. Le raisonnement est structurel, pas mesuré : deux `test:all` complets (2199 runs) n'en ont produit aucun, ce qui ne prouve pas l'absence d'un flake rare.
+- **Statut : risque surveillé, non corrigé** — re-signaler chaque occurrence pour suivre la fréquence. Si des `ActiveRecord::Deadlocked` apparaissent en CI ou en prod après le 2026-08-05, c'est la première piste, et le remède le plus direct est la piste (c) : rebrancher le `RefreshDashboardViewsJob` dormant.
 
 ---
 
