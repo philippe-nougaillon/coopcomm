@@ -142,7 +142,7 @@ class User < ApplicationRecord
   end
 
   def initiales
-    "#{nom.first.upcase}#{prénom.first.upcase}"
+    "#{nom.first.upcase}#{prénom&.first&.upcase}"
   end
 
   def super_admin?
