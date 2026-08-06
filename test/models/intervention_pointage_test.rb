@@ -115,7 +115,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
       temps_de_pause: 0,
       workflow_state: 'terminé'
     )
-    i.agents = [users(:john_wick), users(:nettoyage)]
+    i.agents = [users(:électricité), users(:nettoyage)]
     i.save!
 
     assert_in_delta 4.0, i.reload.temps_total, 1e-6

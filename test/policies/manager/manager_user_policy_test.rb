@@ -6,7 +6,7 @@ class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
   def setup
     manager_paris = users(:manager_paris)
 
-    user_paris = users(:bond)
+    user_paris = users(:agent_whatsapp)
     user_paris_service_different = users(:martin_technique_paris)
 
     @policy = UserPolicy.new(manager_paris, user_paris)

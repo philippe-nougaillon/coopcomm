@@ -17,7 +17,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   # Test critique — l'agent affecté ouvre SA propre intervention validée :
   # la page ne doit contenir ni l'avis ni la section Évaluation.
   test "critique : un agent ne voit pas son évaluation sur la page de son intervention" do
-    agent = users(:john_wick)
+    agent = users(:électricité)
     intervention = cree_intervention_evaluee(agent)
     sign_in agent
 
@@ -30,7 +30,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   # Test critique — même exigence sur l'export XLS de l'index, accessible à tous les
   # rôles.
   test "critique : l'export XLS d'un agent ne contient ni évaluation ni avis" do
-    agent = users(:john_wick)
+    agent = users(:électricité)
     intervention = cree_intervention_evaluee(agent)
     sign_in agent
 
@@ -99,7 +99,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   # Test critique — parcours quotidien de l'agent : terminer son intervention.
   test 'critique : terminer une intervention en conflit de disponibilité redirige au lieu de planter' do
-    agent = users(:john_wick)
+    agent = users(:électricité)
     intervention = cree_intervention_en_conflit(agent)
     sign_in agent
 
@@ -113,7 +113,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   # Même filet côté adhérent, sur les deux transitions qu'il déclenche.
   test 'critique : valider une intervention en conflit de disponibilité redirige au lieu de planter' do
-    intervention = cree_intervention_en_conflit(users(:john_wick), workflow_state: 'terminé')
+    intervention = cree_intervention_en_conflit(users(:électricité), workflow_state: 'terminé')
     sign_in users(:weil)
 
     post valider_intervention_url(intervention)
@@ -124,7 +124,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'critique : refuser une intervention en conflit de disponibilité redirige au lieu de planter' do
-    intervention = cree_intervention_en_conflit(users(:john_wick), workflow_state: 'terminé')
+    intervention = cree_intervention_en_conflit(users(:électricité), workflow_state: 'terminé')
     sign_in users(:weil)
 
     post refuser_intervention_url(intervention)
@@ -189,7 +189,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   # Garde anti-faux-positif : sans conflit, la transition passe toujours — le
   # filet ne doit pas bloquer le parcours nominal.
   test 'terminer une intervention saine reste possible' do
-    agent = users(:john_wick)
+    agent = users(:électricité)
     intervention = cree_intervention_en_conflit(agent, avec_conflit: false)
     sign_in agent
 
@@ -201,7 +201,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   # Test critique — le temps facturé aux communes doit être enregistré quel que soit
   # le chemin de terminaison, sans qu'aucun formulaire ne le fournisse.
   test 'critique : terminer via le bouton enregistre le temps total et une pause à 0' do
-    agent = users(:john_wick)
+    agent = users(:électricité)
     intervention = cree_intervention_en_conflit(agent, avec_conflit: false)
     intervention.update_columns(temps_de_pause: nil, temps_total: nil)
     sign_in agent
@@ -306,7 +306,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     Intervention.create!(
       description: 'Intervention évaluée du test critique',
       adherent: users(:weil),
-      service: services(:comptabilite),
+      service: services(:technique),
       agent_ids: [agent.id],
       début: DateTime.new(2024, 3, 11, 9, 0),
       fin: DateTime.new(2024, 3, 11, 11, 0),
@@ -325,7 +325,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
       description: 'Intervention validée du test',
       adherent: users(:weil),
       service: services(:technique),
-      agent_ids: [users(:john_wick).id],
+      agent_ids: [users(:électricité).id],
       début: DateTime.new(2024, 5, 6, 9, 0),
       fin: DateTime.new(2024, 5, 6, 11, 0),
       temps_de_pause: 0,
@@ -338,14 +338,14 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   # SECONDE intervention du même agent recouvre sa plage.
   def cree_intervention_en_conflit(agent, workflow_state: 'nouveau', avec_conflit: true)
     intervention = Intervention.create!(
-      description: 'Intervention à terminer', adherent: users(:weil), service: services(:comptabilite),
+      description: 'Intervention à terminer', adherent: users(:weil), service: services(:technique),
       agent_ids: [agent.id], début: DateTime.new(2024, 3, 12, 9, 0), fin: DateTime.new(2024, 3, 12, 11, 0),
       temps_de_pause: 0, workflow_state: workflow_state, slug: SecureRandom.uuid
     )
     return intervention unless avec_conflit
 
     conflit = Intervention.new(
-      description: 'Intervention qui recouvre la plage', adherent: users(:weil), service: services(:comptabilite),
+      description: 'Intervention qui recouvre la plage', adherent: users(:weil), service: services(:technique),
       début: DateTime.new(2024, 3, 12, 8, 0), fin: DateTime.new(2024, 3, 12, 12, 0),
       temps_de_pause: 0, workflow_state: 'nouveau', slug: SecureRandom.uuid
     )
@@ -503,9 +503,9 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "un agent crée une intervention à postériori : elle est terminée d'emblée" do
-    # john_wick n'a aucune intervention de fixture, donc jamais de conflit d'horaire
+    # nettoyage n'a aucune intervention de fixture, donc jamais de conflit d'horaire
     # avec la plage créée ici.
-    agent = users(:john_wick)
+    agent = users(:nettoyage)
     sign_in agent
 
     # On se place à midi d'AUJOURD'HUI pour que "hours.ago" ne change jamais de jour ni d'année.
@@ -1009,7 +1009,7 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
   end
 
   test 'archiver une intervention invalide est refusé avec son motif' do
-    intervention = cree_intervention_en_conflit(users(:john_wick), workflow_state: 'validé')
+    intervention = cree_intervention_en_conflit(users(:électricité), workflow_state: 'validé')
 
     post archiver_intervention_url(intervention)
 
@@ -1190,8 +1190,8 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
   end
 
   test "création par un agent « à postériori » (terminée d'emblée) : enqueue la notification managers « réalisée »" do
-    # john_wick et pas martin : cf. le test « à postériori » ci-dessus (B10).
-    agent = users(:john_wick)
+    # nettoyage et pas martin : cf. le test « à postériori » ci-dessus (B10).
+    agent = users(:nettoyage)
     sign_in agent
 
     # Milieu de journée : les "hours.ago" restent le même jour (cf. test à postériori ci-dessus).
@@ -1464,10 +1464,10 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
 
     sign_in users(:hidalgo)
     patch intervention_url(fille), params: {
-      intervention: { agent_ids: ['', users(:john_wick).id], description: fille.description }
+      intervention: { agent_ids: ['', users(:électricité).id], description: fille.description }
     }
 
-    assert_equal [users(:john_wick).id], fille.reload.agent_ids
+    assert_equal [users(:électricité).id], fille.reload.agent_ids
   end
 
   test 'une intervention hors pointage accepte toujours plusieurs agents' do
@@ -1475,10 +1475,42 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
     intervention = interventions(:nouvelle_intervention)
 
     patch intervention_url(intervention), params: {
-      intervention: { agent_ids: ['', users(:bond).id, users(:john_wick).id],
+      intervention: { agent_ids: ['', users(:bond).id, users(:électricité).id],
                       description: intervention.description }
     }
 
-    assert_equal [users(:bond).id, users(:john_wick).id].sort, intervention.reload.agent_ids.sort
+    assert_equal [users(:bond).id, users(:électricité).id].sort, intervention.reload.agent_ids.sort
+  end
+
+  # --- Liste des agents après un échec de validation -------------------------
+  # Le formulaire réaffiché doit proposer les agents du service SOUMIS.
+
+  test "update refusé : la liste des agents suit le service soumis" do
+    intervention = interventions(:nouvelle_intervention)
+
+    patch intervention_url(intervention), params: {
+      intervention: { service_id: services(:informatique).id,
+                      agent_ids: ['', users(:martin_technique_paris).id],
+                      description: intervention.description }
+    }
+
+    assert_response :unprocessable_content
+    ids = assigns(:agents).map(&:last)
+    assert_includes ids, users(:hidalgo).id
+    assert_not_includes ids, users(:martin_technique_paris).id
+  end
+
+  test "création refusée : la liste des agents suit le service soumis" do
+    post interventions_url, params: {
+      intervention: { service_id: services(:informatique).id,
+                      adherent_id: users(:weil).id,
+                      agent_ids: ['', users(:martin_technique_paris).id],
+                      description: 'Nouvelle demande' }
+    }
+
+    assert_response :unprocessable_content
+    ids = assigns(:agents).map(&:last)
+    assert_includes ids, users(:hidalgo).id
+    assert_not_includes ids, users(:martin_technique_paris).id
   end
 end

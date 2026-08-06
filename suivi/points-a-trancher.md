@@ -106,3 +106,14 @@ Le découpage du 2026-08-05 a ramené `_form` à 83 lignes d'ossature et `_form_
 - l'adhérent n'est modifiable que sur un bon saisi par un agent (`bon?` et hors pointage) ;
 - les dates réelles sont **toujours** obligatoires et disposées côte à côte, là où l'autre formulaire ne les exige qu'à la terminaison.
 Les deux premières s'expriment déjà par des prédicats de policy (`saisir_description?`, `choisir_service?`, `choisir_adherent?`). **À trancher : fusionne-t-on ?** Le gain serait un seul formulaire ; le coût, une troisième condition sur la disposition et l'obligation des dates.
+
+### D12 — ✅ TRANCHÉ (2026-08-06) — Les 7 interventions de dev dont l'agent est hors du service (= **B78**)
+**Décision PE : purge.** Les 136 interventions invalides de la base de dev (dont ces 7) ont été supprimées, après réparation des filles de pointage sans adhérent — celui du modèle est repris, et la fille n'est supprimée que si le modèle est introuvable ou qu'elle reste invalide (1 seul cas concerné, `#171`, réparée et conservée). Reste 226 interventions, **toutes valides**, 0 fille orpheline, 0 convention à heures négatives. Sauvegarde `pg_dump` prise avant la purge. **La question reste entière côté prod** : la validation est permanente, le volume n'y a pas été mesuré, et une purge n'y est évidemment pas envisageable. Détail des motifs ci-dessous.
+
+
+La validation `service_partagé_par_adherent_et_agents` fige 7 interventions de la base de dev. Le pendant adhérent (29 lignes) a été réglé en rattachant l'adhérent au service ; pour un **agent**, `agent_must_have_exactly_one_service` interdit ce recours. Quatre issues, toutes avec un coût :
+1. **Retirer l'agent** de l'intervention — on perd la trace de qui a réalisé le travail, et `#383` est `terminé` donc exige au moins un agent (il faudrait lui en réassigner un du bon service).
+2. **Ajouter le service manquant à l'agent** — viole l'invariant « un agent, un service ». À noter : BERNARD André l'enfreint **déjà** (Technique + Prévention), donc la base n'est pas homogène sur ce point non plus.
+3. **Changer le service de l'agent** — casse ses autres interventions, qui deviendraient à leur tour hors règle.
+4. **Changer le service de l'intervention** — écarté par PE le 2026-08-06.
+La même question se posera en **prod** au déploiement : il faut mesurer le volume avant, la validation étant permanente. Voir aussi D8 (même invariant, autre symptôme).

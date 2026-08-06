@@ -539,8 +539,10 @@ class InterventionsController < ApplicationController
     @tools = current_organisation.tools.ordered
   end
 
+  # Le service soumis prime : après un échec de validation, le formulaire est
+  # réaffiché avec le service choisi, pas celui encore enregistré.
   def preselected_form_service
-    service_id = @intervention&.service_id || params[:service_id]
+    service_id = params.dig(:intervention, :service_id).presence || @intervention&.service_id || params[:service_id]
     service_id ||= current_user.services.first&.id if current_user.agent?
     return nil if service_id.blank?
 

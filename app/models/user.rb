@@ -121,9 +121,14 @@ class User < ApplicationRecord
   end
 
   # Liste plate au format [["NOM Prénom", id], …].
+  # Les administrateurs sont proposés quel que soit leur service, cf. la
+  # validation Intervention#service_partagé_par_adherent_et_agents qui les exempte.
   def self.agents_for_services(services)
+    organisation_ids = Service.where(id: services).select(:organisation_id)
+    admins = administrateur.by_service(Service.where(organisation_id: organisation_ids))
+
     intervenants
-      .by_service(services)
+      .where(id: by_service(services).ids | admins.ids)
       .order(:nom, :prénom)
       .map { |agent| ["#{agent.nom} #{agent.prénom}", agent.id] }
   end

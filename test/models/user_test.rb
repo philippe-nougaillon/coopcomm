@@ -63,6 +63,21 @@ class UserTest < ActiveSupport::TestCase
     assert_equal noms.sort, noms
   end
 
+  test 'agents_for_services propose les administrateurs hors du service demandé' do
+    admin = users(:philippe_super_admin)
+    ids = User.agents_for_services([services(:technique)]).map(&:last)
+
+    assert_not_includes admin.service_ids, services(:technique).id
+    assert_includes ids, admin.id
+  end
+
+  test "agents_for_services borne les administrateurs à l'organisation du service" do
+    ids = User.agents_for_services([services(:service_marseille)]).map(&:last)
+
+    assert_not_includes ids, users(:philippe_super_admin).id
+    assert_not_includes ids, users(:administrateur_paris).id
+  end
+
   # --- User#find_current_intervention -------------------------------------
   # Cœur du « re-scan » du QRCode : retrouve l'intervention fille EN COURS (état « nouveau
   # ») de CET agent, datée d'AUJOURD'HUI, pour le modèle scanné.
