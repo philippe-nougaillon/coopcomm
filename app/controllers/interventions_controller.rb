@@ -21,96 +21,13 @@ class InterventionsController < ApplicationController
     session[:vue] ||= 'normal'
     params[:vue] ||= session[:vue]
 
-    # Filtre en fonction du rôle de l'utilisateur
-    @interventions = Intervention.by_role_for(current_user)
+    services_demandes = scoped_services(:service, admin_sees_all: true)
 
-    selected_services = scoped_services(:service, admin_sees_all: true)
-
-    # Filtre sur les services
-    if current_user.manager_or_admin? || @selected_service_ids.present?
-      @interventions = @interventions.filter_by_service(selected_services)
-    end
-
-    # Le select est `multiple` : tableau de libellés humanisés (ex. ["Nouveau"]).
-    selected_states = Array(params[:workflow_state]).reject(&:blank?).map(&:downcase)
-
-    @interventions = if params[:archives].present?
-                       @interventions.where(workflow_state: 'archivé')
-                     elsif selected_states.any?
-                       @interventions.where(workflow_state: selected_states)
-                     else
-                       @interventions.where.not(workflow_state: 'archivé')
-                     end
-
-    # Enlever les interventions filles si ce n'est pas un adhérent
-    # @interventions = @interventions.where(template_slug: nil) unless current_user.adhérent?
-
-    if params[:search].present?
-      @interventions = @interventions.where('description ILIKE :search OR commentaires ILIKE :search',
-                                            { search: "%#{params[:search]}%" })
-    end
-
-    if params[:du].present?
-      if params[:au].present?
-        @interventions = @interventions.where('DATE(début) BETWEEN ? AND ?', params[:du], params[:au])
-      else
-        @interventions = @interventions.where('DATE(début) = ?',
-                                              params[:du]).or(@interventions.where('DATE(fin) = ?', params[:du]))
-      end
-    elsif params[:au].present?
-      @interventions = @interventions.where('DATE(fin) = ?', params[:au])
-    end
-
-    @interventions = @interventions.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
-
-    if params[:equipe].present?
-      # On nettoie le tableau pour enlever l'élément vide ("") envoyé par le formulaire
-      tags = params[:equipe].reject(&:blank?)
-
-      if tags.any?
-        adherent_ids = @users_in_same_services.tagged_with(tags, any: true).pluck(:id)
-
-        # Étape B : On filtre directement sur la clé étrangère de l'intervention
-        @interventions = @interventions.where(adherent_id: adherent_ids)
-      end
-    end
-
-    if params[:agent_ids].present?
-      @interventions = @interventions.joins(agent_interventions: :agent).where(agent: { id: params[:agent_ids] })
-    end
-
-    if params[:tool_ids].present?
-      @interventions = @interventions.joins(:tool_interventions).where(tool_interventions: { tool_id: params[:tool_ids] })
-    end
-
-    if params[:tags].present?
-      @interventions = @interventions.tagged_with(params[:tags].reject(&:blank?))
-      session[:tags] = params[:tags]
-    else
-      session[:tags] = params[:tags] = []
-    end
-
-    @interventions = @interventions.reorder(Arel.sql("#{sort_column} #{sort_direction}")) if params[:vue] == 'compact'
-
-    @interventions = @interventions.distinct
-
-    users_in_same_services = User.by_service(selected_services)
-
-    adherents_services = current_user.administrateur? ? @services : selected_services
-    @adhérents = User.by_service(adherents_services).adhérent.order(:nom)
-
-    if current_user.manager_or_admin? || current_user.adhérent?
-      @grouped_agents = users_in_same_services.grouped_agents(current_user)
-    end
-
-    @tools = current_organisation.tools.ordered
+    @interventions = filtrer(Intervention.by_role_for(current_user), services_demandes)
+    charger_options_de_filtre(services_demandes)
 
     session[:vue] = params[:vue]
 
-    @interventions = @interventions.includes(:tags, :agents, :adherent, :service, :organisation,
-                                             :tools).with_attached_photos
-
-    
     respond_to do |format|
       format.html do
         @pagy, @interventions = pagy(@interventions)
@@ -297,21 +214,29 @@ class InterventionsController < ApplicationController
   def valider
     return if redirect_si_invalide('validée')
 
-    @intervention.valider!
+    if @intervention.can_valider?
+      @intervention.valider!
 
-    Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
+      Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
 
-    redirect_to @intervention, notice: 'Intervention validée'
+      redirect_to @intervention, notice: 'Intervention validée'
+    else
+      redirect_to @intervention, alert: "Impossible de valider l'intervention"
+    end
   end
 
   def refuser
     return if redirect_si_invalide('refusée')
 
-    @intervention.refuser!
+    if @intervention.can_refuser?
+      @intervention.refuser!
 
-    Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
+      Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
 
-    redirect_to @intervention, notice: 'Intervention refusée'
+      redirect_to @intervention, notice: 'Intervention refusée'
+    else
+      redirect_to @intervention, alert: "Impossible de refuser l'intervention"
+    end
   end
 
   def archiver
@@ -334,7 +259,7 @@ class InterventionsController < ApplicationController
 
   def purge
     @intervention.photos.find(params[:photo_id]).purge
-    @intervention.update(audit_comment: "Photo n°#{params[:photo_id]} supprimée")
+    @intervention.update(audit_comment: 'Photo supprimée')
     redirect_to @intervention, notice: 'Photo supprimée', status: :see_other
   end
 
@@ -485,6 +410,103 @@ class InterventionsController < ApplicationController
 
   private
 
+  def filtrer(interventions, services_demandes)
+    interventions = interventions.filter_by_service(services_demandes) if filtre_service_applicable?
+    interventions = filtrer_par_etat(interventions)
+    interventions = filtrer_par_recherche(interventions)
+    interventions = filtrer_par_dates(interventions)
+    interventions = filtrer_par_acteurs(interventions)
+    interventions = filtrer_par_mots_cles(interventions)
+
+    interventions = interventions.reorder(Arel.sql("#{sort_column} #{sort_direction}")) if params[:vue] == 'compact'
+
+    interventions.distinct
+                 .includes(:tags, :agents, :adherent, :service, :organisation, :tools)
+                 .with_attached_photos
+  end
+
+  def filtre_service_applicable?
+    current_user.manager_or_admin? || @selected_service_ids.present?
+  end
+
+  def filtrer_par_etat(interventions)
+    return interventions.where(workflow_state: Intervention::ARCHIVE) if params[:archives].present?
+
+    # Le select est `multiple` : tableau de libellés humanisés (ex. ["Nouveau"]).
+    etats = Array(params[:workflow_state]).reject(&:blank?).map(&:downcase)
+    return interventions.where(workflow_state: etats) if etats.any?
+
+    interventions.where.not(workflow_state: Intervention::ARCHIVE)
+  end
+
+  def filtrer_par_recherche(interventions)
+    return interventions if params[:search].blank?
+
+    interventions.where('description ILIKE :search OR commentaires ILIKE :search',
+                        search: "%#{params[:search]}%")
+  end
+
+  def filtrer_par_dates(interventions)
+    du = params[:du]
+    au = params[:au]
+
+    if du.present? && au.present?
+      interventions.where('DATE(début) BETWEEN ? AND ?', du, au)
+    elsif du.present?
+      interventions.where('DATE(début) = ?', du).or(interventions.where('DATE(fin) = ?', du))
+    elsif au.present?
+      interventions.where('DATE(fin) = ?', au)
+    else
+      interventions
+    end
+  end
+
+  def filtrer_par_acteurs(interventions)
+    interventions = interventions.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
+    interventions = filtrer_par_equipe(interventions)
+
+    if params[:agent_ids].present?
+      interventions = interventions.joins(agent_interventions: :agent).where(agent: { id: params[:agent_ids] })
+    end
+
+    return interventions if params[:tool_ids].blank?
+
+    interventions.joins(:tool_interventions).where(tool_interventions: { tool_id: params[:tool_ids] })
+  end
+
+  # @users_in_same_services n'est jamais assignée : ce filtre part en 500 (B47).
+  # Comportement conservé tel quel, la correction reste à décider.
+  def filtrer_par_equipe(interventions)
+    return interventions if params[:equipe].blank?
+
+    tags = params[:equipe].reject(&:blank?)
+    return interventions if tags.empty?
+
+    interventions.where(adherent_id: @users_in_same_services.tagged_with(tags, any: true).pluck(:id))
+  end
+
+  def filtrer_par_mots_cles(interventions)
+    if params[:tags].present?
+      session[:tags] = params[:tags]
+      return interventions.tagged_with(params[:tags].reject(&:blank?))
+    end
+
+    session[:tags] = params[:tags] = []
+    interventions
+  end
+
+  # Alimente les listes déroulantes du bandeau de filtres.
+  def charger_options_de_filtre(services_demandes)
+    services_des_adherents = current_user.administrateur? ? @services : services_demandes
+    @adhérents = User.by_service(services_des_adherents).adhérent.order(:nom)
+
+    if current_user.manager_or_admin? || current_user.adhérent?
+      @grouped_agents = User.by_service(services_demandes).grouped_agents(current_user)
+    end
+
+    @tools = current_organisation.tools.ordered
+  end
+
   def get_routage_responses; end
 
   # TODO VU : à supprimer s'il n'y a pas d'optique d'amélioration sur la carte google, sinon, déplacer ce bloc dans le model
@@ -525,8 +547,10 @@ class InterventionsController < ApplicationController
     @tools = current_organisation.tools.ordered
   end
 
+  # Le service soumis prime : après un échec de validation, le formulaire est
+  # réaffiché avec le service choisi, pas celui encore enregistré.
   def preselected_form_service
-    service_id = @intervention&.service_id || params[:service_id]
+    service_id = params.dig(:intervention, :service_id).presence || @intervention&.service_id || params[:service_id]
     service_id ||= current_user.services.first&.id if current_user.agent?
     return nil if service_id.blank?
 

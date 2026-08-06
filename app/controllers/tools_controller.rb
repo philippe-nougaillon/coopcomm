@@ -50,6 +50,12 @@ class ToolsController < ApplicationController
 
     @date_inicio_grid = @date.beginning_of_week
     @date_fin_grid = @date_fin.end_of_week
+
+    return unless current_user.manager_or_admin?
+
+    # Les mouvements ne sont pas associés à l'outil côté audited : la grille de
+    # disponibilités les affiche déjà, l'historique ne les répète pas.
+    @pagy, @audits = pagy(@tool.own_and_associated_audits.includes(:user).reorder(id: :desc), items: 10)
   end
 
   # GET /tools/new

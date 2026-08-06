@@ -1,8 +1,8 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-bond_informatique:
+bond_technique:
   user: bond
-  service: service_paris
+  service: technique
 
 martin_technique:
   user: martin_technique_paris
@@ -36,6 +36,10 @@ weil_informatique:
   user: weil
   service: informatique
 
+weil_technique:
+  user: weil
+  service: technique
+
 administrateur_paris_service_paris:
   user: administrateur_paris
   service: service_paris
@@ -60,9 +64,13 @@ agent_whatsapp_service_paris:
   user: agent_whatsapp
   service: service_paris
 
-patrick_adherent_paris_technique:
+patrick_adherent_paris_service_paris:
   user: patrick_adherent_paris
   service: service_paris
+
+patrick_adherent_paris_technique:
+  user: patrick_adherent_paris
+  service: technique
 
 manager_marseille_service_marseille:
   user: manager_marseille

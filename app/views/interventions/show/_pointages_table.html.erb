@@ -9,7 +9,7 @@
         <thead class="bg-slate-200/60 border-b border-slate-100 text-xs uppercase font-semibold text-slate-400 tracking-wider">
           <tr>
             <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Il y a</th>
-            <% unless current_user.agent? %>
+            <% if policy(intervention).voir_agent_des_pointages? %>
               <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Agent</th>
             <% end %>
             <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Début</th>
@@ -25,7 +25,7 @@
             <% pointages.each do |pointage| %>
               <tr class="hover:bg-base-200/60 transition-colors duration-150 align-middle">
                 <td class="py-3 px-4"><%= time_ago_in_words pointage.début %></td>
-                <% unless current_user.agent? %>
+                <% if policy(intervention).voir_agent_des_pointages? %>
                   <td class="py-3 px-4 font-medium text-slate-700"><%= pointage.agents.first&.nom_prénom %></td>
                 <% end %>
                 <td class="py-3 px-4"><%= l pointage.début %></td>
@@ -52,7 +52,7 @@
             <% end %>
           <% else %>
             <tr>
-              <td colspan="<%= current_user.agent? ? 7 : 8 %>" class="text-center py-10 text-slate-400 italic">
+              <td colspan="<%= policy(intervention).voir_agent_des_pointages? ? 8 : 7 %>" class="text-center py-10 text-slate-400 italic">
                 Aucun pointage enregistré pour le moment.
               </td>
             </tr>

@@ -73,7 +73,7 @@
       </div>
     </div>
     <div class="flex gap-2 mt-4 w-full">
-      <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>
+      <%= button_tag "Annuler", type: "button", onclick: "history.back();", class: "btn flex-1" %>
       <%= f.submit "Enregistrer",  class: "btn btn-primary flex-1" %>
     </div>
   <% end %>

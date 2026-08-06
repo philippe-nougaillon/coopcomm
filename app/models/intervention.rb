@@ -31,7 +31,7 @@ class Intervention < ApplicationRecord
   # delete_all, donc sans écrire d'audit (AgentIntervention est audited).
   has_many :agents, through: :agent_interventions, class_name: 'User', dependent: :destroy
   has_many :tool_interventions, dependent: :destroy
-  has_many :tools, through: :tool_interventions
+  has_many :tools, through: :tool_interventions, dependent: :destroy
   has_many :mouvements
 
   has_one :organisation, through: :service
@@ -61,6 +61,7 @@ class Intervention < ApplicationRecord
   validate :dates_obligatoires_si_terminé
   validate :agent_obligatoire_si_terminé
   validate :agent_unique_si_pointage
+  validate :service_partagé_par_adherent_et_agents
 
   before_save :calc_temps_total
 
@@ -605,6 +606,21 @@ class Intervention < ApplicationRecord
     return if agents.size == 1
 
     errors.add(:base, MESSAGE_AGENT_UNIQUE)
+  end
+
+  def service_partagé_par_adherent_et_agents
+    return if service.blank?
+
+    if adherent.present? && !adherent.service_ids.include?(service_id)
+      errors.add(:base,
+                 "L'adhérent #{adherent.nom_prénom} n'appartient pas au service #{service.nom}")
+    end
+
+    agents.reject(&:administrateur?).each do |agent|
+      next if agent.service_ids.include?(service_id)
+
+      errors.add(:base, "L'agent #{agent.nom_prénom} n'appartient pas au service #{service.nom}")
+    end
   end
 
   def set_temporary_description

@@ -47,8 +47,6 @@ class InterventionAdherentFlowTest < ApplicationSystemTestCase
     click_on intervention.description
     click_on 'Modifier' # n'existe que sur le show : Capybara attend la navigation
     fill_in 'Description', with: 'Installer la fibre'
-    # La refonte UX vide le select Service à l'édition (required) : il faut re-choisir
-    select_option('#intervention_service_id', 'Informatique')
     soumettre 'enregistrer_intervention'
     assert_no_text 'Modifier intervention'
     assert_text 'Installer la fibre'

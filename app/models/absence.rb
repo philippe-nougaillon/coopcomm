@@ -14,12 +14,7 @@ class Absence < ApplicationRecord
     congé_sans_solde: 3
   }
 
-  MOTIF_LABELS = {
-    'congés_payés' => 'Congés payés',
-    'congé_parental' => 'Congé parental',
-    'formation' => 'Formation',
-    'congé_sans_solde' => 'Congé sans solde'
-  }.freeze
+  MOTIF_LABELS = motifs.keys.index_with(&:humanize).freeze
 
   validate :dates_must_make_sense
   validate :no_overlapping_absences
@@ -31,8 +26,6 @@ class Absence < ApplicationRecord
   after_create_commit  -> { notifier_personne_concernée('créée') }
   after_update_commit  -> { notifier_personne_concernée('modifiée') }
   after_destroy_commit -> { notifier_personne_concernée('supprimée') }
-
-  Absence::MOTIF_LABELS
 
   def en_cours?
     (du..au).include?(Date.today)

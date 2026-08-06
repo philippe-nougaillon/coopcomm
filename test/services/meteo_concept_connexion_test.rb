@@ -147,19 +147,11 @@ class MeteoConceptConnexionTest < ActiveSupport::TestCase
                  MeteoConceptConnexion.get_icon_meteo_by_date(Date.today, previsions)
   end
 
-  # BUG (registre) : get_title n'a pas la garde nil de get_icon_meteo_by_date.
-  # Retirer le skip à la correction.
   test "l'infobulle hors de la fenêtre de prévision ne fait pas planter la page" do
-    skip 'get_title interpole une prévision nil → NoMethodError'
-
     assert_nil MeteoConceptConnexion.get_title(Date.today + 20, previsions)
   end
 
-  # BUG (registre) : get_forecast_for_date suppose 14 jours de prévisions.
-  # Retirer le skip à la correction.
   test 'une réponse tronquée de l’API ne fait pas planter la recherche de prévision' do
-    skip 'forecasts[index] nil → NoMethodError sur .third'
-
     assert_nil MeteoConceptConnexion.get_forecast_for_date(Date.today + 5, previsions.first(3))
   end
 

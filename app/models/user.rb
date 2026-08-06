@@ -42,7 +42,7 @@ class User < ApplicationRecord
   has_many :absences, dependent: :destroy
   has_many :conventions, dependent: :destroy
   has_many :user_services, dependent: :destroy
-  has_many :services, through: :user_services
+  has_many :services, through: :user_services, dependent: :destroy
 
   # L'utilisateur n'est associé qu'à une seule organisation, via ses services
   has_many :organisations, -> { limit(1) }, through: :services
@@ -121,9 +121,14 @@ class User < ApplicationRecord
   end
 
   # Liste plate au format [["NOM Prénom", id], …].
+  # Les administrateurs sont proposés quel que soit leur service, cf. la
+  # validation Intervention#service_partagé_par_adherent_et_agents qui les exempte.
   def self.agents_for_services(services)
+    organisation_ids = Service.where(id: services).select(:organisation_id)
+    admins = administrateur.by_service(Service.where(organisation_id: organisation_ids))
+
     intervenants
-      .by_service(services)
+      .where(id: by_service(services).ids | admins.ids)
       .order(:nom, :prénom)
       .map { |agent| ["#{agent.nom} #{agent.prénom}", agent.id] }
   end
@@ -137,7 +142,7 @@ class User < ApplicationRecord
   end
 
   def initiales
-    "#{nom.first.upcase}#{prénom.first.upcase}"
+    "#{nom.first.upcase}#{prénom&.first&.upcase}"
   end
 
   def super_admin?

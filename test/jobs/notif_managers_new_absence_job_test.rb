@@ -6,13 +6,13 @@ class NotifManagersNewAbsenceJobTest < ActiveJob::TestCase
   include ActionMailer::TestHelper
 
   setup do
-    @absence = absences(:one) # user: bond, rattaché au service_paris
-    # Managers/admins du service de l'absent : hidalgo, manager_paris, administrateur_paris.
+    @absence = absences(:one) # user: bond, rattaché au service technique
+    # Managers/admins du service de l'absent : hidalgo, administrateur_paris.
     @managers = @absence.user.services.flat_map(&:managers_and_admin).uniq
   end
 
   test 'notifie tous les managers du service de l\'absent (un MailLog par mail)' do
-    assert_equal 3, @managers.size, 'pré-condition : 3 managers attendus sur le service_paris'
+    assert_equal 2, @managers.size, 'pré-condition : 2 managers attendus sur le service technique'
 
     assert_emails @managers.size do
       assert_difference -> { MailLog.count }, @managers.size do

@@ -80,3 +80,40 @@
 |---|---|---|
 | D2 — Fusionner la branche `dashboard-scenic` (vues matérialisées Scenic) dans `staging` ? | **Fusionnée** — constaté le 2026-07-31 : `origin/dashboard-scenic` (`11ddebfe`) est un ancêtre de `staging`, `db/views/` et les modèles `DashboardAgentStat`/`DashboardInterventionStat` y sont, `dashboard_data.rb` a disparu (commit `0fb76419 #297`). Conséquences : **B12 corrigé** sur staging, et **B13 n'est plus un bug de branche mais un bug de staging** (le filtre `temps_total >= 0` opère sur les cellules pré-agrégées). | ≤ 2026-07-31 |
 | D4 — Notifier quelqu'un quand un adhérent refuse une cotation ? | **Non, personne pour l'instant** (décision équipe rapportée par PE) ; à revoir plus tard. Le correctif reste noté si ça change : job `NotifCotationRefuseeJob` miroir de `NotifCotationSigneeJob` (créateur via l'audit `create`), branché sur le bloc de `transition!` de `cotations_controller#refuser`. | 2026-07-13 |
+
+### D9 — Incohérences de visibilité entre la liste et la page d'une intervention (signalées le 2026-08-05, aucune corrigée)
+Toutes sont **figées par les matrices de caractérisation** : elles ne peuvent plus bouger par accident, mais elles ne sont pas résolues.
+
+1. **L'adhérent voit dans la liste des données que la page détaillée lui cache.** À l'origine 9 : agents, matériel, mots clés, début/fin réels, temps passé, temps total, pause, commentaires, photos. **Partiellement résolu le 2026-08-06 par PE**, dans les deux sens : la page lui donne désormais une section « Intervention » (dates + temps passé, total, pause), et la liste ne lui montre plus les commentaires. **Restent divergents** : agents, matériel, mots clés et photos, visibles dans la liste et absents de la page. À trancher.
+2. ~~**Boutons désactivés contre boutons masqués**~~ — **TRANCHÉ le 2026-08-06 par PE** : la liste masque désormais les boutons non déclenchables, comme la page détaillée et l'accueil. Le paramètre `valider_toujours_visible` du partial, qui n'existait que pour reproduire cet écart, a été retiré.
+3. **Aucun bouton « Archiver » nulle part** dans l'application, alors que l'action, la route, la policy et les tests existent. L'archivage n'est atteignable qu'en forgeant une requête. Fonctionnalité oubliée, ou à retirer ?
+4. **Aucun verrou d'édition par état** : une intervention `archivé` reste modifiable par le manager, l'administrateur, l'agent affecté et l'adhérent, et supprimable par le manager et l'administrateur. Est-ce voulu ?
+5. **`InterventionPolicy` ignore le service du manager** : un manager a exactement les mêmes droits sur une intervention d'un service dont il n'est **pas** membre que sur les siennes — alors qu'`ApplicationPolicy#manage?` fait la distinction et que `UserPolicy` l'a explicitement introduite (B61). Volontaire pour les interventions ?
+6. **L'adhérent peut télécharger le PDF de l'affiche QR code de pointage** (`can_see_qrcode_pointage_pdf?` = `show? && !agent?`), et le bouton lui est proposé sur un modèle de pointage. Utile, ou fuite d'un outil interne ?
+7. ~~**L'adhérent ne voyait plus les dates prévues sur sa page**~~ — **TRANCHÉ et corrigé le 2026-08-06 par PE** : nouveau prédicat `voir_dates_prevues?`, l'adhérent les voit sauf à l'état « pointage activé ». Figé par la sonde `donnee:debut_prevue` de la matrice de visibilité.
+8. ~~**La section « Intervention » de l'adhérent était rendue sur un modèle de pointage**~~ (encadré « Non renseigné / 0 h / 0 h / 0 h ») — **TRANCHÉ et corrigé le 2026-08-06 par PE** : sur un modèle, l'adhérent reçoit le **tableau des pointages** comme les autres rôles, colonne « Agent » comprise (`voir_pointages?` n'exclut plus l'adhérent). Figé par les sondes `bloc:pointages` et `donnee:agent_pointage`.
+
+### D11 — ~~Visibilité de l'adhérent repassée en dur dans la vue~~ — **TRANCHÉ et appliqué le 2026-08-06**
+`#444` avait rouvert une exception au principe posé le 2026-08-05 (toute la visibilité de la page dans `InterventionPolicy`). Rétabli sur décision de PE :
+- `show.html.erb` ne teste plus aucun rôle : trois branches de policy, `voir_pointages?` / `voir_realisation?` / `voir_temps?`.
+- Nouveau prédicat `voir_temps?` (= `show? && adhérent? && !record.repeter?`) pour la section « Intervention » de l'adhérent, extraite en partial `show/_temps_adherent.html.erb` — le `<h2>` et les deux sous-partials n'y sont plus dupliqués.
+- `voir_agent_des_pointages?`, défini le 2026-08-05 mais **jamais appelé**, pilote enfin la colonne « Agent » du tableau des pointages, qui testait `current_user.agent?` en dur à trois endroits (en-tête, cellule, `colspan`).
+- Le `unless current_user.adhérent?` devenu mort dans `show/_assignation.html.erb` a été retiré par PE.
+
+### D10 — Fusion des deux formulaires d'intervention
+Le découpage du 2026-08-05 a ramené `_form` à 83 lignes d'ossature et `_form_for_agents` à 172, tous deux consommant les mêmes blocs. Il ne reste que **trois** différences réelles, toutes visibles en tête de `_form_for_agents` :
+- pas de champ description, et le service est figé sur `current_user.services.first` ;
+- l'adhérent n'est modifiable que sur un bon saisi par un agent (`bon?` et hors pointage) ;
+- les dates réelles sont **toujours** obligatoires et disposées côte à côte, là où l'autre formulaire ne les exige qu'à la terminaison.
+Les deux premières s'expriment déjà par des prédicats de policy (`saisir_description?`, `choisir_service?`, `choisir_adherent?`). **À trancher : fusionne-t-on ?** Le gain serait un seul formulaire ; le coût, une troisième condition sur la disposition et l'obligation des dates.
+
+### D12 — ✅ TRANCHÉ (2026-08-06) — Les 7 interventions de dev dont l'agent est hors du service (= **B78**)
+**Décision PE : purge.** Les 136 interventions invalides de la base de dev (dont ces 7) ont été supprimées, après réparation des filles de pointage sans adhérent — celui du modèle est repris, et la fille n'est supprimée que si le modèle est introuvable ou qu'elle reste invalide (1 seul cas concerné, `#171`, réparée et conservée). Reste 226 interventions, **toutes valides**, 0 fille orpheline, 0 convention à heures négatives. Sauvegarde `pg_dump` prise avant la purge. **La question reste entière côté prod** : la validation est permanente, le volume n'y a pas été mesuré, et une purge n'y est évidemment pas envisageable. Détail des motifs ci-dessous.
+
+
+La validation `service_partagé_par_adherent_et_agents` fige 7 interventions de la base de dev. Le pendant adhérent (29 lignes) a été réglé en rattachant l'adhérent au service ; pour un **agent**, `agent_must_have_exactly_one_service` interdit ce recours. Quatre issues, toutes avec un coût :
+1. **Retirer l'agent** de l'intervention — on perd la trace de qui a réalisé le travail, et `#383` est `terminé` donc exige au moins un agent (il faudrait lui en réassigner un du bon service).
+2. **Ajouter le service manquant à l'agent** — viole l'invariant « un agent, un service ». À noter : BERNARD André l'enfreint **déjà** (Technique + Prévention), donc la base n'est pas homogène sur ce point non plus.
+3. **Changer le service de l'agent** — casse ses autres interventions, qui deviendraient à leur tour hors règle.
+4. **Changer le service de l'intervention** — écarté par PE le 2026-08-06.
+La même question se posera en **prod** au déploiement : il faut mesurer le volume avant, la validation étant permanente. Voir aussi D8 (même invariant, autre symptôme).

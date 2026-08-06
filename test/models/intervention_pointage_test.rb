@@ -115,7 +115,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
       temps_de_pause: 0,
       workflow_state: 'terminé'
     )
-    i.agents = [users(:john_wick), users(:nettoyage)]
+    i.agents = [users(:électricité), users(:nettoyage)]
     i.save!
 
     assert_in_delta 4.0, i.reload.temps_total, 1e-6
@@ -177,9 +177,12 @@ class InterventionPointageTest < ActiveSupport::TestCase
 
   test 'terminer une intervention sans pause renseignée enregistre une pause à 0' do
     i = interventions(:nouvelle_intervention) # 2 agents
-    # 3 jours en arrière : hors du pointage ouvert de martin (fixture intervention_fille).
+    # Vendredi précédant le lundi de `tonte_locaux` : toujours passé, jamais en
+    # conflit. `3.days.ago` tombait sur ce lundi tous les jeudis, et bond est
+    # agent des deux interventions.
+    veille = (Date.today - 1).beginning_of_week - 3.days
     i.update_columns(temps_de_pause: nil, temps_total: nil,
-                     début: 3.days.ago, fin: 3.days.ago + 3.hours)
+                     début: veille + 8.hours, fin: veille + 11.hours)
 
     i.reload.terminer!
 

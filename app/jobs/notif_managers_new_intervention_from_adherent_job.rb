@@ -4,14 +4,7 @@ class NotifManagersNewInterventionFromAdherentJob < ApplicationJob
   queue_as :default
 
   def perform(intervention, adherent)
-    return unless adherent.services.any?
-
-    manager_ids = []
-    adherent.services.each do |service|
-      manager_ids += service.managers_and_admin.pluck(:id)
-    end
-
-    managers = User.where(id: manager_ids)
+    managers = intervention.service.managers_and_admin
 
     title = "Nouvel intervention d'un adhérent"
 

@@ -12,6 +12,6 @@ module MailLogsHelper
                to_value.to_s.split(',')
              end
 
-    Array(emails).map(&:strip).reject(&:blank?).join(',<br/>').html_safe
+    Array(emails).map { |email| email.to_s.strip }.reject(&:blank?).join(',<br/>').html_safe
   end
 end

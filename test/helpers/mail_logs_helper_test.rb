@@ -38,10 +38,7 @@ class MailLogsHelperTest < ActionView::TestCase
     assert_equal 'a@paris.fr', format_mail_recipients('  a@paris.fr , , ')
   end
 
-  test 'BUG H3 : une liste de nombres ne doit pas faire tomber la page des logs' do
-    skip 'H3 (registre) : mail_logs_helper.rb:15 appelle strip sur le résultat de JSON.parse, qui peut ' \
-         'contenir des entiers (MailLog.to a déjà porté des ID). Correctif : map { |e| e.to_s.strip }.'
-
+  test 'une liste de nombres ne doit pas faire tomber la page des logs' do
     assert_nothing_raised { format_mail_recipients('[1, 2]') }
   end
 

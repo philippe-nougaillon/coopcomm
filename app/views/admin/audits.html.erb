@@ -109,7 +109,7 @@
           </thead>
           <tbody>
             <% if @audits.any? %>
-              <%= render partial: 'audit', collection: @audits.includes(:user) %>
+              <%= render partial: 'audit', collection: grouper_audits(@audits.includes(:user)) %>
             <% else %>
               <tr>
                 <td colspan="4" class="text-left md:text-center py-8 text-slate-400 text-base italic">
