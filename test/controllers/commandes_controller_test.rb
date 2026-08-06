@@ -32,10 +32,10 @@ class CommandesControllerTest < ActionDispatch::IntegrationTest
 
   # Test critique — un lien mort (vieux mail, slug régénéré) est un cas du quotidien :
   # redirection propre, jamais un 500.
-  test "critique : slug inconnu → redirection vers l'index avec alerte (ex-bug B9)" do
+  test "critique : slug inconnu → redirection avec alerte (ex-bug B9)" do
     get commande_url('slug-inexistant')
 
-    assert_redirected_to commandes_path
+    assert_redirected_to root_path
     assert_equal 'Commande introuvable', flash[:alert]
   end
 

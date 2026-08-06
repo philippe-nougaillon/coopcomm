@@ -127,18 +127,22 @@ class DashboardRefreshManagerFlowTest < ApplicationSystemTestCase
     visit dashboard_path
     assert_equal total_avant + 1, kpi('Total Interventions').to_i
 
-    # Vue agent : le temps est réparti entre les deux agents (temps / 2 chacun,
-    # Bond cumulant en plus les 9 h de tonte_locaux).
+    # Vue agent : le temps est réparti entre les deux agents (temps / 2 chacun),
+    # Bond cumulant en plus sa part de tonte_locaux — qu'il partage avec un agent
+    # désactivé, lequel garde la sienne depuis la v03 de la vue.
     tonte = interventions(:tonte_locaux)
+    part_tonte = tonte.temps_total / AgentIntervention.where(intervention_id: tonte.id).count
     assert_in_delta temps / 2.0, DashboardAgentStat.find_by(agent: users(:martin_technique_paris)).temps_total, 0.01
-    assert_in_delta tonte.temps_total + (temps / 2.0), DashboardAgentStat.find_by(agent: users(:bond)).temps_total, 0.01
+    assert_in_delta part_tonte + (temps / 2.0), DashboardAgentStat.find_by(agent: users(:bond)).temps_total, 0.01
   end
 
   test "ajout d'un deuxième agent en modification : la répartition du temps est recalculée" do
     tonte = interventions(:tonte_locaux)
 
-    # Point de départ (anti-faux-positif) : Bond porte seul les 9 h de la fixture.
-    assert_in_delta tonte.temps_total, DashboardAgentStat.find_by(agent: users(:bond)).temps_total, 0.01
+    # Point de départ (anti-faux-positif) : Bond porte sa part de la fixture, qu'il
+    # partage avec un agent désactivé.
+    parts = -> { AgentIntervention.where(intervention_id: tonte.id).count }
+    assert_in_delta tonte.temps_total / parts.call, DashboardAgentStat.find_by(agent: users(:bond)).temps_total, 0.01
 
     visit edit_intervention_url(tonte)
     # dynamic-select ne propose que les services de l'adhérent : pour weil, seul
@@ -151,11 +155,13 @@ class DashboardRefreshManagerFlowTest < ApplicationSystemTestCase
     end
     temps = tonte.reload.temps_total
 
-    # Le dashboard reflète la nouvelle répartition : temps / 2 pour chacun.
+    # Le dashboard reflète la nouvelle répartition, à parts égales entre tous les
+    # agents affectés — l'agent désactivé de la fixture compris.
+    part = temps / parts.call
     visit dashboard_path
     assert_equal "#{temps.round(1)}h", kpi('Temps Cumulé')
-    assert_in_delta temps / 2.0, DashboardAgentStat.find_by(agent: users(:bond)).temps_total, 0.01
-    assert_in_delta temps / 2.0, DashboardAgentStat.find_by(agent: users(:martin_technique_paris)).temps_total, 0.01
+    assert_in_delta part, DashboardAgentStat.find_by(agent: users(:bond)).temps_total, 0.01
+    assert_in_delta part, DashboardAgentStat.find_by(agent: users(:martin_technique_paris)).temps_total, 0.01
   end
 
   test 'une modification sans impact dashboard ne déclenche PAS de refresh' do
@@ -187,9 +193,12 @@ class DashboardRefreshManagerFlowTest < ApplicationSystemTestCase
   end
 
   test "une transition d'état déclenche le refresh et rattrape les données en attente" do
-    iv = interventions(:nouvelle_intervention)
-    iv.update_columns(temps_total: 5) # même marqueur de péremption que ci-dessus
+    # Marqueur de péremption sur tonte_locaux, que le test ne sauvegarde jamais :
+    # le save de la transition recalcule temps_total, un marqueur sur iv ne
+    # survivrait pas.
+    interventions(:tonte_locaux).update_columns(temps_total: 20)
 
+    iv = interventions(:nouvelle_intervention)
     visit intervention_url(iv)
     click_button 'Terminer'
     assert_text 'Intervention terminée'
@@ -197,6 +206,6 @@ class DashboardRefreshManagerFlowTest < ApplicationSystemTestCase
     # workflow_state EST une colonne du dashboard → refresh : le marqueur est
     # rattrapé (le refresh reconstruit la vue depuis TOUTE la base).
     visit dashboard_path
-    assert_equal "#{(interventions(:tonte_locaux).temps_total + 5).round(1)}h", kpi('Temps Cumulé')
+    assert_equal "#{(20 + iv.reload.temps_total).round(1)}h", kpi('Temps Cumulé')
   end
 end

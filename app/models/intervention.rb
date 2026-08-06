@@ -6,7 +6,6 @@ class Intervention < ApplicationRecord
 
   include Workflow
   include WorkflowActiverecord
-  include DashboardRefreshable
   include PieceJointeValidable
   include PieceJointeAuditable
 
@@ -28,7 +27,9 @@ class Intervention < ApplicationRecord
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
 
   has_many :agent_interventions, dependent: :destroy
-  has_many :agents, through: :agent_interventions, class_name: 'User'
+  # dependent: :destroy — sans lui, retirer un agent supprime la jointure en
+  # delete_all, donc sans écrire d'audit (AgentIntervention est audited).
+  has_many :agents, through: :agent_interventions, class_name: 'User', dependent: :destroy
   has_many :tool_interventions, dependent: :destroy
   has_many :tools, through: :tool_interventions
   has_many :mouvements
@@ -111,10 +112,6 @@ class Intervention < ApplicationRecord
   end
 
   after_create :replace_description_with_id
-
-  # Rafraîchit (de façon coalescée) les vues matérialisées du dashboard.
-  after_commit :refresh_dashboard_views, on: %i[create destroy]
-  after_commit :refresh_dashboard_views, on: :update, if: :dashboard_relevant_change?
 
   # after_create_commit :broadcast_to_authorized_viewers
   # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
@@ -379,9 +376,11 @@ class Intervention < ApplicationRecord
 
   def calc_temps_total
     self.temps_total = if fin && début && fin > début
-                         # size et non count : sur un enregistrement neuf, count interroge la base
-                         # avec un owner_id nil et renvoie 0.
-                         ((fin - début).seconds.in_hours - temps_de_pause.to_f) * agents.size
+                         # Les jointures, et non `agents` : ce dernier exclut les agents
+                         # désactivés, dont le temps resterait pourtant à répartir.
+                         # size et non count : sur un enregistrement neuf, count interroge la
+                         # base avec un owner_id nil et renvoie 0.
+                         ((fin - début).seconds.in_hours - temps_de_pause.to_f) * agent_interventions.size
                        else
                          0
                        end

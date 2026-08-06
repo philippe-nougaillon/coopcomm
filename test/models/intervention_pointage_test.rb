@@ -11,17 +11,17 @@ class InterventionPointageTest < ActiveSupport::TestCase
 
   # === Intervention#calc_temps_total (pur calculateur) ====================
   # Contrat : renvoie 0 si une date manque ou si fin <= début ; sinon (fin - début, en
-  # heures) - temps_de_pause, multiplié par le nombre d'agents.
+  # heures) - temps_de_pause, multiplié par le nombre d'agents AFFECTÉS (désactivés compris).
 
-  test 'calc_temps_total : durée simple sans pause, un agent' do
-    i = interventions(:tonte_locaux) # 1 agent (bond)
+  test 'calc_temps_total : durée simple sans pause' do
+    i = interventions(:tonte_locaux) # 2 agents affectés, dont un désactivé
     ref = Time.zone.local(2026, 3, 2, 9, 0, 0)
     i.début = ref
     i.fin = ref + 3.hours
     i.temps_de_pause = 0
 
-    assert_equal 1, i.agents.count, 'préalable : la fixture doit avoir un seul agent'
-    assert_in_delta 3.0, i.calc_temps_total, 1e-6
+    assert_equal 2, i.agent_interventions.size, 'préalable : la fixture doit avoir deux affectations'
+    assert_in_delta 6.0, i.calc_temps_total, 1e-6
   end
 
   test 'calc_temps_total : la pause est soustraite de la durée' do
@@ -31,7 +31,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
     i.fin = ref + 3.hours
     i.temps_de_pause = 0.5
 
-    assert_in_delta 2.5, i.calc_temps_total, 1e-6
+    assert_in_delta 5.0, i.calc_temps_total, 1e-6
   end
 
   test 'calc_temps_total : le temps est multiplié par le nombre d agents' do
@@ -43,6 +43,32 @@ class InterventionPointageTest < ActiveSupport::TestCase
 
     assert_equal 2, i.agents.count, 'préalable : la fixture doit avoir deux agents'
     assert_in_delta 6.0, i.calc_temps_total, 1e-6
+  end
+
+  test 'calc_temps_total : un agent désactivé continue de compter dans le multiplicateur' do
+    i = interventions(:tonte_locaux) # bond + un agent désactivé
+    ref = Time.zone.local(2026, 3, 2, 9, 0, 0)
+    i.début = ref
+    i.fin = ref + 3.hours
+    i.temps_de_pause = 0
+
+    assert_equal 1, i.agents.size, 'préalable : un seul agent actif'
+    assert_equal 2, i.agent_interventions.size, 'préalable : deux agents affectés'
+    assert_in_delta 6.0, i.calc_temps_total, 1e-6
+  end
+
+  test 'désactiver un agent ne réduit pas le temps enregistré à la sauvegarde suivante' do
+    i = interventions(:tonte_locaux)
+    i.update!(début: Time.zone.local(2026, 3, 2, 9, 0), fin: Time.zone.local(2026, 3, 2, 17, 0),
+              temps_de_pause: 0)
+    avant = i.temps_total
+
+    i.agents.first.discard
+
+    assert_no_changes -> { i.reload.temps_total } do
+      i.update!(description: 'modifiée après la désactivation')
+    end
+    assert_in_delta 16.0, avant, 1e-6, 'préalable : 8 h × 2 agents affectés'
   end
 
   test 'calc_temps_total : une fin antérieure au début renvoie 0' do
@@ -99,18 +125,18 @@ class InterventionPointageTest < ActiveSupport::TestCase
     i = interventions(:tonte_locaux)
     i.update!(début: 4.hours.ago, fin: 1.hour.ago, temps_de_pause: 0)
 
-    assert_in_delta 3.0, i.reload.temps_total, 1e-6
+    assert_in_delta 6.0, i.reload.temps_total, 1e-6
 
     i.update!(fin: i.début + 1.hour)
 
-    assert_in_delta 1.0, i.reload.temps_total, 1e-6
+    assert_in_delta 2.0, i.reload.temps_total, 1e-6
   end
 
   test 'la pause est déduite du temps_total persisté' do
     i = interventions(:tonte_locaux)
     i.update!(début: 4.hours.ago, fin: 1.hour.ago, temps_de_pause: 0.5)
 
-    assert_in_delta 2.5, i.reload.temps_total, 1e-6
+    assert_in_delta 5.0, i.reload.temps_total, 1e-6
   end
 
   # === temps_de_pause : renseigné à la terminaison, et à elle seule =======

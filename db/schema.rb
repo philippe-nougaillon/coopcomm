@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_24_103818) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_05_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -675,13 +675,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_24_103818) do
       agent_interventions.agent_id,
       COALESCE(sum((interventions.temps_total / (nb_agents.cnt)::numeric)), (0)::numeric) AS temps_total
      FROM ((((agent_interventions
-       JOIN users ON (((users.id = agent_interventions.agent_id) AND (users.discarded_at IS NULL))))
+       JOIN users ON ((users.id = agent_interventions.agent_id)))
        JOIN interventions ON ((interventions.id = agent_interventions.intervention_id)))
        JOIN services ON ((services.id = interventions.service_id)))
        JOIN ( SELECT ai.intervention_id,
               count(*) AS cnt
              FROM (agent_interventions ai
-               JOIN users u ON (((u.id = ai.agent_id) AND (u.discarded_at IS NULL))))
+               JOIN users u ON ((u.id = ai.agent_id)))
             GROUP BY ai.intervention_id) nb_agents ON ((nb_agents.intervention_id = agent_interventions.intervention_id)))
     GROUP BY services.organisation_id, agent_interventions.agent_id;
   SQL
@@ -702,4 +702,25 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_24_103818) do
   SQL
   add_index "dashboard_intervention_stats", ["organisation_id", "service_id", "adherent_id", "mois", "workflow_state"], name: "idx_dashboard_intervention_stats_unique", unique: true
 
+
+  create_function :refresh_dashboard_views, sql_definition: <<-'SQL'
+      CREATE OR REPLACE FUNCTION public.refresh_dashboard_views()
+       RETURNS trigger
+       LANGUAGE plpgsql
+      AS $function$
+      BEGIN
+        REFRESH MATERIALIZED VIEW dashboard_intervention_stats;
+        REFRESH MATERIALIZED VIEW dashboard_agent_stats;
+        RETURN NULL;
+      END;
+      $function$
+  SQL
+
+  create_trigger :agent_interventions_refresh_dashboard, sql_definition: <<-SQL
+      CREATE TRIGGER agent_interventions_refresh_dashboard AFTER INSERT OR DELETE OR UPDATE OF agent_id, intervention_id ON public.agent_interventions FOR EACH STATEMENT EXECUTE FUNCTION refresh_dashboard_views()
+  SQL
+
+  create_trigger :interventions_refresh_dashboard, sql_definition: <<-SQL
+      CREATE TRIGGER interventions_refresh_dashboard AFTER INSERT OR DELETE OR UPDATE OF workflow_state, temps_total, co2, service_id, adherent_id, "début" ON public.interventions FOR EACH STATEMENT EXECUTE FUNCTION refresh_dashboard_views()
+  SQL
 end
