@@ -40,6 +40,30 @@ module InterventionsHelper
   end
 
 
+  # --- Boutons de workflow ---
+
+  STYLES_LISTE = {
+    terminer: 'z-10 btn btn-primary border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!',
+    valider: 'z-10 btn btn-success border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!',
+    refuser: 'z-10 btn btn-error border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!'
+  }.freeze
+
+  TITRES_LISTE = {
+    terminer_modal: "Terminer l'intervention",
+    terminer: "Cliquez pour passer cette intervention en statut 'Terminé'",
+    valider: "Cliquez pour passer cette intervention en statut 'Validé'",
+    refuser: "Cliquez pour passer cette intervention en statut 'Refusé'"
+  }.freeze
+
+  # Vrai si au moins un bouton de transition sera rendu, la page d'une
+  # intervention masquant — contrairement à la liste — ce qui n'est pas
+  # déclenchable.
+  def actions_workflow_disponibles?(intervention)
+    (policy(intervention).terminer? && intervention.can_terminer?) ||
+      (policy(intervention).valider? && intervention.can_valider?) ||
+      (policy(intervention).refuser? && intervention.can_refuser?)
+  end
+
   # --- Trajet ---
 
   def trajet_affichable?(intervention)
@@ -60,17 +84,21 @@ module InterventionsHelper
     intervention.trajet.presence || routes_response&.dig('routes_info').presence
   end
 
-  # --- Compte-rendu ---
-
+  # Le compte-rendu est saisissable une fois l'intervention réalisée, ou par
+  # anticipation quand on vient du bouton « Terminer ». Il dépend donc de la
+  # requête en cours, ce qui le distingue des prédicats de la policy.
+  #
+  # Défini par EXCLUSION : un état ajouté au workflow aura le compte-rendu par
+  # défaut, comme `terminé`, `validé`, `refusé` et `archivé`.
   ETATS_SANS_COMPTE_RENDU = [Intervention::NOUVEAU, Intervention::POINTAGE_ACTIVE].freeze
 
-  def peut_voir_compte_rendu?(intervention, user)
-    return false unless user.adhérent? || user.manager_or_admin?
+  def saisir_compte_rendu?(intervention, terminaison_demandee)
+    return false if intervention.repeter? || current_user.agent?
 
-    ETATS_SANS_COMPTE_RENDU.exclude?(intervention.workflow_state)
+    # `current_state` et non `workflow_state` : la colonne est nil sur une
+    # intervention neuve, et nil ne figure dans aucune liste d'exclusion.
+    ETATS_SANS_COMPTE_RENDU.exclude?(intervention.current_state.to_s) ||
+      (intervention.nouveau? && terminaison_demandee)
   end
 
-  def compte_rendu_est_avis?(intervention, user)
-    (intervention.validé? || intervention.refusé?) && !user.agent?
-  end
 end

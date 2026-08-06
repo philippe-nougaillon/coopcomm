@@ -1,0 +1,67 @@
+<%# locals: (intervention:, styles:, titres: {}, classe_form: nil, valider_toujours_visible: false) %>
+<%#
+  Boutons de transition du workflow, partagés par la liste, la page d'une
+  intervention et l'accueil. Chaque page fournit ses propres classes.
+
+  `valider_toujours_visible` reproduit la différence historique entre la liste,
+  qui rend Valider et Refuser DÉSACTIVÉS quand la transition est impossible, et
+  les autres pages, qui les masquent.
+%>
+
+<% if policy(intervention).terminer? && intervention.can_terminer? %>
+  <% lien, methode, params_terminer = terminer_destination(intervention) %>
+  <% msg = message_terminaison_incomplete(intervention) %>
+  <% if msg.present? %>
+    <button type="button"
+            class="<%= styles[:terminer_modal] || styles[:terminer] %>"
+            onclick="<%= js_ouvrir_modal_terminer(intervention) %>"
+            title="<%= titres[:terminer_modal] || titres[:terminer] %>">
+      Terminer
+    </button>
+    <dialog id="<%= modal_id_terminer(intervention) %>" class="modal">
+      <div class="modal-box">
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 class="text-lg font-bold text-amber-600 flex items-center gap-2">
+          <%= embedded_svg "icons/warning.svg", title: "Informations manquantes" %>
+          Informations manquantes
+        </h3>
+        <p class="py-4 text-sm text-slate-600 text-left">
+          <%= msg %>
+          Vous allez être redirigé(e) vers le formulaire de modification pour les renseigner.
+        </p>
+        <div class="modal-action">
+          <form method="dialog">
+            <button class="btn btn-ghost">Annuler</button>
+          </form>
+          <%= button_to "Continuer vers le formulaire", lien, method: methode, params: params_terminer, class: "btn btn-info text-white" %>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>Fermer</button>
+      </form>
+    </dialog>
+  <% else %>
+    <%= button_to 'Terminer', lien, method: methode, params: params_terminer,
+                  class: styles[:terminer],
+                  title: titres[:terminer],
+                  form: { data: { turbo: false }, class: classe_form } %>
+  <% end %>
+<% end %>
+
+<% if policy(intervention).valider? && (valider_toujours_visible || intervention.can_valider?) %>
+  <%= button_to 'Valider', valider_intervention_path(intervention),
+                class: styles[:valider],
+                title: titres[:valider],
+                form: { data: { turbo: false }, class: classe_form },
+                disabled: !intervention.can_valider? %>
+<% end %>
+
+<% if policy(intervention).refuser? && (valider_toujours_visible || intervention.can_refuser?) %>
+  <%= button_to 'Refuser', refuser_intervention_path(intervention),
+                class: styles[:refuser],
+                title: titres[:refuser],
+                form: { data: { turbo: false }, class: classe_form },
+                disabled: !intervention.can_refuser? %>
+<% end %>

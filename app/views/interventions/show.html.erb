@@ -23,8 +23,8 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <% if @intervention.repeter && !current_user&.agent? %>
-          <%= link_to intervention_path(format: :pdf), class: "btn btn-ghost bg-amber-50 text-amber-700 hover:bg-amber-100 border-none font-medium gap-2", title: "Voir le QRCode de pointage" do %>
+        <% if policy(@intervention).voir_qrcode_pointage? %>
+          <%= link_to intervention_path(@intervention, format: :pdf), class: "btn btn-ghost bg-amber-50 text-amber-700 hover:bg-amber-100 border-none font-medium gap-2", title: "Voir le QRCode de pointage" do %>
             <%= embedded_svg "icons/qr_code_2.svg", class: "w-5 h-5 fill-current" %>
             <span>QR Code</span>
           <% end %>
@@ -39,23 +39,23 @@
     </div>
 
     <%# --- DEMANDE + ASSIGNATION --- %>
-    <div class="grid grid-cols-1 <%= current_user.adhérent? ? '' : 'lg:grid-cols-2 gap-8' %> mb-10">
+    <div class="grid grid-cols-1 <%= policy(@intervention).voir_assignation? ? 'lg:grid-cols-2 gap-8' : '' %> mb-10">
       <%= render "interventions/show/demande", intervention: @intervention %>
-      <% unless current_user.adhérent? %>
+      <% if policy(@intervention).voir_assignation? %>
         <%= render "interventions/show/assignation", intervention: @intervention %>
       <% end %>
     </div>
 
     <%# --- POINTAGES / INTERVENTION / COMPTE-RENDU --- %>
-    <% unless current_user.adhérent? %>
-      <% if @intervention.repeter %>
-        <%= render "interventions/show/pointages_table", intervention: @intervention, pointages: @pointages %>
-      <% else %>
-        <%= render "interventions/show/intervention_details", intervention: @intervention, routes_response: @routes_response %>
-      <% end %>
+    <% if policy(@intervention).voir_pointages? %>
+      <%= render "interventions/show/pointages_table", intervention: @intervention, pointages: @pointages %>
     <% end %>
 
-    <% if current_user.adhérent? || current_user.manager_or_admin? %>
+    <% if policy(@intervention).voir_realisation? %>
+      <%= render "interventions/show/intervention_details", intervention: @intervention, routes_response: @routes_response %>
+    <% end %>
+
+    <% if policy(@intervention).voir_compte_rendu? %>
       <%= render "interventions/show/compte_rendu", intervention: @intervention %>
     <% end %>
 
@@ -64,7 +64,7 @@
     <% end %>
 
     <%# --- ACTIVITÉ --- %>
-    <% if current_user.manager_or_admin? %>
+    <% if policy(@intervention).voir_activite? %>
       <%= render "interventions/show/activite", audits: @audits, pagy: @pagy %>
     <% end %>
 

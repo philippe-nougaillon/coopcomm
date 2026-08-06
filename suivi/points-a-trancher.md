@@ -80,3 +80,20 @@
 |---|---|---|
 | D2 — Fusionner la branche `dashboard-scenic` (vues matérialisées Scenic) dans `staging` ? | **Fusionnée** — constaté le 2026-07-31 : `origin/dashboard-scenic` (`11ddebfe`) est un ancêtre de `staging`, `db/views/` et les modèles `DashboardAgentStat`/`DashboardInterventionStat` y sont, `dashboard_data.rb` a disparu (commit `0fb76419 #297`). Conséquences : **B12 corrigé** sur staging, et **B13 n'est plus un bug de branche mais un bug de staging** (le filtre `temps_total >= 0` opère sur les cellules pré-agrégées). | ≤ 2026-07-31 |
 | D4 — Notifier quelqu'un quand un adhérent refuse une cotation ? | **Non, personne pour l'instant** (décision équipe rapportée par PE) ; à revoir plus tard. Le correctif reste noté si ça change : job `NotifCotationRefuseeJob` miroir de `NotifCotationSigneeJob` (créateur via l'audit `create`), branché sur le bloc de `transition!` de `cotations_controller#refuser`. | 2026-07-13 |
+
+### D9 — Incohérences de visibilité entre la liste et la page d'une intervention (signalées le 2026-08-05, aucune corrigée)
+Toutes sont **figées par les matrices de caractérisation** : elles ne peuvent plus bouger par accident, mais elles ne sont pas résolues.
+
+1. **L'adhérent voit 9 données dans la liste que la page détaillée lui cache** : agents, matériel, mots clés, début/fin réels, temps passé, temps total, pause, commentaires, photos. La page ne lui montre que la demande. C'est l'incohérence signalée par PE, en réalité bien plus large que le seul « temps passé ». **À trancher : quelle est la bonne visibilité pour l'adhérent ?** (aligner la page sur la liste, ou l'inverse).
+2. **Boutons désactivés contre boutons masqués** : la liste rend « Valider » et « Refuser » **désactivés** quand la transition est impossible ; la page détaillée et l'accueil les **masquent**. Deux réponses différentes à la même question.
+3. **Aucun bouton « Archiver » nulle part** dans l'application, alors que l'action, la route, la policy et les tests existent. L'archivage n'est atteignable qu'en forgeant une requête. Fonctionnalité oubliée, ou à retirer ?
+4. **Aucun verrou d'édition par état** : une intervention `archivé` reste modifiable par le manager, l'administrateur, l'agent affecté et l'adhérent, et supprimable par le manager et l'administrateur. Est-ce voulu ?
+5. **`InterventionPolicy` ignore le service du manager** : un manager a exactement les mêmes droits sur une intervention d'un service dont il n'est **pas** membre que sur les siennes — alors qu'`ApplicationPolicy#manage?` fait la distinction et que `UserPolicy` l'a explicitement introduite (B61). Volontaire pour les interventions ?
+6. **L'adhérent peut télécharger le PDF de l'affiche QR code de pointage** (`can_see_qrcode_pointage_pdf?` = `show? && !agent?`), et le bouton lui est proposé sur un modèle de pointage. Utile, ou fuite d'un outil interne ?
+
+### D10 — Fusion des deux formulaires d'intervention
+Le découpage du 2026-08-05 a ramené `_form` à 83 lignes d'ossature et `_form_for_agents` à 172, tous deux consommant les mêmes blocs. Il ne reste que **trois** différences réelles, toutes visibles en tête de `_form_for_agents` :
+- pas de champ description, et le service est figé sur `current_user.services.first` ;
+- l'adhérent n'est modifiable que sur un bon saisi par un agent (`bon?` et hors pointage) ;
+- les dates réelles sont **toujours** obligatoires et disposées côte à côte, là où l'autre formulaire ne les exige qu'à la terminaison.
+Les deux premières s'expriment déjà par des prédicats de policy (`saisir_description?`, `choisir_service?`, `choisir_adherent?`). **À trancher : fusionne-t-on ?** Le gain serait un seul formulaire ; le coût, une troisième condition sur la disposition et l'obligation des dates.

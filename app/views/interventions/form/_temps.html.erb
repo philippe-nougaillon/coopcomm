@@ -1,0 +1,33 @@
+<%# locals: (form:, intervention:, pause_obligatoire:) %>
+<%# « Agent » et « Total » sont calculés par le contrôleur Stimulus
+    calc-temps-passe, puis recalculés côté modèle à l'enregistrement. %>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+  <div>
+    <label class="label font-semibold text-slate-600 text-xs uppercase tracking-wider p-0 mb-1">
+      Pause (h) <%= raw('<span class="text-red-500">*</span>') if pause_obligatoire %>
+    </label>
+    <%= form.select :temps_de_pause,
+                    options_for_select([0.0, 0.5, 1.0].map { |v| [v.to_s.tr('.', ','), v] }, intervention.temps_de_pause),
+                    { include_blank: true },
+                    class: "select select-bordered select-sm w-full h-10 focus:input-primary #{pause_obligatoire && intervention.temps_de_pause.blank? ? 'bg-amber-50 border-amber-300' : 'bg-white'}",
+                    required: pause_obligatoire,
+                    data: { 'calc-temps-passe-target': 'pause', action: "change->calc-temps-passe#calc" } %>
+  </div>
+
+  <div>
+    <label for="temps_par_agent" class="label font-semibold text-slate-600 text-xs uppercase tracking-wider p-0 mb-1">Agent (h)</label>
+    <input type="number"
+           id="temps_par_agent"
+           readonly
+           class="input input-bordered w-full focus:input-primary h-10 font-bold text-slate-500 bg-slate-200/60 border-transparent text-center"
+           data-calc-temps-passe-target="tempsParAgent">
+  </div>
+
+  <div>
+    <label class="label font-semibold text-slate-600 text-xs uppercase tracking-wider p-0 mb-1">Total (h)</label>
+    <%= form.number_field :temps_total,
+                          readonly: true,
+                          class: "input input-bordered w-full focus:input-primary h-10 font-black text-slate-700 bg-slate-200/60 border-transparent text-center",
+                          data: { 'calc-temps-passe-target': 'temps' } %>
+  </div>
+</div>

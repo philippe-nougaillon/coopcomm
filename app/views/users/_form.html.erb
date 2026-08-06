@@ -132,7 +132,7 @@
                placeholder: "Glissez une photo de profil ici ou cliquez pour parcourir",
                label: "Photo de profil" %>
     <div class="flex gap-2 mt-4 w-full">
-      <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>
+      <%= button_tag "Annuler", type: "button", onclick: "history.back();", class: "btn flex-1" %>
       <%= form.submit "Enregistrer", id: "enregistrer_utilisateur", class: "btn btn-primary flex-1" %>
     </div>
   <% end %>

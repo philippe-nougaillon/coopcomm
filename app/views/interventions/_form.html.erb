@@ -1,15 +1,34 @@
-<%= form_with(model: intervention, url: (create_intervention_modele_pointage_interventions_path if @intervention.repeter && @intervention.new_record?), class: "max-w-5xl mx-auto space-y-8 pb-12",
-              data: (current_user.adhérent? ? {} : {
-                controller: ([(@intervention.repeter ? nil : "verification-disponibilites"), "dynamic-select"].compact.join(" ")),
-                verification_disponibilites_intervention_id_value: (@intervention.id if @intervention.persisted?),
-                dynamic_select_url_value: services_for_adherent_interventions_path,
-                dynamic_select_agents_url_value: agents_for_service_interventions_path
-              })
-    ) do |form| %>
+<%#
+  Formulaire d'intervention pour les adhérents, les managers et les
+  administrateurs — les agents ont le leur (`_form_for_agents`).
+  Chaque bloc est un partial, et sa présence est décidée par InterventionPolicy.
+%>
+<% terminaison_demandee = params[:terminer].present? %>
+<%
+  controleurs = []
+  controleurs << "verification-disponibilites" if policy(intervention).verifier_disponibilites?
+  controleurs << "dynamic-select" if policy(intervention).cascade_services?
 
-  <%= hidden_field_tag :terminer, 1 if params[:terminer].present? %>
+  donnees_form = {}
+  if controleurs.any?
+    donnees_form[:controller] = controleurs.join(" ")
+    donnees_form[:verification_disponibilites_intervention_id_value] = intervention.id if intervention.persisted?
+    if policy(intervention).cascade_services?
+      donnees_form[:dynamic_select_url_value] = services_for_adherent_interventions_path
+      donnees_form[:dynamic_select_agents_url_value] = agents_for_service_interventions_path
+    end
+  end
+%>
 
-  <% if params[:terminer].present? %>
+<%= form_with(model: intervention,
+              url: (create_intervention_modele_pointage_interventions_path if intervention.repeter && intervention.new_record?),
+              class: "max-w-5xl mx-auto space-y-8 pb-12",
+              data: donnees_form) do |form| %>
+
+  <%# Transmis par un champ caché : un formulaire GET perd la query string de son action. %>
+  <%= hidden_field_tag :terminer, 1 if terminaison_demandee %>
+
+  <% if terminaison_demandee %>
     <div class="alert bg-sky-50 border border-sky-200 text-sky-800 rounded-xl p-4 flex items-start gap-3">
       <%= embedded_svg "icons/info.svg", class: "w-5 h-5 shrink-0 mt-0.5" rescue nil %>
       <div>
@@ -19,344 +38,42 @@
     </div>
   <% end %>
 
-  <% if intervention.errors.any? %>
-    <div id="error_explanation" class="alert alert-error bg-red-50 border border-red-200 text-error-content rounded-xl p-4 mb-6 shadow-sm">
-      <div class="flex flex-col gap-1">
-        <h2 class="font-black text-red-700 flex items-center gap-2">
-          <%= embedded_svg "icons/warning.svg", class: "w-5 h-5 text-red-600" %>
-          <%= pluralize(intervention.errors.count, "erreur") %> empêche(nt) cette intervention d'être sauvegardée :
-        </h2>
-        <ul class="list-disc list-inside text-sm text-red-600 pl-2">
-          <% intervention.errors.each do |error| %>
-            <li><%= error.full_message %></li>
-          <% end %>
-        </ul>
-      </div>
-    </div>
-  <% end %>
+  <%= render "interventions/form/erreurs", intervention: intervention %>
 
-  <div class="<%= @intervention.repeter ? 'grid grid-cols-1 gap-6 items-start' : 'space-y-8' %>">
+  <div class="<%= intervention.repeter ? 'grid grid-cols-1 gap-6 items-start' : 'space-y-8' %>">
 
-    <!-- DEMANDE -->
-    <section class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6 <%= 'h-full' if @intervention.repeter %>">
-      <div class="border-b border-slate-100 pb-3 flex items-center gap-2">
-        <span class="w-2 h-6 bg-[#40b3db] rounded-full"></span>
-        <h2 class="text-xl text-slate-800 font-black tracking-tight uppercase">Demande</h2>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="col-span-1 md:col-span-2">
-          <%= form.label :description, class: "label font-semibold text-slate-700" %>
-          <%= form.text_field :description, class: "input input-bordered w-full focus:input-primary" %>
-        </div>
-
-        <% if current_user.adhérent? %>
-          <%= form.hidden_field :adherent_id, value: current_user.id %>
-        <% else %>
-          <div>
-            <%= form.label :adherent_id, class: "label font-semibold text-slate-700" do %>
-              <span>Adhérent <span class="text-red-500">*</span></span>
-            <% end %>
-            <%= form.select :adherent_id,
-                            options_from_collection_for_select(@adhérents, :id, :nom_prénom, intervention.adherent_id),
-                            { include_blank: true, required: true },
-                            class: "slim-select w-full h-10",
-                            data: {
-                              dynamic_select_target: "adherent",
-                              action: "change->dynamic-select#updateServices"
-                            } %>
-          </div>
-        <% end %>
-
-        <div class="<%= 'col-span-1 md:col-span-2' if current_user.adhérent? %>">
-          <%= form.label :service_id, class: "label font-semibold text-slate-700" do %>
-            <span>Service <span class="text-red-500">*</span></span>
-          <% end %>
-          <%= form.select :service_id,
-                          options_from_collection_for_select(@services, :id, :nom, intervention.service_id),
-                          { include_blank: true, required: true },
-                          class: "slim-select w-full h-10",
-                          data: {
-                            dynamic_select_target: "service",
-                            action: "change->dynamic-select#updateAgents"
-                          } %>
-        </div>
-      </div>
-
-      <% if !@intervention.repeter %>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-dashed border-slate-100" <%= "data-controller=\"meteo-intervention\" data-action=\"change->verification-disponibilites#verificationWithInput\"".html_safe if !@intervention.passed %>>
-          
-          <div data-action="change->verification-disponibilites#verificationWithInput" class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:col-span-1">
-            <div data-action='change->meteo-intervention#afficher_meteo' class="col-span-1 sm:col-span-2">
-              <%= form.label :début_prévue, class: "label font-semibold text-slate-700" %>
-              <div class="flex items-center gap-2 p-2 rounded-lg border border-slate-200">
-                <%= form.date_field :début_prévue,
-                                    class: "flex-1 bg-transparent border-none outline-hidden text-sm",
-                                    value: (params[:début_prévue].try(:to_date) || @intervention.début_prévue&.to_date),
-                                    data: {
-                                      'verification-disponibilites-target': "debut_prevue",
-                                      'meteo-intervention-target': "debut_prevue"
-                                    } %>
-                <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs">
-                  <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, { selected: params[:début_prévue_hour] || @intervention.début_prévue&.hour || @intervention.début_prévue_hour }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer", data: { 'verification-disponibilites-target': "debut_prevue_hour", 'meteo-intervention-target': "debut_prevue_hour" } %>
-                  <span class="text-slate-400 font-bold">:</span>
-                  <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, { selected: params[:début_prévue_minute] || @intervention.début_prévue&.min || @intervention.début_prévue_minute }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer", data: { 'verification-disponibilites-target': "debut_prevue_minute" } %>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-span-1 sm:col-span-2">
-              <%= form.label :fin_prévue, class: "label font-semibold text-slate-700" %>
-              <div class="flex items-center gap-2 p-2 rounded-lg border border-slate-200">
-                <%= form.date_field :fin_prévue,
-                                    value: (params[:début_prévue].try(:to_date) || @intervention.fin_prévue&.to_date),
-                                    class: "flex-1 bg-transparent border-none outline-hidden text-sm",
-                                    data: { 'verification-disponibilites-target': "fin_prevue" } %>
-                <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs">
-                  <%= form.select :fin_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, { selected: params[:fin_prévue_hour] || @intervention.fin_prévue&.hour  || @intervention.fin_prévue_hour }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer", data: { 'verification-disponibilites-target': "fin_prevue_hour" } %>
-                  <span class="text-slate-400 font-bold">:</span>
-                  <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, { selected: params[:fin_prévue_minute] || @intervention.fin_prévue&.min || @intervention.fin_prévue_minute }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer", data: { 'verification-disponibilites-target': "fin_prevue_minute" } %>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="flex flex-col justify-between">
-            <div>
-              <%= form.label :meteo, "Prévision météo", class: "label font-semibold text-slate-700" %>
-              <div class="relative flex items-center">
-                <%= form.text_field :meteo, 
-                                    class: "input input-bordered w-full bg-slate-50 border-slate-200 text-slate-500 pl-10 font-medium", 
-                                    readonly: true,
-                                    disabled: @intervention.passed || current_user.adhérent?,
-                                    data: { 'meteo-intervention-target': "prévisionMétéo" } %>
-                <div class="absolute left-3 text-slate-400">
-                  <%= embedded_svg "icons/cloud.svg", class: "w-5 h-5 fill-current" rescue nil %>
-                </div>
-              </div>
-              <p class="text-xs text-slate-400 mt-1.5">Généré automatiquement selon les dates choisies.</p>
-            </div>
-          </div>
-
-        </div>
-      <% end %>
+    <section class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6 <%= 'h-full' if intervention.repeter %>">
+      <%= render "interventions/form/demande", form: form, intervention: intervention %>
     </section>
 
-    <% if !current_user.adhérent? %>
-      <!-- ASSIGNATION -->
-      <section data-controller="calc-temps-passe" class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6 <%= 'h-full' if @intervention.repeter %>">
-        <div class="border-b border-slate-100 pb-3 flex items-center gap-2">
-          <span class="w-2 h-6 bg-[#681b98] rounded-full"></span>
-          <h2 class="text-xl text-slate-800 font-black tracking-tight uppercase">Assignation</h2>
-        </div>
+    <% if policy(intervention).saisir_assignation? %>
+      <section data-controller="calc-temps-passe" class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6 <%= 'h-full' if intervention.repeter %>">
+        <%= render "interventions/form/assignation", form: form, intervention: intervention,
+                   terminaison_demandee: terminaison_demandee %>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div data-verification-disponibilites-target="formAgents">
-            <% agents_obligatoires = params[:terminer].present? || intervention.terminé? %>
-            <%= form.label :agent_ids, class: "label font-semibold text-slate-700" do %>
-              Agents <%= raw('<span class="text-red-500">*</span>') if agents_obligatoires %>
-            <% end %>
-            <%= form.select :agent_ids,
-                            options_for_select(@agents, selected: intervention.agent_ids),
-                            {},
-                            class: "w-full h-10 #{'rounded-lg border border-amber-300 bg-amber-50' if agents_obligatoires && intervention.agents.empty?}", multiple: true,
-                            data: {
-                              controller: 'slim-select',
-                              'calc-temps-passe-target': 'agents',
-                              action: "change->calc-temps-passe#calc",
-                              'verification-disponibilites-target': "agents",
-                              'dynamic-select-target': "agents"
-                            } %>
-          </div>
-
-          <div data-verification-disponibilites-target="formTools">
-            <%= form.label :tool_ids, "Matériel(s)", class: "label font-semibold text-slate-700" %>
-            <%= form.select :tool_ids,
-                            options_from_collection_for_select(@tools, 'id', 'name', intervention.tool_ids.presence || params[:tool_ids]),
-                            {},
-                            class: "slim-select w-full h-10", multiple: true,
-                            'data-verification-disponibilites-target': "tools" %>
-          </div>
-
-          <div class="col-span-1 md:col-span-2">
-            <% if current_user.manager_or_admin? %>
-              <%= form.label :tags_manager, "Mots clés", class: "label font-semibold text-slate-700" %>
-              <%
-                est_soumission = params[form.object_name].present?
-                tags_soumis = est_soumission ? Array(params.dig(form.object_name, :tags_manager)).reject(&:blank?) : intervention.tags.map(&:name)
-                options_manager = (@intervention_tags.map(&:name) + tags_soumis).uniq
-              %>
-              <%= form.select :tags_manager, options_for_select(options_manager, tags_soumis), {}, multiple: true, class: 'slim-select w-full h-10' %>
-            <% else %>
-              <%= form.label :tags_intervenant, "Mots clés", class: "label font-semibold text-slate-700" %>
-              <%
-                est_soumission = params[form.object_name].present?
-                tags_soumis = est_soumission ? Array(params.dig(form.object_name, :tags_intervenant)).reject(&:blank?) : intervention.tags.map(&:name)
-                options_tags = (@intervention_tags.map(&:name) + tags_soumis).uniq
-              %>
-              <%= form.select :tags_intervenant, options_for_select(options_tags, tags_soumis), {}, { multiple: true, class: 'slim-select w-full h-10' } %>
-            <% end %>
-          </div>
-        </div>
-
-        <% if !@intervention.repeter %>
-          <div class="pt-6 border-t border-slate-100 space-y-6">
-            <h3 class="text-md font-bold text-slate-700 uppercase tracking-wider">Réalisation de l'intervention</h3>
-
-            <div>
-              <%= form.label :début, class: "label font-semibold text-slate-700" do %>
-                Début <%= raw('<span class="text-red-500">*</span>') if params[:terminer].present? %>
-              <% end %>
-              <div class="flex items-center gap-2 <%= params[:terminer].present? && intervention.début.blank? ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200' %> p-2 rounded-lg border">
-                <%= form.date_field :début,
-                                    class: "flex-1 bg-transparent border-none outline-hidden text-sm",
-                                    value: (params[:début].try(:to_date) || @intervention.début&.to_date),
-                                    required: params[:terminer].present?,
-                                    data: { 'calc-temps-passe-target': 'debut_date', 'verification-disponibilites-target': 'debut', action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" } %>
-                <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs">
-                  <%= form.select :début_hour, (0..23).map { |h| [format('%02d', h), h] }, {selected: params[:début_hour] || @intervention.début&.hour }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer", data: { 'calc-temps-passe-target': 'debut_hour', 'verification-disponibilites-target': 'debut_hour', action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" } %>
-                  <span class="text-slate-400 font-bold">:</span>
-                  <%= form.select :début_minute, (0..59).map { |m| [format('%02d', m), m] }, {selected: params[:début_minute] ||@intervention.début&.min }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer", data: { 'calc-temps-passe-target': 'debut_minute', 'verification-disponibilites-target': 'debut_minute', action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" } %>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <%= form.label :fin, class: "label font-semibold text-slate-700" do %>
-                Fin <%= raw('<span class="text-red-500">*</span>') if params[:terminer].present? %>
-              <% end %>
-              <div class="flex items-center gap-2 <%= params[:terminer].present? && intervention.fin.blank? ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200' %> p-2 rounded-lg border">
-                <%= form.date_field :fin, class: "flex-1 bg-transparent border-none outline-hidden text-sm", value: (params[:fin].try(:to_date) || @intervention.fin&.to_date), required: params[:terminer].present?, data: { 'calc-temps-passe-target': 'fin_date', 'verification-disponibilites-target': 'fin', action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" } %>
-                <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs">
-                  <%= form.select :fin_hour, (0..23).map { |h| [format('%02d', h), h] }, {selected: params[:fin_hour] || @intervention.fin&.hour }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer", data: { 'calc-temps-passe-target': 'fin_hour', 'verification-disponibilites-target': 'fin_hour', action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" } %>
-                  <span class="text-slate-400 font-bold">:</span>
-                  <%= form.select :fin_minute, (0..59).map { |m| [format('%02d', m), m] }, {selected: params[:fin_minute] || @intervention.fin&.min }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer", data: { 'calc-temps-passe-target': 'fin_minute', 'verification-disponibilites-target': 'fin_minute', action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" } %>
-                </div>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200/80">
-              <% pause_obligatoire = params[:terminer].present? || intervention.terminé? %>
-              <div>
-                <label class="label font-semibold text-slate-600 text-xs uppercase tracking-wider p-0 mb-1">
-                  Pause (h) <%= raw('<span class="text-red-500">*</span>') if pause_obligatoire %>
-                </label>
-                <%= form.select :temps_de_pause,
-                                options_for_select([0.0, 0.5, 1.0].map { |v| [v.to_s.tr('.', ','), v] }, intervention.temps_de_pause),
-                                { include_blank: true },
-                                class: "select select-bordered select-sm w-full h-10 focus:input-primary #{pause_obligatoire && intervention.temps_de_pause.blank? ? 'bg-amber-50 border-amber-300' : 'bg-white'}",
-                                required: pause_obligatoire,
-                                data: { 'calc-temps-passe-target': 'pause', action: "change->calc-temps-passe#calc" } %>
-              </div>
-
-              <div>
-                <label for="temps_par_agent" class="label font-semibold text-slate-600 text-xs uppercase tracking-wider p-0 mb-1">Agent (h)</label>
-                <input type="number" 
-                       id="temps_par_agent" 
-                       readonly 
-                       class="input input-bordered w-full focus:input-primary h-10 font-bold text-slate-500 bg-slate-200/60 border-transparent text-center" 
-                       data-calc-temps-passe-target="tempsParAgent">
-              </div>
-
-              <div>
-                <label class="label font-semibold text-slate-600 text-xs uppercase tracking-wider p-0 mb-1">Total (h)</label>
-                <%= form.number_field :temps_total, 
-                                      readonly: true, 
-                                      class: "input input-bordered w-full focus:input-primary h-10 font-black text-slate-700 bg-slate-200/60 border-transparent text-center", 
-                                      data: { 'calc-temps-passe-target': 'temps' } %>
-              </div>
-            </div>
-          </div>
+        <% if policy(intervention).saisir_realisation? %>
+          <%= render "interventions/form/realisation", form: form, intervention: intervention,
+                     terminaison_demandee: terminaison_demandee %>
         <% end %>
-      </section>
-
-      <!-- COMMENTAIRES ET PHOTOS -->
-      <section class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6">
-        <div class="border-b border-slate-100 pb-3 flex items-center gap-2">
-          <span class="w-2 h-6 bg-amber-500 rounded-full"></span>
-          <h2 class="text-xl text-slate-800 font-black tracking-tight uppercase">Commentaires et Photos</h2>
-        </div>
-
-        <div class="w-full h-full">
-          <%= form.label :commentaires, class: "label font-semibold text-slate-700" %>
-          <%= form.text_area :commentaires, 
-                             class: "textarea textarea-bordered w-full text-sm focus:textarea-primary", 
-                             rows: 4, 
-                             placeholder: "Saisissez vos remarques ou détails d'intervention..." %>
-        </div>
-
-        <div class="col-span-1 md:col-span-2 pt-2">
-          <% intervention.photos.each do |photo| %>
-            <% unless photo.new_record? %>
-              <%= form.hidden_field :photos, multiple: true, value: photo.signed_id %>
-            <% end %>
-          <% end %>
-          <%= render "shared/file_dropzone", 
-                     form: form, 
-                     attribute: :photos,
-                     placeholder: "Glissez les photos de l'intervention ici ou cliquez pour parcourir",
-                     label: "Photos de l'intervention",
-                     replace_hint: false %>
-        </div>
       </section>
     <% end %>
 
-    <!-- COMPTE-RENDU -->
-  <% etats_avec_compte_rendu = %w[terminé validé refusé] %>
+    <% if policy(intervention).saisir_commentaires? %>
+      <%= render "interventions/form/commentaires_photos", form: form, intervention: intervention %>
+    <% end %>
 
-  <% if !@intervention.repeter &&
-        (etats_avec_compte_rendu.include?(intervention.workflow_state) ||
-        (intervention.workflow_state == 'nouveau' && params[:terminer].present?)) &&
-        (current_user.adhérent? || current_user.manager_or_admin?) %>
+    <% if saisir_compte_rendu?(intervention, terminaison_demandee) %>
+      <%= render "interventions/form/compte_rendu", form: form, intervention: intervention %>
+    <% end %>
 
-    <section class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6">
-      <div class="border-b border-slate-100 pb-3 flex flex-wrap justify-between items-center gap-2">
-        <div class="flex items-center gap-2">
-          <span class="w-2 h-6 rounded-full bg-gradient-to-b from-[#40b3db] via-[#9fd9ec] to-[#681b98]"></span>
-          <h2 class="text-xl text-slate-800 font-black tracking-tight uppercase">Compte-rendu</h2>
-        </div>
-        <span class="badge badge-lg py-3 font-bold shadow-2xs <%= intervention.style %>">
-          Statut : <%= intervention.workflow_state.humanize %>
-        </span>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-        <div>
-          <%= form.label :avis, "Avis de l'adhérent", class: "label font-semibold text-slate-700 mb-1" %>
-          <%= form.text_area :avis,
-                              class: "textarea textarea-bordered w-full text-sm focus:textarea-primary",
-                              rows: 3,
-                              'data-controller': 'textarea-autoresize' %>
-        </div>
-
-        <div class="flex flex-col gap-3 bg-emerald-50/50 md:mt-6 p-4 rounded-xl border border-emerald-100/60 justify-center">
-          <%= form.label :note, 'Évaluation des agents :', class: "font-semibold text-slate-700 text-sm p-0" %>
-          <div class="rating rating-md gap-0.5">
-            <% if intervention.note.zero? %>
-              <%= form.radio_button :note, 0,
-                                    class: "rating-hidden",
-                                    style: "background-color: transparent; border: none; --tw-ring-shadow: none;" %>
-            <% end %>
-            <% 1.upto(5) do |i| %>
-              <%= form.radio_button :note, i, class: "mask mask-star-2 bg-amber-400" %>
-            <% end %>
-          </div>
-        </div>
-      </div>
-    </section>
-  <% end %>
-
-    <!-- BOUTONS D'ACTION DU FORMULAIRE -->
     <div class="flex flex-col sm:flex-row gap-3 mt-4 pt-4">
-      <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>
+      <%= button_tag "Annuler", type: "button", onclick: "history.back();", class: "btn flex-1" %>
       <%= form.submit "Enregistrer", id: "enregistrer_intervention", class: "btn btn-primary flex-1" %>
     </div>
 
-  </div> 
+  </div>
+<% end %>
 
-<% end %> 
-
-<!-- BOUTON DE RETOUR (HORS FORMULAIRE) -->
 <div class="max-w-5xl mx-auto pt-6 pb-12">
   <%= link_to interventions_path, class: "inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
     <%= embedded_svg "icons/arrow_back.svg", class: "w-4 h-4 transition-transform group-hover:-translate-x-1", title: "Retour à la liste des interventions" %>

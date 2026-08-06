@@ -4,8 +4,8 @@
     <span class="w-2 h-6 bg-[#40b3db] rounded-full"></span>
     <h2 class="text-xl text-slate-800 font-black tracking-tight uppercase">Demande</h2>
   </div>
-  <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex-1 <%= 'h-full' unless current_user.adhérent? %>">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 <%= 'h-full' unless current_user.adhérent? %>">
+  <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex-1 <%= 'h-full' if policy(intervention).voir_assignation? %>">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 <%= 'h-full' if policy(intervention).voir_assignation? %>">
       <div class="space-y-4 flex flex-col justify-start">
         <div>
           <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Adhérent</span>
