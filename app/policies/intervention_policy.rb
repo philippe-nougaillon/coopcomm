@@ -161,9 +161,10 @@ class InterventionPolicy < ApplicationPolicy
     !agent?
   end
 
-  # Dates souhaitées et prévision météo : sans objet sur un modèle de pointage.
+  # Dates souhaitées et prévision météo : sans objet sur un pointage, qui ne se
+  # décrit que par ses dates réelles.
   def planifier_dates?
-    !agent? && !record.repeter?
+    !agent? && !record.repeter? && record.template_slug.blank?
   end
 
   # Agents, matériel et mots clés.

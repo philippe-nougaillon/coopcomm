@@ -72,6 +72,25 @@ class InterventionMatriceFormulaireTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'les dates prévues ne sont jamais offertes sur un pointage' do
+    ACTEURS.each_value do |fixture|
+      sign_in users(fixture)
+
+      %i[modele fille].each do |type|
+        ETATS.each do |etat|
+          get edit_intervention_url(intervention_matrice(type: type, etat: etat, complete: true))
+          next unless response.successful?
+
+          noms = champs_du_formulaire.map { |champ| champ[:nom] }
+          %w[début_prévue début_prévue_hour début_prévue_minute
+             fin_prévue fin_prévue_hour fin_prévue_minute].each do |absent|
+            assert_not_includes noms, "intervention[#{absent}]", "#{fixture}/#{type}/#{etat}"
+          end
+        end
+      end
+    end
+  end
+
   test "l'agent ne peut pas changer les agents d'une fille de pointage" do
     sign_in users(:martin_technique_paris)
     get edit_intervention_url(intervention_matrice(type: :fille))
