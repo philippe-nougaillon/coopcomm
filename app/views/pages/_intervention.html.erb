@@ -17,7 +17,12 @@
       <%= link_to intervention,
           class:"block group/title" do %>
         <h3 class="font-bold text-lg leading-6 text-<%= intervention.style.split.first.split('-').last %> group-hover/title:underline break-words">
-          <%= intervention.description.humanize %>
+          <span><%= intervention.description.humanize %></span>
+          <% if intervention.repeter %>
+            <%= embedded_svg "icons/event_repeat.svg", title: "Modèle pour le pointage", class: "w-5 h-5 fill-current shrink-0" %>
+          <% elsif intervention.template_slug %>
+            <%= embedded_svg "icons/qr_code_2.svg", title: "Pointage", class: "w-5 h-5 fill-current shrink-0" %>
+          <% end %>
         </h3>
       <% end %>
       <small class="text-slate-500 mt-2 block">
