@@ -1,11 +1,8 @@
-<%# locals: (intervention:, styles:, titres: {}, classe_form: nil, valider_toujours_visible: false) %>
+<%# locals: (intervention:, styles:, titres: {}, classe_form: nil) %>
 <%#
   Boutons de transition du workflow, partagés par la liste, la page d'une
   intervention et l'accueil. Chaque page fournit ses propres classes.
-
-  `valider_toujours_visible` reproduit la différence historique entre la liste,
-  qui rend Valider et Refuser DÉSACTIVÉS quand la transition est impossible, et
-  les autres pages, qui les masquent.
+  Un bouton n'est rendu que si la transition est réellement déclenchable.
 %>
 
 <% if policy(intervention).terminer? && intervention.can_terminer? %>
@@ -50,18 +47,16 @@
   <% end %>
 <% end %>
 
-<% if policy(intervention).valider? && (valider_toujours_visible || intervention.can_valider?) %>
+<% if policy(intervention).valider? && intervention.can_valider? %>
   <%= button_to 'Valider', valider_intervention_path(intervention),
                 class: styles[:valider],
                 title: titres[:valider],
-                form: { data: { turbo: false }, class: classe_form },
-                disabled: !intervention.can_valider? %>
+                form: { data: { turbo: false }, class: classe_form } %>
 <% end %>
 
-<% if policy(intervention).refuser? && (valider_toujours_visible || intervention.can_refuser?) %>
+<% if policy(intervention).refuser? && intervention.can_refuser? %>
   <%= button_to 'Refuser', refuser_intervention_path(intervention),
                 class: styles[:refuser],
                 title: titres[:refuser],
-                form: { data: { turbo: false }, class: classe_form },
-                disabled: !intervention.can_refuser? %>
+                form: { data: { turbo: false }, class: classe_form } %>
 <% end %>

@@ -21,13 +21,13 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
   }.freeze
 
   SONDES = {
-    'bloc:demande' => '>Demande</h2>',
-    'bloc:assignation' => '>Assignation</h2>',
-    'bloc:intervention' => '>Intervention</h2>',
-    'bloc:compte_rendu' => '>Compte-rendu</h2>',
-    'bloc:actions' => '>Actions</h2>',
-    'bloc:activite' => '>Activité</h2>',
-    'bloc:pointages' => '>Pointages</h2>',
+    'bloc:demande' => %r{>Demande</h2>}i,
+    'bloc:assignation' => %r{>Assignation</h2>}i,
+    'bloc:intervention' => %r{>Intervention</h2>}i,
+    'bloc:compte_rendu' => %r{>Compte-rendu</h2>}i,
+    'bloc:actions' => %r{>Actions</h2>}i,
+    'bloc:activite' => %r{>Activité</h2>}i,
+    'bloc:pointages' => %r{>Pointages</h2>}i,
     'donnee:temps_passe' => 'Temps passé',
     'donnee:temps_total' => 'Temps total',
     'donnee:pause' => 'Pause',
@@ -47,6 +47,9 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
   ASSIGNATION = %w[bloc:assignation].freeze
   REALISATION = %w[bloc:intervention donnee:temps_passe donnee:temps_total donnee:pause
                    donnee:commentaires donnee:photos].freeze
+  # Section « Intervention » de l'adhérent : dates et temps, sans les
+  # commentaires ni les photos que voient les autres rôles.
+  TEMPS_ADHERENT = %w[bloc:intervention donnee:temps_passe donnee:temps_total donnee:pause].freeze
   POINTAGES = %w[bloc:pointages donnee:temps_total].freeze
   ACTIVITE = %w[bloc:activite].freeze
   COMPTE_RENDU = %w[bloc:compte_rendu donnee:avis].freeze
@@ -66,12 +69,12 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
     %w[agent_affecte classique] => DEMANDE + ASSIGNATION + REALISATION + ['action:modifier'],
     %w[agent_affecte modele] => DEMANDE + ASSIGNATION + POINTAGES,
     %w[agent_affecte fille] => DEMANDE + ASSIGNATION + REALISATION + ['action:modifier'],
-    # L'adhérent ne voit que la demande : ni agents, ni matériel, ni temps, ni
-    # commentaires, ni photos — alors que l'index les lui montre (incohérence
-    # signalée, cf. la matrice de l'index).
-    %w[adherent_proprietaire classique] => DEMANDE + ['action:modifier'],
-    %w[adherent_proprietaire modele] => DEMANDE + ['action:modifier', 'action:qrcode'],
-    %w[adherent_proprietaire fille] => DEMANDE + ['action:modifier']
+    # L'adhérent a sa propre section « Intervention » : dates et temps, quel que
+    # soit le type. Il ne voit toujours ni agents, ni matériel, ni photos, que
+    # l'index lui montre pourtant (incohérence signalée, cf. la matrice de l'index).
+    %w[adherent_proprietaire classique] => DEMANDE + TEMPS_ADHERENT + ['action:modifier'],
+    %w[adherent_proprietaire modele] => DEMANDE + TEMPS_ADHERENT + ['action:modifier', 'action:qrcode'],
+    %w[adherent_proprietaire fille] => DEMANDE + TEMPS_ADHERENT + ['action:modifier']
   }.freeze
 
   ETATS_AVEC_COMPTE_RENDU = [Intervention::VALIDE, Intervention::REFUSE].freeze
@@ -118,7 +121,7 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
   private
 
   def sondes_presentes
-    SONDES.select { |_, sonde| response.body.include?(sonde) }.keys.sort
+    SONDES.select { |_, sonde| sonde.is_a?(Regexp) ? response.body.match?(sonde) : response.body.include?(sonde) }.keys.sort
   end
 
   def attendu(nom_acteur, type, etat)

@@ -36,15 +36,15 @@ class InterventionMatriceIndexTest < ActionDispatch::IntegrationTest
     'donnee:avis' => InterventionsMatrice::SONDE_AVIS
   }.freeze
 
-  # La vue normale montre les mêmes neuf données à TOUS les rôles, y compris à
+  # La vue normale montre les mêmes huit données à TOUS les rôles, y compris à
   # l'adhérent — dont la page détaillée n'en montre aucune.
   DONNEES_VUE_NORMALE = %w[donnee:adherent donnee:service donnee:agent donnee:debut_fin
-                           donnee:temps_passe donnee:temps_total donnee:pause donnee:materiel
-                           donnee:commentaires].freeze
+                           donnee:temps_passe donnee:temps_total donnee:pause
+                           donnee:materiel].freeze
   DONNEES_VUE_COMPACTE = %w[donnee:dates_prevues].freeze
   EVALUATION = %w[donnee:evaluation donnee:avis].freeze
 
-  ETATS_SANS_ACTIONS = [Intervention::VALIDE, Intervention::REFUSE].freeze
+  ETATS_AVEC_EVALUATION = [Intervention::VALIDE, Intervention::REFUSE].freeze
 
   setup { mere_matrice }
 
@@ -119,25 +119,24 @@ class InterventionMatriceIndexTest < ActionDispatch::IntegrationTest
   end
 
   def attendu(nom_acteur, vue, etat)
-    sondes = vue == 'normal' ? DONNEES_VUE_NORMALE.dup : DONNEES_VUE_COMPACTE.dup
-    sondes += EVALUATION if vue == 'normal' && ETATS_SANS_ACTIONS.include?(etat) &&
-                            nom_acteur != 'agent_affecte'
+    return (DONNEES_VUE_COMPACTE + boutons_attendus(nom_acteur, etat)).sort if vue == 'compact'
+
+    sondes = DONNEES_VUE_NORMALE.dup
+    # Les commentaires ne sont pas montrés à l'adhérent.
+    sondes << 'donnee:commentaires' unless nom_acteur == 'adherent_proprietaire'
+    # L'évaluation et l'avis ne sont jamais montrés à l'agent noté.
+    sondes += EVALUATION if ETATS_AVEC_EVALUATION.include?(etat) && nom_acteur != 'agent_affecte'
 
     (sondes + boutons_attendus(nom_acteur, etat)).sort
   end
 
-  # Aux états validé et refusé, la liste masque tout le bloc d'actions. Ailleurs,
-  # « Terminer » n'apparaît que s'il est réellement déclenchable, tandis que
-  # « Valider » et « Refuser » sont TOUJOURS rendus, désactivés le cas échéant.
+  # Un bouton n'est rendu que si la transition est réellement déclenchable — la
+  # liste ne rend plus, comme avant, des boutons désactivés.
   def boutons_attendus(nom_acteur, etat)
-    return [] if ETATS_SANS_ACTIONS.include?(etat)
-
     boutons = []
     boutons << 'action:terminer' if nom_acteur != 'adherent_proprietaire' && etat == Intervention::NOUVEAU
-
-    if nom_acteur != 'agent_affecte'
-      inactif = etat == Intervention::TERMINE ? '' : '(inactif)'
-      boutons << "action:valider#{inactif}" << "action:refuser#{inactif}"
+    if nom_acteur != 'agent_affecte' && etat == Intervention::TERMINE
+      boutons << 'action:valider' << 'action:refuser'
     end
 
     boutons
