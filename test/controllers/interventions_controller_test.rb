@@ -680,7 +680,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
       delete purge_intervention_url(@intervention), params: { photo_id: photo_id }
     end
 
-    assert_equal "Photo n°#{photo_id} supprimée", @intervention.audits.last.comment
+    assert_equal 'Photo supprimée', @intervention.audits.last.comment
   end
 
   test "purge : un agent NON affecté à l'intervention est refusé et la photo reste" do

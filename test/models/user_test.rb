@@ -308,4 +308,20 @@ class UserTest < ActiveSupport::TestCase
     assert_includes adhérent.errors[:services], "ne doit comporter qu'un seul service pour un agent"
   end
 
+  # Sans `dependent: :destroy` sur la through, Rails retire la ligne de liaison
+  # par delete_all : aucun callback, donc aucune trace du service retiré.
+  test 'retirer un service à un utilisateur laisse une trace dans l\'audit' do
+    manager = users(:hidalgo)
+    retiré = manager.services.first
+    restants = manager.services.where.not(id: retiré.id)
+
+    assert_difference -> { Audited::Audit.where(auditable_type: 'UserService', action: 'destroy').count }, 1 do
+      manager.update!(service_ids: restants.ids)
+    end
+
+    audit = Audited::Audit.where(auditable_type: 'UserService', action: 'destroy').last
+
+    assert_equal retiré.id, audit.audited_changes['service_id']
+    assert_equal manager.id, audit.associated_id
+  end
 end

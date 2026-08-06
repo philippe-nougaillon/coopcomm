@@ -22,7 +22,7 @@
       </thead>
       <tbody>
         <% if audits&.any? %>
-          <%= render partial: 'interventions/audit', collection: audits %>
+          <%= render partial: 'interventions/audit', collection: grouper_audits(audits) %>
         <% else %>
           <tr>
             <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">Aucun historique d'activité disponible.</td>

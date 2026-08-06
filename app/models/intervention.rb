@@ -31,7 +31,7 @@ class Intervention < ApplicationRecord
   # delete_all, donc sans écrire d'audit (AgentIntervention est audited).
   has_many :agents, through: :agent_interventions, class_name: 'User', dependent: :destroy
   has_many :tool_interventions, dependent: :destroy
-  has_many :tools, through: :tool_interventions
+  has_many :tools, through: :tool_interventions, dependent: :destroy
   has_many :mouvements
 
   has_one :organisation, through: :service

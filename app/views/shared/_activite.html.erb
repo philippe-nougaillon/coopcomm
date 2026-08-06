@@ -1,0 +1,43 @@
+<%# locals: (audits:, pagy: nil) %>
+<div class="flex justify-between flex-wrap items-center mt-10 mb-4">
+  <h2 class="text-2xl text-secondary">Activité</h2>
+</div>
+<div class="flex flex-col bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+  <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+    <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+    <span>Faire glisser pour voir plus</span>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="table table-sm w-full border-none">
+      <thead class="bg-slate-100">
+        <tr>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Date</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Utilisateur</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Action</th>
+          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Modifications</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if audits&.any? %>
+          <%= render partial: "shared/audit", collection: grouper_audits(audits) %>
+        <% else %>
+          <tr>
+            <td colspan="4" class="text-center py-8 text-slate-400 text-base italic">
+              Aucun historique d'activité disponible.
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <% if pagy&.pages.to_i > 1 %>
+    <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
+      <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+        <%= pagy_nav(pagy).html_safe %>
+      </div>
+      <div class="text-slate-500 text-center text-sm w-full mt-2">
+        <%= pagy_info(pagy, item_name: "audits").html_safe %>
+      </div>
+    </div>
+  <% end %>
+</div>

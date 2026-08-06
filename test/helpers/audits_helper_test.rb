@@ -8,8 +8,9 @@ class AuditsHelperTest < ActionView::TestCase
   # ActionView::TestCase ne charge que le helper testé.
   include ApplicationHelper
 
-  def audit(comment: nil, changes: {}, type: 'Intervention', action: 'update')
-    Audited::Audit.new(auditable_type: type, action: action, comment: comment, audited_changes: changes)
+  def audit(comment: nil, changes: {}, type: 'Intervention', action: 'update', request_uuid: nil, associated: nil)
+    Audited::Audit.new(auditable_type: type, action: action, comment: comment, audited_changes: changes,
+                       request_uuid: request_uuid, associated_type: associated&.class&.name, associated_id: associated&.id)
   end
 
   # Le libellé du badge sans son icône ni ses classes : un renommage de classe
@@ -130,6 +131,28 @@ class AuditsHelperTest < ActionView::TestCase
     assert_equal 'Invitation relancée', libellé_badge(audit(type: 'User', changes: { 'invitation_token' => %w[abc def] }))
   end
 
+  test 'badge User : première invitation' do
+    audit = audit(type: 'User', changes: { 'invitation_token' => [nil, 'abc'],
+                                           'invitation_created_at' => [nil, '2026-07-01 10:00:00'] })
+
+    assert_equal 'Invitation envoyée', libellé_badge(audit)
+  end
+
+  test 'badge User : invitation acceptée' do
+    audit = audit(type: 'User', changes: { 'invitation_token' => ['abc', nil],
+                                           'invitation_accepted_at' => [nil, '2026-07-01 10:00:00'] })
+
+    assert_equal 'Invitation acceptée', libellé_badge(audit)
+  end
+
+  # L'audit de création porte TOUTES les colonnes, invitation_token comprise.
+  test 'badge User : une création de compte n\'est pas une invitation' do
+    audit = audit(type: 'User', action: 'create', changes: { 'email' => 'a@b.fr', 'invitation_token' => nil })
+
+    assert_equal 'Compte créé', libellé_badge(audit)
+    assert_equal tracé_fichier('add'), tracé_icône(audit)
+  end
+
   test 'badge User : changement d\'entrepôt' do
     assert_equal 'Logistique', libellé_badge(audit(type: 'User', changes: { 'warehouse_id' => [1, 2] }))
   end
@@ -137,7 +160,7 @@ class AuditsHelperTest < ActionView::TestCase
   test 'badge User : création, modification de profil et suppression' do
     assert_equal 'Compte créé',    libellé_badge(audit(type: 'User', action: 'create', changes: { 'email' => 'a@b.fr' }))
     assert_equal 'Profil modifié', libellé_badge(audit(type: 'User', changes: { 'nom' => %w[Dupont Durand] }))
-    assert_equal 'Utilisateur',    libellé_badge(audit(type: 'User', action: 'destroy', changes: { 'nom' => 'Dupont' }))
+    assert_equal 'Compte supprimé', libellé_badge(audit(type: 'User', action: 'destroy', changes: { 'nom' => 'Dupont' }))
   end
 
   test 'badge User : la désactivation prime sur la connexion simultanée' do
@@ -147,9 +170,16 @@ class AuditsHelperTest < ActionView::TestCase
   end
 
   test 'badge UserService : association, retrait et cas restant' do
-    assert_equal 'Service associé', libellé_badge(audit(type: 'UserService', action: 'create'))
-    assert_equal 'Service retiré',  libellé_badge(audit(type: 'UserService', action: 'destroy'))
-    assert_equal 'Service',         libellé_badge(audit(type: 'UserService', action: 'update'))
+    assert_equal 'Service ajouté',     libellé_badge(audit(type: 'UserService', action: 'create'))
+    assert_equal 'Service retiré',     libellé_badge(audit(type: 'UserService', action: 'destroy'))
+    assert_equal 'Services modifiés',  libellé_badge(audit(type: 'UserService', action: 'update'))
+  end
+
+  test 'badge des tables de liaison : agents et outils d\'une intervention' do
+    assert_equal 'Agent ajouté', libellé_badge(audit(type: 'AgentIntervention', action: 'create'))
+    assert_equal 'Agent retiré', libellé_badge(audit(type: 'AgentIntervention', action: 'destroy'))
+    assert_equal 'Outil ajouté', libellé_badge(audit(type: 'ToolIntervention', action: 'create'))
+    assert_equal 'Outil retiré', libellé_badge(audit(type: 'ToolIntervention', action: 'destroy'))
   end
 
   test 'badge des autres modèles : création, modification, suppression' do
@@ -248,6 +278,23 @@ class AuditsHelperTest < ActionView::TestCase
     assert_no_match(/renvoyé/, html)
   end
 
+  test 'création de compte : les champs du compte, pas le résumé d\'invitation' do
+    html = audit_details(audit(type: 'User', action: 'create',
+                               changes: { 'email' => 'a@b.fr', 'nom' => 'Dupont', 'invitation_token' => nil }), nil)
+
+    assert_match 'a@b.fr', html
+    assert_match 'Dupont', html
+    assert_no_match(/renvoyé/, html)
+  end
+
+  test 'invitation acceptée : le message dédié, pas « lien renvoyé »' do
+    html = audit_details(audit(type: 'User', changes: { 'invitation_token' => ['abc', nil],
+                                                        'invitation_accepted_at' => [nil, '2026-07-01 10:00:00'] }), nil)
+
+    assert_match 'acceptée', html
+    assert_no_match(/renvoyé/, html)
+  end
+
   # ==================== BLOC D — formatage des valeurs ====================
 
   test 'les champs techniques ne sont jamais présentés à l\'utilisateur' do
@@ -296,18 +343,20 @@ class AuditsHelperTest < ActionView::TestCase
     assert_equal 'Oui', format_audit_value('journee', '1')
   end
 
+  # Les libellés viennent des enums des modèles : une valeur ajoutée à l'enum est
+  # traduite sans retoucher le helper.
   test 'le motif d\'absence est traduit, une valeur inconnue reste brute' do
-    assert_equal 'Congé annuel', format_audit_value('motif', '0')
-    assert_equal 'Maladie',      format_audit_value('motif', '1')
-    assert_equal 'RTT',          format_audit_value('motif', '2')
-    assert_equal '9',            format_audit_value('motif', '9')
+    Absence.motifs.each do |nom, valeur|
+      assert_equal nom.tr('_', ' ').humanize, format_audit_value('motif', valeur.to_s)
+    end
+    assert_equal '9', format_audit_value('motif', '9')
   end
 
   test 'l\'état d\'un mouvement est traduit, une valeur inconnue reste brute' do
-    assert_equal 'Panne',             format_audit_value('état', 2)
-    assert_equal 'Fin de la panne',   format_audit_value('état', 3)
-    assert_equal 'Réservé',           format_audit_value('état', 4)
-    assert_equal 9,                   format_audit_value('état', 9)
+    assert_equal 'Réservé',         format_audit_value('état', Mouvement.états[:réservé])
+    assert_equal 'Panne',           format_audit_value('état', Mouvement.états[:panne])
+    assert_equal 'Fin de la panne', format_audit_value('état', Mouvement.états[:fin_panne])
+    assert_equal '9',               format_audit_value('état', 9)
   end
 
   test 'un adhérent est identifié par son email, un identifiant orphelin par son numéro' do
@@ -389,5 +438,243 @@ class AuditsHelperTest < ActionView::TestCase
 
   test 'une liste de changements vide rend un tiret' do
     assert_match '—', render_changes_list([])
+  end
+
+  # ==================== BLOC F — tables de liaison ====================
+
+  test 'un agent ajouté à une intervention se lit comme une phrase' do
+    html = audit_details(audit(type: 'AgentIntervention', action: 'create',
+                               changes: { 'agent_id' => users(:bond).id, 'intervention_id' => 42 }), nil)
+
+    assert_match 'Bond James', html
+    assert_match "ajouté à l&#39;intervention n°42", html
+    # Les identifiants bruts et les libellés de colonne n'ont plus lieu d'être.
+    assert_no_match(/Agent id|Intervention id/, html)
+  end
+
+  test 'un agent retiré d\'une intervention se lit comme une phrase' do
+    html = audit_details(audit(type: 'AgentIntervention', action: 'destroy',
+                               changes: { 'agent_id' => users(:bond).id, 'intervention_id' => 42 }), nil)
+
+    assert_match "retiré de l&#39;intervention n°42", html
+  end
+
+  test 'un outil ajouté à une intervention se lit comme une phrase' do
+    html = audit_details(audit(type: 'ToolIntervention', action: 'create',
+                               changes: { 'tool_id' => tools(:tondeuse).id, 'intervention_id' => 7 }), nil)
+
+    assert_match 'Tondeuse', html
+    assert_match "ajouté à l&#39;intervention n°7", html
+  end
+
+  test 'un service rattaché à un utilisateur se lit comme une phrase' do
+    ajout   = audit_details(audit(type: 'UserService', action: 'create',
+                                  changes: { 'user_id' => users(:bond).id, 'service_id' => services(:technique).id }), nil)
+    retrait = audit_details(audit(type: 'UserService', action: 'destroy',
+                                  changes: { 'user_id' => users(:bond).id, 'service_id' => services(:technique).id }), nil)
+
+    assert_match 'rattaché au service Technique', ajout
+    assert_match 'retiré du service Technique', retrait
+  end
+
+  test 'les agents assignés dans la même requête tiennent sur une seule ligne' do
+    intervention = interventions(:tonte_locaux)
+    lot = [users(:bond), users(:martin_technique_paris)].map do |agent|
+      audit(type: 'AgentIntervention', action: 'create', request_uuid: 'abc-123', associated: intervention,
+            changes: { 'agent_id' => agent.id, 'intervention_id' => intervention.id })
+    end
+
+    groupes = grouper_audits(lot)
+
+    assert_equal 1, groupes.size
+    assert_equal 'Agents ajoutés', libellé_badge(groupes.first)
+    html = audit_details(groupes.first, nil)
+    assert_match 'Bond James', html
+    assert_match 'Martin Michel', html
+  end
+
+  test 'un ajout et un retrait dans la même requête donnent une ligne « modifiés »' do
+    intervention = interventions(:tonte_locaux)
+    lot = [%w[create], %w[destroy]].flatten.map.with_index do |action, i|
+      audit(type: 'AgentIntervention', action: action, request_uuid: 'abc-123', associated: intervention,
+            changes: { 'agent_id' => [users(:bond).id, users(:martin_technique_paris).id][i], 'intervention_id' => intervention.id })
+    end
+
+    groupes = grouper_audits(lot)
+
+    assert_equal 1, groupes.size
+    assert_equal 'Agents modifiés', libellé_badge(groupes.first)
+  end
+
+  test 'deux requêtes distinctes ne sont jamais regroupées' do
+    intervention = interventions(:tonte_locaux)
+    lot = %w[uuid-1 uuid-2].map do |uuid|
+      audit(type: 'AgentIntervention', action: 'create', request_uuid: uuid, associated: intervention,
+            changes: { 'agent_id' => users(:bond).id, 'intervention_id' => intervention.id })
+    end
+
+    assert_equal 2, grouper_audits(lot).size
+  end
+
+  test 'deux interventions différentes ne sont jamais regroupées' do
+    lot = [interventions(:tonte_locaux), interventions(:nouvelle_intervention)].map do |intervention|
+      audit(type: 'AgentIntervention', action: 'create', request_uuid: 'abc-123', associated: intervention,
+            changes: { 'agent_id' => users(:bond).id, 'intervention_id' => intervention.id })
+    end
+
+    assert_equal 2, grouper_audits(lot).size
+  end
+
+  test 'les audits ordinaires traversent le regroupement sans être touchés' do
+    lot = [audit(changes: { 'description' => %w[a b] }), audit(changes: { 'description' => %w[b c] })]
+
+    assert_equal lot, grouper_audits(lot)
+  end
+
+  # ==================== BLOC G — identifiants résolus en libellés ====================
+
+  test 'les identifiants d\'association sont remplacés par le libellé de l\'enregistrement' do
+    assert_equal organisations(:mairie_paris).nom, format_audit_value('organisation_id', organisations(:mairie_paris).id)
+    assert_equal 'n°42', format_audit_value('intervention_id', 42)
+    assert_equal prestations(:nettoyage_bureaux).libellé, format_audit_value('prestation_id', prestations(:nettoyage_bureaux).id)
+  end
+
+  test 'un compte désactivé reste nommé dans l\'historique' do
+    users(:bond).discard
+
+    assert_equal 'Bond James', format_audit_value('user_id', users(:bond).id)
+  end
+
+  test 'un enregistrement réellement supprimé est retrouvé dans sa trace d\'audit' do
+    Audited::Audit.create!(auditable_type: 'Service', auditable_id: 999_999, action: 'destroy',
+                           audited_changes: { 'nom' => 'Service dissous' })
+
+    assert_equal 'Service dissous', format_audit_value('service_id', 999_999)
+  end
+
+  test 'le rôle d\'un utilisateur est traduit' do
+    assert_equal 'Manager', format_audit_value('rôle', User.rôles[:manager])
+  end
+
+  test 'les booléens sont rendus en oui / non' do
+    assert_equal 'Oui', format_audit_value('repeter', true)
+    assert_equal 'Non', format_audit_value('repeter', false)
+    assert_equal 'Non', format_audit_value('publiée', 'false')
+  end
+
+  test 'le compteur d\'invitations et le type d\'inviteur ne sont pas présentés' do
+    changes = { 'invitations_count' => [0, 1], 'invited_by_type' => [nil, 'User'], 'invitation_limit' => [nil, 5] }
+
+    assert_empty humanize_changes(changes)
+  end
+
+  # ==================== BLOC H — enregistrements supprimés ====================
+
+  test 'un agent supprimé reste nommé dans l\'audit de liaison, grâce à sa propre trace' do
+    Audited::Audit.create!(auditable_type: 'User', auditable_id: 999_999, action: 'destroy',
+                           audited_changes: { 'nom' => 'DUPONT', 'email' => 'dupont@ccmm.fr' })
+
+    html = audit_details(audit(type: 'AgentIntervention', action: 'destroy',
+                               changes: { 'agent_id' => 999_999, 'intervention_id' => 42 }), nil)
+
+    assert_match 'DUPONT', html
+  end
+
+  test 'un agent supprimé sans aucune trace n\'empêche pas l\'audit de s\'afficher' do
+    html = audit_details(audit(type: 'AgentIntervention', action: 'destroy',
+                               changes: { 'agent_id' => 999_999, 'intervention_id' => 42 }), nil)
+
+    assert_match 'Utilisateur #999999', html
+    assert_match "retiré de l&#39;intervention", html
+  end
+
+  test 'un outil supprimé reste nommé dans l\'audit de liaison' do
+    Audited::Audit.create!(auditable_type: 'Tool', auditable_id: 999_999, action: 'destroy',
+                           audited_changes: { 'name' => 'Débroussailleuse' })
+
+    html = audit_details(audit(type: 'ToolIntervention', action: 'destroy',
+                               changes: { 'tool_id' => 999_999, 'intervention_id' => 42 }), nil)
+
+    assert_match 'Débroussailleuse', html
+  end
+
+  test 'un audit de liaison sans ses clés ne fait pas tomber la page' do
+    html = audit_details(audit(type: 'AgentIntervention', action: 'create', changes: {}), nil)
+
+    assert_match '—', html
+    assert_match "ajouté à l&#39;intervention", html
+  end
+
+  test 'un lot groupé contenant un audit incomplet reste rendu' do
+    intervention = interventions(:tonte_locaux)
+    lot = [{ 'agent_id' => users(:bond).id, 'intervention_id' => intervention.id }, {}].map do |changes|
+      audit(type: 'AgentIntervention', action: 'create', request_uuid: 'abc-123', associated: intervention, changes: changes)
+    end
+
+    groupes = grouper_audits(lot)
+
+    assert_equal 1, groupes.size
+    assert_match 'Bond James', audit_details(groupes.first, nil)
+  end
+
+  test 'un type auditable qui n\'existe plus ne fait pas tomber la page' do
+    html = audit_details(audit(type: 'ModeleDisparu', changes: { 'motif' => [0, 1] }), nil)
+
+    assert_match 'Motif', html
+  end
+
+  test 'les autres associations supprimées sont retrouvées dans leur trace d\'audit' do
+    Audited::Audit.create!(auditable_type: 'Organisation', auditable_id: 999_999, action: 'destroy',
+                           audited_changes: { 'nom' => 'Commune dissoute' })
+    Audited::Audit.create!(auditable_type: 'Commande', auditable_id: 999_999, action: 'destroy',
+                           audited_changes: { 'ref' => 'CM-2026-9' })
+
+    assert_equal 'Commune dissoute', format_audit_value('organisation_id', 999_999)
+    assert_equal 'CM-2026-9', format_audit_value('commande_id', 999_999)
+    assert_equal 'Prestation #999999', format_audit_value('prestation_id', 999_999)
+  end
+
+  test 'sur la fiche d\'une intervention, la cible n\'est pas répétée' do
+    changes = { 'agent_id' => users(:bond).id, 'intervention_id' => 42 }
+    avec  = audit_details(audit(type: 'AgentIntervention', action: 'create', changes: changes), nil)
+    sans  = audit_details(audit(type: 'AgentIntervention', action: 'create', changes: changes), nil, cible: false)
+
+    assert_match 'n°42', avec
+    assert_no_match(/n°42/, sans)
+    assert_match "ajouté à l&#39;intervention", sans
+  end
+
+  # ==================== BLOC I — pièces jointes ====================
+
+  test 'une pièce jointe ajoutée est présentée comme les autres informations' do
+    html = audit_details(audit(comment: '2 photos ajoutées'), nil)
+
+    assert_match 'Pièce jointe', html
+    assert_match '2 photos ajoutées', html
+    # Le commentaire n'est plus une phrase entre guillemets détachée du reste.
+    assert_no_match(/"2 photos/, html)
+    assert_not_nil Nokogiri::HTML::DocumentFragment.parse(html).at_css('ul li')
+  end
+
+  test 'une pièce jointe et un changement de colonne cohabitent dans la même liste' do
+    html = audit_details(audit(comment: '1 photo ajoutée', changes: { 'description' => %w[Tonte Élagage] }), nil)
+    items = Nokogiri::HTML::DocumentFragment.parse(html).css('ul li')
+
+    assert_equal 2, items.size
+    assert_match 'Pièce jointe', items.first.text
+  end
+
+  test 'un commentaire qui ne parle pas de pièce jointe n\'en revendique pas le libellé' do
+    html = audit_details(audit(comment: 'Régularisation manuelle'), nil)
+
+    assert_match 'Commentaire', html
+    assert_no_match(/Pièce jointe/, html)
+  end
+
+  # La création d'un compte porte TOUTES les colonnes, dont warehouse_id.
+  test 'une création de compte n\'est pas un changement d\'entrepôt' do
+    audit = audit(type: 'User', action: 'create', changes: { 'email' => 'a@b.fr', 'warehouse_id' => nil })
+
+    assert_equal 'Compte créé', libellé_badge(audit)
   end
 end

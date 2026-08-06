@@ -303,4 +303,32 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
     assert_includes response.parsed_body.to_s, 'doit être rempli'
   end
+
+  test 'le manager voit l historique des modifications de l outil' do
+    @tool.update!(name: 'Tondeuse thermique')
+
+    get tool_url(@tool)
+
+    assert_select 'h2', text: 'Activité'
+    assert_includes response.body, 'Tondeuse thermique'
+    assert assigns(:audits).any? { |audit| audit.auditable_type == 'Tool' }
+  end
+
+  test 'l historique de l outil ne répète pas les mouvements, déjà affichés au-dessus' do
+    Mouvement.create!(tool: @tool, user: users(:bond), date: Date.today, état: :panne)
+
+    get tool_url(@tool)
+
+    assert_not assigns(:audits).any? { |audit| audit.auditable_type == 'Mouvement' }
+  end
+
+  test 'un agent ne voit pas l historique des modifications de l outil' do
+    sign_in users(:bond)
+
+    get tool_url(@tool)
+
+    assert_response :success
+    assert_select 'h2', text: 'Activité', count: 0
+    assert_nil assigns(:audits)
+  end
 end

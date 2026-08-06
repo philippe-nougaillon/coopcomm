@@ -1,6 +1,3 @@
-<% if current_user&.agent? && audit.audited_changes.keys.map(&:to_s) == ['note'] %>
-  <% return %>
-<% end %>
 <tr class="hover:bg-base-200/60 transition-colors duration-150 align-middle">
   <td class="py-4 pl-4 text-sm whitespace-nowrap">
     <div class="font-semibold text-slate-700 text-xs sm:text-sm leading-tight">
@@ -10,7 +7,7 @@
       <%= l(audit.created_at, format: :long) %>
     </div>
   </td>
-   <td class="px-4 py-3 text-sm">
+  <td class="px-4 py-3 text-sm">
     <% if audit.user_id && audit.user %>
       <div class="font-medium text-slate-700 leading-snug">
         <%= audit.user.email %>
@@ -27,8 +24,7 @@
   <td class="px-4 py-3 align-middle">
     <%= audit_badge(audit) %>
   </td>
-  <%# Columna 4: Detalles de las modificaciones o Comentarios %>
   <td class="px-4 py-3 text-sm max-w-xs md:max-w-md">
-    <%= audit_details(audit, current_user, cible: false) %>
+    <%= audit_details(audit, current_user) %>
   </td>
 </tr>

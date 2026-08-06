@@ -504,6 +504,22 @@ class InterventionTest < ActiveSupport::TestCase
     assert_equal 2, intervention.errors.full_messages.count { |m| m.include?('Secrétariat') }
   end
 
+  # Sans `dependent: :destroy` sur la through, Rails retire la ligne de liaison
+  # par delete_all : aucun callback, donc aucune trace de l'outil retiré.
+  test 'retirer un outil à une intervention laisse une trace dans l\'audit' do
+    intervention = interventions(:tonte_locaux)
+    intervention.update!(tool_ids: [tools(:tondeuse).id])
+
+    assert_difference -> { Audited::Audit.where(auditable_type: 'ToolIntervention', action: 'destroy').count }, 1 do
+      intervention.update!(tool_ids: [])
+    end
+
+    audit = Audited::Audit.where(auditable_type: 'ToolIntervention', action: 'destroy').last
+
+    assert_equal tools(:tondeuse).id, audit.audited_changes['tool_id']
+    assert_equal intervention.id, audit.associated_id
+  end
+
   private
 
   def intervention_sans_dates(adherent:, service:)
