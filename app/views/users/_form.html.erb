@@ -68,7 +68,7 @@
         <%= form.email_field :email, class: 'input input-bordered input-sm w-full focus:input-primary h-10', required: true %>
       </div>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 <%= 'md:grid-cols-1' if current_user.manager? %> gap-4 w-full">
+    <div class="grid grid-cols-1 <%= current_user.manager? ? 'md:grid-cols-1' : 'md:grid-cols-2' %> gap-4 w-full">
       <% if current_user.manager_or_admin? %>
         <div class="form-control w-full">
           <% label_texte = user.rôle == 'adhérent' ? "Secteur" : "Équipe" %>
