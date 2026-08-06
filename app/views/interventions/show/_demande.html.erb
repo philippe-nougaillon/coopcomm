@@ -1,5 +1,5 @@
 <%# locals: (intervention:) %>
-<section class="flex flex-col">
+<section class="flex flex-col mb-10">
   <div class="pb-3 flex items-center gap-2 mb-3">
     <span class="w-2 h-6 bg-[#40b3db] rounded-full"></span>
     <h2 class="text-xl text-slate-800 font-black tracking-tight uppercase">Demande</h2>
@@ -41,24 +41,26 @@
           <% end %>
         </div>
       </div>
-      <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-100 flex flex-col justify-center space-y-3 h-full">
-        <div>
-          <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Début prévue</span>
-          <% if intervention.début_prévue.present? %>
-            <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(intervention.début_prévue, format: :long) %></p>
-          <% else %>
-            <span class="text-slate-400 italic text-sm">Non renseigné</span>
-          <% end %>
+      <% unless current_user.adhérent? %>
+        <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-100 flex flex-col justify-center space-y-3 h-full">
+          <div>
+            <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Début prévue</span>
+            <% if intervention.début_prévue.present? %>
+              <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(intervention.début_prévue, format: :long) %></p>
+            <% else %>
+              <span class="text-slate-400 italic text-sm">Non renseigné</span>
+            <% end %>
+          </div>
+          <div class="border-t border-slate-200/60 pt-3">
+            <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Fin prévue</span>
+            <% if intervention.fin_prévue.present? %>
+              <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(intervention.fin_prévue, format: :long) %></p>
+            <% else %>
+              <span class="text-slate-400 italic text-sm">Non renseignée</span>
+            <% end %>
+          </div>
         </div>
-        <div class="border-t border-slate-200/60 pt-3">
-          <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Fin prévue</span>
-          <% if intervention.fin_prévue.present? %>
-            <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(intervention.fin_prévue, format: :long) %></p>
-          <% else %>
-            <span class="text-slate-400 italic text-sm">Non renseignée</span>
-          <% end %>
-        </div>
-      </div>
+      <% end %>
     </div>
   </div>
 </section>
