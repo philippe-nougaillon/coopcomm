@@ -34,9 +34,9 @@
               <%= render partial: 'cotation', locals: {cotation: } %>
             <% end %>
             <span>
-              <%= link_to adherent_crm_path(tab: params[:tab] || 'cotations'), class: 'text-primary mt-8 hover:underline flex items-center flex-row justify-between gap-2' do %>
-                Voir toutes les cotations
-                <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
+              <%= link_to adherent_crm_path(tab: params[:tab] || 'cotations'), class: "inline-flex items-center gap-2 text-primary font-medium hover:underline transition group mt-8" do %>
+              <span>Voir toutes les cotations</span>
+                <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-transform duration-200 ease-out group-hover:translate-x-1" %>
               <% end %>
             </span>
           </div>
