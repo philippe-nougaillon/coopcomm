@@ -17,7 +17,7 @@
 - **Impact** : l'adhérent est facturé à un prix différent de celui qu'il a signé.
 - **À trancher (client)** : le prix contractuel est-il celui du devis signé (probable) ou le tarif courant ? Correctif technique trivial une fois tranché (ne pas écraser si `prix_ht` déjà renseigné). **Statut 2026-07-10 : en réflexion** — suivi comme **D1** dans `points-a-trancher.md`.
 
-### B3 — `valider`/`refuser` une intervention hors état → erreur 500
+### B3 — ✅ CORRIGÉ (2026-08-06) — `valider`/`refuser` une intervention hors état → erreur 500
 - **Où** : [interventions_controller.rb:312-326](app/controllers/interventions_controller.rb#L312-L326)
 - **Cause** : `valider!` et `refuser!` sont appelés **sans garde `can_valider?`/`can_refuser?`** ni `rescue Workflow::NoTransitionAllowed` (contrairement à `terminer` et `archiver` qui sont protégés).
 - **Parcours de reproduction** (déduit, non exécuté) :
@@ -29,7 +29,7 @@
 - **Trace test (2026-07-28)** : test `skip` documenté dans les TESTS CRITIQUES en tête de `interventions_controller_test.rb` (« re-valider une intervention déjà validée… ») — passera au vert à la correction.
 - ⚠️ **Re-vérifié ouvert le 2026-07-31 — ne pas confondre avec B28.** `redirect_si_invalide` ([interventions_controller.rb:565](app/controllers/interventions_controller.rb#L565)) ne teste que `@intervention.valid?`, c'est-à-dire les **validations du modèle** — pas la **transition de workflow**. Une intervention déjà `validé` est parfaitement valide : le filet la laisse passer, puis `valider!` ([l.286](app/controllers/interventions_controller.rb#L286)) lève `Workflow::NoTransitionAllowed`. `terminer` est protégé par `can_terminer?` ([l.274](app/controllers/interventions_controller.rb#L274)), `valider` et `refuser` **ne le sont toujours pas**. Le `skip` B3 est toujours actif dans la suite.
 - ⚠️ **Portée élargie et REPRODUITE le 2026-08-05** (matrice des transitions). Ce n'est pas seulement le double-clic : **toute** demande `valider`/`refuser` sur une intervention **valide** dont l'état ne permet pas la transition part en 500 — soit **20 des 24 combinaisons** (acteur × état) pour les administrateurs, managers et adhérents, y compris depuis `nouveau`, `pointage activé` et `archivé`. Le `skip` B3 ne pouvait pas le voir : sa fixture est par ailleurs invalide, donc `redirect_si_invalide` intercepte avant d'atteindre le bug — d'où l'impression que le défaut se limitait au double-clic.
-- **Épinglé** par 2 tests dans `intervention_matrice_transitions_test.rb` (`assert_raises(Workflow::NoTransitionAllowed)`), avec une garde qui vérifie d'abord que l'intervention est valide. À inverser à la correction : le résultat attendu deviendra une redirection.
+- ✅ **CORRIGÉ le 2026-08-06** : `valider` et `refuser` sont gardés par `can_valider?` / `can_refuser?` sur le motif exact de `terminer` ([interventions_controller.rb:214-240](app/controllers/interventions_controller.rb#L214)) → redirection avec `alert: "Impossible de valider l'intervention"` au lieu de l'exception. Le `skip` des TESTS CRITIQUES d'`interventions_controller_test.rb` est levé ; dans `intervention_matrice_transitions_test.rb`, l'échappatoire `bug_b7?` et la constante `ACTEURS_AVEC_VALIDATION` sont **supprimées** — les 24 combinaisons acteur × état passent désormais par le chemin normal (`alert` + état inchangé), et les 2 tests d'épinglage sont retournés en tests de redirection. **Prouvé rouge** par sabotage des deux gardes : 4 échecs, dont les 2 matrices d'acteur.
 
 ### B4 — Sujet du mail de panne malformé : `{title: "…"}`
 - **Où** : [notif_panne_job.rb:12-18](app/jobs/notif_panne_job.rb#L12-L18) vs `NotificationMailer#avertissement_reservation`
@@ -252,18 +252,18 @@
 - **Correctif proposé** : afficher un message explicite quand les coordonnées manquent, ou re-remplir le champ avec la valeur saisie. **Non corrigé** (front, non demandé).
 - **Effet de bord constaté sur les tests** : les tests système du formulaire Sites font désormais de **vraies requêtes réseau à `maps.googleapis.com`** (clé d'API présente en test) — dépendance externe + quota consommé à chaque run. `warehouses_test` a été réécrit pour poser adresse et coordonnées comme le fait l'autocomplétion (chemin nominal réel), donc il passe avec ou sans réseau.
 
-### B30 — Météo : `get_title` plante sur une date hors de la fenêtre de prévision
+### B30 — ✅ CORRIGÉ (2026-08-06) — Météo : `get_title` plante sur une date hors de la fenêtre de prévision
 - **Signalé par** : agent, 2026-07-29 (session /tests lot D), **prouvé empiriquement** : `MeteoConceptConnexion.get_title(Date.today + 20, forecasts)` → `NoMethodError: undefined method '[]' for nil`.
 - **Parcours de reproduction** : aucun aujourd'hui **depuis l'UI** — le seul appelant ([tools/_view_list.html.erb:18](app/views/tools/_view_list.html.erb#L18)) est gardé par `if @forecasts && icon_meteo = get_icon_meteo_by_date(date, …)`, qui renvoie nil hors plage et court-circuite l'appel. Le bug se déclenche dès qu'un futur appelant oublie cette garde, ou si la garde est déplacée.
 - **Cause** : `get_title` ([meteo_concept_connexion.rb:68](app/services/meteo_concept_connexion.rb#L68)) interpole `forecast["weather"]` **sans la garde `return unless day_forecast`** que possède son jumeau `get_icon_meteo_by_date` (l.51).
-- **Correctif proposé** : `return if forecast.nil?` en tête, symétrique de `get_icon_meteo_by_date`. **Non corrigé** (méthode /tests). Test `skip` documenté dans `meteo_concept_connexion_test.rb`, qui passera au vert à la correction.
+- ✅ **CORRIGÉ le 2026-08-06** : `return unless forecast` en tête de `get_title` ([meteo_concept_connexion.rb:70](app/services/meteo_concept_connexion.rb#L70)), symétrique de `get_icon_meteo_by_date`. `skip` levé, **prouvé rouge** (`NoMethodError: undefined method '[]' for nil`).
 
-### B31 — Météo : une réponse tronquée de l'API fait planter la recherche de prévision
+### B31 — ✅ CORRIGÉ (2026-08-06) — Météo : une réponse tronquée de l'API fait planter la recherche de prévision
 - **Signalé par** : agent, 2026-07-29 (session /tests lot D), **prouvé empiriquement** : `get_forecast_for_date(Date.today + 5, forecasts.first(3))` → `NoMethodError: undefined method 'third' for nil`.
 - **Parcours de reproduction** : l'API Météo Concept renvoie moins de 14 jours (dégradation partielle, changement d'offre, quota) → ouvrir la page d'accueil ou la réservation de matériel → **erreur 500** sur une page qui n'a pourtant besoin de la météo que pour décorer.
 - **Cause** : `get_forecast_for_date` ([meteo_concept_connexion.rb:64](app/services/meteo_concept_connexion.rb#L64)) borne l'index sur la **constante 14** (`difference_of_day < 14`) au lieu de la taille réelle du tableau reçu, puis appelle `.third` sur `forecasts[index]` sans garde.
 - **Portée** : contredit l'intention explicite du `rescue` de `fetch_response` (« une API météo en panne ne doit jamais faire tomber la page d'accueil ») — la garde protège l'appel HTTP mais pas l'exploitation d'une réponse partielle.
-- **Correctif proposé** : `return unless difference_of_day >= 0 && difference_of_day < forecasts_for_14_days.size`, puis `forecasts_for_14_days[difference_of_day]&.third`. **Non corrigé** (méthode /tests). Test `skip` documenté.
+- ✅ **CORRIGÉ le 2026-08-06** : la borne suit la taille réelle du tableau reçu et l'accès est protégé — `difference_of_day < forecasts_for_14_days.size`, puis `forecasts_for_14_days[difference_of_day]&.third` ([meteo_concept_connexion.rb:62-64](app/services/meteo_concept_connexion.rb#L62)). L'intention du `rescue` de `fetch_response` (« une API météo en panne ne doit jamais faire tomber la page d'accueil ») couvre enfin les réponses **partielles**. `skip` levé, **prouvé rouge** (`NoMethodError: undefined method 'third' for nil`).
 
 ### B32 — `Absence` : une absence sans dates est enregistrable et casse ensuite l'affichage
 - **Signalé par** : agent, 2026-07-29 (hors périmètre de la session, découvert en analysant la couverture), **prouvé empiriquement** en environnement de test : `Absence.new(user: u).valid?` → `true`, puis `nb_jours` → `NoMethodError: undefined method '-' for nil` et `en_cours?` → `TypeError: cannot determine inclusion in beginless/endless ranges`.
@@ -307,13 +307,13 @@
 - **Impact** : 500 sur une page agent, déclenchable par une URL forgée ou un paramètre corrompu.
 - **Correctif proposé** : le même garde que `ToolsController#date_valide?` (une méthode privée de 5 lignes, à mutualiser si un troisième contrôleur en a besoin). **Non appliqué** : hors du périmètre autorisé ce jour (l'autorisation portait sur les trois autres emplacements).
 
-### B42 — L'historique d'un utilisateur annonce « Déconnexion de l'application » pour une modification de profil quelconque
+### B42 — ✅ CORRIGÉ (2026-08-06) — L'historique d'un utilisateur annonce « Déconnexion de l'application » pour une modification de profil quelconque
 - **Signalé par** : agent, 2026-07-29 (session `/tests` « helpers », reproduit par sonde puis par test).
 - **Parcours de repro** : ouvrir l'historique d'un utilisateur (`/users/…`, onglet Activité, ou `/admin/audits`) sur un audit dont **aucun** changement n'est affichable — soit `audited_changes` vide, soit uniquement des champs techniques filtrés (`otp_secret`, `signature`, `failed_attempts`, `ip`, `uid`…). **Observé** : la colonne détail affiche « Déconnexion de l'application », alors que le **badge du même audit** dit « Profil modifié ».
 - **Où** : [app/helpers/audits_helper.rb:113](app/helpers/audits_helper.rb#L113) — `audit.audited_changes['remember_created_at']&.last.nil?` est **vrai quand la clé est absente** (`nil&.last` → `nil`, puis `.nil?` → `true`).
 - **Cause racine** : il manque la garde `key?('remember_created_at') &&` que la fonction jumelle [audits_helper.rb:361](app/helpers/audits_helper.rb#L361) applique correctement pour le badge. Les deux fonctions décrivent le même évènement et divergent.
 - **Impact** : traçabilité trompeuse — un manager lit « déconnexion » là où il y a eu une modification de compte. Exigence CCTP.
-- **Correctif proposé** : ajouter `audit.audited_changes.key?('remember_created_at') &&` (une ligne, aligne le détail sur le badge). Test `skip` documenté prêt à passer au vert : `BUG H1 : un changement de profil invisible ne doit pas être présenté comme une déconnexion` (`audits_helper_test.rb`).
+- ✅ **CORRIGÉ le 2026-08-06** — ⚠️ **le correctif proposé ici était incomplet** : ajouter la garde `key?` à la seule ligne 113 déplace le faux positif d'une ligne, la branche suivante (`&.first.nil?`, l.116) étant elle aussi vraie quand la clé est absente — l'audit se serait alors annoncé « Maintien de la connexion (Cookie) ». La garde est donc posée sur **les deux branches** ([audits_helper.rb:113-117](app/helpers/audits_helper.rb#L113)), comme le fait le badge. Le test asserte désormais l'absence des **deux** libellés. `skip` levé, **prouvé rouge**.
 
 ### B43 — Trois branches mortes dans le repli de `audit_changes_list`
 - **Signalé par** : agent, 2026-07-29 (découvert en écrivant les tests : les assertions attendues échouaient).
@@ -323,13 +323,13 @@
 - **Impact** : nul pour l'utilisateur (le rendu de repli est moins bon que celui qui s'applique), mais 5 lignes de code trompeuses qui font croire à un comportement inexistant.
 - **Correctif proposé** : supprimer les deux branches, ou — si les messages sont voulus — les déplacer **avant** le test `humanize_changes.blank?`. Décision d'affichage à prendre.
 
-### B44 — `/mail_logs` tombe en 500 si la colonne `to` contient une liste de nombres
+### B44 — ✅ CORRIGÉ (2026-08-06) — `/mail_logs` tombe en 500 si la colonne `to` contient une liste de nombres
 - **Signalé par** : agent, 2026-07-29 (reproduit par sonde : `NoMethodError: undefined method 'strip' for an instance of Integer`).
 - **Parcours de repro** : un `MailLog` dont `to` vaut `"[1, 2]"` (JSON valide, contenu non textuel) → ouvrir `/mail_logs` → 500.
 - **Où** : [app/helpers/mail_logs_helper.rb:15](app/helpers/mail_logs_helper.rb#L15) — `Array(emails).map(&:strip)` suppose que `JSON.parse` a rendu des chaînes.
 - **Cause racine** : `MailLog#to` n'a aucune forme garantie (adresse, CSV, tableau, JSON) et a **déjà porté des ID** en production (`notif_panne`, corrigé par `b32fbf28`) — rien n'empêche que ça se reproduise.
 - **Impact** : page des logs d'emails inaccessible tant que la ligne fautive est dans la page. Écran d'administration.
-- **Correctif proposé** : `map { |e| e.to_s.strip }` (une ligne). Test `skip` documenté prêt à passer au vert (`mail_logs_helper_test.rb`).
+- ✅ **CORRIGÉ le 2026-08-06** : `map { |email| email.to_s.strip }` ([mail_logs_helper.rb:15](app/helpers/mail_logs_helper.rb#L15)). `skip` levé, **prouvé rouge** (`NoMethodError: undefined method 'strip' for an instance of Integer`). ⚠️ **B45 reste ouvert** sur la même ligne (le `html_safe` final n'échappe toujours pas les adresses).
 
 ### B45 — `format_mail_recipients` rend du HTML non échappé
 - **Signalé par** : agent, 2026-07-29 (reproduit : `format_mail_recipients('<b>x</b>@paris.fr')` rend le `<b>` comme balise).

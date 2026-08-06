@@ -85,8 +85,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   # Test critique — cas du quotidien (double-clic, retour navigateur, onglet en double) :
   # re-valider une intervention déjà validée.
-  test "critique : re-valider une intervention déjà validée redirige avec un message (bug B3)" do
-    skip 'Bug B3 : valider hors état → Workflow::NoTransitionAllowed non rescué (500) — à réactiver à la correction'
+  test 'critique : re-valider une intervention déjà validée redirige avec un message' do
     intervention = interventions(:intervention_terminée)
     sign_in users(:weil)
     post valider_intervention_url(intervention)

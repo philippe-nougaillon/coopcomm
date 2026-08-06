@@ -232,13 +232,11 @@ class AuditsHelperTest < ActionView::TestCase
     assert_match '—', html
   end
 
-  test 'BUG H1 : un changement de profil invisible ne doit pas être présenté comme une déconnexion' do
-    skip 'H1 (registre) : audits_helper.rb:113 teste `&.last.nil?` sans garde `key?`, vrai quand la clé ' \
-         'est absente. Le badge du même audit dit « Profil modifié ». Correctif : ajouter key?(...).'
-
+  test 'un changement de profil invisible ne doit pas être présenté comme une déconnexion' do
     audit = audit(type: 'User', changes: { 'otp_secret' => %w[aaa bbb] })
 
     assert_no_match(/Déconnexion/, audit_details(audit, nil))
+    assert_no_match(/Maintien de la connexion/, audit_details(audit, nil))
   end
 
   test 'invitation datée : les dates remplacent le message générique' do

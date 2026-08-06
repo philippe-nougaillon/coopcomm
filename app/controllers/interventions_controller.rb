@@ -214,21 +214,29 @@ class InterventionsController < ApplicationController
   def valider
     return if redirect_si_invalide('validée')
 
-    @intervention.valider!
+    if @intervention.can_valider?
+      @intervention.valider!
 
-    Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
+      Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
 
-    redirect_to @intervention, notice: 'Intervention validée'
+      redirect_to @intervention, notice: 'Intervention validée'
+    else
+      redirect_to @intervention, alert: "Impossible de valider l'intervention"
+    end
   end
 
   def refuser
     return if redirect_si_invalide('refusée')
 
-    @intervention.refuser!
+    if @intervention.can_refuser?
+      @intervention.refuser!
 
-    Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
+      Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: @intervention.id }) unless Rails.env.development?
 
-    redirect_to @intervention, notice: 'Intervention refusée'
+      redirect_to @intervention, notice: 'Intervention refusée'
+    else
+      redirect_to @intervention, alert: "Impossible de refuser l'intervention"
+    end
   end
 
   def archiver

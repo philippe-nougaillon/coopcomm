@@ -110,10 +110,10 @@ module AuditsHelper
           return content_tag(:span, "Connexion à l'application", class: 'text-slate-600 font-medium text-xs')
 
         # 2. Cas de déconnexion réelle
-        elsif audit.audited_changes['remember_created_at']&.last.nil?
+        elsif audit.audited_changes.key?('remember_created_at') && audit.audited_changes['remember_created_at']&.last.nil?
           return content_tag(:span, "Déconnexion de l'application", class: 'text-slate-600 font-medium text-xs')
 
-        elsif audit.audited_changes['remember_created_at']&.first.nil?
+        elsif audit.audited_changes.key?('remember_created_at') && audit.audited_changes['remember_created_at']&.first.nil?
           return content_tag(:span, 'Maintien de la connexion (Cookie)', class: 'text-slate-600 font-medium text-xs')
 
         elsif audit.audited_changes.key?('warehouse_id')

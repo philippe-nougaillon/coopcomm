@@ -41,10 +41,6 @@ class InterventionMatriceTransitionsTest < ActionDispatch::IntegrationTest
     'manager_autre_organisation' => {}
   }.freeze
 
-  # Les acteurs dont la policy autorise valider/refuser, et qui tombent donc sur
-  # le bug B3/B7 lorsque l'état ne permet pas la transition.
-  ACTEURS_AVEC_VALIDATION = %w[administrateur manager adherent_proprietaire].freeze
-
   ACTEURS.each_key do |nom_acteur|
     test "#{nom_acteur} : transitions acceptées et refusées, état par état" do
       InterventionsMatrice::ETATS.each do |etat|
@@ -55,28 +51,31 @@ class InterventionMatriceTransitionsTest < ActionDispatch::IntegrationTest
     end
   end
 
-  # ÉPINGLAGE du bug B3/B7 : `valider!` et `refuser!` sont appelés sans garde
-  # `can_valider?` / `can_refuser?` et sans rescue, contrairement à `terminer` et
-  # `archiver`. Sur une intervention VALIDE dont l'état ne permet pas la
-  # transition, la requête part en 500 au lieu de rediriger avec un message.
-  # Le garde `redirect_si_invalide` ne masque le défaut que si l'intervention est
-  # par ailleurs invalide — ce qui explique que le test existant du double-clic
-  # soit resté en `skip`.
-  # À inverser à la correction : le résultat attendu deviendra une redirection.
-  test 'épinglage B3/B7 : valider hors état lève une exception au lieu de rediriger' do
+  # La garde `redirect_si_invalide` ne couvre que les validations du modèle : une
+  # intervention valide dont l'état interdit la transition doit être arrêtée par
+  # `can_valider?` / `can_refuser?`, pas par une exception.
+  test 'valider hors état redirige avec un message au lieu de lever' do
     intervention = intervention_matrice(type: :classique, etat: Intervention::NOUVEAU, complete: true)
     assert intervention.valid?, "garde : l'intervention doit être valide, sinon le bug est masqué"
     sign_in users(:administrateur_paris)
 
-    assert_raises(Workflow::NoTransitionAllowed) { post valider_intervention_url(intervention) }
+    post valider_intervention_url(intervention)
+
+    assert_redirected_to intervention_url(intervention)
+    assert_equal "Impossible de valider l'intervention", flash[:alert]
+    assert_equal Intervention::NOUVEAU, intervention.reload.workflow_state
   end
 
-  test 'épinglage B3/B7 : refuser hors état lève une exception au lieu de rediriger' do
+  test 'refuser hors état redirige avec un message au lieu de lever' do
     intervention = intervention_matrice(type: :classique, etat: Intervention::VALIDE, complete: true)
     assert intervention.valid?, "garde : l'intervention doit être valide, sinon le bug est masqué"
     sign_in users(:administrateur_paris)
 
-    assert_raises(Workflow::NoTransitionAllowed) { post refuser_intervention_url(intervention) }
+    post refuser_intervention_url(intervention)
+
+    assert_redirected_to intervention_url(intervention)
+    assert_equal "Impossible de refuser l'intervention", flash[:alert]
+    assert_equal Intervention::VALIDE, intervention.reload.workflow_state
   end
 
   private
@@ -88,11 +87,6 @@ class InterventionMatriceTransitionsTest < ActionDispatch::IntegrationTest
 
     contexte = "#{nom_acteur} / #{etat} / #{action}"
     autorisee = TRANSITIONS_AUTORISEES.fetch(nom_acteur).fetch(action, []).include?(etat)
-
-    if bug_b7?(nom_acteur, action, autorisee)
-      assert_raises(Workflow::NoTransitionAllowed, contexte) { declenche(action, intervention) }
-      return
-    end
 
     declenche(action, intervention)
 
