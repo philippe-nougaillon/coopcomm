@@ -4,14 +4,7 @@ class NotifManagersInterventionDoneByAgentJob < ApplicationJob
   queue_as :default
 
   def perform(intervention, agent)
-    return unless agent.services.any?
-
-    manager_ids = []
-    agent.services.each do |service|
-      manager_ids += service.managers_and_admin.pluck(:id)
-    end
-
-    managers = User.where(id: manager_ids)
+    managers = intervention.service.managers_and_admin
 
     title = "Nouveau bon d'intervention d'un agent"
 

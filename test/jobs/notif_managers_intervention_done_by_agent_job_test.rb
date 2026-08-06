@@ -8,11 +8,11 @@ class NotifManagersInterventionDoneByAgentJobTest < ActiveJob::TestCase
   setup do
     @intervention = interventions(:tonte_locaux)
     @agent        = users(:martin_technique_paris)
-    # Managers/admins du service « technique » de l'agent : hidalgo + administrateur_paris.
-    @managers = @agent.services.flat_map(&:managers_and_admin).uniq
+    # Managers/admins du service « technique » de l'intervention : hidalgo + administrateur_paris.
+    @managers = @intervention.service.managers_and_admin.to_a
   end
 
-  test 'envoie un mail à chaque manager du service de l\'agent (un MailLog par mail)' do
+  test 'envoie un mail à chaque manager du service de l\'intervention (un MailLog par mail)' do
     assert_equal 2, @managers.size, 'pré-condition : 2 managers attendus sur le service technique'
 
     assert_emails @managers.size do
@@ -30,17 +30,32 @@ class NotifManagersInterventionDoneByAgentJobTest < ActiveJob::TestCase
     assert_equal 'mail', log.channel
   end
 
-  test 'un agent sans service ne déclenche aucune notification' do
-    # Un compte sans service ne peut plus être créé (User#must_have_at_least_one_service)
-    # mais peut subsister en base pour les comptes antérieurs à la validation.
-    sans_service = User.new(nom: 'Sans', prénom: 'Service', email: 'sans.service.agent@example.test',
-                            rôle: 'agent', password: 'qtDug$d843sqACz?V')
-    sans_service.save(validate: false)
-    assert_empty sans_service.services
+  test "les managers du service de l'agent ne sont pas prévenus si l'intervention relève d'un autre service" do
+    @intervention.update_columns(service_id: services(:secretariat).id)
+    @intervention.reload
+
+    destinataires_attendus = [users(:manager_paris).email]
+    assert_equal destinataires_attendus, services(:secretariat).managers_and_admin.map(&:email)
+    assert_not_includes @agent.services, services(:secretariat)
+
+    assert_emails 1 do
+      NotifManagersInterventionDoneByAgentJob.perform_now(@intervention, @agent)
+    end
+
+    destinataires = ActionMailer::Base.deliveries.last.to
+    assert_equal destinataires_attendus, destinataires
+    assert_not_includes destinataires, users(:hidalgo).email
+    assert_not_includes destinataires, users(:administrateur_paris).email
+  end
+
+  test "un service sans manager ne déclenche aucune notification" do
+    @intervention.update_columns(service_id: services(:menage).id)
+    @intervention.reload
+    assert_empty @intervention.service.managers_and_admin
 
     assert_no_emails do
       assert_no_difference -> { MailLog.count } do
-        NotifManagersInterventionDoneByAgentJob.perform_now(@intervention, sans_service)
+        NotifManagersInterventionDoneByAgentJob.perform_now(@intervention, @agent)
       end
     end
   end

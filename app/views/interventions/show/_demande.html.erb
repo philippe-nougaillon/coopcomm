@@ -41,7 +41,7 @@
           <% end %>
         </div>
       </div>
-      <% unless current_user.adhérent? %>
+      <% if policy(intervention).voir_dates_prevues? %>
         <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-100 flex flex-col justify-center space-y-3 h-full">
           <div>
             <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Début prévue</span>

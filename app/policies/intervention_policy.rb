@@ -100,21 +100,25 @@ class InterventionPolicy < ApplicationPolicy
   end
 
   # --- Blocs affichés sur la page d'une intervention ---
-  # L'adhérent ne voit que sa demande. La liste, elle, lui montre tout : cette
-  # divergence est connue, signalée, et figée par les matrices de visibilité.
 
   # Agents, matériel et mots clés.
   def voir_assignation?
-    show? && !adhérent?
+    show? && (!adhérent? || record.workflow_state != Intervention::POINTAGE_ACTIVE)
   end
 
   # Dates réelles, temps, commentaires, photos et trajet.
   def voir_realisation?
-    voir_assignation? && !record.repeter?
+    show? && !adhérent? && !record.repeter?
   end
 
   def voir_pointages?
-    voir_assignation? && record.repeter?
+    show? && record.repeter?
+  end
+
+  # Dates réelles et temps seuls : la section « Intervention » de l'adhérent,
+  # qui n'a ni les commentaires, ni les photos, ni le trajet.
+  def voir_temps?
+    show? && adhérent? && !record.repeter?
   end
 
   # Avis de l'adhérent et évaluation des agents : jamais visibles de l'agent noté.
@@ -133,6 +137,11 @@ class InterventionPolicy < ApplicationPolicy
   # La colonne « Agent » du tableau des pointages : un agent n'y voit que les siens.
   def voir_agent_des_pointages?
     voir_pointages? && !agent?
+  end
+
+  # Dates souhaitées, dans le bloc « Demande ».
+  def voir_dates_prevues?
+    show? && (!adhérent? || record.workflow_state != Intervention::POINTAGE_ACTIVE)
   end
 
   # --- Blocs et champs du formulaire ---

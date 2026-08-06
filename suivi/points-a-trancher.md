@@ -90,6 +90,15 @@ Toutes sont **figées par les matrices de caractérisation** : elles ne peuvent 
 4. **Aucun verrou d'édition par état** : une intervention `archivé` reste modifiable par le manager, l'administrateur, l'agent affecté et l'adhérent, et supprimable par le manager et l'administrateur. Est-ce voulu ?
 5. **`InterventionPolicy` ignore le service du manager** : un manager a exactement les mêmes droits sur une intervention d'un service dont il n'est **pas** membre que sur les siennes — alors qu'`ApplicationPolicy#manage?` fait la distinction et que `UserPolicy` l'a explicitement introduite (B61). Volontaire pour les interventions ?
 6. **L'adhérent peut télécharger le PDF de l'affiche QR code de pointage** (`can_see_qrcode_pointage_pdf?` = `show? && !agent?`), et le bouton lui est proposé sur un modèle de pointage. Utile, ou fuite d'un outil interne ?
+7. ~~**L'adhérent ne voyait plus les dates prévues sur sa page**~~ — **TRANCHÉ et corrigé le 2026-08-06 par PE** : nouveau prédicat `voir_dates_prevues?`, l'adhérent les voit sauf à l'état « pointage activé ». Figé par la sonde `donnee:debut_prevue` de la matrice de visibilité.
+8. ~~**La section « Intervention » de l'adhérent était rendue sur un modèle de pointage**~~ (encadré « Non renseigné / 0 h / 0 h / 0 h ») — **TRANCHÉ et corrigé le 2026-08-06 par PE** : sur un modèle, l'adhérent reçoit le **tableau des pointages** comme les autres rôles, colonne « Agent » comprise (`voir_pointages?` n'exclut plus l'adhérent). Figé par les sondes `bloc:pointages` et `donnee:agent_pointage`.
+
+### D11 — ~~Visibilité de l'adhérent repassée en dur dans la vue~~ — **TRANCHÉ et appliqué le 2026-08-06**
+`#444` avait rouvert une exception au principe posé le 2026-08-05 (toute la visibilité de la page dans `InterventionPolicy`). Rétabli sur décision de PE :
+- `show.html.erb` ne teste plus aucun rôle : trois branches de policy, `voir_pointages?` / `voir_realisation?` / `voir_temps?`.
+- Nouveau prédicat `voir_temps?` (= `show? && adhérent? && !record.repeter?`) pour la section « Intervention » de l'adhérent, extraite en partial `show/_temps_adherent.html.erb` — le `<h2>` et les deux sous-partials n'y sont plus dupliqués.
+- `voir_agent_des_pointages?`, défini le 2026-08-05 mais **jamais appelé**, pilote enfin la colonne « Agent » du tableau des pointages, qui testait `current_user.agent?` en dur à trois endroits (en-tête, cellule, `colspan`).
+- Le `unless current_user.adhérent?` devenu mort dans `show/_assignation.html.erb` a été retiré par PE.
 
 ### D10 — Fusion des deux formulaires d'intervention
 Le découpage du 2026-08-05 a ramené `_form` à 83 lignes d'ossature et `_form_for_agents` à 172, tous deux consommant les mêmes blocs. Il ne reste que **trois** différences réelles, toutes visibles en tête de `_form_for_agents` :

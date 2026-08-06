@@ -327,6 +327,18 @@ class AuditsHelperTest < ActionView::TestCase
     assert_equal 'Utilisateur #999999', format_audit_value('user_id', 999_999)
   end
 
+  test 'un service est identifié par son nom, un identifiant orphelin par son numéro' do
+    assert_equal 'Technique', format_audit_value('service_id', services(:technique).id)
+    assert_equal 'Service #999999', format_audit_value('service_id', 999_999)
+  end
+
+  test 'le changement de service d\'une intervention est rendu en clair' do
+    changement = { 'service_id' => [services(:informatique).id, services(:technique).id] }
+
+    assert_equal [{ label: 'Service', from: 'Informatique', to: 'Technique' }],
+                 humanize_changes(changement)
+  end
+
   test 'un entrepôt est identifié par son nom' do
     assert_equal 'Entrepôt de Paris', format_audit_value('warehouse_id', warehouses(:entrepot_paris).id)
   end

@@ -47,23 +47,12 @@
     </div>
 
     <%# --- POINTAGES / INTERVENTION / COMPTE-RENDU --- %>
-    <% if current_user.adhérent? %>
-      <section class="mb-10">
-        <div class="flex items-center gap-2 mb-4">
-          <span class="w-1.5 h-6 rounded-full bg-gradient-to-b from-[#681b98] via-[#9fd9ec] to-[#40b3db]"></span>
-          <h2 class="text-xl text-slate-800 font-black tracking-tight uppercase">INTERVENTION</h2>
-        </div>
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <%= render "interventions/show/dates", intervention: @intervention %>
-          <%= render "interventions/show/temps", intervention: @intervention %>
-        </div>
-      </section>
-    <% else %>
-      <% if policy(@intervention).voir_pointages? %>
-        <%= render "interventions/show/pointages_table", intervention: @intervention, pointages: @pointages %>
-      <% elsif policy(@intervention).voir_realisation? %>
-        <%= render "interventions/show/intervention_details", intervention: @intervention, routes_response: @routes_response %>
-      <% end %>
+    <% if policy(@intervention).voir_pointages? %>
+      <%= render "interventions/show/pointages_table", intervention: @intervention, pointages: @pointages %>
+    <% elsif policy(@intervention).voir_realisation? %>
+      <%= render "interventions/show/intervention_details", intervention: @intervention, routes_response: @routes_response %>
+    <% elsif policy(@intervention).voir_temps? %>
+      <%= render "interventions/show/temps_adherent", intervention: @intervention %>
     <% end %>
 
     <% if policy(@intervention).voir_compte_rendu? %>

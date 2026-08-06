@@ -8,9 +8,9 @@ require_relative '../support/interventions_matrice'
 # état du workflow.
 #
 # Comparer avec InterventionMatriceVisibiliteTest (la page d'une intervention) :
-# l'adhérent voit ici neuf données que la page détaillée lui cache, et la liste
-# affiche des boutons DÉSACTIVÉS là où la page détaillée les masque. Ces deux
-# incohérences sont figées telles quelles et signalées.
+# l'adhérent voit encore ici les agents, le matériel, les mots clés et les photos
+# que la page détaillée lui cache. Cette incohérence est figée telle quelle et
+# signalée.
 class InterventionMatriceIndexTest < ActionDispatch::IntegrationTest
   include InterventionsMatrice
 

@@ -28,6 +28,8 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
     'bloc:actions' => %r{>Actions</h2>}i,
     'bloc:activite' => %r{>Activité</h2>}i,
     'bloc:pointages' => %r{>Pointages</h2>}i,
+    'donnee:debut_prevue' => 'Début prévue',
+    'donnee:agent_pointage' => '>Agent</th>',
     'donnee:temps_passe' => 'Temps passé',
     'donnee:temps_total' => 'Temps total',
     'donnee:pause' => 'Pause',
@@ -44,6 +46,7 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
   }.freeze
 
   DEMANDE = %w[bloc:demande donnee:meteo].freeze
+  DATES_PREVUES = %w[donnee:debut_prevue].freeze
   ASSIGNATION = %w[bloc:assignation].freeze
   REALISATION = %w[bloc:intervention donnee:temps_passe donnee:temps_total donnee:pause
                    donnee:commentaires donnee:photos].freeze
@@ -51,6 +54,8 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
   # commentaires ni les photos que voient les autres rôles.
   TEMPS_ADHERENT = %w[bloc:intervention donnee:temps_passe donnee:temps_total donnee:pause].freeze
   POINTAGES = %w[bloc:pointages donnee:temps_total].freeze
+  # La colonne « Agent » du tableau des pointages, masquée au seul agent noté.
+  AGENT_POINTAGE = %w[donnee:agent_pointage].freeze
   ACTIVITE = %w[bloc:activite].freeze
   COMPTE_RENDU = %w[bloc:compte_rendu donnee:avis].freeze
 
@@ -58,22 +63,27 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
 
   # Ce que chaque acteur voit indépendamment de l'état du workflow.
   BASE = {
-    %w[administrateur classique] => DEMANDE + ASSIGNATION + REALISATION + ACTIVITE + GESTION,
-    %w[administrateur modele] => DEMANDE + ASSIGNATION + POINTAGES + ACTIVITE + GESTION + ['action:qrcode'],
-    %w[administrateur fille] => DEMANDE + ASSIGNATION + REALISATION + ACTIVITE + GESTION,
-    %w[manager classique] => DEMANDE + ASSIGNATION + REALISATION + ACTIVITE + GESTION,
-    %w[manager modele] => DEMANDE + ASSIGNATION + POINTAGES + ACTIVITE + GESTION + ['action:qrcode'],
-    %w[manager fille] => DEMANDE + ASSIGNATION + REALISATION + ACTIVITE + GESTION,
+    %w[administrateur classique] => DEMANDE + DATES_PREVUES + ASSIGNATION + REALISATION + ACTIVITE + GESTION,
+    %w[administrateur modele] => DEMANDE + DATES_PREVUES + ASSIGNATION + POINTAGES + AGENT_POINTAGE +
+                                 ACTIVITE + GESTION + ['action:qrcode'],
+    %w[administrateur fille] => DEMANDE + DATES_PREVUES + ASSIGNATION + REALISATION + ACTIVITE + GESTION,
+    %w[manager classique] => DEMANDE + DATES_PREVUES + ASSIGNATION + REALISATION + ACTIVITE + GESTION,
+    %w[manager modele] => DEMANDE + DATES_PREVUES + ASSIGNATION + POINTAGES + AGENT_POINTAGE +
+                          ACTIVITE + GESTION + ['action:qrcode'],
+    %w[manager fille] => DEMANDE + DATES_PREVUES + ASSIGNATION + REALISATION + ACTIVITE + GESTION,
     # L'agent ne voit ni l'historique d'activité ni le compte-rendu (évaluation),
     # et ne peut pas modifier un modèle de pointage.
-    %w[agent_affecte classique] => DEMANDE + ASSIGNATION + REALISATION + ['action:modifier'],
-    %w[agent_affecte modele] => DEMANDE + ASSIGNATION + POINTAGES,
-    %w[agent_affecte fille] => DEMANDE + ASSIGNATION + REALISATION + ['action:modifier'],
-    # L'adhérent a sa propre section « Intervention » : dates et temps, quel que
-    # soit le type. Il ne voit toujours ni agents, ni matériel, ni photos, que
-    # l'index lui montre pourtant (incohérence signalée, cf. la matrice de l'index).
+    %w[agent_affecte classique] => DEMANDE + DATES_PREVUES + ASSIGNATION + REALISATION + ['action:modifier'],
+    %w[agent_affecte modele] => DEMANDE + DATES_PREVUES + ASSIGNATION + POINTAGES,
+    %w[agent_affecte fille] => DEMANDE + DATES_PREVUES + ASSIGNATION + REALISATION + ['action:modifier'],
+    # L'adhérent a sa propre section « Intervention » : dates et temps, sauf sur
+    # un modèle de pointage, où il reçoit le tableau des pointages comme les
+    # autres rôles. Les dates prévues et l'assignation lui sont ajoutées par
+    # `attendu`, sauf à l'état « pointage activé ». Il ne voit toujours pas les
+    # photos, que l'index lui montre pourtant.
     %w[adherent_proprietaire classique] => DEMANDE + TEMPS_ADHERENT + ['action:modifier'],
-    %w[adherent_proprietaire modele] => DEMANDE + TEMPS_ADHERENT + ['action:modifier', 'action:qrcode'],
+    %w[adherent_proprietaire modele] => DEMANDE + POINTAGES + AGENT_POINTAGE +
+                                        ['action:modifier', 'action:qrcode'],
     %w[adherent_proprietaire fille] => DEMANDE + TEMPS_ADHERENT + ['action:modifier']
   }.freeze
 
@@ -128,6 +138,10 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
     sondes = BASE[[nom_acteur, type.to_s]].dup
     if ETATS_AVEC_COMPTE_RENDU.include?(etat) && ACTEURS_AVEC_COMPTE_RENDU.include?(nom_acteur)
       sondes += COMPTE_RENDU
+    end
+
+    if nom_acteur == 'adherent_proprietaire' && etat != Intervention::POINTAGE_ACTIVE
+      sondes += DATES_PREVUES + ASSIGNATION
     end
 
     # Un modèle de pointage ne propose aucune transition de workflow.

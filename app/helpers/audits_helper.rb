@@ -194,6 +194,9 @@ module AuditsHelper
     when 'user_id'
       User.find_by(id: value)&.nom_prénom || "Utilisateur ##{value}"
 
+    when 'service_id'
+      Service.find_by(id: value)&.nom || "Service ##{value}"
+
     when 'état'
       {
         '2' => 'Panne',

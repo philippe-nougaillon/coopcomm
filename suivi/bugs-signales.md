@@ -692,3 +692,18 @@
 - **Impact** : le cas « modèle de pointage terminé » ne devrait pas se produire par l'UI (aucun bouton Terminer n'est rendu sur un modèle) ; il est atteignable par requête forgée, par la console et par la tâche de clôture nocturne. La perte silencieuse de `trajet`/`co2`, elle, est atteignable normalement.
 - **Correctif proposé** : sortir l'écriture du callback (`update_columns(trajet:, co2:)` — ces colonnes ne demandent aucune validation), ce qui supprime d'un coup le rejeu des validations, le changement d'état et la perte silencieuse. ⚠️ `co2` est dans la liste surveillée par le trigger du dashboard : `update_columns` déclenche bien le refresh, le comportement de B71 est préservé.
 - **Note connexe** : ce `save` imbriqué est déjà la raison pour laquelle `apres_terminaison` doit être déclaré **en dernier** dans le modèle (cf. décision 2026-07-29-h) — le défaut a donc déjà coûté une fois.
+
+### B75 — Un `<div>` par carte d'intervention n'était jamais fermé pour l'adhérent (signalé ET corrigé le 2026-08-06)
+- **Où** : [_intervention.html.erb:107-115](app/views/interventions/_intervention.html.erb#L107-L115), introduit par `d9fcc0ab` (#444).
+- **Cause** : le `<div>` conteneur du bloc « Commentaires » était ouvert **avant** le `unless current_user.adhérent?`, mais son `</div>` fermant se trouvait **à l'intérieur**. Pour un adhérent, la balise ouvrante était rendue sans fermante.
+- **Parcours de reproduction** : se connecter en adhérent (`weil`) → `/interventions` en vue normale. Chaque carte d'intervention laisse une balise ouvrante orpheline ; le navigateur referme comme il peut, la mise en page des cartes suivantes se décale.
+- **Mesuré, pas déduit** : sonde jetable comptant `<div` contre `</div>` dans la réponse — manager `-1` (ligne de base du layout), adhérent `+5`, soit un `<div>` non fermé par carte. Après correction, adhérent `-1`, identique au manager.
+- **Correctif appliqué** : le `<div>` passe à l'intérieur du `unless`. Le rendu des autres rôles est strictement inchangé (mêmes balises, mêmes classes).
+- **Angle mort révélé** : les matrices de caractérisation sondent des **libellés** (« Commentaires », « Temps passé »…), pas la **structure** du HTML — elles ne pouvaient pas voir ce défaut, et ne le verraient pas davantage s'il revenait.
+
+### B76 — ✅ CORRIGÉ (2026-08-06) — Le bon d'intervention d'un agent était notifié aux managers des services de l'AGENT, pas à ceux du service de l'intervention
+- **Où** : [notif_managers_intervention_done_by_agent_job.rb:7-14](app/jobs/notif_managers_intervention_done_by_agent_job.rb#L7-L14).
+- **Cause** : le job boucle sur `agent.services` pour rassembler les destinataires, exactement comme le faisait son jumeau `NotifManagersNewInterventionFromAdherentJob` (corrigé le 2026-08-06).
+- **Parcours de reproduction** : un agent du service Technique crée un bon d'intervention rattaché au service Secrétariat → les managers de Technique reçoivent le mail, ceux de Secrétariat non.
+- **Impact** : plus faible que pour l'adhérent — un agent n'a qu'un seul service (`agent_must_have_exactly_one_service`), donc le défaut n'apparaît que lorsque l'intervention porte un service différent de celui de son agent. Le manager réellement concerné n'est alors pas prévenu, et un manager étranger l'est.
+- **Correctif appliqué** : `managers = intervention.service.managers_and_admin`, miroir exact de la correction du jumeau. Deux tests ajoutés sur le même patron (intervention déplacée sur `secretariat`, dont l'agent n'est pas membre → seul `manager_paris` prévenu ; service sans manager → aucun mail), **prouvés rouges** (2 échecs) sur l'ancienne version.

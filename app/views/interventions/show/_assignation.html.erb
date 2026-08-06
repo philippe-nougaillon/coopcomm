@@ -36,22 +36,20 @@
           </div>
         <% end %>
       </div>
-      <% unless current_user.adhérent? %>
-        <div>
-          <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Mots clés</span>
-          <% if intervention.tags.any? %>
-            <div class="flex flex-wrap gap-1.5">
-              <% intervention.tags.each do |tag| %>
-                <span class="inline-flex items-center font-semibold text-slate-600">
-                  <span class="text-slate-400 mr-0.5">#</span><%= tag.name.humanize %>
-                </span>
-              <% end %>
-            </div>
-          <% else %>
-            <p class="text-slate-400 italic text-sm">Aucun mot clé</p>
-          <% end %>
-        </div>
-      <% end %>
+      <div>
+        <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Mots clés</span>
+        <% if intervention.tags.any? %>
+          <div class="flex flex-wrap gap-1.5">
+            <% intervention.tags.each do |tag| %>
+              <span class="inline-flex items-center font-semibold text-slate-600">
+                <span class="text-slate-400 mr-0.5">#</span><%= tag.name.humanize %>
+              </span>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-slate-400 italic text-sm">Aucun mot clé</p>
+        <% end %>
+      </div>
     </div>
   </div>
 </section>
