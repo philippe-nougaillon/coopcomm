@@ -1,95 +1,121 @@
-<% page_title!('Pointage "' + @intervention.description + '"') %>
-<h1 class="text-2xl sm:text-4xl text-primary font-bold mb-12">
-  CoopComm
-</h1>
+<% page_title!("Pointage - #{@intervention.description}") %>
 
-<p class="text-xl mb-4">
-  <strong class="block text-slate-400 mb-1">Intervention</strong>
-  <%= @intervention.description %>
-</p>
-
-
-<h3 class="text-xl mb-4">
-  <strong class="block text-slate-400 mb-1">Agent(s)</strong>
-  <% @intervention.agents.each do |agent| %>
-    <%= agent.nom_prénom %>
-    <br>
-  <% end %>
-</h3>
-
-<ul class="timeline timeline-vertical mt-8" data-controller="geolocation" data-location-url-value="<%= update_location_intervention_url %>">
-  <li>
-    <div class="timeline-start text-right">Début intervention</div>
-    <div class="timeline-middle">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        class="h-5 w-5 text-success">
-        <path
-          fill-rule="evenodd"
-          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-          clip-rule="evenodd" />
-      </svg>
+<div class="max-w-4xl mx-auto space-y-6">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+    <div>
+      <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Suivi de Pointage</span>
+      <h1 class="text-2xl sm:text-3xl text-slate-800 font-bold">
+        <%= @intervention.description %>
+      </h1>
     </div>
-    <div class="timeline-end timeline-box mb-4"><%= l(@intervention.début, format: :short) %></div>
-    <hr class="<%= 'bg-success' if @intervention.fin %>" />
-  </li>
-  <li>
-    <hr class="<%= 'bg-success' if @intervention.fin %>" />
-    <div class="timeline-start text-right">Fin intervention</div>
-    <div class="timeline-middle">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        class="h-5 w-5 <%= 'text-success' if @intervention.fin %>">
-        <path
-          fill-rule="evenodd"
-          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-          clip-rule="evenodd" />
-      </svg>
+    <div>
+      <% if @intervention.fin %>
+        <span class="badge badge-success text-white font-medium px-3 py-1 text-sm">Terminé</span>
+      <% else %>
+        <span class="badge badge-warning text-slate-800 font-medium px-3 py-1 text-sm">En cours</span>
+      <% end %>
     </div>
-    <% if @intervention.fin %>
-      <div class="timeline-end timeline-box mt-4">
-        <%= l(@intervention.fin, format: :short) %>
-      </div>
-    <% end %>
-    <hr class="<%= 'bg-success' if @intervention.fin %>" />
-  </li>
-  <li>
-    <hr class="<%= 'bg-success' if @intervention.fin %>" />
-    <div class="timeline-start text-right">Comptabilisation</div>
-    <div class="timeline-middle">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        class="h-5 w-5 <%= 'text-success' if @intervention.fin %>">
-        <path
-          fill-rule="evenodd"
-          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-          clip-rule="evenodd" />
-      </svg>
-    </div>
-    <% if @intervention.fin %>
-      <div class="timeline-end timeline-box mt-4">
-        <%= @intervention.durée_humanized %>
-      </div>
-    <% end %>
-  </li>
-</ul>
-
-<%= form_with model: @intervention, class: "w-full mt-8" do |form| %>
-  <div class="w-full sm:w-1/4 mx-auto">
-    <%= form.text_area :commentaires, class: "textarea w-full", rows: 6, placeholder: "Ecrivez ici vos remarques ou commentaires", 'data-controller': 'textarea-autogrow' %>
-    <%= form.submit "Enregistrer le commentaire", class: "btn btn-primary mt-2" %>
   </div>
-<% end %>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    
+    <div class="md:col-span-1 space-y-4">
+      <div class="bg-white border border-slate-200 shadow-sm h-full rounded-xl p-5">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Agents assignés</h2>
+        <div class="space-y-2">
+          <% if @intervention.agents.any? %>
+            <% @intervention.agents.each do |agent| %>
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-xs text-slate-600">
+                  <%= agent.nom_prénom.first.upcase %>
+                </div>
+                <span class="text-sm font-medium text-slate-700"><%= agent.nom_prénom %></span>
+              </div>
+            <% end %>
+          <% else %>
+            <p class="text-sm text-slate-400 italic">Aucun agent assigné</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="md:col-span-2 bg-white border border-slate-200 shadow-sm rounded-xl p-6">
+      <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Chronologie de l'intervention</h2>
+
+      <ul class="timeline timeline-vertical" data-controller="geolocation" data-location-url-value="<%= update_location_intervention_url %>">
+        <li>
+          <div class="timeline-start text-right text-xs font-medium text-slate-500">Début intervention</div>
+          <div class="timeline-middle">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5 text-success">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="timeline-end timeline-box bg-slate-50 border-slate-200 text-slate-700 text-xs font-semibold my-2">
+            <%= l(@intervention.début, format: :short) %>
+          </div>
+          <hr class="<%= @intervention.fin ? 'bg-success' : 'bg-slate-200' %>" />
+        </li>
+
+        <li>
+          <hr class="<%= @intervention.fin ? 'bg-success' : 'bg-slate-200' %>" />
+          <div class="timeline-start text-right text-xs font-medium text-slate-500">Fin intervention</div>
+          <div class="timeline-middle">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5 <%= @intervention.fin ? 'text-success' : 'text-slate-300' %>">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="timeline-end my-2">
+            <% if @intervention.fin %>
+              <div class="timeline-box bg-slate-50 border-slate-200 text-slate-700 text-xs font-semibold">
+                <%= l(@intervention.fin, format: :short) %>
+              </div>
+            <% else %>
+              <span class="text-xs text-slate-400 italic">En attente</span>
+            <% end %>
+          </div>
+          <hr class="<%= @intervention.fin ? 'bg-success' : 'bg-slate-200' %>" />
+        </li>
+
+        <li>
+          <hr class="<%= @intervention.fin ? 'bg-success' : 'bg-slate-200' %>" />
+          <div class="timeline-start text-right text-xs font-medium text-slate-500">Comptabilisation</div>
+          <div class="timeline-middle">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5 <%= @intervention.fin ? 'text-primary' : 'text-slate-300' %>">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="timeline-end my-2">
+            <% if @intervention.fin %>
+              <div class="timeline-box bg-primary/10 border-primary/20 text-primary font-bold text-xs">
+                <%= @intervention.durée_humanized %>
+              </div>
+            <% else %>
+              <span class="text-xs text-slate-400 italic">—</span>
+            <% end %>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="bg-white border border-slate-200 shadow-sm rounded-xl p-6">
+    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Remarques & Commentaires</h2>
+    <%= form_with model: @intervention, class: "space-y-4" do |form| %>
+      <%= form.text_area :commentaires, 
+            class: "textarea textarea-bordered w-full focus:border-primary focus:ring-1 focus:ring-primary text-slate-700", 
+            rows: 4, 
+            placeholder: "Écrivez ici vos remarques ou commentaires...", 
+            data: { controller: 'textarea-autogrow' } %>
+      
+      <div class="flex justify-end">
+        <%= form.submit "Enregistrer le commentaire", class: "btn btn-primary text-white font-medium shadow-sm" %>
+      </div>
+    <% end %>
+  </div>
+</div>
 
 <% if @intervention.fin && flash[:notice] %>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <script>
-    setTimeout(() => confetti(), 2*1000);
+    setTimeout(() => confetti(), 1500);
   </script>
 <% end %>
