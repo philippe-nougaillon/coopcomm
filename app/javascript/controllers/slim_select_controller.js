@@ -17,9 +17,7 @@ export default class extends Controller {
     let specificSettings = {}
     let specificEvents = {}
 
-    const addableIds = ['intervention_tags_manager', 'user_tag_list']
-
-    if (addableIds.includes(this.element.id)) {
+    if (this.element.dataset.addable === 'true') {
       specificSettings = {
         addableText: 'Appuyez sur "Entrer" pour ajouter {value}',
       }

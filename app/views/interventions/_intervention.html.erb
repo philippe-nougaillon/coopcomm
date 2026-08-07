@@ -7,12 +7,15 @@
           <span class="badge font-bold text-xs uppercase shrink-0 <%= intervention.style %>">
             <%= intervention.workflow_state.humanize %>
           </span>
-          <%= link_to intervention.description.humanize, intervention, class: 'z-10 hover:underline break-words font-semibold' %>
+         <%= link_to intervention, class: "flex items-center gap-2 z-10 hover:underline break-words font-semibold" do %>
+          <span><%= intervention.description.humanize %></span>
+
           <% if intervention.repeter %>
-            <%= embedded_svg "icons/event_repeat.svg", title: "Modèle pour le pointage", class: "w-5 h-5 text-slate-500 shrink-0" %>
+            <%= embedded_svg "icons/event_repeat.svg", title: "Modèle pour le pointage", class: "w-5 h-5 fill-current shrink-0" %>
           <% elsif intervention.template_slug %>
-            <%= embedded_svg "icons/qr_code_2.svg", title: "Pointage", class: "w-5 h-5 text-slate-500 shrink-0" %>
+            <%= embedded_svg "icons/qr_code_2.svg", title: "Pointage", class: "w-5 h-5 fill-current shrink-0" %>
           <% end %>
+        <% end %>
         </div>
         <div class="text-xs text-slate-400">
           <i class="<%= 'text-error animate-pulse font-black' if defined?(from_turbo_stream) %>">

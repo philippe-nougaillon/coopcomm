@@ -354,7 +354,7 @@ module AuditsHelper
 
     content_tag(:ul, class: 'space-y-1.5') do
       items.map do |item|
-        content_tag(:li, class: 'flex flex-wrap items-center gap-1.5 text-xs') do
+        content_tag(:li, class: 'flex flex-wrap items-center gap-1.5 text-xs min-w-0 break-all') do
           label = content_tag(:span, "#{item[:label]} :", class: 'text-slate-400 font-medium shrink-0')
 
           body = if item[:from].present? && item[:from] != '—'
@@ -393,7 +393,7 @@ module AuditsHelper
         audit_changes_list(audit, current_user)
       end
 
-    content_tag(:div, contenu, class: 'bg-slate-50/60 rounded-lg p-2 border border-slate-300 group-hover:bg-white transition-colors duration-150')
+    content_tag(:div, contenu, class: 'bg-slate-50/60 rounded-lg p-2 border border-slate-300 group-hover:bg-white transition-colors duration-150 min-w-0 break-words')
   end
 
   private

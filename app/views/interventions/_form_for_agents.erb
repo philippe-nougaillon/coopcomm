@@ -11,9 +11,21 @@
 <%= form_with(model: intervention, class: "max-w-5xl mx-auto space-y-8 pb-12",
               data: { controller: "verification-disponibilites",
                       verification_disponibilites_intervention_id_value: (intervention.id if intervention.persisted?) }) do |form| %>
+  
   <%= hidden_field_tag :terminer, 1 if terminaison_demandee %>
 
+  <% if terminaison_demandee %>
+    <div class="alert bg-sky-50 border border-sky-200 text-sky-800 rounded-xl p-4 flex items-start gap-3">
+      <%= embedded_svg "icons/info.svg", class: "w-5 h-5 shrink-0 mt-0.5" rescue nil %>
+      <div>
+        <p class="font-semibold">Complétez les informations pour terminer cette intervention</p>
+        <p class="text-sm mt-1">Les champs <strong>Agents</strong>, <strong>Début</strong>, <strong>Fin</strong> et <strong>Pause</strong> ci-dessous sont obligatoires. Une fois enregistrés, l'intervention passera automatiquement au statut « Terminé ».</p>
+      </div>
+    </div>
+  <% end %>
+
   <%= render "interventions/form/erreurs", intervention: intervention %>
+
 
   <div class="space-y-8">
     <section class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6">
@@ -91,7 +103,7 @@
           <%= form.label :début, class: "label font-semibold text-slate-700" do %>
             Début <span class="text-red-500">*</span>
           <% end %>
-          <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200">
+          <div class="flex items-center gap-2  <%= terminaison_demandee && intervention.début.blank? ?  'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200' %> p-2 rounded-lg border">
             <%= form.date_field :début,
                                 class: "flex-1 bg-transparent border-none outline-hidden text-sm",
                                 value: (params[:début]&.to_date || intervention.début&.to_date || (intervention.new_record? ? Date.current : nil)),
@@ -122,7 +134,7 @@
           <%= form.label :fin, class: "label font-semibold text-slate-700" do %>
             Fin <span class="text-red-500">*</span>
           <% end %>
-          <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200">
+          <div class="flex items-center gap-2  <%= terminaison_demandee && intervention.fin.blank? ?  'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200' %> p-2 rounded-lg border">
             <%= form.date_field :fin,
                                 class: "flex-1 bg-transparent border-none outline-hidden text-sm",
                                 value: (params[:fin].try(:to_date) || intervention.fin&.to_date),

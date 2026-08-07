@@ -10,9 +10,9 @@
   <td class="align-middle pl-12 py-3">
     <div class="flex items-center gap-2 justify-left text-lg sm:text-xl font-semibold text-<%= intervention.style.split.first.split('-').last %>">
       <% if intervention.repeter %>
-        <%= embedded_svg "icons/event_repeat.svg", class: "text-slate-700", title: "Modèle pour le pointage" %>
+        <%= embedded_svg "icons/event_repeat.svg", class: "w-6 h-6 fill-current shrink-0", title: "Modèle pour le pointage" %>
       <% elsif intervention.template_slug %>
-        <%= embedded_svg "icons/qr_code_2.svg", title: "Pointage" %>
+        <%= embedded_svg "icons/qr_code_2.svg", class: "w-6 h-6 fill-current shrink-0", title: "Pointage" %>
       <% end %>
       <%= link_to intervention.description.humanize, intervention, class: 'z-10 hover:underline' %>
     </div>
