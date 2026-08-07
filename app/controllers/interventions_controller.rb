@@ -108,7 +108,6 @@ class InterventionsController < ApplicationController
   # POST /interventions or /interventions.json
   def create
     @intervention = Intervention.new(intervention_params)
-    @intervention.organisation = current_organisation
     @intervention.workflow_state = Intervention::TERMINE if current_user.agent?
     update_tag_list
 
@@ -387,7 +386,6 @@ class InterventionsController < ApplicationController
 
   def create_intervention_modele_pointage
     @intervention = Intervention.new(intervention_params)
-    @intervention.organisation = current_organisation
 
     # Force l'intervention à être répété
     @intervention.repeter = true

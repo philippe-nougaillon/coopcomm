@@ -406,6 +406,16 @@
 
 *Chaque fiche garde son parcours de reproduction d'origine (utile pour écrire un test de non-régression) et se termine par le correctif appliqué.*
 
+### B86 — ✅ SIGNALÉ ET CORRIGÉ (2026-08-07) — L'agent ne pouvait pas ouvrir le formulaire d'une intervention créée par WhatsApp (500)
+- **Où** : [_form_for_agents.erb:42](app/views/interventions/_form_for_agents.erb#L42)
+- **Cause** : le champ « Adhérent » figé faisait `intervention.adherent.nom_prénom` **sans garde nil**. Or le webhook WhatsApp ([twilio_controller.rb:26](app/controllers/twilio_controller.rb#L26)) crée l'intervention par `save!(validate: false)` **sans adhérent** (l'agent écrit du terrain sans savoir pour quelle commune). Et la branche « adhérent figé » est bien celle qui s'applique : `bon?` lit l'utilisateur du premier audit, or le webhook n'est pas authentifié → l'audit a `user_id: nil` → `bon?` rend `nil` → `!bon?` est vrai.
+- **Parcours de reproduction** (mesuré, sonde jetable) :
+  1. Un agent envoie un message WhatsApp au numéro du support → une intervention `[WhatsApp] …` est créée, sans adhérent.
+  2. Le même agent ouvre cette intervention (la page s'affiche, 200) et clique **« Modifier »**.
+  3. → `ActionView::Template::Error: undefined method 'nom_prénom' for nil` → **page d'erreur 500**. L'agent ne peut donc pas compléter sa propre saisie.
+- **Ce qui marchait déjà** (mesuré, contre une crainte de PE) : l'intervention **a** un service (`agent.services.first`), donc une organisation ; la policy passe, elle apparaît **en tête de l'index** du manager, et sa page s'affiche en 200 pour l'agent comme pour le manager. Seul le formulaire d'édition plantait.
+- ✅ **CORRIGÉ le 2026-08-07** : `intervention.adherent&.nom_prénom`. Couvert par `test/integration/intervention_sans_adherent_test.rb` (6 tests : brouillon sans adhérent mais rattaché à une organisation, présence dans l'index du manager, show manager + agent, **édition agent**, complétion par le manager qui rend l'intervention valide, sentinelle structurelle « aucun `validate: false` hors du webhook »). **Prouvé rouge** en remettant l'appel sans garde.
+
 ### B3 — ✅ CORRIGÉ (2026-08-06) — `valider`/`refuser` une intervention hors état → erreur 500
 - **Où** : [interventions_controller.rb:312-326](app/controllers/interventions_controller.rb#L312-L326)
 - **Cause** : `valider!` et `refuser!` sont appelés **sans garde `can_valider?`/`can_refuser?`** ni `rescue Workflow::NoTransitionAllowed` (contrairement à `terminer` et `archiver` qui sont protégés).

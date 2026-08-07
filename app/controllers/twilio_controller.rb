@@ -17,26 +17,33 @@ class TwilioController < ApplicationController
 
     agent = User.agent.find_by_whatsapp_phone(sender) if sender.present?
 
-    if sender.present? && message.present? && agent
-      intervention = Intervention.new(
-        description: "[WhatsApp] #{l(DateTime.now,
-                                     format: :long)} #{sender.gsub('whatsapp:', '')}", commentaires: message, service: agent.services.first, workflow_state: 'nouveau'
-      )
-      # Obligé de bypass les validations comme on ne connait pas l'adhérent concerné par l'intervention
-      intervention.save!(validate: false)
-      if intervention
-        # Pas de test de chevauchement d'intervention puisqu'il n'y a aucune date dans ce qu'il y a envoyé
-        intervention.agent_interventions.create(agent:)
-        render xml: Twilio::TwiML::MessagingResponse.new.message(body: 'Intervention créée avec succès.').to_s
-      else
-        render xml: Twilio::TwiML::MessagingResponse.new.message(body: "L'intervention n'a pas pu être créée : #{intervention.errors.full_messages}").to_s
-      end
-    else
-      render xml: Twilio::TwiML::MessagingResponse.new.message(body: "Votre numéro de téléphone n'est associé à aucun agent. Veuillez contacter un manageur.").to_s
+    if sender.blank? || message.blank? || agent.nil?
+      return render xml: reponse_whatsapp("Votre numéro de téléphone n'est associé à aucun agent. Veuillez contacter un manageur.")
     end
+
+    # ordered : sans ordre explicite, « le premier service » varie d'un appel à l'autre.
+    service = agent.services.ordered.first
+
+    if service.nil?
+      return render xml: reponse_whatsapp("Votre compte n'est rattaché à aucun service. Veuillez contacter un manageur.")
+    end
+
+    intervention = Intervention.new(
+      description: "[WhatsApp] #{l(DateTime.now, format: :long)} #{sender.gsub('whatsapp:', '')}",
+      commentaires: message, service: service, workflow_state: 'nouveau'
+    )
+    # Brouillon à compléter : l'adhérent concerné n'est pas connu depuis le terrain.
+    intervention.save!(validate: false)
+    intervention.agent_interventions.create(agent:)
+
+    render xml: reponse_whatsapp('Intervention créée avec succès.')
   end
 
   private
+
+  def reponse_whatsapp(corps)
+    Twilio::TwiML::MessagingResponse.new.message(body: corps).to_s
+  end
 
   def validate_twilio_signature
     validator = Twilio::Security::RequestValidator.new(ENV['TWILIO_AUTH_TOKEN'].to_s)

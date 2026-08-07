@@ -39,7 +39,7 @@
               lui-même, et sur toute fille de pointage. %>
           <% if intervention.persisted? && (!intervention.bon? || intervention.template_slug.present?) %>
             <%= form.label :adherent_id, "Adhérent", class: "label font-semibold text-slate-700" %>
-            <%= form.text_field :adherent_id, value: intervention.adherent.nom_prénom, class: "input input-bordered w-full bg-slate-50 text-slate-500", disabled: true %>
+            <%= form.text_field :adherent_id, value: intervention.adherent&.nom_prénom, class: "input input-bordered w-full bg-slate-50 text-slate-500", disabled: true %>
           <% else %>
             <div>
               <%= form.label :adherent_id, class: "label font-semibold text-slate-700" do %>

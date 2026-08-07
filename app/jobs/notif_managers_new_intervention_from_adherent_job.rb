@@ -3,8 +3,8 @@
 class NotifManagersNewInterventionFromAdherentJob < ApplicationJob
   queue_as :default
 
-  def perform(intervention, adherent)
-    managers = intervention.service.managers_and_admin
+  def perform(intervention, adherent, destinataires = nil)
+    managers = destinataires || intervention.service.managers_and_admin
 
     title = "Nouvel intervention d'un adhérent"
 

@@ -520,6 +520,44 @@ class InterventionTest < ActiveSupport::TestCase
     assert_equal intervention.id, audit.associated_id
   end
 
+  # === Service et adhérent obligatoires =====================================
+
+  test 'une intervention sans service est refusée' do
+    intervention = intervention_sans_dates(adherent: users(:weil), service: nil)
+
+    assert_not intervention.valid?
+    assert_includes intervention.errors.attribute_names, :service_id
+  end
+
+  test 'une intervention sans adhérent est refusée' do
+    intervention = intervention_sans_dates(adherent: nil, service: services(:informatique))
+
+    assert_not intervention.valid?
+    assert_includes intervention.errors.attribute_names, :adherent_id
+  end
+
+  # C'est la clé qui fait foi, pas l'association : User porte un default_scope
+  # :kept, donc `adherent` rend nil dès que le compte est désactivé.
+  test 'un adhérent désactivé reste un adhérent valide à la création' do
+    adherent = users(:weil)
+    intervention = intervention_sans_dates(adherent: adherent, service: services(:informatique))
+    adherent.discard
+
+    assert_nil intervention.reload_adherent
+    assert_predicate intervention, :valid?
+  end
+
+  test 'une intervention dont l’adhérent est désactivé reste enregistrable' do
+    intervention = interventions(:tonte_locaux)
+    intervention.adherent.discard
+
+    intervention.reload
+
+    assert_nil intervention.adherent
+    assert_predicate intervention.adherent_id, :present?
+    assert_predicate intervention, :valid?
+  end
+
   private
 
   def intervention_sans_dates(adherent:, service:)

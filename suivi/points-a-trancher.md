@@ -34,6 +34,24 @@
 - **Effet de bord positif, non recherché** : cette même validation bloque désormais la plupart des rétrogradations silencieuses de **B21** (un manager cité par mégarde dans le fichier n'est plus transformé en agent, sauf s'il est mono-service et que la ligne reprend justement ce service — cas épinglé par un test).
 - **Options** : (a) laisser tel quel, le changement de service se fait à la main dans la fiche — le plus simple, l'import reste un outil de **création** ; (b) faire **remplacer** le service au lieu de cumuler quand la cible est un agent ; (c) rendre le message d'erreur explicite (« cet agent est déjà rattaché à X, retirez-le d'abord »). *Rien n'a été changé dans l'import : seuls ses tests ont été mis à jour.*
 
+### D13 — Verrouiller `interventions.service_id` en base (`null: false`) ? (2026-08-07)
+- **Contexte** : le service et l'adhérent sont obligatoires au niveau du modèle, mais les **colonnes restent nullables** ([db/schema.rb:252 et 265](db/schema.rb#L252)) — seule une écriture qui contourne les validations (webhook WhatsApp, console, SQL direct) peut y mettre `NULL`. La clé étrangère vers `services` existe déjà, celle vers `users` non (`adherent_id` est un `integer` sans contrainte).
+- **Ce qui est décidé** : `adherent_id` **reste nullable**, c'est la condition pour que le brouillon WhatsApp continue d'exister (décision PE du 2026-08-07 : on laisse le webhook tel quel).
+- **Ce qui reste à trancher** : `service_id` en `null: false`. PE indique qu'il n'y a **aucune intervention en production** — la migration y est donc gratuite ; c'est la **démo** qu'il faut mesurer d'abord (requête ci-dessous).
+- ✅ **Condition préalable levée le 2026-08-07** : le webhook garde désormais le cas « agent sans service » (réponse explicite, aucune écriture) et choisit son service par `services.ordered.first`. PE : « il n'y a pas de compte agent sans service, ils seraient inutilisables — mais dans le doute, au cas où un jour un agent puisse avoir 0 ou plusieurs services, fais la correction. » Sans cette garde, poser `null: false` aurait exposé le webhook à une `PG::NotNullViolation` (500 rejoué par Twilio).
+- **Requête de mesure (lecture seule, à passer sur la démo)** :
+  ```sql
+  SELECT COUNT(*) AS total,
+         COUNT(*) FILTER (WHERE service_id  IS NULL) AS sans_service,
+         COUNT(*) FILTER (WHERE adherent_id IS NULL) AS sans_adherent
+  FROM interventions;
+
+  SELECT id, description, workflow_state, created_at
+  FROM interventions
+  WHERE service_id IS NULL OR adherent_id IS NULL
+  ORDER BY created_at DESC;
+  ```
+
 ## 🔧 Actions à faire (infra / prod)
 
 ### A1 — Planifier la relance des cotations sur Hatchbox
