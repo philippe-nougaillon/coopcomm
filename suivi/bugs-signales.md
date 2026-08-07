@@ -303,6 +303,13 @@
 - **Correctif proposé** : sortir l'écriture du callback (`update_columns(trajet:, co2:)` — ces colonnes ne demandent aucune validation), ce qui supprime d'un coup le rejeu des validations, le changement d'état et la perte silencieuse. ⚠️ `co2` est dans la liste surveillée par le trigger du dashboard : `update_columns` déclenche bien le refresh, le comportement de B71 est préservé.
 - **Note connexe** : ce `save` imbriqué est déjà la raison pour laquelle `apres_terminaison` doit être déclaré **en dernier** dans le modèle (cf. décision 2026-07-29-h) — le défaut a donc déjà coûté une fois.
 
+### B85 — Le filtre « Mots clés » des index est calculé sur un périmètre absurde
+- **Où** : [application_controller.rb:57](app/controllers/application_controller.rb#L57), `set_users_tags`
+- **Cause** : `User.by_service(current_user)` reçoit **l'utilisateur courant** là où la méthode attend des **services** — l'identifiant de l'utilisateur est utilisé comme identifiant de service. Le défaut est antérieur (il existait déjà avec la version `joins + where(services: user)`), il a seulement été rendu visible en réécrivant `by_service` en sous-requête.
+- **Parcours de reproduction** (mesuré en console) : `User.by_service(User.first).count` → **0** ; la liste des mots clés proposée au filtre est donc calculée sur un ensemble vide ou, pire, sur les utilisateurs d'un service dont l'identifiant coïncide avec celui de l'utilisateur connecté.
+- **Impact** : le menu déroulant « Mots clés » des index (utilisateurs, interventions) ne propose pas les bons mots clés — il n'en propose aucun dans la plupart des cas. Aucune fuite de données : `tag_counts_on` ne renvoie que des noms de tags.
+- **Correctif proposé** : `User.by_service(current_user.services)`. Une ligne. Non appliqué : hors du périmètre du lot « tris » (2026-08-06).
+
 ---
 
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)

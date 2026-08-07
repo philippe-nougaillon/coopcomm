@@ -22,7 +22,18 @@ class Service < ApplicationRecord
 
   normalizes :nom, with: ->(nom) { nom.humanize.strip }
 
-  scope :ordered, -> { order(Arel.sql('LOWER(services.nom) ASC')) }
+  scope :ordered, -> { trié_par(:nom) }
+
+  triable_par 'services.nom' => :texte,
+              'services.users' => "(SELECT STRING_AGG(#{TriTextuel.expression('users.nom')}, ',' " \
+                                  "ORDER BY #{TriTextuel.expression('users.nom')}) FROM users " \
+                                  'INNER JOIN user_services ON user_services.user_id = users.id ' \
+                                  'WHERE user_services.service_id = services.id AND users.discarded_at IS NULL)',
+              'services.users_count' => '(SELECT COUNT(*) FROM user_services ' \
+                                        'INNER JOIN users ON users.id = user_services.user_id ' \
+                                        'WHERE user_services.service_id = services.id ' \
+                                        'AND users.discarded_at IS NULL)',
+              'services.calculate_distance' => :brut
 
   def managers_and_admin
     users.where(rôle: %i[manager administrateur])

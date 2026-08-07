@@ -15,6 +15,7 @@ class InterventionsController < ApplicationController
   before_action :set_interventions_tags,
                 only: %i[index new edit create update new_intervention_modele_pointage create_intervention_modele_pointage]
 
+  trie Intervention, defaut: 'interventions.updated_at', sens: :desc
 
   # GET /interventions or /interventions.json
   def index
@@ -40,9 +41,6 @@ class InterventionsController < ApplicationController
     end
   end
 
-
-
-
   # GET /interventions/1 or /interventions/1.json
   def show
     # TODO : Déplacer le stale au plus près du render
@@ -54,7 +52,7 @@ class InterventionsController < ApplicationController
                    else
                      @intervention.pointages
                    end
-      @pointages = @pointages.ordered
+      @pointages = trier(@pointages)
     end
 
     if (@intervention.nouveau? || @intervention.trajet.blank?)
@@ -63,7 +61,7 @@ class InterventionsController < ApplicationController
 
     respond_to do |format|
       format.html do
-        @audits = @intervention.own_and_associated_audits.includes(:user).reorder(id: :desc)
+        @audits = trier(@intervention.own_and_associated_audits.includes(:user))
         @pagy, @audits = pagy(@audits, items: 10)
       end
 
@@ -367,7 +365,7 @@ class InterventionsController < ApplicationController
 
   def services_for_adherent
     adherent = User.find(params[:adherent_id])
-    @services = adherent.services.where(id: current_user.service_ids)
+    @services = adherent.services.where(id: current_user.service_ids).ordered
 
     # On renvoie uniquement l'id et le nom pour construire le <select>
     render json: @services.select(:id, :nom)
@@ -418,11 +416,11 @@ class InterventionsController < ApplicationController
     interventions = filtrer_par_acteurs(interventions)
     interventions = filtrer_par_mots_cles(interventions)
 
-    interventions = interventions.reorder(Arel.sql("#{sort_column} #{sort_direction}")) if params[:vue] == 'compact'
+    interventions = interventions.distinct
+                                 .includes(:tags, :agents, :adherent, :service, :organisation, :tools)
+                                 .with_attached_photos
 
-    interventions.distinct
-                 .includes(:tags, :agents, :adherent, :service, :organisation, :tools)
-                 .with_attached_photos
+    params[:vue] == 'compact' ? trier(interventions) : interventions
   end
 
   def filtre_service_applicable?
@@ -498,7 +496,7 @@ class InterventionsController < ApplicationController
   # Alimente les listes déroulantes du bandeau de filtres.
   def charger_options_de_filtre(services_demandes)
     services_des_adherents = current_user.administrateur? ? @services : services_demandes
-    @adhérents = User.by_service(services_des_adherents).adhérent.order(:nom)
+    @adhérents = User.by_service(services_des_adherents).adhérent.ordered
 
     if current_user.manager_or_admin? || current_user.adhérent?
       @grouped_agents = User.by_service(services_demandes).grouped_agents(current_user)
@@ -534,12 +532,12 @@ class InterventionsController < ApplicationController
   end
 
   def set_form_variables
-    services = current_user.services
+    services = current_user.services.ordered
     @services = services unless current_user.agent?
 
     users_in_same_services = User.by_service(services)
 
-    @adhérents = users_in_same_services.adhérent.order(:nom)
+    @adhérents = users_in_same_services.adhérent.ordered
 
     selected_service = preselected_form_service
     @agents = User.agents_for_services(selected_service ? [selected_service] : services)
@@ -558,7 +556,8 @@ class InterventionsController < ApplicationController
   end
 
   def set_interventions_tags
-    @intervention_tags = current_organisation.interventions.tag_counts_on(:tags).order(:name)
+    @intervention_tags = current_organisation.interventions.tag_counts_on(:tags)
+                                             .reorder(Arel.sql(TriTextuel.expression('tags.name')))
   end
 
   # Only allow a list of trusted parameters through.
@@ -584,19 +583,6 @@ class InterventionsController < ApplicationController
                              else
                                params[:intervention][:tags_intervenant]
                              end
-  end
-
-  def sortable_columns
-    ['interventions.description', 'interventions.commentaires', 'interventions.début_prévue',
-     'interventions.fin_prévue', 'interventions.temps_total', 'interventions.updated_at', 'interventions.workflow_state']
-  end
-
-  def sort_column
-    sortable_columns.include?(params[:column]) ? params[:column] : 'interventions.updated_at'
-  end
-
-  def sort_direction
-    %w[asc desc].include?(params[:direction]) ? params[:direction] : 'desc'
   end
 
   def redirect_si_invalide(etat, etat_cible: nil)

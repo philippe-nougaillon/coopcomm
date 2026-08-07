@@ -11,6 +11,8 @@ class PagesController < ApplicationController
 
   layout :define_layout
 
+  trie ExportLog, defaut: 'export_logs.created_at', sens: :desc
+
   def define_layout
     if params[:action] == 'welcome'
       'welcome'
@@ -112,7 +114,6 @@ class PagesController < ApplicationController
 
     @forecasts = MeteoConceptConnexion.call
   end
-
 
   def meteo
     @forecasts = MeteoConceptConnexion.call

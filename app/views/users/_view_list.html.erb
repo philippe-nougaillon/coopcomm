@@ -8,12 +8,8 @@
       <thead class="bg-slate-100">
         <tr>
           <th class="bg-slate-100"></th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left bg-slate-100">
-            <%= sort_link 'users.nom', 'Nom' %>
-          </th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left bg-slate-100">
-            Service
-          </th>
+          <%= th_tri 'Nom', colonne: 'users.nom', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left bg-slate-100' %>
+          <%= th_tri 'Service', colonne: 'users.service', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left bg-slate-100' %>
           <% if params[:vue] == 'calendrier' %>
             <% (@date..@date_fin).each do |date| %>
               <% es_hoy = (date == Date.today) %>

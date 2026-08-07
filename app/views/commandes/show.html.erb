@@ -289,9 +289,9 @@
     <table class="table text-sm w-full">
       <thead class="bg-slate-100 text-slate-600 font-semibold">
         <tr>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Date</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Utilisateur</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Action</th>
+          <%= th_tri 'Date', colonne: 'audits.created_at', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+          <%= th_tri 'Utilisateur', colonne: 'audits.user', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+          <%= th_tri 'Action', colonne: 'audits.action', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
           <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Modifications</th>
         </tr>
       </thead>

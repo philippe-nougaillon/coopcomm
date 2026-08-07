@@ -50,6 +50,8 @@ class Commande < ApplicationRecord
 
   scope :ordered, -> { order(updated_at: :desc) }
 
+  triable_par ColonnesTri.document('commandes')
+
   # Permet au changement de 'workflow_state' d'apparaître dans l'audit trail
   def persist_workflow_state(new_value)
     self[:workflow_state] = new_value

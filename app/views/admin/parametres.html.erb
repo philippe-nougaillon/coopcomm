@@ -10,6 +10,7 @@
 
   <!-- Formulaire de filtres en HAUT (Comme avant) -->
   <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_action: "advance" } do %>
+    <%= champs_tri_caches %>
     <%= hidden_field_tag :tab, current_tab %>
     <div class="grid grid-cols-1 <%= 'sm:grid-cols-2 lg:flex lg:items-end' if current_tab.in?(%w[services sites]) %> gap-4 w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
       
@@ -96,11 +97,11 @@
             <table id="parametres" class="table table-sm w-full border-none">
               <thead class="bg-slate-100">
                 <tr>
-                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Services</th>
-                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Utilisateurs</th>
-                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase text-center tracking-wider">Nombre d'utilisateurs</th>
+                  <%= th_tri 'Services', colonne: 'services.nom', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+                  <%= th_tri 'Utilisateurs', colonne: 'services.users', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+                  <%= th_tri "Nombre d'utilisateurs", colonne: 'services.users_count', class: 'px-4 py-3 font-semibold text-slate-500 uppercase text-center tracking-wider' %>
                   <th class="px-4 py-3 gap-1 items-center justify-center font-semibold flex flex-row text-slate-500 uppercase tracking-wider text-center cursor-help" title="Calcul de distance sur les interventions du service à partir de l'équipe de l'adhérent">
-                    Calcul distances
+                    <%= sort_link 'services.calculate_distance', 'Calcul distances' %>
                     <%= embedded_svg "icons/error.svg", class: "w-6 h-6 fill-current", title: "Info" %>
                   </th>
                 </tr>
@@ -152,9 +153,9 @@
             <table id="warehouses-table" class="table table-sm w-full">
               <thead class="bg-slate-100">
                 <tr>
-                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-44">Nom</th>
-                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Utilisateurs</th>
-                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Localisation</th>
+                  <%= th_tri 'Nom', colonne: 'warehouses.name', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-44' %>
+                  <%= th_tri 'Utilisateurs', colonne: 'warehouses.users', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+                  <%= th_tri 'Localisation', colonne: 'warehouses.address', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
                 </tr>
               </thead>
               <tbody>
@@ -204,12 +205,12 @@
             <table id="prestations-table" class="table table-sm w-full">
               <thead class="bg-slate-100">
                 <tr>
-                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-32">Code</th>
-                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Libellé</th>
-                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Catégorie</th>
-                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Sous-catégorie</th>
-                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Unité</th>
-                  <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Tarif HT</th>
+                  <%= th_tri 'Code', colonne: 'prestations.code', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-32' %>
+                  <%= th_tri 'Libellé', colonne: 'prestations.libellé', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+                  <%= th_tri 'Catégorie', colonne: 'prestations.catégorie', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
+                  <%= th_tri 'Sous-catégorie', colonne: 'prestations.sous_catégorie', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
+                  <%= th_tri 'Unité', colonne: 'prestations.unité', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
+                  <%= th_tri 'Tarif HT', colonne: 'prestations.tarif', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
                 </tr>
               </thead>
               <tbody>

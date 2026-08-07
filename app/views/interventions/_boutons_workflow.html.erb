@@ -32,7 +32,8 @@
           <form method="dialog">
             <button class="btn btn-ghost">Annuler</button>
           </form>
-          <%= button_to "Continuer vers le formulaire", lien, method: methode, params: params_terminer, class: "btn btn-info text-white" %>
+          <%= button_to "Continuer vers le formulaire", lien, method: methode, params: params_terminer,
+                        class: "btn btn-info text-white", form: { data: { turbo: false } } %>
         </div>
       </div>
       <form method="dialog" class="modal-backdrop">

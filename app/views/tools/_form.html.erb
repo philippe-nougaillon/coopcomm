@@ -20,7 +20,7 @@
     </div>
     <div class="form-control w-full">
       <%= form.label :icon_name, "Type", class: "label font-semibold text-slate-700" %>
-      <%= form.select :icon_name, options_for_select(Tool.icons.sort, @tool.icon_name),
+      <%= form.select :icon_name, options_for_select(TriTextuel.ranger(Tool.icons), @tool.icon_name),
         { include_blank: true }, class: 'slim-select w-full h-10' %>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">

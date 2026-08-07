@@ -189,12 +189,13 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:tools), tools(:cisaille)
   end
 
-  test "le filtre par type de l'index restreint la liste" do
-    get tools_url(type: @tool.icon_name)
-
-    assert_includes assigns(:tools), @tool
-    assert_not_includes assigns(:tools), tools(:rateau)
-  end
+  # À réactiver avec le filtre « Type », commenté dans la vue et dans le contrôleur.
+  # test "le filtre par type de l'index restreint la liste" do
+  #   get tools_url(type: @tool.icon_name)
+  #
+  #   assert_includes assigns(:tools), @tool
+  #   assert_not_includes assigns(:tools), tools(:rateau)
+  # end
 
   test 'un slug doutil inconnu redirige sans planter' do
     get tool_url(id: 'slug-inexistant')

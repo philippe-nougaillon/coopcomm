@@ -4,6 +4,10 @@ class ToolsController < ApplicationController
   before_action :set_tool, only: %i[show edit update destroy]
   before_action :is_user_authorized
 
+  trie Tool, defaut: 'tools.name'
+  trie Intervention, defaut: 'interventions.updated_at', sens: :desc
+  trie Mouvement, defaut: 'mouvements.date', sens: :desc
+
   # GET /tools or /tools.json
   def index
     params[:date] = Date.today unless date_valide?(params[:date])
@@ -12,14 +16,15 @@ class ToolsController < ApplicationController
     @date = start_date.beginning_of_week # Ce sera toujours le lundi.
     @date_fin = start_date.end_of_week   # Ce sera toujours le dimanche.
     @tools = current_organisation.tools.ordered
-    @types = Tool.icons
+    # Le filtre « Type » est commenté dans la vue
+    # @types = TriTextuel.ranger(Tool.icons)
     # @états = Mouvement.états.keys
 
     if params[:search].present?
       @tools = @tools.where('name ILIKE :search OR description ILIKE :search', { search: "%#{params[:search]}%" })
     end
 
-    @tools = @tools.where(icon_name: params[:type]) if params[:type].present?
+    # @tools = @tools.where(icon_name: params[:type]) if params[:type].present?
 
     # if params[:etats].present?
     #   tool_ids = []
@@ -31,7 +36,7 @@ class ToolsController < ApplicationController
 
     @forecasts = MeteoConceptConnexion.call
 
-    @tools = @tools.reorder(Arel.sql("#{sort_column} #{sort_direction}, tools.id #{sort_direction}"))
+    @tools = trier(@tools)
     @pagy, @tools = pagy(@tools, items: 10)
   end
 
@@ -51,11 +56,14 @@ class ToolsController < ApplicationController
     @date_inicio_grid = @date.beginning_of_week
     @date_fin_grid = @date_fin.end_of_week
 
+    @interventions = trier(@tool.interventions)
+    @mouvements = trier(@tool.mouvements.includes(:user))
+
     return unless current_user.manager_or_admin?
 
     # Les mouvements ne sont pas associés à l'outil côté audited : la grille de
     # disponibilités les affiche déjà, l'historique ne les répète pas.
-    @pagy, @audits = pagy(@tool.own_and_associated_audits.includes(:user).reorder(id: :desc), items: 10)
+    @pagy, @audits = pagy(trier(@tool.own_and_associated_audits.includes(:user)), items: 10)
   end
 
   # GET /tools/new
@@ -123,19 +131,6 @@ class ToolsController < ApplicationController
 
   def is_user_authorized
     authorize @tool || Tool
-  end
-
-  def sortable_columns
-    ['tools.name', 'tools.modèle', 'tools.marque', 'tools.icon_name', 'mouvements.état']
-  end
-
-  def sort_column
-    base = sortable_columns.include?(params[:column]) ? params[:column] : 'tools.name'
-    base == 'tools.name' ? 'LOWER(unaccent(tools.name))' : base
-  end
-
-  def sort_direction
-    %w[asc desc].include?(params[:direction]) ? params[:direction] : 'asc'
   end
 
   # to_date renvoie nil sur une chaîne vide et lève sur une chaîne illisible.

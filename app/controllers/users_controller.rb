@@ -11,6 +11,9 @@ class UsersController < ApplicationController
 
   require 'capture_stdout'
 
+  trie User, defaut: 'users.nom'
+  trie Absence, defaut: 'absences.du', sens: :desc
+
   # GET /users or /users.json
   def index
     # Périmètre de services filtré (menu + pré-filtre admin), cf. ApplicationController.
@@ -41,7 +44,7 @@ class UsersController < ApplicationController
 
     respond_to do |format|
       format.html do
-        @users = @users.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
+        @users = trier(@users)
         @pagy, @users = pagy(@users, items: 10)
       end
 
@@ -56,9 +59,9 @@ class UsersController < ApplicationController
   def show
     # TODO : Stale à mettre au plus proche du render
     # if stale?(@user)
-    @absences = @user.absences.ordered
-    
-    all_audits = @user.own_and_associated_audits.reorder(id: :desc).to_a
+    @absences = trier(@user.absences)
+
+    all_audits = trier(@user.own_and_associated_audits).to_a
 
     filtered_audits = all_audits.reject do |audit|
       if audit.auditable_type == 'User'
@@ -147,7 +150,7 @@ class UsersController < ApplicationController
     @date = fecha_base.beginning_of_week 
     @date_fin = fecha_base.end_of_week   
 
-    @services = current_user.services
+    @services = current_user.services.ordered
     @agents = User.by_service(params[:service].presence || @services).agent
     
     if params[:search].present?
@@ -169,7 +172,7 @@ class UsersController < ApplicationController
     # ✅ V2 : optimisation N+1
     @agents = @agents.with_attached_profile_picture
 
-    @agents = @agents.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
+    @agents = trier(@agents)
     @pagy, @agents = pagy(@agents, items: 10)
   end
 
@@ -370,7 +373,6 @@ class UsersController < ApplicationController
 
   private
 
-
   def set_user
     @user = User.find_by(slug: params[:id])
     
@@ -387,15 +389,4 @@ class UsersController < ApplicationController
     authorize @user || User
   end
 
-  def sortable_columns
-    ['users.nom', 'users.rôle', 'users.service', 'users.email', 'users.memo']
-  end
-
-  def sort_column
-    sortable_columns.include?(params[:column]) ? params[:column] : 'users.nom'
-  end
-
-  def sort_direction
-    %w[asc desc].include?(params[:direction]) ? params[:direction] : 'asc'
-  end
 end

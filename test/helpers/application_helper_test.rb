@@ -7,8 +7,12 @@ class ApplicationHelperTest < ActionView::TestCase
   # le helper testé.
   include ERB::Util
 
-  # `sort_link` interroge le contrôleur, qui expose ces deux méthodes aux vues.
+  # `sort_link` interroge le contrôleur, qui expose ces méthodes aux vues.
   attr_accessor :sort_column, :sort_direction
+
+  def colonne_triable?(colonne)
+    %w[users.nom users.email].include?(colonne)
+  end
 
   setup do
     @app_instance = ENV.fetch('APP_INSTANCE', nil)
@@ -115,12 +119,44 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_match 'direction=asc', sort_link('users.email', 'Email')
   end
 
-  test 'seule la colonne triée porte le pictogramme de sens' do
+  test 'le pictogramme de la colonne triée est visible, celui des autres n\'apparaît qu\'au survol' do
     self.sort_column = 'users.nom'
     self.sort_direction = 'asc'
 
-    assert_match(/<svg/, sort_link('users.nom', 'Nom'))
-    assert_no_match(/<svg/, sort_link('users.email', 'Email'))
+    assert_no_match(/opacity-0/, sort_link('users.nom', 'Nom'))
+    assert_match(/opacity-0 group-hover:opacity-100/, sort_link('users.email', 'Email'))
+  end
+
+  test 'une colonne non déclarée triable est rendue sans lien' do
+    lien = sort_link('users.memo', 'Mémo')
+
+    assert_no_match(/<a /, lien)
+    assert_match 'Mémo', lien
+  end
+
+  test 'trier repart de la première page' do
+    self.sort_column = 'users.nom'
+    self.sort_direction = 'asc'
+    @request.path_parameters = { controller: 'users', action: 'index' }
+    params[:page] = '3'
+
+    assert_no_match(/page=/, sort_link('users.nom', 'Nom'))
+  end
+
+  test 'l\'en-tête annonce le sens du tri aux lecteurs d\'écran' do
+    self.sort_column = 'users.nom'
+    self.sort_direction = 'desc'
+
+    assert_match 'aria-sort="descending"', th_tri('Nom', colonne: 'users.nom')
+    assert_match 'aria-sort="none"', th_tri('Email', colonne: 'users.email')
+  end
+
+  test 'un en-tête sans colonne triable garde ses classes et son titre' do
+    entete = th_tri('Mots clés', class: 'px-4 py-3')
+
+    assert_match 'class="px-4 py-3"', entete
+    assert_match 'Mots clés', entete
+    assert_no_match(/<a /, entete)
   end
 
   test 'le titre de la colonne est échappé' do

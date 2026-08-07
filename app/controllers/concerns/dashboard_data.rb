@@ -16,7 +16,7 @@ module DashboardData
     co2 = build_co2_par_mois(stats, start_date, end_date)
 
     {
-      export_logs: current_organisation.export_logs.includes(:user).order(created_at: :desc),
+      export_logs: trier(current_organisation.export_logs.includes(:user)),
       temps_total_par_adherent: temps_par_adherent(users),
       temps_total_par_agent: temps_par_agent(users),
       data_workflow_chart: build_workflow_chart(stats, start_date, end_date),

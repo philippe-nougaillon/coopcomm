@@ -8,6 +8,8 @@ class MouvementsController < ApplicationController
   # Défini la route du redirect
   before_action :set_redirect_path, only: %i[new edit create update]
 
+  trie Mouvement, defaut: 'mouvements.updated_at', sens: :desc
+
   # GET /mouvements or /mouvements.json
   def index
     @mouvements = current_organisation.mouvements
@@ -24,7 +26,7 @@ class MouvementsController < ApplicationController
 
     @mouvements = @mouvements.includes(:tool, :user)
 
-    @mouvements = @mouvements.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
+    @mouvements = trier(@mouvements)
     @pagy, @mouvements = pagy(@mouvements, items: 10)
   end
 
@@ -137,15 +139,4 @@ class MouvementsController < ApplicationController
     authorize @mouvement || Mouvement
   end
 
-  def sortable_columns
-    ['mouvements.updated_at', 'tools.name', 'mouvements.état']
-  end
-
-  def sort_column
-    sortable_columns.include?(params[:column]) ? params[:column] : 'mouvements.updated_at'
-  end
-
-  def sort_direction
-    %w[asc desc].include?(params[:direction]) ? params[:direction] : 'desc'
-  end
 end

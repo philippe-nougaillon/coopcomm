@@ -29,7 +29,9 @@ class Tool < ApplicationRecord
 
   after_create :create_mouvement
 
-  scope :ordered, -> { order(Arel.sql("LOWER(unaccent(name)), LOWER(unaccent(description))")) }
+  scope :ordered, -> { trié_par(:name, :description) }
+
+  triable_par({ 'tools.name' => :texte }, puis: TriTextuel.expression('tools.description'))
 
   def self.icons
     {
