@@ -1,2 +1,94 @@
-<h1 class="text-4xl mb-8"><%= page_title!("Résultat de l'import") %></h1>
-<%= simple_format(@stream) %>
+<div class="mx-auto w-full">
+  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16 mb-6">
+    <h1 class="text-primary font-bold text-3xl sm:text-4xl whitespace-nowrap">
+      <%= page_title!("Résultat de l'import") %>
+    </h1>
+  </div>
+
+  <% if @rapport.interrompu? %>
+    <div class="max-w-3xl bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
+      <p class="font-semibold text-red-800"><%= @rapport.message_interruption %></p>
+    </div>
+  <% else %>
+    <div class="max-w-3xl bg-slate-50 border border-slate-200 rounded-xl p-6 mb-8 space-y-2">
+      <% unless @rapport.appliqué %>
+        <p class="font-bold text-amber-700">
+          Mode test : les modifications n'ont pas été enregistrées.
+        </p>
+      <% end %>
+      <p class="font-medium text-slate-800" data-testid="bilan_import">
+        Lignes importées : <%= @rapport.importés %> | Lignes en erreur : <%= @rapport.en_erreur %>
+      </p>
+    </div>
+
+    <% if @rapport.succès.any? %>
+      <h2 class="text-xl font-bold text-slate-800 mb-3">Lignes traitées</h2>
+      <div class="overflow-x-auto mb-10">
+        <table class="table table-zebra w-full" data-testid="tableau_succes">
+          <thead>
+            <tr>
+              <th>Ligne</th>
+              <th>Type</th>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Service</th>
+              <th>Changements</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @rapport.succès.each do |ligne| %>
+              <tr>
+                <td><%= ligne.numéro %></td>
+                <td><%= ligne.type %></td>
+                <td><%= ligne.nom %></td>
+                <td><%= ligne.email %></td>
+                <td><%= ligne.service %></td>
+                <td class="text-sm text-slate-600"><%= import_changements(ligne.changements) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+
+    <% if @rapport.erreurs.any? %>
+      <h2 class="text-xl font-bold text-error mb-3">Lignes en erreur</h2>
+      <div class="overflow-x-auto mb-10">
+        <table class="table table-zebra w-full" data-testid="tableau_erreurs">
+          <thead>
+            <tr>
+              <th>Ligne</th>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Service demandé</th>
+              <th>Motifs</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @rapport.erreurs.each do |ligne| %>
+              <tr>
+                <td><%= ligne.numéro %></td>
+                <td><%= ligne.nom %></td>
+                <td><%= ligne.email %></td>
+                <td><%= ligne.service %></td>
+                <td class="text-sm"><%= ligne.messages.join(' | ') %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  <% end %>
+
+  <div class="my-10 flex gap-6">
+    <%= link_to import_users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+      <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à l'import" %>
+      Nouvel import
+    <% end %>
+
+    <%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+      <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des utilisateurs" %>
+      Retour à la liste des utilisateurs
+    <% end %>
+  </div>
+</div>

@@ -9,8 +9,6 @@ class UsersController < ApplicationController
   # Déclaré dans application_controller.rb
   before_action :set_users_tags, only: %i[edit update]
 
-  require 'capture_stdout'
-
   trie User, defaut: 'users.nom'
   trie Absence, defaut: 'absences.du', sens: :desc
 
@@ -179,160 +177,22 @@ class UsersController < ApplicationController
   def import; end
 
   def import_do
-    if params[:upload].present?
-      @mdp = +'' # String mutable (le fichier est en frozen_string_literal) : on y concatène les mots de passe générés
-      @success_logs = [] # Utilisateurs traités avec succès
-      @error_logs   = [] # Utilisateurs en erreur
+    if params[:upload].blank?
+      flash[:alert] = 'Manque le fichier source pour pouvoir lancer l\'importation !'
+      return redirect_to action: 'import'
+    end
 
-      # ✅ V2 : capture stdout pour logs détaillés dans la vue
-      @stream = capture_stdout do
-        # On lit directement le fichier uploadé (Tempfile) : surtout pas de copie
-        # dans public/ — elle y serait servie sans authentification (PII).
-        file_with_path = params[:upload].tempfile.path
+    @rapport = ImportUtilisateursXls.call(fichier: params[:upload],
+                                          importateur: current_user,
+                                          organisation: current_organisation,
+                                          appliquer: params[:save] == 'true')
 
-        @importes = @errors = 0
-        index = 1
-
-        # IMPORT XLS
-        Spreadsheet.client_encoding = 'UTF-8'
-        book = Spreadsheet.open file_with_path
-        sheet1 = book.worksheet 0
-
-        # ✅ V1 : mapping dynamique des colonnes (robuste aux variations d'en-têtes)
-        first_row = sheet1.row(0).map { |cell| cell.to_s.strip.downcase }
-
-        idx_nom       = first_row.index { |h| h.start_with?('nom') }
-        idx_prenom    = first_row.index { |h| h.start_with?('prénom') || h.start_with?('prenom') }
-        idx_email     = first_row.index { |h| h.start_with?('email') }
-        idx_service   = first_row.index { |h| h.start_with?('service') }
-        idx_telephone = first_row.index { |h| h.start_with?('téléphone') || h.start_with?('telephone') }
-        idx_memo      = first_row.index { |h| h.start_with?('mémo') || h.start_with?('memo') }
-
-        # ✅ V1 : validation structurelle avant d'itérer
-        if idx_nom.nil? || idx_prenom.nil? || idx_email.nil? || idx_service.nil?
-          flash.now[:alert] =
-            'Structure du fichier invalide. Les colonnes obligatoires (Nom, Prénom, Email, Service) sont introuvables.'
-          @errors += 1
-        else
-          sheet1.each 1 do |row|
-            index += 1
-            next unless row[idx_nom].present?
-
-            email_value = row[idx_email]&.to_s&.strip&.downcase
-            next if email_value.blank?
-
-            user = User.where('lower(email) = ?', email_value).first_or_initialize
-            new_record = user.new_record?
-
-            user.nom       = row[idx_nom]&.to_s&.strip&.upcase
-            user.prénom    = row[idx_prenom]&.to_s&.strip&.humanize
-            user.email     = email_value
-            user.téléphone = idx_telephone ? row[idx_telephone]&.to_s&.strip : nil
-            user.memo      = idx_memo ? row[idx_memo]&.to_s&.strip : nil
-
-            if new_record
-              password = User.generate_random_password
-              user.password = password
-              @mdp << password
-            end
-            user.rôle = 'agent'
-
-            service_name = row[idx_service]&.to_s&.strip&.humanize
-            service = Service.find_by(nom: service_name)
-
-            if service
-              already_linked = user.user_services.any? do |us|
-                us.service_id == service.id && !us.marked_for_destruction?
-              end
-              user.user_services.build(service: service) unless already_linked
-            end
-
-            user.valid?
-
-            # ✅ Après user.valid? pour ne pas écraser l'erreur
-            unless service
-              user.errors.add(:services,
-                              "introuvable dans la base de données (Valeur lue: '#{service_name || 'VIDE'}')")
-            end
-
-            # ✅ V2 : logs détaillés des changements
-            safe_changes = user.changes.except('encrypted_password', 'password', 'slug')
-            display_changes = new_record ? safe_changes.transform_values(&:last) : safe_changes.dup
-
-            services_changed = user.user_services.any? { |us| us.new_record? || us.marked_for_destruction? }
-
-            if new_record || services_changed
-              nouveaux_services = user.user_services.reject(&:marked_for_destruction?).filter_map do |us|
-                us.service&.nom
-              end.join(', ')
-              nouveaux_services = 'Aucun' if nouveaux_services.blank?
-
-              if new_record
-                display_changes['service'] = nouveaux_services
-              else
-                anciens_services = user.user_services.select(&:persisted?).filter_map do |us|
-                  us.service&.nom
-                end.join(', ')
-                anciens_services = 'Aucun' if anciens_services.blank?
-                display_changes['service'] = [anciens_services, nouveaux_services]
-              end
-            end
-
-            formatted_changes = display_changes.symbolize_keys
-
-            if formatted_changes.any?
-              puts "#{new_record ? 'NOUVEL' : 'MISE À JOUR'} UTILISATEUR => id: #{user.id || 'N/A'}, changes: #{formatted_changes.inspect}"
-            else
-              puts "UTILISATEUR INCHANGÉ => id: #{user.id}"
-            end
-
-            if user.errors.empty?
-              if params[:save] == 'true'
-                user.save
-                user.invite!(current_user) if new_record
-              end
-              @importes += 1
-              # ✅ V1 : alimentation des logs succès pour la vue
-              @success_logs << {
-                type: new_record ? 'Nouveau' : 'Mise à jour',
-                email: user.email,
-                nom: "#{user.nom} #{user.prénom}",
-                service: service&.nom || 'Aucun'
-              }
-            else
-              puts ' || ERREURS: ' + user.errors.messages.map { |m| "#{m.first} => #{m.last}" }.join(', ')
-              @errors += 1
-              # ✅ V1 : alimentation des logs erreurs pour la vue
-              @error_logs << {
-                email: email_value,
-                nom: "#{row[idx_nom]} #{row[idx_prenom]}",
-                service_tente: row[idx_service],
-                messages: user.errors.full_messages
-              }
-            end
-          end
-
-          puts
-          unless params[:save] == 'true'
-            puts "----------- Les modifications n'ont pas été enregistrées ! ---------------"
-          end
-          puts
-
-          puts '=' * 40
-          puts "Lignes importées: #{@importes} | Lignes ignorées: #{@errors}"
-          puts '=' * 40
-
-          # ✅ V1 : flash.now correct (pas de redirect, on reste sur la page)
-          if @errors.positive?
-            flash.now[:alert] = @importes.zero? ? "L'importation a échouée." : "L'importation a partiellement échouée."
-          else
-            flash.now[:notice] = "L'importation a bien été exécutée."
-          end
-        end
-      end 
+    if @rapport.interrompu?
+      flash.now[:alert] = @rapport.message_interruption
+    elsif @rapport.en_erreur.positive?
+      flash.now[:alert] = @rapport.importés.zero? ? 'L\'importation a échouée.' : 'L\'importation a partiellement échouée.'
     else
-      flash[:alert] = "Manque le fichier source pour pouvoir lancer l'importation !"
-      redirect_to action: 'import'
+      flash.now[:notice] = 'L\'importation a bien été exécutée.'
     end
   end
 

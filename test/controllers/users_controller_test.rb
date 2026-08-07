@@ -749,39 +749,4 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to users_path(discarded: true)
     assert_match(/Impossible de réactiver/i, flash[:alert].to_s)
   end
-
-  # test "should import xls with param upload" do
-  #   headers = ["Nom", "Prénom", "Email", "Téléphone", "Service", "Mémo"]
-  #   data = [
-  #     headers,
-  #     ["DUCHAMP", "Jean", "jean@example.com", "0601020304", "Technique", "Note perso"]
-  #   ]
-
-  #   file_path = create_xls_file('test_agents.xls', data)
-
-  #   assert_difference 'User.count', 1 do
-  #     post import_do_users_url, params: {
-  #       upload: fixture_file_upload(file_path, 'application/vnd.ms-excel')
-  #     }
-  #   end
-
-  #   File.delete(file_path)
-
-  #   assert_redirected_to agents_path
-  # end
-
-  # def create_xls_file(filename, rows)
-  #   book = Spreadsheet::Workbook.new
-  #   sheet = book.create_worksheet(name: "Import")
-
-  #   # Ajout des données (rows est un tableau de tableaux)
-  #   rows.each_with_index do |row_data, index|
-  #     sheet.row(index).replace(row_data)
-  #   end
-
-  #   # Sauvegarde physique du fichier
-  #   path = Rails.root.join('tmp', filename)
-  #   book.write(path)
-  #   path
-  # end
 end
