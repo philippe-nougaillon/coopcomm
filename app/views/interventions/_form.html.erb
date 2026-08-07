@@ -47,15 +47,21 @@
     </section>
 
     <% if policy(intervention).saisir_assignation? %>
-      <section data-controller="calc-temps-passe" class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6 <%= 'h-full' if intervention.repeter %>">
-        <%= render "interventions/form/assignation", form: form, intervention: intervention,
-                   terminaison_demandee: terminaison_demandee %>
+      <div data-controller="calc-temps-passe" class="space-y-6">
+        
+        <section class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6 <%= 'h-full' if intervention.repeter %>">
+          <%= render "interventions/form/assignation", form: form, intervention: intervention,
+                    terminaison_demandee: terminaison_demandee %>
+        </section>
 
         <% if policy(intervention).saisir_realisation? %>
-          <%= render "interventions/form/realisation", form: form, intervention: intervention,
-                     terminaison_demandee: terminaison_demandee %>
+          <section class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6 <%= 'h-full' if intervention.repeter %>">
+            <%= render "interventions/form/realisation", form: form, intervention: intervention,
+                      terminaison_demandee: terminaison_demandee %>
+          </section>
         <% end %>
-      </section>
+
+      </div>
     <% end %>
 
     <% if policy(intervention).saisir_commentaires? %>

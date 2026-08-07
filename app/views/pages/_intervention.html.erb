@@ -16,7 +16,7 @@
     <div class="flex-1 min-w-0">
       <%= link_to intervention,
           class:"block group/title" do %>
-        <h3 class="font-bold text-lg leading-6 text-<%= intervention.style.split.first.split('-').last %> group-hover/title:underline break-words">
+        <h3 class="font-bold text-lg leading-6 text-<%= intervention.style.split.first.split('-').last %> group-hover/title:underline break-words flex flex-row  gap-1 items-center ">
           <span><%= intervention.description.humanize %></span>
           <% if intervention.repeter %>
             <%= embedded_svg "icons/event_repeat.svg", title: "Modèle pour le pointage", class: "w-5 h-5 fill-current shrink-0" %>
