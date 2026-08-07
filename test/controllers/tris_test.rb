@@ -6,6 +6,18 @@ require 'test_helper'
 # la page qui l'affiche, dans les deux sens. Une colonne ajoutée plus tard entre
 # automatiquement dans le test.
 class TrisTest < ActionDispatch::IntegrationTest
+  # `super_admin?` lit une variable d'environnement, absente de la CI : sans ça
+  # l'index des newsletters y répond une redirection Pundit.
+  setup do
+    @super_admin_initial = ENV.fetch('SUPER_ADMIN', nil)
+    ENV['SUPER_ADMIN'] = users(:philippe_super_admin).email
+  end
+
+  teardown do
+    ENV['SUPER_ADMIN'] = @super_admin_initial
+    ENV.delete('SUPER_ADMIN') if @super_admin_initial.nil?
+  end
+
   # [libellé, contrôleur, modèle trié, utilisateur, chemin]
   def tableaux
     [

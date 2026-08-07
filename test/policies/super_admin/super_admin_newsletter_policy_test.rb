@@ -7,11 +7,17 @@ class SuperAdminNewsletterPolicyTest < ActionDispatch::IntegrationTest
     super_admin = users(:philippe_super_admin)
 
     # Permet à l'utilisateur philippe_super_admin d'être considéré comme un super admin automatiquement
+    @super_admin_initial = ENV.fetch('SUPER_ADMIN', nil)
     ENV['SUPER_ADMIN'] = super_admin.email
 
     mail = newsletters(:bond)
 
     @policy = NewsletterPolicy.new(super_admin, mail)
+  end
+
+  def teardown
+    ENV['SUPER_ADMIN'] = @super_admin_initial
+    ENV.delete('SUPER_ADMIN') if @super_admin_initial.nil?
   end
 
   test "accès autorisé pour un super admin avec l'index d'une newsletter" do
