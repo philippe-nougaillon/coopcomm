@@ -244,13 +244,6 @@
 - **Impact** : aucun à l'exécution ; charge de maintenance et bruit dans la mesure de couverture.
 - **Correctif proposé** : suppression. Non testées délibérément (on ne fige pas du code voué à disparaître).
 
-### B47 — Le filtre « Équipe » de l'index des interventions provoque une erreur 500
-- **Signalé par** : agent, 2026-07-30 (reproduit par test : `NoMethodError` sur `nil`).
-- **Parcours** : index des interventions → sélectionner une valeur dans le filtre **Équipe** (tag posé sur un adhérent) → 500.
-- **Où** : [app/controllers/interventions_controller.rb:71](app/controllers/interventions_controller.rb#L71) — `@users_in_same_services.tagged_with(...)`, variable d'instance **jamais assignée** ; la variable **locale** du même nom n'est créée qu'à la ligne 97, après ce bloc.
-- **Impact** : le filtre est inutilisable. Un filtre vide (`equipe=['']`) passe, d'où l'absence de remontée jusqu'ici.
-- **Correctif proposé** : une ligne — utiliser `User.by_service(selected_services)` (ou remonter l'affectation de la locale avant le bloc de filtres). Comportement actuel **épinglé** dans `interventions_index_filters_test.rb`, à inverser à la correction.
-
 ### B48 — La tâche `interventions:relancer` ne relance jamais personne (condition de date inversée)
 - **Signalé par** : agent, 2026-07-30 (reproduit par test : une intervention terminée depuis 10 jours n'est pas sélectionnée ; une intervention datée 10 jours dans le futur l'est).
 - **Où** : [lib/tasks/interventions.rake:6](lib/tasks/interventions.rake#L6) — `where('updated_at::DATE - NOW()::DATE >= ?', 3)` sélectionne les interventions modifiées **dans plus de 3 jours**, pas depuis.
@@ -536,6 +529,13 @@
 - **Cause racine** : `MailLog#to` n'a aucune forme garantie (adresse, CSV, tableau, JSON) et a **déjà porté des ID** en production (`notif_panne`, corrigé par `b32fbf28`) — rien n'empêche que ça se reproduise.
 - **Impact** : page des logs d'emails inaccessible tant que la ligne fautive est dans la page. Écran d'administration.
 - ✅ **CORRIGÉ le 2026-08-06** : `map { |email| email.to_s.strip }` ([mail_logs_helper.rb:15](app/helpers/mail_logs_helper.rb#L15)). `skip` levé, **prouvé rouge** (`NoMethodError: undefined method 'strip' for an instance of Integer`). ⚠️ **B45 reste ouvert** sur la même ligne (le `html_safe` final n'échappe toujours pas les adresses).
+
+### B47 — ✅ CLOS (2026-08-07, filtre mort supprimé) — Le filtre « Équipe » de l'index des interventions provoquait une erreur 500
+- **Signalé par** : agent, 2026-07-30 (reproduit par test : `NoMethodError` sur `nil`).
+- **Parcours de repro** : le filtre **n'avait plus d'interface** — le `<select>` « Équipe » a été retiré de [index.html.erb](app/views/interventions/index.html.erb) par `aea0ce7e` (« Équipe : Remove all call for rôle équipe », mars 2026) en même temps que le rôle `équipe`. Seule une URL forgée l'atteignait : connecté en manager, `/interventions?equipe[]=Équipe+Centre` → 500. Et une fois le paramètre dans l'URL, `intervention_filter_params` le recopiait dans tous les liens de tri et de pagination.
+- **Où** : `filtrer_par_equipe` lisait `@users_in_same_services`, ivar **jamais assignée** dans l'application. Historique : elle vivait dans `set_form_variables` — un `before_action` qui **ne tourne pas sur `index`** — donc le filtre n'a **jamais** fonctionné, à aucune version ; `63caed08` (refactor #237) l'a passée en variable locale sans corriger l'appelant.
+- **Deux 500 distincts, mesurés** (sonde d'intégration jetable) : `equipe[]=X` → `NoMethodError: undefined method 'tagged_with' for nil` ; `equipe=X` (scalaire, la forme que la liste blanche permettait) → `NoMethodError: undefined method 'reject' for an instance of String`. Le second n'était pas au registre.
+- ✅ **CLOS le 2026-08-07** (décision PE : supprimer plutôt que réparer, le rôle `équipe` ayant été retiré volontairement) : `filtrer_par_equipe` et son appel supprimés, `:equipe` retiré de `intervention_filter_params` ([application_helper.rb:17](app/helpers/application_helper.rb#L17)), et `before_action :set_users_tags, only: [:index]` retiré du contrôleur — `@users_tags` n'est plus lu que par `users/_form.html.erb` (servi par `users_controller` et `admin_controller`). Le paramètre forgé est désormais **inerte** : 200, aucune restriction, et il n'est plus réinjecté dans les liens de la page. 2 tests de non-régression dans `interventions_index_filters_test.rb` remplacent les 2 tests d'épinglage, **prouvés rouges** en réintroduisant le code fautif (2 erreurs).
 
 ### B50 — ✅ CORRIGÉ (2026-07-30) — La suppression d'une absence en turbo_stream levait sur un partial introuvable
 - **Correctif** : `users/_absence.html.erb:72` → `render "users/absence_form"` (préfixe ajouté). Test contrôleur retourné (il attendait l'exception, il vérifie désormais que la section est bien remise à jour et que la ligne supprimée a disparu) + nouveau test **système** `absence_suppression_test.rb` qui rejoue le parcours navigateur complet, **prouvé rouge** sur la version non préfixée.

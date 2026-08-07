@@ -9,9 +9,6 @@ class InterventionsController < ApplicationController
                 only: %i[new edit create update new_intervention_modele_pointage create_intervention_modele_pointage]
   before_action :store_return_location, only: %i[new edit]
 
-  # Déclaré dans application_controller.rb
-  before_action :set_users_tags, only: [:index]
-
   before_action :set_interventions_tags,
                 only: %i[index new edit create update new_intervention_modele_pointage create_intervention_modele_pointage]
 
@@ -459,7 +456,6 @@ class InterventionsController < ApplicationController
 
   def filtrer_par_acteurs(interventions)
     interventions = interventions.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
-    interventions = filtrer_par_equipe(interventions)
 
     if params[:agent_ids].present?
       interventions = interventions.joins(agent_interventions: :agent).where(agent: { id: params[:agent_ids] })
@@ -468,17 +464,6 @@ class InterventionsController < ApplicationController
     return interventions if params[:tool_ids].blank?
 
     interventions.joins(:tool_interventions).where(tool_interventions: { tool_id: params[:tool_ids] })
-  end
-
-  # @users_in_same_services n'est jamais assignée : ce filtre part en 500 (B47).
-  # Comportement conservé tel quel, la correction reste à décider.
-  def filtrer_par_equipe(interventions)
-    return interventions if params[:equipe].blank?
-
-    tags = params[:equipe].reject(&:blank?)
-    return interventions if tags.empty?
-
-    interventions.where(adherent_id: @users_in_same_services.tagged_with(tags, any: true).pluck(:id))
   end
 
   def filtrer_par_mots_cles(interventions)

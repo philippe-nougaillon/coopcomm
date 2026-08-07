@@ -100,25 +100,26 @@ class InterventionsIndexFiltersTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), interventions(:intervention_autre_adhérent)
   end
 
-  # --- Équipe (tags posés sur les adhérents) ---
+  # --- Équipe (filtre supprimé avec le rôle équipe) ---
 
-  test 'un filtre équipe vide est ignoré' do
-    get interventions_url(equipe: [''])
-
-    assert_response :success
-    assert_includes assigns(:interventions), @tonte
-  end
-
-  # ÉPINGLAGE BUG — `#index` lit `@users_in_same_services` (jamais assignée)
-  # alors que la variable LOCALE du même nom n'est créée qu'après, ligne 97 :
-  # le filtre équipe plante donc dès qu'un tag est réellement soumis.
-  # À inverser à la correction.
-  test 'un filtre équipe renseigné plante sur une variable non assignée' do
+  test 'un paramètre équipe forgé est ignoré, en tableau comme en scalaire' do
     adherent = users(:weil)
     adherent.tag_list = 'mairie'
     adherent.save!(validate: false) # l'adresse est obligatoire à la mise à jour, hors sujet ici
 
-    assert_raises(NoMethodError) { get interventions_url(equipe: ['mairie']) }
+    [['mairie'], 'mairie'].each do |valeur|
+      get interventions_url(equipe: valeur)
+
+      assert_response :success
+      assert_includes assigns(:interventions), @tonte
+    end
+  end
+
+  test 'un paramètre équipe forgé n_est pas réinjecté dans les liens de la page' do
+    get interventions_url(equipe: ['mairie'])
+
+    assert_response :success
+    assert_no_match(/equipe/, response.body)
   end
 
   # --- Agents et outils ---

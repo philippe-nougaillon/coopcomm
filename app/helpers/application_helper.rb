@@ -14,7 +14,7 @@ module ApplicationHelper
   # (jamais params.permit! : un paramètre forgé — ex. host — se retrouverait
   # dans les liens générés).
   def intervention_filter_params
-    params.permit(:service, :search, :workflow_state, :du, :au, :adherent_id, :equipe,
+    params.permit(:service, :search, :workflow_state, :du, :au, :adherent_id,
                   :archives, :vue, :column, :direction, :page,
                   tags: [], agent_ids: [], tool_ids: [])
   end
