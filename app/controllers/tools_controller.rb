@@ -16,14 +16,15 @@ class ToolsController < ApplicationController
     @date = start_date.beginning_of_week # Ce sera toujours le lundi.
     @date_fin = start_date.end_of_week   # Ce sera toujours le dimanche.
     @tools = current_organisation.tools.ordered
-    @types = TriTextuel.ranger(Tool.icons)
+    # Le filtre « Type » est commenté dans la vue
+    # @types = TriTextuel.ranger(Tool.icons)
     # @états = Mouvement.états.keys
 
     if params[:search].present?
       @tools = @tools.where('name ILIKE :search OR description ILIKE :search', { search: "%#{params[:search]}%" })
     end
 
-    @tools = @tools.where(icon_name: params[:type]) if params[:type].present?
+    # @tools = @tools.where(icon_name: params[:type]) if params[:type].present?
 
     # if params[:etats].present?
     #   tool_ids = []

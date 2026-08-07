@@ -32,7 +32,6 @@ class MenusDeroulantsTest < ActionDispatch::IntegrationTest
       ['notifications : destinataires', users(:hidalgo), mail_logs_path, 'select#search'],
       ['audits : utilisateurs', users(:hidalgo), admin_audits_path, 'select#user_id'],
       ['audits : types', users(:hidalgo), admin_audits_path, 'select#type'],
-      ['matériel : types', users(:hidalgo), tools_path, 'select#type'],
       ['mouvements : matériel', users(:hidalgo), mouvements_path, 'select#tool_ids'],
       ['formulaire d\'intervention : adhérents', users(:hidalgo), new_intervention_path, 'select#intervention_adherent_id'],
       ['formulaire d\'intervention : matériel', users(:hidalgo), new_intervention_path, 'select#intervention_tool_ids'],
