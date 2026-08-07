@@ -112,16 +112,20 @@
                                         action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" },
                                 required: true %>
             <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs">
-              <%= form.select :début_hour, (0..23).map { |h| [format('%02d', h), h] },
-                              { selected: params[:début_hour] || intervention.début&.hour },
+              <%= form.select :début_hour, 
+                               options_for_select((0..23).map { |h| [format('%02d', h), h] },
+                              params[:début_hour] || intervention.début&.hour),
+                              { include_blank: '--' },
                               class: "bg-transparent border-none outline-hidden text-sm cursor-pointer",
                               data: { 'calc-temps-passe-target': 'debut_hour',
                                       'verification-disponibilites-target': 'debut_hour',
                                       action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" },
                               required: true %>
               <span class="text-slate-400 font-bold">:</span>
-              <%= form.select :début_minute, (0..59).map { |m| [format('%02d', m), m] },
-                              { selected: params[:début_minute] || intervention.début&.min },
+              <%= form.select :début_minute, 
+                              options_for_select((0..59).map { |m| [format('%02d', m), m] },
+                                                 params[:début_minute] || intervention.début&.min),
+                              { include_blank: '--' },
                               class: "bg-transparent border-none outline-hidden text-sm cursor-pointer",
                               data: { 'calc-temps-passe-target': 'debut_minute',
                                       'verification-disponibilites-target': 'debut_minute',
@@ -143,16 +147,20 @@
                                         action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" },
                                 required: true %>
             <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs">
-              <%= form.select :fin_hour, (0..23).map { |h| [format('%02d', h), h] },
-                              { selected: params[:fin_hour] || intervention.fin&.hour },
+              <%= form.select :fin_hour, 
+                              options_for_select((0..23).map { |h| [format('%02d', h), h] },
+                                                 params[:fin_hour] || intervention.fin&.hour),
+                              { include_blank: '--' },
                               class: "bg-transparent border-none outline-hidden text-sm cursor-pointer",
                               data: { 'calc-temps-passe-target': 'fin_hour',
                                       'verification-disponibilites-target': 'fin_hour',
                                       action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" },
                               required: true %>
               <span class="text-slate-400 font-bold">:</span>
-              <%= form.select :fin_minute, (0..59).map { |m| [format('%02d', m), m] },
-                              { selected: params[:fin_minute] || intervention.fin&.min },
+              <%= form.select :fin_minute, 
+                              options_for_select((0..59).map { |m| [format('%02d', m), m] },
+                                                 params[:fin_minute] || intervention.fin&.min),
+                              { include_blank: '--' },
                               class: "bg-transparent border-none outline-hidden text-sm cursor-pointer",
                               data: { 'calc-temps-passe-target': 'fin_minute',
                                       'verification-disponibilites-target': 'fin_minute',
@@ -164,7 +172,7 @@
       </div>
 
       <%= render "interventions/form/temps", form: form, intervention: intervention,
-                 pause_obligatoire: true %>
+                 pause_obligatoire: terminaison_demandee %>
     </section>
 
     <%= render "interventions/form/commentaires_photos", form: form, intervention: intervention %>
