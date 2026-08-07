@@ -104,15 +104,4 @@ class ServicesController < ApplicationController
     authorize @service || Service
   end
 
-  def sortable_columns
-    ['services.nom']
-  end
-
-  def sort_column
-    sortable_columns.include?(params[:column]) ? params[:column] : 'services.nom'
-  end
-
-  def sort_direction
-    %w[asc desc].include?(params[:direction]) ? params[:direction] : 'asc'
-  end
 end

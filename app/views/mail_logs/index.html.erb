@@ -16,6 +16,7 @@
     Réactualisation auto toutes les 10 min. Cliquez sur Actualiser pour récupérer les derniers états plus rapidement. 
   </p>
   <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_frame: "notifications_table", turbo_action: "advance" } do %>
+    <%= champs_tri_caches %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
         <%= label_tag :search, "Destinataire", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
@@ -29,7 +30,7 @@
       <div class="w-full md:flex-1">
         <%= label_tag :search_subject, "Sujet", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
         <%= select_tag :search_subject, 
-          options_for_select(@mail_logs.pluck(:subject).uniq.sort, params[:search_subject]), 
+          options_for_select(TriTextuel.ranger(@mail_logs.pluck(:subject).uniq), params[:search_subject]), 
           multiple: true,
           class: 'slim-select w-full h-10',
           data: { placeholder: 'Tous les sujets' },
@@ -53,6 +54,7 @@
     </div>
   <% end %>
   <hr class="mt-6 mb-6">
+  <%= tableau_encadré "notifications_table" do %>
   <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
   </div>
@@ -65,13 +67,13 @@
       <table id="notifications" class="table table-sm w-full border-none ">
         <thead class="bg-slate-100">
           <tr>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Il y a</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Via</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Expéditeur</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Destinataire</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Sujet</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Statut</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">État</th>
+            <%= th_tri 'Il y a', colonne: 'mail_logs.created_at', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Via', colonne: 'mail_logs.channel', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Expéditeur', colonne: 'mail_logs.user', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Destinataire', colonne: 'mail_logs.to', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Sujet', colonne: 'mail_logs.subject', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Statut', colonne: 'mail_logs.statut', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
+            <%= th_tri 'État', colonne: 'mail_logs.etat', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
             <th colspan="2"></th>
           </tr>
         </thead>
@@ -101,4 +103,5 @@
       </div>
     <% end %>
   </div>
+  <% end %>
 </div>

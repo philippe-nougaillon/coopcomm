@@ -23,9 +23,9 @@
         <table class="table w-full">
           <thead class="bg-slate-100 text-slate-600 font-semibold">
             <tr>
-              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left">Période</th>
-              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left">Motif</th>
-              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left">Observation</th>
+              <%= th_tri 'Période', colonne: 'absences.du', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left' %>
+              <%= th_tri 'Motif', colonne: 'absences.motif', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left' %>
+              <%= th_tri 'Observation', colonne: 'absences.observation', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left' %>
               <th class="py-4 px-6"></th>
             </tr>
           </thead>

@@ -8,6 +8,8 @@ class MailLog < ApplicationRecord
   belongs_to :cotation, optional: true
   scope :ordered, -> { order('mail_logs.created_at DESC') }
 
+  triable_par ColonnesTri.mail_logs
+
   enum :channel, {
     mail: 0,
     whatsapp: 1

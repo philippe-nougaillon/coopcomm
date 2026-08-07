@@ -21,7 +21,14 @@ class Prestation < ApplicationRecord
   normalizes :catégorie,      with: ->(value) { value.to_s.upcase }
   normalizes :sous_catégorie, with: ->(value) { value.to_s.upcase }
 
-  scope :ordered, -> { order(:code) }
+  scope :ordered, -> { trié_par(:code, :libellé) }
+
+  triable_par 'prestations.code' => :texte,
+              'prestations.libellé' => :texte,
+              'prestations.catégorie' => :texte,
+              'prestations.sous_catégorie' => :texte,
+              'prestations.unité' => :texte,
+              'prestations.tarif' => :brut
 
   def display_name
     "#{code} → #{libellé} (#{tarif} € HT)"

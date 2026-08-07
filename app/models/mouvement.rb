@@ -13,6 +13,14 @@ class Mouvement < ApplicationRecord
 
   scope :ordered, -> { order(date: :desc) }
 
+  triable_par({ 'mouvements.updated_at' => :brut,
+                'mouvements.état' => :brut,
+                'mouvements.date' => :brut,
+                'mouvements.user' => ColonnesTri.utilisateur('mouvements.user_id'),
+                'tools.name' => "(SELECT #{TriTextuel.expression('tools.name')} FROM tools " \
+                                'WHERE tools.id = mouvements.tool_id)' },
+              puis: 'mouvements.date')
+
   enum :état, {
     réservé: 0,
     panne: 1,

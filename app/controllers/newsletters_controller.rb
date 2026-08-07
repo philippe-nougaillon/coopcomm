@@ -5,9 +5,11 @@ class NewslettersController < ApplicationController
   before_action :is_user_authorized
   skip_before_action :authenticate_user!, only: %i[new destroy]
 
+  trie Newsletter, defaut: 'newsletters.created_at', sens: :desc
+
   # GET /newsletters or /newsletters.json
   def index
-    @newsletters = Newsletter.order(created_at: :desc)
+    @newsletters = trier(Newsletter.all)
 
     respond_to do |format|
       format.html do

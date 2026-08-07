@@ -6,7 +6,7 @@
     <table id="tools" class="table table-sm w-full border-separate border-spacing-0 border-none">
       <thead class="bg-slate-100">
         <tr>
-          <th class="px-4 py-3 font-semibold text-slate-500  tracking-wider bg-slate-100 text-left"><%= sort_link 'tools.name', 'Nom' %></th>
+          <%= th_tri 'Nom', colonne: 'tools.name', class: 'px-4 py-3 font-semibold text-slate-500  tracking-wider bg-slate-100 text-left' %>
           <% (@date..@date_fin).each do |date| %>
             <% es_hoy = (date == Date.today) %>
             <th class="text-center p-3 transition-all min-w-[90px]

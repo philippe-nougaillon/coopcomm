@@ -7,6 +7,8 @@ class Absence < ApplicationRecord
 
   scope :ordered, -> { order(du: :desc) }
 
+  triable_par 'absences.du' => :brut, 'absences.motif' => :brut, 'absences.observation' => :texte
+
   enum :motif, {
     congés_payés: 0,
     congé_parental: 1,

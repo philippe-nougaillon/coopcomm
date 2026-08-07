@@ -4,6 +4,9 @@ class CotationsController < ApplicationController
   before_action :set_cotation, only: %i[show edit update destroy pdf envoyer valider refuser create_commande signer signer_do]
   before_action :is_user_authorized, except: :create
 
+  trie Cotation, defaut: 'cotations.updated_at', sens: :desc
+  trie MailLog, defaut: 'mail_logs.created_at', sens: :desc
+
   # GET /cotations
   def index
     base = policy_scope(Cotation)
@@ -18,7 +21,7 @@ class CotationsController < ApplicationController
       @services   = Service.where(id: service_ids).ordered
     else
       @services  = current_user.get_services_by_role
-      @adhérents = User.by_service(@services).adhérent
+      @adhérents = User.by_service(@services).adhérent.ordered
       @cotations = base.where(service: @services)
     end
 
@@ -40,7 +43,7 @@ class CotationsController < ApplicationController
 
     @cotations = @cotations.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
 
-    @pagy, @cotations = pagy(@cotations, items: 15)
+    @pagy, @cotations = pagy(trier(@cotations), items: 15)
 
     # Dernier mail_log par cotation, en une seule requête (DISTINCT ON, Postgres)
     # pour éviter un N+1 dans l'index.
@@ -53,7 +56,8 @@ class CotationsController < ApplicationController
 
   # GET /cotations/1
   def show
-    @audits = @cotation.own_and_associated_audits.includes(:user).reorder(id: :desc)
+    @mail_logs = trier(@cotation.mail_logs)
+    @audits = trier(@cotation.own_and_associated_audits.includes(:user))
     @pagy, @audits = pagy(@audits, items: 10)
   end
 

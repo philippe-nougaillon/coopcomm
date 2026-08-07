@@ -69,6 +69,19 @@ class Intervention < ApplicationRecord
 
   scope :ordered, -> { order(updated_at: :desc) }
 
+  triable_par 'interventions.updated_at' => :brut,
+              'interventions.workflow_state' => :texte,
+              'interventions.description' => :texte,
+              'interventions.commentaires' => :texte,
+              'interventions.adherent' => ColonnesTri.utilisateur('interventions.adherent_id'),
+              'interventions.agent' => "(SELECT MIN(#{TriTextuel.expression('users.nom')}) FROM users " \
+                                       'INNER JOIN agent_interventions ON agent_interventions.agent_id = users.id ' \
+                                       'WHERE agent_interventions.intervention_id = interventions.id)',
+              'interventions.début_prévue' => :brut,
+              'interventions.début' => :brut,
+              'interventions.fin' => :brut,
+              'interventions.temps_total' => :brut
+
   # montre tout action ou intervention qui ont ce status
   scope :courantes, -> { where(workflow_state: ['nouveau', 'pointage activé', 'terminé']) }
 

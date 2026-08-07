@@ -11,4 +11,6 @@ class Newsletter < ApplicationRecord
   def slug_candidates
     [SecureRandom.uuid]
   end
+
+  triable_par 'newsletters.created_at' => :brut, 'newsletters.email' => :texte
 end

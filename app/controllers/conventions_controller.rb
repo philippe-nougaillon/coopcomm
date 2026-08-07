@@ -4,6 +4,8 @@ class ConventionsController < ApplicationController
   before_action :set_convention, only: %i[show edit update destroy]
   before_action :is_user_authorized, except: :create
 
+  trie Convention, defaut: 'conventions.date_début', sens: :desc
+
   # GET /conventions
   def index
     set_index_filter_collections
@@ -34,12 +36,12 @@ class ConventionsController < ApplicationController
       )
     end
 
-    @pagy, @conventions = pagy(@conventions, items: 15)
+    @pagy, @conventions = pagy(trier(@conventions), items: 15)
   end
 
   # GET /conventions/1
   def show
-    @audits = @convention.audits.includes(:user).reorder(id: :desc)
+    @audits = trier(@convention.audits.includes(:user))
     @pagy, @audits = pagy(@audits, items: 10)
   end
 

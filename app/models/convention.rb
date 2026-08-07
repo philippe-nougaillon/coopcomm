@@ -24,6 +24,19 @@ class Convention < ApplicationRecord
 
   scope :ordered, -> { order(date_début: :desc) }
 
+  triable_par 'conventions.user' => ColonnesTri.utilisateur('conventions.user_id'),
+              'conventions.ref' => :texte,
+              'conventions.service' => ColonnesTri.service('conventions.service_id'),
+              'conventions.date_début' => :brut,
+              'conventions.heures_consommees' => :brut,
+              'conventions.document' => "(SELECT #{TriTextuel.expression('active_storage_blobs.filename')} " \
+                                        'FROM active_storage_attachments ' \
+                                        'INNER JOIN active_storage_blobs ON active_storage_blobs.id = active_storage_attachments.blob_id ' \
+                                        "WHERE active_storage_attachments.record_id = conventions.id " \
+                                        "AND active_storage_attachments.record_type = 'Convention' " \
+                                        "AND active_storage_attachments.name = 'document')",
+              'conventions.mémo' => :texte
+
   def self.visible_to(user)
     if user.administrateur?
       joins(:service).where(services: { organisation_id: user.organisation&.id })

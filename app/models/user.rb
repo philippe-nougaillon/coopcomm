@@ -78,7 +78,27 @@ class User < ApplicationRecord
   validate :agent_must_have_exactly_one_service, if: -> { rôle == 'agent' }
 
   default_scope -> { kept }
-  scope :ordered, -> { order(:nom) }
+  scope :ordered, -> { trié_par(:nom, :prénom) }
+
+  SERVICE = "(SELECT MIN(#{TriTextuel.expression('services.nom')}) FROM services " \
+            'INNER JOIN user_services ON user_services.service_id = services.id ' \
+            'WHERE user_services.user_id = users.id)'
+
+  triable_par({ 'users.nom' => :texte,
+                'users.rôle' => :brut,
+                'users.email' => :texte,
+                'users.service' => SERVICE,
+                'users.tags' => "(SELECT STRING_AGG(#{TriTextuel.expression('tags.name')}, ',' " \
+                                "ORDER BY #{TriTextuel.expression('tags.name')}) FROM taggings " \
+                                'INNER JOIN tags ON tags.id = taggings.tag_id ' \
+                                "WHERE taggings.taggable_id = users.id AND taggings.taggable_type = 'User')",
+                'users.absent' => 'EXISTS (SELECT 1 FROM absences WHERE absences.user_id = users.id ' \
+                                  'AND absences.du <= CURRENT_DATE AND absences.au >= CURRENT_DATE)',
+                'users.moyenne' => '(SELECT AVG(interventions.note) FROM interventions ' \
+                                   'INNER JOIN agent_interventions ON agent_interventions.intervention_id = interventions.id ' \
+                                   'WHERE agent_interventions.agent_id = users.id ' \
+                                   'AND interventions.repeter = FALSE AND interventions.note IS NOT NULL)' },
+              puis: TriTextuel.expression('users.prénom'))
 
   def organisation
     organisations.first
@@ -100,7 +120,7 @@ class User < ApplicationRecord
     h = Hash.new { |hash, key| hash[key] = [] }
 
     # 4. On trie les agents et on construit nos groupes
-    agents.sort_by { |a| [a.nom.to_s, a.prénom.to_s] }.each do |agent|
+    agents.sort_by { |a| [TriTextuel.clé_de_tri(a.nom), TriTextuel.clé_de_tri(a.prénom)] }.each do |agent|
       # On ne garde que les services de l'agent qui sont en commun avec l'utilisateur courant
       # (Optionnel : si tu veux afficher TOUS les services de l'agent, enlève le .select)
       services_communs = agent.services.select { |s| user_service_ids.include?(s.id) }
@@ -117,7 +137,7 @@ class User < ApplicationRecord
     end
 
     # 5. On retourne le Hash trié alphabétiquement par le nom du groupe
-    h.sort_by { |k, _| I18n.transliterate(k) }.to_h
+    TriTextuel.ranger(h).to_h
   end
 
   # Liste plate au format [["NOM Prénom", id], …].
@@ -129,7 +149,7 @@ class User < ApplicationRecord
 
     intervenants
       .where(id: by_service(services).ids | admins.ids)
-      .order(:nom, :prénom)
+      .ordered
       .map { |agent| ["#{agent.nom} #{agent.prénom}", agent.id] }
   end
 
@@ -328,10 +348,10 @@ class User < ApplicationRecord
     )
   end
 
+  # Sous-requête plutôt que jointure + DISTINCT : la relation reste triable par
+  # une expression (`ordered`) et dénombrable sans requête invalide.
   def self.by_service(services)
-    joins(user_services: :service)
-      .where(services: services)
-      .distinct
+    where(id: UserService.where(service_id: Service.where(id: services).select(:id)).select(:user_id))
   end
 
   def manager_or_admin?

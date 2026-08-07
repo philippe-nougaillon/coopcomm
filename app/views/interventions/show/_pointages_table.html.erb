@@ -8,15 +8,15 @@
       <table class="table w-full text-left border-collapse">
         <thead class="bg-slate-200/60 border-b border-slate-100 text-xs uppercase font-semibold text-slate-400 tracking-wider">
           <tr>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Il y a</th>
+            <%= th_tri 'Il y a', colonne: 'interventions.updated_at', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
             <% if policy(intervention).voir_agent_des_pointages? %>
-              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Agent</th>
+              <%= th_tri 'Agent', colonne: 'interventions.agent', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
             <% end %>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Début</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Fin</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Temps total</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Statut</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Commentaires</th>
+            <%= th_tri 'Début', colonne: 'interventions.début', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Fin', colonne: 'interventions.fin', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Temps total', colonne: 'interventions.temps_total', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Statut', colonne: 'interventions.workflow_state', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
+            <%= th_tri 'Commentaires', colonne: 'interventions.commentaires', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
             <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider"></th>
           </tr>
         </thead>

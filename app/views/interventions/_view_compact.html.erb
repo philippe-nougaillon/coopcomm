@@ -3,29 +3,12 @@
   <table id="intervenant" class="table table-sm w-full">
     <thead class="bg-slate-100 ">
   <tr>
-    <th class="align-middle px-3 py-3 font-semibold text-slate-500 uppercase tracking-wider"><%= sort_link 'interventions.updated_at', 'Il y a'%></th>
-    <th class="align-middle pl-2 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center w-36">
-      <div class="flex justify-center items-center w-full text-center">
-       <%= sort_link 'interventions.workflow_state', 'État'%></th>
-       </div>
-    <th class="align-middle pl-12 py-3 font-semibold text-slate-500 uppercase tracking-wider w-70">
-      <div class="flex justify-center items-center w-full text-center">
-        <%= sort_link 'interventions.description', 'Description'%></th>
-      </div>
-    <th class="align-middle px-4 py-3 text-center font-semibold text-slate-500 uppercase tracking-wider">Adhérent</th>
-    
-    <th class="align-middle px-3 py-3 font-semibold text-slate-500 uppercase tracking-wider min-w-[140px]">
-      <div class="flex justify-center items-center w-full text-center">
-        <%= sort_link 'interventions.début_prévue', 'Horaires' %>
-      </div>
-    </th>
-    
-    <th class="align-middle px-2 py-3 font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap w-10">
-      <div class="flex justify-center items-center w-full text-center">
-        <%= sort_link 'interventions.temps_total', 'Temps total' %>
-      </div>
-    </th>
-    
+    <%= th_tri 'Il y a', colonne: 'interventions.updated_at', class: 'align-middle px-3 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+    <%= th_tri 'État', colonne: 'interventions.workflow_state', class: 'align-middle pl-2 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center w-36' %>
+    <%= th_tri 'Description', colonne: 'interventions.description', class: 'align-middle pl-12 py-3 font-semibold text-slate-500 uppercase tracking-wider w-70 text-center' %>
+    <%= th_tri 'Adhérent', colonne: 'interventions.adherent', class: 'align-middle px-4 py-3 text-center font-semibold text-slate-500 uppercase tracking-wider' %>
+    <%= th_tri 'Horaires', colonne: 'interventions.début_prévue', class: 'align-middle px-3 py-3 font-semibold text-slate-500 uppercase tracking-wider min-w-[140px] text-center' %>
+    <%= th_tri 'Temps total', colonne: 'interventions.temps_total', class: 'align-middle px-2 py-3 font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap w-10 text-center' %>
     <th class="align-middle px-3 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Actions</th>
   </tr>
 </thead>

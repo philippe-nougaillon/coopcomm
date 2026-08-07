@@ -3,6 +3,7 @@
 class ApplicationController < ActionController::Base
   include Pagy::Backend
   include Pundit::Authorization
+  include Triable
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
   rescue_from Pagy::OverflowError, with: :pagy_wrong_page
   before_action :authenticate_user!
@@ -11,8 +12,10 @@ class ApplicationController < ActionController::Base
   # `skip_after_action :verify_authorized`.
   after_action :verify_authorized, unless: :devise_controller?
 
-  helper_method :sort_column, :sort_direction
   helper_method :current_organisation
+
+  # Historique d'activité : le même tableau est rendu dans plusieurs show.
+  trie Audited::Audit, ColonnesTri.audits, defaut: 'audits.created_at', sens: :desc
 
   # logique déplacée dans config/initializers/rack_attack.rb
   # rate_limit to: 20, within: 1.minute,
@@ -51,7 +54,7 @@ class ApplicationController < ActionController::Base
   end
 
   def set_users_tags
-    @users_tags = User.by_service(current_user).tag_counts_on(:tags).order(:name)
+    @users_tags = User.by_service(current_user).tag_counts_on(:tags).reorder(Arel.sql(TriTextuel.expression('tags.name')))
   end
 
   
@@ -60,7 +63,7 @@ class ApplicationController < ActionController::Base
   def scoped_services(param_key, admin_sees_all: false)
     default_services = current_user.services
     allowed_services = (current_user.administrateur? && current_organisation&.services) || default_services
-    @services = allowed_services
+    @services = allowed_services.ordered
 
     # Premier affichage : filtre non soumis.
     unless params.key?(param_key)

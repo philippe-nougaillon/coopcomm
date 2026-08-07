@@ -58,6 +58,11 @@ class Cotation < ApplicationRecord
 
   scope :ordered, -> { order(updated_at: :desc) }
 
+  triable_par ColonnesTri.document('cotations').merge(
+    'cotations.dernier_mail' => '(SELECT MAX(mail_logs.created_at) FROM mail_logs ' \
+                                'WHERE mail_logs.cotation_id = cotations.id)'
+  )
+
   # Permet au changement de 'workflow_state' d'apparaître dans l'audit trail
   def persist_workflow_state(new_value)
     self[:workflow_state] = new_value
