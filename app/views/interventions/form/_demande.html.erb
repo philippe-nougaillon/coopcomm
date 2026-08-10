@@ -28,14 +28,14 @@
     <%= form.hidden_field :adherent_id, value: current_user.id %>
   <% end %>
 
-  <div class="<%= 'col-span-1 md:col-span-2' unless policy(intervention).choisir_adherent? %>">
+  <div class="<%= 'col-span-1 md:col-span-2' unless policy(intervention).choisir_adherent? %> ">
     <%= form.label :service_id, class: "label font-semibold text-slate-700" do %>
       <span>Service <span class="text-red-500">*</span></span>
     <% end %>
     <%= form.select :service_id,
                     options_from_collection_for_select(@services, :id, :nom, intervention.service_id),
                     { include_blank: true, required: true },
-                    class: "slim-select w-full h-10",
+                    class: "slim-select w-full h-10 ",
                     data: (policy(intervention).cascade_services? ? { dynamic_select_target: "service", action: "change->dynamic-select#updateAgents" } : {}) %>
   </div>
 </div>
@@ -46,7 +46,7 @@
     <div data-action="change->verification-disponibilites#verificationWithInput" class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:col-span-1">
       <div data-action='change->meteo-intervention#afficher_meteo' class="col-span-1 sm:col-span-2">
         <%= form.label :début_prévue, class: "label font-semibold text-slate-700" %>
-        <div class="flex items-center gap-2 p-2 rounded-lg border border-slate-200">
+        <div class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
           <%= form.date_field :début_prévue,
                               class: "flex-1 bg-transparent border-none outline-hidden text-sm",
                               value: (params[:début_prévue].try(:to_date) || intervention.début_prévue&.to_date),
@@ -54,7 +54,7 @@
                                 'verification-disponibilites-target': "debut_prevue",
                                 'meteo-intervention-target': "debut_prevue"
                               } %>
-          <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs">
+          <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
             <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, { selected: params[:début_prévue_hour] || intervention.début_prévue&.hour || intervention.début_prévue_hour }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer", data: { 'verification-disponibilites-target': "debut_prevue_hour", 'meteo-intervention-target': "debut_prevue_hour" } %>
             <span class="text-slate-400 font-bold">:</span>
             <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, { selected: params[:début_prévue_minute] || intervention.début_prévue&.min || intervention.début_prévue_minute }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer", data: { 'verification-disponibilites-target': "debut_prevue_minute" } %>
@@ -64,12 +64,12 @@
 
       <div class="col-span-1 sm:col-span-2">
         <%= form.label :fin_prévue, class: "label font-semibold text-slate-700" %>
-        <div class="flex items-center gap-2 p-2 rounded-lg border border-slate-200">
+        <div class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
           <%= form.date_field :fin_prévue,
                               value: (params[:début_prévue].try(:to_date) || intervention.fin_prévue&.to_date),
                               class: "flex-1 bg-transparent border-none outline-hidden text-sm",
                               data: { 'verification-disponibilites-target': "fin_prevue" } %>
-          <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs">
+          <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
             <%= form.select :fin_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, { selected: params[:fin_prévue_hour] || intervention.fin_prévue&.hour || intervention.fin_prévue_hour }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer", data: { 'verification-disponibilites-target': "fin_prevue_hour" } %>
             <span class="text-slate-400 font-bold">:</span>
             <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, { selected: params[:fin_prévue_minute] || intervention.fin_prévue&.min || intervention.fin_prévue_minute }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer", data: { 'verification-disponibilites-target': "fin_prevue_minute" } %>

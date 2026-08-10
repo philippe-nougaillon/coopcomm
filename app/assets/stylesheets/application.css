@@ -366,6 +366,22 @@ select.slim-select:focus,
     outline-color: var(--fallback-bc, oklch(var(--bc) / .2));
   }
 
+    /* Style qui s'applique quand le champ est disable */
+  fieldset[disabled] .ss-main,
+  .ss-main.ss-disabled {
+    --ss-bg-color: #e7e7e7 !important;
+    --ss-font-color: #93939a !important;
+    --ss-border-color: #e2e8f0 !important;
+    background-color: #e7e7e7 !important;
+    cursor: not-allowed !important;
+  }
+
+  fieldset[disabled] .ss-main .ss-single-selected,
+  .ss-main.ss-disabled .ss-single-selected {
+    background-color: #e7e7e7 !important;
+    color: #93939a !important;
+  }
+
   /* END SLIM-SELECT REQUIRED */
 
   /* SLIM-SELECT INDISPONIBILITÉ */
