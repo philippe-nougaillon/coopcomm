@@ -39,6 +39,33 @@ class Service < ApplicationRecord
     users.where(rôle: %i[manager administrateur])
   end
 
+  # Vérifie que le service n'a pas de relations avec des 
+  # interventions, conventions, cotations, commandes, factures ni d'utillisateurs autre qu'administrateur
+  def can_be_destroyed?
+    self.interventions.empty? && 
+    self.conventions.empty? && 
+    self.cotations.empty? && 
+    self.commandes.empty? && 
+    self.factures.empty? && 
+    self.users.where.not(rôle: "administrateur").empty?
+  end
+
+  # TODO : Fusionner avec can_be_destroyed? ?
+  def text_for_unauthorized_destroy
+    return "" if can_be_destroyed?
+
+    reasons = []
+
+    reasons << "des interventions" if interventions.any?
+    reasons << "des conventions"   if conventions.any?
+    reasons << "des cotations"     if cotations.any?
+    reasons << "des commandes"     if commandes.any?
+    reasons << "des factures"      if factures.any?
+    reasons << "des utilisateurs non administrateurs" if users.where.not(rôle: "administrateur").any?
+
+    "Impossible de supprimer ce service car il est encore lié à #{reasons.to_sentence(locale: :fr)}."
+  end
+
   private
 
   def slug_candidates
