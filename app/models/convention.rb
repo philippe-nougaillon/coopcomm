@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 class Convention < ApplicationRecord
+  extend FriendlyId
+  friendly_id :slug_candidates, use: :slugged
+  
   include PieceJointeValidable
   include PieceJointeAuditable
 
@@ -94,5 +97,9 @@ class Convention < ApplicationRecord
                 .where('EXTRACT(YEAR FROM conventions.created_at) = ?', year)
                 .count + 1
     self.ref = "CONV-#{year}-#{n}"
+  end
+
+  def slug_candidates
+    [SecureRandom.uuid]
   end
 end
