@@ -96,7 +96,10 @@ class ConventionsController < ApplicationController
   private
 
   def set_convention
-    @convention = Convention.find(params[:id])
+    @convention = Convention.find_by(slug: params[:id])
+    return unless @convention.nil?
+
+    redirect_to root_path, alert: 'Convention introuvable'
   end
 
   def is_user_authorized
