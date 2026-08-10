@@ -275,6 +275,34 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_not interventions(:tonte_locaux).pointage_de?(users(:bond))
   end
 
+  # === Intervention#pointage_du_jour_de? ==================================
+  # `pointer` ne retrouve que le pointage du jour : ailleurs, le bouton
+  # « Terminer » doit passer par le formulaire.
+
+  test 'pointage_du_jour_de? : vrai sur le pointage ouvert aujourd’hui' do
+    mère = interventions(:intervention_repete)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+
+    assert fille.pointage_du_jour_de?(users(:martin_technique_paris))
+  end
+
+  test 'pointage_du_jour_de? : faux sur un pointage resté ouvert un jour précédent' do
+    mère = interventions(:intervention_repete)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+    fille.update_columns(début: 5.days.ago)
+
+    assert fille.pointage_de?(users(:martin_technique_paris)), 'garde : la fille reste un pointage de cet agent'
+    assert_not fille.pointage_du_jour_de?(users(:martin_technique_paris))
+  end
+
+  test 'pointage_du_jour_de? : faux sans date de début' do
+    mère = interventions(:intervention_repete)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+    fille.update_columns(début: nil)
+
+    assert_not fille.pointage_du_jour_de?(users(:martin_technique_paris))
+  end
+
   # === Intervention#en_cours? =============================================
 
   test 'en_cours? : vrai quand maintenant est dans la fenêtre' do

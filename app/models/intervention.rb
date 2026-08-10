@@ -484,6 +484,12 @@ class Intervention < ApplicationRecord
     template_slug.present? && intervention_mère&.agents&.include?(user)
   end
 
+  # `pointer` ne retrouve que les pointages du jour : sur une fille restée ouverte
+  # un jour précédent, il en créerait une nouvelle au lieu de la fermer.
+  def pointage_du_jour_de?(user)
+    pointage_de?(user) && début&.to_date == Time.zone.today
+  end
+
   def update_heures_consommees_convention
     associated_convention = Convention
                         .where("date_début <= ? AND date_fin_prévue >= ?", self.début, self.début)

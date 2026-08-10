@@ -10,7 +10,9 @@ class InterventionsHelperTest < ActionView::TestCase
   setup do
     @mère  = interventions(:intervention_repete) # agents de fixture : bond, martin
     @fille = interventions(:intervention_fille)
-    @fille.update_columns(template_slug: @mère.slug, fin: 1.hour.ago, temps_de_pause: 0)
+    # `début` épinglé sur aujourd'hui : la fixture est ancrée sur `4.hours.ago`, qui
+    # bascule sur la veille entre minuit et 4 h.
+    @fille.update_columns(template_slug: @mère.slug, début: Time.zone.now, fin: 1.hour.ago, temps_de_pause: 0)
   end
 
   test "affecté à l'intervention modèle : on passe par `pointer` de ce modèle" do
@@ -68,6 +70,13 @@ class InterventionsHelperTest < ActionView::TestCase
     @fille.update_columns(fin: nil)
 
     assert_equal [pointer_intervention_path(@mère), :get, nil], terminer_destination(@fille)
+  end
+
+  test 'pointage resté ouvert un jour précédent : renvoie vers le formulaire, pas vers `pointer`' do
+    self.current_user = users(:bond)
+    @fille.update_columns(début: 5.days.ago, fin: nil)
+
+    assert_equal [edit_intervention_path(@fille), :get, { terminer: 1 }], terminer_destination(@fille)
   end
 
   test 'le bouton Terminer ouvre le modal via l’ID du dialogue' do
