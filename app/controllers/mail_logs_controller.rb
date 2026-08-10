@@ -105,11 +105,6 @@ class MailLogsController < ApplicationController
     end
   end
 
-  # Only allow a list of trusted parameters through.
-  def mail_log_params
-    params.require(:mail_log).permit(:to, :subject, :message_id, :user_id)
-  end
-
   def is_user_authorized
     authorize @mail_log || MailLog
   end

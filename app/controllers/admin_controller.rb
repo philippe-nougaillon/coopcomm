@@ -11,11 +11,7 @@ class AdminController < ApplicationController
   trie Prestation, defaut: 'prestations.code'
 
   def audits
-    @audits = if current_user.manager_or_admin?
-                Audited::Audit.where(user_id: User.by_service(current_user.services).pluck(:id))
-              else
-                Audited::Audit.where(user_id: current_user.id)
-              end
+    @audits = Audited::Audit.where(user_id: User.by_service(current_user.services).pluck(:id))
     @types = TriTextuel.ranger(@audits.pluck(:auditable_type).uniq)
     @actions = %w[update create destroy]
     @users = User.by_service(current_user.services).ordered

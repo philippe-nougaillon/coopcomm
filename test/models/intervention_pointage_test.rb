@@ -139,6 +139,24 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_in_delta 5.0, i.reload.temps_total, 1e-6
   end
 
+  # Le calcul doit précéder les validations : sinon `pas_de_temps_total_negatif`
+  # contrôle la valeur de la sauvegarde précédente et laisse passer le négatif.
+  test 'une pause plus longue que la durée est refusée' do
+    i = interventions(:tonte_locaux)
+    i.update!(début: 4.hours.ago, fin: 1.hour.ago, temps_de_pause: 0)
+
+    assert_not i.update(temps_de_pause: 5)
+    assert_includes i.errors.full_messages, 'Le temps total ne peut pas être négatif.'
+    assert_in_delta 6.0, i.reload.temps_total, 1e-6
+  end
+
+  test 'une pause égale à la durée est acceptée' do
+    i = interventions(:tonte_locaux)
+    i.update!(début: 4.hours.ago, fin: 1.hour.ago, temps_de_pause: 3)
+
+    assert_equal 0, i.reload.temps_total
+  end
+
   # === temps_de_pause : renseigné à la terminaison, et à elle seule =======
   # Aucun chemin de terminaison (tâche rake, bouton « Terminer », webhook SMS) ne fournit
   # de pause : à défaut elle vaut 0, et le temps total reste calculable. Hors terminaison
@@ -273,6 +291,34 @@ class InterventionPointageTest < ActiveSupport::TestCase
 
   test 'pointage_de? : faux hors pointage (aucun modèle)' do
     assert_not interventions(:tonte_locaux).pointage_de?(users(:bond))
+  end
+
+  # === Intervention#pointage_du_jour_de? ==================================
+  # `pointer` ne retrouve que le pointage du jour : ailleurs, le bouton
+  # « Terminer » doit passer par le formulaire.
+
+  test 'pointage_du_jour_de? : vrai sur le pointage ouvert aujourd’hui' do
+    mère = interventions(:intervention_repete)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+
+    assert fille.pointage_du_jour_de?(users(:martin_technique_paris))
+  end
+
+  test 'pointage_du_jour_de? : faux sur un pointage resté ouvert un jour précédent' do
+    mère = interventions(:intervention_repete)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+    fille.update_columns(début: 5.days.ago)
+
+    assert fille.pointage_de?(users(:martin_technique_paris)), 'garde : la fille reste un pointage de cet agent'
+    assert_not fille.pointage_du_jour_de?(users(:martin_technique_paris))
+  end
+
+  test 'pointage_du_jour_de? : faux sans date de début' do
+    mère = interventions(:intervention_repete)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+    fille.update_columns(début: nil)
+
+    assert_not fille.pointage_du_jour_de?(users(:martin_technique_paris))
   end
 
   # === Intervention#en_cours? =============================================

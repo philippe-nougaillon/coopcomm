@@ -261,6 +261,17 @@
 - **Impact** : le menu déroulant « Mots clés » des index (utilisateurs, interventions) ne propose pas les bons mots clés — il n'en propose aucun dans la plupart des cas. Aucune fuite de données : `tag_counts_on` ne renvoie que des noms de tags.
 - **Correctif proposé** : `User.by_service(current_user.services)`. Une ligne. Non appliqué : hors du périmètre du lot « tris » (2026-08-06).
 
+### B88 — Le bouton « Terminer » d'une fille pointe sur le pointage de CELUI QUI REGARDE, pas sur celui affiché
+- **Où** : [interventions_helper.rb:17](app/helpers/interventions_helper.rb#L17) (`terminer_destination`) × [user.rb:378](app/models/user.rb#L378) (`find_current_intervention`).
+- **Cause** : le bouton renvoie vers `pointer` de l'intervention **mère**, qui re-cherche ensuite le pointage **de l'utilisateur connecté**. L'identité de la fille affichée est donc perdue en route : `Intervention#pointage_de?` ne vérifie que l'affectation au **modèle**, jamais que l'utilisateur est l'agent de **cette** fille.
+- **Parcours de reproduction** :
+  1. Un manager (ou un administrateur) est sélectionné comme agent sur une intervention **modèle de pointage** — cas voulu (cf. décision 2026-07-28-f).
+  2. Un agent de ce modèle, MARTIN, pointe le matin : sa fille du jour est ouverte.
+  3. Le manager ouvre `/interventions`, voit la fille de MARTIN (il voit toute son organisation) et clique « Terminer ».
+  4. Le pointage de MARTIN n'est pas terminé : l'application crée **une nouvelle fille au nom du manager** (« Début de journée enregistré ! »), ou refuse si le manager a déjà un pointage ouvert.
+- **Impact** : temps de travail attribué au mauvais agent — donc facturation faussée — et le pointage visé reste ouvert. Inatteignable pour un agent (il ne voit pas les filles de ses collègues) ; réservé aux manager/admin affectés à un modèle.
+- **Correctif proposé** : ajouter `agents.include?(user)` à `Intervention#pointage_du_jour_de?` — sur la fille d'un autre, le bouton retomberait alors sur le formulaire d'édition, où l'on renseigne la date de fin réelle. Une ligne. **Non appliqué** : 3 tests de `interventions_helper_test` épinglent aujourd'hui « l'affectation au MODÈLE suffit » (décision 2026-07-28-f) et seraient à retourner — décision de PE.
+
 ---
 
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
@@ -278,6 +289,7 @@
   4. **Fille héritant `fin_prévue`** : `create_next_intervention` fait un `dup` de la mère **sans remettre `fin_prévue`/`début_prévue` à nil** → `pointage_ouvert?` (= `effective_fin.blank?`) devient faux et la garde dédiée est **contournée** ; seul `OVERLAP_SQL` bloque alors (vérifié bloquant aujourd'hui, mais via un intervalle inversé — protection moins intentionnelle). Toute retouche de `create_next_intervention`, `effective_fin` ou `OVERLAP_SQL` mérite un re-test de ce scénario.
 - **Effet de bord actuel (pas le bug signalé, mais à connaître)** : un agent avec une fille orpheline **ne peut plus pointer du tout** (le scan ne peut ni la terminer — filtre « aujourd'hui » — ni en créer une nouvelle — garde #357) jusqu'à la clôture de 22h ou une intervention manuelle du manager.
 - **Décision client 2026-07-10** : on ne code rien tant que le cas n'est pas reproductible ; l'agent doit **re-signaler ce risque** si un changement dans cette zone le rend faisable.
+- **⚠ Occurrence réelle le 2026-08-10 (base de dev, signalée par PE)** : la fille #384 du modèle #294, ouverte le 05/08 à 14:07, avait survécu 5 jours (aucune clôture nocturne en dev). L'effet de bord ci-dessus s'est donc produit tel quel — c'est **B87**. La condition 2 (« tâche bloquée ») suffit à le rendre réel en prod. Depuis la correction de B87, le bouton « Terminer » offre une sortie (le formulaire d'édition) ; **le re-scan du QRCode, lui, reste bloqué** par la garde #357 tant que la fille orpheline n'est pas fermée.
 
 ### R2 — `duplicate key … audits_pkey` : deux runs de test simultanés sur `coopcom_test` rembobinent la séquence des audits (test uniquement — sans objet depuis l'adoption de `rails test:all`)
 - **Signalé le** : 2026-07-13 (PE : `WikiPagesControllerTest#test_should_create_wiki_page`, seed 14293, `PG::UniqueViolation … "audits_pkey" (id)=(4907)`). Diagnostic par autopsie de la base + lecture du code Rails 8.0.5 — non reproductible à la demande (course inter-processus). *Ex-« B14 » d'un stash resté non commité, renuméroté R2 à la résolution du conflit le 2026-07-16 (le n° B14 a été réattribué entre-temps au bug « service changé silencieusement »).*
@@ -329,6 +341,23 @@
 ---
 
 ## ✅ Bugs corrigés (historique)
+
+### B89 — ✅ CORRIGÉ (2026-08-10) — Code mort accumulé, et distinction faite avec le code « parké »
+- **Signalé** le 2026-08-10 en balayant les lignes non couvertes de `bin/coverage`, chaque absence d'appelant vérifiée par `grep` sur `app/`, `lib/`, `config/`.
+- ⚠️ **Le signalement initial mélangeait deux choses**, et c'est la leçon de la correction : du code **mort par oubli** (à supprimer) et du code **parké volontairement**, dont les appelants sont commentés parce que la fonctionnalité doit pouvoir rouvrir. Les deux se ressemblent dans un rapport de couverture ; ils n'appellent pas la même décision.
+- **Supprimé** (mort par oubli, aucune intention de retour) :
+  - `InterventionPolicy#choisir_service?` — prédicat ajouté au découpage des vues (2026-08-05) et jamais branché ; il donnait l'illusion que le choix du service était piloté par la policy.
+  - `UsersController#interventions_average` — aucun appelant.
+  - `WarehousesController#target_tab` et `ServicesController#target_tab` — copies mortes de celle de `PrestationsController`, seule appelée.
+  - `MailLogsController#mail_log_params` et `NewslettersController#newsletter_params` — restes de scaffold : aucune route `create`/`update` (`resources :newsletters, only: %i[index new destroy]`).
+  - `MeteoConceptConnexion` — le `when 6..7` était **masqué** par le `when 6, 7` qui `return` vingt lignes plus haut, pour la même icône.
+  - `AdminController#audits` — le `else` était inatteignable, `authorize :admin` passant par `AdminPolicy#audits? = manager_or_admin?`.
+- **Gardé parké, sur décision de PE (2026-08-10)** — ce n'est pas du code mort mais de la dette assumée, à ne pas re-signaler :
+  - `Tool.icons` + le champ « Type » du formulaire outil (`<% if false %>`, `7ff45c90`/`1ec8bd58`). ⚠ À savoir : `tools/show.html.erb:93` **affiche toujours** l'icône et `icon_name` **reste dans `tool_params`** — seul le champ du formulaire est masqué, la valeur reste modifiable par requête forgée.
+  - `Intervention#broadcast_to_authorized_viewers` — live-update Turbo, `after_create_commit` commenté ([intervention.rb:130](app/models/intervention.rb#L130)) ; `broadcast_channels` garde 2 tests actifs, 6 tests commentés et un renvoi dans `index.html.erb:171` : une ligne à décommenter pour rouvrir.
+  - `NotificationMailer#report_missed_clock_out` — mail « pointage oublié », tâche rake commentée dans `interventions.rake:40`, lié à la sentinelle « alerte si pointages ouverts > 24 h » évoquée le 2026-07-28 et jamais tranchée.
+- **Vérifié** : suite non-système **2362 runs / 8 échecs / 2 erreurs** — les 10 sont **préexistants et sans rapport**, prouvé en remettant les 8 fichiers à HEAD par copie et en rejouant les fichiers concernés (mêmes 10). Sept viennent de `#463 Add slug to convention`, trois du travail « pause » en cours.
+- **Reste faisable** : `# :nocov:` autour des trois blocs parkés les sortirait du dénominateur de SimpleCov sans les supprimer — non appliqué, à décider.
 
 ⚠️ **Collision de numérotation à connaître** : le **B30** du tableau ci-dessous (`calc_temps_total` sur une pause nulle, 2026-07-29) et le **B30** des fiches détaillées (météo `get_title`, 2026-08-06) sont **deux bugs différents** qui ont reçu le même numéro. Aucun n'est renuméroté ici (les deux sont cités tels quels dans CLAUDE.md et dans les tests) ; à ne pas confondre en lecture. Dans la même famille : CLAUDE.md cite un **B64** (compte-rendu de terminaison) qui n'a jamais eu de fiche dans ce registre.
 
@@ -847,6 +876,20 @@
 - **Garde-fou** : les colonnes `NOT NULL` sont **exclues** (seules `users.email` et `users.encrypted_password` le sont) — sinon on remplacerait une erreur de validation lisible par une violation de contrainte en base. Les colonnes non textuelles ne sont pas touchées.
 - **Effet ponctuel connu, à décider** : les lignes qui portent **déjà** une chaîne vide (204 en base de dev, surtout `Intervention` et `User`) produiront **un dernier** audit vide à leur prochain enregistrement, le temps de passer à `NULL`. Un nettoyage en une passe (`UPDATE … SET colonne = NULL WHERE TRIM(colonne) = ''`) l'éviterait — non fait, décision de PE, et à rejouer en prod le cas échéant.
 - **Couverture** : 6 tests (chaîne vide et chaîne d'espaces mises à `NULL`, aucun audit produit, valeur réelle intacte, colonne `NOT NULL` laissée à la validation, colonne non textuelle intacte), **prouvés rouges** en retirant le concern (3 échecs). Suite complète relancée, **système comprise** (91 runs), le concern touchant tous les modèles.
+
+### B87 — ✅ CORRIGÉ (2026-08-10, signalé par PE) — Un pointage resté ouvert un jour précédent ne pouvait plus être terminé
+- **Où** : [interventions_helper.rb:17](app/helpers/interventions_helper.rb#L17) (`terminer_destination`) × [user.rb:378](app/models/user.rb#L378) (`find_current_intervention`).
+- **Cause** : le bouton « Terminer » d'une fille de pointage renvoyait vers `pointer` de l'intervention mère **quel que soit le jour de la fille**. Or `find_current_intervention` ne retrouve que les pointages dont le `début` est **aujourd'hui** : sur une fille de la veille il renvoie `nil`, et `pointer` **crée une nouvelle fille** au lieu de fermer l'ancienne. Cette création est alors refusée par `agents_must_not_have_open_pointage` (#357), qui voit le pointage déjà ouvert — d'où une impasse : ni terminer, ni pointer.
+- **Parcours de reproduction** (vécu par PE, intervention `aaecc115-9816-47f4-a56c-abb007d0626b` = fille #384 du modèle #294) :
+  1. Un agent (ici un administrateur affecté comme agent) pointe le 05/08 à 14:07 et oublie de pointer sa sortie ; la clôture nocturne ne passe pas (dev, ou tâche Hatchbox bloquée en prod).
+  2. Le 10/08, il ouvre sa fille et clique « Terminer ».
+  3. Il est renvoyé sur la page de l'intervention **mère** avec : « Le pointage n'a pas pu être enregistré : Conflit(s) détecté(s) : DACQUET Pierre-emmanuel a déjà un pointage en cours pour l'intervention « #294 » commencée le 05/08/2026 14:07. »
+  4. Le message désigne le pointage que l'on essayait précisément de fermer : aucune sortie par l'interface.
+- **Impact** : pointage bloqué ouvert indéfiniment, donc temps de travail jamais comptabilisé, et l'agent ne peut plus pointer d'aucune autre intervention (garde #357). C'est l'effet de bord de **R1**, cette fois-ci constaté pour de vrai.
+- **Correctif appliqué** : `Intervention#pointage_du_jour_de?` — le bouton ne passe par `pointer` que si `pointer` agirait bien sur cette fille, c'est-à-dire si son `début` est aujourd'hui. Sinon il retombe sur le traitement habituel des informations manquantes : la date de fin étant vide, il ouvre le **formulaire d'édition** avec `terminer: 1`, où l'on saisit la fin réelle. **Vérifié en base de dev** que la fille #384 redevient valide et enregistrable une fois sa fin renseignée.
+- **Pourquoi pas une fermeture automatique à `Time.current`** : cinq jours après, seul l'agent connaît l'heure de fin réelle ; la poser d'office créerait une intervention de 120 h et fausserait le temps facturé.
+- **Couverture** : 4 tests (`pointage_du_jour_de?` vrai le jour même, faux un jour précédent, faux sans date de début ; helper : une fille de la veille mène au formulaire), **prouvés rouges** en revenant à `pointage_de?`. ⚠ La fixture `intervention_fille` est ancrée sur `4.hours.ago`, qui bascule sur la veille **entre minuit et 4 h** — le `début` est désormais épinglé dans le setup du test de helper, sans quoi la suite serait devenue dépendante de l'heure (famille de la « bombe du jeudi »).
+- **Voisin non corrigé** : **B88** (le bouton agit sur le pointage de celui qui regarde, pas sur la fille affichée).
 
 ---
 

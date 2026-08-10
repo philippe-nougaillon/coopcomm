@@ -362,6 +362,12 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_select 'select#user_service_ids option[selected]', count: 0
   end
 
+  test 'le champ Équipe accepte la création d’un mot clé' do
+    get admin_create_new_user_url
+
+    assert_select 'select#user_tag_list[data-addable=?]', 'true'
+  end
+
   def ids_du_select_services(body)
     select_html = body[/<select[^>]*id="user_service_ids".*?<\/select>/m].to_s
     select_html.scan(/<option value="(\d+)"/).flatten.map(&:to_i)

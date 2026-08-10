@@ -9,7 +9,7 @@
     <%= form.select :temps_de_pause,
                     options_for_select([0.0, 0.5, 1.0].map { |v| [v.to_s.tr('.', ','), v] }, intervention.temps_de_pause),
                     { include_blank: true },
-                    class: "select select-bordered select-sm w-full h-10 focus:input-primary #{pause_obligatoire && intervention.temps_de_pause.blank? ? 'bg-amber-50 border-amber-300' : 'bg-white'}",
+                    class: "select select-bordered select-sm w-full h-10 focus:input-primary #{pause_obligatoire && intervention.temps_de_pause.blank? && !current_user.agent? ? 'bg-amber-50 border-amber-300' : 'bg-white'}",
                     required: pause_obligatoire,
                     data: { 'calc-temps-passe-target': 'pause', action: "change->calc-temps-passe#calc" } %>
   </div>

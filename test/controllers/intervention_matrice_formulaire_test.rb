@@ -112,6 +112,16 @@ class InterventionMatriceFormulaireTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'le manager peut créer un mot clé depuis le formulaire, pas l’intervenant' do
+    { administrateur_paris: 'true', hidalgo: 'true', martin_technique_paris: 'false' }.each do |fixture, attendu|
+      sign_in users(fixture)
+      get edit_intervention_url(intervention_matrice(type: :classique))
+
+      select = Nokogiri::HTML(response.body).at_css('select[name^="intervention[tags_"]')
+      assert_equal attendu, select['data-addable'], fixture.to_s
+    end
+  end
+
   test 'un agent ne peut ni créer ni modifier un modèle de pointage' do
     sign_in users(:martin_technique_paris)
 

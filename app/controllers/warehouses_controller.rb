@@ -84,10 +84,6 @@ class WarehousesController < ApplicationController
     params.expect(warehouse: [:name, :address, :longitude, :latitude, { user_ids: [] }])
   end
 
-  def target_tab
-    params[:tab].presence || 'sites'
-  end
-
   def is_user_authorized
     authorize @warehouse || Warehouse
   end

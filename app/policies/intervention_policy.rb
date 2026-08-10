@@ -157,10 +157,6 @@ class InterventionPolicy < ApplicationPolicy
     !adhérent?
   end
 
-  def choisir_service?
-    !agent?
-  end
-
   # Dates souhaitées et prévision météo : sans objet sur un pointage, qui ne se
   # décrit que par ses dates réelles.
   def planifier_dates?

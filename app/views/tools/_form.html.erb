@@ -18,11 +18,15 @@
       <% end %>
       <%= form.text_field :name, class: 'input input-bordered input-sm w-full focus:input-primary h-10', required: true, placeholder: 'Ex. Perceuse sans fil...' %>
     </div>
-    <div class="form-control w-full">
-      <%= form.label :icon_name, "Type", class: "label font-semibold text-slate-700" %>
-      <%= form.select :icon_name, options_for_select(TriTextuel.ranger(Tool.icons), @tool.icon_name),
-        { include_blank: true }, class: 'slim-select w-full h-10' %>
-    </div>
+    <% if false %>
+      
+      <%# <div class="form-control w-full"> %>
+        <%# form.label :icon_name, "Type", class: "label font-semibold text-slate-700" %>
+        <%# form.select :icon_name, options_for_select(TriTextuel.ranger(Tool.icons), @tool.icon_name),
+          { include_blank: true }, class: 'slim-select w-full h-10' %>
+      <%# </div> %>
+    
+    <% end %>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
       <div class="form-control w-full">
         <%= form.label :marque, class: "label font-semibold text-slate-700" %>

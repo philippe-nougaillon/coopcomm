@@ -51,6 +51,7 @@ class Intervention < ApplicationRecord
   before_validation :set_temporary_description, on: :create
   before_validation :check_workflow_pointage_mère
   before_validation -> { self.temps_de_pause = 0 if temps_de_pause.nil? && terminé? }
+  before_validation :calc_temps_total
 
   validates :description, :adherent_id, :service_id, presence: true
 
@@ -62,8 +63,7 @@ class Intervention < ApplicationRecord
   validate :agent_obligatoire_si_terminé
   validate :agent_unique_si_pointage
   validate :service_partagé_par_adherent_et_agents
-
-  before_save :calc_temps_total
+  validate :pas_de_temps_total_negatif
 
   after_commit :update_heures_consommees_convention, if: -> { self.temps_total.present? }
 
@@ -484,6 +484,12 @@ class Intervention < ApplicationRecord
     template_slug.present? && intervention_mère&.agents&.include?(user)
   end
 
+  # `pointer` ne retrouve que les pointages du jour : sur une fille restée ouverte
+  # un jour précédent, il en créerait une nouvelle au lieu de la fermer.
+  def pointage_du_jour_de?(user)
+    pointage_de?(user) && début&.to_date == Time.zone.today
+  end
+
   def update_heures_consommees_convention
     associated_convention = Convention
                         .where("date_début <= ? AND date_fin_prévue >= ?", self.début, self.début)
@@ -633,6 +639,12 @@ class Intervention < ApplicationRecord
       next if agent.service_ids.include?(service_id)
 
       errors.add(:base, "L'agent #{agent.nom_prénom} n'appartient pas au service #{service.nom}")
+    end
+  end
+
+  def pas_de_temps_total_negatif
+    if self.temps_total < 0
+      errors.add(:base, "Le temps total ne peut pas être négatif.")
     end
   end
 

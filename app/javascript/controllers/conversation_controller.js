@@ -1,30 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import { Controller } from "@hotwired/stimulus"
 
 // Connects to data-controller="conversation"
@@ -36,7 +9,7 @@ import { Controller } from "@hotwired/stimulus"
 // possède son propre overflow-y-auto (layout flex avec header/footer fixes).
 export default class extends Controller {
   static targets = ["container", "badge", "input"]
-  static values = { toId: Number }
+  static values = { toUserSlug: String }
 
   connect() {
     this.scrollToCorrectPosition()
@@ -102,7 +75,7 @@ export default class extends Controller {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify({ message, to_id: this.toIdValue }),
+      body: JSON.stringify({ message, to_user_slug: this.toUserSlugValue }),
     }).then((response) => {
       if (response.ok) {
         this.inputTarget.value = ""

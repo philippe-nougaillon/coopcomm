@@ -10,7 +10,9 @@ class InterventionsHelperTest < ActionView::TestCase
   setup do
     @mère  = interventions(:intervention_repete) # agents de fixture : bond, martin
     @fille = interventions(:intervention_fille)
-    @fille.update_columns(template_slug: @mère.slug, fin: 1.hour.ago, temps_de_pause: 0)
+    # `début` épinglé sur aujourd'hui : la fixture est ancrée sur `4.hours.ago`, qui
+    # bascule sur la veille entre minuit et 4 h.
+    @fille.update_columns(template_slug: @mère.slug, début: Time.zone.now, fin: 1.hour.ago, temps_de_pause: 0)
   end
 
   test "affecté à l'intervention modèle : on passe par `pointer` de ce modèle" do
@@ -70,6 +72,13 @@ class InterventionsHelperTest < ActionView::TestCase
     assert_equal [pointer_intervention_path(@mère), :get, nil], terminer_destination(@fille)
   end
 
+  test 'pointage resté ouvert un jour précédent : renvoie vers le formulaire, pas vers `pointer`' do
+    self.current_user = users(:bond)
+    @fille.update_columns(début: 5.days.ago, fin: nil)
+
+    assert_equal [edit_intervention_path(@fille), :get, { terminer: 1 }], terminer_destination(@fille)
+  end
+
   test 'le bouton Terminer ouvre le modal via l’ID du dialogue' do
     intervention = interventions(:tonte_locaux)
 
@@ -111,5 +120,40 @@ class InterventionsHelperTest < ActionView::TestCase
 
   test 'aucun message quand tout est renseigné' do
     assert_nil message_terminaison_incomplete(interventions(:tonte_locaux))
+  end
+
+  # --- Trajet ---
+  # Le stub WebMock global renvoie une réponse sans `routes_info` : le bloc
+  # Trajet de la fiche d'intervention n'est jamais rendu en `:texte` ni en
+  # `:vide` par le reste de la suite.
+
+  test 'trajet_mode : le trajet enregistré suffit à afficher le texte' do
+    @fille.trajet = '12 km aller-retour'
+
+    assert_equal :texte, trajet_mode(@fille, nil)
+  end
+
+  test 'trajet_mode : sans trajet enregistré, la réponse Routes prend le relais' do
+    @fille.trajet = nil
+
+    assert_equal :texte, trajet_mode(@fille, { 'routes_info' => '8 km aller-retour' })
+  end
+
+  test 'trajet_mode : sans trajet ni réponse Routes, le bloc est vide' do
+    @fille.trajet = nil
+
+    assert_equal :vide, trajet_mode(@fille, nil)
+  end
+
+  test 'trajet_texte : le trajet enregistré prime sur la réponse Routes' do
+    @fille.trajet = '12 km aller-retour'
+
+    assert_equal '12 km aller-retour', trajet_texte(@fille, { 'routes_info' => '8 km aller-retour' })
+  end
+
+  test 'trajet_texte : sans trajet enregistré, la réponse Routes est affichée' do
+    @fille.trajet = nil
+
+    assert_equal '8 km aller-retour', trajet_texte(@fille, { 'routes_info' => '8 km aller-retour' })
   end
 end
