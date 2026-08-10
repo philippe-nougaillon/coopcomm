@@ -51,6 +51,7 @@ class Intervention < ApplicationRecord
   before_validation :set_temporary_description, on: :create
   before_validation :check_workflow_pointage_mère
   before_validation -> { self.temps_de_pause = 0 if temps_de_pause.nil? && terminé? }
+  before_validation :calc_temps_total
 
   validates :description, :adherent_id, :service_id, presence: true
 
@@ -63,8 +64,6 @@ class Intervention < ApplicationRecord
   validate :agent_unique_si_pointage
   validate :service_partagé_par_adherent_et_agents
   validate :pas_de_temps_total_negatif
-
-  before_save :calc_temps_total
 
   after_commit :update_heures_consommees_convention, if: -> { self.temps_total.present? }
 
