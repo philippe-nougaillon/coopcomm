@@ -62,6 +62,7 @@ class Intervention < ApplicationRecord
   validate :agent_obligatoire_si_terminé
   validate :agent_unique_si_pointage
   validate :service_partagé_par_adherent_et_agents
+  validate :pas_de_temps_total_negatif
 
   before_save :calc_temps_total
 
@@ -639,6 +640,12 @@ class Intervention < ApplicationRecord
       next if agent.service_ids.include?(service_id)
 
       errors.add(:base, "L'agent #{agent.nom_prénom} n'appartient pas au service #{service.nom}")
+    end
+  end
+
+  def pas_de_temps_total_negatif
+    if self.temps_total < 0
+      errors.add(:base, "Le temps total ne peut pas être négatif.")
     end
   end
 
