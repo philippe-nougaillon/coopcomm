@@ -17,17 +17,17 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'should show a conversation with an interlocutor' do
-    get messagerie_conversation_url(@interlocutor_user.id)
+    get messagerie_conversation_url(@interlocutor_user.slug)
     assert_response :success
   end
 
   test 'conversation with yourself redirects to messagerie' do
-    get messagerie_conversation_url(@current_user.id)
+    get messagerie_conversation_url(@current_user.slug)
     assert_redirected_to messagerie_path
   end
 
   test 'conversation with an unknown user redirects to messagerie' do
-    get messagerie_conversation_url(to_id: 0)
+    get messagerie_conversation_url(to_user_slug: 0)
     assert_redirected_to messagerie_path
   end
 
@@ -35,7 +35,7 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
     assert_difference('Message.count') do
       post messagerie_send_message_url, params: {
         message: 'Bonjour',
-        to_id: @interlocutor_user.id
+        to_user_slug: @interlocutor_user.slug
       }
     end
 
@@ -46,7 +46,7 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference('Message.count') do
       post messagerie_send_message_url, params: {
         message: 'Bonjour moi-même',
-        to_id: @current_user.id
+        to_user_slug: @current_user.slug
       }
     end
 
