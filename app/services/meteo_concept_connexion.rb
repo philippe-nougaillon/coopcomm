@@ -183,8 +183,6 @@ class MeteoConceptConnexion < ApplicationService
       'meteo/animated/cloudy-day-3.svg'
     when 3..5
       'meteo/animated/cloudy.svg'
-    when 6..7
-      'meteo/animated/cloudy.svg'
 
       # --- Pluie continue ---
     when 10  # faible

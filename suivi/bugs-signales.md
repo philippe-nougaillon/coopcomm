@@ -342,6 +342,23 @@
 
 ## ✅ Bugs corrigés (historique)
 
+### B89 — ✅ CORRIGÉ (2026-08-10) — Code mort accumulé, et distinction faite avec le code « parké »
+- **Signalé** le 2026-08-10 en balayant les lignes non couvertes de `bin/coverage`, chaque absence d'appelant vérifiée par `grep` sur `app/`, `lib/`, `config/`.
+- ⚠️ **Le signalement initial mélangeait deux choses**, et c'est la leçon de la correction : du code **mort par oubli** (à supprimer) et du code **parké volontairement**, dont les appelants sont commentés parce que la fonctionnalité doit pouvoir rouvrir. Les deux se ressemblent dans un rapport de couverture ; ils n'appellent pas la même décision.
+- **Supprimé** (mort par oubli, aucune intention de retour) :
+  - `InterventionPolicy#choisir_service?` — prédicat ajouté au découpage des vues (2026-08-05) et jamais branché ; il donnait l'illusion que le choix du service était piloté par la policy.
+  - `UsersController#interventions_average` — aucun appelant.
+  - `WarehousesController#target_tab` et `ServicesController#target_tab` — copies mortes de celle de `PrestationsController`, seule appelée.
+  - `MailLogsController#mail_log_params` et `NewslettersController#newsletter_params` — restes de scaffold : aucune route `create`/`update` (`resources :newsletters, only: %i[index new destroy]`).
+  - `MeteoConceptConnexion` — le `when 6..7` était **masqué** par le `when 6, 7` qui `return` vingt lignes plus haut, pour la même icône.
+  - `AdminController#audits` — le `else` était inatteignable, `authorize :admin` passant par `AdminPolicy#audits? = manager_or_admin?`.
+- **Gardé parké, sur décision de PE (2026-08-10)** — ce n'est pas du code mort mais de la dette assumée, à ne pas re-signaler :
+  - `Tool.icons` + le champ « Type » du formulaire outil (`<% if false %>`, `7ff45c90`/`1ec8bd58`). ⚠ À savoir : `tools/show.html.erb:93` **affiche toujours** l'icône et `icon_name` **reste dans `tool_params`** — seul le champ du formulaire est masqué, la valeur reste modifiable par requête forgée.
+  - `Intervention#broadcast_to_authorized_viewers` — live-update Turbo, `after_create_commit` commenté ([intervention.rb:130](app/models/intervention.rb#L130)) ; `broadcast_channels` garde 2 tests actifs, 6 tests commentés et un renvoi dans `index.html.erb:171` : une ligne à décommenter pour rouvrir.
+  - `NotificationMailer#report_missed_clock_out` — mail « pointage oublié », tâche rake commentée dans `interventions.rake:40`, lié à la sentinelle « alerte si pointages ouverts > 24 h » évoquée le 2026-07-28 et jamais tranchée.
+- **Vérifié** : suite non-système **2362 runs / 8 échecs / 2 erreurs** — les 10 sont **préexistants et sans rapport**, prouvé en remettant les 8 fichiers à HEAD par copie et en rejouant les fichiers concernés (mêmes 10). Sept viennent de `#463 Add slug to convention`, trois du travail « pause » en cours.
+- **Reste faisable** : `# :nocov:` autour des trois blocs parkés les sortirait du dénominateur de SimpleCov sans les supprimer — non appliqué, à décider.
+
 ⚠️ **Collision de numérotation à connaître** : le **B30** du tableau ci-dessous (`calc_temps_total` sur une pause nulle, 2026-07-29) et le **B30** des fiches détaillées (météo `get_title`, 2026-08-06) sont **deux bugs différents** qui ont reçu le même numéro. Aucun n'est renuméroté ici (les deux sont cités tels quels dans CLAUDE.md et dans les tests) ; à ne pas confondre en lecture. Dans la même famille : CLAUDE.md cite un **B64** (compte-rendu de terminaison) qui n'a jamais eu de fiche dans ce registre.
 
 ### Corrections anciennes (récapitulatif)

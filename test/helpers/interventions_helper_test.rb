@@ -121,4 +121,39 @@ class InterventionsHelperTest < ActionView::TestCase
   test 'aucun message quand tout est renseigné' do
     assert_nil message_terminaison_incomplete(interventions(:tonte_locaux))
   end
+
+  # --- Trajet ---
+  # Le stub WebMock global renvoie une réponse sans `routes_info` : le bloc
+  # Trajet de la fiche d'intervention n'est jamais rendu en `:texte` ni en
+  # `:vide` par le reste de la suite.
+
+  test 'trajet_mode : le trajet enregistré suffit à afficher le texte' do
+    @fille.trajet = '12 km aller-retour'
+
+    assert_equal :texte, trajet_mode(@fille, nil)
+  end
+
+  test 'trajet_mode : sans trajet enregistré, la réponse Routes prend le relais' do
+    @fille.trajet = nil
+
+    assert_equal :texte, trajet_mode(@fille, { 'routes_info' => '8 km aller-retour' })
+  end
+
+  test 'trajet_mode : sans trajet ni réponse Routes, le bloc est vide' do
+    @fille.trajet = nil
+
+    assert_equal :vide, trajet_mode(@fille, nil)
+  end
+
+  test 'trajet_texte : le trajet enregistré prime sur la réponse Routes' do
+    @fille.trajet = '12 km aller-retour'
+
+    assert_equal '12 km aller-retour', trajet_texte(@fille, { 'routes_info' => '8 km aller-retour' })
+  end
+
+  test 'trajet_texte : sans trajet enregistré, la réponse Routes est affichée' do
+    @fille.trajet = nil
+
+    assert_equal '8 km aller-retour', trajet_texte(@fille, { 'routes_info' => '8 km aller-retour' })
+  end
 end

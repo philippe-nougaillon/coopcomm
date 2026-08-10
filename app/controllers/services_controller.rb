@@ -96,10 +96,6 @@ class ServicesController < ApplicationController
     params.expect(service: %i[nom calculate_distance])
   end
 
-  def target_tab
-    params[:tab].presence || 'services'
-  end
-
   def is_user_authorized
     authorize @service || Service
   end

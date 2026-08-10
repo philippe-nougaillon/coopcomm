@@ -201,10 +201,6 @@ class UsersController < ApplicationController
     redirect_to user_path(@user), notice: 'Lien d\'accès renvoyé avec succès.'
   end
 
-  def interventions_average
-    interventions.average(:note)&.round(2) || 0
-  end
-
   def edit_password; end
 
   def update_password

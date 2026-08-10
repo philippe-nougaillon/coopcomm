@@ -107,11 +107,6 @@ class NewslettersController < ApplicationController
     @newsletter = Newsletter.find_by(slug: params[:id])
   end
 
-  # Only allow a list of trusted parameters through.
-  def newsletter_params
-    params.expect(newsletter: [:email])
-  end
-
   def is_user_authorized
     authorize @newsletter || Newsletter
   end

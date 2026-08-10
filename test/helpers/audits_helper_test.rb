@@ -634,6 +634,17 @@ class AuditsHelperTest < ActionView::TestCase
     assert_equal 'Prestation #999999', format_audit_value('prestation_id', 999_999)
   end
 
+  test 'une ligne de facture nomme sa facture par sa référence' do
+    assert_equal factures(:facture_paris).ref, format_audit_value('facture_id', factures(:facture_paris).id)
+  end
+
+  test 'une facture supprimée est retrouvée dans sa trace d\'audit' do
+    Audited::Audit.create!(auditable_type: 'Facture', auditable_id: 999_999, action: 'destroy',
+                           audited_changes: { 'ref' => 'FA-2026-9' })
+
+    assert_equal 'FA-2026-9', format_audit_value('facture_id', 999_999)
+  end
+
   test 'sur la fiche d\'une intervention, la cible n\'est pas répétée' do
     changes = { 'agent_id' => users(:bond).id, 'intervention_id' => 42 }
     avec  = audit_details(audit(type: 'AgentIntervention', action: 'create', changes: changes), nil)
