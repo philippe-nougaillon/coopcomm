@@ -11,4 +11,5 @@
 
 <%= form.label champ, "Mots clés", class: "label font-semibold text-slate-700" %>
 <%= form.select champ, options_for_select(options, tags_soumis), {},
-                { multiple: true, class: 'slim-select w-full h-10' } %>
+                { multiple: true, class: 'slim-select w-full h-10',
+                  data: { addable: champ == :tags_manager } } %>

@@ -82,7 +82,7 @@
             end
             options_users = (@users_tags.map(&:name) + tags_users_soumis).uniq
           %>
-          <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full h-10', data: { controller: 'slim-select' } } %>
+          <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full h-10', data: { controller: 'slim-select', addable: true } } %>
         </div>
       <% end %>
       <% if current_user.manager_or_admin? %>
