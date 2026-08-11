@@ -10,6 +10,7 @@ class AdministrateurServicePolicyTest < ActionDispatch::IntegrationTest
 
     @policy = ServicePolicy.new(administrateur, service)
     @policy_service_different = ServicePolicy.new(administrateur, service_different)
+    @policy_service_supprimable = ServicePolicy.new(administrateur, services(:menage))
   end
 
   # Index
@@ -55,8 +56,12 @@ class AdministrateurServicePolicyTest < ActionDispatch::IntegrationTest
   end
 
   # Destroy
-  test "accès autorisé pour un administrateur sur la page destroy d'un service" do
-    assert @policy.destroy?
+  test "accès autorisé pour un administrateur sur la page destroy d'un service sans rattachement" do
+    assert @policy_service_supprimable.destroy?
+  end
+
+  test "accès interdit pour un administrateur sur la page destroy d'un service encore rattaché" do
+    refute @policy.destroy?
   end
 
   test "accès interdit pour un administrateur sur la page destroy d'un service d'une autre organisation" do

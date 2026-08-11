@@ -298,7 +298,7 @@ class AuditsHelperTest < ActionView::TestCase
   # ==================== BLOC D — formatage des valeurs ====================
 
   test 'les champs techniques ne sont jamais présentés à l\'utilisateur' do
-    changes = { 'updated_at' => %w[a b], 'slug' => %w[a b], 'encrypted_password' => %w[a b], 'tag_list' => %w[a b] }
+    changes = { 'updated_at' => %w[a b], 'slug' => %w[a b], 'encrypted_password' => %w[a b], 'template_slug' => %w[a b] }
 
     assert_empty humanize_changes(changes)
   end
@@ -687,5 +687,66 @@ class AuditsHelperTest < ActionView::TestCase
     audit = audit(type: 'User', action: 'create', changes: { 'email' => 'a@b.fr', 'warehouse_id' => nil })
 
     assert_equal 'Compte créé', libellé_badge(audit)
+  end
+
+  # ==================== BLOC J — mots clés ====================
+
+  test 'un mot clé ajouté est nommé, pas résumé par une ligne vide' do
+    html = audit_details(audit(changes: { 'tag_list' => [%w[urgence], %w[urgence plomberie]] }), nil)
+
+    assert_match 'Mots clés', html
+    assert_match 'urgence, plomberie', html
+    assert_no_match(/—/, html)
+  end
+
+  test 'un mot clé retiré montre la liste d\'avant et celle d\'après' do
+    changements = humanize_changes({ 'tag_list' => [%w[urgence peinture], %w[urgence]] })
+
+    assert_equal 1, changements.size
+    assert_equal 'Mots clés', changements.first[:label]
+    assert_equal 'urgence, peinture', changements.first[:from]
+    assert_equal 'urgence', changements.first[:to]
+  end
+
+  test 'tous les mots clés retirés : la nouvelle valeur est le tiret, pas un tableau vide' do
+    changements = humanize_changes({ 'tag_list' => [%w[urgence], []] })
+
+    assert_equal 'urgence', changements.first[:from]
+    assert_equal '—', changements.first[:to]
+  end
+
+  # Sur une création, la valeur stockée est la liste elle-même : la lire comme un
+  # couple avant/après annoncerait « urgence → plomberie ».
+  test 'à la création, la liste des mots clés est une valeur, pas un avant/après' do
+    changements = humanize_changes({ 'tag_list' => %w[urgence plomberie] })
+
+    assert_equal '—', changements.first[:from]
+    assert_equal 'urgence, plomberie', changements.first[:to]
+  end
+
+  test 'une création sans mot clé n\'ajoute aucune ligne' do
+    assert_empty humanize_changes({ 'tag_list' => [] })
+  end
+
+  test 'une liste de mots clés inchangée est ignorée' do
+    assert_empty humanize_changes({ 'tag_list' => [%w[urgence], %w[urgence]] })
+  end
+
+  test 'un changement de mots clés enregistré en base donne un audit lisible' do
+    intervention = interventions(:tonte_locaux)
+    intervention.update!(tag_list: 'urgence')
+    intervention.update!(tag_list: 'urgence, plomberie')
+
+    html = audit_details(intervention.audits.reload.last, nil)
+
+    assert_match 'Mots clés', html
+    assert_match 'urgence, plomberie', html
+  end
+
+  test 'les mots clés d\'un utilisateur sont rendus comme ceux d\'une intervention' do
+    html = audit_details(audit(type: 'User', changes: { 'tag_list' => [[], ['Secteur Nord']] }), nil)
+
+    assert_match 'Mots clés', html
+    assert_match 'Secteur Nord', html
   end
 end

@@ -261,16 +261,18 @@
 - **Impact** : le menu déroulant « Mots clés » des index (utilisateurs, interventions) ne propose pas les bons mots clés — il n'en propose aucun dans la plupart des cas. Aucune fuite de données : `tag_counts_on` ne renvoie que des noms de tags.
 - **Correctif proposé** : `User.by_service(current_user.services)`. Une ligne. Non appliqué : hors du périmètre du lot « tris » (2026-08-06).
 
-### B88 — Le bouton « Terminer » d'une fille pointe sur le pointage de CELUI QUI REGARDE, pas sur celui affiché
-- **Où** : [interventions_helper.rb:17](app/helpers/interventions_helper.rb#L17) (`terminer_destination`) × [user.rb:378](app/models/user.rb#L378) (`find_current_intervention`).
-- **Cause** : le bouton renvoie vers `pointer` de l'intervention **mère**, qui re-cherche ensuite le pointage **de l'utilisateur connecté**. L'identité de la fille affichée est donc perdue en route : `Intervention#pointage_de?` ne vérifie que l'affectation au **modèle**, jamais que l'utilisateur est l'agent de **cette** fille.
-- **Parcours de reproduction** :
-  1. Un manager (ou un administrateur) est sélectionné comme agent sur une intervention **modèle de pointage** — cas voulu (cf. décision 2026-07-28-f).
-  2. Un agent de ce modèle, MARTIN, pointe le matin : sa fille du jour est ouverte.
-  3. Le manager ouvre `/interventions`, voit la fille de MARTIN (il voit toute son organisation) et clique « Terminer ».
-  4. Le pointage de MARTIN n'est pas terminé : l'application crée **une nouvelle fille au nom du manager** (« Début de journée enregistré ! »), ou refuse si le manager a déjà un pointage ouvert.
-- **Impact** : temps de travail attribué au mauvais agent — donc facturation faussée — et le pointage visé reste ouvert. Inatteignable pour un agent (il ne voit pas les filles de ses collègues) ; réservé aux manager/admin affectés à un modèle.
-- **Correctif proposé** : ajouter `agents.include?(user)` à `Intervention#pointage_du_jour_de?` — sur la fille d'un autre, le bouton retomberait alors sur le formulaire d'édition, où l'on renseigne la date de fin réelle. Une ligne. **Non appliqué** : 3 tests de `interventions_helper_test` épinglent aujourd'hui « l'affectation au MODÈLE suffit » (décision 2026-07-28-f) et seraient à retourner — décision de PE.
+### B90 — Un adhérent qui modifie son intervention en efface TOUS les mots clés
+- **Où** : [interventions_controller.rb:563](app/controllers/interventions_controller.rb#L563), `update_tag_list`
+- **Cause** : la méthode assigne **inconditionnellement** `@intervention.tag_list = params[:intervention][:tags_manager | tags_intervenant]`. Or le champ Mots clés vit dans le bloc « Assignation », que `_form.html.erb:49` ne rend que si `policy(intervention).saisir_assignation?` — **faux pour un adhérent** ([intervention_policy.rb:167](app/policies/intervention_policy.rb#L167) : `!adhérent?`). Le paramètre est donc absent, `tag_list = nil`, et `acts-as-taggable-on` interprète `nil` comme une liste vide → **tous les mots clés sont détachés**.
+- **Parcours de reproduction** (mesuré de bout en bout via le contrôleur, le 2026-08-11) :
+  1. En tant que **manager**, j'ouvre une intervention et je lui pose deux mots clés (« urgence », « plomberie »). J'enregistre.
+  2. En tant qu'**adhérent** propriétaire de cette intervention, je l'ouvre en modification, je change **la description seule** (le champ Mots clés ne m'est pas proposé) et j'enregistre → **303**, la modification passe.
+  3. Je retourne sur l'intervention en tant que manager : les **deux mots clés ont disparu**.
+  - Sonde : `PATCH /interventions/:id` en adhérent avec `{ description: … }` → `tag_list` passe de `["urgence", "plomberie"]` à `[]`.
+- **Impact** : perte silencieuse d'une donnée de classement, sans que personne n'ait demandé quoi que ce soit. **Depuis le 2026-08-11 l'effacement est visible dans l'historique** (« Mots clés : ~~urgence, plomberie~~ → — »), ce qui va le faire remonter par les utilisateurs ; il était muet jusque-là.
+- **Correctif proposé** (une ligne) : ne toucher aux mots clés que si le formulaire les a soumis —
+  `champ = current_user.manager_or_admin? ? :tags_manager : :tags_intervenant` puis `return unless params[:intervention].key?(champ)`. ⚠ Attention à ne pas confondre « champ absent » (ne rien faire) et « champ vidé » (retirer les mots clés) : un select `multiple` vidé envoie `['']`, donc la clé est bien présente — c'est le même piège que le filtre Services des index (décision 2026-06-23).
+- **Non corrigé** : hors du périmètre du lot « affichage des mots clés dans l'audit » (2026-08-11), et la garde touche un chemin d'écriture partagé par les 3 actions de création/modification.
 
 ---
 
@@ -341,6 +343,31 @@
 ---
 
 ## ✅ Bugs corrigés (historique)
+
+### B88 — ✅ CORRIGÉ (2026-08-10) — Le bouton « Terminer » d'une fille pointait sur le pointage de CELUI QUI REGARDE, pas sur celui affiché
+- **Où** : [interventions_helper.rb:17](app/helpers/interventions_helper.rb#L17) (`terminer_destination`) × [user.rb:378](app/models/user.rb#L378) (`find_current_intervention`).
+- **Cause** : le bouton renvoie vers `pointer` de l'intervention **mère**, qui re-cherche ensuite le pointage **de l'utilisateur connecté**. L'identité de la fille affichée est donc perdue en route : `Intervention#pointage_de?` ne vérifie que l'affectation au **modèle**, jamais que l'utilisateur est l'agent de **cette** fille.
+- **Parcours de reproduction** :
+  1. Un manager (ou un administrateur) est sélectionné comme agent sur une intervention **modèle de pointage** — cas voulu (cf. décision 2026-07-28-f).
+  2. Un agent de ce modèle, MARTIN, pointe le matin : sa fille du jour est ouverte.
+  3. Le manager ouvre `/interventions`, voit la fille de MARTIN (il voit toute son organisation) et clique « Terminer ».
+  4. Le pointage de MARTIN n'est pas terminé : l'application crée **une nouvelle fille au nom du manager** (« Début de journée enregistré ! »), ou refuse si le manager a déjà un pointage ouvert.
+- **Impact** : temps de travail attribué au mauvais agent — donc facturation faussée — et le pointage visé reste ouvert. Inatteignable pour un agent (il ne voit pas les filles de ses collègues) ; réservé aux manager/admin affectés à un modèle.
+- ✅ **CORRIGÉ le 2026-08-10** (demande PE) : le discriminant devient l'affectation à **la fille affichée**, dans `Intervention#pointage_de?` ([intervention.rb:482](app/models/intervention.rb#L482)) plutôt que dans `pointage_du_jour_de?` comme proposé — c'est `pointage_de?` que son nom engage (« ce pointage est celui de cet utilisateur »), et son seul appelant est `pointage_du_jour_de?`.
+
+  ```ruby
+  def pointage_de?(user)
+    template_slug.present? && agents.include?(user)
+  end
+  ```
+
+  **Décision de PE : la vérification sur les agents du MODÈLE est retirée, pas seulement remplacée** (« on s'en fiche s'il a été retiré de la mère par la suite »). Elle avait deux effets de bord qu'il faut connaître, le second ayant demandé un correctif :
+  - ⚠️ **Le bouton peut désormais mener à un refus Pundit** : `InterventionPolicy#pointer?` ([intervention_policy.rb:74](app/policies/intervention_policy.rb#L74)) n'interroge, lui, que les agents de la **mère**. Un agent retiré du modèle après avoir ouvert sa fille verra un bouton « Terminer » qui le renvoie sur un refus d'autorisation, sans autre issue pour fermer son pointage. Ce cas est celui que la décision 2026-07-28-f voulait rendre impossible ; il est jugé négligeable et assumé.
+  - **Le repli « modèle introuvable » disparaissait avec elle** : `terminer_destination` construisait `pointer_intervention_path(nil)` → `ActionController::UrlGenerationError` sur une fille dont le `template_slug` est obsolète. La garde a été **remontée dans le helper**, là où l'URL est fabriquée : `modèle_à_pointer(intervention)` ([interventions_helper.rb:30](app/helpers/interventions_helper.rb#L30)) rend `nil` si le bouton ne doit pas passer par `pointer` **ou** si le modèle n'existe plus, et il est partagé avec `message_terminaison_incomplete` — sans quoi le formulaire s'ouvrirait sans expliquer ce qui manque.
+- **Effet observable** : sur la fille d'un autre agent, le bouton retombe sur le traitement des informations manquantes — donc le **formulaire d'édition** avec `terminer: 1` si le pointage est encore ouvert (on y renseigne la fin réelle), et `terminer` en POST s'il est complet. Plus aucun chemin ne crée un pointage au nom de celui qui regarde.
+- **Tests** : les 3 tests de `interventions_helper_test` qui épinglaient « l'affectation au MODÈLE suffit » sont retournés (ils utilisaient `bond`, agent du modèle mais **pas** de la fixture `intervention_fille`, dont l'agent est `martin` — ils décrivaient donc exactement le bug). Ajoutés : « affecté au modèle mais pas au pointage affiché : le formulaire, pas `pointer` » (helper) et « `pointage_de?` : faux sur le pointage d'un autre agent du même modèle » (modèle). **Prouvés rouges** en deux temps : l'ancienne condition remise → 2 échecs ; la garde nil neutralisée → l'`UrlGenerationError` du test « modèle introuvable ». Sabotages faits et défaits par copie de sauvegarde avec contrôle `md5sum`.
+- **Vérifié** : `bundle exec rails test` **2366 runs / 0 échec / 0 erreur / 0 skip** ; flux système d'intervention (agent, manager) **97 runs / 0 échec**.
+- **Reste ouvert, sans rapport avec ce correctif** : un pointage resté ouvert un jour précédent ne peut toujours pas être ré-ouvert par un **re-scan du QRCode** (garde #357) — cf. **R1**. Le bouton « Terminer », lui, offre une sortie depuis B87.
 
 ### B89 — ✅ CORRIGÉ (2026-08-10) — Code mort accumulé, et distinction faite avec le code « parké »
 - **Signalé** le 2026-08-10 en balayant les lignes non couvertes de `bin/coverage`, chaque absence d'appelant vérifiée par `grep` sur `app/`, `lib/`, `config/`.
