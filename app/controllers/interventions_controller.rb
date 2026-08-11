@@ -467,13 +467,11 @@ class InterventionsController < ApplicationController
   end
 
   def filtrer_par_mots_cles(interventions)
-    if params[:tags].present?
-      session[:tags] = params[:tags]
-      return interventions.tagged_with(params[:tags].reject(&:blank?))
-    end
+    mots_cles = Array(params[:tags]).grep(String).reject(&:blank?)
+    params[:tags] = mots_cles
+    return interventions if mots_cles.empty?
 
-    session[:tags] = params[:tags] = []
-    interventions
+    interventions.tagged_with(mots_cles)
   end
 
   # Alimente les listes déroulantes du bandeau de filtres.

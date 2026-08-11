@@ -254,12 +254,17 @@
 - **Correctif proposé** : sortir l'écriture du callback (`update_columns(trajet:, co2:)` — ces colonnes ne demandent aucune validation), ce qui supprime d'un coup le rejeu des validations, le changement d'état et la perte silencieuse. ⚠️ `co2` est dans la liste surveillée par le trigger du dashboard : `update_columns` déclenche bien le refresh, le comportement de B71 est préservé.
 - **Note connexe** : ce `save` imbriqué est déjà la raison pour laquelle `apres_terminaison` doit être déclaré **en dernier** dans le modèle (cf. décision 2026-07-29-h) — le défaut a donc déjà coûté une fois.
 
-### B85 — Le filtre « Mots clés » des index est calculé sur un périmètre absurde
-- **Où** : [application_controller.rb:57](app/controllers/application_controller.rb#L57), `set_users_tags`
-- **Cause** : `User.by_service(current_user)` reçoit **l'utilisateur courant** là où la méthode attend des **services** — l'identifiant de l'utilisateur est utilisé comme identifiant de service. Le défaut est antérieur (il existait déjà avec la version `joins + where(services: user)`), il a seulement été rendu visible en réécrivant `by_service` en sous-requête.
-- **Parcours de reproduction** (mesuré en console) : `User.by_service(User.first).count` → **0** ; la liste des mots clés proposée au filtre est donc calculée sur un ensemble vide ou, pire, sur les utilisateurs d'un service dont l'identifiant coïncide avec celui de l'utilisateur connecté.
-- **Impact** : le menu déroulant « Mots clés » des index (utilisateurs, interventions) ne propose pas les bons mots clés — il n'en propose aucun dans la plupart des cas. Aucune fuite de données : `tag_counts_on` ne renvoie que des noms de tags.
-- **Correctif proposé** : `User.by_service(current_user.services)`. Une ligne. Non appliqué : hors du périmètre du lot « tris » (2026-08-06).
+### B91 — Un adhérent peut écraser les mots clés par un paramètre `tag_list` forgé — ⏸️ MIS DE CÔTÉ (décision PE, 2026-08-11)
+- **Décision PE** : « il y a plein de champs qui ne devraient pas être permis pour certains rôles parce qu'ils sont cachés selon le `workflow_state` ou le rôle ; c'est un sujet à part, la majorité de ces cas sont des *abuser stories* ». Le critère retenu : **un bug est un bug quand un utilisateur modifie un champ qui ne lui est PAS caché** (c'était le cas de B90) ; forger un paramètre absent de son formulaire n'en est pas un. Fiche conservée pour mémoire, à traiter avec l'ensemble des permits le jour où le sujet sera ouvert.
+- **Où** : [interventions_controller.rb:550](app/controllers/interventions_controller.rb#L550) — `:tag_list` figure dans les permits
+- **Cause** : aucun formulaire ne soumet `intervention[tag_list]` (les rôles passent par `tags_manager` / `tags_intervenant`, lus par `update_tag_list`). Le permit est donc **mort en usage normal** et ne sert qu'à une requête forgée : `assign_attributes(intervention_params)` écrit les mots clés **avant** que `update_tag_list` ne s'exécute, et celui-ci sort tôt pour l'adhérent puisque son formulaire ne porte aucun champ de mots clés.
+- **Parcours de reproduction** (prouvé par test) :
+  1. Une intervention porte les mots clés `urgence`.
+  2. Connecté en **adhérent**, j'envoie `PATCH /interventions/:slug` avec `intervention[tag_list]=forgé` (console navigateur, ou un champ ajouté à la main dans le formulaire).
+  3. Les mots clés de l'intervention deviennent `forgé` — alors que le champ ne m'est jamais proposé et que la garde de **B90** est précisément là pour m'empêcher d'y toucher.
+- **Correctif proposé** : retirer `:tag_list` de `intervention_params`. Aucun formulaire ne le soumet, donc aucune régression attendue.
+- **Épinglé par** : `interventions_controller_test`, « un adhérent écrase les mots clés par un paramètre tag_list forgé » — à inverser à la correction.
+
 
 ---
 
@@ -330,6 +335,22 @@
 ---
 
 ## ✅ Bugs corrigés (historique)
+
+### B52 — ✅ SANS OBJET (2026-08-11) — `TagCloudComponent` appelé avec le mauvais mot-clé
+- Le composant et son gabarit ont été **supprimés** : plus aucun appelant depuis le retrait des deux vues non routées (`carte_interventions`, `route_interventions`) du 2026-08-10-c. Vérifié avant suppression : aucune vue, aucun contrôleur, aucun test, aucun preview ViewComponent ne le référence ; boot de l'application contrôlé après coup.
+- ⚠️ `app/components/` est désormais **vide** : la gem `view_component` n'a plus un seul composant dans le dépôt. À retirer du Gemfile si aucun composant n'est prévu.
+
+### B92 — ✅ SIGNALÉ ET CORRIGÉ (2026-08-11) — La liste déroulante « Mots clés » de /users exposait celles des autres organisations
+- **Où** : [users/index.html.erb:53](app/views/users/index.html.erb#L53), liste construite dans la vue à partir de `ActsAsTaggableOn::Tag.joins(:taggings).where(taggable_type: 'User')` — sans aucun bornage. La table `tags` est commune à toute l'application.
+- **Reproduction** (prouvée par test avant correction) : un manager de Marseille pose `astreinte-portuaire` sur un de ses agents → un administrateur de Paris le voit proposé dans le menu « Mots clés » de `/users`. Le **filtrage** restait cloisonné (`by_service`) : seuls les libellés fuyaient.
+- **Correctif** : la requête quitte la vue pour `set_users_tags`, qui part désormais de `current_organisation.users` — miroir exact de `set_interventions_tags`, déjà correct côté interventions. `set_users_tags` est ajouté au `before_action` de `users#index`.
+- **B85 corrigé du même coup**, et il le fallait : la méthode passait `User.by_service(current_user)` (un utilisateur là où l'on attend des services → relation vide), si bien que le champ Mots clés du formulaire utilisateur ne proposait **jamais** de mot clé existant. Écrire le bornage correct pour l'index en laissant la version fausse dans la même méthode n'était pas tenable.
+- **Épinglages retournés** : `users_index_filter_test` (« la liste est bornée à l'organisation ») et `users_controller_test` (« le formulaire propose les mots clés déjà utilisés » + un test critique inter-organisations). Les trois **prouvés rouges** par sabotage.
+
+### B85 — ✅ CORRIGÉ (2026-08-11) — Le filtre « Mots clés » des index était calculé sur un périmètre absurde
+- **Où** : [application_controller.rb:56](app/controllers/application_controller.rb#L56), `set_users_tags`
+- **Cause** : `User.by_service(current_user)` recevait **l'utilisateur courant** là où la méthode attend des **services** — la relation était vide, donc aucun mot clé n'était jamais proposé.
+- **Correctif** : `current_organisation&.users` (repli `User.none`), en même temps que **B92** : les deux vivaient dans la même méthode.
 
 ### B90 — ✅ SIGNALÉ ET CORRIGÉ (2026-08-11) — Un adhérent qui modifiait son intervention en effaçait TOUS les mots clés
 - **Où** : [interventions_controller.rb:563](app/controllers/interventions_controller.rb#L563), `update_tag_list`

@@ -142,7 +142,7 @@ class InterventionsIndexFiltersTest < ActionDispatch::IntegrationTest
 
   # --- Tags d'intervention ---
 
-  test 'un tag d\'intervention restreint la liste et est mémorisé en session' do
+  test 'un tag d\'intervention restreint la liste' do
     @tonte.update!(tag_list: 'urgent')
 
     get interventions_url(tags: ['urgent'])
@@ -150,14 +150,103 @@ class InterventionsIndexFiltersTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes assigns(:interventions), @tonte
     assert_not_includes assigns(:interventions), interventions(:nouvelle_intervention)
-    assert_equal ['urgent'], session[:tags]
   end
 
-  test 'sans tag soumis, la session est remise à vide' do
+  test 'sans tag soumis, la liste n\'est pas restreinte' do
     get interventions_url
 
     assert_response :success
-    assert_empty session[:tags]
+    assert_includes assigns(:interventions), @tonte
+  end
+
+  test 'deux mots clés se cumulent : seules les interventions qui portent les deux' do
+    les_deux = cree_intervention('Porte les deux mots clés', tag_list: 'urgence, plomberie')
+    un_seul = cree_intervention('Ne porte qu\'un mot clé', tag_list: 'urgence')
+
+    get interventions_url, params: { tags: %w[urgence plomberie] }
+
+    assert_response :success
+    assert_includes assigns(:interventions), les_deux
+    assert_not_includes assigns(:interventions), un_seul
+  end
+
+  test 'le filtre par mot clé ignore la casse' do
+    urgente = cree_intervention('Intervention urgente', tag_list: 'urgence')
+
+    get interventions_url, params: { tags: ['URGENCE'] }
+
+    assert_response :success
+    assert_includes assigns(:interventions), urgente
+  end
+
+  test 'un mot clé inconnu rend une liste vide sans erreur' do
+    get interventions_url, params: { tags: ['mot-clé-qui-n-existe-pas'] }
+
+    assert_response :success
+    assert_empty assigns(:interventions)
+  end
+
+  # Filtre vidé = filtre retiré, comme pour la saisie des mots clés (B90) : ce que
+  # l'utilisateur n'a pas demandé ne doit rien restreindre.
+  test 'un filtre de mots clés vidé rend toutes les interventions' do
+    get interventions_url, params: { tags: [''] }
+
+    assert_response :success
+    assert_includes assigns(:interventions), @tonte
+  end
+
+  test 'un paramètre tags scalaire est accepté au lieu de faire tomber la page' do
+    @tonte.update!(tag_list: 'urgence')
+
+    get interventions_url, params: { tags: 'urgence' }
+
+    assert_response :success
+    assert_includes assigns(:interventions), @tonte
+  end
+
+  test 'un paramètre tags non textuel est ignoré' do
+    get interventions_url, params: { tags: { a: 'b' } }
+
+    assert_response :success
+    assert_includes assigns(:interventions), @tonte
+  end
+
+  # --- Cloisonnement multi-organisations des mots clés ---
+  # La table des mots clés est commune à toutes les organisations : seul le périmètre de
+  # la relation interrogée les sépare.
+
+  test 'critique : un mot clé d une autre organisation ne remonte aucune intervention' do
+    marseille = interventions(:nettoyage_port)
+    marseille.update!(tag_list: 'secret-marseille')
+
+    get interventions_url, params: { tags: ['secret-marseille'] }
+
+    assert_response :success
+    assert_empty assigns(:interventions)
+  end
+
+  test 'critique : la liste des mots clés proposée est bornée à l organisation' do
+    interventions(:nettoyage_port).update!(tag_list: 'secret-marseille')
+    @tonte.update!(tag_list: 'urgence')
+
+    get interventions_url
+
+    assert_response :success
+    noms = assigns(:intervention_tags).map(&:name)
+    assert_includes noms, 'urgence'
+    assert_not_includes noms, 'secret-marseille'
+  end
+
+  test 'le filtre par mot clé se combine avec le filtre Statut' do
+    urgente_nouvelle = cree_intervention('Urgente et nouvelle', tag_list: 'urgence')
+    urgente_validée = cree_intervention('Urgente et validée', tag_list: 'urgence',
+                                                             workflow_state: 'validé')
+
+    get interventions_url, params: { tags: ['urgence'], workflow_state: ['Nouveau'] }
+
+    assert_response :success
+    assert_includes assigns(:interventions), urgente_nouvelle
+    assert_not_includes assigns(:interventions), urgente_validée
   end
 
   # --- Tri de la vue compacte ---

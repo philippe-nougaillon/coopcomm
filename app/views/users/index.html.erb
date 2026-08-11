@@ -49,14 +49,8 @@
       <% end %>
       <div class="w-full md:flex-1">
         <%= label_tag :user_tag, "Mots clés", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
-        <%
-          tags_de_users = TriTextuel.ranger(ActsAsTaggableOn::Tag.joins(:taggings)
-                                                                .where(taggings: { taggable_type: 'User' })
-                                                                .distinct
-                                                                .pluck(:name))
-        %>
-        <%= select_tag :user_tag, 
-                options_for_select(tags_de_users, params[:user_tag]), 
+        <%= select_tag :user_tag,
+                options_from_collection_for_select(@users_tags, :name, :name, params[:user_tag]),
                 multiple: true,
                 class: 'slim-select w-full h-10', 
                 data: { placeholder: 'Tous les mots-clés' },
