@@ -261,6 +261,19 @@
 - **Impact** : le menu déroulant « Mots clés » des index (utilisateurs, interventions) ne propose pas les bons mots clés — il n'en propose aucun dans la plupart des cas. Aucune fuite de données : `tag_counts_on` ne renvoie que des noms de tags.
 - **Correctif proposé** : `User.by_service(current_user.services)`. Une ligne. Non appliqué : hors du périmètre du lot « tris » (2026-08-06).
 
+### B90 — Un adhérent qui modifie son intervention en efface TOUS les mots clés
+- **Où** : [interventions_controller.rb:563](app/controllers/interventions_controller.rb#L563), `update_tag_list`
+- **Cause** : la méthode assigne **inconditionnellement** `@intervention.tag_list = params[:intervention][:tags_manager | tags_intervenant]`. Or le champ Mots clés vit dans le bloc « Assignation », que `_form.html.erb:49` ne rend que si `policy(intervention).saisir_assignation?` — **faux pour un adhérent** ([intervention_policy.rb:167](app/policies/intervention_policy.rb#L167) : `!adhérent?`). Le paramètre est donc absent, `tag_list = nil`, et `acts-as-taggable-on` interprète `nil` comme une liste vide → **tous les mots clés sont détachés**.
+- **Parcours de reproduction** (mesuré de bout en bout via le contrôleur, le 2026-08-11) :
+  1. En tant que **manager**, j'ouvre une intervention et je lui pose deux mots clés (« urgence », « plomberie »). J'enregistre.
+  2. En tant qu'**adhérent** propriétaire de cette intervention, je l'ouvre en modification, je change **la description seule** (le champ Mots clés ne m'est pas proposé) et j'enregistre → **303**, la modification passe.
+  3. Je retourne sur l'intervention en tant que manager : les **deux mots clés ont disparu**.
+  - Sonde : `PATCH /interventions/:id` en adhérent avec `{ description: … }` → `tag_list` passe de `["urgence", "plomberie"]` à `[]`.
+- **Impact** : perte silencieuse d'une donnée de classement, sans que personne n'ait demandé quoi que ce soit. **Depuis le 2026-08-11 l'effacement est visible dans l'historique** (« Mots clés : ~~urgence, plomberie~~ → — »), ce qui va le faire remonter par les utilisateurs ; il était muet jusque-là.
+- **Correctif proposé** (une ligne) : ne toucher aux mots clés que si le formulaire les a soumis —
+  `champ = current_user.manager_or_admin? ? :tags_manager : :tags_intervenant` puis `return unless params[:intervention].key?(champ)`. ⚠ Attention à ne pas confondre « champ absent » (ne rien faire) et « champ vidé » (retirer les mots clés) : un select `multiple` vidé envoie `['']`, donc la clé est bien présente — c'est le même piège que le filtre Services des index (décision 2026-06-23).
+- **Non corrigé** : hors du périmètre du lot « affichage des mots clés dans l'audit » (2026-08-11), et la garde touche un chemin d'écriture partagé par les 3 actions de création/modification.
+
 ---
 
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
