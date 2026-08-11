@@ -130,4 +130,62 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     assert_equal adherent_initial, fille.adherent_id
     assert_equal agents_initiaux, fille.agent_ids
   end
+
+  # --- Zone de dépôt des photos (seul champ multiple de l'application) -------
+
+  test 'la zone de photos annonce le nombre de fichiers ajoutés' do
+    visit edit_intervention_url(interventions(:tonte_locaux))
+
+    attach_file 'intervention_photos', [image_path, autre_image_path], make_visible: true
+
+    assert_text '2 fichiers sélectionnés'
+    assert_text 'exemple.png, carte_grise.jpg'
+    assert_selector "[data-controller='dropzone'][data-dropzone-state='success']"
+  end
+
+  test 'une photo seule affiche son nom sans compteur' do
+    visit edit_intervention_url(interventions(:tonte_locaux))
+
+    attach_file 'intervention_photos', image_path, make_visible: true
+
+    assert_text 'exemple.png'
+    assert_no_text 'fichiers sélectionnés'
+  end
+
+  test 'un fichier refusé efface le compteur' do
+    visit edit_intervention_url(interventions(:tonte_locaux))
+
+    attach_file 'intervention_photos', [image_path, autre_image_path], make_visible: true
+    assert_text '2 fichiers sélectionnés'
+
+    attach_file 'intervention_photos', fichier_refusé_path, make_visible: true
+
+    assert_text 'Format non accepté'
+    assert_no_text 'fichiers sélectionnés'
+  end
+
+  test 'les photos annoncées par le compteur sont bien toutes enregistrées' do
+    intervention = interventions(:tonte_locaux)
+    visit edit_intervention_url(intervention)
+
+    attach_file 'intervention_photos', [image_path, autre_image_path], make_visible: true
+    assert_text '2 fichiers sélectionnés'
+
+    assert_difference -> { intervention.reload.photos.count }, 2 do
+      soumettre 'enregistrer_intervention'
+      assert_text intervention.description
+    end
+  end
+
+  def image_path
+    Rails.root.join('test/fixtures/files/exemple.png').to_s
+  end
+
+  def autre_image_path
+    Rails.root.join('test/fixtures/files/carte_grise.jpg').to_s
+  end
+
+  def fichier_refusé_path
+    Rails.root.join('test/fixtures/files/responseMeteoConcept.json').to_s
+  end
 end
