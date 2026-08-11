@@ -10,13 +10,6 @@
 
 ## 🔴 Bugs ouverts
 
-### B94 — La page de bilan de l'import XLS est en 500 : un `<% end %>` en trop, commité sur `staging`
-- **Où** : [users/import_do.html.erb:99](app/views/users/import_do.html.erb#L99) — arrivé par le merge `c8cb244a`, le fichier n'est pas en cours d'édition locale.
-- **Cause** : le template ne compile pas. Erreur de syntaxe exacte, obtenue en compilant l'ERB à la main : `<compiled>:100: unexpected 'end', ignoring it`. Le compteur de blocs donne un `end` surnuméraire lignes 98-99 **et** un `end` manquant plus haut — l'intention d'imbrication n'est pas déductible du fichier seul, d'où l'absence de correctif appliqué.
-- **Parcours de reproduction** : Utilisateurs → **Importer** → déposer n'importe quel `.xls` → **Lancer l'import**. La page de bilan répond `ActionView::Template::Error: undefined method 'safe_append=' for nil`. **L'import lui-même s'exécute** (le service tourne, les comptes sont créés et les invitations parties) : c'est l'affichage du compte-rendu qui tombe, donc l'utilisateur ne sait pas ce qui a été importé.
-- **Effet sur la suite** : **21 erreurs** (`users_import_test` ×20, `securite_regressions_test` ×1) — reproduites arbre propre le 2026-08-11 en remettant les 5 fichiers de la session à `HEAD`.
-- **Correctif** : rétablir l'imbrication des blocs entre les lignes 55 et 100 ; à faire par l'auteur du merge, qui sait quel bloc devait se fermer où.
-
 ### B2 — Prix du devis écrasé par le tarif courant à la création de la commande (décision métier à prendre)
 - **Où** : [create_commande_from_cotation.rb:19](app/services/create_commande_from_cotation.rb#L19) + `CommandeLigne#set_prix_from_prestation` ; symétrique dans `create_facture_from_commande.rb:19`
 - **Cause** : le service copie bien `prix_ht`/`total_ht` du devis, mais le callback de `CommandeLigne` les **écrase avec le tarif actuel** de la prestation (`total_ht` est de toute façon une colonne générée).
@@ -342,6 +335,19 @@
 ---
 
 ## ✅ Bugs corrigés (historique)
+
+### B94 — ✅ CORRIGÉ CÔTÉ COLLÈGUE (2026-08-11) — La page de bilan de l'import XLS était en 500 (`<% end %>` en trop)
+- **Où** : [users/import_do.html.erb](app/views/users/import_do.html.erb) — le fichier a été réécrit par `067b592b` (#451, refonte UX du bilan d'import), arrivé par le merge `3728eaa6`. La page compile et s'affiche à nouveau.
+- ⚠️ **Reste rouge, mais ce ne sont plus les mêmes échecs** : **9 tests** de `users_import_test` assertent l'ancien libellé du bilan et voient désormais la phrase ajoutée par #451 (« Importation exécutée avec succès ! Toutes les données ont été enregistrées avec succès. »). Ce sont des **tests périmés, pas une régression** — reproduits arbre propre le 2026-08-11 en remettant les fichiers de la session à `HEAD`. À aligner sur le nouveau libellé (ou à faire aligner par l'auteur de #451 si le message doit encore bouger).
+
+### B95 — ✅ SIGNALÉ PAR PE ET CORRIGÉ (2026-08-11) — Une pièce jointe refusée disparaissait en silence et l'enregistrement réussissait quand même
+- **Où** : [dropzone_controller.js:107](app/javascript/controllers/dropzone_controller.js#L107), `change()` — `this.inputTarget.value = ""` sur un fichier trop volumineux ou au mauvais format.
+- **Cause** : le fichier refusé est retiré de l'input avant l'envoi (à raison : on n'envoie pas 21 Mo pour rien), mais **rien n'empêchait la soumission**. Le formulaire partait sans pièce jointe, le record s'enregistrait normalement, et l'utilisateur repartait persuadé d'avoir joint son image. Vaut pour les 6 zones de dépôt (intervention, convention, outil ×2, utilisateur, page wiki).
+- **⚠️ La validation serveur, elle, faisait déjà son travail** — mesuré en console avant de coder : `Tool#save` renvoie `false` avec « Photo fichier trop volumineux (10 Mo maximum) », même en modifiant une autre colonne dans la même sauvegarde. Le trou était **entièrement côté navigateur**.
+- **Parcours de reproduction** : Outils → un outil → **Modifier** → déposer une photo de plus de 10 Mo → la zone passe au rouge (« Fichier trop volumineux ») → **Enregistrer** → l'outil est enregistré, redirection normale, **aucune photo attachée et aucun message**.
+- **Correctif** : le contrôleur Stimulus écoute le `submit` du formulaire qui le contient et l'annule tant que `data-dropzone-state="error"` (la zone est recentrée à l'écran). Turbo n'envoie rien quand la soumission est déjà empêchée (il teste `defaultPrevented` sur son écouteur de `document`, qui passe après celui du formulaire).
+- **⚠️ Sortie de secours : aucune, sur décision de PE.** Le formulaire reste bloqué tant qu'un fichier **valide** n'a pas été choisi — quelqu'un qui dépose une photo trop lourde par erreur ne peut plus enregistrer ses autres modifications sans recharger la page. Le lien « Retirer le fichier » a été proposé et écarté.
+- **Tests** : `conventions_test` (« un fichier refusé bloque l'enregistrement de la convention ») et `intervention_agent_flow_test` (« une photo trop volumineuse bloque l'enregistrement tant qu'elle n'est pas remplacée »). Tous deux **prouvés rouges** par sabotage. Ils sont discriminants par construction : si la soumission passait, la page redirigerait et le second `attach_file` ne trouverait plus de champ.
 
 ### B93 — ✅ SIGNALÉ PAR PE ET CORRIGÉ (2026-08-11) — Un agent perdait ses heures de début et de fin quand une validation refusait son bon d'intervention
 - **Où** : [interventions/_form_for_agents.erb](app/views/interventions/_form_for_agents.erb), les 4 selects heure/minute — `params[:début_hour] || (intervention.new_record? ? nil : intervention.début&.hour)`.

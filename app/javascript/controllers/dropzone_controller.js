@@ -15,6 +15,24 @@ export default class extends Controller {
 
   connect() {
     this.defaultLabel = this.hasFilenameTarget ? this.filenameTarget.textContent.trim() : ""
+
+    this.form = this.element.closest("form")
+    this.boundBloquerSiRefus = (event) => this.bloquerSiRefus(event)
+    if (this.form) this.form.addEventListener("submit", this.boundBloquerSiRefus)
+  }
+
+  disconnect() {
+    if (this.form) this.form.removeEventListener("submit", this.boundBloquerSiRefus)
+  }
+
+  // Le fichier refusé est retiré de l'input : sans ce garde le formulaire
+  // partirait sans lui et l'enregistrement réussirait, pièce jointe perdue en
+  // silence. Turbo n'envoie rien quand la soumission est déjà empêchée.
+  bloquerSiRefus(event) {
+    if (this.element.dataset.dropzoneState !== "error") return
+
+    event.preventDefault()
+    this.element.scrollIntoView({ block: "center" })
   }
 
   open(event) {
@@ -101,7 +119,7 @@ export default class extends Controller {
     this.element.dataset.dropzoneState = "success"
     this.hideError()
     if (this.hasFilenameTarget) this.filenameTarget.textContent = files.map(file => file.name).join(", ")
-    this.setCount(files.length > 1 ? `${files.length} fichiers sélectionnés` : "")
+    this.setCount(`${files.length} fichier${files.length > 1 ? "s" : ""} sélectionné${files.length > 1 ? "s" : ""}`)
   }
 
   markInvalid(file) {

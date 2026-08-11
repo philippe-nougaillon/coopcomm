@@ -77,6 +77,27 @@ class ConventionsTest < ApplicationSystemTestCase
     assert_equal 0, evaluate_script("document.querySelector('#convention_document').files.length")
   end
 
+  test "un fichier refusé bloque l'enregistrement de la convention" do
+    visit new_convention_path
+    remplir_convention
+
+    attach_file 'convention_document', fichier_refusé_path, make_visible: true
+    assert_text 'Format non accepté'
+
+    avant = Convention.count
+    cliquer_bouton 'Enregistrer'
+    assert_selector "[data-controller='dropzone'][data-dropzone-state='error']"
+
+    # Si la soumission était passée, `create` aurait redirigé vers l'index et il
+    # n'y aurait plus de zone de dépôt à remplir ici.
+    attach_file 'convention_document', pdf_path, make_visible: true
+    cliquer_bouton 'Enregistrer'
+
+    assert_current_path conventions_path
+    assert_equal avant + 1, Convention.count, "la soumission bloquée n'a pas dû créer de convention"
+    assert_equal 'exemple.pdf', users(:patrick_adherent_paris).conventions.last.document.filename.to_s
+  end
+
   test 'déposer la photo du document signé est accepté' do
     visit new_convention_path
 
@@ -92,16 +113,12 @@ class ConventionsTest < ApplicationSystemTestCase
     attach_file 'convention_document', pdf_path, make_visible: true
 
     assert_text 'exemple.pdf'
+    assert_text '1 fichier sélectionné'
     assert_no_text 'Format non accepté'
     # La zone passe en vert (couleur success daisyUI).
     assert_selector "[data-controller='dropzone'][data-dropzone-state='success']"
 
-    select_option '#convention_user_id', 'Bruel Patrick'
-    assert_selector '#convention_service_id option', text: 'Service_Paris', visible: false, wait: 5
-    select_option '#convention_service_id', 'Service_Paris'
-    fill_in 'convention_date_début', with: Date.current
-    fill_in 'convention_date_fin_prévue', with: Date.current + 1.year
-    fill_in 'convention_heures_conventionnees', with: 10
+    remplir_convention
 
     cliquer_bouton 'Enregistrer'
 
@@ -141,6 +158,15 @@ class ConventionsTest < ApplicationSystemTestCase
   end
 
   private
+
+  def remplir_convention
+    select_option '#convention_user_id', 'Bruel Patrick'
+    assert_selector '#convention_service_id option', text: 'Service_Paris', visible: false, wait: 5
+    select_option '#convention_service_id', 'Service_Paris'
+    fill_in 'convention_date_début', with: Date.current
+    fill_in 'convention_date_fin_prévue', with: Date.current + 1.year
+    fill_in 'convention_heures_conventionnees', with: 10
+  end
 
   # Selenium ne sait pas glisser un fichier du bureau vers la page : on émet les
   # évènements de survol que le navigateur enverrait, depuis un enfant de la zone.

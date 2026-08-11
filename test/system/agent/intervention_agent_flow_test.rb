@@ -143,13 +143,13 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     assert_selector "[data-controller='dropzone'][data-dropzone-state='success']"
   end
 
-  test 'une photo seule affiche son nom sans compteur' do
+  test 'une photo seule est comptée elle aussi' do
     visit edit_intervention_url(interventions(:tonte_locaux))
 
     attach_file 'intervention_photos', image_path, make_visible: true
 
     assert_text 'exemple.png'
-    assert_no_text 'fichiers sélectionnés'
+    assert_text '1 fichier sélectionné'
   end
 
   test 'un fichier refusé efface le compteur' do
@@ -161,7 +161,34 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     attach_file 'intervention_photos', fichier_refusé_path, make_visible: true
 
     assert_text 'Format non accepté'
-    assert_no_text 'fichiers sélectionnés'
+    assert_no_text 'sélectionné'
+  end
+
+  test "une photo trop volumineuse bloque l'enregistrement tant qu'elle n'est pas remplacée" do
+    intervention = interventions(:tonte_locaux)
+    visit edit_intervention_url(intervention)
+
+    attach_file 'intervention_photos', gros_fichier.path, make_visible: true
+    assert_text 'Fichier trop volumineux'
+
+    cliquer_bouton 'enregistrer_intervention'
+    assert_selector "[data-controller='dropzone'][data-dropzone-state='error']"
+
+    # Si la soumission était passée, `edit` aurait redirigé vers la page de
+    # l'intervention et il n'y aurait plus de champ à remplir ici.
+    attach_file 'intervention_photos', image_path, make_visible: true
+    assert_difference -> { intervention.reload.photos.count }, 1 do
+      soumettre 'enregistrer_intervention'
+      assert_text intervention.description
+    end
+  end
+
+  # Jamais envoyé au serveur : le contenu n'a pas à être une vraie image.
+  def gros_fichier
+    @gros_fichier ||= Tempfile.new(['gros', '.png']).tap do |fichier|
+      fichier.write('0' * 11.megabytes)
+      fichier.flush
+    end
   end
 
   test 'les photos annoncées par le compteur sont bien toutes enregistrées' do
