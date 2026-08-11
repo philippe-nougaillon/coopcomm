@@ -14,13 +14,23 @@ module InterventionsHelper
   # Destination du bouton « Terminer », sous la forme [lien, méthode HTTP, paramètres].
   # Les paramètres passent par des champs cachés : un formulaire GET perd la query string de son action.
   def terminer_destination(intervention)
-    return [pointer_intervention_path(intervention.intervention_mère), :get, nil] if intervention.pointage_du_jour_de?(current_user)
+    if (modèle = modèle_à_pointer(intervention))
+      return [pointer_intervention_path(modèle), :get, nil]
+    end
 
     if champs_manquants_pour_terminer(intervention).any?
       return [edit_intervention_path(intervention), :get, { terminer: 1 }]
     end
 
     [terminer_intervention_path(intervention), :post, nil]
+  end
+
+  # Nil si le bouton ne doit pas passer par `pointer` — y compris quand le slug du
+  # modèle est obsolète, auquel cas il n'y a aucune cible à pointer.
+  def modèle_à_pointer(intervention)
+    return nil unless intervention.pointage_du_jour_de?(current_user)
+
+    intervention.intervention_mère
   end
 
   def champs_manquants_pour_terminer(intervention)
@@ -34,7 +44,7 @@ module InterventionsHelper
 
   def message_terminaison_incomplete(intervention)
     champs = champs_manquants_pour_terminer(intervention)
-    return nil if champs.empty? || intervention.pointage_du_jour_de?(current_user)
+    return nil if champs.empty? || modèle_à_pointer(intervention)
 
     "#{champs.to_sentence.upcase_first} #{champs.one? ? 'est obligatoire' : 'sont obligatoires'} pour terminer cette intervention."
   end

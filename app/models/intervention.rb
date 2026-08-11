@@ -481,7 +481,7 @@ class Intervention < ApplicationRecord
   end
 
   def pointage_de?(user)
-    template_slug.present? && intervention_mère&.agents&.include?(user)
+    template_slug.present? && agents.include?(user)
   end
 
   # `pointer` ne retrouve que les pointages du jour : sur une fille restée ouverte

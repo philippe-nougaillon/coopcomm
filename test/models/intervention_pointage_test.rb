@@ -264,7 +264,17 @@ class InterventionPointageTest < ActiveSupport::TestCase
 
   # === Intervention#pointage_de? ==========================================
   # Discriminant du bouton « Terminer » (helper terminer_destination) : c'est
-  # l'AFFECTATION au modèle qui compte, jamais le rôle.
+  # l'AFFECTATION qui compte, jamais le rôle — au modèle ET à la fille affichée.
+
+  test 'pointage_de? : faux sur le pointage d’un autre agent du même modèle' do
+    mère = interventions(:intervention_repete)
+    manager = users(:manager_paris)
+    AgentIntervention.create!(agent: manager, intervention: mère)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+
+    assert mère.agents.include?(manager), 'garde : affecté au modèle'
+    assert_not fille.pointage_de?(manager)
+  end
 
   test 'pointage_de? : vrai pour un agent affecté au modèle' do
     mère = interventions(:intervention_repete)

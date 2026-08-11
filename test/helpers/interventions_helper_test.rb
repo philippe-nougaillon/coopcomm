@@ -9,24 +9,37 @@ class InterventionsHelperTest < ActionView::TestCase
 
   setup do
     @mère  = interventions(:intervention_repete) # agents de fixture : bond, martin
-    @fille = interventions(:intervention_fille)
+    @fille = interventions(:intervention_fille)  # agent de fixture : martin
+    @agent = users(:martin_technique_paris)
     # `début` épinglé sur aujourd'hui : la fixture est ancrée sur `4.hours.ago`, qui
     # bascule sur la veille entre minuit et 4 h.
     @fille.update_columns(template_slug: @mère.slug, début: Time.zone.now, fin: 1.hour.ago, temps_de_pause: 0)
   end
 
-  test "affecté à l'intervention modèle : on passe par `pointer` de ce modèle" do
-    self.current_user = users(:bond)
+  test "agent du pointage : on passe par `pointer` de l'intervention modèle" do
+    self.current_user = @agent
 
     assert_equal [pointer_intervention_path(@mère), :get, nil], terminer_destination(@fille)
   end
 
-  test 'manager affecté comme agent : même traitement que les autres affectés' do
+  test 'manager affecté comme agent du pointage : même traitement que les autres affectés' do
     manager = users(:manager_paris)
     AgentIntervention.create!(agent: manager, intervention: @mère)
+    @fille.agents = [manager]
     self.current_user = manager
 
     assert_equal [pointer_intervention_path(@mère), :get, nil], terminer_destination(@fille)
+  end
+
+  # B88 : `pointer` ferme le pointage de l'utilisateur connecté, pas celui affiché.
+  test 'affecté au modèle mais pas au pointage affiché : le formulaire, pas `pointer`' do
+    manager = users(:manager_paris)
+    AgentIntervention.create!(agent: manager, intervention: @mère)
+    @fille.update_columns(fin: nil)
+    self.current_user = manager
+
+    assert_not @fille.agents.include?(manager), 'garde : la fille est le pointage de quelqu’un d’autre'
+    assert_equal [edit_intervention_path(@fille), :get, { terminer: 1 }], terminer_destination(@fille)
   end
 
   test 'non affecté à l\'intervention modèle : `terminer` en POST' do
@@ -45,7 +58,7 @@ class InterventionsHelperTest < ActionView::TestCase
   end
 
   test 'intervention modèle introuvable : repli sur `terminer` plutôt qu un lien vers nil' do
-    self.current_user = users(:bond)
+    self.current_user = @agent
     @fille.update_columns(template_slug: SecureRandom.uuid)
 
     assert_equal [terminer_intervention_path(@fille), :post, nil], terminer_destination(@fille)
@@ -66,14 +79,14 @@ class InterventionsHelperTest < ActionView::TestCase
   end
 
   test "un pointage de l'utilisateur reste dirigé vers `pointer` même sans date de fin" do
-    self.current_user = users(:bond)
+    self.current_user = @agent
     @fille.update_columns(fin: nil)
 
     assert_equal [pointer_intervention_path(@mère), :get, nil], terminer_destination(@fille)
   end
 
   test 'pointage resté ouvert un jour précédent : renvoie vers le formulaire, pas vers `pointer`' do
-    self.current_user = users(:bond)
+    self.current_user = @agent
     @fille.update_columns(début: 5.days.ago, fin: nil)
 
     assert_equal [edit_intervention_path(@fille), :get, { terminer: 1 }], terminer_destination(@fille)
