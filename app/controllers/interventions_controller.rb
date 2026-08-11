@@ -560,12 +560,13 @@ class InterventionsController < ApplicationController
     session[:return_to] = request.referer if request.referer.present? && URI(request.referer).host == request.host
   end
 
+  # Le champ n'est pas proposé à l'adhérent : sans cette garde, son formulaire
+  # effacerait des mots clés qu'il n'a jamais vus.
   def update_tag_list
-    @intervention.tag_list = if current_user.manager_or_admin?
-                               params[:intervention][:tags_manager]
-                             else
-                               params[:intervention][:tags_intervenant]
-                             end
+    champ = current_user.manager_or_admin? ? :tags_manager : :tags_intervenant
+    return unless params[:intervention].key?(champ)
+
+    @intervention.tag_list = params[:intervention][champ]
   end
 
   def redirect_si_invalide(etat, etat_cible: nil)

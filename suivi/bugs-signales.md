@@ -261,19 +261,6 @@
 - **Impact** : le menu déroulant « Mots clés » des index (utilisateurs, interventions) ne propose pas les bons mots clés — il n'en propose aucun dans la plupart des cas. Aucune fuite de données : `tag_counts_on` ne renvoie que des noms de tags.
 - **Correctif proposé** : `User.by_service(current_user.services)`. Une ligne. Non appliqué : hors du périmètre du lot « tris » (2026-08-06).
 
-### B90 — Un adhérent qui modifie son intervention en efface TOUS les mots clés
-- **Où** : [interventions_controller.rb:563](app/controllers/interventions_controller.rb#L563), `update_tag_list`
-- **Cause** : la méthode assigne **inconditionnellement** `@intervention.tag_list = params[:intervention][:tags_manager | tags_intervenant]`. Or le champ Mots clés vit dans le bloc « Assignation », que `_form.html.erb:49` ne rend que si `policy(intervention).saisir_assignation?` — **faux pour un adhérent** ([intervention_policy.rb:167](app/policies/intervention_policy.rb#L167) : `!adhérent?`). Le paramètre est donc absent, `tag_list = nil`, et `acts-as-taggable-on` interprète `nil` comme une liste vide → **tous les mots clés sont détachés**.
-- **Parcours de reproduction** (mesuré de bout en bout via le contrôleur, le 2026-08-11) :
-  1. En tant que **manager**, j'ouvre une intervention et je lui pose deux mots clés (« urgence », « plomberie »). J'enregistre.
-  2. En tant qu'**adhérent** propriétaire de cette intervention, je l'ouvre en modification, je change **la description seule** (le champ Mots clés ne m'est pas proposé) et j'enregistre → **303**, la modification passe.
-  3. Je retourne sur l'intervention en tant que manager : les **deux mots clés ont disparu**.
-  - Sonde : `PATCH /interventions/:id` en adhérent avec `{ description: … }` → `tag_list` passe de `["urgence", "plomberie"]` à `[]`.
-- **Impact** : perte silencieuse d'une donnée de classement, sans que personne n'ait demandé quoi que ce soit. **Depuis le 2026-08-11 l'effacement est visible dans l'historique** (« Mots clés : ~~urgence, plomberie~~ → — »), ce qui va le faire remonter par les utilisateurs ; il était muet jusque-là.
-- **Correctif proposé** (une ligne) : ne toucher aux mots clés que si le formulaire les a soumis —
-  `champ = current_user.manager_or_admin? ? :tags_manager : :tags_intervenant` puis `return unless params[:intervention].key?(champ)`. ⚠ Attention à ne pas confondre « champ absent » (ne rien faire) et « champ vidé » (retirer les mots clés) : un select `multiple` vidé envoie `['']`, donc la clé est bien présente — c'est le même piège que le filtre Services des index (décision 2026-06-23).
-- **Non corrigé** : hors du périmètre du lot « affichage des mots clés dans l'audit » (2026-08-11), et la garde touche un chemin d'écriture partagé par les 3 actions de création/modification.
-
 ---
 
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
@@ -343,6 +330,19 @@
 ---
 
 ## ✅ Bugs corrigés (historique)
+
+### B90 — ✅ SIGNALÉ ET CORRIGÉ (2026-08-11) — Un adhérent qui modifiait son intervention en effaçait TOUS les mots clés
+- **Où** : [interventions_controller.rb:563](app/controllers/interventions_controller.rb#L563), `update_tag_list`
+- **Cause** : la méthode assignait **inconditionnellement** `@intervention.tag_list = params[:intervention][:tags_manager | tags_intervenant]`. Or le champ Mots clés vit dans le bloc « Assignation », que `_form.html.erb:49` ne rend que si `policy(intervention).saisir_assignation?` — **faux pour un adhérent** ([intervention_policy.rb:167](app/policies/intervention_policy.rb#L167) : `!adhérent?`). Le paramètre était donc absent, `tag_list = nil`, et `acts-as-taggable-on` interprète `nil` comme une liste vide → **tous les mots clés détachés**.
+- **Parcours de reproduction** (mesuré de bout en bout via le contrôleur) :
+  1. En tant que **manager**, je pose deux mots clés sur une intervention (« urgence », « plomberie »). J'enregistre.
+  2. En tant qu'**adhérent** propriétaire, je l'ouvre en modification, je change **la description seule** (le champ Mots clés ne m'est pas proposé) et j'enregistre → **303**, la modification passe.
+  3. Je reviens en manager : les **deux mots clés ont disparu**.
+- **Impact** : perte silencieuse d'une donnée de classement. L'effacement était muet jusqu'au 2026-08-11 ; l'affichage des mots clés dans l'historique (même jour) l'aurait rendu visible aux utilisateurs.
+- **Périmètre exact, mesuré avant correction** (rendu réel des formulaires, pas déduction) : manager/admin → `tags_manager` **plus le champ caché `""`** de Rails ; agent → `tags_intervenant` + champ caché ; adhérent → **aucun champ**. Le vidage volontaire reste donc distinguable de l'absence du champ.
+- **Correctif** : `champ = current_user.manager_or_admin? ? :tags_manager : :tags_intervenant` puis `return unless params[:intervention].key?(champ)`. Règle retenue : *le contrôleur n'écrit que ce que le formulaire lui a envoyé* — préférée à un test de rôle (`unless current_user.adhérent?`), qui redeviendrait faux le jour où le champ s'ouvre ou se ferme à un autre rôle.
+- ⚠ **Piège documenté** : ne pas confondre « champ **absent** » (ne rien faire) et « champ **vidé** » (retirer les mots clés). La variante naïve `return if params[…][champ].blank?` se comporte **identiquement aujourd'hui** (un select vidé envoie `['']`, qui n'est pas `blank?`) — mesuré. En revanche `return if Array(…).compact_blank.empty?` (« aucun mot clé sélectionné = rien à faire ») **casse le retrait volontaire**, et c'est ce que fige le test « un manager qui vide le champ les retire vraiment ». Même famille que le filtre Services des index (décision 2026-06-23).
+- **Tests** : 4 dans `interventions_controller_test.rb` (adhérent conserve, manager vide, manager modifie, agent modifie), **prouvés rouges** par trois sabotages distincts — garde retirée → l'adhérent efface ; « ignore une sélection vide » → le retrait volontaire ne marche plus.
 
 ### B88 — ✅ CORRIGÉ (2026-08-10) — Le bouton « Terminer » d'une fille pointait sur le pointage de CELUI QUI REGARDE, pas sur celui affiché
 - **Où** : [interventions_helper.rb:17](app/helpers/interventions_helper.rb#L17) (`terminer_destination`) × [user.rb:378](app/models/user.rb#L378) (`find_current_intervention`).
