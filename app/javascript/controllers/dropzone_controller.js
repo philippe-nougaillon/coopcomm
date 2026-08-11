@@ -4,12 +4,12 @@ import { Controller } from "@hotwired/stimulus"
 // le formulaire : les fichiers déposés lui sont injectés via DataTransfer, en
 // respectant ses attributs `multiple` et `accept`.
 //
-// Cibles : input (requis), filename, error.
+// Cibles : input (requis), filename, error, count.
 // Classes : active, neutral, valid, invalid — neutral est retirée dès qu'un état
 // valid/invalid est posé, pour ne jamais avoir deux `border-color` en cascade.
 // Valeurs : errorMessage, sizeMessage, maxSize, dropLabel.
 export default class extends Controller {
-  static targets = ["input", "filename", "error"]
+  static targets = ["input", "filename", "error", "count"]
   static classes = ["active", "neutral", "valid", "invalid"]
   static values = { errorMessage: String, sizeMessage: String, maxSize: Number, dropLabel: String }
 
@@ -34,6 +34,8 @@ export default class extends Controller {
     if (this.hasFilenameTarget && this.dropLabelValue) {
       this.labelBeforeDrag = this.filenameTarget.textContent
       this.filenameTarget.textContent = this.dropLabelValue
+      this.countBeforeDrag = this.countText()
+      this.setCount("")
     }
   }
 
@@ -51,6 +53,8 @@ export default class extends Controller {
     if (this.hasFilenameTarget && this.labelBeforeDrag !== undefined) {
       this.filenameTarget.textContent = this.labelBeforeDrag
       this.labelBeforeDrag = undefined
+      this.setCount(this.countBeforeDrag || "")
+      this.countBeforeDrag = undefined
     }
   }
 
@@ -97,12 +101,14 @@ export default class extends Controller {
     this.element.dataset.dropzoneState = "success"
     this.hideError()
     if (this.hasFilenameTarget) this.filenameTarget.textContent = files.map(file => file.name).join(", ")
+    this.setCount(files.length > 1 ? `${files.length} fichiers sélectionnés` : "")
   }
 
   markInvalid(file) {
     this.swapState({ add: this.invalidClasses, remove: [...this.validClasses, ...this.neutralClasses] })
     this.element.dataset.dropzoneState = "error" // marqueur d'état inerte (cf. markValid)
     if (this.hasFilenameTarget) this.filenameTarget.textContent = this.defaultLabel
+    this.setCount("")
     if (this.hasErrorTarget) {
       this.errorTarget.textContent = this.errorText(file)
       this.errorTarget.classList.remove("hidden")
@@ -114,6 +120,17 @@ export default class extends Controller {
     this.element.dataset.dropzoneState = "neutral" // marqueur d'état inerte (cf. markValid)
     this.hideError()
     if (this.hasFilenameTarget) this.filenameTarget.textContent = this.defaultLabel
+    this.setCount("")
+  }
+
+  setCount(texte) {
+    if (!this.hasCountTarget) return
+    this.countTarget.textContent = texte
+    this.countTarget.classList.toggle("hidden", texte === "")
+  }
+
+  countText() {
+    return this.hasCountTarget ? this.countTarget.textContent : ""
   }
 
   swapState({ add, remove }) {
