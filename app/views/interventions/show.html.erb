@@ -14,12 +14,32 @@
           <% if @intervention.repeter %>
             <%= embedded_svg "icons/event_repeat.svg", class: "w-6 h-6 text-#{@intervention.style.split.first.split('-').last}", title: "Modèle pour le pointage" %>
           <% elsif @intervention.template_slug %>
-            <%= embedded_svg "icons/qr_code_2.svg", class: "w-6 h-6 text-#{@intervention.style.split.first.split('-').last}", title: "Pointage" %>
-          <% end %>
+            <% mère = @intervention.intervention_mère %>
+              <% if mère %>
+                <%= link_to intervention_path(mère),
+                            class: "inline-flex hover:opacity-60 transition",
+                            title: "Voir le modèle de pointage ##{mère.id}" do %>
+                  <%= embedded_svg "icons/qr_code_2.svg", class: "w-6 h-6 text-#{@intervention.style.split.first.split('-').last}" %>
+                <% end %>
+              <% else %>
+                <%= embedded_svg "icons/qr_code_2.svg", class: "w-6 h-6 text-#{@intervention.style.split.first.split('-').last}", title: "Pointage" %>
+              <% end %>
+            <% end %>
         </div>
         <p class="text-sm text-slate-400 mt-1">
           Il y a <%= time_ago_in_words @intervention.updated_at %>
         </p>
+
+        <% if @intervention.template_slug.present? %>
+          <% mère = @intervention.intervention_mère %>
+          <% if mère %>
+            <%= link_to intervention_path(mère),
+                        class: "inline-flex items-center gap-1.5 mt-2 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+              <%= embedded_svg "icons/back.svg", class: "w-4 h-4 transition-transform group-hover:-translate-x-1" %>
+              Pointage du modèle <span class="font-semibold">#<%= mère.id %></span>
+            <% end %>
+          <% end %>
+        <% end %>
       </div>
 
       <div class="flex items-center gap-2">
