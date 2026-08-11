@@ -21,15 +21,15 @@ class ConventionsTest < ApplicationSystemTestCase
     Rails.root.join('test/fixtures/files/responseMeteoConcept.json').to_s
   end
 
-  test "la zone de dépôt s'affiche sur le formulaire d'édition" do
-    visit edit_convention_path(@convention)
+  test "la zone de dépôt s'affiche sur le formulaire" do
+    visit new_convention_path
 
     assert_selector "[data-controller='dropzone']"
     assert_text 'Glissez un document (PDF, Word, Excel, photo) ici ou cliquez pour parcourir'
   end
 
   test 'déposer un fichier au mauvais format affiche une erreur et ne retient pas le fichier' do
-    visit edit_convention_path(@convention)
+    visit new_convention_path
 
     attach_file 'convention_document', fichier_refusé_path, make_visible: true
 
@@ -41,7 +41,7 @@ class ConventionsTest < ApplicationSystemTestCase
   end
 
   test 'survoler la zone avec un fichier annonce visuellement le dépôt' do
-    visit edit_convention_path(@convention)
+    visit new_convention_path
 
     survoler_avec_un_fichier
     assert_selector "[data-controller='dropzone'][data-dropzone-dragging]"
@@ -57,14 +57,14 @@ class ConventionsTest < ApplicationSystemTestCase
   end
 
   test 'la zone annonce les formats acceptés et la taille maximale' do
-    visit edit_convention_path(@convention)
+    visit new_convention_path
 
     assert_text 'Formats acceptés : PDF, DOC, DOCX'
     assert_text '20 Mo maximum par fichier'
   end
 
   test 'un fichier de plus de 20 Mo est refusé sans être envoyé' do
-    visit edit_convention_path(@convention)
+    visit new_convention_path
 
     gros = Tempfile.new(['gros', '.pdf'])
     gros.write('0' * 21.megabytes)
@@ -78,7 +78,7 @@ class ConventionsTest < ApplicationSystemTestCase
   end
 
   test 'déposer la photo du document signé est accepté' do
-    visit edit_convention_path(@convention)
+    visit new_convention_path
 
     attach_file 'convention_document', image_path, make_visible: true
 
@@ -87,7 +87,7 @@ class ConventionsTest < ApplicationSystemTestCase
   end
 
   test "déposer un PDF affiche son nom et l'enregistre" do
-    visit edit_convention_path(@convention)
+    visit new_convention_path
 
     attach_file 'convention_document', pdf_path, make_visible: true
 
@@ -96,17 +96,25 @@ class ConventionsTest < ApplicationSystemTestCase
     # La zone passe en vert (couleur success daisyUI).
     assert_selector "[data-controller='dropzone'][data-dropzone-state='success']"
 
+    select_option '#convention_user_id', 'Bruel Patrick'
+    assert_selector '#convention_service_id option', text: 'Service_Paris', visible: false, wait: 5
+    select_option '#convention_service_id', 'Service_Paris'
+    fill_in 'convention_date_début', with: Date.current
+    fill_in 'convention_date_fin_prévue', with: Date.current + 1.year
+    fill_in 'convention_heures_conventionnees', with: 10
+
     cliquer_bouton 'Enregistrer'
 
     # État métier plutôt que le toast (il s'auto-détruit au bout de 5 s) :
-    # `update` redirige vers l'index, c'est ça le signal fiable de succès.
+    # `create` redirige vers l'index, c'est ça le signal fiable de succès.
     assert_current_path conventions_path
-    assert @convention.reload.document.attached?, 'le document aurait dû être attaché'
-    assert_equal 'exemple.pdf', @convention.document.filename.to_s
+    créée = users(:patrick_adherent_paris).conventions.last
+    assert créée.document.attached?, 'le document aurait dû être attaché'
+    assert_equal 'exemple.pdf', créée.document.filename.to_s
   end
 
   test "déposer un PDF après une erreur efface le message d'erreur" do
-    visit edit_convention_path(@convention)
+    visit new_convention_path
 
     attach_file 'convention_document', fichier_refusé_path, make_visible: true
     assert_text 'Format non accepté'

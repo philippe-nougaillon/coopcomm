@@ -20,18 +20,22 @@ class ConventionPolicy < ApplicationPolicy
   end
 
   def create?
-    organisation? && (administrateur? || (user.manager? && user.services.include?(record.service)))
+    new?
   end
 
   def show?
-    create? || (adhérent? && record.user==user)
+    manage? || (adhérent? && record.user == user)
+  end
+
+  def edit?
+    false
   end
 
   def update?
-    create?
+    edit?
   end
 
   def destroy?
-    create?
+    manage?
   end
 end

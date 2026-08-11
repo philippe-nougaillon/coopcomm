@@ -2,7 +2,7 @@
 
 class ConventionsController < ApplicationController
   before_action :set_convention, only: %i[show edit update destroy]
-  before_action :is_user_authorized, except: :create
+  before_action :is_user_authorized
 
   trie Convention, defaut: 'conventions.date_début', sens: :desc
 
@@ -135,8 +135,6 @@ class ConventionsController < ApplicationController
   def available_services_for(adherent)
     return Service.none if adherent.nil?
 
-    base = current_user.administrateur? ? adherent.services : adherent.services.where(id: current_user.service_ids)
-    used = adherent.conventions.where.not(id: @convention&.id).pluck(:service_id)
-    base.where.not(id: used).ordered
+    current_user.administrateur? ? adherent.services : adherent.services.where(id: current_user.service_ids)
   end
 end

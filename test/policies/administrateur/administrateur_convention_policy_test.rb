@@ -19,9 +19,10 @@ class AdministrateurConventionPolicyTest < ActionDispatch::IntegrationTest
     assert @policy.services_for_adherent?
   end
 
-  test 'show / update / destroy / create autorisés dans son organisation' do
+  test 'show / destroy / create autorisés dans son organisation, update jamais' do
     assert @policy.show?
-    assert @policy.update?
+    refute @policy.edit?
+    refute @policy.update?
     assert @policy.destroy?
     assert @policy.create?
   end
