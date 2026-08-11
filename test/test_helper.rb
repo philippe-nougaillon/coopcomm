@@ -10,6 +10,7 @@ require 'bcrypt'
 require 'capybara/rails'
 require 'capybara/dsl'
 require 'webmock/minitest' # Permet de stopper les requêtes en dehors du serveur (Ex: API météo)
+require_relative 'failed_tests_reporter'
 
 # Le hook global posé par `sign_in` est drainé par la 1re requête venue : sous
 # `test:all`, une requête navigateur retardataire volait le login du test
