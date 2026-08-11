@@ -6,18 +6,71 @@
   </div>
 
   
+  <% if @rapport.interrompu? %>
+  <div class="max-w-3xl bg-white border border-red-200 rounded-2xl shadow-sm flex items-start gap-3" style="padding: 1.25rem;">
+    <%= embedded_svg "icons/warning.svg", class: "text-error shrink-0 mt-0.5", title: "Import interrompu" %>
+    <div>
+      <p class="text-xs font-medium text-error uppercase tracking-wide mb-1">Import interrompu</p>
+      <p class="font-medium text-slate-800 text-sm"><%= @rapport.message_interruption %></p>
+    </div>
+  </div>
+<% else %>
+  <% unless @rapport.appliqué %>
+    <div class="max-w-3xl bg-amber-50 border border-amber-200 rounded-2xl mb-6 flex items-center gap-3" style="padding: 0.75rem 1.25rem;">
+      <%= embedded_svg "icons/info.svg", class: "text-amber-600 shrink-0", title: "Mode test" %>
+      <p class="font-medium text-amber-800 text-sm">
+        Mode test : les modifications n'ont pas été enregistrées.
+      </p>
+    </div>
+  <% end %>
 
-    <div class="bg-white border border-slate-200 rounded-2xl max-w-3xl mb-10" style="padding: 1.25rem;" data-testid="bilan_import">
-      <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Bilan</p>
-      <div class="flex gap-8">
-        <div>
-          <p class="text-2xl font-semibold text-slate-800"><%= @rapport.importés %></p>
+    <%
+      if @rapport.en_erreur > 0
+        card_classes         = "bg-white"
+        text_classes         = "text-amber-800"
+        title_text           = @rapport.appliqué ? "Importation partielle exécutée" : "Simulation terminée (avec des erreurs)"
+        subtitle_text        = "Ajustez le fichier Excel et relancez la vérification."
+        icon_svg             = "icons/warning.svg"
+        erreur_number_class  = "text-error"
+      else
+        card_classes         = "bg-white"
+        text_classes         = "text-emerald-800"
+        title_text           = @rapport.appliqué ? "Importation exécutée avec succès !" : "Simulation réussie !"
+        subtitle_text        = @rapport.appliqué ? "Toutes les données ont été enregistrées avec succès." : "Aucune donnée n'a été modifiée en base."
+        icon_svg             = "icons/check.svg"
+        erreur_number_class  = "text-slate-800"
+      end
+    %>
+
+    <div class="max-w-3xl mb-10 p-5 border border-slate-200 rounded-2xl shadow-sm <%= card_classes %>" data-testid="bilan_import">
+      <p class="text-xl text-black font-semibold uppercase tracking-wide mb-3 opacity-70">Bilan</p>
+
+      <div class="flex gap-3">
+        <div class="bg-white rounded-lg px-4 py-3 flex-1 border border-slate-100">
+          <p class="text-xl font-semibold text-slate-800"><%= @rapport.importés %></p>
           <p class="text-sm text-slate-500">Lignes importées</p>
         </div>
-        <div>
-          <p class="text-2xl font-semibold <%= @rapport.en_erreur > 0 ? 'text-error' : 'text-slate-800' %>"><%= @rapport.en_erreur %></p>
+        <div class="bg-white rounded-lg px-4 py-3 flex-1 border border-slate-100">
+          <p class="text-xl font-semibold <%= erreur_number_class %>"><%= @rapport.en_erreur %></p>
           <p class="text-sm text-slate-500">Lignes en erreur</p>
         </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-4 pt-4 border-t border-slate-100">
+        <div class="flex items-center gap-3 <%= text_classes %>">
+          <%= embedded_svg icon_svg, class: "w-5 h-5 shrink-0" %>
+          <div>
+            <p class="text-sm font-semibold"><%= title_text %></p>
+            <p class="text-xs opacity-80 mt-0.5"><%= subtitle_text %></p>
+          </div>
+        </div>
+
+        <% if @rapport.en_erreur > 0 %>
+          <%= link_to import_users_path, class: "btn btn-warning shrink-0 inline-flex items-center gap-2" do %>
+            <%= embedded_svg "icons/refresh.svg", class: "w-4 h-4" %>
+            <span>Corriger et relancer</span>
+          <% end %>
+        <% end %>
       </div>
     </div>
 
@@ -88,7 +141,7 @@
                 <td class="px-4 py-3 text-slate-500 break-all"><%= ligne.email %></td>
                 <td class="px-4 py-3 text-slate-500"><%= ligne.service %></td>
                 <td class="px-4 py-3">
-                  <span class="text-error"><%= ligne.messages.join(' · ') %></span>
+                  <span class="text-error capitalize"><%= ligne.messages.join(' · ') %></span>
                 </td>
               </tr>
             <% end %>
@@ -96,80 +149,13 @@
         </table>
       </div>
     <% end %>
+
   <% end %>
 
-
-  <% if @rapport.interrompu? %>
-    <div class="max-w-3xl bg-white border border-red-200 rounded-2xl shadow-sm flex items-start gap-3" style="padding: 1.25rem;">
-      <%= embedded_svg "icons/warning.svg", class: "text-error shrink-0 mt-0.5", title: "Import interrompu" %>
-      <div>
-        <p class="text-xs font-medium text-error uppercase tracking-wide mb-1">Import interrompu</p>
-        <p class="font-medium text-slate-800 text-sm"><%= @rapport.message_interruption %></p>
-      </div>
-    </div>
-  <% else %>
-    <% unless @rapport.appliqué %>
-      <div class="max-w-3xl bg-amber-50 border border-amber-200 rounded-2xl mb-6 flex items-center gap-3" style="padding: 0.75rem 1.25rem;">
-        <%= embedded_svg "icons/info.svg", class: "text-amber-600 shrink-0", title: "Mode test" %>
-        <p class="font-medium text-amber-800 text-sm">
-          Mode test : les modifications n'ont pas été enregistrées.
-        </p>
-      </div>
-    <% end %>
-    
-
-<%
-  # Configuración dinámica del contenedor completo según el resultado
-  if @rapport.en_erreur > 0
-    # ESTADO: CON ERRORES (Toda la tarjeta en Amarillo/Amber)
-    card_classes     = "bg-amber-50 border-amber-200 text-amber-800"
-    icon_bg_classes  = " text-amber-800"
-    title_text       = @rapport.appliqué ? "Importation partielle exécutée" : "Simulation terminée (avec des erreurs)"
-    subtitle_text    = "Ajustez le fichier Excel et relancez la vérification. "
-    icon_svg         = "icons/info.svg"
-  else
-    # ESTADO: ÉXITO (Toda la tarjeta en Verde/Emerald)
-    card_classes     = "bg-emerald-50 border-emerald-200 text-emerald-800"
-    icon_bg_classes  = " text-emerald-800"
-    title_text       = @rapport.appliqué ? "Importation exécutée avec succès !" : "Simulation réussie !"
-    subtitle_text    = @rapport.appliqué ? "Toutes les données ont été enregistrées avec succès." : "Aucune donnée n'a été modifiée en base."
-    icon_svg         = "icons/check.svg"
-  end
-%>
-
-
-
-<%# --- CONTENEDOR COMPLETO QUE CAMBIA DE COLOR --- %>
-<div class="my-12 p-6 border rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-6 <%= card_classes %>">
-
-  <%# LADO IZQUIERDO: Ícono a la izquierda + Textos a la derecha %>
-  <div class="flex items-center gap-4">
-    <%# Ícono con fondo ligeramente más oscuro para contrastar %>
-    <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 <%= icon_bg_classes %>">
-      <%= embedded_svg icon_svg, class: "w-5 h-5" %>
-    </div>
-
-    <%# Bloque de Textos %>
-    <div class="flex flex-col">
-      <p class="text-sm font-semibold"><%= title_text %></p>
-      <p class="text-xs opacity-80 mt-0.5"><%= subtitle_text %></p>
-    </div>
-  </div>
-
-  <%# LADO DERECHO: Botones de Acción %>
-  <div class="flex items-center gap-3 self-end sm:self-auto shrink-0">
- 
-
-    <%= link_to import_users_path, class: "btn btn-warning" do %>
-      <%= embedded_svg "icons/refresh.svg", class: "w-4 h-4" %>
-      <span><%= @rapport.appliqué ? "Nouvel import" : "Corriger et relancer" %></span>
-    <% end %>
-  </div>
-
-</div>
-</div>
-
+  <div class="mb-10">
     <%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
       <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des utilisateurs" %>
-      Retour à la liste des utilisateurs
+      <span>Retour à la liste des utilisateurs</span>
     <% end %>
+  </div>
+</div>
