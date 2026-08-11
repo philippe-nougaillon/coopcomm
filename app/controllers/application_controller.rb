@@ -54,7 +54,8 @@ class ApplicationController < ActionController::Base
   end
 
   def set_users_tags
-    @users_tags = User.by_service(current_user).tag_counts_on(:tags).reorder(Arel.sql(TriTextuel.expression('tags.name')))
+    utilisateurs = current_organisation&.users || User.none
+    @users_tags = utilisateurs.tag_counts_on(:tags).reorder(Arel.sql(TriTextuel.expression('tags.name')))
   end
 
   

@@ -7,7 +7,7 @@ class UsersController < ApplicationController
   # la méthode reactivate a tout de même un authorize
   before_action :is_user_authorized, except: %i[reactivate]
   # Déclaré dans application_controller.rb
-  before_action :set_users_tags, only: %i[edit update]
+  before_action :set_users_tags, only: %i[index edit update]
 
   trie User, defaut: 'users.nom'
   trie Absence, defaut: 'absences.du', sens: :desc

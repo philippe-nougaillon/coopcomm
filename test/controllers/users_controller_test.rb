@@ -755,4 +755,51 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to users_path(discarded: true)
     assert_match(/Impossible de réactiver/i, flash[:alert].to_s)
   end
+
+  # ==================== Mots clés ====================
+
+  test 'les mots clés d un utilisateur sont modifiables depuis sa fiche' do
+    agent = users(:bond)
+
+    patch user_url(agent), params: { user: { nom: agent.nom, tag_list: ['', 'secteur-nord', 'astreinte'] } }
+
+    assert_equal %w[secteur-nord astreinte], agent.reload.tag_list
+  end
+
+  test 'vider le champ Mots clés les retire vraiment' do
+    agent = users(:bond)
+    agent.update!(tag_list: 'secteur-nord')
+
+    patch user_url(agent), params: { user: { nom: agent.nom, tag_list: [''] } }
+
+    assert_empty agent.reload.tag_list
+  end
+
+  test 'la fiche d un utilisateur affiche ses mots clés' do
+    agent = users(:bond)
+    agent.update!(tag_list: 'secteur-nord')
+
+    get user_url(agent)
+
+    assert_response :success
+    assert_match 'secteur-nord', response.body
+  end
+
+  test 'le formulaire de modification propose les mots clés déjà utilisés' do
+    users(:bond).update!(tag_list: 'secteur-nord')
+
+    get edit_user_url(users(:martin_technique_paris))
+
+    assert_response :success
+    assert_includes assigns(:users_tags).map(&:name), 'secteur-nord'
+  end
+
+  test 'critique : le formulaire ne propose pas les mots clés d une autre organisation' do
+    users(:nettoyeur_marseille).update!(tag_list: 'secret-marseille')
+
+    get edit_user_url(users(:martin_technique_paris))
+
+    assert_response :success
+    assert_not_includes assigns(:users_tags).map(&:name), 'secret-marseille'
+  end
 end
