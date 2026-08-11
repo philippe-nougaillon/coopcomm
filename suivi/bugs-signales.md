@@ -10,6 +10,13 @@
 
 ## 🔴 Bugs ouverts
 
+### B94 — La page de bilan de l'import XLS est en 500 : un `<% end %>` en trop, commité sur `staging`
+- **Où** : [users/import_do.html.erb:99](app/views/users/import_do.html.erb#L99) — arrivé par le merge `c8cb244a`, le fichier n'est pas en cours d'édition locale.
+- **Cause** : le template ne compile pas. Erreur de syntaxe exacte, obtenue en compilant l'ERB à la main : `<compiled>:100: unexpected 'end', ignoring it`. Le compteur de blocs donne un `end` surnuméraire lignes 98-99 **et** un `end` manquant plus haut — l'intention d'imbrication n'est pas déductible du fichier seul, d'où l'absence de correctif appliqué.
+- **Parcours de reproduction** : Utilisateurs → **Importer** → déposer n'importe quel `.xls` → **Lancer l'import**. La page de bilan répond `ActionView::Template::Error: undefined method 'safe_append=' for nil`. **L'import lui-même s'exécute** (le service tourne, les comptes sont créés et les invitations parties) : c'est l'affichage du compte-rendu qui tombe, donc l'utilisateur ne sait pas ce qui a été importé.
+- **Effet sur la suite** : **21 erreurs** (`users_import_test` ×20, `securite_regressions_test` ×1) — reproduites arbre propre le 2026-08-11 en remettant les 5 fichiers de la session à `HEAD`.
+- **Correctif** : rétablir l'imbrication des blocs entre les lignes 55 et 100 ; à faire par l'auteur du merge, qui sait quel bloc devait se fermer où.
+
 ### B2 — Prix du devis écrasé par le tarif courant à la création de la commande (décision métier à prendre)
 - **Où** : [create_commande_from_cotation.rb:19](app/services/create_commande_from_cotation.rb#L19) + `CommandeLigne#set_prix_from_prestation` ; symétrique dans `create_facture_from_commande.rb:19`
 - **Cause** : le service copie bien `prix_ht`/`total_ht` du devis, mais le callback de `CommandeLigne` les **écrase avec le tarif actuel** de la prestation (`total_ht` est de toute façon une colonne générée).
@@ -335,6 +342,14 @@
 ---
 
 ## ✅ Bugs corrigés (historique)
+
+### B93 — ✅ SIGNALÉ PAR PE ET CORRIGÉ (2026-08-11) — Un agent perdait ses heures de début et de fin quand une validation refusait son bon d'intervention
+- **Où** : [interventions/_form_for_agents.erb](app/views/interventions/_form_for_agents.erb), les 4 selects heure/minute — `params[:début_hour] || (intervention.new_record? ? nil : intervention.début&.hour)`.
+- **Cause** : sur un enregistrement **neuf**, la vue ignorait délibérément la valeur portée par l'objet ; et le repli `params[:début_hour]` était du **code mort** (le paramètre réel est `params[:intervention][:début_hour]`, jamais `params[:début_hour]`). Après un refus de validation, les 4 heures revenaient donc à `--`, alors que la mémoire portait bien la saisie — mesuré : `début = 2024-04-19 09:15`, champ rendu vide. Les **dates**, elles, revenaient (elles lisaient l'objet), d'où l'impression que « seules les heures » disparaissaient.
+- **Parcours de reproduction** : en tant qu'**agent**, Interventions → **Nouveau** → saisir adhérent, dates et heures (ex. 09:15 → 10:45) → **Enregistrer** → refus de validation (le plus courant : « Conflit détecté sur un agent », ou une pause supérieure à la durée). Le formulaire revient avec les dates mais les quatre listes d'heures sur `--`.
+- **Correctif** : les 8 selects des trois partials (`_form_for_agents`, `form/_realisation`, `form/_demande`) passent par `InterventionsHelper#heure_saisie` / `#minute_saisie`, qui lisent **l'accesseur virtuel d'abord** (`début_hour`), puis la colonne datetime. L'accesseur d'abord n'est pas un détail : quand la date qui accompagne l'heure est absente, `combine_datetime` ne fusionne rien, la colonne reste nulle et l'heure saisie serait perdue elle aussi.
+- **Corrigés du même coup** : le préremplissage du planning agent lisait `params[:début_prévue]` pour la **date de fin prévue** (copier-coller — inoffensif tant que les deux liens passent la même date, faux dès qu'ils diffèrent) ; le préremplissage par query string remonte de la vue vers `interventions#new`, si bien qu'**aucun formulaire de l'application ne lit plus `params`** pour ses valeurs.
+- **Filet permanent** : `test/integration/formulaires_conservent_la_saisie_test.rb` (13 cas) — chaque cas soumet des données invalides et compare **automatiquement** chaque paramètre envoyé au champ ré-affiché, donc un champ ajouté demain est couvert sans toucher le fichier. Deux sabotages séparés l'ont prouvé rouge.
 
 ### B52 — ✅ SANS OBJET (2026-08-11) — `TagCloudComponent` appelé avec le mauvais mot-clé
 - Le composant et son gabarit ont été **supprimés** : plus aucun appelant depuis le retrait des deux vues non routées (`carte_interventions`, `route_interventions`) du 2026-08-10-c. Vérifié avant suppression : aucune vue, aucun contrôleur, aucun test, aucun preview ViewComponent ne le référence ; boot de l'application contrôlé après coup.
