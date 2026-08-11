@@ -1512,4 +1512,51 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
     assert_includes ids, users(:hidalgo).id
     assert_not_includes ids, users(:martin_technique_paris).id
   end
+
+  # ==================== Mots clés ====================
+  # Le champ n'est proposé qu'aux rôles qui saisissent l'assignation : le
+  # contrôleur ne doit écrire les mots clés que si le formulaire les a soumis.
+
+  test "un adhérent qui modifie son intervention conserve les mots clés" do
+    @intervention.update!(tag_list: 'urgence, plomberie')
+    sign_in users(:weil)
+
+    patch intervention_url(@intervention),
+          params: { intervention: { description: 'Description revue par l’adhérent' } }
+
+    assert_redirected_to intervention_url(@intervention)
+    assert_equal %w[urgence plomberie], @intervention.reload.tag_list
+  end
+
+  test "un manager qui vide le champ Mots clés les retire vraiment" do
+    @intervention.update!(tag_list: 'urgence, plomberie')
+
+    # Un select multiple vidé reste soumis, grâce au champ caché de Rails.
+    patch intervention_url(@intervention),
+          params: { intervention: { description: @intervention.description, tags_manager: [''] } }
+
+    assert_redirected_to intervention_url(@intervention)
+    assert_empty @intervention.reload.tag_list
+  end
+
+  test "un manager modifie les mots clés depuis son formulaire" do
+    @intervention.update!(tag_list: 'urgence')
+
+    patch intervention_url(@intervention),
+          params: { intervention: { description: @intervention.description,
+                                    tags_manager: ['', 'urgence', 'plomberie'] } }
+
+    assert_equal %w[urgence plomberie], @intervention.reload.tag_list
+  end
+
+  test "un agent modifie les mots clés depuis son formulaire" do
+    @intervention.update!(tag_list: 'urgence')
+    sign_in users(:bond)
+
+    patch intervention_url(@intervention),
+          params: { intervention: { description: @intervention.description,
+                                    tags_intervenant: ['', 'élagage'] } }
+
+    assert_equal ['élagage'], @intervention.reload.tag_list
+  end
 end
