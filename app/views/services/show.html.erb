@@ -59,6 +59,11 @@
             <button type="submit">Fermer</button>
           </form>
         </dialog>
+      <% else %>
+        <div class="btn btn-ghost flex-1 pt-1 text-secondary cursor-not-allowed" title="<%= @service.text_for_unauthorized_destroy %>">
+          <%= embedded_svg "icons/delete.svg", class: "w-4 h-4 fill-current" %>
+          <span class="hidden lg:inline">Supprimer</span>
+        </div>
       <% end %>
     </div>
     <div class="pt-6">
