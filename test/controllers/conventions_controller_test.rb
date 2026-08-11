@@ -39,15 +39,9 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to conventions_path
   end
 
-  test 'edit accessible' do
+  test 'edit refusé' do
     get edit_convention_url(@convention)
-    assert_response :success
-  end
-
-  test 'update une convention' do
-    patch convention_url(@convention), params: { convention: { date_fin_prévue: '2026-12-31' } }
-    assert_redirected_to conventions_path
-    assert_equal Date.new(2026, 12, 31), @convention.reload.date_fin_prévue
+    assert_redirected_to root_path
   end
 
   test 'destroy une convention' do
@@ -164,21 +158,23 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
-  # --- update : branche d'échec, et collections du formulaire côté manager ---
+  # --- édition fermée, et collections du formulaire côté manager ---
 
-  test 'update invalide réaffiche le formulaire en 422' do
-    patch convention_url(@convention), params: { convention: { date_début: '' } }
+  test 'update refusé aussi à un manager de la convention' do
+    sign_in users(:hidalgo)
 
-    assert_response :unprocessable_content
-    assert_not_nil @convention.reload.date_début
+    patch convention_url(@convention), params: { convention: { mémo: 'forcé' } }
+
+    assert_redirected_to root_path
+    assert_not_equal 'forcé', @convention.reload.mémo
   end
 
   # Pour un manager (et non un administrateur), la liste des adhérents proposée
   # est bornée à ses services et non à toute l'organisation.
-  test 'edit par un manager ne propose que les adhérents de ses services' do
+  test 'new par un manager ne propose que les adhérents de ses services' do
     sign_in users(:hidalgo)
 
-    get edit_convention_url(@convention)
+    get new_convention_url
 
     assert_response :success
     assert_includes assigns(:adherents), users(:weil)

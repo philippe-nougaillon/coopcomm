@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_10_102015) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_11_141121) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -152,7 +152,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_10_102015) do
     t.string "ref"
     t.string "slug"
     t.index ["service_id"], name: "index_conventions_on_service_id"
-    t.index ["user_id", "service_id"], name: "index_conventions_on_user_id_and_service_id", unique: true
+    t.index ["user_id", "service_id", "date_début", "date_fin_prévue"], name: "index_conventions_on_user_id_service_id_and_dates", unique: true
     t.index ["user_id"], name: "index_conventions_on_user_id"
   end
 
@@ -350,7 +350,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_10_102015) do
     t.string "nom"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "organisation_id", null: false
+    t.bigint "organisation_id"
     t.string "slug"
     t.boolean "calculate_distance", default: false
     t.index ["organisation_id"], name: "index_services_on_organisation_id"

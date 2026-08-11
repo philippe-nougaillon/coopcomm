@@ -13,28 +13,30 @@ class AdministrateurConventionPolicyTest < ActionDispatch::IntegrationTest
     @policy_autre_org = ConventionPolicy.new(@administrateur, convention_autre_org)
   end
 
-  test 'index / new / services_for_adherent autorisés pour un administrateur' do
+  test 'accès autorisé pour un administrateur sur une convention de son organisation' do
     assert @policy.index?
     assert @policy.new?
-    assert @policy.services_for_adherent?
-  end
-
-  test 'show / update / destroy / create autorisés dans son organisation' do
-    assert @policy.show?
-    assert @policy.update?
-    assert @policy.destroy?
     assert @policy.create?
+    assert @policy.services_for_adherent?
+    assert @policy.show?
+    assert @policy.destroy?
   end
 
-  test "accès interdit sur une convention d'une autre organisation" do
+  test 'accès interdit pour un administrateur sur une convention de son organisation' do
+    refute @policy.edit?
+    refute @policy.update?
+  end
+
+  test "accès interdit pour un administrateur sur une convention d'une autre organisation" do
     refute @policy_autre_org.show?
+    refute @policy_autre_org.edit?
     refute @policy_autre_org.update?
     refute @policy_autre_org.destroy?
-    refute @policy_autre_org.create?
   end
 
-  test "scope : un administrateur voit les conventions de son organisation, pas celles d'une autre" do
+  test 'scope' do
     scope = ConventionPolicy::Scope.new(@administrateur, Convention.all).resolve
+
     assert_includes scope, conventions(:convention_paris)
     refute_includes scope, conventions(:convention_marseille)
   end

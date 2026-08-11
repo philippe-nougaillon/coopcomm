@@ -65,10 +65,12 @@ class Convention < ApplicationRecord
 
     exists = Convention.where(user_id: user_id, service_id: service_id)
                        .where.not(id: id)
+                       .where(date_début: ..date_fin_prévue) # La date de fin ne doit pas chevaucher la date de début
+                       .where(date_fin_prévue: date_début..) # Inversement
                        .exists?
     return unless exists
 
-    errors.add(:base, 'Cet adhérent a déjà une convention pour ce service.')
+    errors.add(:base, 'Cet adhérent a déjà une convention pour ce service dans cette période.')
   end
 
   def service_must_belong_to_adherent
