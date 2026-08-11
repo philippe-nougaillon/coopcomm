@@ -29,14 +29,31 @@ class CreateFactureFromCommandeTest < ActiveSupport::TestCase
     ligne_copie = facture.facture_lignes.first
     assert_equal ligne_source.prestation_id, ligne_copie.prestation_id
     assert_equal ligne_source.qté, ligne_copie.qté
+    assert_equal ligne_source.prix_ht, ligne_copie.prix_ht
   end
 
   test 'la facture construite persiste et recalcule son total' do
     facture = CreateFactureFromCommande.new(@commande).call
     assert facture.save, facture.errors.full_messages.to_sentence
-    # prix_ht est re-dérivé de la prestation (25.50) × qté 3 = 76.50
+    # prix_ht est copié de la commande (25.50) × qté 3 = 76.50
     assert_equal 76.5, facture.reload.total_ht.to_f
     assert_equal 1, facture.facture_lignes.count
+  end
+
+  # Test critique — miroir de create_commande_from_cotation_test : le prix facturé
+  # est celui de la commande, jamais le tarif du jour (ex-bug B2).
+  test 'le prix de la commande est figé : une hausse ultérieure du tarif ne change pas la facture' do
+    ligne_commande = @commande.commande_lignes.first
+    assert_equal 25.5, ligne_commande.prix_ht.to_f
+
+    prestations(:nettoyage_bureaux).update!(tarif: 40.00)
+
+    facture = CreateFactureFromCommande.new(@commande).call
+    facture.save!
+
+    assert_equal 25.5, facture.facture_lignes.first.reload.prix_ht.to_f, 'le prix de la commande doit être conservé'
+    assert_equal 76.5, facture.reload.total_ht.to_f # 25.50 × 3, et non 120.00
+    assert_equal 25.5, ligne_commande.reload.prix_ht.to_f
   end
 
   test "la facture construite reçoit une ref et l'état initial à la sauvegarde" do
