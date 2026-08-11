@@ -47,10 +47,19 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
 
   test 'should destroy service' do
     assert_difference('Service.count', -1) do
-      delete service_url(@service)
+      delete service_url(services(:menage))
     end
 
     assert_redirected_to admin_parametres_path(tab: "services")
+  end
+
+  test 'critique : un service encore rattaché n’est pas supprimé' do
+    assert_no_difference('Service.count') do
+      delete service_url(@service)
+    end
+
+    assert_redirected_to root_path
+    assert_equal "Vous n'êtes pas autorisé à effectuer cette action.", flash[:alert]
   end
 
   # --- create / update : branches d'échec ---
