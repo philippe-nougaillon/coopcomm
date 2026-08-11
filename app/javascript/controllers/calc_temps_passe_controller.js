@@ -14,7 +14,10 @@ export default class extends Controller {
 
   calc() {
     let temps = this.tempsTarget
-    if (this.debut_dateTarget.value != "" && this.fin_dateTarget.value != "") {
+    
+    if (this.debut_dateTarget.value != "" && this.fin_dateTarget.value != "" &&
+    this.debut_hourTarget.value != "" && this.debut_minuteTarget.value != "" &&
+    this.fin_hourTarget.value != "" && this.fin_minuteTarget.value != "") {
       console.log("permier test passé")
       console.log(this.debut_dateTarget.value)
       console.log(this.debut_hourTarget.value)

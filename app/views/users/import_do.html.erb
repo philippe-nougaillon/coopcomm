@@ -1,49 +1,74 @@
 <div class="mx-auto w-full">
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16 mb-6">
+  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16 mb-8">
     <h1 class="text-primary font-bold text-3xl sm:text-4xl whitespace-nowrap">
       <%= page_title!("Résultat de l'import") %>
     </h1>
   </div>
 
   <% if @rapport.interrompu? %>
-    <div class="max-w-3xl bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
-      <p class="font-semibold text-red-800"><%= @rapport.message_interruption %></p>
+    <div class="max-w-3xl bg-white border border-red-200 rounded-2xl shadow-sm flex items-start gap-3" style="padding: 1.25rem;">
+      <%= embedded_svg "icons/warning.svg", class: "text-error shrink-0 mt-0.5", title: "Import interrompu" %>
+      <div>
+        <p class="text-xs font-medium text-error uppercase tracking-wide mb-1">Import interrompu</p>
+        <p class="font-medium text-slate-800 text-sm"><%= @rapport.message_interruption %></p>
+      </div>
     </div>
   <% else %>
-    <div class="max-w-3xl bg-slate-50 border border-slate-200 rounded-xl p-6 mb-8 space-y-2">
-      <% unless @rapport.appliqué %>
-        <p class="font-bold text-amber-700">
+
+    <% unless @rapport.appliqué %>
+      <div class="max-w-3xl bg-amber-50 border border-amber-200 rounded-2xl mb-6 flex items-center gap-3" style="padding: 0.75rem 1.25rem;">
+        <%= embedded_svg "icons/info.svg", class: "text-amber-600 shrink-0", title: "Mode test" %>
+        <p class="font-medium text-amber-800 text-sm">
           Mode test : les modifications n'ont pas été enregistrées.
         </p>
-      <% end %>
-      <p class="font-medium text-slate-800" data-testid="bilan_import">
-        Lignes importées : <%= @rapport.importés %> | Lignes en erreur : <%= @rapport.en_erreur %>
-      </p>
+      </div>
+    <% end %>
+
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-3xl mb-10" style="padding: 1.25rem;" data-testid="bilan_import">
+      <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Bilan</p>
+      <div class="flex gap-8">
+        <div>
+          <p class="text-2xl font-semibold text-slate-800"><%= @rapport.importés %></p>
+          <p class="text-sm text-slate-500">Lignes importées</p>
+        </div>
+        <div>
+          <p class="text-2xl font-semibold <%= @rapport.en_erreur > 0 ? 'text-error' : 'text-slate-800' %>"><%= @rapport.en_erreur %></p>
+          <p class="text-sm text-slate-500">Lignes en erreur</p>
+        </div>
+      </div>
     </div>
 
     <% if @rapport.succès.any? %>
-      <h2 class="text-xl font-bold text-slate-800 mb-3">Lignes traitées</h2>
-      <div class="overflow-x-auto mb-10">
-        <table class="table table-zebra w-full" data-testid="tableau_succes">
-          <thead>
+      <h2 class="text-2xl text-secondary font-semibold mb-4">Lignes traitées</h2>
+
+      <div class="block md:hidden flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
+      </div>
+      <div class="overflow-x-auto border-x border-b border-slate-200 shadow-sm bg-white rounded-b-xl md:rounded-xl mb-10">
+        <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+          <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+          <span>Faire glisser pour voir plus</span>
+        </div>
+        <table class="table text-sm w-full" data-testid="tableau_succes">
+          <thead class="bg-slate-100 text-slate-600 font-semibold">
             <tr>
-              <th>Ligne</th>
-              <th>Type</th>
-              <th>Nom</th>
-              <th>Email</th>
-              <th>Service</th>
-              <th>Changements</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Ligne</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Type</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Nom</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Changements</th>
             </tr>
           </thead>
           <tbody>
             <% @rapport.succès.each do |ligne| %>
               <tr>
-                <td><%= ligne.numéro %></td>
-                <td><%= ligne.type %></td>
-                <td><%= ligne.nom %></td>
-                <td><%= ligne.email %></td>
-                <td><%= ligne.service %></td>
-                <td class="text-sm text-slate-600"><%= import_changements(ligne.changements) %></td>
+                <td class="px-4 py-3 text-slate-500"><%= ligne.numéro %></td>
+                <td class="px-4 py-3 text-slate-800"><%= ligne.type %></td>
+                <td class="px-4 py-3 font-medium text-slate-800"><%= ligne.nom %></td>
+                <td class="px-4 py-3 text-slate-500 break-all"><%= ligne.email %></td>
+                <td class="px-4 py-3 text-slate-500"><%= ligne.service %></td>
+                <td class="px-4 py-3 text-slate-500"><%= import_changements(ligne.changements) %></td>
               </tr>
             <% end %>
           </tbody>
@@ -52,26 +77,36 @@
     <% end %>
 
     <% if @rapport.erreurs.any? %>
-      <h2 class="text-xl font-bold text-error mb-3">Lignes en erreur</h2>
-      <div class="overflow-x-auto mb-10">
-        <table class="table table-zebra w-full" data-testid="tableau_erreurs">
-          <thead>
+      <h2 class="text-2xl text-secondary font-semibold mb-4">Lignes en erreur</h2>
+
+      <div class="block md:hidden flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
+      </div>
+      <div class="overflow-x-auto border-x border-b border-slate-200 shadow-sm bg-white rounded-b-xl md:rounded-xl mb-10">
+        <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+          <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+          <span>Faire glisser pour voir plus</span>
+        </div>
+        <table class="table text-sm w-full" data-testid="tableau_erreurs">
+          <thead class="bg-slate-100 text-slate-600 font-semibold">
             <tr>
-              <th>Ligne</th>
-              <th>Nom</th>
-              <th>Email</th>
-              <th>Service demandé</th>
-              <th>Motifs</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Ligne</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Nom</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service demandé</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Motifs</th>
             </tr>
           </thead>
           <tbody>
             <% @rapport.erreurs.each do |ligne| %>
               <tr>
-                <td><%= ligne.numéro %></td>
-                <td><%= ligne.nom %></td>
-                <td><%= ligne.email %></td>
-                <td><%= ligne.service %></td>
-                <td class="text-sm"><%= ligne.messages.join(' | ') %></td>
+                <td class="px-4 py-3 text-slate-500"><%= ligne.numéro %></td>
+                <td class="px-4 py-3 font-medium text-slate-800"><%= ligne.nom %></td>
+                <td class="px-4 py-3 text-slate-500 break-all"><%= ligne.email %></td>
+                <td class="px-4 py-3 text-slate-500"><%= ligne.service %></td>
+                <td class="px-4 py-3">
+                  <span class="badge badge-soft h-full badge-error"><%= ligne.messages.join(' · ') %></span>
+                </td>
               </tr>
             <% end %>
           </tbody>
