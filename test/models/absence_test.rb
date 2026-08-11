@@ -9,6 +9,14 @@ class AbsenceTest < ActiveSupport::TestCase
     @agent = users(:bond)
   end
 
+  # Sentinelle : ajouter un motif à l'enum doit suffire. Un libellé écrit à la
+  # main finit toujours par diverger (l'historique d'audit annonçait « Maladie »
+  # pour un congé parental).
+  test 'chaque motif de l\'enum a son libellé, sans table à tenir à jour' do
+    assert_equal Absence.motifs.keys.sort, Absence::MOTIF_LABELS.keys.sort
+    assert_equal 'Congé sans solde', Absence::MOTIF_LABELS['congé_sans_solde']
+  end
+
   test 'Une intervention ne se créée pas si un agent est absent' do
     absence = createAbsence
 

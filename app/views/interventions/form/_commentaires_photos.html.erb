@@ -1,0 +1,31 @@
+<%# locals: (form:, intervention:) %>
+<section class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6">
+  <div class="border-b border-slate-100 pb-3 flex items-center gap-2">
+    <span class="w-2 h-6 bg-amber-500 rounded-full"></span>
+    <h2 class="text-xl text-slate-800 font-black tracking-tight uppercase">Commentaires et Photos</h2>
+  </div>
+
+  <div class="w-full h-full">
+    <%= form.label :commentaires, class: "label font-semibold text-slate-700" %>
+    <%= form.text_area :commentaires,
+                       class: "textarea textarea-bordered w-full text-sm focus:textarea-primary",
+                       rows: 4,
+                       placeholder: "Saisissez vos remarques ou détails d'intervention..." %>
+  </div>
+
+  <div class="col-span-1 md:col-span-2 pt-2">
+    <%# Les photos déjà enregistrées sont ré-émises en signed_id, sinon le
+        formulaire les détacherait à l'enregistrement. %>
+    <% intervention.photos.each do |photo| %>
+      <% unless photo.new_record? %>
+        <%= form.hidden_field :photos, multiple: true, value: photo.signed_id %>
+      <% end %>
+    <% end %>
+    <%= render "shared/file_dropzone",
+               form: form,
+               attribute: :photos,
+               placeholder: "Glissez les photos de l'intervention ici ou cliquez pour parcourir",
+               label: "Photos de l'intervention",
+               replace_hint: false %>
+  </div>
+</section>

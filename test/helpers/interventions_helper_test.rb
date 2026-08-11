@@ -9,22 +9,37 @@ class InterventionsHelperTest < ActionView::TestCase
 
   setup do
     @mère  = interventions(:intervention_repete) # agents de fixture : bond, martin
-    @fille = interventions(:intervention_fille)
-    @fille.update_columns(template_slug: @mère.slug, fin: 1.hour.ago)
+    @fille = interventions(:intervention_fille)  # agent de fixture : martin
+    @agent = users(:martin_technique_paris)
+    # `début` épinglé sur aujourd'hui : la fixture est ancrée sur `4.hours.ago`, qui
+    # bascule sur la veille entre minuit et 4 h.
+    @fille.update_columns(template_slug: @mère.slug, début: Time.zone.now, fin: 1.hour.ago, temps_de_pause: 0)
   end
 
-  test "affecté à l'intervention modèle : on passe par `pointer` de ce modèle" do
-    self.current_user = users(:bond)
+  test "agent du pointage : on passe par `pointer` de l'intervention modèle" do
+    self.current_user = @agent
 
     assert_equal [pointer_intervention_path(@mère), :get, nil], terminer_destination(@fille)
   end
 
-  test 'manager affecté comme agent : même traitement que les autres affectés' do
+  test 'manager affecté comme agent du pointage : même traitement que les autres affectés' do
     manager = users(:manager_paris)
     AgentIntervention.create!(agent: manager, intervention: @mère)
+    @fille.agents = [manager]
     self.current_user = manager
 
     assert_equal [pointer_intervention_path(@mère), :get, nil], terminer_destination(@fille)
+  end
+
+  # B88 : `pointer` ferme le pointage de l'utilisateur connecté, pas celui affiché.
+  test 'affecté au modèle mais pas au pointage affiché : le formulaire, pas `pointer`' do
+    manager = users(:manager_paris)
+    AgentIntervention.create!(agent: manager, intervention: @mère)
+    @fille.update_columns(fin: nil)
+    self.current_user = manager
+
+    assert_not @fille.agents.include?(manager), 'garde : la fille est le pointage de quelqu’un d’autre'
+    assert_equal [edit_intervention_path(@fille), :get, { terminer: 1 }], terminer_destination(@fille)
   end
 
   test 'non affecté à l\'intervention modèle : `terminer` en POST' do
@@ -43,7 +58,7 @@ class InterventionsHelperTest < ActionView::TestCase
   end
 
   test 'intervention modèle introuvable : repli sur `terminer` plutôt qu un lien vers nil' do
-    self.current_user = users(:bond)
+    self.current_user = @agent
     @fille.update_columns(template_slug: SecureRandom.uuid)
 
     assert_equal [terminer_intervention_path(@fille), :post, nil], terminer_destination(@fille)
@@ -64,10 +79,17 @@ class InterventionsHelperTest < ActionView::TestCase
   end
 
   test "un pointage de l'utilisateur reste dirigé vers `pointer` même sans date de fin" do
-    self.current_user = users(:bond)
+    self.current_user = @agent
     @fille.update_columns(fin: nil)
 
     assert_equal [pointer_intervention_path(@mère), :get, nil], terminer_destination(@fille)
+  end
+
+  test 'pointage resté ouvert un jour précédent : renvoie vers le formulaire, pas vers `pointer`' do
+    self.current_user = @agent
+    @fille.update_columns(début: 5.days.ago, fin: nil)
+
+    assert_equal [edit_intervention_path(@fille), :get, { terminer: 1 }], terminer_destination(@fille)
   end
 
   test 'le bouton Terminer ouvre le modal via l’ID du dialogue' do
@@ -77,10 +99,74 @@ class InterventionsHelperTest < ActionView::TestCase
     assert_equal "terminer_modal_#{intervention.id}", modal_id_terminer(intervention)
   end
 
-  test 'le helper renvoie le message de dates manquantes quand il faut terminer' do
+  test 'sans agent : renvoie vers le formulaire avec la demande de terminaison' do
+    self.current_user = users(:manager_paris)
+    @fille.agents.destroy_all
+
+    assert_equal [edit_intervention_path(@fille), :get, { terminer: 1 }], terminer_destination(@fille.reload)
+  end
+
+  # Cette branche était inatteignable tant que le modèle posait une pause à 0 à chaque
+  # sauvegarde : 0 n'est pas `blank?`, donc la pause n'était jamais réclamée.
+  test 'sans temps de pause : renvoie vers le formulaire avec la demande de terminaison' do
+    self.current_user = users(:manager_paris)
+    @fille.update_columns(temps_de_pause: nil)
+
+    assert_equal [edit_intervention_path(@fille), :get, { terminer: 1 }], terminer_destination(@fille.reload)
+  end
+
+  test 'le helper renvoie le message des informations manquantes quand il faut terminer' do
     intervention = interventions(:tonte_locaux)
     intervention.update_columns(début: nil, fin: nil)
 
-    assert_equal 'Les dates de début et de fin sont obligatoires pour terminer cette intervention.', message_dates_manquantes(intervention)
+    assert_equal 'La date de début et la date de fin sont obligatoires pour terminer cette intervention.',
+                 message_terminaison_incomplete(intervention)
+  end
+
+  test "le message nomme l'agent manquant" do
+    intervention = interventions(:tonte_locaux)
+    intervention.agents.destroy_all
+
+    assert_equal 'Au moins un agent est obligatoire pour terminer cette intervention.',
+                 message_terminaison_incomplete(intervention.reload)
+  end
+
+  test 'aucun message quand tout est renseigné' do
+    assert_nil message_terminaison_incomplete(interventions(:tonte_locaux))
+  end
+
+  # --- Trajet ---
+  # Le stub WebMock global renvoie une réponse sans `routes_info` : le bloc
+  # Trajet de la fiche d'intervention n'est jamais rendu en `:texte` ni en
+  # `:vide` par le reste de la suite.
+
+  test 'trajet_mode : le trajet enregistré suffit à afficher le texte' do
+    @fille.trajet = '12 km aller-retour'
+
+    assert_equal :texte, trajet_mode(@fille, nil)
+  end
+
+  test 'trajet_mode : sans trajet enregistré, la réponse Routes prend le relais' do
+    @fille.trajet = nil
+
+    assert_equal :texte, trajet_mode(@fille, { 'routes_info' => '8 km aller-retour' })
+  end
+
+  test 'trajet_mode : sans trajet ni réponse Routes, le bloc est vide' do
+    @fille.trajet = nil
+
+    assert_equal :vide, trajet_mode(@fille, nil)
+  end
+
+  test 'trajet_texte : le trajet enregistré prime sur la réponse Routes' do
+    @fille.trajet = '12 km aller-retour'
+
+    assert_equal '12 km aller-retour', trajet_texte(@fille, { 'routes_info' => '8 km aller-retour' })
+  end
+
+  test 'trajet_texte : sans trajet enregistré, la réponse Routes est affichée' do
+    @fille.trajet = nil
+
+    assert_equal '8 km aller-retour', trajet_texte(@fille, { 'routes_info' => '8 km aller-retour' })
   end
 end

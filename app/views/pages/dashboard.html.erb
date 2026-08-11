@@ -33,12 +33,9 @@
         <table class="table table-sm w-full border-none">
           <thead class="bg-slate-100">
             <tr>
-              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-                Date et heure</th>
-              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-                Utilisateur</th>
-              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-                Type d'export</th>
+              <%= th_tri 'Date et heure', colonne: 'export_logs.created_at', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+              <%= th_tri 'Utilisateur', colonne: 'export_logs.user', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+              <%= th_tri "Type d'export", colonne: 'export_logs.export_type', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
             </tr>
           </thead>
           <tbody>

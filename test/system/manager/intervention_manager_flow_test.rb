@@ -31,8 +31,9 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     # Le select Service (requis) se peuple après le choix de l'adhérent
     select_option('#intervention_service_id', 'Informatique')
 
-    # Sélectionner l'agent
-    select_option('#intervention_agent_ids', 'Bond James')
+    # Aucun agent n'est rattaché à Informatique : seul un administrateur, proposé
+    # quel que soit son service, peut être assigné ici.
+    select_option('#intervention_agent_ids', 'Nougaillon Philippe')
 
     # Créneau réalisé dans le passé (une date future est refusée par validation)
     fill_in 'Début', with: (Date.today - 1).strftime('%m%d%Y')
@@ -159,11 +160,12 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     assert_text 'Avis de l\'adhérent'
     assert_text 'Évaluation des agents'
 
+    page.select '0,0', from: 'intervention_temps_de_pause'
     fill_in 'Avis de l\'adhérent', with: 'Travail bien fait'
     find('.rating input[value="5"]').click
 
     cliquer_bouton 'Enregistrer'
-    assert_text 'Intervention terminée'
+    assert_text 'Terminé'
     assert_equal 'terminé', intervention.reload.workflow_state
   end
 

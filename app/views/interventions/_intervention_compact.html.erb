@@ -10,9 +10,9 @@
   <td class="align-middle pl-12 py-3">
     <div class="flex items-center gap-2 justify-left text-lg sm:text-xl font-semibold text-<%= intervention.style.split.first.split('-').last %>">
       <% if intervention.repeter %>
-        <%= embedded_svg "icons/event_repeat.svg", class: "text-slate-700", title: "Modèle pour le pointage" %>
+        <%= embedded_svg "icons/event_repeat.svg", class: "w-6 h-6 fill-current shrink-0", title: "Modèle pour le pointage" %>
       <% elsif intervention.template_slug %>
-        <%= embedded_svg "icons/qr_code_2.svg", title: "Pointage" %>
+        <%= embedded_svg "icons/qr_code_2.svg", class: "w-6 h-6 fill-current shrink-0", title: "Pointage" %>
       <% end %>
       <%= link_to intervention.description.humanize, intervention, class: 'z-10 hover:underline' %>
     </div>
@@ -49,61 +49,13 @@
     <% if !(intervention.validé? || intervention.refusé?) %>
       <div class="my-2">
         <div class="flex justify-center gap-2">
-          <% if policy(intervention).terminer? %>
-            <% lien, methode, params_terminer = terminer_destination(intervention) %>
-            <% msg = message_dates_manquantes(intervention) %>
-            <% if msg.present? %>
-              <button type="button"
-                    class="z-10 btn btn-primary border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!", 
-                    onclick="<%= js_ouvrir_modal_terminer(intervention) %>"
-                    title="Terminer l'intervention"
-                    <%= 'disabled' unless intervention.can_terminer? %>>
-              Terminer
-            </button>
-            <dialog id="<%= modal_id_terminer(intervention) %>" class="modal">
-                <div class="modal-box">
-                  <form method="dialog">
-                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-                  </form>
-                  <h3 class="text-lg font-bold text-amber-600 flex items-center gap-2">
-                    <%= embedded_svg "icons/warning.svg", title: "Dates manquantes" %>
-                    Dates manquantes
-                  </h3>
-                  <p class="py-4 text-sm text-slate-600 text-left">
-                    <%= msg %>
-                    Vous allez être redirigé(e) vers le formulaire de modification pour renseigner ces dates.
-                  </p>
-                  <div class="modal-action">
-                    <form method="dialog">
-                      <button class="btn btn-ghost">Annuler</button>
-                    </form>
-                    <%= link_to "Continuer vers le formulaire", lien, params: params_terminer, class: "btn btn-info text-white" %>
-                  </div>
-                </div>
-                <form method="dialog" class="modal-backdrop">
-                  <button>Fermer</button>
-                </form>
-              </dialog>
-            <% else %>
-              <%= button_to 'Terminer', lien, method: methode, params: params_terminer, 
-              class: 'z-10 btn btn-primary border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', 
-              title: 'Cliquez pour passer cette intervention en statut \'Terminé\'', 
-              form: { data: { turbo: false }, class: 'contents', onsubmit: (msg.present? ? "return confirm(#{msg.to_json});" : nil) },
-              disabled: !intervention.can_terminer? || current_user.adhérent? %>
-            <% end %>
-          <% end %>
-          <% if policy(intervention).valider? %>
-            <%= button_to 'Valider', valider_intervention_path(intervention), class: 'z-10 btn btn-success border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', 
-            title: 'Cliquez pour passer cette intervention en statut \'Validé\'', 
-            form: { data: { turbo: false }, class: 'contents' }, disabled: !intervention.can_valider?  %>
-          <% end %>
-          <% if policy(intervention).refuser? %>
-            <%= button_to 'Refuser', refuser_intervention_path(intervention), class: 'z-10 btn btn-error border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!', title: 'Cliquez pour passer cette intervention en statut \'Refusé\'', form: { data: { turbo: false }, class: 'contents' }, disabled: !intervention.can_refuser? %>
-          <% end %>
+          <%= render "interventions/boutons_workflow", intervention: intervention,
+                     styles: InterventionsHelper::STYLES_LISTE,
+                     titres: InterventionsHelper::TITRES_LISTE,
+                     classe_form: 'contents' %>
+
         </div>
       </div>
-    <% else %>
-      <span class="text-xs italic text-slate-400 font-medium">Aucune action</span>
     <% end %>
   </td>
 </tr>

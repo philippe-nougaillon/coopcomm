@@ -178,7 +178,7 @@ class SecuriteRegressionsTest < ActionDispatch::IntegrationTest
   test 'impossible de lire une conversation avec un utilisateur d’une autre organisation' do
     sign_in users(:hidalgo)
 
-    get messagerie_conversation_url(to_id: users(:manager_marseille).id)
+    get messagerie_conversation_url(to_user_slug: users(:manager_marseille).slug)
 
     assert_redirected_to messagerie_path
   end

@@ -1,30 +1,41 @@
 <div class="group p-6 transition-all duration-300 hover:bg-slate-50 hover:-translate-y-0.5">
-  <div class="flex items-start gap-4 sm:w-80 min-w-0">
-    <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
-      <%= embedded_svg "icons/request_quote.svg",
-          class: "w-6 h-6 text-secondary",
-              title: "Cotation à signer " %>
+  <div class="flex gap-5">
+    <div class="flex-shrink-0">
+      <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
+        <%= embedded_svg "icons/request_quote.svg",
+            class: "w-6 h-6 text-secondary",
+            title: "Cotation à signer" %>
+      </div>
     </div>
     <div class="flex-1 min-w-0">
-      <b><%= link_to cotation.ref, cotation_path(cotation.slug), class: "font-bold text-lg leading-6  text-#{cotation.style.split.first.split('-').last}  group-hover/title:underline break-words" %></b>
-      <br>
-      <%= cotation.service.nom %>
-      (<%= number_to_currency(cotation.total_ht) %> HT)
+      <%= link_to cotation_path(cotation.slug), class: "block group/title" do %>
+        <h3 class="font-bold text-lg leading-6 text-primary group-hover/title:underline break-words">
+          <%= cotation.ref %>
+        </h3>
+      <% end %>
+
+      <p class="text-slate-700 text-sm mt-1">
+        <%= cotation.service.nom %> (<%= number_to_currency(cotation.total_ht) %> HT)
+      </p>
+
       <small class="text-slate-500 mt-2 block">
         Créée il y a <%= time_ago_in_words cotation.created_at %>
       </small>
+
+      <!-- Boutons -->
+      <div class="flex flex-wrap gap-3 mt-5">
+        <% if policy(cotation).signer? && cotation.can_signer? %>
+          <%= link_to 'Signer', signer_cotation_path(cotation), 
+                class: "btn btn-accent btn-outline w-24 text-sm transition-all duration-300 hover:scale-105 hover:text-white! justify-center",
+                data: { turbo: false } %>
+        <% end %>
+
+        <% if policy(cotation).signer? && cotation.can_refuser? %>
+          <%= button_to 'Refuser', refuser_cotation_path(cotation), 
+                class: "btn btn-error btn-outline w-24 text-sm transition-all duration-300 hover:scale-105 hover:text-white!",
+                form: { data: { turbo: false } } %>
+        <% end %>
+      </div>
     </div>
-  </div>
-  <div class="flex flex-wrap gap-3 mt-5">
-    <% if policy(cotation).signer? && cotation.can_signer? %>
-      <%= link_to 'Signer', signer_cotation_path(cotation), 
-            class: "btn btn-accent btn-outline w-24 transition-all duration-300 hover:scale-105 hover:text-white!",
-            data: { turbo: false } %>
-    <% end %>
-    <% if policy(cotation).signer? && cotation.can_refuser? %>
-      <%= button_to 'Refuser', refuser_cotation_path(cotation), 
-            class: "btn btn-error btn-outline w-24 transition-all duration-300 hover:scale-105 hover:text-white!",
-        form: { data: { turbo: false }, class: 'w-[100px]' } %>
-    <% end %>
   </div>
 </div>

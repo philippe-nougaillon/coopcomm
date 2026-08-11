@@ -34,6 +34,26 @@ class TwilioControllerTest < ActionDispatch::IntegrationTest
     assert_match 'application/xml', response.content_type # On utilise un assert_match car content_type contient aussi le charset
   end
 
+  test "un agent sans service ne crée pas d'intervention" do
+    @agent.services.clear
+
+    assert_no_difference 'Intervention.count' do
+      post_signé('From' => @agent.téléphone, 'Body' => 'Fuite rue des Lilas')
+    end
+
+    assert_response :success
+    assert_match 'rattaché à aucun service', response.body
+  end
+
+  test "un agent à plusieurs services : l'intervention prend le premier dans l'ordre" do
+    @agent.services << services(:informatique)
+
+    post_signé('From' => @agent.téléphone, 'Body' => 'Fuite rue des Lilas')
+
+    assert_equal services(:informatique), Intervention.last.service
+    assert_equal services(:informatique), @agent.services.ordered.first
+  end
+
   test 'should return error message when sender is unknown' do
     assert_no_difference 'Intervention.count' do
       post_signé('From' => 'whatsapp:+33000000000', 'Body' => 'Hello')

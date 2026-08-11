@@ -148,15 +148,15 @@
         <table class="table table-sm w-full border-collapse">
           <thead class="bg-slate-100">
             <tr>
-              <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Intervention</th>
-              <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Du</th>
-              <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Au</th>
-              <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Adhérent</th>
+              <%= th_tri 'Intervention', colonne: 'interventions.description', class: 'font-semibold text-slate-500 uppercase tracking-wider text-xs' %>
+              <%= th_tri 'Du', colonne: 'interventions.début', class: 'font-semibold text-slate-500 uppercase tracking-wider text-xs' %>
+              <%= th_tri 'Au', colonne: 'interventions.fin', class: 'font-semibold text-slate-500 uppercase tracking-wider text-xs' %>
+              <%= th_tri 'Adhérent', colonne: 'interventions.adherent', class: 'font-semibold text-slate-500 uppercase tracking-wider text-xs' %>
             </tr>
           </thead>
           <tbody>
-            <% if @tool.interventions.any? %>
-              <%= render partial: 'intervention', collection: @tool.interventions.ordered,
+            <% if @interventions.any? %>
+              <%= render partial: 'intervention', collection: @interventions,
                          cached: ->(intervention) { [intervention, current_user] } %>
             <% else %>
               <tr>
@@ -185,16 +185,15 @@
       <table class="table table-sm w-full">
         <thead class="bg-slate-100">
           <tr>
-            <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Il y a</th>
-            <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">État</th>
-            <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Par</th>
-            <th class="font-semibold text-slate-500 uppercase tracking-wider text-xs">Date</th>
-            <th></th>
+            <%= th_tri 'Il y a', colonne: 'mouvements.updated_at', class: 'font-semibold text-slate-500 uppercase tracking-wider text-xs' %>
+            <%= th_tri 'État', colonne: 'mouvements.état', class: 'font-semibold text-slate-500 uppercase tracking-wider text-xs' %>
+            <%= th_tri 'Par', colonne: 'mouvements.user', class: 'font-semibold text-slate-500 uppercase tracking-wider text-xs' %>
+            <%= th_tri 'Date', colonne: 'mouvements.date', class: 'font-semibold text-slate-500 uppercase tracking-wider text-xs' %>
           </tr>
         </thead>
         <tbody>
-          <% if @tool.mouvements.any? %>
-            <%= render @tool.mouvements.includes(:user).ordered %>
+          <% if @mouvements.any? %>
+            <%= render @mouvements %>
           <% else %>
             <tr>
               <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">
@@ -241,6 +240,7 @@
         </div>
       <% end %>
     </div>
+    <%= render "shared/activite", audits: @audits, pagy: @pagy %>
   <% end %>
   <div class="pt-6">
     <%= link_to tools_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>

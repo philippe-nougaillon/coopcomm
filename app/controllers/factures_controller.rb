@@ -3,6 +3,8 @@ class FacturesController < ApplicationController
   before_action :is_user_authorized
   before_action :set_form_collections, only: %i[edit update]
 
+  trie Facture, defaut: 'factures.updated_at', sens: :desc
+
   # GET /factures or /factures.json
   def index
     base = policy_scope(Facture)
@@ -16,7 +18,7 @@ class FacturesController < ApplicationController
       @services  = Service.where(id: service_ids).ordered
     else
       @services  = current_user.get_services_by_role
-      @adhérents = User.by_service(@services).adhérent
+      @adhérents = User.by_service(@services).adhérent.ordered
       @factures  = base.where(service: @services)
     end
 
@@ -38,12 +40,12 @@ class FacturesController < ApplicationController
 
     @factures = @factures.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
 
-    @pagy, @factures = pagy(@factures, items: 15)
+    @pagy, @factures = pagy(trier(@factures), items: 15)
   end
 
   # GET /factures/1 or /factures/1.json
   def show
-    @audits = @facture.own_and_associated_audits.includes(:user).reorder(id: :desc)
+    @audits = trier(@facture.own_and_associated_audits.includes(:user))
     @pagy, @audits = pagy(@audits, items: 10)
   end
 
@@ -140,8 +142,11 @@ class FacturesController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_facture
-    @facture = Facture.find_by(slug: params.expect(:id))
-    redirect_to factures_path, alert: 'Facture introuvable' if @facture.nil?
+    @facture = Facture.find_by(slug: params[:id])
+
+    if @facture.nil?
+      redirect_to root_path, alert: 'Facture introuvable'
+    end
   end
 
   # Only allow a list of trusted parameters through.

@@ -132,7 +132,8 @@
       <%# --- PROCHAINE ÉTAPE --- %>
       <% has_workflow_action = (policy(@cotation).envoyer? && @cotation.can_envoyer?) ||
                            (policy(@cotation).valider? && @cotation.can_valider?) ||
-                           (policy(@cotation).refuser? && @cotation.can_refuser?) %>
+                           (policy(@cotation).refuser? && @cotation.can_refuser?) ||
+                            policy(@cotation).signer? %>
       <% if has_workflow_action %>
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4  mb:mb-6 mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="text-base text-slate-600 uppercase font-semibold shrink-0">
@@ -141,6 +142,9 @@
           <div class="flex flex-wrap  items-center gap-2 w-full sm:w-auto">
             <% if policy(@cotation).envoyer? && @cotation.can_envoyer? %>
               <%= button_to "Envoyer", envoyer_cotation_path(@cotation), class: "btn btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
+            <% end %>
+            <% if policy(@cotation).signer? %>
+              <%= link_to "Signer", signer_cotation_path(@cotation), class: "btn btn-accent btn-outline w-24 transition-all duration-300 hover:scale-105 hover:text-white!"%>
             <% end %>
             <% if policy(@cotation).valider? && @cotation.can_valider? %>
               <%= button_to "Valider", valider_cotation_path(@cotation), class: "btn btn-success btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
@@ -255,8 +259,7 @@
     </div>
   <% end %>
   <%# --- HISTORIQUE DES ENVOIS --- %>
-  <% mail_logs = @cotation.mail_logs.ordered %>
-  <% if mail_logs.any? %>
+  <% if @mail_logs.any? %>
     <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
       <h2 class="text-2xl text-secondary font-semibold">Historique des envois</h2>
     </div>
@@ -271,18 +274,18 @@
       <table class="table table-sm w-full border-none">
         <thead class="bg-slate-100">
           <tr>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Il y a</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Via</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Expéditeur</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Destinataire</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Sujet</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">État</th>
+            <%= th_tri 'Il y a', colonne: 'mail_logs.created_at', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Via', colonne: 'mail_logs.channel', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Expéditeur', colonne: 'mail_logs.user', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Destinataire', colonne: 'mail_logs.to', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Sujet', colonne: 'mail_logs.subject', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Statut', colonne: 'mail_logs.statut', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'État', colonne: 'mail_logs.etat', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
             <th class="px-4 py-3"></th>
           </tr>
         </thead>
         <tbody>
-          <%= render partial: "mail_logs/mail_log", collection: mail_logs, as: :mail_log %>
+          <%= render partial: "mail_logs/mail_log", collection: @mail_logs, as: :mail_log %>
         </tbody>
       </table>
     </div>

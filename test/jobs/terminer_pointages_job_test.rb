@@ -28,6 +28,16 @@ class TerminerPointagesJobTest < ActiveJob::TestCase
     assert_in_delta Time.current, @pointage.fin, 1.minute
   end
 
+  test 'la clôture automatique enregistre le temps total et une pause à 0' do
+    @pointage.update_columns(début: 3.hours.ago, temps_de_pause: nil, temps_total: nil)
+
+    TerminerPointagesJob.perform_now
+
+    @pointage.reload
+    assert_equal 0, @pointage.temps_de_pause
+    assert_in_delta 3.0, @pointage.temps_total, 0.05
+  end
+
   test 'clôture le pointage même si une absence a été posée après son ouverture' do
     Absence.create!(user: @agent, du: Date.today, au: Date.today, motif: 0)
 
@@ -80,6 +90,17 @@ class TerminerPointagesJobTest < ActiveJob::TestCase
     assert_no_changes -> { déjà_terminée.reload.workflow_state } do
       TerminerPointagesJob.perform_now
     end
+  end
+
+  # Décision : un pointage privé de son agent n'est pas clôturé de force, il reste
+  # ouvert jusqu'à correction manuelle (l'erreur est journalisée par le job).
+  test 'un pointage sans agent reste ouvert' do
+    @pointage.agents.destroy_all
+
+    TerminerPointagesJob.perform_now
+
+    assert @pointage.reload.nouveau?
+    assert_nil @pointage.fin
   end
 
   test 'un pointage en échec n’interrompt pas le traitement des suivants' do

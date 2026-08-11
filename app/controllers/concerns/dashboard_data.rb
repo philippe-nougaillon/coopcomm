@@ -3,6 +3,10 @@
 module DashboardData
   extend ActiveSupport::Concern
 
+  # Les agents désactivés gardent leur temps au dashboard, mais pas leur nom. S'ils
+  # sont plusieurs, leurs temps sont cumulés sur cette seule entrée.
+  LIBELLE_AGENT_DESACTIVE = 'Utilisateur désactivé'
+
   private
 
   def build_dashboard_for_manager(users, start_date, end_date)
@@ -12,7 +16,7 @@ module DashboardData
     co2 = build_co2_par_mois(stats, start_date, end_date)
 
     {
-      export_logs: current_organisation.export_logs.includes(:user).order(created_at: :desc),
+      export_logs: trier(current_organisation.export_logs.includes(:user)),
       temps_total_par_adherent: temps_par_adherent(users),
       temps_total_par_agent: temps_par_agent(users),
       data_workflow_chart: build_workflow_chart(stats, start_date, end_date),
@@ -81,13 +85,25 @@ module DashboardData
 
   def temps_par_agent(users)
     agents = users.agent
+    désactivés = User.with_discarded.discarded.agent.by_service(current_user.services)
     # La vue dashboard_agent_stats porte déjà la répartition temps_total / nb d'agents.
-    totals = DashboardAgentStat.where(agent_id: agents.select(:id))
+    totals = DashboardAgentStat.where(agent_id: agents.ids + désactivés.ids)
                                .where("temps_total >= 0")
                                .group(:agent_id).sum(:temps_total)
-    agents.each_with_object({}) do |agent, hash|
+    par_agent = agents.each_with_object({}) do |agent, hash|
       hash[agent.nom_prénom] = totals[agent.id] || 0
     end
+    désactivés.sort_by(&:id).each_with_object(par_agent) do |agent, hash|
+      temps = totals[agent.id] || 0
+      hash[libellé_agent_désactivé(hash)] = temps if temps.positive?
+    end
+  end
+
+  # Une entrée par agent désactivé, jamais son nom : « Utilisateur désactivé »,
+  # puis « … #2 », « … #3 » pour ne pas écraser la précédente.
+  def libellé_agent_désactivé(par_agent)
+    rang = par_agent.keys.count { |clé| clé.start_with?(LIBELLE_AGENT_DESACTIVE) } + 1
+    rang == 1 ? LIBELLE_AGENT_DESACTIVE : "#{LIBELLE_AGENT_DESACTIVE} ##{rang}"
   end
 
   def build_workflow_chart(stats, start_date, end_date)

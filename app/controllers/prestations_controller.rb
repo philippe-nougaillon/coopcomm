@@ -30,7 +30,7 @@ class PrestationsController < ApplicationController
   # PATCH/PUT /prestations/1
   def update
     if @prestation.update(prestation_params)
-      redirect_to admin_parametres_path(tab: target_tab),  notice: 'Prestation mise à jour.', status: :see_other
+      redirect_to admin_parametres_path(tab: 'prestations'),  notice: 'Prestation mise à jour.', status: :see_other
     else
       render :edit, status: :unprocessable_content
     end
@@ -39,9 +39,9 @@ class PrestationsController < ApplicationController
   # DELETE /prestations/1
   def destroy
     if @prestation.destroy
-      redirect_to admin_parametres_path(tab: target_tab), notice: 'Prestation supprimée.', status: :see_other
+      redirect_to admin_parametres_path(tab: 'prestations'), notice: 'Prestation supprimée.', status: :see_other
     else
-      redirect_to admin_parametres_path, alert: @prestation.errors.full_messages.to_sentence, status: :see_other
+       redirect_to admin_parametres_path(tab: 'prestations'), alert: @prestation.errors.full_messages.to_sentence, status: :see_other
     end
   end
 
@@ -49,7 +49,7 @@ class PrestationsController < ApplicationController
 
   def set_prestation
     @prestation = current_organisation.prestations.find_by(slug: params[:id])
-    redirect_to admin_parametres_path, alert: 'Prestation introuvable' if @prestation.nil?
+    redirect_to admin_parametres_path(tab: 'prestations'), alert: 'Prestation introuvable' if @prestation.nil?
   end
 
   def is_user_authorized

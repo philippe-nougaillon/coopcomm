@@ -19,24 +19,8 @@ class Tool < ApplicationRecord
   has_one_attached :photo
   has_one_attached :document
 
-  DOCUMENTS = %w[
-    application/pdf
-    application/msword
-    application/vnd.openxmlformats-officedocument.wordprocessingml.document
-    application/vnd.ms-excel
-    application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-  ].freeze
-
-  IMAGES = %w[
-    image/png
-    image/jpeg
-    image/jpg
-    image/webp
-    image/avif
-  ].freeze
-
-  valide_piece_jointe :photo, types: IMAGES
-  valide_piece_jointe :document, types: DOCUMENTS
+  valide_image :photo
+  valide_document :document
 
   normalizes :name, with: ->(name) { name.humanize.strip }
 
@@ -45,7 +29,9 @@ class Tool < ApplicationRecord
 
   after_create :create_mouvement
 
-  scope :ordered, -> { order(Arel.sql("LOWER(unaccent(name)), LOWER(unaccent(description))")) }
+  scope :ordered, -> { trié_par(:name, :description) }
+
+  triable_par({ 'tools.name' => :texte }, puis: TriTextuel.expression('tools.description'))
 
   def self.icons
     {

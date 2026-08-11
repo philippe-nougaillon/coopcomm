@@ -163,6 +163,8 @@ gem 'solid_cache', '~> 1.0'
 
 # Vues (matérialisées) PostgreSQL versionnées via migrations — alimentent le dashboard
 gem 'scenic', '~> 1.8'
+# Fonctions et triggers PostgreSQL versionnés, et dumpés dans schema.rb (companion de scenic)
+gem 'fx', '~> 0.11'
 
 gem 'solid_cable', '~> 3.0'
 

@@ -1,0 +1,16 @@
+<%# locals: (intervention:) %>
+<% if intervention.errors.any? %>
+  <div id="error_explanation" class="alert alert-error bg-red-50 border border-red-200 text-error-content rounded-xl p-4 mb-6 shadow-sm">
+    <div class="flex flex-col gap-1">
+      <h2 class="font-black text-red-700 flex items-center gap-2">
+        <%= embedded_svg "icons/warning.svg", class: "w-5 h-5 text-red-600" %>
+        <%= pluralize(intervention.errors.count, "erreur") %> empêche(nt) cette intervention d'être sauvegardée :
+      </h2>
+      <ul class="list-disc list-inside text-sm text-red-600 pl-2">
+        <% intervention.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+<% end %>

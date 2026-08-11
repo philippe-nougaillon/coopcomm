@@ -73,21 +73,14 @@ class AuditManagerFlowTest < ApplicationSystemTestCase
 
   test 'Filter les audits par date' do
     go_to_audit_page
-    # `<input type="date">` natif : on saisit une séquence de chiffres MMJJAAAA (ordre des
-    # segments du widget), pas une chaîne à tirets DMY — sinon le champ misparse et.
-    fill_in 'Du', with: (Date.today - 14).strftime('%m%d%Y')
-    fill_in 'Au', with: Date.today.strftime('%m%d%Y')
-    # Attendre que le widget date ait bien assemblé la valeur avant de soumettre
-    assert has_field?('Au', with: Date.today.strftime('%Y-%m-%d'), wait: 5)
-    page.driver.browser.switch_to.active_element.send_keys(:enter)
+    # Un objet Date, jamais une chaîne : Capybara ne pose la valeur d'un `<input type="date">`
+    # en JS que pour un Date, sinon il tape les caractères un à un dans le widget natif,
+    # qui les interprète selon la locale du navigateur (`2026-08-05` → `02/02/60805`).
+    fill_in 'Du', with: Date.today - 14
+    fill_in 'Au', with: Date.today
     assert_text @manager.email # l'audit du login (aujourd'hui) est dans la plage
 
-    # Réécriture d'un champ date déjà rempli (le champ persiste hors du turbo-frame
-    # rechargé, focus resté sur le segment année) : `fill_in` taperait dans l'année.
-    champ_au = find_field('Au')
-    champ_au.send_keys(:arrow_left, :arrow_left, :arrow_left, (Date.today - 1).strftime('%m%d%Y'))
-    assert has_field?('Au', with: (Date.today - 1).strftime('%Y-%m-%d'), wait: 5)
-    champ_au.send_keys(:enter)
+    fill_in 'Au', with: Date.today - 1
     assert_text 'Aucun résultat trouvé' # plage se terminant hier : exclut l'audit d'aujourd'hui
   end
 

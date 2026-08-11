@@ -1,0 +1,21 @@
+<%# locals: (intervention:) %>
+<div class="bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col justify-between space-y-2">
+  <div class="flex items-center justify-between">
+    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Temps passé</span>
+    <span class="w-24 text-center text-sm font-bold text-slate-800 bg-white py-1 rounded-md border border-slate-200 shadow-xs">
+      <%= intervention.temps_par_agent %> h
+    </span>
+  </div>
+  <div class="flex items-center justify-between border-t border-slate-200/60 pt-2">
+    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Temps total</span>
+    <span class="w-24 text-center text-sm font-bold text-slate-800 bg-white py-1 rounded-md border border-slate-200 shadow-xs">
+      <%= intervention.temps_total %> h
+    </span>
+  </div>
+  <div class="flex items-center justify-between border-t border-slate-200/60 pt-2">
+    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pause</span>
+    <span class="w-24 text-center text-sm font-medium text-slate-500 bg-white py-1 rounded-md border border-slate-200 shadow-xs">
+      <%= intervention.temps_de_pause %> h
+    </span>
+  </div>
+</div>

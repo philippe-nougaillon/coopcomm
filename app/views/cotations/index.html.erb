@@ -11,7 +11,8 @@
       <% end %>
     <% end %>
   </div>
-  <%= form_tag cotations_path, method: :get, class: "pt-6" do %>
+  <%= form_tag cotations_path, method: :get, class: "pt-6", data: { turbo_frame: "cotations_table", turbo_action: "advance" } do %>
+    <%= champs_tri_caches %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
         <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
@@ -49,6 +50,7 @@
   <% end %>
 </div>
 <hr class="mt-6 mb-6">
+<%= tableau_encadré "cotations_table" do %>
 <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
   <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
 </div>
@@ -61,14 +63,14 @@
     <table class="table table-sm w-full border-none">
       <thead class="bg-slate-100">
         <tr>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Réf</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Statut</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Adhérent</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Intitulé</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Livraison</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Total HT</th>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Dernier mail</th>
+          <%= th_tri 'Réf', colonne: 'cotations.ref', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+          <%= th_tri 'Statut', colonne: 'cotations.workflow_state', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+          <%= th_tri 'Adhérent', colonne: 'cotations.adherent', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+          <%= th_tri 'Service', colonne: 'cotations.service', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+          <%= th_tri 'Intitulé', colonne: 'cotations.intitulé', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+          <%= th_tri 'Livraison', colonne: 'cotations.date_livraison_souhaitée', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
+          <%= th_tri 'Total HT', colonne: 'cotations.total_ht', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
+          <%= th_tri 'Dernier mail', colonne: 'cotations.dernier_mail', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
         </tr>
       </thead>
       <tbody>
@@ -96,3 +98,4 @@
     </div>
   <% end %>
 </div>
+<% end %>

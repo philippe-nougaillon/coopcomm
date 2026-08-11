@@ -14,7 +14,7 @@ module ApplicationHelper
   # (jamais params.permit! : un paramètre forgé — ex. host — se retrouverait
   # dans les liens générés).
   def intervention_filter_params
-    params.permit(:service, :search, :workflow_state, :du, :au, :adherent_id, :equipe,
+    params.permit(:service, :search, :workflow_state, :du, :au, :adherent_id,
                   :archives, :vue, :column, :direction, :page,
                   tags: [], agent_ids: [], tool_ids: [])
   end
@@ -118,23 +118,62 @@ module ApplicationHelper
     record ? polymorphic_path(record) : nil
   end
 
+  # Un formulaire de filtre est soumis en GET : sans ces champs, filtrer après
+  # avoir trié remettrait l'ordre par défaut.
+  def champs_tri_caches
+    return '' if sort_column.blank?
+
+    safe_join([hidden_field_tag('column', sort_column, id: nil),
+               hidden_field_tag('direction', sort_direction, id: nil)])
+  end
+
+  # Encadre un tableau d'index : seuls les liens de tri rechargent le cadre (donc
+  # sans revenir en haut de la page), tout le reste — lien d'une ligne, bouton
+  # d'action, export — navigue normalement grâce à `target: _top`.
+  def tableau_encadré(id, **options, &bloc)
+    @frame_tri = id
+    turbo_frame_tag(id, target: '_top', data: { turbo_action: 'advance' }, **options, &bloc)
+  ensure
+    @frame_tri = nil
+  end
+
+  def th_tri(titre, colonne: nil, **options)
+    options = options.merge(scope: 'col')
+    options[:'aria-sort'] = aria_sort(colonne) if colonne.present? && colonne_triable?(colonne)
+
+    content_tag(:th, colonne.present? ? sort_link(colonne, titre) : titre, options)
+  end
+
   def sort_link(column, title = nil)
     title ||= (@model_class ? @model_class.human_attribute_name(column) : column.titleize)
-    direction = column == sort_column && sort_direction == 'asc' ? 'desc' : 'asc'
+    return content_tag(:span, title) unless colonne_triable?(column)
 
-    svg_icon = sort_direction == 'asc' ? 'keyboard_arrow_down.svg' : 'keyboard_arrow_up.svg'
-    link_title = sort_direction == 'asc' ? 'Tri croissant' : 'Tri décroissant'
+    active = column == sort_column
+    direction = active && sort_direction == 'asc' ? 'desc' : 'asc'
 
-    icon_html = ''
-    if column == sort_column
-      icon_html = embedded_svg("icons/#{svg_icon}", class: 'w-4 h-4 fill-current text-primary shrink-0 ml-1')
+    link_to url_for(request.parameters.merge('column' => column, 'direction' => direction, 'page' => nil)),
+            class: 'group inline-flex items-center cursor-pointer hover:text-primary',
+            title: direction == 'asc' ? 'Trier par ordre croissant' : 'Trier par ordre décroissant',
+            data: { turbo_frame: @frame_tri } do
+      safe_join([content_tag(:span, title), icone_tri(active, active ? sort_direction : direction)])
     end
+  end
 
-    link_to "<span>#{h title}</span>#{icon_html}".html_safe,
-            url_for(request.parameters.merge(column: column, direction: direction)),
-            class: 'flex items-center',
-            title: link_title,
-            'data-turbo': false
+  def icone_tri(active, sens)
+    icone = sens == 'asc' ? 'keyboard_arrow_down.svg' : 'keyboard_arrow_up.svg'
+    classes = if active
+                'w-4 h-4 fill-current text-primary shrink-0 ml-1'
+              else
+                'w-4 h-4 fill-current text-slate-400 shrink-0 ml-1 opacity-0 group-hover:opacity-100 transition-opacity'
+              end
+
+    embedded_svg("icons/#{icone}", class: classes)
+  end
+
+  def aria_sort(colonne)
+    return 'none' unless colonne == sort_column
+
+    sort_direction == 'asc' ? 'ascending' : 'descending'
   end
 
   def message_time_format(time)

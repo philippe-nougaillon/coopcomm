@@ -8,7 +8,7 @@
     <% end %>
   </div>
   <div>
-    <b><%= link_to_if user&.id, truncate(message.moderation, length: 100), (user ? messagerie_conversation_path(user.id) : messagerie_path), class:'hover:underline hover:text-primary' %></b>
+    <b><%= link_to_if user&.id, truncate(message.moderation, length: 100), (user ? messagerie_conversation_path(user.slug) : messagerie_path), class:'hover:underline hover:text-primary' %></b>
     <div>
       <small>
         il y a <%= time_ago_in_words message.created_at %>

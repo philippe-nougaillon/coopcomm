@@ -59,14 +59,16 @@ class MeteoConceptConnexion < ApplicationService
 
     # La date doit être sur les 14 prochains jours
     difference_of_day = (date - Date.today).to_i
-    return unless difference_of_day >= 0 && difference_of_day < 14
+    return unless difference_of_day >= 0 && difference_of_day < forecasts_for_14_days.size
 
-    forecasts_for_14_days[difference_of_day].third
+    forecasts_for_14_days[difference_of_day]&.third
   end
 
   # Retourne le forecast sous forme de titre
   def self.get_title(date, forecasts_for_14_days)
     forecast = self.get_forecast_for_date(date, forecasts_for_14_days)
+    return unless forecast
+
     "#{self.WEATHER[forecast["weather"]]} | Température : #{forecast["temp2m"]} °C | Probabilité de pluie : #{forecast["probarain"]}% | Vent : #{forecast["wind10m"]} km/h"
   end
 
@@ -180,8 +182,6 @@ class MeteoConceptConnexion < ApplicationService
     when 1..2
       'meteo/animated/cloudy-day-3.svg'
     when 3..5
-      'meteo/animated/cloudy.svg'
-    when 6..7
       'meteo/animated/cloudy.svg'
 
       # --- Pluie continue ---

@@ -12,6 +12,7 @@
     <% end %>
   </div>
   <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_frame: "users_table", turbo_action: "advance" } do %>
+    <%= champs_tri_caches %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
         <%= label_tag :search, "Rechercher",class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
@@ -49,11 +50,10 @@
       <div class="w-full md:flex-1">
         <%= label_tag :user_tag, "Mots clés", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
         <%
-          tags_de_users = ActsAsTaggableOn::Tag.joins(:taggings)
-                                              .where(taggings: { taggable_type: 'User' })
-                                              .distinct
-                                              .pluck(:name)
-                                              .sort
+          tags_de_users = TriTextuel.ranger(ActsAsTaggableOn::Tag.joins(:taggings)
+                                                                .where(taggings: { taggable_type: 'User' })
+                                                                .distinct
+                                                                .pluck(:name))
         %>
         <%= select_tag :user_tag, 
                 options_for_select(tags_de_users, params[:user_tag]), 
@@ -99,6 +99,7 @@
   <% end %>
 </div>
 <hr class="mt-6 mb-6">
+<%= tableau_encadré "users_table" do %>
 <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-none md:rounded-t-xl border-t border-x md:border-b-0 border-slate-200">
   <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
 </div>
@@ -112,19 +113,13 @@
         <thead class="bg-slate-100">
           <tr>
             <th class="w-10 px-3 py-3"></th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-              <%= sort_link 'users.nom', 'Nom' %>
-            </th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap" colspan="2">
-              <%= sort_link 'users.rôle', 'Rôle' %>
-            </th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Mots clés</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-              <%= sort_link 'users.email', 'Email' %>
-            </th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Absent ?</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Évaluation</th>
+            <%= th_tri 'Nom', colonne: 'users.nom', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Rôle', colonne: 'users.rôle', colspan: 2, class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap' %>
+            <%= th_tri 'Service', colonne: 'users.service', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Mots clés', colonne: 'users.tags', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Email', colonne: 'users.email', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            <%= th_tri 'Absent ?', colonne: 'users.absent', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
+            <%= th_tri 'Évaluation', colonne: 'users.moyenne', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
           </tr>
         </thead>
         <tbody>
@@ -141,7 +136,6 @@
       </table>
     </div>
   </div>
-</div>
 <div class="flex flex-col bg-white border-x border-b border-slate-200 rounded-b-xl">
   <div class="flex flex-wrap justify-end items-center gap-2 p-4">
     <% if @users.any? %>
@@ -172,3 +166,4 @@
     <% end %>
   </div>
 </div>
+<% end %>

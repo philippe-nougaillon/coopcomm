@@ -1,7 +1,7 @@
 # Guide de contribution — CoopComm
 
 > Erreurs récurrentes constatées dans l'historique du projet, et checklist pour ne plus les refaire.
-> Chaque règle est tirée d'un **vrai correctif** du dépôt (commit ou bug du registre `.claude/method/bugs-signales.md`).
+> Chaque règle est tirée d'un **vrai correctif** du dépôt (commit ou bug du registre `suivi/bugs-signales.md`).
 > Principes de base déjà acquis : **une fonction ne fait qu'une chose · KISS · DRY**. Ce guide couvre le reste.
 
 ---
@@ -117,7 +117,7 @@ Règles :
   (`ApplicationService`) ; effet de bord asynchrone (mail, notif) → job via le pub/sub ;
   le contrôleur ne fait que : autoriser, appeler, répondre.
 - Un TODO qu'on écrit quand même = **une issue GitHub** avec le numéro dans le commentaire
-  (`# TODO(#342) : ...`). Un TODO sans issue n'existe pas pour personne.
+  (`# TODO(#XXX) : ...`). Un TODO sans issue n'existe pas pour personne.
 - Divers Rails : redirection **303** (`status: :see_other`) après create/update/destroy
   soumis par Turbo ; les `<label>` ont un `for=` (accessibilité + testabilité).
 
@@ -187,4 +187,4 @@ réécrits intégralement le 2026-07-09).
 ---
 
 *Registre détaillé des bugs ouverts (B1–B10, avec parcours de reproduction) :
-`.claude/method/bugs-signales.md`. Décisions en attente : `.claude/method/points-a-trancher.md`.*
+`suivi/bugs-signales.md`. Décisions en attente : `suivi/points-a-trancher.md`.*

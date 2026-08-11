@@ -16,8 +16,13 @@
     <div class="flex-1 min-w-0">
       <%= link_to intervention,
           class:"block group/title" do %>
-        <h3 class="font-bold text-lg leading-6 text-<%= intervention.style.split.first.split('-').last %> group-hover/title:underline break-words">
-          <%= intervention.description.humanize %>
+        <h3 class="font-bold text-lg leading-6 text-<%= intervention.style.split.first.split('-').last %> group-hover/title:underline break-words flex flex-row  gap-1 items-center ">
+          <span><%= intervention.description.humanize %></span>
+          <% if intervention.repeter %>
+            <%= embedded_svg "icons/event_repeat.svg", title: "Modèle pour le pointage", class: "w-5 h-5 fill-current shrink-0" %>
+          <% elsif intervention.template_slug %>
+            <%= embedded_svg "icons/qr_code_2.svg", title: "Pointage", class: "w-5 h-5 fill-current shrink-0" %>
+          <% end %>
         </h3>
       <% end %>
       <small class="text-slate-500 mt-2 block">
@@ -25,24 +30,12 @@
       </small>
       <!-- Boutons -->
       <div class="flex flex-wrap gap-3 mt-5">
-        <% if policy(intervention).terminer? && intervention.can_terminer? %>
-          <% lien, methode, params_terminer = terminer_destination(intervention) %>
-          <%= button_to 'Terminer', lien, method: methode, params: params_terminer,
-            class: "btn btn-primary btn-outline w-24 text-sm transition-all duration-300 hover:scale-105 hover:text-white!",
-            form: { data: { turbo: false } } %>
-        <% end %>
-        <% if policy(intervention).valider? && intervention.can_valider? %>
-          <%= button_to 'Valider',
-            valider_intervention_path(intervention),
-            class: "btn btn-success btn-outline w-24 text-sm  transition-all duration-300 hover:scale-105 hover:text-white!",
-            form: { data: { turbo: false } } %>
-        <% end %>
-        <% if policy(intervention).refuser? && intervention.can_refuser? %>
-          <%= button_to 'Refuser',
-            refuser_intervention_path(intervention),
-            class: "btn btn-error btn-outline w-24 transition-all duration-300 hover:scale-105 hover:text-white!",
-            form: { data: { turbo: false } } %>
-        <% end %>
+        <%= render "interventions/boutons_workflow", intervention: intervention,
+                   styles: { terminer_modal: "btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white! w-full sm:w-24 justify-center",
+                             terminer: "btn btn-primary btn-outline w-24 text-sm transition-all duration-300 hover:scale-105 hover:text-white!",
+                             valider: "btn btn-success btn-outline w-24 text-sm  transition-all duration-300 hover:scale-105 hover:text-white!",
+                             refuser: "btn btn-error btn-outline w-24 transition-all duration-300 hover:scale-105 hover:text-white!" },
+                   titres: { terminer_modal: "Terminer l'intervention" } %>
       </div>
     </div>
   </div>

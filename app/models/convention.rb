@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 class Convention < ApplicationRecord
+  extend FriendlyId
+  friendly_id :slug_candidates, use: :slugged
+  
   include PieceJointeValidable
   include PieceJointeAuditable
 
@@ -12,15 +15,7 @@ class Convention < ApplicationRecord
 
   has_one_attached :document
 
-  DOCUMENTS = %w[
-    application/pdf
-    application/msword
-    application/vnd.openxmlformats-officedocument.wordprocessingml.document
-    application/vnd.ms-excel
-    application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-  ].freeze
-
-  valide_piece_jointe :document, types: DOCUMENTS
+  valide_document :document
 
   validates :date_début, presence: true
   validates :date_fin_prévue, presence: true
@@ -31,6 +26,19 @@ class Convention < ApplicationRecord
   before_create :assign_ref
 
   scope :ordered, -> { order(date_début: :desc) }
+
+  triable_par 'conventions.user' => ColonnesTri.utilisateur('conventions.user_id'),
+              'conventions.ref' => :texte,
+              'conventions.service' => ColonnesTri.service('conventions.service_id'),
+              'conventions.date_début' => :brut,
+              'conventions.heures_consommees' => :brut,
+              'conventions.document' => "(SELECT #{TriTextuel.expression('active_storage_blobs.filename')} " \
+                                        'FROM active_storage_attachments ' \
+                                        'INNER JOIN active_storage_blobs ON active_storage_blobs.id = active_storage_attachments.blob_id ' \
+                                        "WHERE active_storage_attachments.record_id = conventions.id " \
+                                        "AND active_storage_attachments.record_type = 'Convention' " \
+                                        "AND active_storage_attachments.name = 'document')",
+              'conventions.mémo' => :texte
 
   def self.visible_to(user)
     if user.administrateur?
@@ -89,5 +97,9 @@ class Convention < ApplicationRecord
                 .where('EXTRACT(YEAR FROM conventions.created_at) = ?', year)
                 .count + 1
     self.ref = "CONV-#{year}-#{n}"
+  end
+
+  def slug_candidates
+    [SecureRandom.uuid]
   end
 end

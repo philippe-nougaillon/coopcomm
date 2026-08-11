@@ -6,6 +6,10 @@
 class AdherentCrmController < ApplicationController
   before_action :is_user_authorized
 
+  trie Cotation, defaut: 'cotations.updated_at', sens: :desc
+  trie Commande, defaut: 'commandes.updated_at', sens: :desc
+  trie Facture, defaut: 'factures.updated_at', sens: :desc
+
   TABS = %w[cotations commandes factures].freeze
 
   def index
@@ -63,7 +67,7 @@ class AdherentCrmController < ApplicationController
 
     @cotations = apply_filters(@cotations, 'cotations')
 
-    @pagy, @cotations = pagy(@cotations, items: 15)
+    @pagy, @cotations = pagy(trier(@cotations), items: 15)
 
     # Dernier mail_log par cotation, en une seule requête (DISTINCT ON, Postgres)
     # pour éviter un N+1 dans l'index.
@@ -94,7 +98,7 @@ class AdherentCrmController < ApplicationController
 
     @commandes = @commandes.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
 
-    @pagy, @commandes = pagy(@commandes, items: 15)
+    @pagy, @commandes = pagy(trier(@commandes), items: 15)
   end
 
   def prepare_variables_of_facture_for_view
@@ -117,7 +121,7 @@ class AdherentCrmController < ApplicationController
 
     @factures = @factures.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
 
-    @pagy, @factures = pagy(@factures, items: 15)
+    @pagy, @factures = pagy(trier(@factures), items: 15)
   end
 
   def is_user_authorized

@@ -17,7 +17,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   # Test critique — l'agent affecté ouvre SA propre intervention validée :
   # la page ne doit contenir ni l'avis ni la section Évaluation.
   test "critique : un agent ne voit pas son évaluation sur la page de son intervention" do
-    agent = users(:john_wick)
+    agent = users(:électricité)
     intervention = cree_intervention_evaluee(agent)
     sign_in agent
 
@@ -30,7 +30,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   # Test critique — même exigence sur l'export XLS de l'index, accessible à tous les
   # rôles.
   test "critique : l'export XLS d'un agent ne contient ni évaluation ni avis" do
-    agent = users(:john_wick)
+    agent = users(:électricité)
     intervention = cree_intervention_evaluee(agent)
     sign_in agent
 
@@ -85,8 +85,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   # Test critique — cas du quotidien (double-clic, retour navigateur, onglet en double) :
   # re-valider une intervention déjà validée.
-  test "critique : re-valider une intervention déjà validée redirige avec un message (bug B3)" do
-    skip 'Bug B3 : valider hors état → Workflow::NoTransitionAllowed non rescué (500) — à réactiver à la correction'
+  test 'critique : re-valider une intervention déjà validée redirige avec un message' do
     intervention = interventions(:intervention_terminée)
     sign_in users(:weil)
     post valider_intervention_url(intervention)
@@ -99,7 +98,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   # Test critique — parcours quotidien de l'agent : terminer son intervention.
   test 'critique : terminer une intervention en conflit de disponibilité redirige au lieu de planter' do
-    agent = users(:john_wick)
+    agent = users(:électricité)
     intervention = cree_intervention_en_conflit(agent)
     sign_in agent
 
@@ -113,7 +112,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   # Même filet côté adhérent, sur les deux transitions qu'il déclenche.
   test 'critique : valider une intervention en conflit de disponibilité redirige au lieu de planter' do
-    intervention = cree_intervention_en_conflit(users(:john_wick), workflow_state: 'terminé')
+    intervention = cree_intervention_en_conflit(users(:électricité), workflow_state: 'terminé')
     sign_in users(:weil)
 
     post valider_intervention_url(intervention)
@@ -124,7 +123,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'critique : refuser une intervention en conflit de disponibilité redirige au lieu de planter' do
-    intervention = cree_intervention_en_conflit(users(:john_wick), workflow_state: 'terminé')
+    intervention = cree_intervention_en_conflit(users(:électricité), workflow_state: 'terminé')
     sign_in users(:weil)
 
     post refuser_intervention_url(intervention)
@@ -189,13 +188,112 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   # Garde anti-faux-positif : sans conflit, la transition passe toujours — le
   # filet ne doit pas bloquer le parcours nominal.
   test 'terminer une intervention saine reste possible' do
-    agent = users(:john_wick)
+    agent = users(:électricité)
     intervention = cree_intervention_en_conflit(agent, avec_conflit: false)
     sign_in agent
 
     post terminer_intervention_url(intervention)
 
     assert intervention.reload.terminé?
+  end
+
+  # Test critique — le temps facturé aux communes doit être enregistré quel que soit
+  # le chemin de terminaison, sans qu'aucun formulaire ne le fournisse.
+  test 'critique : terminer via le bouton enregistre le temps total et une pause à 0' do
+    agent = users(:électricité)
+    intervention = cree_intervention_en_conflit(agent, avec_conflit: false)
+    intervention.update_columns(temps_de_pause: nil, temps_total: nil)
+    sign_in agent
+
+    post terminer_intervention_url(intervention)
+
+    intervention.reload
+    assert intervention.terminé?
+    assert_equal 0, intervention.temps_de_pause
+    assert_in_delta 2.0, intervention.temps_total, 1e-6
+  end
+
+  # Le formulaire manager laisse la pause vide : l'enregistrement ne doit pas la
+  # transformer en 0, qui se lirait comme un choix de l'utilisateur.
+  test "la création par un manager n'invente pas de temps de pause" do
+    post interventions_url, params: {
+      intervention: {
+        description: 'Élagage à planifier',
+        adherent_id: users(:patrick_adherent_paris).id,
+        service_id: services(:technique).id,
+        début_prévue: 2.days.from_now,
+        fin_prévue: 2.days.from_now + 2.hours,
+        temps_de_pause: ''
+      }
+    }
+
+    intervention = Intervention.find_by(description: 'Élagage à planifier')
+    assert intervention, 'garde : la création doit avoir abouti'
+    assert_nil intervention.temps_de_pause
+  end
+
+  test 'critique : le formulaire de terminaison rend la pause obligatoire' do
+    intervention = interventions(:intervention_paris)
+
+    get edit_intervention_url(intervention, terminer: 1)
+
+    assert_response :success
+    assert_select 'select#intervention_temps_de_pause[required]'
+  end
+
+  # Test critique — le temps facturé se calcule par agent : une intervention
+  # terminée sans agent vaut 0 heure et ne doit pas pouvoir être enregistrée.
+  test 'critique : update avec la demande de terminaison est refusé sans agent' do
+    intervention = interventions(:intervention_paris)
+
+    patch intervention_url(intervention), params: {
+      terminer: 1,
+      intervention: { début: 2.hours.ago, fin: 1.hour.ago, description: intervention.description, agent_ids: [''] }
+    }
+
+    assert_response :unprocessable_content
+    assert intervention.reload.nouveau?, "l'état ne doit pas avoir changé"
+    assert_match(/Au moins un agent est obligatoire/, response.body)
+  end
+
+  test 'critique : terminer via le bouton est refusé sans agent' do
+    intervention = interventions(:intervention_paris)
+    intervention.agents.destroy_all
+
+    post terminer_intervention_url(intervention)
+
+    assert_redirected_to intervention_url(intervention)
+    assert_match(/Au moins un agent est obligatoire/, flash[:alert])
+    assert intervention.reload.nouveau?, "l'état ne doit pas avoir changé"
+  end
+
+  test 'critique : le formulaire de terminaison rend les agents obligatoires' do
+    intervention = interventions(:intervention_paris)
+
+    get edit_intervention_url(intervention, terminer: 1)
+
+    assert_response :success
+    assert_select 'label[for=intervention_agent_ids] span.text-red-500'
+  end
+
+  test 'le formulaire ordinaire laisse les agents facultatifs' do
+    intervention = interventions(:intervention_paris)
+
+    get edit_intervention_url(intervention)
+
+    assert_response :success
+    assert_select 'select#intervention_agent_ids'
+    assert_select 'label[for=intervention_agent_ids] span.text-red-500', false
+  end
+
+  test 'le formulaire ordinaire laisse la pause facultative' do
+    intervention = interventions(:intervention_paris)
+
+    get edit_intervention_url(intervention)
+
+    assert_response :success
+    assert_select 'select#intervention_temps_de_pause'
+    assert_select 'select#intervention_temps_de_pause[required]', false
   end
 
   # Sentinelle distinctive : détecter la fuite par la donnée, pas par le wording
@@ -207,7 +305,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     Intervention.create!(
       description: 'Intervention évaluée du test critique',
       adherent: users(:weil),
-      service: services(:comptabilite),
+      service: services(:technique),
       agent_ids: [agent.id],
       début: DateTime.new(2024, 3, 11, 9, 0),
       fin: DateTime.new(2024, 3, 11, 11, 0),
@@ -226,7 +324,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
       description: 'Intervention validée du test',
       adherent: users(:weil),
       service: services(:technique),
-      agent_ids: [users(:john_wick).id],
+      agent_ids: [users(:électricité).id],
       début: DateTime.new(2024, 5, 6, 9, 0),
       fin: DateTime.new(2024, 5, 6, 11, 0),
       temps_de_pause: 0,
@@ -239,14 +337,14 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   # SECONDE intervention du même agent recouvre sa plage.
   def cree_intervention_en_conflit(agent, workflow_state: 'nouveau', avec_conflit: true)
     intervention = Intervention.create!(
-      description: 'Intervention à terminer', adherent: users(:weil), service: services(:comptabilite),
+      description: 'Intervention à terminer', adherent: users(:weil), service: services(:technique),
       agent_ids: [agent.id], début: DateTime.new(2024, 3, 12, 9, 0), fin: DateTime.new(2024, 3, 12, 11, 0),
       temps_de_pause: 0, workflow_state: workflow_state, slug: SecureRandom.uuid
     )
     return intervention unless avec_conflit
 
     conflit = Intervention.new(
-      description: 'Intervention qui recouvre la plage', adherent: users(:weil), service: services(:comptabilite),
+      description: 'Intervention qui recouvre la plage', adherent: users(:weil), service: services(:technique),
       début: DateTime.new(2024, 3, 12, 8, 0), fin: DateTime.new(2024, 3, 12, 12, 0),
       temps_de_pause: 0, workflow_state: 'nouveau', slug: SecureRandom.uuid
     )
@@ -404,9 +502,9 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "un agent crée une intervention à postériori : elle est terminée d'emblée" do
-    # john_wick n'a aucune intervention de fixture, donc jamais de conflit d'horaire
+    # nettoyage n'a aucune intervention de fixture, donc jamais de conflit d'horaire
     # avec la plage créée ici.
-    agent = users(:john_wick)
+    agent = users(:nettoyage)
     sign_in agent
 
     # On se place à midi d'AUJOURD'HUI pour que "hours.ago" ne change jamais de jour ni d'année.
@@ -582,7 +680,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
       delete purge_intervention_url(@intervention), params: { photo_id: photo_id }
     end
 
-    assert_equal "Photo n°#{photo_id} supprimée", @intervention.audits.last.comment
+    assert_equal 'Photo supprimée', @intervention.audits.last.comment
   end
 
   test "purge : un agent NON affecté à l'intervention est refusé et la photo reste" do
@@ -910,7 +1008,7 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
   end
 
   test 'archiver une intervention invalide est refusé avec son motif' do
-    intervention = cree_intervention_en_conflit(users(:john_wick), workflow_state: 'validé')
+    intervention = cree_intervention_en_conflit(users(:électricité), workflow_state: 'validé')
 
     post archiver_intervention_url(intervention)
 
@@ -1091,8 +1189,8 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
   end
 
   test "création par un agent « à postériori » (terminée d'emblée) : enqueue la notification managers « réalisée »" do
-    # john_wick et pas martin : cf. le test « à postériori » ci-dessus (B10).
-    agent = users(:john_wick)
+    # nettoyage et pas martin : cf. le test « à postériori » ci-dessus (B10).
+    agent = users(:nettoyage)
     sign_in agent
 
     # Milieu de journée : les "hours.ago" restent le même jour (cf. test à postériori ci-dessus).
@@ -1224,23 +1322,6 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
 
   # --- L'adhérent d'une fille de pointage est figé pour l'agent --------------
 
-  test "un agent ne peut pas changer l'adhérent d'une fille de pointage" do
-    agent = users(:martin_technique_paris)
-    sign_in agent
-    modele = interventions(:intervention_repete)
-    get pointer_intervention_url(modele)
-    fille = Intervention.find_by(template_slug: modele.slug)
-    adherent_initial = fille.adherent
-
-    patch intervention_url(fille), params: {
-      intervention: { adherent_id: users(:patrick_adherent_paris).id, description: 'Pointage modifié' }
-    }
-
-    fille.reload
-    assert_equal adherent_initial, fille.adherent
-    assert_equal 'Pointage modifié', fille.description, 'le reste de la modification doit passer'
-  end
-
   test "le formulaire d'édition d'une fille de pointage n'offre pas de choix d'adhérent" do
     agent = users(:martin_technique_paris)
     sign_in agent
@@ -1279,5 +1360,156 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
     }
 
     assert_equal users(:patrick_adherent_paris), fille.reload.adherent
+  end
+
+  # --- Une fille de pointage n'a qu'un seul agent ---------------------------
+
+  test "un second agent est refusé sur une fille de pointage" do
+    sign_in users(:martin_technique_paris)
+    modele = interventions(:intervention_repete)
+    get pointer_intervention_url(modele)
+    fille = Intervention.find_by(template_slug: modele.slug)
+    agents_initiaux = fille.agent_ids
+
+    sign_in users(:hidalgo)
+    patch intervention_url(fille), params: {
+      intervention: { agent_ids: ['', users(:martin_technique_paris).id, users(:john_wick).id],
+                      description: 'Pointage à deux' }
+    }
+
+    assert_response :unprocessable_content
+    fille.reload
+    assert_equal agents_initiaux, fille.agent_ids, "les lignes de jointure ne doivent pas être écrites"
+    assert_not_equal 'Pointage à deux', fille.description
+  end
+
+  test 'le formulaire réaffiché après ce refus conserve la saisie' do
+    sign_in users(:martin_technique_paris)
+    modele = interventions(:intervention_repete)
+    get pointer_intervention_url(modele)
+    fille = Intervention.find_by(template_slug: modele.slug)
+
+    sign_in users(:hidalgo)
+    patch intervention_url(fille), params: {
+      intervention: { agent_ids: ['', users(:martin_technique_paris).id, users(:john_wick).id],
+                      description: 'Pointage à deux', commentaires: 'Commentaire saisi' }
+    }
+
+    assert_response :unprocessable_content
+    assert_select "input#intervention_description[value=?]", 'Pointage à deux'
+    assert_select 'textarea#intervention_commentaires', text: /Commentaire saisi/
+  end
+
+  test "le formulaire d'une fille de pointage désactive le champ Agents pour l'agent" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+    modele = interventions(:intervention_repete)
+    get pointer_intervention_url(modele)
+    fille = Intervention.find_by(template_slug: modele.slug)
+
+    get edit_intervention_url(fille)
+
+    assert_response :success
+    assert_select 'select#intervention_agent_ids[disabled]'
+  end
+
+  test "un agent garde le choix des agents hors pointage" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+
+    get edit_intervention_url(interventions(:nouvelle_intervention))
+
+    assert_response :success
+    assert_select 'select#intervention_agent_ids[disabled]', false
+  end
+
+  test 'le formulaire réaffiché après un refus garde les agents et outils soumis' do
+    sign_in users(:martin_technique_paris)
+    modele = interventions(:intervention_repete)
+    get pointer_intervention_url(modele)
+    fille = Intervention.find_by(template_slug: modele.slug)
+    outil = tools(:tondeuse)
+
+    sign_in users(:hidalgo)
+    patch intervention_url(fille), params: {
+      intervention: { agent_ids: ['', users(:martin_technique_paris).id, users(:électricité).id],
+                      tool_ids: ['', outil.id], description: 'Pointage à deux' }
+    }
+
+    assert_response :unprocessable_content
+    assert_select "select#intervention_agent_ids option[selected][value=?]", users(:martin_technique_paris).id.to_s
+    assert_select "select#intervention_agent_ids option[selected][value=?]", users(:électricité).id.to_s
+    assert_select "select#intervention_tool_ids option[selected][value=?]", outil.id.to_s
+    assert_empty fille.reload.tool_ids, "les outils soumis ne doivent pas être écrits en base"
+  end
+
+  test 'un update réussi enregistre bien les outils' do
+    sign_in users(:hidalgo)
+    intervention = interventions(:nouvelle_intervention)
+    outil = tools(:outil_paris)
+
+    patch intervention_url(intervention), params: {
+      intervention: { description: intervention.description, tool_ids: ['', outil.id] }
+    }
+
+    assert_equal [outil.id], intervention.reload.tool_ids
+  end
+
+  test "l'agent d'une fille de pointage reste remplaçable" do
+    sign_in users(:martin_technique_paris)
+    modele = interventions(:intervention_repete)
+    get pointer_intervention_url(modele)
+    fille = Intervention.find_by(template_slug: modele.slug)
+
+    sign_in users(:hidalgo)
+    patch intervention_url(fille), params: {
+      intervention: { agent_ids: ['', users(:électricité).id], description: fille.description }
+    }
+
+    assert_equal [users(:électricité).id], fille.reload.agent_ids
+  end
+
+  test 'une intervention hors pointage accepte toujours plusieurs agents' do
+    sign_in users(:hidalgo)
+    intervention = interventions(:nouvelle_intervention)
+
+    patch intervention_url(intervention), params: {
+      intervention: { agent_ids: ['', users(:bond).id, users(:électricité).id],
+                      description: intervention.description }
+    }
+
+    assert_equal [users(:bond).id, users(:électricité).id].sort, intervention.reload.agent_ids.sort
+  end
+
+  # --- Liste des agents après un échec de validation -------------------------
+  # Le formulaire réaffiché doit proposer les agents du service SOUMIS.
+
+  test "update refusé : la liste des agents suit le service soumis" do
+    intervention = interventions(:nouvelle_intervention)
+
+    patch intervention_url(intervention), params: {
+      intervention: { service_id: services(:informatique).id,
+                      agent_ids: ['', users(:martin_technique_paris).id],
+                      description: intervention.description }
+    }
+
+    assert_response :unprocessable_content
+    ids = assigns(:agents).map(&:last)
+    assert_includes ids, users(:hidalgo).id
+    assert_not_includes ids, users(:martin_technique_paris).id
+  end
+
+  test "création refusée : la liste des agents suit le service soumis" do
+    post interventions_url, params: {
+      intervention: { service_id: services(:informatique).id,
+                      adherent_id: users(:weil).id,
+                      agent_ids: ['', users(:martin_technique_paris).id],
+                      description: 'Nouvelle demande' }
+    }
+
+    assert_response :unprocessable_content
+    ids = assigns(:agents).map(&:last)
+    assert_includes ids, users(:hidalgo).id
+    assert_not_includes ids, users(:martin_technique_paris).id
   end
 end

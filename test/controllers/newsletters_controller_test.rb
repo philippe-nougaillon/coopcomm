@@ -7,9 +7,15 @@ class NewslettersControllerTest < ActionDispatch::IntegrationTest
     @super_admin = users(:philippe_super_admin)
 
     # Permet à l'utilisateur philippe_super_admin d'être considéré comme un super admin automatiquement
+    @super_admin_initial = ENV.fetch('SUPER_ADMIN', nil)
     ENV['SUPER_ADMIN'] = @super_admin.email
 
     @newsletter = newsletters(:bond)
+  end
+
+  teardown do
+    ENV['SUPER_ADMIN'] = @super_admin_initial
+    ENV.delete('SUPER_ADMIN') if @super_admin_initial.nil?
   end
 
   test 'should get index' do

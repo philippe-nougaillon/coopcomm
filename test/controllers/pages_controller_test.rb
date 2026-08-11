@@ -182,7 +182,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
 
   test 'home : le bouton Terminer d\'une intervention hors pointage poste vers `terminer`' do
     intervention = interventions(:nouvelle_intervention)
-    intervention.update_columns(updated_at: 1.minute.from_now)
+    intervention.update_columns(updated_at: 1.minute.from_now, temps_de_pause: 0)
     sign_in users(:martin_technique_paris)
 
     get home_url

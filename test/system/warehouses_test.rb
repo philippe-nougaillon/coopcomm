@@ -25,7 +25,7 @@ class WarehousesTest < ApplicationSystemTestCase
 
     # État durable plutôt que le toast (volatil + couplé au wording) : create
     # redirige vers les paramètres, et le check en base ci-dessous prouve le succès.
-    assert_current_path admin_parametres_path
+    assert_current_path admin_parametres_path(tab: 'sites')
     assert Warehouse.exists?(name: 'Atelier municipal')
   end
 

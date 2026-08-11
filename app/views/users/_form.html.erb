@@ -1,6 +1,6 @@
 <div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
   <%# La création ne passe pas par POST /users : cette route appartient à Devise. %>
-  <%= form_with(model: user, url: (user.new_record? ? admin_create_new_user_do_path : user_path(user)), id: dom_id(user), class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-4' }, data: { controller: 'nested-form toggle-role-info', nested_form_wrapper_selector_value: '.nested-form-wrapper' }) do |form| %>
+  <%= form_with(model: user, url: (user.new_record? ? admin_create_new_user_do_path : user_path(user)), id: dom_id(user), class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-4' }, data: { controller: 'toggle-role-info' }) do |form| %>
     <% if user.errors.any? %>
       <div id="error_explanation" class="bg-red-50 text-red-500 px-4 py-3 font-medium rounded-lg mb-2 border border-red-200">
         <h2 class="font-black mb-2 text-sm md:text-base">
@@ -22,7 +22,8 @@
                         User.rôles.keys,
                         { selected: user.rôle, required: true },
                         class: 'slim-select w-full h-10',
-                        data: { 'toggle-role-info-target': 'role',
+                        data: { controller: 'slim-select',
+                                'toggle-role-info-target': 'role',
                                 action: 'change->toggle-role-info#change'
                         } %>
       </div>
@@ -67,7 +68,7 @@
         <%= form.email_field :email, class: 'input input-bordered input-sm w-full focus:input-primary h-10', required: true %>
       </div>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+    <div class="grid grid-cols-1 <%= current_user.manager? ? 'md:grid-cols-1' : 'md:grid-cols-2' %> gap-4 w-full">
       <% if current_user.manager_or_admin? %>
         <div class="form-control w-full">
           <% label_texte = user.rôle == 'adhérent' ? "Secteur" : "Équipe" %>
@@ -81,7 +82,7 @@
             end
             options_users = (@users_tags.map(&:name) + tags_users_soumis).uniq
           %>
-          <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full h-10', data: { controller: 'slim-select' } } %>
+          <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full h-10', data: { controller: 'slim-select', addable: true } } %>
         </div>
       <% end %>
       <% if current_user.manager_or_admin? %>
@@ -102,10 +103,14 @@
               services_sélectionnés = user.services.ids
               services_sélectionnés = services_assignables.ids if services_sélectionnés.empty? && services_assignables.size == 1
             %>
+            <%# `data-controller` déclaré plutôt que laissé à l'injection d'application.js,
+                qui n'écoute que turbo:load/render : sans widget, la CSS de
+                `select.slim-select[required]` rend le champ invisible. %>
             <%= form.select :service_ids,
                             options_from_collection_for_select(services_assignables, 'id', 'nom', services_sélectionnés),
                             { required: true },
-                            { multiple: true, class: 'slim-select w-full h-10' } %>
+                            { multiple: true, class: 'slim-select w-full h-10',
+                              data: { controller: 'slim-select' } } %>
           </div>
         <% end %>
       <% else %>
@@ -123,12 +128,11 @@
     </div>
     <%= render "shared/file_dropzone", 
                form: form, 
-               attribute: :profile_picture, 
-               accept: "image/*",
+               attribute: :profile_picture,
                placeholder: "Glissez une photo de profil ici ou cliquez pour parcourir",
                label: "Photo de profil" %>
     <div class="flex gap-2 mt-4 w-full">
-      <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>
+      <%= button_tag "Annuler", type: "button", onclick: "history.back();", class: "btn flex-1" %>
       <%= form.submit "Enregistrer", id: "enregistrer_utilisateur", class: "btn btn-primary flex-1" %>
     </div>
   <% end %>

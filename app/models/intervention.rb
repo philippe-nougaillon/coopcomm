@@ -6,7 +6,6 @@ class Intervention < ApplicationRecord
 
   include Workflow
   include WorkflowActiverecord
-  include DashboardRefreshable
   include PieceJointeValidable
   include PieceJointeAuditable
 
@@ -28,16 +27,21 @@ class Intervention < ApplicationRecord
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
 
   has_many :agent_interventions, dependent: :destroy
-  has_many :agents, through: :agent_interventions, class_name: 'User'
+  # dependent: :destroy — sans lui, retirer un agent supprime la jointure en
+  # delete_all, donc sans écrire d'audit (AgentIntervention est audited).
+  has_many :agents, through: :agent_interventions, class_name: 'User', dependent: :destroy
   has_many :tool_interventions, dependent: :destroy
-  has_many :tools, through: :tool_interventions
+  has_many :tools, through: :tool_interventions, dependent: :destroy
   has_many :mouvements
 
   has_one :organisation, through: :service
 
   has_many_attached :photos
 
-  valide_piece_jointe :photos, types: PieceJointeValidable::IMAGES
+  valide_image :photos
+
+  MESSAGE_AGENT_UNIQUE = "Une intervention de pointage n'accepte qu'un seul agent"
+
 
   before_validation -> { combine_datetime(:début_prévue) }
   before_validation -> { combine_datetime(:fin_prévue) }
@@ -46,6 +50,8 @@ class Intervention < ApplicationRecord
   before_validation :check_absence
   before_validation :set_temporary_description, on: :create
   before_validation :check_workflow_pointage_mère
+  before_validation -> { self.temps_de_pause = 0 if temps_de_pause.nil? && terminé? }
+  before_validation :calc_temps_total
 
   validates :description, :adherent_id, :service_id, presence: true
 
@@ -54,13 +60,27 @@ class Intervention < ApplicationRecord
   validate :agents_must_be_available
   validate :dates_cannot_be_in_the_future
   validate :dates_obligatoires_si_terminé
-
-  before_save -> { self.temps_de_pause = 0 if temps_de_pause.nil? }
-  before_save :calc_temps_total
+  validate :agent_obligatoire_si_terminé
+  validate :agent_unique_si_pointage
+  validate :service_partagé_par_adherent_et_agents
+  validate :pas_de_temps_total_negatif
 
   after_commit :update_heures_consommees_convention, if: -> { self.temps_total.present? }
 
   scope :ordered, -> { order(updated_at: :desc) }
+
+  triable_par 'interventions.updated_at' => :brut,
+              'interventions.workflow_state' => :texte,
+              'interventions.description' => :texte,
+              'interventions.commentaires' => :texte,
+              'interventions.adherent' => ColonnesTri.utilisateur('interventions.adherent_id'),
+              'interventions.agent' => "(SELECT MIN(#{TriTextuel.expression('users.nom')}) FROM users " \
+                                       'INNER JOIN agent_interventions ON agent_interventions.agent_id = users.id ' \
+                                       'WHERE agent_interventions.intervention_id = interventions.id)',
+              'interventions.début_prévue' => :brut,
+              'interventions.début' => :brut,
+              'interventions.fin' => :brut,
+              'interventions.temps_total' => :brut
 
   # montre tout action ou intervention qui ont ce status
   scope :courantes, -> { where(workflow_state: ['nouveau', 'pointage activé', 'terminé']) }
@@ -106,10 +126,6 @@ class Intervention < ApplicationRecord
   end
 
   after_create :replace_description_with_id
-
-  # Rafraîchit (de façon coalescée) les vues matérialisées du dashboard.
-  after_commit :refresh_dashboard_views, on: %i[create destroy]
-  after_commit :refresh_dashboard_views, on: :update, if: :dashboard_relevant_change?
 
   # after_create_commit :broadcast_to_authorized_viewers
   # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
@@ -373,15 +389,15 @@ class Intervention < ApplicationRecord
   end
 
   def calc_temps_total
-    if !fin || !début
-      temps_total = 0
-    elsif fin > début
-      temps_total = (fin - début).seconds.in_hours - temps_de_pause.to_f
-      temps_total *= agents.count
-    else
-      temps_total = 0
-    end
-    temps_total
+    self.temps_total = if fin && début && fin > début
+                         # Les jointures, et non `agents` : ce dernier exclut les agents
+                         # désactivés, dont le temps resterait pourtant à répartir.
+                         # size et non count : sur un enregistrement neuf, count interroge la
+                         # base avec un owner_id nil et renvoie 0.
+                         ((fin - début).seconds.in_hours - temps_de_pause.to_f) * agent_interventions.size
+                       else
+                         0
+                       end
   end
 
   def en_cours?
@@ -465,7 +481,13 @@ class Intervention < ApplicationRecord
   end
 
   def pointage_de?(user)
-    template_slug.present? && intervention_mère&.agents&.include?(user)
+    template_slug.present? && agents.include?(user)
+  end
+
+  # `pointer` ne retrouve que les pointages du jour : sur une fille restée ouverte
+  # un jour précédent, il en créerait une nouvelle au lieu de la fermer.
+  def pointage_du_jour_de?(user)
+    pointage_de?(user) && début&.to_date == Time.zone.today
   end
 
   def update_heures_consommees_convention
@@ -498,7 +520,7 @@ class Intervention < ApplicationRecord
       temps_total_audit * (-1)
     # Dans le cas d'un update, on ajoute la différence entre l'ancienne (first) et la nouvelle valeur (last)
     elsif last_audit.action == "update" && temps_total_audit.is_a?(Array)
-      (temps_total_audit.last - temps_total_audit.first)
+      (temps_total_audit.last.to_f - temps_total_audit.first.to_f)
     else
       0
     end
@@ -587,6 +609,43 @@ class Intervention < ApplicationRecord
 
     errors.add(:début, "est obligatoire pour terminer l'intervention") if début.blank?
     errors.add(:fin, "est obligatoire pour terminer l'intervention") if fin.blank?
+  end
+
+  def agent_obligatoire_si_terminé
+    return unless terminé?
+    # size et non count : sur un enregistrement neuf, count interroge la base avec un owner_id nil.
+    return if agents.size.positive?
+
+    errors.add(:base, "Au moins un agent est obligatoire pour terminer l'intervention")
+  end
+
+  def agent_unique_si_pointage
+    return if template_slug.blank?
+    # size et non count : sur un enregistrement neuf, count interroge la base avec un owner_id nil.
+    return if agents.size == 1
+
+    errors.add(:base, MESSAGE_AGENT_UNIQUE)
+  end
+
+  def service_partagé_par_adherent_et_agents
+    return if service.blank?
+
+    if adherent.present? && !adherent.service_ids.include?(service_id)
+      errors.add(:base,
+                 "L'adhérent #{adherent.nom_prénom} n'appartient pas au service #{service.nom}")
+    end
+
+    agents.reject(&:administrateur?).each do |agent|
+      next if agent.service_ids.include?(service_id)
+
+      errors.add(:base, "L'agent #{agent.nom_prénom} n'appartient pas au service #{service.nom}")
+    end
+  end
+
+  def pas_de_temps_total_negatif
+    if self.temps_total < 0
+      errors.add(:base, "Le temps total ne peut pas être négatif.")
+    end
   end
 
   def set_temporary_description

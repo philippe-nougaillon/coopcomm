@@ -50,16 +50,18 @@ class DashboardTempsNegatifTest < ActionDispatch::IntegrationTest
   end
 
   test "manager : ÉPINGLAGE B13 — le filtre agent opère sur le NET de l'agent, pas par intervention" do
-    # bond porte déjà +9 h (tonte_locaux) ; on lui impute -5 h.
-    cree_intervention_avec_temps(-5, adherent: users(:weil), service: services(:technique),
+    # bond porte déjà +4,5 h (sa moitié de tonte_locaux, partagée avec un agent
+    # désactivé) ; on lui impute -2 h.
+    cree_intervention_avec_temps(-2, adherent: users(:weil), service: services(:technique),
                                      debut: mois(3), agent: users(:bond))
     refresh_dashboard_views!
     sign_in users(:hidalgo)
 
     get dashboard_url
 
-    # Comportement actuel : approximation au grain agent, 9 - 5 = 4.
-    assert_in_delta 4.0, assigns(:temps_total_par_agent)['Bond James']
+    # Comportement actuel : approximation au grain agent, 4,5 - 2 = 2,5. Au grain
+    # intervention, le -2 serait écarté et bond garderait 4,5.
+    assert_in_delta 2.5, assigns(:temps_total_par_agent)['Bond James']
   end
 
   test "manager : ÉPINGLAGE B13 — un négatif est absorbé par une cellule positive du même mois" do
@@ -93,8 +95,8 @@ class DashboardTempsNegatifTest < ActionDispatch::IntegrationTest
   # Dashboard adhérent.
 
   test 'adhérent : le temps consommé exclut une intervention à temps négatif' do
-    cree_donnees_adherent_weil
-    sign_in users(:weil)
+    cree_donnees_adherent_informatique
+    sign_in users(:adhérent_sans_intervention)
 
     get dashboard_url
 
@@ -104,8 +106,8 @@ class DashboardTempsNegatifTest < ActionDispatch::IntegrationTest
   end
 
   test 'adhérent : kpi_temps_total exclut une intervention à temps négatif' do
-    cree_donnees_adherent_weil
-    sign_in users(:weil)
+    cree_donnees_adherent_informatique
+    sign_in users(:adhérent_sans_intervention)
 
     get dashboard_url
 
@@ -113,8 +115,8 @@ class DashboardTempsNegatifTest < ActionDispatch::IntegrationTest
   end
 
   test 'adhérent : temps_total_par_service exclut une intervention à temps négatif' do
-    cree_donnees_adherent_weil
-    sign_in users(:weil)
+    cree_donnees_adherent_informatique
+    sign_in users(:adhérent_sans_intervention)
 
     get dashboard_url
 
@@ -122,8 +124,8 @@ class DashboardTempsNegatifTest < ActionDispatch::IntegrationTest
   end
 
   test 'adhérent : le mois qui ne porte qu-un temps négatif reste à 0 dans temps_total_par_mois' do
-    cree_donnees_adherent_weil
-    sign_in users(:weil)
+    cree_donnees_adherent_informatique
+    sign_in users(:adhérent_sans_intervention)
 
     get dashboard_url
 
@@ -154,12 +156,12 @@ class DashboardTempsNegatifTest < ActionDispatch::IntegrationTest
     n.months.ago.beginning_of_month.change(hour: 9) + 14.days
   end
 
-  # +6 h il y a 2 mois, -4 h le mois dernier, pour weil sur SON service
+  # +6 h il y a 2 mois, -4 h le mois dernier, pour un adhérent d'informatique sur SON service
   # (informatique) — le seul visible depuis son dashboard adhérent.
-  def cree_donnees_adherent_weil
-    cree_intervention_avec_temps(6, adherent: users(:weil),
+  def cree_donnees_adherent_informatique
+    cree_intervention_avec_temps(6, adherent: users(:adhérent_sans_intervention),
                                     service: services(:informatique), debut: mois(2))
-    cree_intervention_avec_temps(-4, adherent: users(:weil),
+    cree_intervention_avec_temps(-4, adherent: users(:adhérent_sans_intervention),
                                      service: services(:informatique), debut: mois(1))
     refresh_dashboard_views!
   end

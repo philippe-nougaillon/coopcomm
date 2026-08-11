@@ -1,33 +1,22 @@
 # frozen_string_literal: true
 
 require 'test_helper'
-require 'spreadsheet'
+require_relative '../support/fabrique_xls'
 
-# Import XLS des agents — `users#import` (formulaire) et `users#import_do` (traitement).
+# Import XLS des agents — parcours HTTP (`users#import`, `users#import_do`) et
+# bilan affiché. La logique ligne à ligne est couverte par
+# `test/services/import_utilisateurs_xls_test.rb`.
 class UsersImportTest < ActionDispatch::IntegrationTest
-  # En-têtes du modèle officiel téléchargeable (= User.xls_headers, épinglé plus bas).
-  ENTETES = %w[Nom Prénom Email Téléphone Service Mémo].freeze
+  include FabriqueXls
 
   setup do
-    Spreadsheet.client_encoding = 'UTF-8'
-    @tempfiles = []
     @admin = users(:administrateur_paris)
     sign_in @admin
   end
 
-  teardown do
-    @tempfiles.each(&:close!)
-  end
+  teardown { fermer_fichiers }
 
-  # --- A. Accès et autorisation -------------------------------------------
-
-  test 'un manager accède au formulaire d’import' do
-    sign_in users(:hidalgo)
-
-    get import_users_url
-
-    assert_response :success
-  end
+  # ==================== TESTS CRITIQUES ====================
 
   test 'un agent ne peut pas accéder au formulaire d’import' do
     sign_in users(:bond)
@@ -58,10 +47,43 @@ class UsersImportTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_user_session_path
   end
 
+  test 'un manager n’importe que dans le périmètre de son organisation' do
+    sign_in users(:hidalgo)
+    Service.create!(nom: 'Voirie', organisation: organisations(:mairie_marseille))
+
+    assert_no_difference 'User.count' do
+      importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test',
+                               service: 'Voirie')], save: 'true')
+    end
+
+    assert_bilan importés: 0, erreurs: 1
+    assert_match(/introuvable dans votre organisation/, tableau_erreurs)
+  end
+
+  test 'un compte privilégié n’est jamais rétrogradé par un import' do
+    hidalgo = users(:hidalgo)
+
+    importer([ENTETES, ligne(nom: 'Hidalgo', prénom: 'Anne', email: hidalgo.email)], save: 'true')
+
+    assert hidalgo.reload.manager?
+    assert_bilan importés: 0, erreurs: 1
+    assert_match(/modifiez-le depuis sa fiche/, tableau_erreurs)
+  end
+
+  # --- A. Accès -----------------------------------------------------------
+
+  test 'un manager accède au formulaire d’import' do
+    sign_in users(:hidalgo)
+
+    get import_users_url
+
+    assert_response :success
+  end
+
   # --- B. Garde upload et structure du fichier ----------------------------
 
-  # Sentinelle : les tests ci-dessous fabriquent leurs fichiers dans cet ordre de
-  # colonnes ; si le modèle proposé aux utilisateurs change, ils doivent suivre.
+  # Sentinelle : les tests fabriquent leurs fichiers dans cet ordre de colonnes ;
+  # si le modèle proposé aux utilisateurs change, ils doivent suivre.
   test 'les en-têtes attendues du modèle XLS n’ont pas changé' do
     assert_equal ENTETES, User.xls_headers
   end
@@ -73,37 +95,26 @@ class UsersImportTest < ActionDispatch::IntegrationTest
     assert_equal 'Manque le fichier source pour pouvoir lancer l\'importation !', flash[:alert]
   end
 
-  test 'une colonne obligatoire manquante interrompt l’import avant toute écriture' do
-    entetes_sans_service = %w[Nom Prénom Email]
+  test 'un fichier qui n’est pas un XLS est refusé proprement' do
+    fichier = Rack::Test::UploadedFile.new(Rails.root.join('test/fixtures/files/exemple.png'), 'image/png')
 
     assert_no_difference 'User.count' do
-      importer([entetes_sans_service, ['Durand', 'Marie', 'marie.durand@example.test']], save: 'true')
+      post import_do_users_url, params: { upload: fichier, save: 'true' }
+    end
+
+    assert_response :success
+    assert_match(/format attendu est Excel 97-2003/, flash[:alert])
+    assert_no_selector_bilan
+  end
+
+  test 'une colonne obligatoire manquante interrompt l’import avant toute écriture' do
+    assert_no_difference 'User.count' do
+      importer([%w[Nom Prénom Email], ['Durand', 'Marie', 'marie.durand@example.test']], save: 'true')
     end
 
     assert_response :success
     assert_match(/Structure du fichier invalide/, flash[:alert])
-  end
-
-  test 'l’ordre des colonnes est libre grâce au mapping dynamique' do
-    entetes_inversées = %w[Mémo Service Téléphone Email Prénom Nom]
-    ligne_inversée    = ['Note', 'Informatique', '0102030405', 'marie.durand@example.test', 'Marie', 'Durand']
-
-    assert_difference 'User.count', 1 do
-      importer([entetes_inversées, ligne_inversée], save: 'true')
-    end
-
-    créé = User.find_by(email: 'marie.durand@example.test')
-    assert_equal 'DURAND', créé.nom
-    assert_includes créé.services, services(:informatique)
-  end
-
-  test 'les en-têtes sont reconnues sans accents ni casse' do
-    entetes_brutes = %w[NOM PRENOM EMAIL TELEPHONE SERVICE MEMO]
-
-    assert_difference 'User.count', 1 do
-      importer([entetes_brutes, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test')],
-               save: 'true')
-    end
+    assert_no_selector_bilan
   end
 
   test 'un fichier réduit aux en-têtes ne fait rien et annonce un succès' do
@@ -111,66 +122,44 @@ class UsersImportTest < ActionDispatch::IntegrationTest
       importer([ENTETES], save: 'true')
     end
 
-    assert_response :success
     assert_equal "L'importation a bien été exécutée.", flash[:notice]
-    assert_match(/Lignes importées: 0 \| Lignes ignorées: 0/, response.body)
+    assert_bilan importés: 0, erreurs: 0
   end
 
-  test 'un fichier qui n’est pas un XLS est refusé proprement' do
-    skip 'BUG (comportement à définir) : aucune protection serveur, Spreadsheet.open lève ' \
-         'et l’utilisateur reçoit une 500 — cf. users_controller.rb:216'
-
-    fichier = Rack::Test::UploadedFile.new(Rails.root.join('test/fixtures/files/exemple.png'), 'image/png')
-
-    post import_do_users_url, params: { upload: fichier, save: 'false' }
-
-    assert_response :success
-    assert flash[:alert].present?, 'un fichier illisible doit produire une alerte, pas une erreur serveur'
-  end
-
-  # --- C. Création d'utilisateurs (chemin nominal) ------------------------
+  # --- C. Chemin nominal ---------------------------------------------------
 
   test 'une ligne valide crée un agent rattaché à son service' do
     assert_difference 'User.count', 1 do
       importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test',
-                               service: 'Informatique')],
-               save: 'true')
+                               service: 'Informatique')], save: 'true')
     end
 
     créé = User.find_by(email: 'marie.durand@example.test')
-    assert créé.agent?, 'un utilisateur importé est toujours créé avec le rôle agent'
+    assert créé.agent?
     assert_includes créé.services, services(:informatique)
+    assert_equal "L'importation a bien été exécutée.", flash[:notice]
+    assert_bilan importés: 1, erreurs: 0
   end
 
-  test 'le nom, le prénom et l’email sont normalisés à l’import' do
-    importer([ENTETES, ligne(nom: '  durand ', prénom: 'MARIE', email: '  Marie.Durand@EXAMPLE.test  ')],
-             save: 'true')
-
-    créé = User.find_by(email: 'marie.durand@example.test')
-    assert_not_nil créé, 'l’email doit être normalisé en minuscules et sans espaces'
-    assert_equal 'DURAND', créé.nom
-    assert_equal 'Marie', créé.prénom
-  end
-
-  test 'le téléphone et le mémo des colonnes optionnelles sont importés' do
+  test 'le bilan détaille chaque ligne traitée' do
     importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test',
-                             téléphone: '0102030405', mémo: 'Import du 27/07')],
-             save: 'true')
+                             téléphone: '0102030405')], save: 'true')
 
-    créé = User.find_by(email: 'marie.durand@example.test')
-    assert_equal '0102030405', créé.téléphone
-    assert_equal 'Import du 27/07', créé.memo
+    succès = tableau_succès
+    assert_match(/Nouveau/, succès)
+    assert_match(/DURAND Marie/, succès)
+    assert_match(/marie\.durand@example\.test/, succès)
+    assert_match(/Informatique/, succès)
+    assert_match(/Téléphone : 0102030405/, succès)
   end
 
-  test 'un utilisateur créé reçoit une invitation de la part de l’importateur' do
-    assert_emails 1 do
-      importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test')],
-               save: 'true')
-    end
+  test 'le bilan d’un remplacement de service nomme l’ancien et le nouveau' do
+    importer([ENTETES, ligne(nom: 'Martin', prénom: 'Michel',
+                             email: users(:martin_technique_paris).email, service: 'Informatique')],
+             save: 'true')
 
-    créé = User.find_by(email: 'marie.durand@example.test')
-    assert_equal ['marie.durand@example.test'], ActionMailer::Base.deliveries.last.to
-    assert_equal @admin.id, créé.invited_by_id
+    assert_match(/Mise à jour/, tableau_succès)
+    assert_match(/Service : Technique → Informatique/, tableau_succès)
   end
 
   test 'le mot de passe généré pour un utilisateur importé satisfait la politique de complexité' do
@@ -194,137 +183,10 @@ class UsersImportTest < ActionDispatch::IntegrationTest
       importer([ENTETES] + lignes, save: 'true')
     end
 
-    assert_match(/Lignes importées: 2 \| Lignes ignorées: 0/, response.body)
+    assert_bilan importés: 2, erreurs: 0
   end
 
-  # --- D. Mise à jour d'un utilisateur existant ---------------------------
-
-  test 'un email déjà connu met à jour l’utilisateur sans créer de doublon' do
-    martin = users(:martin_technique_paris)
-
-    assert_no_difference 'User.count' do
-      importer([ENTETES, ligne(nom: 'Martin-Durand', prénom: 'Michel', email: martin.email.upcase,
-                               service: 'Technique', mémo: 'Mis à jour par import')],
-               save: 'true')
-    end
-
-    martin.reload
-    assert_equal 'MARTIN-DURAND', martin.nom
-    assert_equal 'Mis à jour par import', martin.memo
-  end
-
-  test 'une mise à jour ne déclenche aucune nouvelle invitation' do
-    martin = users(:martin_technique_paris)
-
-    assert_no_emails do
-      importer([ENTETES, ligne(nom: 'Martin', prénom: 'Michel', email: martin.email, service: 'Technique')],
-               save: 'true')
-    end
-  end
-
-  test 'un service déjà rattaché n’est pas rattaché une seconde fois' do
-    martin = users(:martin_technique_paris)
-
-    assert_no_difference 'UserService.count' do
-      importer([ENTETES, ligne(nom: 'Martin', prénom: 'Michel', email: martin.email, service: 'Technique')],
-               save: 'true')
-    end
-  end
-
-  test 'un second service met la ligne en erreur : un agent n’en a qu’un seul' do
-    martin = users(:martin_technique_paris)
-
-    assert_no_difference 'UserService.count' do
-      importer([ENTETES, ligne(nom: 'Martin', prénom: 'Michel', email: martin.email, service: 'Informatique')],
-               save: 'true')
-    end
-
-    martin.reload
-    assert_not_includes martin.services, services(:informatique)
-    assert_includes martin.services, services(:technique)
-    assert_match(/un seul service/, response.body)
-  end
-
-  test 'un fichier sans colonne Téléphone conserve le téléphone existant' do
-    skip 'BUG : les colonnes optionnelles absentes écrasent les valeurs en base ' \
-         '(users_controller.rb:248-249) — perte de données silencieuse'
-
-    martin = users(:martin_technique_paris)
-    martin.update_columns(téléphone: '0102030405')
-    entetes_sans_telephone = %w[Nom Prénom Email Service]
-
-    importer([entetes_sans_telephone, ['Martin', 'Michel', martin.email, 'Technique']], save: 'true')
-
-    assert_equal '0102030405', martin.reload.téléphone
-  end
-
-  test 'un email appartenant à un utilisateur désactivé est signalé en erreur' do
-    # ÉPINGLAGE : `User.where(...)` subit le `default_scope :kept`, l'utilisateur
-    # soft-deleté n'est donc pas retrouvé → tentative de création → unicité en défaut.
-    désactivé = users(:agent_discarded_paris)
-
-    assert_no_difference 'User.count' do
-      importer([ENTETES, ligne(nom: 'Spectre', prénom: 'Ancien', email: désactivé.email, service: 'Technique')],
-               save: 'true')
-    end
-
-    assert_match(/ERREURS: email .*est déjà utilisé/, response.body,
-                 'l’erreur remontée est une collision d’unicité, sans mention de la désactivation')
-    assert_match(/Lignes importées: 0 \| Lignes ignorées: 1/, response.body)
-  end
-
-  # --- E. Mode simulation vs enregistrement -------------------------------
-
-  test 'sans paramètre save, l’import ne fait que simuler' do
-    assert_no_difference 'User.count' do
-      importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test')])
-    end
-
-    assert_match(/Les modifications n'ont pas été enregistrées/, response.body)
-  end
-
-  test 'avec save à false, aucun utilisateur n’est créé ni invité' do
-    assert_no_emails do
-      assert_no_difference 'User.count' do
-        importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test')],
-                 save: 'false')
-      end
-    end
-  end
-
-  test 'la simulation signale les erreurs sans rien enregistrer' do
-    assert_no_difference 'User.count' do
-      importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test',
-                               service: 'Zorglub')],
-               save: 'false')
-    end
-
-    assert_match(/Zorglub/, response.body)
-    assert_equal "L'importation a échouée.", flash[:alert]
-  end
-
-  test 'la simulation ne modifie pas un utilisateur existant' do
-    martin = users(:martin_technique_paris)
-    nom_initial = martin.nom
-
-    importer([ENTETES, ligne(nom: 'Martin-Durand', prénom: 'Michel', email: martin.email, service: 'Technique')],
-             save: 'false')
-
-    assert_equal nom_initial, martin.reload.nom
-  end
-
-  # --- F. Lignes en erreur et cas limites de données ----------------------
-
-  test 'un service introuvable met la ligne en erreur en citant la valeur lue' do
-    assert_no_difference 'User.count' do
-      importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test',
-                               service: 'Zorglub')],
-               save: 'true')
-    end
-
-    assert_equal "L'importation a échouée.", flash[:alert]
-    assert_match(/Zorglub/, response.body)
-  end
+  # --- D. Lignes en erreur et bilan ---------------------------------------
 
   test 'une ligne en erreur n’empêche pas l’import des lignes valides' do
     lignes = [
@@ -337,122 +199,80 @@ class UsersImportTest < ActionDispatch::IntegrationTest
     end
 
     assert_equal "L'importation a partiellement échouée.", flash[:alert]
-    assert_match(/Lignes importées: 1 \| Lignes ignorées: 1/, response.body)
+    assert_bilan importés: 1, erreurs: 1
+    assert_match(/Zorglub/, tableau_erreurs)
   end
 
-  test 'un email invalide met la ligne en erreur' do
-    assert_no_difference 'User.count' do
-      importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'pas-un-email')], save: 'true')
-    end
-
-    assert_match(/Lignes importées: 0 \| Lignes ignorées: 1/, response.body)
-  end
-
-  test 'une ligne sans nom est ignorée sans être comptée' do
-    # ÉPINGLAGE : `next` silencieux (users_controller.rb:237) — la ligne n'apparaît
-    # ni dans les importées ni dans les ignorées, et le bilan annonce un succès.
-    assert_no_difference 'User.count' do
-      importer([ENTETES, ligne(nom: '', prénom: 'Marie', email: 'marie.durand@example.test')], save: 'true')
-    end
-
-    assert_match(/Lignes importées: 0 \| Lignes ignorées: 0/, response.body)
-    assert_equal "L'importation a bien été exécutée.", flash[:notice]
-  end
-
-  test 'une ligne sans email est ignorée sans être comptée' do
-    # ÉPINGLAGE : idem, `next` silencieux (users_controller.rb:240).
-    assert_no_difference 'User.count' do
-      importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: '')], save: 'true')
-    end
-
-    assert_match(/Lignes importées: 0 \| Lignes ignorées: 0/, response.body)
-  end
-
-  test 'les noms accentués et non ASCII sont importés et normalisés' do
-    importer([ENTETES, ligne(nom: 'Ångström', prénom: 'józef', email: 'jozef.angstrom@example.test')],
-             save: 'true')
-
-    créé = User.find_by(email: 'jozef.angstrom@example.test')
-    assert_equal 'ÅNGSTRÖM', créé.nom
-    assert_equal 'Józef', créé.prénom
-  end
-
-  test 'un même email répété dans le fichier ne crée qu’un utilisateur' do
-    lignes = [
-      ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test'),
-      ligne(nom: 'Durand-Dupuis', prénom: 'Marie', email: 'marie.durand@example.test')
-    ]
-
+  test 'une ligne sans nom est comptée en erreur et son numéro est affiché' do
     assert_difference 'User.count', 1 do
-      importer([ENTETES] + lignes, save: 'true')
+      importer([ENTETES,
+                ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test'),
+                ligne(nom: '', prénom: 'Paul', email: 'paul.dupuis@example.test')],
+               save: 'true')
     end
 
-    # ÉPINGLAGE : les deux lignes sont comptées comme importées, la seconde étant
-    # traitée comme une mise à jour de la première.
-    assert_match(/Lignes importées: 2 \| Lignes ignorées: 0/, response.body)
-    assert_equal 'DURAND-DUPUIS', User.find_by(email: 'marie.durand@example.test').nom
+    assert_bilan importés: 1, erreurs: 1
+    assert_match(/Nom manquant/, tableau_erreurs)
+    assert_equal '3', premiere_erreur.at_css('td').text.strip
   end
 
-  # --- G. Cloisonnement multi-organisations (défauts épinglés) ------------
+  test 'une ligne sans email est comptée en erreur' do
+    importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: '')], save: 'true')
 
-  test 'un service d’une autre organisation est accepté par l’import' do
-    # ÉPINGLAGE B20 : `Service.find_by(nom:)` (users_controller.rb:259) n'est pas borné à
-    # l'organisation courante, alors que l'unicité du nom l'est (service.rb:21).
-    service_marseille = Service.create!(nom: 'Voirie', organisation: organisations(:mairie_marseille))
-
-    importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test',
-                             service: 'Voirie')],
-             save: 'true')
-
-    créé = User.find_by(email: 'marie.durand@example.test')
-    assert_includes créé.services, service_marseille
-    assert_equal organisations(:mairie_marseille), créé.organisation
+    assert_bilan importés: 0, erreurs: 1
+    assert_match(/Email manquant/, tableau_erreurs)
+    assert_equal "L'importation a échouée.", flash[:alert]
   end
 
-  test 'un manager d’une autre organisation n’est plus rétrogradé : le second service invalide la ligne' do
-    manager_marseille = users(:manager_marseille)
+  test 'un compte désactivé est nommé comme tel dans le bilan' do
+    désactivé = users(:agent_discarded_paris)
 
-    importer([ENTETES, ligne(nom: 'Payan', prénom: 'Benoit', email: manager_marseille.email,
-                             service: 'Informatique')],
-             save: 'true')
+    assert_no_difference 'User.unscoped.count' do
+      importer([ENTETES, ligne(nom: 'Spectre', prénom: 'Ancien', email: désactivé.email)], save: 'true')
+    end
 
-    manager_marseille.reload
-    assert manager_marseille.manager?
-    assert_not_includes manager_marseille.services, services(:informatique)
+    assert_match(/ce compte est désactivé/, tableau_erreurs)
+    assert désactivé.reload.discarded?
   end
 
-  test 'un manager multi-services de l’organisation n’est plus rétrogradé' do
-    hidalgo = users(:hidalgo)
+  # --- E. Mode simulation --------------------------------------------------
 
-    importer([ENTETES, ligne(nom: 'Hidalgo', prénom: 'Anne', email: hidalgo.email, service: 'Informatique')],
-             save: 'true')
+  test 'sans paramètre save, l’import ne fait que simuler' do
+    assert_no_difference 'User.count' do
+      importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test')])
+    end
 
-    assert hidalgo.reload.manager?
+    assert_match(/les modifications n'ont pas été enregistrées/i, response.body)
+    assert_bilan importés: 1, erreurs: 0
   end
 
-  test 'ÉPINGLAGE B21 : un manager mono-service est encore rétrogradé en agent' do
-    # La validation « un agent n'a qu'un seul service » bloque désormais la plupart des
-    # rétrogradations, mais pas celle d'un manager dont l'unique service est justement
-    # celui de la ligne importée : le compte reste valide et `rôle = 'agent'` passe.
-    # À inverser à la correction de B21 (borner la recherche par email + authorize).
-    manager = User.create!(nom: 'Mono', prénom: 'Service', email: 'mono.service@example.test',
-                           rôle: 'manager', password: 'qtDug$d843sqACz?V',
-                           service_ids: [services(:informatique).id])
-
-    importer([ENTETES, ligne(nom: 'Mono', prénom: 'Service', email: manager.email, service: 'Informatique')],
-             save: 'true')
-
-    assert manager.reload.agent?, 'B21 corrigé ? inverser cet épinglage'
+  test 'avec save à false, aucun utilisateur n’est créé ni invité' do
+    assert_no_emails do
+      assert_no_difference 'User.count' do
+        importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test')],
+                 save: 'false')
+      end
+    end
   end
 
-  # --- H. Effets de bord --------------------------------------------------
-
-  test 'la création par import est tracée dans l’audit trail' do
+  test 'le mode appliqué n’affiche pas l’avertissement de simulation' do
     importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test')],
              save: 'true')
 
+    assert_no_match(/n'ont pas été enregistrées/i, response.body)
+  end
+
+  # --- F. Effets de bord ---------------------------------------------------
+
+  test 'un utilisateur créé reçoit une invitation de la part de l’importateur' do
+    assert_emails 1 do
+      importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test')],
+               save: 'true')
+    end
+
     créé = User.find_by(email: 'marie.durand@example.test')
-    assert_equal 1, créé.audits.where(action: 'create').count
+    assert_equal ['marie.durand@example.test'], ActionMailer::Base.deliveries.last.to
+    assert_equal @admin.id, créé.invited_by_id
   end
 
   test 'l’invitation envoyée est tracée dans les MailLog' do
@@ -471,30 +291,39 @@ class UsersImportTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'aucun mot de passe en clair n’apparaît dans la page de bilan' do
+    importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test')],
+             save: 'true')
+
+    assert_no_match(/mot de passe/i, response.body)
+    assert_no_match(/encrypted_password/, response.body)
+  end
+
   private
 
-  # Construit une ligne du fichier dans l'ordre d'ENTETES.
-  def ligne(nom:, prénom:, email:, service: 'Informatique', téléphone: nil, mémo: nil)
-    [nom, prénom, email, téléphone, service, mémo]
-  end
-
-  # Fabrique un vrai fichier XLS 97-2003 (format attendu par la gem Spreadsheet).
-  def fichier_xls(lignes)
-    book = Spreadsheet::Workbook.new
-    sheet = book.create_worksheet(name: 'Import')
-    lignes.each_with_index { |ligne, index| sheet.row(index).replace(ligne) }
-
-    tempfile = Tempfile.new(['import', '.xls'])
-    book.write(tempfile.path)
-    @tempfiles << tempfile
-
-    Rack::Test::UploadedFile.new(tempfile.path, 'application/vnd.ms-excel')
-  end
-
   def importer(lignes, save: nil)
-    params = { upload: fichier_xls(lignes) }
+    params = { upload: televersement(lignes) }
     params[:save] = save unless save.nil?
 
     post import_do_users_url, params: params
   end
+
+  def page = Nokogiri::HTML(response.body)
+
+  def assert_bilan(importés:, erreurs:)
+    bilan = page.at_css('[data-testid=bilan_import]')
+    assert_not_nil bilan, 'le bilan de l’import doit être affiché'
+    assert_equal "Lignes importées : #{importés} | Lignes en erreur : #{erreurs}", bilan.text.squish
+  end
+
+  def assert_no_selector_bilan
+    assert_nil page.at_css('[data-testid=bilan_import]'),
+               'un import interrompu n’affiche aucun compteur de lignes'
+  end
+
+  def tableau_succès = page.at_css('[data-testid=tableau_succes]')&.text.to_s.squish
+
+  def tableau_erreurs = page.at_css('[data-testid=tableau_erreurs]')&.text.to_s.squish
+
+  def premiere_erreur = page.at_css('[data-testid=tableau_erreurs] tbody tr')
 end

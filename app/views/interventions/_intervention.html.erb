@@ -7,12 +7,15 @@
           <span class="badge font-bold text-xs uppercase shrink-0 <%= intervention.style %>">
             <%= intervention.workflow_state.humanize %>
           </span>
-          <%= link_to intervention.description.humanize, intervention, class: 'z-10 hover:underline break-words' %>
+         <%= link_to intervention, class: "flex items-center gap-2 z-10 hover:underline break-words font-semibold" do %>
+          <span><%= intervention.description.humanize %></span>
+
           <% if intervention.repeter %>
-            <%= embedded_svg "icons/event_repeat.svg", title: "Modèle pour le pointage", class: "w-5 h-5 text-slate-500 shrink-0" %>
+            <%= embedded_svg "icons/event_repeat.svg", title: "Modèle pour le pointage", class: "w-5 h-5 fill-current shrink-0" %>
           <% elsif intervention.template_slug %>
-            <%= embedded_svg "icons/qr_code_2.svg", title: "Pointage", class: "w-5 h-5 text-slate-500 shrink-0" %>
+            <%= embedded_svg "icons/qr_code_2.svg", title: "Pointage", class: "w-5 h-5 fill-current shrink-0" %>
           <% end %>
+        <% end %>
         </div>
         <div class="text-xs text-slate-400">
           <i class="<%= 'text-error animate-pulse font-black' if defined?(from_turbo_stream) %>">
@@ -28,62 +31,11 @@
         <% end %>
       </div>
       <% if !(intervention.validé? || intervention.refusé?) %>
-        <div class="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-2 z-10 shrink-0 w-full md:w-auto">
-          <% if !defined?(from_turbo_stream) && policy(intervention).terminer? && intervention.can_terminer? %>
-            <% lien, methode, params_terminer = terminer_destination(intervention) %>
-            <% msg = message_dates_manquantes(intervention) %>
-            <% if msg.present? %>
-              <button type="button"
-                    class="btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white! w-full sm:w-24 justify-center"
-                    onclick="<%= js_ouvrir_modal_terminer(intervention) %>"
-                    title="Terminer l'intervention"
-                    <%= 'disabled' unless intervention.can_terminer? %>>
-              Terminer
-            </button>
-            <dialog id="<%= modal_id_terminer(intervention) %>" class="modal">
-                <div class="modal-box">
-                  <form method="dialog">
-                    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-                  </form>
-                  <h3 class="text-lg font-bold text-amber-600 flex items-center gap-2">
-                    <%= embedded_svg "icons/warning.svg", title: "Dates manquantes" %>
-                    Dates manquantes
-                  </h3>
-                  <p class="py-4 text-sm text-slate-600 text-left">
-                    <%= msg %>
-                    Vous allez être redirigé(e) vers le formulaire de modification pour renseigner ces dates.
-                  </p>
-                  <div class="modal-action">
-                    <form method="dialog">
-                      <button class="btn btn-ghost">Annuler</button>
-                    </form>
-                    <%= link_to "Continuer vers le formulaire", lien, params: params_terminer, class: "btn btn-info text-white" %>
-                  </div>
-                </div>
-                <form method="dialog" class="modal-backdrop">
-                  <button>Fermer</button>
-                </form>
-              </dialog>
-            <% else %>
-              <%= button_to 'Terminer', lien, method: methode, params: params_terminer,
-                class: 'btn btn-primary btn-outline btn-xs sm:btn-sm hover:text-white! w-full sm:w-24 justify-center',
-                title: "Terminer l'intervention",
-                form: { data: { turbo: false }, class: 'contents sm:block', onsubmit: (msg.present? ? "return confirm(#{msg.to_json});" : nil) },
-                disabled: !intervention.can_terminer? || current_user.adhérent? %>
-            <% end %>
-          <% end %>
-          <% if !defined?(from_turbo_stream) && policy(intervention).valider? && intervention.can_valider? %>
-            <%= button_to 'Valider', valider_intervention_path(intervention),
-                class: 'btn btn-success btn-outline btn-xs sm:btn-sm hover:text-white! w-full sm:w-24 justify-center',
-                form: { data: { turbo: false }, class: 'contents sm:block' },
-                disabled: !intervention.can_valider? %>
-          <% end %>
-          <% if !defined?(from_turbo_stream) && policy(intervention).refuser? && intervention.can_refuser? %>
-            <%= button_to 'Refuser', refuser_intervention_path(intervention),
-                class: 'btn btn-error btn-outline btn-xs sm:btn-sm hover:text-white! w-full sm:w-24 justify-center',
-                form: { data: { turbo: false }, class: 'contents sm:block' },
-                disabled: !intervention.can_refuser? %>
-          <% end %>
+        <div class="flex justify-center gap-2">
+          <%= render "interventions/boutons_workflow", intervention: intervention,
+                     styles: InterventionsHelper::STYLES_LISTE,
+                     titres: InterventionsHelper::TITRES_LISTE,
+                     classe_form: 'contents' %>
         </div>
       <% end %>
     </div>
@@ -156,12 +108,14 @@
         <% end %>
       </div>
       <div class="space-y-3 min-w-0 lg:col-span-1">
-        <div>
-          <strong class="block text-xs font-bold text-slate-400 uppercase mb-1">Commentaires</strong>
-          <p class="text-xs text-slate-600 break-words leading-relaxed max-h-24 overflow-y-auto">
-            <%= intervention.commentaires.present? ? truncate(intervention.commentaires, length: 120) : '-' %>
-          </p>
-        </div>
+        <% unless current_user.adhérent? %>
+          <div>
+            <strong class="block text-xs font-bold text-slate-400 uppercase mb-1">Commentaires</strong>
+            <p class="text-xs text-slate-600 break-words leading-relaxed max-h-24 overflow-y-auto">
+              <%= intervention.commentaires.present? ? truncate(intervention.commentaires, length: 120) : '-' %>
+            </p>
+          </div>
+        <% end %>
         <% if intervention.photos.attached? %>
           <div>
             <% if intervention.photos.count > 1 %>

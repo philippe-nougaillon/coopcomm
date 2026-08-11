@@ -32,6 +32,6 @@ class ServicePolicy < ApplicationPolicy
   end
 
   def destroy?
-    administrateur? && organisation?
+    administrateur? && organisation? && record.can_be_destroyed?
   end
 end

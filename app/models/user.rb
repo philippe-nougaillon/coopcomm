@@ -28,15 +28,7 @@ class User < ApplicationRecord
 
   has_one_attached :profile_picture
 
-  IMAGES = %w[
-    image/png
-    image/jpeg
-    image/jpg
-    image/webp
-    image/avif
-  ].freeze
-
-  valide_piece_jointe :profile_picture, types: IMAGES
+  valide_image :profile_picture
 
   belongs_to :warehouse, optional: true
 
@@ -50,7 +42,7 @@ class User < ApplicationRecord
   has_many :absences, dependent: :destroy
   has_many :conventions, dependent: :destroy
   has_many :user_services, dependent: :destroy
-  has_many :services, through: :user_services
+  has_many :services, through: :user_services, dependent: :destroy
 
   # L'utilisateur n'est associé qu'à une seule organisation, via ses services
   has_many :organisations, -> { limit(1) }, through: :services
@@ -86,7 +78,27 @@ class User < ApplicationRecord
   validate :agent_must_have_exactly_one_service, if: -> { rôle == 'agent' }
 
   default_scope -> { kept }
-  scope :ordered, -> { order(:nom) }
+  scope :ordered, -> { trié_par(:nom, :prénom) }
+
+  SERVICE = "(SELECT MIN(#{TriTextuel.expression('services.nom')}) FROM services " \
+            'INNER JOIN user_services ON user_services.service_id = services.id ' \
+            'WHERE user_services.user_id = users.id)'
+
+  triable_par({ 'users.nom' => :texte,
+                'users.rôle' => :brut,
+                'users.email' => :texte,
+                'users.service' => SERVICE,
+                'users.tags' => "(SELECT STRING_AGG(#{TriTextuel.expression('tags.name')}, ',' " \
+                                "ORDER BY #{TriTextuel.expression('tags.name')}) FROM taggings " \
+                                'INNER JOIN tags ON tags.id = taggings.tag_id ' \
+                                "WHERE taggings.taggable_id = users.id AND taggings.taggable_type = 'User')",
+                'users.absent' => 'EXISTS (SELECT 1 FROM absences WHERE absences.user_id = users.id ' \
+                                  'AND absences.du <= CURRENT_DATE AND absences.au >= CURRENT_DATE)',
+                'users.moyenne' => '(SELECT AVG(interventions.note) FROM interventions ' \
+                                   'INNER JOIN agent_interventions ON agent_interventions.intervention_id = interventions.id ' \
+                                   'WHERE agent_interventions.agent_id = users.id ' \
+                                   'AND interventions.repeter = FALSE AND interventions.note IS NOT NULL)' },
+              puis: TriTextuel.expression('users.prénom'))
 
   def organisation
     organisations.first
@@ -108,7 +120,7 @@ class User < ApplicationRecord
     h = Hash.new { |hash, key| hash[key] = [] }
 
     # 4. On trie les agents et on construit nos groupes
-    agents.sort_by { |a| [a.nom.to_s, a.prénom.to_s] }.each do |agent|
+    agents.sort_by { |a| [TriTextuel.clé_de_tri(a.nom), TriTextuel.clé_de_tri(a.prénom)] }.each do |agent|
       # On ne garde que les services de l'agent qui sont en commun avec l'utilisateur courant
       # (Optionnel : si tu veux afficher TOUS les services de l'agent, enlève le .select)
       services_communs = agent.services.select { |s| user_service_ids.include?(s.id) }
@@ -125,14 +137,19 @@ class User < ApplicationRecord
     end
 
     # 5. On retourne le Hash trié alphabétiquement par le nom du groupe
-    h.sort_by { |k, _| I18n.transliterate(k) }.to_h
+    TriTextuel.ranger(h).to_h
   end
 
   # Liste plate au format [["NOM Prénom", id], …].
+  # Les administrateurs sont proposés quel que soit leur service, cf. la
+  # validation Intervention#service_partagé_par_adherent_et_agents qui les exempte.
   def self.agents_for_services(services)
+    organisation_ids = Service.where(id: services).select(:organisation_id)
+    admins = administrateur.by_service(Service.where(organisation_id: organisation_ids))
+
     intervenants
-      .by_service(services)
-      .order(:nom, :prénom)
+      .where(id: by_service(services).ids | admins.ids)
+      .ordered
       .map { |agent| ["#{agent.nom} #{agent.prénom}", agent.id] }
   end
 
@@ -145,7 +162,7 @@ class User < ApplicationRecord
   end
 
   def initiales
-    "#{nom.first.upcase}#{prénom.first.upcase}"
+    "#{nom.first.upcase}#{prénom&.first&.upcase}"
   end
 
   def super_admin?
@@ -331,10 +348,10 @@ class User < ApplicationRecord
     )
   end
 
+  # Sous-requête plutôt que jointure + DISTINCT : la relation reste triable par
+  # une expression (`ordered`) et dénombrable sans requête invalide.
   def self.by_service(services)
-    joins(user_services: :service)
-      .where(services: services)
-      .distinct
+    where(id: UserService.where(service_id: Service.where(id: services).select(:id)).select(:user_id))
   end
 
   def manager_or_admin?
@@ -360,13 +377,13 @@ class User < ApplicationRecord
 
   def find_current_intervention(slug_intervention_pointage)
     Intervention
-              .joins(:agent_interventions)
-              .where(template_slug: slug_intervention_pointage)
-              .where(agent_interventions: { agent_id: self.id })
-              .where('DATE(début) = ?', Date.today)
-              .where(workflow_state: 'nouveau') # Seul les nouvelles interventions nous intéresse
-              .order(updated_at: :asc) # Trie du plus ancien au plus récent
-              .last # Prend l'intervention créée/modifiée la plus récente
+      .joins(:agent_interventions)
+      .where(template_slug: slug_intervention_pointage)
+      .where(agent_interventions: { agent_id: id })
+      .where(début: Time.zone.today.all_day)
+      .where(workflow_state: 'nouveau') # Seules les interventions nouvelles sont pertinentes
+      .order(updated_at: :desc)
+      .first # Prend la plus récemment modifiée
   end
 
   def get_services_by_role

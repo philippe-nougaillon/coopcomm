@@ -106,17 +106,22 @@ class InterventionTest < ActiveSupport::TestCase
   # Remplace Convention#temps_total_interventions (tests déplacés depuis
   # convention_test.rb).
 
-  def create_intervention_conventionnee(attrs = {})
+  # temps_total est dérivé des dates et du nombre d'agents, jamais fixé à la main.
+  def create_intervention_conventionnee(heures: 3, **attrs)
+    début = attrs.delete(:début) || 10.hours.ago
     Intervention.create!({ description: 'intervention conventionnée',
                            adherent_id: users(:weil).id,
                            service: services(:informatique),
-                           début: 2.hours.ago }.merge(attrs))
+                           agents: [users(:hidalgo)],
+                           temps_de_pause: 0,
+                           début: début,
+                           fin: début + heures.hours }.merge(attrs))
   end
 
   test "création : le temps_total s'ajoute aux heures consommées de la convention couvrant l'intervention" do
     travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      create_intervention_conventionnee(temps_total: 3)
-      create_intervention_conventionnee(temps_total: 5)
+      create_intervention_conventionnee(heures: 3)
+      create_intervention_conventionnee(heures: 5, début: 6.hours.ago)
 
       assert_equal 8, conventions(:convention_paris).reload.heures_consommees
     end
@@ -124,7 +129,7 @@ class InterventionTest < ActiveSupport::TestCase
 
   test "création : une intervention d'un autre service ne modifie pas les heures consommées" do
     travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      create_intervention_conventionnee(temps_total: 99, service: services(:service_marseille))
+      create_intervention_conventionnee(heures: 4, service: services(:technique))
 
       assert_equal 0, conventions(:convention_paris).reload.heures_consommees
     end
@@ -132,7 +137,7 @@ class InterventionTest < ActiveSupport::TestCase
 
   test "création : une intervention d'un autre adhérent ne modifie pas les heures consommées" do
     travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      create_intervention_conventionnee(temps_total: 99, adherent_id: users(:michael_jackson).id)
+      create_intervention_conventionnee(heures: 4, adherent_id: users(:adhérent_sans_intervention).id)
 
       assert_equal 0, conventions(:convention_paris).reload.heures_consommees
     end
@@ -140,7 +145,7 @@ class InterventionTest < ActiveSupport::TestCase
 
   test "création : une intervention hors période de la convention ne modifie pas les heures consommées" do
     travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      create_intervention_conventionnee(temps_total: 99, début: Time.zone.parse('2025-06-01 12:00:00'))
+      create_intervention_conventionnee(heures: 4, début: Time.zone.parse('2025-06-01 06:00:00'))
 
       assert_equal 0, conventions(:convention_paris).reload.heures_consommees
     end
@@ -148,8 +153,8 @@ class InterventionTest < ActiveSupport::TestCase
 
   test "modification du temps_total : seule la différence s'ajoute aux heures consommées" do
     travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      intervention = create_intervention_conventionnee(temps_total: 3)
-      intervention.update!(temps_total: 5)
+      intervention = create_intervention_conventionnee(heures: 3)
+      intervention.update!(fin: intervention.début + 5.hours)
 
       assert_equal 5, conventions(:convention_paris).reload.heures_consommees
     end
@@ -157,7 +162,7 @@ class InterventionTest < ActiveSupport::TestCase
 
   test 'modification sans changement du temps_total : heures consommées inchangées' do
     travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      intervention = create_intervention_conventionnee(temps_total: 3)
+      intervention = create_intervention_conventionnee(heures: 3)
       intervention.update!(description: 'description modifiée')
 
       assert_equal 3, conventions(:convention_paris).reload.heures_consommees
@@ -166,7 +171,7 @@ class InterventionTest < ActiveSupport::TestCase
 
   test 'suppression : le temps_total est retranché des heures consommées' do
     travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      intervention = create_intervention_conventionnee(temps_total: 3)
+      intervention = create_intervention_conventionnee(heures: 3)
       intervention.destroy!
 
       assert_equal 0, conventions(:convention_paris).reload.heures_consommees
@@ -258,7 +263,7 @@ class InterventionTest < ActiveSupport::TestCase
   # --- dernière_en_cours ---
 
   test 'dernière_en_cours retient l\'intervention qui recouvre l\'instant présent' do
-    agent = users(:john_wick)
+    agent = users(:nettoyage)
     en_cours = Intervention.create!(
       description: 'En cours maintenant', adherent: users(:weil), service: services(:technique),
       workflow_state: 'nouveau', début_prévue: 1.hour.ago, fin_prévue: 1.hour.from_now,
@@ -361,6 +366,44 @@ class InterventionTest < ActiveSupport::TestCase
     assert_predicate intervention, :valid?
   end
 
+  test 'terminé sans agent : invalide' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.agents.destroy_all
+    intervention.reload.workflow_state = Intervention::TERMINE
+
+    assert_not intervention.valid?
+    assert_includes intervention.errors.full_messages.join, "Au moins un agent est obligatoire pour terminer l'intervention"
+  end
+
+  test 'terminé avec un agent : valide' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.workflow_state = Intervention::TERMINE
+
+    assert_predicate intervention.agents, :any?
+    assert_predicate intervention, :valid?
+  end
+
+  test 'un état autre que terminé n’exige pas d’agent' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.agents.destroy_all
+
+    assert_predicate intervention.reload, :valid?
+  end
+
+  test 'une intervention déjà terminée sans agent ne peut plus être enregistrée' do
+    intervention = interventions(:intervention_terminée)
+    intervention.agents.destroy_all
+
+    assert_not intervention.reload.update(commentaires: 'peu importe')
+  end
+
+  test 'agents retirés d’une intervention terminée : invalide' do
+    intervention = interventions(:intervention_terminée)
+    intervention.agent_ids = []
+
+    assert_not intervention.valid?
+  end
+
   # Les événements sont observés par les jobs qu'ils déclenchent : les mêmes
   # sondes que test/subscription.
   test 'terminer publie workflow_changed et done' do
@@ -400,7 +443,126 @@ class InterventionTest < ActiveSupport::TestCase
     end
   end
 
+  # === Le service doit être partagé par l'adhérent et les agents ============
+  # Seuls les administrateurs échappent à la règle côté agents.
+
+  test "un adhérent qui n'appartient pas au service de l'intervention est refusé" do
+    intervention = intervention_sans_dates(adherent: users(:berthout), service: services(:informatique))
+
+    assert_not intervention.valid?
+    assert_includes intervention.errors.full_messages,
+                    "L'adhérent #{users(:berthout).nom_prénom} n'appartient pas au service Informatique"
+  end
+
+  test "un adhérent qui appartient au service de l'intervention est accepté" do
+    intervention = intervention_sans_dates(adherent: users(:weil), service: services(:informatique))
+
+    assert intervention.valid?, intervention.errors.full_messages.to_sentence
+  end
+
+  test "un agent qui n'appartient pas au service de l'intervention est refusé" do
+    intervention = intervention_sans_dates(adherent: users(:weil), service: services(:technique))
+    intervention.agents = [users(:john_wick)]
+
+    assert_not intervention.valid?
+    assert_includes intervention.errors.full_messages,
+                    "L'agent #{users(:john_wick).nom_prénom} n'appartient pas au service Technique"
+  end
+
+  test "un agent qui appartient au service de l'intervention est accepté" do
+    intervention = intervention_sans_dates(adherent: users(:weil), service: services(:technique))
+    intervention.agents = [users(:martin_technique_paris)]
+
+    assert intervention.valid?, intervention.errors.full_messages.to_sentence
+  end
+
+  test "un administrateur est accepté comme agent quel que soit son service" do
+    admin = users(:philippe_super_admin)
+    intervention = intervention_sans_dates(adherent: users(:weil), service: services(:technique))
+    intervention.agents = [admin]
+
+    assert_not_includes admin.service_ids, services(:technique).id
+    assert intervention.valid?, intervention.errors.full_messages.to_sentence
+  end
+
+  test "un manager n'est pas exempté : hors service, il est refusé comme agent" do
+    manager = users(:manager_paris)
+    intervention = intervention_sans_dates(adherent: users(:weil), service: services(:technique))
+    intervention.agents = [manager]
+
+    assert_not_includes manager.service_ids, services(:technique).id
+    assert_not intervention.valid?
+    assert_includes intervention.errors.full_messages,
+                    "L'agent #{manager.nom_prénom} n'appartient pas au service Technique"
+  end
+
+  test 'changer le service pour un service étranger à tout le monde est refusé' do
+    intervention = interventions(:tonte_locaux)
+    intervention.service = services(:secretariat)
+
+    assert_not intervention.valid?
+    assert_equal 2, intervention.errors.full_messages.count { |m| m.include?('Secrétariat') }
+  end
+
+  # Sans `dependent: :destroy` sur la through, Rails retire la ligne de liaison
+  # par delete_all : aucun callback, donc aucune trace de l'outil retiré.
+  test 'retirer un outil à une intervention laisse une trace dans l\'audit' do
+    intervention = interventions(:tonte_locaux)
+    intervention.update!(tool_ids: [tools(:tondeuse).id])
+
+    assert_difference -> { Audited::Audit.where(auditable_type: 'ToolIntervention', action: 'destroy').count }, 1 do
+      intervention.update!(tool_ids: [])
+    end
+
+    audit = Audited::Audit.where(auditable_type: 'ToolIntervention', action: 'destroy').last
+
+    assert_equal tools(:tondeuse).id, audit.audited_changes['tool_id']
+    assert_equal intervention.id, audit.associated_id
+  end
+
+  # === Service et adhérent obligatoires =====================================
+
+  test 'une intervention sans service est refusée' do
+    intervention = intervention_sans_dates(adherent: users(:weil), service: nil)
+
+    assert_not intervention.valid?
+    assert_includes intervention.errors.attribute_names, :service_id
+  end
+
+  test 'une intervention sans adhérent est refusée' do
+    intervention = intervention_sans_dates(adherent: nil, service: services(:informatique))
+
+    assert_not intervention.valid?
+    assert_includes intervention.errors.attribute_names, :adherent_id
+  end
+
+  # C'est la clé qui fait foi, pas l'association : User porte un default_scope
+  # :kept, donc `adherent` rend nil dès que le compte est désactivé.
+  test 'un adhérent désactivé reste un adhérent valide à la création' do
+    adherent = users(:weil)
+    intervention = intervention_sans_dates(adherent: adherent, service: services(:informatique))
+    adherent.discard
+
+    assert_nil intervention.reload_adherent
+    assert_predicate intervention, :valid?
+  end
+
+  test 'une intervention dont l’adhérent est désactivé reste enregistrable' do
+    intervention = interventions(:tonte_locaux)
+    intervention.adherent.discard
+
+    intervention.reload
+
+    assert_nil intervention.adherent
+    assert_predicate intervention.adherent_id, :present?
+    assert_predicate intervention, :valid?
+  end
+
   private
+
+  def intervention_sans_dates(adherent:, service:)
+    Intervention.new(description: 'Contrôle du service', adherent: adherent, service: service)
+  end
 
   def cree_pointage_termine_par(agent)
     mère = interventions(:intervention_repete)
