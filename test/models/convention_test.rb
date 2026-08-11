@@ -72,6 +72,19 @@ class ConventionTest < ActiveSupport::TestCase
     assert doublon.errors[:base].any?
   end
 
+  test 'un même adhérent peut avoir une seconde convention sur le même service si les périodes ne se chevauchent pas' do
+    build_convention.save! # 2026-01-01 → 2026-12-31
+    suivante = build_convention(date_début: Date.new(2027, 1, 1), date_fin_prévue: Date.new(2027, 12, 31))
+    assert suivante.valid?
+  end
+
+  test 'un même adhérent ne peut pas avoir une seconde convention sur le même service si les périodes se chevauchent' do
+    build_convention.save! # 2026-01-01 → 2026-12-31
+    chevauchante = build_convention(date_début: Date.new(2026, 12, 31), date_fin_prévue: Date.new(2027, 6, 30))
+    refute chevauchante.valid?
+    assert chevauchante.errors[:base].any?
+  end
+
   test 'un même adhérent peut avoir une convention sur un autre de ses services' do
     @adherent.services << services(:secretariat) # patrick a désormais service_paris + secretariat
     build_convention.save! # service_paris
