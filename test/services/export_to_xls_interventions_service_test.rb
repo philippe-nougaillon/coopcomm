@@ -36,6 +36,18 @@ class ExportToXlsInterventionsServiceTest < ActionDispatch::IntegrationTest
     assert_equal @interventions.count + 1, sheet.rows.count # +1 pour la ligne d'en-tête
   end
 
+  test 'la colonne Mots clés reprend les mots clés de l intervention' do
+    intervention = @interventions.first
+    intervention.update!(tag_list: 'urgence, plomberie')
+
+    book = Spreadsheet.open(StringIO.new(ExportToXls::Interventions.call(Intervention.where(id: intervention.id))))
+    sheet = book.worksheet(0)
+
+    colonne = sheet.row(0).index('Mots clés')
+    assert_not_nil colonne, 'garde : la colonne Mots clés doit exister dans l\'en-tête'
+    assert_equal 'urgence, plomberie', sheet.row(1)[colonne]
+  end
+
   def create_interventions(count = 3)
     count.times do |i|
       Intervention.create!(

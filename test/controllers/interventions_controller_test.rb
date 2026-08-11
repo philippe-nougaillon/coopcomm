@@ -1559,4 +1559,98 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
 
     assert_equal ['élagage'], @intervention.reload.tag_list
   end
+
+  test "un manager pose des mots clés dès la création" do
+    post interventions_url,
+         params: { intervention: { description: 'Création avec mots clés',
+                                   adherent_id: users(:weil).id,
+                                   service_id: services(:technique).id,
+                                   tags_manager: ['', 'urgence', 'plomberie'] } }
+
+    créée = Intervention.find_by(description: 'Création avec mots clés')
+    assert_not_nil créée, "garde : la création doit avoir abouti (#{flash[:alert]})"
+    assert_equal %w[urgence plomberie], créée.tag_list
+  end
+
+  test "un agent pose des mots clés sur son bon d'intervention" do
+    agent = users(:nettoyage) # aucune intervention de fixture : jamais de conflit d'horaire
+    sign_in agent
+
+    travel_to Time.current.middle_of_day do
+      post interventions_url,
+           params: { intervention: { début: 2.hours.ago, fin: 1.hour.ago,
+                                     description: 'Bon d\'intervention avec mots clés',
+                                     adherent_id: users(:patrick_adherent_paris).id,
+                                     service_id: services(:technique).id,
+                                     agent_ids: [agent.id],
+                                     tags_intervenant: ['', 'élagage'] } }
+    end
+
+    créée = Intervention.find_by(description: 'Bon d\'intervention avec mots clés')
+    assert_not_nil créée, "garde : la création doit avoir abouti (#{flash[:alert]})"
+    assert_equal ['élagage'], créée.tag_list
+  end
+
+  test "le champ de l'autre rôle est ignoré : un manager qui soumet tags_intervenant" do
+    @intervention.update!(tag_list: 'urgence')
+
+    patch intervention_url(@intervention),
+          params: { intervention: { description: @intervention.description,
+                                    tags_intervenant: ['', 'forgé'] } }
+
+    assert_equal ['urgence'], @intervention.reload.tag_list
+  end
+
+  test "le champ de l'autre rôle est ignoré : un agent qui soumet tags_manager" do
+    @intervention.update!(tag_list: 'urgence')
+    sign_in users(:bond)
+
+    patch intervention_url(@intervention),
+          params: { intervention: { description: @intervention.description,
+                                    tags_manager: ['', 'forgé'] } }
+
+    assert_equal ['urgence'], @intervention.reload.tag_list
+  end
+
+  # ÉPINGLAGE : `:tag_list` figure dans les permits (interventions_controller.rb:550)
+  # alors qu'aucun formulaire ne le soumet — les rôles passent par tags_manager /
+  # tags_intervenant. Une requête forgée écrit donc les mots clés par mass assignment,
+  # y compris pour un adhérent, à qui le champ n'est jamais proposé.
+  # À inverser à la correction (retrait de :tag_list des permits).
+  test "un adhérent écrase les mots clés par un paramètre tag_list forgé" do
+    @intervention.update!(tag_list: 'urgence')
+    sign_in users(:weil)
+
+    patch intervention_url(@intervention),
+          params: { intervention: { description: @intervention.description, tag_list: 'forgé' } }
+
+    assert_equal ['forgé'], @intervention.reload.tag_list
+  end
+
+  test 'un formulaire refusé réaffiche les mots clés saisis, y compris un mot clé inédit' do
+    @intervention.update!(tag_list: 'urgence')
+
+    # Sans adhérent, la création est refusée : une description vide ne suffirait pas,
+    # `set_temporary_description` la remplit à la création.
+    post interventions_url,
+         params: { intervention: { description: 'Création refusée',
+                                   service_id: services(:technique).id,
+                                   tags_manager: ['', 'urgence', 'mot-clé-inédit'] } }
+
+    assert_response :unprocessable_content
+    assert_select 'select#intervention_tags_manager option[selected]', text: 'urgence'
+    assert_select 'select#intervention_tags_manager option[selected]', text: 'mot-clé-inédit'
+  end
+
+  test 'un modèle de pointage est créé avec ses mots clés' do
+    post create_intervention_modele_pointage_interventions_url,
+         params: { intervention: { description: 'Modèle avec mots clés',
+                                   adherent_id: users(:weil).id,
+                                   service_id: services(:technique).id,
+                                   tags_manager: ['', 'tonte'] } }
+
+    modele = Intervention.find_by(description: 'Modèle avec mots clés')
+    assert_not_nil modele, "garde : la création doit avoir abouti (#{flash[:alert]})"
+    assert_equal ['tonte'], modele.tag_list
+  end
 end

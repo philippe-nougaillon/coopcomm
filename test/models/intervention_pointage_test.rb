@@ -232,6 +232,39 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_equal Date.today, fille.début.to_date
   end
 
+  # Le modèle est RECHARGÉ avant chaque scan : au scan réel, `set_intervention` vient de
+  # le lire et personne n'a touché à `tag_list`. Sur un enregistrement dont le cache de
+  # mots clés est froid, `dup` n'en copie aucun — sans la ligne `new_intervention.tags`,
+  # la fille naîtrait sans mots clés.
+  test 'create_next_intervention : la fille hérite des mots clés du modèle' do
+    interventions(:intervention_repete).update!(tag_list: 'tonte, espace vert')
+    mère = Intervention.find(interventions(:intervention_repete).id)
+
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+
+    assert_equal ['tonte', 'espace vert'], fille.reload.tag_list
+  end
+
+  test 'create_next_intervention : modifier le modèle ne touche pas les filles déjà créées' do
+    interventions(:intervention_repete).update!(tag_list: 'tonte')
+    mère = Intervention.find(interventions(:intervention_repete).id)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+
+    mère.update!(tag_list: 'élagage')
+
+    assert_equal ['tonte'], fille.reload.tag_list
+  end
+
+  test 'create_next_intervention : modifier une fille ne touche pas le modèle' do
+    interventions(:intervention_repete).update!(tag_list: 'tonte')
+    mère = Intervention.find(interventions(:intervention_repete).id)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+
+    fille.update!(tag_list: 'élagage')
+
+    assert_equal ['tonte'], mère.reload.tag_list
+  end
+
   # === Intervention#pointages =============================================
 
   test 'pointages : renvoie toutes les filles du modèle' do
