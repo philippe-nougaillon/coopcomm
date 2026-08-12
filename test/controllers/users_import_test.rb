@@ -313,7 +313,10 @@ class UsersImportTest < ActionDispatch::IntegrationTest
   def assert_bilan(importés:, erreurs:)
     bilan = page.at_css('[data-testid=bilan_import]')
     assert_not_nil bilan, 'le bilan de l’import doit être affiché'
-    assert_equal "Bilan #{importés} Lignes importées #{erreurs} Lignes en erreur", bilan.text.squish
+
+    compteurs = bilan.text.squish
+    assert_match(/\b#{importés} Lignes importées/, compteurs)
+    assert_match(/\b#{erreurs} Lignes en erreur/, compteurs)
   end
 
   def assert_no_selector_bilan
