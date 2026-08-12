@@ -7,3 +7,10 @@ entrepot_paris:
   address: La Souterraine, 31 Rue Croix des Petits Champs, 75001 Paris, France
   latitude: 48.864388487354134
   longitude: 2.3395163956353677
+entrepot_marseille:
+  organisation: mairie_marseille
+  name: Entrepôt de Marseille
+  slug: 2f1c0d3e-4b5a-4c6d-9e8f-1a2b3c4d5e6f
+  address: 1 Quai du Port, 13002 Marseille, France
+  latitude: 43.295
+  longitude: 5.3697
