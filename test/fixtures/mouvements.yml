@@ -13,3 +13,9 @@ mouvement_tondeuse_fin:
   user: bond
   état: 2
   date: <%= 1.day.ago %>
+
+mouvement_marseille:
+  tool: camion
+  user: agent_marseille
+  état: 0
+  date: <%= 2.days.ago %>

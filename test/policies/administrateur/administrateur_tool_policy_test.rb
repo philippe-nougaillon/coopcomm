@@ -4,45 +4,29 @@ require 'test_helper'
 
 class AdministrateurToolPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    administrateur_paris = users(:administrateur_paris)
+    administrateur = users(:administrateur_paris)
 
-    tool_paris = tools(:outil_paris)
+    tool = tools(:outil_paris)
+    tool_autre_org = tools(:outil_marseille)
 
-    @policy = ToolPolicy.new(administrateur_paris, tool_paris)
+    @policy = ToolPolicy.new(administrateur, tool)
+    @policy_autre_org = ToolPolicy.new(administrateur, tool_autre_org)
   end
 
-  # Index
-  test 'should get index' do
+  test 'accès autorisé pour un administrateur sur un outil de son organisation' do
     assert @policy.index?
-  end
-
-  # Show
-  test 'should get show' do
     assert @policy.show?
-  end
-
-  # New
-  test 'should get new' do
     assert @policy.new?
-  end
-
-  # Create
-  test 'should get create' do
     assert @policy.create?
-  end
-
-  # Edit
-  test 'should get edit' do
     assert @policy.edit?
-  end
-
-  # Update
-  test 'should get update' do
     assert @policy.update?
+    assert @policy.destroy?
   end
 
-  # Destroy
-  test 'should get destroy' do
-    assert @policy.destroy?
+  test "accès interdit pour un administrateur sur un outil d'une autre organisation" do
+    refute @policy_autre_org.show?
+    refute @policy_autre_org.edit?
+    refute @policy_autre_org.update?
+    refute @policy_autre_org.destroy?
   end
 end

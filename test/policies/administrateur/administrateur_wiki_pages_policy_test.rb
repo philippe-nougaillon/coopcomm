@@ -4,35 +4,38 @@ require 'test_helper'
 
 class AdministrateurWikiPagesPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    administrateur_paris = users(:administrateur_paris)
+    administrateur = users(:administrateur_paris)
 
     wiki_page = wiki_pages(:blog_only_admin)
+    wiki_page_autre_auteur = wiki_pages(:blog)
+    wiki_page_non_publiée = wiki_pages(:guide)
 
-    @policy = WikiPagePolicy.new(administrateur_paris, wiki_page)
+    @policy = WikiPagePolicy.new(administrateur, wiki_page)
+    @policy_autre_auteur = WikiPagePolicy.new(administrateur, wiki_page_autre_auteur)
+    @policy_non_publiée = WikiPagePolicy.new(administrateur, wiki_page_non_publiée)
   end
 
-  # New
-  test 'accès autorisé pour un administrateur pour un new de wiki pages' do
+  test 'accès autorisé pour un administrateur sur une page wiki dont il est auteur' do
+    assert @policy.index?
+    assert @policy.show?
     assert @policy.new?
-  end
-
-  # Create
-  test 'accès autorisé pour un administrateur pour un create de wiki pages' do
     assert @policy.create?
-  end
-
-  # Edit
-  test 'accès autorisé pour un administrateur pour un edit de wiki pages' do
     assert @policy.edit?
-  end
-
-  # Update
-  test 'accès autorisé pour un administrateur pour un update de wiki pages' do
     assert @policy.update?
+    assert @policy.destroy?
   end
 
-  # Destroy
-  test 'accès autorisé pour un administrateur pour un destroy de wiki pages' do
-    assert @policy.destroy?
+  test "accès autorisé pour un administrateur sur une page wiki d'un autre auteur" do
+    assert @policy_autre_auteur.show?
+    assert @policy_autre_auteur.edit?
+    assert @policy_autre_auteur.update?
+  end
+
+  test "accès interdit pour un administrateur sur une page wiki d'un autre auteur" do
+    refute @policy_autre_auteur.destroy?
+  end
+
+  test 'accès autorisé pour un administrateur sur une page wiki non publiée' do
+    assert @policy_non_publiée.show?
   end
 end

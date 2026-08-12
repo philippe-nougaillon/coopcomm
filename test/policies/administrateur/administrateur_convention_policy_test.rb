@@ -4,10 +4,10 @@ require 'test_helper'
 
 class AdministrateurConventionPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    @administrateur = users(:administrateur_paris) # mairie_paris
+    @administrateur = users(:administrateur_paris)
 
-    convention = conventions(:convention_paris)               # mairie_paris
-    convention_autre_org = conventions(:convention_marseille) # mairie_marseille
+    convention = conventions(:convention_paris)
+    convention_autre_org = conventions(:convention_marseille)
 
     @policy = ConventionPolicy.new(@administrateur, convention)
     @policy_autre_org = ConventionPolicy.new(@administrateur, convention_autre_org)
@@ -34,7 +34,7 @@ class AdministrateurConventionPolicyTest < ActionDispatch::IntegrationTest
     refute @policy_autre_org.destroy?
   end
 
-  test 'scope' do
+  test 'scope : un administrateur ne voit que les conventions de son organisation' do
     scope = ConventionPolicy::Scope.new(@administrateur, Convention.all).resolve
 
     assert_includes scope, conventions(:convention_paris)
