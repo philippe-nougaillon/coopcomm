@@ -132,6 +132,19 @@ class NotificationMailer < ApplicationMailer
     end
   end
 
+  def cotation_refusee(cotation, email, cc_email = nil)
+    @cotation = cotation
+
+    mail(to: email,
+         cc: cc_email.presence,
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Cotation refusée').tap do |message|
+      message.mailgun_options = {
+        'tag' => ['cotation refusée']
+      }
+    end
+  end
+
   def commande_envoyee(commande, email, cc_email = nil)
     @commande = commande
 

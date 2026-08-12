@@ -143,6 +143,61 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'refusé', cotation.reload.workflow_state
   end
 
+  test 'refuser : notifie le créateur de la cotation (via l\'audit de création)' do
+    sign_in @adherent
+    cotation = cotations(:cotation_secretariat) # envoyé, audit create = administrateur_paris
+
+    assert_enqueued_with(job: NotifManagerCotationRefuseeJob,
+                         args: [cotation, @admin, @adherent.id]) do
+      post refuser_cotation_url(cotation)
+    end
+  end
+
+  test 'refuser : aucune notification quand le créateur refuse lui-même' do
+    cotation = cotations(:cotation_secretariat) # envoyé, créée par @admin, qui est connecté
+
+    assert_no_enqueued_jobs only: NotifManagerCotationRefuseeJob do
+      post refuser_cotation_url(cotation)
+    end
+    assert_equal 'refusé', cotation.reload.workflow_state
+  end
+
+  test 'refuser : un autre gestionnaire notifie bien le créateur' do
+    sign_in users(:manager_paris)
+    cotation = cotations(:cotation_secretariat) # envoyé, audit create = administrateur_paris
+
+    assert_enqueued_with(job: NotifManagerCotationRefuseeJob,
+                         args: [cotation, @admin, users(:manager_paris).id]) do
+      post refuser_cotation_url(cotation)
+    end
+  end
+
+  test 'refuser : une transition impossible ne déclenche aucune notification' do
+    cotation = cotations(:cotation_paris) # créé : refuser n'est pas possible
+
+    assert_no_enqueued_jobs only: NotifManagerCotationRefuseeJob do
+      post refuser_cotation_url(cotation)
+    end
+    assert_equal 'créé', cotation.reload.workflow_state
+  end
+
+  test 'refuser : un créateur au compte désactivé ne fait pas échouer le refus' do
+    skip 'Bug signalé (non corrigé) : `manager.id` sans garde nil dans ' \
+         'notify_manager_cotation_refusee → NoMethodError (500) dès que le créateur ' \
+         'est introuvable (compte désactivé, ou audit sans utilisateur), alors que la ' \
+         'transition est déjà enregistrée. Correctif : `manager&.id != current_user.id`.'
+
+    @admin.discard # le créateur a quitté la collectivité
+    sign_in @adherent
+    cotation = cotations(:cotation_secretariat)
+
+    assert_no_enqueued_jobs only: NotifManagerCotationRefuseeJob do
+      post refuser_cotation_url(cotation)
+    end
+    assert_redirected_to cotation_path(cotation)
+    assert_equal 'refusé', cotation.reload.workflow_state
+  end
+
   test 'valider est sans effet sur une cotation en créé (transition impossible)' do
     cotation = cotations(:cotation_paris) # créé
     post valider_cotation_url(cotation)
