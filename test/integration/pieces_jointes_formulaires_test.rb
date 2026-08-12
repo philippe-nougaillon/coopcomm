@@ -59,6 +59,13 @@ class PiecesJointesFormulairesTest < ActionDispatch::IntegrationTest
     assert_dropzone Intervention, :photos, multiple: true
   end
 
+  test 'formulaire d’intervention : photos de la demande' do
+    sign_in users(:hidalgo)
+    get new_intervention_url
+
+    assert_dropzone Intervention, :photos_demande, multiple: true
+  end
+
   private
 
   def assert_dropzone(modèle, attribut, multiple: false)
@@ -75,7 +82,11 @@ class PiecesJointesFormulairesTest < ActionDispatch::IntegrationTest
     formats = PieceJointeValidable.libellé_formats(règle[:types])
     taille = PieceJointeValidable.libellé_taille(règle[:max_octets])
 
+    # Une annonce par zone de dépôt partageant ces formats : le formulaire
+    # d'intervention en porte deux (photos de réalisation et de demande).
+    zones = css_select("input[type=file][accept='#{PieceJointeValidable.accept(règle[:types])}']").size
+
     assert_select 'span', text: "Formats acceptés : #{formats} — #{taille} maximum par fichier.",
-                  count: 1, message: "le formulaire n'annonce pas les formats et la taille validés par #{modèle}##{attribut}"
+                  count: zones, message: "le formulaire n'annonce pas les formats et la taille validés par #{modèle}##{attribut}"
   end
 end

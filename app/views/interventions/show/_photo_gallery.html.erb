@@ -1,6 +1,6 @@
-<%# locals: (photos:, compact: false) %>
+<%# locals: (photos:, compact: false, titre: "Photos", message_vide: nil) %>
 <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider <%= compact ? 'mb-2' : 'mb-3' %>">
-  Photos
+  <%= titre %>
 </span>
 <% if photos.attached? %>
   <div class="flex flex-wrap gap-3 <%= 'max-h-48 overflow-y-auto p-1' if compact %>">
@@ -20,6 +20,6 @@
   </div>
 <% else %>
   <p class="text-slate-400 italic text-sm <%= 'pt-2' unless compact %>">
-    Aucune photo n'est attachée<%= compact ? '.' : ' à cette intervention.' %>
+    <%= message_vide || "Aucune photo n'est attachée#{compact ? '.' : ' à cette intervention.'}" %>
   </p>
 <% end %>

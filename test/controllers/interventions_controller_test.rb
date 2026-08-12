@@ -749,6 +749,136 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  # --- Photos de la demande --------------------------------------------------
+  # Attachement distinct des photos de réalisation : l'adhérent y dépose l'état
+  # des lieux des travaux à faire. Même formulaire, même action de purge.
+
+  test 'edit affiche une intervention qui a déjà des photos de demande' do
+    @intervention.photos_demande.attach(file_fixture('exemple.png'))
+    @intervention.save
+
+    get edit_intervention_url(@intervention)
+
+    assert_response :success
+    assert_select "input[type=file][name='intervention[photos_demande][]'][multiple]"
+  end
+
+  test 'update ajoute une photo de demande sans toucher aux photos de réalisation' do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+
+    assert_difference('@intervention.photos_demande.count', 1) do
+      assert_no_difference('@intervention.photos.count') do
+        patch intervention_url(@intervention), params: {
+          intervention: { photos_demande: [fixture_file_upload('exemple.png', 'image/png')] }
+        }
+      end
+    end
+  end
+
+  test 'update conserve les photos de demande ré-émises en signed_id et ajoute la nouvelle' do
+    @intervention.photos_demande.attach(file_fixture('exemple.png'))
+    @intervention.save
+    existante = @intervention.photos_demande.first
+
+    patch intervention_url(@intervention), params: {
+      intervention: { photos_demande: [existante.signed_id, fixture_file_upload('exemple.png', 'image/png')] }
+    }
+
+    assert_equal 2, @intervention.reload.photos_demande.count
+  end
+
+  test "update d'une photo de demande est tracé dans l'audit trail" do
+    assert_difference('@intervention.audits.count', 1) do
+      patch intervention_url(@intervention), params: {
+        intervention: { photos_demande: [fixture_file_upload('exemple.png', 'image/png')] }
+      }
+    end
+
+    assert_equal 'photo de la demande ajoutée', @intervention.audits.last.comment.sub(/\A\d+ /, '')
+  end
+
+  test 'purge : une photo de demande est supprimée par la même action que les photos' do
+    @intervention.photos_demande.attach(file_fixture('exemple.png'))
+    @intervention.save
+
+    assert_difference('@intervention.photos_demande.count', -1) do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos_demande.first.id
+      }
+    end
+
+    assert_redirected_to @intervention
+  end
+
+  test 'purge : la photo de demande est réellement supprimée (blob détruit et fichier effacé)' do
+    @intervention.photos_demande.attach(file_fixture('exemple.png'))
+    @intervention.save
+    blob = @intervention.photos_demande.first.blob
+
+    assert_difference('ActiveStorage::Blob.count', -1) do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos_demande.first.id
+      }
+    end
+
+    assert_not ActiveStorage::Blob.exists?(blob.id)
+    assert_not ActiveStorage::Blob.service.exist?(blob.key)
+  end
+
+  test 'purge : supprimer une photo de demande laisse les photos de réalisation intactes' do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.photos_demande.attach(file_fixture('exemple.png'))
+    @intervention.save
+
+    assert_no_difference('@intervention.photos.count') do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos_demande.first.id
+      }
+    end
+
+    assert_equal 0, @intervention.reload.photos_demande.count
+  end
+
+  test "purge : un agent affecté à l'intervention peut supprimer une photo de demande" do
+    @intervention.photos_demande.attach(file_fixture('exemple.png'))
+    @intervention.save
+    sign_in users(:bond)
+
+    assert_difference('@intervention.photos_demande.count', -1) do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos_demande.first.id
+      }
+    end
+  end
+
+  test "purge : un agent NON affecté est refusé et la photo de demande reste" do
+    @intervention.photos_demande.attach(file_fixture('exemple.png'))
+    @intervention.save
+    sign_in users(:martin_technique_paris)
+
+    assert_no_difference('ActiveStorage::Attachment.count') do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos_demande.first.id
+      }
+    end
+
+    assert_redirected_to root_path
+  end
+
+  test "purge : impossible de supprimer la photo de demande d'une AUTRE intervention" do
+    autre = interventions(:nouvelle_intervention)
+    autre.photos_demande.attach(file_fixture('exemple.png'))
+    autre.save
+    cible = autre.photos_demande.first
+
+    assert_no_difference('ActiveStorage::Attachment.count') do
+      delete purge_intervention_url(@intervention), params: { photo_id: cible.id }
+    end
+
+    assert_response :not_found
+  end
+
   test 'purge : non connecté → redirigé vers la connexion' do
     @intervention.photos.attach(file_fixture('exemple.png'))
     @intervention.save
