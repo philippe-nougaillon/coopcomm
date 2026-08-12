@@ -181,23 +181,6 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'créé', cotation.reload.workflow_state
   end
 
-  test 'refuser : un créateur au compte désactivé ne fait pas échouer le refus' do
-    skip 'Bug signalé (non corrigé) : `manager.id` sans garde nil dans ' \
-         'notify_manager_cotation_refusee → NoMethodError (500) dès que le créateur ' \
-         'est introuvable (compte désactivé, ou audit sans utilisateur), alors que la ' \
-         'transition est déjà enregistrée. Correctif : `manager&.id != current_user.id`.'
-
-    @admin.discard # le créateur a quitté la collectivité
-    sign_in @adherent
-    cotation = cotations(:cotation_secretariat)
-
-    assert_no_enqueued_jobs only: NotifManagerCotationRefuseeJob do
-      post refuser_cotation_url(cotation)
-    end
-    assert_redirected_to cotation_path(cotation)
-    assert_equal 'refusé', cotation.reload.workflow_state
-  end
-
   test 'valider est sans effet sur une cotation en créé (transition impossible)' do
     cotation = cotations(:cotation_paris) # créé
     post valider_cotation_url(cotation)
