@@ -252,7 +252,11 @@ class InterventionsController < ApplicationController
   end
 
   def purge
-    @intervention.photos.find(params[:photo_id]).purge
+    @intervention.photos.attachments
+                  .or(@intervention.photos_demande.attachments)
+                  .find(params[:photo_id])
+                  .purge
+
     @intervention.update(audit_comment: 'Photo supprimée')
     redirect_to @intervention, notice: 'Photo supprimée', status: :see_other
   end
@@ -545,7 +549,7 @@ class InterventionsController < ApplicationController
   # :workflow_state, :note et :avis sont volontairement exclus du mass assignment.
   def intervention_params
     permitted = params.require(:intervention).permit(:adherent_id, :service_id, :début, :début_hour, :début_minute, :fin,
-                                                     :fin_hour, :fin_minute, :temps_de_pause, :temps_total, :description, :commentaires, :tag_list, :repeter, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute, :meteo, photos: [], agent_ids: [], tool_ids: [])
+                                                     :fin_hour, :fin_minute, :temps_de_pause, :temps_total, :description, :commentaires, :tag_list, :repeter, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute, :meteo, photos: [], agent_ids: [], tool_ids: [], photos_demande: [])
     permitted.merge!(params.require(:intervention).permit(:note, :avis)) if current_user.adhérent? || current_user.manager_or_admin?
     permitted
   end

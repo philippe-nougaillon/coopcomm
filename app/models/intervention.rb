@@ -37,8 +37,10 @@ class Intervention < ApplicationRecord
   has_one :organisation, through: :service
 
   has_many_attached :photos
+  has_many_attached :photos_demande
 
   valide_image :photos
+  valide_image :photos_demande
 
   MESSAGE_AGENT_UNIQUE = "Une intervention de pointage n'accepte qu'un seul agent"
 

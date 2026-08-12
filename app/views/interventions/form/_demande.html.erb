@@ -97,3 +97,17 @@
 
   </div>
 <% end %>
+
+<div class="col-span-1 md:col-span-2 pt-2">
+  <% intervention.photos_demande.each do |photo| %>
+    <% unless photo.new_record? %>
+      <%= form.hidden_field :photos_demande, multiple: true, value: photo.signed_id %>
+    <% end %>
+  <% end %>
+  <%= render "shared/file_dropzone",
+               form: form,
+               attribute: :photos_demande,
+               placeholder: "Glissez les photos pour l'intervention ici ou cliquez pour parcourir",
+               label: "Photos pour l'intervention",
+               replace_hint: false %>
+</div>
