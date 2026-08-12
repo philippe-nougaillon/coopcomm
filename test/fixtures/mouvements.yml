@@ -19,3 +19,9 @@ mouvement_marseille:
   user: agent_marseille
   état: 0
   date: <%= 2.days.ago %>
+
+mouvement_adherent:
+  tool: outil_adherent
+  user: weil
+  état: 0
+  date: <%= 3.days.ago %>

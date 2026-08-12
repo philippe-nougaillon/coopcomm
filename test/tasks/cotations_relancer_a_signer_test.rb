@@ -16,6 +16,12 @@ class CotationsRelancerASignerTaskTest < ActiveJob::TestCase
 
     @adherent = users(:weil) # a cotation_secretariat en état « envoyé »
     @cotation = cotations(:cotation_secretariat)
+
+    # La tâche balaie TOUTE la base : sans ce nettoyage, chaque cotation « envoyé »
+    # ajoutée aux fixtures ferait échouer les comptages de jobs ci-dessous.
+    Cotation.where(workflow_state: Cotation::ENVOYE)
+            .where.not(id: @cotation.id)
+            .update_all(workflow_state: Cotation::CREE)
   end
 
   test 'enfile le job pour un adhérent ayant une cotation à signer, sans mail récent' do

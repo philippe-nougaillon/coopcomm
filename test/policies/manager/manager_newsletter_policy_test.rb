@@ -6,22 +6,17 @@ class ManagerNewsletterPolicyTest < ActionDispatch::IntegrationTest
   def setup
     manager = users(:hidalgo)
 
-    mail = newsletters(:bond)
+    newsletter = newsletters(:bond)
 
-    @policy = NewsletterPolicy.new(manager, mail)
+    @policy = NewsletterPolicy.new(manager, newsletter)
   end
 
-  test "accès interdit pour un manager avec l'index d'une newsletter" do
-    refute @policy.index?
-  end
-
-  # Il peut créer ou supprimer car n'importe qui peut s'abonner et se désabonner, le slug est présent pour la sécurité
-
-  test "accès autorisé pour un manager avec la création d'une newsletter" do
+  test 'accès autorisé pour un manager sur un abonnement à la newsletter' do
     assert @policy.new?
+    assert @policy.destroy?
   end
 
-  test "accès autorisé pour un manager avec la suppression d'une newsletter" do
-    assert @policy.destroy?
+  test 'accès interdit pour un manager sur un abonnement à la newsletter' do
+    refute @policy.index?
   end
 end

@@ -429,11 +429,12 @@ class AdherentCrmControllerTest < ActionDispatch::IntegrationTest
   test 'la seconde page contient le reste des cotations' do
     creer_cotations(20)
     sign_in users(:administrateur_paris)
+    total = Cotation.visible_to(users(:administrateur_paris)).count
 
     get adherent_crm_url(page: 2)
 
-    assert_equal 22, assigns(:pagy).count
-    assert_equal 7, assigns(:cotations).size
+    assert_equal total, assigns(:pagy).count
+    assert_equal total - 15, assigns(:cotations).size
   end
 
   test 'une page hors bornes redirige au lieu de lever une erreur' do

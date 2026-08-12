@@ -2,39 +2,48 @@
 
 require 'test_helper'
 
-# Rôles sans aucun droit de gestion des factures (adhérent et agent regroupés).
 class AdherentFacturePolicyTest < ActionDispatch::IntegrationTest
   def setup
     @adherent = users(:weil)
-    @agent = users(:agent_whatsapp)
-    @facture = factures(:facture_paris)
+
+    facture_envoyée = factures(:facture_secretariat)
+    facture_créée = factures(:facture_paris)
+    facture_autre_adherent = factures(:facture_marseille)
+
+    @policy = FacturePolicy.new(@adherent, facture_envoyée)
+    @policy_créée = FacturePolicy.new(@adherent, facture_créée)
+    @policy_autre_adherent = FacturePolicy.new(@adherent, facture_autre_adherent)
   end
 
-  test "un adhérent voit le détail de ses propres factures quel que soit l'état" do
-    @facture.update!(adherent_id: @adherent.id, workflow_state: 'envoyé')
-    policy = FacturePolicy.new(@adherent, @facture)
-    assert policy.show?
+  test 'accès autorisé pour un adhérent sur une facture envoyée dont il est le destinataire' do
+    assert @policy.index?
+    assert @policy.show?
+    assert @policy.pdf?
   end
 
-  test "un adhérent ne voit pas le détail de ses propres factures à l'état créé" do
-    @facture.update!(adherent_id: @adherent.id, workflow_state: 'créé')
-    policy = FacturePolicy.new(@adherent, @facture)
-    refute policy.show?
+  test 'accès interdit pour un adhérent sur une facture envoyée dont il est le destinataire' do
+    refute @policy.update?
+    refute @policy.destroy?
+    refute @policy.envoyer?
+    refute @policy.valider?
+    refute @policy.refuser?
   end
 
-  test "un adhérent n'a pas accès aux factures d'un autre adhérent" do
-    autre_adherent = users(:patrick_adherent_paris)
-    @facture.update!(adherent_id: autre_adherent.id, workflow_state: 'envoyé')
-    policy = FacturePolicy.new(@adherent, @facture)
-    refute policy.show?
+  test 'accès interdit pour un adhérent sur une facture créée dont il est le destinataire' do
+    refute @policy_créée.show?
+    refute @policy_créée.pdf?
   end
 
-  test "un agent n'a aucun accès aux factures" do
-    policy = FacturePolicy.new(@agent, @facture)
-    refute policy.index?
-    refute policy.show?
-    refute policy.update?
-    refute policy.destroy?
-    refute policy.pdf?
+  test "accès interdit pour un adhérent sur une facture d'un autre adhérent" do
+    refute @policy_autre_adherent.show?
+    refute @policy_autre_adherent.pdf?
+  end
+
+  test 'scope : un adhérent ne voit que ses propres factures déjà envoyées' do
+    scope = FacturePolicy::Scope.new(@adherent, Facture.all).resolve
+
+    assert_includes scope, factures(:facture_secretariat)
+    refute_includes scope, factures(:facture_paris)
+    refute_includes scope, factures(:facture_marseille)
   end
 end

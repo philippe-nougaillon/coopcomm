@@ -4,15 +4,14 @@ require 'test_helper'
 
 class ManagerConventionPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    @manager = users(:hidalgo) # mairie_paris : service_paris, informatique, technique
+    @manager = users(:hidalgo)
 
-    convention = conventions(:convention_paris)               # service informatique
-    convention_autre_org = conventions(:convention_marseille) # mairie_marseille
+    convention = conventions(:convention_paris)
+    convention_autre_org = conventions(:convention_marseille)
 
     @policy = ConventionPolicy.new(@manager, convention)
-    @policy_autre_org = ConventionPolicy.new(@manager, convention_autre_org)
-    # manager_paris est de la même organisation mais ne gère pas le service informatique
     @policy_autre_service = ConventionPolicy.new(users(:manager_paris), convention)
+    @policy_autre_org = ConventionPolicy.new(@manager, convention_autre_org)
   end
 
   test 'accès autorisé pour un manager sur une convention de son service' do

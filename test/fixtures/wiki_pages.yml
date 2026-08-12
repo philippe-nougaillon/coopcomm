@@ -23,3 +23,10 @@ blog_only_admin:
   publiée: true
   user: administrateur_paris
   poids: 4
+
+wiki_page_publique:
+  titre: page publique
+  publiée: true
+  private: false
+  user: hidalgo
+  poids: 2

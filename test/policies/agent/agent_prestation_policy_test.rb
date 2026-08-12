@@ -2,16 +2,16 @@
 
 require 'test_helper'
 
-class AdherentPrestationPolicyTest < ActionDispatch::IntegrationTest
+class AgentPrestationPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    @adherent = users(:weil)
+    @agent = users(:martin_technique_paris)
 
     prestation = prestations(:nettoyage_bureaux)
 
-    @policy = PrestationPolicy.new(@adherent, prestation)
+    @policy = PrestationPolicy.new(@agent, prestation)
   end
 
-  test 'accès interdit pour un adhérent sur une prestation de son organisation' do
+  test 'accès interdit pour un agent sur une prestation de son organisation' do
     refute @policy.show?
     refute @policy.new?
     refute @policy.create?
@@ -20,8 +20,8 @@ class AdherentPrestationPolicyTest < ActionDispatch::IntegrationTest
     refute @policy.destroy?
   end
 
-  test 'scope : un adhérent ne voit que les prestations de son organisation' do
-    scope = PrestationPolicy::Scope.new(@adherent, Prestation.all).resolve
+  test 'scope : un agent ne voit que les prestations de son organisation' do
+    scope = PrestationPolicy::Scope.new(@agent, Prestation.all).resolve
 
     assert_includes scope, prestations(:nettoyage_bureaux)
     refute_includes scope, prestations(:prestation_marseille)

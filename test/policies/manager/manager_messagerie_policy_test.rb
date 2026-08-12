@@ -6,28 +6,16 @@ class ManagerMessageriePolicyTest < ActionDispatch::IntegrationTest
   def setup
     manager = users(:hidalgo)
 
-    interlocutor_user = users(:martin_technique_paris)
+    interlocuteur = users(:martin_technique_paris)
 
-    @policy = MessageriePolicy.new(manager, interlocutor_user)
+    @policy = MessageriePolicy.new(manager, interlocuteur)
   end
 
-  # Messagerie
-  test 'accès autorisé pour un agent sur la page index de messagerie' do
+  test 'accès autorisé pour un manager sur une conversation avec un utilisateur' do
     assert @policy.index?
-  end
-
-  # Send message
-  test 'accès autorisé pour un agent sur la page send_message de messagerie' do
+    assert @policy.conversation?
     assert @policy.send_message?
-  end
-
-  # Search contact
-  test 'accès autorisé pour un agent sur la page search_contact de messagerie' do
     assert @policy.search_contact?
-  end
-
-  # Mark as read
-  test 'accès autorisé pour un agent sur la page mark_as_read de messagerie' do
     assert @policy.mark_as_read?
   end
 end

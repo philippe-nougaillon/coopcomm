@@ -4,20 +4,15 @@ require 'test_helper'
 
 class AgentDocumentPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    agent_paris = users(:martin_technique_paris)
+    agent = users(:martin_technique_paris)
 
     document = documents(:carte_grise)
 
-    @policy = DocumentPolicy.new(agent_paris, document)
+    @policy = DocumentPolicy.new(agent, document)
   end
 
-  # Valider
-  test 'accès agent document valider interdit' do
+  test "accès interdit pour un agent sur un document d'un outil de son organisation" do
     refute @policy.valider?
-  end
-
-  # Refuser
-  test 'accès agent document refuser interdit' do
     refute @policy.refuser?
   end
 end

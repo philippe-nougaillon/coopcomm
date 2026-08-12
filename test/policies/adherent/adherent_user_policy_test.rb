@@ -4,75 +4,42 @@ require 'test_helper'
 
 class AdherentUserPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    adherent_paris = users(:patrick_adherent_paris)
+    adherent = users(:weil)
 
-    user_paris = users(:user_paris)
+    user = users(:user_paris)
 
-    @policy = UserPolicy.new(adherent_paris, user_paris)
-    @policy_user_myself = UserPolicy.new(adherent_paris, adherent_paris)
+    @policy = UserPolicy.new(adherent, user)
+    @policy_user_myself = UserPolicy.new(adherent, adherent)
   end
 
-  # Index
-  test 'accès adhérent user index interdit' do
+  test 'accès interdit pour un adhérent sur un user de son organisation' do
     refute @policy.index?
-  end
-
-  # Show
-  test 'accès adhérent user show interdit' do
     refute @policy.show?
-  end
-
-  test 'accès autorisé pour un adhérent sur sa page show' do
-    assert @policy_user_myself.show?
-  end
-
-  # New
-  test 'accès adhérent user new interdit' do
     refute @policy.new?
-  end
-
-  # Create
-  test 'accès adhérent user create interdit' do
     refute @policy.create?
-  end
-
-  # Edit
-  test 'accès adhérent user edit interdit' do
     refute @policy.edit?
-  end
-
-  # Update
-  test 'accès adhérent user update interdit' do
     refute @policy.update?
-  end
-
-  # Destroy
-  test 'accès adhérent user destroy interdit' do
     refute @policy.destroy?
-  end
-
-  # Agent calendrier
-  test 'accès adhérent user agent calendrier interdit' do
-    refute @policy.agent_calendrier?
-  end
-
-  # Inviter
-  test "accès interdit pour un adherent sur la page inviter d'un user" do
     refute @policy.inviter?
+    refute @policy.reactivate?
+    refute @policy.agent_calendrier?
+    refute @policy.import?
+    refute @policy.import_do?
+    refute @policy.edit_password?
+    refute @policy.update_password?
   end
 
-  # Edit password
-  test 'accès autorisé pour un adherent sur sa page edit_password' do
+  test 'accès autorisé pour un adhérent sur sa propre fiche' do
+    assert @policy_user_myself.show?
+    assert @policy_user_myself.edit?
+    assert @policy_user_myself.update?
     assert @policy_user_myself.edit_password?
-  end
-
-  # Update password
-  test 'accès autorisé pour un adherent sur sa page update_password' do
     assert @policy_user_myself.update_password?
   end
 
-  # Reactivate
-  test "accès interdit pour un adherent sur la page reactivate d'un user" do
-    refute @policy.reactivate?
+  test 'accès interdit pour un adhérent sur sa propre fiche' do
+    refute @policy_user_myself.destroy?
+    refute @policy_user_myself.inviter?
+    refute @policy_user_myself.reactivate?
   end
 end

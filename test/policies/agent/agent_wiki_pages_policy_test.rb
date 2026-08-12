@@ -4,35 +4,35 @@ require 'test_helper'
 
 class AgentWikiPagesPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    agent_paris = users(:martin_technique_paris)
+    agent = users(:martin_technique_paris)
 
-    wiki_page = wiki_pages(:blog)
+    wiki_page_publique = wiki_pages(:wiki_page_publique)
+    wiki_page_privée = wiki_pages(:blog)
+    wiki_page_non_publiée = wiki_pages(:guide)
 
-    @policy = WikiPagePolicy.new(agent_paris, wiki_page)
+    @policy = WikiPagePolicy.new(agent, wiki_page_publique)
+    @policy_privée = WikiPagePolicy.new(agent, wiki_page_privée)
+    @policy_non_publiée = WikiPagePolicy.new(agent, wiki_page_non_publiée)
   end
 
-  # New
-  test 'accès interdit pour un agent pour un new de wiki pages' do
+  test 'accès autorisé pour un agent sur une page wiki publique' do
+    assert @policy.index?
+    assert @policy.show?
+  end
+
+  test 'accès interdit pour un agent sur une page wiki publique' do
     refute @policy.new?
-  end
-
-  # Create
-  test 'accès interdit pour un agent pour un create de wiki pages' do
     refute @policy.create?
-  end
-
-  # Edit
-  test 'accès interdit pour un agent pour un edit de wiki pages' do
     refute @policy.edit?
-  end
-
-  # Update
-  test 'accès interdit pour un agent pour un update de wiki pages' do
     refute @policy.update?
+    refute @policy.destroy?
   end
 
-  # Destroy
-  test 'accès interdit pour un agent pour un destroy de wiki pages' do
-    refute @policy.destroy?
+  test 'accès interdit pour un agent sur une page wiki privée' do
+    refute @policy_privée.show?
+  end
+
+  test 'accès interdit pour un agent sur une page wiki non publiée' do
+    refute @policy_non_publiée.show?
   end
 end

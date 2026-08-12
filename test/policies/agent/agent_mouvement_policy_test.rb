@@ -6,54 +6,33 @@ class AgentMouvementPolicyTest < ActionDispatch::IntegrationTest
   def setup
     agent = users(:bond)
 
-    @mouvement = mouvements(:mouvement_tondeuse)
+    mouvement = mouvements(:mouvement_tondeuse)
+    mouvement_autre_org = mouvements(:mouvement_marseille)
 
-    @policy = MouvementPolicy.new(agent, @mouvement)
+    @policy = MouvementPolicy.new(agent, mouvement)
+    @policy_autre_agent = MouvementPolicy.new(users(:martin_technique_paris), mouvement)
+    @policy_autre_org = MouvementPolicy.new(agent, mouvement_autre_org)
   end
 
-  # Index
-  test 'accès interdit pour un agent sur la page index des mouvements' do
-    refute @policy.index?
-  end
-
-  # show
-  test "accès interdit pour un agent sur la page show d'un mouvement" do
-    refute @policy.show?
-  end
-
-  # New
-  test "accès interdit pour un agent sur la page new d'un mouvement" do
-    refute @policy.new?
-  end
-
-  # Create
-  test "accès interdit pour un agent sur la page create d'un mouvement" do
-    refute @policy.create?
-  end
-
-  # Edit
-  test "accès interdit pour un agent sur la page edit d'un mouvement" do
-    refute @policy.edit?
-  end
-
-  # Update
-  test "accès interdit pour un agent sur la page update d'un mouvement" do
-    refute @policy.update?
-  end
-
-  # reserve
-  test "accès autorisé pour un administrateur sur la page reserve d'un mouvement" do
+  test 'accès autorisé pour un agent sur sa propre réservation' do
     assert @policy.reserve?
-  end
-
-  # libere
-  test "un agent peut libérer sa propre réservation" do
     assert @policy.libere?
   end
 
-  test "un agent ne peut pas libérer la réservation d'un autre" do
-    policy = MouvementPolicy.new(users(:martin_technique_paris), @mouvement)
+  test 'accès interdit pour un agent sur sa propre réservation' do
+    refute @policy.index?
+    refute @policy.show?
+    refute @policy.new?
+    refute @policy.create?
+    refute @policy.edit?
+    refute @policy.update?
+  end
 
-    refute policy.libere?
+  test "accès interdit pour un agent sur la réservation d'un autre agent" do
+    refute @policy_autre_agent.libere?
+  end
+
+  test "accès interdit pour un agent sur une réservation d'une autre organisation" do
+    refute @policy_autre_org.libere?
   end
 end

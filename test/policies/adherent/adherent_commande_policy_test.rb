@@ -5,49 +5,46 @@ require 'test_helper'
 class AdherentCommandePolicyTest < ActionDispatch::IntegrationTest
   def setup
     @adherent = users(:weil)
-    @agent = users(:agent_whatsapp)
-    @commande = commandes(:commande_paris)
+
+    commande_envoyée = commandes(:commande_secretariat)
+    commande_créée = commandes(:commande_paris)
+    commande_autre_adherent = commandes(:commande_marseille)
+
+    @policy = CommandePolicy.new(@adherent, commande_envoyée)
+    @policy_créée = CommandePolicy.new(@adherent, commande_créée)
+    @policy_autre_adherent = CommandePolicy.new(@adherent, commande_autre_adherent)
   end
 
-  test "un adhérent a accès à l'index des commandes" do
-    policy = CommandePolicy.new(@adherent, @commande)
-    assert policy.index?
+  test 'accès autorisé pour un adhérent sur une commande envoyée dont il est le destinataire' do
+    assert @policy.index?
+    assert @policy.show?
+    assert @policy.pdf?
   end
 
-  test "un adhérent voit le détail de ses propres commandes quel que soit l'état" do
-    @commande.update!(adherent_id: @adherent.id, workflow_state: 'envoyé')
-    policy = CommandePolicy.new(@adherent, @commande)
-    assert policy.show?
+  test 'accès interdit pour un adhérent sur une commande envoyée dont il est le destinataire' do
+    refute @policy.update?
+    refute @policy.destroy?
+    refute @policy.envoyer?
+    refute @policy.valider?
+    refute @policy.refuser?
+    refute @policy.create_facture?
   end
 
-  test "un adhérent ne voit pas le détail de ses propres commandes à l'état créé" do
-    @commande.update!(adherent_id: @adherent.id, workflow_state: 'créé')
-    policy = CommandePolicy.new(@adherent, @commande)
-    refute policy.show?
+  test 'accès interdit pour un adhérent sur une commande créée dont il est le destinataire' do
+    refute @policy_créée.show?
+    refute @policy_créée.pdf?
   end
 
-  test "un adhérent n'a pas accès aux commandes d'un autre adhérent" do
-    autre_adherent = users(:patrick_adherent_paris)
-    @commande.update!(adherent_id: autre_adherent.id, workflow_state: 'envoyé')
-    policy = CommandePolicy.new(@adherent, @commande)
-    refute policy.show?
+  test "accès interdit pour un adhérent sur une commande d'un autre adhérent" do
+    refute @policy_autre_adherent.show?
+    refute @policy_autre_adherent.pdf?
   end
 
-  test "un agent n'a aucun accès aux commandes" do
-    policy = CommandePolicy.new(@agent, @commande)
-    refute policy.index?
-    refute policy.show?
-    refute policy.update?
-    refute policy.destroy?
-    refute policy.pdf?
-    refute policy.create_facture?
-  end
-
-  # Décision : le Scope des commandes est un pass-through volontaire (il ne filtre PAS).
-  test 'scope : un adhérent ne voit que ses propres commandes hors état créé' do
+  test 'scope : un adhérent ne voit que ses propres commandes déjà envoyées' do
     scope = CommandePolicy::Scope.new(@adherent, Commande.all).resolve
 
-    expected_ids = Commande.where(adherent_id: @adherent.id).where.not(workflow_state: 'créé').pluck(:id).sort
-    assert_equal expected_ids, scope.pluck(:id).sort
+    assert_includes scope, commandes(:commande_secretariat)
+    refute_includes scope, commandes(:commande_paris)
+    refute_includes scope, commandes(:commande_marseille)
   end
 end

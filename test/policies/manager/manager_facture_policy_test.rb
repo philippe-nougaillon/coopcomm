@@ -4,57 +4,68 @@ require 'test_helper'
 
 class ManagerFacturePolicyTest < ActionDispatch::IntegrationTest
   def setup
-    @manager = users(:manager_paris) # gère service_paris et secretariat
+    @manager = users(:hidalgo)
 
-    facture_son_service = factures(:facture_secretariat) # service: secretariat, état « envoyé »
-    facture_autre_service = factures(:facture_paris)      # service: informatique
-    facture_autre_org = factures(:facture_marseille)      # mairie_marseille
+    facture_créée = factures(:facture_paris)
+    facture_envoyée = factures(:facture_envoyée)
+    facture_autre_service = factures(:facture_secretariat)
+    facture_autre_org = factures(:facture_marseille)
 
-    @policy = FacturePolicy.new(@manager, facture_son_service)
+    @policy = FacturePolicy.new(@manager, facture_créée)
+    @policy_envoyée = FacturePolicy.new(@manager, facture_envoyée)
     @policy_autre_service = FacturePolicy.new(@manager, facture_autre_service)
     @policy_autre_org = FacturePolicy.new(@manager, facture_autre_org)
   end
 
-  test 'index autorisé pour un manager' do
+  test 'accès autorisé pour un manager sur une facture créée de son service' do
     assert @policy.index?
-  end
-
-  test 'show / destroy / pdf autorisés sur une facture de son service' do
     assert @policy.show?
-    assert @policy.destroy?
     assert @policy.pdf?
-  end
-
-  test 'transitions autorisées sur une facture de son service' do
+    assert @policy.update?
+    assert @policy.destroy?
     assert @policy.envoyer?
     assert @policy.valider?
     assert @policy.refuser?
   end
 
-  # --- Verrou d'édition selon l'état (modifiable?) ---
-
-  test 'update interdit sur une facture envoyée de son service' do
-    # facture_secretariat est à l'état « envoyé » (non modifiable)
-    refute @policy.update?
-    refute @policy.edit?
+  test 'accès autorisé pour un manager sur une facture envoyée de son service' do
+    assert @policy_envoyée.show?
+    assert @policy_envoyée.pdf?
+    assert @policy_envoyée.destroy?
+    assert @policy_envoyée.envoyer?
+    assert @policy_envoyée.valider?
+    assert @policy_envoyée.refuser?
   end
 
-  test 'update autorisé sur une facture modifiable (créé) de son service' do
-    facture_creee = Facture.new(service: services(:secretariat), adherent: users(:weil), intitulé: 'Brouillon')
-    policy = FacturePolicy.new(@manager, facture_creee)
-    assert policy.update?
-    assert policy.edit?
+  test 'accès interdit pour un manager sur une facture envoyée de son service' do
+    refute @policy_envoyée.update?
   end
 
-  test "accès interdit sur une facture d'un service qu'il ne gère pas" do
+  test "accès interdit pour un manager sur une facture d'un service qu'il ne gère pas" do
     refute @policy_autre_service.show?
+    refute @policy_autre_service.pdf?
     refute @policy_autre_service.update?
     refute @policy_autre_service.destroy?
-    refute @policy_autre_service.pdf?
+    refute @policy_autre_service.envoyer?
+    refute @policy_autre_service.valider?
+    refute @policy_autre_service.refuser?
   end
 
-  test "accès interdit sur une facture d'une autre organisation" do
+  test "accès interdit pour un manager sur une facture d'une autre organisation" do
     refute @policy_autre_org.show?
+    refute @policy_autre_org.pdf?
+    refute @policy_autre_org.update?
     refute @policy_autre_org.destroy?
+    refute @policy_autre_org.envoyer?
+    refute @policy_autre_org.valider?
+    refute @policy_autre_org.refuser?
+  end
+
+  test "scope : un manager ne voit que les factures des services qu'il gère" do
+    scope = FacturePolicy::Scope.new(@manager, Facture.all).resolve
+
+    assert_includes scope, factures(:facture_paris)
+    refute_includes scope, factures(:facture_secretariat)
+    refute_includes scope, factures(:facture_marseille)
   end
 end

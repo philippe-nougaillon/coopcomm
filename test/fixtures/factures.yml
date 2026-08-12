@@ -36,3 +36,12 @@ facture_validée:
   workflow_state: "validé"
   total_ht: 0
   slug: <%= SecureRandom.uuid %>
+
+facture_envoyée:
+  adherent: weil
+  service: informatique
+  ref: "2026-4"
+  intitulé: Facture informatique envoyée
+  workflow_state: "envoyé"
+  total_ht: 0
+  slug: <%= SecureRandom.uuid %>
