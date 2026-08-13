@@ -67,6 +67,10 @@ class InterventionPolicy < ApplicationPolicy
     show?
   end
 
+  def purger_photos_demande?
+    purge? && !agent?
+  end
+
   def get_unavailable_elements?
     index?
   end

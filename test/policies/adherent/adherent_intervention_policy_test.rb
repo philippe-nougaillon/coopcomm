@@ -25,6 +25,7 @@ class AdherentInterventionPolicyTest < ActionDispatch::IntegrationTest
     assert @policy.edit?
     assert @policy.update?
     assert @policy.purge?
+    assert @policy.purger_photos_demande?
     assert @policy.valider?
     assert @policy.refuser?
     assert @policy.can_see_qrcode_pointage_pdf?

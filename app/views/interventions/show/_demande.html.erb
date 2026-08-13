@@ -65,7 +65,9 @@
     <div class="mt-6 pt-6 border-t border-slate-100 shrink-0">
       <%= render "interventions/show/photo_gallery", photos: intervention.photos_demande,
                                                      titre: "Photos de la demande",
-                                                     message_vide: "Aucune photo n'est attachée à la demande." %>
+                                                     message_vide: "Aucune photo n'est attachée à la demande.",
+                                                     supprimable: policy(intervention).purger_photos_demande?,
+                                                     chemin_suppression: ->(photo) { purger_photos_demande_intervention_path(photo_id: photo.id) } %>
     </div>
   </div>
 </section>

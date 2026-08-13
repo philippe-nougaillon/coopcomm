@@ -204,6 +204,20 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     end
   end
 
+  test "un agent ne peut pas supprimer une photo de la demande" do
+    intervention = interventions(:tonte_locaux)
+    intervention.photos.attach(io: File.open(image_path), filename: 'exemple.png', content_type: 'image/png')
+    intervention.photos_demande.attach(io: File.open(image_path), filename: 'exemple.png', content_type: 'image/png')
+    photo_realisation = intervention.photos.first
+    photo_demande = intervention.photos_demande.first
+
+    visit intervention_url(intervention)
+    assert_text 'PHOTOS DE LA DEMANDE'
+
+    assert_selector "form[action*='photo_id=#{photo_realisation.id}']"
+    assert_no_selector "form[action*='photo_id=#{photo_demande.id}']"
+  end
+
   def image_path
     Rails.root.join('test/fixtures/files/exemple.png').to_s
   end

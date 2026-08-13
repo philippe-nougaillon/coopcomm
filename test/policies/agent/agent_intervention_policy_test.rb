@@ -36,6 +36,7 @@ class AgentInterventionPolicyTest < ActionDispatch::IntegrationTest
 
   test 'accès interdit pour un agent sur une intervention à laquelle il est affecté' do
     refute @policy.destroy?
+    refute @policy.purger_photos_demande?
     refute @policy.valider?
     refute @policy.refuser?
     refute @policy.archiver?

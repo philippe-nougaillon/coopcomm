@@ -151,13 +151,17 @@ class CacheFragmentsTest < ActionDispatch::IntegrationTest
     avec_cache do
       sign_in users(:bond)
       get tools_url
-      assert_select 'a[href=?]', liberer
-      assert_select 'span[title=?]', "Réservé par qqn d'autre", count: 0
+      assert_select "tr##{ActionView::RecordIdentifier.dom_id(outil)}" do
+        assert_select 'a[href=?]', liberer
+        assert_select 'span[title=?]', "Réservé par qqn d'autre", count: 0
+      end
 
       sign_in users(:martin_technique_paris)
       get tools_url
-      assert_select 'a[href=?]', liberer, count: 0
-      assert_select 'span[title=?]', "Réservé par qqn d'autre"
+      assert_select "tr##{ActionView::RecordIdentifier.dom_id(outil)}" do
+        assert_select 'a[href=?]', liberer, count: 0
+        assert_select 'span[title=?]', "Réservé par qqn d'autre"
+      end
     end
   end
 

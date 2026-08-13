@@ -2,8 +2,8 @@
 
 class InterventionsController < ApplicationController
   before_action :set_intervention,
-                only: %i[show edit update destroy terminer valider refuser archiver purge pointer pointage_statut
-                         update_location]
+                only: %i[show edit update destroy terminer valider refuser archiver purge purger_photos_demande
+                         pointer pointage_statut update_location]
   before_action :is_user_authorized
   before_action :set_form_variables,
                 only: %i[new edit create update new_intervention_modele_pointage create_intervention_modele_pointage]
@@ -252,13 +252,17 @@ class InterventionsController < ApplicationController
   end
 
   def purge
-    @intervention.photos.attachments
-                  .or(@intervention.photos_demande.attachments)
-                  .find(params[:photo_id])
-                  .purge
+    @intervention.photos.find(params[:photo_id]).purge
 
     @intervention.update(audit_comment: 'Photo supprimée')
     redirect_to @intervention, notice: 'Photo supprimée', status: :see_other
+  end
+
+  def purger_photos_demande
+    @intervention.photos_demande.find(params[:photo_id]).purge
+
+    @intervention.update(audit_comment: 'Photo de la demande supprimée')
+    redirect_to @intervention, notice: 'Photo de la demande supprimée', status: :see_other
   end
 
   def pointer

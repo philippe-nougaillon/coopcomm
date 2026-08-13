@@ -24,6 +24,7 @@ class AdministrateurInterventionPolicyTest < ActionDispatch::IntegrationTest
     assert @policy.update?
     assert @policy.destroy?
     assert @policy.purge?
+    assert @policy.purger_photos_demande?
     assert @policy.terminer?
     assert @policy.valider?
     assert @policy.refuser?

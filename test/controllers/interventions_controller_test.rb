@@ -803,7 +803,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     @intervention.save
 
     assert_difference('@intervention.photos_demande.count', -1) do
-      delete purge_intervention_url(@intervention), params: {
+      delete purger_photos_demande_intervention_url(@intervention), params: {
         photo_id: @intervention.photos_demande.first.id
       }
     end
@@ -817,7 +817,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     blob = @intervention.photos_demande.first.blob
 
     assert_difference('ActiveStorage::Blob.count', -1) do
-      delete purge_intervention_url(@intervention), params: {
+      delete purger_photos_demande_intervention_url(@intervention), params: {
         photo_id: @intervention.photos_demande.first.id
       }
     end
@@ -832,7 +832,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     @intervention.save
 
     assert_no_difference('@intervention.photos.count') do
-      delete purge_intervention_url(@intervention), params: {
+      delete purger_photos_demande_intervention_url(@intervention), params: {
         photo_id: @intervention.photos_demande.first.id
       }
     end
@@ -840,13 +840,54 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, @intervention.reload.photos_demande.count
   end
 
-  test "purge : un agent affecté à l'intervention peut supprimer une photo de demande" do
+  test "purge : un agent affecté à l'intervention ne peut pas supprimer une photo de demande" do
     @intervention.photos_demande.attach(file_fixture('exemple.png'))
     @intervention.save
     sign_in users(:bond)
 
-    assert_difference('@intervention.photos_demande.count', -1) do
+    assert_no_difference('@intervention.photos_demande.count') do
+      delete purger_photos_demande_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos_demande.first.id
+      }
+    end
+
+    assert_redirected_to root_path
+  end
+
+  test "purge : un agent affecté à l'intervention peut supprimer une photo de réalisation" do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.save
+    sign_in users(:bond)
+
+    assert_difference('@intervention.photos.count', -1) do
       delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos.first.id
+      }
+    end
+  end
+
+  test 'purge : les deux actions sont cloisonnées par type de photo' do
+    @intervention.photos.attach(file_fixture('exemple.png'))
+    @intervention.photos_demande.attach(file_fixture('exemple.png'))
+    @intervention.save
+
+    assert_no_difference('ActiveStorage::Attachment.count') do
+      delete purge_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos_demande.first.id
+      }
+      delete purger_photos_demande_intervention_url(@intervention), params: {
+        photo_id: @intervention.photos.first.id
+      }
+    end
+  end
+
+  test "purge : l'adhérent de l'intervention peut supprimer une photo de demande" do
+    @intervention.photos_demande.attach(file_fixture('exemple.png'))
+    @intervention.save
+    sign_in users(:weil)
+
+    assert_difference('@intervention.photos_demande.count', -1) do
+      delete purger_photos_demande_intervention_url(@intervention), params: {
         photo_id: @intervention.photos_demande.first.id
       }
     end
@@ -858,7 +899,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:martin_technique_paris)
 
     assert_no_difference('ActiveStorage::Attachment.count') do
-      delete purge_intervention_url(@intervention), params: {
+      delete purger_photos_demande_intervention_url(@intervention), params: {
         photo_id: @intervention.photos_demande.first.id
       }
     end
@@ -873,7 +914,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     cible = autre.photos_demande.first
 
     assert_no_difference('ActiveStorage::Attachment.count') do
-      delete purge_intervention_url(@intervention), params: { photo_id: cible.id }
+      delete purger_photos_demande_intervention_url(@intervention), params: { photo_id: cible.id }
     end
 
     assert_response :not_found
