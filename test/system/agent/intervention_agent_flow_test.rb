@@ -168,7 +168,7 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     intervention = interventions(:tonte_locaux)
     visit edit_intervention_url(intervention)
 
-    attach_file 'intervention_photos', gros_fichier.path, make_visible: true
+    attach_file 'intervention_photos', fichier_volumineux('.png', 11.megabytes), make_visible: true
     assert_text 'Fichier trop volumineux'
 
     cliquer_bouton 'enregistrer_intervention'
@@ -180,14 +180,6 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     assert_difference -> { intervention.reload.photos.count }, 1 do
       soumettre 'enregistrer_intervention'
       assert_text intervention.description
-    end
-  end
-
-  # Jamais envoyé au serveur : le contenu n'a pas à être une vraie image.
-  def gros_fichier
-    @gros_fichier ||= Tempfile.new(['gros', '.png']).tap do |fichier|
-      fichier.write('0' * 11.megabytes)
-      fichier.flush
     end
   end
 

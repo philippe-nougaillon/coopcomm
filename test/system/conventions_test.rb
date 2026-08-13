@@ -66,10 +66,7 @@ class ConventionsTest < ApplicationSystemTestCase
   test 'un fichier de plus de 20 Mo est refusé sans être envoyé' do
     visit new_convention_path
 
-    gros = Tempfile.new(['gros', '.pdf'])
-    gros.write('0' * 21.megabytes)
-    gros.flush
-    attach_file 'convention_document', gros.path, make_visible: true
+    attach_file 'convention_document', fichier_volumineux('.pdf', 21.megabytes), make_visible: true
 
     assert_text 'Fichier trop volumineux. Taille maximale : 20 Mo.'
     assert_selector "[data-controller='dropzone'][data-dropzone-state='error']"

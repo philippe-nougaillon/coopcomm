@@ -68,6 +68,21 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     assert_no_button locator, disabled: :all, wait: 10
   end
 
+  # Création d'un fichier volumineux
+  def fichier_volumineux(extension, taille)
+    chemin = Rails.root.join('tmp', "gros_#{SecureRandom.hex(4)}#{extension}")
+    chemin.dirname.mkpath
+    chemin.binwrite('0' * taille)
+
+    (@fichiers_volumineux ||= []) << chemin
+    chemin.to_s
+  end
+
+  # Suppression des fichiers volumineux créés
+  teardown do
+    @fichiers_volumineux&.each { |chemin| FileUtils.rm_f(chemin) }
+  end
+
   # Reproduit la transformation CSS `text-transform: capitalize` (majuscule
   # en début de chaque mot, sans toucher au reste) pour comparer avec le
   # texte tel qu'il est réellement affiché à l'écran.
