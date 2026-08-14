@@ -299,6 +299,15 @@ class UsersImportTest < ActionDispatch::IntegrationTest
     assert_no_match(/encrypted_password/, response.body)
   end
 
+  test 'import_do : aucun fichier n’est écrit dans public/' do
+    fichiers_avant = Dir[Rails.root.join('public', '*')].sort
+
+    importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test')],
+             save: 'true')
+
+    assert_equal fichiers_avant, Dir[Rails.root.join('public', '*')].sort
+  end
+
   private
 
   def importer(lignes, save: nil)

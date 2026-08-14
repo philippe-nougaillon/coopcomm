@@ -497,6 +497,39 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to user_url(@user)
   end
 
+  # ==================== TESTS CRITIQUES ====================
+
+  test 'critique : update par un agent sur lui-même, rôle administrateur soumis → rôle inchangé' do
+    bond = users(:bond)
+    sign_in bond
+
+    patch user_url(bond), params: { user: { nom: bond.nom, rôle: 'administrateur' } }
+
+    assert bond.reload.agent?
+  end
+
+  test 'critique : update par un manager, rôle manager soumis sur un agent → rôle inchangé' do
+    sign_in users(:hidalgo)
+    bond = users(:bond)
+
+    patch user_url(bond), params: { user: { nom: bond.nom, rôle: 'manager' } }
+
+    assert bond.reload.agent?
+  end
+
+  test 'critique : update, service_ids d’une autre organisation soumis → services inchangés' do
+    sign_in users(:hidalgo)
+    bond = users(:bond)
+    services_avant = bond.services.sort_by(&:id)
+
+    patch user_url(bond), params: { user: { nom: bond.nom, service_ids: [services(:service_marseille).id] } }
+
+    assert_not_includes bond.reload.services, services(:service_marseille)
+    assert_equal services_avant, bond.services.sort_by(&:id)
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
   test 'should destroy user' do
     assert_difference('User.count', -1) do
       delete user_url(@user)

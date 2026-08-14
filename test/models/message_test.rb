@@ -14,4 +14,11 @@ class MessageTest < ActiveSupport::TestCase
   test 'nb_bad_words vaut zéro sur un message correct' do
     assert_equal 0, Message.new(message: 'Bonjour, merci pour votre travail.').nb_bad_words
   end
+
+  test 'un destinataire d’une autre organisation est refusé' do
+    message = Message.new(from_user: users(:hidalgo), to_user: users(:manager_marseille), message: 'x')
+
+    assert_not message.valid?
+    assert_includes message.errors[:base], 'Destinataire injoignable'
+  end
 end

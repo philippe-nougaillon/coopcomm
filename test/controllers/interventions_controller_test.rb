@@ -355,120 +355,421 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     intervention
   end
 
+  # ==================== TESTS CRITIQUES ====================
+
+  test "critique : index, un mot clé d'une autre organisation → aucune intervention" do
+    sign_in users(:administrateur_paris)
+    interventions(:nettoyage_port).update!(tag_list: 'secret-marseille')
+
+    get interventions_url, params: { tags: ['secret-marseille'] }
+
+    assert_response :success
+    assert_empty assigns(:interventions)
+  end
+
+  test "critique : index, liste des mots clés proposée → bornée à l'organisation" do
+    sign_in users(:administrateur_paris)
+    interventions(:nettoyage_port).update!(tag_list: 'secret-marseille')
+    @intervention.update!(tag_list: 'urgence')
+
+    get interventions_url
+
+    assert_response :success
+    noms = assigns(:intervention_tags).map(&:name)
+    assert_includes noms, 'urgence'
+    assert_not_includes noms, 'secret-marseille'
+  end
+
+  test "critique : index, l'export XLS ne contient aucune intervention d'une autre organisation" do
+    get interventions_url(format: :xls)
+
+    assert_response :success
+    sheet = Spreadsheet.open(StringIO.new(response.body)).worksheet(0)
+    contenu = sheet.rows.map { |r| r.to_a.join(' ') }.join(' ')
+    assert_includes contenu, interventions(:tonte_locaux).description
+    assert_not_includes contenu, interventions(:nettoyage_port).description
+  end
+
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'should get index' do
-    get interventions_url
-    assert_response :success
-  end
-
-  # --- Pré-filtrage par service de l'index --------------------------------
-  # administrateur_paris (org mairie_paris) a pour services service_paris / informatique /
-  # technique.
-
-  test 'index : un administrateur voit toute son organisation par défaut' do
+  test 'index : rendu nominal' do
     sign_in users(:administrateur_paris)
-    hors_perimetre = interventions(:tonte_locaux)
-    hors_perimetre.update_columns(service_id: services(:comptabilite).id)
 
     get interventions_url
 
     assert_response :success
-    assert_select "a[href=?]", intervention_path(hors_perimetre), { minimum: 1 },
-                  'un admin voit par défaut toute son organisation, y compris hors de ses services'
   end
 
-  test "index : un administrateur peut filtrer sur un autre service de son organisation" do
+  test 'index : filtre service non soumis par un administrateur → toute son organisation' do
     sign_in users(:administrateur_paris)
-    hors_perimetre = interventions(:tonte_locaux)
-    hors_perimetre.update_columns(service_id: services(:comptabilite).id)
+    hors_perimetre = cree_intervention_hors_services
+
+    get interventions_url
+
+    assert_response :success
+    assert_includes assigns(:interventions), hors_perimetre
+    assert_empty assigns(:selected_service_ids)
+  end
+
+  test 'index : filtre service sur un service de son organisation → seulement ce service' do
+    sign_in users(:administrateur_paris)
+    comptabilite = cree_intervention_hors_services
 
     get interventions_url, params: { service: [services(:comptabilite).id] }
 
     assert_response :success
-    assert_select "a[href=?]", intervention_path(hors_perimetre), { minimum: 1 },
-                  "l'administrateur peut voir un service de son organisation hors de ses propres services"
+    assert_includes assigns(:interventions), comptabilite
+    assert_not_includes assigns(:interventions), interventions(:nouvelle_intervention)
   end
 
-  test "index : le menu service propose toute l'organisation à un administrateur" do
-    sign_in users(:administrateur_paris)
+  test 'index : filtre service non soumis par un manager → tous ses services' do
+    technique = cree_intervention_index('Dans ses services', service: services(:technique))
 
     get interventions_url
 
     assert_response :success
-    assert_select "select[name='service[]'] option", { text: 'Comptabilité' },
-                  'un service hors de ses services mais dans son organisation doit être proposé'
+    assert_includes assigns(:interventions), technique
+    assert_empty assigns(:selected_service_ids)
   end
 
-  test "index : un manager ne peut pas forger un service hors de son périmètre" do
-    # hidalgo (manager) est signé par le setup. service_marseille est hors org.
-    hors_perimetre = interventions(:tonte_locaux)
-    hors_perimetre.update_columns(service_id: services(:comptabilite).id)
+  test 'index : filtre service forgé hors périmètre par un manager → repli sur ses services' do
+    hors_perimetre = cree_intervention_hors_services
 
     get interventions_url, params: { service: [services(:comptabilite).id] }
 
     assert_response :success
-    # Le param hors périmètre est ignoré → repli sur ses propres services
-    assert_select "a[href=?]", intervention_path(hors_perimetre), { count: 0 },
-                  'un manager ne doit pas voir un service hors de son périmètre via un param forgé'
-    # …et le menu ne le lui propose pas non plus
-    assert_select "select[name='service[]'] option", { text: 'Comptabilité', count: 0 }
+    assert_not_includes assigns(:interventions), hors_perimetre
   end
 
-  # --- Affichage du filtre service selon le nombre de services ------------
-
-  test 'index : le filtre service est masqué pour un utilisateur à un seul service' do
-    sign_in users(:manager_marseille) # un seul service : service_marseille
+  test 'index : filtre service non soumis par un adhérent → toutes ses interventions' do
+    weil = users(:weil)
+    UserService.create!(user: weil, service: services(:technique))
+    hors_services_membres = interventions(:tonte_locaux)
+    hors_services_membres.update_columns(service_id: services(:informatique).id)
+    sign_in weil
 
     get interventions_url
 
     assert_response :success
-    assert_select "select[name='service[]']", false,
-                  'le filtre service doit être masqué quand le current_user n\'a qu\'un seul service'
+    assert_includes assigns(:interventions), interventions(:nouvelle_intervention)
+    assert_includes assigns(:interventions), hors_services_membres
   end
 
-  test 'index : le filtre service reste visible pour un manager à plusieurs services' do
-    # hidalgo (setup) a 3 services
+  test 'index : filtre service choisi par un adhérent → seulement ce service' do
+    weil = users(:weil)
+    UserService.create!(user: weil, service: services(:technique))
+    autre_service = interventions(:tonte_locaux)
+    autre_service.update_columns(service_id: services(:informatique).id)
+    sign_in weil
+
+    get interventions_url, params: { service: [services(:technique).id] }
+
+    assert_response :success
+    assert_includes assigns(:interventions), interventions(:nouvelle_intervention)
+    assert_not_includes assigns(:interventions), autre_service
+  end
+
+  test 'index : aucun filtre → les archivées sont exclues' do
+    sign_in users(:administrateur_paris)
+    archivee = cree_intervention_index('Intervention archivée', workflow_state: 'archivé')
+
     get interventions_url
 
     assert_response :success
-    assert_select "select[name='service[]']"
+    assert_not_includes assigns(:interventions), archivee
   end
 
-  test 'index : le filtre service reste visible pour un administrateur' do
+  test 'index : archives → seulement les archivées' do
+    sign_in users(:administrateur_paris)
+    archivee = cree_intervention_index('Intervention archivée', workflow_state: 'archivé')
+
+    get interventions_url(archives: '1')
+
+    assert_response :success
+    assert_includes assigns(:interventions), archivee
+    assert_not_includes assigns(:interventions), @intervention
+  end
+
+  test 'index : un statut → seulement les interventions de cet état' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url, params: { workflow_state: ['Nouveau'] }
+
+    assert_response :success
+    assert_includes assigns(:interventions), interventions(:nouvelle_intervention)
+    assert_not_includes assigns(:interventions), @intervention
+  end
+
+  test 'index : plusieurs statuts → les interventions de ces états' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url, params: { workflow_state: %w[Nouveau Terminé] }
+
+    assert_response :success
+    assert_includes assigns(:interventions), interventions(:nouvelle_intervention)
+    assert_includes assigns(:interventions), interventions(:intervention_terminée)
+    assert_not_includes assigns(:interventions), @intervention
+  end
+
+  test 'index : statut vide → retombe sur le défaut, les non archivées' do
+    sign_in users(:administrateur_paris)
+    archivee = cree_intervention_index('Intervention archivée', workflow_state: 'archivé')
+
+    get interventions_url, params: { workflow_state: [''] }
+
+    assert_response :success
+    assert_includes assigns(:interventions), interventions(:nouvelle_intervention)
+    assert_not_includes assigns(:interventions), archivee
+  end
+
+  test 'index : recherche sur la description → les interventions correspondantes' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url(search: 'Tonte locaux')
+
+    assert_response :success
+    assert_includes assigns(:interventions), @intervention
+    assert_not_includes assigns(:interventions), interventions(:nouvelle_intervention)
+  end
+
+  test 'index : recherche sur les commentaires → les interventions correspondantes' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url(search: 'bord des routes')
+
+    assert_response :success
+    assert_includes assigns(:interventions), @intervention
+  end
+
+  test 'index : recherche sans correspondance → liste vide' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url(search: 'zzz-aucune-correspondance-zzz')
+
+    assert_response :success
+    assert_empty assigns(:interventions)
+  end
+
+  test 'index : du et au → les interventions qui commencent dans l’intervalle' do
+    sign_in users(:administrateur_paris)
+    jour = @intervention.début.to_date
+
+    get interventions_url(du: jour.to_s, au: jour.to_s)
+
+    assert_response :success
+    assert_includes assigns(:interventions), @intervention
+    assert_not_includes assigns(:interventions), interventions(:nouvelle_intervention)
+  end
+
+  test 'index : du seul → les interventions qui commencent ou finissent ce jour' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url(du: @intervention.début.to_date.to_s)
+
+    assert_response :success
+    assert_includes assigns(:interventions), @intervention
+  end
+
+  test 'index : au seul → les interventions qui finissent ce jour' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url(au: @intervention.fin.to_date.to_s)
+
+    assert_response :success
+    assert_includes assigns(:interventions), @intervention
+  end
+
+  test 'index : intervalle de dates hors période → liste vide' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url(du: '1900-01-01', au: '1900-01-02')
+
+    assert_response :success
+    assert_empty assigns(:interventions)
+  end
+
+  test 'index : adherent_id → seulement les interventions de cet adhérent' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url(adherent_id: users(:weil).id)
+
+    assert_response :success
+    assert_includes assigns(:interventions), @intervention
+    assert_not_includes assigns(:interventions), interventions(:intervention_autre_adhérent)
+  end
+
+  test 'index : agent_ids → seulement les interventions de cet agent' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url(agent_ids: [users(:bond).id])
+
+    assert_response :success
+    assert_includes assigns(:interventions), @intervention
+    assert_not_includes assigns(:interventions), interventions(:intervention_autre_agent)
+  end
+
+  test 'index : tool_ids → seulement les interventions utilisant cet outil' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url(tool_ids: [tools(:tondeuse).id])
+
+    assert_response :success
+    assert_includes assigns(:interventions), @intervention
+    assert_not_includes assigns(:interventions), interventions(:intervention_terminée)
+  end
+
+  test 'index : paramètre équipe forgé → ignoré, liste non restreinte' do
+    sign_in users(:administrateur_paris)
+    temoin = cree_intervention_index('Témoin équipe')
+
+    [['mairie'], 'mairie'].each do |valeur|
+      get interventions_url(equipe: valeur)
+
+      assert_response :success
+      assert_includes assigns(:interventions), temoin
+    end
+  end
+
+  test 'index : un mot clé → seulement les interventions qui le portent' do
+    sign_in users(:administrateur_paris)
+    urgente = cree_intervention_index('Urgente', tag_list: 'urgence')
+    ordinaire = cree_intervention_index('Ordinaire')
+
+    get interventions_url, params: { tags: ['urgence'] }
+
+    assert_response :success
+    assert_includes assigns(:interventions), urgente
+    assert_not_includes assigns(:interventions), ordinaire
+  end
+
+  test 'index : aucun mot clé soumis → liste non restreinte' do
+    sign_in users(:administrateur_paris)
+    temoin = cree_intervention_index('Sans mot clé')
+
+    get interventions_url
+
+    assert_response :success
+    assert_includes assigns(:interventions), temoin
+  end
+
+  test 'index : deux mots clés → seulement les interventions qui portent les deux' do
+    sign_in users(:administrateur_paris)
+    les_deux = cree_intervention_index('Porte les deux', tag_list: 'urgence, plomberie')
+    un_seul = cree_intervention_index('N’en porte qu’un', tag_list: 'urgence')
+
+    get interventions_url, params: { tags: %w[urgence plomberie] }
+
+    assert_response :success
+    assert_includes assigns(:interventions), les_deux
+    assert_not_includes assigns(:interventions), un_seul
+  end
+
+  test 'index : mot clé dans une autre casse → les interventions correspondantes' do
+    sign_in users(:administrateur_paris)
+    urgente = cree_intervention_index('Urgente', tag_list: 'urgence')
+
+    get interventions_url, params: { tags: ['URGENCE'] }
+
+    assert_response :success
+    assert_includes assigns(:interventions), urgente
+  end
+
+  test 'index : mot clé inconnu → liste vide' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url, params: { tags: ['mot-clé-qui-n-existe-pas'] }
+
+    assert_response :success
+    assert_empty assigns(:interventions)
+  end
+
+  test 'index : filtre de mots clés vidé → liste non restreinte' do
+    sign_in users(:administrateur_paris)
+    temoin = cree_intervention_index('Témoin filtre vidé')
+
+    get interventions_url, params: { tags: [''] }
+
+    assert_response :success
+    assert_includes assigns(:interventions), temoin
+  end
+
+  test 'index : paramètre tags scalaire → accepté au lieu de faire tomber la page' do
+    sign_in users(:administrateur_paris)
+    urgente = cree_intervention_index('Urgente', tag_list: 'urgence')
+
+    get interventions_url, params: { tags: 'urgence' }
+
+    assert_response :success
+    assert_includes assigns(:interventions), urgente
+  end
+
+  test 'index : paramètre tags non textuel → ignoré, liste non restreinte' do
+    sign_in users(:administrateur_paris)
+    temoin = cree_intervention_index('Témoin tags non textuel')
+
+    get interventions_url, params: { tags: { a: 'b' } }
+
+    assert_response :success
+    assert_includes assigns(:interventions), temoin
+  end
+
+  test 'index : liste des services proposée à un administrateur → toute son organisation' do
     sign_in users(:administrateur_paris)
 
     get interventions_url
 
     assert_response :success
-    assert_select "select[name='service[]']"
+    assert_includes assigns(:services), services(:comptabilite)
   end
 
-  # --- Liste des adhérents et filtre service ------------------------------
-  # weil est un adhérent du service `informatique`. En filtrant sur `service_paris`, il ne
-  # doit rester proposé QUE pour un administrateur (liste complète).
+  test 'index : liste des services proposée à un manager → ses services seulement' do
+    get interventions_url
 
-  test 'index : la liste des adhérents ne suit pas le filtre service pour un administrateur' do
+    assert_response :success
+    assert_not_includes assigns(:services), services(:comptabilite)
+  end
+
+  test 'index : liste des adhérents pour un administrateur → non restreinte par le filtre service' do
     sign_in users(:administrateur_paris)
 
     get interventions_url, params: { service: [services(:service_paris).id] }
 
     assert_response :success
-    assert_select "select[name='adherent_id[]'] option[value=?]", users(:weil).id.to_s, { minimum: 1 },
-                  "l'administrateur garde la liste complète des adhérents malgré le filtre service"
+    assert_includes assigns(:adhérents), users(:weil)
   end
 
-  test 'index : la liste des adhérents suit le filtre service pour un manager' do
-    # hidalgo (manager, setup) filtre sur service_paris : weil (informatique) sort de la liste
+  test 'index : liste des adhérents pour un manager → restreinte au filtre service' do
     get interventions_url, params: { service: [services(:service_paris).id] }
 
     assert_response :success
-    assert_select "select[name='adherent_id[]'] option[value=?]", users(:weil).id.to_s, { count: 0 },
-                  'pour un manager, la liste des adhérents suit les services sélectionnés'
+    assert_not_includes assigns(:adhérents), users(:weil)
   end
 
-  # NOTE : l'ancien test « should get index with export xls » appelait users_url (copier-
-  # coller) — l'export des interventions n'était donc testé nulle part.
+  test 'index : format xls → un classeur Excel est téléchargé' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url(format: :xls)
+
+    assert_response :success
+    assert_equal 'application/xls', response.media_type
+    assert_match(/Interventions_.*\.xls/, response.headers['Content-Disposition'])
+  end
+
+  def cree_intervention_index(description, attributs = {})
+    Intervention.create!({
+      description: description,
+      adherent: users(:weil),
+      service: services(:technique),
+      workflow_state: 'nouveau',
+      slug: SecureRandom.uuid
+    }.merge(attributs))
+  end
+
+  def cree_intervention_hors_services
+    intervention = cree_intervention_index('Hors des services du current_user')
+    intervention.update_columns(service_id: services(:comptabilite).id)
+    intervention
+  end
 
   test 'should get new' do
     get new_intervention_url
@@ -566,6 +867,33 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     }
     assert_redirected_to intervention_url(@intervention)
   end
+
+  # ==================== TESTS CRITIQUES ====================
+
+  test 'critique : update, workflow_state soumis en paramètre → état inchangé' do
+    intervention = interventions(:nouvelle_intervention)
+    état_avant = intervention.workflow_state
+
+    patch intervention_url(intervention),
+          params: { intervention: { description: intervention.description, workflow_state: 'validé' } }
+
+    assert_equal état_avant, intervention.reload.workflow_state
+  end
+
+  test 'critique : update par un agent, note et avis soumis → évaluation inchangée' do
+    sign_in users(:bond)
+    intervention = interventions(:nouvelle_intervention)
+    note_avant = intervention.note
+
+    patch intervention_url(intervention),
+          params: { intervention: { description: intervention.description, note: 5, avis: 'Excellent travail' } }
+
+    intervention.reload
+    assert_equal note_avant, intervention.note
+    assert_not_equal 'Excellent travail', intervention.avis
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'should destroy intervention without mouvements' do
     assert_difference('Intervention.count', -1) do
@@ -1233,6 +1561,130 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
 
     assert_response :unprocessable_content
     assert_includes response.parsed_body['errors'].to_s, 'Adherent'
+  end
+
+  test 'get_unavailable_elements : agent occupé sur les dates réelles → son id est renvoyé' do
+    sign_in users(:administrateur_paris)
+    cree_intervention_occupante(début: '2025-04-08 09:00', fin: '2025-04-08 12:00')
+
+    json = interroger_disponibilites(date_debut: '2025-04-08 10:00', date_fin: '2025-04-08 11:00')
+
+    assert_includes json['agents'], users(:bond).id
+  end
+
+  test 'get_unavailable_elements : dates réelles disjointes → aucun agent renvoyé' do
+    sign_in users(:administrateur_paris)
+    cree_intervention_occupante(début: '2025-04-08 09:00', fin: '2025-04-08 12:00')
+
+    json = interroger_disponibilites(date_debut: '2025-04-08 14:00', date_fin: '2025-04-08 17:00')
+
+    assert_not_includes json['agents'], users(:bond).id
+  end
+
+  test 'get_unavailable_elements : réel disjoint mais prévu chevauchant → aucun agent renvoyé' do
+    sign_in users(:administrateur_paris)
+    cree_intervention_occupante(début: '2025-04-08 09:00', fin: '2025-04-08 12:00',
+                                début_prévue: '2025-04-08 14:00', fin_prévue: '2025-04-08 17:00')
+
+    json = interroger_disponibilites(date_debut: '2025-04-08 14:00', date_fin: '2025-04-08 17:00')
+
+    assert_not_includes json['agents'], users(:bond).id
+  end
+
+  test 'get_unavailable_elements : réel absent → repli sur les dates prévues' do
+    sign_in users(:administrateur_paris)
+    cree_intervention_occupante(début_prévue: '2025-04-08 09:00', fin_prévue: '2025-04-08 12:00')
+
+    json = interroger_disponibilites(date_debut_prevue: '2025-04-08 10:00',
+                                     date_fin_prevue: '2025-04-08 11:00')
+
+    assert_includes json['agents'], users(:bond).id
+  end
+
+  test 'get_unavailable_elements : bornes mixtes réelle et prévue → conflit détecté' do
+    sign_in users(:administrateur_paris)
+    cree_intervention_occupante(début: '2025-04-08 09:00', fin: '2025-04-08 12:00')
+
+    json = interroger_disponibilites(date_debut: '2025-04-08 10:30', date_fin_prevue: '2025-04-08 11:30')
+
+    assert_includes json['agents'], users(:bond).id
+  end
+
+  test 'get_unavailable_elements : le réel prime sur le prévu borne par borne → aucun conflit' do
+    sign_in users(:administrateur_paris)
+    cree_intervention_occupante(début: '2025-04-08 09:00', fin: '2025-04-08 12:00')
+
+    json = interroger_disponibilites(date_debut: '2025-04-08 13:00',
+                                     date_debut_prevue: '2025-04-08 10:30',
+                                     date_fin: '2025-04-08 14:00')
+
+    assert_not_includes json['agents'], users(:bond).id
+  end
+
+  test 'get_unavailable_elements : outil occupé sur la plage → son id est renvoyé' do
+    sign_in users(:administrateur_paris)
+    tool = tools(:tondeuse)
+    adherent = users(:weil)
+    Intervention.create!(description: 'Occupe l’outil', organisation: organisations(:mairie_paris),
+                         tools: [tool], adherent: adherent, service: adherent.services.first,
+                         début: '2025-04-08 09:00', fin: '2025-04-08 12:00')
+
+    json = interroger_disponibilites(date_debut: '2025-04-08 10:00', date_fin: '2025-04-08 11:00',
+                                     agents_ids: '', tool_ids: tool.id.to_s)
+
+    assert_includes json['tools'], tool.id
+  end
+
+  test 'get_unavailable_elements : agent absent sur la plage → son id est renvoyé' do
+    sign_in users(:administrateur_paris)
+    Absence.create!(du: '2025-04-08', au: '2025-04-08', motif: 0, user: users(:bond))
+
+    json = interroger_disponibilites(date_debut: '2025-04-08 10:00', date_fin: '2025-04-08 11:00')
+
+    assert_includes json['agents'], users(:bond).id
+  end
+
+  test 'get_unavailable_elements : aucune date fournie → réponse vide sans erreur' do
+    sign_in users(:administrateur_paris)
+    cree_intervention_occupante(début: '2025-04-08 09:00', fin: '2025-04-08 12:00')
+
+    json = interroger_disponibilites
+
+    assert_empty json['agents']
+    assert_empty json['tools']
+  end
+
+  def cree_intervention_occupante(**attrs)
+    adherent = users(:weil)
+    Intervention.create!({
+      description: 'Intervention existante',
+      organisation: organisations(:mairie_paris),
+      agents: [users(:bond)],
+      adherent: adherent,
+      service: adherent.services.first
+    }.merge(attrs))
+  end
+
+  def interroger_disponibilites(date_debut: 'null', date_fin: 'null', date_debut_prevue: 'null',
+                                date_fin_prevue: 'null', agents_ids: nil, tool_ids: '')
+    get get_unavailable_elements_interventions_url, params: {
+      intervention_id: 'null',
+      agents_ids: agents_ids || users(:bond).id.to_s,
+      tool_ids: tool_ids,
+      date_debut_prevue: en_utc(date_debut_prevue),
+      date_fin_prevue: en_utc(date_fin_prevue),
+      date_debut: en_utc(date_debut),
+      date_fin: en_utc(date_fin)
+    }
+
+    assert_response :success
+    JSON.parse(response.body)
+  end
+
+  def en_utc(valeur)
+    return valeur if valeur == 'null'
+
+    Time.zone.parse(valeur).utc.iso8601
   end
 
   # --- Modèle de pointage : new / create ---
