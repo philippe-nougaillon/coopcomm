@@ -30,12 +30,10 @@
       <button type="button" 
               class="btn btn-soft btn-secondary inline-flex items-center gap-2 normal-case flex-1 sm:flex-none justify-center" 
               onclick="this.closest('dialog').close()">
-        <%= embedded_svg "icons/cancel.svg", class: "w-4 h-4 fill-current" %>
         <span>Annuler</span>
       </button>
       <%= f.button type: :submit, 
                    class: "btn btn-primary inline-flex items-center justify-center gap-2 normal-case px-6 flex-1 sm:flex-none" do %>
-        <%= embedded_svg "icons/check.svg", class: "w-4 h-4 fill-current" %>
         <span>Enregistrer</span>
       <% end %>
     </div>

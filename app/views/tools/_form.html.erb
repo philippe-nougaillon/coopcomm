@@ -54,7 +54,7 @@
              attribute: :document,
              placeholder: "Glissez un document (PDF, Notice, Carte grise, etc.) ici ou cliquez pour parcourir" %>
     </div>
-    <div class="flex gap-2 mt-4 w-full">
+    <div class="flex flex-col sm:flex-row gap-2 mt-4 w-full">
       <%= button_tag "Annuler", type: "button", onclick: "history.back();", class: "btn w-full sm:flex-1" %>
       <%= form.submit "Enregistrer", id: "enregistrer_tool", class: "btn btn-primary text-white font-bold w-full sm:flex-1 order-1 sm:order-2 shadow-md hover:shadow-lg transition-all" %>
   </div>
