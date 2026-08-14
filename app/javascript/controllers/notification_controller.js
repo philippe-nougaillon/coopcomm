@@ -14,6 +14,7 @@ export default class extends Notification {
     this.element.addEventListener("click", (e) => this.togglePin(e))
   }
 
+  // Réinitier le timing
   arm() {
     this.start = Date.now()
     this.timeout = setTimeout(() => this.hide(), this.remaining)
