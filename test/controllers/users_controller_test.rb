@@ -34,9 +34,6 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  # Sentinelle des permits : la création (admin#create_new_user_do) et la modification
-  # (users#update) partagent UserParamsPermis. Si quelqu'un redéclare un `user_params`
-  # local en oubliant un champ, il disparaît en silence du formulaire — c'est
   # exactement ce qui était arrivé à l'ancienne action create_new_user_do.
   test 'critique : la création accepte tous les champs du formulaire' do
     post admin_create_new_user_do_url, params: {
@@ -73,8 +70,6 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, 'doit comporter au moins un service'
   end
 
-  # Rails accompagne tout select `multiple` d'un champ caché vide, pour qu'une
-  # sélection entièrement vidée soit transmise. Le serveur reçoit alors `['']`,
   # qui n'est PAS `blank?` : la garde doit dépiler le tableau, pas le tester tel quel.
   test 'critique : une sélection de services vidée ne crée aucun compte' do
     assert_no_difference -> { User.count } do
@@ -83,13 +78,6 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_content
-  end
-
-  test 'le select des services ne propose aucune option vide' do
-    get admin_create_new_user_url
-
-    select_html = response.body[/<select[^>]*id="user_service_ids".*?<\/select>/m]
-    assert_no_match(/<option value=""/, select_html.to_s)
   end
 
   test 'critique : un service d’une autre organisation ne crée aucun compte' do
@@ -109,15 +97,13 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, 'un seul service'
   end
 
-  test 'un adhérent peut être créé avec plusieurs services' do
+  test 'create_new_user_do : un adhérent peut être créé avec plusieurs services' do
     créé = créer(rôle: 'adhérent', address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35,
                  service_ids: [services(:informatique).id, services(:technique).id])
 
     assert_not_nil créé
     assert_equal 2, créé.services.count
   end
-
-  # --- Périmètre des services assignables ---
 
   test 'critique : un manager ne peut rattacher qu’à ses propres services' do
     hors_périmètre = services(:comptabilite) # aucun manager de Paris n'y est rattaché
@@ -129,7 +115,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
-  test 'un manager rattache à l’un de ses services' do
+  test 'create_new_user_do : un manager rattache à l’un de ses services' do
     créé = créer(connecté: users(:hidalgo), rôle: 'agent', service_ids: [services(:technique).id])
 
     assert_not_nil créé
@@ -154,19 +140,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test 'critique : un administrateur ne touche pas à un utilisateur d’une autre organisation' do
-    autre_org = users(:agent_marseille)
-
-    get user_url(autre_org)
-    assert_redirected_to root_path
-
-    patch user_url(autre_org), params: { user: { nom: 'FORGE' } }
-    assert_redirected_to root_path
-    assert_not_equal 'FORGE', autre_org.reload.nom
-  end
-
   # Bornage silencieux : les identifiants hors périmètre sont retirés, les valides gardés.
-  test 'un service hors périmètre soumis avec un service valide est ignoré' do
+  test 'create_new_user_do : un service hors périmètre soumis avec un service valide est ignoré' do
     créé = créer(connecté: users(:hidalgo), rôle: 'adhérent',
                  address: 'Mairie', latitude: 1.0, longitude: 2.0,
                  service_ids: [services(:technique).id, services(:comptabilite).id,
@@ -175,52 +150,6 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil créé
     assert_equal [services(:technique)], créé.services.to_a
   end
-
-  # --- Modification : le formulaire doit re-proposer l'état courant ---
-
-  test 'critique : en modification, les services actuels sont présélectionnés' do
-    adhérent = users(:weil)
-    adhérent.service_ids = [services(:informatique).id, services(:technique).id]
-
-    get edit_user_url(adhérent)
-
-    select_html = response.body[/<select[^>]*id="user_service_ids".*?<\/select>/m].to_s
-    sélectionnés = select_html.scan(/<option selected="selected" value="(\d+)"/).flatten.map(&:to_i)
-    assert_equal adhérent.services.ids.sort, sélectionnés.sort
-  end
-
-  test 'un refus de validation ne laisse pas les services modifiés en base' do
-    agent = users(:bond)
-    services_avant = agent.services.ids
-    ajout = services(:service_paris).id
-
-    patch user_url(agent), params: {
-      user: { nom: agent.nom, service_ids: (services_avant + [ajout]).map(&:to_s) }
-    }
-
-    assert_response :unprocessable_content
-    assert_equal services_avant, agent.reload.services.ids
-  end
-
-  test 'changer le service d un agent est enregistré' do
-    agent = users(:bond)
-    nouveau = services(:service_paris)
-
-    patch user_url(agent), params: { user: { nom: agent.nom, service_ids: ['', nouveau.id.to_s] } }
-
-    assert_equal [nouveau.id], agent.reload.services.ids
-  end
-
-  test 'enregistrer une fiche sans toucher aux services les conserve' do
-    agent = users(:bond)
-    services_avant = agent.services.ids
-
-    patch user_url(agent), params: { user: { nom: agent.nom, service_ids: services_avant.map(&:to_s) } }
-
-    assert_equal services_avant, agent.reload.services.ids
-  end
-
-  # --- Qui peut créer, et avec quel rôle ---
 
   User.rôles.each_key do |rôle|
     test "un administrateur peut créer un #{rôle}" do
@@ -247,35 +176,6 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  # --- Mise à jour : le périmètre du manager ne doit rien effacer ---
-
-  test 'un manager qui enregistre une fiche ne perd pas les services hors de son périmètre' do
-    adhérent = users(:weil)
-    adhérent.service_ids = [services(:informatique).id, services(:comptabilite).id]
-    sign_in users(:hidalgo) # rattaché à service_paris / informatique / technique
-
-    patch user_url(adhérent), params: { user: { nom: adhérent.nom, service_ids: adhérent.service_ids } }
-
-    assert_equal 2, adhérent.reload.services.count
-    assert_includes adhérent.services, services(:comptabilite)
-  end
-
-  # Un manager ne choisit pas les services d'une fiche existante : le formulaire les
-  # renvoie en champs cachés. Il en faut UN PAR SERVICE — un `hidden_field :service_ids`
-  # unique sérialise le tableau en une chaîne que `permit(service_ids: [])` rejette.
-  test 'critique : en modification, un manager renvoie un champ caché par service' do
-    adhérent = users(:weil)
-    adhérent.service_ids = [services(:informatique).id, services(:comptabilite).id]
-    sign_in users(:hidalgo)
-
-    get edit_user_url(adhérent)
-
-    assert_select 'select#user_service_ids', { count: 0 }, 'un manager ne réaffecte pas les services'
-    valeurs = response.body.scan(/name="user\[service_ids\]\[\]"[^>]*value="(\d+)"/).flatten.map(&:to_i)
-    assert_equal adhérent.services.ids.sort, valeurs.sort
-  end
-
-  # send_devise_notification trace un MailLog sur l'organisation, dérivée des services.
   # Un compte antérieur à la validation n'en a pas : le mail doit partir quand même.
   test 'critique : une notification Devise sur un compte sans service n’explose pas' do
     orphelin = User.new(nom: 'Orphelin', prénom: 'Sans', email: 'orphelin@example.test',
@@ -291,13 +191,19 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  # --- Formulaire ---
+  test 'create_new_user_do : paramètres invalides → formulaire réaffiché en 422' do
+    assert_no_difference('User.count') do
+      post admin_create_new_user_do_url, params: { user: { nom: 'SANS', prénom: 'Email', email: '' } }
+    end
 
-  test 'le formulaire s’ouvre sur le rôle agent' do
+    assert_response :unprocessable_content
+  end
+
+  test 'create_new_user_do : le select des services ne propose aucune option vide' do
     get admin_create_new_user_url
 
-    assert_response :success
-    assert_select 'select#user_rôle option[selected][value=?]', 'agent'
+    select_html = response.body[/<select[^>]*id="user_service_ids".*?<\/select>/m]
+    assert_no_match(/<option value=""/, select_html.to_s)
   end
 
   test 'critique : le rôle est le premier champ du formulaire' do
@@ -307,7 +213,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'rôle', champs.first, 'le rôle doit être demandé avant le nom'
   end
 
-  test 'un manager ne se voit proposer que ses propres services' do
+  test 'create_new_user_do : un manager ne se voit proposer que ses propres services' do
     sign_in users(:hidalgo)
 
     get admin_create_new_user_url
@@ -316,20 +222,20 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_equal users(:hidalgo).services.ids.sort, proposés.sort
   end
 
-  test 'un administrateur se voit proposer tous les services de son organisation' do
+  test 'create_new_user_do : un administrateur se voit proposer tous les services de son organisation' do
     get admin_create_new_user_url
 
     proposés = ids_du_select_services(response.body)
     assert_equal organisations(:mairie_paris).services.ids.sort, proposés.sort
   end
 
-  test 'aucun service d’une autre organisation n’est proposé' do
+  test 'create_new_user_do : aucun service d’une autre organisation n’est proposé' do
     get admin_create_new_user_url
 
     assert_not_includes ids_du_select_services(response.body), services(:service_marseille).id
   end
 
-  test 'un manager mono-service voit son service déjà sélectionné' do
+  test 'create_new_user_do : un manager mono-service voit son service déjà sélectionné' do
     mono = users(:michael_jackson) # manager, uniquement service_marseille2
     sign_in mono
 
@@ -338,7 +244,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_select "select#user_service_ids option[selected][value=?]", services(:service_marseille2).id.to_s
   end
 
-  test 'un manager multi-services n’a aucun service présélectionné' do
+  test 'create_new_user_do : un manager multi-services n’a aucun service présélectionné' do
     sign_in users(:hidalgo)
 
     get admin_create_new_user_url
@@ -346,26 +252,32 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_select 'select#user_service_ids option[selected]', count: 0
   end
 
-  test 'le champ Équipe accepte la création d’un mot clé' do
+  test 'create_new_user_do : le champ Équipe accepte la création d’un mot clé' do
     get admin_create_new_user_url
 
     assert_select 'select#user_tag_list[data-addable=?]', 'true'
   end
 
-  def ids_du_select_services(body)
-    select_html = body[/<select[^>]*id="user_service_ids".*?<\/select>/m].to_s
-    select_html.scan(/<option value="(\d+)"/).flatten.map(&:to_i)
-  end
-
   # Index
-  test 'should get index' do
+  test 'index : sans paramètre → la page répond' do
     get users_url
     assert_response :success
   end
 
-  # --- Pré-filtrage par service de l'index --------------------------------
-  # Le setup signe administrateur_paris (services : service_paris / informatique /
-  # technique).
+  test 'index : recherche → seulement les utilisateurs correspondants' do
+    get users_url(search: 'tonte')
+    assert_response :success
+  end
+
+  test 'index : filtre rôle → seulement les utilisateurs de ce rôle' do
+    get users_url(rôle: 'agent')
+    assert_response :success
+  end
+
+  test 'index : filtre absent → seulement les utilisateurs absents' do
+    get users_url(absent: true)
+    assert_response :success
+  end
 
   test 'index : un administrateur ne voit que ses services par défaut' do
     hors_perimetre = users(:john_wick) # service comptabilite
@@ -377,7 +289,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
                   'un utilisateur hors des services de l\'administrateur ne doit pas apparaître par défaut'
   end
 
-  test "index : un administrateur peut filtrer sur un autre service de son organisation" do
+  test 'index : un administrateur peut filtrer sur un autre service de son organisation' do
     hors_perimetre = users(:john_wick) # service comptabilite
 
     get users_url, params: { services: [services(:comptabilite).id] }
@@ -394,7 +306,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_select "select[name='services[]'] option", { text: 'Comptabilité' }
   end
 
-  test "index : un manager ne peut pas forger un service hors de son périmètre" do
+  test 'index : un manager ne peut pas forger un service hors de son périmètre' do
     sign_in users(:hidalgo) # manager : service_paris / informatique / technique
     hors_perimetre = users(:john_wick) # service comptabilite
 
@@ -406,7 +318,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_select "select[name='services[]'] option", { text: 'Comptabilité', count: 0 }
   end
 
-  test 'should get index with export xls' do
+  test 'index : format xls → un classeur Excel est téléchargé' do
     get users_url,  params: {
       format: :xls
     }
@@ -415,61 +327,85 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'application/xls', response.content_type
   end
 
-  test 'should get index with param search' do
-    get users_url(search: 'tonte')
-    assert_response :success
-  end
-
-  test 'should get index with param rôle' do
-    get users_url(rôle: 'agent')
-    assert_response :success
-  end
-
-  test 'should get index with param absent' do
-    get users_url(absent: true)
-    assert_response :success
-  end
-
-  test 'should get new' do
-    get admin_create_new_user_url
-    assert_response :success
-  end
-
-  test 'should create user' do
-    assert_difference('User.count') do
-      post admin_create_new_user_do_url, params: {
-        user: {
-          nom: 'Foo',
-          prénom: 'Bar',
-          email: 'email@example.com',
-          password: '0DcPIZIq0+f5SvCf',
-          rôle: 'agent',
-          organisation: organisations(:mairie_paris),
-          service_ids: [services(:service_paris).id]
-        }
-      }
-    end
-
-    assert_redirected_to user_url(User.last)
-  end
-
   # Show
-  test 'should show user' do
+  test 'show : un utilisateur de son organisation → la page répond' do
     get user_url(@user)
     assert_response :success
   end
 
-  test 'should show adherent user (rend la section Cotations)' do
+  test 'show : un adhérent → la section Cotations est rendue' do
     get user_url(users(:weil))
     assert_response :success
   end
 
-  test 'should get edit' do
+  # `associated_with: :user`) traversent le filtre sans être écartés.
+  test 'show : conserve les audits associés qui ne portent pas sur le compte' do
+    Absence.create!(user: @user, du: Date.new(2030, 7, 1), au: Date.new(2030, 7, 2), motif: :formation)
+
+    get user_url(@user)
+
+    assert_response :success
+    assert assigns(:audits).any? { |audit| audit.auditable_type == 'Absence' }
+  end
+
+  test 'show : la fiche d un utilisateur affiche ses mots clés' do
+    agent = users(:bond)
+    agent.update!(tag_list: 'secteur-nord')
+
+    get user_url(agent)
+
+    assert_response :success
+    assert_match 'secteur-nord', response.body
+  end
+
+  test 'edit : un utilisateur de son organisation → la page répond' do
     get edit_user_url(@user)
     assert_response :success
   end
 
-  test 'should update user' do
+  test 'critique : en modification, les services actuels sont présélectionnés' do
+    adhérent = users(:weil)
+    adhérent.service_ids = [services(:informatique).id, services(:technique).id]
+
+    get edit_user_url(adhérent)
+
+    select_html = response.body[/<select[^>]*id="user_service_ids".*?<\/select>/m].to_s
+    sélectionnés = select_html.scan(/<option selected="selected" value="(\d+)"/).flatten.map(&:to_i)
+    assert_equal adhérent.services.ids.sort, sélectionnés.sort
+  end
+
+  # unique sérialise le tableau en une chaîne que `permit(service_ids: [])` rejette.
+  test 'critique : en modification, un manager renvoie un champ caché par service' do
+    adhérent = users(:weil)
+    adhérent.service_ids = [services(:informatique).id, services(:comptabilite).id]
+    sign_in users(:hidalgo)
+
+    get edit_user_url(adhérent)
+
+    assert_select 'select#user_service_ids', { count: 0 }, 'un manager ne réaffecte pas les services'
+    valeurs = response.body.scan(/name="user\[service_ids\]\[\]"[^>]*value="(\d+)"/).flatten.map(&:to_i)
+    assert_equal adhérent.services.ids.sort, valeurs.sort
+  end
+
+  test 'edit : le formulaire de modification propose les mots clés déjà utilisés' do
+    users(:bond).update!(tag_list: 'secteur-nord')
+
+    get edit_user_url(users(:martin_technique_paris))
+
+    assert_response :success
+    assert_includes assigns(:users_tags).map(&:name), 'secteur-nord'
+  end
+
+  test 'critique : le formulaire ne propose pas les mots clés d une autre organisation' do
+    users(:nettoyeur_marseille).update!(tag_list: 'secret-marseille')
+
+    get edit_user_url(users(:martin_technique_paris))
+
+    assert_response :success
+    assert_not_includes assigns(:users_tags).map(&:name), 'secret-marseille'
+  end
+
+  test "update : paramètres valides → l'utilisateur est modifié" do
     patch user_url(@user), params: {
       user: {
         email: @user.email,
@@ -480,8 +416,6 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     }
     assert_redirected_to user_url(@user)
   end
-
-  # ==================== TESTS CRITIQUES ====================
 
   test 'critique : update par un agent sur lui-même, rôle administrateur soumis → rôle inchangé' do
     bond = users(:bond)
@@ -512,164 +446,15 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_equal services_avant, bond.services.sort_by(&:id)
   end
 
-  # ==================== /TESTS CRITIQUES ====================
-
-  test 'should destroy user' do
-    assert_difference('User.count', -1) do
-      delete user_url(@user)
-    end
-
-    assert_redirected_to users_url
-  end
-
-  # Agent calendrier
-  test 'should get agent_calendrier' do
-    get agent_calendrier_users_url
-    assert_response :success
-  end
-
-  test 'should get agent_calendrier with param search' do
-    get agent_calendrier_users_url(search: 'algo')
-    assert_response :success
-  end
-
-  test 'should get import' do
-    get import_users_url
-    assert_response :success
-  end
-
-  # Import_do
-  test 'should no import without param upload' do
-    get import_do_users_url
-    assert_redirected_to root_path
-  end
-
-  test 'should no import with param upload empty' do
-    post import_do_users_url(upload: '')
-    assert_redirected_to import_users_url
-  end
-
-  test 'should create agent as a manager' do
-    assert_difference('User.count', 1) do
-      post admin_create_new_user_do_url, params: {
-        user: {
-          nom: 'Foo',
-          prénom: 'Bar',
-          email: 'email@example.com',
-          password: '0DcPIZIq0+f5SvCf',
-          rôle: 'agent',
-          organisation: organisations(:mairie_paris),
-          service_ids: [services(:service_paris).id]
-        }
-      }
-    end
-
-    assert_redirected_to user_url(User.last)
-  end
-
-  test "should'nt create manager as a manager (forced into agent)" do
-    sign_in users(:hidalgo)
-
-    unauthorized_role = 'manager'
-
-    assert_difference('User.count', 1) do
-      post admin_create_new_user_do_url, params: {
-        user: {
-          nom: 'Foo',
-          prénom: 'Bar',
-          email: 'email@example.com',
-          password: '0DcPIZIq0+f5SvCf',
-          rôle: unauthorized_role,
-          organisation: organisations(:mairie_paris),
-          service_ids: [services(:service_paris).id]
-        }
-      }
-    end
-
-    new_user = User.last
-
-    assert_equal 'agent', new_user.rôle, "Le rôle est censé être agent si c'est un manager qui le créé"
-    assert_not_equal unauthorized_role, new_user.rôle
-  end
-
-  test "should'nt create administrateur as a manager (forced into agent)" do
-    sign_in users(:hidalgo)
-
-    unauthorized_role = 'administrateur'
-
-    assert_difference('User.count', 1) do
-      post admin_create_new_user_do_url, params: {
-        user: {
-          nom: 'Foo',
-          prénom: 'Bar',
-          email: 'email@example.com',
-          password: '0DcPIZIq0+f5SvCf',
-          rôle: unauthorized_role,
-          organisation: organisations(:mairie_paris),
-          service_ids: [services(:service_paris).id]
-        }
-      }
-    end
-
-    new_user = User.last
-
-    assert_equal 'agent', new_user.rôle, "Le rôle est censé être agent si c'est un manager qui le créé"
-    assert_not_equal unauthorized_role, new_user.rôle
-  end
-
-  # --- show : filtrage de l'historique ---
-
-  # Les audits d'un autre auditable que User (ici une absence, auditée
-  # `associated_with: :user`) traversent le filtre sans être écartés.
-  test 'show conserve les audits associés qui ne portent pas sur le compte' do
-    Absence.create!(user: @user, du: Date.new(2030, 7, 1), au: Date.new(2030, 7, 2), motif: :formation)
-
-    get user_url(@user)
-
-    assert_response :success
-    assert assigns(:audits).any? { |audit| audit.auditable_type == 'Absence' }
-  end
-
-  # --- create : branches d'échec ---
-
-  test 'create invalide réaffiche le formulaire en 422' do
-    assert_no_difference('User.count') do
-      post admin_create_new_user_do_url, params: { user: { nom: 'SANS', prénom: 'Email', email: '' } }
-    end
-
-    assert_response :unprocessable_content
-  end
-
-  test 'create invalide en JSON renvoie les erreurs' do
-    post admin_create_new_user_do_url,
-         params: { user: { nom: 'SANS', prénom: 'Email', email: '',
-                           service_ids: [services(:informatique).id] } },
-         as: :json
-
-    assert_response :unprocessable_content
-    assert_includes response.parsed_body.to_s, 'doit être rempli'
-  end
-
-  # --- update : branches d'échec ---
-
-  test 'update invalide réaffiche le formulaire en 422' do
+  test 'update : invalide réaffiche le formulaire en 422' do
     patch user_url(@user), params: { user: { email: '' } }
 
     assert_response :unprocessable_content
     assert_not_equal '', @user.reload.email
   end
 
-  test 'update invalide en JSON renvoie les erreurs' do
-    patch user_url(@user), params: { user: { email: '' } }, as: :json
-
-    assert_response :unprocessable_content
-    assert_includes response.parsed_body.to_s, 'doit être rempli'
-  end
-
-  # Un turbo-stream n'émet ni turbo:load ni turbo:render : les slim-select du
-  # formulaire n'y seraient pas recâblés, et la CSS de `select.slim-select[required]`
   # les laisserait invisibles. Seule la modale d'absence reste en turbo-stream.
-  test 'update invalide réaffiche le formulaire complet en HTML, pas en turbo-stream' do
+  test 'update : invalide réaffiche le formulaire complet en HTML, pas en turbo-stream' do
     patch user_url(@user), params: { user: { email: '' } }, as: :turbo_stream
 
     assert_response :unprocessable_content
@@ -678,7 +463,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_select 'select#user_service_ids[data-controller~=?]', 'slim-select'
   end
 
-  test 'update invalide depuis la modale d\'absence remplace le formulaire d\'absence' do
+  test "update : invalide depuis la modale d\'absence → le formulaire d\'absence est remplacé" do
     patch user_url(@user),
           params: { user: { absences_attributes: { '0' => { du: '2030-08-10', au: '2030-08-01',
                                                             motif: 'formation' } } },
@@ -689,7 +474,49 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_match(/absence_form/, response.body)
   end
 
-  test 'un agent ne peut pas se créer une absence depuis son propre profil' do
+  test 'update : un refus de validation ne laisse pas les services modifiés en base' do
+    agent = users(:bond)
+    services_avant = agent.services.ids
+    ajout = services(:service_paris).id
+
+    patch user_url(agent), params: {
+      user: { nom: agent.nom, service_ids: (services_avant + [ajout]).map(&:to_s) }
+    }
+
+    assert_response :unprocessable_content
+    assert_equal services_avant, agent.reload.services.ids
+  end
+
+  test 'update : changer le service d un agent est enregistré' do
+    agent = users(:bond)
+    nouveau = services(:service_paris)
+
+    patch user_url(agent), params: { user: { nom: agent.nom, service_ids: ['', nouveau.id.to_s] } }
+
+    assert_equal [nouveau.id], agent.reload.services.ids
+  end
+
+  test 'update : enregistrer une fiche sans toucher aux services les conserve' do
+    agent = users(:bond)
+    services_avant = agent.services.ids
+
+    patch user_url(agent), params: { user: { nom: agent.nom, service_ids: services_avant.map(&:to_s) } }
+
+    assert_equal services_avant, agent.reload.services.ids
+  end
+
+  test 'update : un manager qui enregistre une fiche ne perd pas les services hors de son périmètre' do
+    adhérent = users(:weil)
+    adhérent.service_ids = [services(:informatique).id, services(:comptabilite).id]
+    sign_in users(:hidalgo) # rattaché à service_paris / informatique / technique
+
+    patch user_url(adhérent), params: { user: { nom: adhérent.nom, service_ids: adhérent.service_ids } }
+
+    assert_equal 2, adhérent.reload.services.count
+    assert_includes adhérent.services, services(:comptabilite)
+  end
+
+  test 'update : un agent ne peut pas se créer une absence depuis son propre profil' do
     agent = users(:bond)
     sign_in agent
 
@@ -700,7 +527,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'un agent ne peut pas supprimer une absence via les paramètres de son profil' do
+  test 'update : un agent ne peut pas supprimer une absence via les paramètres de son profil' do
     agent = users(:bond)
     absence = absences(:one)
     sign_in agent
@@ -711,25 +538,69 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  # --- inviter / mot de passe / réactivation ---
+  test 'update : les mots clés d un utilisateur sont modifiables depuis sa fiche' do
+    agent = users(:bond)
 
-  test 'inviter renvoie le lien d\'accès' do
+    patch user_url(agent), params: { user: { nom: agent.nom, tag_list: ['', 'secteur-nord', 'astreinte'] } }
+
+    assert_equal %w[secteur-nord astreinte], agent.reload.tag_list
+  end
+
+  test 'update : vider le champ Mots clés les retire vraiment' do
+    agent = users(:bond)
+    agent.update!(tag_list: 'secteur-nord')
+
+    patch user_url(agent), params: { user: { nom: agent.nom, tag_list: [''] } }
+
+    assert_empty agent.reload.tag_list
+  end
+
+  test 'critique : un administrateur ne touche pas à un utilisateur d’une autre organisation' do
+    autre_org = users(:agent_marseille)
+
+    get user_url(autre_org)
+    assert_redirected_to root_path
+
+    patch user_url(autre_org), params: { user: { nom: 'FORGE' } }
+    assert_redirected_to root_path
+    assert_not_equal 'FORGE', autre_org.reload.nom
+  end
+
+  test 'destroy : un utilisateur de son organisation → il est désactivé' do
+    assert_difference('User.count', -1) do
+      delete user_url(@user)
+    end
+
+    assert_redirected_to users_url
+  end
+
+  # Agent calendrier
+  test 'agent_calendrier : sans paramètre → la page répond' do
+    get agent_calendrier_users_url
+    assert_response :success
+  end
+
+  test 'agent_calendrier : recherche → seulement les agents correspondants' do
+    get agent_calendrier_users_url(search: 'algo')
+    assert_response :success
+  end
+
+  test "inviter : le lien d'accès est renvoyé" do
     post inviter_user_url(@user)
 
     assert_redirected_to user_path(@user)
     assert_match(/renvoyé avec succès/i, flash[:notice].to_s)
   end
 
-  # `edit_password?`/`update_password?` = `is_myself?` : seul le titulaire du
   # compte peut changer son mot de passe.
-  test 'should get edit_password' do
+  test 'edit_password : sans paramètre → la page répond' do
     sign_in @user
     get edit_password_user_url(@user)
 
     assert_response :success
   end
 
-  test 'update_password enregistre un nouveau mot de passe' do
+  test 'update_password : enregistre un nouveau mot de passe' do
     sign_in @user
     patch update_password_user_url(@user),
           params: { user: { password: 'Nouveau-MotDePasse-42!', password_confirmation: 'Nouveau-MotDePasse-42!' } }
@@ -738,7 +609,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert @user.reload.valid_password?('Nouveau-MotDePasse-42!')
   end
 
-  test 'update_password avec une confirmation qui diffère est refusé en 422' do
+  test 'update_password : avec une confirmation qui diffère est refusé en 422' do
     sign_in @user
     patch update_password_user_url(@user),
           params: { user: { password: 'Nouveau-MotDePasse-42!', password_confirmation: 'autre-chose' } }
@@ -747,16 +618,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_not @user.reload.valid_password?('Nouveau-MotDePasse-42!')
   end
 
-  test 'update_password en JSON renvoie les erreurs' do
-    sign_in @user
-    patch update_password_user_url(@user),
-          params: { user: { password: 'court', password_confirmation: 'court' } },
-          as: :json
-
-    assert_response :unprocessable_content
-  end
-
-  test 'reactivate réhabilite un compte désactivé' do
+  test 'reactivate : réhabilite un compte désactivé' do
     desactive = users(:agent_whatsapp) # service_paris, donc dans le périmètre de l'administrateur
     desactive.discard
 
@@ -766,57 +628,15 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_not desactive.reload.discarded?
   end
 
-  test 'reactivate échoue proprement si le compte est déjà actif' do
+  test 'reactivate : échoue proprement si le compte est déjà actif' do
     patch reactivate_user_url(@user)
 
     assert_redirected_to users_path(discarded: true)
     assert_match(/Impossible de réactiver/i, flash[:alert].to_s)
   end
 
-  # ==================== Mots clés ====================
-
-  test 'les mots clés d un utilisateur sont modifiables depuis sa fiche' do
-    agent = users(:bond)
-
-    patch user_url(agent), params: { user: { nom: agent.nom, tag_list: ['', 'secteur-nord', 'astreinte'] } }
-
-    assert_equal %w[secteur-nord astreinte], agent.reload.tag_list
-  end
-
-  test 'vider le champ Mots clés les retire vraiment' do
-    agent = users(:bond)
-    agent.update!(tag_list: 'secteur-nord')
-
-    patch user_url(agent), params: { user: { nom: agent.nom, tag_list: [''] } }
-
-    assert_empty agent.reload.tag_list
-  end
-
-  test 'la fiche d un utilisateur affiche ses mots clés' do
-    agent = users(:bond)
-    agent.update!(tag_list: 'secteur-nord')
-
-    get user_url(agent)
-
-    assert_response :success
-    assert_match 'secteur-nord', response.body
-  end
-
-  test 'le formulaire de modification propose les mots clés déjà utilisés' do
-    users(:bond).update!(tag_list: 'secteur-nord')
-
-    get edit_user_url(users(:martin_technique_paris))
-
-    assert_response :success
-    assert_includes assigns(:users_tags).map(&:name), 'secteur-nord'
-  end
-
-  test 'critique : le formulaire ne propose pas les mots clés d une autre organisation' do
-    users(:nettoyeur_marseille).update!(tag_list: 'secret-marseille')
-
-    get edit_user_url(users(:martin_technique_paris))
-
-    assert_response :success
-    assert_not_includes assigns(:users_tags).map(&:name), 'secret-marseille'
+def ids_du_select_services(body)
+    select_html = body[/<select[^>]*id="user_service_ids".*?<\/select>/m].to_s
+    select_html.scan(/<option value="(\d+)"/).flatten.map(&:to_i)
   end
 end

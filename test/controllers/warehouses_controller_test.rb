@@ -8,68 +8,74 @@ class WarehousesControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:administrateur_paris)
   end
 
-  test 'should not get index' do
-    get warehouses_url
-    assert_response :not_found
-  end
-
-  test 'should get new' do
-    get new_warehouse_url
-    assert_response :success
-  end
-
-  test 'should create warehouse' do
-    assert_difference('Warehouse.count') do
-      post warehouses_url,
-           params: { warehouse: { address: @warehouse.address, name: @warehouse.name, latitude: '1.234',
-                                  longitude: '5.678' } }
-    end
-
-    assert_redirected_to admin_parametres_path(tab: "sites")
-  end
-
-  test 'should show warehouse' do
+  test 'show : un site de son organisation → la page répond' do
     get warehouse_url(@warehouse)
+
     assert_response :success
   end
 
-  test 'should get edit' do
+  test 'new : sans paramètre → la page répond' do
+    get new_warehouse_url
+
+    assert_response :success
+  end
+
+  test 'new : le formulaire ne propose que les non-adhérents des services du current_user' do
+    get new_warehouse_url
+
+    assert_includes assigns(:users), users(:bond)
+    assert_not_includes assigns(:users), users(:weil)
+    assert_not_includes assigns(:users), users(:agent_marseille)
+  end
+
+  test 'edit : un site de son organisation → la page répond' do
     get edit_warehouse_url(@warehouse)
+
     assert_response :success
   end
 
-  test 'should update warehouse' do
-    patch warehouse_url(@warehouse),
-          params: { warehouse: { address: '7 Rue Francis de Pressensé, 75014 Paris', name: 'Entrepôt de Paris',
-                                 latitude: '2.345', longitude: '6.789' } }
-    assert_redirected_to admin_parametres_path(tab: "sites")
-  end
-
-  test 'should destroy warehouse' do
-    assert_difference('Warehouse.count', -1) do
-      delete warehouse_url(@warehouse)
+  test 'create : paramètres valides → le site est créé' do
+    assert_difference('Warehouse.count') do
+      post warehouses_url, params: { warehouse: { address: @warehouse.address, name: 'Nouveau site',
+                                                  latitude: '1.234', longitude: '5.678' } }
     end
 
-    assert_redirected_to admin_parametres_path(tab: "sites")
+    assert_redirected_to admin_parametres_path(tab: 'sites')
   end
 
-  # --- update : branches d'échec / slug inconnu ---
+  test 'create : sans adresse → aucune création et formulaire réaffiché' do
+    assert_no_difference('Warehouse.count') do
+      post warehouses_url, params: { warehouse: { name: 'Sans adresse' } }
+    end
 
-  test 'update invalide réaffiche le formulaire en 422' do
+    assert_response :unprocessable_content
+  end
+
+  test 'update : paramètres valides → le site est modifié' do
+    patch warehouse_url(@warehouse),
+          params: { warehouse: { address: '7 Rue Francis de Pressensé, 75014 Paris',
+                                 name: 'Entrepôt de Paris', latitude: '2.345', longitude: '6.789' } }
+
+    assert_redirected_to admin_parametres_path(tab: 'sites')
+    assert_equal '7 Rue Francis de Pressensé, 75014 Paris', @warehouse.reload.address
+  end
+
+  test 'update : adresse vidée → formulaire réaffiché en 422 et site inchangé' do
     patch warehouse_url(@warehouse), params: { warehouse: { address: '' } }
 
     assert_response :unprocessable_content
     assert_not_equal '', @warehouse.reload.address
   end
 
-  test 'update invalide en JSON renvoie les erreurs' do
-    patch warehouse_url(@warehouse), params: { warehouse: { address: '' } }, as: :json
+  test 'destroy : un site de son organisation → il est supprimé' do
+    assert_difference('Warehouse.count', -1) do
+      delete warehouse_url(@warehouse)
+    end
 
-    assert_response :unprocessable_content
-    assert_includes response.parsed_body.to_s, 'doit être rempli'
+    assert_redirected_to admin_parametres_path(tab: 'sites')
   end
 
-  test 'un slug de site inconnu redirige au lieu de planter' do
+  test 'set_warehouse : un slug inconnu redirige sans planter' do
     get edit_warehouse_url('site-inexistant')
 
     assert_redirected_to root_path

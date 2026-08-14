@@ -119,8 +119,8 @@ class AuditManagerFlowTest < ApplicationSystemTestCase
 
   test 'Cumuler les filtres' do
     go_to_audit_page
-    fill_in 'Du', with: (Date.today - 14).strftime('%m%d%Y')
-    fill_in 'Au', with: Date.today.strftime('%m%d%Y')
+    fill_in 'Du', with: Date.current - 14
+    fill_in 'Au', with: Date.current
     ouvrir_criteres_avances
     choisir_filtre('#user_id', @manager.nom)
     choisir_filtre('#type', 'User')

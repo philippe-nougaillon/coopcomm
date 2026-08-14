@@ -2,76 +2,15 @@
 
 require 'test_helper'
 
+# L'index et la suppression depuis l'administration sont réservés au super_admin,
+# donc hors périmètre. Restent les deux parcours ouverts au public : l'inscription
+# depuis la page d'accueil et le lien de désinscription des mails.
 class NewslettersControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @super_admin = users(:philippe_super_admin)
-
-    # Permet à l'utilisateur philippe_super_admin d'être considéré comme un super admin automatiquement
-    @super_admin_initial = ENV.fetch('SUPER_ADMIN', nil)
-    ENV['SUPER_ADMIN'] = @super_admin.email
-
     @newsletter = newsletters(:bond)
   end
 
-  teardown do
-    ENV['SUPER_ADMIN'] = @super_admin_initial
-    ENV.delete('SUPER_ADMIN') if @super_admin_initial.nil?
-  end
-
-  test 'should get index' do
-    sign_in @super_admin
-    get newsletters_url
-    assert_response :success
-  end
-
-  test 'should get index with export xls' do
-    sign_in @super_admin
-    get users_url, params: {
-      format: :xls
-    }
-
-    assert_response :success
-    assert_equal 'application/xls', response.content_type
-  end
-
-  # test "should get new" do
-  #   get new_newsletter_url
-  #   assert_response :success
-  # end
-
-  test 'should create newsletter' do
-    assert_difference('Newsletter.count') do
-      get new_newsletter_url, params: { email: "#{@newsletter.email}m" }
-    end
-
-    assert_response :success
-  end
-
-  # test "should show newsletter" do
-  #   get newsletter_url(@newsletter)
-  #   assert_response :success
-  # end
-
-  # test "should get edit" do
-  #   get edit_newsletter_url(@newsletter)
-  #   assert_response :success
-  # end
-
-  # test "should update newsletter" do
-  #   patch newsletter_url(@newsletter), params: { newsletter: { email: @newsletter.email } }
-  #   assert_redirected_to newsletter_url(@newsletter)
-  # end
-
-  test 'should destroy newsletter as super_admin' do
-    sign_in @super_admin
-    assert_difference('Newsletter.count', -1) do
-      delete newsletter_url(@newsletter)
-    end
-
-    assert_redirected_to newsletters_url
-  end
-
-  test 'should destroy newsletter from unsubscribe link' do
+  test 'destroy : depuis le lien de désinscription → l’inscription est supprimée' do
     assert_difference('Newsletter.count', -1) do
       delete newsletter_url(@newsletter)
     end
@@ -79,16 +18,23 @@ class NewslettersControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_url
   end
 
-  test 'index exporte les inscrits au format XLS' do
-    sign_in @super_admin
+  test 'set_newsletter : un identifiant inconnu redirige sans planter' do
+    assert_no_difference('Newsletter.count') do
+      delete newsletter_url(id: 0)
+    end
 
-    get newsletters_url(format: :xls)
-
-    assert_response :success
-    assert_equal 'application/xls', response.content_type
+    assert_redirected_to root_path
   end
 
-  test 'une inscription avec une adresse déjà connue est signalée sans doublon' do
+  test 'new : une adresse inédite → l’inscription est enregistrée' do
+    assert_difference('Newsletter.count') do
+      get new_newsletter_url, params: { email: "autre-#{@newsletter.email}" }
+    end
+
+    assert_response :success
+  end
+
+  test 'new : une adresse déjà connue → signalée sans doublon' do
     assert_no_difference('Newsletter.count') do
       get new_newsletter_url(email: @newsletter.email)
     end

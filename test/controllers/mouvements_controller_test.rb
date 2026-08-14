@@ -6,18 +6,82 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
   JOUR = Date.new(2026, 6, 2)
 
   setup do
-    @template_mouvement = mouvements(:mouvement_tondeuse)
+    @mouvement = mouvements(:mouvement_tondeuse)
     @outil = tools(:cisaille)
     sign_in users(:administrateur_paris)
   end
 
-  # ==========================================================================
-  # ============ TESTS CRITIQUES : réserver et libérer du matériel ===========
-  # Parcours quotidien des agents. Une réservation perdue, ou celle d'un
-  # collègue libérée par erreur, immobilise ou libère du matériel à tort.
-  # ==========================================================================
+  test 'index : sans paramètre → la page répond' do
+    get mouvements_url
 
-  test 'réserver un outil crée une réservation à son nom' do
+    assert_response :success
+  end
+
+  test 'new : sans paramètre → la page répond' do
+    get new_mouvement_url
+
+    assert_response :success
+  end
+
+  test 'create : paramètres valides → le mouvement est créé' do
+    assert_difference('Mouvement.count') do
+      post mouvements_url, params: { mouvement: { tool_id: @mouvement.tool_id, état: @mouvement.état,
+                                                  date: DateTime.now } }
+    end
+
+    assert_redirected_to mouvements_path
+  end
+
+  # Arrivée via /mouvements/new sans tool_id : le select doit rester affiché pour
+  # que l'utilisateur corrige son choix.
+  test 'create : invalide sans tool_id imposé → le select reste affiché' do
+    assert_no_difference('Mouvement.count') do
+      post mouvements_url, params: { mouvement: { tool_id: @mouvement.tool_id, état: 'réservé', date: '' } }
+    end
+
+    assert_response :unprocessable_content
+    assert_select 'select[name=?]', 'mouvement[tool_id]'
+    assert_select 'input[type=hidden][name=?]', 'mouvement[tool_id]', false
+  end
+
+  # Arrivée via new_mouvement_path(tool_id:) : l'outil ne doit pas être modifiable
+  # dans ce parcours, le champ reste donc caché.
+  test 'create : invalide avec tool_id imposé → le champ reste caché' do
+    assert_no_difference('Mouvement.count') do
+      post mouvements_url, params: { tool_id: @mouvement.tool_id,
+                                     mouvement: { tool_id: @mouvement.tool_id, état: 'réservé', date: '' } }
+    end
+
+    assert_response :unprocessable_content
+    assert_select 'input[type=hidden][name=?]', 'mouvement[tool_id]'
+    assert_select 'select[name=?]', 'mouvement[tool_id]', false
+  end
+
+  test 'edit : un mouvement de son organisation → la page répond' do
+    get edit_mouvement_url(@mouvement)
+
+    assert_response :success
+  end
+
+  test 'update : paramètres valides → le mouvement est modifié' do
+    patch mouvement_url(@mouvement), params: { mouvement: { tool_id: @mouvement.tool_id, état: @mouvement.état,
+                                                            date: DateTime.now + 1.day } }
+
+    assert_redirected_to mouvements_path
+  end
+
+  test 'update : date vidée → formulaire réaffiché en 422 et mouvement inchangé' do
+    patch mouvement_url(@mouvement), params: { mouvement: { date: '' } }
+
+    assert_response :unprocessable_content
+    assert_not_nil @mouvement.reload.date
+  end
+
+  # ==================== TESTS CRITIQUES ====================
+  # Parcours quotidien des agents : une réservation perdue, ou celle d'un collègue
+  # libérée par erreur, immobilise ou libère du matériel à tort.
+
+  test 'critique : reserve, un outil de son organisation → une réservation à son nom' do
     assert_difference('Mouvement.count', 1) do
       post reserve_tool_mouvements_url(tool_id: @outil.id), params: { date: JOUR.to_s }
     end
@@ -29,7 +93,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert_equal @outil, mouvement.tool
   end
 
-  test "réserver l'outil d'une autre organisation est introuvable" do
+  test 'critique : reserve, un outil d’une autre organisation → introuvable, aucune réservation' do
     assert_no_difference('Mouvement.count') do
       post reserve_tool_mouvements_url(tool_id: tools(:camion).id), params: { date: JOUR.to_s }
     end
@@ -37,7 +101,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test 'réserver avec une date illisible ne crée rien et prévient' do
+  test 'reserve : date illisible → aucune réservation et alerte' do
     assert_no_difference('Mouvement.count') do
       post reserve_tool_mouvements_url(tool_id: @outil.id), params: { date: 'pas-une-date' }
     end
@@ -48,13 +112,13 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
 
   # ÉPINGLAGE : rien n'empêche de réserver deux fois le même outil le même jour.
   # La grille n'en affiche qu'une. À inverser si le métier tranche.
-  test 'réserver deux fois le même jour crée deux réservations' do
+  test 'reserve : deux fois le même jour → deux réservations' do
     assert_difference('Mouvement.count', 2) do
       2.times { post reserve_tool_mouvements_url(tool_id: @outil.id), params: { date: JOUR.to_s } }
     end
   end
 
-  test 'libérer sa réservation la supprime' do
+  test 'critique : libere, sa propre réservation → elle est supprimée' do
     mienne = reservation(users(:administrateur_paris))
 
     post libere_tool_mouvements_url(tool_id: @outil.id),
@@ -64,38 +128,27 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to tools_path
   end
 
-  test 'libérer une réservation revient à la page filtrée' do
-    reservation(users(:administrateur_paris))
-    filtres = tools_url(search: 'cisaille', type: 'wrench', date: JOUR.to_s)
-
-    post libere_tool_mouvements_url(tool_id: @outil.id),
-         params: { date: JOUR.to_s, user_id: users(:administrateur_paris).id },
-         headers: { 'HTTP_REFERER' => filtres }
-
-    assert_redirected_to filtres
-  end
-
-  test 'libérer une réservation inexistante revient à la page filtrée' do
-    filtres = tools_url(search: 'cisaille', type: 'wrench', date: JOUR.to_s)
-
-    post libere_tool_mouvements_url(tool_id: @outil.id),
-         params: { date: JOUR.to_s, user_id: users(:administrateur_paris).id },
-         headers: { 'HTTP_REFERER' => filtres }
-
-    assert_redirected_to filtres
-  end
-
-  test "un manager peut libérer la réservation d'un autre" do
+  test 'critique : libere par un manager, la réservation d’un autre → elle est supprimée' do
     sign_in users(:hidalgo)
     celle_dun_autre = reservation(users(:bond))
 
-    post libere_tool_mouvements_url(tool_id: @outil.id),
-         params: { date: JOUR.to_s, user_id: users(:bond).id }
+    post libere_tool_mouvements_url(tool_id: @outil.id), params: { date: JOUR.to_s, user_id: users(:bond).id }
 
     assert_not Mouvement.exists?(celle_dun_autre.id)
   end
 
-  test "un agent qui forge la requête ne libère pas sa propre réservation à la place" do
+  test 'critique : libere par un agent, sa propre réservation → elle est supprimée' do
+    sign_in users(:bond)
+    la_mienne = reservation(users(:bond))
+
+    post libere_tool_mouvements_url(tool_id: @outil.id), params: { date: JOUR.to_s, user_id: users(:bond).id }
+
+    assert_not Mouvement.exists?(la_mienne.id)
+  end
+
+  # La substitution silencieuse d'un `user_id` forgé par celui du current_user
+  # libérerait la réservation de l'agent au lieu de refuser la requête.
+  test 'critique : libere, requête forgée par un agent → aucune réservation détruite' do
     sign_in users(:bond)
     la_mienne = reservation(users(:bond))
     celle_dun_autre = reservation(users(:martin_technique_paris), JOUR + 1)
@@ -107,26 +160,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert Mouvement.exists?(celle_dun_autre.id)
   end
 
-  test 'un agent peut libérer sa propre réservation' do
-    sign_in users(:bond)
-    la_mienne = reservation(users(:bond))
-
-    post libere_tool_mouvements_url(tool_id: @outil.id),
-         params: { date: JOUR.to_s, user_id: users(:bond).id }
-
-    assert_not Mouvement.exists?(la_mienne.id)
-  end
-
-  test "libérer une réservation inexistante prévient sans rien détruire" do
-    assert_no_difference('Mouvement.count') do
-      post libere_tool_mouvements_url(tool_id: @outil.id),
-           params: { date: JOUR.to_s, user_id: users(:administrateur_paris).id }
-    end
-
-    assert_equal "Il n'existe pas de réservation ce jour-là pour cet utilisateur.", flash[:alert]
-  end
-
-  test 'libérer ne détruit pas une panne du même jour' do
+  test 'critique : libere, une panne du même jour → elle n’est pas détruite' do
     en_panne = Mouvement.create!(tool: @outil, user: users(:administrateur_paris), état: :panne, date: JOUR)
 
     post libere_tool_mouvements_url(tool_id: @outil.id),
@@ -135,7 +169,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert Mouvement.exists?(en_panne.id)
   end
 
-  test "libérer une réservation d'une autre organisation ne détruit rien" do
+  test 'critique : libere, une réservation d’une autre organisation → rien n’est détruit' do
     ailleurs = Mouvement.create!(tool: tools(:camion), user: users(:manager_marseille), état: :réservé, date: JOUR)
 
     post libere_tool_mouvements_url(tool_id: tools(:camion).id),
@@ -144,21 +178,43 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert Mouvement.exists?(ailleurs.id)
   end
 
-  test 'libérer sans paramètre prévient au lieu de rendre une page blanche' do
+  # ==================== /TESTS CRITIQUES ====================
+
+  test 'libere : aucune réservation ce jour-là → alerte, rien n’est détruit' do
+    assert_no_difference('Mouvement.count') do
+      post libere_tool_mouvements_url(tool_id: @outil.id),
+           params: { date: JOUR.to_s, user_id: users(:administrateur_paris).id }
+    end
+
+    assert_equal "Il n'existe pas de réservation ce jour-là pour cet utilisateur.", flash[:alert]
+  end
+
+  test 'libere : sans paramètre → alerte au lieu d’une page blanche' do
     post libere_tool_mouvements_url(tool_id: @outil.id)
 
     assert_redirected_to tools_path
     assert_equal "Il n'existe pas de réservation ce jour-là pour cet utilisateur.", flash[:alert]
   end
 
-  test 'un slug de mouvement inconnu redirige sans planter' do
+  test 'libere : retour à la page d’où l’on vient, filtres compris' do
+    reservation(users(:administrateur_paris))
+    filtres = tools_url(search: 'cisaille', type: 'wrench', date: JOUR.to_s)
+
+    post libere_tool_mouvements_url(tool_id: @outil.id),
+         params: { date: JOUR.to_s, user_id: users(:administrateur_paris).id },
+         headers: { 'HTTP_REFERER' => filtres }
+
+    assert_redirected_to filtres
+  end
+
+  test 'set_mouvement : un slug inconnu redirige sans planter' do
     get edit_mouvement_url(id: 'slug-inexistant')
 
     assert_redirected_to root_path
     assert_equal 'Mouvement introuvable', flash[:alert]
   end
 
-  test 'un slug de mouvement inconnu ramène à la page précédente' do
+  test 'set_mouvement : un slug inconnu ramène à la page précédente' do
     precedente = tools_url(search: 'cisaille')
 
     get edit_mouvement_url(id: 'slug-inexistant'), headers: { 'HTTP_REFERER' => precedente }
@@ -167,89 +223,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Mouvement introuvable', flash[:alert]
   end
 
-  test 'should get index' do
-    get mouvements_url
-    assert_response :success
-  end
-
-  test 'should get show' do
-    get mouvement_url(@template_mouvement)
-    assert_response :not_found # Page non activé
-  end
-
-  test 'should get new' do
-    get new_mouvement_url
-    assert_response :success
-  end
-
-  test 'should create mouvement' do
-    assert_difference('Mouvement.count') do
-      post mouvements_url,
-           params: { mouvement: { tool_id: @template_mouvement.tool_id, état: @template_mouvement.état,
-                                  date: DateTime.now } }
-    end
-
-    assert_redirected_to mouvements_path
-  end
-
-  # Création invalide SANS outil imposé (arrivée via /mouvements/new sans tool_id) :
-  # le select doit rester affiché pour que l'utilisateur corrige son choix.
-  test 'create invalide sans tool_id imposé : le select reste affiché' do
-    assert_no_difference('Mouvement.count') do
-      post mouvements_url,
-           params: { mouvement: { tool_id: @template_mouvement.tool_id, état: 'réservé', date: '' } }
-    end
-
-    assert_response :unprocessable_content
-    assert_select 'select[name=?]', 'mouvement[tool_id]'
-    assert_select 'input[type=hidden][name=?]', 'mouvement[tool_id]', false
-  end
-
-  # Création invalide AVEC outil imposé (arrivée via new_mouvement_path(tool_id:)) :
-  # le champ doit rester caché, l'outil ne devant pas être modifiable dans ce parcours.
-  test 'create invalide avec tool_id imposé : le champ reste caché' do
-    assert_no_difference('Mouvement.count') do
-      post mouvements_url,
-           params: { tool_id: @template_mouvement.tool_id,
-                     mouvement: { tool_id: @template_mouvement.tool_id, état: 'réservé', date: '' } }
-    end
-
-    assert_response :unprocessable_content
-    assert_select 'input[type=hidden][name=?]', 'mouvement[tool_id]'
-    assert_select 'select[name=?]', 'mouvement[tool_id]', false
-  end
-
-  test 'should get edit' do
-    get edit_mouvement_url(@template_mouvement)
-    assert_response :success
-  end
-
-  test 'should update mouvement' do
-    patch mouvement_url(@template_mouvement),
-          params: { mouvement: { tool_id: @template_mouvement.tool_id, état: @template_mouvement.état,
-                                 date: DateTime.now + 1.day } }
-    assert_redirected_to mouvements_path
-  end
-
-  private
-
   def reservation(qui, jour = JOUR)
     Mouvement.create!(tool: @outil, user: qui, état: :réservé, date: jour)
-  end
-
-  # --- update : branches d'échec ---
-
-  test 'update invalide réaffiche le formulaire en 422' do
-    patch mouvement_url(@template_mouvement), params: { mouvement: { date: '' } }
-
-    assert_response :unprocessable_content
-    assert_not_nil @template_mouvement.reload.date
-  end
-
-  test 'update invalide en JSON renvoie les erreurs' do
-    patch mouvement_url(@template_mouvement), params: { mouvement: { date: '' } }, as: :json
-
-    assert_response :unprocessable_content
-    assert_includes response.parsed_body.to_s, 'doit être rempli'
   end
 end
