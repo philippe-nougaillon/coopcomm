@@ -17,7 +17,6 @@
         data-transition-leave-to="opacity-0 translate-x-96">
         <div class="max-w-lg w-full <%= type == 'notice' ? 'bg-green-200' : 'bg-red-200' %> shadow-xl rounded-xl pointer-events-auto overflow-hidden">
 
-          <%# fila 1: solo la cruz, alineada a la derecha %>
           <div class="flex justify-end pt-2 pr-2">
             <button data-action="notification#hide"
                     class="relative p-1 rounded-md text-black hover:text-gray-700 focus:outline-none transition-colors"
@@ -33,7 +32,6 @@
             </button>
           </div>
 
-          <%# fila 2: icono + texto %>
           <div class="flex items-center px-2 pb-4">
             <% if type == "notice" %>
             <% else %>
