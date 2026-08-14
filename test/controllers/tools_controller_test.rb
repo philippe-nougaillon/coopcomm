@@ -21,6 +21,7 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
 
     assert_not_includes assigns(:tools), tools(:camion)
   end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'index : sans date → la semaine en cours' do
@@ -192,6 +193,8 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to root_path
   end
+
+  private
 
   def nom_unique = "#{@tool.name}-#{SecureRandom.hex(4)}"
 end

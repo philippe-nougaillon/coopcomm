@@ -14,15 +14,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   # (`by_service` joint `user_services`), son email reste pris, et l'invitation qui
   # suit la création échouait en 500. La création doit donc être refusée en bloc.
 
+  # Champs minimaux d'une création, complétés par chaque test.
   ATTRIBUTS_BASE = { nom: 'Nouveau', prénom: 'Venu', email: 'nouveau.venu@example.test' }.freeze
-
-  def créer(connecté: nil, **attributs)
-    sign_in connecté if connecté
-    post admin_create_new_user_do_url, params: { user: ATTRIBUTS_BASE.merge(attributs) }
-    User.find_by(email: ATTRIBUTS_BASE[:email])
-  end
-
-  # ==================== TESTS CRITIQUES ====================
 
   # Index
   test 'index : sans paramètre → la page répond' do
@@ -131,12 +124,16 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_no_match(/<option value=""/, select_html.to_s)
   end
 
+  # ==================== TESTS CRITIQUES ====================
+
   test 'create_new_user : le rôle est le premier champ du formulaire (critique)' do
     get admin_create_new_user_url
 
     champs = response.body.scan(/(?:name|id)="user(?:\[)?(rôle|nom)/).flatten
     assert_equal 'rôle', champs.first, 'le rôle doit être demandé avant le nom'
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'create_new_user : un manager ne se voit proposer que ses propres services' do
     sign_in users(:hidalgo)
@@ -201,6 +198,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
     assert_select 'form[action=?][method=?]', admin_create_new_user_do_path, 'post'
   end
+
+  # ==================== TESTS CRITIQUES ====================
 
   test 'create_new_user_do : un agent est créé rattaché à son service et invité (critique)' do
     assert_emails 1 do
@@ -276,6 +275,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, 'un seul service'
   end
 
+  # ==================== /TESTS CRITIQUES ====================
+
   test 'create_new_user_do : un adhérent peut être créé avec plusieurs services' do
     créé = créer(rôle: 'adhérent', address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35,
                  service_ids: [services(:informatique).id, services(:technique).id])
@@ -283,6 +284,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil créé
     assert_equal 2, créé.services.count
   end
+
+  # ==================== TESTS CRITIQUES ====================
 
   test 'create_new_user_do : un manager ne rattache qu’à ses propres services (critique)' do
     hors_périmètre = services(:comptabilite) # aucun manager de Paris n'y est rattaché
@@ -294,12 +297,16 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
+  # ==================== /TESTS CRITIQUES ====================
+
   test 'create_new_user_do : un manager rattache à l’un de ses services' do
     créé = créer(connecté: users(:hidalgo), rôle: 'agent', service_ids: [services(:technique).id])
 
     assert_not_nil créé
     assert_equal [services(:technique)], créé.services.to_a
   end
+
+  # ==================== TESTS CRITIQUES ====================
 
   test 'create_new_user_do : un administrateur rattache à tout service de son organisation et garde la main (critique)' do
     hors_de_ses_services = services(:comptabilite)
@@ -318,6 +325,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     get edit_user_url(créé)
     assert_response :success
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 
   # Bornage silencieux : les identifiants hors périmètre sont retirés, les valides gardés.
   test 'create_new_user_do : un service hors périmètre soumis avec un service valide est ignoré' do
@@ -339,6 +348,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
       assert_equal rôle, créé.rôle
     end
   end
+
+  # ==================== TESTS CRITIQUES ====================
 
   test 'create_new_user_do : un manager ne crée que des agents, quel que soit le rôle demandé (critique)' do
     sign_in users(:hidalgo)
@@ -370,6 +381,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # ==================== /TESTS CRITIQUES ====================
+
   test 'create_new_user_do : paramètres invalides → formulaire réaffiché en 422' do
     assert_no_difference('User.count') do
       post admin_create_new_user_do_url, params: { user: { nom: 'SANS', prénom: 'Email', email: '' } }
@@ -382,6 +395,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     get edit_user_url(@user)
     assert_response :success
   end
+
+  # ==================== TESTS CRITIQUES ====================
 
   test 'edit : les services actuels sont présélectionnés (critique)' do
     adhérent = users(:weil)
@@ -407,6 +422,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_equal adhérent.services.ids.sort, valeurs.sort
   end
 
+  # ==================== /TESTS CRITIQUES ====================
+
   test 'edit : le formulaire de modification propose les mots clés déjà utilisés' do
     users(:bond).update!(tag_list: 'secteur-nord')
 
@@ -416,6 +433,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:users_tags).map(&:name), 'secteur-nord'
   end
 
+  # ==================== TESTS CRITIQUES ====================
+
   test 'edit : les mots clés d’une autre organisation ne sont pas proposés (critique)' do
     users(:nettoyeur_marseille).update!(tag_list: 'secret-marseille')
 
@@ -424,6 +443,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_not_includes assigns(:users_tags).map(&:name), 'secret-marseille'
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 
   test "update : paramètres valides → l'utilisateur est modifié" do
     patch user_url(@user), params: {
@@ -436,6 +457,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     }
     assert_redirected_to user_url(@user)
   end
+
+  # ==================== TESTS CRITIQUES ====================
 
   test 'update : par un agent sur lui-même, rôle administrateur soumis → rôle inchangé (critique)' do
     bond = users(:bond)
@@ -465,6 +488,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes bond.reload.services, services(:service_marseille)
     assert_equal services_avant, bond.services.sort_by(&:id)
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'update : invalide réaffiche le formulaire en 422' do
     patch user_url(@user), params: { user: { email: '' } }
@@ -575,6 +600,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_empty agent.reload.tag_list
   end
 
+  # ==================== TESTS CRITIQUES ====================
+
   test 'update : un administrateur ne touche pas à un utilisateur d’une autre organisation (critique)' do
     autre_org = users(:agent_marseille)
 
@@ -585,6 +612,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
     assert_not_equal 'FORGE', autre_org.reload.nom
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'destroy : un utilisateur de son organisation → il est désactivé' do
     assert_difference('User.count', -1) do
@@ -658,5 +687,13 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 def ids_du_select_services(body)
     select_html = body[/<select[^>]*id="user_service_ids".*?<\/select>/m].to_s
     select_html.scan(/<option value="(\d+)"/).flatten.map(&:to_i)
+  end
+
+  private
+
+  def créer(connecté: nil, **attributs)
+    sign_in connecté if connecté
+    post admin_create_new_user_do_url, params: { user: ATTRIBUTS_BASE.merge(attributs) }
+    User.find_by(email: ATTRIBUTS_BASE[:email])
   end
 end

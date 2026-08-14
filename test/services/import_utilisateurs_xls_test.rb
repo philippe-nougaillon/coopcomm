@@ -117,6 +117,8 @@ class ImportUtilisateursXlsTest < ActiveSupport::TestCase
                     'le motif doit nommer la désactivation, pas la collision d’unicité')
   end
 
+  # ==================== /TESTS CRITIQUES ====================
+
   # --- A. Lecture du fichier ----------------------------------------------
 
   test 'un fichier qui n’est pas un classeur est refusé sans lever' do

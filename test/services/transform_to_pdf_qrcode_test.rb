@@ -28,6 +28,8 @@ class TransformToPdfQrcodeTest < ActiveSupport::TestCase
     assert_not_equal charge_utile_du_qrcode(@modèle), charge_utile_du_qrcode(autre)
   end
 
+  # ==================== /TESTS CRITIQUES ====================
+
   # ==================== Lisibilité de l'affiche ====================
 
   test 'la description est imprimée en capitales' do

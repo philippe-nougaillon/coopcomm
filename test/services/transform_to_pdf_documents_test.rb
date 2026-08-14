@@ -65,6 +65,8 @@ class TransformToPdfDocumentsTest < ActiveSupport::TestCase
     assert_no_match(/Devis nettoyage trimestriel/i, texte)
   end
 
+  # ==================== /TESTS CRITIQUES ====================
+
   # ==================== En-tête et métadonnées ====================
 
   test 'le titre distingue le devis, la commande et la facture' do

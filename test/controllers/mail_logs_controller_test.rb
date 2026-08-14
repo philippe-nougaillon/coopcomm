@@ -83,6 +83,8 @@ class MailLogsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/introuvable/i, flash[:alert].to_s)
   end
 
+  private
+
   def cree_mail_log(**attributs)
     MailLog.create!({ organisation: organisations(:mairie_paris), channel: 0,
                       user_id: users(:bond).id }.merge(attributs))

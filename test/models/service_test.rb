@@ -18,6 +18,7 @@ class ServiceTest < ActiveSupport::TestCase
       assert_includes service.errors[:nom], 'doit être rempli(e)'
     end
   end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'un service avec un nom est valide' do

@@ -12,10 +12,6 @@ class DashboardAgentDesactiveTest < ActionDispatch::IntegrationTest
     sign_in users(:hidalgo)
   end
 
-  def users_with_discarded(nom)
-    User.with_discarded.find(ActiveRecord::FixtureSet.identify(nom))
-  end
-
   test "dashboard : le nom d'un agent désactivé n'apparaît pas dans le graphique" do
     get dashboard_url
 
@@ -66,4 +62,9 @@ class DashboardAgentDesactiveTest < ActionDispatch::IntegrationTest
     assert_in_delta part, assigns(:temps_total_par_agent)[users(:bond).nom_prénom], 0.01
   end
 
+  private
+
+  def users_with_discarded(nom)
+    User.with_discarded.find(ActiveRecord::FixtureSet.identify(nom))
+  end
 end

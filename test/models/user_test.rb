@@ -233,7 +233,8 @@ class UserTest < ActiveSupport::TestCase
     assert_equal User.rôles.keys, users(:administrateur_paris).assignable_roles
   end
 
-  # ==== TESTS CRITIQUES : rattachement aux services ====
+  # ==================== TESTS CRITIQUES ====================
+  # Rattachement aux services :
   # L'organisation d'un utilisateur dérive de ses services : un compte sans service
   # n'appartient à aucune organisation, n'apparaît dans aucune liste (`by_service`
   # joint `user_services`) et fait échouer tout ce qui lit `current_organisation`.
@@ -324,4 +325,6 @@ class UserTest < ActiveSupport::TestCase
     assert_equal retiré.id, audit.audited_changes['service_id']
     assert_equal manager.id, audit.associated_id
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 end

@@ -122,7 +122,7 @@ class DashboardExportXlsTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-private
+  private
 
   def classeur_recu
     Spreadsheet.open(StringIO.new(response.body.dup.force_encoding('binary')))

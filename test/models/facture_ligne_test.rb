@@ -2,14 +2,15 @@
 
 require 'test_helper'
 
-# ==================== TESTS CRITIQUES ====================
-# Le prix d'une ligne est figé à la transformation de la commande en facture :
-# il ne suit plus le tarif de la prestation. total_ht est une colonne générée.
 class FactureLigneTest < ActiveSupport::TestCase
   setup do
     @facture = factures(:facture_secretariat) # total_ht initial 0, sans ligne
     @prestation = prestations(:nettoyage_bureaux) # tarif 25.50
   end
+
+  # ==================== TESTS CRITIQUES ====================
+  # Le prix d'une ligne est figé à la transformation de la commande en facture :
+  # il ne suit plus le tarif de la prestation. total_ht est une colonne générée.
 
   # --- Validations ---
 
@@ -77,4 +78,6 @@ class FactureLigneTest < ActiveSupport::TestCase
     ligne.destroy
     assert_equal 51.0, @facture.reload.total_ht.to_f
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 end

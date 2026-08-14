@@ -445,7 +445,7 @@ class AdherentCrmControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:factures), facture
   end
 
-private
+  private
 
   def creer_cotations(nombre)
     nombre.times do |i|

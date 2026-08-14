@@ -38,6 +38,7 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to messagerie_path
   end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'send_message : un interlocuteur du périmètre → le message est créé' do
@@ -72,6 +73,7 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
       }
     end
   end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'mark_as_read : un message qui m’est destiné → il est marqué lu' do

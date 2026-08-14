@@ -13,6 +13,9 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     sign_in @admin
   end
 
+  # SVG vide encodé en base64 : la charge utile que le pad de signature envoie.
+  SIGNATURE = 'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4='
+
   test 'index : sans paramètre → la page répond' do
     get cotations_url
     assert_response :success
@@ -415,5 +418,4 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_nil cotation.signature
   end
 
-SIGNATURE = 'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4='
 end

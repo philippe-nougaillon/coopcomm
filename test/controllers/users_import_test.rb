@@ -40,6 +40,7 @@ class UsersImportTest < ActionDispatch::IntegrationTest
     assert_bilan importés: 0, erreurs: 1
     assert_match(/modifiez-le depuis sa fiche/, tableau_erreurs)
   end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'import : un manager accède au formulaire' do
@@ -279,7 +280,7 @@ class UsersImportTest < ActionDispatch::IntegrationTest
     assert candidat.valid?, candidat.errors.full_messages.join(', ')
   end
 
-private
+  private
 
   def importer(lignes, save: nil)
     params = { upload: televersement(lignes) }
@@ -287,8 +288,6 @@ private
 
     post import_do_users_url, params: params
   end
-
-  def page = Nokogiri::HTML(response.body)
 
   def assert_bilan(importés:, erreurs:)
     bilan = page.at_css('[data-testid=bilan_import]')
@@ -304,9 +303,8 @@ private
                'un import interrompu n’affiche aucun compteur de lignes'
   end
 
+  def page = Nokogiri::HTML(response.body)
   def tableau_succès = page.at_css('[data-testid=tableau_succes]')&.text.to_s.squish
-
   def tableau_erreurs = page.at_css('[data-testid=tableau_erreurs]')&.text.to_s.squish
-
   def premiere_erreur = page.at_css('[data-testid=tableau_erreurs] tbody tr')
 end

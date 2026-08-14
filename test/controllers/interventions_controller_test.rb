@@ -10,6 +10,9 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:hidalgo)
   end
 
+  # Marqueur planté dans l'avis : il ne doit jamais atteindre l'agent noté.
+  AVIS_SENTINELLE = /AVIS-RESERVE-AUX-GESTIONNAIRES/
+
   test 'set_intervention : un slug inconnu redirige sans planter' do
     get intervention_url('abcdefg')
     assert_redirected_to root_path
@@ -448,6 +451,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     contenu = sheet.rows.map { |r| r.to_a.join(' ') }.join(' ')
     assert_includes contenu, interventions(:tonte_locaux).avis
   end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'show : une intervention de son périmètre → la page répond' do
@@ -475,6 +479,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success, "garde anti-faux-positif : l'agent doit accéder à la page"
     assert_no_match AVIS_SENTINELLE, response.body
   end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test "show.pdf : un manager peut générer l'affiche QRCode du modèle de pointage" do
@@ -556,6 +561,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select 'label[for=intervention_agent_ids] span.text-red-500'
   end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'le formulaire ordinaire laisse les agents facultatifs' do
@@ -902,6 +908,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
     assert intervention.reload.nouveau?, "l'état ne doit pas avoir changé"
   end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'update sans demande de terminaison laisse l’état inchangé' do
@@ -1318,6 +1325,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/Conflit/, flash[:alert], "le motif du refus doit être affiché à l'utilisateur")
     assert intervention.reload.nouveau?, "l'état ne doit pas avoir changé"
   end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'terminer une intervention déjà validée est refusé' do
@@ -1388,6 +1396,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/pas valide/, flash[:alert])
     assert intervention.reload.terminé?, "l'état ne doit pas avoir changé"
   end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test "archiver une intervention validée l\'archive" do
@@ -1997,7 +2006,31 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
-AVIS_SENTINELLE = /AVIS-RESERVE-AUX-GESTIONNAIRES/
+test 'pointer intervention repete doit pouvoir créer plusieurs interventions dans la journée' do
+    intervention = interventions(:intervention_repete)
+
+    sign_in users(:martin_technique_paris)
+    jour = Time.zone.local(2025, 1, 6)
+    assert_difference('Intervention.count', 1) do
+      travel_to(jour + 8.hours) { get pointer_intervention_url(intervention) }
+    end
+    assert_no_difference('Intervention.count') do
+      travel_to(jour + 12.hours) { get pointer_intervention_url(intervention) }
+    end
+    assert_difference('Intervention.count', 1) do
+      travel_to(jour + 13.hours) { get pointer_intervention_url(intervention) }
+    end
+    assert_no_difference('Intervention.count') do
+      travel_to(jour + 17.hours) { get pointer_intervention_url(intervention) }
+    end
+    expected_nb_intervention_filles = 2
+    actual_nb_intervention_filles = Intervention.where(template_slug: intervention.slug).last(2).count
+
+    assert_equal expected_nb_intervention_filles, actual_nb_intervention_filles
+  end
+
+  private
+
   def cree_intervention_evaluee(agent)
     Intervention.create!(
       description: 'Intervention évaluée du test critique',
@@ -2014,6 +2047,7 @@ AVIS_SENTINELLE = /AVIS-RESERVE-AUX-GESTIONNAIRES/
       slug: SecureRandom.uuid
     )
   end
+
   def cree_intervention_validee
     Intervention.create!(
       description: 'Intervention validée du test',
@@ -2027,6 +2061,7 @@ AVIS_SENTINELLE = /AVIS-RESERVE-AUX-GESTIONNAIRES/
       slug: SecureRandom.uuid
     )
   end
+
   def cree_intervention_en_conflit(agent, workflow_state: 'nouveau', avec_conflit: true)
     intervention = Intervention.create!(
       description: 'Intervention à terminer', adherent: users(:weil), service: services(:technique),
@@ -2063,29 +2098,6 @@ AVIS_SENTINELLE = /AVIS-RESERVE-AUX-GESTIONNAIRES/
     intervention
   end
 
-test 'pointer intervention repete doit pouvoir créer plusieurs interventions dans la journée' do
-    intervention = interventions(:intervention_repete)
-
-    sign_in users(:martin_technique_paris)
-    jour = Time.zone.local(2025, 1, 6)
-    assert_difference('Intervention.count', 1) do
-      travel_to(jour + 8.hours) { get pointer_intervention_url(intervention) }
-    end
-    assert_no_difference('Intervention.count') do
-      travel_to(jour + 12.hours) { get pointer_intervention_url(intervention) }
-    end
-    assert_difference('Intervention.count', 1) do
-      travel_to(jour + 13.hours) { get pointer_intervention_url(intervention) }
-    end
-    assert_no_difference('Intervention.count') do
-      travel_to(jour + 17.hours) { get pointer_intervention_url(intervention) }
-    end
-    expected_nb_intervention_filles = 2
-    actual_nb_intervention_filles = Intervention.where(template_slug: intervention.slug).last(2).count
-
-    assert_equal expected_nb_intervention_filles, actual_nb_intervention_filles
-  end
-
   def cree_intervention_occupante(**attrs)
     adherent = users(:weil)
     Intervention.create!({
@@ -2095,6 +2107,12 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
       adherent: adherent,
       service: adherent.services.first
     }.merge(attrs))
+  end
+
+  def en_utc(valeur)
+    return valeur if valeur == 'null'
+
+    Time.zone.parse(valeur).utc.iso8601
   end
 
   def interroger_disponibilites(date_debut: 'null', date_fin: 'null', date_debut_prevue: 'null',
@@ -2111,11 +2129,5 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
 
     assert_response :success
     JSON.parse(response.body)
-  end
-
-  def en_utc(valeur)
-    return valeur if valeur == 'null'
-
-    Time.zone.parse(valeur).utc.iso8601
   end
 end

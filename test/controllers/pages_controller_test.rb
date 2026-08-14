@@ -306,6 +306,9 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Le seuil de l'assistant est de 10 interventions planifiées (hors pointages).
+
+  private
+
   def cree_interventions_planifiees(nombre)
     nombre.times do |i|
       jour = Date.new(2024, 2, 1) + i

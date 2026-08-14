@@ -13,18 +13,6 @@ class TwilioControllerTest < ActionDispatch::IntegrationTest
     ENV['TWILIO_AUTH_TOKEN'] = @ancien_token
   end
 
-  # Reproduit la signature HMAC-SHA1 que Twilio joint à chaque webhook
-  # (cf. TwilioController#validate_twilio_signature).
-  def signature_twilio(url, params)
-    data = url + params.sort.map { |k, v| "#{k}#{v}" }.join
-    Base64.strict_encode64(OpenSSL::HMAC.digest('sha1', ENV['TWILIO_AUTH_TOKEN'], data))
-  end
-
-  def post_signé(params)
-    url = twilio_whatsapp_reply_url
-    post url, params: params, headers: { 'X-Twilio-Signature' => signature_twilio(url, params) }
-  end
-
   test 'should create intervention when sender exists' do
     assert_difference('Intervention.count', 1) do
       post_signé('From' => @agent.téléphone, 'Body' => "Réparation fuite d'eau")
@@ -88,5 +76,19 @@ class TwilioControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :forbidden
+  end
+
+  private
+
+  # Reproduit la signature HMAC-SHA1 que Twilio joint à chaque webhook
+  # (cf. TwilioController#validate_twilio_signature).
+  def signature_twilio(url, params)
+    data = url + params.sort.map { |k, v| "#{k}#{v}" }.join
+    Base64.strict_encode64(OpenSSL::HMAC.digest('sha1', ENV['TWILIO_AUTH_TOKEN'], data))
+  end
+
+  def post_signé(params)
+    url = twilio_whatsapp_reply_url
+    post url, params: params, headers: { 'X-Twilio-Signature' => signature_twilio(url, params) }
   end
 end

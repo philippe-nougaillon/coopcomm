@@ -88,10 +88,11 @@ class InterventionMatriceIndexTest < ActionDispatch::IntegrationTest
     end
   end
 
-  private
-
   # Restreint l'analyse au fragment de l'intervention : la page porte des listes
   # de filtres qui contiennent les mêmes intitulés.
+
+  private
+
   def fragment(intervention, vue)
     doc = Nokogiri::HTML(response.body)
     return doc.at_css("##{ActionView::RecordIdentifier.dom_id(intervention)}") if vue == 'normal'

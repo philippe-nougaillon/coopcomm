@@ -47,6 +47,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
     assert_includes response.body, 'doit être rempli'
   end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'create : nom déjà pris → aucune création et formulaire réaffiché' do
@@ -77,6 +78,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
     assert_equal 'Technique', service.reload.nom
   end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'update : nom déjà pris → le service est inchangé' do
@@ -104,6 +106,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
     assert_equal "Vous n'êtes pas autorisé à effectuer cette action.", flash[:alert]
   end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'set_service : un slug inconnu redirige sans planter' do

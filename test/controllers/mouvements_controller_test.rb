@@ -3,13 +3,14 @@
 require 'test_helper'
 
 class MouvementsControllerTest < ActionDispatch::IntegrationTest
-  JOUR = Date.new(2026, 6, 2)
-
   setup do
     @mouvement = mouvements(:mouvement_tondeuse)
     @outil = tools(:cisaille)
     sign_in users(:administrateur_paris)
   end
+
+  # Jour de référence des réservations, hors de toute fixture.
+  JOUR = Date.new(2026, 6, 2)
 
   test 'index : sans paramètre → la page répond' do
     get mouvements_url
@@ -101,6 +102,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
   end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'reserve : date illisible → aucune réservation et alerte' do
@@ -181,6 +183,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
 
     assert Mouvement.exists?(ailleurs.id)
   end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'libere : aucune réservation ce jour-là → alerte, rien n’est détruit' do
@@ -225,6 +228,8 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to precedente
     assert_equal 'Mouvement introuvable', flash[:alert]
   end
+
+  private
 
   def reservation(qui, jour = JOUR)
     Mouvement.create!(tool: @outil, user: qui, état: :réservé, date: jour)
