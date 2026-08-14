@@ -36,8 +36,10 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Un service sans nom se retrouve en entrée VIDE dans le sélecteur du formulaire
+  # ==================== TESTS CRITIQUES ====================
+
   # utilisateur : les comptes qu'on y rattache paraissent sans service.
-  test 'critique : create, nom vide → aucune création' do
+  test 'create : nom vide → aucune création (critique)' do
     assert_no_difference('Service.count') do
       post services_url, params: { service: { nom: '' } }
     end
@@ -45,6 +47,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
     assert_includes response.body, 'doit être rempli'
   end
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'create : nom déjà pris → aucune création et formulaire réaffiché' do
     assert_no_difference('Service.count') do
@@ -64,7 +67,9 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_equal nouveau_nom, @service.reload.nom
   end
 
-  test 'critique : update, nom vidé → le service garde son nom' do
+  # ==================== TESTS CRITIQUES ====================
+
+  test 'update : nom vidé → le service garde son nom (critique)' do
     service = services(:technique)
 
     patch service_url(service), params: { service: { nom: '  ' } }
@@ -72,6 +77,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
     assert_equal 'Technique', service.reload.nom
   end
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'update : nom déjà pris → le service est inchangé' do
     patch service_url(@service), params: { service: { nom: services(:technique).nom } }
@@ -88,7 +94,9 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_parametres_path(tab: 'services')
   end
 
-  test 'critique : destroy, un service encore rattaché → aucune suppression' do
+  # ==================== TESTS CRITIQUES ====================
+
+  test 'destroy : un service encore rattaché → aucune suppression (critique)' do
     assert_no_difference('Service.count') do
       delete service_url(@service)
     end
@@ -96,6 +104,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
     assert_equal "Vous n'êtes pas autorisé à effectuer cette action.", flash[:alert]
   end
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'set_service : un slug inconnu redirige sans planter' do
     get service_url('service-inexistant')

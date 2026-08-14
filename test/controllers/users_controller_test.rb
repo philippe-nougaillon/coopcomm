@@ -10,7 +10,6 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:administrateur_paris)
   end
 
-  # ==== TESTS CRITIQUES : création d'un utilisateur et rattachement au service ====
   # Un compte sans service n'a pas d'organisation : il n'apparaît dans aucune liste
   # (`by_service` joint `user_services`), son email reste pris, et l'invitation qui
   # suit la création échouait en 500. La création doit donc être refusée en bloc.
@@ -23,240 +22,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     User.find_by(email: ATTRIBUTS_BASE[:email])
   end
 
-  test 'critique : un agent est créé rattaché à son service et invité' do
-    assert_emails 1 do
-      créé = créer(rôle: 'agent', service_ids: [services(:informatique).id])
-
-      assert_not_nil créé
-      assert_equal [services(:informatique)], créé.services.to_a
-      assert_equal organisations(:mairie_paris), créé.organisation
-      assert_redirected_to user_url(créé)
-    end
-  end
-
-  # exactement ce qui était arrivé à l'ancienne action create_new_user_do.
-  test 'critique : la création accepte tous les champs du formulaire' do
-    post admin_create_new_user_do_url, params: {
-      user: { nom: 'Complet', prénom: 'Champs', email: 'complet@example.test',
-              rôle: 'adhérent', téléphone: '0102030405', memo: 'Note interne',
-              address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35,
-              color: '#123456', tag_list: ['Secteur Nord'],
-              service_ids: [services(:informatique).id],
-              profile_picture: fixture_file_upload('exemple.png', 'image/png') }
-    }
-
-    créé = User.find_by(email: 'complet@example.test')
-    assert_not_nil créé, "la création a échoué : #{flash[:alert]}"
-    assert_equal 'COMPLET', créé.nom
-    assert_equal 'Champs', créé.prénom
-    assert_equal 'adhérent', créé.rôle
-    assert_equal '0102030405', créé.téléphone
-    assert_equal 'Note interne', créé.memo
-    assert_equal 'Mairie de Paris', créé.address
-    assert_equal '#123456', créé.color
-    assert_equal ['Secteur Nord'], créé.tag_list
-    assert_equal [services(:informatique)], créé.services.to_a
-    assert créé.profile_picture.attached?
-  end
-
-  test 'critique : aucun compte n’est créé sans service' do
-    assert_no_emails do
-      assert_no_difference -> { User.count } do
-        créer(rôle: 'adhérent', address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35)
-      end
-    end
-
-    assert_response :unprocessable_content
-    assert_includes response.body, 'doit comporter au moins un service'
-  end
-
-  # qui n'est PAS `blank?` : la garde doit dépiler le tableau, pas le tester tel quel.
-  test 'critique : une sélection de services vidée ne crée aucun compte' do
-    assert_no_difference -> { User.count } do
-      créer(rôle: 'adhérent', address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35,
-            service_ids: [''])
-    end
-
-    assert_response :unprocessable_content
-  end
-
-  test 'critique : un service d’une autre organisation ne crée aucun compte' do
-    assert_no_difference -> { User.count } do
-      créer(rôle: 'agent', service_ids: [services(:service_marseille).id])
-    end
-
-    assert_response :unprocessable_content
-  end
-
-  test 'critique : un agent ne peut pas être créé avec deux services' do
-    assert_no_difference -> { User.count } do
-      créer(rôle: 'agent', service_ids: [services(:informatique).id, services(:technique).id])
-    end
-
-    assert_response :unprocessable_content
-    assert_includes response.body, 'un seul service'
-  end
-
-  test 'create_new_user_do : un adhérent peut être créé avec plusieurs services' do
-    créé = créer(rôle: 'adhérent', address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35,
-                 service_ids: [services(:informatique).id, services(:technique).id])
-
-    assert_not_nil créé
-    assert_equal 2, créé.services.count
-  end
-
-  test 'critique : un manager ne peut rattacher qu’à ses propres services' do
-    hors_périmètre = services(:comptabilite) # aucun manager de Paris n'y est rattaché
-
-    assert_no_difference -> { User.count } do
-      créer(connecté: users(:hidalgo), rôle: 'agent', service_ids: [hors_périmètre.id])
-    end
-
-    assert_response :unprocessable_content
-  end
-
-  test 'create_new_user_do : un manager rattache à l’un de ses services' do
-    créé = créer(connecté: users(:hidalgo), rôle: 'agent', service_ids: [services(:technique).id])
-
-    assert_not_nil créé
-    assert_equal [services(:technique)], créé.services.to_a
-  end
-
-  test 'critique : un administrateur rattache à n’importe quel service de son organisation et garde la main dessus' do
-    hors_de_ses_services = services(:comptabilite)
-
-    créé = créer(rôle: 'agent', service_ids: [hors_de_ses_services.id])
-
-    assert_not_nil créé
-    assert_equal [hors_de_ses_services], créé.services.to_a
-
-    # Le compte doit rester accessible : sinon l'administrateur le voit dans la liste
-    # sans pouvoir l'ouvrir, le modifier ni relancer son invitation.
-    follow_redirect!
-    assert_response :success
-    assert_nil flash[:alert]
-
-    get edit_user_url(créé)
-    assert_response :success
-  end
-
-  # Bornage silencieux : les identifiants hors périmètre sont retirés, les valides gardés.
-  test 'create_new_user_do : un service hors périmètre soumis avec un service valide est ignoré' do
-    créé = créer(connecté: users(:hidalgo), rôle: 'adhérent',
-                 address: 'Mairie', latitude: 1.0, longitude: 2.0,
-                 service_ids: [services(:technique).id, services(:comptabilite).id,
-                               services(:service_marseille).id])
-
-    assert_not_nil créé
-    assert_equal [services(:technique)], créé.services.to_a
-  end
-
-  User.rôles.each_key do |rôle|
-    test "un administrateur peut créer un #{rôle}" do
-      créé = créer(rôle: rôle, service_ids: [services(:informatique).id],
-                   address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35)
-
-      assert_not_nil créé
-      assert_equal rôle, créé.rôle
-    end
-  end
-
-  test 'critique : un manager ne crée que des agents, quel que soit le rôle demandé' do
-    sign_in users(:hidalgo)
-
-    %w[adhérent manager administrateur].each do |demandé|
-      post admin_create_new_user_do_url, params: {
-        user: { nom: 'Forcé', prénom: 'Agent', email: "force-#{demandé}@example.test",
-                rôle: demandé, service_ids: [services(:informatique).id] }
-      }
-
-      créé = User.find_by(email: "force-#{demandé}@example.test")
-      assert_not_nil créé, "aucun compte créé pour le rôle demandé #{demandé}"
-      assert_equal 'agent', créé.rôle
-    end
-  end
-
-  # Un compte antérieur à la validation n'en a pas : le mail doit partir quand même.
-  test 'critique : une notification Devise sur un compte sans service n’explose pas' do
-    orphelin = User.new(nom: 'Orphelin', prénom: 'Sans', email: 'orphelin@example.test',
-                        rôle: 'adhérent', password: 'qtDug$d843sqACz?V')
-    orphelin.save(validate: false)
-
-    assert_nil orphelin.organisation
-
-    assert_emails 1 do
-      assert_no_difference -> { MailLog.count } do
-        orphelin.send_reset_password_instructions
-      end
-    end
-  end
-
-  test 'create_new_user_do : paramètres invalides → formulaire réaffiché en 422' do
-    assert_no_difference('User.count') do
-      post admin_create_new_user_do_url, params: { user: { nom: 'SANS', prénom: 'Email', email: '' } }
-    end
-
-    assert_response :unprocessable_content
-  end
-
-  test 'create_new_user_do : le select des services ne propose aucune option vide' do
-    get admin_create_new_user_url
-
-    select_html = response.body[/<select[^>]*id="user_service_ids".*?<\/select>/m]
-    assert_no_match(/<option value=""/, select_html.to_s)
-  end
-
-  test 'critique : le rôle est le premier champ du formulaire' do
-    get admin_create_new_user_url
-
-    champs = response.body.scan(/(?:name|id)="user(?:\[)?(rôle|nom)/).flatten
-    assert_equal 'rôle', champs.first, 'le rôle doit être demandé avant le nom'
-  end
-
-  test 'create_new_user_do : un manager ne se voit proposer que ses propres services' do
-    sign_in users(:hidalgo)
-
-    get admin_create_new_user_url
-
-    proposés = ids_du_select_services(response.body)
-    assert_equal users(:hidalgo).services.ids.sort, proposés.sort
-  end
-
-  test 'create_new_user_do : un administrateur se voit proposer tous les services de son organisation' do
-    get admin_create_new_user_url
-
-    proposés = ids_du_select_services(response.body)
-    assert_equal organisations(:mairie_paris).services.ids.sort, proposés.sort
-  end
-
-  test 'create_new_user_do : aucun service d’une autre organisation n’est proposé' do
-    get admin_create_new_user_url
-
-    assert_not_includes ids_du_select_services(response.body), services(:service_marseille).id
-  end
-
-  test 'create_new_user_do : un manager mono-service voit son service déjà sélectionné' do
-    mono = users(:michael_jackson) # manager, uniquement service_marseille2
-    sign_in mono
-
-    get admin_create_new_user_url
-
-    assert_select "select#user_service_ids option[selected][value=?]", services(:service_marseille2).id.to_s
-  end
-
-  test 'create_new_user_do : un manager multi-services n’a aucun service présélectionné' do
-    sign_in users(:hidalgo)
-
-    get admin_create_new_user_url
-
-    assert_select 'select#user_service_ids option[selected]', count: 0
-  end
-
-  test 'create_new_user_do : le champ Équipe accepte la création d’un mot clé' do
-    get admin_create_new_user_url
-
-    assert_select 'select#user_tag_list[data-addable=?]', 'true'
-  end
+  # ==================== TESTS CRITIQUES ====================
 
   # Index
   test 'index : sans paramètre → la page répond' do
@@ -358,12 +124,266 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_match 'secteur-nord', response.body
   end
 
+  test 'create_new_user : le select des services ne propose aucune option vide' do
+    get admin_create_new_user_url
+
+    select_html = response.body[/<select[^>]*id="user_service_ids".*?<\/select>/m]
+    assert_no_match(/<option value=""/, select_html.to_s)
+  end
+
+  test 'create_new_user : le rôle est le premier champ du formulaire (critique)' do
+    get admin_create_new_user_url
+
+    champs = response.body.scan(/(?:name|id)="user(?:\[)?(rôle|nom)/).flatten
+    assert_equal 'rôle', champs.first, 'le rôle doit être demandé avant le nom'
+  end
+
+  test 'create_new_user : un manager ne se voit proposer que ses propres services' do
+    sign_in users(:hidalgo)
+
+    get admin_create_new_user_url
+
+    proposés = ids_du_select_services(response.body)
+    assert_equal users(:hidalgo).services.ids.sort, proposés.sort
+  end
+
+  test 'create_new_user : un administrateur se voit proposer tous les services de son organisation' do
+    get admin_create_new_user_url
+
+    proposés = ids_du_select_services(response.body)
+    assert_equal organisations(:mairie_paris).services.ids.sort, proposés.sort
+  end
+
+  test 'create_new_user : aucun service d’une autre organisation n’est proposé' do
+    get admin_create_new_user_url
+
+    assert_not_includes ids_du_select_services(response.body), services(:service_marseille).id
+  end
+
+  test 'create_new_user : un manager mono-service voit son service déjà sélectionné' do
+    mono = users(:michael_jackson) # manager, uniquement service_marseille2
+    sign_in mono
+
+    get admin_create_new_user_url
+
+    assert_select "select#user_service_ids option[selected][value=?]", services(:service_marseille2).id.to_s
+  end
+
+  test 'create_new_user : un manager multi-services n’a aucun service présélectionné' do
+    sign_in users(:hidalgo)
+
+    get admin_create_new_user_url
+
+    assert_select 'select#user_service_ids option[selected]', count: 0
+  end
+
+  test 'create_new_user : le champ Équipe accepte la création d’un mot clé' do
+    get admin_create_new_user_url
+
+    assert_select 'select#user_tag_list[data-addable=?]', 'true'
+  end
+
+  test 'create_new_user : sans paramètre → la page répond' do
+    get admin_create_new_user_url
+
+    assert_response :success
+  end
+
+  test 'create_new_user : le formulaire s’ouvre sur le rôle agent' do
+    get admin_create_new_user_url
+
+    assert_equal 'agent', assigns(:user).rôle
+  end
+
+  # l'inscription publique et aucun compte n'est créé.
+  test 'create_new_user : le formulaire poste sur le chemin dédié, pas sur POST /users' do
+    get admin_create_new_user_url
+
+    assert_select 'form[action=?][method=?]', admin_create_new_user_do_path, 'post'
+  end
+
+  test 'create_new_user_do : un agent est créé rattaché à son service et invité (critique)' do
+    assert_emails 1 do
+      créé = créer(rôle: 'agent', service_ids: [services(:informatique).id])
+
+      assert_not_nil créé
+      assert_equal [services(:informatique)], créé.services.to_a
+      assert_equal organisations(:mairie_paris), créé.organisation
+      assert_redirected_to user_url(créé)
+    end
+  end
+
+  # exactement ce qui était arrivé à l'ancienne action create_new_user_do.
+  test 'create_new_user_do : tous les champs du formulaire sont acceptés (critique)' do
+    post admin_create_new_user_do_url, params: {
+      user: { nom: 'Complet', prénom: 'Champs', email: 'complet@example.test',
+              rôle: 'adhérent', téléphone: '0102030405', memo: 'Note interne',
+              address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35,
+              color: '#123456', tag_list: ['Secteur Nord'],
+              service_ids: [services(:informatique).id],
+              profile_picture: fixture_file_upload('exemple.png', 'image/png') }
+    }
+
+    créé = User.find_by(email: 'complet@example.test')
+    assert_not_nil créé, "la création a échoué : #{flash[:alert]}"
+    assert_equal 'COMPLET', créé.nom
+    assert_equal 'Champs', créé.prénom
+    assert_equal 'adhérent', créé.rôle
+    assert_equal '0102030405', créé.téléphone
+    assert_equal 'Note interne', créé.memo
+    assert_equal 'Mairie de Paris', créé.address
+    assert_equal '#123456', créé.color
+    assert_equal ['Secteur Nord'], créé.tag_list
+    assert_equal [services(:informatique)], créé.services.to_a
+    assert créé.profile_picture.attached?
+  end
+
+  test 'create_new_user_do : sans service → aucun compte créé (critique)' do
+    assert_no_emails do
+      assert_no_difference -> { User.count } do
+        créer(rôle: 'adhérent', address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35)
+      end
+    end
+
+    assert_response :unprocessable_content
+    assert_includes response.body, 'doit comporter au moins un service'
+  end
+
+  # qui n'est PAS `blank?` : la garde doit dépiler le tableau, pas le tester tel quel.
+  test 'create_new_user_do : sélection de services vidée → aucun compte créé (critique)' do
+    assert_no_difference -> { User.count } do
+      créer(rôle: 'adhérent', address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35,
+            service_ids: [''])
+    end
+
+    assert_response :unprocessable_content
+  end
+
+  test 'create_new_user_do : un service d’une autre organisation → aucun compte créé (critique)' do
+    assert_no_difference -> { User.count } do
+      créer(rôle: 'agent', service_ids: [services(:service_marseille).id])
+    end
+
+    assert_response :unprocessable_content
+  end
+
+  test 'create_new_user_do : un agent avec deux services → refusé (critique)' do
+    assert_no_difference -> { User.count } do
+      créer(rôle: 'agent', service_ids: [services(:informatique).id, services(:technique).id])
+    end
+
+    assert_response :unprocessable_content
+    assert_includes response.body, 'un seul service'
+  end
+
+  test 'create_new_user_do : un adhérent peut être créé avec plusieurs services' do
+    créé = créer(rôle: 'adhérent', address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35,
+                 service_ids: [services(:informatique).id, services(:technique).id])
+
+    assert_not_nil créé
+    assert_equal 2, créé.services.count
+  end
+
+  test 'create_new_user_do : un manager ne rattache qu’à ses propres services (critique)' do
+    hors_périmètre = services(:comptabilite) # aucun manager de Paris n'y est rattaché
+
+    assert_no_difference -> { User.count } do
+      créer(connecté: users(:hidalgo), rôle: 'agent', service_ids: [hors_périmètre.id])
+    end
+
+    assert_response :unprocessable_content
+  end
+
+  test 'create_new_user_do : un manager rattache à l’un de ses services' do
+    créé = créer(connecté: users(:hidalgo), rôle: 'agent', service_ids: [services(:technique).id])
+
+    assert_not_nil créé
+    assert_equal [services(:technique)], créé.services.to_a
+  end
+
+  test 'create_new_user_do : un administrateur rattache à tout service de son organisation et garde la main (critique)' do
+    hors_de_ses_services = services(:comptabilite)
+
+    créé = créer(rôle: 'agent', service_ids: [hors_de_ses_services.id])
+
+    assert_not_nil créé
+    assert_equal [hors_de_ses_services], créé.services.to_a
+
+    # Le compte doit rester accessible : sinon l'administrateur le voit dans la liste
+    # sans pouvoir l'ouvrir, le modifier ni relancer son invitation.
+    follow_redirect!
+    assert_response :success
+    assert_nil flash[:alert]
+
+    get edit_user_url(créé)
+    assert_response :success
+  end
+
+  # Bornage silencieux : les identifiants hors périmètre sont retirés, les valides gardés.
+  test 'create_new_user_do : un service hors périmètre soumis avec un service valide est ignoré' do
+    créé = créer(connecté: users(:hidalgo), rôle: 'adhérent',
+                 address: 'Mairie', latitude: 1.0, longitude: 2.0,
+                 service_ids: [services(:technique).id, services(:comptabilite).id,
+                               services(:service_marseille).id])
+
+    assert_not_nil créé
+    assert_equal [services(:technique)], créé.services.to_a
+  end
+
+  User.rôles.each_key do |rôle|
+    test "un administrateur peut créer un #{rôle}" do
+      créé = créer(rôle: rôle, service_ids: [services(:informatique).id],
+                   address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35)
+
+      assert_not_nil créé
+      assert_equal rôle, créé.rôle
+    end
+  end
+
+  test 'create_new_user_do : un manager ne crée que des agents, quel que soit le rôle demandé (critique)' do
+    sign_in users(:hidalgo)
+
+    %w[adhérent manager administrateur].each do |demandé|
+      post admin_create_new_user_do_url, params: {
+        user: { nom: 'Forcé', prénom: 'Agent', email: "force-#{demandé}@example.test",
+                rôle: demandé, service_ids: [services(:informatique).id] }
+      }
+
+      créé = User.find_by(email: "force-#{demandé}@example.test")
+      assert_not_nil créé, "aucun compte créé pour le rôle demandé #{demandé}"
+      assert_equal 'agent', créé.rôle
+    end
+  end
+
+  # Un compte antérieur à la validation n'en a pas : le mail doit partir quand même.
+  test 'create_new_user_do : une notification Devise sur un compte sans service n’explose pas (critique)' do
+    orphelin = User.new(nom: 'Orphelin', prénom: 'Sans', email: 'orphelin@example.test',
+                        rôle: 'adhérent', password: 'qtDug$d843sqACz?V')
+    orphelin.save(validate: false)
+
+    assert_nil orphelin.organisation
+
+    assert_emails 1 do
+      assert_no_difference -> { MailLog.count } do
+        orphelin.send_reset_password_instructions
+      end
+    end
+  end
+
+  test 'create_new_user_do : paramètres invalides → formulaire réaffiché en 422' do
+    assert_no_difference('User.count') do
+      post admin_create_new_user_do_url, params: { user: { nom: 'SANS', prénom: 'Email', email: '' } }
+    end
+
+    assert_response :unprocessable_content
+  end
+
   test 'edit : un utilisateur de son organisation → la page répond' do
     get edit_user_url(@user)
     assert_response :success
   end
 
-  test 'critique : en modification, les services actuels sont présélectionnés' do
+  test 'edit : les services actuels sont présélectionnés (critique)' do
     adhérent = users(:weil)
     adhérent.service_ids = [services(:informatique).id, services(:technique).id]
 
@@ -375,7 +395,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   # unique sérialise le tableau en une chaîne que `permit(service_ids: [])` rejette.
-  test 'critique : en modification, un manager renvoie un champ caché par service' do
+  test 'edit : un manager renvoie un champ caché par service (critique)' do
     adhérent = users(:weil)
     adhérent.service_ids = [services(:informatique).id, services(:comptabilite).id]
     sign_in users(:hidalgo)
@@ -396,7 +416,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:users_tags).map(&:name), 'secteur-nord'
   end
 
-  test 'critique : le formulaire ne propose pas les mots clés d une autre organisation' do
+  test 'edit : les mots clés d’une autre organisation ne sont pas proposés (critique)' do
     users(:nettoyeur_marseille).update!(tag_list: 'secret-marseille')
 
     get edit_user_url(users(:martin_technique_paris))
@@ -417,7 +437,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to user_url(@user)
   end
 
-  test 'critique : update par un agent sur lui-même, rôle administrateur soumis → rôle inchangé' do
+  test 'update : par un agent sur lui-même, rôle administrateur soumis → rôle inchangé (critique)' do
     bond = users(:bond)
     sign_in bond
 
@@ -426,7 +446,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert bond.reload.agent?
   end
 
-  test 'critique : update par un manager, rôle manager soumis sur un agent → rôle inchangé' do
+  test 'update : par un manager, rôle manager soumis sur un agent → rôle inchangé (critique)' do
     sign_in users(:hidalgo)
     bond = users(:bond)
 
@@ -435,7 +455,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert bond.reload.agent?
   end
 
-  test 'critique : update, service_ids d’une autre organisation soumis → services inchangés' do
+  test 'update : service_ids d’une autre organisation soumis → services inchangés (critique)' do
     sign_in users(:hidalgo)
     bond = users(:bond)
     services_avant = bond.services.sort_by(&:id)
@@ -555,7 +575,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_empty agent.reload.tag_list
   end
 
-  test 'critique : un administrateur ne touche pas à un utilisateur d’une autre organisation' do
+  test 'update : un administrateur ne touche pas à un utilisateur d’une autre organisation (critique)' do
     autre_org = users(:agent_marseille)
 
     get user_url(autre_org)

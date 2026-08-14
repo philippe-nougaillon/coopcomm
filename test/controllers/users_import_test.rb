@@ -18,7 +18,7 @@ class UsersImportTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test "critique : import_do, un manager n'importe que dans le périmètre de son organisation" do
+  test "import_do : un manager n'importe que dans le périmètre de son organisation (critique)" do
     sign_in users(:hidalgo)
     Service.create!(nom: 'Voirie', organisation: organisations(:mairie_marseille))
 
@@ -31,7 +31,7 @@ class UsersImportTest < ActionDispatch::IntegrationTest
     assert_match(/introuvable dans votre organisation/, tableau_erreurs)
   end
 
-  test "critique : import_do, un compte privilégié n'est jamais rétrogradé" do
+  test "import_do : un compte privilégié n'est jamais rétrogradé (critique)" do
     hidalgo = users(:hidalgo)
 
     importer([ENTETES, ligne(nom: 'Hidalgo', prénom: 'Anne', email: hidalgo.email)], save: 'true')
@@ -40,6 +40,7 @@ class UsersImportTest < ActionDispatch::IntegrationTest
     assert_bilan importés: 0, erreurs: 1
     assert_match(/modifiez-le depuis sa fiche/, tableau_erreurs)
   end
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'import : un manager accède au formulaire' do
     sign_in users(:hidalgo)

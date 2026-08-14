@@ -94,7 +94,7 @@ class CommandesControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'critique : update, prix de ligne forgé dans les paramètres → prix inchangé' do
+  test 'update : prix de ligne forgé dans les paramètres → prix inchangé (critique)' do
     ligne = commande_lignes(:ligne_commande_paris)
     prix_initial = ligne.prix_ht
 

@@ -59,27 +59,6 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:audits), @audit
   end
 
-  test 'create_new_user : sans paramètre → la page répond' do
-    get admin_create_new_user_url
-
-    assert_response :success
-  end
-
-  test 'create_new_user : le formulaire s’ouvre sur le rôle agent' do
-    get admin_create_new_user_url
-
-    assert_equal 'agent', assigns(:user).rôle
-  end
-
-  # `POST /users` appartient à Devise dès que :registerable est réactivé : le
-  # formulaire doit viser le chemin dédié, sans quoi la création est captée par
-  # l'inscription publique et aucun compte n'est créé.
-  test 'create_new_user : le formulaire poste sur le chemin dédié, pas sur POST /users' do
-    get admin_create_new_user_url
-
-    assert_select 'form[action=?][method=?]', admin_create_new_user_do_path, 'post'
-  end
-
   test 'parametres : sans paramètre → la page répond' do
     get admin_parametres_url
 

@@ -33,12 +33,11 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'critique : conversation avec un utilisateur d’une autre organisation → retour à la messagerie' do
+  test 'conversation : un utilisateur d’une autre organisation → retour à la messagerie (critique)' do
     get messagerie_conversation_url(to_user_slug: users(:manager_marseille).slug)
 
     assert_redirected_to messagerie_path
   end
-
   # ==================== /TESTS CRITIQUES ====================
 
   test 'send_message : un interlocuteur du périmètre → le message est créé' do
@@ -65,7 +64,7 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'critique : send_message vers un utilisateur d’une autre organisation → aucun message créé' do
+  test 'send_message : vers un utilisateur d’une autre organisation → aucun message créé (critique)' do
     assert_no_difference('Message.count') do
       post messagerie_send_message_url, params: {
         message: 'fuite ?',
@@ -73,7 +72,6 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
       }
     end
   end
-
   # ==================== /TESTS CRITIQUES ====================
 
   test 'mark_as_read : un message qui m’est destiné → il est marqué lu' do

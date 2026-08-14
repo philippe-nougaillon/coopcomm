@@ -8,7 +8,9 @@ class ServiceTest < ActiveSupport::TestCase
   # du formulaire utilisateur : impossible de distinguer un vrai service d'une ligne
   # accidentelle, et les utilisateurs qu'on y rattache semblent « sans service ».
 
-  test 'critique : un service sans nom est invalide' do
+  # ==================== TESTS CRITIQUES ====================
+
+  test 'un service sans nom est invalide (critique)' do
     [nil, '', '   '].each do |nom|
       service = Service.new(nom: nom, organisation: organisations(:mairie_paris))
 
@@ -16,6 +18,7 @@ class ServiceTest < ActiveSupport::TestCase
       assert_includes service.errors[:nom], 'doit être rempli(e)'
     end
   end
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'un service avec un nom est valide' do
     assert Service.new(nom: 'Voirie', organisation: organisations(:mairie_paris)).valid?

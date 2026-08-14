@@ -77,11 +77,12 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil @mouvement.reload.date
   end
 
-  # ==================== TESTS CRITIQUES ====================
   # Parcours quotidien des agents : une réservation perdue, ou celle d'un collègue
   # libérée par erreur, immobilise ou libère du matériel à tort.
 
-  test 'critique : reserve, un outil de son organisation → une réservation à son nom' do
+  # ==================== TESTS CRITIQUES ====================
+
+  test 'reserve : un outil de son organisation → une réservation à son nom (critique)' do
     assert_difference('Mouvement.count', 1) do
       post reserve_tool_mouvements_url(tool_id: @outil.id), params: { date: JOUR.to_s }
     end
@@ -93,13 +94,14 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert_equal @outil, mouvement.tool
   end
 
-  test 'critique : reserve, un outil d’une autre organisation → introuvable, aucune réservation' do
+  test 'reserve : un outil d’une autre organisation → introuvable, aucune réservation (critique)' do
     assert_no_difference('Mouvement.count') do
       post reserve_tool_mouvements_url(tool_id: tools(:camion).id), params: { date: JOUR.to_s }
     end
 
     assert_response :not_found
   end
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'reserve : date illisible → aucune réservation et alerte' do
     assert_no_difference('Mouvement.count') do
@@ -118,7 +120,9 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'critique : libere, sa propre réservation → elle est supprimée' do
+  # ==================== TESTS CRITIQUES ====================
+
+  test 'libere : sa propre réservation → elle est supprimée (critique)' do
     mienne = reservation(users(:administrateur_paris))
 
     post libere_tool_mouvements_url(tool_id: @outil.id),
@@ -128,7 +132,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to tools_path
   end
 
-  test 'critique : libere par un manager, la réservation d’un autre → elle est supprimée' do
+  test 'libere : par un manager, la réservation d’un autre → elle est supprimée (critique)' do
     sign_in users(:hidalgo)
     celle_dun_autre = reservation(users(:bond))
 
@@ -137,7 +141,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert_not Mouvement.exists?(celle_dun_autre.id)
   end
 
-  test 'critique : libere par un agent, sa propre réservation → elle est supprimée' do
+  test 'libere : par un agent, sa propre réservation → elle est supprimée (critique)' do
     sign_in users(:bond)
     la_mienne = reservation(users(:bond))
 
@@ -148,7 +152,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
 
   # La substitution silencieuse d'un `user_id` forgé par celui du current_user
   # libérerait la réservation de l'agent au lieu de refuser la requête.
-  test 'critique : libere, requête forgée par un agent → aucune réservation détruite' do
+  test 'libere : requête forgée par un agent → aucune réservation détruite (critique)' do
     sign_in users(:bond)
     la_mienne = reservation(users(:bond))
     celle_dun_autre = reservation(users(:martin_technique_paris), JOUR + 1)
@@ -160,7 +164,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert Mouvement.exists?(celle_dun_autre.id)
   end
 
-  test 'critique : libere, une panne du même jour → elle n’est pas détruite' do
+  test 'libere : une panne du même jour → elle n’est pas détruite (critique)' do
     en_panne = Mouvement.create!(tool: @outil, user: users(:administrateur_paris), état: :panne, date: JOUR)
 
     post libere_tool_mouvements_url(tool_id: @outil.id),
@@ -169,7 +173,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert Mouvement.exists?(en_panne.id)
   end
 
-  test 'critique : libere, une réservation d’une autre organisation → rien n’est détruit' do
+  test 'libere : une réservation d’une autre organisation → rien n’est détruit (critique)' do
     ailleurs = Mouvement.create!(tool: tools(:camion), user: users(:manager_marseille), état: :réservé, date: JOUR)
 
     post libere_tool_mouvements_url(tool_id: tools(:camion).id),
@@ -177,7 +181,6 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
 
     assert Mouvement.exists?(ailleurs.id)
   end
-
   # ==================== /TESTS CRITIQUES ====================
 
   test 'libere : aucune réservation ce jour-là → alerte, rien n’est détruit' do

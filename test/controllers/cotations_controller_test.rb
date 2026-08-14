@@ -13,11 +13,6 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     sign_in @admin
   end
 
-  # ==================== TESTS CRITIQUES ====================
-  # Le prix d'un devis vient toujours du tarif des prestations, jamais de la requête.
-
-  # Test critique.
-
   test 'index : sans paramètre → la page répond' do
     get cotations_url
     assert_response :success
@@ -219,7 +214,10 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_not_equal '', cotation.reload.intitulé
   end
 
-  test 'critique : update, prix de ligne forgé dans les paramètres → prix inchangé' do
+  # ==================== TESTS CRITIQUES ====================
+
+  # Le prix d'un devis vient toujours du tarif des prestations, jamais de la requête.
+  test 'update : prix de ligne forgé dans les paramètres → prix inchangé (critique)' do
     post cotations_url, params: { cotation: {
       adherent_id: @adherent.id, service_id: @service.id, intitulé: 'Devis',
       cotation_lignes_attributes: { '0' => { prestation_id: @prestation.id, qté: 1, prix_ht: 1 } }
@@ -227,6 +225,8 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     ligne = Cotation.order(:created_at).last.cotation_lignes.first
     assert_equal @prestation.tarif, ligne.prix_ht
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'destroy : une cotation de son périmètre → soft delete' do
     cotation = cotations(:cotation_paris)

@@ -10,19 +10,14 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:hidalgo)
   end
 
-  # ==================== TESTS CRITIQUES ====================
-  # Évaluations (note/avis) jamais visibles de l'agent noté, et validation ou
-  # refus par l'adhérent.
-
-  # Test critique — l'agent affecté ouvre SA propre intervention validée :
-  # la page ne doit contenir ni l'avis ni la section Évaluation.
-
   test 'set_intervention : un slug inconnu redirige sans planter' do
     get intervention_url('abcdefg')
     assert_redirected_to root_path
   end
 
-  test "critique : index, un mot clé d'une autre organisation → aucune intervention" do
+  # ==================== TESTS CRITIQUES ====================
+
+  test "index : un mot clé d'une autre organisation → aucune intervention (critique)" do
     sign_in users(:administrateur_paris)
     interventions(:nettoyage_port).update!(tag_list: 'secret-marseille')
 
@@ -32,7 +27,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_empty assigns(:interventions)
   end
 
-  test "critique : index, liste des mots clés proposée → bornée à l'organisation" do
+  test "index : liste des mots clés proposée → bornée à l'organisation (critique)" do
     sign_in users(:administrateur_paris)
     interventions(:nettoyage_port).update!(tag_list: 'secret-marseille')
     @intervention.update!(tag_list: 'urgence')
@@ -45,7 +40,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes noms, 'secret-marseille'
   end
 
-  test "critique : index, l'export XLS ne contient aucune intervention d'une autre organisation" do
+  test "index : l'export XLS ne contient aucune intervention d'une autre organisation (critique)" do
     get interventions_url(format: :xls)
 
     assert_response :success
@@ -54,6 +49,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes contenu, interventions(:tonte_locaux).description
     assert_not_includes contenu, interventions(:nettoyage_port).description
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'index : rendu nominal' do
     sign_in users(:administrateur_paris)
@@ -418,8 +415,10 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/Interventions_.*\.xls/, response.headers['Content-Disposition'])
   end
 
+  # ==================== TESTS CRITIQUES ====================
+
   # rôles.
-  test "critique : l'export XLS d'un agent ne contient ni évaluation ni avis" do
+  test "index : l'export XLS d'un agent ne contient ni évaluation ni avis (critique)" do
     agent = users(:électricité)
     intervention = cree_intervention_evaluee(agent)
     sign_in agent
@@ -438,7 +437,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # (la correction B25 ne doit pas les faire disparaître pour tout le monde).
-  test "critique : l'export XLS d'un manager contient les évaluations et avis" do
+  test "index : l'export XLS d'un manager contient les évaluations et avis (critique)" do
     get interventions_url(format: :xls) # hidalgo (manager) connecté par le setup
 
     assert_response :success
@@ -449,6 +448,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     contenu = sheet.rows.map { |r| r.to_a.join(' ') }.join(' ')
     assert_includes contenu, interventions(:tonte_locaux).avis
   end
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'show : une intervention de son périmètre → la page répond' do
     get intervention_url(@intervention)
@@ -461,7 +461,11 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "#map"
   end
 
-  test 'critique : un agent ne voit pas son évaluation sur la page de son intervention' do
+  # L'agent affecté ouvre SA propre intervention validée : la page ne doit
+  # ==================== TESTS CRITIQUES ====================
+
+  # contenir ni l'avis ni la section Évaluation.
+  test 'show : un agent ne voit pas son évaluation (critique)' do
     agent = users(:électricité)
     intervention = cree_intervention_evaluee(agent)
     sign_in agent
@@ -471,6 +475,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success, "garde anti-faux-positif : l'agent doit accéder à la page"
     assert_no_match AVIS_SENTINELLE, response.body
   end
+  # ==================== /TESTS CRITIQUES ====================
 
   test "show.pdf : un manager peut générer l'affiche QRCode du modèle de pointage" do
     # hidalgo (manager, service technique) est connecté via le setup.
@@ -532,7 +537,9 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[type=file][name='intervention[photos_demande][]'][multiple]"
   end
 
-  test 'critique : le formulaire de terminaison rend la pause obligatoire' do
+  # ==================== TESTS CRITIQUES ====================
+
+  test 'edit : le formulaire de terminaison rend la pause obligatoire (critique)' do
     intervention = interventions(:intervention_paris)
 
     get edit_intervention_url(intervention, terminer: 1)
@@ -541,7 +548,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'select#intervention_temps_de_pause[required]'
   end
 
-  test 'critique : le formulaire de terminaison rend les agents obligatoires' do
+  test 'edit : le formulaire de terminaison rend les agents obligatoires (critique)' do
     intervention = interventions(:intervention_paris)
 
     get edit_intervention_url(intervention, terminer: 1)
@@ -549,6 +556,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select 'label[for=intervention_agent_ids] span.text-red-500'
   end
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'le formulaire ordinaire laisse les agents facultatifs' do
     intervention = interventions(:intervention_paris)
@@ -816,7 +824,9 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to intervention_url(@intervention)
   end
 
-  test 'critique : update, workflow_state soumis en paramètre → état inchangé' do
+  # ==================== TESTS CRITIQUES ====================
+
+  test 'update : workflow_state soumis en paramètre → état inchangé (critique)' do
     intervention = interventions(:nouvelle_intervention)
     état_avant = intervention.workflow_state
 
@@ -826,7 +836,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal état_avant, intervention.reload.workflow_state
   end
 
-  test 'critique : update par un agent, note et avis soumis → évaluation inchangée' do
+  test 'update : par un agent, note et avis soumis → évaluation inchangée (critique)' do
     sign_in users(:bond)
     intervention = interventions(:nouvelle_intervention)
     note_avant = intervention.note
@@ -840,7 +850,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # formulaire, et l'enregistrement termine l'intervention.
-  test 'critique : update avec la demande de terminaison termine l’intervention' do
+  test 'update : demande de terminaison → l’intervention est terminée (critique)' do
     intervention = interventions(:intervention_paris)
 
     patch intervention_url(intervention), params: {
@@ -853,7 +863,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Intervention terminée', flash[:notice]
   end
 
-  test 'critique : update avec la demande de terminaison est refusé sans date de fin' do
+  test 'update : demande de terminaison sans date de fin → refusé (critique)' do
     intervention = interventions(:intervention_paris)
 
     patch intervention_url(intervention), params: {
@@ -867,7 +877,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # terminée sans agent vaut 0 heure et ne doit pas pouvoir être enregistrée.
-  test 'critique : update avec la demande de terminaison est refusé sans agent' do
+  test 'update : demande de terminaison sans agent → refusé (critique)' do
     intervention = interventions(:intervention_paris)
 
     patch intervention_url(intervention), params: {
@@ -881,7 +891,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # modifier une intervention, mais jamais la terminer.
-  test 'critique : un adhérent ne peut pas terminer une intervention via le paramètre' do
+  test 'update : un adhérent ne peut pas terminer via le paramètre (critique)' do
     intervention = interventions(:intervention_paris)
     sign_in users(:patrick_adherent_paris)
 
@@ -892,6 +902,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
     assert intervention.reload.nouveau?, "l'état ne doit pas avoir changé"
   end
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'update sans demande de terminaison laisse l’état inchangé' do
     intervention = interventions(:intervention_paris)
@@ -1266,8 +1277,10 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert intervention.reload.terminé?
   end
 
+  # ==================== TESTS CRITIQUES ====================
+
   # le chemin de terminaison, sans qu'aucun formulaire ne le fournisse.
-  test 'critique : terminer via le bouton enregistre le temps total et une pause à 0' do
+  test 'terminer : le temps total et une pause à 0 sont enregistrés (critique)' do
     agent = users(:électricité)
     intervention = cree_intervention_en_conflit(agent, avec_conflit: false)
     intervention.update_columns(temps_de_pause: nil, temps_total: nil)
@@ -1281,7 +1294,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_in_delta 2.0, intervention.temps_total, 1e-6
   end
 
-  test 'critique : terminer via le bouton est refusé sans agent' do
+  test 'terminer : sans agent → refusé (critique)' do
     intervention = interventions(:intervention_paris)
     intervention.agents.destroy_all
 
@@ -1293,7 +1306,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Test critique — parcours quotidien de l'agent : terminer son intervention.
-  test 'critique : terminer une intervention en conflit de disponibilité redirige au lieu de planter' do
+  test 'terminer : intervention en conflit → redirection au lieu d’une erreur (critique)' do
     agent = users(:électricité)
     intervention = cree_intervention_en_conflit(agent)
     sign_in agent
@@ -1305,6 +1318,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/Conflit/, flash[:alert], "le motif du refus doit être affiché à l'utilisateur")
     assert intervention.reload.nouveau?, "l'état ne doit pas avoir changé"
   end
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'terminer une intervention déjà validée est refusé' do
     intervention = cree_intervention_validee
@@ -1316,8 +1330,10 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'validé', intervention.reload.workflow_state
   end
 
+  # ==================== TESTS CRITIQUES ====================
+
   # Test critique — parcours quotidien : l'adhérent valide le travail terminé.
-  test "critique : l'adhérent valide une intervention terminée" do
+  test 'valider : l’adhérent valide une intervention terminée (critique)' do
     intervention = interventions(:intervention_terminée)
     sign_in users(:weil)
 
@@ -1328,7 +1344,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # re-valider une intervention déjà validée.
-  test 'critique : re-valider une intervention déjà validée redirige avec un message' do
+  test 'valider : une intervention déjà validée → redirection avec un message (critique)' do
     intervention = interventions(:intervention_terminée)
     sign_in users(:weil)
     post valider_intervention_url(intervention)
@@ -1340,7 +1356,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Même filet côté adhérent, sur les deux transitions qu'il déclenche.
-  test 'critique : valider une intervention en conflit de disponibilité redirige au lieu de planter' do
+  test 'valider : intervention en conflit → redirection au lieu d’une erreur (critique)' do
     intervention = cree_intervention_en_conflit(users(:électricité), workflow_state: 'terminé')
     sign_in users(:weil)
 
@@ -1352,7 +1368,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Test critique — parcours quotidien : l'adhérent refuse le travail terminé.
-  test "critique : l'adhérent refuse une intervention terminée" do
+  test 'refuser : l’adhérent refuse une intervention terminée (critique)' do
     intervention = interventions(:intervention_terminée)
     sign_in users(:weil)
 
@@ -1362,7 +1378,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert intervention.reload.refusé?, "l'intervention doit passer à l'état refusé"
   end
 
-  test 'critique : refuser une intervention en conflit de disponibilité redirige au lieu de planter' do
+  test 'refuser : intervention en conflit → redirection au lieu d’une erreur (critique)' do
     intervention = cree_intervention_en_conflit(users(:électricité), workflow_state: 'terminé')
     sign_in users(:weil)
 
@@ -1372,6 +1388,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/pas valide/, flash[:alert])
     assert intervention.reload.terminé?, "l'état ne doit pas avoir changé"
   end
+  # ==================== /TESTS CRITIQUES ====================
 
   test "archiver une intervention validée l\'archive" do
     intervention = cree_intervention_validee

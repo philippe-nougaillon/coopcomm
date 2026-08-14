@@ -94,7 +94,7 @@ class FacturesControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'critique : update, prix de ligne forgé dans les paramètres → prix inchangé' do
+  test 'update : prix de ligne forgé dans les paramètres → prix inchangé (critique)' do
     ligne = facture_lignes(:ligne_facture_paris)
     prix_initial = ligne.prix_ht
 

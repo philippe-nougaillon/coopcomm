@@ -3,14 +3,13 @@
 require 'test_helper'
 
 class AdherentCrmControllerTest < ActionDispatch::IntegrationTest
-  # ==========================================================================
-  # ==================== TESTS CRITIQUES : CLOISONNEMENT =====================
-  # ==========================================================================
   # La collection affichée doit rester un sous-ensemble de policy_scope quels
   # que soient les params : apply_filters lit adhérent_ids / service_ids /
   # workflow_state bruts et les injecte dans des where sans borner le périmètre.
 
-  test "critique : index, un adhérent ne voit pas les documents d'un autre adhérent" do
+  # ==================== TESTS CRITIQUES ====================
+
+  test "index : un adhérent ne voit pas les documents d'un autre adhérent (critique)" do
     sign_in users(:weil)
 
     get adherent_crm_url
@@ -18,7 +17,7 @@ class AdherentCrmControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:cotations), cotations(:cotation_marseille)
   end
 
-  test "critique : index, un adhérent ne voit pas ses cotations à l'état créé" do
+  test "index : un adhérent ne voit pas ses cotations à l'état créé (critique)" do
     sign_in users(:weil)
 
     get adherent_crm_url
@@ -26,7 +25,7 @@ class AdherentCrmControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:cotations), cotations(:cotation_paris)
   end
 
-  test "critique : index, un adhérent ne voit pas ses commandes à l'état créé" do
+  test "index : un adhérent ne voit pas ses commandes à l'état créé (critique)" do
     sign_in users(:weil)
 
     get adherent_crm_url(tab: 'commandes')
@@ -34,7 +33,7 @@ class AdherentCrmControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:commandes), commandes(:commande_paris)
   end
 
-  test "critique : index, un adhérent ne voit pas ses factures à l'état créé" do
+  test "index : un adhérent ne voit pas ses factures à l'état créé (critique)" do
     sign_in users(:weil)
 
     get adherent_crm_url(tab: 'factures')
@@ -42,7 +41,7 @@ class AdherentCrmControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:factures), factures(:facture_paris)
   end
 
-  test "critique : index, un manager ne voit aucune cotation d'une autre organisation" do
+  test "index : un manager ne voit aucune cotation d'une autre organisation (critique)" do
     sign_in users(:hidalgo)
 
     get adherent_crm_url
@@ -50,7 +49,7 @@ class AdherentCrmControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:cotations), cotations(:cotation_marseille)
   end
 
-  test "critique : index, un administrateur ne voit aucune cotation d'une autre organisation" do
+  test "index : un administrateur ne voit aucune cotation d'une autre organisation (critique)" do
     sign_in users(:administrateur_paris)
 
     get adherent_crm_url
@@ -58,7 +57,7 @@ class AdherentCrmControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:cotations), cotations(:cotation_marseille)
   end
 
-  test "critique : index, le filtre adhérent_ids ne permet pas d'atteindre un document hors périmètre" do
+  test "index : le filtre adhérent_ids ne permet pas d'atteindre un document hors périmètre (critique)" do
     sign_in users(:weil)
 
     get adherent_crm_url(adhérent_ids: [users(:michael_jackson).id])
@@ -66,13 +65,15 @@ class AdherentCrmControllerTest < ActionDispatch::IntegrationTest
     assert_empty assigns(:cotations)
   end
 
-  test "critique : index, le filtre service_ids ne permet pas d'atteindre un service d'une autre organisation" do
+  test "index : le filtre service_ids ne permet pas d'atteindre un service d'une autre organisation (critique)" do
     sign_in users(:hidalgo)
 
     get adherent_crm_url(service_ids: [services(:service_marseille).id])
 
     assert_empty assigns(:cotations)
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'index : sans paramètre → la page répond' do
     sign_in users(:administrateur_paris)

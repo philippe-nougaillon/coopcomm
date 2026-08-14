@@ -16,12 +16,11 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test "critique : index, le matériel d'une autre organisation n'apparaît pas" do
+  test "index : le matériel d'une autre organisation n'apparaît pas (critique)" do
     get tools_url
 
     assert_not_includes assigns(:tools), tools(:camion)
   end
-
   # ==================== /TESTS CRITIQUES ====================
 
   test 'index : sans date → la semaine en cours' do
