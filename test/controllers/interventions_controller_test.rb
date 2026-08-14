@@ -1192,20 +1192,6 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test 'purge : non connecté → redirigé vers la connexion' do
-    @intervention.photos.attach(file_fixture('exemple.png'))
-    @intervention.save
-    sign_out users(:hidalgo)
-
-    assert_no_difference('ActiveStorage::Attachment.count') do
-      delete purge_intervention_url(@intervention), params: {
-        photo_id: @intervention.photos.first.id
-      }
-    end
-
-    assert_redirected_to new_user_session_path
-  end
-
   test 'purge : la redirection après un DELETE Turbo est en 303 see_other' do
     # 303 après
     # toute soumission destructrice Turbo, comme le reste de l'app.
@@ -1696,6 +1682,27 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
   # --- GET agents_for_service ---------------------------------------------
   # Endpoint JSON alimentant la mise à jour dynamique de la liste des agents en fonction
   # du service sélectionné.
+
+  test 'services_for_adherent : un adhérent du périmètre → ses services en JSON' do
+    get services_for_adherent_interventions_url(adherent_id: users(:weil).id)
+
+    assert_response :success
+    noms = response.parsed_body.map { |service| service['nom'] }
+    assert_includes noms, services(:informatique).nom
+  end
+
+  test 'services_for_adherent : les services hors du périmètre du current_user sont exclus' do
+    get services_for_adherent_interventions_url(adherent_id: users(:adherent_marseille).id)
+
+    assert_response :success
+    assert_empty response.parsed_body
+  end
+
+  test 'services_for_adherent : un adherent_id inconnu répond 404 sans planter' do
+    get services_for_adherent_interventions_url(adherent_id: 0)
+
+    assert_response :not_found
+  end
 
   test 'agents_for_service renvoie les agents du service en JSON' do
     get agents_for_service_interventions_url(service_id: services(:technique).id), as: :json

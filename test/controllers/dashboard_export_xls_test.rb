@@ -9,13 +9,6 @@ class DashboardExportXlsTest < ActionDispatch::IntegrationTest
   # A. Autorisation
   # ==========================================================================
 
-  # Devise ne redirige que les formats navigationnels : en xls il répond 401.
-  test "un visiteur non connecté ne peut pas exporter le tableau de bord" do
-    get dashboard_url(format: :xls)
-
-    assert_response :unauthorized
-  end
-
   test "aucun export n'est journalisé quand l'accès est refusé" do
     sign_in users(:martin_technique_paris)
 

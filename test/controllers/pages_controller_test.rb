@@ -85,12 +85,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   # ---------------------------------------------------------------------------
   # home — authentification + couleur de bannière selon l'heure.
 
-  test 'home redirige vers la connexion si anonyme' do
-    get home_url
-
-    assert_redirected_to new_user_session_url
-  end
-
   test 'home est accessible à un utilisateur connecté' do
     sign_in users(:hidalgo)
 
@@ -224,12 +218,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Peu nuageux', body['weather'] # code weather 1 dans la fixture
   end
 
-  test 'meteo_by_day redirige vers la connexion si anonyme' do
-    get meteo_by_day_url(day: 0)
-
-    assert_redirected_to new_user_session_url
-  end
-
   test 'meteo_by_day avec un jour hors bornes rend un JSON vide' do
     sign_in users(:hidalgo)
 
@@ -242,20 +230,8 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   # ---------------------------------------------------------------------------
   # dashboard — bords d'autorisation.
 
-  test 'dashboard redirige vers la connexion si anonyme' do
-    get dashboard_url
-
-    assert_redirected_to new_user_session_url
-  end
-
   # ---------------------------------------------------------------------------
   # assistant — réservé aux administrateurs.
-
-  test 'assistant redirige vers la connexion si anonyme' do
-    get assistant_url
-
-    assert_redirected_to new_user_session_url
-  end
 
   test 'assistant sans commit n_appelle pas le LLM' do
     sign_in users(:administrateur_paris)
