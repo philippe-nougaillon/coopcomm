@@ -1,33 +1,48 @@
+<style>
+  @keyframes close-ring {
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: 62.8; }
+  }
+</style>
 <div id="notification">
   <% flash.each do |type, msg| %>
     <% if ["notice", "alert"].include?(type) %>
-      <div data-controller="notification" 
+      <div data-controller="notification"
         data-notification-delay-value="3600000"
         data-notification-duration-value="10000"
-        class="transition transform duration-1000 hidden fixed bottom-20 right-0 flex items-end justify-center px-4 py-6 pointer-events-none sm:p-6 sm:pt-16 sm:items-start z-50 mt-8 w-full mb-14 lg:mb-6" 
+        class="group transition transform duration-1000 hidden fixed bottom-20 right-0 flex items-end justify-center px-4 py-6 pointer-events-none sm:p-6 sm:pt-16 sm:items-start z-50 mt-8 w-full mb-14 lg:mb-6"
         data-transition-enter-from="opacity-0 translate-x-96"
-        data-transition-enter-to="opacity-100 translate-x-0" 
-        data-transition-leave-from="opacity-100 translate-x-0" 
+        data-transition-enter-to="opacity-100 translate-x-0"
+        data-transition-leave-from="opacity-100 translate-x-0"
         data-transition-leave-to="opacity-0 translate-x-96">
-        
-        <div class="max-w-md w-full <%= type == 'notice' ? 'bg-green-200' : 'bg-red-200' %> shadow-lg rounded-lg pointer-events-auto overflow-hidden relative">
-          <button data-action="notification#hide" 
-                  class="absolute top-2 right-2 p-1 rounded-md text-black hover:text-gray-700 focus:outline-none transition-colors" 
-                  data-testid="close_notification">
-            <span class="sr-only">Close</span>
-            <%= embedded_svg "icons/close_small.svg", class: "w-5 h-5 fill-current text-black", title: "Retirer la notification" %>
-          </button>
-          <div class="flex items-center p-4 pr-8">
+        <div class="max-w-lg w-full <%= type == 'notice' ? 'bg-green-200' : 'bg-red-200' %> shadow-xl rounded-xl pointer-events-auto overflow-hidden">
+
+          <%# fila 1: solo la cruz, alineada a la derecha %>
+          <div class="flex justify-end pt-2 pr-2">
+            <button data-action="notification#hide"
+                    class="relative p-1 rounded-md text-black hover:text-gray-700 focus:outline-none transition-colors"
+                    data-testid="close_notification">
+              <span class="sr-only">Close</span>
+              <svg class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"
+                        class="fill-none stroke-current text-black/30 stroke-2" />
+                <circle cx="12" cy="12" r="10"
+                        class="fill-none stroke-current text-black stroke-2 [stroke-dasharray:62.8] animate-[close-ring_linear_forwards] [animation-duration:var(--duration,5000ms)] group-[.paused]:[animation-play-state:paused]" />
+              </svg>
+              <%= embedded_svg "icons/close_small.svg", class: "w-4 h-4 fill-current text-black relative" %>
+            </button>
+          </div>
+
+          <%# fila 2: icono + texto %>
+          <div class="flex items-center px-2 pb-4">
             <% if type == "notice" %>
-              <%= embedded_svg "icons/check_circle.svg", class: "h-6 w-6 shrink-0" %>
             <% else %>
-               <%= embedded_svg "icons/cancel.svg", class: "h-6 w-6 shrink-0" %>
             <% end %>
-            <div class="ml-3 w-0 flex-1 text-black font-medium">
-               <%# Se añaden break-words y whitespace-pre-line para obligar el salto de línea %>
+            <div class="ml-4 w-0 flex-1 text-black font-medium text-base sm:text-lg">
                <p class="break-words whitespace-pre-line"><%= notice || alert %></p>
             </div>
           </div>
+
         </div>
       </div>
     <% end %>
