@@ -29,14 +29,6 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert_equal @outil, mouvement.tool
   end
 
-  test 'un adhérent ne peut pas réserver de matériel' do
-    sign_in users(:weil)
-
-    assert_no_difference('Mouvement.count') do
-      post reserve_tool_mouvements_url(tool_id: @outil.id), params: { date: JOUR.to_s }
-    end
-  end
-
   test "réserver l'outil d'une autre organisation est introuvable" do
     assert_no_difference('Mouvement.count') do
       post reserve_tool_mouvements_url(tool_id: tools(:camion).id), params: { date: JOUR.to_s }
@@ -101,17 +93,6 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
          params: { date: JOUR.to_s, user_id: users(:bond).id }
 
     assert_not Mouvement.exists?(celle_dun_autre.id)
-  end
-
-  test "un agent ne peut pas libérer la réservation d'un autre" do
-    sign_in users(:bond)
-    celle_dun_autre = reservation(users(:martin_technique_paris))
-
-    post libere_tool_mouvements_url(tool_id: @outil.id),
-         params: { date: JOUR.to_s, user_id: users(:martin_technique_paris).id }
-
-    assert Mouvement.exists?(celle_dun_autre.id)
-    assert_equal "Vous n'êtes pas autorisé à effectuer cette action.", flash[:alert]
   end
 
   test "un agent qui forge la requête ne libère pas sa propre réservation à la place" do

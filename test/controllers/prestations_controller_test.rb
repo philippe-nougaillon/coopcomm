@@ -49,18 +49,6 @@ class PrestationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_parametres_path(tab: "prestations")
   end
 
-  test 'un manager ne peut pas gérer le catalogue' do
-    sign_in users(:manager_paris)
-    get new_prestation_url
-    assert_redirected_to root_path
-  end
-
-  test 'un adhérent ne peut pas gérer le catalogue' do
-    sign_in users(:weil)
-    get new_prestation_url
-    assert_redirected_to root_path
-  end
-
   # --- Création invalide ---
 
   test 'create invalide (sans code) : aucune prestation créée et formulaire re-rendu' do

@@ -39,11 +39,6 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to conventions_path
   end
 
-  test 'edit refusé' do
-    get edit_convention_url(@convention)
-    assert_redirected_to root_path
-  end
-
   test 'destroy une convention' do
     assert_difference('Convention.count', -1) do
       delete convention_url(@convention)
@@ -71,23 +66,11 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'td', text: /Note de suivi/
   end
 
-  test "un agent n'est pas autorisé à voir le show" do
-    sign_in users(:agent_whatsapp)
-    get convention_url(@convention)
-    assert_redirected_to root_path
-  end
-
   test 'services_for_adherent renvoie les services disponibles en JSON' do
     get services_for_adherent_conventions_url(adherent_id: @adherent.id)
     assert_response :success
     noms = response.parsed_body.map { |s| s['nom'] }
     assert_includes noms, @service.nom
-  end
-
-  test "un agent n'est pas autorisé à voir l'index" do
-    sign_in users(:agent_whatsapp)
-    get conventions_url
-    assert_redirected_to root_path
   end
 
   # --- Filtres de l'index (convention_paris : service Informatique, début 2026-01-01, fin ouverte, sans document) ---

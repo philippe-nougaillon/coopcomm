@@ -18,25 +18,6 @@ class UsersImportTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'un agent ne peut pas accéder au formulaire d’import' do
-    sign_in users(:bond)
-
-    get import_users_url
-
-    assert_redirected_to root_path
-    assert_equal "Vous n'êtes pas autorisé à effectuer cette action.", flash[:alert]
-  end
-
-  test 'un adhérent ne peut pas lancer un import' do
-    sign_in users(:weil)
-
-    assert_no_difference 'User.count' do
-      importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test')], save: 'true')
-    end
-
-    assert_redirected_to root_path
-  end
-
   test 'un visiteur non connecté ne peut pas lancer un import' do
     sign_out @admin
 

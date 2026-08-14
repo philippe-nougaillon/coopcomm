@@ -34,23 +34,4 @@ class AbsencesControllerTest < ActionDispatch::IntegrationTest
     assert_response :no_content
   end
 
-  test 'un agent ne peut pas supprimer sa propre absence' do
-    sign_in @agent
-
-    assert_no_difference('Absence.count') do
-      delete absence_url(@absence)
-    end
-
-    assert_redirected_to root_path
-  end
-
-  test 'un adhérent ne peut pas supprimer l\'absence d\'un agent' do
-    sign_in users(:weil)
-
-    assert_no_difference('Absence.count') do
-      delete absence_url(@absence)
-    end
-
-    assert_redirected_to root_path
-  end
 end

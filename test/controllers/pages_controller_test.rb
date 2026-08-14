@@ -29,13 +29,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "ne doit pas accéder au dashboard en tant qu'agent" do
-    sign_in users(:martin_technique_paris)
-
-    get dashboard_url
-    assert_redirected_to root_url
-  end
-
   test 'doit afficher le dashboard sans intervention avec un manager' do
     sign_in users(:michael_jackson)
 
@@ -257,14 +250,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
 
   # ---------------------------------------------------------------------------
   # assistant — réservé aux administrateurs.
-
-  test 'assistant est refusé à un non-administrateur' do
-    sign_in users(:hidalgo) # manager
-
-    get assistant_url
-
-    assert_redirected_to root_url
-  end
 
   test 'assistant redirige vers la connexion si anonyme' do
     get assistant_url

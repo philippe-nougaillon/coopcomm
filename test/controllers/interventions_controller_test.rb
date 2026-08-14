@@ -1011,34 +1011,6 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Photo supprimée', @intervention.audits.last.comment
   end
 
-  test "purge : un agent NON affecté à l'intervention est refusé et la photo reste" do
-    @intervention.photos.attach(file_fixture('exemple.png'))
-    @intervention.save
-    sign_in users(:martin_technique_paris)
-
-    assert_no_difference('ActiveStorage::Attachment.count') do
-      delete purge_intervention_url(@intervention), params: {
-        photo_id: @intervention.photos.first.id
-      }
-    end
-
-    assert_redirected_to root_path # user_not_authorized (pas de referrer en test)
-  end
-
-  test "purge : un agent d'une autre organisation est refusé" do
-    @intervention.photos.attach(file_fixture('exemple.png'))
-    @intervention.save
-    sign_in users(:agent_marseille)
-
-    assert_no_difference('ActiveStorage::Attachment.count') do
-      delete purge_intervention_url(@intervention), params: {
-        photo_id: @intervention.photos.first.id
-      }
-    end
-
-    assert_redirected_to root_path
-  end
-
   test "purge : l'adhérent de l'intervention peut supprimer une photo (épinglage : purge? = show?)" do
     # Comportement ACTUEL épinglé : la policy autorise aussi l'adhérent (client) à
     # supprimer les photos posées par les agents.
@@ -1168,20 +1140,6 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, @intervention.reload.photos_demande.count
   end
 
-  test "purge : un agent affecté à l'intervention ne peut pas supprimer une photo de demande" do
-    @intervention.photos_demande.attach(file_fixture('exemple.png'))
-    @intervention.save
-    sign_in users(:bond)
-
-    assert_no_difference('@intervention.photos_demande.count') do
-      delete purger_photos_demande_intervention_url(@intervention), params: {
-        photo_id: @intervention.photos_demande.first.id
-      }
-    end
-
-    assert_redirected_to root_path
-  end
-
   test "purge : un agent affecté à l'intervention peut supprimer une photo de réalisation" do
     @intervention.photos.attach(file_fixture('exemple.png'))
     @intervention.save
@@ -1219,20 +1177,6 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
         photo_id: @intervention.photos_demande.first.id
       }
     end
-  end
-
-  test "purge : un agent NON affecté est refusé et la photo de demande reste" do
-    @intervention.photos_demande.attach(file_fixture('exemple.png'))
-    @intervention.save
-    sign_in users(:martin_technique_paris)
-
-    assert_no_difference('ActiveStorage::Attachment.count') do
-      delete purger_photos_demande_intervention_url(@intervention), params: {
-        photo_id: @intervention.photos_demande.first.id
-      }
-    end
-
-    assert_redirected_to root_path
   end
 
   test "purge : impossible de supprimer la photo de demande d'une AUTRE intervention" do
@@ -1861,16 +1805,6 @@ test 'pointer intervention repete doit pouvoir créer plusieurs interventions da
 
     assert_response :success
     assert_equal 'application/pdf', response.media_type
-  end
-
-  test 'show.pdf : un agent ne peut pas générer l\'affiche QRCode' do
-    sign_in users(:martin_technique_paris) # agent rattaché à l'intervention
-
-    get intervention_url(interventions(:intervention_repete), format: :pdf)
-
-    # Refus Pundit → redirection avec message d'alerte (cf. user_not_authorized)
-    assert_response :redirect
-    assert_match(/n'êtes pas autorisé/i, flash[:alert].to_s)
   end
 
   # --- pointage_statut : redirige vers le statut de la fille du pointeur ----

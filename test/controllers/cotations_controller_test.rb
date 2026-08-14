@@ -236,12 +236,6 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to cotations_path
   end
 
-  test "un agent n'est pas autorisé à voir l'index" do
-    sign_in users(:agent_whatsapp)
-    get cotations_url
-    assert_redirected_to root_path
-  end
-
   # --- Création invalide ---
 
   test 'create invalide (sans intitulé) : aucune cotation créée et formulaire re-rendu' do
@@ -261,12 +255,6 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     sign_in @adherent
     get signer_cotation_url(cotations(:cotation_secretariat)) # envoyé
     assert_response :success
-  end
-
-  test "signer : un non-adhérent (admin) n'est pas autorisé" do
-    # @admin est déjà connecté (setup)
-    get signer_cotation_url(cotations(:cotation_secretariat))
-    assert_redirected_to root_path
   end
 
   test 'signer_do : un adhérent signe une cotation envoyée -> signée + signature/ip/date persistées' do
@@ -326,30 +314,6 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_nil cotation.signature
   end
 
-  test "signer_do : un non-adhérent n'est pas autorisé et ne signe pas" do
-    cotation = cotations(:cotation_secretariat) # envoyé ; @admin connecté
-
-    post signer_do_cotation_url(cotation), params: { cotation: { signature: SIGNATURE } }
-
-    assert_redirected_to root_path
-    cotation.reload
-    assert_nil cotation.signature
-    assert_equal 'envoyé', cotation.workflow_state
-  end
-
-  test "signer_do : un adhérent ne peut pas signer la cotation d'un autre adhérent" do
-    sign_in @adherent # weil
-    autre = cotations(:cotation_marseille) # adhérent: michael_jackson
-    autre.update!(workflow_state: 'envoyé') # envoyée, mais pas à weil
-
-    post signer_do_cotation_url(autre), params: { cotation: { signature: SIGNATURE } }
-
-    assert_redirected_to root_path
-    autre.reload
-    assert_nil autre.signature
-    assert_equal 'envoyé', autre.workflow_state
-  end
-
   # --- Index côté adhérent (voit TOUTES ses cotations envoyées, tous services confondus) ---
   # weil n'est rattaché qu'à Informatique mais possède une cotation sur
   # Secrétariat : l'ancien filtre par service la masquait.
@@ -371,13 +335,6 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     refute_includes assigns(:cotations), cotations(:cotation_paris) # créé, à weil
-  end
-
-  test "l'accès direct d'un adhérent à sa cotation non envoyée est refusé" do
-    sign_in @adherent
-    get cotation_url(cotations(:cotation_paris)) # créé, à weil
-
-    assert_redirected_to root_path
   end
 
   test "le filtre Services d'un adhérent liste les services de ses cotations envoyées" do

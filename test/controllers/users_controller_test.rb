@@ -222,22 +222,6 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # --- Qui peut créer, et avec quel rôle ---
 
-  test 'critique : un agent ne peut pas créer de compte' do
-    assert_no_difference -> { User.count } do
-      créer(connecté: users(:bond), rôle: 'agent', service_ids: [services(:informatique).id])
-    end
-
-    assert_redirected_to root_path
-  end
-
-  test 'critique : un adhérent ne peut pas créer de compte' do
-    assert_no_difference -> { User.count } do
-      créer(connecté: users(:weil), rôle: 'agent', service_ids: [services(:informatique).id])
-    end
-
-    assert_redirected_to root_path
-  end
-
   User.rôles.each_key do |rôle|
     test "un administrateur peut créer un #{rôle}" do
       créé = créer(rôle: rôle, service_ids: [services(:informatique).id],

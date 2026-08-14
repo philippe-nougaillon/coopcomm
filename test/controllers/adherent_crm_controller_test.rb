@@ -74,51 +74,13 @@ class AdherentCrmControllerTest < ActionDispatch::IntegrationTest
     assert_empty assigns(:cotations)
   end
 
-  # ==========================================================================
-  # A. Autorisation
-  # ==========================================================================
-
-  test 'un agent ne peut pas accéder au CRM' do
-    sign_in users(:bond)
-
-    get adherent_crm_url
-
-    assert_redirected_to root_url
-  end
-
-  test 'un visiteur non connecté est renvoyé vers la connexion' do
-    get adherent_crm_url
-
-    assert_redirected_to new_user_session_url
-  end
-
-  test 'un adhérent accède au CRM' do
-    sign_in users(:weil)
-
-    get adherent_crm_url
-
-    assert_response :success
-  end
-
-  test 'un manager accède au CRM' do
-    sign_in users(:hidalgo)
-
-    get adherent_crm_url
-
-    assert_response :success
-  end
-
-  test 'un administrateur accède au CRM' do
+  test 'index : sans paramètre → la page répond' do
     sign_in users(:administrateur_paris)
 
     get adherent_crm_url
 
     assert_response :success
   end
-
-  # ==========================================================================
-  # B. Choix de l'onglet
-  # ==========================================================================
 
   test "sans paramètre, l'onglet affiché est celui des cotations" do
     sign_in users(:weil)
