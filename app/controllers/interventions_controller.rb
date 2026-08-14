@@ -99,9 +99,6 @@ class InterventionsController < ApplicationController
     @intervention.fin = DateTime.now
   end
 
-  # GET /interventions/1/edit
-  def edit; end
-
   # POST /interventions or /interventions.json
   def create
     @intervention = Intervention.new(intervention_params)
@@ -118,6 +115,9 @@ class InterventionsController < ApplicationController
       end
     end
   end
+
+  # GET /interventions/1/edit
+  def edit; end
 
   # PATCH/PUT /interventions/1 or /interventions/1.json
   def update
