@@ -12,11 +12,9 @@ class MouvementTest < ActiveSupport::TestCase
     @outil      = tools(:cisaille)
   end
 
-  # ==========================================================================
-  # ==================== TESTS CRITIQUES : cohérence des pannes ==============
-  # Une panne mal enregistrée laisse un outil réservable alors qu'il est hors
-  # service, ou l'immobilise indéfiniment.
-  # ==========================================================================
+  # ==================== TESTS CRITIQUES ====================
+  # Cohérence des pannes : une panne mal enregistrée laisse un outil réservable
+  # alors qu'il est hors service, ou l'immobilise indéfiniment.
 
   test "déclarer une panne sur un outil déjà en panne est refusé" do
     panne(@outil, '2026-06-02')
@@ -105,11 +103,12 @@ class MouvementTest < ActiveSupport::TestCase
     assert reservation.valid?
   end
 
-  # ==========================================================================
-  # ============ TESTS CRITIQUES : réparation et réservations ================
-  # La fin de panne détruit des réservations d'autres utilisateurs : le
-  # périmètre détruit doit être exactement la durée de la panne.
-  # ==========================================================================
+  # ==================== /TESTS CRITIQUES ====================
+
+  # ==================== TESTS CRITIQUES ====================
+  # Réparation et réservations : la fin de panne détruit des réservations
+  # d'autres utilisateurs, le périmètre détruit doit être exactement la durée
+  # de la panne.
 
   test 'la réparation supprime les réservations posées pendant la panne' do
     panne(@outil, '2026-06-02')
@@ -157,6 +156,8 @@ class MouvementTest < ActiveSupport::TestCase
 
     assert Mouvement.exists?(rescapee.id)
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 
   # ==========================================================================
   # A. resolue?

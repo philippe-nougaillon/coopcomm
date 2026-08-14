@@ -428,4 +428,6 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_operator intervention.agents.size, :>, 1
     assert intervention.valid?, intervention.errors.full_messages.to_sentence
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 end

@@ -14,12 +14,11 @@ class ToolTest < ActiveSupport::TestCase
     @autre = users(:weil)
   end
 
-  # ==========================================================================
-  # ============ TESTS CRITIQUES : grille de disponibilités ==================
-  # Chaque lettre pilote l'action de la case dans tools/_mouvement :
-  # L → lien « réserver », R → lien « libérer », I et P → carré inerte.
-  # Une lettre fausse propose donc une action fausse, pas seulement une couleur.
-  # ==========================================================================
+  # ==================== TESTS CRITIQUES ====================
+  # Grille de disponibilités : chaque lettre pilote l'action de la case dans
+  # tools/_mouvement — L → lien « réserver », R → lien « libérer », I et P →
+  # carré inerte. Une lettre fausse propose une action fausse, pas seulement
+  # une couleur.
 
   test 'une semaine sans mouvement est entièrement libre' do
     assert_equal %w[L L L L L L L], grille
@@ -104,6 +103,8 @@ class ToolTest < ActiveSupport::TestCase
 
     assert_equal 'I', grille[1]
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 
   # ==========================================================================
   # A. est_encore_en_panne_le

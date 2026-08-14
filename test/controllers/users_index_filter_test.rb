@@ -122,7 +122,9 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
     assert_empty assigns(:users)
   end
 
-  test 'critique : le filtre par mot clé ne franchit pas la frontière d organisation' do
+  # ==================== TESTS CRITIQUES ====================
+
+  test 'index : le filtre par mot clé ne franchit pas la frontière d’organisation (critique)' do
     paris = users(:bond)
     marseille = users(:nettoyeur_marseille)
     paris.update!(tag_list: 'commun')
@@ -135,7 +137,7 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:users).map(&:id), marseille.id
   end
 
-  test 'critique : la liste des mots clés proposée est bornée à l organisation' do
+  test 'index : la liste des mots clés proposée est bornée à l’organisation (critique)' do
     users(:nettoyeur_marseille).update!(tag_list: 'secret-marseille')
     users(:bond).update!(tag_list: 'secteur-nord')
 
@@ -146,4 +148,6 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
     assert_select 'select#user_tag option', { text: 'secret-marseille', count: 0 },
                   'les mots clés d\'une autre organisation ne doivent pas être proposés'
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 end

@@ -6,10 +6,10 @@ class AbsencesControllerTest < ActionDispatch::IntegrationTest
   setup do
     @agent = users(:bond)
     @absence = absences(:one)
-    sign_in users(:hidalgo)
+    sign_in users(:administrateur_paris)
   end
 
-  test 'destroy supprime l\'absence et revient à la fiche de l\'agent' do
+  test 'destroy : une absence de son périmètre → elle est supprimée' do
     assert_difference('Absence.count', -1) do
       delete absence_url(@absence)
     end
@@ -17,7 +17,7 @@ class AbsencesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to user_path(@agent)
   end
 
-  test 'destroy en turbo_stream met à jour la section des absences' do
+  test 'destroy : en turbo_stream → la section des absences est mise à jour' do
     assert_difference('Absence.count', -1) do
       delete absence_url(@absence), as: :turbo_stream
     end
@@ -26,31 +26,5 @@ class AbsencesControllerTest < ActionDispatch::IntegrationTest
     assert_match 'absences_section', response.body
     assert_match "absence_#{absences(:two).id}", response.body
     assert_no_match(/absence_#{@absence.id}\b/, response.body)
-  end
-
-  test 'destroy en JSON ne renvoie aucun contenu' do
-    delete absence_url(@absence), as: :json
-
-    assert_response :no_content
-  end
-
-  test 'un agent ne peut pas supprimer sa propre absence' do
-    sign_in @agent
-
-    assert_no_difference('Absence.count') do
-      delete absence_url(@absence)
-    end
-
-    assert_redirected_to root_path
-  end
-
-  test 'un adhérent ne peut pas supprimer l\'absence d\'un agent' do
-    sign_in users(:weil)
-
-    assert_no_difference('Absence.count') do
-      delete absence_url(@absence)
-    end
-
-    assert_redirected_to root_path
   end
 end

@@ -214,11 +214,11 @@
 - **Impact** : le jour où B48 sera corrigé, la tâche enverra le premier mail puis lèvera `NoMethodError` — l'adhérent est relancé, le `MailLog` n'est jamais tracé et les suivants ne sont pas traités.
 - **Correctif proposé** : `intervention.organisation&.id`, comme les 4 jobs corrigés le 2026-07-01. Comportement actuel **épinglé**.
 
-### B51 — Les réponses JSON des pages wiki lèvent sur un attribut inexistant
+### B51 — ✅ CORRIGÉ (2026-08-13) — Les réponses JSON des pages wiki levaient sur un attribut inexistant
 - **Signalé par** : agent, 2026-07-30 (reproduit par test).
-- **Où** : [app/views/wiki_pages/_wiki_page.json.jbuilder:3](app/views/wiki_pages/_wiki_page.json.jbuilder#L3) — la vue générée interroge `nom`, absent de `WikiPage`.
-- **Impact** : toute requête JSON sur la ressource lève. Aucun appelant connu aujourd'hui.
-- **Correctif proposé** : aligner la vue sur les attributs réels (`titre`, `sous_titre`…) ou supprimer les vues jbuilder si le format JSON n'est pas utilisé. Comportement actuel **épinglé**.
+- **Où** : `app/views/wiki_pages/_wiki_page.json.jbuilder` — la vue générée interrogeait `nom`, absent de `WikiPage`.
+- **Impact** : toute requête JSON sur la ressource levait. Aucun appelant.
+- ✅ **Corrigé par suppression, sur décision d'Alex** : le format JSON de `wiki_pages` était du scaffold que rien ne consommait. Les 3 vues jbuilder (`index`, `show`, `_wiki_page`) et les 6 branches `format.json` de `create`/`update`/`destroy` ont été retirées ; les trois actions rendent désormais directement leur `redirect_to`/`render`. Le test qui épinglait le bug a disparu avec le format.
 
 ### B52 — Code mort : `TagCloudComponent` est appelé avec un mot-clé qui n'existe pas
 - **Signalé par** : agent, 2026-07-30.
