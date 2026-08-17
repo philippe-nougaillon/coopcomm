@@ -193,6 +193,7 @@ class User < ApplicationRecord
     rated_interventions.count
   end
 
+  # Fonction inutilisée
   def self.from_omniauth(auth)
     require 'open-uri'
 
