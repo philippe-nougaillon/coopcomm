@@ -41,7 +41,7 @@ class ToolsCalendrierTest < ApplicationSystemTestCase
 
   test 'la réservation d’un autre est bleue, plus claire que la mienne' do
     mienne = couleur_de("a[title='Réservé par vous (cliquez pour libérer)'] span")
-    rouge, vert, bleu = autre = couleur_de("a[title=\"Réservé par qqn d'autre (cliquez pour libérer)\"] span")
+    rouge, vert, bleu = autre = couleur_de("a[title=\"Réservé par quelqu'un d'autre (cliquez pour libérer)\"] span")
 
     assert_operator bleu, :>, rouge
     assert_operator bleu, :>, vert
