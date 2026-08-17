@@ -4,6 +4,7 @@ require 'test_helper'
 
 class InterventionTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
+  include ActionDispatch::TestProcess::FixtureFile
 
   # --- Notification des managers à la création (send_manager_notification) ---
   # Le créateur est déduit de l'audit de création : au niveau modèle, il faut `as_user`
@@ -520,6 +521,39 @@ class InterventionTest < ActiveSupport::TestCase
     assert_equal intervention.id, audit.associated_id
   end
 
+  # === Audit des pièces jointes (PieceJointeAuditable) ======================
+
+  # Un attachement n'étant pas une colonne, audited n'écrit une ligne que si le
+  # commentaire est renseigné : c'est ce commentaire qui fait exister l'audit.
+  test 'pièce jointe : une photo ajoutée → un audit portant le libellé au singulier' do
+    intervention = intervention_avec_photos
+
+    assert_difference -> { intervention.audits.count }, 1 do
+      intervention.update!(photos: [png])
+    end
+    assert_match(/1 photo ajoutée/i, intervention.audits.last.comment)
+  end
+
+  test 'pièce jointe : deux photos ajoutées → le libellé s\'accorde au pluriel' do
+    intervention = intervention_avec_photos
+    intervention.update!(photos: [png])
+
+    intervention.update!(photos: intervention.photos.map(&:signed_id) + [png, png])
+
+    assert_match(/2 photos ajoutées/i, intervention.audits.last.comment)
+  end
+
+  test 'pièce jointe : photo existante ré-émise par le formulaire → aucun faux message d\'ajout' do
+    intervention = intervention_avec_photos
+    intervention.update!(photos: [png])
+    existante = intervention.photos.first
+
+    intervention.update!(description: 'Titre modifié', photos: [existante.signed_id])
+
+    assert_equal 1, intervention.reload.photos.count
+    refute_match(/ajoutée/i, intervention.audits.last.comment.to_s)
+  end
+
   # === Service et adhérent obligatoires =====================================
 
   test 'une intervention sans service est refusée' do
@@ -562,6 +596,18 @@ class InterventionTest < ActiveSupport::TestCase
 
   def intervention_sans_dates(adherent:, service:)
     Intervention.new(description: 'Contrôle du service', adherent: adherent, service: service)
+  end
+
+  def intervention_avec_photos
+    Intervention.create!(description: 'Photo test',
+                         adherent_id: users(:weil).id,
+                         service: services(:informatique),
+                         début_prévue: 1.day.from_now,
+                         fin_prévue: 1.day.from_now + 1.hour)
+  end
+
+  def png
+    fixture_file_upload('exemple.png', 'image/png')
   end
 
   def cree_pointage_termine_par(agent)

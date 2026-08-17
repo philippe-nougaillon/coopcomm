@@ -41,3 +41,13 @@ Même formule de nom, seul le premier mot change (`affichage autorisé pour un a
 nominal → variantes d'état ou de type du record → autre service → autre organisation → cas particuliers → **scope**.
 
 **Le scope en dernier, et seulement s'il filtre vraiment** (`visible_to`, `where(organisation:)`…) — un scope pass-through (`resolve = scope`) ne se teste pas. Nom **explicite** : `scope : un <rôle> ne voit que <ce qu'il voit>`, ou `scope : un <rôle> ne voit aucune <ressource>` quand il ne voit rien.
+
+**On asserte toujours les enregistrements réellement reçus**, nommés — jamais « une relation est revenue », jamais un simple compte : c'est la seule assertion qui tombe si quelqu'un remplace le filtre par `scope.all`.
+
+**Combien de situations, selon ce que fait `resolve` :**
+
+| `resolve` | Ce que couvre le test de policy |
+|---|---|
+| délègue à `<Modèle>.visible_to(user)` | **un seul** test, discriminant : un record visible **et** un record qui ne doit pas l'être. La matrice complète (par rôle, par état, par organisation) vit dans le test du modèle — voir `modeles.md`. |
+| porte son propre filtre (`scope.where(organisation:)`) | la logique n'existe nulle part ailleurs : elle se couvre **entièrement ici**, situation par situation. |
+| pass-through | rien. |

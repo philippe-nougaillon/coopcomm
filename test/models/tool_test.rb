@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class ToolTest < ActiveSupport::TestCase
+  include ActionDispatch::TestProcess::FixtureFile
+
   # Semaine de référence en dates absolues : la grille de disponibilités dépend
   # de l'ordre des jours et de l'état de panne reporté d'un jour au suivant.
   LUNDI = Date.new(2026, 6, 1)
@@ -193,7 +195,58 @@ class ToolTest < ActiveSupport::TestCase
     assert_difference('Mouvement.count', -1) { @outil.destroy }
   end
 
+  # ==========================================================================
+  # E. Audit des pièces jointes (PieceJointeAuditable)
+  # ==========================================================================
+
+  # Un attachement n'étant pas une colonne, audited n'écrit une ligne que si le
+  # commentaire est renseigné : c'est ce commentaire qui fait exister l'audit.
+  test 'pièce jointe : un document ajouté sans changement de colonne → un audit portant le libellé' do
+    outil = tools(:rateau)
+
+    assert_difference -> { outil.audits.count }, 1 do
+      outil.update!(document: pdf)
+    end
+    assert_match(/document ajouté/i, outil.audits.last.comment)
+  end
+
+  test 'pièce jointe : deux attachements dans le même save → les deux sont mentionnés' do
+    outil = tools(:rateau)
+
+    outil.update!(photo: png, document: pdf)
+
+    assert_match(/photo ajoutée/i, outil.audits.last.comment)
+    assert_match(/document ajouté/i, outil.audits.last.comment)
+  end
+
+  test 'pièce jointe : pièce existante ré-émise par le formulaire → aucun faux message d\'ajout' do
+    outil = tools(:rateau)
+    outil.update!(document: pdf)
+    existant = outil.document
+
+    outil.update!(name: 'Rateau renommé', document: existant.signed_id)
+
+    assert_equal existant.blob_id, outil.reload.document.blob_id
+    refute_match(/ajouté/i, outil.audits.last.comment.to_s)
+  end
+
+  test 'pièce jointe : aucune pièce jointe ajoutée → aucun commentaire sur l\'audit' do
+    outil = tools(:rateau)
+
+    outil.update!(description: 'Description modifiée')
+
+    assert_nil outil.audits.last.comment
+  end
+
   private
+
+  def png
+    fixture_file_upload('exemple.png', 'image/png')
+  end
+
+  def pdf
+    fixture_file_upload('exemple.pdf', 'application/pdf')
+  end
 
   def grille
     @outil.reload.get_etats_from_mouvements(LUNDI, DIMANCHE, @moi.id).map(&:etat)
