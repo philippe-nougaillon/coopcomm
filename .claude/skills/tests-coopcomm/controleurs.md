@@ -28,6 +28,9 @@ Un test de contrôleur vérifie **un seul contrat** : l'action reçoit ces param
 
 **Chaque action est testée**, y compris celles qui ne rendent que du JSON (`agents_for_service`, la météo de `pages`) — on y asserte le contenu du JSON. On ne teste **pas** les blocs `format.json` d'une action HTML, ni les actions commentées.
 
+⚠ **Une action que personne ne peut atteindre ne se teste pas.** Route commentée ou absente du `only:`, ou **prédicat de policy écrit en dur à `false`** (`ConventionPolicy#edit?`, et `update?` qui en dérive) : l'action est fermée, aucun rôle n'y accède, et écrire un test « accès refusé » n'a pas de sens. Ni un test de refus, ni un test de non-écriture, ni une sentinelle. Quand la fonctionnalité rouvrira, les tests s'écriront à ce moment-là.
+**Vérifier la policy AVANT de rédiger la matrice**, pas après : c'est elle qui dit quelles actions ont un contrat à couvrir.
+
 **Chaque dérivé de l'action est testé** : toute condition écrite dans l'action donne son test, branches d'erreur comprises.
 
 **Chaque méthode privée est testée via l'action qui l'appelle**, sauf `is_user_authorized` et `set_[record]`. On asserte la sortie sur les variables d'instance (`assigns(...)`, gem `rails-controller-testing`), **jamais sur le HTML**. Vigilance sur `set_form_[record]` : il doit sortir les bons services/utilisateurs (administrateur → toute l'organisation, sinon → les siens).

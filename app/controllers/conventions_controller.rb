@@ -65,11 +65,13 @@ class ConventionsController < ApplicationController
     end
   end
 
+  # Aciton désactivée
   # GET /conventions/1/edit
   def edit
     set_form_collections
   end
-
+  
+  # Action désactivée
   # PATCH/PUT /conventions/1
   def update
     if @convention.update(convention_params)
