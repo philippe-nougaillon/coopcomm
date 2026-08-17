@@ -5,12 +5,14 @@
   <input id="messagerie-drawer" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content flex flex-col h-dvh lg:min-h-screen lg:pt-16 relative w-full overflow-hidden bg-slate-50">
     <div class="flex-shrink-0 px-4 2xl:px-8 py-4 z-30 bg-slate-50 border-b">
-      <div class="flex items-center justify-between lg:justify-start">
+      <div class="flex items-center  lg:justify-start">
         <div class="lg:hidden flex-shrink-0">
-          <label for="messagerie-drawer" class="btn btn-sm drawer-button bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 rounded-lg">
-            <%= embedded_svg "icons/group.svg", class: "w-6 h-6 fill-current" %>
-            <span class="hidden md:inline lg:hidden font-medium text-sm">Contacts</span>
-          </label>
+          <div class="btn btn-sm bg-transparent border-none text-black hover:bg-primary/20 rounded-lg">
+            <%= link_to messagerie_path, class: "flex items-center gap-2" do %>
+            <%= embedded_svg "icons/arrow_back.svg", class: "w-6 h-6 fill-current" %>
+              
+            <% end %>
+          </div>
         </div>
         <div class="flex items-center gap-4">
           <%= render partial: "partials/user_profile_picture", locals: { user: @destinataire } %>

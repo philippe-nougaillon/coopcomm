@@ -1,14 +1,49 @@
-<p>Bonjour <%= @user.prénom || @user.nom %>,</p>
-<p>
-  Vous avez une réservation prévue pour l'outil <strong><%= @tool.name %></strong>
-  le <strong><%= @date_reservation.strftime('%d/%m/%Y à %H:%M') %></strong>.
+
+<h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">
+  Bonjour <%= @user.prénom || @user.nom %>,
+</h2>
+
+<p style="color: #475569; margin-bottom: 24px;">
+  Nous vous informons que l'outil que vous avez réservé a été déclaré <strong>en panne</strong>.
 </p>
-<p>
-  Nous vous informons que cet outil a été déclaré en <strong>panne</strong>
-  le <%= @date_panne.strftime('%d/%m/%Y à %H:%M') %>.
-</p>
-<p>
-  Si l'outil n'est pas réparé avant la date de votre réservation, 
-  celle-ci sera automatiquement annulée pour libérer le planning.
-</p>
-<p>Merci de vérifier la disponibilité de l'outil sur le planning avant votre intervention.</p>
+
+<table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14px;">
+  <tbody>
+    <tr style="border-bottom: 1px solid #f1f5f9;">
+      <td style="padding: 10px 0; font-weight: 600; color: #334155; width: 40%;">
+        Outil
+      </td>
+      <td style="padding: 10px 0; color: #0f172a; text-align: right;">
+        <%= @tool.name %>
+      </td>
+    </tr>
+    <tr style="border-bottom: 1px solid #f1f5f9;">
+      <td style="padding: 10px 0; font-weight: 600; color: #334155; width: 40%;">
+        Réservation prévue le
+      </td>
+      <td style="padding: 10px 0; color: #0f172a; text-align: right;">
+        <%= @date_reservation.strftime('%d/%m/%Y à %H:%M') %>
+      </td>
+    </tr>
+    <tr style="border-bottom: 1px solid #f1f5f9;">
+      <td style="padding: 10px 0; font-weight: 600; color: #334155; width: 40%;">
+        Panne déclarée le
+      </td>
+      <td style="padding: 10px 0; color: #0f172a; text-align: right;">
+        <%= @date_panne.strftime('%d/%m/%Y à %H:%M') %>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 0 4px 4px 0; margin-bottom: 16px;">
+  <p style="margin: 0; font-size: 13px; color: #64748b;">
+    Si l'outil n'est pas réparé avant la date de votre réservation, celle-ci sera automatiquement <strong>annulée</strong> pour libérer le planning.
+  </p>
+</div>
+
+<div style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 0 4px 4px 0;">
+  <p style="margin: 0; font-size: 13px; color: #64748b;">
+    Merci de vérifier la disponibilité de l'outil sur le planning avant votre intervention.
+  </p>
+</div>

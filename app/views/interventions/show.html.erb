@@ -8,7 +8,7 @@
           <h1 class="text-3xl font-bold tracking-tight text-<%= @intervention.style.split.first.split('-').last %>">
             <%= page_title!(@intervention.description.humanize) %>
           </h1>
-          <span class="badge badge-lg font-semibold px-3 py-1.5 rounded-full <%= @intervention.style %>">
+          <span class="badge font-bold text-xs uppercase shrink-0 <%= @intervention.style %>">
             <%= @intervention.workflow_state.humanize %>
           </span>
           <% if @intervention.repeter %>

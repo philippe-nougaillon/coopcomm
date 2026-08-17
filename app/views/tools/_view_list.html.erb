@@ -17,7 +17,7 @@
                   <% if @forecasts && icon_meteo = MeteoConceptConnexion.get_icon_meteo_by_date(date, @forecasts["forecast"])%>
                     <%= image_tag icon_meteo, class: "h-12 w-auto object-contain", title: MeteoConceptConnexion.get_title(date, @forecasts["forecast"]) %>
                   <% else %>
-                    <%= embedded_svg "icons/cloud_sign.svg", class: "w-8 h-8 text-slate-400", title: "Prévision météo indisponible" %>
+                    <%= embedded_svg "icons/cloud.svg", class: "w-8 h-8 text-slate-400", title: "Météo indisponible" %>
                   <% end %>
                 </div>
               </div>

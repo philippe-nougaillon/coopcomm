@@ -28,7 +28,7 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
     'bloc:actions' => %r{>Actions</h2>}i,
     'bloc:activite' => %r{>Activité</h2>}i,
     'bloc:pointages' => %r{>Pointages</h2>}i,
-    'donnee:debut_prevue' => 'Début prévue',
+    'donnee:debut_prevue' => 'Début prévu',
     'donnee:agent_pointage' => '<span>Agent</span>',
     'donnee:temps_passe' => 'Temps passé',
     'donnee:temps_total' => 'Temps total',

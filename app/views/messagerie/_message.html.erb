@@ -10,8 +10,8 @@
     <div class="chat-header text-lg mb-1 opacity-70 px-2">
       <small><i>il y a <%= time_ago_in_words message.created_at %></i></small>
     </div>
-    <div class="chat-bubble rounded <%= is_my ? "chat-bubble-accent" : "bg-gray-200" %> <%= "font-bold" if is_unread %> max-w-full">
-      <p class="text-xl break-words">
+    <div class="chat-bubble rounded <%= is_my ? "chat-bubble-info" : "bg-gray-200" %> <%= "font-bold" if is_unread %> max-w-full">
+      <p class="text-base break-words">
         <%= message.moderation %>
       </p>
     </div>

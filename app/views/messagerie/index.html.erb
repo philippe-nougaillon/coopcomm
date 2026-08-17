@@ -24,14 +24,12 @@
                 <div class="card-body p-4 flex flex-row items-center gap-4">
                   <%= render partial: 'partials/user_profile_picture', locals: { user: user } %>
                   <div class="flex-1 min-w-0">
-                    <div class="flex justify-between items-baseline mb-1">
+                    <span class="text-xs whitespace-nowrap italic <%= unread_count > 0 ? 'text-primary font-bold' : 'text-slate-400' %>">
+                        Il y a <%= time_ago_in_words(last_message.created_at) %> 
+                      </span>
                       <h4 class="font-bold truncate <%= unread_count > 0 ? 'text-primary' : 'text-slate-800' %>">
                         <%= user.nom_prénom %>
                       </h4>
-                      <span class="text-xs whitespace-nowrap ml-2 <%= unread_count > 0 ? 'text-primary font-bold' : 'text-slate-400' %>">
-                        <%= message_time_format(last_message.created_at) %>
-                      </span>
-                    </div>
                     <div class="flex justify-between items-center gap-2">
                       <p class="text-sm truncate <%= unread_count > 0 ? 'text-slate-700 font-semibold' : 'text-slate-500' %>">
                         <% if last_message.from_id == current_user.id %>

@@ -93,7 +93,7 @@ class InterventionsController < ApplicationController
       @intervention.agent_ids = params[:agent_id]
     end
 
-    # Ajout de la date de fin si c'est un agent et que la date début prévue et fin prévue sont nil
+    # Ajout de la date de fin si c'est un agent et que la date début prévu et fin prévue sont nil
     return unless current_user.agent? && (params[:début_prévue].blank? || params[:fin_prévue].blank?)
 
     @intervention.fin = DateTime.now

@@ -44,7 +44,7 @@
       <% if policy(intervention).voir_dates_prevues? %>
         <div class="bg-slate-50/80 p-4 rounded-xl border border-slate-100 flex flex-col justify-center space-y-3 h-full">
           <div>
-            <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Début prévue</span>
+            <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Début prévu</span>
             <% if intervention.début_prévue.present? %>
               <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(intervention.début_prévue, format: :long) %></p>
             <% else %>
