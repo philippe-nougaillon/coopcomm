@@ -280,11 +280,24 @@ class Intervention < ApplicationRecord
 
       next unless conflicting_interventions.exists?
 
-      messages = conflicting_interventions.map do |conflict|
-        " #{agent.nom} déjà sur l’intervention « #{conflict.description} » du #{conflict.effective_début&.strftime('%d/%m/%Y %H:%M')} au #{conflict.effective_fin&.strftime('%d/%m/%Y %H:%M')}"
-      end
-      errors.add('', "Conflit(s) détecté(s) sur un agent :#{messages.to_sentence}")
+      message = if reprise_immediate_de_pointage?(conflicting_interventions)
+                  'Veuillez attendre une minute avant de recommencer à pointer.'
+                else
+                  conflincting_message = conflicting_interventions.map do |conflict|
+                    " #{agent.nom} déjà sur l’intervention « #{conflict.description} » du #{conflict.effective_début&.strftime('%d/%m/%Y %H:%M')} au #{conflict.effective_fin&.strftime('%d/%m/%Y %H:%M')}"
+                  end
+                  "Conflit(s) détecté(s) sur un agent :#{conflincting_message.to_sentence}"
+                end
+
+      errors.add('', message)
     end
+  end
+
+  # Le nouveau pointage reprend là où le précédent s'est arrêté : les secondes
+  # étant écrasées par combine_datetime, deux scans dans la même minute donnent
+  # des bornes égales, que OVERLAP_SQL compte comme un chevauchement.
+  def reprise_immediate_de_pointage?(conflits)
+    template_slug != nil && conflits.last.template_slug == template_slug && conflits.last.effective_fin == effective_début
   end
 
   # Deux intervalles ouverts ne se chevauchent pas au sens SQL : ce cas échappe
