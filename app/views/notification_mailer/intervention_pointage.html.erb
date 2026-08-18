@@ -1,26 +1,15 @@
-Bonjour,
-<br>
-<br>
-Le QRCode de l'intervention '<b><%= @intervention.description.humanize %></b>' vient d'être flashé.
-<br>
-<br>
-Arrivée
-<br>
-<strong><%= I18n.l(@intervention.début, format: :long) %></strong>
+<h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">Bonjour,</h2>
+
+<p style="color: #475569; margin-bottom: 24px;">
+Le QR code de l'intervention « <b><%= @intervention.description.humanize %></b> » vient d'être flashé.
+<br><br>
+Arrivée : <b><%= I18n.l(@intervention.début, format: :long) %></b>
 <% if @intervention.fin %>
-  <br>
-  <br>
-  Départ
-  <br>
-  <strong><%= I18n.l(@intervention.fin, format: :long) %></strong>
-  <br>
-  <br>
-  Durée
-  <br>
-  <strong>
-    <%= @intervention.durée_humanized %>
-  </strong>
+<br><br>
+Départ : <b><%= I18n.l(@intervention.fin, format: :long) %></b>
+<br><br>
+Durée : <b><%= @intervention.durée_humanized %></b>
 <% end %>
-<br>
-<br>
+<br><br>
 <%= link_to "Voir l'intervention", intervention_url(@intervention) %>
+</p>

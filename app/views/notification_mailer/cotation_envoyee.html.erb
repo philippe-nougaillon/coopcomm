@@ -6,8 +6,4 @@ Votre cotation « <%= @cotation.intitulé.capitalize %> » (<b>N°<%= @cotation.
 Vous trouverez la cotation détaillée en pièce jointe.
 <br><br>
 Vous pouvez également la signer en vous connectant sur votre espace : « <%= link_to "Signer ma cotation n°#{@cotation.ref}", signer_cotation_url(@cotation) %> »
-<br><br>
-Cordialement,
-<br>
-L'équipe COOPCOMM
 </p>

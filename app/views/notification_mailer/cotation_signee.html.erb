@@ -4,10 +4,7 @@
 La cotation  « <%= @cotation.intitulé.capitalize %> » (<b>N°<%= @cotation.ref %></b>) vient d'être <b>signée</b> par <%= @cotation.adherent&.nom %>.
 <br><br>
 Vous pouvez également la voir directement sur votre espace : <%= link_to "Voir la cotation", cotation_url(@cotation) %>
-<br><br>
-Cordialement,
-<br>
-L'équipe COOPCOMM
+
 </p>
 
 

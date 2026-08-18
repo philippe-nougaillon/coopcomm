@@ -36,6 +36,12 @@
         font-size: 15px;
         line-height: 1.6;
       }
+      .email-signature {
+        padding: 0 28px 24px;
+        background-color: #ffffff;
+        font-size: 15px;
+        color: #475569;
+      }
       .email-footer {
         background-color: #f8fafc;
         padding: 16px 24px;
@@ -61,6 +67,11 @@
 
         <div class="email-body">
           <%= yield %>
+        </div>
+
+         <div class="email-signature">
+          Cordialement,<br>
+          <strong>L'équipe COOPCOMM</strong>
         </div>
 
         <div class="email-footer">

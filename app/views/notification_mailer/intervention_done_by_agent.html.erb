@@ -1,8 +1,10 @@
-Bonjour,
-<br>
-<br>
-Un agent a créé un bon d'intervention :
-<br>
-Description : <%= @intervention.description %>
-<br>
-<%= link_to "Voir l'intervention", intervention_url(@intervention) %>
+<h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">Bonjour,</h2>
+
+<p style="color: #475569; margin-bottom: 24px;">
+Un agent a créé un bon d'intervention.
+<br><br>
+Description : <b><%= @intervention.description %></b>
+<br><br>
+Vous pouvez consulter le détail en vous connectant sur votre espace : « <%= link_to "Voir l'intervention", intervention_url(@intervention) %> »
+
+</p>

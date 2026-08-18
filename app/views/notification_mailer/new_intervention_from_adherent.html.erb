@@ -1,8 +1,9 @@
-Bonjour,
-<br>
-<br>
-Un adhérent a créé une intervention :
-<br>
-Description : <%= @intervention.description %>
-<br>
+<h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">Bonjour,</h2>
+
+<p style="color: #475569; margin-bottom: 24px;">
+Un adhérent a créé une intervention.
+<br><br>
+Description : <b><%= @intervention.description %></b>
+<br><br>
 <%= link_to "Voir l'intervention", intervention_url(@intervention) %>
+</p>

@@ -1,32 +1,41 @@
-Bonjour,
-<br><br>
-<% if @cotations.size > 1 %>
-  Vous avez <b><%= @cotations.size %> cotations</b> en attente de votre signature :
-<% else %>
-  Vous avez une cotation en attente de votre signature :
-<% end %>
-<br><br>
-<table cellpadding="6" cellspacing="0" border="1" style="border-collapse: collapse;">
+<h2 style="margin-top:0; color:#0f172a; font-size:18px;">Bonjour,</h2>
+
+<p style="color:#475569; margin-bottom:24px; font-size:14px; line-height:1.5;">
+  <% if @cotations.size > 1 %>
+    Vous avez <b><%= @cotations.size %> cotations</b> en attente de votre signature :
+  <% else %>
+    Vous avez une cotation en attente de votre signature :
+  <% end %>
+</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; margin-bottom:24px; font-size:14px;">
   <thead>
     <tr>
-      <th align="left">Référence</th>
-      <th align="left">Intitulé</th>
-      <th align="right">Total HT</th>
-      <th></th>
+      <th align="left" style="padding:10px 8px; background-color:#f8fafc; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.03em; border-bottom:1px solid #e2e8f0;">Référence</th>
+      <th align="left" style="padding:10px 8px; background-color:#f8fafc; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.03em; border-bottom:1px solid #e2e8f0;">Intitulé</th>
+      <th align="right" style="padding:10px 8px; background-color:#f8fafc; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:0.03em; border-bottom:1px solid #e2e8f0;">Total HT</th>
+      <th style="padding:10px 8px; background-color:#f8fafc; border-bottom:1px solid #e2e8f0;"></th>
     </tr>
   </thead>
   <tbody>
-    <% @cotations.each do |cotation| %>
-      <tr>
-        <td>n°<%= cotation.ref %></td>
-        <td><%= cotation.intitulé %></td>
-        <td align="right"><%= number_to_currency(cotation.total_ht, unit: '€', format: '%n %u') %></td>
-        <td><%= link_to 'Signer', signer_cotation_url(cotation) %></td>
+    <% @cotations.each_with_index do |cotation, i| %>
+      <tr style="<%= 'border-bottom:1px solid #f1f5f9;' unless i == @cotations.size - 1 %>">
+        <td style="padding:12px 8px; color:#0f172a;">n°<%= cotation.ref %></td>
+        <td style="padding:12px 8px; color:#0f172a;"><%= cotation.intitulé %></td>
+        <td align="right" style="padding:12px 8px; color:#0f172a; font-weight:600;">
+          <%= number_to_currency(cotation.total_ht, unit: '€', format: '%n %u') %>
+        </td>
+        <td style="padding:12px 8px; text-align:right;">
+          <%= link_to 'Signer', signer_cotation_url(cotation), style: "background-color:#3b82f6; color:#ffffff; text-decoration:none; padding:8px 16px; border-radius:6px; font-size:13px; font-weight:600; display:inline-block;" %>
+        </td>
       </tr>
     <% end %>
   </tbody>
 </table>
-<br>
-Cordialement,
-<br>
-L'équipe COOPCOMM
+
+<div style="background-color:#f8fafc; border-left:4px solid #3b82f6; padding:12px 16px; border-radius:0 4px 4px 0; margin-bottom:24px;">
+  <p style="margin:0; font-size:13px; color:#64748b;">
+    La signature électronique vaut acceptation ferme des conditions décrites dans chaque cotation.
+  </p>
+</div>
+
