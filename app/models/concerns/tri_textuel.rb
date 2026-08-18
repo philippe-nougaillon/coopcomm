@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
-# Source unique du « tri sans accent ni majuscule » : les scopes `ordered` des
-# modèles et les colonnes triables des contrôleurs passent tous par ici.
+# Source unique du « tri sans accent ni majuscule », côté SQL comme côté Ruby.
+# Consommé par les scopes `ordered` des modèles, par les colonnes `:texte` de
+# `ColonnesTriables` et par `Triable` au moment d'appliquer le tri ; les listes
+# déroulantes des vues passent par `ranger`. Ne lit aucun paramètre de requête
+# et ne décide d'aucun ordre : il ne fait que normaliser.
 module TriTextuel
   extend ActiveSupport::Concern
 

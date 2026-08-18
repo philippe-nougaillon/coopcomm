@@ -3,7 +3,5 @@
 require 'test_helper'
 
 class WarehouseTest < ActiveSupport::TestCase
-  # test "the truth" do
-  #   assert true
-  # end
+  # Aucun test pour l'instant : le scope `ordered` reste à couvrir.
 end

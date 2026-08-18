@@ -18,7 +18,7 @@ Un test de modèle vérifie **le contrat du modèle lui-même** : ce que ses sco
 
 **`visible_to`** se teste **ici**, jamais dans le test de policy (voir `policies.md` pour ce qui reste à la charge du `Scope`).
 
-**Tous les `validates`, et chaque variante** : chaque paramètre qui peut faire basculer la règle (rôle de l'acteur, état de workflow, présence d'une date, appartenance à un service…) a son test — le cas qui passe et le cas qui est refusé.
+**Les validations écrites à la main** (`validate :une_méthode`), et **chacune de leurs variantes** : chaque paramètre qui peut faire basculer la règle (rôle de l'acteur, état de workflow, présence d'une date, appartenance à un service…) a son test — le cas qui passe et le cas qui est refusé.
 
 **Tous les `before_*` et `after_*`** : que le callback produit bien l'effet demandé. Quand il notifie, on asserte que **le job est mis en file** (`assert_enqueued_with`), pas le contenu du mail — c'est l'affaire du test du job et du mailer.
 
@@ -29,6 +29,7 @@ Un test de modèle vérifie **le contrat du modèle lui-même** : ce que ses sco
 Une seule liste, à jour :
 
 - les **audits écrits par la gem** — qu'une modification de colonne laisse une trace est l'affaire d'`audited`. ⚠ Seule exception : un audit **écrit à la main** par notre code (`audit_comment` posé par `PieceJointeAuditable` pour les pièces jointes) — là c'est notre contrat, il se teste, **dans le fichier du modèle concerné** ;
+- les **validations déclaratives de Rails** (`presence: true`, `uniqueness: true`, `numericality`…) — c'est le framework. Seule une contrainte dont la **portée** est une décision à nous se teste (l'unicité d'un nom d'outil **par organisation** dit le cloisonnement multi-organisations, pas l'unicité) ;
 - les **relations** (`belongs_to`, `has_many`, `has_one`, `through`…) ;
 - les **enums** ;
 - **`triable_par`** et les colonnes triables ;

@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
-# Tri des tableaux. Les colonnes triables sont déclarées dans le modèle
+# Tri des tableaux, CÔTÉ CONTRÔLEUR : lit et valide `params[:column]` et
+# `params[:direction]`, porte le tri par défaut de la page, applique le `reorder`,
+# et expose `sort_column` / `sort_direction` / `colonne_triable?` aux vues d'index,
+# où `th_tri` s'en sert pour rendre les en-têtes cliquables.
+#
+# Les colonnes triables sont déclarées dans le modèle
 # (`ColonnesTriables`) ; le contrôleur ne dit que ce que la page en fait :
 #
 #   trie User, defaut: 'users.nom'      # une ligne par tableau affiché

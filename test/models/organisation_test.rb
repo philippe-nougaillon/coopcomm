@@ -3,5 +3,5 @@
 require 'test_helper'
 
 class OrganisationTest < ActiveSupport::TestCase
-  # Pas de tests à faire pour l'instant
+  # Aucun test pour l'instant : `numero` reste à couvrir.
 end

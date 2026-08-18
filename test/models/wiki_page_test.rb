@@ -3,5 +3,5 @@
 require 'test_helper'
 
 class WikiPageTest < ActiveSupport::TestCase
-  # Pas de tests à faire pour l'instant
+  # Aucun test pour l'instant : la validation et l'audit de la pièce jointe restent à couvrir.
 end

@@ -7,19 +7,19 @@ class ChaineVideEnNilTest < ActiveSupport::TestCase
     @user = users(:bond)
   end
 
-  test 'une chaîne vide soumise par un formulaire est enregistrée comme NULL' do
+  test 'chaîne vide soumise par un formulaire → enregistrée en NULL' do
     @user.update!(address: '')
 
     assert_nil @user.reload.address
   end
 
-  test 'une chaîne d\'espaces est enregistrée comme NULL' do
+  test 'chaîne faite d\'espaces → enregistrée en NULL' do
     @user.update!(memo: "   \n ")
 
     assert_nil @user.reload.memo
   end
 
-  test 'réenregistrer un champ vide ne produit aucun audit' do
+  test 'champ déjà vide réenregistré → aucun audit' do
     @user.update!(address: nil)
 
     assert_no_difference -> { @user.audits.count } do
@@ -27,20 +27,20 @@ class ChaineVideEnNilTest < ActiveSupport::TestCase
     end
   end
 
-  test 'une valeur réelle n\'est jamais touchée' do
+  test 'valeur réelle → jamais touchée' do
     @user.update!(address: '3 rue des Lilas')
 
     assert_equal '3 rue des Lilas', @user.reload.address
   end
 
-  test 'une colonne NOT NULL est laissée telle quelle, la validation fait son travail' do
+  test 'colonne NOT NULL → laissée telle quelle, la validation fait son travail' do
     @user.email = ''
 
     assert_not @user.valid?
     assert_equal '', @user.email
   end
 
-  test 'les colonnes qui ne sont pas du texte ne sont pas touchées' do
+  test 'colonne qui n\'est pas du texte → jamais touchée' do
     intervention = interventions(:tonte_locaux)
     intervention.update!(temps_de_pause: 0)
 
