@@ -30,19 +30,19 @@ class UserTest < ActiveSupport::TestCase
   # joint `user_services`) et fait échouer tout ce qui lit `current_organisation`.
 
   User.rôles.each_key do |rôle|
-    test "must_have_at_least_one_service : un #{rôle} sans service → refusé" do
+    test "must_have_at_least_one_service : un #{rôle} sans service → refusé (critique)" do
       user = nouveau(rôle: rôle)
 
       assert_not user.valid?
       assert_includes user.errors[:services], 'doit comporter au moins un service'
     end
 
-    test "must_have_at_least_one_service : un #{rôle} avec un service → accepté" do
+    test "must_have_at_least_one_service : un #{rôle} avec un service → accepté (critique)" do
       assert nouveau(rôle: rôle, service_ids: [services(:informatique).id]).valid?
     end
   end
 
-  test 'must_have_at_least_one_service : dernier service retiré → refusé' do
+  test 'must_have_at_least_one_service : dernier service retiré → refusé (critique)' do
     agent = users(:martin_technique_paris)
 
     agent.user_services.each(&:mark_for_destruction)
@@ -51,7 +51,7 @@ class UserTest < ActiveSupport::TestCase
     assert_includes agent.errors[:services], 'doit comporter au moins un service'
   end
 
-  test 'must_have_at_least_one_service : service remplacé dans le même enregistrement → accepté' do
+  test 'must_have_at_least_one_service : service remplacé dans le même enregistrement → accepté (critique)' do
     agent = users(:martin_technique_paris)
 
     agent.user_services.load
@@ -61,14 +61,14 @@ class UserTest < ActiveSupport::TestCase
     assert agent.valid?, agent.errors.full_messages.to_s
   end
 
-  test 'agent_must_have_exactly_one_service : agent créé avec deux services → refusé' do
+  test 'agent_must_have_exactly_one_service : agent créé avec deux services → refusé (critique)' do
     agent = nouveau(rôle: 'agent', service_ids: [services(:informatique).id, services(:technique).id])
 
     assert_not agent.valid?
     assert_includes agent.errors[:services], "ne doit comporter qu'un seul service pour un agent"
   end
 
-  test 'agent_must_have_exactly_one_service : second service ajouté à un agent existant → refusé' do
+  test 'agent_must_have_exactly_one_service : second service ajouté à un agent existant → refusé (critique)' do
     agent = users(:martin_technique_paris)
 
     agent.user_services.build(service: services(:informatique))
@@ -77,7 +77,7 @@ class UserTest < ActiveSupport::TestCase
     assert_includes agent.errors[:services], "ne doit comporter qu'un seul service pour un agent"
   end
 
-  test 'agent_must_have_exactly_one_service : multi-services basculé en agent → refusé' do
+  test 'agent_must_have_exactly_one_service : multi-services basculé en agent → refusé (critique)' do
     utilisateur = users(:hidalgo)
 
     utilisateur.rôle = 'agent'
@@ -86,7 +86,7 @@ class UserTest < ActiveSupport::TestCase
     assert_includes utilisateur.errors[:services], "ne doit comporter qu'un seul service pour un agent"
   end
 
-  test 'agent_must_have_exactly_one_service : adhérent, manager et administrateur → plusieurs services acceptés' do
+  test 'agent_must_have_exactly_one_service : adhérent, manager et administrateur → plusieurs services acceptés (critique)' do
     %w[adhérent manager administrateur].each do |rôle|
       user = nouveau(rôle: rôle, service_ids: [services(:informatique).id, services(:technique).id])
 
@@ -96,7 +96,7 @@ class UserTest < ActiveSupport::TestCase
 
   # Sans `dependent: :destroy` sur la through, Rails retire la ligne de liaison
   # par delete_all : aucun callback, donc aucune trace du service retiré.
-  test 'services : service retiré à un utilisateur → trace dans l\'audit' do
+  test 'services : service retiré à un utilisateur → trace dans l\'audit (critique)' do
     manager = users(:hidalgo)
     retiré = manager.services.first
     restants = manager.services.where.not(id: retiré.id)
@@ -111,7 +111,7 @@ class UserTest < ActiveSupport::TestCase
     assert_equal manager.id, audit.associated_id
   end
 
-  test 'services : rattachement à un service → l\'organisation en dérive' do
+  test 'services : rattachement à un service → l\'organisation en dérive (critique)' do
     utilisateur = nouveau(rôle: 'adhérent', service_ids: [services(:informatique).id])
 
     utilisateur.save!
@@ -119,33 +119,33 @@ class UserTest < ActiveSupport::TestCase
     assert_equal services(:informatique).organisation, utilisateur.organisation
   end
 
-  test 'by_service : services demandés → leurs utilisateurs, jamais ceux des autres services' do
+  test 'by_service : services demandés → leurs utilisateurs, jamais ceux des autres services (critique)' do
     utilisateurs = User.by_service([services(:informatique)])
 
     assert_includes utilisateurs, users(:weil)
     assert_not_includes utilisateurs, users(:agent_marseille)
   end
 
-  test 'by_service : utilisateur de deux services demandés → rendu une seule fois' do
+  test 'by_service : utilisateur de deux services demandés → rendu une seule fois (critique)' do
     utilisateurs = User.by_service([services(:service_paris), services(:technique)])
 
     assert_equal 1, utilisateurs.to_a.count(users(:hidalgo))
   end
 
-  test 'by_service : utilisateur désactivé → exclu' do
+  test 'by_service : utilisateur désactivé → exclu (critique)' do
     users(:weil).discard
 
     assert_not_includes User.by_service([services(:informatique)]), users(:weil)
   end
 
-  test 'get_services_by_role : administrateur → tous les services de son organisation' do
+  test 'get_services_by_role : administrateur → tous les services de son organisation (critique)' do
     services_proposés = users(:administrateur_paris).get_services_by_role
 
     assert_includes services_proposés, services(:secretariat)
     assert_not_includes services_proposés, services(:service_marseille)
   end
 
-  test 'get_services_by_role : manager → seulement les siens' do
+  test 'get_services_by_role : manager → seulement les siens (critique)' do
     manager = users(:manager_paris)
 
     assert_equal manager.services.sort_by(&:id), manager.get_services_by_role.sort_by(&:id)
@@ -154,7 +154,7 @@ class UserTest < ActiveSupport::TestCase
   # Liste PLATE (sans groupe) des intervenants d'un ou plusieurs services, au format
   # [["NOM Prénom", id], …], triée par nom puis prénom.
 
-  test 'agents_for_services : service demandé → ses intervenants' do
+  test 'agents_for_services : service demandé → ses intervenants (critique)' do
     ids = User.agents_for_services([services(:technique)]).map(&:last)
 
     assert_includes ids, users(:martin_technique_paris).id, 'agent du service attendu'
@@ -163,20 +163,20 @@ class UserTest < ActiveSupport::TestCase
     assert_includes ids, users(:nettoyage).id,              'agent du service attendu'
   end
 
-  test 'agents_for_services : adhérent du service → exclu' do
+  test 'agents_for_services : adhérent du service → exclu (critique)' do
     ids = User.agents_for_services([services(:informatique)]).map(&:last)
 
     assert_not_includes ids, users(:weil).id
   end
 
-  test 'agents_for_services : intervenant d\'un autre service ou d\'une autre organisation → exclu' do
+  test 'agents_for_services : intervenant d\'un autre service ou d\'une autre organisation → exclu (critique)' do
     ids = User.agents_for_services([services(:technique)]).map(&:last)
 
     assert_not_includes ids, users(:agent_whatsapp).id
     assert_not_includes ids, users(:agent_marseille).id
   end
 
-  test 'agents_for_services : intervenant retenu → rendu au format [nom complet, id]' do
+  test 'agents_for_services : intervenant retenu → rendu au format [nom complet, id] (critique)' do
     cible = users(:martin_technique_paris)
 
     agent = User.agents_for_services([services(:technique)]).find { |_nom, id| id == cible.id }
@@ -188,7 +188,7 @@ class UserTest < ActiveSupport::TestCase
     assert_kind_of Integer, id
   end
 
-  test 'agents_for_services : intervenant de deux services demandés → rendu une seule fois' do
+  test 'agents_for_services : intervenant de deux services demandés → rendu une seule fois (critique)' do
     ids = User.agents_for_services([services(:service_paris), services(:technique)]).map(&:last)
 
     assert_equal 1, ids.count(users(:hidalgo).id)
@@ -196,13 +196,13 @@ class UserTest < ActiveSupport::TestCase
 
   # Les noms (premier mot) sont distincts et purement ASCII ici : un tri
   # croissant stable est vérifiable sans dépendre de la collation SQL.
-  test 'agents_for_services : plusieurs intervenants → triés par nom croissant' do
+  test 'agents_for_services : plusieurs intervenants → triés par nom croissant (critique)' do
     noms = User.agents_for_services([services(:technique)]).map { |nom, _id| nom.split.first }
 
     assert_equal noms.sort, noms
   end
 
-  test 'agents_for_services : administrateur hors du service demandé → proposé quand même' do
+  test 'agents_for_services : administrateur hors du service demandé → proposé quand même (critique)' do
     admin = users(:philippe_super_admin)
 
     ids = User.agents_for_services([services(:technique)]).map(&:last)
@@ -211,7 +211,7 @@ class UserTest < ActiveSupport::TestCase
     assert_includes ids, admin.id
   end
 
-  test 'agents_for_services : administrateur d\'une autre organisation → exclu' do
+  test 'agents_for_services : administrateur d\'une autre organisation → exclu (critique)' do
     ids = User.agents_for_services([services(:service_marseille)]).map(&:last)
 
     assert_not_includes ids, users(:philippe_super_admin).id

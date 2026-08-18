@@ -25,7 +25,7 @@ class MouvementTest < ActiveSupport::TestCase
   # Cohérence des pannes : une panne mal enregistrée laisse un outil réservable
   # alors qu'il est hors service, ou l'immobilise indéfiniment.
 
-  test 'coherence_panne : outil déjà en panne → refusé' do
+  test 'coherence_panne : outil déjà en panne → refusé (critique)' do
     panne(@outil, '2026-06-02')
 
     doublon = Mouvement.new(tool: @outil, user: @declarant, état: :panne, date: t('2026-06-03'))
@@ -34,7 +34,7 @@ class MouvementTest < ActiveSupport::TestCase
     assert_includes doublon.errors[:état], "Impossible : l'outil est déjà en panne à ce moment-là."
   end
 
-  test 'coherence_panne : panne déclarée juste avant une panne non réparée → refusée' do
+  test 'coherence_panne : panne déclarée juste avant une panne non réparée → refusée (critique)' do
     panne(@outil, '2026-06-05')
 
     antérieure = Mouvement.new(tool: @outil, user: @declarant, état: :panne, date: t('2026-06-03'))
@@ -44,7 +44,7 @@ class MouvementTest < ActiveSupport::TestCase
                     'Impossible : une autre panne est déjà déclarée juste après sans avoir été réparée.'
   end
 
-  test 'coherence_panne : panne déclarée après une réparation → acceptée' do
+  test 'coherence_panne : panne déclarée après une réparation → acceptée (critique)' do
     panne(@outil, '2026-06-02')
     fin_panne(@outil, '2026-06-04')
 
@@ -53,14 +53,14 @@ class MouvementTest < ActiveSupport::TestCase
     assert rechute.valid?
   end
 
-  test 'coherence_fin_panne : outil qui n\'est pas en panne → refusée' do
+  test 'coherence_fin_panne : outil qui n\'est pas en panne → refusée (critique)' do
     réparation = Mouvement.new(tool: @outil, user: @declarant, état: :fin_panne, date: t('2026-06-04'))
 
     assert_not réparation.valid?
     assert_includes réparation.errors[:état], "Impossible : l'outil n'était pas déclaré en panne à cette date."
   end
 
-  test 'coherence_fin_panne : réparation après une autre réparation → refusée' do
+  test 'coherence_fin_panne : réparation après une autre réparation → refusée (critique)' do
     panne(@outil, '2026-06-02')
     fin_panne(@outil, '2026-06-04')
 
@@ -70,7 +70,7 @@ class MouvementTest < ActiveSupport::TestCase
     assert_includes doublon.errors[:état], "Impossible : l'outil n'était pas déclaré en panne à cette date."
   end
 
-  test 'coherence_fin_panne : réparation déjà prévue plus tard → refusée' do
+  test 'coherence_fin_panne : réparation déjà prévue plus tard → refusée (critique)' do
     panne(@outil, '2026-06-02')
     fin_panne(@outil, '2026-06-06')
 
@@ -80,7 +80,7 @@ class MouvementTest < ActiveSupport::TestCase
     assert_includes intercalée.errors[:état], 'Impossible : une fin de panne est déjà prévue pour plus tard.'
   end
 
-  test 'coherence_fin_panne : réparation après une panne → acceptée' do
+  test 'coherence_fin_panne : réparation après une panne → acceptée (critique)' do
     panne(@outil, '2026-06-02')
 
     réparation = Mouvement.new(tool: @outil, user: @declarant, état: :fin_panne, date: t('2026-06-04'))
@@ -88,7 +88,7 @@ class MouvementTest < ActiveSupport::TestCase
     assert réparation.valid?
   end
 
-  test 'cohérence : panne sur un autre outil au même moment → acceptée' do
+  test 'cohérence : panne sur un autre outil au même moment → acceptée (critique)' do
     panne(@outil, '2026-06-02')
 
     autre_outil = Mouvement.new(tool: tools(:outil_paris), user: @declarant, état: :panne, date: t('2026-06-03'))
@@ -96,7 +96,7 @@ class MouvementTest < ActiveSupport::TestCase
     assert autre_outil.valid?
   end
 
-  test 'cohérence : panne déplacée dans le temps → jamais en conflit avec elle-même' do
+  test 'cohérence : panne déplacée dans le temps → jamais en conflit avec elle-même (critique)' do
     existante = panne(@outil, '2026-06-02')
 
     assert existante.update(date: t('2026-06-03'))
@@ -104,7 +104,7 @@ class MouvementTest < ActiveSupport::TestCase
 
   # ÉPINGLAGE : aucune règle n'interdit de réserver un outil en panne.
   # À inverser si le métier décide de bloquer la réservation d'un outil hors service.
-  test 'cohérence : réservation d\'un outil en panne → acceptée' do
+  test 'cohérence : réservation d\'un outil en panne → acceptée (critique)' do
     panne(@outil, '2026-06-02')
 
     réservation = Mouvement.new(tool: @outil, user: @reserviste, état: :réservé, date: t('2026-06-03'))
@@ -180,7 +180,7 @@ class MouvementTest < ActiveSupport::TestCase
   # d'autres utilisateurs, le périmètre détruit doit être exactement la durée
   # de la panne.
 
-  test 'nettoyer_reservations_pendant_panne : réservation posée pendant la panne → supprimée' do
+  test 'nettoyer_reservations_pendant_panne : réservation posée pendant la panne → supprimée (critique)' do
     panne(@outil, '2026-06-02')
     pendant = reservation(@outil, '2026-06-03', @reserviste)
 
@@ -189,7 +189,7 @@ class MouvementTest < ActiveSupport::TestCase
     assert_not Mouvement.exists?(pendant.id)
   end
 
-  test 'nettoyer_reservations_pendant_panne : réservation postérieure à la réparation → conservée' do
+  test 'nettoyer_reservations_pendant_panne : réservation postérieure à la réparation → conservée (critique)' do
     panne(@outil, '2026-06-02')
     après = reservation(@outil, '2026-06-09', @reserviste)
 
@@ -198,7 +198,7 @@ class MouvementTest < ActiveSupport::TestCase
     assert Mouvement.exists?(après.id)
   end
 
-  test 'nettoyer_reservations_pendant_panne : réservation antérieure à la panne → conservée' do
+  test 'nettoyer_reservations_pendant_panne : réservation antérieure à la panne → conservée (critique)' do
     avant = reservation(@outil, '2026-05-28', @reserviste)
     panne(@outil, '2026-06-02')
 
@@ -207,14 +207,14 @@ class MouvementTest < ActiveSupport::TestCase
     assert Mouvement.exists?(avant.id)
   end
 
-  test 'nettoyer_reservations_pendant_panne : panne et réparation → jamais supprimées elles-mêmes' do
+  test 'nettoyer_reservations_pendant_panne : panne et réparation → jamais supprimées elles-mêmes (critique)' do
     début = panne(@outil, '2026-06-02')
     fin = fin_panne(@outil, '2026-06-05')
 
     assert_equal [début.id, fin.id].sort, @outil.mouvements.reload.pluck(:id).sort
   end
 
-  test 'nettoyer_reservations_pendant_panne : panne d\'origine disparue → rien n\'est supprimé' do
+  test 'nettoyer_reservations_pendant_panne : panne d\'origine disparue → rien n\'est supprimé (critique)' do
     début = panne(@outil, '2026-06-02')
     fin = fin_panne(@outil, '2026-06-05')
     début.destroy

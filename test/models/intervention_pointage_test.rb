@@ -12,7 +12,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
   # de pause : à défaut elle vaut 0, et le temps total reste calculable. Hors terminaison
   # elle reste vide : une pause à 0 doit être un choix, jamais un effet de bord.
 
-  test 'temps_de_pause : pause absente sur une intervention terminée → 0 dès la validation' do
+  test 'temps_de_pause : pause absente sur une intervention terminée → 0 dès la validation (critique)' do
     i = interventions(:tonte_locaux)
     i.workflow_state = Intervention::TERMINE
     i.temps_de_pause = nil
@@ -22,7 +22,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_equal 0, i.temps_de_pause
   end
 
-  test 'temps_de_pause : pause absente hors terminaison → reste vide' do
+  test 'temps_de_pause : pause absente hors terminaison → reste vide (critique)' do
     i = interventions(:tonte_locaux)
     i.temps_de_pause = nil
 
@@ -31,7 +31,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_nil i.temps_de_pause
   end
 
-  test 'temps_de_pause : création d\'une intervention planifiée → aucune pause inventée' do
+  test 'temps_de_pause : création d\'une intervention planifiée → aucune pause inventée (critique)' do
     i = Intervention.create!(
       description: 'Intervention planifiée',
       adherent: users(:weil),
@@ -43,7 +43,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_nil i.reload.temps_de_pause
   end
 
-  test 'temps_de_pause : terminaison sans pause renseignée → pause enregistrée à 0' do
+  test 'temps_de_pause : terminaison sans pause renseignée → pause enregistrée à 0 (critique)' do
     i = interventions(:nouvelle_intervention)
     # Vendredi précédant le lundi de `tonte_locaux` : toujours passé, jamais en
     # conflit. `3.days.ago` tombait sur ce lundi tous les jeudis, et bond est
@@ -61,7 +61,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
   # Contrat : renvoie 0 si une date manque ou si fin <= début ; sinon (fin - début, en
   # heures) - temps_de_pause, multiplié par le nombre d'agents AFFECTÉS (désactivés compris).
 
-  test 'calc_temps_total : durée simple sans pause → durée × agents affectés' do
+  test 'calc_temps_total : durée simple sans pause → durée × agents affectés (critique)' do
     i = interventions(:tonte_locaux)
     ref = Time.zone.local(2026, 3, 2, 9, 0, 0)
     i.début = ref
@@ -72,7 +72,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_in_delta 6.0, i.calc_temps_total, 1e-6
   end
 
-  test 'calc_temps_total : pause renseignée → déduite de la durée' do
+  test 'calc_temps_total : pause renseignée → déduite de la durée (critique)' do
     i = interventions(:tonte_locaux)
     ref = Time.zone.local(2026, 3, 2, 9, 0, 0)
     i.début = ref
@@ -82,7 +82,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_in_delta 5.0, i.calc_temps_total, 1e-6
   end
 
-  test 'calc_temps_total : plusieurs agents → temps multiplié par leur nombre' do
+  test 'calc_temps_total : plusieurs agents → temps multiplié par leur nombre (critique)' do
     i = interventions(:intervention_repete)
     ref = Time.zone.local(2026, 3, 2, 9, 0, 0)
     i.début = ref
@@ -93,7 +93,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_in_delta 6.0, i.calc_temps_total, 1e-6
   end
 
-  test 'calc_temps_total : agent désactivé → compte toujours dans le multiplicateur' do
+  test 'calc_temps_total : agent désactivé → compte toujours dans le multiplicateur (critique)' do
     i = interventions(:tonte_locaux)
     ref = Time.zone.local(2026, 3, 2, 9, 0, 0)
     i.début = ref
@@ -105,7 +105,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_in_delta 6.0, i.calc_temps_total, 1e-6
   end
 
-  test 'calc_temps_total : agent désactivé après coup → temps enregistré inchangé' do
+  test 'calc_temps_total : agent désactivé après coup → temps enregistré inchangé (critique)' do
     i = interventions(:tonte_locaux)
     i.update!(début: Time.zone.local(2026, 3, 2, 9, 0), fin: Time.zone.local(2026, 3, 2, 17, 0),
               temps_de_pause: 0)
@@ -119,7 +119,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_in_delta 16.0, avant, 1e-6, 'préalable : 8 h × 2 agents affectés'
   end
 
-  test 'calc_temps_total : fin antérieure au début → 0' do
+  test 'calc_temps_total : fin antérieure au début → 0 (critique)' do
     i = interventions(:tonte_locaux)
     ref = Time.zone.local(2026, 3, 2, 9, 0, 0)
     i.début = ref
@@ -128,14 +128,14 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_equal 0, i.calc_temps_total
   end
 
-  test 'calc_temps_total : date manquante → 0' do
+  test 'calc_temps_total : date manquante → 0 (critique)' do
     i = interventions(:tonte_locaux)
     i.fin = nil
 
     assert_equal 0, i.calc_temps_total
   end
 
-  test 'calc_temps_total : sauvegarde → temps recalculé et persisté' do
+  test 'calc_temps_total : sauvegarde → temps recalculé et persisté (critique)' do
     i = Intervention.new(
       description: 'Saisie a posteriori',
       adherent: users(:weil),
@@ -153,7 +153,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
 
   # Régression : sur un enregistrement neuf, agents.count interroge la base avec un
   # owner_id nil et renvoie 0, ce qui enregistrerait un temps_total nul à la création.
-  test 'calc_temps_total : création à deux agents → temps déjà multiplié' do
+  test 'calc_temps_total : création à deux agents → temps déjà multiplié (critique)' do
     i = Intervention.new(
       description: "Bon d'intervention à deux",
       adherent: users(:weil),
@@ -169,7 +169,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_in_delta 4.0, i.reload.temps_total, 1e-6
   end
 
-  test 'calc_temps_total : dates modifiées → temps persisté recalculé' do
+  test 'calc_temps_total : dates modifiées → temps persisté recalculé (critique)' do
     i = interventions(:tonte_locaux)
     i.update!(début: 4.hours.ago, fin: 1.hour.ago, temps_de_pause: 0)
 
@@ -180,7 +180,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_in_delta 2.0, i.reload.temps_total, 1e-6
   end
 
-  test 'calc_temps_total : pause modifiée → déduite du temps persisté' do
+  test 'calc_temps_total : pause modifiée → déduite du temps persisté (critique)' do
     i = interventions(:tonte_locaux)
     i.update!(début: 4.hours.ago, fin: 1.hour.ago, temps_de_pause: 0.5)
 
@@ -189,7 +189,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
 
   # Le calcul doit précéder les validations : sinon `pas_de_temps_total_negatif`
   # contrôle la valeur de la sauvegarde précédente et laisse passer le négatif.
-  test 'pas_de_temps_total_negatif : pause plus longue que la durée → refusée' do
+  test 'pas_de_temps_total_negatif : pause plus longue que la durée → refusée (critique)' do
     i = interventions(:tonte_locaux)
     i.update!(début: 4.hours.ago, fin: 1.hour.ago, temps_de_pause: 0)
 
@@ -198,7 +198,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_in_delta 6.0, i.reload.temps_total, 1e-6
   end
 
-  test 'pas_de_temps_total_negatif : pause égale à la durée → acceptée, temps nul' do
+  test 'pas_de_temps_total_negatif : pause égale à la durée → acceptée, temps nul (critique)' do
     i = interventions(:tonte_locaux)
     i.update!(début: 4.hours.ago, fin: 1.hour.ago, temps_de_pause: 3)
 
@@ -208,7 +208,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
   # Une fille naît toujours avec l'unique agent qui a scanné ; seul le formulaire
   # d'édition peut lui en ajouter d'autres.
 
-  test 'agent_unique_si_pointage : fille à deux agents → refusée' do
+  test 'agent_unique_si_pointage : fille à deux agents → refusée (critique)' do
     mère = interventions(:intervention_repete)
     fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
 
@@ -218,7 +218,7 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_includes fille.errors.full_messages, Intervention::MESSAGE_AGENT_UNIQUE
   end
 
-  test 'agent_unique_si_pointage : fille sans agent → refusée' do
+  test 'agent_unique_si_pointage : fille sans agent → refusée (critique)' do
     mère = interventions(:intervention_repete)
     fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
 
@@ -228,14 +228,14 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_includes fille.errors.full_messages, Intervention::MESSAGE_AGENT_UNIQUE
   end
 
-  test 'agent_unique_si_pointage : fille à un seul agent → acceptée' do
+  test 'agent_unique_si_pointage : fille à un seul agent → acceptée (critique)' do
     mère = interventions(:intervention_repete)
     fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
 
     assert fille.valid?, fille.errors.full_messages.to_sentence
   end
 
-  test 'agent_unique_si_pointage : intervention hors pointage → plusieurs agents acceptés' do
+  test 'agent_unique_si_pointage : intervention hors pointage → plusieurs agents acceptés (critique)' do
     intervention = interventions(:intervention_repete)
 
     assert_nil intervention.template_slug

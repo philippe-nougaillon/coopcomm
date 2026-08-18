@@ -127,48 +127,48 @@ class ToolTest < ActiveSupport::TestCase
   # carré inerte. Une lettre fausse propose une action fausse, pas seulement
   # une couleur.
 
-  test 'get_etats_from_mouvements : semaine sans mouvement → entièrement libre' do
+  test 'get_etats_from_mouvements : semaine sans mouvement → entièrement libre (critique)' do
     assert_equal %w[L L L L L L L], grille
   end
 
-  test 'get_etats_from_mouvements : ma réservation → seule case marquée réservée par moi' do
+  test 'get_etats_from_mouvements : ma réservation → seule case marquée réservée par moi (critique)' do
     reservation('2026-06-02', @moi)
 
     assert_equal %w[L R L L L L L], grille
   end
 
-  test 'get_etats_from_mouvements : réservation d\'un autre → case indisponible' do
+  test 'get_etats_from_mouvements : réservation d\'un autre → case indisponible (critique)' do
     reservation('2026-06-04', @autre)
 
     assert_equal %w[L L L I L L L], grille
   end
 
-  test 'get_etats_from_mouvements : panne antérieure à la semaine → semaine entière en panne' do
+  test 'get_etats_from_mouvements : panne antérieure à la semaine → semaine entière en panne (critique)' do
     panne('2026-05-28')
 
     assert_equal %w[P P P P P P P], grille
   end
 
-  test 'get_etats_from_mouvements : jour de déclaration d\'une panne → en panne' do
+  test 'get_etats_from_mouvements : jour de déclaration d\'une panne → en panne (critique)' do
     panne('2026-06-02')
 
     assert_equal 'P', grille[1]
   end
 
-  test 'get_etats_from_mouvements : jours suivant une panne → en panne' do
+  test 'get_etats_from_mouvements : jours suivant une panne → en panne (critique)' do
     panne('2026-06-02')
 
     assert_equal %w[P P P P P], grille[2..]
   end
 
-  test 'get_etats_from_mouvements : réparation → libre dès le jour de la fin de panne' do
+  test 'get_etats_from_mouvements : réparation → libre dès le jour de la fin de panne (critique)' do
     panne('2026-06-02')
     fin_panne('2026-06-04')
 
     assert_equal %w[L L L L], grille[3..]
   end
 
-  test 'get_etats_from_mouvements : panne, réparation puis rechute → cycle retracé' do
+  test 'get_etats_from_mouvements : panne, réparation puis rechute → cycle retracé (critique)' do
     panne('2026-06-01')
     fin_panne('2026-06-03')
     panne('2026-06-05')
@@ -176,27 +176,27 @@ class ToolTest < ActiveSupport::TestCase
     assert_equal %w[P P L L P P P], grille
   end
 
-  test 'get_etats_from_mouvements : journées réservées → le réservataire est nommé' do
+  test 'get_etats_from_mouvements : journées réservées → le réservataire est nommé (critique)' do
     reservation('2026-06-02', @moi)
     reservation('2026-06-04', @autre)
 
     assert_equal [nil, @moi.id, nil, @autre.id, nil, nil, nil], reservataires
   end
 
-  test 'get_etats_from_mouvements : journées libres ou en panne → aucun réservataire' do
+  test 'get_etats_from_mouvements : journées libres ou en panne → aucun réservataire (critique)' do
     panne('2026-06-02')
 
     assert_equal [nil] * 7, reservataires
   end
 
-  test 'get_etats_from_mouvements : mouvements d\'un autre outil → sans effet sur la grille' do
+  test 'get_etats_from_mouvements : mouvements d\'un autre outil → sans effet sur la grille (critique)' do
     reservation('2026-06-02', @moi, tools(:outil_paris))
     panne('2026-06-04', tools(:outil_paris))
 
     assert_equal %w[L L L L L L L], grille
   end
 
-  test 'get_etats_from_mouvements : intervalle demandé → une lettre par jour' do
+  test 'get_etats_from_mouvements : intervalle demandé → une lettre par jour (critique)' do
     assert_equal 1, @outil.get_etats_from_mouvements(LUNDI, LUNDI, @moi.id).size
     assert_equal 31, @outil.get_etats_from_mouvements(LUNDI, LUNDI + 30, @moi.id).size
   end
@@ -204,7 +204,7 @@ class ToolTest < ActiveSupport::TestCase
   # ÉPINGLAGE : rien n'empêche deux réservations le même jour, et la grille n'en
   # retient qu'une. Ma propre réservation est alors masquée par celle d'un autre,
   # donc la case n'offre pas le lien « libérer ». À inverser si le métier tranche.
-  test 'get_etats_from_mouvements : deux réservations le même jour → seule la dernière compte' do
+  test 'get_etats_from_mouvements : deux réservations le même jour → seule la dernière compte (critique)' do
     reservation('2026-06-02', @moi)
     reservation('2026-06-02', @autre)
 

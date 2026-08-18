@@ -29,7 +29,10 @@ description: Conventions et gabarits imposés des tests du projet (Minitest, Rai
 
 **Aucun commentaire dans un fichier de test.** Le nom du fichier et celui de chaque test doivent suffire. Seule exception : une ligne en tête de fichier quand la **raison d'être** du fichier ne se devine pas (typiquement un test d'intégration transverse), et seulement si elle apprend quelque chose. Les précisions sur une fixture passent par le **nom de la variable** (`convention_autre_org`, `service_supprimable`), pas par un commentaire.
 
-**Tests critiques — marqueur et bannière** *(vaut pour tous les types de tests, **sauf** les tests système)*. Le marqueur se met **à la fin du nom**, entre parenthèses (`… → <effet> (critique)`), jamais en préfixe. Les tests critiques qui se suivent sont **groupés et encadrés** par exactement ces deux lignes, avec **une ligne vide avant la fermeture** pour ne pas la coller au dernier test :
+**Tests critiques — marqueur ET bannière, jamais l'un sans l'autre** *(vaut pour tous les types de tests, **sauf** les tests système)*. Les deux sont obligatoires et ne se remplacent pas :
+
+1. **Chaque** test critique porte le marqueur **à la fin de son nom**, entre parenthèses (`… → <effet> (critique)`), jamais en préfixe. **Aucune exception**, y compris pour un test généré dans une boucle (le marqueur va dans la chaîne interpolée) et pour un test déjà entouré d'une bannière.
+2. Les tests critiques qui se suivent sont **groupés et encadrés** par exactement ces deux lignes, avec **une ligne vide avant la fermeture** pour ne pas la coller au dernier test :
 
 ```
 # ==================== TESTS CRITIQUES ====================
@@ -37,7 +40,9 @@ description: Conventions et gabarits imposés des tests du projet (Minitest, Rai
 # ==================== /TESTS CRITIQUES ====================
 ```
 
-Plusieurs blocs par fichier sont normaux — chacun vit auprès de ce qu'il vise.
+*Pourquoi les deux* : la bannière explique **pourquoi** le groupe est critique et se lit dans le fichier ; le marqueur voyage avec le test — dans la sortie d'un run, dans `test/failed_tests.rb`, dans un rapport de couverture — là où la bannière est invisible. Un test critique déplacé hors de son groupe garde ainsi son statut.
+
+Plusieurs blocs par fichier sont normaux — chacun vit auprès de ce qu'il vise. Un test critique isolé porte son marqueur **sans** bannière si aucun autre ne le rejoint.
 
 **Helpers de test** *(vaut pour tous les types de tests, **sauf** les tests système)*. Une méthode utilisée par **un seul** fichier vit sous `private`, en fin de classe, avec le commentaire qui l'explique **collé à elle**. Utilisée par **plusieurs** fichiers, elle devient un module de `test/support/` que les fichiers `require_relative` et `include` — comme `fabrique_xls.rb`, `interventions_matrice.rb` et `lecture_pdf.rb` qui s'y trouvent déjà.
 
