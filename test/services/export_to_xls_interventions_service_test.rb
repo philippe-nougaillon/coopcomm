@@ -48,16 +48,16 @@ class ExportToXlsInterventionsServiceTest < ActionDispatch::IntegrationTest
     assert_equal 'urgence, plomberie', sheet.row(1)[colonne]
   end
 
+  private
+
   def create_interventions(count = 3)
     count.times do |i|
       Intervention.create!(
         description: "Test intervention #{i}",
-        organisation: organisations(:mairie_paris),
-        workflow_state: 'created',
-        début: Time.current - 2.hours,
+        workflow_state: Intervention::NOUVEAU,
+        début: 2.hours.ago,
         fin: Time.current,
         temps_de_pause: 0,
-        temps_total: 2,
         slug: SecureRandom.uuid,
         adherent: @template_adherent,
         service: @template_adherent.services.first

@@ -160,10 +160,6 @@ class TransformToPdfDocumentsTest < ActiveSupport::TestCase
     assert_match(/Entretien des espaces verts/i, texte)
   end
 
-  test 'la classe mère refuse d’être utilisée directement' do
-    assert_raises(NotImplementedError) { TransformToPdf::BasePdfForCrm.call(@cotation) }
-  end
-
   private
 
   # Le pad de signature transmet un SVG encodé en base64 dans une data URI.
