@@ -16,8 +16,9 @@ description: Conventions et gabarits imposés des tests du projet (Minitest, Rai
 | Test de **policy** Pundit | `policies.md` — gabarit imposé, à lire en entier |
 | Test de **contrôleur** | `controleurs.md` — gabarit imposé, à lire en entier |
 | Test de **modèle** (ou de concern de modèle) | `modeles.md` — gabarit imposé, à lire en entier |
+| Test de **service** (`app/services/`) | `services.md` — gabarit imposé, à lire en entier |
 | Ajout ou choix d'une **fixture** | `fixtures.md` |
-| Test de **job, service, système** | Aucun gabarit imposé à ce jour — appliquer les règles transverses ci-dessous. Ne pas en inventer un. |
+| Test de **job, système** | Aucun gabarit imposé à ce jour — appliquer les règles transverses ci-dessous. Ne pas en inventer un. |
 
 ## Règles transverses (tous types de tests)
 
