@@ -2,7 +2,7 @@
 
 module TransformToPdf
   # Classe mère générique pour tous les documents PDF (Cotation, Commande, Facture)
-  class BasePdf < ApplicationService
+  class BasePdfForCrm < ApplicationService
     include Prawn::View
     include ActionView::Helpers::NumberHelper
 

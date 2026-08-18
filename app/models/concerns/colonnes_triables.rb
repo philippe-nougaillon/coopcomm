@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-# Catalogue des colonnes par lesquelles un modèle peut être trié, déclaré dans le
-# modèle : les expressions qui reflètent une méthode Ruby (`User#moyenne`) vivent
-# ainsi à côté d'elle.
+# Catalogue des colonnes par lesquelles un modèle peut être trié, déclaré DANS LE
+# MODÈLE : les expressions qui reflètent une méthode Ruby (`User#moyenne`) vivent
+# ainsi à côté d'elle. Ce fichier ne trie rien et ne connaît ni requête ni vue —
+# il est lu par `Triable.trie` côté contrôleur, qui applique l'ordre.
 #
 #   triable_par({ 'users.nom' => :texte, 'users.moyenne' => '(SELECT AVG(…))' },
 #               puis: TriTextuel.expression('users.prénom'))

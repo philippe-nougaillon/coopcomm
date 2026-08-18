@@ -59,6 +59,15 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
     assert_includes nouvelle.errors.full_messages.join(' '), 'Conflit(s) détecté(s) sur un agent'
   end
 
+  test 'A5bis nouvelle avec fin prévue seule DANS le créneau (repli sur une borne) → conflit' do
+    creer_existante_agent
+
+    nouvelle = construire_agent(fin_prévue: "#{JOUR} 11:00")
+
+    assert_not nouvelle.valid?
+    assert_includes nouvelle.errors.full_messages.join(' '), 'Conflit(s) détecté(s) sur un agent'
+  end
+
   test 'A6 nouvelle MIXTE (début réel + fin prévue) chevauchant le créneau → conflit' do
     creer_existante_agent
 
@@ -153,6 +162,15 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
     creer_outil(début: "#{JOUR} 11:00")
 
     nouvelle = construire_outil(début: "#{JOUR} 10:00", fin: "#{JOUR} 12:00")
+
+    assert_not nouvelle.valid?
+    assert_includes nouvelle.errors.full_messages.join(' '), 'Conflit(s) détecté(s) sur un outil'
+  end
+
+  test 'C2bis nouvelle avec fin prévue seule DANS le créneau de l’outil → conflit outil' do
+    creer_outil(début: "#{JOUR} 10:00", fin: "#{JOUR} 12:00")
+
+    nouvelle = construire_outil(fin_prévue: "#{JOUR} 11:00")
 
     assert_not nouvelle.valid?
     assert_includes nouvelle.errors.full_messages.join(' '), 'Conflit(s) détecté(s) sur un outil'

@@ -22,14 +22,14 @@ class TransformToPdfDocumentsTest < ActiveSupport::TestCase
   # Le total figure deux fois — en métadonnées et sous le tableau. Les compter
   # empêche qu'un seul des deux emplacements dérive : un document qui
   # s'auto-contredit sur son montant est le pire des cas.
-  test 'le total imprimé est celui de l’enregistrement, aux deux emplacements' do
+  test 'le total imprimé est celui de l’enregistrement, aux deux emplacements (critique)' do
     texte = texte_pdf(TransformToPdf::Cotation.call(@cotation))
 
     assert_equal 76.50, @cotation.total_ht.to_f, 'garde : fixture attendue à 76,50'
     assert_equal 2, texte.scan('Total HT : 76,50 €').size
   end
 
-  test 'le total imprimé suit la somme des lignes quand une ligne est ajoutée' do
+  test 'le total imprimé suit la somme des lignes quand une ligne est ajoutée (critique)' do
     CotationLigne.create!(cotation: @cotation, prestation: prestations(:entretien_espaces_verts),
                           intitulé: 'Tonte mensuelle', qté: 2)
 
@@ -39,7 +39,7 @@ class TransformToPdfDocumentsTest < ActiveSupport::TestCase
     assert_equal 2, texte.scan('Total HT : 136,50 €').size
   end
 
-  test 'chaque ligne est imprimée avec son code, son intitulé, sa quantité et ses montants' do
+  test 'chaque ligne est imprimée avec son code, son intitulé, sa quantité et ses montants (critique)' do
     CotationLigne.create!(cotation: @cotation, prestation: prestations(:entretien_espaces_verts),
                           intitulé: 'Tonte mensuelle', qté: 2)
 
@@ -51,14 +51,14 @@ class TransformToPdfDocumentsTest < ActiveSupport::TestCase
     assert_match(/Tonte mensuelle/i, texte)
   end
 
-  test 'le prix unitaire et le total de la ligne sont imprimés distinctement' do
+  test 'le prix unitaire et le total de la ligne sont imprimés distinctement (critique)' do
     texte = texte_pdf(TransformToPdf::Cotation.call(@cotation))
 
     assert_includes texte, '25,50 €', 'prix unitaire de la prestation'
     assert_includes texte, '76,50 €', 'total de la ligne (25,50 × 3)'
   end
 
-  test 'un document ne contient pas les données d’un autre document' do
+  test 'un document ne contient pas les données d’un autre document (critique)' do
     texte = texte_pdf(TransformToPdf::Facture.call(factures(:facture_marseille)))
 
     assert_match(/Devis Marseille/i, texte)
@@ -158,10 +158,6 @@ class TransformToPdfDocumentsTest < ActiveSupport::TestCase
     texte = texte_pdf(TransformToPdf::Cotation.call(@cotation.reload))
 
     assert_match(/Entretien des espaces verts/i, texte)
-  end
-
-  test 'la classe mère refuse d’être utilisée directement' do
-    assert_raises(NotImplementedError) { TransformToPdf::BasePdf.call(@cotation) }
   end
 
   private

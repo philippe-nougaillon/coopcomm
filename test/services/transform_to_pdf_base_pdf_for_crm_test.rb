@@ -4,9 +4,9 @@ require 'test_helper'
 
 # La classe mère des PDF de documents impose deux points d'extension aux classes
 # filles (Cotation, Commande, Facture).
-class TransformToPdfBasePdfTest < ActiveSupport::TestCase
+class TransformToPdfBasePdfForCrmTest < ActiveSupport::TestCase
   setup do
-    @base = TransformToPdf::BasePdf.new(cotations(:cotation_paris))
+    @base = TransformToPdf::BasePdfForCrm.new(cotations(:cotation_paris))
   end
 
   test 'document_title doit être implémenté par la classe fille' do

@@ -9,7 +9,7 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
     { io: File.open(Rails.root.join('test/fixtures/files', fichier)), filename: nom || fichier, content_type: type }
   end
 
-  test "refuse un PDF comme photo d'intervention" do
+  test 'valide_image : PDF déposé comme photo d\'intervention → refusé' do
     intervention = interventions(:nouvelle_intervention)
     intervention.photos = [{ io: File.open(Rails.root.join('test/fixtures/files/exemple.pdf')),
                              filename: 'exemple.pdf', content_type: 'application/pdf' }]
@@ -19,7 +19,7 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
     assert intervention.errors[:photos].any?, 'un PDF ne doit pas être accepté comme photo'
   end
 
-  test "accepte une image PNG comme photo d'intervention" do
+  test 'valide_image : PNG comme photo d\'intervention → accepté' do
     intervention = interventions(:nouvelle_intervention)
     intervention.photos = [{ io: File.open(Rails.root.join('test/fixtures/files/exemple.png')),
                              filename: 'exemple.png', content_type: 'image/png' }]
@@ -29,7 +29,7 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
     assert_empty intervention.errors[:photos]
   end
 
-  test 'refuse une pièce jointe au-delà de la taille maximale' do
+  test 'taille : pièce jointe au-delà du plafond → refusée' do
     intervention = interventions(:nouvelle_intervention)
     intervention.photos = [{ io: File.open(Rails.root.join('test/fixtures/files/exemple.png')),
                              filename: 'exemple.png', content_type: 'image/png' }]
@@ -42,7 +42,7 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
     assert intervention.errors[:photos].any?, 'au-delà de 10 Mo la photo doit être refusée'
   end
 
-  test "accepte une image AVIF comme photo d'intervention (format annoncé par les deux formulaires)" do
+  test 'valide_image : AVIF, annoncé par les deux formulaires → accepté' do
     intervention = interventions(:nouvelle_intervention)
     intervention.photos = [{ io: File.open(Rails.root.join('test/fixtures/files/exemple.png')),
                              filename: 'exemple.avif', content_type: 'image/avif' }]
@@ -52,7 +52,7 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
     assert_empty intervention.errors[:photos]
   end
 
-  test 'accepte un PDF comme document de convention' do
+  test 'valide_document : PDF comme document de convention → accepté' do
     convention = conventions(:convention_paris)
     convention.document = pièce('exemple.pdf', 'application/pdf')
 
@@ -61,7 +61,7 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
     assert_empty convention.errors[:document]
   end
 
-  test 'accepte la photo du document signé comme document de convention' do
+  test 'valide_document : photo du document signé → acceptée' do
     convention = conventions(:convention_paris)
     convention.document = pièce('exemple.png', 'image/jpeg', nom: 'convention_signée.jpg')
 
@@ -70,7 +70,7 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
     assert_empty convention.errors[:document]
   end
 
-  test 'accepte un tableur comme document de page wiki' do
+  test 'valide_document : tableur comme document de page wiki → accepté' do
     page = wiki_pages(:guide)
     page.document = pièce('import_users.xls', 'application/vnd.ms-excel', nom: 'guide.xls')
 
@@ -79,7 +79,7 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
     assert_empty page.errors[:document]
   end
 
-  test "accepte une photo HEIC (format natif des téléphones) comme photo d'outil" do
+  test 'valide_image : HEIC, format natif des téléphones → accepté' do
     tool = tools(:rateau)
     tool.photo = pièce('exemple.png', 'image/heic', nom: 'photo.heic')
 
@@ -88,7 +88,7 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
     assert_empty tool.errors[:photo]
   end
 
-  test "refuse un exécutable comme document d'outil" do
+  test 'valide_document : exécutable comme document d\'outil → refusé' do
     tool = tools(:rateau)
     tool.document = pièce('exemple.png', 'application/x-msdownload', nom: 'notice.exe')
 
@@ -97,7 +97,7 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
     assert tool.errors[:document].any?, 'un exécutable ne doit pas être accepté'
   end
 
-  test 'le type réel prime sur celui annoncé par le navigateur' do
+  test 'validation : extension renommée → le type réel prime sur celui annoncé' do
     png = Tempfile.new(['faux', '.pdf'], binmode: true)
     png.write("\x89PNG\r\n\x1A\n\x00\x00\x00\rIHDR".b)
     png.rewind
@@ -110,7 +110,7 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
 
   # ==== Taille maximale ====
 
-  test 'un document de plus de 20 Mo est refusé' do
+  test 'taille : document de plus de 20 Mo → refusé' do
     convention = conventions(:convention_paris)
     convention.document = pièce('exemple.pdf', 'application/pdf')
     convention.document.attachment.blob.byte_size = 21.megabytes
@@ -120,7 +120,7 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
     assert_includes convention.errors[:document].join, '20 Mo maximum'
   end
 
-  test 'un document de moins de 20 Mo est accepté' do
+  test 'taille : document de moins de 20 Mo → accepté' do
     convention = conventions(:convention_paris)
     convention.document = pièce('exemple.pdf', 'application/pdf')
     convention.document.attachment.blob.byte_size = 19.megabytes
@@ -130,7 +130,7 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
     assert_empty convention.errors[:document]
   end
 
-  test 'une image reste plafonnée à 10 Mo' do
+  test 'taille : image au-delà de 10 Mo → refusée' do
     tool = tools(:rateau)
     tool.photo = pièce('exemple.png', 'image/png')
     tool.photo.attachment.blob.byte_size = 11.megabytes
@@ -142,7 +142,7 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
 
   # ==== Source unique des formats et de la taille ====
 
-  test 'les règles déclarées sur les modèles sont exposées aux formulaires' do
+  test 'regles_pieces_jointes : règles des modèles → exposées aux formulaires' do
     assert_equal({ types: PieceJointeValidable::DOCUMENTS, max_octets: 20.megabytes },
                  Convention.regles_pieces_jointes['document'])
     assert_equal({ types: PieceJointeValidable::IMAGES, max_octets: 10.megabytes },
@@ -153,17 +153,17 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
                  Tool.regles_pieces_jointes['document'])
   end
 
-  test "l'attribut accept liste les extensions ET les types MIME" do
+  test 'accept : rendu du champ → extensions ET types MIME' do
     accept = PieceJointeValidable.accept(%w[application/pdf image/jpeg])
 
     assert_equal '.pdf,.jpg,.jpeg,application/pdf,image/jpeg', accept
   end
 
-  test 'le libellé des formats ne montre que les extensions' do
+  test 'libellé des formats : rendu du champ → seulement les extensions' do
     assert_equal 'PDF, JPG, JPEG', PieceJointeValidable.libellé_formats(%w[application/pdf image/jpeg])
   end
 
-  test 'chaque type accepté a une extension connue' do
+  test 'regles_pieces_jointes : chaque type accepté → une extension connue' do
     sans_extension = PieceJointeValidable::DOCUMENTS.reject { |type| PieceJointeValidable::EXTENSIONS.key?(type) }
 
     assert_empty sans_extension,
@@ -172,7 +172,7 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
 
   # ==== Sentinelle : aucune pièce jointe ne doit échapper aux deux concerns ====
 
-  test 'tout attachement du domaine est validé et audité' do
+  test 'sentinelle : tout attachement du domaine → validé et audité' do
     Rails.application.eager_load!
 
     ApplicationRecord.descendants.select { |modèle| modèle.attachment_reflections.any? }.each do |modèle|

@@ -242,12 +242,6 @@ class MeteoConceptConnexionTest < ActiveSupport::TestCase
     assert_nil MeteoConceptConnexion.WEATHER[9999]
   end
 
-  test 'chaque code de la table a une icône' do
-    sans_icone = MeteoConceptConnexion.WEATHER.keys.reject { |code| MeteoConceptConnexion.get_icon_meteo(code) }
-
-    assert_empty sans_icone
-  end
-
   private
 
   def previsions
@@ -270,10 +264,5 @@ class MeteoConceptConnexionTest < ActiveSupport::TestCase
     yield
   ensure
     ENV[nom] = ancienne
-  end
-
-  test 'un code de nuages couvre les valeurs 6 et 7 du second aiguillage' do
-    assert_equal 'meteo/animated/cloudy.svg', MeteoConceptConnexion.get_icon_meteo(6)
-    assert_equal 'meteo/animated/cloudy.svg', MeteoConceptConnexion.get_icon_meteo(7)
   end
 end

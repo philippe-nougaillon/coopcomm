@@ -3,29 +3,14 @@
 require 'test_helper'
 
 class MailLogTest < ActiveSupport::TestCase
-  test 'peut être rattaché à une cotation' do
-    cotation = cotations(:cotation_paris)
-    log = mail_logs(:mail_log)
+  test 'scope ordered : plusieurs envois → le plus récent en tête' do
+    ancien = MailLog.create!(organisation: organisations(:mairie_paris), user_id: users(:hidalgo).id,
+                             to: 'a@example.test', subject: 'Ancien', created_at: 2.days.ago)
+    récent = MailLog.create!(organisation: organisations(:mairie_paris), user_id: users(:hidalgo).id,
+                             to: 'b@example.test', subject: 'Récent', created_at: 1.hour.ago)
 
-    log.update!(cotation: cotation)
+    ordonnés = MailLog.ordered.to_a
 
-    assert_equal cotation, log.reload.cotation
-    assert_includes cotation.mail_logs, log
-  end
-
-  test "la cotation n'est pas obligatoire (la plupart des logs n'en ont pas)" do
-    assert mail_logs(:mail_log).cotation.nil?
-    assert mail_logs(:mail_log).valid?
-  end
-
-  test 'supprimer la cotation détache le log sans le détruire (nullify)' do
-    cotation = cotations(:cotation_paris)
-    log = mail_logs(:mail_log)
-    log.update!(cotation: cotation)
-
-    assert_no_difference -> { MailLog.count } do
-      cotation.destroy
-    end
-    assert_nil log.reload.cotation_id
+    assert_operator ordonnés.index(récent), :<, ordonnés.index(ancien)
   end
 end

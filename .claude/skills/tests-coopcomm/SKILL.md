@@ -16,10 +16,13 @@ description: Conventions et gabarits imposés des tests du projet (Minitest, Rai
 | Test de **policy** Pundit | `policies.md` — gabarit imposé, à lire en entier |
 | Test de **contrôleur** | `controleurs.md` — gabarit imposé, à lire en entier |
 | Test de **modèle** (ou de concern de modèle) | `modeles.md` — gabarit imposé, à lire en entier |
+| Test de **service** (`app/services/`) | `services.md` — gabarit imposé, à lire en entier |
 | Ajout ou choix d'une **fixture** | `fixtures.md` |
-| Test de **job, service, système** | Aucun gabarit imposé à ce jour — appliquer les règles transverses ci-dessous. Ne pas en inventer un. |
+| Test de **job, système** | Aucun gabarit imposé à ce jour — appliquer les règles transverses ci-dessous. Ne pas en inventer un. |
 
 ## Règles transverses (tous types de tests)
+
+**Tout ce qui touche aux services se teste, et c'est critique.** Le rattachement aux services est la racine du système : l'organisation, le périmètre de visibilité, les listes d'agents et le cloisonnement entre communes en dérivent tous. Validation, rattachement, filtre, périmètre, dérivation d'organisation — chacun a son test, marqué critique. **Cette règle prime sur toutes les exclusions** de ce fichier et de `modeles.md` : un test de services ne se supprime pas parce qu'il porte sur une validation déclarative, une relation ou un audit de la gem.
 
 **Ce qui est commenté ne se teste pas.** Méthode, action, route, transition ou bloc mis en commentaire : aucun test, d'aucune sorte — ni de refus, ni de non-régression, ni de sentinelle. Le jour où la fonctionnalité rouvre, les tests s'écrivent à ce moment-là.
 
@@ -27,7 +30,10 @@ description: Conventions et gabarits imposés des tests du projet (Minitest, Rai
 
 **Aucun commentaire dans un fichier de test.** Le nom du fichier et celui de chaque test doivent suffire. Seule exception : une ligne en tête de fichier quand la **raison d'être** du fichier ne se devine pas (typiquement un test d'intégration transverse), et seulement si elle apprend quelque chose. Les précisions sur une fixture passent par le **nom de la variable** (`convention_autre_org`, `service_supprimable`), pas par un commentaire.
 
-**Tests critiques — marqueur et bannière** *(vaut pour tous les types de tests, **sauf** les tests système)*. Le marqueur se met **à la fin du nom**, entre parenthèses (`… → <effet> (critique)`), jamais en préfixe. Les tests critiques qui se suivent sont **groupés et encadrés** par exactement ces deux lignes, avec **une ligne vide avant la fermeture** pour ne pas la coller au dernier test :
+**Tests critiques — marqueur ET bannière, jamais l'un sans l'autre** *(vaut pour tous les types de tests, **sauf** les tests système)*. Les deux sont obligatoires et ne se remplacent pas :
+
+1. **Chaque** test critique porte le marqueur **à la fin de son nom**, entre parenthèses (`… → <effet> (critique)`), jamais en préfixe. **Aucune exception**, y compris pour un test généré dans une boucle (le marqueur va dans la chaîne interpolée) et pour un test déjà entouré d'une bannière.
+2. Les tests critiques qui se suivent sont **groupés et encadrés** par exactement ces deux lignes, avec **une ligne vide avant la fermeture** pour ne pas la coller au dernier test :
 
 ```
 # ==================== TESTS CRITIQUES ====================
@@ -35,7 +41,9 @@ description: Conventions et gabarits imposés des tests du projet (Minitest, Rai
 # ==================== /TESTS CRITIQUES ====================
 ```
 
-Plusieurs blocs par fichier sont normaux — chacun vit auprès de ce qu'il vise.
+*Pourquoi les deux* : la bannière explique **pourquoi** le groupe est critique et se lit dans le fichier ; le marqueur voyage avec le test — dans la sortie d'un run, dans `test/failed_tests.rb`, dans un rapport de couverture — là où la bannière est invisible. Un test critique déplacé hors de son groupe garde ainsi son statut.
+
+Plusieurs blocs par fichier sont normaux — chacun vit auprès de ce qu'il vise. Un test critique isolé porte son marqueur **sans** bannière si aucun autre ne le rejoint.
 
 **Helpers de test** *(vaut pour tous les types de tests, **sauf** les tests système)*. Une méthode utilisée par **un seul** fichier vit sous `private`, en fin de classe, avec le commentaire qui l'explique **collé à elle**. Utilisée par **plusieurs** fichiers, elle devient un module de `test/support/` que les fichiers `require_relative` et `include` — comme `fabrique_xls.rb`, `interventions_matrice.rb` et `lecture_pdf.rb` qui s'y trouvent déjà.
 
