@@ -21,6 +21,8 @@ description: Conventions et gabarits imposés des tests du projet (Minitest, Rai
 
 ## Règles transverses (tous types de tests)
 
+**Tout ce qui touche aux services se teste, et c'est critique.** Le rattachement aux services est la racine du système : l'organisation, le périmètre de visibilité, les listes d'agents et le cloisonnement entre communes en dérivent tous. Validation, rattachement, filtre, périmètre, dérivation d'organisation — chacun a son test, marqué critique. **Cette règle prime sur toutes les exclusions** de ce fichier et de `modeles.md` : un test de services ne se supprime pas parce qu'il porte sur une validation déclarative, une relation ou un audit de la gem.
+
 **Ce qui est commenté ne se teste pas.** Méthode, action, route, transition ou bloc mis en commentaire : aucun test, d'aucune sorte — ni de refus, ni de non-régression, ni de sentinelle. Le jour où la fonctionnalité rouvre, les tests s'écrivent à ce moment-là.
 
 **Une condition à la fois, dans l'ordre du code.** Quand on couvre une méthode et ses dérivées, on avance condition par condition : C1, puis C2, puis C3 — jamais dans le désordre. L'ordre des tests doit se relire en regard du code testé.

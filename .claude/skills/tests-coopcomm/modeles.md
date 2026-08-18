@@ -26,6 +26,8 @@ Un test de modèle vérifie **le contrat du modèle lui-même** : ce que ses sco
 
 ## Ce qui ne se teste pas
 
+⚠ **Sauf si cela touche aux services** — la règle des services (`SKILL.md`) prime sur toute la liste ci-dessous.
+
 Une seule liste, à jour :
 
 - les **audits écrits par la gem** — qu'une modification de colonne laisse une trace est l'affaire d'`audited`. ⚠ Seule exception : un audit **écrit à la main** par notre code (`audit_comment` posé par `PieceJointeAuditable` pour les pièces jointes) — là c'est notre contrat, il se teste, **dans le fichier du modèle concerné** ;
