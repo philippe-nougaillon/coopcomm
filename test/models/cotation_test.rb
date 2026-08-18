@@ -63,6 +63,18 @@ class CotationTest < ActiveSupport::TestCase
     assert_equal première.ref.split('-').last.to_i + 1, seconde.ref.split('-').last.to_i
   end
 
+  test 'scope ordered : plusieurs cotations → la plus récemment mise à jour en tête' do
+    ancienne = build_cotation
+    ancienne.save!
+    récente = build_cotation
+    récente.save!
+    ancienne.update_columns(updated_at: 2.days.ago)
+
+    ordonnées = Cotation.ordered.to_a
+
+    assert_operator ordonnées.index(récente), :<, ordonnées.index(ancienne)
+  end
+
   test 'style : chaque état → la classe du badge qui le distingue à l\'écran' do
     cotation = build_cotation
 

@@ -103,6 +103,38 @@ class CommandeTest < ActiveSupport::TestCase
     assert_equal 'Commande-2026-9.pdf', build_commande(ref: '2026-9').pdf_filename
   end
 
+  test 'visible_to : administrateur → les commandes de son organisation' do
+    document = build_commande
+    document.save!
+
+    assert_includes Commande.visible_to(users(:administrateur_paris)), document
+  end
+
+  test 'visible_to : manager → celles des services qu\'il gère' do
+    document = build_commande
+    document.save!
+
+    assert_includes Commande.visible_to(users(:hidalgo)), document
+  end
+
+  test 'visible_to : manager d\'une autre organisation → aucune' do
+    document = build_commande
+    document.save!
+
+    assert_not_includes Commande.visible_to(users(:manager_marseille)), document
+  end
+
+  test 'visible_to : adhérent → les siennes envoyées, jamais un brouillon' do
+    sienne = build_commande
+    sienne.save!
+
+    assert_not_includes Commande.visible_to(@adherent), sienne
+
+    sienne.envoyer!
+
+    assert_includes Commande.visible_to(@adherent), sienne
+  end
+
   test 'visible_to : agent → aucune commande' do
     assert_empty Commande.visible_to(users(:bond))
   end

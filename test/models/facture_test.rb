@@ -103,6 +103,38 @@ class FactureTest < ActiveSupport::TestCase
     assert_equal 'Facture-2026-9.pdf', build_facture(ref: '2026-9').pdf_filename
   end
 
+  test 'visible_to : administrateur → les factures de son organisation' do
+    document = build_facture
+    document.save!
+
+    assert_includes Facture.visible_to(users(:administrateur_paris)), document
+  end
+
+  test 'visible_to : manager → celles des services qu\'il gère' do
+    document = build_facture
+    document.save!
+
+    assert_includes Facture.visible_to(users(:hidalgo)), document
+  end
+
+  test 'visible_to : manager d\'une autre organisation → aucune' do
+    document = build_facture
+    document.save!
+
+    assert_not_includes Facture.visible_to(users(:manager_marseille)), document
+  end
+
+  test 'visible_to : adhérent → les siennes envoyées, jamais un brouillon' do
+    sienne = build_facture
+    sienne.save!
+
+    assert_not_includes Facture.visible_to(@adherent), sienne
+
+    sienne.envoyer!
+
+    assert_includes Facture.visible_to(@adherent), sienne
+  end
+
   test 'visible_to : agent → aucune facture' do
     assert_empty Facture.visible_to(users(:bond))
   end

@@ -88,6 +88,32 @@ class ConventionTest < ActiveSupport::TestCase
     assert convention.errors[:date_fin_prévue].any?
   end
 
+  test 'assign_ref : création → référence au format CONV-AAAA-N' do
+    convention = build_convention
+
+    convention.save!
+
+    assert_match(/\ACONV-#{Date.current.year}-\d+\z/, convention.ref)
+  end
+
+  test 'assign_ref : mise à jour → référence inchangée' do
+    convention = build_convention
+    convention.save!
+    ref = convention.ref
+
+    convention.update!(mémo: 'Précision ajoutée')
+
+    assert_equal ref, convention.ref
+  end
+
+  test 'assign_ref : référence fournie explicitement → conservée' do
+    convention = build_convention(ref: 'CONV-MANUELLE')
+
+    convention.save!
+
+    assert_equal 'CONV-MANUELLE', convention.ref
+  end
+
   test 'scope ordered : plusieurs conventions → la plus récente en tête' do
     ancienne = build_convention(date_début: Date.new(2025, 1, 1))
     ancienne.save!

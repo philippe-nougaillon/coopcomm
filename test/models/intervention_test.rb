@@ -59,6 +59,51 @@ class InterventionTest < ActiveSupport::TestCase
     assert_predicate intervention, :valid?
   end
 
+  test 'combine_datetime : heure et minute saisies à part → reportées sur la date' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.début_prévue = Time.zone.local(2030, 5, 4, 8, 0)
+    intervention.début_prévue_hour = '14'
+    intervention.début_prévue_minute = '45'
+
+    intervention.valid?
+
+    assert_equal 14, intervention.début_prévue.hour
+    assert_equal 45, intervention.début_prévue.min
+  end
+
+  test 'combine_datetime : date absente → aucune heure inventée' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.début_prévue = nil
+    intervention.début_prévue_hour = '14'
+
+    intervention.valid?
+
+    assert_nil intervention.début_prévue
+  end
+
+  test 'set_temporary_description : création sans description → bouchon posé puis remplacé par l\'identifiant' do
+    intervention = Intervention.create!(description: '', adherent: users(:weil), service: services(:informatique))
+
+    assert_equal "##{intervention.id}", intervention.reload.description
+  end
+
+  test 'replace_description_with_id : création avec description → description conservée' do
+    intervention = Intervention.create!(description: 'Réparer la porte', adherent: users(:weil),
+                                        service: services(:informatique))
+
+    assert_equal 'Réparer la porte', intervention.reload.description
+  end
+
+  test 'must_not_have_any_mouvements : intervention encore liée à un mouvement → suppression refusée' do
+    intervention = interventions(:tonte_locaux)
+    Mouvement.create!(tool: tools(:tondeuse), user: users(:bond), intervention: intervention,
+                      état: :réservé, date: Time.zone.parse('2026-06-02 09:00'))
+
+    assert_not intervention.destroy
+    assert_includes intervention.errors.full_messages, 'Il reste des mouvements liés.'
+    assert Intervention.exists?(intervention.id)
+  end
+
   test 'check_workflow_pointage_mère : modèle qui cesse de se répéter → repasse à nouveau' do
     intervention = interventions(:intervention_repete)
     intervention.update_columns(workflow_state: 'pointage activé')
@@ -339,6 +384,148 @@ class InterventionTest < ActiveSupport::TestCase
     assert_no_enqueued_jobs only: [NotifManagersWorkflowChangedJob, NotifAdherentInterventionTermineeJob] do
       Audited.audit_class.as_user(users(:martin_technique_paris)) { intervention.update!(commentaires: 'Relu') }
     end
+  end
+
+  test 'scope ordered : plusieurs interventions → la plus récemment mise à jour en tête' do
+    récente = interventions(:nouvelle_intervention)
+    récente.update_columns(updated_at: 1.minute.from_now)
+
+    assert_equal récente, Intervention.ordered.first
+  end
+
+  test 'scope courantes : tous les états → seuls nouveau, pointage activé et terminé' do
+    états = Intervention.courantes.pluck(:workflow_state).uniq
+
+    assert_includes états, 'nouveau'
+    assert_not_includes états, 'validé'
+    assert_not_includes états, 'archivé'
+  end
+
+  test 'filter_by_service : services demandés → leurs interventions seulement' do
+    filtrées = Intervention.filter_by_service([services(:technique)])
+
+    assert filtrées.all? { |i| i.service_id == services(:technique).id }
+    assert_includes filtrées, interventions(:tonte_locaux)
+  end
+
+  test 'by_role_for : manager → toutes les interventions, triées' do
+    listées = Intervention.by_role_for(users(:hidalgo))
+
+    assert_includes listées, interventions(:tonte_locaux)
+    assert_includes listées, interventions(:intervention_autre_adhérent)
+  end
+
+  test 'by_role_for : adhérent → seulement les siennes' do
+    listées = Intervention.by_role_for(users(:weil))
+
+    assert listées.all? { |i| i.adherent_id == users(:weil).id }
+  end
+
+  test 'by_role_for : agent → seulement celles où il est affecté' do
+    agent = users(:martin_technique_paris)
+
+    listées = Intervention.by_role_for(agent)
+
+    assert listées.all? { |i| i.agents.include?(agent) }
+    assert_not_includes listées, interventions(:intervention_with_location)
+  end
+
+  test 'effective_début / effective_fin : dates réelles renseignées → elles priment sur les prévues' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.assign_attributes(début: Time.zone.local(2030, 5, 4, 9), fin: Time.zone.local(2030, 5, 4, 11),
+                                   début_prévue: Time.zone.local(2030, 5, 4, 14),
+                                   fin_prévue: Time.zone.local(2030, 5, 4, 16))
+
+    assert_equal Time.zone.local(2030, 5, 4, 9), intervention.effective_début
+    assert_equal Time.zone.local(2030, 5, 4, 11), intervention.effective_fin
+  end
+
+  test 'effective_début / effective_fin : dates réelles absentes → repli sur les prévues' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.assign_attributes(début: nil, fin: nil,
+                                   début_prévue: Time.zone.local(2030, 5, 4, 14),
+                                   fin_prévue: Time.zone.local(2030, 5, 4, 16))
+
+    assert_equal Time.zone.local(2030, 5, 4, 14), intervention.effective_début
+    assert_equal Time.zone.local(2030, 5, 4, 16), intervention.effective_fin
+  end
+
+  test 'pointage_ouvert? : fille de pointage sans fin → vrai' do
+    mère = interventions(:intervention_repete)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+
+    assert fille.pointage_ouvert?
+  end
+
+  test 'pointage_ouvert? : fille de pointage clôturée → faux' do
+    mère = interventions(:intervention_repete)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+    fille.update_columns(fin: Time.current)
+
+    assert_not fille.reload.pointage_ouvert?
+  end
+
+  test 'pointage_ouvert? : intervention hors pointage → faux' do
+    assert_not interventions(:nouvelle_intervention).pointage_ouvert?
+  end
+
+  test 'durée_humanized : début et fin réels → durée en heures et minutes' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.début = Time.zone.local(2030, 5, 4, 9, 0)
+    intervention.fin = Time.zone.local(2030, 5, 4, 11, 30)
+
+    assert_equal '02h 30min', intervention.durée_humanized
+  end
+
+  test 'passed : intervention encore à l\'état nouveau et non finie → faux' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.fin = 1.hour.from_now
+
+    assert_not intervention.passed
+  end
+
+  test 'passed : intervention nouveau dont la fin est dépassée → vrai' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.fin = 1.hour.ago
+
+    assert intervention.passed
+  end
+
+  test 'passed : intervention sortie de l\'état nouveau → vrai' do
+    assert interventions(:tonte_locaux).passed
+  end
+
+  test 'temps_par_agent : plusieurs agents affectés → le temps divisé entre eux' do
+    intervention = interventions(:tonte_locaux)
+
+    assert_in_delta intervention.temps_total / intervention.agents.count, intervention.temps_par_agent, 1e-6
+  end
+
+  test 'temps_par_agent : aucun agent → le temps entier, sans division par zéro' do
+    intervention = interventions(:nouvelle_intervention)
+    intervention.agents.destroy_all
+
+    assert_equal intervention.reload.temps_total, intervention.temps_par_agent
+  end
+
+  test 'bon? : intervention créée par un agent → vrai' do
+    intervention = nil
+    Audited.audit_class.as_user(users(:martin_technique_paris)) do
+      intervention = Intervention.create!(description: 'Bon agent', adherent: users(:weil),
+                                          service: services(:informatique))
+    end
+
+    assert intervention.bon?
+  end
+
+  test 'bon? : intervention créée par un manager → faux' do
+    intervention = nil
+    Audited.audit_class.as_user(users(:hidalgo)) do
+      intervention = Intervention.create!(description: 'Demande manager', adherent: users(:weil),
+                                          service: services(:informatique))
+    end
+
+    assert_not intervention.bon?
   end
 
   test 'rgba : état courant → la couleur déclarée sur cet état' do

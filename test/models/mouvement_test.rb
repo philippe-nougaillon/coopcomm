@@ -12,6 +12,15 @@ class MouvementTest < ActiveSupport::TestCase
     @outil      = tools(:cisaille)
   end
 
+  test 'scope ordered : plusieurs mouvements → le plus récent en tête' do
+    ancien = reservation(@outil, '2026-06-02', @reserviste)
+    récent = reservation(@outil, '2026-06-09', @reserviste)
+
+    ordonnés = @outil.mouvements.ordered.to_a
+
+    assert_operator ordonnés.index(récent), :<, ordonnés.index(ancien)
+  end
+
   # ==================== TESTS CRITIQUES ====================
   # Cohérence des pannes : une panne mal enregistrée laisse un outil réservable
   # alors qu'il est hors service, ou l'immobilise indéfiniment.

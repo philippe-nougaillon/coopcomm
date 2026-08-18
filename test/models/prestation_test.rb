@@ -39,6 +39,18 @@ class PrestationTest < ActiveSupport::TestCase
     assert_equal 'VITRES', prestation.sous_catégorie
   end
 
+  test 'normalisation de l\'unité : espaces autour de la valeur → détourée' do
+    prestation = Prestation.create!(organisation: @org, code: 'UNI1', libellé: 'x', tarif: 5, unité: '  heure  ')
+
+    assert_equal 'heure', prestation.unité
+  end
+
+  test 'normalisation de l\'unité : valeur vide → nil' do
+    prestation = Prestation.create!(organisation: @org, code: 'UNI2', libellé: 'x', tarif: 5, unité: '   ')
+
+    assert_nil prestation.unité
+  end
+
   test 'scope ordered : plusieurs prestations → triées par code' do
     codes = Prestation.where(organisation: @org).ordered.pluck(:code)
 
