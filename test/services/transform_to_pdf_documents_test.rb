@@ -161,7 +161,7 @@ class TransformToPdfDocumentsTest < ActiveSupport::TestCase
   end
 
   test 'la classe mère refuse d’être utilisée directement' do
-    assert_raises(NotImplementedError) { TransformToPdf::BasePdf.call(@cotation) }
+    assert_raises(NotImplementedError) { TransformToPdf::BasePdfForCrm.call(@cotation) }
   end
 
   private

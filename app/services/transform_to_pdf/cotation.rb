@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module TransformToPdf
-  class Cotation < BasePdf 
+  class Cotation < BasePdfForCrm 
     private
 
     def document_title

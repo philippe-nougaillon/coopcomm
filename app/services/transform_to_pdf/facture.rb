@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module TransformToPdf
-  class Facture < BasePdf
+  class Facture < BasePdfForCrm
     private
 
     def document_title
