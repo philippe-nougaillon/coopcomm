@@ -135,7 +135,7 @@
     <% if @users.any? %>
       <%= link_to url_for(params.permit(:search, :role, :services, :absent, :discarded).merge(format: :xls)),
               class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base w-full sm:w-auto" do %>
-        <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+        <%= embedded_svg "icons/upload.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
         <span>Exporter en XLS</span>
       <% end %>
     <% end %>
@@ -143,7 +143,7 @@
             data: { testid: "import_users" },
             'data-turbo': false,
             class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base w-full sm:w-auto" do %>
-      <%= embedded_svg "icons/upload.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+      <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
       <span>Importer des agents</span>
     <% end %>
   </div>

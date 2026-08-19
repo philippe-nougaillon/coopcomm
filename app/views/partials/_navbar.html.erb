@@ -63,7 +63,7 @@
           <% end %>
           <% if policy(Tool).index? %>
             <li>
-              <%= link_to tools_path, class: "h-16 py-0 px-3 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'tools'}", title: "Réservation de matériel" do %>
+              <%= link_to tools_path, class: "h-16 py-0 px-3 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'tools'}", title: "Matériels" do %>
                 <%= embedded_svg "icons/front_loader.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
               <% end %>
             </li>
@@ -71,7 +71,7 @@
           <%# --- 4. PLANIFICATION & RESSOURCES PARA ADMINISTRADOR --- %>
         <% elsif current_user.rôle == 'administrateur' || current_user.rôle == 'manager' %>
           <% if policy(Tool).index? || policy(User).agent_calendrier? %>
-            <li class="dropdown dropdown-end">
+            <li class="dropdown dropdown-start">
               <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'tools' || params[:action] == 'agent_calendrier'}" title="Ressources">
                 <%= embedded_svg "icons/construction.svg", class: "w-5 h-5 fill-current" %>
                 <span class="text-sm">Ressources</span>
@@ -88,7 +88,7 @@
                 <% if policy(Tool).index? %>
                   <li>
                     <%= link_to tools_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'tools'}" do %>
-                      <%= embedded_svg "icons/front_loader.svg", class: "w-4 h-4 inline mr-1" %> Matériel
+                      <%= embedded_svg "icons/front_loader.svg", class: "w-4 h-4 inline mr-1" %> Matériels
                     <% end %>
                   </li>
                 <% end %>
@@ -112,7 +112,7 @@
         <% end %>
         <%# --- 3. CRM --- %>
         <% if policy(Convention).index? || policy(Cotation).index? || policy(Commande).index? || policy(Facture).index? %>
-          <li class="dropdown dropdown-end">
+          <li class="dropdown dropdown-start">
             <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if %w[conventions cotations commandes factures].include?(params[:controller])}" title="Documents">
               <%= embedded_svg "icons/contract.svg", class: "w-5 h-5 fill-current" %>
               <span class="text-sm">CRM</span>
@@ -159,7 +159,7 @@
         <% end %>
         <%# --- 4. ADMINISTRATION (MOVIDO AL INICIO) --- %>
         <% if policy(:admin).parametres? || policy(User).index? || policy(Mouvement).index? || policy(:admin).audits? %>
-          <li class="dropdown dropdown-end">
+          <li class="dropdown dropdown-start">
             <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if %w[services warehouses users mouvements].include?(params[:controller]) || params[:action] == 'audits'}" title="Gestion">
               <%= embedded_svg "icons/settings.svg", class: "w-5 h-5 fill-current" %>
                 <span class="text-sm">Gestion</span>
@@ -294,7 +294,7 @@
             <% if policy(Tool).index? %>
               <li>
                 <%= link_to tools_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'tools'}" do %>
-                  <%= embedded_svg "icons/front_loader.svg", class: "w-5 h-5 inline mr-2" %> Matériel
+                  <%= embedded_svg "icons/front_loader.svg", class: "w-5 h-5 inline mr-2" %> Matériels
                 <% end %>
               </li>
             <% end %>
@@ -390,7 +390,7 @@
               <% if policy(Tool).index? %>
                 <li>
                   <%= link_to tools_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'tools'}" do %>
-                    <%= embedded_svg "icons/front_loader.svg", class: "w-5 h-5 inline mr-2" %> Matériel
+                    <%= embedded_svg "icons/front_loader.svg", class: "w-5 h-5 inline mr-2" %> Matériels
                   <% end %>
                 </li>
               <% end %>

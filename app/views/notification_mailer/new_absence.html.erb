@@ -44,8 +44,8 @@
       <td style="padding: 12px 0; font-weight: 600; color: #64748b;">
         Observation
       </td>
-      <td style="padding: 12px 0; color: #334155; text-align: right; font-style: <%= @absence.observation.present? ? 'normal' : 'italic' %>;">
-        <%= @absence.observation.presence || "Aucune" %>
+      <td style="padding: 12px 0; color: #0f172a; text-align: right; font-style: <%= @absence.observation.present? ? 'normal' : 'italic' %>;">
+        <%= @absence.observation.presence&.capitalize || "Aucune" %>
       </td>
     </tr>
   </tbody>

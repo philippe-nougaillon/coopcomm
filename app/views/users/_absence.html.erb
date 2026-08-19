@@ -1,14 +1,16 @@
 <tr id="absence_<%= absence.id %>" 
     class="transition-colors  duration-150 border-b border-slate-100 align-middle text-slate-700 <% if absence.en_cours? %>bg-amber-50/60 hover:bg-amber-50 text-amber-900<% else %>hover:bg-base-200/60 <% end %>">
-  <td class="py-4 pl-4 text-sm whitespace-nowrap flex-1">
-  <div class="grid items-center gap-2.5" style="grid-template-columns: 120px 1fr;">
-    <span class="flex items-center gap-2.5 font-semibold">
-      <% if absence.en_cours? %>
+  <td class="py-4 text-sm whitespace-nowrap flex-1">
+  <% if absence.en_cours? %>
         <span class="relative flex h-2 w-2 shrink-0">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75"></span>
           <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
         </span>
       <% end %>
+      </td>
+  <td class="py-4  text-sm whitespace-nowrap flex-1">
+  <div class="grid items-center gap-2.5" style="grid-template-columns: 120px 1fr;">
+    <span class="flex items-center gap-2.5 font-semibold">
       <%= l(absence.du.to_date, format: "%e %B %Y") %>
     </span>
 
@@ -29,7 +31,7 @@
   </td>
   <td class="py-3 px-4 text-sm <%= absence.en_cours? ? 'text-amber-800/80' : 'text-slate-500' %>">
     <% if absence.observation.present? %>
-      <%= absence.observation %>
+      <%= absence.observation.capitalize %>
     <% else %>
       <%= embedded_svg "icons/check_indeterminate_small.svg", title: "Aucun mot-clé" %>
     <% end %>

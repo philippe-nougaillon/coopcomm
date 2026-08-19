@@ -1,15 +1,15 @@
 <div class="flex flex-col">
   <div class="flex flex-row justify-between items-center my-4 gap-2">
     <h1 class="text-4xl text-primary font-bold">
-      <%= page_title!('Réservation de matériel') %></h1>
+      <%= page_title!('Matériels') %></h1>
     <div class="flex gap-2">
       <% if policy(Mouvement).new? %>
         <%= link_to new_mouvement_path(redirect_to: request.fullpath), 
-            data: { 'testid': "Gestion panne" }, 
+            data: { 'testid': "Panne" }, 
             class: "btn btn-info btn-outline btn-md rounded flex items-center justify-center gap-2 text-base",
-            title: "Gestion panne" do %>
+            title: "Panne" do %>
           <%= embedded_svg "icons/cone.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
-          <span class="hidden md:block">Gestion panne</span>
+          <span class="hidden md:block">Panne</span>
         <% end %>
       <% end %>
       <% if policy(Tool).new? %>

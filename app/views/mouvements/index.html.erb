@@ -5,11 +5,11 @@
     </h1>
     <% if policy(Mouvement).new? %>
       <%= link_to new_mouvement_path(redirect_to: mouvements_path), 
-            data: { 'testid': "Gestion panne" }, 
+            data: { 'testid': "Panne" }, 
             class: "btn btn-info btn-outline btn-md rounded flex items-center justify-center gap-2 text-base",
-            title: "Gestion panne" do %>
+            title: "Panne" do %>
         <%= embedded_svg "icons/cone.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
-        <span class="hidden md:block">Gestion panne</span>
+        <span class="hidden md:block">Panne</span>
       <% end %>
     <% end %>
   </div>

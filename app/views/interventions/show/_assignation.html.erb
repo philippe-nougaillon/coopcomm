@@ -42,7 +42,7 @@
           <div class="flex flex-wrap gap-1.5">
             <% intervention.tags.each do |tag| %>
               <span class="inline-flex items-center font-semibold text-slate-600">
-                <span class="text-slate-400 mr-0.5">#</span><%= tag.name.humanize %>
+                <span class="badge badge-primary badge-outline text-[11px] h-auto py-0.5"><%= tag.name.humanize %></span>
               </span>
             <% end %>
           </div>

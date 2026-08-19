@@ -38,13 +38,13 @@
   <div class="<%= intervention.repeter ? 'grid grid-cols-1 gap-6 items-start' : 'space-y-8' %>">
     <% demande_disable = current_user.adhérent? && intervention.workflow_state == Intervention::TERMINE %>
     <section class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6 <%= 'h-full' if intervention.repeter %>">
-      <fieldset <%= "disabled" if demande_disable %>>
+      <fieldset class="min-w-0" <%= "disabled" if demande_disable %>>
         <%= render "interventions/form/demande", form: form, intervention: intervention %>
       </fieldset>
     </section>
     <% if policy(intervention).saisir_assignation? %>
       <div data-controller="calc-temps-passe" class="space-y-6">
-        <section class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6 <%= 'h-full' if intervention.repeter %>">
+        <section class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6 min-w-0 <%= 'h-full' if intervention.repeter %>">
           <%= render "interventions/form/assignation", form: form, intervention: intervention,
                     terminaison_demandee: terminaison_demandee %>
         </section>
