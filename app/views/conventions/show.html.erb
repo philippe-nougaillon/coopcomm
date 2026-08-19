@@ -1,65 +1,67 @@
 <div class="mx-auto lg:w-2/3 w-full mt-8">
   <% page_title!("Convention — #{@convention.user&.nom_prénom}") %>
+  
   <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
-<h1 class="text-2xl sm:text-3xl text-primary font-bold">
-        <% if current_user.manager_or_admin? %>
-          Convention — <%= @convention.user&.nom_prénom %>
-        <% else %>
-          Convention — <%= @convention.ref %>
-        <% end %>
-      </h1>
-        </div>
-        <div class="flex justify-end w-full sm:w-auto gap-2">
-      <% if current_user.adhérent? %>
-        <% if @convention.document.attached? %>
-          <%= link_to rails_blob_path(@convention.document, disposition: "attachment"),
-                      class: "btn btn-outline btn-primary flex-1 sm:flex-none", 
-                      target: "_blank", 
-                      data: { turbo: false } do %>
-            <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200 hidden md:block" %>
-            <span class="block md:hidden">PDF</span>
-            <span class="hidden md:block">Télécharger la convention</span>
-          <% end %>
+    <h1 class="text-2xl sm:text-3xl text-primary font-bold">
+      <% if current_user.manager_or_admin? %>
+        Convention — <%= @convention.user&.nom_prénom %>
+      <% else %>
+        Convention — <%= @convention.ref %>
+      <% end %>
+    </h1>
+  </div>
+
+  <div class="flex justify-end w-full sm:w-auto gap-2">
+    <% if current_user.adhérent? %>
+      <% if @convention.document.attached? %>
+        <%= link_to rails_blob_path(@convention.document, disposition: "attachment"),
+                    class: "btn btn-outline btn-primary flex-1 sm:flex-none", 
+                    target: "_blank", 
+                    data: { turbo: false } do %>
+          <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200 hidden md:block" %>
+          <span class="block md:hidden">PDF</span>
+          <span class="hidden md:block">Télécharger la convention</span>
         <% end %>
       <% end %>
-    </div>
+    <% end %>
+  </div>
+
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary font-semibold">Informations</h2>
   </div>
-  <div class=" bg-white border border-slate-200 rounded-xl  md:rounded-xl  shadow-sm ">
+
+  <div class="bg-white border border-slate-200 rounded-xl md:rounded-xl shadow-sm">
     <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
       <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
       <span>Faire glisser pour voir plus</span>
     </div>
+
     <div class="grid text-sm overflow-x-auto p-4" style="grid-template-columns: 250px 1fr;">
       <div class="flex flex-row items-center gap-2 pb-4 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
         <%= embedded_svg "icons/account_circle.svg", class: "text-base", title: "Adhérent" %> Adhérent
       </div>
-      <div class="pb-4 text-slate-800 border-b border-slate-100">
-        <%= link_to @convention.user.nom_prénom, user_path(@convention.user), class: "link" if @convention.user %>
+      <div class="pb-4 text-slate-800 border-b border-slate-100 font-semibold">
+        <%= link_to @convention.user.nom_prénom, user_path(@convention.user), class: "text-primary hover:underline" if @convention.user %>
       </div>
+
       <div class="flex items-center gap-2 py-4 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
         <%= embedded_svg "icons/store.svg", class: "text-base", title: "Service" %> Service
       </div>
-
       <div class="py-4 text-slate-800 border-b border-slate-100"><%= @convention.service&.nom %></div>
+
       <div class="flex items-center gap-2 py-4 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
         <%= embedded_svg "icons/calendar_today.svg", class: "text-base", title: "Période" %> Période
       </div>
-      
       <div class="py-4 text-slate-800 border-b border-slate-100">
         <% prog = convention_progress(@convention) %>
         <%= l(@convention.date_début, format: :long) if @convention.date_début %>
         <span class="text-slate-400">→</span>
         <%= @convention.date_fin_prévue ? l(@convention.date_fin_prévue, format: :long) : "—" %>
         <br>
-      <div class="relative w-60 flex items-center h-6">
-        <progress class="progress <%= prog[:color] %> w-full h-4" value="<%= prog[:percent] %>" max="100"></progress>
-        <div class="absolute top-0 bottom-0 w-1 <%= prog[:indicateur_color] %> rounded dashed tooltip tooltip-secondary z-10" 
-             style="left: <%= prog[:indicateur] %>%;" 
-             data-tip="<%= prog[:indicateur_label] %> ">
+        <div class="relative w-60 flex items-center h-6">
+          <progress class="progress <%= prog[:color] %> w-full h-4" value="<%= prog[:percent] %>" max="100"></progress>
+         
         </div>
-      </div>
         <span class="text-xs text-slate-500">
           <% if prog[:percent] == 100 %>
             La convention est <strong>expirée</strong>.
@@ -76,15 +78,47 @@
         <%= embedded_svg "icons/schedule.svg", class: "text-base", title: "Heures consommées" %>Heures consommées
       </div>
       <div class="py-4 text-slate-800 border-b border-slate-100">
-        <%= @convention.heures_consommees.round(1) %> h sur <%= @convention.heures_conventionnees.to_f %> h
-        <% if prog[:depassement] != 0 %>
-          <div class="mt-2">
-            <span class="badge badge-error badge-soft gap-1.5 !px-2 !py-4">        <%= embedded_svg "icons/warning.svg", class: "text-base" %>
-              Dépassement de <%= prog[:depassement].round(1) %> heures
+        <% 
+          consommes = @convention.heures_consommees.round(1)
+          prevus = @convention.heures_conventionnees
+          depasse = consommes > prevus
+          taux_consommation = prevus.positive? ? ((consommes / prevus) * 100).round : 0
+          surplus_heures = (consommes - prevus).round(1)
+        %>
+        <div class="flex flex-col gap-0.5">
+          <div class="font-medium text-slate-800">
+            <span class="<%= depasse ? 'text-error font-bold' : 'text-slate-700' %>">
+              <%= consommes %> h
             </span>
+            <span class="text-slate-400 font-normal">/ <%= prevus %> h</span>
           </div>
-        <% end %>
+
+          <div class="relative w-60 flex items-center h-6">
+        <progress class="progress <%= prog[:color] %> w-full h-4" value="0" max="100"></progress>
+        <div class="absolute top-0 bottom-0 w-1 <%= prog[:indicateur_color] %> rounded dashed tooltip tooltip-secondary z-10" 
+             style="left: <%= prog[:indicateur] %>%;" 
+             data-tip="<%= prog[:indicateur_label] %> ">
+        </div>
+        </div>
+          
+          <div class="flex items-center gap-1.5 text-xs mt-1">
+            <% if depasse %>
+              <span class="badge badge-error badge-soft gap-1.5 !px-2 !py-2">       
+                <%= embedded_svg "icons/warning.svg", class: "text-base" %>
+                Dépassement de <%= surplus_heures %> h
+              </span>
+            <% else %>
+              <span class="text-slate-500 font-medium">
+                <%= taux_consommation %>% consommé
+              </span>
+            <% end %>
+          </div>
+        </div>
       </div>
+
+
+
+
       <div class="flex items-center gap-2 py-4 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
         <%= embedded_svg "icons/article.svg", class: "text-base", title: "Document" %> Document
       </div>
@@ -102,6 +136,7 @@
           <span class="text-slate-400 italic text-xs">Aucun document</span>
         <% end %>
       </div>
+
       <div class="flex items-start gap-2 pt-4 text-slate-500" style="padding-right: 2rem;">
         <%= embedded_svg "icons/sticky_note_2.svg", class: "text-base", title: "Mémo" %> Mémo
       </div>
@@ -118,11 +153,13 @@
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary font-semibold">Activité</h2>
   </div>
-  <div class="flex flex-col bg-white border border-slate-200 rounded-xl  shadow-sm overflow-hidden">
+
+  <div class="flex flex-col bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
     <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
       <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
       <span>Faire glisser pour voir plus</span>
     </div>
+
     <div class="overflow-x-auto">
       <table class="table table-sm w-full border-none">
         <thead class="bg-slate-100">
@@ -146,6 +183,7 @@
         </tbody>
       </table>
     </div>
+
     <% if @pagy&.pages.to_i > 1 %>
       <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full">
         <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
@@ -157,18 +195,21 @@
       </div>
     <% end %>
   </div>
-  <div class="flex gap-2.5 pt-4 items-center justify-end  mt-6 pt-4 border-t border-slate-200">
+
+  <div class="flex gap-2.5 pt-4 items-center justify-end mt-6 border-t border-slate-200">
     <% if policy(@convention).update? %>
       <%= link_to edit_convention_path(@convention), class: "btn" do %>
         <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
         <span class="hidden lg:inline">Modifier</span>
       <% end %>
     <% end %>
+
     <% if policy(@convention).destroy? %>
       <button class="btn btn-soft btn-error hover:!text-white" onclick="delete_convention_modal_<%= @convention.id %>.showModal()" title="Supprimer">
         <%= embedded_svg "icons/delete.svg", class: "w-4 h-4 fill-current transition-colors duration-200" %>
         <span class="hidden lg:inline">Supprimer</span>
       </button>
+
       <dialog id="delete_convention_modal_<%= @convention.id %>" class="modal">
         <div class="modal-box">
           <form method="dialog">
@@ -196,6 +237,7 @@
       </dialog>
     <% end %>
   </div>
+
   <div class="my-10">
     <%= link_to conventions_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
       <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste" %>

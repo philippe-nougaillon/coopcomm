@@ -43,12 +43,12 @@ module ConventionsHelper
       indicateur_color = 'bg-error'
     elsif indicateur < 0
       depassement = depasse
-      indicateur_label = "Aujourd'hui : Durée inférieur de #{depassement.round(1)}h. Veuillez mettre à jour les interventions avec un temps total négatif"
+      indicateur_label = "Aujourd'hui : Durée inférieur de #{depassement.round(1)}h. Veuillez mettre à jour les interventions avec un temps total positif"
       indicateur = 0
       indicateur_color = 'bg-error'
     else
       depassement = 0
-      indicateur_label = "Aujourd'hui (Temps écoulé : #{indicateur.round(1)}%)"
+      indicateur_label = "Aujourd'hui (Temps écoulé : #{indicateur.round}%)"
       indicateur_color = 'bg-neutral'
     end
 

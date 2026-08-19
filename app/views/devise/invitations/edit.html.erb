@@ -1,33 +1,38 @@
-<div class="hero min-h-screen">
-  <div class="mx-auto w-full lg:w-96 card shadow bg-base-100 p-8">
-    <h1 class="text-2xl font-bold border-b border-gray-400 pb-4 w-full text-center my-4">
-      <%= page_title!(t "devise.invitations.edit.header") %></h1>
-    <p>Votre mot de passe doit contenir au moins : </p>
-    <ul class="list-disc list-inside">
-      <li>12 caractères</li>
-      <li>1 majuscule</li>
-      <li>1 minuscule</li>
-      <li>1 chiffre</li>
-      <li>1 symbole</li>
-    </ul>
-    <%= form_for(resource, as: resource_name, url: invitation_path(resource_name), html: { method: :put }) do |f| %>
+<div class="mx-auto w-full max-w-xl px-4">
+  <h1 class="text-primary font-bold text-2xl md:text-4xl text-center my-8">
+    <%= page_title!(t "devise.invitations.edit.header") %>
+  </h1>
+
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+
+    <%= form_for(resource, as: resource_name, url: invitation_path(resource_name), html: { method: :put, data: { controller: "password-strength" } }) do |f| %>
       <%= render "devise/shared/error_messages", resource: resource %>
       <%= f.hidden_field :invitation_token, readonly: true %>
-      <%# Permet au navigateur d'enregistrer le mdp avec l'email %>
+
       <div class="sr-only" aria-hidden="true">
         <%= f.label :email %>
         <%= f.email_field :email, autocomplete: "username", tabindex: "-1" %>
       </div>
+
       <% if f.object.class.require_password_on_accepting %>
-        <div class="w-full">
-          <%= f.label :password, style: "display: block" %>
+
+        <!-- Champ mot de passe -->
+        <div class="w-full mb-4">
+          <%= f.label :password, class: "label font-semibold text-slate-700 px-0", style: "display: block" do %>
+            <span>Mot de passe <span class="text-red-500">*</span></span>
+          <% end %>
           <div data-controller="password-visibility" class="relative w-full">
-            <%= f.password_field :password, 
-                  class: 'input input-bordered w-full focus:input-primary pr-10', 
-                  required: true, 
+            <%= f.password_field :password,
+                  class: "input input-bordered w-full focus:input-primary pr-10",
+                  required: true,
                   autocomplete: "new-password",
-                  data: { password_visibility_target: "input" } %>
-            <button type="button" data-action="click->password-visibility#toggle" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700">
+                  data: {
+                    password_visibility_target: "input",
+                    password_strength_target: "password",
+                    action: "input->password-strength#check"
+                  } %>
+            <button type="button" data-action="click->password-visibility#toggle"
+                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600">
               <svg data-password-visibility-target="showIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -37,14 +42,52 @@
               </svg>
             </button>
           </div>
+
+          <div class="w-full h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
+            <div data-password-strength-target="bar" class="h-full w-0 bg-error transition-all duration-300 rounded-full"></div>
+          </div>
         </div>
-        <div class="field">
-          <%= f.label :password_confirmation %><br />
-          <%= f.password_field :password_confirmation, class:'input input-bordered w-full focus:input-primary', required: true %>
+
+        <!-- Checklist des critères -->
+        <ul class="text-sm mb-4 space-y-1.5 bg-slate-50 border border-slate-100 rounded-xl p-4">
+          <li data-password-strength-target="ruleLength" class="flex items-center gap-2 text-slate-400">
+            <span class="rule-icon">○</span> 12 caractères minimum
+          </li>
+          <li data-password-strength-target="ruleUpper" class="flex items-center gap-2 text-slate-400">
+            <span class="rule-icon">○</span> 1 majuscule
+          </li>
+          <li data-password-strength-target="ruleLower" class="flex items-center gap-2 text-slate-400">
+            <span class="rule-icon">○</span> 1 minuscule
+          </li>
+          <li data-password-strength-target="ruleDigit" class="flex items-center gap-2 text-slate-400">
+            <span class="rule-icon">○</span> 1 chiffre
+          </li>
+          <li data-password-strength-target="ruleSymbol" class="flex items-center gap-2 text-slate-400">
+            <span class="rule-icon">○</span> 1 symbole
+          </li>
+        </ul>
+
+        <!-- Confirmation -->
+        <div class="w-full mb-2">
+          <%= f.label :password_confirmation, class: "label font-semibold text-slate-700 px-0", style: "display: block" do %>
+            <span>Confirmer le mot de passe <span class="text-red-500">*</span></span>
+          <% end %>
+          <%= f.password_field :password_confirmation,
+                class: "input input-bordered w-full focus:input-primary",
+                required: true,
+                data: {
+                  password_strength_target: "confirmation",
+                  action: "input->password-strength#check"
+                } %>
+          <p data-password-strength-target="matchMessage" class="text-sm mt-1 hidden"></p>
         </div>
       <% end %>
-      <div class="actions">
-        <%= f.submit t("devise.invitations.edit.submit_button"), class: 'btn btn-outline lg:btn-lg rounded btn-primary hover:text-white! w-full my-4' %>
+
+      <div class="actions mt-6">
+        <%= f.submit t("devise.invitations.edit.submit_button"),
+              class: "btn btn-primary text-white font-bold w-full shadow-md hover:shadow-lg transition-all",
+              data: { password_strength_target: "submit" },
+              disabled: f.object.class.require_password_on_accepting %>
       </div>
     <% end %>
   </div>

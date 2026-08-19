@@ -1,7 +1,6 @@
 <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
   <div id="<%= dom_id @intervention %>">
 
-    <%# --- ENCABEZADO Y ACCIONES --- %>
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
       <div>
         <div class="flex items-center gap-3 flex-wrap">
@@ -58,7 +57,6 @@
       </div>
     </div>
 
-    <%# --- DEMANDE + ASSIGNATION --- %>
     <div class="grid grid-cols-1 <%= policy(@intervention).voir_assignation? ? 'lg:grid-cols-2 gap-8' : '' %> mb-10">
       <%= render "interventions/show/demande", intervention: @intervention %>
       <% if policy(@intervention).voir_assignation? %>
@@ -66,7 +64,6 @@
       <% end %>
     </div>
 
-    <%# --- POINTAGES / INTERVENTION / COMPTE-RENDU --- %>
     <% if policy(@intervention).voir_pointages? %>
       <%= render "interventions/show/pointages_table", intervention: @intervention, pointages: @pointages %>
     <% elsif policy(@intervention).voir_realisation? %>
@@ -83,12 +80,10 @@
       <%= render "interventions/show/actions", intervention: @intervention %>
     <% end %>
 
-    <%# --- ACTIVITÉ --- %>
     <% if policy(@intervention).voir_activite? %>
       <%= render "interventions/show/activite", audits: @audits, pagy: @pagy %>
     <% end %>
 
-    <%# --- ACCIONES INFERIORES --- %>
     <div class="flex justify-end mt-6 pt-4 border-t border-slate-200">
       <% if policy(@intervention).destroy? %>
         <span title="<%= "Impossible de supprimer l'intervention car il y a des mouvements rattachés" if @intervention.mouvements.any? %>">
