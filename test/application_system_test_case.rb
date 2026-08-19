@@ -29,18 +29,41 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     Capybara.current_session.current_window.resize_to(*self.class.taille_tel)
   end
 
-  # Le toast n'a pas de bouton de fermeture et masque la barre mobile.
+  # Le toast masque la barre mobile : on le referme par sa croix, comme le fait
+  # l'utilisateur. `hide` retire l'élément du DOM à la fin de sa transition.
+  # Sans notification affichée, il n'y a rien à fermer : une notification vit 10 s
+  # et un setup lent peut l'avoir vue disparaître d'elle-même.
   def fermer_notification
-    page.execute_script("document.querySelectorAll('#notification > div').forEach(e => e.remove())")
+    croix = find("[data-testid='close_notification']", wait: 0)
+    cliquer_element(croix)
+    assert_no_selector '#notification > div', wait: 5
+  rescue Capybara::ElementNotFound
+    nil
   end
 
-  # Selon les pages : testid simple, ou variantes _mobile/_pc.
-  def click_sur_boutton_ajouter(element)
-    ["ajouter_#{element}", "ajouter_#{element}_mobile", "ajouter_#{element}_pc"].each do |tid|
-      sel = "[data-testid=\"#{tid}\"]"
-      return find(sel).click if has_css?(sel, wait: 0)
+  # Vérifie le toast affiché après une action, puis le referme.
+  def assert_notification(texte)
+    within '#notification' do
+      assert_text texte
     end
-    raise Capybara::ElementNotFound, "Aucun bouton d'ajout visible pour #{element}"
+    fermer_notification
+  end
+
+  # Réservé aux boutons qui n'affichent qu'une icône. Selon les pages : testid
+  # simple, ou variantes _mobile/_pc.
+  def cliquer(testid)
+    cliquer_element(element_testid(testid))
+  end
+
+  # Un seul sélecteur pour les trois variantes : `find` attend alors l'ouverture
+  # d'un menu, là où un `has_css?(wait: 0)` par variante ne laisse aucune chance.
+  def element_testid(testid)
+    variantes = [testid, "#{testid}_mobile", "#{testid}_pc"]
+    find(variantes.map { |tid| "[data-testid=\"#{tid}\"]" }.join(', '))
+  end
+
+  def click_sur_boutton_ajouter(element)
+    cliquer("ajouter_#{element}")
   end
 
   # Centrer avant de cliquer : Selenium aligne sinon l'élément en bas, sous le
@@ -50,8 +73,12 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     element.click
   end
 
+  # Un bouton porteur de texte se pilote par son texte. Repli sur `role=button` :
+  # daisyUI ouvre ses menus déroulants depuis un `div`, que `find_button` ignore.
   def cliquer_bouton(locator)
     cliquer_element(find_button(locator))
+  rescue Capybara::ElementNotFound
+    cliquer_element(find("[role='button']", text: locator))
   end
 
   def cliquer_lien(locator)
