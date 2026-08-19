@@ -14,9 +14,9 @@
     <div class="flex flex-col items-center justify-center flex-1 p-4 lg:p-8 text-center bg-slate-50">
       <div class="max-w-xl w-full">
         <% if @recent_conversations.present? && @recent_conversations.any? %>
-          <p class="text-slate-500 mb-8 lg:mt-8">Sélectionnez un contact pour démarrer une discussion, ou reprenez une conversation récente ci-dessous.</p>
           <div class="flex flex-col gap-3 text-left overflow-y-auto mb-20 lg:mb-0">
-            <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2">Discussions récentes</h3>
+            <h3 class="font-black text-xl flex items-center gap-3 uppercase">Discussions récentes</h3>
+                      <p class="text-slate-500 mb-8 ">Sélectionnez un contact pour démarrer une discussion, ou reprenez une conversation récente ci-dessous.</p>
             <% @recent_conversations.each do |user| %>
               <% last_message = @last_messages[user.id] %>
               <% unread_count = @unread_counts[user.id] || 0 %>

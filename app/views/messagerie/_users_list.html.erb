@@ -3,7 +3,7 @@
     <div class="p-3 whitespace-nowrap hover:bg-slate-100 transition-colors <%= (user.slug == params[:to_user_slug]) ? "bg-gray-200 font-semibold" : "" %>">
       <div class="flex items-center gap-3">
         <%= render partial: 'partials/user_profile_picture', locals: {user:} %>
-        <span><%= truncate(user.nom_prénom, length: 20) %></span>
+        <span><%= truncate(user.nom_prénom, length: 25) %></span>
       </div>
     </div>
   <% end %>

@@ -70,11 +70,21 @@
       <div class="space-y-2 min-w-0">
         <div>
           <strong class="block text-xs font-bold text-slate-400 uppercase">Début / Fin</strong>
-          <p class="text-xs text-slate-700">
-            <%= intervention.début ? l(intervention.début, format: :short) : 'non renseigné' %>
+            <% if intervention.début %>
+              <%= l(intervention.début, format: :short) %>
+            <% else %>
+              <p class="text-xs text-slate-400">
+               non renseigné
+              </p>
+            <% end %>
           </p>
-          <p class="text-xs text-slate-700">
-            <%= intervention.fin ? l(intervention.fin, format: :short) : 'non renseignée' %>
+            <% if intervention.fin %>
+              <%= l(intervention.fin, format: :short) %>
+            <% else %>
+              <p class="text-xs text-slate-400">
+                non renseignée
+              </p>
+            <% end %>
           </p>
         </div>
       </div>

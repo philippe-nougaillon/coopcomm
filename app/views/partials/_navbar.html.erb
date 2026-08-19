@@ -160,13 +160,9 @@
         <%# --- 4. ADMINISTRATION (MOVIDO AL INICIO) --- %>
         <% if policy(:admin).parametres? || policy(User).index? || policy(Mouvement).index? || policy(:admin).audits? %>
           <li class="dropdown dropdown-end">
-            <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if %w[services warehouses users mouvements].include?(params[:controller]) || params[:action] == 'audits'}" title="Administration">
+            <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if %w[services warehouses users mouvements].include?(params[:controller]) || params[:action] == 'audits'}" title="Gestion">
               <%= embedded_svg "icons/settings.svg", class: "w-5 h-5 fill-current" %>
-               <% if current_user.rôle == 'administrateur' %>
-                <span class="text-sm">Admin</span>
-              <% elsif current_user.rôle == 'manager' %>
                 <span class="text-sm">Gestion</span>
-              <% end %>
               <%= embedded_svg "icons/expand_more.svg", class: "w-4 h-4 fill-current opacity-70" %>
             </div>
             <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 mt-1 text-slate-700">

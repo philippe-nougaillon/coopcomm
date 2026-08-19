@@ -45,9 +45,9 @@
 
     <div data-action="change->verification-disponibilites#verificationWithInput" class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:col-span-1">
       <div data-action='change->meteo-intervention#afficher_meteo' class="col-span-1 sm:col-span-2">
-        <%= form.label :début_prévue, class: "label font-semibold text-slate-700" %>
+        <%= form.label :début_prévu, class: "label font-semibold text-slate-700" %>
         <div class="flex flex-col sm:flex-row items-center gap-2 p-2 rounded-lg border border-slate-200 has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
-          <%= form.date_field :début_prévue,
+          <%= form.date_field :début_prévu,
                               class: " w-full flex-1 bg-transparent border-none outline-hidden text-sm",
                               value: intervention.début_prévue&.to_date,
                               data: {
