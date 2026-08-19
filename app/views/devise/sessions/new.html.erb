@@ -1,21 +1,30 @@
-<div class="hero min-h-screen place-items-start">
-  <div class="mx-auto w-full lg:w-96 card shadow bg-base-100 py-8 px-4">
-    <h1 class="text-2xl font-bold border-b border-gray-400 pb-4 w-full text-center my-4">
-      <%= page_title!('Connexion') %></h1>
-    <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
-      <div class="field">
-        <%= f.label :email %><br />
-        <%= f.email_field :email, autofocus: true, autocomplete: "email", class:'input input-bordered w-full focus:input-primary', required: true %>
+<div class="mx-auto w-full max-w-xl px-4">
+  <h1 class="text-primary font-bold text-2xl md:text-4xl text-center my-8">
+    <%= page_title!('Connexion') %>
+  </h1>
+
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+
+    <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "flex flex-col gap-2" }) do |f| %>
+
+      <div class="w-full">
+        <%= f.label :email, class: "label font-semibold text-slate-700" %>
+        <%= f.email_field :email,
+              autofocus: true,
+              autocomplete: "email",
+              required: true,
+              class: "input input-bordered w-full focus:input-primary" %>
       </div>
-      <div class="w-full mt-4">
-        <%= f.label :password, style: "display: block" %>
+
+      <div class="w-full mb-2">
+        <%= f.label :password, class: "label font-semibold text-slate-700" %>
         <div data-controller="password-visibility" class="relative w-full">
-          <%= f.password_field :password, 
-                class: 'input input-bordered w-full focus:input-primary pr-10', 
-                required: true, 
+          <%= f.password_field :password,
+                class: "input input-bordered w-full focus:input-primary pr-10",
+                required: true,
                 autocomplete: "current-password",
                 data: { password_visibility_target: "input" } %>
-          <button type="button" data-action="click->password-visibility#toggle" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700">
+          <button type="button" data-action="click->password-visibility#toggle" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600">
             <svg data-password-visibility-target="showIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -26,16 +35,22 @@
           </button>
         </div>
       </div>
+
       <% if false && devise_mapping.rememberable? %>
-        <div class="field">
-          <%= f.check_box :remember_me %>
-          <%= f.label :remember_me %>
+        <div class="field flex items-center gap-2">
+          <%= f.check_box :remember_me, class: "checkbox checkbox-sm checkbox-primary" %>
+          <%= f.label :remember_me, class: "label font-normal text-slate-600" %>
         </div>
       <% end %>
-      <div class="actions">
-        <%= f.submit "Se connecter", class: 'btn btn-outline btn-lg rounded btn-primary hover:text-white! w-full my-4'%>
+
+      <div class="actions mt-4">
+        <%= f.submit "Se connecter", class: "btn btn-primary text-white font-bold w-full shadow-md hover:shadow-lg transition-all" %>
       </div>
     <% end %>
-    <%= render "devise/shared/links" %>
+
+    <div class="mt-6 text-center text-sm">
+      <%= render "devise/shared/links" %>
+    </div>
+
   </div>
 </div>
