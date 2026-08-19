@@ -21,11 +21,8 @@ class ManagerConventionPolicyTest < ActionDispatch::IntegrationTest
     assert @policy.services_for_adherent?
     assert @policy.show?
     assert @policy.destroy?
-  end
-
-  test 'accès interdit pour un manager sur une convention de son service' do
-    refute @policy.edit?
-    refute @policy.update?
+    assert @policy.edit?
+    assert @policy.update?
   end
 
   test "accès interdit pour un manager sur une convention d'un service qu'il ne gère pas" do

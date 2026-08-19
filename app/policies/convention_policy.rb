@@ -28,7 +28,7 @@ class ConventionPolicy < ApplicationPolicy
   end
 
   def edit?
-    user&.manager_or_admin?
+    manage?
   end
 
   def update?

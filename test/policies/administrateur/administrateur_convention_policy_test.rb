@@ -20,11 +20,8 @@ class AdministrateurConventionPolicyTest < ActionDispatch::IntegrationTest
     assert @policy.services_for_adherent?
     assert @policy.show?
     assert @policy.destroy?
-  end
-
-  test 'accès interdit pour un administrateur sur une convention de son organisation' do
-    refute @policy.edit?
-    refute @policy.update?
+    assert @policy.edit?
+    assert @policy.update?
   end
 
   test "accès interdit pour un administrateur sur une convention d'une autre organisation" do
