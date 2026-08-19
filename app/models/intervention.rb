@@ -687,8 +687,11 @@ class Intervention < ApplicationRecord
 
     Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: id })
 
-    # Un pointage a son propre événement, publié par interventions#pointer.
-    Events.instance.publish('intervention.done', payload: { intervention_id: id }) if template_slug.blank?
+    # Incohérence avec ce que l'on veut, 
+    # l'adhérent doit recevoir dans tous les cas un mail quand l'intervention est terminée
+    # # Un pointage a son propre événement, publié par interventions#pointer.
+    # Events.instance.publish('intervention.done', payload: { intervention_id: id }) if template_slug.blank?
+    Events.instance.publish('intervention.done', payload: { intervention_id: id })
   end
 
   # Fermer un pointage déjà ouvert reste toujours possible, sinon une absence
