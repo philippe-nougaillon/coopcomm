@@ -96,6 +96,6 @@ class ConventionsHelperTest < ActionView::TestCase
 
     assert_equal 0, prog[:indicateur]
     assert_equal 'bg-error', prog[:indicateur_color]
-    assert_match 'temps total négatif', prog[:indicateur_label]
+    assert_match 'temps total positif', prog[:indicateur_label]
   end
 end
