@@ -24,7 +24,14 @@ Trois étapes qui se suivent font **trois tests**, pas un seul. Un administrateu
 
 **Fichier** : `<rôle>_flow_on_<records>_test.rb`, le record au **pluriel** — `admin_flow_on_users_test.rb`, `adherent_flow_on_invitations_test.rb`. Classe en CamelCase correspondante. Le fichier vit dans `test/system/<rôle>/`.
 
-Le rôle et le record sont deux informations distinctes : le nom doit dire **qui agit** et **sur quoi**.
+Le rôle et le record sont deux informations distinctes : le nom du fichier doit dire **qui agit** et **sur quoi**.
+
+**Nom du test : une user story**, et non une description technique comme dans les autres types de tests. Il dit ce que la personne veut faire, et pourquoi :
+
+```ruby
+test "En tant qu'administrateur, je veux créer un adhérent depuis la page d'accueil" do
+test "En tant qu'adhérent invité, je veux définir mon mot de passe pour accéder à l'application" do
+```
 
 ## 4. Point de départ
 
@@ -78,6 +85,8 @@ Un test système fait remonter deux natures de problèmes, à **ne jamais mélan
 - **Anomalies côté tests** — l'environnement d'exécution : lenteur, parallélisation, session résiduelle, navigateur. Elles se signalent, **jamais en tordant l'assertion pour les contourner**.
 
 La frontière est parfois instructive : un clic perdu parce que le bouton se déplace pendant une animation d'une seconde est une anomalie **utilisateur**, pas de test.
+
+**Un test système ne se met jamais en `skip` parce que l'application est cassée.** Le `skip` est réservé à une décision métier en attente. Face à un défaut pur — un bouton mort, un jeton absent, une page qui n'enregistre rien — le test **reste rouge** : c'est son travail de le dire, et c'est à l'équipe de surveiller les endroits qui clignotent.
 
 **Devant tout problème sur un test système, consulter Alex en proposant plusieurs solutions**, plutôt que de trancher seul.
 
