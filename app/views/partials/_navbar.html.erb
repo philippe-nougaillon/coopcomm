@@ -73,11 +73,11 @@
           <% if policy(Tool).index? || policy(User).agent_calendrier? %>
             <li class="dropdown dropdown-start">
               <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'tools' || params[:action] == 'agent_calendrier'}" title="Ressources">
-                <%= embedded_svg "icons/construction.svg", class: "w-5 h-5 fill-current" %>
+                <%= embedded_svg "icons/construction.svg", class: "ml-4 w-5 h-5 fill-current" %>
                 <span class="text-sm">Ressources</span>
                 <%= embedded_svg "icons/expand_more.svg", class: "w-4 h-4 fill-current opacity-70" %>
               </div>
-              <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 mt-1 text-slate-700">
+              <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 text-slate-700" style="margin-top: 0px;">
                 <% if policy(Intervention).index? %>
                   <li>
                     <%= link_to interventions_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'interventions'}" do %>
@@ -112,13 +112,13 @@
         <% end %>
         <%# --- 3. CRM --- %>
         <% if policy(Convention).index? || policy(Cotation).index? || policy(Commande).index? || policy(Facture).index? %>
-          <li class="dropdown dropdown-start">
+          <li class="dropdown dropdown-start" >
             <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if %w[conventions cotations commandes factures].include?(params[:controller])}" title="Documents">
-              <%= embedded_svg "icons/contract.svg", class: "w-5 h-5 fill-current" %>
+              <%= embedded_svg "icons/contract.svg", class: "ml-4 w-5 h-5 fill-current" %>
               <span class="text-sm">CRM</span>
               <%= embedded_svg "icons/expand_more.svg", class: "w-4 h-4 fill-current opacity-70" %>
             </div>
-            <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 mt-1 text-slate-700">
+            <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 text-slate-700" style="margin-top: 0px;">
               <% if policy(Convention).index? %>
                 <li>
                   <%= link_to conventions_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'conventions'}" do %>
@@ -161,11 +161,11 @@
         <% if policy(:admin).parametres? || policy(User).index? || policy(Mouvement).index? || policy(:admin).audits? %>
           <li class="dropdown dropdown-start">
             <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if %w[services warehouses users mouvements].include?(params[:controller]) || params[:action] == 'audits'}" title="Gestion">
-              <%= embedded_svg "icons/settings.svg", class: "w-5 h-5 fill-current" %>
+              <%= embedded_svg "icons/settings.svg", class: "ml-4 w-5 h-5 fill-current" %>
                 <span class="text-sm">Gestion</span>
               <%= embedded_svg "icons/expand_more.svg", class: "w-4 h-4 fill-current opacity-70" %>
             </div>
-            <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 mt-1 text-slate-700">
+            <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 text-slate-700" style="margin-top: 0px;">
               <% if policy(:admin).parametres? %>
                 <li>
                   <%= link_to admin_parametres_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres'))}" do %>
