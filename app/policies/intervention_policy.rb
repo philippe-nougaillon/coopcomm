@@ -127,7 +127,7 @@ class InterventionPolicy < ApplicationPolicy
 
   # Avis de l'adhérent et évaluation des agents : jamais visibles de l'agent noté.
   def voir_compte_rendu?
-    show? && !agent? && (record.workflow_state == Intervention::VALIDE || record.workflow_state == Intervention::REFUSE)
+    show? && !agent? && (record.validé? || record.refusé?)
   end
 
   def voir_activite?
