@@ -18,7 +18,8 @@ description: Conventions et gabarits imposés des tests du projet (Minitest, Rai
 | Test de **modèle** (ou de concern de modèle) | `modeles.md` — gabarit imposé, à lire en entier |
 | Test de **service** (`app/services/`) | `services.md` — gabarit imposé, à lire en entier |
 | Ajout ou choix d'une **fixture** | `fixtures.md` |
-| Test de **job, système** | Aucun gabarit imposé à ce jour — appliquer les règles transverses ci-dessous. Ne pas en inventer un. |
+| Test **système** (parcours navigateur) | `systeme.md` — gabarit imposé, à lire en entier |
+| Test de **job** | Aucun gabarit imposé à ce jour — appliquer les règles transverses ci-dessous. Ne pas en inventer un. |
 
 ## Règles transverses (tous types de tests)
 
@@ -27,6 +28,16 @@ description: Conventions et gabarits imposés des tests du projet (Minitest, Rai
 **Ce qui est commenté ne se teste pas.** Méthode, action, route, transition ou bloc mis en commentaire : aucun test, d'aucune sorte — ni de refus, ni de non-régression, ni de sentinelle. Le jour où la fonctionnalité rouvre, les tests s'écrivent à ce moment-là.
 
 **Une condition à la fois, dans l'ordre du code.** Quand on couvre une méthode et ses dérivées, on avance condition par condition : C1, puis C2, puis C3 — jamais dans le désordre. L'ordre des tests doit se relire en regard du code testé.
+
+**Chaque chose porte son nom, et un seul (règle Alex, 2026-08-19).** Aucune ambiguïté dans les noms de tests, les messages d'assertion, les variables et les commentaires : trois objets voisins se confondent sans arrêt, alors qu'ils n'ont rien à voir.
+
+| L'objet | Son nom | Jamais |
+|---|---|---|
+| `MailLog` | un **mail log** | une notification, une alerte, un mail envoyé |
+| `Message` (messagerie) | un **message** | une notification, une alerte, un mail |
+| Le bandeau de flash à l'écran | une **notification** ou une **alerte** (le toast) | un message, un mail |
+
+La règle vaut au-delà de ces trois : on désigne un objet par son nom, pas par un synonyme de circonstance. *(Les tests antérieurs à cette règle n'ont pas été renommés.)*
 
 **Aucun commentaire dans un fichier de test.** Le nom du fichier et celui de chaque test doivent suffire. Seule exception : une ligne en tête de fichier quand la **raison d'être** du fichier ne se devine pas (typiquement un test d'intégration transverse), et seulement si elle apprend quelque chose. Les précisions sur une fixture passent par le **nom de la variable** (`convention_autre_org`, `service_supprimable`), pas par un commentaire.
 
