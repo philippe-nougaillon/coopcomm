@@ -9,7 +9,7 @@ import { Controller } from "@hotwired/stimulus"
 // valid/invalid est posé, pour ne jamais avoir deux `border-color` en cascade.
 // Valeurs : errorMessage, sizeMessage, maxSize, dropLabel.
 export default class extends Controller {
-  static targets = ["input", "filename", "error", "count"]
+  static targets = ["input", "filename", "error", "count","fileList"]
   static classes = ["active", "neutral", "valid", "invalid"]
   static values = { errorMessage: String, sizeMessage: String, maxSize: Number, dropLabel: String }
 
@@ -120,6 +120,28 @@ export default class extends Controller {
     this.hideError()
     if (this.hasFilenameTarget) this.filenameTarget.textContent = files.map(file => file.name).join(", ")
     this.setCount(`${files.length} fichier${files.length > 1 ? "s" : ""} sélectionné${files.length > 1 ? "s" : ""}`)
+    this.renderFileList(files)
+  }
+
+  renderFileList(files) {
+    if (!this.hasFileListTarget) return
+    this.fileListTarget.innerHTML = files.map((file, i) => `
+      <li class="flex items-center gap-3 p-2 border border-slate-200 rounded-lg" data-index="${i}">
+        <span class="text-sm flex-1 truncate">${file.name}</span>
+        <span class="text-xs text-slate-400">${(file.size / 1024).toFixed(1)} KB</span>
+        <button type="button" data-action="dropzone#removeFile" data-index="${i}" class="text-slate-400 hover:text-error">✕</button>
+      </li>
+    `).join("")
+    this.fileListTarget.classList.remove("hidden")
+    this.fileListTarget.classList.add("flex")
+  }
+
+  removeFile(event) {
+    const index = Number(event.currentTarget.dataset.index)
+    const dt = new DataTransfer()
+    Array.from(this.inputTarget.files).forEach((file, i) => { if (i !== index) dt.items.add(file) })
+    this.inputTarget.files = dt.files
+    this.change()
   }
 
   markInvalid(file) {

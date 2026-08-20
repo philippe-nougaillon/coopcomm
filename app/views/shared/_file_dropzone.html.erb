@@ -74,6 +74,7 @@
     <span data-dropzone-target="filename" class="text-base mt-2 text-slate-500 font-semibold text-center group-hover:text-white group-data-[dropzone-dragging]:text-primary transition-colors duration-150 break-all w-full"><%= placeholder %></span>
     <span data-dropzone-target="error" class="hidden text-sm text-error font-medium"></span>
   </div>
+   <ul data-dropzone-target="fileList" class="hidden flex-col gap-2 mt-2"></ul>
   <span class="text-xs text-slate-400">Formats acceptés : <%= formats %> — <%= taille_max %> maximum par fichier.</span>
   <% if saved_blobs.any? && replace_hint && !multiple %>
     <span class="text-xs text-slate-400">Déposer un nouveau fichier remplacera le document actuel.</span>
