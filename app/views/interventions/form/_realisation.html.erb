@@ -9,8 +9,8 @@
   <h2 class="text-xl text-slate-800 font-black tracking-tight uppercase">Réalisation de l'intervention</h2>
 </div>
 
-
-  <div>
+<div class =" flex flex-row gap-4 items-center">
+  <div class=" flex-1">
     <%= form.label :début, class: "label font-semibold text-slate-700" do %>
       Début <%= raw('<span class="text-red-500">*</span>') if terminaison_demandee %>
     <% end %>
@@ -28,7 +28,7 @@
     </div>
   </div>
 
-  <div>
+    <div class=" flex-1">
     <%= form.label :fin, class: "label font-semibold text-slate-700" do %>
       Fin <%= raw('<span class="text-red-500">*</span>') if terminaison_demandee %>
     <% end %>
@@ -41,6 +41,8 @@
       </div>
     </div>
   </div>
+
+ </div> 
 
   <%= render "interventions/form/temps", form: form, intervention: intervention,
              pause_obligatoire: pause_obligatoire %>
