@@ -127,16 +127,6 @@ module ApplicationHelper
                hidden_field_tag('direction', sort_direction, id: nil)])
   end
 
-  # Encadre un tableau d'index : seuls les liens de tri rechargent le cadre (donc
-  # sans revenir en haut de la page), tout le reste — lien d'une ligne, bouton
-  # d'action, export — navigue normalement grâce à `target: _top`.
-  def tableau_encadré(id, **options, &bloc)
-    @frame_tri = id
-    turbo_frame_tag(id, target: '_top', data: { turbo_action: 'advance' }, **options, &bloc)
-  ensure
-    @frame_tri = nil
-  end
-
   def th_tri(titre, colonne: nil, **options)
     options = options.merge(scope: 'col')
     options[:'aria-sort'] = aria_sort(colonne) if colonne.present? && colonne_triable?(colonne)
@@ -153,8 +143,7 @@ module ApplicationHelper
 
     link_to url_for(request.parameters.merge('column' => column, 'direction' => direction, 'page' => nil)),
             class: 'group inline-flex items-center cursor-pointer hover:text-primary',
-            title: direction == 'asc' ? 'Trier par ordre croissant' : 'Trier par ordre décroissant',
-            data: { turbo_frame: @frame_tri } do
+            title: direction == 'asc' ? 'Trier par ordre croissant' : 'Trier par ordre décroissant' do
       safe_join([content_tag(:span, title), icone_tri(active, active ? sort_direction : direction)])
     end
   end
