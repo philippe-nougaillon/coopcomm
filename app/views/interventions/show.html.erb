@@ -57,12 +57,18 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 <%= policy(@intervention).voir_assignation? ? 'lg:grid-cols-2 gap-8' : '' %> mb-10">
+    
+
+    <div class="grid grid-cols-1 <%= policy(@intervention).voir_assignation? ? 'lg:grid-cols-2 gap-8' : '' %>">
       <%= render "interventions/show/demande", intervention: @intervention %>
       <% if policy(@intervention).voir_assignation? %>
         <%= render "interventions/show/assignation", intervention: @intervention %>
       <% end %>
     </div>
+
+     <% unless @intervention.repeter %>
+      <%= render "interventions/show/actions", intervention: @intervention %>
+    <% end %>
 
     <% if policy(@intervention).voir_pointages? %>
       <%= render "interventions/show/pointages_table", intervention: @intervention, pointages: @pointages %>
@@ -74,10 +80,6 @@
 
     <% if policy(@intervention).voir_compte_rendu? %>
       <%= render "interventions/show/compte_rendu", intervention: @intervention %>
-    <% end %>
-
-    <% unless @intervention.repeter %>
-      <%= render "interventions/show/actions", intervention: @intervention %>
     <% end %>
 
     <% if policy(@intervention).voir_activite? %>

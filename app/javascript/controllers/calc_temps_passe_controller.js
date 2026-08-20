@@ -12,6 +12,13 @@ export default class extends Controller {
     this.calc()
   }
 
+  applyColor(element, val) {
+    const numericVal = parseFloat(val)
+    element.classList.toggle('text-green-500!', numericVal > 0)
+    element.classList.toggle('text-red-500!', numericVal < 0)
+    element.classList.toggle('text-slate-500!', numericVal === 0)
+  }
+
   calc() {
     let temps = this.tempsTarget
     
@@ -35,7 +42,7 @@ export default class extends Controller {
       let temps_pause = this.pauseTarget.value
       console.log("Debut : " + debut)
 
-      if (fin > debut) {
+      if (fin >= debut) {
         const temps_passe_brut = (fin - debut) / (1000 * 60 * 60)
         let temps_par_agent = temps_passe_brut - temps_pause // Le temps unitaire
         let temps_total = temps_par_agent
@@ -46,47 +53,32 @@ export default class extends Controller {
 
         // Mise à jour du temps total
         temps.value = temps_total.toFixed(2)
-        if (temps.value > 0) {
-          temps.classList.remove('text-red-500!')
-          temps.classList.add('text-green-500!')
-        }
-        else {
-          temps.classList.add('text-red-500!')
-          temps.classList.remove('text-green-500!')
-        }
-
+          this.applyColor(temps, temps_total)
+        
         // Mise à jour du temps par agent
         if (this.hasTempsParAgentTarget) {
-          this.tempsParAgentTarget.value = temps_par_agent.toFixed(2)
-          if (temps_par_agent > 0) {
-            this.tempsParAgentTarget.classList.remove('text-red-500!')
-            this.tempsParAgentTarget.classList.add('text-green-500!')
-          } else {
-            this.tempsParAgentTarget.classList.add('text-red-500!')
-            this.tempsParAgentTarget.classList.remove('text-green-500!')
-          }
+            this.tempsParAgentTarget.value = temps_par_agent.toFixed(2)
+            this.applyColor(this.tempsParAgentTarget, temps_par_agent)
         }
 
       } else {
         // En cas d'erreur de dates (fin < début)
         temps.value = -1
-        temps.classList.add('text-red-500!')
-        temps.classList.remove('text-green-500!')
+        this.applyColor(temps, -1)
 
         if (this.hasTempsParAgentTarget) {
           this.tempsParAgentTarget.value = -1
-          this.tempsParAgentTarget.classList.add('text-red-500!')
-          this.tempsParAgentTarget.classList.remove('text-green-500!')
+          this.applyColor(this.tempsParAgentTarget, -1)
         }
       }
     } else {
       // Si les dates ne sont pas remplies
       temps.value = 0
-      temps.classList.remove('text-green-500!', 'text-red-500!')
+      this.applyColor(temps, 0)
 
       if (this.hasTempsParAgentTarget) {
         this.tempsParAgentTarget.value = 0
-        this.tempsParAgentTarget.classList.remove('text-green-500!', 'text-red-500!')
+        this.applyColor(this.tempsParAgentTarget, 0)
       }
     }
   }

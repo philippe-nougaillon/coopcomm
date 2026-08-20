@@ -59,7 +59,7 @@ class PiecesJointesFormulairesTest < ActionDispatch::IntegrationTest
     assert_dropzone Intervention, :photos, multiple: true
   end
 
-  test 'formulaire d’intervention : photos de la demande' do
+  test 'formulaire d’intervention : Photos pour l/intervention' do
     sign_in users(:hidalgo)
     get new_intervention_url
 
