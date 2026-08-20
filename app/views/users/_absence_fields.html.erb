@@ -79,7 +79,7 @@
     <%= f.select :motif, Absence.motifs.keys.map { |k| [k.humanize, k] }, { selected: f.object.motif }, class: 'select select-sm select-bordered w-full', required: true %>
   </div>
   <div class="flex flex-col gap-1">
-    <%= f.label :observation, class: "text-sm text-slate-500" %>
+    <%= f.label :observations, class: "text-sm text-slate-500" %>
     <%= f.text_area :observation, class: "textarea textarea-bordered w-full h-16" %>
   </div>
 </div>
