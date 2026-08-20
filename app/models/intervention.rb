@@ -18,9 +18,6 @@ class Intervention < ApplicationRecord
   attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute, :début_hour,
                 :début_minute, :fin_hour, :fin_minute
 
-  # Neutralise les publications d'événements de #apres_terminaison (clôture automatique).
-  attr_accessor :sans_notification
-
   before_destroy :must_not_have_any_mouvements
 
   belongs_to :service
@@ -678,19 +675,16 @@ class Intervention < ApplicationRecord
 
   def vient_de_terminer?
     terminé? && saved_change_to_workflow_state?
+    # =Est ce que dans la dernière save, le workflow_state est passé à l'état terminé ?
   end
 
   def apres_terminaison
     calculate_co2
 
-    return if Rails.env.development? || sans_notification
+    return if Rails.env.development?
 
     Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: id })
 
-    # Incohérence avec ce que l'on veut, 
-    # l'adhérent doit recevoir dans tous les cas un mail quand l'intervention est terminée
-    # # Un pointage a son propre événement, publié par interventions#pointer.
-    # Events.instance.publish('intervention.done', payload: { intervention_id: id }) if template_slug.blank?
     Events.instance.publish('intervention.done', payload: { intervention_id: id })
   end
 

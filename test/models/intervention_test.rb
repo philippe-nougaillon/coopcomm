@@ -359,22 +359,13 @@ class InterventionTest < ActiveSupport::TestCase
     end
   end
 
-  test 'apres_terminaison : pointage terminé → done n\'est pas publié' do
+  test 'apres_terminaison : pointage terminé → workflow_changed et done publiés' do
     pointage = cree_pointage_termine_par(users(:martin_technique_paris))
 
-    assert_no_enqueued_jobs only: NotifAdherentInterventionTermineeJob do
-      assert_enqueued_with(job: NotifManagersWorkflowChangedJob) do
+    assert_enqueued_with(job: NotifManagersWorkflowChangedJob) do
+      assert_enqueued_with(job: NotifAdherentInterventionTermineeJob) do
         Audited.audit_class.as_user(users(:martin_technique_paris)) { pointage.terminer! }
       end
-    end
-  end
-
-  test 'apres_terminaison : sans_notification → aucun événement publié' do
-    intervention = interventions(:nouvelle_intervention)
-    intervention.sans_notification = true
-
-    assert_no_enqueued_jobs only: [NotifManagersWorkflowChangedJob, NotifAdherentInterventionTermineeJob] do
-      Audited.audit_class.as_user(users(:martin_technique_paris)) { intervention.terminer! }
     end
   end
 

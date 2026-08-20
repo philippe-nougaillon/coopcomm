@@ -13,12 +13,8 @@ class EmailSubscription
   def on_intervention_done(event)
     intervention = Intervention.find(event[:payload][:intervention_id])
     user = User.find_by(id: intervention.audits.last&.user_id)
-    # le dernier audit peut être le système qui termine l'intervention via "terminer_pointages"
-    return unless user&.agent? && intervention.adherent
 
-    if (adherent = User.find_by(id: intervention.adherent_id))
-      NotifAdherentInterventionTermineeJob.perform_later(intervention, adherent, user.id)
-    end
+    NotifAdherentInterventionTermineeJob.perform_later(intervention, intervention.adherent, user&.id)
   end
 
   def on_intervention_pointage(event)
