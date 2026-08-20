@@ -161,6 +161,7 @@
         <% if policy(:admin).parametres? || policy(User).index? || policy(Mouvement).index? || policy(:admin).audits? %>
           <li class="dropdown dropdown-start">
             <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if %w[services warehouses users mouvements].include?(params[:controller]) || params[:action] == 'audits'}" title="Gestion">
+              
               <%= embedded_svg "icons/settings.svg", class: "ml-4 w-5 h-5 fill-current" %>
                 <span class="text-sm">Gestion</span>
               <%= embedded_svg "icons/expand_more.svg", class: "w-4 h-4 fill-current opacity-70" %>

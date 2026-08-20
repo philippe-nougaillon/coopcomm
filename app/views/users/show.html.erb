@@ -21,8 +21,7 @@
         <%= @user.nom %> <%= @user.prénom %>
       </p>
       <div class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-medium px-3 py-1 rounded-full">
-        <%= embedded_svg "icons/#{@user.avatar}.svg", class: "w-6 h-6 fill-current shrink-0" %>
-        <%= @user.rôle.upcase %>
+        <%= @user.rôle.humanize %>
       </div>
       <% if @user.tag_list.present? %>
         <div class="flex flex-wrap gap-1 justify-center mt-1">
@@ -38,6 +37,19 @@
           <div class="bg-white border border-slate-200 rounded-2xl flex-1" style="padding: 1.25rem;">
             <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Informations</p>
             <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
+              <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+              <%= embedded_svg "icons/person.svg", class: "text-base", title: "Nom" %> Nom
+              </div>
+              <div class="py-2.5 text-slate-800 border-b border-slate-100 break-all"><%= @user.nom %></div>
+              <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+                <%= embedded_svg "icons/person.svg", class: "text-base", title: "Prénom" %> Prénom
+              </div>
+              <div class="py-2.5 text-slate-800 border-b border-slate-100 break-all"><%= @user.prénom %></div>
+              <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+                <%= embedded_svg "icons/group.svg", class: "text-base", title: "Rôle" %> Rôle
+              </div>
+              <div class="py-2.5 text-slate-800 border-b border-slate-100 break-all"><%= @user.rôle.humanize %></div>
+
               <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
                 <%= embedded_svg "icons/mail.svg", title: "Email" %> Email
               </div>
