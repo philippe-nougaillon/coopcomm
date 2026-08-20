@@ -23,7 +23,7 @@
       <% end %>
     </div>
   </div>
-  <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_frame: "tools_table", turbo_action: "advance" } do %>
+  <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_action: "advance" } do %>
     <%= champs_tri_caches %>
     <div class="flex flex-col gap-3 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 items-end w-full">
@@ -50,7 +50,6 @@
     </div>
   <% end %>
   <hr class="mt-6 mb-6">
-  <%= tableau_encadré "tools_table" do %>
   <div class="flex flex-wrap items-center justify-center gap-3 mb-4">
     <%= link_to tools_path(request.query_parameters.merge(date: @date - 7.days)),
         class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10 flex-shrink-0 flex items-center justify-center", title: "Semaine précédente", data: { turbo: false } do %>
@@ -92,5 +91,4 @@
   <div class="flex flex-col bg-white border border-slate-200 rounded-b-xl rounded-t-none md:rounded-b-xl md:rounded-t-none shadow-sm overflow-hidden">
     <%= render partial: 'view_list' %>
   </div>
-  <% end %>
 </div>

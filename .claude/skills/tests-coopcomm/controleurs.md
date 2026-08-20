@@ -55,7 +55,7 @@ Si une erreur tombe dans une action mais vient d'ailleurs (service, méthode de 
 
 **Hors périmètre** : `super_admin`, contrôleur `twilio`, cas de l'utilisateur désactivé, fonctions primaires renvoyant une chaîne (couleur, type, libellé), temps négatifs d'intervention (patchés par #462 → tests à retirer). **`health` reste testé** : c'est le plus important du lot, il compile toute l'application via `eager_load!`.
 
-**Ce qui n'est pas un test de contrôleur vit ailleurs** : les 4 **matrices** d'intervention (caractérisation acteur × type × état) sont **conservées** ; les **dashboards** gardent leurs fichiers propres, séparés d'`admin_controller_test` ; `menus_deroulants_test`, `tris_test` et `tableaux_encadres_test` passent en **tests système** ; `securite_regressions_test` est **dispatché** dans le fichier du contrôleur concerné (sinon on ne s'y retrouve plus).
+**Ce qui n'est pas un test de contrôleur vit ailleurs** : les 4 **matrices** d'intervention (caractérisation acteur × type × état) sont **conservées** ; les **dashboards** gardent leurs fichiers propres, séparés d'`admin_controller_test` ; `menus_deroulants_test` et `tris_test` passent en **tests système** ; `securite_regressions_test` est **dispatché** dans le fichier du contrôleur concerné (sinon on ne s'y retrouve plus).
 
 ## Nommage et constantes
 

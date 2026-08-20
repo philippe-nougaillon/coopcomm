@@ -13,7 +13,7 @@
       <% end %>
     <% end %>
   </div>
-  <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_frame: "mouvements_table", turbo_action: "advance" } do %>
+  <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_action: "advance" } do %>
     <%= champs_tri_caches %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
@@ -45,7 +45,6 @@
     </div>
   <% end %>
   <hr class="mt-6 mb-6">
-  <%= tableau_encadré "mouvements_table" do %>
   <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-none md:rounded-t-xl border-t border-x md:border-b-0 border-slate-200">
     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
   </div>
@@ -89,5 +88,4 @@
         </div>
       <% end %>
     </div>
-  <% end %>
   </div>
