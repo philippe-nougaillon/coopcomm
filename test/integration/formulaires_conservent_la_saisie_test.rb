@@ -183,7 +183,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
 
   test 'outil : une création refusée garde la saisie' do
     sign_in users(:administrateur_paris)
-    soumis = { name: tools(:tondeuse).name, marque: 'Husqvarna', mod: 'LC 140',
+    soumis = { name: '', marque: 'Husqvarna', mod: 'LC 140',
                description: 'Doublon volontaire du nom' }
 
     post tools_url, params: { tool: soumis }

@@ -36,8 +36,10 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
     'donnee:commentaires' => InterventionsMatrice::SONDE_COMMENTAIRES,
     'donnee:avis' => InterventionsMatrice::SONDE_AVIS,
     'donnee:meteo' => InterventionsMatrice::SONDE_METEO,
-    'donnee:photos' => %r{>\s*Photos\s*</span>},
-    'donnee:photos_demande' => %r{>\s*Photos de la demande\s*</span>},
+    # Les trois galeries s'intitulent « Photos » : seul leur message de galerie
+    # vide distingue encore les photos de la demande de celles de la réalisation.
+    'donnee:photos' => %r{Aucune photo n(?:&#39;|')est attachée(?:\.| à cette intervention)},
+    'donnee:photos_demande' => %r{Aucune photo n(?:&#39;|')est attachée à la demande},
     'action:modifier' => 'Modifier',
     'action:supprimer' => "Supprimer l'intervention",
     'action:qrcode' => 'QR Code',

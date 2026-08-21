@@ -878,7 +878,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_content
     assert intervention.reload.nouveau?, "l'état ne doit pas avoir changé"
-    assert_match(/Statut\s*:\s*Nouveau/, response.body, "le formulaire ne doit pas annoncer un état non enregistré")
+    assert_match(/est obligatoire pour terminer l.*intervention/, response.body)
   end
 
   # terminée sans agent vaut 0 heure et ne doit pas pouvoir être enregistrée.
