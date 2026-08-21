@@ -22,7 +22,7 @@ class Tool < ApplicationRecord
   valide_image :photo
   valide_document :document
 
-  normalizes :name, with: ->(name) { name.humanize.strip }
+  normalizes :name, with: ->(name) { name.upcase.strip }
 
   validates :name, presence: true
   validates_uniqueness_of :name, scope: :organisation_id

@@ -55,10 +55,10 @@ class ToolTest < ActiveSupport::TestCase
     assert_nil outil.audits.last.comment
   end
 
-  test 'normalisation du nom : espaces et casse → humanisé et détouré' do
+  test 'normalisation du nom : espaces et casse → mis en majuscule et détouré' do
     outil = Tool.create!(name: '  PERCEUSE à colonne ', organisation: organisations(:mairie_paris))
 
-    assert_equal 'Perceuse à colonne', outil.name
+    assert_equal 'PERCEUSE À COLONNE', outil.name
   end
 
   test 'unicité du nom : doublon dans la même organisation → refusé' do
