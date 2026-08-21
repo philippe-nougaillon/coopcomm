@@ -226,9 +226,10 @@
       </li>
       <%# --- LOGOUT --- %>
       <li>
-        <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?" }, title: "Fermer la session de #{current_user.email} (#{current_user.rôle})", class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 hover:border-primary!" do %>
-          <%= embedded_svg "icons/logout.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
-        <% end %>
+        <button onclick="logout_modal.showModal()" title="Fermer la session de <%= current_user.email %> (<%= current_user.rôle %>)" class="h-16 py-0 flex items-center text-secondary hover:border-b-2 hover:border-primary cursor-pointer">
+  <%= embedded_svg "icons/logout.svg", class: "w-6 h-6 fill-current" %> <!-- O tu icono de cerrar sesión -->
+</button>
+
       </li>
     </ul>
   </div>
@@ -419,10 +420,48 @@
       </div>
       <%# logout %>
       <div class="absolute bottom-0 left-0 right-0 bg-base-100 border-t border-slate-100 p-2.5 rounded-b-2xl z-10">
-        <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?", testid: 'fermer_session' }, class: "flex items-center text-red-400 hover:text-red-600 font-semibold text-xs transition-colors w-full px-3 py-1" do %>
-          <%= embedded_svg "icons/logout.svg", class: "w-4 h-4 mr-2 " %> Déconnexion
-        <% end %>
+       <button onclick="logout_modal.showModal()" title="Fermer la session de <%= current_user.email %> (<%= current_user.rôle %>)" class="h-16 py-0 flex items-center text-secondary hover:border-b-2 hover:border-primary cursor-pointer">
+  <%= embedded_svg "icons/logout.svg", class: "w-6 h-6 fill-current" %> <!-- O tu icono de cerrar sesión -->
+</button>
       </div>
     </div>
   </div>
 </div>
+
+
+
+<dialog id="logout_modal" class="modal">
+  <div class="modal-box">
+    <!-- Botón de cierre en la esquina -->
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+
+    <!-- Título con icono -->
+    <h3 class="text-lg font-bold text-error flex items-center gap-2">
+      <%= embedded_svg "icons/warning.svg", title: "Déconnexion" %>
+      Déconnexion
+    </h3>
+
+    <!-- Mensaje de confirmación -->
+    <p class="py-4 text-sm text-slate-600">
+      Êtes-vous certain(e) de vouloir fermer cette session ?
+    </p>
+
+    <!-- Acciones -->
+    <div class="modal-action">
+      <form method="dialog">
+        <button class="btn btn-ghost">Annuler</button>
+      </form>
+
+      <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "btn btn-error text-white" do %>
+        Oui, se déconnecter
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Fondo oscuro para cerrar al hacer clic fuera -->
+  <form method="dialog" class="modal-backdrop">
+    <button>Fermer</button>
+  </form>
+</dialog>
