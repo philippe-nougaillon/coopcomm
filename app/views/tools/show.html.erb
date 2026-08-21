@@ -10,7 +10,9 @@
       <% if policy(@tool).edit? %>
         <%= link_to edit_tool_path(@tool), class: "btn flex-1 sm:flex-none" do %>
           <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
-          <span class="hidden md:block">Modifier</span>
+          <span class="hidden md:block">
+            Modifier
+          </span>
         <% end %>
       <% end %>
       <% if policy(@tool).destroy? %>
@@ -18,18 +20,24 @@
           <div title="Suppression impossible, l'outil est utilisé dans des interventions" class="cursor-not-allowed flex-1 sm:flex-none">
             <div class="btn btn-soft btn-disabled opacity-50 pointer-events-none w-full">
               <%= embedded_svg "icons/delete.svg", class: "w-5 h-5 fill-current text-gray-400" %>
-              <span class="hidden md:block">Supprimer</span>
+              <span class="hidden md:block">
+                Supprimer
+              </span>
             </div>
           </div>
         <% else %>
           <button type="button" class="btn btn-soft btn-error hover:!text-white flex-1 sm:flex-none" onclick="delete_tool_modal_<%= @tool.id %>.showModal()" title="Supprimer" data-testid="supprimer_outil">
             <%= embedded_svg "icons/delete.svg", class: "w-5 h-5 fill-current" %>
-            <span class="hidden md:block">Supprimer</span>
+            <span class="hidden md:block">
+              Supprimer
+            </span>
           </button>
           <dialog id="delete_tool_modal_<%= @tool.id %>" class="modal">
             <div class="modal-box">
               <form method="dialog">
-                <button type="submit" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                <button type="submit" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                  ✕
+                </button>
               </form>
               <h3 class="text-lg font-bold text-error flex items-center gap-2">
                 <%= embedded_svg "icons/warning.svg", title: "Supprimer le matériel" %>
@@ -40,7 +48,9 @@
               </p>
               <div class="modal-action">
                 <form method="dialog">
-                  <button type="submit" class="btn btn-ghost">Annuler</button>
+                  <button type="submit" class="btn btn-ghost">
+                    Annuler
+                  </button>
                 </form>
                 <%= button_to tool_path(@tool), method: :delete, class: "btn btn-error text-white" do %>
                   Oui, supprimer
@@ -48,20 +58,28 @@
               </div>
             </div>
             <form method="dialog" class="modal-backdrop">
-              <button type="submit">Fermer</button>
+              <button type="submit">
+                Fermer
+              </button>
             </form>
           </dialog>
         <% end %>
       <% end %>
     </div>
   </div>
-  <h2 class="text-2xl text-secondary mt-8 mb-4">Informations & Aperçu</h2>
+
+  <h2 class="text-2xl text-secondary mt-8 mb-4">
+    Informations & Aperçu
+  </h2>
+
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
     <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6">
       <div class="flex flex-col gap-0">
         <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 gap-3">
           <div class="flex items-center gap-3 text-slate-500 shrink-0">
-            <span class="text-base">Modèle</span>
+            <span class="text-base">
+              Modèle
+            </span>
           </div>
           <div class="text-base text-slate-800 font-medium text-right truncate">
             <%= @tool.modèle.presence || "—" %>
@@ -69,7 +87,9 @@
         </div>
         <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 gap-3">
           <div class="flex items-center gap-3 text-slate-500 shrink-0">
-            <span class="text-base">Marque</span>
+            <span class="text-base">
+              Marque
+            </span>
           </div>
           <div class="text-base text-slate-800 font-medium text-right truncate">
             <%= @tool.marque.presence || "—" %>
@@ -78,17 +98,20 @@
         <div class="flex flex-row items-start justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
           <div class="flex items-center gap-3 text-slate-500 shrink-0 mt-0.5">
             <%= embedded_svg "icons/description.svg", class: "w-5 h-5 fill-current" %>
-            <span class="text-base">Description</span>
+            <span class="text-base">
+              Description
+            </span>
           </div>
           <div class="text-base text-slate-800 font-medium text-right max-w-xs">
             <%= @tool.description.presence || "—" %>
           </div>
         </div>
-
         <div class="flex flex-row items-start justify-between pt-3 last:border-0 gap-3">
           <div class="flex items-center gap-3 text-slate-500 shrink-0 mt-0.5">
             <%= embedded_svg "icons/description.svg", class: "w-5 h-5 fill-current" %>
-            <span class="text-base">Document</span>
+            <span class="text-base">
+              Document
+            </span>
           </div>
           <div class="text-base text-slate-800 font-medium text-right max-w-xs">
             <% if @tool.document.attached? %>
@@ -99,9 +122,9 @@
                 <% end %>
               </p>
               <p class="text-xs text-slate-400">
-                    <%= number_to_human_size(@tool.document.byte_size) %> ·
-                    Màj il y a <%= time_ago_in_words(@tool.document.created_at) %>
-                  </p>
+                <%= number_to_human_size(@tool.document.byte_size) %> ·
+                Màj il y a <%= time_ago_in_words(@tool.document.created_at) %>
+              </p>
             <% end %>
           </div>
         </div>
@@ -113,87 +136,105 @@
       <% elsif @tool.icon_name.present? %>
         <%= embedded_svg "icons/#{@tool.icon_name}.svg", class: "w-24 h-24 fill-current text-warning shrink-0" %>
       <% else %>
-        <span class="text-slate-300 text-sm italic">Aucune image</span>
+        <span class="text-slate-300 text-sm italic">
+          Aucune image
+        </span>
       <% end %>
     </div>
   </div>
 
   <div class="flex justify-between flex-wrap items-center mt-10 mb-4">
-    <h2 class="text-2xl text-secondary">Disponibilités</h2>
-    <%= form_tag tool_path(@tool), method: :get, class: 'flex gap-4' do %>
-      <label class="cursor-pointer flex items-center gap-1.5 text-sm text-slate-600">
-        <%= radio_button_tag :vue, 'calendrier', params[:vue] == 'calendrier', { id: 'vue_calendrier', class: 'radio radio-primary radio-sm', onchange: "this.form.submit();" } %>
-        Calendrier
-      </label>
-      <label class="cursor-pointer flex items-center gap-1.5 text-sm text-slate-600">
-        <%= radio_button_tag :vue, 'liste', params[:vue] == 'liste', { id: 'vue_liste', class: 'radio radio-primary radio-sm', onchange: "this.form.submit();" } %>
-        Liste des interventions
-      </label>
-    <% end %>
+    <h2 class="text-2xl text-secondary">
+      Calendrier
+    </h2>
   </div>
+
   <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 overflow-hidden">
-    <% if params[:vue] != 'liste' %>
-      <div class="flex flex-row items-center gap-4 px-4 py-3 bg-slate-50 text-xs text-slate-500 border-b border-slate-100">
-        <div class="flex flex-col md:flex-row gap-2">
-          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-green-500"></span>Disponible</span>
-          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span>En panne</span>
-        </div>
-        <div class="flex flex-col md:flex-row gap-2">
-          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-blue-600"></span>Réservé</span>
-          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-blue-300"></span>Réservé par un autre</span>
-        </div>
+    <% etats = @tool.get_etats_from_mouvements(@date_inicio_grid, @date_fin_grid, current_user.id) %>
+    <%= month_calendar(start_date: @date) do |date| %>
+      <div class="flex justify-center items-center h-6 mb-1">
+        <p class="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-sm <%= date == Date.today ? 'text-purple-700 font-bold' : 'text-slate-400' %>">
+          <%= date.day %>
+        </p>
       </div>
-    <% end %>
-    <% case params[:vue] %>
-    <% when 'calendrier' %>
-      <% etats = @tool.get_etats_from_mouvements(@date_inicio_grid, @date_fin_grid, current_user.id) %>
-      <%= month_calendar(start_date: @date) do |date| %>
-        <div class="flex justify-center items-center h-6 mb-1">
-          <p class="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-sm <%= date == Date.today ? 'text-purple-700 font-bold' : 'text-slate-400' %>">
-            <%= date.day %>
-          </p>
-        </div>
-        <% index = (date - @date_inicio_grid).to_i %>
-        <div class="flex justify-center items-center gap-1 px-1 my-1">
-          <%= render 'tools/mouvement',
-                     etat: etats[index].etat,
-                     reservataire_id: etats[index].reservataire_id,
-                     tool: @tool,
-                     index:,
-                     date: date %>
-        </div>
-      <% end %>
-    <% when 'liste' %>
-      <div class="overflow-x-auto">
-        <table class="table table-sm w-full border-collapse">
-          <thead class="bg-slate-100">
-            <tr>
-              <%= th_tri 'Intervention', colonne: 'interventions.description', class: 'font-semibold text-slate-500 uppercase tracking-wider text-xs' %>
-              <%= th_tri 'Du', colonne: 'interventions.début', class: 'font-semibold text-slate-500 uppercase tracking-wider text-xs' %>
-              <%= th_tri 'Au', colonne: 'interventions.fin', class: 'font-semibold text-slate-500 uppercase tracking-wider text-xs' %>
-              <%= th_tri 'Adhérent', colonne: 'interventions.adherent', class: 'font-semibold text-slate-500 uppercase tracking-wider text-xs' %>
-            </tr>
-          </thead>
-          <tbody>
-            <% if @interventions.any? %>
-              <%= render partial: 'intervention', collection: @interventions,
-                         cached: ->(intervention) { [intervention, current_user] } %>
-            <% else %>
-              <tr>
-                <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">
-                  L'outil n'est pas encore attribué à une intervention
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
+      <% index = (date - @date_inicio_grid).to_i %>
+      <div class="flex justify-center items-center gap-1 px-1 my-1">
+        <%= render 'tools/mouvement',
+                   etat: etats[index].etat,
+                   reservataire_id: etats[index].reservataire_id,
+                   tool: @tool,
+                   index:,
+                   date: date %>
       </div>
     <% end %>
   </div>
+
+  <div class="flex flex-row items-center gap-4 px-4 py-3 bg-slate-50 text-xs text-slate-500 ">
+    <div class="flex flex-col md:flex-row gap-2">
+      <span class="flex items-center gap-1.5">
+        <span class="w-2.5 h-2.5 rounded-sm bg-green-500">
+        </span>
+        Disponible
+      </span>
+      <span class="flex items-center gap-1.5">
+        <span class="w-2.5 h-2.5 rounded-sm bg-red-500">
+        </span>
+        En panne
+      </span>
+    </div>
+    <div class="flex flex-col md:flex-row gap-2">
+      <span class="flex items-center gap-1.5">
+        <span class="w-2.5 h-2.5 rounded-sm bg-blue-600">
+        </span>
+        Réservé
+      </span>
+      <span class="flex items-center gap-1.5">
+        <span class="w-2.5 h-2.5 rounded-sm bg-blue-300">
+        </span>
+        Réservé par un autre
+      </span>
+    </div>
+  </div>
+
   <div class="flex justify-between flex-wrap items-center mt-10 mb-4">
-    <h2 class="text-2xl text-secondary">Mouvements</h2>
-    
+    <h2 class="text-2xl text-secondary">
+      Liste des interventions
+    </h2>
   </div>
+
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="table table-sm w-full border-collapse">
+        <thead class="bg-slate-100">
+          <tr>
+            <%= th_tri 'Intervention', colonne: 'interventions.description', class: 'font-semibold text-slate-500 uppercase tracking-wider text-xs' %>
+            <%= th_tri 'Du', colonne: 'interventions.début', class: 'font-semibold text-slate-500 uppercase tracking-wider text-xs' %>
+            <%= th_tri 'Au', colonne: 'interventions.fin', class: 'font-semibold text-slate-500 uppercase tracking-wider text-xs' %>
+            <%= th_tri 'Adhérent', colonne: 'interventions.adherent', class: 'font-semibold text-slate-500 uppercase tracking-wider text-xs' %>
+          </tr>
+        </thead>
+        <tbody>
+          <% if @interventions.any? %>
+            <%= render partial: 'intervention', collection: @interventions,
+                       cached: ->(intervention) { [intervention, current_user] } %>
+          <% else %>
+            <tr>
+              <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">
+                L'outil n'est pas encore attribué à une intervention
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="flex justify-between flex-wrap items-center mt-10 mb-4">
+    <h2 class="text-2xl text-secondary">
+      Mouvements
+    </h2>
+  </div>
+
   <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 overflow-hidden">
     <div class="overflow-x-auto">
       <table class="table table-sm w-full">
@@ -219,9 +260,11 @@
       </table>
     </div>
   </div>
+
   <% if current_user.manager_or_admin? %>
     <%= render "shared/activite", audits: @audits, pagy: @pagy %>
   <% end %>
+
   <div class="pt-6">
     <%= link_to tools_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
       <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des utilisateurs" %>
