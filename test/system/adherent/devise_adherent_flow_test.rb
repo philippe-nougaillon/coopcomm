@@ -12,8 +12,7 @@ class DeviseAdherentFlowTest < ApplicationSystemTestCase
     # Fermer la notification de connexion
     fermer_notification
 
-    # Le lien de déconnexion visible est dans le dropdown du dock mobile (replié) : le
-    # helper stube le confirm de Turbo, dispatche le clic en JS et re-tente si besoin.
+    # La déconnexion passe par la modale du navbar, cf. le helper partagé.
     se_deconnecter
 
     visit interventions_url

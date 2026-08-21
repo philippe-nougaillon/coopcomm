@@ -124,18 +124,13 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     str.split(' ').map { |word| word.sub(/\A\p{L}/) { |c| c.upcase } }.join(' ')
   end
 
-  # Clic JS : le clic Selenium natif tombe sur le SVG enfant du lien et n'émet
-  # jamais le DELETE. Le confirm est stubé, et le clic re-tenté s'il se perd.
+  # La déconnexion passe par la modale `#logout_modal` du navbar : on l'ouvre et
+  # on clique son lien en JS, le clic Selenium natif tombant sur le SVG enfant.
   def se_deconnecter(temoin_page_publique = 'Mutualisez mieux')
     3.times do
-      # Stub reposé à chaque tour : une navigation entre deux tentatives (redirection
-      # de connexion encore en vol sous charge) rend son `window.confirm` natif au
-      # document, Chrome écarte alors la boîte et le DELETE n'est jamais émis.
-      page.execute_script('window.confirm = () => true')
-      page.execute_script("document.querySelector(\"[data-testid='fermer_session']\")?.click()")
+      page.execute_script("document.querySelector('#logout_modal')?.showModal()")
+      page.execute_script("document.querySelector(\"#logout_modal a[data-turbo-method='delete']\")?.click()")
       return if has_text?(temoin_page_publique, wait: 10)
-    rescue Selenium::WebDriver::Error::UnexpectedAlertOpenError
-      next
     end
 
     flunk "Déconnexion : #{temoin_page_publique.inspect} toujours absent après 3 tentatives de clic"

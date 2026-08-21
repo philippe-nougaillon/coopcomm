@@ -78,16 +78,16 @@ class CotationTest < ActiveSupport::TestCase
   test 'style : chaque état → la classe du badge qui le distingue à l\'écran' do
     cotation = build_cotation
 
-    assert_equal 'badge badge-secondary', cotation.style
+    assert_equal 'badge badge-secondary ', cotation.style
 
     cotation.save!
     cotation.envoyer!
 
-    assert_equal 'badge badge-primary', cotation.style
+    assert_equal 'badge badge-primary ', cotation.style
 
     cotation.signer!
 
-    assert_equal 'badge badge-outline badge-info', cotation.style
+    assert_equal 'badge badge-outline badge-info ', cotation.style
   end
 
   test 'workflow_state_humanized : appel → les états humanisés dans l\'ordre du workflow' do

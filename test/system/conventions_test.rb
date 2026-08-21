@@ -147,8 +147,8 @@ class ConventionsTest < ApplicationSystemTestCase
   test "le choix de l'adhérent peuple dynamiquement la liste des services" do
     visit new_convention_path
 
-    # patrick (Bruel Patrick) est rattaché au seul service Service_Paris, sans convention
-    select_option '#convention_user_id', 'Bruel Patrick'
+    # patrick est rattaché au seul service Service_Paris, sans convention
+    select_option '#convention_user_id', 'Patrick'
 
     # le JS appelle services_for_adherent et injecte les <option> dans le select (caché par slim_select)
     assert_selector '#convention_service_id option', text: 'Service_Paris', visible: false, wait: 5
@@ -157,7 +157,7 @@ class ConventionsTest < ApplicationSystemTestCase
   private
 
   def remplir_convention
-    select_option '#convention_user_id', 'Bruel Patrick'
+    select_option '#convention_user_id', 'Patrick'
     assert_selector '#convention_service_id option', text: 'Service_Paris', visible: false, wait: 5
     select_option '#convention_service_id', 'Service_Paris'
     fill_in 'convention_date_début', with: Date.current

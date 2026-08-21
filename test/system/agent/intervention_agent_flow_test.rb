@@ -32,7 +32,7 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     # Date ancrée sur le vendredi précédant le lundi de la fixture tonte_locaux :
     # toujours passée, jamais en conflit, quel que soit le jour d'exécution.
     date = (Date.today - 1).beginning_of_week - 3
-    select_option('#intervention_adherent_id', 'Bruel Patrick') # adhérent du service de bond
+    select_option('#intervention_adherent_id', 'Patrick') # adhérent du service de bond
 
     fill_in 'Début', with: date.strftime('%m%d%Y')
     select '08', from: 'intervention_début_hour'
