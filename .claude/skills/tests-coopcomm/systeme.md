@@ -37,7 +37,9 @@ test "En tant qu'adhérent invité, je veux définir mon mot de passe pour accé
 
 L'utilisateur est **déjà connecté** au démarrage : `login(...)` dans le `setup`, puis le test commence. Exceptions : le test porte précisément sur la connexion, ou l'acteur ne peut pas être connecté (un invité qui n'a pas encore de mot de passe).
 
-Quand la commande dit **« à partir de la page home »**, le test part de `home_path` et **navigue par les rubriques du haut de page** jusqu'à la page visée — il ne fait pas `visit users_url`. Ces rubriques sont dans la navbar `lg:` : le test passe alors en `taille_pc`.
+Quand la commande dit **« à partir de la page home »**, le test part de `home_path` et **navigue par les rubriques du menu** jusqu'à la page visée — il ne fait pas `visit users_url`.
+
+**Un test n'est jamais lié à une seule largeur d'écran.** Il ne redimensionne pas la fenêtre pour se simplifier la vie : il doit passer en téléphone comme en PC, parce que l'application est utilisée des deux façons. Quand la page diffère entre les deux — la navbar du haut sous `lg:` d'un côté, le dock du bas de l'autre — c'est au **helper** de absorber l'écart, pas au test de choisir un camp. C'est le rôle d'`ouvrir_dropdown`.
 
 ## 5. Cliquer
 
@@ -101,6 +103,8 @@ Aucun commentaire dans le corps d'un test ; une ligne en tête de fichier si sa 
 | `login(user)` | connexion par le vrai formulaire |
 | `se_deconnecter` | déconnexion (clic JS documenté, dernier recours assumé) |
 | `cliquer_bouton(texte)` / `cliquer_lien(texte)` | clic par le texte, recentré sous le dock |
+| `cliquer_div_bouton(texte)` | clic sur une `div[role=button][tabindex]` (menu daisyUI) |
+| `ouvrir_dropdown(nom)` | ouvre le menu, quelle que soit la largeur d'écran |
 | `cliquer(testid)` | clic par `data-testid`, variantes `_mobile` / `_pc` |
 | `click_sur_boutton_ajouter(record)` | bouton « + » des index |
 | `assert_notification(texte)` | vérifie le toast puis le referme |

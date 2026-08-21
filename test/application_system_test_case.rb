@@ -49,12 +49,6 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     fermer_notification
   end
 
-  # Réservé aux boutons qui n'affichent qu'une icône. Selon les pages : testid
-  # simple, ou variantes _mobile/_pc.
-  def cliquer(testid)
-    cliquer_element(element_testid(testid))
-  end
-
   # Un seul sélecteur pour les trois variantes : `find` attend alors l'ouverture
   # d'un menu, là où un `has_css?(wait: 0)` par variante ne laisse aucune chance.
   def element_testid(testid)
@@ -63,7 +57,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   end
 
   def click_sur_boutton_ajouter(element)
-    cliquer("ajouter_#{element}")
+    cliquer_element(element_testid("ajouter_#{element}"))
   end
 
   # Centrer avant de cliquer : Selenium aligne sinon l'élément en bas, sous le
@@ -73,12 +67,25 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     element.click
   end
 
-  # Un bouton porteur de texte se pilote par son texte. Repli sur `role=button` :
-  # daisyUI ouvre ses menus déroulants depuis un `div`, que `find_button` ignore.
   def cliquer_bouton(locator)
     cliquer_element(find_button(locator))
-  rescue Capybara::ElementNotFound
-    cliquer_element(find("[role='button']", text: locator))
+  end
+
+  # daisyUI ouvre ses menus depuis une `div` focusable et non depuis un `<button>` :
+  # `find_button` ne la voit pas, d'où un chemin distinct.
+  def cliquer_div_bouton(texte)
+    cliquer_element(find("[role='button'][tabindex]", text: texte))
+  end
+
+  # Sous 1024 px la navbar du haut disparaît et ses rubriques passent dans le dock
+  # du bas, toutes derrière une même icône sans libellé : le nom du menu n'a plus
+  # de sens à cette largeur.
+  def ouvrir_dropdown(nom)
+    # Si en mode pc
+    return cliquer_div_bouton(nom) if has_css?("[role='button'][tabindex]", text: nom, wait: 0)
+
+    # Sinon en mode mobile
+    cliquer_element(element_testid('dropdown_mobile'))
   end
 
   def cliquer_lien(locator)
