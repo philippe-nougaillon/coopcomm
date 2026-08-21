@@ -59,7 +59,7 @@
     <% if policy(intervention).saisir_commentaires? %>
       <%= render "interventions/form/commentaires_photos", form: form, intervention: intervention %>
     <% end %>
-    <% if policy(intervention).voir_compte_rendu? %>
+    <% if policy(intervention).saisir_compte_rendu? %>
       <%= render "interventions/form/compte_rendu", form: form, intervention: intervention %>
     <% end %>
     <div class="flex flex-col sm:flex-row gap-3 mt-4 pt-4">
