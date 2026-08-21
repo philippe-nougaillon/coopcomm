@@ -6,13 +6,11 @@
   </div>
   <div class="flex-none">
     <ul class="menu w-full menu-horizontal flex-1 items-center py-0! px-0">
-      <%# --- ACCUEIL --- %>
       <li>
         <%= link_to home_path, class: "h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! ' + (demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!') + ' border-b-2' if params[:action] == 'home'}", title: "Page d'accueil" do %>
           <%= embedded_svg "icons/cottage.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
         <% end %>
       </li>
-      <%# --- VISTA PARA EL ROL ADHÉRENT --- %>
       <% if current_user.rôle == 'adhérent' %>
         <% if policy(Intervention).index? %>
           <li>
@@ -28,7 +26,6 @@
             <% end %>
           </li>
         <% end %>
-        <%# ---  (Commandes/Factures/Cotations) --- %>
         <% if policy(Commande).index? || policy(Facture).index? || policy(Cotation).index? %>
           <li>
             <%= link_to adherent_crm_path, class: "h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! ' + (demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!') + ' border-b-2' if params[:controller] == 'adherent_crm'}", title: "Adhérent CRM" do %>
@@ -110,7 +107,6 @@
             </li>
           <% end %>
         <% end %>
-        <%# --- 3. CRM --- %>
         <% if policy(Convention).index? || policy(Cotation).index? || policy(Commande).index? || policy(Facture).index? %>
           <li class="dropdown dropdown-start" >
             <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if %w[conventions cotations commandes factures].include?(params[:controller])}" title="Documents">

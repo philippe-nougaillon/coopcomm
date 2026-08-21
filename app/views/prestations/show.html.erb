@@ -10,7 +10,6 @@
   <div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
     <div class="flex flex-col gap-8">
 
-      <%# --- INFORMATIONS --- %>
       <div>
         <h3 class="flex items-center gap-2 text-slate-700 uppercase font-semibold mb-4">
           <%= embedded_svg "icons/label.svg", class: "w-5 h-5 fill-current shrink-0" %>
@@ -58,7 +57,6 @@
         </div>
       </div>
 
-      <%# --- ACTIONS --- %>
       <div class="flex gap-2 w-full">
         <% if policy(@prestation).edit? %>
           <%= link_to edit_prestation_path(@prestation), class: "btn flex-1 gap-2" do %>

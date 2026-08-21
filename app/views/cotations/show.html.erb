@@ -33,13 +33,11 @@
       <% end %>
     </div>
   </div>
-  <%# --- INFORMATIONS --- %>
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="hidden md:block text-2xl text-secondary font-semibold">Informations & Aperçu</h2>
     <h2 class="block md:hidden text-2xl text-secondary font-semibold">Informations</h2>
   </div>
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-    <%# --- COLUMNA IZQUIERDA: INFORMATIONS --- %>
     <div class="flex flex-col w-full">
       <div class="overflow-x-auto border border-slate-200 shadow-sm bg-white rounded-xl md:rounded-xl">
         <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
@@ -48,7 +46,6 @@
         </div>
         <div class="p-4">
           <div class="flex flex-col gap-0">
-            <%# --- ADHÉRENT --- %>
             <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
               <div class="flex items-center gap-3 text-slate-500 shrink-0">
                 <%= embedded_svg "icons/account_circle.svg", class: "w-5 h-5 fill-current" %>
@@ -58,7 +55,6 @@
                 <%= link_to "#{@cotation.adherent.prénom} #{@cotation.adherent.nom}", user_path(@cotation.adherent), class: "text-primary hover:underline" if @cotation.adherent %>
               </div>
             </div>
-            <%# --- SERVICE --- %>
             <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
               <div class="flex items-center gap-3 text-slate-500 shrink-0">
                 <%= embedded_svg "icons/store.svg", class: "w-5 h-5 fill-current" %>
@@ -68,7 +64,6 @@
                 <%= @cotation.service&.nom %>
               </div>
             </div>
-            <%# --- INTITULÉ --- %>
             <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
               <div class="flex items-center gap-3 text-slate-500 shrink-0">
                 <%= embedded_svg "icons/label.svg", class: "w-5 h-5 fill-current" %>
@@ -78,7 +73,6 @@
                 <%= @cotation.intitulé %>
               </div>
             </div>
-            <%# --- LIVRAISON SOUHAITÉE --- %>
             <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
               <div class="flex items-center gap-3 text-slate-500 shrink-0">
                 <%= embedded_svg "icons/calendar_today.svg", class: "w-5 h-5 fill-current" %>
@@ -92,7 +86,6 @@
                 <% end %>
               </div>
             </div>
-            <%# --- TOTAL HT --- %>
             <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
               <div class="flex items-center gap-3 text-slate-500 shrink-0">
                 <%= embedded_svg "icons/euro.svg", class: "w-5 h-5 fill-current" %>
@@ -102,7 +95,6 @@
                 <%= number_to_currency(@cotation.total_ht) %>
               </div>
             </div>
-            <%# --- Mémo --- %>
             <% if @cotation.mémo.present? %>
               <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
                 <div class="flex items-center gap-3 text-slate-500 shrink-0">
@@ -114,7 +106,6 @@
                 </div>
               </div>
             <% end %>
-            <%# --- Signature --- %>
             <% if @cotation.signee_le.present? %>
               <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
                 <div class="flex items-center gap-3 text-slate-500 shrink-0">
@@ -129,7 +120,6 @@
           </div>
         </div>
       </div>
-      <%# --- PROCHAINE ÉTAPE --- %>
       <% has_workflow_action = (policy(@cotation).envoyer? && @cotation.can_envoyer?) ||
                            (policy(@cotation).valider? && @cotation.can_valider?) ||
                            (policy(@cotation).refuser? && @cotation.can_refuser?) ||
@@ -156,7 +146,6 @@
         </div>
       <% end %>
     </div>
-    <%# ---  APERÇU PDF --- %>
     <div class="hidden md:block w-full h-full min-h-40 lg:h-96 border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white">
       <iframe 
       src="<%= pdf_cotation_path(@cotation, filename: @cotation.pdf_filename) %>#toolbar=0" 
@@ -165,7 +154,6 @@
       </iframe>
     </div>
   </div>
-  <%# --- PRESTATIONS --- %>
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary font-semibold">Prestations</h2>
   </div>
@@ -194,7 +182,6 @@
           </div>
         </div>
       <% end %>
-      <%# Total móvil %>
       <div class="rounded-xl flex justify-between items-stretch shadow-md bg-slate-50 border border-slate-200 overflow-hidden">
         <div class="text-left text-sm font-bold uppercase tracking-wider text-slate-500 p-4 flex items-center">
           Total HT
@@ -258,7 +245,6 @@
       Aucune prestation enregistrée.
     </div>
   <% end %>
-  <%# --- HISTORIQUE DES ENVOIS --- %>
   <% if @mail_logs.any? %>
     <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
       <h2 class="text-2xl text-secondary font-semibold">Historique des envois</h2>
@@ -290,7 +276,6 @@
       </table>
     </div>
   <% end %>
-  <%# --- ACTIVITÉ --- %>
   <% if current_user.manager_or_admin? %>
     <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
       <h2 class="text-2xl text-secondary font-semibold">Activité</h2>
@@ -334,7 +319,6 @@
       <% end %>
     </div>
   <% end %>
-  <%# --- SUPPRIMER  --- %>
   <% if policy(@cotation).destroy? %>
     <div class="flex justify-end mb-10 mt-6 pt-4 border-t border-slate-200">
       <button class="btn btn-soft btn-error hover:!text-white"
@@ -371,7 +355,6 @@
       </dialog>
     </div>
   <% end %>
-  <%# --- RETOUR À LA LISTE --- %>
   <% if current_user.manager_or_admin? %>
     <div class="my-10">
       <%= link_to cotations_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>

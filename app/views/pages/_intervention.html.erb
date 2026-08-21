@@ -28,7 +28,6 @@
       <small class="text-slate-500 mt-2 block">
         Il y a <%= time_ago_in_words(intervention.updated_at) %>
       </small>
-      <!-- Boutons -->
       <div class="flex flex-row  gap-3 mt-5">
         <%= render "interventions/boutons_workflow", intervention: intervention,
                    styles: { terminer_modal: "btn btn-primary btn-outline   hover:text-white! w-full sm:w-24 justify-center",
