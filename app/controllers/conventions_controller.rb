@@ -36,7 +36,7 @@ class ConventionsController < ApplicationController
       )
     end
 
-    @pagy, @conventions = pagy(trier(@conventions), items: 15)
+    @pagy, @conventions = pagy(trier(@conventions), items: 10)
   end
 
   # GET /conventions/1
