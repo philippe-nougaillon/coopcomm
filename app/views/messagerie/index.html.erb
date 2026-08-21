@@ -16,7 +16,7 @@
         <% if @recent_conversations.present? && @recent_conversations.any? %>
           <div class="flex flex-col gap-3 text-left overflow-y-auto mb-20 lg:mb-0">
             <h3 class="font-black text-xl flex items-center gap-3 uppercase">Discussions récentes</h3>
-                      <p class="text-slate-500 mb-8 ">Sélectionnez un contact pour démarrer une discussion, ou reprenez une conversation récente ci-dessous.</p>
+                      <p class="text-slate-500 mb-8 ">Sélectionnez un contact pour démarrer une discussion, ou reprenez une conversation récente ci-dessous :</p>
             <% @recent_conversations.each do |user| %>
               <% last_message = @last_messages[user.id] %>
               <% unread_count = @unread_counts[user.id] || 0 %>

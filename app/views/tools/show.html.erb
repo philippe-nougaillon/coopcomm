@@ -88,7 +88,7 @@
         <div class="flex flex-row items-start justify-between pt-3 last:border-0 gap-3">
           <div class="flex items-center gap-3 text-slate-500 shrink-0 mt-0.5">
             <%= embedded_svg "icons/description.svg", class: "w-5 h-5 fill-current" %>
-            <span class="text-base">Documents</span>
+            <span class="text-base">Document</span>
           </div>
           <div class="text-base text-slate-800 font-medium text-right max-w-xs">
             <% if @tool.document.attached? %>
@@ -192,12 +192,7 @@
   </div>
   <div class="flex justify-between flex-wrap items-center mt-10 mb-4">
     <h2 class="text-2xl text-secondary">Mouvements</h2>
-    <% if policy(Mouvement).new? %>
-      <%= link_to new_mouvement_path(tool_id: @tool.id), data: { 'testid': "ajouter_panne" }, class: 'btn btn-info btn-outline btn-md rounded flex items-center justify-center gap-2 text-base' do %>
-        <%= embedded_svg "icons/cone.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
-        <span class="hidden md:block">Panne</span>
-      <% end %>
-    <% end %>
+    
   </div>
   <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 overflow-hidden">
     <div class="overflow-x-auto">

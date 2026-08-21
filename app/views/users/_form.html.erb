@@ -1,4 +1,4 @@
-<div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+<div class="max-w-4xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
   <%# La création ne passe pas par POST /users : cette route appartient à Devise. %>
   <%= form_with(model: user, url: (user.new_record? ? admin_create_new_user_do_path : user_path(user)), id: dom_id(user), class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-4' }, data: { controller: 'toggle-role-info' }) do |form| %>
     <% if user.errors.any? %>
@@ -96,7 +96,7 @@
         <% else %>
           <div class="form-control w-full">
             <%= form.label :service_ids, class: "label font-semibold text-slate-700" do %>
-              <span>Service <span class="text-red-500">*</span></span>
+              <span>Service(s) <span class="text-red-500">*</span></span>
             <% end %>
             <%
               services_assignables = services_assignables_par(current_user)
