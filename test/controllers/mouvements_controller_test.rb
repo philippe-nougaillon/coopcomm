@@ -18,6 +18,26 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'index : filtre Par → seuls les mouvements de cet utilisateur' do
+    la_mienne = reservation(users(:administrateur_paris))
+    celle_dun_autre = reservation(users(:bond))
+
+    get mouvements_url, params: { user_ids: [users(:administrateur_paris).id] }
+
+    assert_includes assigns(:mouvements), la_mienne
+    assert_not_includes assigns(:mouvements), celle_dun_autre
+  end
+
+  test 'index : filtre Date → seuls les mouvements de ce jour-là' do
+    ce_jour_la = reservation(users(:administrateur_paris))
+    la_veille = reservation(users(:administrateur_paris), JOUR - 1)
+
+    get mouvements_url, params: { date: JOUR.to_s }
+
+    assert_includes assigns(:mouvements), ce_jour_la
+    assert_not_includes assigns(:mouvements), la_veille
+  end
+
   test 'new : sans paramètre → la page répond' do
     get new_mouvement_url
 
