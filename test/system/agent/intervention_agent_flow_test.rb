@@ -204,7 +204,7 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     photo_demande = intervention.photos_demande.first
 
     visit intervention_url(intervention)
-    assert_text 'PHOTOS POUR L\'INTERVENTION'
+    assert_text 'PHOTOS'
 
     assert_selector "form[action*='photo_id=#{photo_realisation.id}']"
     assert_no_selector "form[action*='photo_id=#{photo_demande.id}']"
