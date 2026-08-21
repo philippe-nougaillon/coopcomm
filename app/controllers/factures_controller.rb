@@ -40,7 +40,7 @@ class FacturesController < ApplicationController
 
     @factures = @factures.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
 
-    @pagy, @factures = pagy(trier(@factures), items: 15)
+    @pagy, @factures = pagy(trier(@factures), items: 10)
   end
 
   # GET /factures/1 or /factures/1.json

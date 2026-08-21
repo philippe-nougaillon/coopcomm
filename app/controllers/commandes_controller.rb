@@ -40,7 +40,7 @@ class CommandesController < ApplicationController
 
     @commandes = @commandes.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
 
-    @pagy, @commandes = pagy(trier(@commandes), items: 15)
+    @pagy, @commandes = pagy(trier(@commandes), items: 10)
   end
 
   # GET /commandes/1 or /commandes/1.json

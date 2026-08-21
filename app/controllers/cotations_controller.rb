@@ -43,7 +43,7 @@ class CotationsController < ApplicationController
 
     @cotations = @cotations.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
 
-    @pagy, @cotations = pagy(trier(@cotations), items: 15)
+    @pagy, @cotations = pagy(trier(@cotations), items: 10)
 
     # Dernier mail_log par cotation, en une seule requête (DISTINCT ON, Postgres)
     # pour éviter un N+1 dans l'index.
