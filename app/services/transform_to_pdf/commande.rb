@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module TransformToPdf
-  class Commande < BasePdf
+  class Commande < BasePdfForCrm
     private
 
     def document_title

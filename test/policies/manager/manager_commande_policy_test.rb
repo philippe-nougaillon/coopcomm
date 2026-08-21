@@ -2,80 +2,89 @@
 
 require 'test_helper'
 
-# Miroir de manager_facture_policy_test.rb (+ create_facture?, règle propre aux commandes).
 class ManagerCommandePolicyTest < ActionDispatch::IntegrationTest
   def setup
-    @manager = users(:manager_paris) # gère service_paris et secretariat
+    @manager = users(:hidalgo)
 
-    @commande_son_service = commandes(:commande_secretariat) # service: secretariat, état « envoyé »
-    commande_autre_service = commandes(:commande_paris)      # service: informatique
-    commande_autre_org = commandes(:commande_marseille)      # mairie_marseille
+    commande_créée = commandes(:commande_paris)
+    commande_envoyée = commandes(:commande_envoyée)
+    commande_validée = commandes(:commande_validée)
+    commande_autre_service = commandes(:commande_secretariat)
+    commande_autre_org = commandes(:commande_marseille)
 
-    @policy = CommandePolicy.new(@manager, @commande_son_service)
+    @policy = CommandePolicy.new(@manager, commande_créée)
+    @policy_envoyée = CommandePolicy.new(@manager, commande_envoyée)
+    @policy_validée = CommandePolicy.new(@manager, commande_validée)
     @policy_autre_service = CommandePolicy.new(@manager, commande_autre_service)
     @policy_autre_org = CommandePolicy.new(@manager, commande_autre_org)
   end
 
-  test 'index autorisé pour un manager' do
+  test 'accès autorisé pour un manager sur une commande créée de son service' do
     assert @policy.index?
-  end
-
-  test 'show / destroy / pdf autorisés sur une commande de son service' do
     assert @policy.show?
-    assert @policy.destroy?
     assert @policy.pdf?
-  end
-
-  test 'transitions autorisées sur une commande de son service' do
+    assert @policy.update?
+    assert @policy.destroy?
     assert @policy.envoyer?
     assert @policy.valider?
     assert @policy.refuser?
   end
 
-  # --- Verrou d'édition selon l'état (modifiable?) ---
-
-  test 'update interdit sur une commande envoyée de son service' do
-    # commande_secretariat est à l'état « envoyé » (non modifiable)
-    refute @policy.update?
-    refute @policy.edit?
+  test 'accès interdit pour un manager sur une commande créée de son service' do
+    refute @policy.create_facture?
   end
 
-  test 'update autorisé sur une commande modifiable (créé) de son service' do
-    commande_creee = Commande.new(service: services(:secretariat), adherent: users(:weil), intitulé: 'Brouillon')
-    policy = CommandePolicy.new(@manager, commande_creee)
-    assert policy.update?
-    assert policy.edit?
+  test 'accès autorisé pour un manager sur une commande envoyée de son service' do
+    assert @policy_envoyée.show?
+    assert @policy_envoyée.pdf?
+    assert @policy_envoyée.destroy?
+    assert @policy_envoyée.envoyer?
+    assert @policy_envoyée.valider?
+    assert @policy_envoyée.refuser?
   end
 
-  # --- create_facture? (manage? && validé?) ---
-
-  test 'create_facture interdit tant que la commande de son service n\'est pas validée' do
-    refute @policy.create_facture? # état « envoyé »
+  test 'accès interdit pour un manager sur une commande envoyée de son service' do
+    refute @policy_envoyée.update?
+    refute @policy_envoyée.create_facture?
   end
 
-  test 'create_facture autorisé sur une commande validée de son service' do
-    @commande_son_service.update!(workflow_state: Commande::VALIDE)
-    policy = CommandePolicy.new(@manager, Commande.find(@commande_son_service.id))
-    assert policy.create_facture?
+  test 'accès autorisé pour un manager sur une commande validée de son service' do
+    assert @policy_validée.show?
+    assert @policy_validée.destroy?
+    assert @policy_validée.create_facture?
   end
 
-  test 'create_facture interdit sur une commande validée d\'un service qu\'il ne gère pas' do
-    commandes(:commande_paris).update!(workflow_state: Commande::VALIDE)
-    policy = CommandePolicy.new(@manager, Commande.find(commandes(:commande_paris).id))
-    refute policy.create_facture?
+  test 'accès interdit pour un manager sur une commande validée de son service' do
+    refute @policy_validée.update?
   end
 
-  # --- Hors périmètre ---
-
-  test "accès interdit sur une commande d'un service qu'il ne gère pas" do
+  test "accès interdit pour un manager sur une commande d'un service qu'il ne gère pas" do
     refute @policy_autre_service.show?
+    refute @policy_autre_service.pdf?
     refute @policy_autre_service.update?
     refute @policy_autre_service.destroy?
-    refute @policy_autre_service.pdf?
+    refute @policy_autre_service.envoyer?
+    refute @policy_autre_service.valider?
+    refute @policy_autre_service.refuser?
+    refute @policy_autre_service.create_facture?
   end
 
-  test "accès interdit sur une commande d'une autre organisation" do
+  test "accès interdit pour un manager sur une commande d'une autre organisation" do
     refute @policy_autre_org.show?
+    refute @policy_autre_org.pdf?
+    refute @policy_autre_org.update?
     refute @policy_autre_org.destroy?
+    refute @policy_autre_org.envoyer?
+    refute @policy_autre_org.valider?
+    refute @policy_autre_org.refuser?
+    refute @policy_autre_org.create_facture?
+  end
+
+  test "scope : un manager ne voit que les commandes des services qu'il gère" do
+    scope = CommandePolicy::Scope.new(@manager, Commande.all).resolve
+
+    assert_includes scope, commandes(:commande_paris)
+    refute_includes scope, commandes(:commande_secretariat)
+    refute_includes scope, commandes(:commande_marseille)
   end
 end

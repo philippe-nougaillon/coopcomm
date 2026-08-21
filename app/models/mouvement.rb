@@ -24,15 +24,15 @@ class Mouvement < ApplicationRecord
   enum :état, {
     réservé: 0,
     panne: 1,
-    fin_panne: 2
+    fin_de_panne: 2
   }
 
   validates :date, presence: true
   validate :coherence_panne, if: :panne?
-  validate :coherence_fin_panne, if: :fin_panne?
+  validate :coherence_fin_de_panne, if: :fin_de_panne?
 
   after_create :avertir_reservations_futures, if: :panne?
-  after_save :nettoyer_reservations_pendant_panne, if: :fin_panne?
+  after_save :nettoyer_reservations_pendant_panne, if: :fin_de_panne?
 
   def style
     case état
@@ -40,7 +40,7 @@ class Mouvement < ApplicationRecord
       'primary'
     when 'panne'
       'warning'
-    when 'fin_panne'
+    when 'fin_de_panne'
       'secondary'
     else
       'info'
@@ -50,12 +50,16 @@ class Mouvement < ApplicationRecord
   def resolue?
     return false unless panne?
 
-    # On vérifie s'il y a un événement "fin_panne" postérieur à cette panne
+    # On vérifie s'il y a un événement "fin_de_panne" postérieur à cette panne
     if tool.mouvements.loaded?
-      tool.mouvements.any? { |m| m.fin_panne? && m.date > date }
+      tool.mouvements.any? { |m| m.fin_de_panne? && m.date > date }
     else
-      tool.mouvements.where(état: :fin_panne).where('date > ?', date).exists?
+      tool.mouvements.where(état: :fin_de_panne).where('date > ?', date).exists?
     end
+  end
+
+  def self.etats_for_select
+    Mouvement.états.keys.map{|etat| [etat.humanize, etat]}
   end
 
   private
@@ -79,14 +83,14 @@ class Mouvement < ApplicationRecord
   end
 
   # Vérifie qu'on ne déclare pas une fin de panne alors que l'outil ne l'est pas.
-  def coherence_fin_panne
+  def coherence_fin_de_panne
     event_precedent, event_suivant = evenements_panne_voisins
 
-    if event_precedent.nil? || event_precedent.fin_panne?
+    if event_precedent.nil? || event_precedent.fin_de_panne?
       errors.add(:état, "Impossible : l'outil n'était pas déclaré en panne à cette date.")
     end
 
-    return unless event_suivant&.fin_panne?
+    return unless event_suivant&.fin_de_panne?
 
     errors.add(:état, 'Impossible : une fin de panne est déjà prévue pour plus tard.')
   end
@@ -126,13 +130,13 @@ class Mouvement < ApplicationRecord
     end
   end
 
-  # Renvoie les mouvements panne/fin_panne encadrant ce mouvement :
+  # Renvoie les mouvements panne/fin_de_panne encadrant ce mouvement :
   # le voisin de gauche (le passé, <= date) et le voisin de droite (le futur, > date).
   def evenements_panne_voisins
-    mouvements_panne_et_fin_panne = tool.mouvements.where.not(id: id).where(état: %i[panne fin_panne])
+    mouvements_panne_et_fin_de_panne = tool.mouvements.where.not(id: id).where(état: %i[panne fin_de_panne])
 
-    event_precedent = mouvements_panne_et_fin_panne.where('date <= ?', date).order(date: :desc).first
-    event_suivant = mouvements_panne_et_fin_panne.where('date > ?', date).order(date: :asc).first
+    event_precedent = mouvements_panne_et_fin_de_panne.where('date <= ?', date).order(date: :desc).first
+    event_suivant = mouvements_panne_et_fin_de_panne.where('date > ?', date).order(date: :asc).first
 
     [event_precedent, event_suivant]
   end

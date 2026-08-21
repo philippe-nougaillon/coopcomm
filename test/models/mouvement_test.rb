@@ -12,13 +12,20 @@ class MouvementTest < ActiveSupport::TestCase
     @outil      = tools(:cisaille)
   end
 
-  # ==========================================================================
-  # ==================== TESTS CRITIQUES : cohérence des pannes ==============
-  # Une panne mal enregistrée laisse un outil réservable alors qu'il est hors
-  # service, ou l'immobilise indéfiniment.
-  # ==========================================================================
+  test 'scope ordered : plusieurs mouvements → le plus récent en tête' do
+    ancien = reservation(@outil, '2026-06-02', @reserviste)
+    récent = reservation(@outil, '2026-06-09', @reserviste)
 
-  test "déclarer une panne sur un outil déjà en panne est refusé" do
+    ordonnés = @outil.mouvements.ordered.to_a
+
+    assert_operator ordonnés.index(récent), :<, ordonnés.index(ancien)
+  end
+
+  # ==================== TESTS CRITIQUES ====================
+  # Cohérence des pannes : une panne mal enregistrée laisse un outil réservable
+  # alors qu'il est hors service, ou l'immobilise indéfiniment.
+
+  test 'coherence_panne : outil déjà en panne → refusé (critique)' do
     panne(@outil, '2026-06-02')
 
     doublon = Mouvement.new(tool: @outil, user: @declarant, état: :panne, date: t('2026-06-03'))
@@ -27,61 +34,61 @@ class MouvementTest < ActiveSupport::TestCase
     assert_includes doublon.errors[:état], "Impossible : l'outil est déjà en panne à ce moment-là."
   end
 
-  test 'déclarer une panne juste avant une panne non réparée est refusé' do
+  test 'coherence_panne : panne déclarée juste avant une panne non réparée → refusée (critique)' do
     panne(@outil, '2026-06-05')
 
-    anterieure = Mouvement.new(tool: @outil, user: @declarant, état: :panne, date: t('2026-06-03'))
+    antérieure = Mouvement.new(tool: @outil, user: @declarant, état: :panne, date: t('2026-06-03'))
 
-    assert_not anterieure.valid?
-    assert_includes anterieure.errors[:état],
+    assert_not antérieure.valid?
+    assert_includes antérieure.errors[:état],
                     'Impossible : une autre panne est déjà déclarée juste après sans avoir été réparée.'
   end
 
-  test 'déclarer une panne après une réparation est accepté' do
+  test 'coherence_panne : panne déclarée après une réparation → acceptée (critique)' do
     panne(@outil, '2026-06-02')
-    fin_panne(@outil, '2026-06-04')
+    fin_de_panne(@outil, '2026-06-04')
 
     rechute = Mouvement.new(tool: @outil, user: @declarant, état: :panne, date: t('2026-06-06'))
 
     assert rechute.valid?
   end
 
-  test "déclarer une fin de panne sur un outil qui n'est pas en panne est refusé" do
-    reparation = Mouvement.new(tool: @outil, user: @declarant, état: :fin_panne, date: t('2026-06-04'))
+  test 'coherence_fin_de_panne : outil qui n\'est pas en panne → refusée (critique)' do
+    réparation = Mouvement.new(tool: @outil, user: @declarant, état: :fin_de_panne, date: t('2026-06-04'))
 
-    assert_not reparation.valid?
-    assert_includes reparation.errors[:état], "Impossible : l'outil n'était pas déclaré en panne à cette date."
+    assert_not réparation.valid?
+    assert_includes réparation.errors[:état], "Impossible : l'outil n'était pas déclaré en panne à cette date."
   end
 
-  test 'déclarer une fin de panne après une autre fin de panne est refusé' do
+  test 'coherence_fin_de_panne : réparation après une autre réparation → refusée (critique)' do
     panne(@outil, '2026-06-02')
-    fin_panne(@outil, '2026-06-04')
+    fin_de_panne(@outil, '2026-06-04')
 
-    doublon = Mouvement.new(tool: @outil, user: @declarant, état: :fin_panne, date: t('2026-06-06'))
+    doublon = Mouvement.new(tool: @outil, user: @declarant, état: :fin_de_panne, date: t('2026-06-06'))
 
     assert_not doublon.valid?
     assert_includes doublon.errors[:état], "Impossible : l'outil n'était pas déclaré en panne à cette date."
   end
 
-  test 'déclarer une fin de panne alors quune réparation est déjà prévue plus tard est refusé' do
+  test 'coherence_fin_de_panne : réparation déjà prévue plus tard → refusée (critique)' do
     panne(@outil, '2026-06-02')
-    fin_panne(@outil, '2026-06-06')
+    fin_de_panne(@outil, '2026-06-06')
 
-    intercalee = Mouvement.new(tool: @outil, user: @declarant, état: :fin_panne, date: t('2026-06-04'))
+    intercalée = Mouvement.new(tool: @outil, user: @declarant, état: :fin_de_panne, date: t('2026-06-04'))
 
-    assert_not intercalee.valid?
-    assert_includes intercalee.errors[:état], 'Impossible : une fin de panne est déjà prévue pour plus tard.'
+    assert_not intercalée.valid?
+    assert_includes intercalée.errors[:état], 'Impossible : une fin de panne est déjà prévue pour plus tard.'
   end
 
-  test 'déclarer une fin de panne après une panne est accepté' do
+  test 'coherence_fin_de_panne : réparation après une panne → acceptée (critique)' do
     panne(@outil, '2026-06-02')
 
-    reparation = Mouvement.new(tool: @outil, user: @declarant, état: :fin_panne, date: t('2026-06-04'))
+    réparation = Mouvement.new(tool: @outil, user: @declarant, état: :fin_de_panne, date: t('2026-06-04'))
 
-    assert reparation.valid?
+    assert réparation.valid?
   end
 
-  test 'les règles de cohérence sont bornées à un seul outil' do
+  test 'cohérence : panne sur un autre outil au même moment → acceptée (critique)' do
     panne(@outil, '2026-06-02')
 
     autre_outil = Mouvement.new(tool: tools(:outil_paris), user: @declarant, état: :panne, date: t('2026-06-03'))
@@ -89,7 +96,7 @@ class MouvementTest < ActiveSupport::TestCase
     assert autre_outil.valid?
   end
 
-  test 'modifier une panne ne la fait pas entrer en conflit avec elle-même' do
+  test 'cohérence : panne déplacée dans le temps → jamais en conflit avec elle-même (critique)' do
     existante = panne(@outil, '2026-06-02')
 
     assert existante.update(date: t('2026-06-03'))
@@ -97,131 +104,17 @@ class MouvementTest < ActiveSupport::TestCase
 
   # ÉPINGLAGE : aucune règle n'interdit de réserver un outil en panne.
   # À inverser si le métier décide de bloquer la réservation d'un outil hors service.
-  test 'réserver un outil en panne reste possible' do
+  test 'cohérence : réservation d\'un outil en panne → acceptée (critique)' do
     panne(@outil, '2026-06-02')
 
-    reservation = Mouvement.new(tool: @outil, user: @reserviste, état: :réservé, date: t('2026-06-03'))
+    réservation = Mouvement.new(tool: @outil, user: @reserviste, état: :réservé, date: t('2026-06-03'))
 
-    assert reservation.valid?
+    assert réservation.valid?
   end
 
-  # ==========================================================================
-  # ============ TESTS CRITIQUES : réparation et réservations ================
-  # La fin de panne détruit des réservations d'autres utilisateurs : le
-  # périmètre détruit doit être exactement la durée de la panne.
-  # ==========================================================================
+  # ==================== /TESTS CRITIQUES ====================
 
-  test 'la réparation supprime les réservations posées pendant la panne' do
-    panne(@outil, '2026-06-02')
-    pendant = reservation(@outil, '2026-06-03', @reserviste)
-
-    fin_panne(@outil, '2026-06-05')
-
-    assert_not Mouvement.exists?(pendant.id)
-  end
-
-  test 'la réparation conserve les réservations postérieures à la panne' do
-    panne(@outil, '2026-06-02')
-    apres = reservation(@outil, '2026-06-09', @reserviste)
-
-    fin_panne(@outil, '2026-06-05')
-
-    assert Mouvement.exists?(apres.id)
-  end
-
-  test 'la réparation conserve les réservations antérieures à la panne' do
-    avant = reservation(@outil, '2026-05-28', @reserviste)
-    panne(@outil, '2026-06-02')
-
-    fin_panne(@outil, '2026-06-05')
-
-    assert Mouvement.exists?(avant.id)
-  end
-
-  test 'la réparation conserve la panne et la fin de panne' do
-    debut = panne(@outil, '2026-06-02')
-    fin = fin_panne(@outil, '2026-06-05')
-
-    assert_equal [debut.id, fin.id].sort, @outil.mouvements.reload.pluck(:id).sort
-  end
-
-  test 'la réparation ne détruit rien si la panne dorigine a disparu' do
-    debut = panne(@outil, '2026-06-02')
-    fin = fin_panne(@outil, '2026-06-05')
-    debut.destroy
-    rescapee = reservation(@outil, '2026-06-03', @reserviste)
-
-    # Sans la panne d'origine la fin de panne n'est plus valide : seul un
-    # enregistrement sans validation permet d'atteindre la garde du nettoyage.
-    fin.save!(validate: false)
-
-    assert Mouvement.exists?(rescapee.id)
-  end
-
-  # ==========================================================================
-  # A. resolue?
-  # ==========================================================================
-
-  test 'une panne suivie dune réparation est résolue' do
-    debut = panne(@outil, '2026-06-02')
-    fin_panne(@outil, '2026-06-04')
-
-    assert debut.resolue?
-  end
-
-  test 'une panne sans réparation nest pas résolue' do
-    debut = panne(@outil, '2026-06-02')
-
-    assert_not debut.resolue?
-  end
-
-  test 'une réparation antérieure ne résout pas une panne' do
-    panne(@outil, '2026-06-02')
-    fin_panne(@outil, '2026-06-04')
-    rechute = panne(@outil, '2026-06-06')
-
-    assert_not rechute.resolue?
-  end
-
-  test 'une réservation nest jamais résolue' do
-    assert_not reservation(@outil, '2026-06-02', @reserviste).resolue?
-  end
-
-  test 'resolue? répond la même chose que les mouvements soient chargés ou non' do
-    debut = panne(@outil, '2026-06-02')
-    fin_panne(@outil, '2026-06-04')
-
-    depuis_sql = debut.resolue?
-    debut.tool.mouvements.load
-    depuis_memoire = debut.resolue?
-
-    assert_equal depuis_sql, depuis_memoire
-    assert depuis_memoire
-  end
-
-  # ==========================================================================
-  # B. Attributs dérivés
-  # ==========================================================================
-
-  test 'chaque état a son style de badge' do
-    assert_equal 'primary', Mouvement.new(état: :réservé).style
-    assert_equal 'warning', Mouvement.new(état: :panne).style
-    assert_equal 'secondary', Mouvement.new(état: :fin_panne).style
-  end
-
-  test 'un mouvement sans date est invalide' do
-    assert_not Mouvement.new(tool: @outil, user: @declarant, état: :réservé).valid?
-  end
-
-  test "l'organisation d'un mouvement est celle de son outil" do
-    assert_equal @outil.organisation, reservation(@outil, '2026-06-02', @reserviste).organisation
-  end
-
-  # ==========================================================================
-  # C. Notification des réservations futures à la déclaration d'une panne
-  # ==========================================================================
-
-  test "déclarer une panne enqueue NotifPanneJob pour la réservation future d'un autre utilisateur" do
+  test 'avertir_reservations_futures : réservation à venir d\'un tiers → un NotifPanneJob avec les deux ids' do
     réservation = Mouvement.create!(tool: @tool, user: @reserviste, état: :réservé, date: 2.days.from_now)
 
     panne = nil
@@ -229,13 +122,13 @@ class MouvementTest < ActiveSupport::TestCase
       panne = Mouvement.create!(tool: @tool, user: @declarant, état: :panne, date: Time.current)
     end
 
-    # Le job reçoit des ids bruts (pas de GlobalID) : (mouvement_panne_id, réservation_id).
     assert_enqueued_with(job: NotifPanneJob, args: [panne.id, réservation.id])
   end
 
-  test 'déclarer une panne enqueue un NotifPanneJob par réservation future' do
+  test 'avertir_reservations_futures : plusieurs réservations à venir → un job par réservation' do
     résa_1 = Mouvement.create!(tool: @tool, user: @reserviste, état: :réservé, date: 2.days.from_now)
-    résa_2 = Mouvement.create!(tool: @tool, user: users(:patrick_adherent_paris), état: :réservé, date: 3.days.from_now)
+    résa_2 = Mouvement.create!(tool: @tool, user: users(:patrick_adherent_paris), état: :réservé,
+                               date: 3.days.from_now)
 
     panne = nil
     assert_enqueued_jobs 2, only: NotifPanneJob do
@@ -243,10 +136,11 @@ class MouvementTest < ActiveSupport::TestCase
     end
 
     couples = enqueued_jobs.select { |j| j[:job] == NotifPanneJob }.map { |j| j[:args] }
+
     assert_equal [[panne.id, résa_1.id], [panne.id, résa_2.id]].sort, couples.sort
   end
 
-  test 'les réservations futures du déclarant lui-même ne sont pas notifiées' do
+  test 'avertir_reservations_futures : réservation du déclarant lui-même → aucun job' do
     Mouvement.create!(tool: @tool, user: @declarant, état: :réservé, date: 2.days.from_now)
 
     assert_no_enqueued_jobs only: NotifPanneJob do
@@ -254,7 +148,7 @@ class MouvementTest < ActiveSupport::TestCase
     end
   end
 
-  test 'les réservations passées ne sont pas notifiées' do
+  test 'avertir_reservations_futures : réservation passée → aucun job' do
     Mouvement.create!(tool: @tool, user: @reserviste, état: :réservé, date: 2.days.ago)
 
     assert_no_enqueued_jobs only: NotifPanneJob do
@@ -262,9 +156,9 @@ class MouvementTest < ActiveSupport::TestCase
     end
   end
 
-  test "la réservation future d'un utilisateur supprimé (discard) n'est pas notifiée" do
-    # Le default_scope :kept de User s'applique à l'association : réservation.user
-    # renvoie nil pour un réserviste soft-deleted, la garde `user.present?` l'exclut.
+  # Le default_scope :kept de User s'applique à l'association : réservation.user
+  # renvoie nil pour un réserviste soft-deleted, la garde `user.present?` l'exclut.
+  test 'avertir_reservations_futures : réservataire désactivé → aucun job' do
     Mouvement.create!(tool: @tool, user: @reserviste, état: :réservé, date: 2.days.from_now)
     @reserviste.discard
 
@@ -273,12 +167,113 @@ class MouvementTest < ActiveSupport::TestCase
     end
   end
 
-  test "créer un mouvement qui n'est pas une panne ne notifie personne" do
+  test 'avertir_reservations_futures : mouvement qui n\'est pas une panne → aucun job' do
     Mouvement.create!(tool: @tool, user: @reserviste, état: :réservé, date: 3.days.from_now)
 
     assert_no_enqueued_jobs only: NotifPanneJob do
       Mouvement.create!(tool: @tool, user: @declarant, état: :réservé, date: 2.days.from_now)
     end
+  end
+
+  # ==================== TESTS CRITIQUES ====================
+  # Réparation et réservations : la fin de panne détruit des réservations
+  # d'autres utilisateurs, le périmètre détruit doit être exactement la durée
+  # de la panne.
+
+  test 'nettoyer_reservations_pendant_panne : réservation posée pendant la panne → supprimée (critique)' do
+    panne(@outil, '2026-06-02')
+    pendant = reservation(@outil, '2026-06-03', @reserviste)
+
+    fin_de_panne(@outil, '2026-06-05')
+
+    assert_not Mouvement.exists?(pendant.id)
+  end
+
+  test 'nettoyer_reservations_pendant_panne : réservation postérieure à la réparation → conservée (critique)' do
+    panne(@outil, '2026-06-02')
+    après = reservation(@outil, '2026-06-09', @reserviste)
+
+    fin_de_panne(@outil, '2026-06-05')
+
+    assert Mouvement.exists?(après.id)
+  end
+
+  test 'nettoyer_reservations_pendant_panne : réservation antérieure à la panne → conservée (critique)' do
+    avant = reservation(@outil, '2026-05-28', @reserviste)
+    panne(@outil, '2026-06-02')
+
+    fin_de_panne(@outil, '2026-06-05')
+
+    assert Mouvement.exists?(avant.id)
+  end
+
+  test 'nettoyer_reservations_pendant_panne : panne et réparation → jamais supprimées elles-mêmes (critique)' do
+    début = panne(@outil, '2026-06-02')
+    fin = fin_de_panne(@outil, '2026-06-05')
+
+    assert_equal [début.id, fin.id].sort, @outil.mouvements.reload.pluck(:id).sort
+  end
+
+  test 'nettoyer_reservations_pendant_panne : panne d\'origine disparue → rien n\'est supprimé (critique)' do
+    début = panne(@outil, '2026-06-02')
+    fin = fin_de_panne(@outil, '2026-06-05')
+    début.destroy
+    rescapée = reservation(@outil, '2026-06-03', @reserviste)
+
+    # Sans la panne d'origine la fin de panne n'est plus valide : seul un
+    # enregistrement sans validation permet d'atteindre la garde du nettoyage.
+    fin.save!(validate: false)
+
+    assert Mouvement.exists?(rescapée.id)
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
+  test 'style : chaque état → la couleur du badge qui le distingue à l\'écran' do
+    assert_equal 'primary', Mouvement.new(état: :réservé).style
+    assert_equal 'warning', Mouvement.new(état: :panne).style
+    assert_equal 'secondary', Mouvement.new(état: :fin_de_panne).style
+  end
+
+  test 'style : mouvement sans état → couleur neutre' do
+    assert_equal 'info', Mouvement.new.style
+  end
+
+  test 'resolue? : panne suivie d\'une réparation → vrai' do
+    début = panne(@outil, '2026-06-02')
+    fin_de_panne(@outil, '2026-06-04')
+
+    assert début.resolue?
+  end
+
+  test 'resolue? : panne sans réparation → faux' do
+    début = panne(@outil, '2026-06-02')
+
+    assert_not début.resolue?
+  end
+
+  test 'resolue? : réparation antérieure à la panne → faux' do
+    panne(@outil, '2026-06-02')
+    fin_de_panne(@outil, '2026-06-04')
+    rechute = panne(@outil, '2026-06-06')
+
+    assert_not rechute.resolue?
+  end
+
+  test 'resolue? : réservation → faux, une réservation ne se résout pas' do
+    assert_not reservation(@outil, '2026-06-02', @reserviste).resolue?
+  end
+
+  test 'resolue? : association chargée ou non → même réponse' do
+    début = panne(@outil, '2026-06-02')
+    fin_de_panne(@outil, '2026-06-04')
+
+    depuis_sql = début.resolue?
+    début.tool.mouvements.load
+    depuis_mémoire = début.resolue?
+
+    assert_equal depuis_sql, depuis_mémoire
+    assert depuis_mémoire
   end
 
   private
@@ -293,15 +288,11 @@ class MouvementTest < ActiveSupport::TestCase
     Mouvement.create!(tool: outil, user: @declarant, état: :panne, date: t(jour))
   end
 
-  def fin_panne(outil, jour)
-    Mouvement.create!(tool: outil, user: @declarant, état: :fin_panne, date: t(jour))
+  def fin_de_panne(outil, jour)
+    Mouvement.create!(tool: outil, user: @declarant, état: :fin_de_panne, date: t(jour))
   end
 
   def reservation(outil, jour, qui)
     Mouvement.create!(tool: outil, user: qui, état: :réservé, date: t(jour))
-  end
-
-  test 'un mouvement sans état retombe sur le style neutre' do
-    assert_equal 'info', Mouvement.new.style
   end
 end

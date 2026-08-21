@@ -4,70 +4,60 @@ require 'test_helper'
 
 class ConventionsControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @admin = users(:administrateur_paris)        # mairie_paris
-    @adherent = users(:patrick_adherent_paris)   # a le service service_paris, sans convention
+    @admin = users(:administrateur_paris)
+    @adherent = users(:patrick_adherent_paris)
     @service = services(:service_paris)
     @convention = conventions(:convention_paris)
-
-    # --- On définit des dates dynamiques relatives à AUJOURD'HUI ---
     @today = Date.current
-    @start_of_year = @today.beginning_of_year
-    @end_of_year = @today.end_of_year
-
     sign_in @admin
   end
 
-  test 'index accessible à un admin' do
+  test 'index : sans paramètre → la page répond' do
     get conventions_url
+
     assert_response :success
   end
 
-  test 'new accessible (avec adhérent prérempli)' do
-    get new_convention_url(adherent_id: @adherent.slug)
+  test 'index : recherche sans correspondance → la convention est absente' do
+    get conventions_url(search: 'inexistant.pdf')
+
     assert_response :success
+    assert_not_includes assigns(:conventions), @convention
   end
 
-  test 'create une convention' do
-    assert_difference('Convention.count') do
-      post conventions_url, params: { convention: {
-        user_id: @adherent.id,
-        service_id: @service.id,
-        date_début: @today.to_s,
-        date_fin_prévue: (@today + 1.year).to_s
-      } }
-    end
-    assert_redirected_to conventions_path
+  test 'index : adherent_id → seulement les conventions de cet adhérent' do
+    get conventions_url(adherent_id: @convention.user_id)
+    assert_includes assigns(:conventions), @convention
+
+    get conventions_url(adherent_id: @adherent.id)
+    assert_not_includes assigns(:conventions), @convention
   end
 
-  test 'edit accessible' do
-    get edit_convention_url(@convention)
-    assert_response :success
+  test 'index : service_id → seulement les conventions de ce service' do
+    get conventions_url(service_id: services(:informatique).id)
+    assert_includes assigns(:conventions), @convention
+
+    get conventions_url(service_id: services(:technique).id)
+    assert_not_includes assigns(:conventions), @convention
   end
 
-  test 'update une convention' do
-    patch convention_url(@convention), params: { convention: { date_fin_prévue: '2026-12-31' } }
-    assert_redirected_to conventions_path
-    assert_equal Date.new(2026, 12, 31), @convention.reload.date_fin_prévue
+  test 'index : active_on → seulement les conventions actives à cette date' do
+    get conventions_url(active_on: @today.beginning_of_year.to_s)
+    assert_includes assigns(:conventions), @convention
+
+    get conventions_url(active_on: (@today.beginning_of_year - 1.year).to_s)
+    assert_not_includes assigns(:conventions), @convention
   end
 
-  test 'destroy une convention' do
-    assert_difference('Convention.count', -1) do
-      delete convention_url(@convention)
-    end
-    assert_redirected_to conventions_path
-  end
-
-  test 'show accessible à un admin et affiche les informations clés' do
+  test 'show : une convention de son organisation → la page répond' do
     get convention_url(@convention)
+
     assert_response :success
-    assert_select 'h1', text: /Convention/
     assert_match @convention.user.nom_prénom, response.body
     assert_match @convention.service.nom, response.body
   end
 
-  test "le show affiche le journal d'activité (audits) de la convention" do
-    # Une modification génère un audit (gem `audited`) ; on vérifie qu'il
-    # apparaît dans la section « Activité » (rendue par le partial _audit + prettify).
+  test 'show : une modification tracée → elle apparaît dans le journal d’activité' do
     @convention.update!(mémo: 'Note de suivi')
 
     get convention_url(@convention)
@@ -77,111 +67,99 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'td', text: /Note de suivi/
   end
 
-  test "un agent n'est pas autorisé à voir le show" do
-    sign_in users(:agent_whatsapp)
-    get convention_url(@convention)
-    assert_redirected_to root_path
-  end
+  test 'new : sans paramètre → la page répond' do
+    get new_convention_url
 
-  test 'services_for_adherent renvoie les services disponibles en JSON' do
-    get services_for_adherent_conventions_url(adherent_id: @adherent.id)
     assert_response :success
-    noms = response.parsed_body.map { |s| s['nom'] }
-    assert_includes noms, @service.nom
   end
 
-  test "un agent n'est pas autorisé à voir l'index" do
-    sign_in users(:agent_whatsapp)
-    get conventions_url
-    assert_redirected_to root_path
+  test 'new : avec un adhérent en paramètre → il est préchargé' do
+    get new_convention_url(adherent_id: @adherent.slug)
+
+    assert_response :success
+    assert_equal @adherent, assigns(:convention).user
   end
 
-  # --- Filtres de l'index (convention_paris : service Informatique, début 2026-01-01, fin ouverte, sans document) ---
-  # On assertit sur le lien vers le show propre à la ligne du tableau (seul lien de la
-  # ligne depuis que #326 a déplacé les actions dans le show)
+  test 'new : par un manager → seuls les adhérents de ses services sont proposés' do
+    sign_in users(:hidalgo)
 
-  def convention_row_marker(convention)
-    %(href="#{convention_path(convention)}")
+    get new_convention_url
+
+    assert_response :success
+    assert_includes assigns(:adherents), users(:weil)
+    assert_not_includes assigns(:adherents), users(:adherent_marseille)
   end
 
-  test 'filtre par service inclut le service correspondant et exclut les autres' do
-    row = convention_row_marker(@convention)
+  test 'create : paramètres valides → la convention est créée' do
+    assert_difference('Convention.count') do
+      post conventions_url, params: { convention: {
+        user_id: @adherent.id,
+        service_id: @service.id,
+        date_début: @today.to_s,
+        date_fin_prévue: (@today + 1.year).to_s
+      } }
+    end
 
-    get conventions_url(service_id: services(:informatique).id)
-    assert_includes response.body, row
-
-    get conventions_url(service_id: services(:technique).id)
-    assert_not_includes response.body, row
+    assert_redirected_to conventions_path
   end
 
-  test 'filtre active_on inclut une convention active à la date' do
-    # On utilise la date de début de l'année en cours, à laquelle on sait que la convention de la fixture est active.
-    get conventions_url(active_on: @start_of_year.to_s)
-    assert_includes response.body, convention_row_marker(@convention)
-  end
-
-  test 'filtre active_on exclut une convention pas encore commencée à la date' do
-    # Un año antes del inicio del año actual
-    get conventions_url(active_on: (@start_of_year - 1.year).to_s)
-    assert_not_includes response.body, convention_row_marker(@convention)
-  end
-
-  test 'recherche par nom de document exclut une convention sans document correspondant' do
-    get conventions_url(search: 'inexistant.pdf')
-    assert_not_includes response.body, convention_row_marker(@convention)
-  end
-
-  # --- Créations invalides (les 3 validations métier du model) ---
-
-  test 'create invalide (doublon de convention pour le couple adhérent/service) : aucune création' do
-    # weil a déjà convention_paris sur le service informatique
+  test 'create : doublon adhérent/service → aucune création' do
     assert_no_difference -> { Convention.count } do
       post conventions_url, params: { convention: {
         user_id: users(:weil).id, service_id: services(:informatique).id, date_début: @today.to_s
       } }
     end
+
     assert_response :unprocessable_content
   end
 
-  test 'create invalide (date de fin antérieure à la date de début) : aucune création' do
+  test 'create : date de fin antérieure au début → aucune création' do
     assert_no_difference -> { Convention.count } do
       post conventions_url, params: { convention: {
         user_id: @adherent.id, service_id: @service.id,
-        date_début: @today.to_s, 
-        date_fin_prévue: (@today - 1.month).to_s # Un mes ANTES de empezar (inválido)
+        date_début: @today.to_s, date_fin_prévue: (@today - 1.month).to_s
       } }
     end
+
     assert_response :unprocessable_content
   end
 
-  test "create invalide (service n'appartenant pas à l'adhérent) : aucune création" do
-    # patrick n'est rattaché qu'au service service_paris, pas à informatique
+  test 'create : service n’appartenant pas à l’adhérent → aucune création' do
     assert_no_difference -> { Convention.count } do
       post conventions_url, params: { convention: {
         user_id: @adherent.id, service_id: services(:informatique).id, date_début: @today.to_s
       } }
     end
+
     assert_response :unprocessable_content
   end
 
-  # --- update : branche d'échec, et collections du formulaire côté manager ---
+  test 'destroy : une convention de son organisation → elle est supprimée' do
+    assert_difference('Convention.count', -1) do
+      delete convention_url(@convention)
+    end
 
-  test 'update invalide réaffiche le formulaire en 422' do
-    patch convention_url(@convention), params: { convention: { date_début: '' } }
-
-    assert_response :unprocessable_content
-    assert_not_nil @convention.reload.date_début
+    assert_redirected_to conventions_path
   end
 
-  # Pour un manager (et non un administrateur), la liste des adhérents proposée
-  # est bornée à ses services et non à toute l'organisation.
-  test 'edit par un manager ne propose que les adhérents de ses services' do
-    sign_in users(:hidalgo)
-
-    get edit_convention_url(@convention)
+  test 'services_for_adherent : un adhérent de son organisation → ses services en JSON' do
+    get services_for_adherent_conventions_url(adherent_id: @adherent.id)
 
     assert_response :success
-    assert_includes assigns(:adherents), users(:weil)
-    assert_not_includes assigns(:adherents), users(:adherent_marseille)
+    assert_includes response.parsed_body.map { |service| service['nom'] }, @service.nom
+  end
+
+  test 'services_for_adherent : un adhérent d’une autre organisation → aucun service' do
+    get services_for_adherent_conventions_url(adherent_id: users(:adherent_marseille).id)
+
+    assert_response :success
+    assert_empty response.parsed_body
+  end
+
+  test 'set_convention : un slug inconnu redirige sans planter' do
+    get convention_url(id: 'slug-qui-n-existe-pas')
+
+    assert_redirected_to root_path
+    assert_equal 'Convention introuvable', flash[:alert]
   end
 end

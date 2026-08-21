@@ -190,6 +190,21 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     assert_equal 'terminé', intervention.reload.workflow_state
   end
 
+  # Le comportement de la zone est couvert en détail sur le formulaire agent
+  # (intervention_agent_flow_test) ; ici on garde une sentinelle : la section
+  # Photos est bien branchée dans le formulaire manager, qui est un autre partial.
+  test 'la zone de photos annonce le nombre de fichiers ajoutés' do
+    visit edit_intervention_url(interventions(:tonte_locaux))
+
+    attach_file 'intervention_photos',
+                [Rails.root.join('test/fixtures/files/exemple.png').to_s,
+                 Rails.root.join('test/fixtures/files/carte_grise.jpg').to_s],
+                make_visible: true
+
+    assert_text '2 fichiers sélectionnés'
+    assert_text 'exemple.png, carte_grise.jpg'
+  end
+
   # !!! Tests sur les filtres obsolètes !!!
 
   # TODO VU: Rendre dynamique les assert_text

@@ -18,15 +18,17 @@ class TransformToPdfQrcodeTest < ActiveSupport::TestCase
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'le QRCode encode l’URL de pointage de cette intervention' do
+  test 'le QRCode encode l’URL de pointage de cette intervention (critique)' do
     assert_equal pointer_intervention_url(@modèle, host: @hôte), charge_utile_du_qrcode(@modèle)
   end
 
-  test 'deux interventions donnent deux QRCodes différents' do
+  test 'deux interventions donnent deux QRCodes différents (critique)' do
     autre = interventions(:intervention_fille)
 
     assert_not_equal charge_utile_du_qrcode(@modèle), charge_utile_du_qrcode(autre)
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 
   # ==================== Lisibilité de l'affiche ====================
 

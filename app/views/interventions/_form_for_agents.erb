@@ -103,18 +103,18 @@
           <%= form.label :début, class: "label font-semibold text-slate-700" do %>
             Début <span class="text-red-500">*</span>
           <% end %>
-          <div class="flex items-center gap-2  <%= terminaison_demandee && intervention.début.blank? ?  'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200' %> p-2 rounded-lg border">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2 <%= terminaison_demandee && intervention.début.blank? ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200' %> p-2 rounded-lg border">
             <%= form.date_field :début,
-                                class: "flex-1 bg-transparent border-none outline-hidden text-sm",
-                                value: (params[:début]&.to_date || intervention.début&.to_date || (intervention.new_record? ? Date.current : nil)),
+                                class: "w-full sm:flex-1 bg-transparent border-none outline-hidden text-sm",
+                                value: (intervention.début&.to_date || (intervention.new_record? ? Date.current : nil)),
                                 data: { 'calc-temps-passe-target': 'debut_date',
                                         'verification-disponibilites-target': 'debut',
                                         action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" },
                                 required: true %>
-            <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs">
+            <div class="flex items-center justify-center gap-1 w-full sm:w-auto bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs shrink-0">
               <%= form.select :début_hour, 
                                options_for_select((0..23).map { |h| [format('%02d', h), h] },
-                              params[:début_hour] || intervention.début&.hour),
+                                                  heure_saisie(intervention, :début)),
                               { include_blank: '--' },
                               class: "bg-transparent border-none outline-hidden text-sm cursor-pointer",
                               data: { 'calc-temps-passe-target': 'debut_hour',
@@ -124,7 +124,7 @@
               <span class="text-slate-400 font-bold">:</span>
               <%= form.select :début_minute, 
                               options_for_select((0..59).map { |m| [format('%02d', m), m] },
-                                                 params[:début_minute] || intervention.début&.min),
+                                                 minute_saisie(intervention, :début)),
                               { include_blank: '--' },
                               class: "bg-transparent border-none outline-hidden text-sm cursor-pointer",
                               data: { 'calc-temps-passe-target': 'debut_minute',
@@ -138,18 +138,18 @@
           <%= form.label :fin, class: "label font-semibold text-slate-700" do %>
             Fin <span class="text-red-500">*</span>
           <% end %>
-          <div class="flex items-center gap-2  <%= terminaison_demandee && intervention.fin.blank? ?  'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200' %> p-2 rounded-lg border">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2 <%= terminaison_demandee && intervention.fin.blank? ?  'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200' %> p-2 rounded-lg border">
             <%= form.date_field :fin,
-                                class: "flex-1 bg-transparent border-none outline-hidden text-sm",
-                                value: (params[:fin].try(:to_date) || intervention.fin&.to_date),
+                                class: "w-full sm:flex-1 bg-transparent border-none outline-hidden text-sm",
+                                value: intervention.fin&.to_date,
                                 data: { 'calc-temps-passe-target': 'fin_date',
                                         'verification-disponibilites-target': 'fin',
                                         action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" },
                                 required: true %>
-            <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs">
+            <div class="flex items-center justify-center gap-1 w-full sm:w-auto bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs shrink-0">
               <%= form.select :fin_hour, 
                               options_for_select((0..23).map { |h| [format('%02d', h), h] },
-                                                 params[:fin_hour] || intervention.fin&.hour),
+                              heure_saisie(intervention, :fin)),
                               { include_blank: '--' },
                               class: "bg-transparent border-none outline-hidden text-sm cursor-pointer",
                               data: { 'calc-temps-passe-target': 'fin_hour',
@@ -159,7 +159,7 @@
               <span class="text-slate-400 font-bold">:</span>
               <%= form.select :fin_minute, 
                               options_for_select((0..59).map { |m| [format('%02d', m), m] },
-                                                 params[:fin_minute] || intervention.fin&.min),
+                              minute_saisie(intervention, :fin)),
                               { include_blank: '--' },
                               class: "bg-transparent border-none outline-hidden text-sm cursor-pointer",
                               data: { 'calc-temps-passe-target': 'fin_minute',
@@ -179,8 +179,8 @@
   </div>
 
   <div class="flex flex-col sm:flex-row gap-3 pt-4">
-    <%= button_tag "Annuler", type: "button", onclick: "history.back();", class: "btn flex-1" %>
-    <%= form.submit "Enregistrer", id: "enregistrer_intervention", class: "btn btn-primary text-white font-bold flex-1 order-1 sm:order-2 shadow-md hover:shadow-lg transition-all" %>
+    <%= button_tag "Annuler", type: "button", onclick: "history.back();", class: "btn w-full sm:flex-1" %>
+    <%= form.submit "Enregistrer", id: "enregistrer_intervention", class: "btn btn-primary text-white font-bold w-full sm:flex-1 order-1 sm:order-2 shadow-md hover:shadow-lg transition-all" %>
   </div>
 
   <div class="pt-4">

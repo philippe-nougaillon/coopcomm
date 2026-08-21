@@ -5,7 +5,7 @@ class WikiPagesController < ApplicationController
   before_action :set_wiki_page, only: %i[show edit update destroy]
   before_action :is_user_authorized
 
-  # GET /wiki_pages or /wiki_pages.json
+  # GET /wiki_pages 
   def index
     @wiki_pages = case params[:catégorie]
                   when 'blog'
@@ -30,7 +30,7 @@ class WikiPagesController < ApplicationController
     @wiki_pages = @wiki_pages.order(:poids)
   end
 
-  # GET /wiki_pages/1 or /wiki_pages/1.json
+  # GET /wiki_pages/1
   def show; end
 
   # GET /wiki_pages/new
@@ -41,43 +41,32 @@ class WikiPagesController < ApplicationController
   # GET /wiki_pages/1/edit
   def edit; end
 
-  # POST /wiki_pages or /wiki_pages.json
+  # POST /wiki_pages
   def create
     @wiki_page = WikiPage.new(wiki_page_params)
     @wiki_page.user_id = current_user.id
 
-    respond_to do |format|
-      if @wiki_page.save
-        format.html { redirect_to wiki_page_url(@wiki_page), notice: 'Page wiki créée avec succès.' }
-        format.json { render :show, status: :created, location: @wiki_page }
-      else
-        format.html { render :new, status: :unprocessable_content }
-        format.json { render json: @wiki_page.errors, status: :unprocessable_content }
-      end
+    if @wiki_page.save
+      redirect_to wiki_page_url(@wiki_page), notice: 'Page wiki créée avec succès.'
+    else
+      render :new, status: :unprocessable_content
     end
   end
 
-  # PATCH/PUT /wiki_pages/1 or /wiki_pages/1.json
+  # PATCH/PUT /wiki_pages/1
   def update
-    respond_to do |format|
-      if @wiki_page.update(wiki_page_params)
-        format.html { redirect_to wiki_page_url(@wiki_page), notice: 'Page wiki modifiée avec succès.' }
-        format.json { render :show, status: :ok, location: @wiki_page }
-      else
-        format.html { render :edit, status: :unprocessable_content }
-        format.json { render json: @wiki_page.errors, status: :unprocessable_content }
-      end
+    if @wiki_page.update(wiki_page_params)
+      redirect_to wiki_page_url(@wiki_page), notice: 'Page wiki modifiée avec succès.'
+    else
+      render :edit, status: :unprocessable_content
     end
   end
 
-  # DELETE /wiki_pages/1 or /wiki_pages/1.json
+  # DELETE /wiki_pages/1
   def destroy
     @wiki_page.discard
 
-    respond_to do |format|
-      format.html { redirect_to wiki_pages_url, notice: 'Page wiki supprimée avec succès.' }
-      format.json { head :no_content }
-    end
+    redirect_to wiki_pages_url, notice: 'Page wiki supprimée avec succès.'
   end
 
   private

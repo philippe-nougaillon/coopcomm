@@ -33,7 +33,7 @@
         turbo_method: :post,
         turbo_confirm: "Libérer la réservation d'un autre utilisateur pour le #{date.strftime('%d/%m')} ?"
       },
-      title: "Réservé par qqn d'autre (cliquez pour libérer)" do %>
+      title: "Réservé par quelqu'un d'autre (cliquez pour libérer)" do %>
       <span class="border-1 border-slate-400 rounded-sm bg-blue-300 hover:opacity-75 h-4 inline-block align-middle cursor-pointer shadow-sm"
             style="padding-left: 15px;">
       </span>
@@ -41,7 +41,7 @@
   <% else %>
     <span class="border-1 border-slate-400 rounded-sm bg-blue-300 h-4 inline-block align-middle cursor-default shadow-sm"
           style="padding-left: 15px;"
-          title="Réservé par qqn d'autre">
+          title="Réservé par quelqu'un d'autre">
     </span>
   <% end %>
 <% elsif etat == "P" %>

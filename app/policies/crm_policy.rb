@@ -3,11 +3,11 @@
 class CrmPolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
-      Scope
+      scope
     end
   end
 
   def index?
-    manager_or_admin? || user.adhérent?
+    manager_or_admin? || user&.adhérent?
   end
 end

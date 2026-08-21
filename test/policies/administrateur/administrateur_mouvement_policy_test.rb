@@ -7,48 +7,30 @@ class AdministrateurMouvementPolicyTest < ActionDispatch::IntegrationTest
     administrateur = users(:administrateur_paris)
 
     mouvement = mouvements(:mouvement_tondeuse)
+    mouvement_autre_org = mouvements(:mouvement_marseille)
 
     @policy = MouvementPolicy.new(administrateur, mouvement)
+    @policy_autre_org = MouvementPolicy.new(administrateur, mouvement_autre_org)
   end
 
-  # Index
-  test 'accès autorisé pour un administrateur sur la page index des mouvements' do
+  test 'accès autorisé pour un administrateur sur un mouvement de son organisation' do
     assert @policy.index?
+    assert @policy.new?
+    assert @policy.create?
+    assert @policy.edit?
+    assert @policy.update?
+    assert @policy.reserve?
+    assert @policy.libere?
   end
 
-  # show
-  test "accès impossible pour un administrateur sur la page show d'un mouvement" do
+  test 'accès interdit pour un administrateur sur un mouvement de son organisation' do
     refute @policy.show?
   end
 
-  # New
-  test "accès autorisé pour un administrateur sur la page new d'un mouvement" do
-    assert @policy.new?
-  end
-
-  # Create
-  test "accès autorisé pour un administrateur sur la page create d'un mouvement" do
-    assert @policy.create?
-  end
-
-  # Edit
-  test "accès autorisé pour un administrateur sur la page edit d'un mouvement" do
-    assert @policy.edit?
-  end
-
-  # Update
-  test "accès autorisé pour un administrateur sur la page update d'un mouvement" do
-    assert @policy.update?
-  end
-
-
-  # reserve
-  test "accès autorisé pour un administrateur sur la page reserve d'un mouvement" do
-    assert @policy.reserve?
-  end
-
-  # libere
-  test "un administrateur peut libérer la réservation de n'importe qui" do
-    assert @policy.libere?
+  test "accès interdit pour un administrateur sur un mouvement d'une autre organisation" do
+    refute @policy_autre_org.show?
+    refute @policy_autre_org.edit?
+    refute @policy_autre_org.update?
+    refute @policy_autre_org.libere?
   end
 end

@@ -23,9 +23,10 @@
         <table class="table w-full">
           <thead class="bg-slate-100 text-slate-600 font-semibold">
             <tr>
+              <th class="py-4 px-6"></th>
               <%= th_tri 'Période', colonne: 'absences.du', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left' %>
               <%= th_tri 'Motif', colonne: 'absences.motif', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left' %>
-              <%= th_tri 'Observation', colonne: 'absences.observation', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left' %>
+              <%= th_tri 'Observations', colonne: 'absences.observation', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left' %>
               <th class="py-4 px-6"></th>
             </tr>
           </thead>
@@ -48,7 +49,7 @@
             Aucune absence enregistrée
           </h3>
           <p class="text-xs sm:text-sm text-slate-500 max-w-sm mt-1 leading-relaxed mb-4">
-            Cet utilisateur n'a pas d'absences planifiées ou passées pour le moment.
+            Cet utilisateur n'a pas enregistré d'absence planifiée ou passée pour le moment.
           </p>
           <%# Botón en el centro si el usuario tiene permisos %>
           <% if current_user.manager_or_admin? %>
@@ -68,7 +69,7 @@
           <form method="dialog">
             <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
           </form>
-          <div class="flex items-center gap-3 mb-6">
+          <div class="flex items-center gap-3 mb-6 mt-2">
             <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
               <%= embedded_svg "icons/event_busy.svg", class: "text-primary", title: "Une absence" %>
             </div>

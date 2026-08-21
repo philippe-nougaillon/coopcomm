@@ -28,7 +28,7 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
     'bloc:actions' => %r{>Actions</h2>}i,
     'bloc:activite' => %r{>Activité</h2>}i,
     'bloc:pointages' => %r{>Pointages</h2>}i,
-    'donnee:debut_prevue' => 'Début prévue',
+    'donnee:debut_prevue' => 'Début prévu',
     'donnee:agent_pointage' => '<span>Agent</span>',
     'donnee:temps_passe' => 'Temps passé',
     'donnee:temps_total' => 'Temps total',
@@ -36,7 +36,10 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
     'donnee:commentaires' => InterventionsMatrice::SONDE_COMMENTAIRES,
     'donnee:avis' => InterventionsMatrice::SONDE_AVIS,
     'donnee:meteo' => InterventionsMatrice::SONDE_METEO,
-    'donnee:photos' => "Aucune photo n'est attachée",
+    # Les trois galeries s'intitulent « Photos » : seul leur message de galerie
+    # vide distingue encore les photos de la demande de celles de la réalisation.
+    'donnee:photos' => %r{Aucune photo n(?:&#39;|')est attachée(?:\.| à cette intervention)},
+    'donnee:photos_demande' => %r{Aucune photo n(?:&#39;|')est attachée à la demande},
     'action:modifier' => 'Modifier',
     'action:supprimer' => "Supprimer l'intervention",
     'action:qrcode' => 'QR Code',
@@ -45,13 +48,13 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
     'action:refuser' => '>Refuser<'
   }.freeze
 
-  DEMANDE = %w[bloc:demande donnee:meteo].freeze
+  DEMANDE = %w[bloc:demande donnee:meteo donnee:photos_demande].freeze
   DATES_PREVUES = %w[donnee:debut_prevue].freeze
   ASSIGNATION = %w[bloc:assignation].freeze
   REALISATION = %w[bloc:intervention donnee:temps_passe donnee:temps_total donnee:pause
                    donnee:commentaires donnee:photos].freeze
   # Section « Intervention » de l'adhérent : dates et temps, sans les
-  # commentaires ni les photos que voient les autres rôles.
+  # commentaires ni les photos de réalisation que voient les autres rôles.
   TEMPS_ADHERENT = %w[bloc:intervention donnee:temps_passe donnee:temps_total donnee:pause].freeze
   POINTAGES = %w[bloc:pointages donnee:temps_total].freeze
   # La colonne « Agent » du tableau des pointages, masquée au seul agent noté.
@@ -79,8 +82,7 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
     # L'adhérent a sa propre section « Intervention » : dates et temps, sauf sur
     # un modèle de pointage, où il reçoit le tableau des pointages comme les
     # autres rôles. Les dates prévues et l'assignation lui sont ajoutées par
-    # `attendu`, sauf à l'état « pointage activé ». Il ne voit toujours pas les
-    # photos, que l'index lui montre pourtant.
+    # `attendu`, sauf à l'état « pointage activé ».
     %w[adherent_proprietaire classique] => DEMANDE + TEMPS_ADHERENT + ['action:modifier'],
     %w[adherent_proprietaire modele] => DEMANDE + POINTAGES + AGENT_POINTAGE +
                                         ['action:modifier', 'action:qrcode'],

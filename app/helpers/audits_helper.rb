@@ -24,11 +24,14 @@ module AuditsHelper
     updated_at
     id
     template_slug
-    tag_list
     invited_by_type
     invitations_count
     invitation_limit
   ].freeze
+
+  # Champs dont la valeur est elle-même une liste : sur un audit de création ou
+  # de suppression, le tableau stocké est la liste, pas un couple avant/après.
+  CHAMPS_LISTE = %w[tag_list].freeze
 
   # Tables de liaison : leur audit ne se lit pas comme une liste de colonnes mais
   # comme une phrase (« X ajouté à l'intervention »).
@@ -42,7 +45,7 @@ module AuditsHelper
   }.freeze
 
   LIBELLES_ENUM = {
-    'fin_panne' => 'Fin de la panne',
+    'fin_de_panne' => 'Fin de panne',
     'faq' => 'FAQ'
   }.freeze
 
@@ -139,7 +142,8 @@ module AuditsHelper
       'private' => 'Page privée',
       'qté' => 'Quantité',
       'prix_ht' => 'Prix HT',
-      'total_ht' => 'Total HT'
+      'total_ht' => 'Total HT',
+      'tag_list' => 'Mots clés'
     }.fetch(key, key.humanize)
   end
 
@@ -214,7 +218,7 @@ module AuditsHelper
     changes.filter_map do |key, value|
       next if FILTERED_FIELDS.include?(key)
 
-      old_val, new_val = value.is_a?(Array) ? value : [nil, value]
+      old_val, new_val = paire_avant_après(key, value)
 
       # Force le format lisible avant de vérifier s'ils sont vides
       formatted_old = format_audit_value(key, old_val, auditable_type)
@@ -236,6 +240,8 @@ module AuditsHelper
     when 'locked_at'
       return (value.present? && value != '—') ? 'Verrouillé' : 'Ouvert'
     end
+
+    return value.compact_blank.join(', ').presence || '—' if value.is_a?(Array)
 
     # 2. Règle générale pour le reste des champs (si nil, affiche un tiret)
     return '—' if value.nil? || value.to_s.strip.empty? || value.to_s == '—'
@@ -347,6 +353,13 @@ module AuditsHelper
 
   def liaison_value_brute(valeur)
     (valeur.is_a?(Array) ? valeur.compact.last : valeur).presence
+  end
+
+  def paire_avant_après(key, value)
+    return [nil, value] unless value.is_a?(Array)
+    return value unless CHAMPS_LISTE.include?(key)
+
+    value.first.is_a?(Array) ? value : [nil, value]
   end
 
   def render_changes_list(items)

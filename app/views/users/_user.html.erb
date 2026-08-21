@@ -23,7 +23,6 @@
   <%# Rôle %>
   <td colspan="2" class="py-3 px-4 whitespace-nowrap">
     <div class="flex items-center gap-1.5 text-success font-bold tracking-wider">
-      <%= embedded_svg "icons/#{user.avatar}.svg", class: "w-6 h-6 fill-current shrink-0" %>
       <span><%= user.rôle.upcase %></span>
     </div>
   </td>
@@ -91,12 +90,14 @@
   </td>
   <%# Absent %>
   <td class="py-3 px-4 text-center">
+    <span class="flex justify-center">
     <% if user.agent? && user.absent? %>
       <% title_absence = "Absent du #{l(user.current_absence.du)} au #{l(user.current_absence.au)}, motif : #{user.current_absence.motif}" %>
       <%= embedded_svg "icons/person_off.svg",
   class: "text-amber-500 cursor-help hover:scale-110 transition-transform text-xl",
   title: title_absence,
   alt: "Utilisateur actuellement absent" %>    <% end %>
+  </span>
   </td>
   <%# Évaluation %>
   <td class="py-3 px-4">

@@ -67,7 +67,7 @@ class AdherentCrmController < ApplicationController
 
     @cotations = apply_filters(@cotations, 'cotations')
 
-    @pagy, @cotations = pagy(trier(@cotations), items: 15)
+    @pagy, @cotations = pagy(trier(@cotations), items: 10)
 
     # Dernier mail_log par cotation, en une seule requête (DISTINCT ON, Postgres)
     # pour éviter un N+1 dans l'index.
@@ -98,7 +98,7 @@ class AdherentCrmController < ApplicationController
 
     @commandes = @commandes.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
 
-    @pagy, @commandes = pagy(trier(@commandes), items: 15)
+    @pagy, @commandes = pagy(trier(@commandes), items: 10)
   end
 
   def prepare_variables_of_facture_for_view
@@ -121,7 +121,7 @@ class AdherentCrmController < ApplicationController
 
     @factures = @factures.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
 
-    @pagy, @factures = pagy(trier(@factures), items: 15)
+    @pagy, @factures = pagy(trier(@factures), items: 10)
   end
 
   def is_user_authorized

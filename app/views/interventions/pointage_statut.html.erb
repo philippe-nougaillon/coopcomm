@@ -10,9 +10,10 @@
     </div>
     <div>
       <% if @intervention.fin %>
-        <span class="badge badge-success text-white font-medium px-3 py-1 text-sm">Terminé</span>
+        <span class="badge font-bold text-xs uppercase shrink-0  badge-primary text-white ">Terminé</span>
+        
       <% else %>
-        <span class="badge badge-warning text-slate-800 font-medium px-3 py-1 text-sm">En cours</span>
+        <span class="badge font-bold text-xs uppercase shrink-0  badge-secondary text-white  ">Nouveau</span>
       <% end %>
     </div>
   </div>

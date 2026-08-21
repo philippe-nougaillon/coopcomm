@@ -12,7 +12,7 @@ class DeviseAgentFlowTest < ApplicationSystemTestCase
     # Fermer la notification de connexion
     fermer_notification
 
-    # Anti-flake (déconnexion) : clic JS sur l'ancre + confirm stubé + re-essai, cf.
+    # La déconnexion passe par la modale du navbar, cf. le helper partagé.
     se_deconnecter
 
     visit interventions_url

@@ -4,45 +4,29 @@ require 'test_helper'
 
 class AgentToolPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    agent_paris = users(:martin_technique_paris)
+    agent = users(:martin_technique_paris)
 
-    tool_paris = tools(:outil_paris)
+    tool = tools(:outil_paris)
+    tool_autre_org = tools(:outil_marseille)
 
-    @policy = ToolPolicy.new(agent_paris, tool_paris)
+    @policy = ToolPolicy.new(agent, tool)
+    @policy_autre_org = ToolPolicy.new(agent, tool_autre_org)
   end
 
-  # Index
-  test 'should get index' do
+  test 'accès autorisé pour un agent sur un outil de son organisation' do
     assert @policy.index?
-  end
-
-  # Show
-  test 'should get show' do
     assert @policy.show?
   end
 
-  # New
-  test 'should refute new with agent' do
+  test 'accès interdit pour un agent sur un outil de son organisation' do
     refute @policy.new?
-  end
-
-  # Create
-  test 'should refute create with agent' do
     refute @policy.create?
-  end
-
-  # Edit
-  test 'should refute edit with agent' do
     refute @policy.edit?
-  end
-
-  # Update
-  test 'should refute update with agent' do
     refute @policy.update?
+    refute @policy.destroy?
   end
 
-  # Destroy
-  test 'should refute destroy with agent' do
-    refute @policy.destroy?
+  test "accès interdit pour un agent sur un outil d'une autre organisation" do
+    refute @policy_autre_org.show?
   end
 end

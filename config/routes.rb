@@ -72,6 +72,7 @@ Rails.application.routes.draw do
       post :refuser
       post :archiver
       delete :purge
+      delete :purger_photos_demande
       get :pointer
       get :pointage_statut
       patch :update_location

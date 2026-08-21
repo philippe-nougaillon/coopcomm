@@ -19,7 +19,7 @@
     <input type="number"
            id="temps_par_agent"
            readonly
-           class="input input-bordered w-full focus:input-primary h-10 font-bold text-slate-500 bg-slate-200/60 border-transparent text-center"
+           class="input input-bordered w-full focus:input-primary h-10 font-bold bg-slate-200/60 border-transparent text-center"
            data-calc-temps-passe-target="tempsParAgent">
   </div>
 
@@ -27,7 +27,7 @@
     <label class="label font-semibold text-slate-600 text-xs uppercase tracking-wider p-0 mb-1">Total (h)</label>
     <%= form.number_field :temps_total,
                           readonly: true,
-                          class: "input input-bordered w-full focus:input-primary h-10 font-black text-slate-700 bg-slate-200/60 border-transparent text-center",
+                          class: "input input-bordered w-full focus:input-primary h-10 font-bold bg-slate-200/60 border-transparent text-center",
                           data: { 'calc-temps-passe-target': 'temps' } %>
   </div>
 </div>

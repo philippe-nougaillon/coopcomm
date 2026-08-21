@@ -6,13 +6,11 @@
   </div>
   <div class="flex-none">
     <ul class="menu w-full menu-horizontal flex-1 items-center py-0! px-0">
-      <%# --- ACCUEIL --- %>
       <li>
         <%= link_to home_path, class: "h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! ' + (demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!') + ' border-b-2' if params[:action] == 'home'}", title: "Page d'accueil" do %>
           <%= embedded_svg "icons/cottage.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
         <% end %>
       </li>
-      <%# --- VISTA PARA EL ROL ADHÉRENT --- %>
       <% if current_user.rôle == 'adhérent' %>
         <% if policy(Intervention).index? %>
           <li>
@@ -28,7 +26,6 @@
             <% end %>
           </li>
         <% end %>
-        <%# ---  (Commandes/Factures/Cotations) --- %>
         <% if policy(Commande).index? || policy(Facture).index? || policy(Cotation).index? %>
           <li>
             <%= link_to adherent_crm_path, class: "h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{'menu-active text-primary! ' + (demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!') + ' border-b-2' if params[:controller] == 'adherent_crm'}", title: "Adhérent CRM" do %>
@@ -63,7 +60,7 @@
           <% end %>
           <% if policy(Tool).index? %>
             <li>
-              <%= link_to tools_path, class: "h-16 py-0 px-3 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'tools'}", title: "Réservation de matériel" do %>
+              <%= link_to tools_path, class: "h-16 py-0 px-3 flex items-center text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'tools'}", title: "Matériels" do %>
                 <%= embedded_svg "icons/front_loader.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
               <% end %>
             </li>
@@ -71,13 +68,13 @@
           <%# --- 4. PLANIFICATION & RESSOURCES PARA ADMINISTRADOR --- %>
         <% elsif current_user.rôle == 'administrateur' || current_user.rôle == 'manager' %>
           <% if policy(Tool).index? || policy(User).agent_calendrier? %>
-            <li class="dropdown dropdown-end">
+            <li class="dropdown dropdown-start">
               <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if params[:controller] == 'tools' || params[:action] == 'agent_calendrier'}" title="Ressources">
-                <%= embedded_svg "icons/construction.svg", class: "w-5 h-5 fill-current" %>
+                <%= embedded_svg "icons/construction.svg", class: "ml-4 w-5 h-5 fill-current" %>
                 <span class="text-sm">Ressources</span>
                 <%= embedded_svg "icons/expand_more.svg", class: "w-4 h-4 fill-current opacity-70" %>
               </div>
-              <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 mt-1 text-slate-700">
+              <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 text-slate-700" style="margin-top: 0px;">
                 <% if policy(Intervention).index? %>
                   <li>
                     <%= link_to interventions_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'interventions'}" do %>
@@ -88,7 +85,7 @@
                 <% if policy(Tool).index? %>
                   <li>
                     <%= link_to tools_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'tools'}" do %>
-                      <%= embedded_svg "icons/front_loader.svg", class: "w-4 h-4 inline mr-1" %> Matériel
+                      <%= embedded_svg "icons/front_loader.svg", class: "w-4 h-4 inline mr-1" %> Matériels
                     <% end %>
                   </li>
                 <% end %>
@@ -110,15 +107,14 @@
             </li>
           <% end %>
         <% end %>
-        <%# --- 3. CRM --- %>
         <% if policy(Convention).index? || policy(Cotation).index? || policy(Commande).index? || policy(Facture).index? %>
-          <li class="dropdown dropdown-end">
+          <li class="dropdown dropdown-start" >
             <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if %w[conventions cotations commandes factures].include?(params[:controller])}" title="Documents">
-              <%= embedded_svg "icons/contract.svg", class: "w-5 h-5 fill-current" %>
+              <%= embedded_svg "icons/contract.svg", class: "ml-4 w-5 h-5 fill-current" %>
               <span class="text-sm">CRM</span>
               <%= embedded_svg "icons/expand_more.svg", class: "w-4 h-4 fill-current opacity-70" %>
             </div>
-            <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 mt-1 text-slate-700">
+            <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 text-slate-700" style="margin-top: 0px;">
               <% if policy(Convention).index? %>
                 <li>
                   <%= link_to conventions_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'conventions'}" do %>
@@ -159,17 +155,14 @@
         <% end %>
         <%# --- 4. ADMINISTRATION (MOVIDO AL INICIO) --- %>
         <% if policy(:admin).parametres? || policy(User).index? || policy(Mouvement).index? || policy(:admin).audits? %>
-          <li class="dropdown dropdown-end">
-            <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if %w[services warehouses users mouvements].include?(params[:controller]) || params[:action] == 'audits'}" title="Administration">
-              <%= embedded_svg "icons/settings.svg", class: "w-5 h-5 fill-current" %>
-               <% if current_user.rôle == 'administrateur' %>
-                <span class="text-sm">Admin</span>
-              <% elsif current_user.rôle == 'manager' %>
+          <li class="dropdown dropdown-start">
+            <div tabindex="0" role="button" class="h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary #{"menu-active text-primary! #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'} border-b-2" if %w[services warehouses users mouvements].include?(params[:controller]) || params[:action] == 'audits'}" title="Gestion">
+              
+              <%= embedded_svg "icons/settings.svg", class: "ml-4 w-5 h-5 fill-current" %>
                 <span class="text-sm">Gestion</span>
-              <% end %>
               <%= embedded_svg "icons/expand_more.svg", class: "w-4 h-4 fill-current opacity-70" %>
             </div>
-            <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 mt-1 text-slate-700">
+            <ul tabindex="0" class="dropdown-content z-[210] menu p-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 text-slate-700" style="margin-top: 0px;">
               <% if policy(:admin).parametres? %>
                 <li>
                   <%= link_to admin_parametres_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres'))}" do %>
@@ -233,9 +226,10 @@
       </li>
       <%# --- LOGOUT --- %>
       <li>
-        <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?" }, title: "Fermer la session de #{current_user.email} (#{current_user.rôle})", class: "h-16 py-0 flex items-center text-secondary hover:border-b-2 hover:border-primary!" do %>
-          <%= embedded_svg "icons/logout.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
-        <% end %>
+        <button onclick="logout_modal.showModal()" title="Fermer la session de <%= current_user.email %> (<%= current_user.rôle %>)" class="h-16 py-0 flex items-center text-secondary hover:border-b-2 hover:border-primary cursor-pointer">
+  <%= embedded_svg "icons/logout.svg", class: "w-6 h-6 fill-current" %> <!-- O tu icono de cerrar sesión -->
+</button>
+
       </li>
     </ul>
   </div>
@@ -264,7 +258,7 @@
   <% end %>
   <%# Menu desplegable móvil %>
   <div class="dropdown dropdown-top dropdown-end flex items-center justify-center w-full h-full">
-    <div tabindex="0" role="button" class="flex flex-col items-center justify-center text-secondary w-full h-full active:bg-slate-100">
+    <div tabindex="0" role="button" class="flex flex-col items-center justify-center text-secondary w-full h-full active:bg-slate-100" data-testid="dropdown_mobile">
       <%= embedded_svg "icons/more_vert.svg", class: "w-6 h-6 fill-current" %>
     </div>
     <div tabindex="0" class="dropdown-content z-[210] shadow-xl bg-base-100 rounded-2xl w-60 border border-slate-200 mb-2 max-h-[70vh] flex flex-col overflow-hidden">
@@ -298,7 +292,7 @@
             <% if policy(Tool).index? %>
               <li>
                 <%= link_to tools_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'tools'}" do %>
-                  <%= embedded_svg "icons/front_loader.svg", class: "w-5 h-5 inline mr-2" %> Matériel
+                  <%= embedded_svg "icons/front_loader.svg", class: "w-5 h-5 inline mr-2" %> Matériels
                 <% end %>
               </li>
             <% end %>
@@ -394,7 +388,7 @@
               <% if policy(Tool).index? %>
                 <li>
                   <%= link_to tools_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'tools'}" do %>
-                    <%= embedded_svg "icons/front_loader.svg", class: "w-5 h-5 inline mr-2" %> Matériel
+                    <%= embedded_svg "icons/front_loader.svg", class: "w-5 h-5 inline mr-2" %> Matériels
                   <% end %>
                 </li>
               <% end %>
@@ -426,10 +420,48 @@
       </div>
       <%# logout %>
       <div class="absolute bottom-0 left-0 right-0 bg-base-100 border-t border-slate-100 p-2.5 rounded-b-2xl z-10">
-        <%= link_to destroy_user_session_path, 'data-turbo-method': :delete, data: {turbo_confirm: "Êtes-vous certain(e) de vouloir fermer cette session ?", testid: 'fermer_session' }, class: "flex items-center text-red-400 hover:text-red-600 font-semibold text-xs transition-colors w-full px-3 py-1" do %>
-          <%= embedded_svg "icons/logout.svg", class: "w-4 h-4 mr-2 " %> Déconnexion
-        <% end %>
+       <button onclick="logout_modal.showModal()" title="Fermer la session de <%= current_user.email %> (<%= current_user.rôle %>)" class="h-16 py-0 flex items-center text-secondary hover:border-b-2 hover:border-primary cursor-pointer">
+  <%= embedded_svg "icons/logout.svg", class: "w-6 h-6 fill-current" %> <!-- O tu icono de cerrar sesión -->
+</button>
       </div>
     </div>
   </div>
 </div>
+
+
+
+<dialog id="logout_modal" class="modal">
+  <div class="modal-box">
+    <!-- Botón de cierre en la esquina -->
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+
+    <!-- Título con icono -->
+    <h3 class="text-lg font-bold text-error flex items-center gap-2">
+      <%= embedded_svg "icons/warning.svg", title: "Déconnexion" %>
+      Déconnexion
+    </h3>
+
+    <!-- Mensaje de confirmación -->
+    <p class="py-4 text-sm text-slate-600">
+      Êtes-vous certain(e) de vouloir fermer cette session ?
+    </p>
+
+    <!-- Acciones -->
+    <div class="modal-action">
+      <form method="dialog">
+        <button class="btn btn-ghost">Annuler</button>
+      </form>
+
+      <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "btn btn-error text-white" do %>
+        Oui, se déconnecter
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Fondo oscuro para cerrar al hacer clic fuera -->
+  <form method="dialog" class="modal-backdrop">
+    <button>Fermer</button>
+  </form>
+</dialog>

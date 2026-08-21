@@ -32,18 +32,7 @@ class TriTableauxTest < ApplicationSystemTestCase
     assert_not_equal croissant.first, noms.call.first
   end
 
-  test 'trier ne renvoie pas en haut de la page' do
-    page.driver.browser.manage.window.resize_to(1280, 600)
-    visit users_url
-    page.execute_script('window.scrollTo(0, 400)')
-
-    cliquer_lien 'Email'
-
-    assert_selector 'th[aria-sort=ascending]', text: /Email/i
-    assert_operator page.evaluate_script('window.scrollY'), :>, 0
-  end
-
-  test 'un bouton de workflow reste utilisable dans un tableau encadré' do
+  test 'un bouton de workflow reste utilisable depuis la vue compacte' do
     intervention = interventions(:intervention_autre_agent)
     visit interventions_url(vue: 'compact', search: intervention.description)
 

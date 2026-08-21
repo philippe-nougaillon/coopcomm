@@ -1,20 +1,52 @@
-Bonjour,
-<br>
-<br>
-Une nouvelle absence vient d'être créée :
-<br>
-<%= @absence.user.nom_prénom %>
-<br>
-<% if @absence.matin %>
-  Le <%= I18n.l(@absence.du, format: :long) %> matin
-<% elsif @absence.après_midi %>
-  Le <%= I18n.l(@absence.du, format: :long) %> après-midi
-<% else %>
-  Du <%= I18n.l(@absence.du, format: :long) %> au <%= I18n.l(@absence.au, format: :long) %>
-<% end %>
-<br>
-<br>
-Motif : <%= @absence.motif %>
-<br>
-<br>
-Observation : <%= @absence.observation.presence || "Aucune" %>
+
+<h2 style="margin-top: 0; color: #0f172a; font-size: 18px; font-weight: 600;">Bonjour,</h2>
+
+<p style="color: #475569; margin-bottom: 24px; font-size: 15px;">
+  Une nouvelle absence vient d'être créée dans le système.
+</p>
+
+<table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14px;">
+  <tbody>
+    <tr style="border-bottom: 1px solid #f1f5f9;">
+      <td style="padding: 12px 0; font-weight: 600; color: #64748b; width: 35%;">
+        Agent
+      </td>
+      <td style="padding: 12px 0; color: #0f172a; font-weight: 600; text-align: right;">
+        <%= @absence.user.nom_prénom %>
+      </td>
+    </tr>
+
+    <tr >
+      <td style="padding: 12px 0; font-weight: 600; color: #64748b;">
+        Période
+      </td>
+      <td style="padding: 12px 0; color: #0f172a; text-align: right;">
+        <% if @absence.matin %>
+          Le <%= I18n.l(@absence.du, format: :long) %> (Matin)</span>
+        <% elsif @absence.après_midi %>
+          Le <%= I18n.l(@absence.du, format: :long) %> (Après-midi)</span>
+        <% else %>
+          Du <%= I18n.l(@absence.du, format: :long) %> au <%= I18n.l(@absence.au, format: :long) %>
+        <% end %>
+      </td>
+    </tr>
+
+    <tr >
+      <td style="padding: 12px 0; font-weight: 600; color: #64748b;">
+        Motif
+      </td>
+      <td style="padding: 12px 0; color: #0f172a; text-align: right;">
+         <%= @absence.motif.presence&.humanize || 'Non renseigné' %>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding: 12px 0; font-weight: 600; color: #64748b;">
+        Observation
+      </td>
+      <td style="padding: 12px 0; color: #0f172a; text-align: right; font-style: <%= @absence.observation.present? ? 'normal' : 'italic' %>;">
+        <%= @absence.observation.presence&.capitalize || "Aucune" %>
+      </td>
+    </tr>
+  </tbody>
+</table>

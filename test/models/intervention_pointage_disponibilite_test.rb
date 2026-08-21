@@ -55,6 +55,62 @@ class InterventionPointageDisponibiliteTest < ActiveSupport::TestCase
     assert mere.valid?, mere.errors.full_messages.to_sentence
   end
 
+  test 'agents_must_be_available : re-pointage du même modèle dans la minute → invitation à attendre' do
+    creer(début: '2025-04-08 08:00', fin: '2025-04-08 10:00', template_slug: 'modele-a')
+
+    reprise = construire(début: '2025-04-08 10:00', template_slug: 'modele-a')
+
+    assert_not reprise.valid?
+    assert_includes reprise.errors.full_messages.join(' '), 'Veuillez attendre une minute'
+  end
+
+  test 'agents_must_be_available : re-pointage du même modèle la minute suivante → accepté' do
+    creer(début: '2025-04-08 08:00', fin: '2025-04-08 10:00', template_slug: 'modele-a')
+
+    reprise = construire(début: '2025-04-08 10:01', template_slug: 'modele-a')
+
+    assert reprise.valid?, reprise.errors.full_messages.to_sentence
+  end
+
+  test 'agents_must_be_available : deux interventions sans pointage qui se touchent → conflit standard' do
+    creer(début: '2025-04-08 10:00', fin: '2025-04-08 12:00')
+
+    ordinaire = construire(début: '2025-04-08 12:00', fin: '2025-04-08 14:00')
+
+    assert_not ordinaire.valid?
+    assert_includes ordinaire.errors.full_messages.join(' '), 'Conflit(s) détecté(s) sur un agent'
+  end
+
+  test 'agents_must_be_available : pointages de modèles différents qui se touchent → conflit standard' do
+    creer(début: '2025-04-08 08:00', fin: '2025-04-08 10:00', template_slug: 'modele-a')
+
+    autre_modele = construire(début: '2025-04-08 10:00', template_slug: 'modele-b')
+
+    assert_not autre_modele.valid?
+    assert_includes autre_modele.errors.full_messages.join(' '), 'Conflit(s) détecté(s) sur un agent'
+  end
+
+  test 'agents_must_be_available : pointage du même modèle qui chevauche vraiment → conflit standard' do
+    creer(début: '2025-04-08 08:00', fin: '2025-04-08 12:00', template_slug: 'modele-a')
+
+    chevauchant = construire(début: '2025-04-08 10:00', template_slug: 'modele-a')
+
+    assert_not chevauchant.valid?
+    assert_includes chevauchant.errors.full_messages.join(' '), 'Conflit(s) détecté(s) sur un agent'
+  end
+
+  test 'agents_must_be_available : reprise dans la minute doublée d’un vrai conflit → conflit standard' do
+    creer(début: '2025-04-08 08:00', fin: '2025-04-08 10:00', template_slug: 'modele-a')
+    ordinaire_chevauchante = creer(début: '2025-04-08 13:00', fin: '2025-04-08 15:00')
+    ordinaire_chevauchante.update_columns(début: Time.zone.parse('2025-04-08 09:00'),
+                                          fin: Time.zone.parse('2025-04-08 12:00'))
+
+    reprise = construire(début: '2025-04-08 10:00', template_slug: 'modele-a')
+
+    assert_not reprise.valid?
+    assert_includes reprise.errors.full_messages.join(' '), 'Conflit(s) détecté(s) sur un agent'
+  end
+
   private
 
   def base

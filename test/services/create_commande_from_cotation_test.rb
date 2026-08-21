@@ -36,8 +36,8 @@ class CreateCommandeFromCotationTest < ActiveSupport::TestCase
     assert_equal @cotation.cotation_lignes.count, commande.commande_lignes.size
     # L'association cotation_lignes n'a pas d'ordre garanti et le service la parcourt
     # telle quelle : on compare donc les deux collections sans dépendre de la position.
-    attendus = @cotation.cotation_lignes.map { |l| [l.prestation_id, l.intitulé, l.qté] }.sort
-    obtenus  = commande.commande_lignes.map { |l| [l.prestation_id, l.intitulé, l.qté] }.sort
+    attendus = @cotation.cotation_lignes.map { |l| [l.prestation_id, l.intitulé, l.qté, l.prix_ht] }.sort
+    obtenus  = commande.commande_lignes.map { |l| [l.prestation_id, l.intitulé, l.qté, l.prix_ht] }.sort
     assert_equal attendus, obtenus
   end
 
@@ -45,7 +45,7 @@ class CreateCommandeFromCotationTest < ActiveSupport::TestCase
     commande = CreateCommandeFromCotation.new(@cotation).call
 
     assert commande.save, commande.errors.full_messages.to_sentence
-    # prix_ht est re-dérivé de la prestation (25.50) × qté 3 = 76.50
+    # prix_ht est copié du devis (25.50) × qté 3 = 76.50
     assert_equal 76.5, commande.reload.total_ht.to_f
     assert_equal 1, commande.commande_lignes.count
   end
@@ -84,9 +84,9 @@ class CreateCommandeFromCotationTest < ActiveSupport::TestCase
     assert commande.errors[:intitulé].any?
   end
 
-  test 'BUG documenté : le prix du devis est écrasé par le tarif ACTUEL de la prestation à la sauvegarde' do
-    # La copie `prix_ht:`/`total_ht:` du service (create_commande_from_cotation.rb:19) est
-    # illusoire : CommandeLigne#set_prix_from_prestation.
+  # Test critique — le prix signé sur le devis est le prix contractuel : une hausse
+  # ultérieure du tarif ne doit jamais faire dériver la commande (ex-bug B2).
+  test 'le prix du devis est figé : une hausse ultérieure du tarif ne change pas la commande' do
     ligne_devis = @cotation.cotation_lignes.first
     assert_equal 25.5, ligne_devis.prix_ht.to_f # prix au moment du devis
 
@@ -96,9 +96,8 @@ class CreateCommandeFromCotationTest < ActiveSupport::TestCase
     commande.save!
 
     ligne_commande = commande.commande_lignes.first.reload
-    assert_equal 40.0, ligne_commande.prix_ht.to_f, 'le prix copié du devis (25.50) a été écrasé'
-    assert_equal 120.0, commande.reload.total_ht.to_f # 40 × 3, et non 76.50
-    # Le devis, lui, n'a pas bougé : l'écart devis signé / commande est silencieux.
+    assert_equal 25.5, ligne_commande.prix_ht.to_f, 'le prix du devis signé doit être conservé'
+    assert_equal 76.5, commande.reload.total_ht.to_f # 25.50 × 3, et non 120.00
     assert_equal 25.5, ligne_devis.reload.prix_ht.to_f
     assert_equal 76.5, @cotation.reload.total_ht.to_f
   end

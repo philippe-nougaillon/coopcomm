@@ -1,13 +1,27 @@
-<h2><%= t "devise.invitations.new.header" %></h2>
-<%= form_for(resource, as: resource_name, url: invitation_path(resource_name), html: { method: :post }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
-  <% resource.class.invite_key_fields.each do |field| -%>
-    <div class="field">
-      <%= f.label field %><br />
-      <%= f.text_field field %>
-    </div>
-  <% end -%>
-  <div class="actions">
-    <%= f.submit t("devise.invitations.new.submit_button") %>
+<div class="mx-auto w-full max-w-xl px-4">
+  <h1 class="text-primary font-bold text-2xl md:text-4xl text-center my-8">
+    <%= page_title!(t "devise.invitations.new.header") %>
+  </h1>
+
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+
+    <%= form_for(resource, as: resource_name, url: invitation_path(resource_name), html: { method: :post, class: "flex flex-col gap-2" }) do |f| %>
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <% resource.class.invite_key_fields.each do |field| -%>
+        <div class="w-full mb-2">
+          <%= f.label field, class: "label font-semibold text-slate-700" %>
+          <%= f.text_field field,
+                required: true,
+                class: "input input-bordered w-full focus:input-primary" %>
+        </div>
+      <% end -%>
+
+      <div class="actions mt-4">
+        <%= f.submit t("devise.invitations.new.submit_button"),
+              class: "btn btn-primary text-white font-bold w-full shadow-md hover:shadow-lg transition-all" %>
+      </div>
+    <% end %>
+
   </div>
-<% end %>
+</div>

@@ -67,6 +67,10 @@ class InterventionPolicy < ApplicationPolicy
     show?
   end
 
+  def purger_photos_demande?
+    purge? && !agent?
+  end
+
   def get_unavailable_elements?
     index?
   end
@@ -123,7 +127,11 @@ class InterventionPolicy < ApplicationPolicy
 
   # Avis de l'adhérent et évaluation des agents : jamais visibles de l'agent noté.
   def voir_compte_rendu?
-    show? && !agent? && (record.validé? || record.refusé?)
+    show? &&!agent? && (record.validé? || record.refusé?)
+  end
+
+  def saisir_compte_rendu?
+    adhérent? && (record.validé? || record.refusé?)
   end
 
   def voir_activite?

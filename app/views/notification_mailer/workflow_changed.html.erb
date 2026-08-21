@@ -1,10 +1,32 @@
-Bonjour,
-<br>
-<br>
-Le statut de l'intervention '<b><%= @intervention.description.humanize %></b>' a été changé par '<b><%= @intervention.audits.last.user.nom_prénom %></b>'.
-<br>
-<br>
-Le nouveau statut est :  '<b><%= @intervention.workflow_state.humanize %></b>'.
-<br>
-<br>
-<%= link_to "Voir l'intervention", intervention_url(@intervention) %>
+<h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">
+  Bonjour,
+</h2>
+
+<p style="color: #475569; margin-bottom: 24px;">
+  Le statut de l'intervention <strong>« <%= @intervention.description.humanize %> »</strong> a été mis à jour.
+</p>
+
+<table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14px;">
+  <tbody>
+    <tr style="border-bottom: 1px solid #f1f5f9;">
+      <td style="padding: 10px 0; font-weight: 600; color: #334155; width: 40%;">
+        Modifié par
+      </td>
+      <td style="padding: 10px 0; color: #0f172a; text-align: right;">
+        <%= @intervention.audits.last&.user&.nom_prénom %>
+      </td>
+    </tr>
+    <tr style="border-bottom: 1px solid #f1f5f9;">
+      <td style="padding: 10px 0; font-weight: 600; color: #334155; width: 40%;">
+        Nouveau statut
+      </td>
+      <td style="padding: 10px 0; color: #0f172a; text-align: right;">
+        <strong><%= @intervention.workflow_state.humanize %></strong>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="color: #475569; margin-bottom: 24px;">
+  Pour plus de détails, <%= link_to "consultez l'intervention", intervention_url(@intervention), style: "color: #2563eb; text-decoration: underline;", target: "_blank" %>.
+</p>

@@ -32,7 +32,7 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     # Date ancrée sur le vendredi précédant le lundi de la fixture tonte_locaux :
     # toujours passée, jamais en conflit, quel que soit le jour d'exécution.
     date = (Date.today - 1).beginning_of_week - 3
-    select_option('#intervention_adherent_id', 'Bruel Patrick') # adhérent du service de bond
+    select_option('#intervention_adherent_id', 'Patrick') # adhérent du service de bond
 
     fill_in 'Début', with: date.strftime('%m%d%Y')
     select '08', from: 'intervention_début_hour'
@@ -129,5 +129,96 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
     assert_equal 'Compte-rendu du pointage', fille.commentaires
     assert_equal adherent_initial, fille.adherent_id
     assert_equal agents_initiaux, fille.agent_ids
+  end
+
+  # --- Zone de dépôt des photos (seul champ multiple de l'application) -------
+
+  test 'la zone de photos annonce le nombre de fichiers ajoutés' do
+    visit edit_intervention_url(interventions(:tonte_locaux))
+
+    attach_file 'intervention_photos', [image_path, autre_image_path], make_visible: true
+
+    assert_text '2 fichiers sélectionnés'
+    assert_text 'exemple.png, carte_grise.jpg'
+    assert_selector "[data-controller='dropzone'][data-dropzone-state='success']"
+  end
+
+  test 'une photo seule est comptée elle aussi' do
+    visit edit_intervention_url(interventions(:tonte_locaux))
+
+    attach_file 'intervention_photos', image_path, make_visible: true
+
+    assert_text 'exemple.png'
+    assert_text '1 fichier sélectionné'
+  end
+
+  test 'un fichier refusé efface le compteur' do
+    visit edit_intervention_url(interventions(:tonte_locaux))
+
+    attach_file 'intervention_photos', [image_path, autre_image_path], make_visible: true
+    assert_text '2 fichiers sélectionnés'
+
+    attach_file 'intervention_photos', fichier_refusé_path, make_visible: true
+
+    assert_text 'Format non accepté'
+    assert_no_text 'sélectionné'
+  end
+
+  test "une photo trop volumineuse bloque l'enregistrement tant qu'elle n'est pas remplacée" do
+    intervention = interventions(:tonte_locaux)
+    visit edit_intervention_url(intervention)
+
+    attach_file 'intervention_photos', fichier_volumineux('.png', 11.megabytes), make_visible: true
+    assert_text 'Fichier trop volumineux'
+
+    cliquer_bouton 'enregistrer_intervention'
+    assert_selector "[data-controller='dropzone'][data-dropzone-state='error']"
+
+    # Si la soumission était passée, `edit` aurait redirigé vers la page de
+    # l'intervention et il n'y aurait plus de champ à remplir ici.
+    attach_file 'intervention_photos', image_path, make_visible: true
+    assert_difference -> { intervention.reload.photos.count }, 1 do
+      soumettre 'enregistrer_intervention'
+      assert_text intervention.description
+    end
+  end
+
+  test 'les photos annoncées par le compteur sont bien toutes enregistrées' do
+    intervention = interventions(:tonte_locaux)
+    visit edit_intervention_url(intervention)
+
+    attach_file 'intervention_photos', [image_path, autre_image_path], make_visible: true
+    assert_text '2 fichiers sélectionnés'
+
+    assert_difference -> { intervention.reload.photos.count }, 2 do
+      soumettre 'enregistrer_intervention'
+      assert_text intervention.description
+    end
+  end
+
+  test "un agent ne peut pas supprimer une photo de la demande" do
+    intervention = interventions(:tonte_locaux)
+    intervention.photos.attach(io: File.open(image_path), filename: 'exemple.png', content_type: 'image/png')
+    intervention.photos_demande.attach(io: File.open(image_path), filename: 'exemple.png', content_type: 'image/png')
+    photo_realisation = intervention.photos.first
+    photo_demande = intervention.photos_demande.first
+
+    visit intervention_url(intervention)
+    assert_text 'PHOTOS'
+
+    assert_selector "form[action*='photo_id=#{photo_realisation.id}']"
+    assert_no_selector "form[action*='photo_id=#{photo_demande.id}']"
+  end
+
+  def image_path
+    Rails.root.join('test/fixtures/files/exemple.png').to_s
+  end
+
+  def autre_image_path
+    Rails.root.join('test/fixtures/files/carte_grise.jpg').to_s
+  end
+
+  def fichier_refusé_path
+    Rails.root.join('test/fixtures/files/responseMeteoConcept.json').to_s
   end
 end

@@ -3,7 +3,5 @@
 require 'test_helper'
 
 class ExportLogTest < ActiveSupport::TestCase
-  # test "the truth" do
-  #   assert true
-  # end
+  # Aucun comportement à tester : ni validation écrite à la main, ni callback, ni méthode propre.
 end

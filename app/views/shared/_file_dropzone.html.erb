@@ -47,33 +47,39 @@
   error_message = local_assigns.fetch(:error_message, "Format non accepté. Formats autorisés : #{formats}.")
   size_message  = "Fichier trop volumineux. Taille maximale : #{taille_max}."
 %>
-<div class="flex flex-col gap-1 <%= wrapper_class %>">
+<%# Le contrôleur vit sur ce wrapper, pas sur la boîte colorée : la liste de
+    fichiers (fileList) est ainsi un frère de la boîte, pas un descendant, et
+    les clics sur son bouton "supprimer" ne rouvrent pas le sélecteur. %>
+<div class="flex flex-col gap-1 <%= wrapper_class %>"
+     data-controller="dropzone"
+     data-dropzone-active-class="border-primary border-2 bg-primary/10 scale-[1.02] shadow-lg"
+     data-dropzone-neutral-class="border-slate-300"
+     data-dropzone-valid-class="border-success bg-success/10"
+     data-dropzone-invalid-class="border-error bg-error/10"
+     data-dropzone-error-message-value="<%= error_message %>"
+     data-dropzone-size-message-value="<%= size_message %>"
+     data-dropzone-max-size-value="<%= max_octets %>"
+     data-dropzone-drop-label-value="Déposez le fichier ici">
   <%= form.label attribute, label, class: "label font-semibold text-slate-700"  %>
   <% if saved_blobs.any? %>
     <p class="text-sm mb-1 break-all">
-      <%= multiple ? "Fichiers actuels :" : "Document actuel :" %>
+      <%= multiple ? "Fichiers actuels :" : "Document actuel : " %>
+      <br>
       <% saved_blobs.each_with_index do |blob, i| %><%= " · " if i.positive? %><%= link_to blob.filename, rails_blob_path(blob, disposition: "inline"),
-            target: "_blank", class: "link link-primary" %><% end %>
+            target: "_blank", class: "link link-primary capitalize" %><% end %>
     </p>
   <% end %>
-  <div data-controller="dropzone"
-       data-dropzone-active-class="border-primary border-2 bg-primary/10 scale-[1.02] shadow-lg"
-       data-dropzone-neutral-class="border-slate-300"
-       data-dropzone-valid-class="border-success bg-success/10"
-       data-dropzone-invalid-class="border-error bg-error/10"
-       data-dropzone-error-message-value="<%= error_message %>"
-       data-dropzone-size-message-value="<%= size_message %>"
-       data-dropzone-max-size-value="<%= max_octets %>"
-       data-dropzone-drop-label-value="Déposez le fichier ici"
+  <div data-dropzone-target="box"
        data-action="dragenter->dropzone#highlight dragover->dropzone#highlight dragleave->dropzone#unhighlight drop->dropzone#drop click->dropzone#open"
-    class="flex flex-col items-center p-6 justify-center w-full border border-dashed border-zinc-700/40 rounded-lg cursor-pointer hover:bg-primary transition-all duration-150 group px-4">
+    class="flex flex-col items-center p-6 justify-center w-full border border-dashed border-zinc-700/40 rounded-lg cursor-pointer hover:bg-primary transition-all duration-150 group px-4 min-w-0">
     <%= form.file_field attribute, accept: accept, multiple: multiple, class: "hidden",
           data: { dropzone_target: "input", action: "change->dropzone#change" } %>
-              <%= embedded_svg "icons/upload.svg", class: "w-8 h-8 text-slate-400 group-hover:text-white group-data-[dropzone-dragging]:text-primary group-data-[dropzone-dragging]:-translate-y-1 transition-all duration-150", title: "Parcourir" %>
-
-    <span data-dropzone-target="filename" class="text-base mt-2 text-slate-500 font-semibold text-center group-hover:text-white group-data-[dropzone-dragging]:text-primary transition-colors duration-150 break-words w-full"><%= placeholder %></span>
+    <%= embedded_svg "icons/download.svg", class: "w-8 h-8 text-slate-400 group-hover:text-white group-data-[dropzone-dragging]:text-primary group-data-[dropzone-dragging]:-translate-y-1 transition-all duration-150", title: "Parcourir" %>
+    <span data-dropzone-target="count" class="hidden text-base mt-2 text-slate-500 font-semibold text-center group-hover:text-white group-data-[dropzone-dragging]:text-primary transition-colors duration-150"></span>
+    <span data-dropzone-target="filename" class="text-base mt-2 text-slate-500 font-semibold text-center group-hover:text-white group-data-[dropzone-dragging]:text-primary transition-colors duration-150 break-all w-full"><%= placeholder %></span>
     <span data-dropzone-target="error" class="hidden text-sm text-error font-medium"></span>
   </div>
+  <ul data-dropzone-target="fileList" class="hidden flex-col gap-2 mt-3"></ul>
   <span class="text-xs text-slate-400">Formats acceptés : <%= formats %> — <%= taille_max %> maximum par fichier.</span>
   <% if saved_blobs.any? && replace_hint && !multiple %>
     <span class="text-xs text-slate-400">Déposer un nouveau fichier remplacera le document actuel.</span>

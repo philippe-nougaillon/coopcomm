@@ -2,8 +2,8 @@
 
 class InterventionsController < ApplicationController
   before_action :set_intervention,
-                only: %i[show edit update destroy terminer valider refuser archiver purge pointer pointage_statut
-                         update_location]
+                only: %i[show edit update destroy terminer valider refuser archiver purge purger_photos_demande
+                         pointer pointage_statut update_location]
   before_action :is_user_authorized
   before_action :set_form_variables,
                 only: %i[new edit create update new_intervention_modele_pointage create_intervention_modele_pointage]
@@ -77,11 +77,11 @@ class InterventionsController < ApplicationController
 
   # GET /interventions/new
   def new
-    @intervention = Intervention.new
-    @intervention.début_prévue_hour = 8
-    @intervention.début_prévue_minute = 0
-    @intervention.fin_prévue_hour = 16
-    @intervention.fin_prévue_minute = 0
+    @intervention = Intervention.new(début_prévue: params[:début_prévue], fin_prévue: params[:fin_prévue])
+    @intervention.début_prévue_hour = params[:début_prévue_hour] || 8
+    @intervention.début_prévue_minute = params[:début_prévue_minute] || 0
+    @intervention.fin_prévue_hour = params[:fin_prévue_hour] || 16
+    @intervention.fin_prévue_minute = params[:fin_prévue_minute] || 0
 
     if current_user.agent?
       @intervention.agent_ids = current_user.id
@@ -93,14 +93,11 @@ class InterventionsController < ApplicationController
       @intervention.agent_ids = params[:agent_id]
     end
 
-    # Ajout de la date de fin si c'est un agent et que la date début prévue et fin prévue sont nil
+    # Ajout de la date de fin si c'est un agent et que la date début prévu et fin prévue sont nil
     return unless current_user.agent? && (params[:début_prévue].blank? || params[:fin_prévue].blank?)
 
     @intervention.fin = DateTime.now
   end
-
-  # GET /interventions/1/edit
-  def edit; end
 
   # POST /interventions or /interventions.json
   def create
@@ -118,6 +115,9 @@ class InterventionsController < ApplicationController
       end
     end
   end
+
+  # GET /interventions/1/edit
+  def edit; end
 
   # PATCH/PUT /interventions/1 or /interventions/1.json
   def update
@@ -253,8 +253,16 @@ class InterventionsController < ApplicationController
 
   def purge
     @intervention.photos.find(params[:photo_id]).purge
+
     @intervention.update(audit_comment: 'Photo supprimée')
     redirect_to @intervention, notice: 'Photo supprimée', status: :see_other
+  end
+
+  def purger_photos_demande
+    @intervention.photos_demande.find(params[:photo_id]).purge
+
+    @intervention.update(audit_comment: 'Photo de la demande supprimée')
+    redirect_to @intervention, notice: 'Photo de la demande supprimée', status: :see_other
   end
 
   def pointer
@@ -467,13 +475,11 @@ class InterventionsController < ApplicationController
   end
 
   def filtrer_par_mots_cles(interventions)
-    if params[:tags].present?
-      session[:tags] = params[:tags]
-      return interventions.tagged_with(params[:tags].reject(&:blank?))
-    end
+    mots_cles = Array(params[:tags]).grep(String).reject(&:blank?)
+    params[:tags] = mots_cles
+    return interventions if mots_cles.empty?
 
-    session[:tags] = params[:tags] = []
-    interventions
+    interventions.tagged_with(mots_cles)
   end
 
   # Alimente les listes déroulantes du bandeau de filtres.
@@ -547,7 +553,7 @@ class InterventionsController < ApplicationController
   # :workflow_state, :note et :avis sont volontairement exclus du mass assignment.
   def intervention_params
     permitted = params.require(:intervention).permit(:adherent_id, :service_id, :début, :début_hour, :début_minute, :fin,
-                                                     :fin_hour, :fin_minute, :temps_de_pause, :temps_total, :description, :commentaires, :tag_list, :repeter, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute, :meteo, photos: [], agent_ids: [], tool_ids: [])
+                                                     :fin_hour, :fin_minute, :temps_de_pause, :temps_total, :description, :commentaires, :tag_list, :repeter, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute, :meteo, photos: [], agent_ids: [], tool_ids: [], photos_demande: [])
     permitted.merge!(params.require(:intervention).permit(:note, :avis)) if current_user.adhérent? || current_user.manager_or_admin?
     permitted
   end
@@ -560,12 +566,13 @@ class InterventionsController < ApplicationController
     session[:return_to] = request.referer if request.referer.present? && URI(request.referer).host == request.host
   end
 
+  # Le champ n'est pas proposé à l'adhérent : sans cette garde, son formulaire
+  # effacerait des mots clés qu'il n'a jamais vus.
   def update_tag_list
-    @intervention.tag_list = if current_user.manager_or_admin?
-                               params[:intervention][:tags_manager]
-                             else
-                               params[:intervention][:tags_intervenant]
-                             end
+    champ = current_user.manager_or_admin? ? :tags_manager : :tags_intervenant
+    return unless params[:intervention].key?(champ)
+
+    @intervention.tag_list = params[:intervention][champ]
   end
 
   def redirect_si_invalide(etat, etat_cible: nil)

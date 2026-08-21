@@ -1,18 +1,31 @@
-<div class="hero min-h-screen place-items-start">
-  <div class="mx-auto w-full lg:w-96 card shadow bg-base-100 py-8 px-4">
-    <h1 class="text-2xl font-bold border-b border-gray-400 pb-4 w-full text-center my-4">
-      <%= page_title!('Mot de passe oublié') %>
-    </h1>
-    <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+<div class="mx-auto w-full max-w-xl px-4">
+  <h1 class="text-primary font-bold text-2xl md:text-4xl text-center my-8">
+    <%= page_title!('Mot de passe oublié') %>
+  </h1>
+
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+
+    <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post, class: "flex flex-col gap-2" }) do |f| %>
       <%= render "devise/shared/error_messages", resource: resource %>
-      <div class="field mb-4">
-        <%= f.label :email %><br />
-        <%= f.email_field :email, autofocus: true, autocomplete: "email", class:'input input-bordered w-full focus:input-primary' %>
+
+      <div class="w-full mb-2">
+        <%= f.label :email, class: "label font-semibold text-slate-700" %>
+        <%= f.email_field :email,
+              autofocus: true,
+              autocomplete: "email",
+              required: true,
+              class: "input input-bordered w-full focus:input-primary" %>
       </div>
-      <div class="actions">
-        <%= f.submit "Changer de mot de passe", class: 'btn btn-outline btn-primary btn-lg rounded hover:text-white! w-full mt-4 mb-8' %>
+
+      <div class="actions mt-4">
+        <%= f.submit "Changer de mot de passe", 
+        class: "btn btn-primary text-white font-bold w-full shadow-md hover:shadow-lg transition-all" %>
       </div>
     <% end %>
-    <%= render "devise/shared/links" %>
+
+    <div class="mt-6 text-center text-sm">
+      <%= render "devise/shared/links" %>
+    </div>
+
   </div>
 </div>

@@ -22,7 +22,6 @@ class TerminerPointagesJob < ApplicationJob
     agent = intervention.agents.first
 
     intervention.fin = Time.current
-    intervention.sans_notification = true
     intervention.terminer!
 
     # Quand il y a un template_slug, l'intervention n'a toujours qu'un seul agent.

@@ -4,39 +4,29 @@ require 'test_helper'
 
 class SuperAdminWikiPagesPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    @super_admin = users(:philippe_super_admin)
+    super_admin = users(:philippe_super_admin)
 
-    wiki_page = wiki_pages(:blog)
+    wiki_page_autre_auteur = wiki_pages(:blog)
+    wiki_page_non_publiée = wiki_pages(:guide)
 
-    @policy = WikiPagePolicy.new(@super_admin, wiki_page)
+    @policy = WikiPagePolicy.new(super_admin, wiki_page_autre_auteur)
+    @policy_non_publiée = WikiPagePolicy.new(super_admin, wiki_page_non_publiée)
   end
 
-  # New
-  test 'accès autorisé pour un super admin pour un new de wiki pages ' do
+  test "accès autorisé pour un super admin sur une page wiki d'un autre auteur" do
+    assert @policy.index?
+    assert @policy.show?
     assert @policy.new?
-  end
-
-  # Create
-  test 'accès autorisé pour un super admin pour un create de wiki pages ' do
     assert @policy.create?
-  end
-
-  # Edit
-  test 'accès autorisé pour un super admin pour un edit de wiki pages ' do
     assert @policy.edit?
-  end
-
-  # Update
-  test 'accès autorisé pour un super admin pour un update de wiki pages ' do
     assert @policy.update?
   end
 
-  # Destroy
-  test 'accès interdit pour un super admin pour un destroy de wiki pages, pas avec le même nom que le créateur' do
+  test "accès interdit pour un super admin sur une page wiki d'un autre auteur" do
     refute @policy.destroy?
   end
 
-  test 'accès autorisé pour un super admin pour un destroy de wiki pages ' do
-    assert WikiPagePolicy.new(@super_admin, @super_admin)
+  test 'accès autorisé pour un super admin sur une page wiki non publiée' do
+    assert @policy_non_publiée.show?
   end
 end

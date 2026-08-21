@@ -11,7 +11,7 @@
       <% end %>
     <% end %>
   </div>
-  <%= form_tag cotations_path, method: :get, class: "pt-6", data: { turbo_frame: "cotations_table", turbo_action: "advance" } do %>
+  <%= form_tag cotations_path, method: :get, class: "pt-6", data: { turbo_action: "advance" } do %>
     <%= champs_tri_caches %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
@@ -50,7 +50,6 @@
   <% end %>
 </div>
 <hr class="mt-6 mb-6">
-<%= tableau_encadré "cotations_table" do %>
 <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
   <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
 </div>
@@ -69,7 +68,7 @@
           <%= th_tri 'Service', colonne: 'cotations.service', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
           <%= th_tri 'Intitulé', colonne: 'cotations.intitulé', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
           <%= th_tri 'Livraison', colonne: 'cotations.date_livraison_souhaitée', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
-          <%= th_tri 'Total HT', colonne: 'cotations.total_ht', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
+          <%= th_tri 'Total HT', colonne: 'cotations.total_ht', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-right' %>
           <%= th_tri 'Dernier mail', colonne: 'cotations.dernier_mail', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
         </tr>
       </thead>
@@ -98,4 +97,3 @@
     </div>
   <% end %>
 </div>
-<% end %>

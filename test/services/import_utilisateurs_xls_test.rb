@@ -24,7 +24,7 @@ class ImportUtilisateursXlsTest < ActiveSupport::TestCase
   # Cloisonnement multi-organisations et intégrité des comptes existants :
   # l'import écrit sans passer par un formulaire, il est le seul garde-fou.
 
-  test 'un service homonyme d’une autre organisation n’est jamais retenu' do
+  test 'un service homonyme d’une autre organisation n’est jamais retenu (critique)' do
     Service.create!(nom: 'Voirie', organisation: organisations(:mairie_marseille))
 
     rapport = importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie@example.test',
@@ -35,7 +35,7 @@ class ImportUtilisateursXlsTest < ActiveSupport::TestCase
     assert_match(/introuvable dans votre organisation/, rapport.erreurs.first.messages.join)
   end
 
-  test 'un service de l’organisation courante est retenu même s’il existe un homonyme ailleurs' do
+  test 'un service de l’organisation courante est retenu même s’il existe un homonyme ailleurs (critique)' do
     voirie_paris = Service.create!(nom: 'Voirie', organisation: @organisation)
     Service.create!(nom: 'Voirie', organisation: organisations(:mairie_marseille))
 
@@ -46,7 +46,7 @@ class ImportUtilisateursXlsTest < ActiveSupport::TestCase
     assert_equal [voirie_paris], User.find_by(email: 'marie@example.test').services
   end
 
-  test 'un agent d’une autre organisation n’est ni modifié ni aspiré' do
+  test 'un agent d’une autre organisation n’est ni modifié ni aspiré (critique)' do
     agent = users(:agent_marseille)
     services_avant = agent.services.to_a
 
@@ -60,7 +60,7 @@ class ImportUtilisateursXlsTest < ActiveSupport::TestCase
     assert_match(/une autre organisation/, rapport.erreurs.first.messages.join)
   end
 
-  test 'un manager de l’organisation n’est pas rétrogradé en agent' do
+  test 'un manager de l’organisation n’est pas rétrogradé en agent (critique)' do
     manager = users(:hidalgo)
 
     rapport = importer([ENTETES, ligne(nom: 'Hidalgo', prénom: 'Anne', email: manager.email)],
@@ -71,7 +71,7 @@ class ImportUtilisateursXlsTest < ActiveSupport::TestCase
     assert_match(/ce compte est un manager/, rapport.erreurs.first.messages.join)
   end
 
-  test 'un manager mono-service n’est pas rétrogradé même quand son unique service est celui du fichier' do
+  test 'un manager mono-service n’est pas rétrogradé même quand son unique service est celui du fichier (critique)' do
     manager = User.create!(nom: 'Mono', prénom: 'Service', email: 'mono.service@example.test',
                            rôle: 'manager', password: 'qtDug$d843sqACz?V',
                            service_ids: [services(:informatique).id])
@@ -82,7 +82,7 @@ class ImportUtilisateursXlsTest < ActiveSupport::TestCase
     assert manager.reload.manager?, 'B21 : la recherche par email ne doit jamais changer le rôle'
   end
 
-  test 'un administrateur n’est pas rétrogradé en agent' do
+  test 'un administrateur n’est pas rétrogradé en agent (critique)' do
     admin = users(:administrateur_paris)
 
     rapport = importer([ENTETES, ligne(nom: 'Admin', prénom: 'Paris', email: admin.email)], appliquer: true)
@@ -91,7 +91,7 @@ class ImportUtilisateursXlsTest < ActiveSupport::TestCase
     assert_match(/ce compte est un administrateur/, rapport.erreurs.first.messages.join)
   end
 
-  test 'un adhérent n’est pas transformé en agent' do
+  test 'un adhérent n’est pas transformé en agent (critique)' do
     adhérent = users(:weil)
     services_avant = adhérent.services.to_a
 
@@ -103,7 +103,7 @@ class ImportUtilisateursXlsTest < ActiveSupport::TestCase
     assert_match(/ce compte est un adhérent/, rapport.erreurs.first.messages.join)
   end
 
-  test 'un compte désactivé est signalé comme tel, sans être réactivé ni dupliqué' do
+  test 'un compte désactivé est signalé comme tel, sans être réactivé ni dupliqué (critique)' do
     désactivé = users(:agent_discarded_paris)
 
     assert_no_difference 'User.unscoped.count' do
@@ -116,6 +116,8 @@ class ImportUtilisateursXlsTest < ActiveSupport::TestCase
     assert_no_match(/déjà utilisé/, @rapport.erreurs.first.messages.join,
                     'le motif doit nommer la désactivation, pas la collision d’unicité')
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 
   # --- A. Lecture du fichier ----------------------------------------------
 

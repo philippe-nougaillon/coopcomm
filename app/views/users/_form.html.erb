@@ -1,4 +1,4 @@
-<div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+<div class="max-w-4xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
   <%# La création ne passe pas par POST /users : cette route appartient à Devise. %>
   <%= form_with(model: user, url: (user.new_record? ? admin_create_new_user_do_path : user_path(user)), id: dom_id(user), class: "contents", html: { autocomplete: "off", class: 'flex flex-col gap-4' }, data: { controller: 'toggle-role-info' }) do |form| %>
     <% if user.errors.any? %>
@@ -96,7 +96,7 @@
         <% else %>
           <div class="form-control w-full">
             <%= form.label :service_ids, class: "label font-semibold text-slate-700" do %>
-              <span>Service <span class="text-red-500">*</span></span>
+              <span>Service(s) <span class="text-red-500">*</span></span>
             <% end %>
             <%
               services_assignables = services_assignables_par(current_user)
@@ -131,10 +131,10 @@
                attribute: :profile_picture,
                placeholder: "Glissez une photo de profil ici ou cliquez pour parcourir",
                label: "Photo de profil" %>
-    <div class="flex gap-2 mt-4 w-full">
-      <%= button_tag "Annuler", type: "button", onclick: "history.back();", class: "btn flex-1" %>
-      <%= form.submit "Enregistrer", id: "enregistrer_utilisateur", class: "btn btn-primary flex-1" %>
-    </div>
+    <div class="flex flex-col sm:flex-row gap-2 mt-4 w-full">
+      <%= button_tag "Annuler", type: "button", onclick: "history.back();", class: "btn w-full sm:flex-1" %>
+      <%= form.submit "Enregistrer", id: "enregistrer_utilisateur",  class: "btn btn-primary text-white font-bold w-full sm:flex-1 order-1 sm:order-2 shadow-md hover:shadow-lg transition-all" %>
+  </div>
   <% end %>
   <div class="pt-6 max-w-3xl mx-auto">
     <%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>

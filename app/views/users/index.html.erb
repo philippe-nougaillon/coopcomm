@@ -11,7 +11,7 @@
       <span class="hidden md:block">Ajouter un utilisateur</span>
     <% end %>
   </div>
-  <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_frame: "users_table", turbo_action: "advance" } do %>
+  <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_action: "advance" } do %>
     <%= champs_tri_caches %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
@@ -49,14 +49,8 @@
       <% end %>
       <div class="w-full md:flex-1">
         <%= label_tag :user_tag, "Mots clés", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
-        <%
-          tags_de_users = TriTextuel.ranger(ActsAsTaggableOn::Tag.joins(:taggings)
-                                                                .where(taggings: { taggable_type: 'User' })
-                                                                .distinct
-                                                                .pluck(:name))
-        %>
-        <%= select_tag :user_tag, 
-                options_for_select(tags_de_users, params[:user_tag]), 
+        <%= select_tag :user_tag,
+                options_from_collection_for_select(@users_tags, :name, :name, params[:user_tag]),
                 multiple: true,
                 class: 'slim-select w-full h-10', 
                 data: { placeholder: 'Tous les mots-clés' },
@@ -99,7 +93,6 @@
   <% end %>
 </div>
 <hr class="mt-6 mb-6">
-<%= tableau_encadré "users_table" do %>
 <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-none md:rounded-t-xl border-t border-x md:border-b-0 border-slate-200">
   <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
 </div>
@@ -141,7 +134,7 @@
     <% if @users.any? %>
       <%= link_to url_for(params.permit(:search, :role, :services, :absent, :discarded).merge(format: :xls)),
               class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base w-full sm:w-auto" do %>
-        <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+        <%= embedded_svg "icons/upload.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
         <span>Exporter en XLS</span>
       <% end %>
     <% end %>
@@ -149,10 +142,14 @@
             data: { testid: "import_users" },
             'data-turbo': false,
             class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base w-full sm:w-auto" do %>
-      <%= embedded_svg "icons/upload.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+      <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
       <span>Importer des agents</span>
     <% end %>
   </div>
+
+
+
+  
  <% if @pagy.pages > 1 %>
     <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
       <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
@@ -166,4 +163,3 @@
     <% end %>
   </div>
 </div>
-<% end %>

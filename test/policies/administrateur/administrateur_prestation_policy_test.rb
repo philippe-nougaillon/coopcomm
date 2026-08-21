@@ -4,32 +4,26 @@ require 'test_helper'
 
 class AdministrateurPrestationPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    @administrateur = users(:administrateur_paris) # mairie_paris
+    @administrateur = users(:administrateur_paris)
 
-    prestation = prestations(:nettoyage_bureaux)              # mairie_paris
-    prestation_autre_org = prestations(:prestation_marseille) # mairie_marseille
+    prestation = prestations(:nettoyage_bureaux)
+    prestation_autre_org = prestations(:prestation_marseille)
 
     @policy = PrestationPolicy.new(@administrateur, prestation)
     @policy_autre_org = PrestationPolicy.new(@administrateur, prestation_autre_org)
   end
 
-  test 'new / create autorisés pour un administrateur' do
+  test 'accès autorisé pour un administrateur sur une prestation de son organisation' do
     assert @policy.new?
     assert @policy.create?
-  end
-
-  test 'show autorisé sur une prestation de son organisation, refusé sur celle d\'une autre' do
     assert @policy.show?
-    assert_not @policy_autre_org.show?
-  end
-
-  test 'edit / update / destroy autorisés dans son organisation' do
     assert @policy.edit?
     assert @policy.update?
     assert @policy.destroy?
   end
 
-  test 'accès interdit dans une autre organisation' do
+  test "accès interdit pour un administrateur sur une prestation d'une autre organisation" do
+    refute @policy_autre_org.show?
     refute @policy_autre_org.edit?
     refute @policy_autre_org.update?
     refute @policy_autre_org.destroy?
@@ -37,6 +31,7 @@ class AdministrateurPrestationPolicyTest < ActionDispatch::IntegrationTest
 
   test 'scope : un administrateur ne voit que les prestations de son organisation' do
     scope = PrestationPolicy::Scope.new(@administrateur, Prestation.all).resolve
+
     assert_includes scope, prestations(:nettoyage_bureaux)
     refute_includes scope, prestations(:prestation_marseille)
   end

@@ -55,12 +55,6 @@
       </div>
     </div>
   </div>
-  <% if @export_logs.count > 10 %>
-    <%= link_to export_logs_path, class: 'text-primary mt-4 hover:underline flex items-center flex-row justify-between gap-2 max-w-xs' do %>
-      Voir tout l'historique
-      <%= embedded_svg "icons/download.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
-    <% end %>
-  <% end %>
 <% else %>
   <div class="border border-base-200 rounded-xl p-4 bg-base-100">
     <p class="text-slate-500">Aucun export effectué pour le moment.</p>

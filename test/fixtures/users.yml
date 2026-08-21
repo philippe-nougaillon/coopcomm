@@ -92,8 +92,7 @@ agent_discarded_paris:
   discarded_at: <%= 1.month.ago %>
 
 patrick_adherent_paris:
-  nom: Bruel
-  prénom: Patrick
+  nom: Patrick
   email: patrick.bruel@gmail.commmmm
   rôle: adhérent
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
@@ -101,7 +100,6 @@ patrick_adherent_paris:
 
 user_paris:
   nom: user
-  prénom: name
   email: name.user@gmail.commmmm
   rôle: adhérent
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
@@ -117,7 +115,6 @@ philippe_super_admin:
 
 adhérent_sans_intervention:
   nom: Dumont
-  prénom: Jules
   email: adherent-sans-intervention@gmail.commmmm
   rôle: adhérent
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
@@ -134,7 +131,6 @@ agent_whatsapp:
 
 adherent_with_location:
   nom: Adherent
-  prénom: Localisé
   email: adherent_localise@gmail.commmmm
   rôle: adhérent
   téléphone: 0123456789
@@ -187,7 +183,6 @@ agent_marseille:
 
 adherent_marseille:
   nom: Tapie
-  prénom: Bernard
   email: bernard.tapie@gmail.commmmm
   rôle: adhérent
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
@@ -205,7 +200,6 @@ john_wick:
 
 george_lucas:
   nom: Lucas
-  prénom: George
   email: george.lucas@gmail.commmmmm
   rôle: adhérent
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
@@ -216,7 +210,6 @@ george_lucas:
 
 emmanuel_valls:
   nom: Valls
-  prénom: Emmanuel
   email: valls.emmanuel@gmail.commmmmm
   rôle: adhérent
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"

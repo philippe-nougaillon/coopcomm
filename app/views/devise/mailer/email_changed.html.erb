@@ -1,6 +1,19 @@
-<p>Bonjour <%= @email %>!</p>
-<% if @resource.try(:unconfirmed_email?) %>
-  <p>Nous vous contactons pour vous informer que votre e-mail est <%= @resource.unconfirmed_email %>.</p>
-<% else %>
-  <p>Nous vous contactons pour vous informer que votre e-mail a été changé en <%= @resource.email %>.</p>
-<% end %>
+<% user_name = @email.split('@').first.capitalize %>
+
+<h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">
+  Bonjour <%= user_name %>,
+</h2>
+
+<p style="color: #475569; margin-bottom: 24px; font-size: 15px; line-height: 1.6;">
+  <% if @resource.try(:unconfirmed_email?) %>
+    Nous vous contactons pour vous informer que votre e-mail est en attente de confirmation : <strong><%= @resource.unconfirmed_email %></strong>.
+  <% else %>
+    Nous vous contactons pour vous informer que votre adresse e-mail a été changée en <strong><%= @resource.email %></strong>.
+  <% end %>
+</p>
+
+<div style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 0 4px 4px 0;">
+  <p style="margin: 0; font-size: 13px; color: #64748b;">
+    En cas d'erreur, rapprochez-vous de votre gestionnaire.
+  </p>
+</div>

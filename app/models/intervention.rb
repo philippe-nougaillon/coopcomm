@@ -18,9 +18,6 @@ class Intervention < ApplicationRecord
   attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute, :début_hour,
                 :début_minute, :fin_hour, :fin_minute
 
-  # Neutralise les publications d'événements de #apres_terminaison (clôture automatique).
-  attr_accessor :sans_notification
-
   before_destroy :must_not_have_any_mouvements
 
   belongs_to :service
@@ -37,8 +34,10 @@ class Intervention < ApplicationRecord
   has_one :organisation, through: :service
 
   has_many_attached :photos
+  has_many_attached :photos_demande
 
   valide_image :photos
+  valide_image :photos_demande
 
   MESSAGE_AGENT_UNIQUE = "Une intervention de pointage n'accepte qu'un seul agent"
 
@@ -64,8 +63,6 @@ class Intervention < ApplicationRecord
   validate :agent_unique_si_pointage
   validate :service_partagé_par_adherent_et_agents
   validate :pas_de_temps_total_negatif
-
-  after_commit :update_heures_consommees_convention, if: -> { self.temps_total.present? }
 
   scope :ordered, -> { order(updated_at: :desc) }
 
@@ -278,11 +275,24 @@ class Intervention < ApplicationRecord
 
       next unless conflicting_interventions.exists?
 
-      messages = conflicting_interventions.map do |conflict|
-        " #{agent.nom} déjà sur l’intervention « #{conflict.description} » du #{conflict.effective_début&.strftime('%d/%m/%Y %H:%M')} au #{conflict.effective_fin&.strftime('%d/%m/%Y %H:%M')}"
-      end
-      errors.add('', "Conflit(s) détecté(s) sur un agent :#{messages.to_sentence}")
+      message = if reprise_immediate_de_pointage?(conflicting_interventions)
+                  'Veuillez attendre une minute avant de recommencer à pointer.'
+                else
+                  conflincting_message = conflicting_interventions.map do |conflict|
+                    " #{agent.nom} déjà sur l’intervention « #{conflict.description} » du #{conflict.effective_début&.strftime('%d/%m/%Y %H:%M')} au #{conflict.effective_fin&.strftime('%d/%m/%Y %H:%M')}"
+                  end
+                  "Conflit(s) détecté(s) sur un agent :#{conflincting_message.to_sentence}"
+                end
+
+      errors.add('', message)
     end
+  end
+
+  # Le nouveau pointage reprend là où le précédent s'est arrêté : les secondes
+  # étant écrasées par combine_datetime, deux scans dans la même minute donnent
+  # des bornes égales, que OVERLAP_SQL compte comme un chevauchement.
+  def reprise_immediate_de_pointage?(conflits)
+    template_slug != nil && conflits.last.template_slug == template_slug && conflits.last.effective_fin == effective_début
   end
 
   # Deux intervalles ouverts ne se chevauchent pas au sens SQL : ce cas échappe
@@ -490,42 +500,6 @@ class Intervention < ApplicationRecord
     pointage_de?(user) && début&.to_date == Time.zone.today
   end
 
-  def update_heures_consommees_convention
-    associated_convention = Convention
-                        .where("date_début <= ? AND date_fin_prévue >= ?", self.début, self.début)
-                        .find_by(user_id: self.adherent_id, service_id: self.service_id)
-
-    if associated_convention.present?
-      last_audit = self.audits.last
-
-      # Si la dernière modification contient le temps_total, on met à jour le nombre d'heures consommees de la convention associé à l'intervention
-      if last_audit.audited_changes["temps_total"]
-        new_temps_total = extract_temps_total_depending_on_audit(last_audit)
-
-        associated_convention.heures_consommees += new_temps_total
-        associated_convention.save(validate: false)
-      end
-    end
-  end
-
-  # Retourne le temps total à ajouter en fonction de l'action en cours (un nombre pour create et destroy, un array pour un update)
-  def extract_temps_total_depending_on_audit(last_audit)
-    temps_total_audit = last_audit.audited_changes["temps_total"]
-    
-    # Dans le cas d'un create, on ajoute la valeur
-    if last_audit.action == "create" && temps_total_audit.is_a?(Numeric)
-      temps_total_audit
-    # Dans le cas d'un destroy, on enleve la valeur
-    elsif last_audit.action == "destroy" && temps_total_audit.is_a?(Numeric)
-      temps_total_audit * (-1)
-    # Dans le cas d'un update, on ajoute la différence entre l'ancienne (first) et la nouvelle valeur (last)
-    elsif last_audit.action == "update" && temps_total_audit.is_a?(Array)
-      (temps_total_audit.last.to_f - temps_total_audit.first.to_f)
-    else
-      0
-    end
-  end
-
   def bon?
     User.find_by(id: audits.first&.user_id)&.agent?
   end
@@ -663,17 +637,17 @@ class Intervention < ApplicationRecord
 
   def vient_de_terminer?
     terminé? && saved_change_to_workflow_state?
+    # =Est ce que dans la dernière save, le workflow_state est passé à l'état terminé ?
   end
 
   def apres_terminaison
     calculate_co2
 
-    return if Rails.env.development? || sans_notification
+    return if Rails.env.development?
 
     Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: id })
 
-    # Un pointage a son propre événement, publié par interventions#pointer.
-    Events.instance.publish('intervention.done', payload: { intervention_id: id }) if template_slug.blank?
+    Events.instance.publish('intervention.done', payload: { intervention_id: id })
   end
 
   # Fermer un pointage déjà ouvert reste toujours possible, sinon une absence

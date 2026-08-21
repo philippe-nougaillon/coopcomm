@@ -31,7 +31,11 @@ class Convention < ApplicationRecord
               'conventions.ref' => :texte,
               'conventions.service' => ColonnesTri.service('conventions.service_id'),
               'conventions.date_début' => :brut,
-              'conventions.heures_consommees' => :brut,
+              'conventions.heures_consommees' => '(SELECT COALESCE(SUM(interventions.temps_total), 0) FROM interventions ' \
+                                                 'WHERE interventions.adherent_id = conventions.user_id ' \
+                                                 'AND interventions.service_id = conventions.service_id ' \
+                                                 'AND interventions.début >= conventions.date_début ' \
+                                                 'AND interventions.début < conventions.date_fin_prévue + 1)',
               'conventions.document' => "(SELECT #{TriTextuel.expression('active_storage_blobs.filename')} " \
                                         'FROM active_storage_attachments ' \
                                         'INNER JOIN active_storage_blobs ON active_storage_blobs.id = active_storage_attachments.blob_id ' \
@@ -58,6 +62,10 @@ class Convention < ApplicationRecord
         .where(début: date_début.beginning_of_day..date_fin_prévue.end_of_day)
   end
 
+  def heures_consommees
+    self.interventions.sum(:temps_total)
+  end
+
   private
 
   def one_convention_per_service
@@ -65,10 +73,12 @@ class Convention < ApplicationRecord
 
     exists = Convention.where(user_id: user_id, service_id: service_id)
                        .where.not(id: id)
+                       .where(date_début: ..date_fin_prévue) # La date de fin ne doit pas chevaucher la date de début
+                       .where(date_fin_prévue: date_début..) # Inversement
                        .exists?
     return unless exists
 
-    errors.add(:base, 'Cet adhérent a déjà une convention pour ce service.')
+    errors.add(:base, 'Cet adhérent a déjà une convention pour ce service dans cette période.')
   end
 
   def service_must_belong_to_adherent

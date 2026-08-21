@@ -193,6 +193,7 @@ class User < ApplicationRecord
     rated_interventions.count
   end
 
+  # Fonction inutilisée
   def self.from_omniauth(auth)
     require 'open-uri'
 
@@ -277,7 +278,7 @@ class User < ApplicationRecord
 
   def nb_bad_words
     nb_bad_words = 0
-    Notification.where(from_id: id).each do |message|
+    Message.where(from_id: id).each do |message|
       nb_bad_words += message.nb_bad_words
     end
     nb_bad_words

@@ -1,35 +1,30 @@
-<div class="mx-auto w-full">
-  <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16 mb-6">
-    <h1 class="text-primary font-bold text-3xl sm:text-4xl whitespace-nowrap">
+<div class="mx-auto w-full max-w-2xl">
+  <div class="flex flex-col justify-center items-center min-h-12 sm:min-h-16">
+    <h1 class="text-primary font-bold text-2xl md:text-4xl whitespace-nowrap text-center my-8">
       <%= page_title!('Import agents') %>
     </h1>
-  </div>
 
-  <!-- BANNIÈRE D'INFORMATIONS -->
-  <div class=" max-w-2xl bg-blue-50 border border-blue-200 rounded-xl  mb-8 shadow-sm flex flex-col  gap-4">
-
-    <div class="space-y-2 px-8 pt-6 text-slate-700  flex-1">
-
+  <div class="max-w-2xl w-full mx-auto bg-blue-50 border border-blue-200 rounded-2xl mb-8 shadow-xl flex flex-col gap-4">
+    <div class="space-y-2 px-8 pt-6 text-slate-700 flex-1">
       <div class="flex items-center gap-2 font-bold text-blue-800 mb-8">
-        <%= embedded_svg "icons/info.svg", class:"text-lg", title:"Informations" %>
+        <%= embedded_svg "icons/info.svg", class: "text-lg", title: "Informations" %>
         <span class="uppercase">Instructions d'importation</span>
       </div>
 
       <p>
         Le fichier doit être au format Excel 97-2003
-        (<span class="font-mono bg-white px-1.5 py-0.5 rounded border border-blue-200 text-xs text-blue-700 font-semibold">
-          .xls
-        </span>)
+        (<span class="font-mono bg-white px-1.5 py-0.5 rounded border border-blue-200 text-xs text-blue-700 font-semibold">.xls</span>)
       </p>
 
       <p>
         Veuillez respecter l’ordre des colonnes suivant :
+        <br>
         <span class="font-semibold text-slate-900 bg-blue-100/60 px-1.5 py-0.5 rounded">
           <%= User.xls_headers.join(', ') %>
         </span>
       </p>
 
-      <p class=" text-slate-500 pt-1">
+      <p class="text-slate-500 pt-1">
         <span class="text-error font-bold">*</span>
         Champs obligatoires :
         <span class="font-medium text-slate-800">
@@ -38,115 +33,92 @@
       </p>
     </div>
 
-    <!-- Bouton téléchargement -->
-    <div class="w-full px-8 py-6 flex flex-col sm:flex-row items-center justify-start gap-4 border-t border-blue-200 bg-blue-50/50 rounded-b-xl">
+    <div class="w-full px-8 py-6 flex flex-col sm:flex-row items-center justify-start gap-4 bg-blue-50/50 rounded-b-xl">
+      <p class="text-sm font-medium text-slate-700 leading-none">
+        Exemple du format attendu :
+      </p>
 
-  <%# Forzamos 'leading-none' para eliminar márgenes fantasmas del texto %>
-  <p class="text-sm font-medium text-slate-700 leading-none">
-    Exemple du format attendu :
-  </p>
-
-  <%# El botón se alineará al centro perfecto del texto de su izquierda %>
-  <%= link_to "/Exemple_import_utilisateurs.xls",
-        download: "modele_donnees.xls",
-        class: "btn btn-primary btn-md normal-case text-white" do %>
-    <%= embedded_svg "icons/download.svg", class: "icon", title: "Télécharger" %>
-    <span>Télécharger le modèle</span>
-  <% end %>
-
-</div>
-  </div>
-
-  <!-- FORMULAIRE -->
-  <%= form_tag(
-        { action: "import_do" },
-        multipart: true,
-        method: :post,
-        id: "import_form",
-        class: "max-w-2xl bg-white border border-slate-200 rounded-xl p-6 shadow-sm"
-      ) do %>
-
-    <!-- Sélection du fichier -->
-    <div class="form-control w-full">
-
-      <%= label_tag :upload,
-          "Fichier source",
-          class: "block text-sm font-semibold text-slate-700 mb-2" %>
-
-      <%= file_field_tag "upload",
-          accept: ".xls,application/vnd.ms-excel",
-          class: "file-input file-input-bordered file-input-primary w-full bg-slate-50",
-          required: true %>
-
-      <%= render "partials/script_accept_file_type",
-          id_form: "import_form",
-          id_file_input: "upload",
-          file_type_accepted: "application/vnd.ms-excel",
-          file_type_for_alert: "XLS" %>
+      <%= link_to "/Exemple_import_utilisateurs.xls",
+                  download: "modele_donnees.xls",
+                  class: "btn btn-primary btn-md normal-case text-white" do %>
+        <%= embedded_svg "icons/download.svg", class: "icon", title: "Télécharger" %>
+        <span>Télécharger le modèle</span>
+      <% end %>
     </div>
 
-    <!-- Options -->
-    <div class="bg-slate-50 border border-slate-200 p-4 my-4 rounded-xl space-y-3 ">
 
+
+      <%= form_tag(
+            { action: "import_do" },
+            multipart: true,
+            method: :post,
+            id: "import_form",
+            class: " rounded-b-2xl shadow-xl p-6 md:p-8  border-t border-blue-200 "
+          ) do %>
+
+      <%= label_tag :upload,
+                    "Fichier source (.xls)",
+                    class: "block text-sm font-semibold text-slate-700 mb-2" %>
+
+      <%= file_field_tag "upload",
+                         accept: ".xls,application/vnd.ms-excel",
+                         class: "file-input file-input-bordered file-input-primary w-full bg-slate-50",
+                         required: true %>
+
+      <%= render "partials/script_accept_file_type",
+                 id_form: "import_form",
+                 id_file_input: "upload",
+                 file_type_accepted: "application/vnd.ms-excel",
+                 file_type_for_alert: "XLS" %>
+   
+
+    <div class="bg-slate-50 border border-slate-200 p-4 my-4 rounded-xl space-y-3">
       <span class="block text-sm font-bold text-slate-800 mb-4">
         Enregistrer les changements ?
       </span>
 
       <div class="flex flex-col sm:flex-row gap-3">
-
-        <!-- Oui -->
         <label class="flex items-center gap-3 cursor-pointer select-none bg-white border border-slate-200 rounded-lg p-3 flex-1 hover:bg-slate-100 transition">
-
           <%= radio_button_tag :save,
-              true,
-              false,
-              class: "radio radio-primary radio-sm" %>
-
+                               true,
+                               false,
+                               class: "radio radio-primary radio-sm" %>
           <span class="text-sm font-medium text-slate-700">
-            Oui (Appliquer)
+            Oui 
           </span>
         </label>
 
-        <!-- Non -->
         <label class="flex items-center gap-3 cursor-pointer select-none bg-white border border-slate-200 rounded-lg p-3 flex-1 hover:bg-slate-100 transition">
-
           <%= radio_button_tag :save,
-              false,
-              true,
-              class: "radio radio-primary radio-sm" %>
-
+                               false,
+                               true,
+                               class: "radio radio-primary radio-sm" %>
           <span class="text-sm font-medium text-slate-700">
-            Non (Mode test)
+            Non (Simulation)
           </span>
         </label>
       </div>
 
       <div class="text-xs text-slate-500 italic mt-4 flex items-center gap-1.5">
-
         <%= embedded_svg "icons/help.svg", class: "text-sm text-slate-400", title: "Aide" %>
-
         <span>
-          Choisissez "Non" pour simuler l'importation et détecter
-          d'éventuelles erreurs.
+          Choisissez "Non" pour simuler l'importation et détecter d'éventuelles erreurs.
         </span>
       </div>
     </div>
 
-    <!-- Bouton principal -->
     <div class="pt-2">
       <%= submit_tag "Lancer l'importation",
-          class: "btn btn-primary btn-block sm:w-auto text-white px-8 shadow-md",
-          data: { turbo: false } %>
+                     class: "btn btn-primary btn-block sm:w-auto text-white px-8 shadow-md",
+                     data: { turbo: false } %>
     </div>
-
   <% end %>
+  </div>
 
-   <div class="my-10">
- 
-<%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+  <div class="my-10 w-full">
+    <%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
       <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste des utilisateurs" %>
       Retour à la liste des utilisateurs
     <% end %>
-
-</div>
+  </div>
 </div>

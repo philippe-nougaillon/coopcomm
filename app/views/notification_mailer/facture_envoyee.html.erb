@@ -1,9 +1,11 @@
-Bonjour,
-<br><br>
-Votre facture <b>n°<%= @facture.ref %></b> — « <%= @facture.intitulé %> » — vous a été envoyée.
+<h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">Bonjour,</h2>
+
+<p style="color: #475569; margin-bottom: 24px;">
+Votre facture « <%= @facture.intitulé.capitalize %> » (<b>N°<%= @facture.ref %></b>) vous a été envoyée.
 <br><br>
 Vous trouverez la facture détaillée en pièce jointe.
 <br><br>
 Cordialement,
 <br>
 L'équipe COOPCOMM
+</p>

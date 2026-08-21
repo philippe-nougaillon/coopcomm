@@ -214,11 +214,11 @@
 - **Impact** : le jour où B48 sera corrigé, la tâche enverra le premier mail puis lèvera `NoMethodError` — l'adhérent est relancé, le `MailLog` n'est jamais tracé et les suivants ne sont pas traités.
 - **Correctif proposé** : `intervention.organisation&.id`, comme les 4 jobs corrigés le 2026-07-01. Comportement actuel **épinglé**.
 
-### B51 — Les réponses JSON des pages wiki lèvent sur un attribut inexistant
+### B51 — ✅ CORRIGÉ (2026-08-13) — Les réponses JSON des pages wiki levaient sur un attribut inexistant
 - **Signalé par** : agent, 2026-07-30 (reproduit par test).
-- **Où** : [app/views/wiki_pages/_wiki_page.json.jbuilder:3](app/views/wiki_pages/_wiki_page.json.jbuilder#L3) — la vue générée interroge `nom`, absent de `WikiPage`.
-- **Impact** : toute requête JSON sur la ressource lève. Aucun appelant connu aujourd'hui.
-- **Correctif proposé** : aligner la vue sur les attributs réels (`titre`, `sous_titre`…) ou supprimer les vues jbuilder si le format JSON n'est pas utilisé. Comportement actuel **épinglé**.
+- **Où** : `app/views/wiki_pages/_wiki_page.json.jbuilder` — la vue générée interrogeait `nom`, absent de `WikiPage`.
+- **Impact** : toute requête JSON sur la ressource levait. Aucun appelant.
+- ✅ **Corrigé par suppression, sur décision d'Alex** : le format JSON de `wiki_pages` était du scaffold que rien ne consommait. Les 3 vues jbuilder (`index`, `show`, `_wiki_page`) et les 6 branches `format.json` de `create`/`update`/`destroy` ont été retirées ; les trois actions rendent désormais directement leur `redirect_to`/`render`. Le test qui épinglait le bug a disparu avec le format.
 
 ### B52 — Code mort : `TagCloudComponent` est appelé avec un mot-clé qui n'existe pas
 - **Signalé par** : agent, 2026-07-30.
@@ -254,12 +254,17 @@
 - **Correctif proposé** : sortir l'écriture du callback (`update_columns(trajet:, co2:)` — ces colonnes ne demandent aucune validation), ce qui supprime d'un coup le rejeu des validations, le changement d'état et la perte silencieuse. ⚠️ `co2` est dans la liste surveillée par le trigger du dashboard : `update_columns` déclenche bien le refresh, le comportement de B71 est préservé.
 - **Note connexe** : ce `save` imbriqué est déjà la raison pour laquelle `apres_terminaison` doit être déclaré **en dernier** dans le modèle (cf. décision 2026-07-29-h) — le défaut a donc déjà coûté une fois.
 
-### B85 — Le filtre « Mots clés » des index est calculé sur un périmètre absurde
-- **Où** : [application_controller.rb:57](app/controllers/application_controller.rb#L57), `set_users_tags`
-- **Cause** : `User.by_service(current_user)` reçoit **l'utilisateur courant** là où la méthode attend des **services** — l'identifiant de l'utilisateur est utilisé comme identifiant de service. Le défaut est antérieur (il existait déjà avec la version `joins + where(services: user)`), il a seulement été rendu visible en réécrivant `by_service` en sous-requête.
-- **Parcours de reproduction** (mesuré en console) : `User.by_service(User.first).count` → **0** ; la liste des mots clés proposée au filtre est donc calculée sur un ensemble vide ou, pire, sur les utilisateurs d'un service dont l'identifiant coïncide avec celui de l'utilisateur connecté.
-- **Impact** : le menu déroulant « Mots clés » des index (utilisateurs, interventions) ne propose pas les bons mots clés — il n'en propose aucun dans la plupart des cas. Aucune fuite de données : `tag_counts_on` ne renvoie que des noms de tags.
-- **Correctif proposé** : `User.by_service(current_user.services)`. Une ligne. Non appliqué : hors du périmètre du lot « tris » (2026-08-06).
+### B91 — Un adhérent peut écraser les mots clés par un paramètre `tag_list` forgé — ⏸️ MIS DE CÔTÉ (décision PE, 2026-08-11)
+- **Décision PE** : « il y a plein de champs qui ne devraient pas être permis pour certains rôles parce qu'ils sont cachés selon le `workflow_state` ou le rôle ; c'est un sujet à part, la majorité de ces cas sont des *abuser stories* ». Le critère retenu : **un bug est un bug quand un utilisateur modifie un champ qui ne lui est PAS caché** (c'était le cas de B90) ; forger un paramètre absent de son formulaire n'en est pas un. Fiche conservée pour mémoire, à traiter avec l'ensemble des permits le jour où le sujet sera ouvert.
+- **Où** : [interventions_controller.rb:550](app/controllers/interventions_controller.rb#L550) — `:tag_list` figure dans les permits
+- **Cause** : aucun formulaire ne soumet `intervention[tag_list]` (les rôles passent par `tags_manager` / `tags_intervenant`, lus par `update_tag_list`). Le permit est donc **mort en usage normal** et ne sert qu'à une requête forgée : `assign_attributes(intervention_params)` écrit les mots clés **avant** que `update_tag_list` ne s'exécute, et celui-ci sort tôt pour l'adhérent puisque son formulaire ne porte aucun champ de mots clés.
+- **Parcours de reproduction** (prouvé par test) :
+  1. Une intervention porte les mots clés `urgence`.
+  2. Connecté en **adhérent**, j'envoie `PATCH /interventions/:slug` avec `intervention[tag_list]=forgé` (console navigateur, ou un champ ajouté à la main dans le formulaire).
+  3. Les mots clés de l'intervention deviennent `forgé` — alors que le champ ne m'est jamais proposé et que la garde de **B90** est précisément là pour m'empêcher d'y toucher.
+- **Correctif proposé** : retirer `:tag_list` de `intervention_params`. Aucun formulaire ne le soumet, donc aucune régression attendue.
+- **Épinglé par** : `interventions_controller_test`, « un adhérent écrase les mots clés par un paramètre tag_list forgé » — à inverser à la correction.
+
 
 ---
 
@@ -330,6 +335,68 @@
 ---
 
 ## ✅ Bugs corrigés (historique)
+
+### B96 — ✅ SIGNALÉ PAR ALEX ET CORRIGÉ (2026-08-20) — En prod, le scroll n'était plus remis à zéro d'une page à l'autre, jusqu'au prochain rechargement complet
+- **Symptôme rapporté** : depuis l'index des interventions, ouvrir une intervention conservait la position du scroll (haut, milieu, bas — celle qu'on avait avant de cliquer) ; idem en passant de l'index des interventions à celui des conventions. Uniquement en prod, pendant un laps de temps, guéri par un rechargement complet de la page.
+- **Où** : `ApplicationHelper#tableau_encadré`, qui encadrait les 10 tableaux d'index dans un `<turbo-frame target="_top" data-turbo-action="advance">` (posé le 2026-08-06-i pour que trier ne renvoie pas en haut de page).
+- **Cause, lue dans la source de Turbo 2.0.x et non déduite** : `Visit#performScroll()` est gardé par `!this.view.forceReloaded`. Or `forceReloaded` est un champ d'instance de `PageView`, initialisé **une seule fois au chargement du document** et **jamais remis à `false`**. Il passe à `true` dans `renderPage()` dès que `renderer.shouldRender` est faux — c'est-à-dire quand les éléments `data-turbo-track="reload"` de la réponse diffèrent de ceux de la page courante (les deux `stylesheet_link_tag` du layout, dont le digest change à chaque déploiement). Normalement Turbo enchaîne sur un rechargement dur, **mais l'invalidation est conditionnée par `shouldInvalidate = willRender`** — et le seul chemin de l'application où `willRender` vaut `false` est la visite fantôme créée par un `<turbo-frame data-turbo-action="advance">`.
+- **Enchaînement** : déploiement en cours (Hatchbox redémarre par vagues, certaines réponses portent déjà les nouveaux digests) → l'utilisateur clique une entête de tri ou soumet un filtre → visite de frame avec `willRender: false` → `forceReloaded = true`, **sans rechargement, sans erreur, sans rien de visible** (le tri ne s'applique simplement pas) → le déploiement se termine, tout s'affiche normalement, mais `performScroll()` ne s'exécute plus jamais pour ce document.
+- **Parcours de reproduction (local)** : ouvrir `/interventions`, scroller, **ne plus recharger** ; provoquer une divergence d'élément suivi (ajouter `<meta name="build" content="x" data-turbo-track="reload">` au `<head>`, ou toucher un CSS pour que Tailwind change le digest) ; cliquer une entête de tri (rien ne se passe visiblement) ; naviguer vers un show puis vers `/conventions` → le scroll est conservé. Contrôle : `Turbo.session.view.forceReloaded` vaut `true`. Repro instantanée sans déploiement : `Turbo.session.view.forceReloaded = true` en console, puis naviguer.
+- **Correctif (décision Alex : retirer le turbo-frame, quitte à perdre l'avantage du tri)** : `tableau_encadré` supprimé, ses 10 appels retirés des vues, `data-turbo-frame` retiré des liens de tri (`sort_link`) et des 10 formulaires de filtre. Plus aucun `willRender: false` dans l'application, donc plus aucun chemin vers `forceReloaded`.
+- **Conséquence assumée** : trier ou filtrer recharge la page entière et revient en haut — c'est le comportement d'avant le 2026-08-06-i. **Le tri lui-même est intact** (`Triable`, `ColonnesTriables`, `TriTextuel`, `th_tri`, `sort_link` inchangés) : les entêtes sont redevenues des liens ordinaires.
+- **Tests** : `test/system/tableaux_encadres_test.rb` supprimé (il ne gardait que le frame) ; le test « trier ne renvoie pas en haut de la page » de `tri_tableaux_test` retiré, les 5 autres conservés. Rendu contrôlé par capture d'écran avant/après sur les index interventions (normal et compact), utilisateurs et conventions : identique, au liseré 1px près de la bordure inline que dessinait le `<turbo-frame>`.
+- **Écarté** : réarmer le drapeau depuis l'application (`turbo:render` → `Turbo.session.view.forceReloaded = false`) — correctif de 3 lignes qui aurait gardé le tri sans rechargement, mais qui s'appuie sur un interne de Turbo. À ressortir si le tri sans saut de page redevient un besoin.
+- ⚠️ **Défaut de Turbo, pas mauvais usage de notre part** : `forceReloaded` jamais réarmé, et invalidation sautée quand `willRender: false`. À signaler en amont si le motif `turbo-frame + data-turbo-action` revient un jour dans le projet.
+
+### B94 — ✅ CORRIGÉ CÔTÉ COLLÈGUE (2026-08-11) — La page de bilan de l'import XLS était en 500 (`<% end %>` en trop)
+- **Où** : [users/import_do.html.erb](app/views/users/import_do.html.erb) — le fichier a été réécrit par `067b592b` (#451, refonte UX du bilan d'import), arrivé par le merge `3728eaa6`. La page compile et s'affiche à nouveau.
+- ⚠️ **Reste rouge, mais ce ne sont plus les mêmes échecs** : **9 tests** de `users_import_test` assertent l'ancien libellé du bilan et voient désormais la phrase ajoutée par #451 (« Importation exécutée avec succès ! Toutes les données ont été enregistrées avec succès. »). Ce sont des **tests périmés, pas une régression** — reproduits arbre propre le 2026-08-11 en remettant les fichiers de la session à `HEAD`. À aligner sur le nouveau libellé (ou à faire aligner par l'auteur de #451 si le message doit encore bouger).
+
+### B95 — ✅ SIGNALÉ PAR PE ET CORRIGÉ (2026-08-11) — Une pièce jointe refusée disparaissait en silence et l'enregistrement réussissait quand même
+- **Où** : [dropzone_controller.js:107](app/javascript/controllers/dropzone_controller.js#L107), `change()` — `this.inputTarget.value = ""` sur un fichier trop volumineux ou au mauvais format.
+- **Cause** : le fichier refusé est retiré de l'input avant l'envoi (à raison : on n'envoie pas 21 Mo pour rien), mais **rien n'empêchait la soumission**. Le formulaire partait sans pièce jointe, le record s'enregistrait normalement, et l'utilisateur repartait persuadé d'avoir joint son image. Vaut pour les 6 zones de dépôt (intervention, convention, outil ×2, utilisateur, page wiki).
+- **⚠️ La validation serveur, elle, faisait déjà son travail** — mesuré en console avant de coder : `Tool#save` renvoie `false` avec « Photo fichier trop volumineux (10 Mo maximum) », même en modifiant une autre colonne dans la même sauvegarde. Le trou était **entièrement côté navigateur**.
+- **Parcours de reproduction** : Outils → un outil → **Modifier** → déposer une photo de plus de 10 Mo → la zone passe au rouge (« Fichier trop volumineux ») → **Enregistrer** → l'outil est enregistré, redirection normale, **aucune photo attachée et aucun message**.
+- **Correctif** : le contrôleur Stimulus écoute le `submit` du formulaire qui le contient et l'annule tant que `data-dropzone-state="error"` (la zone est recentrée à l'écran). Turbo n'envoie rien quand la soumission est déjà empêchée (il teste `defaultPrevented` sur son écouteur de `document`, qui passe après celui du formulaire).
+- **⚠️ Sortie de secours : aucune, sur décision de PE.** Le formulaire reste bloqué tant qu'un fichier **valide** n'a pas été choisi — quelqu'un qui dépose une photo trop lourde par erreur ne peut plus enregistrer ses autres modifications sans recharger la page. Le lien « Retirer le fichier » a été proposé et écarté.
+- **Tests** : `conventions_test` (« un fichier refusé bloque l'enregistrement de la convention ») et `intervention_agent_flow_test` (« une photo trop volumineuse bloque l'enregistrement tant qu'elle n'est pas remplacée »). Tous deux **prouvés rouges** par sabotage. Ils sont discriminants par construction : si la soumission passait, la page redirigerait et le second `attach_file` ne trouverait plus de champ.
+
+### B93 — ✅ SIGNALÉ PAR PE ET CORRIGÉ (2026-08-11) — Un agent perdait ses heures de début et de fin quand une validation refusait son bon d'intervention
+- **Où** : [interventions/_form_for_agents.erb](app/views/interventions/_form_for_agents.erb), les 4 selects heure/minute — `params[:début_hour] || (intervention.new_record? ? nil : intervention.début&.hour)`.
+- **Cause** : sur un enregistrement **neuf**, la vue ignorait délibérément la valeur portée par l'objet ; et le repli `params[:début_hour]` était du **code mort** (le paramètre réel est `params[:intervention][:début_hour]`, jamais `params[:début_hour]`). Après un refus de validation, les 4 heures revenaient donc à `--`, alors que la mémoire portait bien la saisie — mesuré : `début = 2024-04-19 09:15`, champ rendu vide. Les **dates**, elles, revenaient (elles lisaient l'objet), d'où l'impression que « seules les heures » disparaissaient.
+- **Parcours de reproduction** : en tant qu'**agent**, Interventions → **Nouveau** → saisir adhérent, dates et heures (ex. 09:15 → 10:45) → **Enregistrer** → refus de validation (le plus courant : « Conflit détecté sur un agent », ou une pause supérieure à la durée). Le formulaire revient avec les dates mais les quatre listes d'heures sur `--`.
+- **Correctif** : les 8 selects des trois partials (`_form_for_agents`, `form/_realisation`, `form/_demande`) passent par `InterventionsHelper#heure_saisie` / `#minute_saisie`, qui lisent **l'accesseur virtuel d'abord** (`début_hour`), puis la colonne datetime. L'accesseur d'abord n'est pas un détail : quand la date qui accompagne l'heure est absente, `combine_datetime` ne fusionne rien, la colonne reste nulle et l'heure saisie serait perdue elle aussi.
+- **Corrigés du même coup** : le préremplissage du planning agent lisait `params[:début_prévue]` pour la **date de fin prévue** (copier-coller — inoffensif tant que les deux liens passent la même date, faux dès qu'ils diffèrent) ; le préremplissage par query string remonte de la vue vers `interventions#new`, si bien qu'**aucun formulaire de l'application ne lit plus `params`** pour ses valeurs.
+- **Filet permanent** : `test/integration/formulaires_conservent_la_saisie_test.rb` (13 cas) — chaque cas soumet des données invalides et compare **automatiquement** chaque paramètre envoyé au champ ré-affiché, donc un champ ajouté demain est couvert sans toucher le fichier. Deux sabotages séparés l'ont prouvé rouge.
+
+### B52 — ✅ SANS OBJET (2026-08-11) — `TagCloudComponent` appelé avec le mauvais mot-clé
+- Le composant et son gabarit ont été **supprimés** : plus aucun appelant depuis le retrait des deux vues non routées (`carte_interventions`, `route_interventions`) du 2026-08-10-c. Vérifié avant suppression : aucune vue, aucun contrôleur, aucun test, aucun preview ViewComponent ne le référence ; boot de l'application contrôlé après coup.
+- ⚠️ `app/components/` est désormais **vide** : la gem `view_component` n'a plus un seul composant dans le dépôt. À retirer du Gemfile si aucun composant n'est prévu.
+
+### B92 — ✅ SIGNALÉ ET CORRIGÉ (2026-08-11) — La liste déroulante « Mots clés » de /users exposait celles des autres organisations
+- **Où** : [users/index.html.erb:53](app/views/users/index.html.erb#L53), liste construite dans la vue à partir de `ActsAsTaggableOn::Tag.joins(:taggings).where(taggable_type: 'User')` — sans aucun bornage. La table `tags` est commune à toute l'application.
+- **Reproduction** (prouvée par test avant correction) : un manager de Marseille pose `astreinte-portuaire` sur un de ses agents → un administrateur de Paris le voit proposé dans le menu « Mots clés » de `/users`. Le **filtrage** restait cloisonné (`by_service`) : seuls les libellés fuyaient.
+- **Correctif** : la requête quitte la vue pour `set_users_tags`, qui part désormais de `current_organisation.users` — miroir exact de `set_interventions_tags`, déjà correct côté interventions. `set_users_tags` est ajouté au `before_action` de `users#index`.
+- **B85 corrigé du même coup**, et il le fallait : la méthode passait `User.by_service(current_user)` (un utilisateur là où l'on attend des services → relation vide), si bien que le champ Mots clés du formulaire utilisateur ne proposait **jamais** de mot clé existant. Écrire le bornage correct pour l'index en laissant la version fausse dans la même méthode n'était pas tenable.
+- **Épinglages retournés** : `users_index_filter_test` (« la liste est bornée à l'organisation ») et `users_controller_test` (« le formulaire propose les mots clés déjà utilisés » + un test critique inter-organisations). Les trois **prouvés rouges** par sabotage.
+
+### B85 — ✅ CORRIGÉ (2026-08-11) — Le filtre « Mots clés » des index était calculé sur un périmètre absurde
+- **Où** : [application_controller.rb:56](app/controllers/application_controller.rb#L56), `set_users_tags`
+- **Cause** : `User.by_service(current_user)` recevait **l'utilisateur courant** là où la méthode attend des **services** — la relation était vide, donc aucun mot clé n'était jamais proposé.
+- **Correctif** : `current_organisation&.users` (repli `User.none`), en même temps que **B92** : les deux vivaient dans la même méthode.
+
+### B90 — ✅ SIGNALÉ ET CORRIGÉ (2026-08-11) — Un adhérent qui modifiait son intervention en effaçait TOUS les mots clés
+- **Où** : [interventions_controller.rb:563](app/controllers/interventions_controller.rb#L563), `update_tag_list`
+- **Cause** : la méthode assignait **inconditionnellement** `@intervention.tag_list = params[:intervention][:tags_manager | tags_intervenant]`. Or le champ Mots clés vit dans le bloc « Assignation », que `_form.html.erb:49` ne rend que si `policy(intervention).saisir_assignation?` — **faux pour un adhérent** ([intervention_policy.rb:167](app/policies/intervention_policy.rb#L167) : `!adhérent?`). Le paramètre était donc absent, `tag_list = nil`, et `acts-as-taggable-on` interprète `nil` comme une liste vide → **tous les mots clés détachés**.
+- **Parcours de reproduction** (mesuré de bout en bout via le contrôleur) :
+  1. En tant que **manager**, je pose deux mots clés sur une intervention (« urgence », « plomberie »). J'enregistre.
+  2. En tant qu'**adhérent** propriétaire, je l'ouvre en modification, je change **la description seule** (le champ Mots clés ne m'est pas proposé) et j'enregistre → **303**, la modification passe.
+  3. Je reviens en manager : les **deux mots clés ont disparu**.
+- **Impact** : perte silencieuse d'une donnée de classement. L'effacement était muet jusqu'au 2026-08-11 ; l'affichage des mots clés dans l'historique (même jour) l'aurait rendu visible aux utilisateurs.
+- **Périmètre exact, mesuré avant correction** (rendu réel des formulaires, pas déduction) : manager/admin → `tags_manager` **plus le champ caché `""`** de Rails ; agent → `tags_intervenant` + champ caché ; adhérent → **aucun champ**. Le vidage volontaire reste donc distinguable de l'absence du champ.
+- **Correctif** : `champ = current_user.manager_or_admin? ? :tags_manager : :tags_intervenant` puis `return unless params[:intervention].key?(champ)`. Règle retenue : *le contrôleur n'écrit que ce que le formulaire lui a envoyé* — préférée à un test de rôle (`unless current_user.adhérent?`), qui redeviendrait faux le jour où le champ s'ouvre ou se ferme à un autre rôle.
+- ⚠ **Piège documenté** : ne pas confondre « champ **absent** » (ne rien faire) et « champ **vidé** » (retirer les mots clés). La variante naïve `return if params[…][champ].blank?` se comporte **identiquement aujourd'hui** (un select vidé envoie `['']`, qui n'est pas `blank?`) — mesuré. En revanche `return if Array(…).compact_blank.empty?` (« aucun mot clé sélectionné = rien à faire ») **casse le retrait volontaire**, et c'est ce que fige le test « un manager qui vide le champ les retire vraiment ». Même famille que le filtre Services des index (décision 2026-06-23).
+- **Tests** : 4 dans `interventions_controller_test.rb` (adhérent conserve, manager vide, manager modifie, agent modifie), **prouvés rouges** par trois sabotages distincts — garde retirée → l'adhérent efface ; « ignore une sélection vide » → le retrait volontaire ne marche plus.
 
 ### B88 — ✅ CORRIGÉ (2026-08-10) — Le bouton « Terminer » d'une fille pointait sur le pointage de CELUI QUI REGARDE, pas sur celui affiché
 - **Où** : [interventions_helper.rb:17](app/helpers/interventions_helper.rb#L17) (`terminer_destination`) × [user.rb:378](app/models/user.rb#L378) (`find_current_intervention`).

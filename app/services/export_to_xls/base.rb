@@ -77,8 +77,6 @@ module ExportToXls
     private
 
     def autofit_columns_with_gap
-      return unless @sheet
-
       total_columns = @sheet.row(0).size
 
       (0...total_columns).each do |col_index|

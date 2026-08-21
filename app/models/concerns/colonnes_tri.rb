@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-# Colonnes triables partagées par plusieurs contrôleurs : les tableaux qui
-# affichent la même chose se trient de la même façon.
+# Expressions de tri partagées par plusieurs modèles, appelées depuis leurs
+# `triable_par` : les tableaux qui affichent la même chose se trient de la même
+# façon (les trois documents devis/commande/facture, l'utilisateur, le service).
 module ColonnesTri
   # Sous-requête scalaire plutôt que jointure : aucune ligne dupliquée, aucune
   # interférence avec les `includes` et la pagination déjà en place.

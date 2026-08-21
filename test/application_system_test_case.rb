@@ -29,18 +29,35 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     Capybara.current_session.current_window.resize_to(*self.class.taille_tel)
   end
 
-  # Le toast n'a pas de bouton de fermeture et masque la barre mobile.
+  # Le toast masque la barre mobile : on le referme par sa croix, comme le fait
+  # l'utilisateur. `hide` retire l'élément du DOM à la fin de sa transition.
+  # Sans notification affichée, il n'y a rien à fermer : une notification vit 10 s
+  # et un setup lent peut l'avoir vue disparaître d'elle-même.
   def fermer_notification
-    page.execute_script("document.querySelectorAll('#notification > div').forEach(e => e.remove())")
+    croix = find("[data-testid='close_notification']", wait: 0)
+    cliquer_element(croix)
+    assert_no_selector '#notification > div', wait: 5
+  rescue Capybara::ElementNotFound
+    nil
   end
 
-  # Selon les pages : testid simple, ou variantes _mobile/_pc.
-  def click_sur_boutton_ajouter(element)
-    ["ajouter_#{element}", "ajouter_#{element}_mobile", "ajouter_#{element}_pc"].each do |tid|
-      sel = "[data-testid=\"#{tid}\"]"
-      return find(sel).click if has_css?(sel, wait: 0)
+  # Vérifie le toast affiché après une action, puis le referme.
+  def assert_notification(texte)
+    within '#notification' do
+      assert_text texte
     end
-    raise Capybara::ElementNotFound, "Aucun bouton d'ajout visible pour #{element}"
+    fermer_notification
+  end
+
+  # Un seul sélecteur pour les trois variantes : `find` attend alors l'ouverture
+  # d'un menu, là où un `has_css?(wait: 0)` par variante ne laisse aucune chance.
+  def element_testid(testid)
+    variantes = [testid, "#{testid}_mobile", "#{testid}_pc"]
+    find(variantes.map { |tid| "[data-testid=\"#{tid}\"]" }.join(', '))
+  end
+
+  def click_sur_boutton_ajouter(element)
+    cliquer_element(element_testid("ajouter_#{element}"))
   end
 
   # Centrer avant de cliquer : Selenium aligne sinon l'élément en bas, sous le
@@ -52,6 +69,23 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   def cliquer_bouton(locator)
     cliquer_element(find_button(locator))
+  end
+
+  # daisyUI ouvre ses menus depuis une `div` focusable et non depuis un `<button>` :
+  # `find_button` ne la voit pas, d'où un chemin distinct.
+  def cliquer_div_bouton(texte)
+    cliquer_element(find("[role='button'][tabindex]", text: texte))
+  end
+
+  # Sous 1024 px la navbar du haut disparaît et ses rubriques passent dans le dock
+  # du bas, toutes derrière une même icône sans libellé : le nom du menu n'a plus
+  # de sens à cette largeur.
+  def ouvrir_dropdown(nom)
+    # Si en mode pc
+    return cliquer_div_bouton(nom) if has_css?("[role='button'][tabindex]", text: nom, wait: 0)
+
+    # Sinon en mode mobile
+    cliquer_element(element_testid('dropdown_mobile'))
   end
 
   def cliquer_lien(locator)
@@ -68,6 +102,21 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     assert_no_button locator, disabled: :all, wait: 10
   end
 
+  # Création d'un fichier volumineux
+  def fichier_volumineux(extension, taille)
+    chemin = Rails.root.join('tmp', "gros_#{SecureRandom.hex(4)}#{extension}")
+    chemin.dirname.mkpath
+    chemin.binwrite('0' * taille)
+
+    (@fichiers_volumineux ||= []) << chemin
+    chemin.to_s
+  end
+
+  # Suppression des fichiers volumineux créés
+  teardown do
+    @fichiers_volumineux&.each { |chemin| FileUtils.rm_f(chemin) }
+  end
+
   # Reproduit la transformation CSS `text-transform: capitalize` (majuscule
   # en début de chaque mot, sans toucher au reste) pour comparer avec le
   # texte tel qu'il est réellement affiché à l'écran.
@@ -75,18 +124,13 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     str.split(' ').map { |word| word.sub(/\A\p{L}/) { |c| c.upcase } }.join(' ')
   end
 
-  # Clic JS : le clic Selenium natif tombe sur le SVG enfant du lien et n'émet
-  # jamais le DELETE. Le confirm est stubé, et le clic re-tenté s'il se perd.
+  # La déconnexion passe par la modale `#logout_modal` du navbar : on l'ouvre et
+  # on clique son lien en JS, le clic Selenium natif tombant sur le SVG enfant.
   def se_deconnecter(temoin_page_publique = 'Mutualisez mieux')
     3.times do
-      # Stub reposé à chaque tour : une navigation entre deux tentatives (redirection
-      # de connexion encore en vol sous charge) rend son `window.confirm` natif au
-      # document, Chrome écarte alors la boîte et le DELETE n'est jamais émis.
-      page.execute_script('window.confirm = () => true')
-      page.execute_script("document.querySelector(\"[data-testid='fermer_session']\")?.click()")
+      page.execute_script("document.querySelector('#logout_modal')?.showModal()")
+      page.execute_script("document.querySelector(\"#logout_modal a[data-turbo-method='delete']\")?.click()")
       return if has_text?(temoin_page_publique, wait: 10)
-    rescue Selenium::WebDriver::Error::UnexpectedAlertOpenError
-      next
     end
 
     flunk "Déconnexion : #{temoin_page_publique.inspect} toujours absent après 3 tentatives de clic"

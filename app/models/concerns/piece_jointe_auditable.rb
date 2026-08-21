@@ -9,6 +9,7 @@ module PieceJointeAuditable
   LIBELLES = {
     'photo' => ['photo ajoutée', 'photos ajoutées'],
     'photos' => ['photo ajoutée', 'photos ajoutées'],
+    'photos_demande' => ['photo de la demande ajoutée', 'photos de la demande ajoutées'],
     'profile_picture' => ['photo de profil ajoutée', 'photos de profil ajoutées'],
     'document' => ['document ajouté', 'documents ajoutés'],
     'documents' => ['document ajouté', 'documents ajoutés'],

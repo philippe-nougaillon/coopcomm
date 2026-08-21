@@ -14,15 +14,16 @@ class MouvementsController < ApplicationController
   def index
     @mouvements = current_organisation.mouvements
     @tools = current_organisation.tools.ordered
+    @users = current_organisation.users.ordered
     @états = Mouvement.états.keys
 
     @mouvements = @mouvements.where(tool_id: params[:tool_ids]) if params[:tool_ids].present?
 
-    # if params[:date].present?
-    #   @mouvements = @mouvements.joins(:intervention).where("DATE(interventions.début) = ?", params[:date])
-    # end
-
     @mouvements = @mouvements.where(état: params[:etats]) if params[:etats].present?
+
+    @mouvements = @mouvements.where(user_id: params[:user_ids]) if params[:user_ids].present?
+
+    @mouvements = @mouvements.where(date: params[:date]) if params[:date].present?
 
     @mouvements = @mouvements.includes(:tool, :user)
 

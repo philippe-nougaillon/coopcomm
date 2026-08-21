@@ -21,7 +21,7 @@ class ExportToXlsAgentsServiceTest < ActionDispatch::IntegrationTest
   end
 
   test 'retourne un fichier xsl contenant aucun agents' do
-    result = ExportToXls::Agents.call(Newsletter.where(id: nil))
+    result = ExportToXls::Agents.call(User.none)
 
     book = Spreadsheet.open(StringIO.new(result))
     sheet = book.worksheet(0)

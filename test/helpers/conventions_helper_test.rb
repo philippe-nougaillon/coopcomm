@@ -3,19 +3,6 @@
 require 'test_helper'
 
 class ConventionsHelperTest < ActionView::TestCase
-  def convention(start_date, end_date, conventionnees: nil, consommees: nil)
-    Convention.new(date_début: start_date, date_fin_prévue: end_date,
-                   heures_conventionnees: conventionnees, heures_consommees: consommees)
-  end
-
-  def heures(conventionnees:, consommees:)
-    convention_progress(convention(Date.new(2026, 1, 1), Date.new(2026, 12, 31),
-                                   conventionnees: conventionnees, consommees: consommees),
-                        today: Date.new(2026, 7, 1))
-  end
-
-  
-
   test 'convention à venir : 0 % et couleur info' do
     prog = convention_progress(convention(Date.new(2026, 7, 1), Date.new(2026, 12, 31)),
                                today: Date.new(2026, 6, 1))
@@ -96,6 +83,30 @@ class ConventionsHelperTest < ActionView::TestCase
 
     assert_equal 0, prog[:indicateur]
     assert_equal 'bg-error', prog[:indicateur_color]
-    assert_match 'temps total négatif', prog[:indicateur_label]
+    assert_match 'temps total positif', prog[:indicateur_label]
+  end
+
+  private
+
+  def convention(start_date, end_date, conventionnees: nil, consommees: nil)
+    convention = Convention.new(user: users(:patrick_adherent_paris), service: services(:service_paris),
+                                date_début: start_date, date_fin_prévue: end_date,
+                                heures_conventionnees: conventionnees)
+    poser_heures_consommees(convention, consommees) if consommees
+    convention
+  end
+
+  def poser_heures_consommees(convention, heures)
+    Intervention.create!(description: 'Intervention sous convention',
+                         adherent_id: convention.user_id, service_id: convention.service_id,
+                         début: convention.date_début.beginning_of_day + 9.hours,
+                         slug: SecureRandom.uuid)
+                .update_columns(temps_total: heures)
+  end
+
+  def heures(conventionnees:, consommees:)
+    convention_progress(convention(Date.new(2026, 1, 1), Date.new(2026, 12, 31),
+                                   conventionnees: conventionnees, consommees: consommees),
+                        today: Date.new(2026, 7, 1))
   end
 end

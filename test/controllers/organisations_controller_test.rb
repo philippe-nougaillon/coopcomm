@@ -2,51 +2,7 @@
 
 require 'test_helper'
 
+# Les trois actions de ce contrôleur (show, edit, update) sont entièrement commentées :
+# aucune page organisation n'est activée.
 class OrganisationsControllerTest < ActionDispatch::IntegrationTest
-  # Le controller organisation n'a pas de page activé
-
-  # setup do
-  #   @organisation = organisations(:mairie_paris)
-  # end
-
-  # test "should get index" do
-  #   get organisations_url
-  #   assert_response :success
-  # end
-
-  # test "should get new" do
-  #   get new_organisation_url
-  #   assert_response :success
-  # end
-
-  # test "should create organisation" do
-  #   assert_difference("Organisation.count") do
-  #     post organisations_url, params: { organisation: { nom: @organisation.nom } }
-  #   end
-
-  #   assert_redirected_to organisation_url(Organisation.last)
-  # end
-
-  # test "should show organisation" do
-  #   get organisation_url(@organisation)
-  #   assert_response :success
-  # end
-
-  # test "should get edit" do
-  #   get edit_organisation_url(@organisation)
-  #   assert_response :success
-  # end
-
-  # test "should update organisation" do
-  #   patch organisation_url(@organisation), params: { organisation: { nom: @organisation.nom } }
-  #   assert_redirected_to organisation_url(@organisation)
-  # end
-
-  # test "should destroy organisation" do
-  #   assert_difference("Organisation.count", -1) do
-  #     delete organisation_url(@organisation)
-  #   end
-
-  #   assert_redirected_to organisations_url
-  # end
 end

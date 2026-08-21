@@ -101,4 +101,53 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
     assert_select "select[name='services[]']", false,
                   'le filtre services doit être masqué pour un manager mono-service'
   end
+
+  # --- Filtre Mots clés ---
+  # bond est dans technique, donc dans le périmètre par défaut de administrateur_paris.
+
+  test 'le filtre user_tag ne garde que les utilisateurs porteurs du mot clé' do
+    porteur = users(:bond)
+    porteur.update!(tag_list: 'secteur-nord')
+
+    get users_url, params: { user_tag: 'secteur-nord' }
+
+    assert_response :success
+    assert_equal [porteur.id], assigns(:users).map(&:id)
+  end
+
+  test 'un mot clé inconnu rend une liste vide sans erreur' do
+    get users_url, params: { user_tag: 'mot-clé-qui-n-existe-pas' }
+
+    assert_response :success
+    assert_empty assigns(:users)
+  end
+
+  # ==================== TESTS CRITIQUES ====================
+
+  test 'index : le filtre par mot clé ne franchit pas la frontière d’organisation (critique)' do
+    paris = users(:bond)
+    marseille = users(:nettoyeur_marseille)
+    paris.update!(tag_list: 'commun')
+    marseille.update!(tag_list: 'commun')
+
+    get users_url, params: { user_tag: 'commun', services: [''] }
+
+    assert_response :success
+    assert_includes assigns(:users).map(&:id), paris.id
+    assert_not_includes assigns(:users).map(&:id), marseille.id
+  end
+
+  test 'index : la liste des mots clés proposée est bornée à l’organisation (critique)' do
+    users(:nettoyeur_marseille).update!(tag_list: 'secret-marseille')
+    users(:bond).update!(tag_list: 'secteur-nord')
+
+    get users_url
+
+    assert_response :success
+    assert_select 'select#user_tag option', text: 'secteur-nord'
+    assert_select 'select#user_tag option', { text: 'secret-marseille', count: 0 },
+                  'les mots clés d\'une autre organisation ne doivent pas être proposés'
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
 end

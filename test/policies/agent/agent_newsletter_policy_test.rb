@@ -6,22 +6,17 @@ class AgentNewsletterPolicyTest < ActionDispatch::IntegrationTest
   def setup
     agent = users(:martin_technique_paris)
 
-    mail = newsletters(:bond)
+    newsletter = newsletters(:bond)
 
-    @policy = NewsletterPolicy.new(agent, mail)
+    @policy = NewsletterPolicy.new(agent, newsletter)
   end
 
-  test "accès interdit pour un agent avec l'index d'une newsletter" do
-    refute @policy.index?
-  end
-
-  # Il peut créer ou supprimer car n'importe qui peut s'abonner et se désabonner, le slug est présent pour la sécurité
-
-  test "accès autorisé pour un agent avec la création d'une newsletter" do
+  test 'accès autorisé pour un agent sur un abonnement à la newsletter' do
     assert @policy.new?
+    assert @policy.destroy?
   end
 
-  test "accès autorisé pour un agent avec la suppression d'une newsletter" do
-    assert @policy.destroy?
+  test 'accès interdit pour un agent sur un abonnement à la newsletter' do
+    refute @policy.index?
   end
 end
