@@ -115,7 +115,7 @@
           </div>
           <div class="text-base text-slate-800 font-medium text-right max-w-xs">
             <% if @tool.document.attached? %>
-              <p class="font-medium text-slate-800 text-sm">
+              <p class="font-medium text-slate-800 text-sm truncate">
                 <%= link_to rails_blob_path(@tool.document, disposition: "attachment"),
                             class: " hover:text-primary underline " do %>
                   <%= @tool.document.filename.to_s %>
