@@ -8,6 +8,8 @@ class ConventionTest < ActiveSupport::TestCase
     @service  = services(:service_paris)
   end
 
+  DANS_LA_PÉRIODE_DE_CONVENTION_PARIS = Time.zone.parse('2026-03-02 09:00:00')
+
   test 'one_convention_per_service : doublon sur le même couple adhérent/service → refusé' do
     build_convention.save!
 
@@ -177,7 +179,69 @@ class ConventionTest < ActiveSupport::TestCase
     assert_not_includes interventions, hors_période
   end
 
+  test 'heures_consommees : interventions de la période → la somme de leur temps total' do
+    convention = conventions(:convention_paris)
+    intervention_conventionnee(heures: 3)
+    intervention_conventionnee(heures: 5, début: DANS_LA_PÉRIODE_DE_CONVENTION_PARIS + 4.hours)
+
+    assert_equal 8, convention.heures_consommees
+  end
+
+  test 'heures_consommees : aucune intervention → zéro' do
+    assert_equal 0, conventions(:convention_paris).heures_consommees
+  end
+
+  test 'heures_consommees : intervention d\'un autre service → non comptée' do
+    convention = conventions(:convention_paris)
+    intervention_conventionnee(heures: 4, service: services(:technique))
+
+    assert_equal 0, convention.heures_consommees
+  end
+
+  test 'heures_consommees : intervention d\'un autre adhérent → non comptée' do
+    convention = conventions(:convention_paris)
+    intervention_conventionnee(heures: 4, adherent_id: users(:adhérent_sans_intervention).id)
+
+    assert_equal 0, convention.heures_consommees
+  end
+
+  test 'heures_consommees : intervention hors période → non comptée' do
+    convention = conventions(:convention_paris)
+    intervention_conventionnee(heures: 4, début: convention.date_début.beginning_of_day - 2.days)
+
+    assert_equal 0, convention.heures_consommees
+  end
+
+  test 'heures_consommees : temps d\'une intervention modifié → somme recalculée' do
+    convention = conventions(:convention_paris)
+    intervention = intervention_conventionnee(heures: 3)
+
+    intervention.update!(fin: intervention.début + 5.hours)
+
+    assert_equal 5, convention.heures_consommees
+  end
+
+  test 'heures_consommees : intervention supprimée → somme recalculée' do
+    convention = conventions(:convention_paris)
+    intervention_conventionnee(heures: 3).destroy!
+
+    assert_equal 0, convention.heures_consommees
+  end
+
   private
+
+  def intervention_conventionnee(heures:, **attrs)
+    convention = conventions(:convention_paris)
+    début = attrs.delete(:début) || DANS_LA_PÉRIODE_DE_CONVENTION_PARIS
+    Intervention.create!({ description: 'Intervention sous convention',
+                           adherent_id: convention.user_id,
+                           service: convention.service,
+                           agents: [users(:hidalgo)],
+                           temps_de_pause: 0,
+                           début: début,
+                           fin: début + heures.hours,
+                           slug: SecureRandom.uuid }.merge(attrs))
+  end
 
   def build_convention(attrs = {})
     Convention.new({ user: @adherent, service: @service,
