@@ -25,12 +25,14 @@
        form: { data: { turbo_confirm: "Êtes-vous certain(e) de vouloir transformer cette cotation en commande  ? 
        Cette action est irréversible." }, class: 'contents', turbo_method: :post} %>
       <% end %>
+      <span class="block md:hidden">
       <%= link_to pdf_cotation_path(@cotation, filename: @cotation.pdf_filename),
                   class: "btn btn-outline btn-info flex-1 sm:flex-none", target: "_blank", data: { turbo: false } do %>
         <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200 hidden md:block" %>
         <span class="block md:hidden"> PDF </span>
         <span class="hidden md:block">Générer PDF</span>
       <% end %>
+      </span>
     </div>
   </div>
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
@@ -146,14 +148,39 @@
         </div>
       <% end %>
     </div>
-    <div class="hidden md:block w-full h-full min-h-40 lg:h-96 border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white">
-      <iframe 
-      src="<%= pdf_cotation_path(@cotation, filename: @cotation.pdf_filename) %>#toolbar=0" 
-      class="w-full h-full border-none"
-      title="Aperçu de la cotation PDF">
-      </iframe>
+<div class="hidden md:block justify-between w-full h-full">
+      <div class="flex-1 w-full border border-slate-200 rounded-xl overflow-hidden shadow-sm h-full relative group cursor-pointer">
+  <!-- El iframe visual del PDF -->
+  <iframe 
+    src="<%= pdf_cotation_path(@cotation, filename: @cotation.pdf_filename) %>#toolbar=0" 
+    class="w-full h-full border-none pointer-events-none"
+    title="Aperçu de la cotation PDF">
+  </iframe>
+
+  <!-- Capa invisible interactiva -->
+  <%= link_to pdf_cotation_path(@cotation, filename: @cotation.pdf_filename, download: true),
+              class: "absolute inset-0 z-10 flex items-center justify-center bg-black/0 hover:bg-slate-900/10 transition-colors duration-200",
+              target: "_blank",
+              data: { turbo: false },
+              title: "Cliquez pour télécharger le PDF" do %>
+    <!-- Badge que aparece al hacer hover -->
+    <span class="opacity-0 group-hover:opacity-100 bg-slate-900/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg transition-opacity duration-200 pointer-events-none">
+      Cliquez pour télécharger le PDF
+    </span>
+  <% end %>
+</div>
+
     </div>
   </div>
+
+
+
+
+
+
+
+
+  
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary font-semibold">Prestations</h2>
   </div>

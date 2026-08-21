@@ -54,7 +54,7 @@ class FactureTest < ActiveSupport::TestCase
   test 'style : chaque état → la classe du badge qui le distingue à l\'écran' do
     facture = build_facture
 
-    assert_equal 'badge badge-secondary ', facture.style
+    assert_equal 'badge badge-secondary', facture.style
 
     facture.save!
     facture.envoyer!

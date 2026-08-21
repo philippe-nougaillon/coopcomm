@@ -63,9 +63,10 @@
   <%= form.label attribute, label, class: "label font-semibold text-slate-700"  %>
   <% if saved_blobs.any? %>
     <p class="text-sm mb-1 break-all">
-      <%= multiple ? "Fichiers actuels :" : "Document actuel :" %>
+      <%= multiple ? "Fichiers actuels :" : "Document actuel : " %>
+      <br>
       <% saved_blobs.each_with_index do |blob, i| %><%= " · " if i.positive? %><%= link_to blob.filename, rails_blob_path(blob, disposition: "inline"),
-            target: "_blank", class: "link link-primary" %><% end %>
+            target: "_blank", class: "link link-primary capitalize" %><% end %>
     </p>
   <% end %>
   <div data-dropzone-target="box"
