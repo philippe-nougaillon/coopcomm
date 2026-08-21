@@ -4,16 +4,15 @@ require 'application_system_test_case'
 
 class AdminFlowOnUsersTest < ApplicationSystemTestCase
   setup do
-    Capybara.current_session.current_window.resize_to(*self.class.taille_pc)
     @admin = users(:administrateur_paris)
     login(@admin)
     fermer_notification
   end
 
-  test "créer un adhérent depuis la page d'accueil (critique)" do
+  test "En tant qu'administrateur, je veux créer un adhérent depuis la page d'accueil (critique)" do
     visit home_path
 
-    cliquer_bouton 'Gestion'
+    ouvrir_dropdown 'Gestion'
     cliquer_lien 'Utilisateurs'
     assert_current_path users_path
 

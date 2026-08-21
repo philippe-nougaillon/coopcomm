@@ -28,7 +28,7 @@
       <div class="w-full md:flex-1">
         <%= label_tag :etats, "État", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
         <%= select_tag :etats, 
-            options_for_select(@états.map { |e| [field_label(e), e] }, params[:etats]), 
+            options_for_select(Mouvement.etats_for_select, params[:etats]), 
             multiple: true,
             class: 'slim-select w-full h-10',
             data: { placeholder: 'Tous les états' },

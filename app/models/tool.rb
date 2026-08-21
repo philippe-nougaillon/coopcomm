@@ -22,7 +22,7 @@ class Tool < ApplicationRecord
   valide_image :photo
   valide_document :document
 
-  normalizes :name, with: ->(name) { name.humanize.strip }
+  normalizes :name, with: ->(name) { name.upcase.strip }
 
   validates :name, presence: true
   validates_uniqueness_of :name, scope: :organisation_id
@@ -85,8 +85,8 @@ class Tool < ApplicationRecord
       current_state = "L"
       reservataire_id = nil
 
-      # Arrête la période de panne si fin_panne, pour éviter d'entrer dans la condition est_en_panne
-      if etats.include?("fin_panne")
+      # Arrête la période de panne si fin_de_panne, pour éviter d'entrer dans la condition est_en_panne
+      if etats.include?("fin_de_panne")
         est_en_panne = false
       end
 
@@ -96,7 +96,7 @@ class Tool < ApplicationRecord
         current_state = "P"
       else
         # Si des mouvements existent au jour J
-        if etats["panne"].present? && etats["fin_panne"].blank?
+        if etats["panne"].present? && etats["fin_de_panne"].blank?
           current_state = "P"
           est_en_panne = true
         elsif (mouvement_user_id = etats["réservé"].presence)
@@ -114,7 +114,7 @@ class Tool < ApplicationRecord
   # On récupère la dernière panne en cours à la date donnée
   def est_encore_en_panne_le(date)
     mouvements.where('date <= ?', date)
-              .where(état: ["panne", "fin_panne"])
+              .where(état: ["panne", "fin_de_panne"])
               .order(date: :desc, id: :desc)
               .pick(:état) == "panne" # Prend la première panne trouvée
   end

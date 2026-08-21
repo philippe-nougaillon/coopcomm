@@ -45,7 +45,7 @@ module AuditsHelper
   }.freeze
 
   LIBELLES_ENUM = {
-    'fin_panne' => 'Fin de la panne',
+    'fin_de_panne' => 'Fin de panne',
     'faq' => 'FAQ'
   }.freeze
 

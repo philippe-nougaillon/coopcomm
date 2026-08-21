@@ -196,5 +196,5 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
 
   private
 
-  def nom_unique = "#{@tool.name}-#{SecureRandom.hex(4)}"
+  def nom_unique = "#{@tool.name}-#{SecureRandom.hex(4)}".upcase
 end

@@ -24,13 +24,22 @@ Trois étapes qui se suivent font **trois tests**, pas un seul. Un administrateu
 
 **Fichier** : `<rôle>_flow_on_<records>_test.rb`, le record au **pluriel** — `admin_flow_on_users_test.rb`, `adherent_flow_on_invitations_test.rb`. Classe en CamelCase correspondante. Le fichier vit dans `test/system/<rôle>/`.
 
-Le rôle et le record sont deux informations distinctes : le nom doit dire **qui agit** et **sur quoi**.
+Le rôle et le record sont deux informations distinctes : le nom du fichier doit dire **qui agit** et **sur quoi**.
+
+**Nom du test : une user story**, et non une description technique comme dans les autres types de tests. Il dit ce que la personne veut faire, et pourquoi :
+
+```ruby
+test "En tant qu'administrateur, je veux créer un adhérent depuis la page d'accueil" do
+test "En tant qu'adhérent invité, je veux définir mon mot de passe pour accéder à l'application" do
+```
 
 ## 4. Point de départ
 
 L'utilisateur est **déjà connecté** au démarrage : `login(...)` dans le `setup`, puis le test commence. Exceptions : le test porte précisément sur la connexion, ou l'acteur ne peut pas être connecté (un invité qui n'a pas encore de mot de passe).
 
-Quand la commande dit **« à partir de la page home »**, le test part de `home_path` et **navigue par les rubriques du haut de page** jusqu'à la page visée — il ne fait pas `visit users_url`. Ces rubriques sont dans la navbar `lg:` : le test passe alors en `taille_pc`.
+Quand la commande dit **« à partir de la page home »**, le test part de `home_path` et **navigue par les rubriques du menu** jusqu'à la page visée — il ne fait pas `visit users_url`.
+
+**Un test n'est jamais lié à une seule largeur d'écran.** Il ne redimensionne pas la fenêtre pour se simplifier la vie : il doit passer en téléphone comme en PC, parce que l'application est utilisée des deux façons. Quand la page diffère entre les deux — la navbar du haut sous `lg:` d'un côté, le dock du bas de l'autre — c'est au **helper** de absorber l'écart, pas au test de choisir un camp. C'est le rôle d'`ouvrir_dropdown`.
 
 ## 5. Cliquer
 
@@ -79,6 +88,8 @@ Un test système fait remonter deux natures de problèmes, à **ne jamais mélan
 
 La frontière est parfois instructive : un clic perdu parce que le bouton se déplace pendant une animation d'une seconde est une anomalie **utilisateur**, pas de test.
 
+**Un test système ne se met jamais en `skip` parce que l'application est cassée.** Le `skip` est réservé à une décision métier en attente. Face à un défaut pur — un bouton mort, un jeton absent, une page qui n'enregistre rien — le test **reste rouge** : c'est son travail de le dire, et c'est à l'équipe de surveiller les endroits qui clignotent.
+
 **Devant tout problème sur un test système, consulter Alex en proposant plusieurs solutions**, plutôt que de trancher seul.
 
 ## 11. Règles transverses
@@ -92,6 +103,8 @@ Aucun commentaire dans le corps d'un test ; une ligne en tête de fichier si sa 
 | `login(user)` | connexion par le vrai formulaire |
 | `se_deconnecter` | déconnexion (clic JS documenté, dernier recours assumé) |
 | `cliquer_bouton(texte)` / `cliquer_lien(texte)` | clic par le texte, recentré sous le dock |
+| `cliquer_div_bouton(texte)` | clic sur une `div[role=button][tabindex]` (menu daisyUI) |
+| `ouvrir_dropdown(nom)` | ouvre le menu, quelle que soit la largeur d'écran |
 | `cliquer(testid)` | clic par `data-testid`, variantes `_mobile` / `_pc` |
 | `click_sur_boutton_ajouter(record)` | bouton « + » des index |
 | `assert_notification(texte)` | vérifie le toast puis le referme |

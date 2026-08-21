@@ -37,7 +37,7 @@
       <%= form.label :état, class: "label font-semibold text-slate-700"  do%>
         <span>État <span class="text-red-500">*</span></span>
       <% end %>
-      <%= form.select :état, options_for_select([['Panne', 'panne'], ['Fin de panne', 'fin_panne']], mouvement.état), 
+      <%= form.select :état, options_for_select([['Panne', 'panne'], ['Fin de panne', 'fin_de_panne']], mouvement.état), 
           {include_blank: true}, class: 'slim-select w-full h-10', required: true %>
     </div>
     <div class="w-full">
