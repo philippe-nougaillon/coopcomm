@@ -11,9 +11,12 @@
       <span class="hidden md:block"> Actualiser </span>
     <% end %>
   </div>
-  <p class="mb-8">
-    Historique des mails envoyés via MailGun, avec Statut et État (OK = Acheminé, OUVERT = Vu).
-    Réactualisation auto toutes les 10 min. Cliquez sur Actualiser pour récupérer les derniers états plus rapidement. 
+  <p class="mb-4">
+      Historique des mails envoyés via MailGun, avec Statut et État (OK = Acheminé, OUVERT = Vu).
+      <br>
+      Réactualisation automatique toutes les 10 minutes.
+      <br>
+      Cliquez sur Actualiser pour récupérer les derniers états plus rapidement. 
   </p>
   <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_action: "advance" } do %>
     <%= champs_tri_caches %>

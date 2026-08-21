@@ -30,21 +30,21 @@ class Cotation < ApplicationRecord
   ARCHIVE = 'archivé'
 
   workflow do
-    state CREE, meta: { style: 'badge badge-secondary rounded-full' } do
+    state CREE, meta: { style: 'badge badge-secondary ' } do
       event :envoyer, transitions_to: ENVOYE
     end
-    state ENVOYE, meta: { style: 'badge badge-primary rounded-full' } do
+    state ENVOYE, meta: { style: 'badge badge-primary ' } do
       event :signer, transitions_to: SIGNE
       event :refuser, transitions_to: REFUSE
     end
-    state SIGNE, meta: { style: 'badge badge-outline badge-info rounded-full ' } do
+    state SIGNE, meta: { style: 'badge badge-outline badge-info ' } do
       event :valider, transitions_to: VALIDE
       event :refuser, transitions_to: REFUSE
     end
-    state VALIDE, meta: { style: 'badge badge-success rounded-full' } do
+    state VALIDE, meta: { style: 'badge badge-success ' } do
       event :archiver, transitions_to: ARCHIVE
     end
-    state REFUSE, meta: { style: 'badge badge-error text-white rounded-full' } do
+    state REFUSE, meta: { style: 'badge badge-error text-white ' } do
       # Une cotation refusée peut être corrigée puis renvoyée (retour à « envoyé »).
       event :envoyer, transitions_to: ENVOYE
       event :archiver, transitions_to: ARCHIVE

@@ -26,17 +26,17 @@ class Facture < ApplicationRecord
   ARCHIVE = 'archivé'
 
   workflow do
-    state CREE, meta: { style: 'badge badge-secondary rounded-full' } do
+    state CREE, meta: { style: 'badge badge-secondary ' } do
       event :envoyer, transitions_to: ENVOYE
     end
-    state ENVOYE, meta: { style: 'badge badge-primary rounded-full' } do
+    state ENVOYE, meta: { style: 'badge badge-primary ' } do
       event :valider, transitions_to: VALIDE
       event :refuser, transitions_to: REFUSE
     end
-    state VALIDE, meta: { style: 'badge badge-success rounded-full' } do
+    state VALIDE, meta: { style: 'badge badge-success ' } do
       event :archiver, transitions_to: ARCHIVE
     end
-    state REFUSE, meta: { style: 'badge badge-error text-white rounded-full' } do
+    state REFUSE, meta: { style: 'badge badge-error text-white ' } do
       # Une facture refusée peut être corrigée puis renvoyée (retour à « envoyé »).
       event :envoyer, transitions_to: ENVOYE
       event :archiver, transitions_to: ARCHIVE

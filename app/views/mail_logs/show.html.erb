@@ -13,21 +13,29 @@
 
       <% if @mail_log.statut %>
         <span class="inline-flex items-center gap-1 text-xs font-medium text-success bg-success/10 rounded-full px-3 py-1 whitespace-nowrap">
-          OK
+          Acheminé
         </span>
       <% else %>
         <span class="inline-flex items-center gap-1 text-xs font-medium text-error bg-error/10 rounded-full px-3 py-1 whitespace-nowrap">
-          Erreur
+          Échec (KO)
         </span>
       <% end %>
     </div>
 
     <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
+      
+      <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+        <%= embedded_svg "icons/send.svg", class: "text-base", title: "Expéditeur" %> Expéditeur
+      </div>
+      <div class="py-2.5 text-slate-800 border-b border-slate-100 font-mono text-xs break-all">
+        <%= @mail_log.user_id == 0 ? "Système" : User.with_discarded.find(@mail_log.user_id).nom_prénom %>
+      </div>
+      
       <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
         <%= embedded_svg "icons/mail.svg", class: "text-base", title: "Destinataire" %> Destinataire
       </div>
       <div class="py-2.5 text-slate-800 border-b border-slate-100 font-mono text-xs break-all">
-        <%= @mail_log.to %>
+        <%= Array(@mail_log.to).join(', ') %>
       </div>
 
       <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">

@@ -16,10 +16,10 @@
   </div>
 <% else %>
   <% unless @rapport.appliqué %>
-    <div class="max-w-3xl bg-amber-50 border border-amber-200 rounded-2xl mb-6 flex items-center gap-3" style="padding: 0.75rem 1.25rem;">
+    <div class="max-w-4xl bg-amber-50 border border-amber-200 rounded-2xl mb-6 flex items-center gap-3" style="padding: 0.75rem 1.25rem;">
       <%= embedded_svg "icons/info.svg", class: "text-amber-600 shrink-0", title: "Mode test" %>
       <p class="font-medium text-amber-800 text-sm">
-        Mode test : les modifications n'ont pas été enregistrées.
+        Simulation : les modifications n'ont pas été enregistrées.
       </p>
     </div>
   <% end %>
@@ -29,30 +29,30 @@
         card_classes         = "bg-white"
         text_classes         = "text-amber-800"
         title_text           = @rapport.appliqué ? "Importation partielle exécutée" : "Simulation terminée (avec des erreurs)"
-        subtitle_text        = "Ajustez le fichier Excel et relancez la vérification."
+        subtitle_text        = "Consultez les motifs d'erreur pour ajuster le fichier Excel et relancer l'importation."
         icon_svg             = "icons/warning.svg"
         erreur_number_class  = "text-error"
       else
         card_classes         = "bg-white"
         text_classes         = "text-emerald-800"
         title_text           = @rapport.appliqué ? "Importation exécutée avec succès !" : "Simulation réussie !"
-        subtitle_text        = @rapport.appliqué ? "Toutes les données ont été enregistrées avec succès." : "Aucune donnée n'a été modifiée en base."
+        subtitle_text        = @rapport.appliqué ? "Toutes les données ont été enregistrées et les utilisateurs ont été notifiés par e-mail." : "Aucune donnée n'a été ajoutée ou modifiée."
         icon_svg             = "icons/check.svg"
         erreur_number_class  = "text-slate-800"
       end
     %>
 
-    <div class="max-w-3xl mb-10 p-5 border border-slate-200 rounded-2xl shadow-sm <%= card_classes %>" data-testid="bilan_import">
+    <div class="max-w-4xl mb-10 p-5 border border-slate-200 rounded-2xl shadow-sm <%= card_classes %>" data-testid="bilan_import">
       <p class="text-xl text-black font-semibold uppercase tracking-wide mb-3 opacity-70">Bilan</p>
 
       <div class="flex gap-3">
         <div class="bg-white rounded-lg px-4 py-3 flex-1 border border-slate-100">
           <p class="text-xl font-semibold text-slate-800"><%= @rapport.importés %></p>
-          <p class="text-sm text-slate-500">Lignes importées</p>
+          <p class="text-sm text-slate-500">Ligne(s) importées</p>
         </div>
         <div class="bg-white rounded-lg px-4 py-3 flex-1 border border-slate-100">
           <p class="text-xl font-semibold <%= erreur_number_class %>"><%= @rapport.en_erreur %></p>
-          <p class="text-sm text-slate-500">Lignes en erreur</p>
+          <p class="text-sm text-slate-500">Ligne(s) en erreur</p>
         </div>
       </div>
 
@@ -68,14 +68,14 @@
         <% if @rapport.en_erreur > 0 %>
           <%= link_to import_users_path, class: "btn btn-warning shrink-0 inline-flex items-center gap-2" do %>
             <%= embedded_svg "icons/refresh.svg", class: "w-4 h-4" %>
-            <span>Corriger et relancer</span>
+            <span>Relancer l'importation</span>
           <% end %>
         <% end %>
       </div>
     </div>
 
     <% if @rapport.succès.any? %>
-      <h2 class="text-2xl text-secondary font-semibold mb-4">Lignes traitées</h2>
+      <h2 class="text-2xl text-secondary font-semibold mb-4">Lignes importées</h2>
 
       <div class="block md:hidden flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
         <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
@@ -90,7 +90,7 @@
             <tr>
               <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Ligne</th>
               <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Type</th>
-              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Nom</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Nom / Prénom</th>
               <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Email</th>
               <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
               <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Changements</th>
@@ -127,9 +127,9 @@
           <thead class="bg-slate-100 text-slate-600 font-semibold">
             <tr>
               <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Ligne</th>
-              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Nom</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Nom / Prénom</th>
               <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Email</th>
-              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service demandé</th>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Service</th>
               <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">Motifs</th>
             </tr>
           </thead>
