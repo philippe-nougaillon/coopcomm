@@ -16,6 +16,18 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'index : les contacts ne proposent que les comptes actifs' do
+    désactivé = users(:agent_discarded_paris)
+
+    get messagerie_url
+    assert_not_includes assigns(:users), désactivé
+
+    désactivé.undiscard
+
+    get messagerie_url
+    assert_includes assigns(:users), désactivé
+  end
+
   test 'conversation : un interlocuteur du périmètre → la page répond' do
     get messagerie_conversation_url(@interlocutor_user.slug)
     assert_response :success
@@ -29,6 +41,30 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
   test 'conversation : interlocuteur inconnu → retour à la messagerie' do
     get messagerie_conversation_url(to_user_slug: 0)
     assert_redirected_to messagerie_path
+  end
+
+  test 'conversation : avec un agent → la page répond' do
+    get messagerie_conversation_url(users(:bond).slug)
+
+    assert_response :success
+  end
+
+  test 'conversation : avec un manager → la page répond' do
+    get messagerie_conversation_url(users(:manager_paris).slug)
+
+    assert_response :success
+  end
+
+  test 'conversation : avec un administrateur → la page répond' do
+    get messagerie_conversation_url(users(:administrateur_paris).slug)
+
+    assert_response :success
+  end
+
+  test 'conversation : avec un adhérent → la page répond' do
+    get messagerie_conversation_url(users(:patrick_adherent_paris).slug)
+
+    assert_response :success
   end
 
   # ==================== TESTS CRITIQUES ====================
@@ -126,5 +162,17 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes assigns(:users), @interlocutor_user
+  end
+
+  test 'search_contact : la recherche ne propose que les comptes actifs' do
+    désactivé = users(:agent_discarded_paris)
+
+    post messagerie_search_contact_url, params: { query: désactivé.nom }
+    assert_not_includes assigns(:users), désactivé
+
+    désactivé.undiscard
+
+    post messagerie_search_contact_url, params: { query: désactivé.nom }
+    assert_includes assigns(:users), désactivé
   end
 end
