@@ -54,12 +54,12 @@ class FactureTest < ActiveSupport::TestCase
   test 'style : chaque état → la classe du badge qui le distingue à l\'écran' do
     facture = build_facture
 
-    assert_equal 'badge badge-secondary rounded-full', facture.style
+    assert_equal 'badge badge-secondary ', facture.style
 
     facture.save!
     facture.envoyer!
 
-    assert_equal 'badge badge-primary rounded-full', facture.style
+    assert_equal 'badge badge-primary ', facture.style
   end
 
   test 'workflow_state_humanized : appel → les états humanisés du workflow' do

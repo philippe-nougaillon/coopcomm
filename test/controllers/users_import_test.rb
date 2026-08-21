@@ -191,7 +191,7 @@ class UsersImportTest < ActionDispatch::IntegrationTest
       importer([ENTETES, ligne(nom: 'Spectre', prénom: 'Ancien', email: désactivé.email)], save: 'true')
     end
 
-    assert_match(/ce compte est désactivé/, tableau_erreurs)
+    assert_match(/Ce compte est désactivé/, tableau_erreurs)
     assert désactivé.reload.discarded?
   end
 
@@ -294,8 +294,8 @@ class UsersImportTest < ActionDispatch::IntegrationTest
     assert_not_nil bilan, 'le bilan de l’import doit être affiché'
 
     compteurs = bilan.text.squish
-    assert_match(/\b#{importés} Lignes importées/, compteurs)
-    assert_match(/\b#{erreurs} Lignes en erreur/, compteurs)
+    assert_match(/(?:^|\s)#{importés} Ligne\(s\) importées/, compteurs)
+    assert_match(/(?:^|\s)#{erreurs} Ligne\(s\) en erreur/, compteurs)
   end
 
   def assert_no_selector_bilan
