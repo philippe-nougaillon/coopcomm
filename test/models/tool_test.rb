@@ -163,14 +163,14 @@ class ToolTest < ActiveSupport::TestCase
 
   test 'get_etats_from_mouvements : réparation → libre dès le jour de la fin de panne (critique)' do
     panne('2026-06-02')
-    fin_panne('2026-06-04')
+    fin_de_panne('2026-06-04')
 
     assert_equal %w[L L L L], grille[3..]
   end
 
   test 'get_etats_from_mouvements : panne, réparation puis rechute → cycle retracé (critique)' do
     panne('2026-06-01')
-    fin_panne('2026-06-03')
+    fin_de_panne('2026-06-03')
     panne('2026-06-05')
 
     assert_equal %w[P P L L P P P], grille
@@ -221,7 +221,7 @@ class ToolTest < ActiveSupport::TestCase
 
   test 'est_encore_en_panne_le : après la réparation → faux' do
     panne('2026-06-02')
-    fin_panne('2026-06-04')
+    fin_de_panne('2026-06-04')
 
     assert_not @outil.est_encore_en_panne_le(Date.new(2026, 6, 6))
   end
@@ -262,8 +262,8 @@ class ToolTest < ActiveSupport::TestCase
     Mouvement.create!(tool: outil, user: @moi, état: :panne, date: t(jour))
   end
 
-  def fin_panne(jour, outil = @outil)
-    Mouvement.create!(tool: outil, user: @moi, état: :fin_panne, date: t(jour))
+  def fin_de_panne(jour, outil = @outil)
+    Mouvement.create!(tool: outil, user: @moi, état: :fin_de_panne, date: t(jour))
   end
 
   def reservation(jour, qui, outil = @outil)

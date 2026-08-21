@@ -355,7 +355,7 @@ class AuditsHelperTest < ActionView::TestCase
   test 'l\'état d\'un mouvement est traduit, une valeur inconnue reste brute' do
     assert_equal 'Réservé',         format_audit_value('état', Mouvement.états[:réservé])
     assert_equal 'Panne',           format_audit_value('état', Mouvement.états[:panne])
-    assert_equal 'Fin de la panne', format_audit_value('état', Mouvement.états[:fin_panne])
+    assert_equal 'Fin de panne',    format_audit_value('état', Mouvement.états[:fin_de_panne])
     assert_equal '9',               format_audit_value('état', 9)
   end
 
