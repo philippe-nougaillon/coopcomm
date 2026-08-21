@@ -55,6 +55,19 @@ class ColonnesTriablesTest < ActiveSupport::TestCase
     assert_equal attendu, clés_sql(Cotation, 'cotations.dernier_mail') { |valeur| valeur&.round }
   end
 
+  test 'clé de tri « heures consommées » : lecture → la somme calculée par la convention' do
+    convention = conventions(:convention_paris)
+    début = Time.zone.parse('2026-03-02 09:00:00')
+    Intervention.create!(description: 'Intervention sous convention', adherent_id: convention.user_id,
+                         service: convention.service, agents: [users(:hidalgo)], temps_de_pause: 0,
+                         début: début, fin: début + 3.hours, slug: SecureRandom.uuid)
+
+    attendu = Convention.all.to_h { |c| [c.id, c.heures_consommees.to_f] }
+
+    assert_equal({ convention.id => 3.0 }, attendu.slice(convention.id))
+    assert_equal attendu, clés_sql(Convention, 'conventions.heures_consommees', &:to_f)
+  end
+
   test 'triable_par : toute colonne déclarée → expression exécutable en base' do
     Rails.application.eager_load!
 

@@ -252,71 +252,6 @@ class InterventionTest < ActiveSupport::TestCase
     assert_equal 2, intervention.errors.full_messages.count { |m| m.include?('Secrétariat') }
   end
 
-  # temps_total est dérivé des dates et du nombre d'agents, jamais fixé à la main.
-
-  test 'update_heures_consommees_convention : création → le temps s\'ajoute aux heures de la convention' do
-    travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      create_intervention_conventionnee(heures: 3)
-      create_intervention_conventionnee(heures: 5, début: 6.hours.ago)
-
-      assert_equal 8, conventions(:convention_paris).reload.heures_consommees
-    end
-  end
-
-  test 'update_heures_consommees_convention : intervention d\'un autre service → heures inchangées' do
-    travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      create_intervention_conventionnee(heures: 4, service: services(:technique))
-
-      assert_equal 0, conventions(:convention_paris).reload.heures_consommees
-    end
-  end
-
-  test 'update_heures_consommees_convention : intervention d\'un autre adhérent → heures inchangées' do
-    travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      create_intervention_conventionnee(heures: 4, adherent_id: users(:adhérent_sans_intervention).id)
-
-      assert_equal 0, conventions(:convention_paris).reload.heures_consommees
-    end
-  end
-
-  test 'update_heures_consommees_convention : intervention hors période → heures inchangées' do
-    travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      create_intervention_conventionnee(heures: 4, début: Time.zone.parse('2025-06-01 06:00:00'))
-
-      assert_equal 0, conventions(:convention_paris).reload.heures_consommees
-    end
-  end
-
-  test 'update_heures_consommees_convention : temps modifié → seule la différence est reportée' do
-    travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      intervention = create_intervention_conventionnee(heures: 3)
-
-      intervention.update!(fin: intervention.début + 5.hours)
-
-      assert_equal 5, conventions(:convention_paris).reload.heures_consommees
-    end
-  end
-
-  test 'update_heures_consommees_convention : modification sans changement de temps → heures inchangées' do
-    travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      intervention = create_intervention_conventionnee(heures: 3)
-
-      intervention.update!(description: 'description modifiée')
-
-      assert_equal 3, conventions(:convention_paris).reload.heures_consommees
-    end
-  end
-
-  test 'update_heures_consommees_convention : suppression → le temps est retranché' do
-    travel_to Time.zone.parse('2026-06-01 12:00:00') do
-      intervention = create_intervention_conventionnee(heures: 3)
-
-      intervention.destroy!
-
-      assert_equal 0, conventions(:convention_paris).reload.heures_consommees
-    end
-  end
-
   # Le créateur est déduit de l'audit de création : au niveau modèle, il faut `as_user`
   # pour le poser (dans l'app, `audited` capte le current_user du contrôleur).
 
@@ -613,20 +548,6 @@ class InterventionTest < ActiveSupport::TestCase
     assert_nil Intervention.dernière_en_cours(Intervention.where(id: interventions(:nouvelle_intervention).id))
   end
 
-  test 'extract_temps_total_depending_on_audit : audit sans variation de temps → zéro' do
-    intervention = interventions(:tonte_locaux)
-    audit = intervention.audits.build(action: 'update', audited_changes: { 'description' => %w[avant après] })
-
-    assert_equal 0, intervention.send(:extract_temps_total_depending_on_audit, audit)
-  end
-
-  test 'extract_temps_total_depending_on_audit : audit de création → le temps enregistré' do
-    intervention = interventions(:tonte_locaux)
-    audit = intervention.audits.build(action: 'create', audited_changes: { 'temps_total' => 5 })
-
-    assert_equal 5, intervention.send(:extract_temps_total_depending_on_audit, audit)
-  end
-
   test 'broadcast_channels : intervention complète → organisation, service, adhérent et agents' do
     intervention = interventions(:tonte_locaux)
 
@@ -657,17 +578,6 @@ class InterventionTest < ActiveSupport::TestCase
                          service: services(:informatique),
                          début_prévue: 1.day.from_now,
                          fin_prévue: 1.day.from_now + 1.hour)
-  end
-
-  def create_intervention_conventionnee(heures: 3, **attrs)
-    début = attrs.delete(:début) || 10.hours.ago
-    Intervention.create!({ description: 'intervention conventionnée',
-                           adherent_id: users(:weil).id,
-                           service: services(:informatique),
-                           agents: [users(:hidalgo)],
-                           temps_de_pause: 0,
-                           début: début,
-                           fin: début + heures.hours }.merge(attrs))
   end
 
   def png
