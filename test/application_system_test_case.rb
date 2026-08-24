@@ -42,6 +42,9 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   end
 
   # Vérifie le toast affiché après une action, puis le referme.
+  # Risque d'erreur: 
+  # La notification peut apparaitre après le within 
+  # et fait remonter une erreur car elle n'est pas trouvée.
   def assert_notification(texte)
     within '#notification' do
       assert_text texte
@@ -124,15 +127,25 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     str.split(' ').map { |word| word.sub(/\A\p{L}/) { |c| c.upcase } }.join(' ')
   end
 
-  # La déconnexion passe par la modale `#logout_modal` du navbar : on l'ouvre et
-  # on clique son lien en JS, le clic Selenium natif tombant sur le SVG enfant.
-  def se_deconnecter(temoin_page_publique = 'Mutualisez mieux')
-    3.times do
-      page.execute_script("document.querySelector('#logout_modal')?.showModal()")
-      page.execute_script("document.querySelector(\"#logout_modal a[data-turbo-method='delete']\")?.click()")
-      return if has_text?(temoin_page_publique, wait: 10)
-    end
+  # Ouvre la modale de déconnexion sans rien confirmer.
+  def cliquer_bouton_deconnexion
+    cliquer_element(element_testid('dropdown_mobile')) unless has_css?("[data-testid='se_deconnecter']", wait: 0)
+    cliquer_element(element_testid('se_deconnecter'))
 
-    flunk "Déconnexion : #{temoin_page_publique.inspect} toujours absent après 3 tentatives de clic"
+    assert_selector '#logout_modal', text: 'Êtes-vous certain(e) de vouloir fermer cette session ?'
+  end
+
+  def se_deconnecter
+    cliquer_bouton_deconnexion
+    cliquer_lien 'Oui, se déconnecter'
+
+    assert_text 'Mutualisez mieux'
+  end
+
+  # Cherche si le bloc d'erreur du formulaire existe, sinon le test échoue
+  def find_error_form
+    find("#error_explanation")
+  rescue Capybara::ElementNotFound
+    fail "Le bloc d'erreur du formulaire doit apparaitre"
   end
 end
