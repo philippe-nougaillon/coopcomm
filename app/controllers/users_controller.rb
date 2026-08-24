@@ -113,15 +113,8 @@ class UsersController < ApplicationController
         # turbo:render, donc les slim-select réinjectés n'y sont pas recâblés.
         if params[:from_absence_modal]
           format.turbo_stream do
-            absence_en_erreur = @user.absences.to_a.find(&:new_record?) || @user.absences.last
-            render turbo_stream: turbo_stream.replace(
-              'absence_form',
-              partial: 'absence_form',
-              locals: {
-                user: @user,
-                absence: absence_en_erreur
-              }
-            )
+            absence_en_erreur = @user.absences.to_a.find(&:invalid?) || Absence.new(user_id: @user.id)
+            render turbo_stream: turbo_stream.replace('absence_form_new', partial: 'users/absence_form', locals: { user: @user, absence: absence_en_erreur }), status: :unprocessable_entity
           end
         end
 
