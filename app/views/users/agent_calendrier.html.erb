@@ -30,28 +30,34 @@
     </div>
   <% end %>
   <hr class="mt-6 mb-6">
-  <div class="flex items-center justify-center gap-4 mb-4">
-    <%= link_to agent_calendrier_users_path(request.query_parameters.merge(date: @date - 7.days)),
-        class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10", title: "Semaine précédente", data: { turbo: false } do %>
-      <%= embedded_svg "icons/arrow_back.svg", class: "w-5 h-5 fill-current" %>
-    <% end %>
-    <div class="flex items-center gap-3">
-      <span class="font-semibold text-primary text-sm sm:text-base whitespace-nowrap">
+  <div class="flex flex-col items-center justify-center gap-2 mb-6">
+    <div class="flex items-center justify-center gap-4">
+      <%= link_to agent_calendrier_users_path(request.query_parameters.merge(date: @date - 7.days)),
+          class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10", title: "Semaine précédente", data: { turbo: false } do %>
+        <%= embedded_svg "icons/arrow_back.svg", class: "w-5 h-5 fill-current" %>
+      <% end %>
+      
+      <span class="font-semibold text-primary text-base sm:text-lg whitespace-nowrap">
         <%= l(@date, format: "%d %b", locale: :fr) %> — <%= l(@date_fin, format: "%d %b %Y", locale: :fr) %>
       </span>
+
        <%= link_to agent_calendrier_users_path(request.query_parameters.merge(date: @date + 7.days)),
-        class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10", title: "Semaine suivante", data: { turbo: false } do %>
-      <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current" %>
-    <% end %>
-      <% if @date == Date.today %>
-        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm">
-          Aujourd'hui
-        </span>
-      <% else %>
-        <%= link_to "Aujourd'hui",
-          agent_calendrier_users_path(request.query_parameters.merge(date: Date.today)),
-          class: "inline-block text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm hover:bg-purple-50 transition-colors" %>
-      <% end %>
+            class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10", title: "Semaine suivante", data: { turbo: false } do %>
+          <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current" %>
+       <% end %>
+      </div>
+
+      <div>
+        <% if @date == Date.today %>
+          <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm">
+            Aujourd'hui
+          </span>
+        <% else %>
+          <%= link_to "Aujourd'hui",
+            agent_calendrier_users_path(request.query_parameters.merge(date: Date.today)),
+            class: "inline-block text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm hover:bg-purple-50 transition-colors" %>
+        <% end %>
+      </div>  
     </div>
 
   </div>

@@ -61,9 +61,12 @@ class ToolsController < ApplicationController
 
     return unless current_user.manager_or_admin?
 
+    @pagy_mouvements, @mouvements = pagy(@mouvements, items: 10)
+    @pagy_interventions, @interventions = pagy(@interventions, items: 10)
+
     # Les mouvements ne sont pas associés à l'outil côté audited : la grille de
     # disponibilités les affiche déjà, l'historique ne les répète pas.
-    @pagy, @audits = pagy(trier(@tool.own_and_associated_audits.includes(:user)), items: 10)
+    @pagy_audits, @audits = pagy(trier(@tool.own_and_associated_audits.includes(:user)), items: 10)
   end
 
   # GET /tools/new

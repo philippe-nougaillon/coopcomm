@@ -50,19 +50,28 @@
     </div>
   <% end %>
   <hr class="mt-6 mb-6">
-  <div class="flex flex-wrap items-center justify-center gap-3 mb-4">
-    <%= link_to tools_path(request.query_parameters.merge(date: @date - 7.days)),
-        class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10 flex-shrink-0 flex items-center justify-center", title: "Semaine précédente", data: { turbo: false } do %>
-      <%= embedded_svg "icons/arrow_back.svg", class: "w-5 h-5 fill-current" %>
-    <% end %>
-    <div class="flex items-center gap-3 flex-wrap justify-center">
-      <span class="font-semibold text-primary text-sm sm:text-base whitespace-nowrap">
+
+
+
+
+  <div class="flex flex-col items-center justify-center gap-2 mb-6">
+    <div class="flex items-center justify-center gap-4">
+      <%= link_to tools_path(request.query_parameters.merge(date: @date - 7.days)),
+          class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10 flex-shrink-0 flex items-center justify-center", title: "Semaine précédente", data: { turbo: false } do %>
+        <%= embedded_svg "icons/arrow_back.svg", class: "w-5 h-5 fill-current" %>
+      <% end %>
+
+      <span class="font-semibold text-primary text-base sm:text-lg  whitespace-nowrap">
        <%= l(@date, format: "%d %b", locale: :fr) %> — <%= l(@date_fin, format: "%d %b %Y", locale: :fr) %>
-        </span>
-         <%= link_to tools_path(request.query_parameters.merge(date: @date + 7.days)),
-        class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10 flex-shrink-0 flex items-center justify-center", title: "Semaine suivante", data: { turbo: false } do %>
-      <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current" %>
-    <% end %>
+      </span>
+
+        <%= link_to tools_path(request.query_parameters.merge(date: @date + 7.days)),
+          class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10 flex-shrink-0 flex items-center justify-center", title: "Semaine suivante", data: { turbo: false } do %>
+          <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current" %>
+        <% end %>
+    </div>
+
+    <div>
       <% if @date == Date.today %>
         <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm whitespace-nowrap">
           Aujourd'hui
@@ -73,8 +82,13 @@
               class: "inline-block text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm hover:bg-purple-50 transition-colors whitespace-nowrap" %>
       <% end %>
     </div>
-   
   </div>
+
+
+
+
+
+
  
   <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-none md:rounded-t-xl border-t border-x md:border-b-0 border-slate-200">
     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>

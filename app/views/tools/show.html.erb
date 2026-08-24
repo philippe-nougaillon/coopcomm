@@ -227,6 +227,16 @@
         </tbody>
       </table>
     </div>
+    <% if @pagy_interventions&.pages.to_i > 1 %>
+      <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
+        <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+          <%= pagy_nav(@pagy_interventions).html_safe %>
+        </div>
+        <div class="text-slate-500 text-center text-sm w-full mt-2">
+          <%= pagy_info(@pagy_interventions, item_name: "interventions").html_safe %>
+        </div>
+      </div>
+    <% end %>
   </div>
 
   <div class="flex justify-between flex-wrap items-center mt-10 mb-4">
@@ -259,10 +269,20 @@
         </tbody>
       </table>
     </div>
+    <% if @pagy_mouvements&.pages.to_i > 1 %>
+      <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
+        <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+          <%= pagy_nav(@pagy_mouvements).html_safe %>
+        </div>
+        <div class="text-slate-500 text-center text-sm w-full mt-2">
+          <%= pagy_info(@pagy_mouvements, item_name: "mouvements").html_safe %>
+        </div>
+      </div>
+    <% end %>
   </div>
 
   <% if current_user.manager_or_admin? %>
-    <%= render "shared/activite", audits: @audits, pagy: @pagy %>
+    <%= render "shared/activite", audits: @audits, pagy: @pagy_audits %>
   <% end %>
 
   <div class="pt-6">
