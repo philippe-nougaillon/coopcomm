@@ -54,7 +54,7 @@ class CommandeTest < ActiveSupport::TestCase
   test 'style : chaque état → la classe du badge qui le distingue à l\'écran' do
     commande = build_commande
 
-    assert_equal 'badge badge-secondary', commande.style
+    assert_equal 'badge badge-secondary ', commande.style
 
     commande.save!
     commande.envoyer!

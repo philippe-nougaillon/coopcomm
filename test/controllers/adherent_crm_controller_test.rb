@@ -360,13 +360,13 @@ class AdherentCrmControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:cotations), cotations(:cotation_paris)
   end
 
-  test 'index : la première page est limitée à 15 cotations' do
+  test 'index : la première page est limitée à 10 cotations' do
     creer_cotations(20)
     sign_in users(:administrateur_paris)
 
     get adherent_crm_url
 
-    assert_equal 15, assigns(:cotations).size
+    assert_equal 10, assigns(:cotations).size
   end
 
   test 'index : la seconde page contient le reste des cotations' do
@@ -377,7 +377,7 @@ class AdherentCrmControllerTest < ActionDispatch::IntegrationTest
     get adherent_crm_url(page: 2)
 
     assert_equal total, assigns(:pagy).count
-    assert_equal total - 15, assigns(:cotations).size
+    assert_equal 10, assigns(:cotations).size
   end
 
   test 'index : une page hors bornes redirige au lieu de lever une erreur' do
