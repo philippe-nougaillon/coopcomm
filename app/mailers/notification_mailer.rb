@@ -15,6 +15,7 @@ class NotificationMailer < ApplicationMailer
 
   def relance(intervention)
     @intervention = intervention
+    @user = intervention.adherent
 
     mail(to: intervention.adherent.email,
          bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
