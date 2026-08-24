@@ -234,7 +234,7 @@
           <% end %>
         </li>
         <li>
-          <button onclick="logout_modal.showModal()" title="Fermer la session de <%= current_user.email %> (<%= current_user.rôle %>)" class="h-16 py-0 flex items-center text-secondary hover:border-b-2 hover:border-primary cursor-pointer">
+          <button onclick="logout_modal.showModal()" title="Fermer la session de <%= current_user.email %> (<%= current_user.rôle %>)" class="h-16 py-0 flex items-center text-secondary hover:border-b-2 hover:border-primary cursor-pointer" data-testid="se_deconnecter">
             <%= embedded_svg "icons/logout.svg", class: "w-6 h-6 fill-current" %>
           </button>
         </li>

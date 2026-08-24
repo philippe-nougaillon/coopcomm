@@ -34,6 +34,32 @@ class AdherentFlowOnInvitationsTest < ApplicationSystemTestCase
     assert @adherent.reload.invitation_accepted_at, "l'invitation n'a pas été acceptée"
   end
 
+  test "En tant qu'adhérent invité, je ne peux pas enregistrer avec un mot de passe inccorect" do
+    visit lien_du_mail_d_invitation
+
+    fill_in 'user_password', with: 'abcd'
+    fill_in 'user_password_confirmation', with: 'abcd'
+    cliquer_bouton 'Définir mon mot de passe'
+
+    find_error_form
+
+    @adherent.reload
+    assert_nil @adherent.invitation_accepted_at
+    assert_not_equal @adherent.password, 'abcd'
+  end
+
+  test "En tant qu'adhérent invité, je ne peux pas enregistrer sans saisir mon mot de passe" do
+    visit lien_du_mail_d_invitation
+
+    fill_in 'user_password', with: ''
+    fill_in 'user_password_confirmation', with: ''
+    cliquer_bouton 'Définir mon mot de passe'
+
+    @adherent.reload
+    assert_nil @adherent.invitation_accepted_at
+    assert_not_equal @adherent.password, ''
+  end
+
   private
 
   # Le lien est lu dans le mail réellement envoyé ; seul son hôte est remplacé,
