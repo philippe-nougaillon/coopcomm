@@ -45,10 +45,12 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # Risque d'erreur: 
   # La notification peut apparaitre après le within 
   # et fait remonter une erreur car elle n'est pas trouvée.
+  # `assert_selector` rejoue toute la requête à chaque tentative, là où un
+  # `within` fige le conteneur de la page courante : quand l'action navigue,
+  # l'assertion resterait accrochée au `#notification` vide de la page quittée.
   def assert_notification(texte)
-    within '#notification' do
-      assert_text texte
-    end
+    assert_selector '#notification', text: texte
+
     fermer_notification
   end
 
@@ -127,9 +129,22 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     str.split(' ').map { |word| word.sub(/\A\p{L}/) { |c| c.upcase } }.join(' ')
   end
 
+  # Le menu du haut se replie derrière une icône en largeur téléphone : on l'ouvre
+  # si ce qu'on vise n'est pas déjà à l'écran.
+  def ouvrir_dropdown_mobile
+    cliquer_element(element_testid('dropdown_mobile'))
+  end
+
+  # Cliquer sur le bouton de la navbar en mobile ou en pc
+  def cliquer_lien_navbar(texte)
+    # Si le texte n'existe pas, alors on ouvre le dropdown_mobile
+    ouvrir_dropdown_mobile unless has_link?(texte, wait: 0)
+    cliquer_lien(texte)
+  end
+
   # Ouvre la modale de déconnexion sans rien confirmer.
   def cliquer_bouton_deconnexion
-    cliquer_element(element_testid('dropdown_mobile')) unless has_css?("[data-testid='se_deconnecter']", wait: 0)
+    ouvrir_dropdown_mobile unless has_css?("[data-testid='se_deconnecter']", wait: 0)
     cliquer_element(element_testid('se_deconnecter'))
 
     assert_selector '#logout_modal', text: 'Êtes-vous certain(e) de vouloir fermer cette session ?'
