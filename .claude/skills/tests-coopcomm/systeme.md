@@ -4,6 +4,17 @@ Un test système rejoue **un parcours utilisateur réel dans un navigateur**. Il
 
 Tout ce qui suit prime sur le confort d'écriture. **Un test ne s'adapte jamais aux contraintes de l'environnement de test** : si le parcours est pénible à automatiser, c'est souvent que l'application est pénible à utiliser.
 
+## 0. Ce qu'on met ici, et rien d'autre
+
+Un test système coûte environ **25 fois plus cher** qu'un test d'intégration (0,85 test/s contre 21). Deux choses seulement le justifient :
+
+- **Les parcours critiques** : créer une intervention, réserver un outil, consulter son tableau de bord, pointer.
+- **Le JavaScript**, et c'est le plus important — c'est la seule chose qu'aucun autre niveau ne peut couvrir. Un champ qui apparaît selon une condition, une couleur qui change, un bouton que Stimulus active, un menu qui s'ouvre, un widget qui remplace un `<select>`. Sans navigateur, tout ça est invisible : le formulaire d'invitation postait correctement au niveau HTTP alors que son bouton était `disabled` et qu'aucun invité ne pouvait valider (B97).
+
+- **Les messages d'erreur d'un formulaire** : quand on vérifie `#error_explanation`, on asserte **chaque message** qu'il contient, pas seulement sa présence. Le refus (422, état inchangé) est déjà prouvé au niveau contrôleur ; ce qui reste ici, c'est ce que l'utilisateur lit.
+
+Tout ce qui se prouve avec un `get` ou un `post` se teste ailleurs — voir `controleurs.md`, `integration.md` et la hiérarchie de `SKILL.md`.
+
 ## 1. La commande d'un test
 
 Alex donne trois éléments :
@@ -36,6 +47,8 @@ test "En tant qu'adhérent invité, je veux définir mon mot de passe pour accé
 ## 4. Point de départ
 
 L'utilisateur est **déjà connecté** au démarrage : `login(...)` dans le `setup`, puis le test commence. Exceptions : le test porte précisément sur la connexion, ou l'acteur ne peut pas être connecté (un invité qui n'a pas encore de mot de passe).
+
+**Le test démarre sur la page qui porte le bouton de l'action**, jamais sur la route de destination. Pour « créer une intervention », on part de l'index des interventions et on clique le bouton d'ajout — pas de `visit new_intervention_url` : le chemin qui mène au formulaire fait partie du parcours, et c'est souvent là que ça casse.
 
 Quand la commande dit **« à partir de la page home »**, le test part de `home_path` et **navigue par les rubriques du menu** jusqu'à la page visée — il ne fait pas `visit users_url`.
 

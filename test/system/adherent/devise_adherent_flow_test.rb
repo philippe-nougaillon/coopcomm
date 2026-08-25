@@ -18,6 +18,13 @@ class DeviseAdherentFlowTest < ApplicationSystemTestCase
 
     fill_in 'user_email', with: @adherent.email
     fill_in 'user_password', with: 'qtDug$d843sqACz?V'
+
+    flunk "L'oeil pour afficher le mot de passe est caché si le champ password est sélectionné, à modifier !"
+    # L'œil bascule le champ entre `password` (points) et `text` (lisible).
+    assert_equal 'password', find('#user_password')[:type]
+    find("[data-action*='password-visibility#toggle']").click
+    assert_equal 'text', find('#user_password')[:type]
+
     cliquer_bouton 'Se connecter'
 
     assert_notification 'Vous êtes connecté(e).'
@@ -25,19 +32,6 @@ class DeviseAdherentFlowTest < ApplicationSystemTestCase
 
     visit interventions_url
     assert_current_path interventions_path
-  end
-
-  test "En tant qu'adhérent, je ne peux pas me connecter avec un mot de passe incorrect" do
-    visit new_user_session_path
-
-    fill_in 'user_email', with: @adherent.email
-    fill_in 'user_password', with: 'mot-de-passe-oublié'
-    cliquer_bouton 'Se connecter'
-
-    assert_notification 'Email ou mot de passe incorrect.'
-
-    visit interventions_url
-    assert_current_path new_user_session_path
   end
 
   test "En tant qu'adhérent, je veux me déconnecter" do

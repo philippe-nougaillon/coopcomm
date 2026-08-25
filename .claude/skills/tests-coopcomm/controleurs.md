@@ -1,6 +1,30 @@
 # Tests de contrôleurs — gabarit imposé
 
-Un test de contrôleur vérifie **un seul contrat** : l'action reçoit ces paramètres → le record est (ou n'est pas) modifié → on est redirigé au bon endroit, ou la bonne page est rendue. **Rien d'autre.**
+Un test de contrôleur vérifie **un seul contrat**, sur **une seule action** : l'action reçoit ces paramètres → le record est (ou n'est pas) modifié → on est redirigé au bon endroit, ou la bonne page est rendue. **Rien d'autre.** Dès qu'on enchaîne deux actions, c'est un test d'intégration : voir `integration.md`.
+
+## Les cinq assertions
+
+Toutes ne s'appliquent pas à chaque test, mais elles forment la liste dans laquelle on puise, et on n'en invente pas d'autres.
+
+1. **La réponse aboutit** — `assert_response :success` pour un rendu, `assert_redirected_to` pour une redirection. Elle prouve du même coup que l'authentification est passée : un utilisateur non connecté serait redirigé. ⚠ Elle ne prouve **rien** sur le refus des autres — qui a le droit reste l'affaire des tests de policy ; ici on ne met en scène que des acteurs qui ont déjà le droit.
+2. **La redirection mène à la bonne page** — jamais « quelque part ».
+3. **La donnée du record est rendue** — son titre, sa description ou sa référence, dans la page ou dans la ligne du tableau, avec `assert_dom`. **Jamais le titre de la page** ni un intitulé de section : ce sont des libellés de gabarit, ils changent pour des raisons d'ergonomie et feraient tomber le test sans qu'aucun contrat soit rompu. Ce qu'on prouve, c'est que le bon enregistrement est arrivé jusqu'à la vue.
+4. **L'alerte correspond à la situation** — le `flash[:notice]` ou `flash[:alert]` exact que l'action pose.
+5. **L'état en base a changé, ou n'a pas changé** — avec un `reload` avant de lire.
+
+**Requête AJAX** : ajouter `xhr: true`. Sans lui le contrôleur prend la branche HTML et le test couvre autre chose que ce qu'il annonce.
+
+## Les trois actions courantes
+
+**`show`** : on ouvre le show du record et on vérifie que la réponse aboutit, et que la donnée du record est là.
+
+**`destroy`** : on supprime un record **valide**, on vérifie la redirection, et on prouve la suppression — `assert_difference('Record.count', -1)` pour une suppression réelle, `assert record.reload.discarded?` quand le modèle est en `discard`. ⚠ Se tromper de forme fait passer le test sans que rien ne soit supprimé.
+
+**`update`** : on modifie le titre ou la description, on **recharge** le record, on vérifie la nouvelle valeur et la page d'arrivée.
+
+## Fixtures du fichier
+
+**Une fixture principale, posée dans le `setup`**, et des fixtures dérivées quand la situation l'exige (un acteur d'une autre organisation, un record dans un autre état). Une fixture utilisée **une seule fois** reste dans le test qui s'en sert ; dès qu'elle sert deux fois, elle remonte au `setup`.
 
 ## Un fichier par contrôleur
 
@@ -59,7 +83,7 @@ Si une erreur tombe dans une action mais vient d'ailleurs (service, méthode de 
 
 ## Nommage et constantes
 
-**Nom d'un test** : `<action> : <situation> → <effet>`. **Aucun commentaire**, sauf la ligne signalant un contrôleur vide ou désactivé.
+**Nom d'un test** : une phrase qui énonce le comportement, cf. `SKILL.md` — et `commandes_controller_test.rb` comme référence. **Aucun commentaire**, sauf la ligne signalant un contrôleur vide ou désactivé.
 
 **Constantes** : une constante **utilisée une seule fois n'existe pas** — on met sa valeur à l'endroit qui s'en sert. Utilisée plusieurs fois, elle se déclare **en haut du fichier, juste sous le `setup`**, avec un commentaire d'une ligne qui dit à quoi elle sert.
 *Exception de bon sens : une table de données de plusieurs lignes qui pilote des tests générés (les 4 matrices, les listes de pages des sentinelles) reste une constante même utilisée une fois — l'inliner rendrait la méthode illisible.*

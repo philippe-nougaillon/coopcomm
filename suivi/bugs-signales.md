@@ -10,6 +10,18 @@
 
 ## 🔴 Bugs ouverts
 
+### B98 — L'œil qui révèle le mot de passe est inutilisable dès qu'on a tapé dedans
+- **Où** : le bouton `data-action="click->password-visibility#toggle"` des formulaires Devise (connexion, invitation, mot de passe oublié, changement de mot de passe).
+- **Cause** : daisyUI donne `z-index: 1` au champ **quand il a le focus** ; le bouton, en `position: absolute`, reste à `z-index: auto`. Le champ passe donc **au-dessus** de l'œil et intercepte le clic.
+- **Mesuré** (sonde navigateur, 2026-08-26) : champ non focalisé → `elementFromPoint` au centre du bouton renvoie le `<svg>` de l'œil ; champ focalisé après saisie → il renvoie l'`INPUT`, avec `z-index: 1` sur le champ et `auto` sur le bouton.
+- **Parcours de reproduction** :
+  1. J'ouvre la page de connexion et je saisis mon mot de passe — le champ a le focus.
+  2. Je clique sur l'œil pour vérifier ce que j'ai tapé.
+  3. → **Rien ne se passe** : le clic atterrit dans le champ. Il faut d'abord cliquer ailleurs pour retirer le focus, puis cliquer sur l'œil.
+- **Impact** : la fonction est inatteignable dans son usage normal, sur les quatre formulaires. Gênant surtout sur téléphone, où l'on ne relit pas sa saisie autrement.
+- **Correctif proposé** : une classe sur le bouton — `relative z-10`.
+- **Test** : `test/system/adherent/devise_adherent_flow_test.rb`, assertion sur le `type` du champ (`password` → `text`), **rouge volontairement** jusqu'à la correction.
+
 ### B2 — Prix du devis écrasé par le tarif courant à la création de la commande (décision métier à prendre)
 - **Où** : [create_commande_from_cotation.rb:19](app/services/create_commande_from_cotation.rb#L19) + `CommandeLigne#set_prix_from_prestation` ; symétrique dans `create_facture_from_commande.rb:19`
 - **Cause** : le service copie bien `prix_ht`/`total_ht` du devis, mais le callback de `CommandeLigne` les **écrase avec le tarif actuel** de la prestation (`total_ht` est de toute façon une colonne générée).

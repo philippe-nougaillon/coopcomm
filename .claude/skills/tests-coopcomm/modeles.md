@@ -1,6 +1,8 @@
 # Tests de modèles — gabarit imposé
 
-Un test de modèle vérifie **le contrat du modèle lui-même** : ce que ses scopes ramènent, ce que ses validations refusent, ce que ses callbacks produisent, ce que ses méthodes renvoient. **Rien d'autre.**
+Un test de modèle vérifie **le contrat du modèle lui-même** : ce que ses scopes ramènent, ce que ses validations refusent, ce que ses callbacks produisent, ce que ses méthodes renvoient. **Rien d'autre** — aucune requête HTTP, aucune vue, aucune policy.
+
+C'est le niveau le plus proche du test unitaire : **un test = une logique d'une méthode**, sous la forme « avec ces entrées, cette méthode renvoie cela ». Une méthode qui a trois branches donne trois tests, pas un test qui les enchaîne.
 
 ## Un fichier par modèle
 

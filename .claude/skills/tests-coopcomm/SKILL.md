@@ -14,12 +14,29 @@ description: Conventions et gabarits imposés des tests du projet (Minitest, Rai
 | Ce que j'écris | Où sont les règles |
 |---|---|
 | Test de **policy** Pundit | `policies.md` — gabarit imposé, à lire en entier |
-| Test de **contrôleur** | `controleurs.md` — gabarit imposé, à lire en entier |
+| Test de **contrôleur** (une action) | `controleurs.md` — gabarit imposé, à lire en entier |
+| Test d'**intégration** (plusieurs actions enchaînées) | `integration.md` — gabarit imposé, à lire en entier |
 | Test de **modèle** (ou de concern de modèle) | `modeles.md` — gabarit imposé, à lire en entier |
 | Test de **service** (`app/services/`) | `services.md` — gabarit imposé, à lire en entier |
 | Ajout ou choix d'une **fixture** | `fixtures.md` |
 | Test **système** (parcours navigateur) | `systeme.md` — gabarit imposé, à lire en entier |
 | Test de **job** | Aucun gabarit imposé à ce jour — appliquer les règles transverses ci-dessous. Ne pas en inventer un. |
+
+## Hiérarchie : contrôleur < intégration < système
+
+Trois niveaux, du moins cher au plus cher. **Un comportement ne se teste qu'à un seul.**
+
+| Niveau | Ce qu'il couvre |
+|---|---|
+| **Contrôleur** | chaque cas particulier d'**une** action : ce que la machine doit faire, et ce qu'elle doit refuser |
+| **Intégration** | un parcours utilisateur, mais toujours dans la couche contrôleur (`get`, `post`, `assert_dom`) : **plusieurs actions enchaînées** — créer une intervention → la voir dans l'index → la terminer |
+| **Système** | les parcours utilisateurs **critiques**, et uniquement ce qui n'est testable à aucun des deux niveaux inférieurs : le JavaScript, la CSS, le clic réel |
+
+**La règle de décision, dans cet ordre :** ça tient dans une seule action → contrôleur. Il faut enchaîner des actions → intégration. Il faut un navigateur → système.
+
+**Jamais deux niveaux pour la même chose.** Un test système qui refait ce qu'un test de contrôleur prouve déjà se supprime, il ne se garde pas « au cas où » : il coûte 25 fois plus cher, il flake, et le jour où le comportement change il faut corriger deux endroits.
+
+**Les messages d'erreur d'un formulaire (`#error_explanation`) se vérifient en système**, et on y asserte **chacun des messages** de la div, pas seulement sa présence — c'est le seul moyen de savoir que l'utilisateur lit la bonne cause. Le **refus** lui-même (statut 422, état inchangé en base) reste au niveau contrôleur : les deux ne se recouvrent pas.
 
 ## Règles transverses (tous types de tests)
 
@@ -28,6 +45,21 @@ description: Conventions et gabarits imposés des tests du projet (Minitest, Rai
 **Ce qui est commenté ne se teste pas.** Méthode, action, route, transition ou bloc mis en commentaire : aucun test, d'aucune sorte — ni de refus, ni de non-régression, ni de sentinelle. Le jour où la fonctionnalité rouvre, les tests s'écrivent à ce moment-là.
 
 **Une condition à la fois, dans l'ordre du code.** Quand on couvre une méthode et ses dérivées, on avance condition par condition : C1, puis C2, puis C3 — jamais dans le désordre. L'ordre des tests doit se relire en regard du code testé.
+
+**Le nom d'un test est une phrase qui énonce un comportement (règle Alex, 2026-08-25).** Pas une coordonnée technique (`update : intitulé vide → 422`), mais une règle du domaine, lisible par quelqu'un qui ne connaît pas le code :
+
+```ruby
+test 'une commande est affichée avec succès'
+test 'une commande est archivée lorsqu’elle est supprimée'
+test 'la recherche dans la liste ne retourne que les commandes correspondantes'
+test 'une commande à l’état envoyé peut être validée'
+```
+
+Le nom ne s'adresse pas au lecteur et ne raconte pas le décor : les formules « de son périmètre », « qu'il gère », « auquel il a droit » disparaissent — le contexte est dans le corps du test. **Exception** : le mot « périmètre » reste quand le test porte précisément dessus (un paramètre forgé hors périmètre, un résultat borné au périmètre).
+
+**Migration au fil de l'eau (règle Alex, 2026-08-25) : à chaque fois qu'on touche un fichier de test, on convertit *tous* ses noms à cette forme**, même ceux qu'on ne modifiait pas. Jamais de passe globale sur le dépôt : la reprise se fait fichier par fichier, au moment où l'on y travaille de toute façon. `test/controllers/commandes_controller_test.rb` sert de référence.
+
+Vaut pour **tous** les types de tests.
 
 **Chaque chose porte son nom, et un seul (règle Alex, 2026-08-19).** Aucune ambiguïté dans les noms de tests, les messages d'assertion, les variables et les commentaires : trois objets voisins se confondent sans arrêt, alors qu'ils n'ont rien à voir.
 
