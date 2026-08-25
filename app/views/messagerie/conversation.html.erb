@@ -15,10 +15,12 @@
           </div>
         </div>
         <div class="flex items-center gap-4">
-          <%= render partial: "partials/user_profile_picture", locals: { user: @destinataire } %>
-          <h1 class="text-xl sm:text-2xl text-primary font-bold truncate">
-            <span class="block"><%= @destinataire.nom_prénom %></span>
-          </h1>
+          <%= link_to user_path(@destinataire), class: "flex items-center gap-4 hover:underline" do %>
+            <%= render partial: "partials/user_profile_picture", locals: { user: @destinataire } %>
+            <h1 class="text-xl sm:text-2xl text-primary font-bold truncate hover:underline-primary">
+              <span class="block"><%= @destinataire.nom_prénom %></span>
+            </h1>
+          <% end %>
         </div>
       </div>
     </div>
