@@ -52,7 +52,7 @@
                   <% end %>
                 </div>
 
-                <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100 flex-1" style="padding-right: 2rem;">
+                <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100 " style="padding-right: 2rem;">
                   <%= embedded_svg "icons/person.svg", class: "text-base", title: "Prénom" %> Prénom
                 </div>
                 <div class="py-2.5 border-b border-slate-100 break-all flex items-center">
@@ -95,6 +95,20 @@
                   <span class="text-slate-400 italic text-xs">Non renseigné</span>
                 <% end %>
               </div>
+
+              <% if @user.adhérent? %>
+                <div class="flex items-center gap-2 py-2.5 text-slate-500" style="padding-right: 2rem;">
+                  <%= embedded_svg "icons/pin_drop.svg", title: "Localisation" %> Localisation
+                </div>
+                <div class="py-2.5 flex items-center">
+                  <% if @user.address.to_s.strip.present? %>
+                    <span class="text-slate-800 flex items-center"><%= @user.address %></span>
+                  <% else %>
+                    <span class="text-slate-400 italic text-xs">Non renseigné</span>
+                  <% end %>
+                </div>
+              <% end %>
+              
             </div>
           </div>
         </div>
@@ -103,9 +117,8 @@
           <div class="bg-white border border-slate-200 rounded-2xl flex-1 h-full w-full" style="padding: 1.25rem;">
             <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Organisation</p>
             <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
-              <div class="flex items-start gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-                <%= embedded_svg "icons/store.svg", class: "text-base mt-0.5", title: "Services" %>
-                <%= @user.manager_or_admin? ? "Responsable des services" : "Services" %>
+              <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+                <%= embedded_svg "icons/store.svg", title: "Services" %> Services
               </div>
               <div class="py-2.5 border-b border-slate-100 flex items-center w-full">
                 <% services = @user.services.pluck(:nom) %>

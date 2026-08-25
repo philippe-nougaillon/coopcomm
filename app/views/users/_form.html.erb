@@ -71,8 +71,7 @@
     <div class="grid grid-cols-1 <%= current_user.manager? ? 'md:grid-cols-1' : 'md:grid-cols-2' %> gap-4 w-full">
       <% if current_user.manager_or_admin? %>
         <div class="form-control w-full">
-          <% label_texte = user.rôle == 'adhérent' ? "Secteur" : "Équipe" %>
-          <%= form.label :tag_list, label_texte, class: "label font-semibold text-slate-700", data: { 'toggle-role-info-target': 'tagLabel' } %>
+          <%= form.label :tag_list, "Mots clé", class: "label font-semibold text-slate-700" %>
           <%
             est_soumission = params[form.object_name].present?
             if est_soumission

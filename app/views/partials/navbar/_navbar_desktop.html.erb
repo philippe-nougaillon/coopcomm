@@ -229,12 +229,12 @@
           </li>
         <% end %>
         <li title="<%= current_user.nom_prenom_role %>">
-          <%= link_to user_path(current_user), class: class_names("h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => (params[:controller] == 'users' && params[:id] == current_user.slug)) do %>
+          <%= link_to user_path(current_user), class: class_names("h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary focus:bg-base-300! focus:outline-none! navbar-icon-trigger", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => (params[:controller] == 'users' && params[:id] == current_user.slug)) do %>
             <%= render partial: 'partials/user_profile_picture', locals: { user: current_user } %>
           <% end %>
         </li>
         <li>
-          <button onclick="logout_modal.showModal()" title="Fermer la session de <%= current_user.email %> (<%= current_user.rôle %>)" class="h-16 py-0 flex items-center text-secondary hover:border-b-2 hover:border-primary cursor-pointer" data-testid="se_deconnecter">
+          <button onclick="logout_modal.showModal()" title="Fermer la session de <%= current_user.email %> (<%= current_user.rôle %>)" class="h-16 py-0 flex items-center text-secondary hover:border-b-2 hover:border-primary cursor-pointer focus:bg-base-300! focus:outline-none! navbar-icon-trigger" data-testid="se_deconnecter">
             <%= embedded_svg "icons/logout.svg", class: "w-6 h-6 fill-current" %>
           </button>
         </li>
