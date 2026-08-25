@@ -30,7 +30,20 @@ description: Conventions et gabarits imposés des tests du projet (Minitest, Rai
 
 **Une condition à la fois, dans l'ordre du code.** Quand on couvre une méthode et ses dérivées, on avance condition par condition : C1, puis C2, puis C3 — jamais dans le désordre. L'ordre des tests doit se relire en regard du code testé.
 
-**Le nom d'un test décrit un comportement, jamais une mise en scène (règle Alex, 2026-08-25).** Il ne s'adresse pas au lecteur et ne raconte pas le décor : « peut voir une commande », pas « peut voir une commande de son périmètre ». Les formules du genre « de son périmètre », « qu'il gère », « auquel il a droit » disparaissent — le contexte est dans le corps du test, pas dans son titre. Vaut pour **tous** les types de tests.
+**Le nom d'un test est une phrase qui énonce un comportement (règle Alex, 2026-08-25).** Pas une coordonnée technique (`update : intitulé vide → 422`), mais une règle du domaine, lisible par quelqu'un qui ne connaît pas le code :
+
+```ruby
+test 'une commande est affichée avec succès'
+test 'une commande est archivée lorsqu’elle est supprimée'
+test 'la recherche dans la liste ne retourne que les commandes correspondantes'
+test 'une commande à l’état envoyé peut être validée'
+```
+
+Le nom ne s'adresse pas au lecteur et ne raconte pas le décor : les formules « de son périmètre », « qu'il gère », « auquel il a droit » disparaissent — le contexte est dans le corps du test. **Exception** : le mot « périmètre » reste quand le test porte précisément dessus (un paramètre forgé hors périmètre, un résultat borné au périmètre).
+
+**Migration au fil de l'eau (règle Alex, 2026-08-25) : à chaque fois qu'on touche un fichier de test, on convertit *tous* ses noms à cette forme**, même ceux qu'on ne modifiait pas. Jamais de passe globale sur le dépôt : la reprise se fait fichier par fichier, au moment où l'on y travaille de toute façon. `test/controllers/commandes_controller_test.rb` sert de référence.
+
+Vaut pour **tous** les types de tests.
 
 **Chaque chose porte son nom, et un seul (règle Alex, 2026-08-19).** Aucune ambiguïté dans les noms de tests, les messages d'assertion, les variables et les commentaires : trois objets voisins se confondent sans arrêt, alors qu'ils n'ont rien à voir.
 

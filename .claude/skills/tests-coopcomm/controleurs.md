@@ -83,7 +83,7 @@ Si une erreur tombe dans une action mais vient d'ailleurs (service, méthode de 
 
 ## Nommage et constantes
 
-**Nom d'un test** : `<action> : <situation> → <effet>`. **Aucun commentaire**, sauf la ligne signalant un contrôleur vide ou désactivé.
+**Nom d'un test** : une phrase qui énonce le comportement, cf. `SKILL.md` — et `commandes_controller_test.rb` comme référence. **Aucun commentaire**, sauf la ligne signalant un contrôleur vide ou désactivé.
 
 **Constantes** : une constante **utilisée une seule fois n'existe pas** — on met sa valeur à l'endroit qui s'en sert. Utilisée plusieurs fois, elle se déclare **en haut du fichier, juste sous le `setup`**, avec un commentaire d'une ligne qui dit à quoi elle sert.
 *Exception de bon sens : une table de données de plusieurs lignes qui pilote des tests générés (les 4 matrices, les listes de pages des sentinelles) reste une constante même utilisée une fois — l'inliner rendrait la méthode illisible.*

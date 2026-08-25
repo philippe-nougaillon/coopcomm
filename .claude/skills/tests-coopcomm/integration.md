@@ -31,9 +31,9 @@ Les mêmes que pour un contrôleur (`controleurs.md`), à chaque étape de la ch
 
 ## Nommage
 
-`test/integration/<parcours>_test.rb` — le nom dit le parcours, pas le contrôleur : `invitation_utilisateur_test.rb`, `formulaires_conservent_la_saisie_test.rb`.
+`test/integration/<parcours>_test.rb` — le nom du fichier dit le parcours, pas le contrôleur : `invitation_utilisateur_test.rb`, `formulaires_conservent_la_saisie_test.rb`.
 
-Le nom d'un test décrit un comportement, sans s'adresser au lecteur (règle transverse de `SKILL.md`).
+Le nom d'un test est une phrase qui énonce le comportement (règle transverse de `SKILL.md`).
 
 ## Fixtures
 
