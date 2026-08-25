@@ -15,11 +15,19 @@
       Début <%= raw('<span class="text-red-500">*</span>') if terminaison_demandee %>
     <% end %>
     <div class="flex flex-col sm:flex-row items-center gap-2 <%= terminaison_demandee && intervention.début.blank? ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200' %> p-2 rounded-lg border">
-      <%= form.date_field :début,
-                          class: "w-full flex-1 bg-transparent border-none outline-hidden text-sm",
+        <div class="w-full flex-1 cursor-pointer"
+              data-controller="date-picker"
+              data-action="click->date-picker#open">
+            <%= form.date_field :début,
+                          class: "w-full  bg-transparent border-none outline-hidden text-sm",
                           value: intervention.début&.to_date,
                           required: terminaison_demandee,
-                          data: { 'calc-temps-passe-target': 'debut_date', 'verification-disponibilites-target': 'debut', action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" } %>
+                          data: {
+                            'date-picker-target': "input",
+                            'calc-temps-passe-target': 'debut_date', 
+                            'verification-disponibilites-target': 'debut',
+                          action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" } %>
+        </div>
       <div class="flex-1 flex items-center  w-full gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs">
         <%= form.select :début_hour, (0..23).map { |h| [format('%02d', h), h] }, { selected: heure_saisie(intervention, :début) }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'calc-temps-passe-target': 'debut_hour', 'verification-disponibilites-target': 'debut_hour', action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" } %>
         <span class="text-slate-400 font-bold">:</span>
@@ -33,7 +41,18 @@
       Fin <%= raw('<span class="text-red-500">*</span>') if terminaison_demandee %>
     <% end %>
     <div class="flex flex-col sm:flex-row  items-center gap-2 <%= terminaison_demandee && intervention.fin.blank? ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200' %> p-2 rounded-lg border">
-      <%= form.date_field :fin, class: "w-full flex-1 bg-transparent border-none outline-hidden text-sm", value: intervention.fin&.to_date, required: terminaison_demandee, data: { 'calc-temps-passe-target': 'fin_date', 'verification-disponibilites-target': 'fin', action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" } %>
+      <div class="w-full flex-1 cursor-pointer"
+              data-controller="date-picker"
+              data-action="click->date-picker#open">
+            <%= form.date_field :début,
+                                class: "w-full flex-1 bg-transparent border-none outline-hidden text-sm", 
+                                value: intervention.fin&.to_date, 
+                                required: terminaison_demandee, 
+                                data: { 
+                                  'date-picker-target': "input",
+                                  'calc-temps-passe-target': 'fin_date', 'verification-disponibilites-target': 'fin',
+                                   action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" } %>
+      </div>                         
       <div class="flex-1 flex items-center   w-full gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs">
         <%= form.select :fin_hour, (0..23).map { |h| [format('%02d', h), h] }, { selected: heure_saisie(intervention, :fin) }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'calc-temps-passe-target': 'fin_hour', 'verification-disponibilites-target': 'fin_hour', action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" } %>
         <span class="text-slate-400 font-bold">:</span>

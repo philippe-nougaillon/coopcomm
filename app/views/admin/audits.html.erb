@@ -20,17 +20,19 @@
               class: 'input input-bordered input-md w-full',
               placeholder: 'Rechercher...' %>
         </div>
-        <div class="w-full">
+        <div class="w-full" data-controller="date-picker" data-action="click->date-picker#open">
           <%= label_tag :start_date, "Du", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
           <%= date_field_tag :start_date, params[:start_date], 
               class: 'input input-bordered input-md w-full ', 
-              onchange: 'this.form.requestSubmit()' %>
+              onchange: 'this.form.requestSubmit()',
+              data: { 'date-picker-target': "input" } %>
         </div>
-        <div class="w-full">
+        <div class="w-full" data-controller="date-picker" data-action="click->date-picker#open">
           <%= label_tag :end_date, "Au", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
           <%= date_field_tag :end_date, params[:end_date], 
               class: 'input input-bordered input-md w-full ', 
-              onchange: 'this.form.requestSubmit()' %>
+              onchange: 'this.form.requestSubmit()',
+               data: { 'date-picker-target': "input" } %>
         </div>
       </div>
       <%# Filtros Avanzados %>

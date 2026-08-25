@@ -33,10 +33,11 @@
               options_from_collection_for_select(@services, :id, :nom, params[:service_id]),
               include_blank: "Tous", class: "slim-select w-full h-10", onchange: "this.form.submit()" %>
       </div>
-      <div class="w-full md:flex-1">
+      <div class="w-full md:flex-1" data-controller="date-picker" data-action="click->date-picker#open">
         <%= label_tag :active_on, "Active au", class: "block text-xs font-semibold text-slate-600 mb-1" %>
         <%= date_field_tag :active_on, params[:active_on], class: "input input-bordered input-md w-full h-10",
-              onchange: "this.form.submit()" %>
+              onchange: "this.form.submit()",
+              data: { 'date-picker-target': "input" } %>
       </div>
     </div>
   <% end %>

@@ -47,14 +47,20 @@
       <div data-action='change->meteo-intervention#afficher_meteo' class="col-span-1 sm:col-span-2">
         <%= form.label :début_prévu, class: "label font-semibold text-slate-700" %>
         <div class="flex flex-col sm:flex-row items-center gap-2 p-2 rounded-lg border border-slate-200 has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
-          <%= form.date_field :début_prévue,
-                              class: " w-full flex-1 bg-transparent border-none outline-hidden text-sm",
-                              value: intervention.début_prévue&.to_date,
-                              data: {
-                                'verification-disponibilites-target': "debut_prevue",
-                                'meteo-intervention-target': "debut_prevue"
-                              } %>
-          <div class="flex flex-1 items-center  w-full gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
+          <div class="w-full flex-1 cursor-pointer"
+               data-controller="date-picker"
+               data-action="click->date-picker#open">
+            <%= form.date_field :début_prévue,
+                                class: "w-full bg-transparent border-none outline-hidden text-sm cursor-pointer",
+                                value: intervention.début_prévue&.to_date,
+                                data: {
+                                  'date-picker-target': "input",
+                                  'verification-disponibilites-target': "debut_prevue",
+                                  'meteo-intervention-target': "debut_prevue"
+                                } %>
+          </div>
+
+          <div class="flex flex-1 items-center w-full gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
             <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, { selected: heure_saisie(intervention, :début_prévue) }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'verification-disponibilites-target': "debut_prevue_hour", 'meteo-intervention-target': "debut_prevue_hour" } %>
             <span class="text-slate-400 font-bold">:</span>
             <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, { selected: minute_saisie(intervention, :début_prévue) }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'verification-disponibilites-target': "debut_prevue_minute" } %>
@@ -64,12 +70,20 @@
 
       <div class="col-span-1 sm:col-span-2">
         <%= form.label :fin_prévue, class: "label font-semibold text-slate-700" %>
-        <div class="flex  flex-col sm:flex-row  items-center gap-2 p-2 rounded-lg border border-slate-200 has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
-          <%= form.date_field :fin_prévue,
-                              value: intervention.fin_prévue&.to_date,
-                              class: " w-full flex-1 bg-transparent border-none outline-hidden text-sm",
-                              data: { 'verification-disponibilites-target': "fin_prevue" } %>
-          <div class="flex flex-1 items-center  w-full gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
+        <div class="flex flex-col sm:flex-row items-center gap-2 p-2 rounded-lg border border-slate-200 has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
+          <div class="w-full flex-1 cursor-pointer"
+               data-controller="date-picker"
+               data-action="click->date-picker#open">
+            <%= form.date_field :fin_prévue,
+                                value: intervention.fin_prévue&.to_date,
+                                class: "w-full bg-transparent border-none outline-hidden text-sm cursor-pointer",
+                                data: {
+                                  'date-picker-target': "input",
+                                  'verification-disponibilites-target': "fin_prevue"
+                                } %>
+          </div>
+
+          <div class="flex flex-1 items-center w-full gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
             <%= form.select :fin_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, { selected: heure_saisie(intervention, :fin_prévue) }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'verification-disponibilites-target': "fin_prevue_hour" } %>
             <span class="text-slate-400 font-bold">:</span>
             <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, { selected: minute_saisie(intervention, :fin_prévue) }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'verification-disponibilites-target': "fin_prevue_minute" } %>

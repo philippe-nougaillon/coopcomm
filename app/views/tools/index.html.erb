@@ -40,11 +40,12 @@
                 class: 'slim-select w-full h-10',
                 <%# onchange: 'this.form.requestSubmit()' %> 
         <%# </div> %>
-        <div class="w-full">
+        <div class="w-full" data-controller="date-picker" data-action="click->date-picker#open">
           <%= label_tag :date, "Date", class: "block font-semibold text-slate-600 text-sm mb-1" %>
           <%= date_field_tag :date, params[:date], include_blank:true, 
         onchange:'this.form.submit()', 
-        class: 'input input-bordered input-md w-full '%>
+        class: 'input input-bordered input-md w-full ',
+        data: { 'date-picker-target': "input" }%>
         </div>
       </div>
     </div>

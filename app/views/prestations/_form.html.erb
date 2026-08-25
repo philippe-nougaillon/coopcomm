@@ -30,9 +30,10 @@
         <%= f.label :catégorie, class: "label font-semibold text-slate-700" do %>
           <span>Catégorie</span>
         <% end %>
-        <%= f.select :catégorie, %w[A B C],
-       { include_blank: true },
-        class: 'slim-select w-full h-10' %>
+        <%= f.select :catégorie, options_for_select(%w[A B C], f.object.catégorie),
+          { include_blank: false },
+          class: 'slim-select w-full h-10',
+          data: { addable: true } %>
       </div>
       <div class="flex flex-col gap-1">
         <%= f.label :sous_catégorie, class: "label font-semibold text-slate-700"  do %>

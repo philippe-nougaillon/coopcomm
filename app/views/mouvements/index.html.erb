@@ -43,11 +43,12 @@
             data: { placeholder: 'Tous les utilisateurs' },
             onchange: 'this.form.requestSubmit()' %>
       </div>
-      <div class="w-full md:flex-1">
+      <div class="w-full md:flex-1" data-controller="date-picker" data-action="click->date-picker#open">
         <%= label_tag :date, "Date", class: "block font-semibold text-slate-600 text-sm mb-1" %>
         <%= date_field_tag :date, params[:date],
             class: 'input input-bordered input-md w-full',
-            onchange: 'this.form.requestSubmit()' %>
+            onchange: 'this.form.requestSubmit()',
+            data: { 'date-picker-target': "input" } %>
       </div>
     </div>
   <% end %>

@@ -41,17 +41,19 @@
                 onchange: 'this.form.requestSubmit()' %>
         </div>
         <div class="flex flex-row gap-2 w-full">
-          <div class="flex-1">
+          <div class="flex-1" data-controller="date-picker" data-action="click->date-picker#open">
             <%= label_tag :du, 'Du', class: "block font-semibold text-slate-600 text-sm mb-1" %>
             <%= date_field_tag :du, params[:du], 
               class: 'input input-bordered input-md w-full ', 
-              onchange: 'this.form.requestSubmit()' %>
+              onchange: 'this.form.requestSubmit()',
+              data: { 'date-picker-target': "input" } %>
           </div>
-          <div class="flex-1">
+          <div class="flex-1" data-controller="date-picker" data-action="click->date-picker#open">
             <%= label_tag :au, 'Au', class: "block font-semibold text-slate-600 text-sm mb-1" %>
             <%= date_field_tag :au, params[:au], 
               class: 'input input-bordered input-md w-full ', 
-              onchange: 'this.form.requestSubmit()' %>
+              onchange: 'this.form.requestSubmit()',
+              data: { 'date-picker-target': "input" } %>
           </div>
         </div>
       </div>
