@@ -14,7 +14,8 @@ description: Conventions et gabarits imposés des tests du projet (Minitest, Rai
 | Ce que j'écris | Où sont les règles |
 |---|---|
 | Test de **policy** Pundit | `policies.md` — gabarit imposé, à lire en entier |
-| Test de **contrôleur** | `controleurs.md` — gabarit imposé, à lire en entier |
+| Test de **contrôleur** (une action) | `controleurs.md` — gabarit imposé, à lire en entier |
+| Test d'**intégration** (plusieurs actions enchaînées) | `integration.md` — gabarit imposé, à lire en entier |
 | Test de **modèle** (ou de concern de modèle) | `modeles.md` — gabarit imposé, à lire en entier |
 | Test de **service** (`app/services/`) | `services.md` — gabarit imposé, à lire en entier |
 | Ajout ou choix d'une **fixture** | `fixtures.md` |
@@ -28,6 +29,8 @@ description: Conventions et gabarits imposés des tests du projet (Minitest, Rai
 **Ce qui est commenté ne se teste pas.** Méthode, action, route, transition ou bloc mis en commentaire : aucun test, d'aucune sorte — ni de refus, ni de non-régression, ni de sentinelle. Le jour où la fonctionnalité rouvre, les tests s'écrivent à ce moment-là.
 
 **Une condition à la fois, dans l'ordre du code.** Quand on couvre une méthode et ses dérivées, on avance condition par condition : C1, puis C2, puis C3 — jamais dans le désordre. L'ordre des tests doit se relire en regard du code testé.
+
+**Le nom d'un test décrit un comportement, jamais une mise en scène (règle Alex, 2026-08-25).** Il ne s'adresse pas au lecteur et ne raconte pas le décor : « peut voir une commande », pas « peut voir une commande de son périmètre ». Les formules du genre « de son périmètre », « qu'il gère », « auquel il a droit » disparaissent — le contexte est dans le corps du test, pas dans son titre. Vaut pour **tous** les types de tests.
 
 **Chaque chose porte son nom, et un seul (règle Alex, 2026-08-19).** Aucune ambiguïté dans les noms de tests, les messages d'assertion, les variables et les commentaires : trois objets voisins se confondent sans arrêt, alors qu'ils n'ont rien à voir.
 
