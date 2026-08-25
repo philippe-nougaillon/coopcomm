@@ -11,7 +11,9 @@ Un test système coûte environ **25 fois plus cher** qu'un test d'intégration 
 - **Les parcours critiques** : créer une intervention, réserver un outil, consulter son tableau de bord, pointer.
 - **Le JavaScript**, et c'est le plus important — c'est la seule chose qu'aucun autre niveau ne peut couvrir. Un champ qui apparaît selon une condition, une couleur qui change, un bouton que Stimulus active, un menu qui s'ouvre, un widget qui remplace un `<select>`. Sans navigateur, tout ça est invisible : le formulaire d'invitation postait correctement au niveau HTTP alors que son bouton était `disabled` et qu'aucun invité ne pouvait valider (B97).
 
-Tout ce qui se prouve avec un `get` ou un `post` se teste ailleurs — voir `controleurs.md` et `integration.md`.
+- **Les messages d'erreur d'un formulaire** : quand on vérifie `#error_explanation`, on asserte **chaque message** qu'il contient, pas seulement sa présence. Le refus (422, état inchangé) est déjà prouvé au niveau contrôleur ; ce qui reste ici, c'est ce que l'utilisateur lit.
+
+Tout ce qui se prouve avec un `get` ou un `post` se teste ailleurs — voir `controleurs.md`, `integration.md` et la hiérarchie de `SKILL.md`.
 
 ## 1. La commande d'un test
 

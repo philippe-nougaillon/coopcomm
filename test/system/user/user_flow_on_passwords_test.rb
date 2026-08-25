@@ -9,7 +9,6 @@ class UserFlowOnPasswordsTest < ApplicationSystemTestCase
   include ActionMailer::TestHelper
 
   MESSAGE_ENVOI = 'Si votre email existe dans notre base de données, vous recevrez un lien vous permettant de récupérer votre mot de passe.'
-  NOUVEAU_MOT_DE_PASSE = 'Rivoli-2026!parisXY'
 
   setup do
     @utilisateur = users(:bond)
@@ -24,29 +23,6 @@ class UserFlowOnPasswordsTest < ApplicationSystemTestCase
     assert_field 'user_email'
   end
 
-  test "En tant qu'utilisateur, je veux recevoir un mail pour changer mon mot de passe" do
-    visit new_user_password_path
-    fill_in 'user_email', with: @utilisateur.email
-
-    assert_emails 1 do
-      cliquer_bouton 'Changer de mot de passe'
-      assert_notification MESSAGE_ENVOI
-    end
-
-    assert_equal [@utilisateur.email], ActionMailer::Base.deliveries.last.to
-    assert @utilisateur.reload.reset_password_token, "aucun jeton de réinitialisation n'a été posé"
-  end
-
-  test "En tant qu'utilisateur, aucun mail ne part si l'adresse est inconnue" do
-    visit new_user_password_path
-    fill_in 'user_email', with: 'personne@ville-paris.fr'
-
-    assert_no_emails do
-      cliquer_bouton 'Changer de mot de passe'
-      assert_notification MESSAGE_ENVOI
-    end
-  end
-
   test "En tant qu'utilisateur, le lien reçu par mail m'ouvre le formulaire de changement" do
     visit lien_du_mail_de_reinitialisation
 
@@ -59,14 +35,15 @@ class UserFlowOnPasswordsTest < ApplicationSystemTestCase
   test "En tant qu'utilisateur, je veux définir un nouveau mot de passe et revenir à l'accueil" do
     visit lien_du_mail_de_reinitialisation
 
-    fill_in 'user_password', with: NOUVEAU_MOT_DE_PASSE
+    nouveau_mot_de_passe = 'Rivoli-2026!parisXY'
+    fill_in 'user_password', with: nouveau_mot_de_passe
     assert_equal %w[● ● ● ● ●], pastilles_des_criteres, 'les critères remplis doivent être marqués'
 
-    fill_in 'user_password_confirmation', with: NOUVEAU_MOT_DE_PASSE
+    fill_in 'user_password_confirmation', with: nouveau_mot_de_passe
     cliquer_bouton 'Changer mon mot de passe'
 
     assert_current_path root_path
-    assert @utilisateur.reload.valid_password?(NOUVEAU_MOT_DE_PASSE), "le mot de passe n'a pas été changé"
+    assert @utilisateur.reload.valid_password?(nouveau_mot_de_passe), "le mot de passe n'a pas été changé"
   end
 
   test "En tant qu'utilisateur, je ne peux pas reprendre exactement le même mot de passe" do
@@ -80,8 +57,10 @@ class UserFlowOnPasswordsTest < ApplicationSystemTestCase
     assert_field 'user_password', with: ''
   end
 
-  test "En tant qu'utilisateur, je suis alerté si mon mot de passe ne respecte pas les critères" do
+  test 'les critères se valident au fil de la saisie et un mot de passe trop faible est refusé' do
     visit lien_du_mail_de_reinitialisation
+
+    assert_equal %w[○ ○ ○ ○ ○], pastilles_des_criteres, 'aucun critère ne doit être validé au départ'
 
     fill_in 'user_password', with: 'abcd'
     assert_equal %w[○ ○ ● ○ ○], pastilles_des_criteres, 'seule la minuscule est satisfaite par « abcd »'
@@ -89,8 +68,13 @@ class UserFlowOnPasswordsTest < ApplicationSystemTestCase
     fill_in 'user_password_confirmation', with: 'abcd'
     cliquer_bouton 'Changer mon mot de passe'
 
-    assert_selector '#error_explanation'
+    within '#error_explanation' do
+      assert_text 'Mot de passe est trop court (au moins 12 caractères)'
+    end
     assert_not @utilisateur.reload.valid_password?('abcd'), 'le mot de passe ne doit pas avoir changé'
+
+    fill_in 'user_password', with: 'Rivoli-2026!parisXY'
+    assert_equal %w[● ● ● ● ●], pastilles_des_criteres, 'un mot de passe conforme valide les cinq critères'
   end
 
   private

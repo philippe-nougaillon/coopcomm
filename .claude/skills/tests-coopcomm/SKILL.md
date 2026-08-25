@@ -22,6 +22,22 @@ description: Conventions et gabarits imposés des tests du projet (Minitest, Rai
 | Test **système** (parcours navigateur) | `systeme.md` — gabarit imposé, à lire en entier |
 | Test de **job** | Aucun gabarit imposé à ce jour — appliquer les règles transverses ci-dessous. Ne pas en inventer un. |
 
+## Hiérarchie : contrôleur < intégration < système
+
+Trois niveaux, du moins cher au plus cher. **Un comportement ne se teste qu'à un seul.**
+
+| Niveau | Ce qu'il couvre |
+|---|---|
+| **Contrôleur** | chaque cas particulier d'**une** action : ce que la machine doit faire, et ce qu'elle doit refuser |
+| **Intégration** | un parcours utilisateur, mais toujours dans la couche contrôleur (`get`, `post`, `assert_dom`) : **plusieurs actions enchaînées** — créer une intervention → la voir dans l'index → la terminer |
+| **Système** | les parcours utilisateurs **critiques**, et uniquement ce qui n'est testable à aucun des deux niveaux inférieurs : le JavaScript, la CSS, le clic réel |
+
+**La règle de décision, dans cet ordre :** ça tient dans une seule action → contrôleur. Il faut enchaîner des actions → intégration. Il faut un navigateur → système.
+
+**Jamais deux niveaux pour la même chose.** Un test système qui refait ce qu'un test de contrôleur prouve déjà se supprime, il ne se garde pas « au cas où » : il coûte 25 fois plus cher, il flake, et le jour où le comportement change il faut corriger deux endroits.
+
+**Les messages d'erreur d'un formulaire (`#error_explanation`) se vérifient en système**, et on y asserte **chacun des messages** de la div, pas seulement sa présence — c'est le seul moyen de savoir que l'utilisateur lit la bonne cause. Le **refus** lui-même (statut 422, état inchangé en base) reste au niveau contrôleur : les deux ne se recouvrent pas.
+
 ## Règles transverses (tous types de tests)
 
 **Tout ce qui touche aux services se teste, et c'est critique.** Le rattachement aux services est la racine du système : l'organisation, le périmètre de visibilité, les listes d'agents et le cloisonnement entre communes en dérivent tous. Validation, rattachement, filtre, périmètre, dérivation d'organisation — chacun a son test, marqué critique. **Cette règle prime sur toutes les exclusions** de ce fichier et de `modeles.md` : un test de services ne se supprime pas parce qu'il porte sur une validation déclarative, une relation ou un audit de la gem.
