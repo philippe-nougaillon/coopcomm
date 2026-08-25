@@ -1,7 +1,7 @@
 <%# locals: (intervention:, routes_response:) %>
 <% mode = trajet_mode(intervention, routes_response) %>
 
-<span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Trajet (AR)</span>
+<span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Trajet (AR)</span>
 
 <% case mode %>
 <% when :mapa %>
@@ -12,13 +12,36 @@
        data-map-arrivee-value="<%= routes_response["localisation_arrivee"].to_json %>"
        data-map-polyline-value="<%= routes_response.dig("data_response", "routes", 0, "polyline", "encodedPolyline") %>">
   </div>
-  <p class="mt-2 text-sm text-slate-600"><%= routes_response["routes_info"] %></p>
+  <p class="mt-4 text-sm text-slate-600"><%= routes_response["routes_info"] %></p>
 
 <% when :texte %>
-  <p class="text-slate-800 font-semibold text-sm bg-white p-3 rounded-lg border border-slate-200">
-    <%= trajet_texte(intervention, routes_response) %>
-  </p>
+<div class="flex flex-col items-center text-center py-8 ">
+  <div class="p-8 flex flex-col items-center text-center gap-2">
+    <%= embedded_svg "icons/hide.svg", class: "w-10 h-10 text-slate-300 fill-current mb-3" %>
+    <p class="text-sm text-slate-400 mb-6">Trajet terminé — Carte non disponible</p>
+  </div>
+  <div class="w-full max-w-md bg-white rounded-lg border border-slate-200 p-4">
+    <p class="text-sm font-semibold text-slate-800 text-center">
+      <%= trajet_texte(intervention, routes_response) %>
+    </p>
+  </div>
+</div>
 
 <% when :vide %>
-  <p class="text-slate-400 italic text-sm">Trajet non disponible.</p>
+  <div class="p-8 items-center mx-auto flex-1 flex flex-col justify-center gap-2">
+    <%= embedded_svg "icons/edit_location.svg", class: "w-8 h-8 text-slate-400 fill-current transition-colors duration-200" %>
+    <p class="flex items-center text-slate-400 justify-center">Trajet non disponible.</p>
+  </div>
+  <div class="mx-auto pb-6 py-6 text-slate-400 italic text-sm max-w-md">
+    <p class="mb-2">Pour afficher le trajet, les conditions suivantes sont requises :</p>
+    <ul class="list-disc list-inside space-y-1">
+      <li>L'adhérent doit posséder une localisation.</li>
+      <li>Les agents doivent être associés à un site 
+        (<%= link_to "Paramètres / Sites", admin_parametres_path(tab: "sites"), class: "underline hover:text-slate-600" %>).
+      </li>
+      <li>Le calcul des distances doit être activé pour les services 
+        (<%= link_to "Paramètres / Services", admin_parametres_path(tab: "services"), class: "underline hover:text-slate-600" %>).
+      </li>
+    </ul>
+  </div>
 <% end %>

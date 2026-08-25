@@ -17,7 +17,7 @@
          <%= render "interventions/show/temps", intervention: intervention %>
       </div>
 
-      <div class="<%= affiche_trajet ? 'lg:col-start-2 lg:row-start-1 lg:row-span-2' : '' %> bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col h-full min-h-[12rem]">
+      <div class="<%= affiche_trajet ? 'lg:col-start-2 lg:row-start-1 lg:row-span-2' : '' %> bg-slate-50/70 p-4 rounded-xl border border-slate-100 flex flex-col h-full md:min-h-[12rem]">
         <% if affiche_trajet %>
           <%= render "interventions/show/trajet", intervention: intervention, routes_response: routes_response %>
         <% else %>
