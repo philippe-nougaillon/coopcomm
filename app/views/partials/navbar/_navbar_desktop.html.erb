@@ -18,7 +18,7 @@
       <% if current_user.rôle == 'adhérent' %>
         <% if policy(Intervention).index? %>
           <li>
-            <%= link_to interventions_path, class: class_names("h-16 py-0 px-3 flex items-center text-secondary hover:border-b-2 border-primary", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => params[:controller] == 'interventions'), title: "Liste des interventions" do %>
+            <%= link_to interventions_path, class: class_names("h-16 py-0 px-3 flex items-center text-secondary hover:border-b-2 border-primary", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => params[:controller] == 'interventions'), title: "Liste des interventions", data: { testid: "menu_interventions" } do %>
               <%= embedded_svg "icons/construction.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
             <% end %>
           </li>
@@ -60,7 +60,7 @@
 
           <% if policy(Intervention).index? %>
             <li>
-              <%= link_to interventions_path, class: class_names("h-16 py-0 px-3 flex items-center text-secondary hover:border-b-2 border-primary", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => params[:controller] == 'interventions'), title: "Liste des interventions" do %>
+              <%= link_to interventions_path, class: class_names("h-16 py-0 px-3 flex items-center text-secondary hover:border-b-2 border-primary", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => params[:controller] == 'interventions'), title: "Liste des interventions", data: { testid: "menu_interventions" } do %>
                 <%= embedded_svg "icons/construction.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
               <% end %>
             </li>

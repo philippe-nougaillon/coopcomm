@@ -38,6 +38,19 @@ Trois niveaux, du moins cher au plus cher. **Un comportement ne se teste qu'à u
 
 **Les messages d'erreur d'un formulaire (`#error_explanation`) se vérifient en système**, et on y asserte **chacun des messages** de la div, pas seulement sa présence — c'est le seul moyen de savoir que l'utilisateur lit la bonne cause. Le **refus** lui-même (statut 422, état inchangé en base) reste au niveau contrôleur : les deux ne se recouvrent pas.
 
+## `flunk` : le test échoue parce qu'il manque quelque chose
+
+**Quand un test ne passe pas alors que la logique métier veut qu'il passe, on écrit `flunk` avec la raison** (règle Alex, 2026-08-26) — jamais un `skip`, jamais une assertion tordue pour faire passer.
+
+```ruby
+flunk "L'œil pour afficher le mot de passe est caché quand le champ a le focus, à corriger"
+flunk "Le graphe « CO2 par mois » n'existe pas sur le tableau de bord"
+```
+
+Le message dit **ce qui manque**, pas « ça ne marche pas ». Il vaut aussi pour signaler un test **à écrire** : on le pose là où il devra vivre, avec ce qu'il devra prouver.
+
+Le `skip` reste réservé à une décision métier en attente ; le `flunk`, à un défaut de l'application.
+
 ## Règles transverses (tous types de tests)
 
 **Tout ce qui touche aux services se teste, et c'est critique.** Le rattachement aux services est la racine du système : l'organisation, le périmètre de visibilité, les listes d'agents et le cloisonnement entre communes en dérivent tous. Validation, rattachement, filtre, périmètre, dérivation d'organisation — chacun a son test, marqué critique. **Cette règle prime sur toutes les exclusions** de ce fichier et de `modeles.md` : un test de services ne se supprime pas parce qu'il porte sur une validation déclarative, une relation ou un audit de la gem.

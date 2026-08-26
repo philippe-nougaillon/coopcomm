@@ -5,6 +5,17 @@ require 'test_helper'
 # Export XLS du tableau de bord (pages#dashboard, format xls) : aiguillage
 # manager/adhérent, journalisation dans ExportLog et contenu réellement envoyé.
 class DashboardExportXlsTest < ActionDispatch::IntegrationTest
+  test 'le tableau de bord demandé au format xls est téléchargé comme un classeur xls' do
+    sign_in users(:hidalgo)
+
+    get dashboard_url(format: :xls)
+
+    assert_response :success
+    assert_equal 'application/xls', response.media_type
+    nom_attendu = ERB::Util.url_encode("Dashboard_#{I18n.l Date.today}.xls")
+    assert_match(/filename="#{nom_attendu}"/, response.headers['Content-Disposition'])
+  end
+
   test 'export_xls : un manager reçoit un classeur au format manager' do
     sign_in users(:hidalgo)
 
@@ -44,15 +55,6 @@ class DashboardExportXlsTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :success
-  end
-
-  test 'export_xls : le classeur du manager reprend les agrégats du tableau de bord' do
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls)
-
-    nom_attendu = ERB::Util.url_encode("Dashboard_#{I18n.l Date.today}.xls")
-    assert_match(/filename="#{nom_attendu}"/, response.headers['Content-Disposition'])
   end
 
   test "export_xls : l'onglet des états par mois liste les six états du workflow" do

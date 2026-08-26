@@ -3,7 +3,7 @@
     <%= embedded_svg "icons/cottage.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
   <% end %>
 
-  <%= link_to interventions_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:controller] == 'interventions'}", title: "Liste des interventions" do %>
+  <%= link_to interventions_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:controller] == 'interventions'}", title: "Liste des interventions", data: { testid: "menu_interventions" } do %>
     <%= embedded_svg "icons/construction.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
   <% end %>
 

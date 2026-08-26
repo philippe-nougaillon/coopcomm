@@ -56,6 +56,8 @@ Quand la commande dit **« à partir de la page home »**, le test part de `home
 
 ## 5. Cliquer
 
+**On ne clique en système que lorsque le clic change l'état d'un enregistrement** (règle Alex, 2026-08-26). C'est là que Turbo s'interpose — `button_to`, `data-turbo-method`, modale de confirmation — et son interception est précisément ce qui casse en vrai. Un lien qui ne fait que naviguer se prouve en intégration par son `href` et par la réponse de la destination : voir `integration.md`.
+
 **Par le texte quand le bouton porte du texte.** `cliquer_bouton 'Enregistrer'`, `cliquer_lien 'Utilisateurs'`. Si le libellé change un jour, le test doit être mis à jour pour repasser au vert — c'est voulu : le texte fait partie de ce que l'utilisateur voit.
 
 **Par `data-testid` uniquement quand le bouton n'affiche qu'une icône** (ou que son texte est masqué à la largeur testée, `hidden md:block`). Si le testid n'existe pas, l'ajouter dans la vue, **en tout dernier attribut de l'élément** — c'est la dernière chose qu'on veut lire dans un gabarit. Puis `cliquer 'mon_testid'`.
