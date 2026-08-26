@@ -34,14 +34,12 @@ class MouvementsTest < ApplicationSystemTestCase
 
   test 'ne pas pouvoir déclarer deux pannes actives sur le même outil' do
     tools(:tondeuse).mouvements.create!(état: :panne, date: Time.current, user: @manager)
-
     visit new_mouvement_url
-    select_option '#mouvement_tool_id', 'Tondeuse'
-    select_option '#mouvement_état', 'Panne'
+    choisir_filtre('#mouvement_tool_id', 'Tondeuse')
+    select_option '#mouvement_état', 'Panne'  # dejalo con select_option si NO es slim-select
     page.execute_script("document.getElementById('mouvement_date').value = '#{Date.tomorrow}T10:00'")
     click_on 'Enregistrer'
-
-    assert_text 'déjà', wait: 5 # message de cohérence du model (panne déjà active)
+    assert_text 'déjà', wait: 5
   end
 
   # Parcours « outil imposé » : arrivée via new_mouvement_path(tool_id:) (ex. lien "Panne"

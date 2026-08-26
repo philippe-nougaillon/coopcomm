@@ -61,13 +61,12 @@ class AuditManagerFlowTest < ApplicationSystemTestCase
 
   test 'Rechercher dans les audits' do
     go_to_audit_page
-    # Les noms de colonnes (sign_in_count, current_sign_in_at, …) figurent dans audited_changes.
     fill_in 'Rechercher', with: 'sign_in'
-    page.driver.browser.switch_to.active_element.send_keys(:enter)
+    find_field('Rechercher').send_keys(:enter)
     assert_text @manager.email
 
     fill_in 'Rechercher', with: 'qzmoefij'
-    page.driver.browser.switch_to.active_element.send_keys(:enter)
+    find_field('Rechercher').send_keys(:enter)
     assert_text 'Aucun résultat trouvé'
   end
 

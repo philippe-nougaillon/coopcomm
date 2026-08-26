@@ -13,14 +13,17 @@ class DeviseManagerFlowTest < ApplicationSystemTestCase
     fermer_notification
 
     # 1. Cliquer sur l'icône de déconnexion dans le menu/dock pour ouvrir la modale
+    find("[data-testid='dropdown_mobile']").click
+
+    # 2. Cliquer sur l'icône de déconnexion dans le menu/dock pour ouvrir la modale
     find("button[onclick*='logout_modal.showModal()']").click
 
-    # 2. Confirmer la déconnexion dans la modale
+    # 3. Confirmer la déconnexion dans la modale
     within '#logout_modal' do
       click_on 'Oui, se déconnecter'
     end
 
-    # 3. Vérifier l'état déconnecté
+    # 4. Vérifier l'état déconnecté
     assert_text 'Mutualisez mieux', wait: 10
     visit interventions_url
     assert_current_path new_user_session_path

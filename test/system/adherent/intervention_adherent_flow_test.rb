@@ -34,11 +34,11 @@ class InterventionAdherentFlowTest < ApplicationSystemTestCase
     jour = Date.current.strftime('%Y-%m-%d')
 
     # Utiliser .set() au lieu de fill_in pour les champs type="date"
-    find('#intervention_début_prévue').set(jour)
+    find('#intervention_début_prévue').set(Date.current)
     select '08', from: 'intervention_début_prévue_hour'
     select '00', from: 'intervention_début_prévue_minute'
 
-    find('#intervention_fin_prévue').set(jour)
+    find('#intervention_fin_prévue').set(Date.current)
     select '16', from: 'intervention_fin_prévue_hour'
     select '00', from: 'intervention_fin_prévue_minute'
 

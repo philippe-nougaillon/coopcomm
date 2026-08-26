@@ -42,7 +42,7 @@ class UserManagerFlowTest < ApplicationSystemTestCase
     # `update` redirige vers la show : on attend la navigation, puis l'état métier
     # (le toast s'auto-détruit au bout de 5 s — l'asserter est un pile ou face).
     assert_current_path user_path(user)
-    assert_text "THOMAS Didier", visible: :all
+    assert_selector 'body', text: 'THOMAS Didier', visible: :all
     assert_text 'thomas.didier@gmail.commmm'
   end
 

@@ -19,7 +19,6 @@ class DeviseAdherentFlowTest < ApplicationSystemTestCase
     fill_in 'user_email', with: @adherent.email
     fill_in 'user_password', with: 'qtDug$d843sqACz?V'
 
-    flunk "L'oeil pour afficher le mot de passe est caché si le champ password est sélectionné, à modifier !"
     # L'œil bascule le champ entre `password` (points) et `text` (lisible).
     assert_equal 'password', find('#user_password')[:type]
     find("[data-action*='password-visibility#toggle']").click
