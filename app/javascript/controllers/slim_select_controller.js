@@ -11,7 +11,14 @@ export default class extends Controller {
       searchText: 'Pas de résultat',
       searchingText: 'Recherche...',
       allowDeselect: true,
+      
     }
+
+    this.resizeHandler = () => this.truncateChips()
+    window.addEventListener('resize', this.resizeHandler)
+
+    this.maxValuesDesktop = parseInt(this.element.dataset.maxValuesShownDesktop, 10) || null
+    this.maxValuesMobile = parseInt(this.element.dataset.maxValuesShownMobile, 10) || null
 
     // Gestion des exceptions "addable"
     let specificSettings = {}
@@ -51,7 +58,8 @@ export default class extends Controller {
     // On fusionne les événements existants avec ce nouveau videur
     const events = {
       ...specificEvents,
-      beforeChange: beforeChangeFunction
+      beforeChange: beforeChangeFunction,
+      afterChange: () => this.truncateChips() 
     }
 
     // Initialisation
@@ -60,6 +68,8 @@ export default class extends Controller {
       settings: { ...commonSettings, ...specificSettings },
       events: events
     })
+
+    this.truncateChips()   // truncature initiale au chargement
 
     // Ton fix pour les champs requis
     if (this.element.hasAttribute('required')) {
@@ -120,5 +130,23 @@ export default class extends Controller {
     if (this.select) {
       this.select.destroy()
     }
+
+    window.removeEventListener('resize', this.resizeHandler)
   }
+
+    truncateChips() {
+      const maxValuesShown = window.innerWidth < 768 ? this.maxValuesMobile : this.maxValuesDesktop
+      if (!maxValuesShown) return
+      const chips = this.element.parentElement.querySelectorAll('.ss-value')
+      chips.forEach((chip, i) => chip.classList.toggle('ss-hidden-chip', i >= maxValuesShown))
+      const badge = this.element.parentElement.querySelector('.ss-more-badge')
+      if (badge) badge.remove()
+      const hidden = chips.length - maxValuesShown
+      if (hidden > 0) {
+        const b = document.createElement('div')
+        b.className = 'ss-value ss-more-badge'
+        b.textContent = `+ ${hidden}`
+        this.element.nextElementSibling.querySelector('.ss-values').appendChild(b)
+      }
+    }
 }

@@ -42,8 +42,12 @@
           <%= select_tag :services,
                   options_from_collection_for_select(@services, 'id', 'nom', @selected_service_ids),
                   multiple: true,
+                  id: 'services-select',
                   class: 'slim-select w-full h-10',
-                  data: { placeholder: 'Tous les services' },
+                  data: { placeholder: 'Tous les services',
+                          max_values_shown_desktop: 4,
+                          max_values_shown_mobile: 2 
+                        },
                   onchange: 'this.form.requestSubmit()' %>
         </div>
       <% end %>

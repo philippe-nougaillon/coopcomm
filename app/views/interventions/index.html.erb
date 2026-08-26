@@ -36,8 +36,13 @@
           <%= select_tag :workflow_state, 
               options_for_select(Intervention.workflow_state_humanized { |k, _| I18n.transliterate(k) }, params[:workflow_state]), 
                 multiple: true,
+                id: 'statut-select', 
                 class: 'slim-select w-full h-10',
-                data: { placeholder: 'Tous les status' },
+                data: {
+                        placeholder: 'Tous les status',
+                        max_values_shown_desktop: 4,
+                        max_values_shown_mobile: 3
+                      },
                 onchange: 'this.form.requestSubmit()' %>
         </div>
         <div class="flex flex-row gap-2 w-full">
