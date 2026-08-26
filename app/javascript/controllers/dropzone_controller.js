@@ -17,6 +17,7 @@ export default class extends Controller {
 
   connect() {
     this.defaultLabel = this.hasFilenameTarget ? this.filenameTarget.textContent.trim() : ""
+    this.objectUrls = []
 
     this.form = this.element.closest("form")
     this.boundBloquerSiRefus = (event) => this.bloquerSiRefus(event)
@@ -25,6 +26,7 @@ export default class extends Controller {
 
   disconnect() {
     if (this.form) this.form.removeEventListener("submit", this.boundBloquerSiRefus)
+    this.revokeObjectUrls()
   }
 
   // Le fichier refusé est retiré de l'input : sans ce garde le formulaire
@@ -188,7 +190,10 @@ export default class extends Controller {
   renderFileList(files) {
     if (!this.hasFileListTarget) return
 
-    this.fileListTarget.innerHTML = files.map((file, i) => `
+    this.fileListTarget.innerHTML =  `<p class="text-sm font-semibold text-slate-700 mb-2">Fichiers sélectionnés</p>`
+    
+    this.revokeObjectUrls()
+    this.fileListTarget.innerHTML += files.map((file, i) => `
       <li class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm" data-index="${i}">
         <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
           <svg class="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -196,7 +201,8 @@ export default class extends Controller {
           </svg>
         </div>
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-semibold text-slate-800 truncate">${this.escapeHtml(file.name)}</p>
+          <a href="${this.urlLocale(file)}" target="_blank" rel="noopener"
+             class="text-sm font-semibold truncate link link-primary block">${this.escapeHtml(file.name)}</a>
           <p class="text-xs text-slate-400">${(file.size / 1024).toFixed(1)} KB</p>
         </div>
         <button type="button" data-action="dropzone#removeFile" data-index="${i}"
@@ -213,9 +219,23 @@ export default class extends Controller {
 
   hideFileList() {
     if (!this.hasFileListTarget) return
+    this.revokeObjectUrls()
     this.fileListTarget.innerHTML = ""
     this.fileListTarget.classList.add("hidden")
     this.fileListTarget.classList.remove("flex")
+  }
+
+  // Le navigateur affiche ce qu'il sait rendre (images, PDF) ; il télécharge le
+  // reste, y compris le HEIC des iPhone.
+  urlLocale(file) {
+    const url = URL.createObjectURL(file)
+    this.objectUrls.push(url)
+    return url
+  }
+
+  revokeObjectUrls() {
+    this.objectUrls.forEach(url => URL.revokeObjectURL(url))
+    this.objectUrls = []
   }
 
   escapeHtml(str) {
