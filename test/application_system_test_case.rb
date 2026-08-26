@@ -18,7 +18,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   end
 
   # 💡 CORRECTION : On passe sur :headless_chrome et on configure les options du bloc
-  driven_by :selenium, screen_size: taille_tel do |driver_options|
+  driven_by :selenium, using: :headless_chrome, screen_size: taille_tel do |driver_options|
     driver_options.add_argument('--no-sandbox')
     driver_options.add_argument('--disable-dev-shm-usage')
     driver_options.add_argument('--disable-gpu')

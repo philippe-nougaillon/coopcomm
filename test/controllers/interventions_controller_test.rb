@@ -588,6 +588,23 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_nil intervention.temps_de_pause
   end
 
+  test 'une intervention créée par un adhérent naît à l’état nouveau' do
+    adherent = users(:weil)
+    sign_in adherent
+
+    post interventions_url, params: { intervention: {
+      description: 'Remplacer une ampoule du hall',
+      adherent_id: adherent.id,
+      service_id: services(:technique).id,
+      début_prévue: 2.days.from_now,
+      fin_prévue: 2.days.from_now + 2.hours
+    } }
+
+    créée = Intervention.order(:id).last
+    assert_redirected_to intervention_url(créée)
+    assert_equal Intervention::NOUVEAU, créée.workflow_state
+  end
+
   test 'create : par un adhérent → la notification managers « nouvelle demande » est enfilée' do
     adherent = users(:weil)
     sign_in adherent

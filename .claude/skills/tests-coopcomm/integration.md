@@ -23,6 +23,22 @@ je crée → je suis redirigé sur le record → sa donnée est là, le flash au
         → j'ouvre l'index → il y figure
 ```
 
+## Les liens de navigation
+
+**Un lien qui ne fait que naviguer se teste ici, jamais en système.** Deux assertions suffisent : le lien existe **avec le bon chemin**, et la destination répond.
+
+```ruby
+get root_path
+assert_dom "a[href=?]", dashboard_path, text: /Voir le tableau de bord/
+
+get dashboard_path
+assert_response :success
+```
+
+Cliquer réellement dessus n'apprend rien de plus : c'est un `GET`, sans Turbo à intercepter. **On ne clique en système que lorsque le clic change l'état d'un enregistrement** — cf. `systeme.md`.
+
+Quand plusieurs liens partagent le même `href` (le menu et l'accès rapide mènent souvent au même endroit), on les distingue par leur libellé avec `text:`.
+
 ## Assertions
 
 Les mêmes que pour un contrôleur (`controleurs.md`), à chaque étape de la chaîne : la réponse aboutit, la redirection mène à la bonne page, la **donnée du record** est rendue (`assert_dom`, jamais le titre de la page), le flash porte le bon message, l'état en base a changé.
