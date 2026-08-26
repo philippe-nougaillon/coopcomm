@@ -27,14 +27,21 @@ class InterventionAdherentFlowTest < ApplicationSystemTestCase
     visit interventions_url
     click_sur_boutton_ajouter('intervention')
 
-    # Le formulaire adhérent se limite à la demande : description, service, créneau souhaité
     fill_in 'Description', with: 'Tailler les arbres'
     select_option('#intervention_service_id', 'Informatique')
-    fill_in 'Début', with: DateTime.current.strftime("%m%d%Y\t%I%M%P")
-    fill_in 'Fin', with: (DateTime.current + 8.hours).strftime("%m%d%Y\t%I%M%P")
 
-    # État métier plutôt que le toast (il s'auto-détruit au bout de 5 s) :
-    # on attend d'avoir quitté le formulaire, puis on vérifie la création.
+    # Date au format YYYY-MM-DD
+    jour = Date.current.strftime('%Y-%m-%d')
+
+    # Utiliser .set() au lieu de fill_in pour les champs type="date"
+    find('#intervention_début_prévue').set(jour)
+    select '08', from: 'intervention_début_prévue_hour'
+    select '00', from: 'intervention_début_prévue_minute'
+
+    find('#intervention_fin_prévue').set(jour)
+    select '16', from: 'intervention_fin_prévue_hour'
+    select '00', from: 'intervention_fin_prévue_minute'
+
     soumettre 'enregistrer_intervention'
 
     assert_text 'Tailler les arbres'

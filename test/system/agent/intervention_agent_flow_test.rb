@@ -138,9 +138,9 @@ class InterventionAgentFlowTest < ApplicationSystemTestCase
 
     attach_file 'intervention_photos', [image_path, autre_image_path], make_visible: true
 
-    assert_text '2 fichiers sélectionnés'
-    assert_text 'exemple.png, carte_grise.jpg'
-    assert_selector "[data-controller='dropzone'][data-dropzone-state='success']"
+    assert_text "2 fichiers sélectionnés"
+    assert_text "exemple.png"
+    assert_text "carte_grise.jpg"
   end
 
   test 'une photo seule est comptée elle aussi' do

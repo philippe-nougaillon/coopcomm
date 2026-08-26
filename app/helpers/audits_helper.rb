@@ -407,8 +407,8 @@ module AuditsHelper
       end
 
       content_tag(:div, contenu,
-                  class: 'bg-slate-50/60 rounded-lg p-2 border border-slate-300 group-hover:bg-white transition-colors duration-150 min-w-0 break-words',
-                  style: 'width: 200px;')  
+                  class: 'bg-slate-50/60 rounded-lg p-2 border border-slate-300 group-hover:bg-white transition-colors duration-150 w-full break-words',
+                  style: 'min-width: 200px;')  
       end
 
   private

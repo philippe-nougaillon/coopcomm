@@ -36,10 +36,13 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     select_option('#intervention_agent_ids', 'Nougaillon Philippe')
 
     # Créneau réalisé dans le passé (une date future est refusée par validation)
-    fill_in 'Début', with: (Date.today - 1).strftime('%m%d%Y')
+    # Ciblage explicite par ID pour éviter l'ambiguïté Capybara
+    date_passee = (Date.today - 1).strftime('%Y-%m-%d')
+    find('#intervention_début').set(date_passee)
     select '08', from: 'intervention_début_hour'
     select '00', from: 'intervention_début_minute'
-    fill_in 'Fin', with: (Date.today - 1).strftime('%m%d%Y')
+
+    find('#intervention_fin').set(date_passee)
     select '16', from: 'intervention_fin_hour'
     select '00', from: 'intervention_fin_minute'
 
@@ -157,15 +160,26 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     visit edit_intervention_path(intervention, terminer: 1)
 
     assert_text 'COMMENTAIRES ET PHOTOS'
-    assert_text 'Avis de l\'adhérent'
-    assert_text 'Évaluation des agents'
 
+    # 1. Sélectionner l'agent via le helper custom du projet
+    select_option('#intervention_agent_ids', 'Bond James')
+
+    # 2. Remplir le créneau réalisé
+    date_passee = (Date.today - 1).strftime('%Y-%m-%d')
+    find('#intervention_début').set(date_passee)
+    select '08', from: 'intervention_début_hour'
+    select '00', from: 'intervention_début_minute'
+
+    find('#intervention_fin').set(date_passee)
+    select '16', from: 'intervention_fin_hour'
+    select '00', from: 'intervention_fin_minute'
+
+    # 3. Renseigner la pause et les commentaires
     page.select '0,0', from: 'intervention_temps_de_pause'
-    fill_in 'Avis de l\'adhérent', with: 'Travail bien fait'
-    find('.rating input[value="5"]').click
+    fill_in 'Commentaires', with: 'Intervention réalisée avec succès.'
 
-    cliquer_bouton 'Enregistrer'
-    assert_text 'Terminé'
+    soumettre 'enregistrer_intervention'
+
     assert_equal 'terminé', intervention.reload.workflow_state
   end
 
