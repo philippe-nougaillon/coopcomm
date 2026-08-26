@@ -35,4 +35,22 @@ class AdherentFlowOnInterventionsTest < ApplicationSystemTestCase
     assert_equal services(:technique), créée.service
     assert_equal 1, créée.photos_demande.count
   end
+
+  test "En tant qu'adhérent, je veux être averti quand la fin prévue de mon intervention précède son début" do
+    visit new_intervention_path
+
+    fill_in 'Description', with: 'Remplacer une ampoule du hall'
+    select_option('#intervention_service_id', 'Technique')
+    fermer_menus_slim_select
+
+    fill_in 'intervention[début_prévue]', with: Date.current + 3
+    fill_in 'intervention[fin_prévue]', with: Date.current + 2
+
+    cliquer_bouton 'Enregistrer'
+
+    within find_error_form do
+      assert_text "1 erreur empêche(nt) cette intervention d'être sauvegardée :"
+      assert_text "Erreur : La fin prévue de l'intervention ne peut pas être avant son commencement"
+    end
+  end
 end
