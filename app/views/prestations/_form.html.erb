@@ -45,8 +45,8 @@
         <%= f.label :unité, class: "label font-semibold text-slate-700" do %>
           <span>Unité <span class="text-red-500">*</span></span>
         <% end %>
-        <%= f.select :unité, options_for_select(%w[Heure(s) Forfait Jour], f.object.unité),
-             { include_blank: false },
+        <%= f.select :unité, options_for_select(Prestation::UNITES | Array(f.object.unité), f.object.unité),
+             { required: true },
             class: 'slim-select w-full h-10',
             data: { addable: true } %>
       </div>

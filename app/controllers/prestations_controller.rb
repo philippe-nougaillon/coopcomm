@@ -9,7 +9,7 @@ class PrestationsController < ApplicationController
   
   # GET /prestations/new
   def new
-    @prestation = Prestation.new
+    @prestation = Prestation.new(unité: Prestation::UNITE_PAR_DEFAUT)
   end
 
   

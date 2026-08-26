@@ -226,7 +226,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
     # passe en majuscules, ce que le formulaire ré-affiche.
     soumis = { code: '', libellé: 'Tonte de pelouse', tarif: 25.5,
                description: 'Description de la prestation', compétence: 'Espaces verts',
-               délai: '48 h', sous_catégorie: 'ENTRETIEN' }
+               délai: '48 h', sous_catégorie: 'ENTRETIEN', unité: 'Mètre linéaire' }
 
     post prestations_url, params: { prestation: soumis }
 
