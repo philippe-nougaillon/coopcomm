@@ -188,7 +188,7 @@
         </ul>
       </div>
 
-      <div class="absolute bottom-0 left-0 right-0 bg-base-100 border-t border-slate-100 p-2 rounded-b-2xl z-10">
+      <div class="absolute bottom-0 left-0 right-0 bg-base-100 border-t text-[#314158] border-slate-100 p-2 rounded-b-2xl z-10">
         <button onclick="logout_modal.showModal()" title="Fermer la session de <%= current_user.email %> (<%= current_user.rôle %>)" class="w-full h-12 px-3 flex items-center gap-2 rounded-lg text-secondary hover:bg-slate-100 cursor-pointer" data-testid="se_deconnecter">
           <%= embedded_svg "icons/logout.svg", class: "w-5 h-5 fill-current" %>
           <span class="text-sm">Déconnexion</span>

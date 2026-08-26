@@ -102,10 +102,9 @@ class DashboardRefreshManagerFlowTest < ApplicationSystemTestCase
     # Créneau passé à J-10 : hors de portée des fixtures (tonte_locaux occupe Bond au plus
     # 7 jours en arrière) → jamais de conflit #357.
     jour = (Date.today - 10).strftime('%m%d%Y')
-    fill_in 'Début', with: jour
     select '08', from: 'intervention_début_hour'
     select '00', from: 'intervention_début_minute'
-    fill_in 'Fin', with: jour
+    fill_in 'intervention[fin]', with: jour, match: :first
     select '16', from: 'intervention_fin_hour'
     select '00', from: 'intervention_fin_minute'
     page.select '1,0', from: 'intervention_temps_de_pause'

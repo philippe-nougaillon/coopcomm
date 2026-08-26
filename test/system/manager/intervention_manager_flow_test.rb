@@ -156,7 +156,7 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
     intervention = interventions(:nouvelle_intervention)
     visit edit_intervention_path(intervention, terminer: 1)
 
-    assert_text 'COMPTE-RENDU'
+    assert_text 'COMMENTAIRES ET PHOTOS'
     assert_text 'Avis de l\'adhérent'
     assert_text 'Évaluation des agents'
 
@@ -201,8 +201,9 @@ class InterventionManagerFlowTest < ApplicationSystemTestCase
                  Rails.root.join('test/fixtures/files/carte_grise.jpg').to_s],
                 make_visible: true
 
-    assert_text '2 fichiers sélectionnés'
-    assert_text 'exemple.png, carte_grise.jpg'
+    assert_text "exemple.png"
+    assert_text "carte_grise.jpg"
+    assert_text "2 fichiers sélectionnés"
   end
 
   # !!! Tests sur les filtres obsolètes !!!

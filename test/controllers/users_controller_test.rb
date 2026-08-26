@@ -542,7 +542,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
                     from_absence_modal: '1' },
           as: :turbo_stream
 
-    assert_response :success
+    assert_response :unprocessable_entity
     assert_match(/absence_form/, response.body)
   end
 

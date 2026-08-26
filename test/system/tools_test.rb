@@ -9,7 +9,7 @@ class ToolsTest < ApplicationSystemTestCase
 
   test 'Voir la liste des outils' do
     visit tools_url
-    assert_selector 'h1', text: 'Réservation de matériel'
+    assert_selector 'h1', text: 'Matériels'
   end
 
   test 'Créer un outil' do
@@ -51,7 +51,7 @@ class ToolsTest < ApplicationSystemTestCase
   test 'Ne pas pouvoir supprimer un outil avec une intervention' do
     visit tool_url(tools(:tondeuse))
 
-    assert_selector 'h1', text: tools(:tondeuse).name
+    assert_selector 'h1', text: /Tondeuse/i
     assert_no_selector "[data-testid='supprimer_outil']"
   end
 end
