@@ -4,7 +4,7 @@ require 'application_system_test_case'
 
 # Connexion et déconnexion : chaque test pose lui-même son état de départ, la
 # moitié d'entre eux ayant justement besoin de commencer déconnecté.
-class DeviseAdherentFlowTest < ApplicationSystemTestCase
+class AdherentFlowOnDeviseTest < ApplicationSystemTestCase
   setup do
     @adherent = users(:weil)
   end

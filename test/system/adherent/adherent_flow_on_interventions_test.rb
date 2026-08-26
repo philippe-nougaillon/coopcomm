@@ -10,7 +10,7 @@ class AdherentFlowOnInterventionsTest < ApplicationSystemTestCase
     fermer_notification
   end
 
-  test 'une demande d’intervention est créée avec son service et ses photos' do
+  test "En tant qu'adhérent, je veux créer une demande d'intervention avec un service et des photos" do
     cliquer_element(element_testid('menu_interventions'))
     click_sur_boutton_ajouter('intervention')
 
