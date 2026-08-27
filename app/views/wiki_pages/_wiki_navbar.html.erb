@@ -29,22 +29,19 @@
           <% end %>
         </div>
 
-        <%= link_to blog_documentation_index_path do %>
-          <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-slate-100 py-3 pl-8 <%= 'bg-slate-50 hover:bg-base-300' if params[:action] == "blog" %>">
-            Blog
-          </div>
-        <% end %>
-        
-        <%= link_to guide_documentation_index_path do %>
-          <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-slate-100 py-3 pl-8 <%= 'bg-slate-50 hover:bg-base-300' if params[:action] == "guide" %>">
-            Guide
-          </div>
-        <% end %>
-
-        <%= link_to faq_documentation_index_path do %>
-          <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-slate-100 py-3 pl-8 <%= 'bg-slate-50 hover:bg-base-300' if params[:action] == "faq" %>">
-            Faq
-          </div>
+        <% @wiki_page_navbar_by_categorie.each do |catégorie, wikis| %>
+          <%= link_to public_send("#{catégorie}_documentation_index_path") do %>
+            <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-slate-200 py-3 pl-8 <%= 'bg-slate-100 hover:bg-base-300' if (action_name == catégorie) %>">
+              <%= catégorie.humanize %>
+            </div>
+          <% end %>
+          <% wikis.each do |wiki| %>
+            <%= link_to documentation_path(wiki) do %>
+              <div class="flex gap-2 items-center text-sm mt-2 hover:bg-slate-200 py-1 pl-16 <%= 'bg-slate-100 hover:bg-base-300' if @wiki_page == wiki %>">
+                <%= wiki.titre %>
+              </div>
+            <% end %>
+          <% end %>
         <% end %>
       </div>
 

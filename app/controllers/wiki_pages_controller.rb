@@ -4,6 +4,7 @@ class WikiPagesController < ApplicationController
   skip_before_action :authenticate_user!, only: %i[index show blog guide faq]
   before_action :set_wiki_page, only: %i[show edit update destroy]
   before_action :is_user_authorized
+  before_action :set_wiki_page_navbar_by_categorie, only: %i[index show blog guide faq]
 
   # GET /documentation
   def index
@@ -83,6 +84,11 @@ class WikiPagesController < ApplicationController
   end
 
   private
+
+  def set_wiki_page_navbar_by_categorie
+    wiki_pages = wiki_pages_visibles(WikiPage.all).group_by(&:catégorie)
+    @wiki_page_navbar_by_categorie = WikiPage.catégories.keys.index_with { |catégorie| wiki_pages[catégorie].to_a }
+  end
 
   def wiki_pages_visibles(wiki_pages)
     wiki_pages = wiki_pages.where(publiée: true) unless current_user&.manager_or_admin?
