@@ -91,7 +91,7 @@
   <%# Absent %>
   <td class="py-3 px-4 text-center">
     <span class="flex justify-center">
-    <% if user.agent? && user.absent? %>
+    <% if user.absent? %>
       <% title_absence = "Absent du #{l(user.current_absence.du)} au #{l(user.current_absence.au)}, motif : #{user.current_absence.motif}" %>
       <%= embedded_svg "icons/person_off.svg",
         class: "text-amber-500 cursor-help hover:scale-110 transition-transform text-xl",

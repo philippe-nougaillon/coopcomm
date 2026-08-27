@@ -20,17 +20,24 @@
   </div>
   <%# Dates %>
   <div class="flex flex-wrap gap-4">
-    <div class="flex-1 flex flex-col">
+    <div class="flex-1 flex flex-col" data-controller="date-picker" data-action="click->date-picker#open">
       <%= f.label :du, class: "text-sm text-slate-500 mb-1" do %>
         <span>Du <span class="text-red-500">*</span></span>
       <% end %>
-      <%= f.date_field :du, class: "du-input input input-bordered w-full focus:input-primary", required: true, onchange: "syncDates(this)" %>
+      <%= f.date_field :du, 
+                       class: "du-input input input-bordered w-full focus:input-primary",
+                       required: true, 
+                       onchange: "syncDates(this)",
+                       data: { 'date-picker-target': "input" } %>
     </div>
-    <div class="au-container flex-1 flex flex-col <%= 'hidden' if is_half_day %>">
+    <div class="au-container flex-1 flex flex-col <%= 'hidden' if is_half_day %>" data-controller="date-picker" data-action="click->date-picker#open">
       <%= f.label :au, class: "text-sm text-slate-500 mb-1" do %>
         <span>Au <span class="text-red-500">*</span></span>
       <% end %>
-      <%= f.date_field :au, class: "au-input input input-bordered w-full focus:input-primary", required: true %>
+      <%= f.date_field :au, 
+                       class: "au-input input input-bordered w-full focus:input-primary", 
+                       required: true,
+                       data: { 'date-picker-target': "input" } %>
     </div>
   </div>
   <%# MATIN / APRÈS-MIDI %>
