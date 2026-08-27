@@ -48,7 +48,7 @@
             <% if policy(WikiPage).index? %>
               <li>
                 <%= link_to documentation_index_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'wiki_pages'}" do %>
-                  <%= embedded_svg "icons/menu_book.svg", class: "w-5 h-5 inline mr-2" %> Wiki
+                  <%= embedded_svg "icons/menu_book.svg", class: "w-5 h-5 inline mr-2" %> Documentation
                 <% end %>
               </li>
             <% end %>
@@ -64,7 +64,7 @@
             <% if policy(WikiPage).index? %>
               <li>
                 <%= link_to documentation_index_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'wiki_pages'}" do %>
-                  <%= embedded_svg "icons/menu_book.svg", class: "w-5 h-5 inline mr-2" %> Wiki / Guides
+                  <%= embedded_svg "icons/menu_book.svg", class: "w-5 h-5 inline mr-2" %> Documentation
                 <% end %>
               </li>
             <% end %>
@@ -180,7 +180,7 @@
             <% if policy(WikiPage).index? %>
               <li>
                 <%= link_to documentation_index_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'wiki_pages'}" do %>
-                  <%= embedded_svg "icons/menu_book.svg", class: "w-5 h-5 inline mr-2" %> Wiki 
+                  <%= embedded_svg "icons/menu_book.svg", class: "w-5 h-5 inline mr-2" %> Documentation 
                 <% end %>
               </li>
             <% end %>
