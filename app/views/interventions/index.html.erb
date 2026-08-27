@@ -25,18 +25,17 @@
     <div class="flex flex-col gap-3 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end w-full">
         <div class="w-full">
-          <%= label_tag :search, "Rechercher", class: "block font-semibold text-slate-600 text-sm mb-1" %>
+          <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
           <%= text_field_tag :search, params[:search], include_blank: false, 
               onchange: 'this.form.requestSubmit()',
               class: 'input input-bordered input-md w-full',
               placeholder: 'Rechercher...' %>
         </div>
         <div class="w-full">
-          <%= label_tag :workflow_state, "Statut", class: "block font-semibold text-slate-600 text-sm mb-1" %>
+          <%= label_tag :workflow_state, "Statut", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
           <%= select_tag :workflow_state, 
               options_for_select(Intervention.workflow_state_humanized { |k, _| I18n.transliterate(k) }, params[:workflow_state]), 
                 multiple: true,
-                id: 'statut-select', 
                 class: 'slim-select w-full h-10',
                 data: {
                         placeholder: 'Tous les status',
@@ -47,14 +46,14 @@
         </div>
         <div class="flex flex-row gap-2 w-full">
           <div class="flex-1" data-controller="date-picker" data-action="click->date-picker#open">
-            <%= label_tag :du, 'Du', class: "block font-semibold text-slate-600 text-sm mb-1" %>
+            <%= label_tag :du, 'Du', class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
             <%= date_field_tag :du, params[:du], 
               class: 'input input-bordered input-md w-full ', 
               onchange: 'this.form.requestSubmit()',
               data: { 'date-picker-target': "input" } %>
           </div>
           <div class="flex-1" data-controller="date-picker" data-action="click->date-picker#open">
-            <%= label_tag :au, 'Au', class: "block font-semibold text-slate-600 text-sm mb-1" %>
+            <%= label_tag :au, 'Au', class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
             <%= date_field_tag :au, params[:au], 
               class: 'input input-bordered input-md w-full ', 
               onchange: 'this.form.requestSubmit()',
@@ -68,7 +67,8 @@
                                 params[:service].to_a.reject(&:blank?).present? ||
                                 params[:agent_ids].present? ||
                                 params[:tool_ids].present? %>
-        <details class="group w-full" <%= 'open' if filtros_avanzados_activos %>>          <summary class="flex items-center gap-2 text-primary font-semibold text-sm cursor-pointer select-none list-none w-fit pt-2 hover:underline">
+        <details class="group w-full" <%= 'open' if filtros_avanzados_activos %>>          
+          <summary class="flex items-center gap-2 text-primary font-semibold text-sm cursor-pointer select-none list-none w-fit pt-2 hover:underline">
             <%= embedded_svg "icons/tune.svg", class: "text-[18px] transition-transform group-open:rotate-180", title: "Fermer" %>
             <span class="group-open:hidden">Plus de critères de filtrage</span>
             <span class="hidden group-open:inline">Moins de critères de filtrage</span>
@@ -76,7 +76,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end w-full pt-4 mt-2 border-t border-slate-200/60 dynamic-filters">
             <% if current_user.manager_or_admin? || current_user.agent? %>
               <div class="w-full">
-                <%= label_tag :adherent_id, "Adhérent", class: "block font-semibold text-slate-600 text-sm mb-1" %>
+                <%= label_tag :adherent_id, "Adhérent", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
                 <%= select_tag :adherent_id, 
                 options_from_collection_for_select(@adhérents, :id, :nom_prénom, params[:adherent_id]), 
                 
@@ -86,7 +86,7 @@
                   class: 'slim-select w-full h-10' %>
               </div>
               <div class="w-full">
-                <%= label_tag :tags, "Mots clés", class: "block font-semibold text-slate-600 text-sm mb-1" %>
+                <%= label_tag :tags, "Mots clés", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
                 <%= select_tag "tags[]", 
                     options_from_collection_for_select(@intervention_tags, :name, :name, params[:tags]), 
                     multiple: true,
@@ -99,7 +99,7 @@
               <%# Filtre service masqué si le current_user n'a qu'un seul service (sauf administrateur, qui filtre sur toute l'organisation). %>
               <% if current_user.administrateur? || @services.size > 1 %>
                 <div class="w-full">
-                  <%= label_tag :service, "Service", class: "block font-semibold text-slate-600 text-sm mb-1" %>
+                  <%= label_tag :service, "Service", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
                   <%# Champ caché : garantit que `service[]` est TOUJOURS soumis, même
                       filtre vidé → le contrôleur distingue « premier affichage » (param
                       absent → services présélectionnés) de « filtre vidé » (param présent
@@ -113,7 +113,7 @@
                 </div>
               <% end %>
               <div class="w-full">
-                <%= label_tag :agent_ids, "Agent(s)", class: "block font-semibold text-slate-600 text-sm mb-1" %>
+                <%= label_tag :agent_ids, "Agent(s)", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
                 <%= select_tag :agent_ids, grouped_options_for_select(@grouped_agents, params[:agent_ids]), 
                   multiple: true,
                   class: 'slim-select w-full h-10',
@@ -122,7 +122,7 @@
               </div>
             <% end %>
             <div class="w-full">
-              <%= label_tag :tool_ids, "Matériel(s)", class: "block font-semibold text-slate-600 text-sm mb-1" %>
+              <%= label_tag :tool_ids, "Matériel(s)", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
               <%= select_tag :tool_ids, options_from_collection_for_select(@tools, 'id', 'name', params[:tool_ids]), 
                   multiple: true,
                   class: 'slim-select w-full h-10',

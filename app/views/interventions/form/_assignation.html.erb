@@ -16,7 +16,6 @@
                     {},
                     class: "w-full h-10 #{'rounded-lg border border-amber-300 bg-amber-50' if agents_obligatoires && intervention.agents.empty?}",
                     multiple: true,
-                    id: 'agent-select',
                     data: {
                       controller: 'slim-select',
                       'calc-temps-passe-target': 'agents',
@@ -34,7 +33,6 @@
                     options_from_collection_for_select(@tools, 'id', 'name', intervention.tool_ids.presence || params[:tool_ids]),
                     {},
                     class: "slim-select w-full h-10",
-                    id: 'materiels-select', 
                     multiple: true,
                     'data-verification-disponibilites-target': "tools",
                     data: {
