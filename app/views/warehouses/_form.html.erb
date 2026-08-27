@@ -32,7 +32,11 @@
       <%= form.collection_select :user_ids, @users, :id, :nom_prénom, {}, { 
         multiple: true, 
         class: 'w-full h-10 slim-select', 
-        required: true} 
+        required: true,
+        data: {  max_values_shown_desktop: 2,
+                 max_values_shown_mobile: 1 
+              }
+        }
         %>
     </div>
     <div class="w-full" data-controller="places" data-places-center-lat-value="<%= ENV['MAPS_CENTER_LAT'] %>" data-places-center-lng-value="<%= ENV['MAPS_CENTER_LNG'] %>">
