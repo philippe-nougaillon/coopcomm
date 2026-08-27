@@ -9,7 +9,7 @@ class PrestationsController < ApplicationController
   
   # GET /prestations/new
   def new
-    @prestation = Prestation.new(unité: Prestation::UNITE_PAR_DEFAUT)
+    @prestation = Prestation.new(unité: 'Heure(s)')
   end
 
   

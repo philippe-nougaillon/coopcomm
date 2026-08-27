@@ -12,9 +12,6 @@ class Prestation < ApplicationRecord
   has_many :facture_lignes, dependent: :restrict_with_error
 
 
-  UNITES = ['Heure(s)', 'Forfait', 'Jour'].freeze
-  UNITE_PAR_DEFAUT = UNITES.first
-
   validates :code, :libellé, :tarif, presence: true
   validates :code, uniqueness: { scope: :organisation_id, case_sensitive: false }
 

@@ -222,15 +222,28 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
 
   test 'prestation : une création refusée garde la saisie' do
     sign_in users(:administrateur_paris)
-    # `code` et `sous_catégorie` sont soumis déjà normalisés : le modèle les
-    # passe en majuscules, ce que le formulaire ré-affiche.
+    # `code`, `catégorie` et `sous_catégorie` sont soumis déjà normalisés : le
+    # modèle les passe en majuscules, ce que le formulaire ré-affiche.
     soumis = { code: '', libellé: 'Tonte de pelouse', tarif: 25.5,
                description: 'Description de la prestation', compétence: 'Espaces verts',
-               délai: '48 h', sous_catégorie: 'ENTRETIEN', unité: 'Mètre linéaire' }
+               délai: '48 h', catégorie: 'VOIRIE', sous_catégorie: 'ENTRETIEN',
+               unité: 'Mètre linéaire' }
 
     post prestations_url, params: { prestation: soumis }
 
     assert_refus(soumis, prefixe: 'prestation')
+  end
+
+  # Sans option vide en tête, aucune option n'est marquée `selected` et le
+  # navigateur retient la première du menu.
+  test 'prestation : une catégorie vidée ne revient pas à la première du menu' do
+    sign_in users(:administrateur_paris)
+
+    post prestations_url, params: { prestation: { code: '', libellé: 'Tonte', tarif: 25.5, catégorie: '' } }
+
+    assert_response :unprocessable_content
+    assert_dom 'select#prestation_catégorie option:first-child[value=""]'
+    assert_dom 'select#prestation_catégorie option[selected]', 0
   end
 
   test 'site : une création refusée garde la saisie' do
