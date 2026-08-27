@@ -14,7 +14,7 @@ class DeviseManagerFlowTest < ApplicationSystemTestCase
     assert_current_path new_user_session_path
     assert_selector 'h1', text: 'Connexion'
 
-    fill_in 'user_email', with: @adherent.email
+    fill_in 'user_email', with: @manager.email
     fill_in 'user_password', with: 'qtDug$d843sqACz?V'
 
     assert_equal 'password', find('#user_password')[:type]
