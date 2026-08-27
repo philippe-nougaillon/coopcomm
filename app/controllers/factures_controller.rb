@@ -47,6 +47,10 @@ class FacturesController < ApplicationController
   def show
     @audits = trier(@facture.own_and_associated_audits.includes(:user))
     @pagy, @audits = pagy(@audits, items: 10)
+
+    @prestations = @facture.facture_lignes.includes(:prestation)
+    @pagy_prestations, @prestations = pagy(@prestations, items: 10)
+
   end
 
   # GET /factures/new
