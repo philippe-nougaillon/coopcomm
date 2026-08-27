@@ -19,7 +19,7 @@
         <div class="h-18 <%= 'lg:h-16' if user_signed_in? %>"></div>
         
         <div class="p-4 border-b">
-          <%= form_tag request.path, method: :get do %>
+          <%= form_tag documentation_index_path, method: :get do %>
             <label class="input input-bordered flex items-center gap-2 w-full">
               <%= text_field_tag :search, params[:search], include_blank: true, onchange: 'this.form.submit()', class: 'grow border-none outline-none p-0 focus:ring-0 ml-2', placeholder: 'Rechercher...' %>
               <button type="submit" class="flex items-center cursor-pointer">
@@ -29,12 +29,22 @@
           <% end %>
         </div>
 
-        <% WikiPage.catégories.each do |catégorie, id| %>
-          <%= link_to documentation_index_path(catégorie: catégorie) do %>
-            <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-slate-100 py-3 pl-8 <%= 'bg-slate-50 hover:bg-base-300' if params[:catégorie] == catégorie %>">
-              <%= catégorie.humanize %>
-            </div>
-          <% end %>
+        <%= link_to blog_documentation_index_path do %>
+          <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-slate-100 py-3 pl-8 <%= 'bg-slate-50 hover:bg-base-300' if params[:action] == "blog" %>">
+            Blog
+          </div>
+        <% end %>
+        
+        <%= link_to guide_documentation_index_path do %>
+          <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-slate-100 py-3 pl-8 <%= 'bg-slate-50 hover:bg-base-300' if params[:action] == "guide" %>">
+            Guide
+          </div>
+        <% end %>
+
+        <%= link_to faq_documentation_index_path do %>
+          <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-slate-100 py-3 pl-8 <%= 'bg-slate-50 hover:bg-base-300' if params[:action] == "faq" %>">
+            Faq
+          </div>
         <% end %>
       </div>
 

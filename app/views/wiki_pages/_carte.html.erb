@@ -1,4 +1,4 @@
-<%= link_to documentation_path(wiki_page, catégorie: wiki_page.catégorie),
+<%= link_to documentation_path(wiki_page),
             class: "block overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-primary hover:shadow-sm" do %>
   <% if wiki_page.document.attached? && wiki_page.document.representable? %>
     <%= image_tag wiki_page.document.representation(resize_to_fill: [600, 300]), class: "h-32 w-full object-cover" %>

@@ -5,3 +5,9 @@ fr:
   wiki_pages:
     index:
       title: 'Documentation'
+    blog:
+      title: 'Blog'
+    guide:
+      title: 'Guide'
+    faq:
+      title: 'FAQ'

@@ -1,21 +1,17 @@
 # frozen_string_literal: true
 
 class WikiPagesController < ApplicationController
-  skip_before_action :authenticate_user!, only: %i[index show]
+  skip_before_action :authenticate_user!, only: %i[index show blog guide faq]
   before_action :set_wiki_page, only: %i[show edit update destroy]
   before_action :is_user_authorized
 
   # GET /documentation
   def index
-    @catégorie = params[:catégorie] if WikiPage.catégories.key?(params[:catégorie])
-
     if params[:search].present?
-      @wiki_pages = pages_visibles(WikiPage.search_titre_and_contenu("%#{params[:search]}%"))
-    elsif @catégorie
-      @wiki_pages = pages_visibles(WikiPage.where(catégorie: @catégorie))
+      @wiki_pages = wiki_pages_visibles(WikiPage.search_titre_and_contenu("%#{params[:search]}%"))
     else
-      @épinglées_par_catégorie = WikiPage.catégories.keys.index_with do |catégorie|
-        pages_visibles(WikiPage.where(catégorie:, épinglée: true))
+      @epinglees_par_catégorie = WikiPage.catégories.keys.index_with do |catégorie|
+        wiki_pages_visibles(WikiPage.where(catégorie:, épinglée: true))
           .with_attached_document
           .with_rich_text_contenu
           .limit(3)
@@ -40,7 +36,7 @@ class WikiPagesController < ApplicationController
     @wiki_page.user_id = current_user.id
 
     if @wiki_page.save
-      redirect_to documentation_url(@wiki_page), notice: 'Page wiki créée avec succès.'
+      redirect_to documentation_url(@wiki_page), notice: 'Documentation créée avec succès.'
     else
       render :new, status: :unprocessable_content
     end
@@ -49,7 +45,7 @@ class WikiPagesController < ApplicationController
   # PATCH/PUT /documentation/1
   def update
     if @wiki_page.update(wiki_page_params)
-      redirect_to documentation_url(@wiki_page), notice: 'Page wiki modifiée avec succès.'
+      redirect_to documentation_url(@wiki_page), notice: 'Documentation modifiée avec succès.'
     else
       render :edit, status: :unprocessable_content
     end
@@ -59,22 +55,46 @@ class WikiPagesController < ApplicationController
   def destroy
     @wiki_page.discard
 
-    redirect_to documentation_index_url, notice: 'Page wiki supprimée avec succès.'
+    redirect_to documentation_index_url, notice: 'Documentation supprimée avec succès.'
+  end
+
+  # GET /documentation/blog
+  def blog
+    @catégorie = "blog"
+    @wiki_pages = WikiPage.where(catégorie: @catégorie)
+    @wiki_pages = wiki_pages_visibles(@wiki_pages).with_attached_document
+    render :index_by_categorie
+  end
+
+  # GET /documentation/guide
+  def guide
+    @catégorie = "guide"
+    @wiki_pages = WikiPage.where(catégorie: @catégorie)
+    @wiki_pages = wiki_pages_visibles(@wiki_pages).with_attached_document
+    render :index_by_categorie
+  end
+
+  # GET /documentation/faq
+  def faq
+    @catégorie = "faq"
+    @wiki_pages = WikiPage.where(catégorie: @catégorie)
+    @wiki_pages = wiki_pages_visibles(@wiki_pages).with_attached_document
+    render :index_by_categorie
   end
 
   private
 
-  def pages_visibles(pages)
-    pages = pages.where(publiée: true) unless policy(WikiPage).new?
-    pages = pages.where(private: false) if !user_signed_in? || current_user.agent?
-    pages.order(:poids)
+  def wiki_pages_visibles(wiki_pages)
+    wiki_pages = wiki_pages.where(publiée: true) unless current_user&.manager_or_admin?
+    wiki_pages = wiki_pages.where(private: false) if current_user.nil? || current_user.agent?
+    wiki_pages.order(:poids)
   end
 
   # Use callbacks to share common setup or constraints between actions.
   def set_wiki_page
     @wiki_page = WikiPage.friendly.find(params[:id])
   rescue StandardError
-    redirect_to root_path, alert: 'Page wiki introuvable' if @wiki_page.nil?
+    redirect_to root_path, alert: 'Documentation introuvable' if @wiki_page.nil?
   end
 
   # Only allow a list of trusted parameters through.

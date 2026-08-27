@@ -37,4 +37,16 @@ class WikiPagePolicy < ApplicationPolicy
   def destroy?
     edit? && record.user == user
   end
+
+  def blog?
+    index?
+  end
+  
+  def guide?
+    index?
+  end
+
+  def faq?
+    index?
+  end
 end
