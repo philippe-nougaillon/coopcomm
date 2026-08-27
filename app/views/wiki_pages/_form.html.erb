@@ -29,17 +29,17 @@
     <%= form.rich_text_area :contenu, style: 'min-height: 50vh' %>
   </div>
   <div class="flex gap-4">
-    <div>
+    <div class="hover:cursor-help" title="Visible uniquement par les managers et administrateurs si pas publiée ?">
       <%= form.label :publiée, "Publiée ?", class:'whitespace-nowrap' %>
       <br>
       <%= form.check_box :publiée, class: "checkbox checkbox-lg checkbox-primary" %>
     </div>
-    <div>
+    <div class="hover:cursor-help" title="Visible sur l'index et affichée en premier ?">
       <%= form.label :épinglée, "Épinglée ?", class:'whitespace-nowrap' %>
       <br>
       <%= form.check_box :épinglée, class: "checkbox checkbox-lg checkbox-primary" %>
     </div>
-    <div class="hover:cursor-help" title="Visible par les agents ?">
+    <div class="hover:cursor-help" title="Non visible par les agents et les personnes non connectées ?">
       <%= form.label :private, "Privé ?", class:'whitespace-nowrap hover:cursor-help' %>
       <br>
       <%= form.check_box :private, class: "checkbox checkbox-lg checkbox-primary" %>
