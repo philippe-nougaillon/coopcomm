@@ -2,6 +2,7 @@
 
 require 'application_system_test_case'
 
+#TODO : A revoir (surtout les tests sur les dropzone, éviter les dupplications avec ceux dans l'integration)
 class ConventionsTest < ApplicationSystemTestCase
   setup do
     @admin = users(:administrateur_paris)

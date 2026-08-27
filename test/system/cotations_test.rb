@@ -2,6 +2,8 @@
 
 require 'application_system_test_case'
 
+#TODO : A revoir, peut etre juste tester le nested form, 
+# pour vérifier que le cablage entre le formulaire et le model fonctionne correctement.
 class CotationsTest < ApplicationSystemTestCase
   setup do
     @admin = users(:administrateur_paris)
