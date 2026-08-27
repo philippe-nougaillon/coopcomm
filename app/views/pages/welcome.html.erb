@@ -359,7 +359,7 @@
       Vous souhaitez en savoir plus ?
     </h2>
     <div class="flex flex-wrap items-center justify-around gap-4">
-      <%= link_to 'Consultez notre Wiki (Blog / FAQ / ...)', wiki_pages_path, class: 'inline-block bg-[#50b9df] px-4 py-2 rounded-full text-white text-sm font-medium hover:bg-[#48a7c8] transition' %>
+      <%= link_to 'Consultez notre Wiki (Blog / FAQ / ...)', documentation_index_path, class: 'inline-block bg-[#50b9df] px-4 py-2 rounded-full text-white text-sm font-medium hover:bg-[#48a7c8] transition' %>
       <%= link_to "Réservez une démo personnalisée", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: 'inline-block bg-[#db2767] px-5 py-2 rounded-full text-white text-sm font-medium hover:bg-[#c51f5b] transition', title: "Réservez une démo personnalisée avec l'un de nos experts" %>
     </div>
   </section>
@@ -374,9 +374,9 @@
     </div>
     <div class="flex flex-col text-center md:text-left">
       <p class="text-sm font-black mb-4">BESOIN D'AIDE</p>
-      <%= link_to "FAQ", wiki_pages_path(catégorie: "faq"), class: "mb-2 hover:text-[#50b9df]" %>
-      <%= link_to "Blog", wiki_pages_path(catégorie: "blog"), class: "mb-2 hover:text-[#50b9df]" %>
-      <%= link_to "Guide", wiki_pages_path(catégorie: "guide"), class: "mb-2 hover:text-[#50b9df]" %>
+      <%= link_to "FAQ", documentation_index_path(catégorie: "faq"), class: "mb-2 hover:text-[#50b9df]" %>
+      <%= link_to "Blog", documentation_index_path(catégorie: "blog"), class: "mb-2 hover:text-[#50b9df]" %>
+      <%= link_to "Guide", documentation_index_path(catégorie: "guide"), class: "mb-2 hover:text-[#50b9df]" %>
     </div>
     <div class="flex flex-col text-center md:text-left">
       <p class="text-sm font-black mb-4">CONDITIONS</p>

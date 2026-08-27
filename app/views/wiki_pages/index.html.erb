@@ -3,28 +3,54 @@
   <div class="w-full ml-8 sm:ml-64">
     <div class="flex flex-wrap justify-between items-center mb-12 min-h-12 sm:min-h-16">
       <h1 class="text-2xl sm:text-4xl text-primary font-bold">
-        <% if !(params[:catégorie].present? || params[:search].present?) %>
-          Bienvenue sur le Wiki CoopComm !
-        <% elsif params[:catégorie].present? %>
-          <%= params[:catégorie].humanize %>
-        <% elsif params[:search].present? %>
+        <% if @épinglées_par_catégorie %>
+          Bienvenue sur la documentation de CoopComm !
+        <% elsif @catégorie %>
+          <%= @catégorie.humanize %>
+        <% else %>
           <%= @wiki_pages.size == 0 ? 'Pas de résultat trouvé' : "#{@wiki_pages.size} page(s) trouvée(s)" %>
         <% end %>
       </h1>
       <% if policy(WikiPage).new? %>
-  <%= link_to new_wiki_page_path,
+  <%= link_to new_documentation_path,
     data: { testid: "Ajouter_une_Page" },
     class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary",
     title: "Créer un nouvel agent"  do %>
   <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
   <span class="hidden md:block">Ajouter une Page</span>
 <% end %>
-<%= link_to "+ Page", new_wiki_page_path,
+<%= link_to "+ Page", new_documentation_path,
     class: "inline-flex sm:hidden btn btn-primary btn-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary" %>
     <% end %>
     </div>
-    <div id="wiki_pages" class="min-w-full">
-      <%= render @wiki_pages %>
-    </div>
+
+    <% if @épinglées_par_catégorie %>
+      <p class="mb-12 max-w-3xl text-slate-600">
+        CoopComm est un outil <strong>très complet</strong>. C'est pour cela que l'on vous propose une documentation détaillée des différentes interactions possibles.
+        <br>
+        Le <strong>Blog</strong> rassemble les actualités et les nouveautés de CoopComm.
+        Les <strong>Guides</strong> expliquent pas à pas comment utiliser l'application au quotidien.
+        La <strong>FAQ</strong> répond aux questions les plus fréquentes.
+      </p>
+
+      <% @épinglées_par_catégorie.each do |catégorie, pages| %>
+        <section class="mb-12">
+          <h2 class="mb-4 text-xl font-bold text-secondary"><%= catégorie.humanize %></h2>
+          <% if pages.any? %>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <%= render partial: "carte", collection: pages, as: :wiki_page %>
+            </div>
+          <% else %>
+            <p class="text-sm text-slate-400">Aucune page épinglée pour le moment.</p>
+          <% end %>
+          <%= link_to "En voir plus", documentation_index_path(catégorie: catégorie),
+                      class: "mt-4 inline-block text-sm font-medium text-primary hover:underline" %>
+        </section>
+      <% end %>
+    <% else %>
+      <div id="wiki_pages" class="min-w-full">
+        <%= render @wiki_pages %>
+      </div>
+    <% end %>
   </div>
 </div>

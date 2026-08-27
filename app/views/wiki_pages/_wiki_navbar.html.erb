@@ -30,7 +30,7 @@
         </div>
 
         <% WikiPage.catégories.each do |catégorie, id| %>
-          <%= link_to wiki_path(catégorie: catégorie) do %>
+          <%= link_to documentation_index_path(catégorie: catégorie) do %>
             <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-slate-100 py-3 pl-8 <%= 'bg-slate-50 hover:bg-base-300' if params[:catégorie] == catégorie %>">
               <%= catégorie.humanize %>
             </div>

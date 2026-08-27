@@ -1,0 +1,14 @@
+<%= link_to documentation_path(wiki_page, catégorie: wiki_page.catégorie),
+            class: "block overflow-hidden rounded-lg border border-slate-200 bg-white transition hover:border-primary hover:shadow-sm" do %>
+  <% if wiki_page.document.attached? && wiki_page.document.representable? %>
+    <%= image_tag wiki_page.document.representation(resize_to_fill: [600, 300]), class: "h-32 w-full object-cover" %>
+  <% else %>
+    <div class="h-32 w-full bg-slate-100"></div>
+  <% end %>
+  <div class="p-4">
+    <h3 class="line-clamp-1 font-semibold text-secondary"><%= wiki_page.titre %></h3>
+    <p class="mt-1 line-clamp-2 text-sm text-slate-500">
+      <%= wiki_page.sous_titre.presence || wiki_page.contenu.to_plain_text %>
+    </p>
+  </div>
+<% end %>
