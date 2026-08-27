@@ -59,7 +59,7 @@ export default class extends Controller {
     const events = {
       ...specificEvents,
       beforeChange: beforeChangeFunction,
-      afterChange: () => this.truncateChips() 
+      afterChange: () => this.truncateChips(),
     }
 
     // Initialisation
@@ -137,10 +137,14 @@ export default class extends Controller {
     truncateChips() {
       const maxValuesShown = window.innerWidth < 768 ? this.maxValuesMobile : this.maxValuesDesktop
       if (!maxValuesShown) return
+
+      // On enlève l'ancien badge AVANT de compter les chips (sinon il se compte lui-même)
+      const oldBadge = this.element.parentElement.querySelector('.ss-more-badge')
+      if (oldBadge) oldBadge.remove()
+
       const chips = this.element.parentElement.querySelectorAll('.ss-value')
       chips.forEach((chip, i) => chip.classList.toggle('ss-hidden-chip', i >= maxValuesShown))
-      const badge = this.element.parentElement.querySelector('.ss-more-badge')
-      if (badge) badge.remove()
+
       const hidden = chips.length - maxValuesShown
       if (hidden > 0) {
         const b = document.createElement('div')

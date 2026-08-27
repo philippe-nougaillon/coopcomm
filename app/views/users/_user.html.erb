@@ -94,9 +94,11 @@
     <% if user.agent? && user.absent? %>
       <% title_absence = "Absent du #{l(user.current_absence.du)} au #{l(user.current_absence.au)}, motif : #{user.current_absence.motif}" %>
       <%= embedded_svg "icons/person_off.svg",
-  class: "text-amber-500 cursor-help hover:scale-110 transition-transform text-xl",
-  title: title_absence,
-  alt: "Utilisateur actuellement absent" %>    <% end %>
+        class: "text-amber-500 cursor-help hover:scale-110 transition-transform text-xl",
+        title: title_absence,
+        alt: "Utilisateur actuellement absent"
+       %>    
+    <% end %>
   </span>
   </td>
   <%# Évaluation %>
