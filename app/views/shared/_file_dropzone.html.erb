@@ -59,15 +59,19 @@
      data-dropzone-error-message-value="<%= error_message %>"
      data-dropzone-size-message-value="<%= size_message %>"
      data-dropzone-max-size-value="<%= max_octets %>"
-     data-dropzone-drop-label-value="Déposez le fichier ici">
+     data-dropzone-drop-label-value="Déposez le fichier ici"
+     data-testid="dropzone_<%= attribute %>">
   <%= form.label attribute, label, class: "label font-semibold text-slate-700"  %>
   <% if saved_blobs.any? %>
-    <p class="text-sm mb-1 break-all">
-      <%= multiple ? "Fichiers actuels :" : "Document actuel : " %>
-      <br>
-      <% saved_blobs.each_with_index do |blob, i| %><%= " · " if i.positive? %><%= link_to blob.filename, rails_blob_path(blob, disposition: "inline"),
-            target: "_blank", class: "link link-primary capitalize" %><% end %>
-    </p>
+    <div class="mb-3">
+      <p class="text-sm font-semibold text-slate-700 mb-2"><%= multiple ? "Fichiers actuels" : "Document actuel" %></p>
+      <ul class="flex flex-col gap-2">
+        <% saved_blobs.each do |blob| %>
+          <%= render "shared/ligne_fichier", nom: blob.filename.to_s,
+                     url: rails_blob_path(blob, disposition: "inline"), octets: blob.byte_size %>
+        <% end %>
+      </ul>
+    </div>
   <% end %>
   <div data-dropzone-target="box"
        data-action="dragenter->dropzone#highlight dragover->dropzone#highlight dragleave->dropzone#unhighlight drop->dropzone#drop click->dropzone#open"
