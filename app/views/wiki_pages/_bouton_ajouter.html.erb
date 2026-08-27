@@ -1,11 +1,12 @@
+<%# locals: (catégorie: '') %>
 <% if policy(WikiPage).new? %>
-  <%= link_to new_documentation_path,
+  <%= link_to new_documentation_path(catégorie: catégorie),
       data: { testid: "Ajouter_une_Page" },
       class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary",
       title: "Créer une nouvelle page" do %>
     <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
-    <span class="hidden md:block">Ajouter une Page</span>
+    <span class="hidden md:block">Ajouter une documentation</span>
   <% end %>
-  <%= link_to "+ Page", new_documentation_path,
+  <%= link_to "+ Documentation", new_documentation_path(catégorie: catégorie),
       class: "inline-flex sm:hidden btn btn-primary btn-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary" %>
 <% end %>

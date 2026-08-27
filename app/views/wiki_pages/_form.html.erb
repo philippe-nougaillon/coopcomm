@@ -14,45 +14,47 @@
     </div>
   <% end %>
   <div class="my-5">
+    <%= form.label :catégorie %>
+    <%= form.select :catégorie, options_for_select(WikiPage.catégories.keys, (@wiki_page.catégorie || params["catégorie"])), {}, class: 'select select-sm w-full' %>
+  </div>
+  <div class="my-5">
+    <%= form.label :titre %>
     <%= form.text_field :titre, class: "input w-full", placeholder: "Titre", required: true %>
   </div>
   <div class="my-5">
+    <%= form.label :sous_titre %>
     <%= form.text_field :sous_titre, class: "input w-full", placeholder: "Sous-titre", required: true %>
   </div>
   <div class="my-5">
     <%= form.rich_text_area :contenu, style: 'min-height: 50vh' %>
   </div>
-  <div class="flex gap-4 my-5">
-    <div class="my-5">
-      <%= form.label :catégorie %>
-      <%= form.select :catégorie, options_for_select(WikiPage.catégories.keys, @wiki_page.catégorie), {}, class: 'select select-sm w-full' %>
-    </div>
-    <div class="my-5">
+  <div class="flex gap-4">
+    <div>
       <%= form.label :publiée, "Publiée ?", class:'whitespace-nowrap' %>
       <br>
       <%= form.check_box :publiée, class: "checkbox checkbox-lg checkbox-primary" %>
     </div>
-    <div class="my-5">
+    <div>
       <%= form.label :épinglée, "Épinglée ?", class:'whitespace-nowrap' %>
       <br>
       <%= form.check_box :épinglée, class: "checkbox checkbox-lg checkbox-primary" %>
     </div>
-    <div class="my-5 hover:cursor-help" title="Visible par les agents ?">
+    <div class="hover:cursor-help" title="Visible par les agents ?">
       <%= form.label :private, "Privé ?", class:'whitespace-nowrap hover:cursor-help' %>
       <br>
       <%= form.check_box :private, class: "checkbox checkbox-lg checkbox-primary" %>
     </div>
-    <div class="my-5">
+    <div>
       <%= form.label :poids %>
       <%= form.number_field :poids, class: "input input-bordered w-full focus:input-primary" %>
     </div>
-    <div class="my-5">
+  </div>
+  <div class="my-5">
       <%= render "shared/file_dropzone",
                  form: form,
                  attribute: :document,
                  placeholder: "Glissez un document (PDF, Word, Excel, photo) ici ou cliquez pour parcourir" %>
     </div>
-  </div>
   <div class="inline">
     <%= form.submit "Enregistrer", class: "btn btn-primary" %>
   </div>
