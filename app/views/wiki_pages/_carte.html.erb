@@ -5,10 +5,19 @@
   <% else %>
     <div class="h-32 w-full bg-slate-100"></div>
   <% end %>
-  <div class="p-4">
-    <h3 class="line-clamp-1 font-semibold text-secondary"><%= "#{wiki_page.titre} (#{wiki_page.catégorie})" %></h3>
-    <p class="mt-1 line-clamp-2 text-sm text-slate-500">
-      <%= wiki_page.sous_titre.presence || wiki_page.contenu.to_plain_text %>
-    </p>
+  <div class="flex justify-between">
+    <div class="p-4">
+      <h3 class="line-clamp-1 font-semibold text-secondary"><%= "#{wiki_page.titre} (#{wiki_page.catégorie})" %></h3>
+      <p class="mt-1 line-clamp-2 text-sm text-slate-500">
+        <%= wiki_page.sous_titre.presence || wiki_page.contenu.to_plain_text %>
+      </p>
+    </div>
+    <% unless wiki_page.publiée? %>
+      <div class="content-end">
+        <span>
+          <%= embedded_svg "icons/visibility_off.svg", class: "text-slate-500", title: "Documentation non publiée" %>
+        </span>
+      </div>
+    <% end %>
   </div>
 <% end %>
