@@ -6,13 +6,14 @@
       <span class="text-primary text-4xl"><%= page_title!(wiki_page.titre) %></span>
     <% end %>
   </h1>
-  <small>Il y a <%= time_ago_in_words(wiki_page.updated_at) %></small>
+  <h3 class="text-lg">
+    <%= wiki_page.sous_titre %>
+  </h3>
   <% if action_name == "show" %>
     <p class="my-5">
       <%= wiki_page.contenu %>
     </p>
   <% else %>
-    <p class="mb-5"><%= wiki_page.sous_titre %></p>
     <% if wiki_page.document.attached? %>
       <% if wiki_page.document.previewable? %>
         <%= link_to image_tag(wiki_page.document.preview(resize_to_limit: [300, 300]), class: 'max-w-none shadow-xl'), wiki_page.document %>
@@ -22,7 +23,7 @@
         <%= link_to "Télécharger le document", rails_blob_path(wiki_page.document, disposition: "attachment"), class: "btn btn-primary" %>
       <% end %>
     <% end %>
-    <br>
+    <p><small>Il y a <%= time_ago_in_words(wiki_page.updated_at) %></small></p>
     <hr class="my-6">
   <% end %>
 </div>

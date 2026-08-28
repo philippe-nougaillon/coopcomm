@@ -3,7 +3,7 @@
   <% if wiki_page.document.attached? && wiki_page.document.representable? %>
     <%= image_tag wiki_page.document.representation(resize_to_fill: [600, 300]), class: "h-32 w-full object-cover" %>
   <% else %>
-    <div class="h-32 w-full bg-slate-100"></div>
+    <div class="h-32 w-full bg-slate-100"><%= image_tag "CoopComm.png", class: "p-6" %></div>
   <% end %>
   <div class="flex justify-between">
     <div class="p-4">
@@ -11,6 +11,7 @@
       <p class="mt-1 line-clamp-2 text-sm text-slate-500">
         <%= wiki_page.sous_titre.presence || wiki_page.contenu.to_plain_text %>
       </p>
+      <p class="text-slate-500"><small>Il y a <%= time_ago_in_words(wiki_page.updated_at) %></small></p>
     </div>
     <% unless wiki_page.publiée? %>
       <div class="content-end">

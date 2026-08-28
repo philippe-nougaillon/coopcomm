@@ -5,9 +5,9 @@
 
     <% if @wiki_page.document.attached? %>
       <% if @wiki_page.document.representable? %>
-        <%= link_to 'Voir le document', @wiki_page.document, class: "btn btn-primary" %>
+        <%= link_to 'Voir le document', @wiki_page.document, class: "btn btn-primary mt-4" %>
       <% else %>
-        <%= link_to "Télécharger le document", rails_blob_path(@wiki_page.document, disposition: "attachment"), class: "btn btn-primary" %>
+        <%= link_to "Télécharger le document", rails_blob_path(@wiki_page.document, disposition: "attachment"), class: "btn btn-primary mt-4" %>
       <% end %>
     <% end %>
 
@@ -34,5 +34,12 @@
       </div>
     <% end %>
 
+    <div class="pt-8">
+      <%= link_to documentation_index_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+        <%= embedded_svg "icons/arrow_back.svg", class: "w-4 h-4 transition-transform group-hover:-translate-x-1 fill-current" rescue nil %>
+        Retour à la liste des documentations
+      <% end %>
+    </div>
   </div>
 </div>
+
