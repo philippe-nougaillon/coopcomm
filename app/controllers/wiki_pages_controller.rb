@@ -11,12 +11,10 @@ class WikiPagesController < ApplicationController
     if params[:search].present?
       @wiki_pages = wiki_pages_visibles(WikiPage.search_titre_and_contenu("%#{params[:search]}%"))
     else
-      @epinglees_par_catégorie = WikiPage.catégories.keys.index_with do |catégorie|
-        wiki_pages_visibles(WikiPage.where(catégorie:, épinglée: true))
-          .with_attached_document
-          .with_rich_text_contenu
-          .limit(3)
-      end
+      @wiki_pages_for_index = wiki_pages_visibles(WikiPage.all.order(épinglée: :desc))
+                                  .with_attached_document
+                                  .with_rich_text_contenu
+                                  .limit(9)
     end
   end
 

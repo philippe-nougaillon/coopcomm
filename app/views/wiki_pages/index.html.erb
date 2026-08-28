@@ -3,7 +3,7 @@
   <div class="w-full ml-8 sm:ml-64">
     <div class="flex flex-wrap justify-between items-center mb-12 min-h-12 sm:min-h-16">
       <h1 class="text-2xl sm:text-4xl text-primary font-bold">
-        <% if @epinglees_par_catégorie %>
+        <% if @wiki_pages_for_index %>
           Bienvenue sur la documentation de CoopComm !
         <% else %>
           <%= @wiki_pages.size == 0 ? 'Pas de résultat trouvé' : "#{@wiki_pages.size} page(s) trouvée(s)" %>
@@ -12,7 +12,7 @@
       <%= render "bouton_ajouter" %>
     </div>
 
-    <% if @epinglees_par_catégorie %>
+    <% if @wiki_pages_for_index %>
       <p class="mb-12 max-w-3xl text-slate-600">
         CoopComm est un outil <strong>très complet</strong>. C'est pour cela que l'on vous propose une documentation détaillée des différentes interactions possibles.
         <br>
@@ -21,20 +21,17 @@
         La <strong>FAQ</strong> répond aux questions les plus fréquentes.
       </p>
 
-      <% @epinglees_par_catégorie.each do |catégorie, pages| %>
-        <section class="mb-12">
-          <h2 class="mb-4 text-xl font-bold text-secondary"><%= catégorie.humanize %></h2>
-          <% if pages.any? %>
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <%= render partial: "carte", collection: pages, as: :wiki_page %>
-            </div>
-          <% else %>
-            <p class="text-sm text-slate-400">Aucune page épinglée pour le moment.</p>
-          <% end %>
-          <%= link_to "En voir plus", public_send("#{catégorie}_documentation_index_path"),
-                      class: "mt-4 inline-block text-sm font-medium text-primary hover:underline" %>
-        </section>
-      <% end %>
+      
+        
+      <section class="mb-12">
+        <% if @wiki_pages_for_index.any? %>
+          <div class="grid gap-4 sm:grid-cols-3 lg:grid-cols-3">
+            <%= render partial: "carte", collection: @wiki_pages_for_index, as: :wiki_page %>
+          </div>
+        <% else %>
+          <p class="text-sm text-slate-400">Aucune documentation n'a été créée pour le moment.</p>
+        <% end %>
+      </section>
     <% else %>
       <div id="wiki_pages" class="min-w-full">
         <%= render @wiki_pages %>
