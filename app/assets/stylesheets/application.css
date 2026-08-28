@@ -414,6 +414,15 @@ select.slim-select[multiple],
     text-overflow: ellipsis;
   }
 
+  /* Aplica los '...' solo cuando hay múltiples ítems seleccionados */
+  .ss-main.ss-multiple .ss-values .ss-value .ss-value-text {
+    max-width: 5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+  }
+
   /* Optionnel : Limite aussi la taille des textes dans le menu déroulant */
   .ss-main .ss-content .ss-list .ss-option {
     white-space: nowrap;
