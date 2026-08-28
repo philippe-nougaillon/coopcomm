@@ -9,11 +9,11 @@ class WikiPagesController < ApplicationController
   # GET /documentation
   def index
     if params[:search].present?
-      @wiki_pages = wiki_pages_visibles(WikiPage.search_titre_and_contenu("%#{params[:search]}%"))
+      @wiki_pages = wiki_pages_visibles(WikiPage.search_titre_and_contenu("%#{params[:search]}%")).with_attached_document
+      render :index_for_search
     else
       @wiki_pages_for_index = wiki_pages_visibles(WikiPage.all.order(épinglée: :desc))
                                   .with_attached_document
-                                  .with_rich_text_contenu
                                   .limit(9)
     end
   end
@@ -83,11 +83,13 @@ class WikiPagesController < ApplicationController
 
   private
 
+  # Renvoie les catégories avec pour chacun les wiki pages de la catégorie
   def set_wiki_page_navbar_by_categorie
     wiki_pages = wiki_pages_visibles(WikiPage.all).group_by(&:catégorie)
     @wiki_page_navbar_by_categorie = WikiPage.catégories.keys.index_with { |catégorie| wiki_pages[catégorie].to_a }
   end
 
+  # Renvoie les wiki pages visibles en fonction de l'utilisateur
   def wiki_pages_visibles(wiki_pages)
     wiki_pages = wiki_pages.where(publiée: true) unless current_user&.manager_or_admin?
     wiki_pages = wiki_pages.where(private: false) if current_user.nil? || current_user.agent?

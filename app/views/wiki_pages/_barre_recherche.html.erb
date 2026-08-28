@@ -1,0 +1,8 @@
+<%= form_tag documentation_index_path, method: :get, class: "w-full mb-8" do %>
+  <label class="input input-bordered flex items-center gap-2 w-full">
+    <%= text_field_tag :search, params[:search], onchange: 'this.form.submit()', class: 'grow border-none outline-none p-0 focus:ring-0 ml-2', placeholder: 'Rechercher...' %>
+    <button type="submit" class="flex items-center cursor-pointer">
+      <%= embedded_svg "icons/loupe.svg", class: "w-6 h-6 fill-current text-gray-700" %>
+    </button>
+  </label>
+<% end %>
