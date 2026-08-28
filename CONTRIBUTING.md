@@ -121,6 +121,19 @@ Règles :
 - Divers Rails : redirection **303** (`status: :see_other`) après create/update/destroy
   soumis par Turbo ; les `<label>` ont un `for=` (accessibilité + testabilité).
 
+### ⑨ CI et déploiement : ce n'est plus le push qui déploie
+
+Hatchbox ne se déclenche plus au push. C'est **GitHub Actions** qui l'appelle, et seulement
+si `test` **et** `system-test` sont verts (`.github/workflows/rails.yml`). Conséquences :
+
+- Un test rouge **bloque le déploiement** — c'est le but. L'instance garde la version en
+  place, et on relance le job depuis l'UI GitHub si l'échec est un flake.
+- Les deux suites tournent dans **deux jobs séparés**, donc sur deux machines et deux bases
+  distinctes : l'interdit « jamais deux runs sur la même base » du §⑦ est respecté par
+  construction, et il ne s'applique pas entre ces deux jobs.
+- Un déploiement manuel reste possible depuis l'UI Hatchbox : il court-circuite ce
+  garde-fou.
+
 ---
 
 ## 2. Checklist avant commit / PR
