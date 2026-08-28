@@ -69,7 +69,7 @@ export default class extends Controller {
       events: events
     })
 
-    this.truncateChips()   // truncature initiale au chargement
+    requestAnimationFrame(() => this.truncateChips())   // laisse SlimSelect finir son rendu avant de tronquer  // truncature initiale au chargement
 
     // Ton fix pour les champs requis
     if (this.element.hasAttribute('required')) {

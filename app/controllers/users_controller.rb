@@ -142,12 +142,13 @@ class UsersController < ApplicationController
     @date_fin = fecha_base.end_of_week   
 
     @services = current_user.services.ordered
-    @agents = User.by_service(params[:service].presence || @services).agent
-    
+    @selected_service_ids = params[:services]&.reject(&:blank?) || []
+    @agents = User.by_service(@selected_service_ids.presence || @services).agent
+
     if params[:search].present?
       @agents = @agents.where('users.nom ILIKE :search OR users.prénom ILIKE :search OR users.email ILIKE :search',
                               { search: "%#{params[:search]}%" })
-    end
+  end
 
     # Le code actuel n'est pas utile. Si besoin on peut le faire sur la période (@date..@date_fin). Le mieux serait p-e de faire des cases grises directement dans le calendrier.
     # if params[:absent].present?
