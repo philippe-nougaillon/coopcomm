@@ -124,13 +124,14 @@ Règles :
 ### ⑨ CI et déploiement : ce n'est plus le push qui déploie
 
 Hatchbox ne se déclenche plus au push. C'est **GitHub Actions** qui l'appelle, et seulement
-si `test` **et** `system-test` sont verts (`.github/workflows/rails.yml`). Conséquences :
+si le job `test` est vert (`.github/workflows/rails.yml`). Conséquences :
 
 - Un test rouge **bloque le déploiement** — c'est le but. L'instance garde la version en
   place, et on relance le job depuis l'UI GitHub si l'échec est un flake.
-- Les deux suites tournent dans **deux jobs séparés**, donc sur deux machines et deux bases
-  distinctes : l'interdit « jamais deux runs sur la même base » du §⑦ est respecté par
-  construction, et il ne s'applique pas entre ces deux jobs.
+- ⚠️ **Les tests système ne tournent pas sur la CI** : le job est commenté. Le seul endroit
+  où ils sont exécutés, c'est ta machine. Lancer `bin/rails test:all` avant de pousser n'est
+  donc plus une précaution, c'est la seule barrière — une régression que seul un test système
+  attrape passera la CI et partira en production.
 - Un déploiement manuel reste possible depuis l'UI Hatchbox : il court-circuite ce
   garde-fou.
 
