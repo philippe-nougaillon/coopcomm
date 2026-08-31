@@ -29,11 +29,11 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
     get documentation_index_url
 
     assert_template :index
-    assert_includes assigns(:wiki_pages_for_index), wiki_pages(:blog_public)
+    assert_includes assigns(:wiki_pages), wiki_pages(:blog_public)
   end
 
   test 'la page principale affiche les documentations épinglées en premier' do
-    assert_equal wiki_pages(:blog_épinglé), assigns_index_apres_visite.first
+    assert_equal wiki_pages(:blog_épinglé), assigns_index_apres_visite.reorder(:created_at).first
   end
 
   test 'la page principale n’affiche que les neuf premières documentations' do
@@ -74,7 +74,7 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
 
     get documentation_index_url
 
-    assert_not_includes assigns(:wiki_pages_for_index), @documentation_privée
+    assert_not_includes assigns(:wiki_pages), @documentation_privée
   end
 
   test 'un utilisateur non connecté ne voit aucune documentation non publiée dans la liste (critique)' do
@@ -82,7 +82,7 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
 
     get documentation_index_url
 
-    assert_not_includes assigns(:wiki_pages_for_index), @documentation_non_publiée
+    assert_not_includes assigns(:wiki_pages), @documentation_non_publiée
   end
 
   test 'un utilisateur non connecté ne voit aucune documentation privée dans les résultats de recherche (critique)' do
@@ -98,7 +98,7 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
 
     get documentation_index_url
 
-    assert_not_includes assigns(:wiki_pages_for_index), @documentation_privée
+    assert_not_includes assigns(:wiki_pages), @documentation_privée
   end
 
   test 'un agent ne voit aucune documentation non publiée dans la liste (critique)' do
@@ -106,7 +106,7 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
 
     get documentation_index_url
 
-    assert_not_includes assigns(:wiki_pages_for_index), @documentation_non_publiée
+    assert_not_includes assigns(:wiki_pages), @documentation_non_publiée
   end
 
   test 'un agent ne voit aucune documentation privée dans les résultats de recherche (critique)' do
@@ -124,8 +124,8 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
 
     get documentation_index_url
 
-    assert_includes assigns(:wiki_pages_for_index), @documentation_privée
-    assert_includes assigns(:wiki_pages_for_index), @documentation_non_publiée
+    assert_includes assigns(:wiki_pages), @documentation_privée
+    assert_includes assigns(:wiki_pages), @documentation_non_publiée
   end
 
   test 'un adhérent ne voit aucune documentation non publiée dans la liste' do
@@ -133,7 +133,7 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
 
     get documentation_index_url
 
-    assert_not_includes assigns(:wiki_pages_for_index), @documentation_non_publiée
+    assert_not_includes assigns(:wiki_pages), @documentation_non_publiée
   end
 
   test 'une documentation est affichée avec son titre' do
@@ -154,7 +154,7 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
       post documentation_index_url, params: { wiki_page: paramètres_valides }
     end
 
-    documentation_créée = WikiPage.order(:created_at).last
+    documentation_créée = WikiPage.reorder(:created_at).last
     assert_redirected_to documentation_url(documentation_créée)
     assert_equal 'Documentation créée avec succès.', flash[:notice]
     assert_equal @administrateur, documentation_créée.user
@@ -254,7 +254,7 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
 
   def assigns_index_apres_visite
     get documentation_index_url
-    assigns(:wiki_pages_for_index)
+    assigns(:wiki_pages)
   end
 
   def paramètres_valides

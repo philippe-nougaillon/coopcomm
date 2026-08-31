@@ -29,7 +29,7 @@
               <%= catégorie.humanize %>
             </div>
           <% end %>
-          <% WikiPage.where(catégorie: catégorie).each do |wiki| %>
+          <% WikiPage.by_role_for(current_user).by_categorie(catégorie).each do |wiki| %>
             <%= link_to documentation_path(wiki) do %>
               <div class="flex gap-2 items-center text-sm mt-2 hover:bg-slate-200 py-1 pl-16 <%= 'bg-slate-100 hover:bg-base-300' if @wiki_page == wiki %>">
                 <%= wiki.titre %>

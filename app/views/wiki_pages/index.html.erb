@@ -22,9 +22,9 @@
     
       
     <section class="mb-12">
-      <% if @wiki_pages_for_index.any? %>
+      <% if @wiki_pages.any? %>
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <%= render partial: "carte", collection: @wiki_pages_for_index, as: :wiki_page %>
+          <%= render partial: "carte", collection: @wiki_pages, as: :wiki_page %>
         </div>
       <% else %>
         <p class="text-sm text-slate-400">Aucune documentation n'a été créée pour le moment.</p>

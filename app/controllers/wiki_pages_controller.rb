@@ -7,13 +7,14 @@ class WikiPagesController < ApplicationController
 
   # GET /documentation
   def index
+    @wiki_pages = WikiPage.by_role_for(current_user).with_attached_document
+
+    # Renvoie sur la page pour les recherches
     if params[:search].present?
-      @wiki_pages = wiki_pages_visibles(WikiPage.search_titre_and_contenu("%#{params[:search]}%")).with_attached_document
+      @wiki_pages = @wiki_pages.search_titre_and_contenu("%#{params[:search]}%")
       render :index_for_search
-    else
-      @wiki_pages_for_index = wiki_pages_visibles(WikiPage.all.order(épinglée: :desc))
-                                  .with_attached_document
-                                  .limit(9)
+    else # Ou renvoie sur la page principale
+      @wiki_pages = @wiki_pages.order(épinglée: :desc).limit(9)
     end
   end
 
@@ -59,35 +60,31 @@ class WikiPagesController < ApplicationController
   # GET /documentation/blog
   def blog
     @catégorie = "blog"
-    @wiki_pages = WikiPage.where(catégorie: @catégorie)
-    @wiki_pages = wiki_pages_visibles(@wiki_pages).with_attached_document
+    @wiki_pages = WikiPage.by_role_for(current_user)
+                          .by_categorie(@catégorie)
+                          .with_attached_document
     render :index_by_categorie
   end
 
   # GET /documentation/guide
   def guide
     @catégorie = "guide"
-    @wiki_pages = WikiPage.where(catégorie: @catégorie)
-    @wiki_pages = wiki_pages_visibles(@wiki_pages).with_attached_document
+    @wiki_pages = WikiPage.by_role_for(current_user)
+                          .by_categorie(@catégorie)
+                          .with_attached_document
     render :index_by_categorie
   end
 
   # GET /documentation/faq
   def faq
     @catégorie = "faq"
-    @wiki_pages = WikiPage.where(catégorie: @catégorie)
-    @wiki_pages = wiki_pages_visibles(@wiki_pages).with_attached_document
+    @wiki_pages = WikiPage.by_role_for(current_user)
+                          .by_categorie(@catégorie)
+                          .with_attached_document
     render :index_by_categorie
   end
 
   private
-
-  # Renvoie les wiki pages visibles en fonction de l'utilisateur
-  def wiki_pages_visibles(wiki_pages)
-    wiki_pages = wiki_pages.where(publiée: true) unless current_user&.manager_or_admin?
-    wiki_pages = wiki_pages.where(private: false) if current_user.nil? || current_user.agent?
-    wiki_pages.order(:poids)
-  end
 
   # Use callbacks to share common setup or constraints between actions.
   def set_wiki_page
