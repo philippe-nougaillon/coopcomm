@@ -33,13 +33,24 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'la page principale affiche les documentations épinglées en premier' do
-    assert_equal wiki_pages(:blog_épinglé), assigns_index_apres_visite.reorder(:created_at).first
+    get documentation_index_url
+    assert_equal wiki_pages(:blog_épinglé), assigns(:wiki_pages).first
+  end
+
+  test 'la page principale classe les documentations non épinglées par poids croissant' do
+    get documentation_index_url
+
+    poids = assigns(:wiki_pages).where(épinglée: false).pluck(:poids)
+
+    assert_equal poids.sort, poids
   end
 
   test 'la page principale n’affiche que les neuf premières documentations' do
     10.times { |i| créer_documentation(titre: "Documentation de remplissage #{i}") }
 
-    assert_equal 9, assigns_index_apres_visite.size
+    get documentation_index_url
+    
+    assert_equal 9, assigns(:wiki_pages).size
   end
 
   test 'une recherche mène à la page de résultats et non à la page principale' do
@@ -64,77 +75,51 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==================== TESTS CRITIQUES ====================
-  # La documentation est le seul écran ouvert au public, et les agents n'ont
-  # aucune raison d'y lire les notes internes des gestionnaires : une page
-  # privée ou non publiée qui remonterait dans une liste sortirait de
+  # Chaque page de la documentation doit passer par `by_role_for` : la matrice
+  # rôle par rôle est éprouvée dans `wiki_page_test`, ce qui reste ici, c'est
+  # qu'aucune page n'oublie de l'appeler. La documentation étant le seul écran
+  # ouvert sans authentification, une page qui l'oublierait sortirait de
   # l'organisation.
 
-  test 'un utilisateur non connecté ne voit aucune documentation privée dans la liste (critique)' do
-    sign_out @administrateur
+  test 'la page principale ne liste que les documentations visibles par le rôle (critique)' do
+    sign_in users(:martin_technique_paris)
 
     get documentation_index_url
 
+    assert_includes assigns(:wiki_pages), wiki_pages(:blog_public)
     assert_not_includes assigns(:wiki_pages), @documentation_privée
-  end
-
-  test 'un utilisateur non connecté ne voit aucune documentation non publiée dans la liste (critique)' do
-    sign_out @administrateur
-
-    get documentation_index_url
-
     assert_not_includes assigns(:wiki_pages), @documentation_non_publiée
   end
 
-  test 'un utilisateur non connecté ne voit aucune documentation privée dans les résultats de recherche (critique)' do
-    sign_out @administrateur
-
-    get documentation_index_url(search: 'Note interne')
-
-    assert_not_includes assigns(:wiki_pages), @documentation_privée
-  end
-
-  test 'un agent ne voit aucune documentation privée dans la liste (critique)' do
+  test 'la page de résultats ne liste que les documentations visibles par le rôle (critique)' do
     sign_in users(:martin_technique_paris)
 
-    get documentation_index_url
+    get documentation_index_url(search: 'documentation')
 
     assert_not_includes assigns(:wiki_pages), @documentation_privée
-  end
-
-  test 'un agent ne voit aucune documentation non publiée dans la liste (critique)' do
-    sign_in users(:martin_technique_paris)
-
-    get documentation_index_url
-
     assert_not_includes assigns(:wiki_pages), @documentation_non_publiée
   end
 
-  test 'un agent ne voit aucune documentation privée dans les résultats de recherche (critique)' do
+  test 'la page d’une catégorie ne liste que les documentations visibles par le rôle (critique)' do
     sign_in users(:martin_technique_paris)
 
-    get documentation_index_url(search: 'Note interne')
+    get blog_documentation_index_url
 
+    assert_includes assigns(:wiki_pages), wiki_pages(:blog_public)
     assert_not_includes assigns(:wiki_pages), @documentation_privée
+    assert_not_includes assigns(:wiki_pages), @documentation_non_publiée
+  end
+
+  test 'la barre latérale ne nomme aucune documentation invisible par le rôle (critique)' do
+    sign_out @administrateur
+
+    get documentation_index_url
+
+    refute_titre_lisible @documentation_privée
+    refute_titre_lisible @documentation_non_publiée
   end
 
   # ==================== /TESTS CRITIQUES ====================
-
-  test 'un manager voit les documentations privées et non publiées dans la liste' do
-    sign_in users(:hidalgo)
-
-    get documentation_index_url
-
-    assert_includes assigns(:wiki_pages), @documentation_privée
-    assert_includes assigns(:wiki_pages), @documentation_non_publiée
-  end
-
-  test 'un adhérent ne voit aucune documentation non publiée dans la liste' do
-    sign_in users(:weil)
-
-    get documentation_index_url
-
-    assert_not_includes assigns(:wiki_pages), @documentation_non_publiée
-  end
 
   test 'une documentation est affichée avec son titre' do
     get documentation_url(@documentation)
@@ -208,15 +193,6 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:wiki_pages), wiki_pages(:faq_publique)
   end
 
-  test 'un agent ne voit aucune documentation privée sur la page blog (critique)' do
-    sign_in users(:martin_technique_paris)
-
-    get blog_documentation_index_url
-
-    assert_not_includes assigns(:wiki_pages), @documentation_privée
-    assert_not_includes assigns(:wiki_pages), @documentation_non_publiée
-  end
-
   test 'la page guide ne liste que les guides' do
     get guide_documentation_index_url
 
@@ -250,11 +226,6 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
     assert_not response.body.include?(documentation.titre),
                "le titre « #{documentation.titre} » ne doit apparaître nulle part sur la page"
     assert_dom 'a[href=?]', documentation_path(documentation), count: 0
-  end
-
-  def assigns_index_apres_visite
-    get documentation_index_url
-    assigns(:wiki_pages)
   end
 
   def paramètres_valides

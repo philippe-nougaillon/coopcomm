@@ -42,4 +42,51 @@ class WikiPageTest < ActiveSupport::TestCase
     assert_not_includes WikiPage.all, page
     assert_includes WikiPage.with_discarded, page
   end
+
+  test 'un manager voit les documentations privées et les documentations non publiées' do
+    résultats = WikiPage.by_role_for(users(:hidalgo))
+
+    assert_includes résultats, wiki_pages(:blog_public)
+    assert_includes résultats, wiki_pages(:blog_privé)
+    assert_includes résultats, wiki_pages(:blog_non_publié)
+  end
+
+  test 'un administrateur voit les documentations privées et les documentations non publiées' do
+    résultats = WikiPage.by_role_for(users(:administrateur_paris))
+
+    assert_includes résultats, wiki_pages(:blog_public)
+    assert_includes résultats, wiki_pages(:blog_privé)
+    assert_includes résultats, wiki_pages(:blog_non_publié)
+  end
+
+  test 'un adhérent voit les documentations privées mais aucune documentation non publiée' do
+    résultats = WikiPage.by_role_for(users(:weil))
+
+    assert_includes résultats, wiki_pages(:blog_public)
+    assert_includes résultats, wiki_pages(:blog_privé)
+    assert_not_includes résultats, wiki_pages(:blog_non_publié)
+  end
+
+  # ==================== TESTS CRITIQUES ====================
+  # `by_role_for` est le seul filtre entre les notes internes des gestionnaires
+  # et les deux populations qui n'ont rien à y lire : les agents, et le public,
+  # la documentation étant le seul écran ouvert sans authentification.
+
+  test 'un agent ne voit ni les documentations privées ni les documentations non publiées (critique)' do
+    résultats = WikiPage.by_role_for(users(:martin_technique_paris))
+
+    assert_includes résultats, wiki_pages(:blog_public)
+    assert_not_includes résultats, wiki_pages(:blog_privé)
+    assert_not_includes résultats, wiki_pages(:blog_non_publié)
+  end
+
+  test 'un utilisateur non connecté ne voit ni les documentations privées ni les documentations non publiées (critique)' do
+    résultats = WikiPage.by_role_for(nil)
+
+    assert_includes résultats, wiki_pages(:blog_public)
+    assert_not_includes résultats, wiki_pages(:blog_privé)
+    assert_not_includes résultats, wiki_pages(:blog_non_publié)
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
 end

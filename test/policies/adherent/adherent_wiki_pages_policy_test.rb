@@ -27,8 +27,8 @@ class AdherentWikiPagesPolicyTest < ActionDispatch::IntegrationTest
     refute @policy.destroy?
   end
 
-  test 'accès interdit pour un adhérent sur une documentation privée' do
-    refute @policy_privée.show?
+  test 'accès autorisé pour un adhérent sur une documentation privée' do
+    assert @policy_privée.show?
   end
 
   test 'accès interdit pour un adhérent sur une documentation non publiée' do

@@ -12,10 +12,8 @@ class WikiPagePolicy < ApplicationPolicy
     true
   end
 
-  # Une page non publiée ou privée n'est visible que des managers/admins
-  # (l'index filtre déjà sur publiée: true, show doit suivre la même règle).
   def show?
-    (record.publiée? && !record.private?) || manager_or_admin?
+    manager_or_admin? || (adhérent? && record.publiée?) || (record.publiée? && !record.private?)
   end
 
   def new?

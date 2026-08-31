@@ -14,7 +14,7 @@ class WikiPagesController < ApplicationController
       @wiki_pages = @wiki_pages.search_titre_and_contenu("%#{params[:search]}%")
       render :index_for_search
     else # Ou renvoie sur la page principale
-      @wiki_pages = @wiki_pages.order(épinglée: :desc).limit(9)
+      @wiki_pages = @wiki_pages.order(épinglée: :desc).order(:poids).limit(9)
     end
   end
 
@@ -62,6 +62,7 @@ class WikiPagesController < ApplicationController
     @catégorie = "blog"
     @wiki_pages = WikiPage.by_role_for(current_user)
                           .by_categorie(@catégorie)
+                          .order(:poids)
                           .with_attached_document
     render :index_by_categorie
   end
@@ -71,6 +72,7 @@ class WikiPagesController < ApplicationController
     @catégorie = "guide"
     @wiki_pages = WikiPage.by_role_for(current_user)
                           .by_categorie(@catégorie)
+                          .order(:poids)
                           .with_attached_document
     render :index_by_categorie
   end
@@ -80,6 +82,7 @@ class WikiPagesController < ApplicationController
     @catégorie = "faq"
     @wiki_pages = WikiPage.by_role_for(current_user)
                           .by_categorie(@catégorie)
+                          .order(:poids)
                           .with_attached_document
     render :index_by_categorie
   end

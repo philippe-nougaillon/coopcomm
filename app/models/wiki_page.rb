@@ -35,7 +35,7 @@ class WikiPage < ApplicationRecord
     faq: 2
   }
 
-  default_scope -> { kept.order(:poids) } # Sans les discarded
+  default_scope -> { kept } # Sans les discarded
 
   scope :by_categorie, ->(categorie) { where(catégorie: categorie) }
 
