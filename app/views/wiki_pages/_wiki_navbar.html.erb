@@ -14,24 +14,24 @@
   <div class="drawer-side">
     <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
     
-    <nav class="min-h-screen h-96 bg-base-100 shadow w-64 fixed top-0 -ml-4 2xl:-ml-8 overflow-y-auto flex flex-col justify-between">
+    <nav class="min-h-screen h-96 shadow w-64 fixed top-0 -ml-4 2xl:-ml-8 overflow-y-auto flex flex-col justify-between">
       <div>
         <div class="h-18 <%= 'lg:h-16' if user_signed_in? %>"></div>
         
         <%= link_to documentation_index_path do %>
-          <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-slate-200 py-3 pl-8 <%= 'bg-slate-100 hover:bg-base-300' if (action_name == "index") %>">
-            Introduction
+          <div class="flex gap-2 items-center text-xl mt-4 hover:bg-slate-200 py-3 pl-8 <%= 'bg-slate-100 hover:bg-base-300' if (action_name == "index") %>">
+            Commencez ici
           </div>
         <% end %>
         <% WikiPage.catégories.keys.each do |catégorie| %>
           <%= link_to public_send("#{catégorie}_documentation_index_path") do %>
-            <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-slate-200 py-3 pl-8 <%= 'bg-slate-100 hover:bg-base-300' if (action_name == catégorie) %>">
+            <div class="flex gap-2 items-center text-xl mt-4 hover:bg-slate-200 py-3 pl-8 <%= 'bg-slate-100 hover:bg-base-300' if (action_name == catégorie) %>">
               <%= catégorie.humanize %>
             </div>
           <% end %>
           <% WikiPage.by_role_for(current_user).by_categorie(catégorie).each do |wiki| %>
             <%= link_to documentation_path(wiki) do %>
-              <div class="flex gap-2 items-center text-sm mt-2 hover:bg-slate-200 py-1 pl-16 <%= 'bg-slate-100 hover:bg-base-300' if @wiki_page == wiki %>">
+              <div class="flex gap-2 items-center text-sm mt-2 hover:bg-slate-200 pl-12 <%= 'bg-slate-100 hover:bg-base-300' if @wiki_page == wiki %>">
                 <%= wiki.titre %>
               </div>
             <% end %>

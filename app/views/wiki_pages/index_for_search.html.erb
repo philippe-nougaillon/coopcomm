@@ -9,7 +9,9 @@
     </div>
 
     <% if @wiki_pages.any? %>
-      <%= render @wiki_pages %>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <%= render partial: "carte", collection: @wiki_pages, as: :wiki_page %>
+      </div>
     <% end %>
   </div>
 </div>
