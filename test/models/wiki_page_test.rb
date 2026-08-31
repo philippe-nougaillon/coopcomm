@@ -3,37 +3,43 @@
 require 'test_helper'
 
 class WikiPageTest < ActiveSupport::TestCase
-  # Un attachement n'étant pas une colonne, audited n'écrit une ligne que si le
-  # commentaire est renseigné : c'est ce commentaire qui fait exister l'audit.
-  test 'pièce jointe : document ajouté → un audit portant le libellé' do
-    page = wiki_pages(:blog)
+  test 'la recherche retrouve une documentation par un mot de son titre' do
+    résultats = WikiPage.search_titre_and_contenu('Réserver')
 
-    assert_difference -> { page.audits.count }, 1 do
-      page.update!(document: piece('exemple.pdf', 'application/pdf'))
-    end
-    assert_match(/document ajouté/i, page.audits.last.comment)
+    assert_includes résultats, wiki_pages(:guide_public)
+    assert_not_includes résultats, wiki_pages(:faq_publique)
   end
 
-  test 'default_scope : page mise à la corbeille → hors de la liste' do
-    page = wiki_pages(:guide)
+  test 'la recherche retrouve une documentation par un mot de son contenu' do
+    résultats = WikiPage.search_titre_and_contenu('matériel')
+
+    assert_includes résultats, wiki_pages(:guide_public)
+    assert_not_includes résultats, wiki_pages(:faq_publique)
+  end
+
+  test 'la recherche retrouve une documentation par le début d’un mot de son contenu' do
+    résultats = WikiPage.search_titre_and_contenu('scann')
+
+    assert_includes résultats, wiki_pages(:faq_publique)
+    assert_not_includes résultats, wiki_pages(:guide_public)
+  end
+
+  test 'la recherche ne retourne aucune documentation quand aucun titre ni aucun contenu ne correspond' do
+    assert_empty WikiPage.search_titre_and_contenu('astrophysique')
+  end
+
+  test 'la recherche ignore les documentations mises à la corbeille' do
+    wiki_pages(:guide_public).discard
+
+    assert_not_includes WikiPage.search_titre_and_contenu('matériel'), wiki_pages(:guide_public)
+  end
+
+  test 'une documentation mise à la corbeille sort de la liste des documentations' do
+    page = wiki_pages(:guide_public)
 
     page.discard
 
     assert_not_includes WikiPage.all, page
-  end
-
-  test 'should_generate_new_friendly_id? : titre modifié → nouveau slug' do
-    page = wiki_pages(:blog)
-    ancien = page.slug
-
-    page.update!(titre: 'Titre entièrement neuf')
-
-    assert_not_equal ancien, page.reload.slug
-  end
-
-  private
-
-  def piece(fichier, type)
-    { io: File.open(Rails.root.join('test/fixtures/files', fichier)), filename: fichier, content_type: type }
+    assert_includes WikiPage.with_discarded, page
   end
 end

@@ -119,8 +119,8 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     wiki_pages = assigns(:wiki_pages)
     assert wiki_pages.present?, 'welcome doit assigner @wiki_pages'
     assert wiki_pages.all?(&:publiée), 'aucune page non publiée ne doit fuiter'
-    assert_includes wiki_pages, wiki_pages(:blog)
-    assert_not_includes wiki_pages, wiki_pages(:guide) # publiée: false
+    assert_includes wiki_pages, wiki_pages(:blog_public)
+    assert_not_includes wiki_pages, wiki_pages(:blog_non_publié)
   end
 
   test 'dashboard : un administrateur → la page répond' do

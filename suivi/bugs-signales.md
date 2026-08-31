@@ -10,6 +10,31 @@
 
 ## 🔴 Bugs ouverts
 
+### B99 — La barre latérale de la documentation expose le titre de TOUTES les pages, y compris privées et non publiées, aux non connectés et aux agents
+- **Où** : [_wiki_navbar.html.erb](app/views/wiki_pages/_wiki_navbar.html.erb) — `WikiPage.where(catégorie: catégorie).each`, **sans aucun filtre** `publiée` ni `private`. Le partial est rendu par les **quatre** pages de la documentation (`index`, `index_by_categorie`, `index_for_search`, `show`), donc la fuite est présente partout.
+- **Cause** : `wiki_pages_visibles` (contrôleur) filtre correctement ce que la *liste centrale* affiche, mais la barre latérale interroge le modèle **directement**, en contournant ce filtre.
+- **Mesuré** (sonde jetable, 2026-08-31, supprimée depuis) : sur `GET /documentation`, un **utilisateur non connecté** comme un **agent** trouvent dans le HTML le titre de la page privée `Note interne aux gestionnaires`, celui de la page non publiée `Brouillon du prochain billet`, **et le lien cliquable vers chacune**.
+- **Parcours de reproduction** :
+  1. En tant que **manager**, je crée une documentation cochée « Privé ? » intitulée par exemple « Note interne aux gestionnaires », catégorie Blog.
+  2. Je me déconnecte (ou je me connecte en tant qu'**agent**).
+  3. J'ouvre `/documentation`.
+  4. → Le titre apparaît dans la **barre latérale gauche**, sous « Blog », avec un lien vers la page.
+- **Impact** : le *contenu* reste protégé (`WikiPagePolicy#show?` refuse, redirection) — mais le **titre et l'existence** de chaque note interne fuient vers le public. Un titre suffit souvent (« Procédure de licenciement de … », « Tarifs négociés avec … »). C'est le seul écran de l'application ouvert sans authentification.
+- **Correctif proposé** : faire passer la barre latérale par le même filtre que la liste — remonter `wiki_pages_visibles` en `helper_method` (ou en scope de modèle `WikiPage.visibles_par(user)`, forme habituelle du projet) et l'appeler dans le partial, plutôt que `WikiPage.where(catégorie:)`.
+- **Tests** : `test/controllers/wiki_pages_controller_test.rb`, `un utilisateur non connecté ne lit le titre d’aucune documentation privée sur la page (critique)` et son jumeau agent — **rouges volontairement** jusqu'à la correction.
+
+### B100 — Un adhérent voit dans la liste des documentations dont la page lui est refusée
+- **Où** : `WikiPagesController#wiki_pages_visibles` filtre `private: false` seulement `if current_user.nil? || current_user.agent?` — l'adhérent n'y est pas ; mais `WikiPagePolicy#show?` exige `!record.private?` pour tout non-manager, adhérent compris.
+- **Mesuré** (même sonde) : un adhérent connecté a bien la page privée dans `@wiki_pages_for_index`, et son `GET /documentation/:id` répond **302** (refus Pundit).
+- **Parcours de reproduction** :
+  1. En tant que **manager**, je crée une documentation cochée « Privé ? ».
+  2. Je me connecte en tant qu'**adhérent** et j'ouvre `/documentation`.
+  3. Je vois la carte de cette documentation et je clique dessus.
+  4. → « Vous n'êtes pas autorisé à effectuer cette action », retour à l'accueil.
+- **Impact** : incohérence liste ↔ page. Faible en gravité (l'adhérent lit un titre, pas le contenu), mais c'est la **même famille que B99** et le libellé du formulaire annonce « Non visible par les agents et les personnes non connectées ? » — l'adhérent n'est donc ni exclu ni annoncé comme inclus.
+- **Décision à prendre** : soit l'adhérent est traité comme l'agent (ajouter `current_user.adhérent?` au filtre du contrôleur), soit la policy s'aligne sur le contrôleur et lui ouvre les pages privées. Les deux se tiennent ; il faut trancher **une** règle et l'écrire dans le libellé de la case « Privé ? ».
+- **Tests** : aucun test posé, en attente de la décision.
+
 ### B98 — L'œil qui révèle le mot de passe est inutilisable dès qu'on a tapé dedans
 - **Où** : le bouton `data-action="click->password-visibility#toggle"` des formulaires Devise (connexion, invitation, mot de passe oublié, changement de mot de passe).
 - **Cause** : daisyUI donne `z-index: 1` au champ **quand il a le focus** ; le bouton, en `position: absolute`, reste à `z-index: auto`. Le champ passe donc **au-dessus** de l'œil et intercepte le clic.
