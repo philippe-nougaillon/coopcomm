@@ -37,6 +37,22 @@ class WikiPage < ApplicationRecord
 
   default_scope -> { kept } # Sans les discarded
 
+  scope :by_categorie, ->(categorie) { where(catégorie: categorie) }
+
+  # Retourne les wiki pages selon le role de l'utilisateur
+  def self.by_role_for(user)
+    case user&.rôle
+    when 'manager', 'administrateur'
+      WikiPage.all
+    when 'adhérent'
+      WikiPage.where(publiée: true)
+    when 'agent'
+      WikiPage.where(publiée: true, private: false)
+    else
+      WikiPage.where(publiée: true, private: false)
+    end
+  end
+
   def should_generate_new_friendly_id?
     titre_changed? || super
   end

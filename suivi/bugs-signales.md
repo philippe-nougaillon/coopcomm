@@ -362,6 +362,13 @@
 
 ## ✅ Bugs corrigés (historique)
 
+### B100 — ✅ CORRIGÉ (2026-08-31, décision Alex) — Un adhérent voyait dans la liste des documentations dont la page lui était refusée
+- **Où** : le filtre des listes n'excluait les pages privées que pour `nil` et `agent?`, mais `WikiPagePolicy#show?` exigeait `!record.private?` de tout non-manager, adhérent compris → l'adhérent voyait la carte et recevait un refus Pundit au clic.
+- **Décision Alex** : c'est la **policy** qui avait tort — un adhérent doit voir les documentations privées (non publiées exclues).
+- **Correctif** : `show?` devient le miroir exact de `WikiPage.by_role_for` — manager/admin → tout ; adhérent → `record.publiée?` ; agent et non connecté → `record.publiée? && !record.private?`.
+- **⚠ Reliquat** : la règle est désormais écrite **à deux endroits** (`by_role_for` et `show?`), sans garde-fou reliant les deux — c'est précisément la divergence qui a produit ce bug. Une sentinelle « pour chaque rôle, toute page rendue par `by_role_for` passe `show?` » reste à poser.
+- **Tests** : `test/models/wiki_page_test.rb` (un test par rôle sur `by_role_for`) et `test/policies/adherent/adherent_wiki_pages_policy_test.rb` (`accès autorisé … sur une documentation privée`, retourné).
+
 ### B99 — ✅ SIGNALÉ PAR PE ET CORRIGÉ (2026-08-27) — L'attribut `required` d'un select slim-select était inerte : on enregistrait un champ obligatoire vide
 - **Symptôme rapporté** : sur `/prestations/new`, choisir la ligne vide du menu Unité et cliquer sur Enregistrer **crée la prestation sans unité**. Aucun message, aucun blocage.
 - **Où** : tous les selects simples portant `required` et pilotés par `slim_select_controller.js` — une dizaine dans le dépôt (prestations unité, users rôle, interventions adhérent/service, mouvements matériel/état, prestation/adhérent/service des cotations, commandes et factures).

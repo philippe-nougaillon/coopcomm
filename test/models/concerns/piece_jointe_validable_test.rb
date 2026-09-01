@@ -71,7 +71,7 @@ class PieceJointeValidableTest < ActiveSupport::TestCase
   end
 
   test 'valide_document : tableur comme document de page wiki → accepté' do
-    page = wiki_pages(:guide)
+    page = wiki_pages(:guide_public)
     page.document = pièce('import_users.xls', 'application/vnd.ms-excel', nom: 'guide.xls')
 
     page.valid?

@@ -58,8 +58,14 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :wiki_pages
-  match 'wiki', to: 'wiki_pages#index', via: :get
+  resources :documentation, controller: 'wiki_pages' do
+    collection do
+      get :blog
+      get :guide
+      get :faq
+    end
+  end
+  match 'doc', to: redirect('/documentation'), via: :get
 
   # resources :organisations, only: %i[ show edit update ]
 
