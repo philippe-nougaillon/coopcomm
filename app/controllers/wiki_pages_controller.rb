@@ -7,14 +7,17 @@ class WikiPagesController < ApplicationController
 
   # GET /documentation
   def index
-    @wiki_pages = WikiPage.by_role_for(current_user).with_attached_document
+    @wiki_pages = WikiPage.by_role_for(current_user)
+                          .order(épinglée: :desc)
+                          .order(:poids)
+                          .with_attached_document
 
     # Renvoie sur la page pour les recherches
     if params[:search].present?
       @wiki_pages = @wiki_pages.search_titre_and_contenu("%#{params[:search]}%")
       render :index_for_search
     else # Ou renvoie sur la page principale
-      @wiki_pages = @wiki_pages.order(épinglée: :desc).order(:poids).limit(9)
+      @wiki_pages = @wiki_pages
     end
   end
 

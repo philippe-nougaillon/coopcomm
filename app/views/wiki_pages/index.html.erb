@@ -19,16 +19,19 @@
       La <strong>FAQ</strong> répond aux questions les plus fréquentes.
     </p>
 
-    
-      
-    <section class="mb-12">
-      <% if @wiki_pages.any? %>
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <%= render partial: "carte", collection: @wiki_pages, as: :wiki_page %>
-        </div>
-      <% else %>
-        <p class="text-sm text-slate-400">Aucune documentation n'a été créée pour le moment.</p>
+      <% WikiPage.catégories.keys.each do |categorie| %>
+        <section>
+          <div class="mt-6">
+            <h3 class="text-2xl font-semibold mb-2"><%= categorie.humanize %></h3>
+            <% if @wiki_pages.by_categorie(categorie).any? %>
+              <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <%= render partial: "carte", collection: @wiki_pages.by_categorie(categorie).first(3), as: :wiki_page %>
+              </div>
+            <% else %>
+              <p>Aucune page de cette catégorie n'a été créée pour le moment.</p>
+            <% end %>
+          </div>
+        </section>
       <% end %>
-    </section>
   </div>
 </div>
