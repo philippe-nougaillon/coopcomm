@@ -416,7 +416,8 @@ select.slim-select[multiple],
 
   /* Aplica los '...' solo cuando hay múltiples ítems seleccionados */
   .ss-main.ss-multiple .ss-values .ss-value .ss-value-text {
-    max-width: 5rem;
+    max-width: 5
+    rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

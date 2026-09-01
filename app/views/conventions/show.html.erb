@@ -1,30 +1,35 @@
 <div class="mx-auto lg:w-2/3 w-full mt-8">
   <% page_title!("Convention — #{@convention.user&.nom_prénom}") %>
   
-  <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
-    <h1 class="text-2xl sm:text-3xl text-primary font-bold">
+  <div class="flex flex-row justify-between items-start gap-3 mb-8">
+    <h1 class="text-2xl sm:text-3xl text-primary font-bold sm:whitespace-nowrap">
       <% if current_user.manager_or_admin? %>
         Convention — <%= @convention.user&.nom_prénom %>
       <% else %>
         Convention — <%= @convention.ref %>
       <% end %>
     </h1>
-  </div>
+  
+    <div class="flex justify-end w-full sm:w-auto gap-2">
+      <% if policy(@convention).update? %>
+            <%= link_to edit_convention_path(@convention), class: "btn" do %>
+              <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
+              <span class="hidden lg:inline">Modifier</span>
+            <% end %>
+          <% end %>
 
-  <div class="flex justify-end w-full sm:w-auto gap-2">
-    <% if current_user.adhérent? %>
-      <% if @convention.document.attached? %>
-        <%= link_to rails_blob_path(@convention.document, disposition: "attachment"),
-                    class: "btn btn-outline btn-primary flex-1 sm:flex-none", 
-                    target: "_blank", 
-                    data: { turbo: false } do %>
-          <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200 hidden md:block" %>
-          <span class="block md:hidden">PDF</span>
-          <span class="hidden md:block">Télécharger la convention</span>
+      <% if current_user.adhérent? %>
+          <%= link_to pdf_convention_path(@convention, filename: @convention.pdf_filename), 
+                  class: "btn btn-outline btn-info flex-1 sm:flex-none",
+                  target: "_blank",
+                  data: { turbo: false } do %>
+            <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200 hidden md:block" %>
+            <span class="block md:hidden"> PDF </span>
+          <span class="hidden md:block">Générer PDF</span>
         <% end %>
       <% end %>
-    <% end %>
-  </div>
+    </div>
+  </div> 
 
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary font-semibold">Informations</h2>
@@ -197,17 +202,12 @@
   </div>
 
   <div class="flex gap-2.5 pt-4 items-center justify-end mt-6 border-t border-slate-200">
-    <% if policy(@convention).update? %>
-      <%= link_to edit_convention_path(@convention), class: "btn" do %>
-        <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
-        <span class="hidden lg:inline">Modifier</span>
-      <% end %>
-    <% end %>
+
 
     <% if policy(@convention).destroy? %>
       <button class="btn btn-soft btn-error hover:!text-white" onclick="delete_convention_modal_<%= @convention.id %>.showModal()" title="Supprimer">
         <%= embedded_svg "icons/delete.svg", class: "w-4 h-4 fill-current transition-colors duration-200" %>
-        <span class="hidden lg:inline">Supprimer</span>
+        <span class="hidden lg:inline">Supprimer la convention</span>
       </button>
 
       <dialog id="delete_convention_modal_<%= @convention.id %>" class="modal">
