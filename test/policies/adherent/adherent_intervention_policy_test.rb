@@ -36,6 +36,7 @@ class AdherentInterventionPolicyTest < ActionDispatch::IntegrationTest
 
   test 'accès interdit pour un adhérent sur une intervention dont il est le demandeur' do
     refute @policy.destroy?
+    refute @policy.fiche?
     refute @policy.terminer?
     refute @policy.archiver?
     refute @policy.pointer?

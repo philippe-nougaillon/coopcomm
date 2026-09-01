@@ -73,6 +73,8 @@ Rails.application.routes.draw do
       post :archiver
       delete :purge
       delete :purger_photos_demande
+      # `fiche` et non `pdf` : le format pdf de `show` rend déjà l'affiche QRCode.
+      get 'fiche(/*filename)', action: :fiche, as: :fiche, format: false
       get :pointer
       get :pointage_statut
       patch :update_location

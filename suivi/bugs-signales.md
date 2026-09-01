@@ -277,6 +277,20 @@
 - **Correctif proposé** : retirer `:tag_list` de `intervention_params`. Aucun formulaire ne le soumet, donc aucune régression attendue.
 - **Épinglé par** : `interventions_controller_test`, « un adhérent écrase les mots clés par un paramètre tag_list forgé » — à inverser à la correction.
 
+### B100 — Un seul caractère hors Windows-1252 fait tomber le PDF d'un devis, d'une commande ou d'une facture
+- **Où** : [base_pdf_for_crm.rb](app/services/transform_to_pdf/base_pdf_for_crm.rb) — toutes les méthodes qui écrivent du texte issu de la base : `add_metadata` (intitulé, adhérent, service), `add_lignes` (intitulé de ligne, libellé de prestation), `add_memo`, `add_signature`.
+- **Cause** : Prawn n'embarque aucune police ; il utilise les polices **AFM intégrées** au format PDF (Helvetica), qui sont en **single-byte Windows-1252**. Devant un caractère hors de ce jeu, Prawn ne dégrade pas l'affichage — il **lève `Prawn::Errors::IncompatibleStringEncoding`**, et toute la génération tombe avec lui. La documentation de la gem ne propose qu'une issue : embarquer une police TTF.
+- **Mesuré** (sonde en transaction annulée sur la base de dev, 2026-09-01) : mémo d'une cotation réelle passé à `Prévoir 2 m³ de terreau ☀` → `TransformToPdf::Cotation.call(c).render` lève `Prawn::Errors::IncompatibleStringEncoding`. Donnée restaurée par `ActiveRecord::Rollback` (vérifié).
+- **Parcours de reproduction** :
+  1. En tant que **manager**, je crée un devis et je saisis dans le **mémo** un caractère absent du jeu latin occidental — un emoji tapé au téléphone (`☀`, `👍`), une flèche `→`, ou un indice comme `m³`... `³` passe, mais `₂` non.
+  2. J'enregistre, puis j'ouvre la fiche du devis.
+  3. → L'**aperçu PDF de la page ne s'affiche pas**, et le bouton « Générer PDF » rend une **erreur 500**. Le devis devient impossible à envoyer à l'adhérent tant que le caractère n'est pas retiré, et rien n'indique lequel est en cause.
+  4. Idem sur une commande et sur une facture (même classe mère), et sur le **mail** qui joint le PDF (`NotificationMailer` l.110, 152, 169) : l'envoi échoue.
+- **Impact** : ce sont les documents contractuels envoyés aux communes. Le caractère fautif est invisible à l'œil dans le formulaire, et le message d'erreur ne remonte pas à l'utilisateur. Probabilité réelle : la saisie se fait aussi sur téléphone, où l'emoji est à un appui du clavier.
+- **Deux correctifs possibles** :
+  - **assainir le texte** avant de l'écrire, comme le fait `TransformToPdf::Intervention#texte_sûr` (substitutions connues, puis `encode('Windows-1252', undef: :replace, replace: '?')`) — quelques lignes, aucun ajout au dépôt, mais les caractères exotiques deviennent `?` ;
+  - **embarquer une police TTF** (DejaVu Sans ou Open Sans, licence OFL donc compatible avec l'open-source envisagé) — UTF-8 complet, supprime le besoin d'assainir **dans les quatre services PDF à la fois**, au prix de 4 fichiers de police (~300–700 Ko) et de PDF un peu plus lourds. L'équipe y avait déjà pensé : le bloc est commenté dans [qrcode_modele_intervention.rb:27-32](app/services/transform_to_pdf/qrcode_modele_intervention.rb#L27-L32), avec un chemin `vendor/assets/fonts/Open_Sans/`.
+- **Non couvert par les tests** : aucun test n'exerce un caractère hors Windows-1252 sur les PDF CRM.
 
 ---
 
