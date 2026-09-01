@@ -38,9 +38,9 @@ class PiecesJointesFormulairesTest < ActionDispatch::IntegrationTest
     assert_dropzone Tool, :document
   end
 
-  test 'formulaire de page wiki' do
+  test 'formulaire de documentation' do
     sign_in users(:administrateur_paris)
-    get new_wiki_page_url
+    get new_documentation_url
 
     assert_dropzone WikiPage, :document
   end

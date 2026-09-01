@@ -4,4 +4,10 @@ fr:
       title: 'Accueil'
   wiki_pages:
     index:
-      title: 'Wiki'
+      title: 'Documentation'
+    blog:
+      title: 'Blog'
+    guide:
+      title: 'Guide'
+    faq:
+      title: 'FAQ'

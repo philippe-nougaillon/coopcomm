@@ -1,0 +1,21 @@
+<div class="flex w-full">
+  <%= render "wiki_navbar" %>
+  <div class="w-full ml-8 sm:ml-64">
+    <%= render "barre_recherche" %>
+
+    <div class="flex flex-wrap justify-between items-center mb-12 min-h-12 sm:min-h-16">
+      <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= @catégorie.humanize %></h1>
+      <%= render "bouton_ajouter", catégorie: @catégorie %>
+    </div>
+
+    <div id="wiki_pages" class="min-w-full">
+      <% if @wiki_pages.any? %>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <%= render partial: "carte", collection: @wiki_pages, as: :wiki_page %>
+        </div>
+      <% else %>
+        <p class="text-sm text-slate-400">Aucune page dans cette catégorie pour le moment.</p>
+      <% end %>
+    </div>
+  </div>
+</div>
