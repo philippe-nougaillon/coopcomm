@@ -87,9 +87,13 @@ Marqueur **et** bannière (règle transverse). Sont critiques, dans ce répertoi
 
 Pas de sous-classe de circonstance (`class ImportQuiEchoue < ImportUtilisateursXls`) sous la classe de test : elle est chargée par toute la suite, hors de sa portée. Ce qu'il faut à sa place, dans l'ordre de préférence : provoquer le cas par les **données** ; sinon un `stub` posé **dans le test qui en a besoin** ; en dernier recours seulement, si rien d'autre ne marche, une fabrique sous `private`.
 
-## Nommage des tests
+## Nommage
 
-`<élément testé> : <situation> → <effet>` — même formule que les modèles et les contrôleurs. Ex. : `call : aucun agent → classeur d'une seule ligne d'en-tête`, `get_icon_meteo : code inconnu → icône du jour`.
+**Nom d'un test** : une phrase qui énonce le comportement, cf. `SKILL.md`. Ex. : `aucun agent donne un classeur réduit à sa ligne d'en-tête`, `un code météo inconnu retombe sur l'icône du jour`.
+
+**Nom d'un helper** : il dit **ce qu'il rend**, pas ce qu'il fait en général — `dashboard_manager_xls` et `dashboard_manager_xls_vide` plutôt que `export` et `export_vide`, `lire_fichier_xls` plutôt que `lire`. Un fichier de test se lit sans remonter à la définition du helper.
+
+**Pas de `**options` ni d'argument générique dans un helper de test** : le helper reproduit un appel que l'application fait vraiment, avec ses valeurs. Le test qui exerce une variante appelle le service **explicitement**, en écrivant l'option sur place — sinon on ne voit plus, en lisant le test, ce qui est réellement passé au service.
 
 **Aucun commentaire** dans le fichier (règle transverse), et **rien après `private`** que des méthodes privées — un `test` écrit sous `private` reste collecté par Minitest, personne ne le voit passer, et le relecteur est trompé.
 

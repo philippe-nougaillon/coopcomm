@@ -4,6 +4,14 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
 
   connect() {
+    // L'option vide d'un champ obligatoire est le placeholder dont dépend `required` :
+    // la choisir au menu la duplique en SECONDE position, la sélection ne porte alors
+    // plus sur la première option et la validation cesse de voir un vide.
+    if (this.element.hasAttribute('required') && !this.element.multiple) {
+      const vide = this.element.querySelector('option[value=""]')
+      if (vide) vide.disabled = true
+    }
+
     // Paramètres communs
     const commonSettings = {
       placeholderText: this.element.dataset.placeholder || '',

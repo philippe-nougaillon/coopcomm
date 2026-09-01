@@ -160,7 +160,7 @@ class ServiceTest < ActiveSupport::TestCase
   end
 
   def creer_convention(service)
-    Convention.create!(user: @administrateur, service: service,
+    Convention.create!(user: @administrateur, service: service, heures_conventionnees: 100,
                        date_début: Date.new(2026, 1, 1), date_fin_prévue: Date.new(2026, 12, 31))
   end
 end

@@ -5,6 +5,7 @@ convention_paris:
   service: informatique
   date_début: 2026-01-01
   date_fin_prévue: 2026-12-31
+  heures_conventionnees: 100
   heures_consommees: 0
   slug: <%= SecureRandom.uuid %>
 
@@ -13,5 +14,6 @@ convention_marseille:
   service: service_marseille
   date_début: 2026-01-01
   date_fin_prévue: 2026-12-31
+  heures_conventionnees: 100
   heures_consommees: 0
   slug: <%= SecureRandom.uuid %>

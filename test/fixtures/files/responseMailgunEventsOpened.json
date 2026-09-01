@@ -1,0 +1,12 @@
+{
+  "items": [
+    {
+      "event": "opened",
+      "message": {
+        "headers": {
+          "message-id": "ouvert@test.example.com"
+        }
+      }
+    }
+  ]
+}

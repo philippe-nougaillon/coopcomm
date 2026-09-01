@@ -1,38 +1,84 @@
 <div class="flex w-full">
   <%= render "wiki_navbar" %>
-  <div class="ml-8 sm:ml-64">
-    <%= render @wiki_page %>
+  <div class="sm:ml-64">
+    <% if @wiki_page.document.attached? && @wiki_page.document.representable? %>
+      <div class="mb-12">
+        <figure>
+          <% if @wiki_page.document.previewable? %>
+            <%= link_to image_tag(@wiki_page.document.preview(resize_to_limit: [900, 300]), class: 'max-w-none shadow-xl'), @wiki_page.document %>
+          <% elsif @wiki_page.document.representable? %>
+            <%= link_to image_tag(@wiki_page.document.representation(resize_to_limit: [900, 300]), class: 'max-w-none shadow-xl'), @wiki_page.document %>
+          <% end %>
+        </figure>
+      </div>
+    <% end %>
 
-    <% if @wiki_page.document.attached? %>
-      <% if @wiki_page.document.representable? %>
-        <%= link_to 'Voir le document', @wiki_page.document, class: "btn btn-primary" %>
-      <% else %>
-        <%= link_to "Télécharger le document", rails_blob_path(@wiki_page.document, disposition: "attachment"), class: "btn btn-primary" %>
-      <% end %>
+    <h1 class="text-2xl font-bold flex items-center gap-2">
+      <span class="text-primary text-4xl"><%= page_title!(@wiki_page.titre) %></span>
+    </h1>
+    <h3 class="text-lg">
+      <%= @wiki_page.sous_titre %>
+    </h3>
+    <p class="my-5">
+      <%= @wiki_page.contenu %>
+    </p>
+
+    <% if @wiki_page.document.attached? && !@wiki_page.document.representable? %>
+      <%= link_to "Télécharger le document", rails_blob_path(@wiki_page.document, disposition: "attachment"), class: "btn btn-primary mt-4" %>
     <% end %>
 
     <p class="mt-4">
       <i>Publiée le <%= l(@wiki_page.created_at) %></i>
       <i>(Modifiée il y a <%= time_ago_in_words @wiki_page.updated_at %>)</i>
     </p>
+    <% if current_user&.manager_or_admin? %>
+        <div class="card-actions my-4">
+          <% if @wiki_page.publiée? %>
+            <span>
+              <%= embedded_svg "icons/visibility.svg", title: "Page visible par tous (publiée)" %>
+            </span>
+          <% else %>
+            <span>
+              <%= embedded_svg "icons/visibility_off.svg", title: "Page invisible (non publiée)" %>
+            </span>
+          <% end %>
+          <% if @wiki_page.épinglée? %>
+            <span>
+              <%= embedded_svg "icons/pin.svg", title: "Page épinglée" %>
+            </span>
+          <% end %>
+          <% if @wiki_page.private? %>
+            <span>
+              <%= embedded_svg "icons/private.svg", title: "Page privée (visible par les managers et administrateurs)" %>
+            </span>
+          <% end %>
+        </div>
+      <% end %>
     <% if policy(@wiki_page).edit? %>
-      <%= link_to "Modifier", edit_wiki_page_path(@wiki_page), class: "mt-2 btn" %>
+      <%= link_to "Modifier", edit_documentation_path(@wiki_page), class: "mt-2 btn" %>
       <div class="inline-block ml-2">
         <% if policy(@wiki_page).destroy? %>
-          <%= button_to wiki_page_path(@wiki_page), method: :delete, form: { data: {'turbo-confirm': "Êtes-vous bien certain.e de vouloir supprimer définitivement cette page ?"} }, class: "mt-2 btn" do %>
+          <%= button_to documentation_path(@wiki_page), method: :delete, form: { data: {'turbo-confirm': "Êtes-vous bien certain.e de vouloir supprimer définitivement cette page ?"} }, class: "mt-2 btn" do %>
             <%= embedded_svg "icons/delete.svg", title: "Suppression de la page wiki" %>
-              delete
+              Supprimer
             </span>
           <% end %>
         <% else %>
           <div title="Suppression impossible : Vous n'êtes pas l'auteur de cette page wiki" class="mt-2 btn cursor-not-allowed">
             <%= embedded_svg "icons/delete.svg", class: "text-gray-500", title: "Suppression impossible" %>
-              delete
+              Supprimer
             </span>
           </div>
         <% end %>
       </div>
     <% end %>
 
+    <div class="pt-8">
+      <%= link_to documentation_index_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+        <%= embedded_svg "icons/arrow_back.svg", class: "w-4 h-4 transition-transform group-hover:-translate-x-1 fill-current" rescue nil %>
+        Retour à la liste des pages wiki
+      <% end %>
+    </div>
   </div>
 </div>
+

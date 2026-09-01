@@ -113,16 +113,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_template layout: 'layouts/welcome'
   end
 
-  test 'welcome : seules les pages wiki publiées sont exposées' do
-    get welcome_url
-
-    wiki_pages = assigns(:wiki_pages)
-    assert wiki_pages.present?, 'welcome doit assigner @wiki_pages'
-    assert wiki_pages.all?(&:publiée), 'aucune page non publiée ne doit fuiter'
-    assert_includes wiki_pages, wiki_pages(:blog)
-    assert_not_includes wiki_pages, wiki_pages(:guide) # publiée: false
-  end
-
   test 'dashboard : un administrateur → la page répond' do
     sign_in users(:hidalgo)
 

@@ -6,21 +6,20 @@ class AgentWikiPagesPolicyTest < ActionDispatch::IntegrationTest
   def setup
     agent = users(:martin_technique_paris)
 
-    wiki_page_publique = wiki_pages(:wiki_page_publique)
-    wiki_page_privée = wiki_pages(:blog)
-    wiki_page_non_publiée = wiki_pages(:guide)
-
-    @policy = WikiPagePolicy.new(agent, wiki_page_publique)
-    @policy_privée = WikiPagePolicy.new(agent, wiki_page_privée)
-    @policy_non_publiée = WikiPagePolicy.new(agent, wiki_page_non_publiée)
+    @policy = WikiPagePolicy.new(agent, wiki_pages(:blog_public))
+    @policy_privée = WikiPagePolicy.new(agent, wiki_pages(:blog_privé))
+    @policy_non_publiée = WikiPagePolicy.new(agent, wiki_pages(:blog_non_publié))
   end
 
-  test 'accès autorisé pour un agent sur une page wiki publique' do
+  test 'accès autorisé pour un agent sur une documentation publiée et publique' do
     assert @policy.index?
+    assert @policy.blog?
+    assert @policy.guide?
+    assert @policy.faq?
     assert @policy.show?
   end
 
-  test 'accès interdit pour un agent sur une page wiki publique' do
+  test 'accès interdit pour un agent sur une documentation publiée et publique' do
     refute @policy.new?
     refute @policy.create?
     refute @policy.edit?
@@ -28,11 +27,17 @@ class AgentWikiPagesPolicyTest < ActionDispatch::IntegrationTest
     refute @policy.destroy?
   end
 
-  test 'accès interdit pour un agent sur une page wiki privée' do
+  # ==================== TESTS CRITIQUES ====================
+  # Une documentation privée ou non publiée ne doit jamais s'ouvrir à un agent :
+  # c'est la seule barrière une fois l'URL connue.
+
+  test 'accès interdit pour un agent sur une documentation privée (critique)' do
     refute @policy_privée.show?
   end
 
-  test 'accès interdit pour un agent sur une page wiki non publiée' do
+  test 'accès interdit pour un agent sur une documentation non publiée (critique)' do
     refute @policy_non_publiée.show?
   end
+
+  # ==================== /TESTS CRITIQUES ====================
 end

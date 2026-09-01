@@ -277,6 +277,20 @@
 - **Correctif proposé** : retirer `:tag_list` de `intervention_params`. Aucun formulaire ne le soumet, donc aucune régression attendue.
 - **Épinglé par** : `interventions_controller_test`, « un adhérent écrase les mots clés par un paramètre tag_list forgé » — à inverser à la correction.
 
+### B100 — Un seul caractère hors Windows-1252 fait tomber le PDF d'un devis, d'une commande ou d'une facture
+- **Où** : [base_pdf_for_crm.rb](app/services/transform_to_pdf/base_pdf_for_crm.rb) — toutes les méthodes qui écrivent du texte issu de la base : `add_metadata` (intitulé, adhérent, service), `add_lignes` (intitulé de ligne, libellé de prestation), `add_memo`, `add_signature`.
+- **Cause** : Prawn n'embarque aucune police ; il utilise les polices **AFM intégrées** au format PDF (Helvetica), qui sont en **single-byte Windows-1252**. Devant un caractère hors de ce jeu, Prawn ne dégrade pas l'affichage — il **lève `Prawn::Errors::IncompatibleStringEncoding`**, et toute la génération tombe avec lui. La documentation de la gem ne propose qu'une issue : embarquer une police TTF.
+- **Mesuré** (sonde en transaction annulée sur la base de dev, 2026-09-01) : mémo d'une cotation réelle passé à `Prévoir 2 m³ de terreau ☀` → `TransformToPdf::Cotation.call(c).render` lève `Prawn::Errors::IncompatibleStringEncoding`. Donnée restaurée par `ActiveRecord::Rollback` (vérifié).
+- **Parcours de reproduction** :
+  1. En tant que **manager**, je crée un devis et je saisis dans le **mémo** un caractère absent du jeu latin occidental — un emoji tapé au téléphone (`☀`, `👍`), une flèche `→`, ou un indice comme `m³`... `³` passe, mais `₂` non.
+  2. J'enregistre, puis j'ouvre la fiche du devis.
+  3. → L'**aperçu PDF de la page ne s'affiche pas**, et le bouton « Générer PDF » rend une **erreur 500**. Le devis devient impossible à envoyer à l'adhérent tant que le caractère n'est pas retiré, et rien n'indique lequel est en cause.
+  4. Idem sur une commande et sur une facture (même classe mère), et sur le **mail** qui joint le PDF (`NotificationMailer` l.110, 152, 169) : l'envoi échoue.
+- **Impact** : ce sont les documents contractuels envoyés aux communes. Le caractère fautif est invisible à l'œil dans le formulaire, et le message d'erreur ne remonte pas à l'utilisateur. Probabilité réelle : la saisie se fait aussi sur téléphone, où l'emoji est à un appui du clavier.
+- **Deux correctifs possibles** :
+  - **assainir le texte** avant de l'écrire, comme le fait `TransformToPdf::Intervention#texte_sûr` (substitutions connues, puis `encode('Windows-1252', undef: :replace, replace: '?')`) — quelques lignes, aucun ajout au dépôt, mais les caractères exotiques deviennent `?` ;
+  - **embarquer une police TTF** (DejaVu Sans ou Open Sans, licence OFL donc compatible avec l'open-source envisagé) — UTF-8 complet, supprime le besoin d'assainir **dans les quatre services PDF à la fois**, au prix de 4 fichiers de police (~300–700 Ko) et de PDF un peu plus lourds. L'équipe y avait déjà pensé : le bloc est commenté dans [qrcode_modele_intervention.rb:27-32](app/services/transform_to_pdf/qrcode_modele_intervention.rb#L27-L32), avec un chemin `vendor/assets/fonts/Open_Sans/`.
+- **Non couvert par les tests** : aucun test n'exerce un caractère hors Windows-1252 sur les PDF CRM.
 
 ---
 
@@ -347,6 +361,30 @@
 ---
 
 ## ✅ Bugs corrigés (historique)
+
+### B100 — ✅ CORRIGÉ (2026-08-31, décision Alex) — Un adhérent voyait dans la liste des documentations dont la page lui était refusée
+- **Où** : le filtre des listes n'excluait les pages privées que pour `nil` et `agent?`, mais `WikiPagePolicy#show?` exigeait `!record.private?` de tout non-manager, adhérent compris → l'adhérent voyait la carte et recevait un refus Pundit au clic.
+- **Décision Alex** : c'est la **policy** qui avait tort — un adhérent doit voir les documentations privées (non publiées exclues).
+- **Correctif** : `show?` devient le miroir exact de `WikiPage.by_role_for` — manager/admin → tout ; adhérent → `record.publiée?` ; agent et non connecté → `record.publiée? && !record.private?`.
+- **⚠ Reliquat** : la règle est désormais écrite **à deux endroits** (`by_role_for` et `show?`), sans garde-fou reliant les deux — c'est précisément la divergence qui a produit ce bug. Une sentinelle « pour chaque rôle, toute page rendue par `by_role_for` passe `show?` » reste à poser.
+- **Tests** : `test/models/wiki_page_test.rb` (un test par rôle sur `by_role_for`) et `test/policies/adherent/adherent_wiki_pages_policy_test.rb` (`accès autorisé … sur une documentation privée`, retourné).
+
+### B99 — ✅ SIGNALÉ PAR PE ET CORRIGÉ (2026-08-27) — L'attribut `required` d'un select slim-select était inerte : on enregistrait un champ obligatoire vide
+- **Symptôme rapporté** : sur `/prestations/new`, choisir la ligne vide du menu Unité et cliquer sur Enregistrer **crée la prestation sans unité**. Aucun message, aucun blocage.
+- **Où** : tous les selects simples portant `required` et pilotés par `slim_select_controller.js` — une dizaine dans le dépôt (prestations unité, users rôle, interventions adhérent/service, mouvements matériel/état, prestation/adhérent/service des cotations, commandes et factures).
+- **Cause, mesurée au navigateur** : la spec HTML ne traite comme *placeholder* que l'option vide **en première position** du select ; c'est elle qui rend `required` opérant. Or SlimSelect, quand on choisit son option vide, **duplique** celle-ci dans le select natif et pose la sélection sur la **copie** — relevé à l'instant du clic : `options = ["", "", "Heure(s)", "Forfait", "Jour"]`, `selectedIndex = 1`, donc `validity.valueMissing = false` et `form.checkValidity() = true` alors que `select.value === ""`. Le navigateur croit qu'un choix a été fait. La croix `×` de désélection produisait le même effet.
+- **Ce qui n'était PAS en cause**, vérifié un par un avant de conclure : `required="required"` est bien rendu ; la plomberie anti-« invalid form control is not focusable » d'`application.css:330-357` fonctionne (`display` calculé = `block`, le `!important` de la feuille bat le `display: none` inline de SlimSelect) ; `willValidate` vaut `true` ; aucun `novalidate`, `formnovalidate` ni `form.submit()` sur ces formulaires.
+- **Parcours de reproduction** :
+  1. J'ouvre « Nouvelle prestation », je remplis Code, Libellé et Tarif.
+  2. J'ouvre le menu **Unité** et je clique la ligne vide au-dessus de « Heure(s) ».
+  3. Je clique sur Enregistrer.
+  4. → **La prestation est créée, sans unité**, alors que le champ porte une astérisque et l'attribut `required`.
+- **Correctif** : dans `slim_select_controller.js`, pour un select `required` **non `multiple`**, l'option vide est marquée `disabled` avant l'instanciation de SlimSelect. Elle reste dans le DOM — donc `required` continue de la voir comme placeholder — mais SlimSelect ne la propose plus au menu (elle porte alors `ss-option ss-disabled`, masquée par la règle CSS du même lot). Un champ obligatoire réellement vide déclenche la bulle native avant la soumission (`validationMessage` renseigné, contour `ss-error-native`, aucune création en base), c'est-à-dire le comportement d'un champ requis ordinaire.
+- **Ce qui compte est la POSITION de l'option sélectionnée, pas la duplication** — mesuré, et c'est ce qui rend `allowDeselect` indifférent : la croix `×` duplique elle aussi l'option vide, mais insère la copie **en première position** (`selectedIndex = 0`), donc la sélection reste sur un placeholder et `valueMissing` vaut `true` ; le menu, lui, l'insérait en **seconde** position. Après un clic sur la croix, le menu ne propose d'ailleurs aucune ligne vide (`["Heure(s)", "Forfait", "Jour"]`) : il n'y a rien à recliquer. ⚠ L'agent avait d'abord écrit qu'`allowDeselect: false` était indispensable — **c'est faux** : la mesure était faite avec le réglage actif, ce qui masquait le comportement réel de la croix. PE l'a retiré pour garder la croix cliquable partout, et le trou reste fermé.
+- **Périmètre** : la garde « `required` et non `multiple` » laisse intacts les ~30 filtres d'index (leur option « Tous » reste sélectionnable — c'est leur fonctionnalité) et les ~25 selects multiples (Rails n'y met pas d'option vide). Vérifié par test.
+- **Cascade `dynamic-select`** (mesuré) : après un changement d'adhérent, les options du select Service sont reconstruites et **perdent le `disabled`** (le contrôleur ne repasse qu'au `connect`). Sans conséquence : SlimSelect ne propose alors aucune ligne vide, la croix ne duplique rien et `checkValidity()` reste `false`. À re-mesurer si `dynamic_select_controller.js` change de façon de repeupler.
+- **Validation manuelle par PE (2026-08-31)** : rôle d'un utilisateur, ligne de devis/commande/facture, matériel + état d'un mouvement, adhérent + service des devis/commandes/factures, filtre d'index, selects multiples et « + » d'ajout — tout est conforme.
+- **Tests** : `test/system/slim_select_test.rb` (5 tests — le menu ne propose aucun choix vide, pas d'enregistrement sans unité, la croix laisse le champ refusé, un filtre d'index garde « Tous », un requis multiple reste désélectionnable), prouvés rouges en neutralisant la désactivation de l'option vide. ⚠ Une première version du test de la croix asserait la **liste des options** du select natif : elle figeait un détail d'implémentation de SlimSelect (le nombre d'options après duplication) au lieu du contrat, et tombait dès qu'`allowDeselect` changeait. Remplacée par `validity.valueMissing` + refus de la soumission.
 
 ### B96 — ✅ SIGNALÉ PAR ALEX ET CORRIGÉ (2026-08-20) — En prod, le scroll n'était plus remis à zéro d'une page à l'autre, jusqu'au prochain rechargement complet
 - **Symptôme rapporté** : depuis l'index des interventions, ouvrir une intervention conservait la position du scroll (haut, milieu, bas — celle qu'on avait avant de cliquer) ; idem en passant de l'index des interventions à celui des conventions. Uniquement en prod, pendant un laps de temps, guéri par un rechargement complet de la page.

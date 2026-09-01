@@ -41,6 +41,7 @@ class AgentInterventionPolicyTest < ActionDispatch::IntegrationTest
     refute @policy.refuser?
     refute @policy.archiver?
     refute @policy.can_see_qrcode_pointage_pdf?
+    refute @policy.fiche?
     refute @policy.new_intervention_modele_pointage?
     refute @policy.create_intervention_modele_pointage?
   end

@@ -489,6 +489,14 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'application/pdf', response.media_type
   end
 
+  test 'la fiche détaillée est téléchargée au format PDF' do
+    get fiche_intervention_url(@intervention, filename: @intervention.pdf_filename)
+
+    assert_response :success
+    assert_equal 'application/pdf', response.media_type
+    assert_match(/Intervention-#{@intervention.id}\.pdf/, response.headers['Content-Disposition'])
+  end
+
   test 'new : sans paramètre → la page répond' do
     get new_intervention_url
     assert_response :success

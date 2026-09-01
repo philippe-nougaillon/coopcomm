@@ -514,4 +514,19 @@ class UserTest < ActiveSupport::TestCase
              rôle: rôle, password: 'qtDug$d843sqACz?V', service_ids: service_ids,
              address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35)
   end
+
+  test 'xls_headers : modèle XLS proposé aux utilisateurs → en-têtes figées' do
+    assert_equal %w[Nom Prénom Email Téléphone Service Mémo], User.xls_headers
+  end
+
+  test 'generate_random_password : mot de passe engendré → satisfait la politique de complexité' do
+    mot_de_passe = User.generate_random_password
+
+    candidat = User.new(nom: 'DURAND', prénom: 'Marie', email: 'marie.durand@example.test',
+                        rôle: 'agent', password: mot_de_passe)
+    candidat.user_services.build(service: services(:informatique))
+
+    assert_equal 12, mot_de_passe.length
+    assert candidat.valid?, candidat.errors.full_messages.join(', ')
+  end
 end
