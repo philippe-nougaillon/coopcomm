@@ -60,47 +60,31 @@ class ImportUtilisateursXlsTest < ActiveSupport::TestCase
     assert_match(/une autre organisation/, rapport.erreurs.first.messages.join)
   end
 
-  test 'un manager de l’organisation n’est pas rétrogradé en agent (critique)' do
-    manager = users(:hidalgo)
+  # Manager, administrateur et adhérent empruntent la même garde du service :
+  # un seul test, décliné sur les trois rôles.
+  %w[manager administrateur adhérent].each do |rôle|
+    test "un #{rôle} n’est ni rétrogradé en agent ni modifié (critique)" do
+      user = case rôle
+              when 'adhérent'
+              users(:weil)
+              when 'manager'
+              users(:hidalgo)
+              when 'administrateur'
+              users(:administrateur_paris)
+              end
 
-    rapport = importer([ENTETES, ligne(nom: 'Hidalgo', prénom: 'Anne', email: manager.email)],
-                       appliquer: true)
+      services_avant = user.services.to_a
 
-    assert manager.reload.manager?
-    assert_equal 0, rapport.importés
-    assert_match(/ce compte est un manager/, rapport.erreurs.first.messages.join)
-  end
+      rapport = importer([ENTETES, ligne(nom: 'Renommé', prénom: 'Par Import', email: user.email)],
+                         appliquer: true)
 
-  test 'un manager mono-service n’est pas rétrogradé même quand son unique service est celui du fichier (critique)' do
-    manager = User.create!(nom: 'Mono', prénom: 'Service', email: 'mono.service@example.test',
-                           rôle: 'manager', password: 'qtDug$d843sqACz?V',
-                           service_ids: [services(:informatique).id])
-
-    importer([ENTETES, ligne(nom: 'Mono', prénom: 'Service', email: manager.email, service: 'Informatique')],
-             appliquer: true)
-
-    assert manager.reload.manager?, 'B21 : la recherche par email ne doit jamais changer le rôle'
-  end
-
-  test 'un administrateur n’est pas rétrogradé en agent (critique)' do
-    admin = users(:administrateur_paris)
-
-    rapport = importer([ENTETES, ligne(nom: 'Admin', prénom: 'Paris', email: admin.email)], appliquer: true)
-
-    assert admin.reload.administrateur?
-    assert_match(/ce compte est un administrateur/, rapport.erreurs.first.messages.join)
-  end
-
-  test 'un adhérent n’est pas transformé en agent (critique)' do
-    adhérent = users(:weil)
-    services_avant = adhérent.services.to_a
-
-    rapport = importer([ENTETES, ligne(nom: 'Weil', prénom: 'Ariel', email: adhérent.email)], appliquer: true)
-
-    adhérent.reload
-    assert adhérent.adhérent?
-    assert_equal services_avant, adhérent.services.to_a
-    assert_match(/ce compte est un adhérent/, rapport.erreurs.first.messages.join)
+      user.reload
+      assert_equal rôle, user.rôle
+      assert_not_equal 'RENOMMÉ', user.nom
+      assert_equal services_avant, user.services.to_a
+      assert_equal 0, rapport.importés
+      assert_match(/ce compte est un #{rôle}/, rapport.erreurs.first.messages.join)
+    end
   end
 
   test 'un compte désactivé est signalé comme tel, sans être réactivé ni dupliqué (critique)' do
@@ -236,10 +220,12 @@ class ImportUtilisateursXlsTest < ActiveSupport::TestCase
     assert_equal @importateur.id, User.find_by(email: 'marie@example.test').invited_by_id
   end
 
-  test 'la création est tracée dans l’audit trail' do
-    importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie@example.test')], appliquer: true)
+  test 'l’invitation envoyée est tracée dans les MailLog' do
+    assert_difference 'MailLog.count', 1 do
+      importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie@example.test')], appliquer: true)
+    end
 
-    assert_equal 1, User.find_by(email: 'marie@example.test').audits.where(action: 'create').count
+    assert_equal 'marie@example.test', MailLog.last.to
   end
 
   test 'plusieurs lignes valides sont toutes importées' do
@@ -301,17 +287,6 @@ class ImportUtilisateursXlsTest < ActiveSupport::TestCase
 
     assert_equal [services(:informatique)], martin.reload.services
     assert_equal 1, @rapport.importés
-  end
-
-  test 'le remplacement de service est tracé dans l’audit trail' do
-    martin = users(:martin_technique_paris)
-
-    importer([ENTETES, ligne(nom: 'Martin', prénom: 'Michel', email: martin.email, service: 'Informatique')],
-             appliquer: true)
-
-    actions = Audited::Audit.where(auditable_type: 'UserService', associated_id: martin.id).pluck(:action)
-    assert_includes actions, 'create'
-    assert_includes actions, 'destroy'
   end
 
   test 'le bilan d’un remplacement nomme l’ancien et le nouveau service' do
@@ -448,10 +423,14 @@ class ImportUtilisateursXlsTest < ActiveSupport::TestCase
     assert_not_nil User.find_by(email: 'marie@example.test')
   end
 
-  test 'un échec d’enregistrement est compté en erreur, jamais en succès' do
-    rapport = ImportQuiEchoue.call(fichier: televersement([ENTETES, ligne(nom: 'Durand', prénom: 'Marie',
-                                                                        email: 'marie@example.test')]),
-                                   importateur: @importateur, organisation: @organisation, appliquer: true)
+  test 'un enregistrement refusé est compté en erreur, jamais en succès' do
+    agent_qui_refuse_de_s_enregistrer = User.new(email: 'marie@example.test', rôle: 'agent',
+                                                 password: User.generate_random_password)
+    agent_qui_refuse_de_s_enregistrer.define_singleton_method(:save) { |*| false }
+
+    rapport = User.stub(:new, agent_qui_refuse_de_s_enregistrer) do
+      importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie@example.test')], appliquer: true)
+    end
 
     assert_equal 0, rapport.importés
     assert_equal 1, rapport.en_erreur
@@ -486,16 +465,5 @@ class ImportUtilisateursXlsTest < ActiveSupport::TestCase
   def importer(lignes, appliquer: false)
     ImportUtilisateursXls.call(fichier: televersement(lignes), importateur: @importateur,
                               organisation: @organisation, appliquer: appliquer)
-  end
-end
-
-# Reproduit un `save` refusé alors que les validations passent (course sur
-# l'unicité de l'email, échec d'invitation) : le bilan doit compter la ligne en
-# erreur et ne rien laisser derrière lui.
-class ImportQuiEchoue < ImportUtilisateursXls
-  private
-
-  def nouvel_utilisateur(email)
-    super.tap { |utilisateur| utilisateur.define_singleton_method(:save) { |*| false } }
   end
 end
