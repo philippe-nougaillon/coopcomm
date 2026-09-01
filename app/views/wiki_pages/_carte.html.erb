@@ -3,7 +3,8 @@
   <div class="h-32">
     <% if wiki_page.document.attached? && wiki_page.document.representable? %>
       <figure>
-        <%= image_tag wiki_page.document.representation(resize_to_limit: [600, 200]) %>
+        
+        <%= image_tag wiki_page.document.representation(resize_to_limit: [600, 150]) %>
       </figure>
     <% else %>
       <p class="text-center">(<%= wiki_page.catégorie %>)</p>
@@ -12,7 +13,7 @@
 
   <div class="card-body">
     <h3 class="card-title"><%= wiki_page.titre %></h3>
-    <p><%= wiki_page.sous_titre.presence || wiki_page.contenu.to_plain_text %></p>
+    <p class="line-clamp-3"><%= wiki_page.sous_titre.presence %></p>
     <div class="card-actions flex justify-between mt-4">
       <% if current_user&.manager_or_admin? %>
         <div class="card-actions">

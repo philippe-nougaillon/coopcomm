@@ -4,12 +4,24 @@
     <% if @wiki_page.document.attached? && @wiki_page.document.representable? %>
       <div class="mb-12">
         <figure>
-          <%= image_tag @wiki_page.document.representation(resize_to_limit: [900, 300]) %>
+          <% if @wiki_page.document.previewable? %>
+            <%= link_to image_tag(@wiki_page.document.preview(resize_to_limit: [900, 300]), class: 'max-w-none shadow-xl'), @wiki_page.document %>
+          <% elsif @wiki_page.document.representable? %>
+            <%= link_to image_tag(@wiki_page.document.representation(resize_to_limit: [900, 300]), class: 'max-w-none shadow-xl'), @wiki_page.document %>
+          <% end %>
         </figure>
       </div>
     <% end %>
 
-    <%= render @wiki_page %>
+    <h1 class="text-2xl font-bold flex items-center gap-2">
+      <span class="text-primary text-4xl"><%= page_title!(@wiki_page.titre) %></span>
+    </h1>
+    <h3 class="text-lg">
+      <%= @wiki_page.sous_titre %>
+    </h3>
+    <p class="my-5">
+      <%= @wiki_page.contenu %>
+    </p>
 
     <% if @wiki_page.document.attached? && !@wiki_page.document.representable? %>
       <%= link_to "Télécharger le document", rails_blob_path(@wiki_page.document, disposition: "attachment"), class: "btn btn-primary mt-4" %>
@@ -64,7 +76,7 @@
     <div class="pt-8">
       <%= link_to documentation_index_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
         <%= embedded_svg "icons/arrow_back.svg", class: "w-4 h-4 transition-transform group-hover:-translate-x-1 fill-current" rescue nil %>
-        Retour à la liste des documentations
+        Retour à la liste des pages wiki
       <% end %>
     </div>
   </div>

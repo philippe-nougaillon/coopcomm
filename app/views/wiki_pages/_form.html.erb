@@ -18,11 +18,15 @@
     <%= form.select :catégorie, options_for_select(WikiPage.catégories.keys, (@wiki_page.catégorie || params["catégorie"])), {}, class: 'select select-sm w-full' %>
   </div>
   <div class="my-5">
-    <%= form.label :titre %>
+    <%= form.label :titre do %>
+      <span>Titre <span class="text-red-500">*</span></span>
+    <% end %>
     <%= form.text_field :titre, class: "input w-full", placeholder: "Titre", required: true %>
   </div>
   <div class="my-5">
-    <%= form.label :sous_titre %>
+    <%= form.label :sous_titre do %>
+      <span>Sous-titre <span class="text-red-500">*</span></span>
+    <% end %>
     <%= form.text_field :sous_titre, class: "input w-full", placeholder: "Sous-titre", required: true %>
   </div>
   <div class="my-5">

@@ -10,7 +10,9 @@
 
     <div id="wiki_pages" class="min-w-full">
       <% if @wiki_pages.any? %>
-        <%= render @wiki_pages %>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <%= render partial: "carte", collection: @wiki_pages, as: :wiki_page %>
+        </div>
       <% else %>
         <p class="text-sm text-slate-400">Aucune page dans cette catégorie pour le moment.</p>
       <% end %>
