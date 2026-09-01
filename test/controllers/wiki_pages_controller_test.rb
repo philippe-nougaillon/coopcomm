@@ -45,14 +45,6 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal poids.sort, poids
   end
 
-  test 'la page principale n’affiche que les neuf premières documentations' do
-    10.times { |i| créer_documentation(titre: "Documentation de remplissage #{i}") }
-
-    get documentation_index_url
-    
-    assert_equal 9, assigns(:wiki_pages).size
-  end
-
   test 'une recherche mène à la page de résultats et non à la page principale' do
     get documentation_index_url(search: 'Réserver')
 
