@@ -276,7 +276,7 @@ class Intervention < ApplicationRecord
       next unless conflicting_interventions.exists?
 
       message = if reprise_immediate_de_pointage?(conflicting_interventions)
-                  'Veuillez attendre une minute avant de recommencer à pointer.'
+                  'Veuillez attendre quelques secondes avant de recommencer à pointer.'
                 else
                   conflincting_message = conflicting_interventions.map do |conflict|
                     " #{agent.nom} déjà sur l’intervention « #{conflict.description} » du #{conflict.effective_début&.strftime('%d/%m/%Y %H:%M')} au #{conflict.effective_fin&.strftime('%d/%m/%Y %H:%M')}"
@@ -535,7 +535,7 @@ class Intervention < ApplicationRecord
 
     hour = send("#{field}_hour").presence || datetime.hour
     minute = send("#{field}_minute").presence || datetime.min
-    send("#{field}=", datetime.change(hour: hour.to_i, min: minute.to_i))
+    send("#{field}=", datetime.change(hour: hour.to_i, min: minute.to_i, sec: datetime.sec))
   end
 
   def broadcast_to_authorized_viewers
