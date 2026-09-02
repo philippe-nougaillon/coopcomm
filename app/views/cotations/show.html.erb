@@ -13,7 +13,7 @@
         </span>
       </div>
     </div>
-    <div class="flex justify-end md:w-full gap-2">
+    <div class="flex flex-col justify-end gap-2">
       <% if policy(@cotation).update? %>
         <%= link_to edit_cotation_path(@cotation), class: "btn flex-1 sm:flex-none" do %>
           <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
@@ -21,13 +21,48 @@
         <% end %>
       <% end %>
       <% if policy(@cotation).create_commande? %>
-        <%= button_to "Convertir en commande", create_commande_cotation_path(@cotation),
-            class: "btn btn-success btn-outline hover:text-white!", 
-            form: { data: { turbo_confirm: "Êtes-vous certain(e) de vouloir transformer cette cotation en commande ? Cette action est irréversible." }, class: 'contents', turbo_method: :post} %>
+        <div class="flex justify-end ">
+          <button class="btn btn-outline btn-success hover:!text-white"
+            onclick="convert_commande_modal_<%= @cotation.id %>.showModal()" 
+            title="Convertir en commande">
+            <%= embedded_svg "icons/receipt.svg", class: "w-5 h-5 fill-current", title: "Convertir en commande" %>
+            <span class="hidden md:block">Convertir en commande </span>
+            <span class="block md:hidden">Commande</span>
+          </button>
+          <dialog id="convert_commande_modal_<%= @cotation.id %>" class="modal">
+            <div class="modal-box">
+              <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+              </form>
+              <h3 class="text-lg font-bold text-success flex items-center gap-2">
+                <%= embedded_svg "icons/receipt.svg", class: "w-6 h-6 fill-current text-success", title: "Commande" %>
+                Convertir en commande 
+              </h3>
+              <p class="py-4 text-sm text-slate-600 text-left">
+                Êtes-vous certain(e) de vouloir transformer cette cotation en commande ? 
+                Cette action est irréversible.
+              </p>
+              <div class="modal-action">
+                <form method="dialog">
+                  <button class="btn btn-ghost">Annuler</button>
+                </form>
+                <%= button_to create_commande_cotation_path(@cotation),
+                        method: :post,
+                        class: "btn btn-success text-white",
+                        form: { data: { turbo: false } } do %>
+                  Oui, convertir
+                <% end %>
+              </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+              <button>Fermer</button>
+            </form>
+          </dialog>
+        </div>
       <% end %>
       <span class="block md:hidden">
         <%= link_to pdf_cotation_path(@cotation, filename: @cotation.pdf_filename),
-                    class: "btn btn-outline btn-info flex-1 sm:flex-none", target: "_blank", data: { turbo: false } do %>
+                    class: "btn btn-outline btn-info flex flex-1 sm:flex-none", target: "_blank", data: { turbo: false } do %>
           <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200 hidden md:block" %>
           <span class="block md:hidden"> PDF </span>
           <span class="hidden md:block">Générer PDF</span>
@@ -44,10 +79,7 @@
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
     <div class="flex flex-col w-full">
       <div class="overflow-x-auto border border-slate-200 shadow-sm bg-white rounded-xl md:rounded-xl">
-        <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-          <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
-          <span>Faire glisser pour voir plus</span>
-        </div>
+        
         <div class="p-4">
           <div class="flex flex-col gap-0">
             <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">

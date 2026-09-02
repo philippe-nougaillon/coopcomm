@@ -4,16 +4,13 @@
       <h2 class="text-2xl text-secondary font-semibold">Absences</h2>
       <% if current_user.manager_or_admin? && @absences.any? %>
         <button class="btn btn-outline btn-success hover:text-white!" 
-      onclick="resetAbsenceForm(document.getElementById('absence_form_new')); absence_modal.showModal()"
-      <%= embedded_svg "icons/add.svg", 
-      class: "w-6 h-6 fill-current transition-colors duration-200",
-      title: "Ajouter une absence" %>
+                onclick="resetAbsenceForm(document.getElementById('absence_form_new')); absence_modal.showModal()">
+          <%= embedded_svg "icons/add.svg", 
+                class: "w-6 h-6 fill-current transition-colors duration-200",
+                title: "Ajouter une absence" %>
           <span class="hidden md:block">Ajouter une absence</span>
         </button>
       <% end %>
-
-
-      
 
     </div>
     <% if @absences.any? %>
