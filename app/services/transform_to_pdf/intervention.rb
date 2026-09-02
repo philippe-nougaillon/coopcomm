@@ -13,11 +13,24 @@ module TransformToPdf
     TAILLE_VIGNETTE = 120
     VIGNETTES_PAR_LIGNE = 4
     ESPACE_VIGNETTE = 10
+    TAILLE_SURTITRE = 24
+    HAUTEUR_SURTITRE = 30
     TAILLE_TITRE = 20
     HAUTEUR_TITRE = 26
     TAILLE_BADGE = 8
     HAUTEUR_BADGE = 15
-    ESPACE_BADGE = 8
+    ESPACE_BADGE = 6
+    # Mesurés depuis le bas réel du texte, et non déduits de la hauteur des boîtes.
+    ESPACE_SURTITRE_TITRE = 16
+    ESPACE_TITRE_BADGE = 4
+    COTE_LOGO = 80
+    MARGE_LOGO = 20
+    # Le fichier du logo porte 17 px de blanc sur 200 au-dessus du dessin : sans
+    # ce décalage, le titre paraît plus haut que lui alors que les deux partent
+    # de la même ordonnée.
+    BLANC_HAUT_LOGO = 7
+    MARGE_BASSE = 55
+    HAUTEUR_FOOTER = 18
 
     COULEURS_ETAT = {
       'primary' => '0082CE',
@@ -32,6 +45,13 @@ module TransformToPdf
     # sur tout le reste. Le texte du trajet porte « CO₂ », et une saisie mobile
     # peut porter n'importe quoi.
     SUBSTITUTIONS = { '₂' => '2', '→' => '->' }.freeze
+
+    # Marge basse élargie : elle réserve la bande du pied de page, que le flux
+    # de contenu ne peut alors plus atteindre — Prawn ouvre une page plutôt que
+    # de descendre sous `bounds`.
+    def document
+      @document ||= Prawn::Document.new(bottom_margin: MARGE_BASSE)
+    end
 
     def initialize(intervention, user)
       super()
@@ -49,6 +69,8 @@ module TransformToPdf
       add_demande
       add_assignation
       add_realisation
+      start_new_page
+      add_photos
       add_compte_rendu
       add_activite
       add_footer
@@ -57,38 +79,44 @@ module TransformToPdf
 
     private
 
+    # Prawn descend le curseur sous une image : on le remonte pour que le titre
+    # démarre à la même hauteur que le logo, et le filet passe sous le plus bas des deux.
     def add_header
-      image @logo, height: 80, position: :right if File.exist?(@logo)
+      haut = cursor
+      logo = File.exist?(@logo)
+      image @logo, height: COTE_LOGO, position: :right if logo
+      bas_logo = cursor
+      move_cursor_to haut - (logo ? BLANC_HAUT_LOGO : 0)
 
-      add_titre_et_badge
+      largeur = bounds.width - COTE_LOGO - MARGE_LOGO
+      text_box "Bon d'intervention", at: [0, cursor], width: largeur, height: HAUTEUR_SURTITRE,
+                                     size: TAILLE_SURTITRE, overflow: :shrink_to_fit
+      move_cursor_to cursor - hauteur_ligne(TAILLE_SURTITRE) - ESPACE_SURTITRE_TITRE
+
+      add_titre_et_badge(largeur)
       mention = mention_pointage
       text mention, size: 10, style: :italic if mention
 
+      move_cursor_to [cursor, bas_logo].min
       move_down 10
       stroke_horizontal_rule
       move_down 20
     end
 
-    # Le titre porte la couleur de l'état et le badge le suit sur la même ligne,
-    # comme sur la page. Le titre est borné pour laisser sa place au badge.
-    def add_titre_et_badge
+    # Le titre porte la couleur de l'état ; le badge se pose sous lui.
+    def add_titre_et_badge(largeur)
       libellé = texte_sûr(@intervention.description.to_s.humanize)
       état = texte_sûr(@intervention.workflow_state.to_s.humanize.upcase)
       couleur = couleur_état
 
-      haut = cursor
-      place_badge = largeur_badge(état) + ESPACE_BADGE
-      largeur = [width_of(libellé, size: TAILLE_TITRE, style: :bold), bounds.width - place_badge].min
-
-      # `text_box` ignore l'option `color:` ; seul `fill_color` teinte le texte.
       fill_color couleur
-      text_box libellé, at: [0, haut], width: largeur, height: HAUTEUR_TITRE,
+      text_box libellé, at: [0, cursor], width: largeur, height: HAUTEUR_TITRE,
                         size: TAILLE_TITRE, style: :bold, overflow: :shrink_to_fit
       fill_color '000000'
+      move_cursor_to cursor - hauteur_ligne(TAILLE_TITRE) - ESPACE_TITRE_BADGE
 
-      dessiner_badge(état, couleur, largeur + ESPACE_BADGE, centre_optique(TAILLE_TITRE, haut))
-
-      move_cursor_to haut - HAUTEUR_TITRE
+      dessiner_badge(état, couleur, 0, cursor - (HAUTEUR_BADGE / 2.0))
+      move_cursor_to cursor - HAUTEUR_BADGE - ESPACE_BADGE
     end
 
     # `centre` est l'axe vertical du texte à côté duquel le badge se pose : la
@@ -106,21 +134,20 @@ module TransformToPdf
       fill_color '000000'
     end
 
-    # Milieu de la ligne de texte, descendantes comprises — ce que centre le
-    # `items-center` de la page.
-    # ⚠ Les métriques ne suivent la taille que si `font_size` est assignée : dans
-    # un bloc `font_size(t) { font.ascender }`, Prawn rend toujours la même valeur.
-    def centre_optique(taille, haut)
-      ancienne = document.font_size
-      document.font_size = taille
-      milieu = (document.font.ascender + document.font.descender) / 2.0
-      document.font_size = ancienne
-
-      haut - milieu
-    end
-
     def largeur_badge(texte)
       width_of(texte, size: TAILLE_BADGE, style: :bold) + 16
+    end
+
+    # Hauteur réellement occupée par une ligne, descendantes comprises.
+    # ⚠ Les métriques ne suivent la taille que si `font_size` est assignée : dans
+    # un bloc `font_size(t) { font.ascender }`, Prawn rend toujours la même valeur.
+    def hauteur_ligne(taille)
+      ancienne = document.font_size
+      document.font_size = taille
+      hauteur = document.font.ascender + document.font.descender
+      document.font_size = ancienne
+
+      hauteur
     end
 
     def couleur_état
@@ -150,7 +177,6 @@ module TransformToPdf
       end
 
       table_infos(lignes)
-      ajouter_photos(@intervention.photos_demande, "Aucune photo n'est attachée à la demande.")
     end
 
     def add_assignation
@@ -184,8 +210,6 @@ module TransformToPdf
       text 'Commentaires', size: 10, style: :bold
       move_down 4
       text texte_sûr(@intervention.commentaires.presence || 'Aucun commentaire.'), size: 10
-
-      ajouter_photos(@intervention.photos, "Aucune photo n'est attachée à cette intervention.")
     end
 
     def add_temps_seuls
@@ -265,6 +289,17 @@ module TransformToPdf
                     ['Évaluation', @intervention.note.present? ? "#{@intervention.note} / 5" : '—']
                   ])
     end
+
+    def add_photos
+      titre_section('Photos Demande')
+      ajouter_photos(@intervention.photos_demande, "Aucune photo n'est attachée à la demande.")
+
+      return unless @policy.voir_realisation?
+
+      titre_section('Photos Intervention')
+      ajouter_photos(@intervention.photos, "Aucune photo n'est attachée à cette intervention.")
+    end
+
 
     def add_activite
       return unless @policy.voir_activite?
@@ -410,12 +445,22 @@ module TransformToPdf
       valeurs.compact_blank.join("\n").presence || defaut
     end
 
+    # Le pied de page se dessine dans la marge basse, via `canvas` : hors de la
+    # zone de contenu, que Prawn refuse de faire déborder. C'est la réservation
+    # d'espace qui empêche le chevauchement, pas la position du texte.
+    # Écrit sous la zone de contenu, donc dans la marge que `document` réserve.
+    # ⚠ Ni `canvas` ni `bounding_box` ici : sous `repeat`, tous deux vident la
+    # pile d'état graphique de Prawn (EmptyGraphicStateStack).
     def add_footer
       repeat(:all) do
-        move_cursor_to 20
-        stroke_horizontal_rule
-        move_down 5
-        text "Document généré le #{I18n.l(Time.current, format: :long)}", size: 8, align: :center
+        y = bounds.bottom - HAUTEUR_FOOTER
+
+        stroke_line [0, y], [bounds.width, y]
+        # `height` est obligatoire : sous la zone de contenu, la hauteur déduite
+        # est nulle et Prawn n'écrit rien, sans rien signaler.
+        text_box "Document généré le #{I18n.l(Time.current, format: :long)}",
+                 at: [0, y - 5], width: bounds.width, height: HAUTEUR_FOOTER,
+                 size: 8, align: :center
       end
     end
   end

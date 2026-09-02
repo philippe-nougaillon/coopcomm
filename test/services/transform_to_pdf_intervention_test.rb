@@ -99,7 +99,7 @@ class TransformToPdfInterventionTest < ActiveSupport::TestCase
     texte = fiche(@modele, @manager)
 
     assert_includes texte, 'POINTAGES'
-    refute_includes texte, 'INTERVENTION'
+    refute_includes texte, 'Temps passé'
   end
 
   test 'un modèle de pointage sans pointage le dit au lieu de laisser un tableau vide' do
@@ -159,6 +159,26 @@ class TransformToPdfInterventionTest < ActiveSupport::TestCase
 
     assert_includes texte, "ajouté à l'intervention"
     refute_includes texte, "l'intervention n°#{@intervention.id}"
+  end
+
+  test "les photos de la réalisation ne sont pas imprimées pour un adhérent" do
+    intervention = interventions(:intervention_with_location)
+
+    texte = fiche(intervention, users(:adherent_with_location))
+
+    assert_includes texte, 'PHOTOS DEMANDE'
+    refute_includes texte, 'PHOTOS INTERVENTION'
+  end
+
+  test 'le pied de page porte la date de génération' do
+    assert_includes fiche(@intervention, @manager), "Document généré le #{I18n.l(Time.current, format: :long)}"
+  end
+
+  test 'la bande du pied de page est réservée sous la zone de contenu' do
+    document = TransformToPdf::Intervention.call(@intervention, @manager)
+    document.render
+
+    assert_operator document.page.margins[:bottom], :>, Prawn::Document.new.page.margins[:bottom]
   end
 
   test 'une photo dont le fichier est perdu ne fait pas échouer la génération' do
