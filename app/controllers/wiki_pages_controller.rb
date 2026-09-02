@@ -8,8 +8,6 @@ class WikiPagesController < ApplicationController
   # GET /documentation
   def index
     @wiki_pages = WikiPage.by_role_for(current_user)
-                          .order(épinglée: :desc)
-                          .order(:poids)
                           .with_attached_document
 
     # Renvoie sur la page pour les recherches

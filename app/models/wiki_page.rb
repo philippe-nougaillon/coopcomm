@@ -19,7 +19,7 @@ class WikiPage < ApplicationRecord
   include Discard::Model
 
   pg_search_scope :search_titre_and_contenu,
-                  against: :titre,
+                  against: [:titre, :sous_titre],
                   associated_against: {
                     rich_text_content: [:body]
                   },
@@ -35,7 +35,7 @@ class WikiPage < ApplicationRecord
     faq: 2
   }
 
-  default_scope -> { kept } # Sans les discarded
+  default_scope -> { kept.order(épinglée: :desc).order(:poids, :updated_at) } # Sans les discarded
 
   scope :by_categorie, ->(categorie) { where(catégorie: categorie) }
 
