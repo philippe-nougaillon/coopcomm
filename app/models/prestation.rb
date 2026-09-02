@@ -12,7 +12,7 @@ class Prestation < ApplicationRecord
   has_many :facture_lignes, dependent: :restrict_with_error
 
 
-  validates :code, :libellé, :tarif, presence: true
+  validates :code, :libellé, :tarif, :unité, presence: true
   validates :code, uniqueness: { scope: :organisation_id, case_sensitive: false }
 
   normalizes :code,           with: ->(value) { value.to_s.upcase }
