@@ -17,7 +17,7 @@ class Convention < ApplicationRecord
 
   valide_document :document
 
-  validates :date_début, :date_fin_prévue, :heures_conventionnees, presence: true
+  validates :date_début, :date_fin_prévue, presence: true
   validates :heures_conventionnees, numericality: { greater_than: 0 }
   validate :one_convention_per_service
   validate :service_must_belong_to_adherent
