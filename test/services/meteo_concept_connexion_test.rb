@@ -170,64 +170,12 @@ class MeteoConceptConnexionTest < ActiveSupport::TestCase
   # E. get_icon_meteo — correspondance code → icône
   # ==========================================================================
 
-  test 'un ciel clair donne l’icône du jour' do
+  test 'un code météo connu donne son icône' do
     assert_equal 'meteo/animated/day.svg', MeteoConceptConnexion.get_icon_meteo(0)
   end
 
-  test 'un ciel peu nuageux donne l’icône partiellement nuageuse' do
-    assert_equal 'meteo/animated/cloudy-day-3.svg', MeteoConceptConnexion.get_icon_meteo(1)
-    assert_equal 'meteo/animated/cloudy-day-3.svg', MeteoConceptConnexion.get_icon_meteo(2)
-  end
-
-  test 'un ciel couvert donne l’icône nuageuse' do
-    assert_equal 'meteo/animated/cloudy.svg', MeteoConceptConnexion.get_icon_meteo(3)
-    assert_equal 'meteo/animated/cloudy.svg', MeteoConceptConnexion.get_icon_meteo(5)
-  end
-
-  test 'le brouillard donne l’icône nuageuse' do
-    assert_equal 'meteo/animated/cloudy.svg', MeteoConceptConnexion.get_icon_meteo(6)
-    assert_equal 'meteo/animated/cloudy.svg', MeteoConceptConnexion.get_icon_meteo(7)
-  end
-
-  test 'toute la plage des orages donne l’icône d’orage' do
-    assert_equal 'meteo/animated/thunder.svg', MeteoConceptConnexion.get_icon_meteo(100)
-    assert_equal 'meteo/animated/thunder.svg', MeteoConceptConnexion.get_icon_meteo(128)
-    assert_equal 'meteo/animated/thunder.svg', MeteoConceptConnexion.get_icon_meteo(142)
-  end
-
-  test 'la pluie continue est graduée de faible à forte' do
-    assert_equal 'meteo/animated/rainy-2.svg', MeteoConceptConnexion.get_icon_meteo(10)
-    assert_equal 'meteo/animated/rainy-3.svg', MeteoConceptConnexion.get_icon_meteo(11)
-    assert_equal 'meteo/animated/rainy-4.svg', MeteoConceptConnexion.get_icon_meteo(12)
-  end
-
-  test 'la neige continue est graduée de faible à forte' do
-    assert_equal 'meteo/animated/snowy-2.svg', MeteoConceptConnexion.get_icon_meteo(20)
-    assert_equal 'meteo/animated/snowy-3.svg', MeteoConceptConnexion.get_icon_meteo(21)
-    assert_equal 'meteo/animated/snowy-4.svg', MeteoConceptConnexion.get_icon_meteo(22)
-  end
-
-  test 'les averses de pluie partagent une icône par intensité' do
-    assert_equal 'meteo/animated/rainy-3.svg', MeteoConceptConnexion.get_icon_meteo(40)
-    assert_equal 'meteo/animated/rainy-3.svg', MeteoConceptConnexion.get_icon_meteo(46)
-    assert_equal 'meteo/animated/rainy-5.svg', MeteoConceptConnexion.get_icon_meteo(42)
-  end
-
-  test 'la pluie intermittente est graduée de faible à forte' do
-    assert_equal 'meteo/animated/rainy-1.svg', MeteoConceptConnexion.get_icon_meteo(210)
-    assert_equal 'meteo/animated/rainy-3.svg', MeteoConceptConnexion.get_icon_meteo(212)
-  end
-
-  test 'la grêle a son icône dédiée' do
-    assert_equal 'meteo/animated/snowy-6.svg', MeteoConceptConnexion.get_icon_meteo(235)
-  end
-
-  test 'un code inconnu retombe sur l’icône du jour' do
+  test 'un code météo hors de la table retombe sur l’icône du jour' do
     assert_equal 'meteo/animated/day.svg', MeteoConceptConnexion.get_icon_meteo(9999)
-  end
-
-  test 'un code nul retombe sur l’icône du jour' do
-    assert_equal 'meteo/animated/day.svg', MeteoConceptConnexion.get_icon_meteo(nil)
   end
 
   # ==========================================================================

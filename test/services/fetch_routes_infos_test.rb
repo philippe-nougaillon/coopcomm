@@ -2,7 +2,7 @@
 
 require 'test_helper'
 
-class FetchRoutesInfosServiceTest < ActiveSupport::TestCase
+class FetchRoutesInfosTest < ActiveSupport::TestCase
   DEPART  = { lat: 48.864388487354134, lng: 2.3395163956353677 }.freeze
   ARRIVEE = { lat: 48.85685812374327, lng: 2.351386343078722 }.freeze
 
@@ -84,15 +84,15 @@ class FetchRoutesInfosServiceTest < ActiveSupport::TestCase
 
   # Les durées sont doublées (aller-retour) avant d'être mises en forme :
   # 1770 s de trajet simple donnent 59 min de trajet compté.
-  test 'une durée de moins dune heure est donnée en minutes' do
+  test 'une durée de moins d\'une heure est donnée en minutes' do
     assert_includes duree_affichee(1770), 'Durée: 59 min'
   end
 
-  test 'une durée dune heure pile est donnée en heures et minutes' do
+  test 'une durée d\'une heure pile est donnée en heures et minutes' do
     assert_includes duree_affichee(1800), 'Durée: 1h 00min'
   end
 
-  test 'les minutes dune durée en heures sont sur deux chiffres' do
+  test 'les minutes d\'une durée en heures sont sur deux chiffres' do
     assert_includes duree_affichee(1860), 'Durée: 1h 02min'
   end
 
