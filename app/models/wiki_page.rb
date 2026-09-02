@@ -35,7 +35,7 @@ class WikiPage < ApplicationRecord
     faq: 2
   }
 
-  default_scope -> { kept.order(épinglée: :desc).order(:poids, :updated_at) } # Sans les discarded
+  default_scope -> { kept.order(épinglée: :desc).order(:poids).order(updated_at: :desc) }
 
   scope :by_categorie, ->(categorie) { where(catégorie: categorie) }
 
