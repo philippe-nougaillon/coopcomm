@@ -398,14 +398,6 @@ select.slim-select:focus,
 
   /* END SLIM-SELECT INDISPONIBILITÉ */
 
-  /* SLIM-SELECT OPTION DÉSACTIVÉE */
-
-  .ss-option.ss-disabled {
-    display: none !important;
-  }
-
-  /* END SLIM-SELECT OPTION DÉSACTIVÉE */
-
   /* TAILLE CONTENU SLIM-SELECT */
   .ss-main .ss-values .ss-value .ss-value-text {
     max-width: 150px;
