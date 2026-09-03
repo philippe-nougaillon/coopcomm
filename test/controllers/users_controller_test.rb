@@ -651,15 +651,70 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Agent calendrier
-  test 'agent_calendrier : sans paramètre → la page répond' do
+  test 'le calendrier des agents répond sans paramètre' do
     get agent_calendrier_users_url
     assert_response :success
   end
 
-  test 'agent_calendrier : recherche → seulement les agents correspondants' do
+  test 'la recherche dans le calendrier des agents ne retourne que les agents correspondants' do
     get agent_calendrier_users_url(search: 'algo')
     assert_response :success
   end
+
+  test 'le menu services du calendrier des agents propose toute organisation à un administrateur' do
+    get agent_calendrier_users_url
+
+    assert_response :success
+    assert_select "select[name='services[]'] option", { text: 'Comptabilité' }
+  end
+
+  test 'le filtre services du calendrier des agents est masqué pour un manager mono-service' do
+    sign_in users(:manager_marseille)
+
+    get agent_calendrier_users_url
+
+    assert_response :success
+    assert_select "select[name='services[]']", false,
+                  'le filtre services doit être masqué pour un manager mono-service'
+  end
+
+  # ==================== TESTS CRITIQUES ====================
+  # Le périmètre de visibilité et le cloisonnement entre communes dérivent du
+  # rattachement aux services : un filtre inopérant expose des agents d'un autre
+  # service, un filtre non borné ceux d'une autre organisation.
+  test 'le calendrier des agents filtré sur un service ne montre que les agents de ce service (critique)' do
+    agent_du_service = users(:bond)               # technique
+    agent_autre_service = users(:agent_whatsapp)  # service_paris
+
+    get agent_calendrier_users_url, params: { services: [services(:technique).id] }
+
+    assert_response :success
+    assert_select 'a[href=?]', user_path(agent_du_service), { minimum: 1 }
+    assert_select 'a[href=?]', user_path(agent_autre_service), { count: 0 },
+                  'un agent hors du service demandé ne doit pas apparaître dans le calendrier'
+  end
+
+  test 'le calendrier des agents dont le filtre est vidé montre tout le périmètre (critique)' do
+    hors_services_de_l_administrateur = users(:john_wick) # comptabilité
+
+    get agent_calendrier_users_url, params: { services: [''] }
+
+    assert_response :success
+    assert_select 'a[href=?]', user_path(hors_services_de_l_administrateur), { minimum: 1 }
+  end
+
+  test 'un manager ne peut pas forger un service hors de son périmètre dans le calendrier des agents (critique)' do
+    sign_in users(:hidalgo) # service_paris / informatique / technique
+    hors_perimetre = users(:john_wick) # comptabilité
+
+    get agent_calendrier_users_url, params: { services: [services(:comptabilite).id] }
+
+    assert_response :success
+    assert_select 'a[href=?]', user_path(hors_perimetre), { count: 0 }
+    assert_select "select[name='services[]'] option", { text: 'Comptabilité', count: 0 }
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
 
   test 'import_do : sans paramètre → la page répond' do
     get import_do_users_url

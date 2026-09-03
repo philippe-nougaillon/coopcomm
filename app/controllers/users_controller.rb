@@ -141,8 +141,9 @@ class UsersController < ApplicationController
     @date = fecha_base.beginning_of_week 
     @date_fin = fecha_base.end_of_week   
 
-    @services = current_user.services.ordered
-    @agents = User.by_service(params[:service].presence || @services).agent
+
+    # Initialisation + filtre service
+    @agents = User.by_service(scoped_services(:services)).agent
     
     if params[:search].present?
       @agents = @agents.where('users.nom ILIKE :search OR users.prénom ILIKE :search OR users.email ILIKE :search',
