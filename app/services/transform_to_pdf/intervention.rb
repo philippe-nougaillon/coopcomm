@@ -74,6 +74,7 @@ module TransformToPdf
       add_compte_rendu
       add_activite
       add_footer
+      add_numeros_de_page
       self
     end
 
@@ -98,9 +99,6 @@ module TransformToPdf
       text mention, size: 10, style: :italic if mention
 
       move_cursor_to [cursor, bas_logo].min
-      move_down 10
-      stroke_horizontal_rule
-      move_down 20
     end
 
     # Le titre porte la couleur de l'état ; le badge se pose sous lui.
@@ -109,11 +107,15 @@ module TransformToPdf
       état = texte_sûr(@intervention.workflow_state.to_s.humanize.upcase)
       couleur = couleur_état
 
+      # `text` et non `text_box` : il revient à la ligne et descend le curseur de
+      # la hauteur réellement écrite. Une boîte de hauteur fixe rétrécissait la
+      # police et laissait la seconde ligne recouvrir le badge.
       fill_color couleur
-      text_box libellé, at: [0, cursor], width: largeur, height: HAUTEUR_TITRE,
-                        size: TAILLE_TITRE, style: :bold, overflow: :shrink_to_fit
+      bounding_box([0, cursor], width: largeur) do
+        text libellé, size: TAILLE_TITRE, style: :bold
+      end
       fill_color '000000'
-      move_cursor_to cursor - hauteur_ligne(TAILLE_TITRE) - ESPACE_TITRE_BADGE
+      move_down ESPACE_TITRE_BADGE
 
       dessiner_badge(état, couleur, 0, cursor - (HAUTEUR_BADGE / 2.0))
       move_cursor_to cursor - HAUTEUR_BADGE - ESPACE_BADGE
@@ -208,8 +210,9 @@ module TransformToPdf
 
       move_down 10
       text 'Commentaires', size: 10, style: :bold
+
       move_down 4
-      text texte_sûr(@intervention.commentaires.presence || 'Aucun commentaire.'), size: 10
+      text texte_sûr(@intervention.commentaires.presence || 'Aucun commentaire.'), size: 10, align: :justify
     end
 
     def add_temps_seuls
@@ -362,8 +365,6 @@ module TransformToPdf
 
     def ajouter_photos(pieces, message_vide)
       move_down 10
-      text 'Photos', size: 10, style: :bold
-      move_down 4
 
       return text(message_vide, size: 10, style: :italic) unless pieces.attached?
 
@@ -453,15 +454,24 @@ module TransformToPdf
     # pile d'état graphique de Prawn (EmptyGraphicStateStack).
     def add_footer
       repeat(:all) do
-        y = bounds.bottom - HAUTEUR_FOOTER
-
-        stroke_line [0, y], [bounds.width, y]
+        stroke_line [0, bounds.bottom - HAUTEUR_FOOTER], [bounds.width, bounds.bottom - HAUTEUR_FOOTER]
         # `height` est obligatoire : sous la zone de contenu, la hauteur déduite
         # est nulle et Prawn n'écrit rien, sans rien signaler.
         text_box "Document généré le #{I18n.l(Time.current, format: :long)}",
-                 at: [0, y - 5], width: bounds.width, height: HAUTEUR_FOOTER,
+                 at: [0, ordonnée_texte_footer], width: bounds.width, height: HAUTEUR_FOOTER,
                  size: 8, align: :center
       end
+    end
+
+    # Hors du `repeat` : celui-ci pose un tampon unique, réutilisé tel quel sur
+    # chaque page — le numéro y serait figé. `number_pages` repasse page par page.
+    def add_numeros_de_page
+      number_pages '<page>/<total>', at: [0, ordonnée_texte_footer],
+                                     width: bounds.width, align: :right, size: 8
+    end
+
+    def ordonnée_texte_footer
+      bounds.bottom - HAUTEUR_FOOTER - 5
     end
   end
 end

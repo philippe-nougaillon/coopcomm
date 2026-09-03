@@ -84,6 +84,18 @@ class TransformToPdfInterventionTest < ActiveSupport::TestCase
     assert_includes texte, 'NOUVEAU'
   end
 
+  test 'une description longue passe à la ligne sans rétrécir ni recouvrir le badge' do
+    @intervention.update_column(:description,
+                                'Remise en état complète des allées du parc municipal avec élagage des arbres')
+
+    lignes = lignes_du_pdf(TransformToPdf::Intervention.call(@intervention, @manager))
+    titre = lignes.select { |ligne| ligne[:taille] == TransformToPdf::Intervention::TAILLE_TITRE }
+    badge = lignes.find { |ligne| ligne[:texte] == 'NOUVEAU' }
+
+    assert_operator titre.size, :>, 1
+    assert_operator titre.last[:y], :>, badge[:y]
+  end
+
   test "le titre reprend la description et prend la couleur de l'état" do
     @intervention.update_column(:description, 'Élagage du square')
 
@@ -170,6 +182,16 @@ class TransformToPdfInterventionTest < ActiveSupport::TestCase
     refute_includes texte, 'PHOTOS INTERVENTION'
   end
 
+  test 'chaque page est numérotée à droite, sur la ligne du pied de page' do
+    lignes = lignes_du_pdf(TransformToPdf::Intervention.call(@intervention, @manager))
+    numeros = lignes.select { |ligne| ligne[:texte].match?(%r{\A\d+/\d+\z}) }
+    date = lignes.find { |ligne| ligne[:texte].start_with?('Document généré') }
+
+    assert_equal (1..numeros.size).map { |page| "#{page}/#{numeros.size}" }, numeros.map { |l| l[:texte] }
+    assert_equal date[:y], numeros.first[:y]
+    assert_operator numeros.first[:x], :>, date[:x]
+  end
+
   test 'le pied de page porte la date de génération' do
     assert_includes fiche(@intervention, @manager), "Document généré le #{I18n.l(Time.current, format: :long)}"
   end
@@ -206,6 +228,17 @@ class TransformToPdfInterventionTest < ActiveSupport::TestCase
 
   def section_pointages(texte)
     texte.split('POINTAGES').last
+  end
+
+  def lignes_du_pdf(document)
+    document.render.dup.force_encoding(Encoding::BINARY).scan(/BT(.*?)ET/m).filter_map do |(bloc)|
+      position = bloc.match(/([\d.]+) ([\d.]+) Td/)
+      next if position.nil?
+
+      texte = bloc.scan(/<([0-9A-Fa-f]+)>/).map { |(hexa)| [hexa].pack('H*') }.join
+      { x: position[1].to_f, y: position[2].to_f, taille: bloc[%r{/F[\w.]+ ([\d.]+) Tf}, 1].to_f,
+        texte: texte.force_encoding('Windows-1252').encode('UTF-8') }
+    end
   end
 
   def couleurs_du_pdf(document)
