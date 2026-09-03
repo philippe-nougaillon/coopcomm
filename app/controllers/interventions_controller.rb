@@ -600,10 +600,12 @@ class InterventionsController < ApplicationController
   end
 
   def format_datetime_from_form
-    params[:intervention][:début_prévue] = Intervention.combine_datetime(dates_params[:début_prévue], dates_params[:début_prévue_hour], dates_params[:début_prévue_minute])
-    params[:intervention][:fin_prévue] = Intervention.combine_datetime(dates_params[:fin_prévue], dates_params[:fin_prévue_hour], dates_params[:fin_prévue_minute])
-    params[:intervention][:début] = Intervention.combine_datetime(dates_params[:début], dates_params[:début_hour], dates_params[:début_minute])
-    params[:intervention][:fin] = Intervention.combine_datetime(dates_params[:fin], dates_params[:fin_hour], dates_params[:fin_minute])
+    %i[début_prévue fin_prévue début fin].each do |champ_date|
+      # Permet de ne pas écraser la date si elle n'est pas dans params
+      next unless dates_params.key?(champ_date)
+
+      params[:intervention][champ_date] = Intervention.combine_datetime(dates_params[champ_date], dates_params["#{champ_date}_hour"], dates_params["#{champ_date}_minute"])
+    end
   end
 
   def dates_params
