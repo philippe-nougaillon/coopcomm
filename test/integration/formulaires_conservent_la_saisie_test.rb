@@ -135,7 +135,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
   end
 
   # Les heures saisies sans leur date ne peuvent pas être fusionnées dans la
-  # colonne datetime : elles doivent survivre par leurs accesseurs virtuels.
+  # colonne datetime
   test 'intervention : les heures survivent même quand la date manque' do
     agent = users(:bond)
     sign_in agent

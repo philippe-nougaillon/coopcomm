@@ -12,6 +12,8 @@ class InterventionsController < ApplicationController
   before_action :set_interventions_tags,
                 only: %i[index new edit create update new_intervention_modele_pointage create_intervention_modele_pointage]
 
+  before_action :format_datetime_from_form, only: %i[create update]
+
   trie Intervention, defaut: 'interventions.updated_at', sens: :desc
 
   # GET /interventions or /interventions.json
@@ -88,10 +90,10 @@ class InterventionsController < ApplicationController
   # GET /interventions/new
   def new
     @intervention = Intervention.new(début_prévue: params[:début_prévue], fin_prévue: params[:fin_prévue])
-    @intervention.début_prévue_hour = params[:début_prévue_hour] || 8
-    @intervention.début_prévue_minute = params[:début_prévue_minute] || 0
-    @intervention.fin_prévue_hour = params[:fin_prévue_hour] || 16
-    @intervention.fin_prévue_minute = params[:fin_prévue_minute] || 0
+    params[:début_prévue_hour] ||= 8
+    params[:début_prévue_minute] ||= 0
+    params[:fin_prévue_hour] ||= 16
+    params[:fin_prévue_minute] ||= 0
 
     if current_user.agent?
       @intervention.agent_ids = current_user.id
@@ -562,8 +564,8 @@ class InterventionsController < ApplicationController
   # Only allow a list of trusted parameters through.
   # :workflow_state, :note et :avis sont volontairement exclus du mass assignment.
   def intervention_params
-    permitted = params.require(:intervention).permit(:adherent_id, :service_id, :début, :début_hour, :début_minute, :fin,
-                                                     :fin_hour, :fin_minute, :temps_de_pause, :temps_total, :description, :commentaires, :tag_list, :repeter, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute, :meteo, photos: [], agent_ids: [], tool_ids: [], photos_demande: [])
+    permitted = params.require(:intervention).permit(:adherent_id, :service_id, :début, :fin,
+                                                      :temps_de_pause, :temps_total, :description, :commentaires, :tag_list, :repeter, :début_prévue, :fin_prévue, :meteo, photos: [], agent_ids: [], tool_ids: [], photos_demande: [])
     permitted.merge!(params.require(:intervention).permit(:note, :avis)) if current_user.adhérent? || current_user.manager_or_admin?
     permitted
   end
@@ -595,5 +597,16 @@ class InterventionsController < ApplicationController
     redirect_to @intervention,
                 alert: "L'intervention n'est pas valide, elle ne peut pas être #{etat} : #{motifs}"
     true
+  end
+
+  def format_datetime_from_form
+    params[:intervention][:début_prévue] = Intervention.combine_datetime(dates_params[:début_prévue], dates_params[:début_prévue_hour], dates_params[:début_prévue_minute])
+    params[:intervention][:fin_prévue] = Intervention.combine_datetime(dates_params[:fin_prévue], dates_params[:fin_prévue_hour], dates_params[:fin_prévue_minute])
+    params[:intervention][:début] = Intervention.combine_datetime(dates_params[:début], dates_params[:début_hour], dates_params[:début_minute])
+    params[:intervention][:fin] = Intervention.combine_datetime(dates_params[:fin], dates_params[:fin_hour], dates_params[:fin_minute])
+  end
+
+  def dates_params
+    params.require(:intervention).permit(:début, :début_hour, :début_minute, :fin, :fin_hour, :fin_minute, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute)
   end
 end

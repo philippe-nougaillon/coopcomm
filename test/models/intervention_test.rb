@@ -59,26 +59,62 @@ class InterventionTest < ActiveSupport::TestCase
     assert_predicate intervention, :valid?
   end
 
-  test 'combine_datetime : heure et minute saisies à part → reportées sur la date' do
-    intervention = interventions(:nouvelle_intervention)
-    intervention.début_prévue = Time.zone.local(2030, 5, 4, 8, 0)
-    intervention.début_prévue_hour = '14'
-    intervention.début_prévue_minute = '45'
-
-    intervention.valid?
-
-    assert_equal 14, intervention.début_prévue.hour
-    assert_equal 45, intervention.début_prévue.min
+  test 'combine_datetime : date nulle → nil' do
+    assert_nil Intervention.combine_datetime(nil, '9', '5')
   end
 
-  test 'combine_datetime : date absente → aucune heure inventée' do
+  test 'combine_datetime : date vide → nil' do
+    assert_nil Intervention.combine_datetime('', '9', '5')
+  end
+
+  test 'combine_datetime : date vide, heure et minute vides → nil' do
+    assert_nil Intervention.combine_datetime('', '', '')
+  end
+
+  test 'combine_datetime : heure et minute fournies → reportées sur la date' do
+    date = Time.zone.local(2024, 4, 19, 0, 0)
+
+    assert_equal Time.zone.local(2024, 4, 19, 9, 5), Intervention.combine_datetime(date, '9', '5')
+  end
+
+  test 'combine_datetime : heure seule → la minute de la date est conservée' do
+    date = Time.zone.local(2024, 4, 19, 8, 30)
+
+    assert_equal Time.zone.local(2024, 4, 19, 9, 30), Intervention.combine_datetime(date, '9', '')
+  end
+
+  test 'combine_datetime : minute seule → l\'heure de la date est conservée' do
+    date = Time.zone.local(2024, 4, 19, 8, 30)
+
+    assert_equal Time.zone.local(2024, 4, 19, 8, 5), Intervention.combine_datetime(date, '', '5')
+  end
+
+  test 'combine_datetime : heure et minute reçues du formulaire → converties depuis leur chaîne' do
+    date = Time.zone.local(2024, 4, 19, 0, 0)
+
+    assert_equal Time.zone.local(2024, 4, 19, 8, 5), Intervention.combine_datetime(date, '08', '05')
+  end
+
+  test 'combine_datetime : date seule, heure et minute vides → la date rendue intacte' do
+    date = Time.zone.local(2024, 4, 19, 8, 30)
+
+    assert_equal date, Intervention.combine_datetime(date, '', '')
+  end
+
+  test 'dates : changement des quatre dates → chacune ressort identique à celle fournie' do
     intervention = interventions(:nouvelle_intervention)
-    intervention.début_prévue = nil
-    intervention.début_prévue_hour = '14'
+    début = Time.zone.local(2024, 4, 19, 9, 5, 37)
+    fin = Time.zone.local(2024, 4, 19, 18, 45, 12)
+    début_prévue = Time.zone.local(2030, 5, 4, 8, 15, 3)
+    fin_prévue = Time.zone.local(2030, 5, 4, 17, 45, 59)
 
-    intervention.valid?
+    intervention.update!(début: début, fin: fin, début_prévue: début_prévue, fin_prévue: fin_prévue)
 
-    assert_nil intervention.début_prévue
+    intervention.reload
+    assert_equal début, intervention.début
+    assert_equal fin, intervention.fin
+    assert_equal début_prévue, intervention.début_prévue
+    assert_equal fin_prévue, intervention.fin_prévue
   end
 
   test 'set_temporary_description : création sans description → bouchon posé puis remplacé par l\'identifiant' do

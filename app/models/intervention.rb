@@ -15,8 +15,6 @@ class Intervention < ApplicationRecord
 
   # Autorise Rails à lire et écrire ces champs virtuels pour le formulaire
   attr_accessor :tags_manager
-  attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute, :début_hour,
-                :début_minute, :fin_hour, :fin_minute
 
   before_destroy :must_not_have_any_mouvements
 
@@ -42,10 +40,11 @@ class Intervention < ApplicationRecord
   MESSAGE_AGENT_UNIQUE = "Une intervention de pointage n'accepte qu'un seul agent"
 
 
-  before_validation -> { combine_datetime(:début_prévue) }
-  before_validation -> { combine_datetime(:fin_prévue) }
-  before_validation -> { combine_datetime(:début) }
-  before_validation -> { combine_datetime(:fin) }
+  # TODO : a voir si il faut garder le validate dans le cas ou il faut vérifier que la date est bien combiné
+  #before_validation -> { combine_datetime(:début_prévue) }
+  #before_validation -> { combine_datetime(:fin_prévue) }
+  #before_validation -> { combine_datetime(:début) }
+  #before_validation -> { combine_datetime(:fin) }
   before_validation :check_absence
   before_validation :set_temporary_description, on: :create
   before_validation :check_workflow_pointage_mère
@@ -523,19 +522,23 @@ class Intervention < ApplicationRecord
     end
   end
 
+  # Permet de combiner la date, l'heure et la minute (seconde toujours à 0).
+  # Est utilisé après un formulaire pour formater la date
+  def self.combine_datetime(date, hour, minute)
+    return if date.blank?
+
+    date = DateTime.parse(date.to_s)
+
+    hour = hour.presence || date.hour
+    minute = minute.presence || date.minute
+    
+    Time.zone.local(date.year, date.month, date.day, hour.to_i, minute.to_i)
+  end
+
   private
 
   def slug_candidates
     [SecureRandom.uuid]
-  end
-
-  def combine_datetime(field)
-    datetime = send(field)
-    return if datetime.blank?
-
-    hour = send("#{field}_hour").presence || datetime.hour
-    minute = send("#{field}_minute").presence || datetime.min
-    send("#{field}=", datetime.change(hour: hour.to_i, min: minute.to_i, sec: datetime.sec))
   end
 
   def broadcast_to_authorized_viewers

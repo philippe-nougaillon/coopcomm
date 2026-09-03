@@ -597,6 +597,61 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_nil intervention.temps_de_pause
   end
 
+  test 'une intervention créée sans aucune date naît avec ses quatre dates vides' do
+    post interventions_url, params: {
+      intervention: {
+        description: 'Demande sans aucune date',
+        adherent_id: users(:patrick_adherent_paris).id,
+        service_id: services(:technique).id,
+        début_prévue: '', début_prévue_hour: '', début_prévue_minute: '',
+        fin_prévue: '', fin_prévue_hour: '', fin_prévue_minute: '',
+        début: '', début_hour: '', début_minute: '',
+        fin: '', fin_hour: '', fin_minute: ''
+      }
+    }
+
+    intervention = Intervention.find_by(description: 'Demande sans aucune date')
+    assert intervention, 'garde : la création doit avoir abouti'
+    assert_nil intervention.début_prévue
+    assert_nil intervention.fin_prévue
+    assert_nil intervention.début
+    assert_nil intervention.fin
+  end
+
+  test 'les dates prévues sont enregistrées avec l’heure et la minute choisies dans le formulaire' do
+    post interventions_url, params: {
+      intervention: {
+        description: 'Élagage planifié à l’heure',
+        adherent_id: users(:patrick_adherent_paris).id,
+        service_id: services(:technique).id,
+        début_prévue: '2030-05-04', début_prévue_hour: '8', début_prévue_minute: '15',
+        fin_prévue: '2030-05-04', fin_prévue_hour: '17', fin_prévue_minute: '45'
+      }
+    }
+
+    intervention = Intervention.find_by(description: 'Élagage planifié à l’heure')
+    assert intervention, 'garde : la création doit avoir abouti'
+    assert_equal Time.zone.local(2030, 5, 4, 8, 15), intervention.début_prévue
+    assert_equal Time.zone.local(2030, 5, 4, 17, 45), intervention.fin_prévue
+  end
+
+  test 'les dates réelles sont enregistrées avec l’heure et la minute choisies dans le formulaire' do
+    post interventions_url, params: {
+      intervention: {
+        description: 'Élagage réalisé à l’heure',
+        adherent_id: users(:patrick_adherent_paris).id,
+        service_id: services(:technique).id,
+        début: '2024-04-19', début_hour: '9', début_minute: '5',
+        fin: '2024-04-19', fin_hour: '18', fin_minute: '45'
+      }
+    }
+
+    intervention = Intervention.find_by(description: 'Élagage réalisé à l’heure')
+    assert intervention, 'garde : la création doit avoir abouti'
+    assert_equal Time.zone.local(2024, 4, 19, 9, 5), intervention.début
+    assert_equal Time.zone.local(2024, 4, 19, 18, 45), intervention.fin
+  end
+
   test 'une intervention créée par un adhérent naît à l’état nouveau' do
     adherent = users(:weil)
     sign_in adherent
@@ -879,6 +934,20 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
       }
     }
     assert_redirected_to intervention_url(@intervention)
+  end
+
+  test 'une modification qui ne soumet aucune date laisse les quatre dates intactes' do
+    intervention = interventions(:tonte_locaux)
+    dates_avant = intervention.slice(:début, :fin, :début_prévue, :fin_prévue)
+
+    patch intervention_url(intervention), params: { intervention: { commentaires: 'Commentaire seul' } }
+
+    intervention.reload
+    assert_equal 'Commentaire seul', intervention.commentaires
+    assert_equal dates_avant['début'], intervention.début
+    assert_equal dates_avant['fin'], intervention.fin
+    assert_equal dates_avant['début_prévue'], intervention.début_prévue
+    assert_equal dates_avant['fin_prévue'], intervention.fin_prévue
   end
 
   # ==================== TESTS CRITIQUES ====================
@@ -1740,6 +1809,33 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
     intervention_créée.reload
     assert_not_nil intervention_créée
+  end
+
+  test 'le pointage de début enregistre l’instant exact du scan' do
+    sign_in users(:bond)
+    modele = interventions(:intervention_repete)
+    scan = Time.current.middle_of_day.change(sec: 12)
+
+    travel_to scan do
+      get pointer_intervention_url(modele)
+    end
+
+    assert_equal scan, Intervention.find_by(template_slug: modele.slug).début
+  end
+
+  test 'le pointage de fin enregistre l’instant exact du scan' do
+    sign_in users(:bond)
+    modele = interventions(:intervention_repete)
+    scan_de_fin = Time.current.middle_of_day.change(sec: 41)
+
+    travel_to Time.current.middle_of_day.change(sec: 12) do
+      get pointer_intervention_url(modele)
+    end
+    travel_to scan_de_fin do
+      get pointer_intervention_url(modele)
+    end
+
+    assert_equal scan_de_fin, Intervention.find_by(template_slug: modele.slug).fin
   end
 
   test "pointer : une intervention qui n'est pas un modèle → aucune fille créée" do
