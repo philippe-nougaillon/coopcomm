@@ -55,10 +55,17 @@ class CotationsController < ApplicationController
   end
 
   # GET /cotations/1
+ 
+
   def show
-    @mail_logs = trier(@cotation.mail_logs)
     @audits = trier(@cotation.own_and_associated_audits.includes(:user))
     @pagy, @audits = pagy(@audits, items: 10)
+
+    @prestations = @cotation.cotation_lignes.includes(:prestation)
+    @pagy_prestations, @prestations = pagy(@prestations, items: 10)
+
+    @mail_logs = trier(@cotation.mail_logs)
+    @pagy_envois, @mail_logs = pagy(@mail_logs, items: 10)
   end
 
   # GET /cotations/new
