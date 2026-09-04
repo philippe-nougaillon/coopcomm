@@ -24,6 +24,7 @@ class AdherentInterventionPolicyTest < ActionDispatch::IntegrationTest
     assert @policy.create?
     assert @policy.edit?
     assert @policy.update?
+    assert @policy.fiche?
     assert @policy.purge?
     assert @policy.purger_photos_demande?
     assert @policy.valider?
@@ -36,7 +37,6 @@ class AdherentInterventionPolicyTest < ActionDispatch::IntegrationTest
 
   test 'accès interdit pour un adhérent sur une intervention dont il est le demandeur' do
     refute @policy.destroy?
-    refute @policy.fiche?
     refute @policy.terminer?
     refute @policy.archiver?
     refute @policy.pointer?

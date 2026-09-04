@@ -17,7 +17,7 @@
               <%= render partial: "carte", collection: @wiki_pages.by_categorie(categorie).first(3), as: :wiki_page %>
             </div>
           <% else %>
-            <p>Aucune page de cette catégorie n'a été créée pour le moment.</p>
+            <p>Aucune page de cette catégorie n'a été trouvée.</p>
           <% end %>
         </div>
       </section>

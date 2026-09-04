@@ -43,7 +43,7 @@ class PrestationsControllerTest < ActionDispatch::IntegrationTest
 
   test 'une prestation créée est rattachée à l’organisation de son auteur' do
     assert_difference('Prestation.count') do
-      post prestations_url, params: { prestation: { code: 'ABC99', libellé: 'Nouvelle', tarif: 42 } }
+      post prestations_url, params: { prestation: { code: 'ABC99', libellé: 'Nouvelle', unité: 'Heure(s)', tarif: 42 } }
     end
 
     assert_redirected_to admin_parametres_path(tab: 'prestations')
@@ -52,7 +52,15 @@ class PrestationsControllerTest < ActionDispatch::IntegrationTest
 
   test 'une prestation sans code n’est pas créée' do
     assert_no_difference -> { Prestation.count } do
-      post prestations_url, params: { prestation: { libellé: 'Sans code', tarif: 10 } }
+      post prestations_url, params: { prestation: { libellé: 'Sans code', unité: 'Heure(s)', tarif: 10 } }
+    end
+
+    assert_response :unprocessable_content
+  end
+
+  test 'une prestation sans unité n’est pas créée' do
+    assert_no_difference -> { Prestation.count } do
+      post prestations_url, params: { prestation: { code: 'ABC98', libellé: 'Sans unité', unité: '  ', tarif: 10 } }
     end
 
     assert_response :unprocessable_content

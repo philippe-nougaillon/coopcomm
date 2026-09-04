@@ -10,6 +10,13 @@ class WikiPageTest < ActiveSupport::TestCase
     assert_not_includes résultats, wiki_pages(:faq_publique)
   end
 
+  test 'la recherche retrouve une documentation par un mot de son sous-titre' do
+    résultats = WikiPage.search_titre_and_contenu('Pas à pas')
+
+    assert_includes résultats, wiki_pages(:guide_public)
+    assert_not_includes résultats, wiki_pages(:faq_publique)
+  end
+
   test 'la recherche retrouve une documentation par un mot de son contenu' do
     résultats = WikiPage.search_titre_and_contenu('matériel')
 

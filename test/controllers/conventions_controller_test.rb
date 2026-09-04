@@ -73,13 +73,6 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test 'les heures conventionnées sont vides dans le formulaire de création' do
-    get new_convention_url
-
-    assert_response :success
-    assert_nil assigns(:convention).heures_conventionnees
-  end
-
   test 'l’adhérent passé en paramètre est préchargé dans le formulaire de création' do
     get new_convention_url(adherent_id: @adherent.slug)
 

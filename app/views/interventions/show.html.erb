@@ -50,7 +50,7 @@
         <% end %>
         <% if policy(@intervention).fiche? %>
           <%= link_to fiche_intervention_path(@intervention, filename: @intervention.pdf_filename),
-              class: "btn btn-outline btn-info flex-1 sm:flex-none", target: "_blank", data: { turbo: false } do %>
+              class: "btn btn-outline btn-info flex-1 sm:flex-none", target: "_blank", data: { turbo: false }, title: "Générer le bon d'intervention (PDF)" do %>
             <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200 hidden md:block" %>
             <span class="block md:hidden"> PDF </span>
             <span class="hidden md:block">Générer PDF</span>
