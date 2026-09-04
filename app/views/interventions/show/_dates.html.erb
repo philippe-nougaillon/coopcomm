@@ -3,7 +3,7 @@
   <div>
     <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Début</span>
     <% if intervention.début.present? %>
-      <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(intervention.début, format: :long) %></p>
+      <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(intervention.début, format: intervention.template_slug.present? ? :very_long : :long ) %></p>
     <% else %>
       <span class="text-slate-400 italic text-sm">Non renseigné</span>
     <% end %>
@@ -11,7 +11,7 @@
   <div class="border-t border-slate-200/60 pt-3">
     <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Fin</span>
     <% if intervention.fin.present? %>
-      <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(intervention.fin, format: :long) %></p>
+      <p class="text-sm font-semibold mt-0.5 text-slate-800"><%= l(intervention.fin, format: intervention.template_slug.present? ? :very_long : :long ) %></p>
     <% else %>
       <span class="text-slate-400 italic text-sm">Non renseignée</span>
     <% end %>

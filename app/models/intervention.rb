@@ -40,11 +40,6 @@ class Intervention < ApplicationRecord
   MESSAGE_AGENT_UNIQUE = "Une intervention de pointage n'accepte qu'un seul agent"
 
 
-  # TODO : a voir si il faut garder le validate dans le cas ou il faut vérifier que la date est bien combiné
-  #before_validation -> { combine_datetime(:début_prévue) }
-  #before_validation -> { combine_datetime(:fin_prévue) }
-  #before_validation -> { combine_datetime(:début) }
-  #before_validation -> { combine_datetime(:fin) }
   before_validation :check_absence
   before_validation :set_temporary_description, on: :create
   before_validation :check_workflow_pointage_mère
@@ -520,19 +515,6 @@ class Intervention < ApplicationRecord
     else
       {}
     end
-  end
-
-  # Permet de combiner la date, l'heure et la minute (seconde toujours à 0).
-  # Est utilisé après un formulaire pour formater la date
-  def self.combine_datetime(date, hour, minute)
-    return if date.blank?
-
-    date = DateTime.parse(date.to_s)
-
-    hour = hour.presence || date.hour
-    minute = minute.presence || date.minute
-    
-    Time.zone.local(date.year, date.month, date.day, hour.to_i, minute.to_i)
   end
 
   private

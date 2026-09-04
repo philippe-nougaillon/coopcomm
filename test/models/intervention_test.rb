@@ -59,48 +59,6 @@ class InterventionTest < ActiveSupport::TestCase
     assert_predicate intervention, :valid?
   end
 
-  test 'combine_datetime : date nulle → nil' do
-    assert_nil Intervention.combine_datetime(nil, '9', '5')
-  end
-
-  test 'combine_datetime : date vide → nil' do
-    assert_nil Intervention.combine_datetime('', '9', '5')
-  end
-
-  test 'combine_datetime : date vide, heure et minute vides → nil' do
-    assert_nil Intervention.combine_datetime('', '', '')
-  end
-
-  test 'combine_datetime : heure et minute fournies → reportées sur la date' do
-    date = Time.zone.local(2024, 4, 19, 0, 0)
-
-    assert_equal Time.zone.local(2024, 4, 19, 9, 5), Intervention.combine_datetime(date, '9', '5')
-  end
-
-  test 'combine_datetime : heure seule → la minute de la date est conservée' do
-    date = Time.zone.local(2024, 4, 19, 8, 30)
-
-    assert_equal Time.zone.local(2024, 4, 19, 9, 30), Intervention.combine_datetime(date, '9', '')
-  end
-
-  test 'combine_datetime : minute seule → l\'heure de la date est conservée' do
-    date = Time.zone.local(2024, 4, 19, 8, 30)
-
-    assert_equal Time.zone.local(2024, 4, 19, 8, 5), Intervention.combine_datetime(date, '', '5')
-  end
-
-  test 'combine_datetime : heure et minute reçues du formulaire → converties depuis leur chaîne' do
-    date = Time.zone.local(2024, 4, 19, 0, 0)
-
-    assert_equal Time.zone.local(2024, 4, 19, 8, 5), Intervention.combine_datetime(date, '08', '05')
-  end
-
-  test 'combine_datetime : date seule, heure et minute vides → la date rendue intacte' do
-    date = Time.zone.local(2024, 4, 19, 8, 30)
-
-    assert_equal date, Intervention.combine_datetime(date, '', '')
-  end
-
   test 'dates : changement des quatre dates → chacune ressort identique à celle fournie' do
     intervention = interventions(:nouvelle_intervention)
     début = Time.zone.local(2024, 4, 19, 9, 5, 37)

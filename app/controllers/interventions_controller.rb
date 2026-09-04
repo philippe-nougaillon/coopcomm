@@ -604,8 +604,38 @@ class InterventionsController < ApplicationController
       # Permet de ne pas écraser la date si elle n'est pas dans params
       next unless dates_params.key?(champ_date)
 
-      params[:intervention][champ_date] = Intervention.combine_datetime(dates_params[champ_date], dates_params["#{champ_date}_hour"], dates_params["#{champ_date}_minute"])
+      nouvelle_date = combine_datetime(champ_date)
+
+      # Si la date n'a pas changé ?
+      if only_seconds_changed?(champ_date, nouvelle_date)
+        # On ne change pas la date
+        params[:intervention].delete(champ_date)
+      # Si la date a changé ?
+      else
+        params[:intervention][champ_date] = nouvelle_date
+      end
     end
+  end
+
+  # Vérifie si uniquement les secondes de la dates ont changées
+  def only_seconds_changed?(champ_date, nouvelle_date)
+    actuelle = @intervention&.public_send(champ_date)
+    return false if actuelle.blank? || nouvelle_date.blank?
+
+    # Dates à 0 secondes
+    actuelle.change(sec: 0) == nouvelle_date.change(sec: 0)
+  end
+
+  # Combine la date, l'heure et la minute passé par la formulaire de l'intervention
+  def combine_datetime(champ_date)
+    date = dates_params[champ_date]
+    return if date.blank?
+
+    date = DateTime.parse(date.to_s)
+    heure = dates_params["#{champ_date}_hour"].presence || date.hour
+    minute = dates_params["#{champ_date}_minute"].presence || date.minute
+
+    Time.zone.local(date.year, date.month, date.day, heure.to_i, minute.to_i)
   end
 
   def dates_params

@@ -652,6 +652,43 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal Time.zone.local(2024, 4, 19, 18, 45), intervention.fin
   end
 
+  test 'une intervention pointée garde ses secondes quand le formulaire est renvoyé sans changement' do
+    intervention = interventions(:tonte_locaux)
+    intervention.update_columns(début: intervention.début.change(sec: 32))
+
+    patch intervention_url(intervention), params: {
+      intervention: { début: intervention.début.to_date.to_s, début_hour: intervention.début.hour, début_minute: intervention.début.min, commentaires: "blablabla je change au moins un paramètre" }
+    }
+
+    assert_equal 32, intervention.reload.début.sec
+  end
+
+  test 'changer l’heure depuis le formulaire enregistre la nouvelle valeur' do
+    intervention = interventions(:tonte_locaux)
+    intervention.update_columns(début: intervention.début.change(sec: 32))
+    attendu = intervention.début.change(min: 35, sec: 0)
+
+    patch intervention_url(intervention), params: {
+      intervention: { début: intervention.début.to_date.to_s, début_hour: '8', début_minute: '35' }
+    }
+
+    assert_equal attendu, intervention.reload.début
+  end
+
+  test 'renvoyer le formulaire sans changer les dates ne crée aucun audit sur début ni fin' do
+    intervention = interventions(:tonte_locaux)
+    intervention.update_columns(début: intervention.début.change(sec: 32), fin: intervention.fin.change(sec: 32))
+    audits_avant = intervention.audits.pluck(:id)
+
+    patch intervention_url(intervention), params: {
+      intervention: { début: intervention.début.to_date.to_s, début_hour: '8', début_minute: '30',
+                      fin: intervention.fin.to_date.to_s, fin_hour: '17', fin_minute: '30' }
+    }
+
+    nouveaux = intervention.audits.where.not(id: audits_avant).map(&:audited_changes)
+    assert_empty nouveaux.select { |changes| changes.key?('début') || changes.key?('fin') }
+  end
+
   test 'une intervention créée par un adhérent naît à l’état nouveau' do
     adherent = users(:weil)
     sign_in adherent
