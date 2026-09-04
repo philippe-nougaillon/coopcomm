@@ -71,7 +71,7 @@
         <div>
           <strong class="block text-xs font-bold text-slate-400 uppercase">Début / Fin</strong>
             <% if intervention.début %>
-              <%= l(intervention.début, format: :short) %>
+              <%= l intervention.début %>
             <% else %>
               <p class="text-xs text-slate-400">
                non renseigné
@@ -79,7 +79,7 @@
             <% end %>
           </p>
             <% if intervention.fin %>
-              <%= l(intervention.fin, format: :short) %>
+              <%= l intervention.fin %>
             <% else %>
               <p class="text-xs text-slate-400">
                 non renseignée
