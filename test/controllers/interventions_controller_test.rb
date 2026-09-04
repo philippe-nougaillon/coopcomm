@@ -652,41 +652,23 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal Time.zone.local(2024, 4, 19, 18, 45), intervention.fin
   end
 
-  test 'une intervention pointée garde ses secondes quand le formulaire est renvoyé sans changement' do
-    intervention = interventions(:tonte_locaux)
-    intervention.update_columns(début: intervention.début.change(sec: 32))
+  test 'une intervention créée avec une date de début sans heure ni minute démarre à minuit' do
+    date_saisie = interventions(:nouvelle_intervention).début.to_date
+    expected = date_saisie.beginning_of_day
 
-    patch intervention_url(intervention), params: {
-      intervention: { début: intervention.début.to_date.to_s, début_hour: intervention.début.hour, début_minute: intervention.début.min, commentaires: "blablabla je change au moins un paramètre" }
+    post interventions_url, params: {
+      intervention: {
+        description: 'Élagage sans heure saisie',
+        adherent_id: users(:patrick_adherent_paris).id,
+        service_id: services(:technique).id,
+        début: date_saisie.to_s, début_hour: '', début_minute: ''
+      }
     }
 
-    assert_equal 32, intervention.reload.début.sec
-  end
-
-  test 'changer l’heure depuis le formulaire enregistre la nouvelle valeur' do
-    intervention = interventions(:tonte_locaux)
-    intervention.update_columns(début: intervention.début.change(sec: 32))
-    attendu = intervention.début.change(min: 35, sec: 0)
-
-    patch intervention_url(intervention), params: {
-      intervention: { début: intervention.début.to_date.to_s, début_hour: '8', début_minute: '35' }
-    }
-
-    assert_equal attendu, intervention.reload.début
-  end
-
-  test 'renvoyer le formulaire sans changer les dates ne crée aucun audit sur début ni fin' do
-    intervention = interventions(:tonte_locaux)
-    intervention.update_columns(début: intervention.début.change(sec: 32), fin: intervention.fin.change(sec: 32))
-    audits_avant = intervention.audits.pluck(:id)
-
-    patch intervention_url(intervention), params: {
-      intervention: { début: intervention.début.to_date.to_s, début_hour: '8', début_minute: '30',
-                      fin: intervention.fin.to_date.to_s, fin_hour: '17', fin_minute: '30' }
-    }
-
-    nouveaux = intervention.audits.where.not(id: audits_avant).map(&:audited_changes)
-    assert_empty nouveaux.select { |changes| changes.key?('début') || changes.key?('fin') }
+    intervention = Intervention.find_by(description: 'Élagage sans heure saisie')
+    assert intervention, 'garde : la création doit avoir abouti'
+    actual = intervention.début
+    assert_equal expected, actual
   end
 
   test 'une intervention créée par un adhérent naît à l’état nouveau' do
@@ -985,6 +967,102 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal dates_avant['fin'], intervention.fin
     assert_equal dates_avant['début_prévue'], intervention.début_prévue
     assert_equal dates_avant['fin_prévue'], intervention.fin_prévue
+  end
+
+  test 'modifier l’heure de début d’un pointage enregistre la nouvelle heure' do
+    sign_in users(:martin_technique_paris)
+    scan_time = Time.current.change(sec: 27) - 2.hours
+    intervention_modele = interventions(:intervention_repete)
+
+    travel_to scan_time do
+      get pointer_intervention_url(intervention_modele)
+    end
+
+    intervention_fille = Intervention.reorder(created_at: :desc).where(template_slug: intervention_modele.slug).first
+    début_avant = intervention_fille.début
+    début_saisi = début_avant - 1.hour
+    expected = début_saisi.change(sec: 0)
+
+    patch intervention_url(intervention_fille), params: {
+      intervention: { début: début_saisi.to_date.to_s,
+                      début_hour: début_saisi.hour,
+                      début_minute: début_saisi.min }
+    }
+
+    actual = intervention_fille.reload.début
+    assert_equal expected, actual
+  end
+
+  test 'modifier uniquement la date de début d’un pointage conserve l’heure et la minute' do
+    sign_in users(:martin_technique_paris)
+    scan_time = Time.current.change(sec: 27) - 2.hours
+    intervention_modele = interventions(:intervention_repete)
+
+    travel_to scan_time do
+      get pointer_intervention_url(intervention_modele)
+    end
+
+    intervention_fille = Intervention.reorder(created_at: :desc).where(template_slug: intervention_modele.slug).first
+    début_avant = intervention_fille.début
+    date_saisie = début_avant.to_date - 1
+    expected = début_avant.change(year: date_saisie.year, month: date_saisie.month,
+                                  day: date_saisie.day, sec: 0)
+
+    patch intervention_url(intervention_fille), params: {
+      intervention: { début: date_saisie.to_s,
+                      début_hour: début_avant.hour,
+                      début_minute: début_avant.min }
+    }
+
+    actual = intervention_fille.reload.début
+    assert_equal expected, actual
+  end
+
+  test 'modifier uniquement le commentaire d’un pointage laisse sa date de début inchangée' do
+    sign_in users(:martin_technique_paris)
+    scan_time = Time.current.change(sec: 27) - 2.hours
+    intervention_modele = interventions(:intervention_repete)
+
+    travel_to scan_time do
+      get pointer_intervention_url(intervention_modele)
+    end
+
+    intervention_fille = Intervention.reorder(created_at: :desc).where(template_slug: intervention_modele.slug).first
+    expected = intervention_fille.début
+
+    patch intervention_url(intervention_fille), params: {
+      intervention: { commentaires: 'Remarque saisie après le scan',
+                      début: expected.to_date.to_s,
+                      début_hour: expected.hour,
+                      début_minute: expected.min }
+    }
+
+    intervention_fille.reload
+    actual = intervention_fille.début
+    assert_equal 'Remarque saisie après le scan', intervention_fille.commentaires
+    assert_equal expected, actual
+  end
+
+  test 'renvoyer le formulaire sans changer les dates ne crée aucun audit sur début ni fin' do
+    intervention = interventions(:tonte_locaux)
+
+    # Changement des secondes, qui ne doit pas créer d'audit après le formulaire qui change à 0 seconde
+    intervention.update_columns(début: intervention.début.change(sec: 32), fin: intervention.fin.change(sec: 32))
+    
+    début_avant = intervention.début
+    fin_avant = intervention.fin
+    audits_avant = intervention.audits.pluck(:id)
+
+    patch intervention_url(intervention), params: {
+      intervention: { début: début_avant.to_date.to_s, début_hour: début_avant.hour, début_minute: début_avant.min,
+                      fin: fin_avant.to_date.to_s, fin_hour: fin_avant.hour, fin_minute: fin_avant.min }
+    }
+
+    # Derniers audits après la modification
+    derniers_audits = intervention.audits.where.not(id: audits_avant).pluck(:audited_changes)
+    
+    # Aucun début ou fin ne doit apparaitre dans les audits
+    refute derniers_audits.any? { |change| change.key?("début") || change.key?("fin") }
   end
 
   # ==================== TESTS CRITIQUES ====================
@@ -1875,6 +1953,42 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal scan_de_fin, Intervention.find_by(template_slug: modele.slug).fin
   end
 
+  test 'terminer un pointage en saisissant sa date de fin laisse sa date de début inchangée' do
+    sign_in users(:bond)
+    scan_time = Time.current.change(sec: 27) - 2.hour
+
+    modele = interventions(:intervention_repete)
+
+    travel_to scan_time do
+      get pointer_intervention_url(modele)
+    end
+
+    intervention_fille = Intervention.reorder(created_at: :desc).where(template_slug: modele.slug).first
+
+    expected_début = intervention_fille.début
+    fin_saisie = scan_time + 2.hours
+    expected_fin = fin_saisie.change(sec: 0)
+
+    travel_to fin_saisie do
+      patch intervention_url(intervention_fille), params: {
+        terminer: 1,
+        intervention: {
+          début: expected_début.to_date.to_s,
+          début_hour: expected_début.hour, début_minute: expected_début.min,
+          fin: fin_saisie.to_date.to_s,
+          fin_hour: fin_saisie.hour, fin_minute: fin_saisie.min,
+          temps_de_pause: 0
+        }
+      }
+    end
+
+    intervention_fille.reload
+    actual_début = intervention_fille.début
+    actual_fin = intervention_fille.fin
+    assert_equal expected_début, actual_début
+    assert_equal expected_fin, actual_fin
+  end
+
   test "pointer : une intervention qui n'est pas un modèle → aucune fille créée" do
     intervention = interventions(:intervention_repete)
     intervention.repeter = false
@@ -2212,8 +2326,6 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_content
   end
-
-  # L'agent affecté ouvre SA propre intervention validée : la page ne doit
 
   private
 
