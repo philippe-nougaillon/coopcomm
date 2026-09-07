@@ -5,6 +5,11 @@ export default class extends Controller {
 
   connect() {
 
+    const blankOption = this.element.querySelector('option[value=""]')
+      if (blankOption) {
+        blankOption.dataset.placeholder = 'true'
+      }
+
     // Paramètres communs
     const commonSettings = {
       placeholderText: this.element.dataset.placeholder || '',
