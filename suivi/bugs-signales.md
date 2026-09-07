@@ -138,19 +138,13 @@
 - **Cause** : la vue ([adherent_crm/index.html.erb:29](app/views/adherent_crm/index.html.erb#L29)) alimente le menu avec `Commande.workflow_state_humanized` **quel que soit l'onglet**. Or `Commande` n'a pas l'état `SIGNE` ([commande.rb:22-26](app/models/commande.rb#L22)), contrairement à `Cotation` ([cotation.rb:25-30](app/models/cotation.rb#L25)).
 - **Correctif proposé** : choisir la classe selon `@tab` (`{'cotations' => Cotation, 'commandes' => Commande, 'factures' => Facture}[@tab]`). **Non corrigé** (modification de vue avec effet sur le comportement → hors du périmètre /tests).
 
-### B34 — CRM adhérent : le terme de recherche n'est pas échappé (jokers SQL actifs)
-- **Signalé par** : agent, 2026-07-29 (session /tests lot B).
-- **Parcours de reproduction** : CRM → champ « Rechercher » → saisir `%` (ou `_`) → **tous** les documents du périmètre remontent, au lieu de ceux contenant littéralement ce caractère.
-- **Cause** : `apply_filters` ([adherent_crm_controller.rb:29](app/controllers/adherent_crm_controller.rb#L29)) construit `"%#{params[:search]}%"` sans échapper `%` ni `_`, qui sont les jokers de `ILIKE`.
-- **Portée** : **pas une faille** — la valeur passe par un paramètre lié (`s:`), donc aucune injection SQL, et le filtre ne peut que restreindre `policy_scope`. Simple gêne fonctionnelle. Sévérité faible.
-- **Correctif proposé** : `ActiveRecord::Base.sanitize_sql_like(params[:search])` avant interpolation. **Non corrigé** (méthode /tests). Comportement actuel **épinglé** par un test, à inverser à la correction.
-
-### B35 — CRM adhérent : le filtre `adherent_id` est ignoré sur l'onglet Cotations
-- **Signalé par** : agent, 2026-07-29 (session /tests lot B).
-- **Parcours de reproduction** : en manager, appeler `/adherent_crm?adherent_id=<id>` → les onglets Commandes et Factures sont bien restreints à cet adhérent ([adherent_crm_controller.rb:95](app/controllers/adherent_crm_controller.rb#L95) et l.118), l'onglet Cotations ne l'est **pas**.
-- **Cause** : asymétrie entre les trois `prepare_variables_of_*_for_view` — `adherent_id` (sans accent) n'est appliqué qu'aux commandes et factures ; seul `adhérent_ids` (avec accent, dans `apply_filters`) vaut pour les trois. Deux paramètres différents pour la même intention, dont aucun n'est aujourd'hui émis par le formulaire de la vue.
-- **Portée** : incohérence, pas une fuite (`policy_scope` borne les trois onglets de la même manière).
-- **Correctif proposé** : unifier sur un seul paramètre et l'appliquer dans `apply_filters`. **Non corrigé** (méthode /tests). Comportement actuel **épinglé** par un test.
+### B34 — REQUALIFIÉ (2026-09-07) : le terme de recherche n'est pas échappé, mais c'est le comportement de TOUTE l'application
+- **Signalé par** : agent, 2026-07-29 (session /tests lot B), comme un défaut du CRM adhérent.
+- **Parcours de reproduction** : n'importe quel champ « Rechercher » de l'application → saisir `%` (ou `_`) → **tous** les documents du périmètre remontent, au lieu de ceux contenant littéralement ce caractère. Reproductible **par l'adhérent** sur le CRM, dont il est le seul utilisateur depuis que la page lui est réservée.
+- **Requalification** : la fiche visait `apply_filters` du CRM comme s'il s'agissait d'une anomalie locale. **Mesuré le 2026-09-07** : les **12** emplacements de recherche du dépôt s'écrivent tous `"%#{params[:search]}%"` avec paramètre lié, sans exception — `interventions_controller#filtrer_par_recherche` ([l.456](app/controllers/interventions_controller.rb#L456)), `users`, `tools`, `cotations`, `commandes`, `factures`, `conventions`, `admin`, `messagerie`, `mail_logs`, `wiki_pages`. Le CRM ne diverge de rien : il fait comme tout le monde.
+- **Portée** : **pas une faille** — la valeur passe par un paramètre lié, donc aucune injection SQL, et le filtre ne peut que restreindre `policy_scope`. Simple gêne fonctionnelle. Sévérité faible.
+- **Décision (PE, 2026-09-07)** : « comment est-ce géré dans les autres contrôleurs ? si la version des interventions est ok, prends la même » → la version des interventions étant **identique**, il n'y a rien à aligner et **rien n'a été changé**. Corriger le seul CRM créerait une page où `%` est littéral face à onze où il reste joker.
+- **Si le sujet est rouvert** : c'est un chantier **global** (`ActiveRecord::Base.sanitize_sql_like` sur les 12 emplacements, ou un helper partagé), pas un correctif d'une ligne. Comportement actuel **épinglé** par un test du CRM.
 
 ### B38 — Créer un outil ne pose aucun mouvement : le `after_create` échoue en silence
 - **Signalé par** : agent, 2026-07-29 (session `/tests` « matériel », reproduit par test).
@@ -365,6 +359,11 @@
 ---
 
 ## ✅ Bugs corrigés (historique)
+
+### B35 — ✅ SANS OBJET (2026-09-07) — Le filtre `adherent_id` a disparu avec l'accès des gestionnaires au CRM
+- **Signalé par** : agent, 2026-07-29 (session /tests lot B) : `adherent_id` (sans accent) n'était appliqué qu'aux commandes et factures, pas aux cotations.
+- **Devenu sans objet** : `CrmPolicy#index?` réserve le CRM aux adhérents (décision PE, 2026-09-07). Les deux `where(adherent_id: params[:adherent_id])` ne servaient qu'aux gestionnaires ; ils ont été **supprimés** avec les branches devenues mortes, et leurs trois tests d'épinglage avec eux. Il ne reste qu'un seul paramètre d'adhérent, `adhérent_ids` dans `apply_filters`, appliqué identiquement aux trois onglets.
+- **Reste à savoir** : `adhérent_ids` n'est émis par **aucun** formulaire de la vue (`@adhérents` n'était déjà lu nulle part) — il n'a d'utilité que pour une requête forgée, où il ne peut que restreindre le périmètre de l'adhérent. À supprimer aussi le jour où l'on nettoie `apply_filters`.
 
 ### B102 — ✅ CORRIGÉ (2026-09-07, en deux commits) — Depuis le retour en arrière sur slim-select, deux champs obligatoires acceptaient d'être vidés : l'état d'un mouvement et le rôle d'un utilisateur
 - **Où** : `mouvements/_form.html.erb` (État) et `users/_form.html.erb:23` (Rôle). Conséquence directe de `#491`, qui avait retiré le garde JS de B99 : l'option vide d'un select obligatoire était de nouveau proposée au menu, et la choisir ne déclenchait **aucun** blocage du navigateur (mécanisme mesuré en B99 : SlimSelect duplique l'option en 2ᵉ position, la sélection ne porte plus sur un placeholder). Ces deux champs étaient les seuls des ~10 selects `required` du dépôt à n'avoir aucun filet serveur — les autres sont rattrapés par un `belongs_to` ou par une validation de présence (`Prestation#unité` depuis `#486`).

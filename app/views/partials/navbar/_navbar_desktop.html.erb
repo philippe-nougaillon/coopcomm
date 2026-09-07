@@ -32,7 +32,7 @@
           </li>
         <% end %>
 
-        <% if policy(Commande).index? || policy(Facture).index? || policy(Cotation).index? %>
+        <% if policy(:crm).index? %>
           <li>
             <%= link_to adherent_crm_path, class: class_names("h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => params[:controller] == 'adherent_crm'), title: "Adhérent CRM" do %>
               <%= embedded_svg "icons/contract.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
