@@ -84,6 +84,7 @@
     <span data-dropzone-target="error" class="hidden text-sm text-error font-medium"></span>
   </div>
   <ul data-dropzone-target="fileList" class="hidden flex-col gap-2 mt-3"></ul>
+  
   <span class="text-xs text-slate-400">Formats acceptés : <%= formats %> — <%= taille_max %> maximum par fichier.</span>
   <% if saved_blobs.any? && replace_hint && !multiple %>
     <span class="text-xs text-slate-400">Déposer un nouveau fichier remplacera le document actuel.</span>

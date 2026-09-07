@@ -26,7 +26,12 @@
         <%= label_tag :service_ids, "Services", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
         <%= select_tag :service_ids,
                       options_from_collection_for_select(@services || [], 'id', 'nom', params[:service_ids]),                       class: 'slim-select w-full h-10',
-                      data: { placeholder: 'Tous les services'},
+                      multiple: true,
+                      class: 'slim-select w-full h-10',
+                      data: { placeholder: 'Tous les services',
+                        max_values_shown_desktop: 2,
+                        max_values_shown_mobile: 2 
+                      },
                       onchange: 'this.form.requestSubmit()' %>
       </div>
       <div class="w-full md:flex-1">
