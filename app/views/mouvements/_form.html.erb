@@ -27,18 +27,21 @@
         <%= form.label :tool_id, class: "label font-semibold text-slate-700" do %>
           <span>Matériel <span class="text-red-500">*</span></span>
         <% end %>
-        <%= form.select :tool_id, 
+           <%= form.select :tool_id,
             options_from_collection_for_select(@tools, :id, :name, @mouvement.tool_id),
-            {include_blank: true, required: true}, 
-            class: "slim-select w-full h-10" %>
+            { required: true },
+            { class: "slim-select w-full h-10",
+              data: { controller: "slim-select", placeholder: "Sélectionner un matériel" } } %>
       </div>
     <% end %>
     <div class="w-full">
       <%= form.label :état, class: "label font-semibold text-slate-700"  do%>
         <span>État <span class="text-red-500">*</span></span>
       <% end %>
-      <%= form.select :état, options_for_select([['Panne', 'panne'], ['Fin de panne', 'fin_de_panne']], mouvement.état), 
-          {include_blank: true}, class: 'slim-select w-full h-10', required: true %>
+      <%= form.select :état,  options_for_select([['Panne', 'panne'], ['Fin de panne', 'fin_de_panne']], mouvement.état),
+      { required: true, },
+      { class: "slim-select w-full h-10",
+        data: { controller: "slim-select",  placeholder: "Sélectionner un état" } } %>
     </div>
     <div class="w-full">
       <%= form.label :date, class: "label font-semibold text-slate-700" %>
