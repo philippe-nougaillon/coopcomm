@@ -17,6 +17,22 @@ class AdherentCrmControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:cotations), cotations(:cotation_envoyée)
   end
 
+  test "un adhérent ne voit pas la commande d'un autre adhérent de son organisation (critique)" do
+    sign_in users(:weil)
+
+    get adherent_crm_url(tab: 'commandes')
+
+    assert_not_includes assigns(:commandes), commandes(:commande_autre_adherent)
+  end
+
+  test "un adhérent ne voit pas la facture d'un autre adhérent de son organisation (critique)" do
+    sign_in users(:weil)
+
+    get adherent_crm_url(tab: 'factures')
+
+    assert_not_includes assigns(:factures), factures(:facture_autre_adherent)
+  end
+
   test "un adhérent ne voit aucune cotation d'une autre organisation (critique)" do
     sign_in users(:weil)
 
