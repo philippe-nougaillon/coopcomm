@@ -2,7 +2,7 @@
   <td class="px-4 py-3.5 uppercase text-primary font-bold text-lg max-w-[180px] truncate">
     <%= link_to prestation.code, prestation_path(prestation), class: 'hover:underline', title: prestation.code %>
   </td>
-  <td class="px-4 py-3.5 text-base font-semibold capitalize">
+  <td class="px-4 py-3.5 text-base font-semibold first-letter:capitalize">
     <%= prestation.libellé %>
   </td>
   <td class="px-4 py-3.5 text-base text-center">
@@ -28,7 +28,7 @@
       </span>
     <% end %>
   </td>
-  <td class="px-4 py-3.5 text-base capitalize text-center">
+  <td class="px-4 py-3.5 text-base first-letter:capitalize text-center">
     <%= prestation.unité %>
   </td>
   <td class="px-4 py-3.5 text-base text-center font-medium">

@@ -13,7 +13,7 @@
         <%= audit.user.email %>
       </div>
       <div class="text-slate-400 text-xs flex items-center gap-1.5 mt-0.5">
-        <span class="capitalize"><%= audit.user.rôle.to_s.humanize %></span>
+        <span class="first-letter:capitalize"><%= audit.user.rôle.to_s.humanize %></span>
       </div>
     <% else %>
       <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-wider">

@@ -43,7 +43,7 @@
       <% end %>
     </div>
   </td>
-  <td class="px-4 py-3 text-base capitalize"><%= cotation.intitulé %></td>
+  <td class="px-4 py-3 text-base first-letter:capitalize"><%= cotation.intitulé %></td>
   <td class="px-4 py-3 text-nowrap text-center text-base">
     <% if cotation.date_livraison_souhaitée.present? %>
       <% formatted_date = l(cotation.date_livraison_souhaitée, format: :long) %>

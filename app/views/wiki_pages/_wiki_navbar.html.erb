@@ -31,7 +31,7 @@
           <% end %>
           <% WikiPage.by_role_for(current_user).by_categorie(catégorie).first(3).each do |wiki| %>
             <%= link_to documentation_path(wiki) do %>
-              <div class="flex gap-2 items-center text-sm mt-2 hover:bg-slate-200 pl-12 capitalize <%= 'bg-slate-100 hover:bg-base-300' if @wiki_page == wiki %>">
+              <div class="flex gap-2 items-center text-sm mt-2 hover:bg-slate-200 pl-12 first-letter:capitalize <%= 'bg-slate-100 hover:bg-base-300' if @wiki_page == wiki %>">
                 <%= wiki.titre %>
               </div>
             <% end %>

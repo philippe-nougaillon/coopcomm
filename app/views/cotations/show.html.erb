@@ -96,7 +96,7 @@
                 <%= embedded_svg "icons/store.svg", class: "w-5 h-5 fill-current" %>
                 <span class="text-base">Service</span>
               </div>
-              <div class="text-base text-slate-800 font-medium text-right capitalize truncate">
+              <div class="text-base text-slate-800 font-medium text-right first-letter:capitalize truncate">
                 <%= @cotation.service&.nom %>
               </div>
             </div>
@@ -105,7 +105,7 @@
                 <%= embedded_svg "icons/label.svg", class: "w-5 h-5 fill-current" %>
                 <span class="text-base">Intitulé</span>
               </div>
-              <div class="text-base text-slate-800 font-medium text-right capitalize truncate">
+              <div class="text-base text-slate-800 font-medium text-right first-letter:capitalize truncate">
                 <%= @cotation.intitulé %>
               </div>
             </div>
@@ -261,7 +261,7 @@
               <td class="px-4 py-3 font-semibold text-sm text-left max-w-48 truncate cursor-help" title="<%= ligne.prestation&.code %>">
                 <%= ligne.prestation&.code %>
               </td>
-              <td class="px-4 py-3 text-sm text-primary font-bold capitalize"><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
+              <td class="px-4 py-3 text-sm text-primary font-bold first-letter:capitalize"><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
               <td class="px-4 py-3 text-right text-sm whitespace-nowrap"><%= number_to_currency(ligne.prix_ht) %></td>
               <td class="px-6 py-4 text-center font-medium">
                 <span class="bg-slate-100 px-2 py-1 rounded font-semibold text-sm text-slate-600"><%= ligne.qté %></span>
