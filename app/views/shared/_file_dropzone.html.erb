@@ -62,18 +62,7 @@
      data-dropzone-drop-label-value="Déposez le fichier ici"
      data-testid="dropzone_<%= attribute %>">
   <%= form.label attribute, label, class: "label font-semibold text-slate-700"  %>
-  <% if saved_blobs.any? %>
-    <div class="mb-3">
-      <p class="text-sm font-semibold text-slate-700 mb-2"><%= multiple ? "Fichiers actuels" : "Document actuel" %></p>
-      <ul class="flex flex-col gap-2">
-        <% saved_blobs.each do |blob| %>
-          <%= render "shared/ligne_fichier", nom: blob.filename.to_s,
-                     url: rails_blob_path(blob, disposition: "inline"), octets: blob.byte_size %>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
-  <div data-dropzone-target="box"
+      <div data-dropzone-target="box"
        data-action="dragenter->dropzone#highlight dragover->dropzone#highlight dragleave->dropzone#unhighlight drop->dropzone#drop click->dropzone#open"
     class="flex flex-col items-center p-6 justify-center w-full border border-dashed border-zinc-700/40 rounded-lg cursor-pointer hover:bg-primary transition-all duration-150 group px-4 min-w-0">
     <%= form.file_field attribute, accept: accept, multiple: multiple, class: "hidden",
@@ -83,10 +72,24 @@
     <span data-dropzone-target="filename" class="text-base mt-2 text-slate-500 font-semibold text-center group-hover:text-white group-data-[dropzone-dragging]:text-primary transition-colors duration-150 break-all w-full"><%= placeholder %></span>
     <span data-dropzone-target="error" class="hidden text-sm text-error font-medium"></span>
   </div>
+  <% if saved_blobs.any? %>
+    <div class="mb-3">
+      <p class="text-sm font-semibold text-slate-700 my-2"><%= multiple ? "Fichiers actuels" : "Document actuel" %></p>
+      <ul class="flex flex-col gap-2">
+        <% saved_blobs.each do |blob| %>
+          <%= render "shared/ligne_fichier", nom: blob.filename.to_s,
+                     url: rails_blob_path(blob, disposition: "inline"), octets: blob.byte_size %>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
   <ul data-dropzone-target="fileList" class="hidden flex-col gap-2 mt-3"></ul>
   
-  <span class="text-xs text-slate-400">Formats acceptés : <%= formats %> — <%= taille_max %> maximum par fichier.</span>
+  <span class="text-xs text-slate-400 mt-1">Formats acceptés : <%= formats %> — <%= taille_max %> maximum par fichier.</span>
   <% if saved_blobs.any? && replace_hint && !multiple %>
-    <span class="text-xs text-slate-400">Déposer un nouveau fichier remplacera le document actuel.</span>
+    <span class="text-xs text-slate-400 mt-1">Déposer un nouveau fichier remplacera le document actuel.</span>
   <% end %>
+
+
 </div>
