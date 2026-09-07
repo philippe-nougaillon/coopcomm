@@ -21,7 +21,9 @@
                       'calc-temps-passe-target': 'agents',
                       action: "change->calc-temps-passe#calc",
                       'verification-disponibilites-target': "agents",
-                      'dynamic-select-target': "agents"
+                      'dynamic-select-target': "agents",
+                      max_values_shown_desktop: 3,
+                      max_values_shown_mobile: 2
                     } %>
   </div>
 
@@ -30,8 +32,13 @@
     <%= form.select :tool_ids,
                     options_from_collection_for_select(@tools, 'id', 'name', intervention.tool_ids.presence || params[:tool_ids]),
                     {},
-                    class: "slim-select w-full h-10", multiple: true,
-                    'data-verification-disponibilites-target': "tools" %>
+                    class: "slim-select w-full h-10",
+                    multiple: true,
+                    'data-verification-disponibilites-target': "tools",
+                    data: {
+                            max_values_shown_desktop: 4,
+                            max_values_shown_mobile: 2  
+                          } %>
   </div>
 
   <div class="col-span-1 md:col-span-2">

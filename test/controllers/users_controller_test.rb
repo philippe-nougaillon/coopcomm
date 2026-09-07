@@ -381,6 +381,33 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # Un compte dont le mot de passe est perdu n'a pas d'autre porte d'entrée que
+  # ce mail : sans lui, son titulaire est enfermé dehors.
+  test 'mot de passe oublié : une adresse connue reçoit son mail de réinitialisation (critique)' do
+    # Doit etre déconnecté
+    sign_out @user
+
+    assert_emails 1 do
+      post user_password_url, params: { user: { email: @user.email } }
+    end
+
+    assert_equal [@user.email], ActionMailer::Base.deliveries.last.to
+    assert @user.reload.reset_password_token, "aucun jeton de réinitialisation n'a été posé"
+  end
+
+  # `config.paranoid = true` : le message est le même qu'avec une adresse connue,
+  # pour qu'on ne puisse pas deviner qui a un compte. Seul l'envoi les distingue.
+  test 'mot de passe oublié : une adresse inconnue ne déclenche aucun mail (critique)' do
+    # Doit etre déconnecté
+    sign_out @user
+
+    assert_no_emails do
+      post user_password_url, params: { user: { email: 'personne@example.test' } }
+    end
+
+    assert_redirected_to new_user_session_path
+  end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'create_new_user_do : paramètres invalides → formulaire réaffiché en 422' do
@@ -515,7 +542,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
                     from_absence_modal: '1' },
           as: :turbo_stream
 
-    assert_response :success
+    assert_response :unprocessable_entity
     assert_match(/absence_form/, response.body)
   end
 
@@ -634,6 +661,25 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'import_do : sans paramètre → la page répond' do
+    get import_do_users_url
+
+    assert_redirected_to root_path
+  end
+
+  test 'import_do : un champ upload vide ramène au formulaire' do
+    post import_do_users_url(upload: '')
+
+    assert_redirected_to import_users_url
+  end
+
+  test 'import_do : sans fichier joint, une alerte nomme le fichier manquant' do
+    post import_do_users_url
+
+    assert_redirected_to import_users_url
+    assert_equal 'Manque le fichier source pour pouvoir lancer l\'importation !', flash[:alert]
+  end
+
   test "inviter : le lien d'accès est renvoyé" do
     post inviter_user_url(@user)
 
@@ -684,7 +730,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_match(/Impossible de réactiver/i, flash[:alert].to_s)
   end
 
-def ids_du_select_services(body)
+  # TODO: A changer par un assigns ou split
+  def ids_du_select_services(body)
     select_html = body[/<select[^>]*id="user_service_ids".*?<\/select>/m].to_s
     select_html.scan(/<option value="(\d+)"/).flatten.map(&:to_i)
   end

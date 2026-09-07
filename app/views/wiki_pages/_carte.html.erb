@@ -1,0 +1,48 @@
+<div class="card bg-base-100 shadow-sm hover:shadow-lg">
+  
+  <div class="h-32">
+    <% if wiki_page.document.attached? && wiki_page.document.representable? %>
+      <figure>
+        
+        <%= image_tag wiki_page.document.representation(resize_to_limit: [600, 150]) %>
+      </figure>
+    <% else %>
+      <p class="text-center">(<%= wiki_page.catégorie %>)</p>
+    <% end %>
+  </div>
+
+  <div class="card-body">
+    <h3 class="card-title"><%= wiki_page.titre %></h3>
+    <p class="line-clamp-3"><%= wiki_page.sous_titre.presence %></p>
+    <div class="card-actions flex justify-between mt-4">
+      <% if current_user&.manager_or_admin? %>
+        <div class="card-actions">
+          <% if wiki_page.publiée? %>
+            <span>
+              <%= embedded_svg "icons/visibility.svg", title: "Page visible par tous (publiée)" %>
+            </span>
+          <% else %>
+            <span>
+              <%= embedded_svg "icons/visibility_off.svg", title: "Page invisible (non publiée)" %>
+            </span>
+          <% end %>
+          <% if wiki_page.épinglée? %>
+            <span>
+              <%= embedded_svg "icons/pin.svg", title: "Page épinglée" %>
+            </span>
+          <% end %>
+          <% if wiki_page.private? %>
+            <span>
+              <%= embedded_svg "icons/private.svg", title: "Page privée (visible par les managers et administrateurs)" %>
+            </span>
+          <% end %>
+        </div>
+      <% end %>
+      <div class="justify-end">
+        <%= link_to documentation_path(wiki_page), class: "btn btn-primary" do %>
+          En savoir plus
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

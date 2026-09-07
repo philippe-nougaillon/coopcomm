@@ -71,8 +71,8 @@
     <div class="grid grid-cols-1 <%= current_user.manager? ? 'md:grid-cols-1' : 'md:grid-cols-2' %> gap-4 w-full">
       <% if current_user.manager_or_admin? %>
         <div class="form-control w-full">
-          <% label_texte = user.rôle == 'adhérent' ? "Secteur" : "Équipe" %>
-          <%= form.label :tag_list, label_texte, class: "label font-semibold text-slate-700", data: { 'toggle-role-info-target': 'tagLabel' } %>
+          <%= form.label :tag_list, "Mots clé", 
+                          class: "label font-semibold text-slate-700" %>
           <%
             est_soumission = params[form.object_name].present?
             if est_soumission
@@ -82,7 +82,14 @@
             end
             options_users = (@users_tags.map(&:name) + tags_users_soumis).uniq
           %>
-          <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full h-10', data: { controller: 'slim-select', addable: true } } %>
+          <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, 
+          { multiple: true, 
+            class: 'w-full h-10', 
+            data: { controller: 'slim-select', 
+                    addable: true,
+                    max_values_shown_desktop: 2,
+                    max_values_shown_mobile: 2  }
+          } %>
         </div>
       <% end %>
       <% if current_user.manager_or_admin? %>
@@ -110,7 +117,11 @@
                             options_from_collection_for_select(services_assignables, 'id', 'nom', services_sélectionnés),
                             { required: true },
                             { multiple: true, class: 'slim-select w-full h-10',
-                              data: { controller: 'slim-select' } } %>
+                              data: { controller: 'slim-select',
+                                      max_values_shown_desktop: 1,
+                                      max_values_shown_mobile: 1 
+                                    } 
+                            } %>
           </div>
         <% end %>
       <% else %>

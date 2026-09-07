@@ -2,7 +2,7 @@
 
 class InterventionsController < ApplicationController
   before_action :set_intervention,
-                only: %i[show edit update destroy terminer valider refuser archiver purge purger_photos_demande
+                only: %i[show fiche edit update destroy terminer valider refuser archiver purge purger_photos_demande
                          pointer pointage_statut update_location]
   before_action :is_user_authorized
   before_action :set_form_variables,
@@ -73,6 +73,16 @@ class InterventionsController < ApplicationController
                   disposition: 'inline'
       end
     end
+  end
+
+  # GET /interventions/1/fiche
+  def fiche
+    pdf = TransformToPdf::Intervention.call(@intervention, current_user)
+
+    send_data pdf.render,
+              filename: @intervention.pdf_filename,
+              type: 'application/pdf',
+              disposition: 'inline'
   end
 
   # GET /interventions/new

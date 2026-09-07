@@ -7,51 +7,66 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
         <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
-        <%= text_field_tag :search, params[:search], include_blank: true,
+        <%= text_field_tag :search, params[:search], 
+                
+                include_blank: true,
                 onchange: 'this.form.requestSubmit()',
                 class: 'input input-bordered input-md w-full',
                 placeholder: 'Nom / Prénom' %>
       </div>
       <div class="w-full md:flex-1">
         <%= label_tag :services, "Services", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
-        <%= select_tag :services,
-                options_from_collection_for_select(@services, 'id', 'nom', @selected_service_ids),
-                multiple: true,
-                class: 'slim-select w-full h-10',
-                data: { placeholder: 'Tous les services' },
-                onchange: 'this.form.requestSubmit()' %>
+        <%= select_tag "services[]",
+        options_from_collection_for_select(@services, 'id', 'nom', @selected_service_ids),
+        multiple: true,
+        class: 'slim-select w-full h-10',
+        onchange: 'this.form.requestSubmit()',
+        data: { placeholder: 'Tous les services',
+                max_values_shown_desktop: 3,
+                max_values_shown_mobile: 1 
+              } %>
       </div>
-      <div class="w-full md:flex-1">
+      
+      
+      <div class="w-full md:flex-1" data-controller="date-picker" data-action="click->date-picker#open">
         <%= label_tag :date, "Date", class: "block font-semibold text-slate-600 text-sm mb-1" %>
         <%= date_field_tag :date, params[:date],
-              include_blank: true, onchange: 'this.form.submit()',
-              class: 'input input-bordered input-md w-full' %>
+              include_blank: true, 
+              onchange: 'this.form.submit()',
+              class: 'input input-bordered input-md w-full',
+              data: { 'date-picker-target': "input" } %>
       </div>
     </div>
   <% end %>
   <hr class="mt-6 mb-6">
-  <div class="flex items-center justify-center gap-4 mb-4">
-    <%= link_to agent_calendrier_users_path(request.query_parameters.merge(date: @date - 7.days)),
-        class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10", title: "Semaine précédente", data: { turbo: false } do %>
-      <%= embedded_svg "icons/arrow_back.svg", class: "w-5 h-5 fill-current" %>
-    <% end %>
-    <div class="flex items-center gap-3">
-      <span class="font-semibold text-primary text-sm sm:text-base whitespace-nowrap">
+  <div class="flex flex-col items-center justify-center gap-2 mb-6">
+    <div class="flex items-center justify-center gap-4">
+      <%= link_to agent_calendrier_users_path(request.query_parameters.merge(date: @date - 7.days)),
+          class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10", title: "Semaine précédente", data: { turbo: false } do %>
+        <%= embedded_svg "icons/arrow_back.svg", class: "w-5 h-5 fill-current" %>
+      <% end %>
+      
+      <span class="font-semibold text-primary text-base sm:text-lg whitespace-nowrap">
         <%= l(@date, format: "%d %b", locale: :fr) %> — <%= l(@date_fin, format: "%d %b %Y", locale: :fr) %>
       </span>
+
        <%= link_to agent_calendrier_users_path(request.query_parameters.merge(date: @date + 7.days)),
-        class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10", title: "Semaine suivante", data: { turbo: false } do %>
-      <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current" %>
-    <% end %>
-      <% if @date == Date.today %>
-        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm">
-          Aujourd'hui
-        </span>
-      <% else %>
-        <%= link_to "Aujourd'hui",
-          agent_calendrier_users_path(request.query_parameters.merge(date: Date.today)),
-          class: "inline-block text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm hover:bg-purple-50 transition-colors" %>
-      <% end %>
+            class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10", title: "Semaine suivante", data: { turbo: false } do %>
+          <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current" %>
+       <% end %>
+      </div>
+
+      <div>
+        <% if @date == Date.today %>
+          <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm">
+            Aujourd'hui
+          </span>
+        <% else %>
+          <%= link_to "Aujourd'hui",
+            agent_calendrier_users_path(request.query_parameters.merge(date: Date.today)),
+            class: "inline-block text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm hover:bg-purple-50 transition-colors" %>
+        <% end %>
+      </div>  
     </div>
 
   </div>

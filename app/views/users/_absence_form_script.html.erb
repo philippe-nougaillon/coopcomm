@@ -90,6 +90,42 @@
       }
     }
 
+    function resetAbsenceForm(form) {
+      if (!form) return;
+
+      form.querySelector('#error_explanation')?.remove();
+
+      const container = form.querySelector('.absence-form-container');
+
+      // Fecha / texto / textarea a vacío real
+      form.querySelectorAll('input[type="date"], input[type="text"], textarea').forEach(input => {
+        input.value = '';
+      });
+
+      if (!container) return;
+
+      // Des-marcar todos los radios (tipo día y periodo)
+      container.querySelectorAll('.type-radio, .period-radio').forEach(r => r.checked = false);
+
+      // Volver a "Journée entière" por defecto (dispara el handler
+      // para ocultar el bloque de medio día y mostrar "Au")
+      const fullDayRadio = container.querySelector('.type-radio[value="full"]');
+      if (fullDayRadio) {
+        fullDayRadio.checked = true;
+        handleHalfDayChange(fullDayRadio);
+      }
+
+      // Hidden fields matin / après_midi a 0
+      container.querySelector('.hidden-matin').value = '0';
+      container.querySelector('.hidden-apres-midi').value = '0';
+
+      // Motif al primer valor
+      const motif = container.querySelector('select');
+      if (motif) motif.selectedIndex = 0;
+
+      refreshPeriodStyles(container);
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.absence-form-container').forEach(container => {
         refreshPeriodStyles(container);

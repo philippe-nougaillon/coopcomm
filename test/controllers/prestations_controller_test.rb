@@ -9,56 +9,78 @@ class PrestationsControllerTest < ActionDispatch::IntegrationTest
     sign_in @admin
   end
 
-  test 'show : une prestation de son organisation → la page répond' do
+  test 'une prestation est affichée avec succès' do
     get prestation_url(@prestation)
 
     assert_response :success
   end
 
-  test 'new : sans paramètre → la page répond' do
+  test 'le formulaire de création est affiché avec succès' do
     get new_prestation_url
 
     assert_response :success
   end
 
-  test 'edit : une prestation de son organisation → la page répond' do
+  test 'le formulaire de création propose « Heure(s) » comme unité' do
+    get new_prestation_url
+
+    assert_equal 'Heure(s)', assigns(:prestation).unité
+  end
+
+  test 'le formulaire de modification est affiché avec succès' do
     get edit_prestation_url(@prestation)
 
     assert_response :success
   end
 
-  test 'create : paramètres valides → la prestation est créée dans son organisation' do
+  test 'le formulaire de modification garde l’unité enregistrée' do
+    @prestation.update!(unité: 'Forfait')
+
+    get edit_prestation_url(@prestation)
+
+    assert_equal 'Forfait', assigns(:prestation).unité
+  end
+
+  test 'une prestation créée est rattachée à l’organisation de son auteur' do
     assert_difference('Prestation.count') do
-      post prestations_url, params: { prestation: { code: 'ABC99', libellé: 'Nouvelle', tarif: 42 } }
+      post prestations_url, params: { prestation: { code: 'ABC99', libellé: 'Nouvelle', unité: 'Heure(s)', tarif: 42 } }
     end
 
     assert_redirected_to admin_parametres_path(tab: 'prestations')
     assert_equal @admin.organisation, Prestation.order(:created_at).last.organisation
   end
 
-  test 'create : sans code → aucune création et formulaire réaffiché' do
+  test 'une prestation sans code n’est pas créée' do
     assert_no_difference -> { Prestation.count } do
-      post prestations_url, params: { prestation: { libellé: 'Sans code', tarif: 10 } }
+      post prestations_url, params: { prestation: { libellé: 'Sans code', unité: 'Heure(s)', tarif: 10 } }
     end
 
     assert_response :unprocessable_content
   end
 
-  test 'update : paramètres valides → la prestation est modifiée' do
+  test 'une prestation sans unité n’est pas créée' do
+    assert_no_difference -> { Prestation.count } do
+      post prestations_url, params: { prestation: { code: 'ABC98', libellé: 'Sans unité', unité: '  ', tarif: 10 } }
+    end
+
+    assert_response :unprocessable_content
+  end
+
+  test 'une prestation est modifiée avec succès' do
     patch prestation_url(@prestation), params: { prestation: { libellé: 'Modifié' } }
 
     assert_redirected_to admin_parametres_path(tab: 'prestations')
     assert_equal 'Modifié', @prestation.reload.libellé
   end
 
-  test 'update : libellé vide → formulaire réaffiché en 422 et prestation inchangée' do
+  test 'une prestation dont le libellé est vidé n’est pas modifiée' do
     patch prestation_url(@prestation), params: { prestation: { libellé: '' } }
 
     assert_response :unprocessable_content
     assert_not_equal '', @prestation.reload.libellé
   end
 
-  test 'destroy : une prestation inutilisée → elle est supprimée' do
+  test 'une prestation inutilisée est supprimée' do
     inutilisée = prestations(:entretien_espaces_verts)
 
     assert_difference('Prestation.count', -1) do
@@ -68,7 +90,7 @@ class PrestationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_parametres_path(tab: 'prestations')
   end
 
-  test 'destroy : une prestation utilisée dans une cotation → aucune suppression' do
+  test 'une prestation utilisée dans une cotation n’est pas supprimée' do
     assert_no_difference('Prestation.count') do
       delete prestation_url(@prestation)
     end
@@ -76,7 +98,7 @@ class PrestationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_parametres_path(tab: 'prestations')
   end
 
-  test 'set_prestation : un slug inconnu redirige sans planter' do
+  test 'un slug de prestation inconnu redirige sans planter' do
     get prestation_url(id: 'slug-qui-n-existe-pas')
 
     assert_redirected_to admin_parametres_path(tab: 'prestations')

@@ -53,9 +53,9 @@ module InterventionsHelper
   # --- Boutons de workflow ---
 
   STYLES_LISTE = {
-    terminer: 'z-10 btn btn-primary border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!',
-    valider: 'z-10 btn btn-success border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!',
-    refuser: 'z-10 btn btn-error border border-gray-200 btn-outline btn-xs sm:btn-sm hover:text-white!'
+    terminer: 'z-10 btn btn-primary border border-gray-200 btn-outline btn-base hover:text-white!',
+    valider: 'z-10 btn btn-success border border-gray-200 btn-outline btn-base hover:text-white!',
+    refuser: 'z-10 btn btn-error border border-gray-200 btn-outline btn-base hover:text-white!'
   }.freeze
 
   TITRES_LISTE = {

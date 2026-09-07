@@ -5,6 +5,8 @@
 > **Règle de tenue** : dès qu'un bug est corrigé, sa fiche **quitte « Bugs ouverts »** pour « Bugs corrigés ». La section « ouverts » ne doit contenir **que** des bugs ouverts — un `✅ CORRIGÉ` qui y traîne rend le registre illisible. Un bug seulement **partiellement** corrigé reste dans « ouverts », avec le reliquat en tête de fiche.
 >
 > **Rangement (2026-08-06)** : les 34 fiches marquées corrigées qui étaient restées dans « ouverts » ont été déplacées ; les deux fiches ajoutées après « Comment s'en servir » (B73, B74) sont revenues dans « ouverts » ; les fiches des deux sections sont désormais **triées par numéro**. Dernière re-vérification du contenu dans le code : **2026-07-31** (balayage complet des bugs alors ouverts).
+>
+> **Rangement (2026-09-03)** — écritures concurrentes de deux personnes fin août / début septembre : la **collision de numérotation B100** (trois fiches) est tranchée (voir la note de numérotation en tête des corrigés), le **doublon B52** est supprimé, **B51** — marqué corrigé mais laissé sur place — rejoint les corrigés, et « ouverts » est re-triée par numéro. Ce lot **range**, il ne requalifie aucun bug : le dernier balayage dans le code reste celui du 2026-07-31.
 
 ---
 
@@ -214,18 +216,6 @@
 - **Impact** : le jour où B48 sera corrigé, la tâche enverra le premier mail puis lèvera `NoMethodError` — l'adhérent est relancé, le `MailLog` n'est jamais tracé et les suivants ne sont pas traités.
 - **Correctif proposé** : `intervention.organisation&.id`, comme les 4 jobs corrigés le 2026-07-01. Comportement actuel **épinglé**.
 
-### B51 — ✅ CORRIGÉ (2026-08-13) — Les réponses JSON des pages wiki levaient sur un attribut inexistant
-- **Signalé par** : agent, 2026-07-30 (reproduit par test).
-- **Où** : `app/views/wiki_pages/_wiki_page.json.jbuilder` — la vue générée interrogeait `nom`, absent de `WikiPage`.
-- **Impact** : toute requête JSON sur la ressource levait. Aucun appelant.
-- ✅ **Corrigé par suppression, sur décision d'Alex** : le format JSON de `wiki_pages` était du scaffold que rien ne consommait. Les 3 vues jbuilder (`index`, `show`, `_wiki_page`) et les 6 branches `format.json` de `create`/`update`/`destroy` ont été retirées ; les trois actions rendent désormais directement leur `redirect_to`/`render`. Le test qui épinglait le bug a disparu avec le format.
-
-### B52 — Code mort : `TagCloudComponent` est appelé avec un mot-clé qui n'existe pas
-- **Signalé par** : agent, 2026-07-30.
-- **Où** : [app/components/tag_cloud_component.rb:4](app/components/tag_cloud_component.rb#L4) attend `intervention_tags:`, mais les deux seules vues qui l'utilisent (`carte_interventions`, `route_interventions`) passent `tags:` → `ArgumentError` au rendu.
-- **Impact** : nul aujourd'hui — **aucune route** ne mène à ces deux vues (vérifié par `rails routes`). L'erreur apparaîtrait au premier branchement.
-- **Correctif proposé** : supprimer les deux vues mortes et le composant, ou aligner le mot-clé avant de les rebrancher.
-
 ### B53 — Code mort exécutable : méthodes qui lèveraient si elles étaient appelées
 - **Signalé par** : agent, 2026-07-30 (analyse de couverture).
 - **Où** :
@@ -265,6 +255,48 @@
 - **Correctif proposé** : retirer `:tag_list` de `intervention_params`. Aucun formulaire ne le soumet, donc aucune régression attendue.
 - **Épinglé par** : `interventions_controller_test`, « un adhérent écrase les mots clés par un paramètre tag_list forgé » — à inverser à la correction.
 
+### B98 — L'œil qui révèle le mot de passe est inutilisable dès qu'on a tapé dedans
+- **Où** : le bouton `data-action="click->password-visibility#toggle"` des formulaires Devise (connexion, invitation, mot de passe oublié, changement de mot de passe).
+- **Cause** : daisyUI donne `z-index: 1` au champ **quand il a le focus** ; le bouton, en `position: absolute`, reste à `z-index: auto`. Le champ passe donc **au-dessus** de l'œil et intercepte le clic.
+- **Mesuré** (sonde navigateur, 2026-08-26) : champ non focalisé → `elementFromPoint` au centre du bouton renvoie le `<svg>` de l'œil ; champ focalisé après saisie → il renvoie l'`INPUT`, avec `z-index: 1` sur le champ et `auto` sur le bouton.
+- **Parcours de reproduction** :
+  1. J'ouvre la page de connexion et je saisis mon mot de passe — le champ a le focus.
+  2. Je clique sur l'œil pour vérifier ce que j'ai tapé.
+  3. → **Rien ne se passe** : le clic atterrit dans le champ. Il faut d'abord cliquer ailleurs pour retirer le focus, puis cliquer sur l'œil.
+- **Impact** : la fonction est inatteignable dans son usage normal, sur les quatre formulaires. Gênant surtout sur téléphone, où l'on ne relit pas sa saisie autrement.
+- **Correctif proposé** : une classe sur le bouton — `relative z-10`.
+- **Test** : `test/system/adherent/devise_adherent_flow_test.rb`, assertion sur le `type` du champ (`password` → `text`), **rouge volontairement** jusqu'à la correction.
+
+### B101 — Un seul caractère hors Windows-1252 fait tomber le PDF d'un devis, d'une commande ou d'une facture
+- **Où** : [base_pdf_for_crm.rb](app/services/transform_to_pdf/base_pdf_for_crm.rb) — toutes les méthodes qui écrivent du texte issu de la base : `add_metadata` (intitulé, adhérent, service), `add_lignes` (intitulé de ligne, libellé de prestation), `add_memo`, `add_signature`.
+- ⚠ **Périmètre : les documents CRM seulement — le PDF d'une INTERVENTION n'est pas concerné.** `TransformToPdf::Intervention` assainit déjà son texte (`texte_sûr`, [intervention.rb:435](app/services/transform_to_pdf/intervention.rb#L435)) : les caractères inconnus y deviennent `?`, le PDF se génère normalement. **C'est le comportement voulu, pas un bug** — voir « pourquoi des `?` » ci-dessous. `BasePdfForCrm` n'a **aucun** équivalent : là, ça lève.
+- **Les deux comportements mesurés côte à côte (2026-09-07, sonde en mémoire, rien enregistré)** : intervention **#423** (slug `32c322af-…`), dont les commentaires contiennent réellement `☀ 👍 → m³ ³ ₂` → `TransformToPdf::Intervention.call(i, u).render` rend **68 396 octets, aucune erreur** (les caractères hors jeu s'affichent `?`) ; la même chaîne posée dans le `mémo` d'une cotation → `TransformToPdf::Cotation.call(c).render` lève **`Prawn::Errors::IncompatibleStringEncoding`**.
+- **Pourquoi des `?` du côté intervention** : Prawn n'a que les polices intégrées au format PDF, en single-byte Windows-1252 ; un caractère absent de ce jeu **n'a aucune forme à dessiner**. Les deux seules issues sont donc « remplacer par un signe de substitution » (ce que fait `texte_sûr`) ou « embarquer une police TTF » (correctif de fond, ci-dessous), qui est la seule qui rende les emoji et les flèches réellement lisibles.
+- **Cause** : Prawn n'embarque aucune police ; il utilise les polices **AFM intégrées** au format PDF (Helvetica), qui sont en **single-byte Windows-1252**. Devant un caractère hors de ce jeu, Prawn ne dégrade pas l'affichage — il **lève `Prawn::Errors::IncompatibleStringEncoding`**, et toute la génération tombe avec lui. La documentation de la gem ne propose qu'une issue : embarquer une police TTF.
+- **Mesuré** (sonde en transaction annulée sur la base de dev, 2026-09-01) : mémo d'une cotation réelle passé à `Prévoir 2 m³ de terreau ☀` → `TransformToPdf::Cotation.call(c).render` lève `Prawn::Errors::IncompatibleStringEncoding`. Donnée restaurée par `ActiveRecord::Rollback` (vérifié).
+- **Parcours de reproduction** :
+  1. En tant que **manager**, je crée un devis et je saisis dans le **mémo** un caractère absent du jeu latin occidental — un emoji tapé au téléphone (`☀`, `👍`), une flèche `→`, ou un indice comme `m³`... `³` passe, mais `₂` non.
+  2. J'enregistre, puis j'ouvre la fiche du devis.
+  3. → L'**aperçu PDF de la page ne s'affiche pas**, et le bouton « Générer PDF » rend une **erreur 500**. Le devis devient impossible à envoyer à l'adhérent tant que le caractère n'est pas retiré, et rien n'indique lequel est en cause.
+  4. Idem sur une commande et sur une facture (même classe mère), et sur le **mail** qui joint le PDF (`NotificationMailer` l.110, 152, 169) : l'envoi échoue.
+- **Impact** : ce sont les documents contractuels envoyés aux communes. Le caractère fautif est invisible à l'œil dans le formulaire, et le message d'erreur ne remonte pas à l'utilisateur. Probabilité réelle : la saisie se fait aussi sur téléphone, où l'emoji est à un appui du clavier.
+- **Deux correctifs possibles** :
+  - **assainir le texte** avant de l'écrire, comme le fait `TransformToPdf::Intervention#texte_sûr` (substitutions connues, puis `encode('Windows-1252', undef: :replace, replace: '?')`) — quelques lignes, aucun ajout au dépôt, mais les caractères exotiques deviennent `?` ;
+  - **embarquer une police TTF** (DejaVu Sans ou Open Sans, licence OFL donc compatible avec l'open-source envisagé) — UTF-8 complet, supprime le besoin d'assainir **dans les quatre services PDF à la fois**, au prix de 4 fichiers de police (~300–700 Ko) et de PDF un peu plus lourds. L'équipe y avait déjà pensé : le bloc est commenté dans [qrcode_modele_intervention.rb:27-32](app/services/transform_to_pdf/qrcode_modele_intervention.rb#L27-L32), avec un chemin `vendor/assets/fonts/Open_Sans/`.
+- **Non couvert par les tests** : aucun test n'exerce un caractère hors Windows-1252 sur les PDF CRM.
+
+### B103 — L'entrée « Tous » des filtres d'index a disparu du menu déroulant : on ne peut plus revenir à « tout afficher » que par la petite croix
+- **Signalé par** : l'agent, 2026-09-07, en instruisant l'effet du commit `c8c8b8ef` (Dani, « Fix blank sur mouvement »).
+- **Où** : [slim_select_controller.js:8-11](app/javascript/controllers/slim_select_controller.js#L8-L11) — `connect()` marque `data-placeholder = 'true'` sur l'option vide de **tous** les selects slim, sans regarder si le select est `required`. SlimSelect 2.13.1 masque alors cette option (`ss-option ss-hide`). Le garde visait les champs obligatoires (il y ferme le trou de B99/B102, cf. la fiche B99) ; il attrape au passage les filtres, dont l'option vide **est** un choix légitime.
+- **Vues concernées** : les 6 filtres à blanc étiqueté — `cotations/index:53`, `commandes/index:42`, `factures/index:36`, `conventions/index:27` et `:34`, `adherent_crm/index:32` (tous `include_blank: "Tous"`).
+- **Mesuré au navigateur (2026-09-07), preuve rouge/verte faite** : sur `/cotations?workflow_state=Envoyé`, menu du filtre Statut = `[["", ss-option ss-hide], ["Créé"], ["Envoyé" ss-selected], …]` — l'entrée « Tous » est là mais invisible et sans son libellé. Le bloc de 5 lignes retiré temporairement (copie de sauvegarde, jamais `git checkout`) → `[["Tous", ss-option], …]` : l'entrée revient. L'écart est donc bien imputable à ce commit.
+- **Parcours de reproduction** :
+  1. J'ouvre la liste des devis et je filtre sur le statut « Envoyé ».
+  2. Je rouvre le menu **Statut** pour revenir à tous les devis.
+  3. → La ligne **« Tous » n'est plus proposée** ; le menu ne liste que les six statuts. Il faut deviner la petite croix `×` du champ pour vider le filtre.
+- **Impact** : faible mais quotidien, et sur un public « peu à l'aise avec l'informatique ». Pas de cul-de-sac : la croix `×` fonctionne et re-soumet bien le formulaire (vérifié : `?workflow_state=` → liste complète). **Le champ replié affiche toujours « Tous » quand rien n'est filtré** (SlimSelect reprend le texte de l'option placeholder) — la perte ne concerne que le menu ouvert. Même chose pour les invites `prompt: "Choisir un adhérent"` des formulaires : elles restent affichées dans le champ replié, seule leur ligne de menu disparaît, ce qui est le comportement voulu là-bas.
+- **Correctif proposé, mesuré** : borner le garde aux champs obligatoires — `if (blankOption && this.element.required)`. Variante posée temporairement et relevée au navigateur : le filtre Statut retrouve son entrée « Tous », et les trois selects requis de `cotations/new` gardent `data-placeholder = "true"` et `valueMissing = true`. Les ~10 selects `required` du dépôt portent bien l'attribut (vérifié sur rôle, état et matériel d'un mouvement, adhérent/service/prestation d'un devis), donc aucun n'est déprotégé par ce bornage. C'était déjà le périmètre du garde de B99.
+- **Non couvert par un test** : plus aucun test ne surveille le comportement de l'option vide depuis la suppression de `test/system/slim_select_test.rb` par `#491`.
 
 ---
 
@@ -332,9 +364,47 @@
 
 ---
 
----
-
 ## ✅ Bugs corrigés (historique)
+
+### B102 — ✅ CORRIGÉ (2026-09-07, en deux commits) — Depuis le retour en arrière sur slim-select, deux champs obligatoires acceptaient d'être vidés : l'état d'un mouvement et le rôle d'un utilisateur
+- **Où** : `mouvements/_form.html.erb` (État) et `users/_form.html.erb:23` (Rôle). Conséquence directe de `#491`, qui avait retiré le garde JS de B99 : l'option vide d'un select obligatoire était de nouveau proposée au menu, et la choisir ne déclenchait **aucun** blocage du navigateur (mécanisme mesuré en B99 : SlimSelect duplique l'option en 2ᵉ position, la sélection ne porte plus sur un placeholder). Ces deux champs étaient les seuls des ~10 selects `required` du dépôt à n'avoir aucun filet serveur — les autres sont rattrapés par un `belongs_to` ou par une validation de présence (`Prestation#unité` depuis `#486`).
+- **Parcours de reproduction (avant correction)** :
+  1. En tant qu'administrateur, j'ouvre « Nouvel utilisateur », je remplis Nom, Email, Service.
+  2. J'ouvre le menu **Rôle** et je clique la ligne vide au-dessus de « agent ». J'enregistre.
+  3. → Autrefois annoncé ici comme « le compte est créé sans rôle » ; **c'était faux**, voir la rectification ci-dessous.
+  4. Même chose sur un mouvement dont on vidait l'**État**.
+- ⚠ **Rectification du symptôme (mesuré le 2026-09-07, en transaction annulée)** : le compte n'était **pas** créé sans rôle. `users.rôle` est `null: false` en base ([schema.rb:552](db/schema.rb#L552)) — l'`INSERT` levait `ActiveRecord::NotNullViolation`, que `save` ne convertit pas en `false` : elle remontait en **erreur 500**, à la création comme à la modification d'un compte existant. Aucune donnée corrompue, donc, mais une page d'erreur brute et la saisie perdue. Un manager n'était pas concerné (`admin_controller.rb:56` force `rôle = 'agent'`).
+- **Correctif, deux commits du même jour et deux approches différentes** :
+  - **côté modèle** — `9846a53a` (PE) : `validates :date, :état, presence: true` sur `Mouvement` ([mouvement.rb:29](app/models/mouvement.rb#L29)). Le navigateur laisse toujours soumettre, c'est le serveur qui refuse et le formulaire se ré-affiche avec l'erreur. Même parti pris que `Prestation#unité` sous `#486` ;
+  - **côté navigateur, et pour tous les selects à la fois** — `c8c8b8ef` (Dani) : `slim_select_controller.js#connect` marque l'option vide `data-placeholder = 'true'`, ce que SlimSelect 2.13.1 comprend en la masquant du menu (`ss-option ss-hide`). C'est ce commit qui ferme le cas **Rôle**, resté sans validation de modèle.
+- **Vérifié au navigateur le 2026-09-07** (sonde jetable, supprimée) : sur le champ Rôle, menu = `["" ss-hide, adhérent, agent, manager, administrateur]` → la ligne vide n'est plus choisissable ; après un clic sur la croix `×`, `selectedIndex = 0`, `value = ""`, **`valueMissing = true`**, le champ est `:invalid` (« Please select an item in the list ») et rien n'est enregistré.
+- ⚠ **Reliquats connus, assumés** : (1) `User#rôle` n'a toujours **aucune** validation de présence — une requête forgée avec `rôle=''` produit encore le 500 `NotNullViolation` ; c'est une *abuser story* au sens du critère de PE (2026-09-03 : un bug se juge sur un champ qui n'est **pas** caché à l'utilisateur), donc non traité. `validates :rôle, presence: true` reste une ligne sans risque si on veut un message lisible — aucun compte existant ne peut être figé, le `null: false` le garantit. (2) Le garde de `c8c8b8ef` ne teste pas `required` et s'applique donc aussi aux filtres → **B103**. (3) Aucun test ne couvre ce garde (l'ancien `test/system/slim_select_test.rb` a été supprimé par `#491`).
+
+### B100 — ✅ CORRIGÉ (2026-08-31, décision Alex) — Un adhérent voyait dans la liste des documentations dont la page lui était refusée
+- **Où** : le filtre des listes n'excluait les pages privées que pour `nil` et `agent?`, mais `WikiPagePolicy#show?` exigeait `!record.private?` de tout non-manager, adhérent compris → l'adhérent voyait la carte et recevait un refus Pundit au clic.
+- **Décision Alex** : c'est la **policy** qui avait tort — un adhérent doit voir les documentations privées (non publiées exclues).
+- **Correctif** : `show?` devient le miroir exact de `WikiPage.by_role_for` — manager/admin → tout ; adhérent → `record.publiée?` ; agent et non connecté → `record.publiée? && !record.private?`.
+- **⚠ Reliquat** : la règle est désormais écrite **à deux endroits** (`by_role_for` et `show?`), sans garde-fou reliant les deux — c'est précisément la divergence qui a produit ce bug. Une sentinelle « pour chaque rôle, toute page rendue par `by_role_for` passe `show?` » reste à poser.
+- **Tests** : `test/models/wiki_page_test.rb` (un test par rôle sur `by_role_for`) et `test/policies/adherent/adherent_wiki_pages_policy_test.rb` (`accès autorisé … sur une documentation privée`, retourné).
+
+### B99 — ✅ SIGNALÉ PAR PE ET CORRIGÉ (2026-08-27) — L'attribut `required` d'un select slim-select était inerte : on enregistrait un champ obligatoire vide
+- **Symptôme rapporté** : sur `/prestations/new`, choisir la ligne vide du menu Unité et cliquer sur Enregistrer **crée la prestation sans unité**. Aucun message, aucun blocage.
+- **Où** : tous les selects simples portant `required` et pilotés par `slim_select_controller.js` — une dizaine dans le dépôt (prestations unité, users rôle, interventions adhérent/service, mouvements matériel/état, prestation/adhérent/service des cotations, commandes et factures).
+- **Cause, mesurée au navigateur** : la spec HTML ne traite comme *placeholder* que l'option vide **en première position** du select ; c'est elle qui rend `required` opérant. Or SlimSelect, quand on choisit son option vide, **duplique** celle-ci dans le select natif et pose la sélection sur la **copie** — relevé à l'instant du clic : `options = ["", "", "Heure(s)", "Forfait", "Jour"]`, `selectedIndex = 1`, donc `validity.valueMissing = false` et `form.checkValidity() = true` alors que `select.value === ""`. Le navigateur croit qu'un choix a été fait. La croix `×` de désélection produisait le même effet.
+- **Ce qui n'était PAS en cause**, vérifié un par un avant de conclure : `required="required"` est bien rendu ; la plomberie anti-« invalid form control is not focusable » d'`application.css:330-357` fonctionne (`display` calculé = `block`, le `!important` de la feuille bat le `display: none` inline de SlimSelect) ; `willValidate` vaut `true` ; aucun `novalidate`, `formnovalidate` ni `form.submit()` sur ces formulaires.
+- **Parcours de reproduction** :
+  1. J'ouvre « Nouvelle prestation », je remplis Code, Libellé et Tarif.
+  2. J'ouvre le menu **Unité** et je clique la ligne vide au-dessus de « Heure(s) ».
+  3. Je clique sur Enregistrer.
+  4. → **La prestation est créée, sans unité**, alors que le champ porte une astérisque et l'attribut `required`.
+- **Correctif** : dans `slim_select_controller.js`, pour un select `required` **non `multiple`**, l'option vide est marquée `disabled` avant l'instanciation de SlimSelect. Elle reste dans le DOM — donc `required` continue de la voir comme placeholder — mais SlimSelect ne la propose plus au menu (elle porte alors `ss-option ss-disabled`, masquée par la règle CSS du même lot). Un champ obligatoire réellement vide déclenche la bulle native avant la soumission (`validationMessage` renseigné, contour `ss-error-native`, aucune création en base), c'est-à-dire le comportement d'un champ requis ordinaire.
+- **Ce qui compte est la POSITION de l'option sélectionnée, pas la duplication** — mesuré, et c'est ce qui rend `allowDeselect` indifférent : la croix `×` duplique elle aussi l'option vide, mais insère la copie **en première position** (`selectedIndex = 0`), donc la sélection reste sur un placeholder et `valueMissing` vaut `true` ; le menu, lui, l'insérait en **seconde** position. Après un clic sur la croix, le menu ne propose d'ailleurs aucune ligne vide (`["Heure(s)", "Forfait", "Jour"]`) : il n'y a rien à recliquer. ⚠ L'agent avait d'abord écrit qu'`allowDeselect: false` était indispensable — **c'est faux** : la mesure était faite avec le réglage actif, ce qui masquait le comportement réel de la croix. PE l'a retiré pour garder la croix cliquable partout, et le trou reste fermé.
+- **Périmètre** : la garde « `required` et non `multiple` » laisse intacts les ~30 filtres d'index (leur option « Tous » reste sélectionnable — c'est leur fonctionnalité) et les ~25 selects multiples (Rails n'y met pas d'option vide). Vérifié par test.
+- ⚠ **Correctif RETIRÉ par PE le 2026-09-02** (`#491`, « option blank sélectionnable pour les required => de nouveau visible ») : le garde JS et la règle CSS qui masquait l'option désactivée sont supprimés, l'option vide est de nouveau proposée au menu et `required` redevient inerte sur ces selects. La protection passe désormais **côté serveur** — `#486` a ajouté `validates :unité, presence: true` sur `Prestation`, ce qui ferme le parcours d'origine. `test/system/slim_select_test.rb`, qui n'existait que pour prouver le garde, a été supprimé. **Le trou reste ouvert pour les deux champs sans filet serveur : voir B102.**
+- ✅ **Un garde navigateur est REVENU le 2026-09-07** (`c8c8b8ef`, Dani, « Fix blank sur mouvement »), par une autre voie que celle du 27/08 : `slim_select_controller.js#connect` marque l'option vide `data-placeholder = 'true'`, ce que SlimSelect 2.13.1 comprend — il la rend `ss-option ss-hide` dans le menu (donc inchoisissable) au lieu de la désactiver. Mesuré au navigateur le 2026-09-07 sur le champ Rôle : menu = `["" ss-hide, adhérent, agent, manager, administrateur]` ; après un clic sur la croix `×`, `selectedIndex = 0`, `value = ""`, **`valueMissing = true`** et le champ est `:invalid` (« Please select an item in the list ») — `required` mord donc de nouveau. Le trou de `#491` est refermé, y compris pour les champs sans filet serveur. ⚠ Cette version-ci ne teste **pas** `required` : elle s'applique à **tous** les selects slim, d'où l'effet de bord **B103**. Aucun test ne couvre ce garde-ci (l'ancien fichier a été supprimé avec `#491`).
+- **Cascade `dynamic-select`** (mesuré) : après un changement d'adhérent, les options du select Service sont reconstruites et **perdent le `disabled`** (le contrôleur ne repasse qu'au `connect`). Sans conséquence : SlimSelect ne propose alors aucune ligne vide, la croix ne duplique rien et `checkValidity()` reste `false`. À re-mesurer si `dynamic_select_controller.js` change de façon de repeupler.
+- **Validation manuelle par PE (2026-08-31)** : rôle d'un utilisateur, ligne de devis/commande/facture, matériel + état d'un mouvement, adhérent + service des devis/commandes/factures, filtre d'index, selects multiples et « + » d'ajout — tout est conforme.
+- **Tests** : `test/system/slim_select_test.rb` (5 tests — le menu ne propose aucun choix vide, pas d'enregistrement sans unité, la croix laisse le champ refusé, un filtre d'index garde « Tous », un requis multiple reste désélectionnable), prouvés rouges en neutralisant la désactivation de l'option vide. ⚠ Une première version du test de la croix asserait la **liste des options** du select natif : elle figeait un détail d'implémentation de SlimSelect (le nombre d'options après duplication) au lieu du contrat, et tombait dès qu'`allowDeselect` changeait. Remplacée par `validity.valueMissing` + refus de la soumission.
 
 ### B96 — ✅ SIGNALÉ PAR ALEX ET CORRIGÉ (2026-08-20) — En prod, le scroll n'était plus remis à zéro d'une page à l'autre, jusqu'au prochain rechargement complet
 - **Symptôme rapporté** : depuis l'index des interventions, ouvrir une intervention conservait la position du scroll (haut, milieu, bas — celle qu'on avait avant de cliquer) ; idem en passant de l'index des interventions à celui des conventions. Uniquement en prod, pendant un laps de temps, guéri par un rechargement complet de la page.
@@ -440,7 +510,9 @@
 - **Vérifié** : suite non-système **2362 runs / 8 échecs / 2 erreurs** — les 10 sont **préexistants et sans rapport**, prouvé en remettant les 8 fichiers à HEAD par copie et en rejouant les fichiers concernés (mêmes 10). Sept viennent de `#463 Add slug to convention`, trois du travail « pause » en cours.
 - **Reste faisable** : `# :nocov:` autour des trois blocs parkés les sortirait du dénominateur de SimpleCov sans les supprimer — non appliqué, à décider.
 
-⚠️ **Collision de numérotation à connaître** : le **B30** du tableau ci-dessous (`calc_temps_total` sur une pause nulle, 2026-07-29) et le **B30** des fiches détaillées (météo `get_title`, 2026-08-06) sont **deux bugs différents** qui ont reçu le même numéro. Aucun n'est renuméroté ici (les deux sont cités tels quels dans CLAUDE.md et dans les tests) ; à ne pas confondre en lecture. Dans la même famille : CLAUDE.md cite un **B64** (compte-rendu de terminaison) qui n'a jamais eu de fiche dans ce registre.
+⚠️ **Collision de numérotation à connaître** : le **B30** du tableau ci-dessous (`calc_temps_total` sur une pause nulle, 2026-07-29) et le **B30** des fiches détaillées (météo `get_title`, 2026-08-06) sont **deux bugs différents** qui ont reçu le même numéro. Aucun n'est renuméroté ici (les deux sont cités tels quels dans CLAUDE.md et dans les tests) ; à ne pas confondre en lecture. Dans la même famille : CLAUDE.md cite un **B64** (compte-rendu de terminaison) qui n'a jamais eu de fiche dans ce registre, et `.claude/skills/tests-coopcomm/systeme.md` cite un **B97** (formulaire d'invitation dont le bouton était `disabled`, donc invalidable au navigateur alors que le POST passait) qui n'en a jamais eu non plus — le défaut n'est plus dans le code, mais son parcours de reproduction n'est reconstituable par personne d'autre qu'Alex, donc rien n'est inventé ici.
+
+⚠️ **Collision B100, résolue le 2026-09-03** : trois fiches distinctes avaient reçu ce numéro, écrites en parallèle sans se voir. Arbitrage chronologique — **B100** reste la fiche d'Alex (documentations visibles mais refusées à l'adhérent, corrigée le 31/08) ; le PDF Windows-1252 (01/09) est devenu **B101** et les selects slim-select sans filet serveur (02/09) sont devenus **B102**. Contrairement au double B30 ci-dessus, aucun de ces numéros n'était cité hors de ce fichier : la renumérotation ne casse aucun test ni aucune note.
 
 ### Corrections anciennes (récapitulatif)
 
@@ -663,6 +735,12 @@
 - **Où (corrigé le 2026-07-30 : la note désignait le mauvais fichier)** : le `render` fautif est [app/views/users/_absence.html.erb:72](app/views/users/_absence.html.erb#L72) — `render "absence_form"` **sans préfixe**. Dans `users#show` le contexte de recherche est `users/` et le partial est trouvé ; appelé depuis `AbsencesController`, il est cherché dans `absences/` puis `application/` → `ActionView::MissingTemplate`. Chaîne complète : `absences_controller.rb:20` → `users/_absences_section.html.erb:33` → `users/_absence.html.erb:72`.
 - **Impact réel** : `@absence.destroy` a lieu **avant** le rendu ([absences_controller.rb:10](app/controllers/absences_controller.rb#L10)) → **l'absence est bien supprimée**, mais le manager reçoit un écran d'erreur (et un mail `exception_notification` part en prod). Il ne sait qu'après rechargement que l'opération a réussi. La variante HTML, elle, fonctionne de bout en bout.
 - **Correctif proposé** : préfixer le partial → `render "users/absence_form", absence: absence` dans `users/_absence.html.erb`. Comportement actuel **épinglé** dans `absences_controller_test.rb`.
+
+### B51 — ✅ CORRIGÉ (2026-08-13) — Les réponses JSON des pages wiki levaient sur un attribut inexistant
+- **Signalé par** : agent, 2026-07-30 (reproduit par test).
+- **Où** : `app/views/wiki_pages/_wiki_page.json.jbuilder` — la vue générée interrogeait `nom`, absent de `WikiPage`.
+- **Impact** : toute requête JSON sur la ressource levait. Aucun appelant.
+- ✅ **Corrigé par suppression, sur décision d'Alex** : le format JSON de `wiki_pages` était du scaffold que rien ne consommait. Les 3 vues jbuilder (`index`, `show`, `_wiki_page`) et les 6 branches `format.json` de `create`/`update`/`destroy` ont été retirées ; les trois actions rendent désormais directement leur `redirect_to`/`render`. Le test qui épinglait le bug a disparu avec le format.
 
 ### B54 — ✅ CORRIGÉ (2026-07-30) — Une absence de **demi-journée** bloquait la journée entière à la création d'une intervention
 - **Signalé par** : agent, 2026-07-30 (revue de la fonctionnalité Absences demandée par PE) ; **corrigé le jour même sur demande de PE**.

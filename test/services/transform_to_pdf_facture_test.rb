@@ -10,13 +10,13 @@ class TransformToPdfFactureTest < ActiveSupport::TestCase
     @facture = factures(:facture_paris)
   end
 
-  test 'document_title : une facture → le titre du document et sa référence' do
+  test 'le titre du document porte « Facture » et la référence de la facture' do
     texte = texte_pdf(TransformToPdf::Facture.call(@facture))
 
     assert_includes texte, "Facture n°#{@facture.ref}"
   end
 
-  test 'document_lignes_association : une facture → ses propres lignes sont imprimées' do
+  test 'les lignes de la facture sont imprimées' do
     texte = texte_pdf(TransformToPdf::Facture.call(@facture))
 
     assert_match(/#{@facture.facture_lignes.first.intitulé}/i, texte)

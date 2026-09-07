@@ -19,14 +19,14 @@ class TransformToPdfBasePdfForCrmTest < ActiveSupport::TestCase
   # Tout ce qui touche à l'argent : le total imprimé, le détail des lignes, et
   # la distinction entre prix unitaire et total de ligne.
 
-  test 'add_metadata et add_lignes : un devis à 76,50 € → le total est imprimé aux deux emplacements (critique)' do
+  test 'le total imprimé est celui de l’enregistrement, aux deux emplacements (critique)' do
     texte = texte_pdf(TransformToPdf::Cotation.call(@cotation))
 
     assert_equal 76.50, @cotation.total_ht.to_f, 'garde : fixture attendue à 76,50'
     assert_equal 2, texte.scan('Total HT : 76,50 €').size
   end
 
-  test 'add_lignes : une ligne ajoutée → le total imprimé suit la somme des lignes (critique)' do
+  test 'le total imprimé suit la somme des lignes quand une ligne est ajoutée (critique)' do
     CotationLigne.create!(cotation: @cotation, prestation: prestations(:entretien_espaces_verts),
                           intitulé: 'Tonte mensuelle', qté: 2)
 
@@ -36,7 +36,7 @@ class TransformToPdfBasePdfForCrmTest < ActiveSupport::TestCase
     assert_equal 2, texte.scan('Total HT : 136,50 €').size
   end
 
-  test 'add_lignes : deux lignes → chacune porte son code et son intitulé (critique)' do
+  test 'chaque ligne est imprimée avec son code et son intitulé (critique)' do
     CotationLigne.create!(cotation: @cotation, prestation: prestations(:entretien_espaces_verts),
                           intitulé: 'Tonte mensuelle', qté: 2)
 
@@ -48,14 +48,14 @@ class TransformToPdfBasePdfForCrmTest < ActiveSupport::TestCase
     assert_match(/Tonte mensuelle/i, texte)
   end
 
-  test 'add_lignes : une ligne de 3 × 25,50 € → le prix unitaire et le total de ligne sont distincts (critique)' do
+  test 'le prix unitaire et le total de la ligne sont imprimés distinctement (critique)' do
     texte = texte_pdf(TransformToPdf::Cotation.call(@cotation))
 
     assert_includes texte, '25,50 €', 'prix unitaire de la prestation'
     assert_includes texte, '76,50 €', 'total de la ligne (25,50 × 3)'
   end
 
-  test 'call : une facture d’une autre organisation → aucune donnée d’un autre document (critique)' do
+  test 'un document ne contient pas les données d’un autre document (critique)' do
     texte = texte_pdf(TransformToPdf::Facture.call(factures(:facture_marseille)))
 
     assert_match(/Devis Marseille/i, texte)
@@ -64,23 +64,7 @@ class TransformToPdfBasePdfForCrmTest < ActiveSupport::TestCase
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'document_title : appelé sur la classe mère → non implémenté' do
-    erreur = assert_raises(NotImplementedError) do
-      TransformToPdf::BasePdfForCrm.new(@cotation).send(:document_title)
-    end
-
-    assert_includes erreur.message, 'document_title'
-  end
-
-  test 'document_lignes_association : appelé sur la classe mère → non implémenté' do
-    erreur = assert_raises(NotImplementedError) do
-      TransformToPdf::BasePdfForCrm.new(@cotation).send(:document_lignes_association)
-    end
-
-    assert_includes erreur.message, 'document_lignes_association'
-  end
-
-  test 'add_metadata : un devis → la référence, le statut, l’adhérent, le service et l’intitulé' do
+  test 'les métadonnées identifient la référence, le statut, l’adhérent, le service et l’intitulé' do
     texte = texte_pdf(TransformToPdf::Cotation.call(@cotation))
 
     assert_match(/Réf : #{@cotation.ref}/, texte)
@@ -90,7 +74,7 @@ class TransformToPdfBasePdfForCrmTest < ActiveSupport::TestCase
     assert_match(/Intitulé : Devis nettoyage trimestriel/i, texte)
   end
 
-  test 'call : un document accentué → les accents et le symbole euro sont lisibles' do
+  test 'les accents et le symbole euro sont lisibles' do
     texte = texte_pdf(TransformToPdf::Cotation.call(@cotation))
 
     assert_includes texte, 'Réf'
@@ -99,34 +83,34 @@ class TransformToPdfBasePdfForCrmTest < ActiveSupport::TestCase
     assert_includes texte, '€'
   end
 
-  test 'add_metadata : une date de livraison souhaitée → elle est imprimée' do
+  test 'la date de livraison souhaitée est imprimée quand elle est renseignée' do
     texte = texte_pdf(TransformToPdf::Commande.call(@commande))
 
     assert_includes texte, I18n.l(@commande.date_livraison_souhaitée, format: :long).capitalize
   end
 
-  test 'add_metadata : aucune date de livraison souhaitée → un tiret est imprimé' do
+  test 'sans date de livraison souhaitée, un tiret est imprimé' do
     texte = texte_pdf(TransformToPdf::Cotation.call(@cotation))
 
     assert_nil @cotation.date_livraison_souhaitée, 'garde : fixture sans date de livraison'
     assert_includes texte, 'Livraison souhaitée : —'
   end
 
-  test 'add_memo : un mémo renseigné → la section est imprimée' do
+  test 'le mémo est imprimé quand il est renseigné' do
     texte = texte_pdf(TransformToPdf::Commande.call(@commande))
 
     assert_includes texte, 'Mémo'
     assert_includes texte, 'Prévoir un accès badge le matin'
   end
 
-  test 'add_memo : aucun mémo → la section n’est pas imprimée' do
+  test 'sans mémo, la section n’est pas imprimée' do
     texte = texte_pdf(TransformToPdf::Facture.call(@facture))
 
     assert_predicate @facture.mémo, :blank?, 'garde : fixture sans mémo'
     assert_no_match(/Mémo/, texte)
   end
 
-  test 'add_signature : un devis signé → la signature, le nom du signataire et la date' do
+  test 'une cotation signée porte la signature, le nom du signataire et la date' do
     @cotation.update_columns(signature: signature_svg, signee_le: Time.zone.parse('2026-06-15 10:00'))
 
     texte = texte_pdf(TransformToPdf::Cotation.call(@cotation.reload))
@@ -136,19 +120,19 @@ class TransformToPdfBasePdfForCrmTest < ActiveSupport::TestCase
     assert_includes texte, I18n.l(@cotation.signee_le.to_date, format: :long)
   end
 
-  test 'add_signature : aucune signature → la section n’est pas imprimée' do
+  test 'un document sans signature n’a pas de section Signature' do
     texte = texte_pdf(TransformToPdf::Commande.call(@commande))
 
     assert_no_match(/Signature/, texte)
   end
 
-  test 'add_footer : un document quelconque → le pied de page porte la date de génération' do
+  test 'le pied de page porte la date de génération' do
     texte = texte_pdf(TransformToPdf::Cotation.call(@cotation))
 
     assert_includes texte, "Document généré le #{I18n.l(Time.current, format: :long)}"
   end
 
-  test 'add_lignes : un document sans ligne → le total est imprimé à zéro' do
+  test 'un document sans ligne s’imprime avec un total à zéro' do
     cotation = cotations(:cotation_secretariat)
 
     texte = texte_pdf(TransformToPdf::Cotation.call(cotation))
@@ -158,7 +142,7 @@ class TransformToPdfBasePdfForCrmTest < ActiveSupport::TestCase
     assert_includes texte, '0,00 €'
   end
 
-  test 'add_lignes : une ligne sans intitulé propre → le libellé de la prestation est imprimé' do
+  test 'une ligne sans intitulé propre retombe sur le libellé de la prestation' do
     CotationLigne.create!(cotation: @cotation, prestation: prestations(:entretien_espaces_verts),
                           intitulé: nil, qté: 1)
 

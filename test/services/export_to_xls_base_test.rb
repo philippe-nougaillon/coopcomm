@@ -9,107 +9,107 @@ class ExportToXlsBaseTest < ActiveSupport::TestCase
     @base = ExportToXls::Base.new
   end
 
-  test 'add_worksheet : un nom → la feuille est créée et le service est renvoyé pour le chaînage' do
+  test 'add_worksheet crée la feuille et renvoie le service pour le chaînage' do
     retour = @base.add_worksheet('Liste des agents')
 
     assert_same @base, retour
-    assert_equal ['Liste des agents'], lire(@base.build_file).worksheets.map(&:name)
+    assert_equal ['Liste des agents'], lire_fichier_xls(@base.build_file).worksheets.map(&:name)
   end
 
-  test 'add_worksheet : deux appels → deux feuilles dans l’ordre de création' do
+  test 'deux appels à add_worksheet créent deux feuilles dans l’ordre' do
     @base.add_worksheet('Première').add_worksheet('Seconde')
 
-    assert_equal %w[Première Seconde], lire(@base.build_file).worksheets.map(&:name)
+    assert_equal %w[Première Seconde], lire_fichier_xls(@base.build_file).worksheets.map(&:name)
   end
 
-  test 'add_headers : trois en-têtes → la première ligne les porte' do
+  test 'add_headers écrit les en-têtes sur la première ligne' do
     @base.add_worksheet('Feuille').add_headers(%w[Nom Prénom Email])
 
-    assert_equal %w[Nom Prénom Email], feuille(@base).row(0).to_a
+    assert_equal %w[Nom Prénom Email], premiere_feuille(@base).row(0).to_a
   end
 
-  test 'setup_data : trois lignes → le classeur en compte quatre avec l’en-tête' do
+  test 'setup_data écrit une ligne par donnée, sous l’en-tête' do
     @base.add_worksheet('Feuille').add_headers(%w[Nom Prénom])
     @base.setup_data([%w[Weil Ariel], %w[Bond James], %w[Martin Michel]])
 
-    assert_equal 4, feuille(@base).rows.count
-    assert_equal %w[Weil Ariel], feuille(@base).row(1).to_a
-    assert_equal %w[Martin Michel], feuille(@base).row(3).to_a
+    assert_equal 4, premiere_feuille(@base).rows.count
+    assert_equal %w[Weil Ariel], premiere_feuille(@base).row(1).to_a
+    assert_equal %w[Martin Michel], premiere_feuille(@base).row(3).to_a
   end
 
-  test 'setup_data : aucune ligne → le classeur ne porte que son en-tête' do
+  test 'setup_data sans donnée laisse le classeur à sa seule ligne d’en-tête' do
     @base.add_worksheet('Feuille').add_headers(%w[Nom Prénom])
     @base.setup_data([])
 
-    assert_equal 1, feuille(@base).rows.count
+    assert_equal 1, premiere_feuille(@base).rows.count
   end
 
-  test 'setup_data : une cellule nulle → la ligne est écrite sans lever' do
+  test 'setup_data écrit une cellule nulle sans lever' do
     @base.add_worksheet('Feuille').add_headers(%w[Nom Téléphone])
     @base.setup_data([['Weil', nil]])
 
-    assert_equal ['Weil', nil], feuille(@base).row(1).to_a
+    assert_equal ['Weil', nil], premiere_feuille(@base).row(1).to_a
   end
 
-  test 'setup_data : un nombre et un texte → seul le nombre est centré' do
+  test 'setup_data ne centre que les valeurs numériques' do
     @base.add_worksheet('Feuille').add_headers(['Nom', 'Service', 'Interventions'])
     @base.setup_data([['Weil', 'Informatique', 4]])
 
-    ligne = feuille(@base).row(1)
+    ligne = premiere_feuille(@base).row(1)
 
     assert_equal :center, ligne.format(2).horizontal_align
     assert_not_equal :center, ligne.format(1).horizontal_align
   end
 
-  test 'build_file : un classeur rempli → un binaire relu par Spreadsheet' do
+  test 'build_file renvoie un binaire relu par Spreadsheet' do
     @base.add_worksheet('Feuille').add_headers(%w[Nom])
     @base.setup_data([['Weil']])
 
     binaire = @base.build_file
 
     assert_equal Encoding::BINARY, binaire.encoding
-    assert_equal ['Weil'], lire(binaire).worksheet(0).row(1).to_a
+    assert_equal ['Weil'], lire_fichier_xls(binaire).worksheet(0).row(1).to_a
   end
 
-  test 'build_file : deux appels successifs → le second classeur est identique au premier' do
+  test 'build_file appelé deux fois renvoie le même classeur' do
     @base.add_worksheet('Feuille').add_headers(%w[Nom])
     @base.setup_data([['Weil']])
 
     assert_equal @base.build_file, @base.build_file
   end
 
-  test 'autofit_columns_with_gap : une cellule longue → la colonne prend sa longueur plus quatre' do
+  test 'la largeur d’une colonne est la longueur de sa plus longue cellule plus quatre' do
     description = 'Tonte des espaces verts du centre-bourg'
     @base.add_worksheet('Feuille').add_headers(['Description'])
     @base.setup_data([[description]])
     @base.build_file
 
-    assert_equal description.length + 4, feuille(@base).column(0).width
+    assert_equal description.length + 4, premiere_feuille(@base).column(0).width
   end
 
-  test 'autofit_columns_with_gap : un en-tête plus long que ses données → la colonne suit l’en-tête' do
+  test 'la largeur d’une colonne suit son en-tête quand il est plus long que les données' do
     @base.add_worksheet('Feuille').add_headers(["Nombre d'interventions"])
     @base.setup_data([[4]])
     @base.build_file
 
-    assert_equal "Nombre d'interventions".length + 4, feuille(@base).column(0).width
+    assert_equal "Nombre d'interventions".length + 4, premiere_feuille(@base).column(0).width
   end
 
-  test 'autofit_columns_with_gap : des cellules courtes → la colonne garde la largeur minimale' do
+  test 'une colonne courte garde la largeur minimale de dix' do
     @base.add_worksheet('Feuille').add_headers(%w[Nom])
     @base.setup_data([['Weil']])
     @base.build_file
 
-    assert_equal 10, feuille(@base).column(0).width
+    assert_equal 10, premiere_feuille(@base).column(0).width
   end
 
   private
 
-  def feuille(service)
-    lire(service.build_file).worksheet(0)
+  def premiere_feuille(service)
+    lire_fichier_xls(service.build_file).worksheet(0)
   end
 
-  def lire(binaire)
+  def lire_fichier_xls(binaire)
     Spreadsheet.open(StringIO.new(binaire))
   end
 end

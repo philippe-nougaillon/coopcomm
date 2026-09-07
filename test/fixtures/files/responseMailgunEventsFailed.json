@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "event": "failed",
+      "severity": "permanent",
+      "reason": "suppressed-address",
+      "message": {
+        "headers": {
+          "message-id": "echec@test.example.com"
+        }
+      }
+    }
+  ]
+}

@@ -15,28 +15,37 @@
     <%= champs_tri_caches %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
-        <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+        <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
         <%= text_field_tag :search, params[:search], class: "input input-bordered input-md w-full",
               placeholder: "Mémo, Heures, Nom du document", onchange: "this.form.submit()" %>
       </div>
       <% if current_user.manager_or_admin? %>
         <div class="w-full md:flex-1">
-          <%= label_tag :adherent_id, "Adhérent", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+          <%= label_tag :adherent_id, "Adhérent", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
           <%= select_tag :adherent_id,
               options_from_collection_for_select(@adherents, :id, :nom_prénom, params[:adherent_id]),
-              include_blank: "Tous", class: "slim-select w-full h-10", onchange: "this.form.submit()" %>
+              include_blank: "Tous les adhérents",
+              class: "slim-select w-full h-10", 
+              onchange: "this.form.submit()" %>
         </div>
       <% end %>
       <div class="w-full md:flex-1">
-        <%= label_tag :service_id, "Service", class: "block text-xs font-semibold text-slate-600 mb-1" %>
+        <%= label_tag :service_id, "Service", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
         <%= select_tag :service_id,
               options_from_collection_for_select(@services, :id, :nom, params[:service_id]),
-              include_blank: "Tous", class: "slim-select w-full h-10", onchange: "this.form.submit()" %>
-      </div>
-      <div class="w-full md:flex-1">
-        <%= label_tag :active_on, "Active au", class: "block text-xs font-semibold text-slate-600 mb-1" %>
-        <%= date_field_tag :active_on, params[:active_on], class: "input input-bordered input-md w-full h-10",
+              multiple: true,
+              class: "slim-select w-full h-10",
+               data: { placeholder: 'Tous les services',
+                        max_values_shown_desktop: 2,
+                        max_values_shown_mobile: 2 
+                      }, 
               onchange: "this.form.submit()" %>
+      </div>
+      <div class="w-full md:flex-1" data-controller="date-picker" data-action="click->date-picker#open">
+        <%= label_tag :active_on, "Active au", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
+        <%= date_field_tag :active_on, params[:active_on], class: "input input-bordered input-md w-full h-10",
+              onchange: "this.form.submit()",
+              data: { 'date-picker-target': "input" } %>
       </div>
     </div>
   <% end %>

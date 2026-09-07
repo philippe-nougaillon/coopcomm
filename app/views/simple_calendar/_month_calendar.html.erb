@@ -2,7 +2,6 @@
   <div class="calendar-heading pt-4 pb-2">
     <div class="flex flex-col items-center justify-center gap-2 mb-4">
       
-      <%# Fila 1: Flecha Izq - Fecha - Flecha Der %>
       <div class="flex items-center justify-center gap-4">
         <%= link_to calendar.url_for_previous_view,
             class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10 flex-shrink-0 flex items-center justify-center", title: "Mois précédent", data: { turbo: false } do %>
@@ -19,7 +18,6 @@
         <% end %>
       </div>
 
-      <%# Fila 2: Aujourd'hui centrado abajo %>
       <div>
         <% if start_date.month == Date.today.month && start_date.year == Date.today.year %>
           <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm whitespace-nowrap">
@@ -32,7 +30,6 @@
                 data: { turbo: false } %>
         <% end %>
       </div>
-
     </div>
   </div>
 

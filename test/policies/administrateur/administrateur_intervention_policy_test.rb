@@ -31,6 +31,7 @@ class AdministrateurInterventionPolicyTest < ActionDispatch::IntegrationTest
     assert @policy.archiver?
     assert @policy.get_unavailable_elements?
     assert @policy.can_see_qrcode_pointage_pdf?
+    assert @policy.fiche?
     assert @policy.services_for_adherent?
     assert @policy.agents_for_service?
     assert @policy.new_intervention_modele_pointage?
@@ -103,6 +104,7 @@ class AdministrateurInterventionPolicyTest < ActionDispatch::IntegrationTest
     refute @policy_autre_org.refuser?
     refute @policy_autre_org.archiver?
     refute @policy_autre_org.can_see_qrcode_pointage_pdf?
+    refute @policy_autre_org.fiche?
     refute @policy_autre_org.pointer?
   end
 

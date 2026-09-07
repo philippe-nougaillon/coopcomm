@@ -9,36 +9,45 @@
         <div class="lg:hidden flex-shrink-0">
           <div class="btn btn-sm bg-transparent border-none text-black hover:bg-primary/20 rounded-lg">
             <%= link_to messagerie_path, class: "flex items-center gap-2" do %>
-            <%= embedded_svg "icons/arrow_back.svg", class: "w-6 h-6 fill-current" %>
-              
+             <%= embedded_svg "icons/arrow_back.svg", class: "w-6 h-6 fill-current" %> 
             <% end %>
           </div>
         </div>
         <div class="flex items-center gap-4">
-          <%= render partial: "partials/user_profile_picture", locals: { user: @destinataire } %>
-          <h1 class="text-xl sm:text-2xl text-primary font-bold truncate">
-            <span class="block"><%= @destinataire.nom_prénom %></span>
-          </h1>
+          <%= link_to user_path(@destinataire), class: "flex items-center gap-4 " do %>
+            <%= render partial: "partials/user_profile_picture", locals: { user: @destinataire } %>
+            <h1 class="text-xl sm:text-2xl text-primary font-bold truncate hover:underline hover:underline-primary">
+              <span class="block"><%= @destinataire.nom_prénom %></span>
+            </h1>
+          <% end %>
         </div>
       </div>
     </div>
     <div class="flex-1 min-h-0 w-full relative flex flex-col" data-controller="conversation" data-conversation-to-user-slug-value="<%= @destinataire.slug %>">
       <div id="chat-messages-container" data-conversation-target="container" class="flex-1 min-h-0 overflow-y-auto px-2 pt-4 pb-4 w-full lg:w-3/5 mx-auto">
-        <% @messages.each do |message| %>
-          <% if message.id == @first_unread_id %>
-            <div id="first-unread-banner" class="flex items-center gap-4 my-6">
-              <div class="flex-1 border-t border-primary/30"></div>
-              <div class="badge badge-primary badge-outline font-bold px-4 py-3">
-                <%= pluralize(@unread_count, "nouveau message", "nouveaux messages") %>
+        <% @messages.group_by { |m| m.created_at.to_date }.each do |date, day_messages| %>
+          <div class="sticky top-0 z-20 flex justify-center py-2 pointer-events-none">
+            <span class="text-xs font-semibold text-gray-600 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm">
+              <%= format_message_date(date) %>
+            </span>
+          </div>
+
+          <% day_messages.each do |message| %>
+            <% if message.id == @first_unread_id %>
+              <div id="first-unread-banner" class="flex items-center gap-4 my-6">
+                <div class="flex-1 border-t border-primary/30"></div>
+                <div class="badge badge-primary badge-outline font-bold px-4 py-3">
+                  <%= pluralize(@unread_count, "nouveau message", "nouveaux messages") %>
+                </div>
+                <div class="flex-1 border-t border-primary/30"></div>
               </div>
-              <div class="flex-1 border-t border-primary/30"></div>
+            <% end %>
+            <div class="message-wrapper"
+                data-message-id="<%= message.id %>"
+                data-unread="<%= message.to_id == current_user.id && message.read_at.nil? ? 'true' : 'false' %>">
+              <%= render partial: "messagerie/message", locals: { message: message } %>
             </div>
           <% end %>
-          <div class="message-wrapper"
-              data-message-id="<%= message.id %>"
-              data-unread="<%= message.to_id == current_user.id && message.read_at.nil? ? 'true' : 'false' %>">
-            <%= render partial: "messagerie/message", locals: { message: message } %>
-          </div>
         <% end %>
       </div>
       <div class="sticky bottom-0 lg:relative z-40 w-full bg-slate-50 border-t border-slate-200/80 p-2 pb-20 lg:pb-4 lg:pt-2 flex-shrink-0" >

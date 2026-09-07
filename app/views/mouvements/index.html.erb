@@ -17,7 +17,7 @@
     <%= champs_tri_caches %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
-        <%= label_tag :tool_ids, "Matériel",  class: "block font-semibold text-slate-600 text-sm mb-1"  %>
+        <%= label_tag :tool_ids, "Matériel",  class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
         <%= select_tag :tool_ids, 
         options_from_collection_for_select(@tools, 'id', 'name', params[:tool_ids]), 
                 multiple: true,
@@ -26,28 +26,36 @@
                 onchange: 'this.form.requestSubmit()' %>
       </div>
       <div class="w-full md:flex-1">
-        <%= label_tag :etats, "État", class: "block font-semibold text-slate-600 text-sm mb-1" %>
+        <%= label_tag :etats, "État", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
         <%= select_tag :etats, 
             options_for_select(Mouvement.etats_for_select, params[:etats]), 
             multiple: true,
+            id: 'etats-select', 
             class: 'slim-select w-full h-10',
-            data: { placeholder: 'Tous les états' },
+            data: { placeholder: 'Tous les états' ,
+                    max_values_shown_desktop: 3,
+                    max_values_shown_mobile: 2 
+                  },
             onchange: 'this.form.requestSubmit()' %>
       </div>
       <div class="w-full md:flex-1">
-        <%= label_tag :user_ids, "Par", class: "block font-semibold text-slate-600 text-sm mb-1" %>
+        <%= label_tag :user_ids, "Par", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
         <%= select_tag :user_ids,
             options_from_collection_for_select(@users, 'id', 'nom_prénom', params[:user_ids]),
             multiple: true,
             class: 'slim-select w-full h-10',
-            data: { placeholder: 'Tous les utilisateurs' },
+            data: { placeholder: 'Tous les utilisateurs',
+                    max_values_shown_desktop: 3,
+                    max_values_shown_mobile: 2 
+                  },
             onchange: 'this.form.requestSubmit()' %>
       </div>
-      <div class="w-full md:flex-1">
-        <%= label_tag :date, "Date", class: "block font-semibold text-slate-600 text-sm mb-1" %>
+      <div class="w-full md:flex-1" data-controller="date-picker" data-action="click->date-picker#open">
+        <%= label_tag :date, "Date", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
         <%= date_field_tag :date, params[:date],
             class: 'input input-bordered input-md w-full',
-            onchange: 'this.form.requestSubmit()' %>
+            onchange: 'this.form.requestSubmit()',
+            data: { 'date-picker-target': "input" } %>
       </div>
     </div>
   <% end %>

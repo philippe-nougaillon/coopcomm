@@ -46,7 +46,13 @@
       <div class="form-control w-full">
         <%= f.label :date_livraison_souhaitée, "Livraison souhaitée", class: "label font-semibold text-slate-700" %>
         <div class="flex items-center gap-2 h-10 rounded-lg border border-slate-200">
-          <%= f.date_field :date_livraison_souhaitée, class: "flex-1 bg-transparent border-none outline-hidden text-sm " %>
+          <div class="w-full flex-1 cursor-pointer"
+                data-controller="date-picker"
+                data-action="click->date-picker#open">
+            <%= f.date_field :date_livraison_souhaitée, 
+            class: "w-full bg-transparent border-none outline-hidden text-sm ",
+            data: {'date-picker-target': "input"} %>
+          </div>
         </div>
       </div>
       <div class="form-control w-full sm:col-span-2">

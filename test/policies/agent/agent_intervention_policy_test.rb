@@ -24,6 +24,7 @@ class AgentInterventionPolicyTest < ActionDispatch::IntegrationTest
     assert @policy.create?
     assert @policy.edit?
     assert @policy.update?
+    assert @policy.fiche?
     assert @policy.purge?
     assert @policy.terminer?
     assert @policy.pointer?

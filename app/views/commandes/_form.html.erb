@@ -39,7 +39,14 @@
       </div>
       <div class="form-control w-full">
         <%= f.label :date_livraison_souhaitée, "Livraison souhaitée", class: "label font-semibold text-slate-700" %>
-        <%= f.date_field :date_livraison_souhaitée, class: "input input-bordered w-full focus:input-primary " %>
+        <div class="w-full flex-1 cursor-pointer"
+                  data-controller="date-picker"
+                  data-action="click->date-picker#open">
+            <%= f.date_field :date_livraison_souhaitée, 
+            class: "input input-bordered w-full focus:input-primary ",
+            data: {'date-picker-target': "input"} %>
+        </div>
+                                  
       </div>
       <div class="form-control w-full sm:col-span-2">
         <%= f.label :mémo, "Mémo", class: "label font-semibold text-slate-700" %>

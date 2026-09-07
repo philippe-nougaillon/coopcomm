@@ -18,22 +18,23 @@
       <div>
         <div class="h-18 <%= 'lg:h-16' if user_signed_in? %>"></div>
         
-        <div class="p-4 border-b">
-          <%= form_tag request.path, method: :get do %>
-            <label class="input input-bordered flex items-center gap-2 w-full">
-              <%= text_field_tag :search, params[:search], include_blank: true, onchange: 'this.form.submit()', class: 'grow border-none outline-none p-0 focus:ring-0 ml-2', placeholder: 'Rechercher...' %>
-              <button type="submit" class="flex items-center cursor-pointer">
-                <%= embedded_svg "icons/loupe.svg", class: "w-6 h-6 fill-current text-gray-700" %>
-              </button>
-            </label>
-          <% end %>
-        </div>
-
-        <% WikiPage.catégories.each do |catégorie, id| %>
-          <%= link_to wiki_path(catégorie: catégorie) do %>
-            <div class="flex gap-2 items-center text-xl font-black mt-4 hover:bg-slate-100 py-3 pl-8 <%= 'bg-slate-50 hover:bg-base-300' if params[:catégorie] == catégorie %>">
+        <%= link_to documentation_index_path do %>
+          <div class="flex gap-2 items-center text-xl mt-4 hover:bg-slate-200 py-3 pl-8 <%= 'bg-slate-100 hover:bg-base-300' if (action_name == "index") %>">
+            Commencez ici
+          </div>
+        <% end %>
+        <% WikiPage.catégories.keys.each do |catégorie| %>
+          <%= link_to public_send("#{catégorie}_documentation_index_path") do %>
+            <div class="flex gap-2 items-center text-xl mt-4 hover:bg-slate-200 py-3 pl-8 <%= 'bg-slate-100 hover:bg-base-300' if (action_name == catégorie) %>">
               <%= catégorie.humanize %>
             </div>
+          <% end %>
+          <% WikiPage.by_role_for(current_user).by_categorie(catégorie).first(3).each do |wiki| %>
+            <%= link_to documentation_path(wiki) do %>
+              <div class="flex gap-2 items-center text-sm mt-2 hover:bg-slate-200 pl-12 <%= 'bg-slate-100 hover:bg-base-300' if @wiki_page == wiki %>">
+                <%= wiki.titre %>
+              </div>
+            <% end %>
           <% end %>
         <% end %>
       </div>

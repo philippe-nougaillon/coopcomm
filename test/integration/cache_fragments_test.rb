@@ -132,11 +132,11 @@ class CacheFragmentsTest < ActionDispatch::IntegrationTest
     avec_cache do
       sign_in users(:hidalgo)
       get tools_url
-      assert_select 'a[href=?]', liberer
+      assert_select 'form[action=?]', liberer
 
       sign_in users(:martin_technique_paris)
       get tools_url
-      assert_select 'a[href=?]', liberer, count: 0
+      assert_select 'form[action=?]', liberer, count: 0
     end
   end
 
@@ -175,11 +175,11 @@ class CacheFragmentsTest < ActionDispatch::IntegrationTest
     avec_cache do
       sign_in users(:hidalgo)
       get tool_url(outil, date: '2026-06-15')
-      assert_select 'a[href=?]', liberer
+      assert_select 'form[action=?]', liberer
 
       sign_in users(:martin_technique_paris)
       get tool_url(outil, date: '2026-06-15')
-      assert_select 'a[href=?]', liberer, count: 0
+      assert_select 'form[action=?]', liberer, count: 0
     end
   end
 

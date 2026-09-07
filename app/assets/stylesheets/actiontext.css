@@ -30,6 +30,11 @@
   max-width: 100% !important;
 }
 
+/* Le preflight Tailwind passe les img en display:block, ce qui annule le text-align:center de Trix. */
+.trix-content img {
+  margin-inline: auto;
+}
+
 trix-editor[input="wiki_page_contenu_trix_input_wiki_page"] {
   min-height: 15em;
 }

@@ -10,13 +10,13 @@ class TransformToPdfCotationTest < ActiveSupport::TestCase
     @cotation = cotations(:cotation_paris)
   end
 
-  test 'document_title : un devis → le titre du document et sa référence' do
+  test 'le titre du document porte « Cotation / Devis » et la référence du devis' do
     texte = texte_pdf(TransformToPdf::Cotation.call(@cotation))
 
     assert_includes texte, "Cotation / Devis n°#{@cotation.ref}"
   end
 
-  test 'document_lignes_association : un devis → ses propres lignes sont imprimées' do
+  test 'les lignes du devis sont imprimées' do
     texte = texte_pdf(TransformToPdf::Cotation.call(@cotation))
 
     assert_match(/#{@cotation.cotation_lignes.first.intitulé}/i, texte)

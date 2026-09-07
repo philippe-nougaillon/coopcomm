@@ -489,6 +489,14 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'application/pdf', response.media_type
   end
 
+  test 'la fiche détaillée est téléchargée au format PDF' do
+    get fiche_intervention_url(@intervention, filename: @intervention.pdf_filename)
+
+    assert_response :success
+    assert_equal 'application/pdf', response.media_type
+    assert_match(/Intervention-#{@intervention.id}\.pdf/, response.headers['Content-Disposition'])
+  end
+
   test 'new : sans paramètre → la page répond' do
     get new_intervention_url
     assert_response :success
@@ -538,6 +546,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
       }
     end
 
+    assert_equal 'Intervention créée avec succès.', flash[:notice]
     assert_redirected_to intervention_url(Intervention.last)
   end
 
@@ -586,6 +595,23 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     intervention = Intervention.find_by(description: 'Élagage à planifier')
     assert intervention, 'garde : la création doit avoir abouti'
     assert_nil intervention.temps_de_pause
+  end
+
+  test 'une intervention créée par un adhérent naît à l’état nouveau' do
+    adherent = users(:weil)
+    sign_in adherent
+
+    post interventions_url, params: { intervention: {
+      description: 'Remplacer une ampoule du hall',
+      adherent_id: adherent.id,
+      service_id: services(:technique).id,
+      début_prévue: 2.days.from_now,
+      fin_prévue: 2.days.from_now + 2.hours
+    } }
+
+    créée = Intervention.order(:id).last
+    assert_redirected_to intervention_url(créée)
+    assert_equal Intervention::NOUVEAU, créée.workflow_state
   end
 
   test 'create : par un adhérent → la notification managers « nouvelle demande » est enfilée' do
@@ -675,6 +701,32 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     créée = Intervention.find_by(description: 'Bon d\'intervention avec mots clés')
     assert_not_nil créée, "garde : la création doit avoir abouti (#{flash[:alert]})"
     assert_equal ['élagage'], créée.tag_list
+  end
+
+  test 'une intervention sans service n’est pas enregistrée (critique)' do
+    assert_no_difference('Intervention.count') do
+      post interventions_url, params: { intervention: {
+        description: 'Demande sans service',
+        adherent_id: users(:weil).id,
+        service_id: ''
+      } }
+    end
+
+    assert_response :unprocessable_content
+  end
+
+  test 'une intervention dont la fin prévue précède le début n’est pas enregistrée' do
+    assert_no_difference('Intervention.count') do
+      post interventions_url, params: { intervention: {
+        description: 'Créneau incohérent',
+        adherent_id: users(:weil).id,
+        service_id: services(:informatique).id,
+        début_prévue: 3.days.from_now,
+        fin_prévue: 2.days.from_now
+      } }
+    end
+
+    assert_response :unprocessable_content
   end
 
   test 'create : refusée → la liste des agents suit le service soumis' do

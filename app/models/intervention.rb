@@ -504,6 +504,10 @@ class Intervention < ApplicationRecord
     User.find_by(id: audits.first&.user_id)&.agent?
   end
 
+  def pdf_filename
+    "Intervention-#{id}.pdf"
+  end
+
   def get_routes_info_from_location
     localisation_depart = self.origin_location
 

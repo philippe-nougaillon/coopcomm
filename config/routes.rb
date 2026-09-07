@@ -58,8 +58,14 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :wiki_pages
-  match 'wiki', to: 'wiki_pages#index', via: :get
+  resources :documentation, controller: 'wiki_pages' do
+    collection do
+      get :blog
+      get :guide
+      get :faq
+    end
+  end
+  match 'doc', to: redirect('/documentation'), via: :get
 
   # resources :organisations, only: %i[ show edit update ]
 
@@ -73,6 +79,8 @@ Rails.application.routes.draw do
       post :archiver
       delete :purge
       delete :purger_photos_demande
+      # `fiche` et non `pdf` : le format pdf de `show` rend déjà l'affiche QRCode.
+      get 'fiche(/*filename)', action: :fiche, as: :fiche, format: false
       get :pointer
       get :pointage_statut
       patch :update_location
@@ -140,6 +148,11 @@ Rails.application.routes.draw do
   resources :conventions do
     collection do
       get :services_for_adherent
+    end
+
+    member do
+      # Ajout de constraints: { filename: /.*/ } pour accepter les points (ex: .pdf) dans l'URL
+      get 'pdf(/*filename)', action: :pdf, as: :pdf, format: false, constraints: { filename: /.*/ }
     end
   end
 

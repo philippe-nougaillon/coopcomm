@@ -1,30 +1,37 @@
 <div class="flex w-full">
   <%= render "wiki_navbar" %>
   <div class="w-full ml-8 sm:ml-64">
-    <div class="flex flex-wrap justify-between items-center mb-12 min-h-12 sm:min-h-16">
+    <%= render "barre_recherche" %>
+
+    <div class="flex flex-wrap justify-between items-center min-h-12 sm:min-h-16">
       <h1 class="text-2xl sm:text-4xl text-primary font-bold">
-        <% if !(params[:catégorie].present? || params[:search].present?) %>
-          Bienvenue sur le Wiki CoopComm !
-        <% elsif params[:catégorie].present? %>
-          <%= params[:catégorie].humanize %>
-        <% elsif params[:search].present? %>
-          <%= @wiki_pages.size == 0 ? 'Pas de résultat trouvé' : "#{@wiki_pages.size} page(s) trouvée(s)" %>
-        <% end %>
+        Bienvenue sur la documentation de CoopComm !
       </h1>
-      <% if policy(WikiPage).new? %>
-  <%= link_to new_wiki_page_path,
-    data: { testid: "Ajouter_une_Page" },
-    class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary",
-    title: "Créer un nouvel agent"  do %>
-  <%= embedded_svg "icons/add.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
-  <span class="hidden md:block">Ajouter une Page</span>
-<% end %>
-<%= link_to "+ Page", new_wiki_page_path,
-    class: "inline-flex sm:hidden btn btn-primary btn-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary" %>
-    <% end %>
+      <%= render "bouton_ajouter" %>
     </div>
-    <div id="wiki_pages" class="min-w-full">
-      <%= render @wiki_pages %>
-    </div>
+
+    <p class="mb-6 max-w-3xl text-slate-600">
+      CoopComm est un outil <strong>très complet</strong>. C'est pour cela que l'on vous propose une documentation détaillée des différentes interactions possibles.
+      <br>
+      <br>
+      Le <strong>Blog</strong> rassemble les actualités et les nouveautés de CoopComm.
+      Les <strong>Guides</strong> expliquent pas à pas comment utiliser l'application au quotidien.
+      La <strong>FAQ</strong> répond aux questions les plus fréquentes.
+    </p>
+
+      <% WikiPage.catégories.keys.each do |categorie| %>
+        <section>
+          <div class="mt-6">
+            <h3 class="text-2xl font-semibold mb-2"><%= categorie.humanize %></h3>
+            <% if @wiki_pages.by_categorie(categorie).any? %>
+              <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <%= render partial: "carte", collection: @wiki_pages.by_categorie(categorie).first(3), as: :wiki_page %>
+              </div>
+            <% else %>
+              <p>Aucune page de cette catégorie n'a été créée pour le moment.</p>
+            <% end %>
+          </div>
+        </section>
+      <% end %>
   </div>
 </div>

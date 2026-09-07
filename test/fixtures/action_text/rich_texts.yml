@@ -1,4 +1,9 @@
-# one:
-#   record: name_of_fixture (ClassOfFixture)
-#   name: content
-#   body: <p>In a <i>million</i> stars!</p>
+guide_public_contenu:
+  record: guide_public (WikiPage)
+  name: contenu
+  body: <p>La réservation de matériel se fait depuis la fiche outil.</p>
+
+faq_publique_contenu:
+  record: faq_publique (WikiPage)
+  name: contenu
+  body: <p>Le pointage se fait en scannant le QRCode affiché sur place.</p>

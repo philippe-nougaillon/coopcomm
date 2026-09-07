@@ -13,6 +13,11 @@ class MailLogsController < ApplicationController
 
     @emails = TriTextuel.ranger(User.by_service(current_user.services).pluck(:email))
 
+    # Opciones del select "Sujet": se calculan SIN filtrar, así no desaparecen
+    # las demás opciones cuando el usuario ya seleccionó una.
+    @all_subjects = TriTextuel.ranger(@organisation_mail_logs.distinct.pluck(:subject))
+
+
     # 1. Búsqueda por Destinataire (Maneja arrays provenientes de SlimSelect múltiple)
     if params[:search].present?
       # Convertimos params[:search] a un Array limpio de Strings

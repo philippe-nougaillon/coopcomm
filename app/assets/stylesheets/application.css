@@ -315,12 +315,12 @@ select.slim-select[multiple],
   color: transparent !important;
 }
 
-/* 3. Focus (pour tous) */
-select.slim-select:focus,
-#intervention_tags:focus,
-#intervention_tags_manager:focus {
-  border-color: #5897fb;
-}
+  /* 3. Focus (pour tous) */
+  select.slim-select:focus,
+  #intervention_tags:focus,
+  #intervention_tags_manager:focus {
+    border-color: #5897fb;
+  }
 
 
 
@@ -384,6 +384,14 @@ select.slim-select:focus,
 
   /* END SLIM-SELECT REQUIRED */
 
+  .ss-hidden-chip { display: none !important; }
+
+  .ss-more-badge {
+    background-color: #5897fb;
+    color: white;
+    padding: 4px;
+  }
+
   /* SLIM-SELECT INDISPONIBILITÉ */
 
   .ss-option.invalid {
@@ -404,6 +412,16 @@ select.slim-select:focus,
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  /* Aplica los '...' solo cuando hay múltiples ítems seleccionados */
+  .ss-main.ss-multiple .ss-values .ss-value .ss-value-text {
+    max-width: 5
+    rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
   }
 
   /* Optionnel : Limite aussi la taille des textes dans le menu déroulant */

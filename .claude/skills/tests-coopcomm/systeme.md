@@ -4,6 +4,17 @@ Un test système rejoue **un parcours utilisateur réel dans un navigateur**. Il
 
 Tout ce qui suit prime sur le confort d'écriture. **Un test ne s'adapte jamais aux contraintes de l'environnement de test** : si le parcours est pénible à automatiser, c'est souvent que l'application est pénible à utiliser.
 
+## 0. Ce qu'on met ici, et rien d'autre
+
+Un test système coûte environ **25 fois plus cher** qu'un test d'intégration (0,85 test/s contre 21). Deux choses seulement le justifient :
+
+- **Les parcours critiques** : créer une intervention, réserver un outil, consulter son tableau de bord, pointer.
+- **Le JavaScript**, et c'est le plus important — c'est la seule chose qu'aucun autre niveau ne peut couvrir. Un champ qui apparaît selon une condition, une couleur qui change, un bouton que Stimulus active, un menu qui s'ouvre, un widget qui remplace un `<select>`. Sans navigateur, tout ça est invisible : le formulaire d'invitation postait correctement au niveau HTTP alors que son bouton était `disabled` et qu'aucun invité ne pouvait valider (B97).
+
+- **Les messages d'erreur d'un formulaire** : quand on vérifie `#error_explanation`, on asserte **chaque message** qu'il contient, pas seulement sa présence. Le refus (422, état inchangé) est déjà prouvé au niveau contrôleur ; ce qui reste ici, c'est ce que l'utilisateur lit.
+
+Tout ce qui se prouve avec un `get` ou un `post` se teste ailleurs — voir `controleurs.md`, `integration.md` et la hiérarchie de `SKILL.md`.
+
 ## 1. La commande d'un test
 
 Alex donne trois éléments :
@@ -37,11 +48,15 @@ test "En tant qu'adhérent invité, je veux définir mon mot de passe pour accé
 
 L'utilisateur est **déjà connecté** au démarrage : `login(...)` dans le `setup`, puis le test commence. Exceptions : le test porte précisément sur la connexion, ou l'acteur ne peut pas être connecté (un invité qui n'a pas encore de mot de passe).
 
+**Le test démarre sur la page qui porte le bouton de l'action**, jamais sur la route de destination. Pour « créer une intervention », on part de l'index des interventions et on clique le bouton d'ajout — pas de `visit new_intervention_url` : le chemin qui mène au formulaire fait partie du parcours, et c'est souvent là que ça casse.
+
 Quand la commande dit **« à partir de la page home »**, le test part de `home_path` et **navigue par les rubriques du menu** jusqu'à la page visée — il ne fait pas `visit users_url`.
 
 **Un test n'est jamais lié à une seule largeur d'écran.** Il ne redimensionne pas la fenêtre pour se simplifier la vie : il doit passer en téléphone comme en PC, parce que l'application est utilisée des deux façons. Quand la page diffère entre les deux — la navbar du haut sous `lg:` d'un côté, le dock du bas de l'autre — c'est au **helper** de absorber l'écart, pas au test de choisir un camp. C'est le rôle d'`ouvrir_dropdown`.
 
 ## 5. Cliquer
+
+**On ne clique en système que lorsque le clic change l'état d'un enregistrement** (règle Alex, 2026-08-26). C'est là que Turbo s'interpose — `button_to`, `data-turbo-method`, modale de confirmation — et son interception est précisément ce qui casse en vrai. Un lien qui ne fait que naviguer se prouve en intégration par son `href` et par la réponse de la destination : voir `integration.md`.
 
 **Par le texte quand le bouton porte du texte.** `cliquer_bouton 'Enregistrer'`, `cliquer_lien 'Utilisateurs'`. Si le libellé change un jour, le test doit être mis à jour pour repasser au vert — c'est voulu : le texte fait partie de ce que l'utilisateur voit.
 

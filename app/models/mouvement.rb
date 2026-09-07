@@ -27,7 +27,7 @@ class Mouvement < ApplicationRecord
     fin_de_panne: 2
   }
 
-  validates :date, presence: true
+  validates :date, :état, presence: true
   validate :coherence_panne, if: :panne?
   validate :coherence_fin_de_panne, if: :fin_de_panne?
 

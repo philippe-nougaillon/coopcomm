@@ -22,5 +22,6 @@ prestation_marseille:
   organisation: mairie_marseille
   code: MAR01
   libellé: Prestation Marseille
+  unité: heure
   tarif: 50.00
   slug: <%= SecureRandom.uuid %>

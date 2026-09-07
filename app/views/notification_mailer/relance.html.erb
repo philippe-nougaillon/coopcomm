@@ -1,7 +1,10 @@
-<h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">Bonjour,</h2>
+<h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">
+  Bonjour<%= " #{@user.prénom.humanize}" if @user&.prénom.present? %> !
+</h2>
+
 
 <p style="color: #475569; margin-bottom: 24px;">
-  Nous vous rappelons que l'intervention <strong>« <%= @intervention.description %> »</strong> est en attente de votre validation.
+  Nous vous rappelons que l'intervention <strong style="text-transform: capitalize;">« <%= @intervention.description %> »</strong> est en attente de votre validation.
 <br>
 <br>
 Pour la valider, cliquez sur le lien suivant : <%= link_to "Valider l'intervention", intervention_url(@intervention), style: "color: #2563eb; text-decoration: underline;" %>

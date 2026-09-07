@@ -47,6 +47,10 @@ class CommandesController < ApplicationController
   def show
     @audits = trier(@commande.own_and_associated_audits.includes(:user))
     @pagy, @audits = pagy(@audits, items: 10)
+
+    @prestations = @commande.commande_lignes.includes(:prestation)
+    @pagy_prestations, @prestations = pagy(@prestations, items: 10)
+
   end
 
   # GET /commandes/new

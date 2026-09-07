@@ -17,8 +17,8 @@ class Convention < ApplicationRecord
 
   valide_document :document
 
-  validates :date_début, presence: true
-  validates :date_fin_prévue, presence: true
+  validates :date_début, :date_fin_prévue, presence: true
+  validates :heures_conventionnees, numericality: { greater_than: 0 }
   validate :one_convention_per_service
   validate :service_must_belong_to_adherent
   validate :end_date_after_start_date
@@ -64,6 +64,11 @@ class Convention < ApplicationRecord
 
   def heures_consommees
     self.interventions.sum(:temps_total)
+  end
+
+  # Nom du fichier PDF (utilisé dans l'URL et l'en-tête Content-Disposition)
+  def pdf_filename
+    "Convention-#{ref}.pdf"
   end
 
   private

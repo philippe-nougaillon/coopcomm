@@ -20,17 +20,19 @@
               class: 'input input-bordered input-md w-full',
               placeholder: 'Rechercher...' %>
         </div>
-        <div class="w-full">
+        <div class="w-full" data-controller="date-picker" data-action="click->date-picker#open">
           <%= label_tag :start_date, "Du", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
           <%= date_field_tag :start_date, params[:start_date], 
               class: 'input input-bordered input-md w-full ', 
-              onchange: 'this.form.requestSubmit()' %>
+              onchange: 'this.form.requestSubmit()',
+              data: { 'date-picker-target': "input" } %>
         </div>
-        <div class="w-full">
+        <div class="w-full" data-controller="date-picker" data-action="click->date-picker#open">
           <%= label_tag :end_date, "Au", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
           <%= date_field_tag :end_date, params[:end_date], 
               class: 'input input-bordered input-md w-full ', 
-              onchange: 'this.form.requestSubmit()' %>
+              onchange: 'this.form.requestSubmit()',
+               data: { 'date-picker-target': "input" } %>
         </div>
       </div>
       <%# Filtros Avanzados %>
@@ -46,7 +48,10 @@
             <%= select_tag :user_id, 
               options_from_collection_for_select(@users, 'id', 'nom', params[:user_id]), 
               multiple: true,
-              data: { placeholder: 'Tous les utilisateurs' },
+              data: { placeholder: 'Tous les utilisateurs',
+                      max_values_shown_desktop: 2,
+                      max_values_shown_mobile: 1 
+                    },
               onchange: 'this.form.requestSubmit()',
               class: 'slim-select w-full h-10' %>
           </div>
@@ -55,7 +60,10 @@
             <%= select_tag :type,
                 options_for_select(@types, params[:type]), 
                 multiple: true,
-                data: { placeholder: 'Tous les types' },
+                data: { placeholder: 'Tous les types',
+                        max_values_shown_desktop: 2,
+                        max_values_shown_mobile: 1 
+                      },
                 onchange: 'this.form.requestSubmit()',
                 class: 'slim-select w-full h-10' %>
           </div>
@@ -64,7 +72,10 @@
             <%= select_tag :action_name,
               options_for_select([['Création', 'create'], ['Modification', 'update'], ['Suppression', 'destroy']], params[:action_name]), 
               multiple: true,
-              data: { placeholder: 'Toutes les actions' },
+              data: { placeholder: 'Toutes les actions',
+                      max_values_shown_desktop: 3,
+                      max_values_shown_mobile: 1 
+                    },
               onchange: 'this.form.requestSubmit()',
               class: 'slim-select w-full h-10' %>
           </div>

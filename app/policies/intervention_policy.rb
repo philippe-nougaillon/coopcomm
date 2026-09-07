@@ -103,6 +103,10 @@ class InterventionPolicy < ApplicationPolicy
     new_intervention_modele_pointage?
   end
 
+  def fiche?
+    show?
+  end
+
   # --- Blocs affichés sur la page d'une intervention ---
 
   # Agents, matériel et mots clés.

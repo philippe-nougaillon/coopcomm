@@ -1,32 +1,78 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-blog:
-  titre: blog
-  publiée: true
-  user: hidalgo
-  poids: 1
-
-guide:
-  titre: guide
-  publiée: false
-  user: hidalgo
-  poids: 14
-
-fiche:
-  titre: fiche
-  publiée: false
-  user: hidalgo
-  poids: 7
-
-blog_only_admin:
-  titre: blog
-  publiée: true
-  user: administrateur_paris
-  poids: 4
-
-wiki_page_publique:
-  titre: page publique
+blog_épinglé:
+  titre: Nouveautés de la version 2
+  sous_titre: Ce qui change pour les agents
+  catégorie: blog
   publiée: true
   private: false
+  épinglée: true
+  poids: 9
+  slug: nouveautes-de-la-version-2
   user: hidalgo
+
+blog_public:
+  titre: Retour sur la mise en production
+  sous_titre: Le déploiement de septembre
+  catégorie: blog
+  publiée: true
+  private: false
+  épinglée: false
+  poids: 1
+  slug: retour-sur-la-mise-en-production
+  user: hidalgo
+
+blog_privé:
+  titre: Note interne aux gestionnaires
+  sous_titre: Réservée aux managers et administrateurs
+  catégorie: blog
+  publiée: true
+  private: true
+  épinglée: false
   poids: 2
+  slug: note-interne-aux-gestionnaires
+  user: hidalgo
+
+blog_non_publié:
+  titre: Brouillon du prochain billet
+  sous_titre: Encore en cours de rédaction
+  catégorie: blog
+  publiée: false
+  private: false
+  épinglée: false
+  poids: 3
+  slug: brouillon-du-prochain-billet
+  user: hidalgo
+
+guide_public:
+  titre: Réserver un outil
+  sous_titre: Pas à pas depuis la fiche outil
+  catégorie: guide
+  publiée: true
+  private: false
+  épinglée: false
+  poids: 4
+  slug: reserver-un-outil
+  user: hidalgo
+
+faq_publique:
+  titre: Questions fréquentes sur le pointage
+  sous_titre: Les scans du quotidien
+  catégorie: faq
+  publiée: true
+  private: false
+  épinglée: false
+  poids: 5
+  slug: questions-frequentes-sur-le-pointage
+  user: hidalgo
+
+blog_de_l_administrateur:
+  titre: Billet signé par l'administrateur
+  sous_titre: Un autre auteur que le manager
+  catégorie: blog
+  publiée: true
+  private: false
+  épinglée: false
+  poids: 6
+  slug: billet-signe-par-l-administrateur
+  user: administrateur_paris

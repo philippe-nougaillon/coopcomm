@@ -60,18 +60,28 @@
       
       <div class="flex justify-center items-center gap-1">
         <% if interventions_matin.any? || absence_matin %>
-          <span class="inline-block w-4 h-4 bg-[#db2767] border border-slate-400 rounded-sm shadow-sm" title="<%= absence_matin&.motif || interventions_matin.pluck(:description) %>"></span>
+          <% title_matin = if absence_matin
+                             "Absence : #{absence_matin.motif}"
+                           elsif interventions_matin.any?
+                             "Absente due aux interventions : #{interventions_matin.pluck(:description).join(', ')}"
+                           end %>
+          <span class="inline-block w-5 h-5 bg-[#db2767] border border-slate-400 hover:bg-[#e55387] rounded-sm shadow-sm" title="<%= title_matin %>"></span>
         <% else %>
           <%= link_to new_intervention_path(agent_id: agent.id, début_prévue: date, début_prévue_hour: 8, début_prévue_minute: 0, fin_prévue: date, fin_prévue_hour: 12), class: "inline-flex items-center justify-center" do %>
-            <span class="inline-block w-4 h-4 border border-slate-400 bg-green-500 rounded-sm hover:scale-110 transition-transform shadow-sm" title="Créer une intervention pour réserver cet agent"></span>
+            <span class="inline-block w-5 h-5 border border-slate-400 bg-green-500 rounded-sm hover:scale-110 transition-transform shadow-sm" title="Créer une intervention pour réserver cet agent"></span>
           <% end %>
         <% end %>
 
         <% if interventions_soir.any? || absence_soir %>
-          <span class="inline-block w-4 h-4 bg-[#db2767] border border-slate-400 rounded-sm shadow-sm" title="<%= absence_soir&.motif || interventions_soir.pluck(:description) %>"></span>
+          <% title_soir = if absence_soir
+                            "Absence : #{absence_soir.motif}"
+                          elsif interventions_soir.any?
+                            "Absente due aux interventions : #{interventions_soir.pluck(:description).join(', ')}"
+                          end %>
+          <span class="inline-block w-5 h-5 bg-[#db2767] border border-slate-400 hover:bg-[#e55387] rounded-sm shadow-sm" title="<%= title_soir %>"></span>
         <% else %>
           <%= link_to new_intervention_path(agent_id: agent.id, début_prévue: date, début_prévue_hour: 13, début_prévue_minute: 0, fin_prévue: date, fin_prévue_hour: 16), class: "inline-flex items-center justify-center" do %>
-            <span class="inline-block w-4 h-4 border border-slate-400 bg-green-500 rounded-sm hover:scale-110 transition-transform shadow-sm" title="Créer une intervention pour réserver cet agent"></span>
+            <span class="inline-block w-5 h-5 border border-slate-400 bg-green-500 rounded-sm hover:scale-110 transition-transform shadow-sm" title="Créer une intervention pour réserver cet agent"></span>
           <% end %>
         <% end %>
       </div>

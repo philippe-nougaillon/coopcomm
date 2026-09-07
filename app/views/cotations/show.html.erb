@@ -1,6 +1,7 @@
 <div class="mx-auto lg:w-2/3 w-full mt-8">
   <% page_title!("Cotation #{@cotation.ref}") %>
-  <div class="flex flex-row  justify-between items-start gap-3 mb-8">
+  
+  <div class="flex flex-row justify-between items-start gap-3 mb-8">
     <div>
       <h1 class="flex flex-col md:flex-row md:gap-2 text-2xl sm:text-3xl text-primary font-bold sm:whitespace-nowrap">
         Cotation 
@@ -12,7 +13,7 @@
         </span>
       </div>
     </div>
-    <div class="flex justify-end  md:w-full gap-2 ">
+    <div class="flex flex-col justify-end gap-2">
       <% if policy(@cotation).update? %>
         <%= link_to edit_cotation_path(@cotation), class: "btn flex-1 sm:flex-none" do %>
           <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
@@ -20,32 +21,65 @@
         <% end %>
       <% end %>
       <% if policy(@cotation).create_commande? %>
-        <%= button_to "Convertir en commande", create_commande_cotation_path(@cotation),
-       class: "btn btn-success btn-outline hover:text-white!", 
-       form: { data: { turbo_confirm: "Êtes-vous certain(e) de vouloir transformer cette cotation en commande  ? 
-       Cette action est irréversible." }, class: 'contents', turbo_method: :post} %>
+        <div class="flex justify-end ">
+          <button class="btn btn-outline btn-success hover:!text-white"
+            onclick="convert_commande_modal_<%= @cotation.id %>.showModal()" 
+            title="Convertir en commande">
+            <%= embedded_svg "icons/receipt.svg", class: "w-5 h-5 fill-current", title: "Convertir en commande" %>
+            <span class="hidden md:block">Convertir en commande </span>
+            <span class="block md:hidden">Commande</span>
+          </button>
+          <dialog id="convert_commande_modal_<%= @cotation.id %>" class="modal">
+            <div class="modal-box">
+              <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+              </form>
+              <h3 class="text-lg font-bold text-success flex items-center gap-2">
+                <%= embedded_svg "icons/receipt.svg", class: "w-6 h-6 fill-current text-success", title: "Commande" %>
+                Convertir en commande 
+              </h3>
+              <p class="py-4 text-sm text-slate-600 text-left">
+                Êtes-vous certain(e) de vouloir transformer cette cotation en commande ? 
+                Cette action est irréversible.
+              </p>
+              <div class="modal-action">
+                <form method="dialog">
+                  <button class="btn btn-ghost">Annuler</button>
+                </form>
+                <%= button_to create_commande_cotation_path(@cotation),
+                        method: :post,
+                        class: "btn btn-success text-white",
+                        form: { data: { turbo: false } } do %>
+                  Oui, convertir
+                <% end %>
+              </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+              <button>Fermer</button>
+            </form>
+          </dialog>
+        </div>
       <% end %>
       <span class="block md:hidden">
-      <%= link_to pdf_cotation_path(@cotation, filename: @cotation.pdf_filename),
-                  class: "btn btn-outline btn-info flex-1 sm:flex-none", target: "_blank", data: { turbo: false } do %>
-        <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200 hidden md:block" %>
-        <span class="block md:hidden"> PDF </span>
-        <span class="hidden md:block">Générer PDF</span>
-      <% end %>
+        <%= link_to pdf_cotation_path(@cotation, filename: @cotation.pdf_filename),
+                    class: "btn btn-outline btn-info flex flex-1 sm:flex-none", target: "_blank", data: { turbo: false } do %>
+          <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200 hidden md:block" %>
+          <span class="block md:hidden"> PDF </span>
+          <span class="hidden md:block">Générer PDF</span>
+        <% end %>
       </span>
     </div>
   </div>
+
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="hidden md:block text-2xl text-secondary font-semibold">Informations & Aperçu</h2>
     <h2 class="block md:hidden text-2xl text-secondary font-semibold">Informations</h2>
   </div>
+
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
     <div class="flex flex-col w-full">
       <div class="overflow-x-auto border border-slate-200 shadow-sm bg-white rounded-xl md:rounded-xl">
-        <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-          <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
-          <span>Faire glisser pour voir plus</span>
-        </div>
+        
         <div class="p-4">
           <div class="flex flex-col gap-0">
             <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
@@ -122,16 +156,17 @@
           </div>
         </div>
       </div>
+
       <% has_workflow_action = (policy(@cotation).envoyer? && @cotation.can_envoyer?) ||
-                           (policy(@cotation).valider? && @cotation.can_valider?) ||
-                           (policy(@cotation).refuser? && @cotation.can_refuser?) ||
-                            policy(@cotation).signer? %>
+                               (policy(@cotation).valider? && @cotation.can_valider?) ||
+                               (policy(@cotation).refuser? && @cotation.can_refuser?) ||
+                                policy(@cotation).signer? %>
       <% if has_workflow_action %>
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4  mb:mb-6 mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb:mb-6 mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="text-base text-slate-600 uppercase font-semibold shrink-0">
             Prochaine étape
           </div>
-          <div class="flex flex-wrap  items-center gap-2 w-full sm:w-auto">
+          <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <% if policy(@cotation).envoyer? && @cotation.can_envoyer? %>
               <%= button_to "Envoyer", envoyer_cotation_path(@cotation), class: "btn btn-info btn-outline min-w-20 flex-1 sm:flex-none hover:text-white!", form: { data: { turbo: false }, class: 'inline-block flex-1 sm:flex-none' } %>
             <% end %>
@@ -148,43 +183,32 @@
         </div>
       <% end %>
     </div>
-<div class="hidden md:block justify-between w-full h-full">
+
+    <div class="hidden md:block justify-between w-full h-full">
       <div class="flex-1 w-full border border-slate-200 rounded-xl overflow-hidden shadow-sm h-full relative group cursor-pointer">
-  <!-- El iframe visual del PDF -->
-  <iframe 
-    src="<%= pdf_cotation_path(@cotation, filename: @cotation.pdf_filename) %>#toolbar=0" 
-    class="w-full h-full border-none pointer-events-none"
-    title="Aperçu de la cotation PDF">
-  </iframe>
-
-  <!-- Capa invisible interactiva -->
-  <%= link_to pdf_cotation_path(@cotation, filename: @cotation.pdf_filename, download: true),
-              class: "absolute inset-0 z-10 flex items-center justify-center bg-black/0 hover:bg-slate-900/10 transition-colors duration-200",
-              target: "_blank",
-              data: { turbo: false },
-              title: "Cliquez pour télécharger le PDF" do %>
-    <!-- Badge que aparece al hacer hover -->
-    <span class="opacity-0 group-hover:opacity-100 bg-slate-900/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg transition-opacity duration-200 pointer-events-none">
-      Cliquez pour télécharger le PDF
-    </span>
-  <% end %>
-</div>
-
+        <iframe 
+          src="<%= pdf_cotation_path(@cotation, filename: @cotation.pdf_filename) %>#toolbar=0" 
+          class="w-full h-full border-none pointer-events-none"
+          title="Aperçu de la cotation PDF">
+        </iframe>
+        <%= link_to pdf_cotation_path(@cotation, filename: @cotation.pdf_filename, download: true),
+                    class: "absolute inset-0 z-10 flex items-center justify-center bg-black/0 hover:bg-slate-900/10 transition-colors duration-200",
+                    target: "_blank",
+                    data: { turbo: false },
+                    title: "Cliquez pour télécharger le PDF" do %>
+          <span class="opacity-0 group-hover:opacity-100 bg-slate-900/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg transition-opacity duration-200 pointer-events-none">
+            Cliquez pour télécharger le PDF
+          </span>
+        <% end %>
+      </div>
     </div>
   </div>
 
-
-
-
-
-
-
-
-  
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary font-semibold">Prestations</h2>
   </div>
-  <% cotation_lignes = @cotation.cotation_lignes.includes(:prestation) %>
+
+  <% cotation_lignes = @prestations %>
   <% if cotation_lignes.any? %>
     <%# ======= Movil ===== %>
     <div class="block md:hidden space-y-3 mb-8">
@@ -218,60 +242,62 @@
         </div>
       </div>
     </div>
-    <%# ======= desktop  ========= %>
-    <div class="hidden md:block overflow-x-auto border-x border-b border-slate-200 shadow-sm bg-white rounded-b-xl md:rounded-xl mb-8">
+
+    <%# ======= desktop ========= %>
+    <div class="hidden md:block overflow-x-auto border border-slate-200 shadow-sm bg-white rounded-xl mb-8">
       <table class="table table-sm w-full border-none">
         <thead class="bg-slate-100">
           <tr>
             <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left w-30">Code</th>
             <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-left w-full">Intitulé</th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-right w-40 ">Prix HT</th>
+            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-right w-40">Prix HT</th>
             <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center w-20">Qté</th>
             <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center w-32">Total HT</th>
           </tr>
         </thead>
         <tbody>
-          <% cotation_lignes = @cotation.cotation_lignes.includes(:prestation) %>
-          <% if cotation_lignes.any? %>
-            <% cotation_lignes.each do |ligne| %>
-              <tr class="hover:bg-base-200/60 transition-colors duration-150 align-middle">
-                <td class="px-4 py-3 font-semibold text-sm text-left max-w-48 truncate cursor-help" title="<%= ligne.prestation&.code %>">
-                  <%= ligne.prestation&.code %>
-                </td>
-                <td class="px-4 py-3 text-sm text-primary font-bold capitalize"><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
-                <td class="px-4 py-3 text-right text-sm whitespace-nowrap"><%= number_to_currency(ligne.prix_ht) %></td>
-                <td class="px-6 py-4 text-center font-medium">
-                  <span class="bg-slate-100 px-2 py-1 rounded font-semibold text-sm text-slate-600"><%= ligne.qté %></span>
-                </td>
-                <td class="px-4 py-3 text-center text-sm"><%= number_to_currency(ligne.total_ht) %></td>
-              </tr>
-            <% end %>
-          <% else %>
-            <tr>
-              <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">Aucune prestation enregistrée.</td>
+          <% cotation_lignes.each do |ligne| %>
+            <tr class="hover:bg-base-200/60 transition-colors duration-150 align-middle">
+              <td class="px-4 py-3 font-semibold text-sm text-left max-w-48 truncate cursor-help" title="<%= ligne.prestation&.code %>">
+                <%= ligne.prestation&.code %>
+              </td>
+              <td class="px-4 py-3 text-sm text-primary font-bold capitalize"><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
+              <td class="px-4 py-3 text-right text-sm whitespace-nowrap"><%= number_to_currency(ligne.prix_ht) %></td>
+              <td class="px-6 py-4 text-center font-medium">
+                <span class="bg-slate-100 px-2 py-1 rounded font-semibold text-sm text-slate-600"><%= ligne.qté %></span>
+              </td>
+              <td class="px-4 py-3 text-center text-sm"><%= number_to_currency(ligne.total_ht) %></td>
             </tr>
           <% end %>
         </tbody>
-        <% if cotation_lignes.any? %>
-          <tfoot>
-            <tr class="bg-slate-50/50 border-t-2 border-slate-200">
-              <td colspan="3"></td>
-              <td class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">
-                Total HT
-              </td>
-              <td class="px-6 py-4 text-right text-base font-bold text-primary bg-blue-50/30 border-l border-slate-200/60">
-                <%= number_to_currency(@cotation.total_ht) %>
-              </td>
-            </tr>
-          </tfoot>
-        <% end %>
+        <tfoot>
+          <tr class="bg-slate-50/50 border-t-2 border-slate-200">
+            <td colspan="3"></td>
+            <td class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">
+              Total HT
+            </td>
+            <td class="px-6 py-4 text-right text-base font-bold text-primary bg-blue-50/30 border-l border-slate-200/60">
+              <%= number_to_currency(@cotation.total_ht) %>
+            </td>
+          </tr>
+        </tfoot>
       </table>
-    </div>
-  <% else %>
-    <div class="text-center py-12 bg-white border border-slate-200 rounded-xl shadow-sm mb-8 text-slate-400 text-base italic">
-      Aucune prestation enregistrée.
+       <% if @pagy_prestations&.pages.to_i > 1 %>
+    <div class="flex flex-col justify-center p-4 border-t border-slate-200 bg-slate-50/50 w-full ">
+      <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+        <%= pagy_nav(@pagy_prestations).html_safe %>
+      </div>
+      <div class="text-slate-500 text-center text-sm w-full mt-2">
+        <%= pagy_info(@pagy_prestations, item_name: "prestations").html_safe %>
+      </div>
     </div>
   <% end %>
+    </div>
+  
+  <% end %>
+
+ 
+
   <% if @mail_logs.any? %>
     <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
       <h2 class="text-2xl text-secondary font-semibold">Historique des envois</h2>
@@ -279,7 +305,7 @@
     <div class="block md:hidden flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
       <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
     </div>
-    <div class="overflow-x-auto border-x border-b border-slate-200 shadow-sm bg-white rounded-b-xl md:rounded-xl mb-8">
+    <div class="overflow-x-auto border border-slate-200 shadow-sm bg-white rounded-xl mb-8">
       <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
         <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
         <span>Faire glisser pour voir plus</span>
@@ -301,8 +327,21 @@
           <%= render partial: "mail_logs/mail_log", collection: @mail_logs, as: :mail_log %>
         </tbody>
       </table>
+      <% if @pagy_envois&.pages.to_i > 1 %>
+    <div class="flex flex-col justify-center p-4 border-t border-slate-200 bg-slate-50/50 w-full ">
+      <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+        <%= pagy_nav(@pagy_envois).html_safe %>
+      </div>
+      <div class="text-slate-500 text-center text-sm w-full mt-2">
+        <%= pagy_info(@pagy_envois, item_name: "envois").html_safe %>
+      </div>
     </div>
   <% end %>
+    </div>
+  <% end %>
+
+  
+
   <% if current_user.manager_or_admin? %>
     <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
       <h2 class="text-2xl text-secondary font-semibold">Activité</h2>
@@ -310,7 +349,7 @@
     <div class="block md:hidden flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
       <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
     </div>
-    <div class="overflow-x-auto border-x border-b border-slate-200 shadow-sm bg-white rounded-b-xl md:rounded-xl mb-8">
+    <div class="overflow-x-auto border border-slate-200 shadow-sm bg-white rounded-xl mb-8">
       <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
         <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
         <span>Faire glisser pour voir plus</span>
@@ -329,7 +368,7 @@
             <%= render partial: "audit", collection: @audits %>
           <% else %>
             <tr>
-              <td colspan="5" class="text-center py-8 text-slate-400 text-base italic">Aucun historique d'activité disponible.</td>
+              <td colspan="4" class="text-center py-8 text-slate-400 text-base italic">Aucun historique d'activité disponible.</td>
             </tr>
           <% end %>
         </tbody>
@@ -346,6 +385,7 @@
       <% end %>
     </div>
   <% end %>
+
   <% if policy(@cotation).destroy? %>
     <div class="flex justify-end mb-10 mt-6 pt-4 border-t border-slate-200">
       <button class="btn btn-soft btn-error hover:!text-white"
@@ -382,6 +422,7 @@
       </dialog>
     </div>
   <% end %>
+
   <% if current_user.manager_or_admin? %>
     <div class="my-10">
       <%= link_to cotations_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
@@ -392,7 +433,7 @@
   <% else %>
     <div class="my-10">
       <%= link_to adherent_crm_path(tab: 'cotations'),
-     class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+          class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
         <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste" %>
         Retour à la liste
       <% end %>
