@@ -215,8 +215,6 @@ class User < ApplicationRecord
 
         user.save
 
-        Events.instance.publish('organisation.created', payload: { user_id: user.id }) unless Rails.env.development?
-
         user
       end
     end

@@ -17,9 +17,6 @@ module Users
       @user.rôle = 'administrateur'
       @user.dispatch_email_to_nom_prénom
       @user.save
-      return if Rails.env.development?
-
-      Events.instance.publish('organisation.created', payload: { user_id: @user.id })
     end
 
     # GET /resource/edit

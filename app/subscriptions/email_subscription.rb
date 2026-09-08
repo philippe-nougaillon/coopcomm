@@ -30,12 +30,6 @@ class EmailSubscription
     NotifWhatsappAdherentInterventionPointageJob.perform_later(intervention) if intervention.adherent&.téléphone?
   end
 
-  def on_organisation_created(event)
-    user = User.find(event[:payload][:user_id])
-    WelcomeNotificationJob.perform_later(user)
-    NewOrganisationNotificationJob.perform_later(user.organisation)
-  end
-
   def on_create_newsletter(event)
     email = Newsletter.find(event[:payload][:newsletter_id]).email
     NotifConfirmEmailNewsletterJob.perform_later(email)
