@@ -1,4 +1,4 @@
-<% user_name = @resource.email.split('@').first.capitalize %>
+<% user_name = @resource.email.split('@').humanize %>
 
 <h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">
   <%= t("devise.mailer.invitation_instructions.hello", email: user_name) %>

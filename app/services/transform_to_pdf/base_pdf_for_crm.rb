@@ -54,15 +54,15 @@ module TransformToPdf
 
     # Section des métadonnées (dates, statut, adhérent, service, total)
     def add_metadata
-      livraison = @record.date_livraison_souhaitée ? I18n.l(@record.date_livraison_souhaitée, format: :long).capitalize : '—'
+      livraison = @record.date_livraison_souhaitée ? I18n.l(@record.date_livraison_souhaitée, format: :long).humanize : '—'
 
       data = [
-        ['Le :', I18n.l(@record.updated_at, format: :long).capitalize],
+        ['Le :', I18n.l(@record.updated_at, format: :long)],
         ['Réf :', @record.ref.to_s],
         ['Statut :', @record.workflow_state.to_s.humanize],
-        ['Adhérent :', @record.adherent&.nom_prénom.to_s.capitalize],
-        ['Service :', @record.service&.nom.to_s.capitalize],
-        ['Intitulé :', @record.intitulé.to_s.capitalize],
+        ['Adhérent :', @record.adherent&.nom_prénom.humanize],
+        ['Service :', @record.service&.nom.humanize],
+        ['Intitulé :', @record.intitulé.humanize],
         ['Livraison souhaitée :', livraison],
         ['Total HT :', number_to_currency(@record.total_ht || 0)]
       ]
@@ -90,7 +90,7 @@ module TransformToPdf
 
         [
           ligne.prestation&.code,
-          intitule_texte.to_s.capitalize,
+          intitule_texte.humanize,
           number_to_currency(ligne.prix_ht),
           ligne.qté,
           number_to_currency(ligne.total_ht)

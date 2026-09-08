@@ -45,7 +45,7 @@
         Observation
       </td>
       <td style="padding: 12px 0; color: #0f172a; text-align: right; font-style: <%= @absence.observation.present? ? 'normal' : 'italic' %>;">
-        <%= @absence.observation.presence&.capitalize || "Aucune" %>
+        <%= @absence.observation.presence&.humanize || "Aucune" %>
       </td>
     </tr>
   </tbody>

@@ -1,7 +1,8 @@
 <h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">Bonjour,</h2>
 
 <p style="color: #475569; margin-bottom: 24px;">
-Votre commande « <%= @commande.intitulé.capitalize %> » (<b>N°<%= @commande.ref %></b>) vous a été envoyée.
+Votre commande « <%= @commande.intitulé.humanize %> » (<b>N°<%= @commande.ref %></b>) vous a été envoyée.
 <br><br>
 Vous trouverez la commande détaillée en pièce jointe.
 </p>
+

@@ -244,8 +244,8 @@
         <% if commande_lignes.any? %>
           <% commande_lignes.each do |ligne| %>
             <tr class="hover:bg-base-200/60 transition-colors duration-150 align-middle">
-              <td class="px-4 py-3 font-semibold text-sm text-center"><%= ligne.prestation&.code %></td>
-              <td class="px-4 py-3 text-sm text-primary font-bold capitalize"><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
+              <td class="px-4 py-3 font-semibold text-sm text-left max-w-48 truncate cursor-help" title="<%= ligne.prestation&.code %>"><%= ligne.prestation&.code %></td>
+              <td class="px-4 py-3 text-sm text-primary font-bold first-letter:capitalize"><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
               <td class="px-4 py-3 text-right text-sm whitespace-nowrap"><%= number_to_currency(ligne.prix_ht) %></td>
               <td class="px-6 py-4 text-center font-medium">
                 <span class="bg-slate-100 px-2 py-1 rounded font-semibold text-sm text-slate-600"><%= ligne.qté %></span>
