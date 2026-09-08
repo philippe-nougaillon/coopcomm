@@ -1,9 +1,13 @@
 <div class="mx-auto md:w-2/3 w-full">
-  <h1 class="font-bold text-4xl"><%= page_title!('Modifier la documentation') %></h1>
+  <div class="flex items-center justify-between gap-4 mb-6">
+    <h1 class="font-bold text-4xl"><%= page_title!('Modifier la documentation') %></h1>
+
+    <%= link_to "Voir la page", documentation_path(@wiki_page), class: "btn btn-ghost shrink-0" %>
+  </div>
+
   <%= render "form", wiki_page: @wiki_page %>
-  <%= link_to "Voir", documentation_path(@wiki_page), class: "ml-2 btn" %>
-  <%= link_to "Retour", documentation_index_path, class: "ml-2 btn" %>
-  <div class="pt-8">
+
+  <div class="pt-6 pb-12">
     <%= link_to documentation_index_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
       <%= embedded_svg "icons/arrow_back.svg", class: "w-4 h-4 transition-transform group-hover:-translate-x-1 fill-current" rescue nil %>
       Retour à la liste des pages wiki
