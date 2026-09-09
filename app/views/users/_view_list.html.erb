@@ -15,7 +15,7 @@
               <% es_hoy = (date == Date.today) %>
               <th class="text-center p-3 text-xs font-semibold tracking-wider transition-all min-w-[80px]
                          <%= es_hoy ? 'text-purple-700 bg-purple-50/40 border-x-2 border-t border-purple-500 font-bold' : 'text-slate-500 bg-slate-100' %>">
-                <span class="first-letter:capitalize"><%= l(date, format: :calendar).humanize %></span>
+                <span ><%= l(date, format: :calendar).humanize %></span>
               </th>
             <% end %>
           <% else %>

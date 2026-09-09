@@ -101,16 +101,16 @@
                 <%= embedded_svg "icons/store.svg", class: "w-5 h-5 fill-current" %>
                 <span class="text-base">Service</span>
               </div>
-              <div class="text-base text-slate-800 font-medium text-right first-letter:capitalize truncate">
-                <%= @commande.service&.nom %> </div>
+              <div class="text-base text-slate-800 font-medium text-right truncate">
+                <%= @commande.service&.nom.humanize %> </div>
             </div>
             <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
               <div class="flex items-center gap-3 text-slate-500 shrink-0">
                 <%= embedded_svg "icons/label.svg", class: "w-5 h-5 fill-current" %>
                 <span class="text-base">Intitulé</span>
               </div>
-              <div class="text-base text-slate-800 font-medium text-right first-letter:capitalize truncate">
-                <%= @commande.intitulé %></div>
+              <div class="text-base text-slate-800 font-medium text-right truncate">
+                <%= @commande.intitulé.humanize %></div>
             </div>
             <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
               <div class="flex items-center gap-3 text-slate-500 shrink-0">

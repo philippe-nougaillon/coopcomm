@@ -74,8 +74,8 @@ module TransformToPdf
       rows = interventions.map do |i|
         [
           i.description.to_s,
-          i.début ? I18n.l(i.début, format: :long).capitalize : '—',
-          i.fin ? I18n.l(i.fin, format: :long).capitalize : '—',
+          i.début ? I18n.l(i.début, format: :long) : '—',
+          i.fin ? I18n.l(i.fin, format: :long) : '—',
           number_with_precision(i.temps_total, precision: 2)
         ]
       end

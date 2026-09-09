@@ -32,7 +32,7 @@
   </td>
   <td class="py-3 px-4 text-sm text-slate-500" data-absence-status-target="observation">
     <% if absence.observation.present? %>
-      <%= absence.observation.capitalize %>
+      <%= absence.observation.humanize %>
     <% else %>
       <%= embedded_svg "icons/check_indeterminate_small.svg", title: "Aucun mot-clé" %>
     <% end %>

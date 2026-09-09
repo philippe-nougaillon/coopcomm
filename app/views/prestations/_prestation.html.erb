@@ -2,13 +2,13 @@
   <td class="px-4 py-3.5 uppercase text-primary font-bold text-lg max-w-[180px] truncate">
     <%= link_to prestation.code, prestation_path(prestation), class: 'hover:underline', title: prestation.code %>
   </td>
-  <td class="px-4 py-3.5 text-base font-semibold first-letter:capitalize">
-    <%= prestation.libellé %>
+  <td class="px-4 py-3.5 text-base font-semibold">
+    <%= prestation.libellé.humanize %>
   </td>
   <td class="px-4 py-3.5 text-base text-center">
     <% if prestation.catégorie.present? %>
       <span class="text-success font-semibold whitespace-nowrap">
-        <%= prestation.catégorie %>
+        <%= prestation.catégorie.humanize %>
       </span>
     <% else %>
       <span class="text-success font-semibold flex justify-center whitespace-nowrap">
@@ -28,8 +28,8 @@
       </span>
     <% end %>
   </td>
-  <td class="px-4 py-3.5 text-base first-letter:capitalize text-center">
-    <%= prestation.unité %>
+  <td class="px-4 py-3.5 text-base text-center">
+    <%= prestation.unité.humanize %>
   </td>
   <td class="px-4 py-3.5 text-base text-center font-medium">
     <%= number_to_currency(prestation.tarif) %>
