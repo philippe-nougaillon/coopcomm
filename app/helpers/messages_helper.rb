@@ -5,7 +5,7 @@ module MessagesHelper
     elsif date.yesterday?
       "Hier"
     elsif date > 7.days.ago
-      l(date, format: "%A").capitalize # Ej: "Lundi"
+      l(date, format: "%A") # Ej: "Lundi"
      elsif date.year == Date.current.year
       l(date, format: "%a %d %b")                # "mer. 19 août"
     else

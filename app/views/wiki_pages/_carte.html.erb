@@ -11,6 +11,13 @@
   <div class="card-body p-5 flex flex-col flex-1">
      <% if current_user&.manager_or_admin? %>
       <div class=" top-2.5 left-2.5 right-2.5 flex flex-wrap gap-1.5 pointer-events-none ">
+         <% if wiki_page.private? %>
+          <span class="badge badge-soft badge-sm badge-secondary gap-1 text-[11px] font-semibold shadow-xs border border-secondary/20">
+            <%= embedded_svg "icons/private.svg", class: "w-3 h-3 fill-current" %>
+            Privée (managers et administrateurs)
+          </span>
+        <% end %>
+        
         <% if wiki_page.publiée? %>
           <span class="badge badge-soft badge-sm badge-success gap-1 text-[11px] font-semibold shadow-xs border border-success/20">
             <%= embedded_svg "icons/visibility.svg", class: "w-3 h-3 fill-current" %>
@@ -30,12 +37,7 @@
           </span>
         <% end %>
 
-        <% if wiki_page.private? %>
-          <span class="badge badge-soft badge-sm badge-secondary gap-1 text-[11px] font-semibold shadow-xs border border-secondary/20">
-            <%= embedded_svg "icons/private.svg", class: "w-3 h-3 fill-current" %>
-            Privée (managers et administrateurs)
-          </span>
-        <% end %>
+       
       </div>
     <% end %>
     

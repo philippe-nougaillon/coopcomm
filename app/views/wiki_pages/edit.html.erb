@@ -1,12 +1,7 @@
-<div class="mx-auto md:w-2/3 w-full">
-  <h1 class="font-bold text-4xl"><%= page_title!('Modifier la documentation') %></h1>
+<div class="mx-auto w-full max-w-4xl ">
+  <h1 class="text-primary font-bold text-2xl md:text-4xl text-center my-8">
+    <%= page_title!('Modifier la documentation') %>
+  
+  </h1>
   <%= render "form", wiki_page: @wiki_page %>
-  <%= link_to "Voir", documentation_path(@wiki_page), class: "ml-2 btn" %>
-  <%= link_to "Retour", documentation_index_path, class: "ml-2 btn" %>
-  <div class="pt-8">
-    <%= link_to documentation_index_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
-      <%= embedded_svg "icons/arrow_back.svg", class: "w-4 h-4 transition-transform group-hover:-translate-x-1 fill-current" rescue nil %>
-      Retour à la liste des pages wiki
-    <% end %>
-  </div>
 </div>

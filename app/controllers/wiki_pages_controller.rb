@@ -100,7 +100,7 @@ class WikiPagesController < ApplicationController
   # Only allow a list of trusted parameters through.
   def wiki_page_params
     params.require(:wiki_page).permit(:titre, :sous_titre, :publiée, :poids, :contenu, :catégorie, :épinglée,
-                                      :document, :private)
+                                      :document, :photo, :private)
   end
 
   def is_user_authorized

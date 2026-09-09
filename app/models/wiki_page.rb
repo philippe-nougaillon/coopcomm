@@ -12,8 +12,10 @@ class WikiPage < ApplicationRecord
   belongs_to :user
   has_rich_text :contenu
   has_one_attached :document
+  has_one_attached :photo
 
   valide_document :document
+  valide_image :photo
 
   include PgSearch::Model
   include Discard::Model
