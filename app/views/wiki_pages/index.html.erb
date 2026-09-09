@@ -21,8 +21,8 @@
 
       <% WikiPage.catégories.keys.each do |categorie| %>
         <section>
-          <div class="mt-6">
-            <h3 class="text-2xl font-semibold mb-2"><%= categorie.humanize %></h3>
+          <div class="mt-6 ">
+            <h3 class="text-2xl mb-2 text-primary font-bold"><%= categorie.humanize %></h3>
             <% if @wiki_pages.by_categorie(categorie).any? %>
               <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <%= render partial: "carte", collection: @wiki_pages.by_categorie(categorie).first(3), as: :wiki_page %>

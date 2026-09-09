@@ -1,0 +1,94 @@
+<%#
+  Document avec bouton de suppression optionnel et aperçu PDF/Download.
+
+  Locals requis :
+    document           - un ActiveStorage::Attached::One attaché (document.attached? doit être true)
+
+  Locals optionnels :
+    supprimable        - bool : affiche le bouton de suppression (défaut false)
+    chemin_suppression - String : route DELETE à appeler (obligatoire si supprimable est true)
+%>
+<%
+  supprimable        = local_assigns.fetch(:supprimable, false)
+  chemin_suppression = local_assigns[:chemin_suppression]
+
+  raise ArgumentError, "chemin_suppression requis quand supprimable: true" if supprimable && chemin_suppression.blank?
+%>
+
+<% if document.attached? %>
+  <hr class="mb-6">
+
+  <%# Vista Desktop con iframe %>
+  <div class="hidden md:block w-full h-60 mt-6">
+    <div class="relative group cursor-pointer w-full h-full border border-slate-200 rounded-xl shadow-sm">
+
+      <% if supprimable %>
+        <button type="button"
+                onclick="document.getElementById('delete_doc_modal_<%= document.id %>').showModal()"
+                class="absolute -top-2 -right-2 bg-white text-red-500 rounded-full p-1.5 shadow-md border border-slate-200 hover:bg-red-50 hover:text-red-600 transition-all z-20">
+          <%= embedded_svg "icons/delete.svg", class: "w-3.5 h-3.5", title: "Supprimer" rescue nil %>
+        </button>
+
+        <dialog id="delete_doc_modal_<%= document.id %>" class="modal">
+          <div class="modal-box">
+            <form method="dialog">
+              <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="text-lg font-bold text-error flex items-center gap-2">
+              <%= embedded_svg "icons/delete.svg", class: "w-6 h-6 fill-current text-error", title: "Supprimer" rescue nil %>
+              Supprimer le document
+            </h3>
+            <p class="py-4 text-sm text-slate-600 text-left">
+              Êtes-vous bien certain.e de vouloir supprimer définitivement ce document ?
+              Cette action est irréversible.
+            </p>
+            <div class="modal-action">
+              <form method="dialog">
+                <button class="btn btn-ghost">Annuler</button>
+              </form>
+
+              <%= button_to chemin_suppression, method: :delete, class: "btn btn-error text-white" do %>
+                Oui, supprimer
+              <% end %>
+            </div>
+          </div>
+          <form method="dialog" class="modal-backdrop">
+            <button>Fermer</button>
+          </form>
+        </dialog>
+      <% end %>
+
+      <div class="w-full h-full rounded-xl overflow-hidden">
+        <iframe
+          src="<%= rails_blob_path(document, disposition: "inline") %>#toolbar=0&navpanes=0&scrollbar=0"
+          class="w-full h-full border-none pointer-events-none"
+          title="Aperçu du document">
+        </iframe>
+      </div>
+
+      <%= link_to rails_blob_path(document, disposition: "attachment"),
+                  class: "absolute inset-0 z-10 flex items-center justify-center bg-black/0 hover:bg-slate-900/10 transition-colors duration-200 rounded-xl",
+                  target: "_blank",
+                  data: { turbo: false },
+                  title: "Cliquez pour télécharger le document" do %>
+        <span class="opacity-0 group-hover:opacity-100 bg-slate-900/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg transition-opacity duration-200 pointer-events-none">
+          Cliquez pour télécharger le document
+        </span>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Vista Móvil %>
+  <div class="block md:hidden mt-6 p-4 relative flex items-center justify-between bg-slate-50 rounded-xl border border-slate-200">
+    <% if supprimable %>
+      <button type="button"
+              onclick="document.getElementById('delete_doc_modal_<%= document.id %>').showModal()"
+              class="absolute -top-2 -right-2 bg-white text-red-500 rounded-full p-1.5 shadow-md border border-slate-200 hover:bg-red-50 hover:text-red-600 transition-all z-20">
+        <%= embedded_svg "icons/delete.svg", class: "w-3.5 h-3.5", title: "Supprimer" rescue nil %>
+      </button>
+    <% end %>
+
+    <span class="text-sm font-medium text-slate-600 truncate mr-2"><%= document.filename %></span>
+    <%= link_to "Télécharger", rails_blob_path(document, disposition: "attachment"), class: "btn btn-primary btn-sm shrink-0" %>
+  </div>
+<% end %>

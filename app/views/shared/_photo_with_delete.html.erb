@@ -1,0 +1,79 @@
+<%#
+  Photo avec bouton de suppression optionnel, conçue pour flotter à droite
+  du texte qui suit (le conteneur parent doit avoir `flow-root`, cf. usages).
+
+  Locals requis :
+    photo             - un ActiveStorage::Attached::One attaché (photo.attached? doit être true)
+
+  Locals optionnels :
+    supprimable        - bool : affiche le bouton de suppression (défaut false)
+    chemin_suppression - String : route DELETE à appeler (obligatoire si supprimable est true)
+    wrapper_class       - classes du conteneur flottant (défaut : profil "article", cf. ci-dessous)
+    alt_text            - texte alternatif de l'image (défaut "")
+
+  Exemples :
+    render "shared/photo_with_delete", photo: @wiki_page.photo,
+           supprimable: policy(@wiki_page).edit?,
+           chemin_suppression: purge_photo_documentation_path(@wiki_page)
+
+    render "shared/photo_with_delete", photo: intervention.photo,
+           supprimable: policy(intervention).edit?,
+           chemin_suppression: purge_intervention_path(intervention, photo_id: intervention.photo.id)
+%>
+<%
+  supprimable        = local_assigns.fetch(:supprimable, false)
+  chemin_suppression = local_assigns[:chemin_suppression]
+  alt_text           = local_assigns.fetch(:alt_text, "")
+  wrapper_class      = local_assigns.fetch(:wrapper_class,
+    "float-right mt-6 w-full sm:w-2/5 md:w-2/4 ml-6 mb-4 rounded-2xl overflow-hidden  shadow-sm"
+  )
+
+  raise ArgumentError, "chemin_suppression requis quand supprimable: true" if supprimable && chemin_suppression.blank?
+%>
+<div class="relative">
+<div class=" <%= wrapper_class %>" style="max-height: 48rem;">
+  <% if supprimable %>
+    <button type="button"
+            onclick="document.getElementById('delete_photo_modal_<%= photo.id %>').showModal()"
+            class="absolute -top-2 -right-2 bg-white text-red-500 rounded-full p-1.5 mt-6 shadow-md border border-slate-200 hover:bg-red-50 hover:text-red-600 transition-all z-10">
+      <%= embedded_svg "icons/delete.svg", class: "w-3.5 h-3.5", title: "Supprimer" rescue nil %>
+    </button>
+
+    <dialog id="delete_photo_modal_<%= photo.id %>" class="modal">
+      <div class="modal-box">
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 class="text-lg font-bold text-error flex items-center gap-2">
+          <%= embedded_svg "icons/delete.svg", class: "w-6 h-6 fill-current text-error", title: "Supprimer" rescue nil %>
+          Supprimer la photo
+        </h3>
+        <p class="py-4 text-sm text-slate-600 text-left">
+          Êtes-vous bien certain.e de vouloir supprimer définitivement cette photo ?
+          Cette action est irréversible.
+        </p>
+        <div class="modal-action">
+          <form method="dialog">
+            <button class="btn btn-ghost">Annuler</button>
+          </form>
+
+          <%= button_to chemin_suppression, method: :delete, class: "btn btn-error text-white" do %>
+            Oui, supprimer
+          <% end %>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>Fermer</button>
+      </form>
+    </dialog>
+  <% end %>
+
+  <% if photo.representable? %>
+    <%= image_tag photo, alt: alt_text, class: "w-full h-full object-cover" %>
+  <% else %>
+    <div class="w-full h-56 flex items-center justify-center bg-slate-50">
+      <%= embedded_svg "icons/images.svg", class: "w-8 h-8 text-slate-300", title: "Aperçu indisponible" rescue nil %>
+    </div>
+  <% end %>
+</div>
+</div>
