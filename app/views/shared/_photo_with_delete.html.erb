@@ -35,7 +35,8 @@
   <% if supprimable %>
     <button type="button"
             onclick="document.getElementById('delete_photo_modal_<%= photo.id %>').showModal()"
-            class="absolute -top-2 -right-2 bg-white text-red-500 rounded-full p-1.5 mt-6 shadow-md border border-slate-200 hover:bg-red-50 hover:text-red-600 transition-all z-10">
+            class="absolute -top-2 -right-2 bg-white text-red-500 rounded-full p-1.5 mt-6 shadow-md border border-slate-200 hover:bg-red-50 hover:text-red-600 transition-all z-10"
+            title="Supprimer la photo">
       <%= embedded_svg "icons/delete.svg", class: "w-3.5 h-3.5", title: "Supprimer" rescue nil %>
     </button>
 

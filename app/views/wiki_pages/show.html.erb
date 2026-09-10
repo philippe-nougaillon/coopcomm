@@ -63,20 +63,27 @@
         <div class="text-slate-800 text-base leading-relaxed text-justify pt-4">
           <%= @wiki_page.contenu %>
         </div>
+         
+         <div class="text-xs text-slate-400 mb-6 mt-2">
+          <p>Publié le <%= l(@wiki_page.created_at) %></p>
+          <p class="mt-0.5">Modifié il y a <%= time_ago_in_words @wiki_page.updated_at %></p>
+        </div>
       </div>
 
+      <hr class="mb-6">
+
       <% if @wiki_page.document.attached? %>
+        <h2 class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+         DOCUMENT
+        </h2>
         <%= render "shared/document_with_delete",
                    document: @wiki_page.document,
                    supprimable: policy(@wiki_page).purge_document?,
                    chemin_suppression: purge_document_documentation_path(@wiki_page) %>
       <% end %>
 
-      <div class="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-slate-400">
-        <div>
-          <p>Publiée le <%= l(@wiki_page.created_at) %></p>
-          <p class="mt-0.5">Modifiée il y a <%= time_ago_in_words @wiki_page.updated_at %></p>
-        </div>
+      <div class="pt-6 flex items-end justify-end gap-4 text-xs text-slate-400">
+       
 
         <% if policy(@wiki_page).edit? %>
           <div class="flex items-center gap-2">
