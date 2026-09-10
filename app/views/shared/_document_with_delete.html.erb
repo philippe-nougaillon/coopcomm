@@ -17,7 +17,7 @@
 
 <% if document.attached? %>
 
-  <div class="relative w-90">
+  <div class="relative w-80">
 
       <% if supprimable %>
         <button type="button"
@@ -60,11 +60,23 @@
                   target: "_blank",
                   data: { turbo: false },
                   title: "Cliquez pour télécharger le document" do %>
-        <iframe
-          src="<%= rails_blob_path(document, disposition: "inline") %>#toolbar=0&navpanes=0&scrollbar=0"
-          class=" h-full border-none pointer-events-none"
-          title="Aperçu du document">
-        </iframe>
+
+        <% if document.image? %>
+          <div class="w-full h-48 overflow-hidden rounded">
+            <%= image_tag rails_blob_path(document),
+                  class: "w-full h-full object-cover pointer-events-none" %>
+          </div>
+        <% else %>
+          <div class="w-full h-48 overflow-hidden rounded">
+            <iframe
+              src="<%= rails_blob_path(document, disposition: "inline") %>#view=FitH&toolbar=0&navpanes=0"
+              class="border-none pointer-events-none"
+              style="width: calc(100% + 24px); height: 100%;"
+              title="Aperçu du document">
+            </iframe>
+          </div>
+        <% end %>
+
       <% end %>
 
   </div>
