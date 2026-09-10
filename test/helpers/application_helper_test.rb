@@ -55,7 +55,7 @@ class ApplicationHelperTest < ActionView::TestCase
 
   test 'message de la semaine écoulée : le jour de la semaine' do
     travel_to Time.zone.local(2026, 7, 15, 18, 0) do
-      assert_equal 'Vendredi', message_time_format(Time.zone.local(2026, 7, 10, 9, 30))
+      assert_equal 'vendredi', message_time_format(Time.zone.local(2026, 7, 10, 9, 30))
     end
   end
 
