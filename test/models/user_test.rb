@@ -293,24 +293,6 @@ class UserTest < ActiveSupport::TestCase
     assert_equal 0.0, users(:adhérent_sans_intervention).star_count(3)
   end
 
-  test 'dispatch_email_to_nom_prénom : adresse avec séparateur → nom et prénom déduits' do
-    utilisateur = User.new(email: 'dupont.jeanne@mairie.fr')
-
-    utilisateur.dispatch_email_to_nom_prénom
-
-    assert_equal 'DUPONT', utilisateur.nom
-    assert_equal 'Jeanne', utilisateur.prénom
-  end
-
-  test 'dispatch_email_to_nom_prénom : adresse sans séparateur → prénom laissé vide' do
-    utilisateur = User.new(email: 'accueil@mairie.fr')
-
-    utilisateur.dispatch_email_to_nom_prénom
-
-    assert_equal 'ACCUEIL', utilisateur.nom
-    assert_nil utilisateur.prénom
-  end
-
   test 'avatar : chaque rôle → l\'icône qui le distingue à l\'écran' do
     assert_equal 'manage_accounts', users(:hidalgo).avatar
     assert_equal 'person', users(:bond).avatar

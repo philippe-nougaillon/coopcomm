@@ -220,11 +220,6 @@ class User < ApplicationRecord
     end
   end
 
-  def dispatch_email_to_nom_prénom
-    nom_prénom = email.split('@').first
-    self.nom, self.prénom = nom_prénom.split('.')
-  end
-
   def avatar
     case rôle
     when 'manager'
