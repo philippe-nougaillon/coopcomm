@@ -16,6 +16,7 @@ class WikiPage < ApplicationRecord
 
   valide_document :document
   valide_image :photo
+  valide_piece_jointe_riche :contenu, types: DOCUMENTS, max_octets: TAILLE_MAX_CONTENU_RICHE
 
   include PgSearch::Model
   include Discard::Model

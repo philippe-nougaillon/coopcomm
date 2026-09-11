@@ -30,6 +30,7 @@ module PieceJointeValidable
 
   TAILLE_MAX_IMAGE = 10.megabytes
   TAILLE_MAX_DOCUMENT = 20.megabytes
+  TAILLE_MAX_CONTENU_RICHE = 100.megabytes 
 
   EXTENSIONS = {
     'image/png' => %w[.png],
@@ -102,6 +103,38 @@ module PieceJointeValidable
 
           errors.add(nom, "format non pris en charge (#{blob.content_type})") unless types.include?(blob.content_type)
           errors.add(nom, "fichier trop volumineux (#{PieceJointeValidable.libellé_taille(max_octets)} maximum)") if blob.byte_size.to_i > max_octets
+        end
+      end
+    end
+
+    # Valide les fichiers attachés directement dans un champ ActionText (Trix),
+    # ex: has_rich_text :contenu. Contrairement à valide_piece_jointe, il n'y a
+    # pas de has_one_attached : les blobs vivent dans le corps HTML du rich
+    # text. On ne valide que les blobs absents de la version persistée, pour
+    # ne pas bloquer un contenu ancien qui contiendrait un fichier hors des
+    # règles actuelles.
+    def valide_piece_jointe_riche(nom, types:, max_octets:)
+      self.regles_pieces_jointes = regles_pieces_jointes.merge(nom.to_s => { types: types, max_octets: max_octets })
+
+      validate do
+        rich_text = send(nom)
+        next if rich_text.blank? || rich_text.body.blank?
+
+        blobs_actuels = rich_text.body.attachables.grep(ActiveStorage::Blob)
+
+        anciens_ids =
+          if persisted?
+            rich_text_persisté = self.class.unscoped.find_by(id: id)&.public_send(nom)
+            rich_text_persisté&.body&.attachables.to_a.grep(ActiveStorage::Blob).map(&:id) || []
+          else
+            []
+          end
+
+        nouveaux_blobs = blobs_actuels.reject { |blob| anciens_ids.include?(blob.id) }
+
+        nouveaux_blobs.each do |blob|
+          errors.add(nom, "contient un fichier de format non pris en charge (#{blob.filename})") unless types.include?(blob.content_type)
+          errors.add(nom, "contient un fichier trop volumineux (#{blob.filename}, #{PieceJointeValidable.libellé_taille(max_octets)} maximum)") if blob.byte_size.to_i > max_octets
         end
       end
     end
