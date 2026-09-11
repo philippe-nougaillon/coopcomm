@@ -16,6 +16,13 @@ module PieceJointeValidable
     image/heif
   ].freeze
 
+  VIDEOS = %w[
+    video/mp4
+    video/webm
+    video/ogg
+    video/quicktime
+  ].freeze
+
   DOCUMENTS = (%w[
     application/pdf
     application/msword
@@ -30,7 +37,9 @@ module PieceJointeValidable
 
   TAILLE_MAX_IMAGE = 10.megabytes
   TAILLE_MAX_DOCUMENT = 20.megabytes
-  TAILLE_MAX_CONTENU_RICHE = 100.megabytes 
+
+  CONTENU_RICHE = (DOCUMENTS + VIDEOS + IMAGES).freeze
+  TAILLE_MAX_CONTENU_RICHE = 110.megabytes 
 
   EXTENSIONS = {
     'image/png' => %w[.png],
@@ -49,7 +58,11 @@ module PieceJointeValidable
     'application/vnd.oasis.opendocument.text' => %w[.odt],
     'application/vnd.oasis.opendocument.spreadsheet' => %w[.ods],
     'text/plain' => %w[.txt],
-    'text/csv' => %w[.csv]
+    'text/csv' => %w[.csv],
+    'video/mp4' => %w[.mp4],
+    'video/webm' => %w[.webm],
+    'video/ogg' => %w[.ogg],
+    'video/quicktime' => %w[.mov]
   }.freeze
 
   def self.extensions(types)
