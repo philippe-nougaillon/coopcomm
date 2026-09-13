@@ -125,8 +125,6 @@
           </div>
         <% end %>
       <% else %>
-        <%# ¡IMPORTANTE! Si el usuario no es admin/manager, enviamos sus service_ids asignados de forma oculta %>
-        <%# para que al guardar no falle la validación de presencia de servicios si existe en el modelo %>
         <% user.services.ids.each do |service_id| %>
           <%= hidden_field_tag "#{form.object_name}[service_ids][]", service_id %>
         <% end %>
