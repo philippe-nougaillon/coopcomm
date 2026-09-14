@@ -48,7 +48,10 @@
             <%= select_tag :user_id, 
               options_from_collection_for_select(@users, 'id', 'nom', params[:user_id]), 
               multiple: true,
-              data: { placeholder: 'Tous les utilisateurs' },
+              data: { placeholder: 'Tous les utilisateurs',
+                      max_values_shown_desktop: 2,
+                      max_values_shown_mobile: 1 
+                    },
               onchange: 'this.form.requestSubmit()',
               class: 'slim-select w-full h-10' %>
           </div>
@@ -57,7 +60,10 @@
             <%= select_tag :type,
                 options_for_select(@types, params[:type]), 
                 multiple: true,
-                data: { placeholder: 'Tous les types' },
+                data: { placeholder: 'Tous les types',
+                        max_values_shown_desktop: 2,
+                        max_values_shown_mobile: 1 
+                      },
                 onchange: 'this.form.requestSubmit()',
                 class: 'slim-select w-full h-10' %>
           </div>
@@ -66,7 +72,10 @@
             <%= select_tag :action_name,
               options_for_select([['Création', 'create'], ['Modification', 'update'], ['Suppression', 'destroy']], params[:action_name]), 
               multiple: true,
-              data: { placeholder: 'Toutes les actions' },
+              data: { placeholder: 'Toutes les actions',
+                      max_values_shown_desktop: 3,
+                      max_values_shown_mobile: 1 
+                    },
               onchange: 'this.form.requestSubmit()',
               class: 'slim-select w-full h-10' %>
           </div>

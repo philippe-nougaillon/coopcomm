@@ -107,8 +107,8 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
 
     get documentation_index_url
 
-    refute_titre_lisible @documentation_privée
-    refute_titre_lisible @documentation_non_publiée
+    refute_titre @documentation_privée
+    refute_titre @documentation_non_publiée
   end
 
   # ==================== /TESTS CRITIQUES ====================
@@ -214,7 +214,7 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
 
   # Le corps de la réponse entier dans un message d'échec est illisible : on ne
   # rapporte que le titre qui a fuité et l'endroit où il est lisible.
-  def refute_titre_lisible(documentation)
+  def refute_titre(documentation)
     assert_not response.body.include?(documentation.titre),
                "le titre « #{documentation.titre} » ne doit apparaître nulle part sur la page"
     assert_dom 'a[href=?]', documentation_path(documentation), count: 0

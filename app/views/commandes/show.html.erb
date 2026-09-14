@@ -59,14 +59,21 @@
           </dialog>
         </div>
       <% end %>
-      <%= link_to pdf_commande_path(@commande, filename: @commande.pdf_filename),
-          class: "btn btn-outline btn-info flex-1 sm:flex-none", target: "_blank", data: { turbo: false } do %>
-        <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200 hidden md:block" %>
-        <span class="block md:hidden"> PDF </span>
-        <span class="hidden md:block">Générer PDF</span>
-      <% end %>
+       <span class="block md:hidden">
+        <%= link_to pdf_commande_path(@commande, filename: @commande.pdf_filename),
+                    class: "btn btn-outline btn-info flex-1 sm:flex-none", target: "_blank", data: { turbo: false } do %>
+          <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200 hidden md:block" %>
+          <span class="block md:hidden"> PDF </span>
+          <span class="hidden md:block">Générer PDF</span>
+        <% end %>
+      </span>
     </div>
   </div>
+
+
+
+
+  
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="hidden md:block text-2xl text-secondary font-semibold">Informations & Aperçu</h2>
     <h2 class="block md:hidden text-2xl text-secondary font-semibold">Informations</h2>
@@ -94,16 +101,16 @@
                 <%= embedded_svg "icons/store.svg", class: "w-5 h-5 fill-current" %>
                 <span class="text-base">Service</span>
               </div>
-              <div class="text-base text-slate-800 font-medium text-right capitalize truncate">
-                <%= @commande.service&.nom %> </div>
+              <div class="text-base text-slate-800 font-medium text-right truncate">
+                <%= @commande.service&.nom.humanize %> </div>
             </div>
             <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
               <div class="flex items-center gap-3 text-slate-500 shrink-0">
                 <%= embedded_svg "icons/label.svg", class: "w-5 h-5 fill-current" %>
                 <span class="text-base">Intitulé</span>
               </div>
-              <div class="text-base text-slate-800 font-medium text-right capitalize truncate">
-                <%= @commande.intitulé %></div>
+              <div class="text-base text-slate-800 font-medium text-right truncate">
+                <%= @commande.intitulé.humanize %></div>
             </div>
             <div class="flex flex-row items-center justify-between py-3 border-b border-slate-100 last:border-0 gap-3">
               <div class="flex items-center gap-3 text-slate-500 shrink-0">
@@ -164,18 +171,29 @@
       </div>
     <% end %>
   </div>
-  <div class="hidden md:block w-full h-full min-h-40 lg:h-96 border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white">
-    <iframe 
-      src="<%= pdf_commande_path(@commande, filename: @commande.pdf_filename) %>#toolbar=0" 
-      class="w-full h-full border-none"
-      title="Aperçu de la commande PDF">
-    </iframe>
-  </div>
+  <div class="hidden md:block justify-between w-full h-full">
+      <div class="flex-1 w-full border border-slate-200 rounded-xl overflow-hidden shadow-sm h-full relative group cursor-pointer">
+        <iframe 
+          src="<%= pdf_commande_path(@commande, filename: @commande.pdf_filename) %>#toolbar=0" 
+          class="w-full h-full border-none pointer-events-none"
+          title="Aperçu de la cotation PDF">
+        </iframe>
+        <%= link_to pdf_commande_path(@commande, filename: @commande.pdf_filename, download: true),
+                    class: "absolute inset-0 z-10 flex items-center justify-center bg-black/0 hover:bg-slate-900/10 transition-colors duration-200",
+                    target: "_blank",
+                    data: { turbo: false },
+                    title: "Cliquez pour télécharger le PDF" do %>
+          <span class="opacity-0 group-hover:opacity-100 bg-slate-900/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg transition-opacity duration-200 pointer-events-none">
+            Cliquez pour télécharger le PDF
+          </span>
+        <% end %>
+      </div>
+    </div>
 </div>
 <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
   <h2 class="text-2xl text-secondary font-semibold">Prestations</h2>
 </div>
-<% commande_lignes = @commande.commande_lignes.includes(:prestation) %>
+<% commande_lignes = @prestations %>
 <% if commande_lignes.any? %>
   <%# ======= Movil ===== %>
   <div class="block md:hidden space-y-3 mb-8">
@@ -226,8 +244,8 @@
         <% if commande_lignes.any? %>
           <% commande_lignes.each do |ligne| %>
             <tr class="hover:bg-base-200/60 transition-colors duration-150 align-middle">
-              <td class="px-4 py-3 font-semibold text-sm text-center"><%= ligne.prestation&.code %></td>
-              <td class="px-4 py-3 text-sm text-primary font-bold capitalize"><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
+              <td class="px-4 py-3 font-semibold text-sm text-left max-w-48 truncate cursor-help" title="<%= ligne.prestation&.code %>"><%= ligne.prestation&.code %></td>
+              <td class="px-4 py-3 text-sm text-primary font-bold first-letter:capitalize"><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
               <td class="px-4 py-3 text-right text-sm whitespace-nowrap"><%= number_to_currency(ligne.prix_ht) %></td>
               <td class="px-6 py-4 text-center font-medium">
                 <span class="bg-slate-100 px-2 py-1 rounded font-semibold text-sm text-slate-600"><%= ligne.qté %></span>
@@ -255,10 +273,16 @@
         </tfoot>
       <% end %>
     </table>
-  </div>
-<% else %>
-  <div class="text-center py-12 bg-white border border-slate-200 rounded-xl shadow-sm mb-8 text-slate-400 text-base italic">
-    Aucune prestation enregistrée.
+    <% if @pagy_prestations&.pages.to_i > 1 %>
+    <div class="flex flex-col justify-center p-4 border-t border-slate-200 bg-slate-50/50 w-full ">
+      <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+        <%= pagy_nav(@pagy_prestations).html_safe %>
+      </div>
+      <div class="text-slate-500 text-center text-sm w-full mt-2">
+        <%= pagy_info(@pagy_prestations, item_name: "prestations").html_safe %>
+      </div>
+    </div>
+  <% end %>
   </div>
 <% end %>
 <% if current_user.manager_or_admin? %>

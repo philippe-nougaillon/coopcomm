@@ -5,22 +5,12 @@
 > **Règle de tenue** : dès qu'un bug est corrigé, sa fiche **quitte « Bugs ouverts »** pour « Bugs corrigés ». La section « ouverts » ne doit contenir **que** des bugs ouverts — un `✅ CORRIGÉ` qui y traîne rend le registre illisible. Un bug seulement **partiellement** corrigé reste dans « ouverts », avec le reliquat en tête de fiche.
 >
 > **Rangement (2026-08-06)** : les 34 fiches marquées corrigées qui étaient restées dans « ouverts » ont été déplacées ; les deux fiches ajoutées après « Comment s'en servir » (B73, B74) sont revenues dans « ouverts » ; les fiches des deux sections sont désormais **triées par numéro**. Dernière re-vérification du contenu dans le code : **2026-07-31** (balayage complet des bugs alors ouverts).
+>
+> **Rangement (2026-09-03)** — écritures concurrentes de deux personnes fin août / début septembre : la **collision de numérotation B100** (trois fiches) est tranchée (voir la note de numérotation en tête des corrigés), le **doublon B52** est supprimé, **B51** — marqué corrigé mais laissé sur place — rejoint les corrigés, et « ouverts » est re-triée par numéro. Ce lot **range**, il ne requalifie aucun bug : le dernier balayage dans le code reste celui du 2026-07-31.
 
 ---
 
 ## 🔴 Bugs ouverts
-
-### B98 — L'œil qui révèle le mot de passe est inutilisable dès qu'on a tapé dedans
-- **Où** : le bouton `data-action="click->password-visibility#toggle"` des formulaires Devise (connexion, invitation, mot de passe oublié, changement de mot de passe).
-- **Cause** : daisyUI donne `z-index: 1` au champ **quand il a le focus** ; le bouton, en `position: absolute`, reste à `z-index: auto`. Le champ passe donc **au-dessus** de l'œil et intercepte le clic.
-- **Mesuré** (sonde navigateur, 2026-08-26) : champ non focalisé → `elementFromPoint` au centre du bouton renvoie le `<svg>` de l'œil ; champ focalisé après saisie → il renvoie l'`INPUT`, avec `z-index: 1` sur le champ et `auto` sur le bouton.
-- **Parcours de reproduction** :
-  1. J'ouvre la page de connexion et je saisis mon mot de passe — le champ a le focus.
-  2. Je clique sur l'œil pour vérifier ce que j'ai tapé.
-  3. → **Rien ne se passe** : le clic atterrit dans le champ. Il faut d'abord cliquer ailleurs pour retirer le focus, puis cliquer sur l'œil.
-- **Impact** : la fonction est inatteignable dans son usage normal, sur les quatre formulaires. Gênant surtout sur téléphone, où l'on ne relit pas sa saisie autrement.
-- **Correctif proposé** : une classe sur le bouton — `relative z-10`.
-- **Test** : `test/system/adherent/devise_adherent_flow_test.rb`, assertion sur le `type` du champ (`password` → `text`), **rouge volontairement** jusqu'à la correction.
 
 ### B2 — Prix du devis écrasé par le tarif courant à la création de la commande (décision métier à prendre)
 - **Où** : [create_commande_from_cotation.rb:19](app/services/create_commande_from_cotation.rb#L19) + `CommandeLigne#set_prix_from_prestation` ; symétrique dans `create_facture_from_commande.rb:19`
@@ -226,18 +216,6 @@
 - **Impact** : le jour où B48 sera corrigé, la tâche enverra le premier mail puis lèvera `NoMethodError` — l'adhérent est relancé, le `MailLog` n'est jamais tracé et les suivants ne sont pas traités.
 - **Correctif proposé** : `intervention.organisation&.id`, comme les 4 jobs corrigés le 2026-07-01. Comportement actuel **épinglé**.
 
-### B51 — ✅ CORRIGÉ (2026-08-13) — Les réponses JSON des pages wiki levaient sur un attribut inexistant
-- **Signalé par** : agent, 2026-07-30 (reproduit par test).
-- **Où** : `app/views/wiki_pages/_wiki_page.json.jbuilder` — la vue générée interrogeait `nom`, absent de `WikiPage`.
-- **Impact** : toute requête JSON sur la ressource levait. Aucun appelant.
-- ✅ **Corrigé par suppression, sur décision d'Alex** : le format JSON de `wiki_pages` était du scaffold que rien ne consommait. Les 3 vues jbuilder (`index`, `show`, `_wiki_page`) et les 6 branches `format.json` de `create`/`update`/`destroy` ont été retirées ; les trois actions rendent désormais directement leur `redirect_to`/`render`. Le test qui épinglait le bug a disparu avec le format.
-
-### B52 — Code mort : `TagCloudComponent` est appelé avec un mot-clé qui n'existe pas
-- **Signalé par** : agent, 2026-07-30.
-- **Où** : [app/components/tag_cloud_component.rb:4](app/components/tag_cloud_component.rb#L4) attend `intervention_tags:`, mais les deux seules vues qui l'utilisent (`carte_interventions`, `route_interventions`) passent `tags:` → `ArgumentError` au rendu.
-- **Impact** : nul aujourd'hui — **aucune route** ne mène à ces deux vues (vérifié par `rails routes`). L'erreur apparaîtrait au premier branchement.
-- **Correctif proposé** : supprimer les deux vues mortes et le composant, ou aligner le mot-clé avant de les rebrancher.
-
 ### B53 — Code mort exécutable : méthodes qui lèveraient si elles étaient appelées
 - **Signalé par** : agent, 2026-07-30 (analyse de couverture).
 - **Où** :
@@ -277,8 +255,23 @@
 - **Correctif proposé** : retirer `:tag_list` de `intervention_params`. Aucun formulaire ne le soumet, donc aucune régression attendue.
 - **Épinglé par** : `interventions_controller_test`, « un adhérent écrase les mots clés par un paramètre tag_list forgé » — à inverser à la correction.
 
-### B100 — Un seul caractère hors Windows-1252 fait tomber le PDF d'un devis, d'une commande ou d'une facture
+### B98 — L'œil qui révèle le mot de passe est inutilisable dès qu'on a tapé dedans
+- **Où** : le bouton `data-action="click->password-visibility#toggle"` des formulaires Devise (connexion, invitation, mot de passe oublié, changement de mot de passe).
+- **Cause** : daisyUI donne `z-index: 1` au champ **quand il a le focus** ; le bouton, en `position: absolute`, reste à `z-index: auto`. Le champ passe donc **au-dessus** de l'œil et intercepte le clic.
+- **Mesuré** (sonde navigateur, 2026-08-26) : champ non focalisé → `elementFromPoint` au centre du bouton renvoie le `<svg>` de l'œil ; champ focalisé après saisie → il renvoie l'`INPUT`, avec `z-index: 1` sur le champ et `auto` sur le bouton.
+- **Parcours de reproduction** :
+  1. J'ouvre la page de connexion et je saisis mon mot de passe — le champ a le focus.
+  2. Je clique sur l'œil pour vérifier ce que j'ai tapé.
+  3. → **Rien ne se passe** : le clic atterrit dans le champ. Il faut d'abord cliquer ailleurs pour retirer le focus, puis cliquer sur l'œil.
+- **Impact** : la fonction est inatteignable dans son usage normal, sur les quatre formulaires. Gênant surtout sur téléphone, où l'on ne relit pas sa saisie autrement.
+- **Correctif proposé** : une classe sur le bouton — `relative z-10`.
+- **Test** : `test/system/adherent/devise_adherent_flow_test.rb`, assertion sur le `type` du champ (`password` → `text`), **rouge volontairement** jusqu'à la correction.
+
+### B101 — Un seul caractère hors Windows-1252 fait tomber le PDF d'un devis, d'une commande ou d'une facture
 - **Où** : [base_pdf_for_crm.rb](app/services/transform_to_pdf/base_pdf_for_crm.rb) — toutes les méthodes qui écrivent du texte issu de la base : `add_metadata` (intitulé, adhérent, service), `add_lignes` (intitulé de ligne, libellé de prestation), `add_memo`, `add_signature`.
+- ⚠ **Périmètre : les documents CRM seulement — le PDF d'une INTERVENTION n'est pas concerné.** `TransformToPdf::Intervention` assainit déjà son texte (`texte_sûr`, [intervention.rb:435](app/services/transform_to_pdf/intervention.rb#L435)) : les caractères inconnus y deviennent `?`, le PDF se génère normalement. **C'est le comportement voulu, pas un bug** — voir « pourquoi des `?` » ci-dessous. `BasePdfForCrm` n'a **aucun** équivalent : là, ça lève.
+- **Les deux comportements mesurés côte à côte (2026-09-07, sonde en mémoire, rien enregistré)** : intervention **#423** (slug `32c322af-…`), dont les commentaires contiennent réellement `☀ 👍 → m³ ³ ₂` → `TransformToPdf::Intervention.call(i, u).render` rend **68 396 octets, aucune erreur** (les caractères hors jeu s'affichent `?`) ; la même chaîne posée dans le `mémo` d'une cotation → `TransformToPdf::Cotation.call(c).render` lève **`Prawn::Errors::IncompatibleStringEncoding`**.
+- **Pourquoi des `?` du côté intervention** : Prawn n'a que les polices intégrées au format PDF, en single-byte Windows-1252 ; un caractère absent de ce jeu **n'a aucune forme à dessiner**. Les deux seules issues sont donc « remplacer par un signe de substitution » (ce que fait `texte_sûr`) ou « embarquer une police TTF » (correctif de fond, ci-dessous), qui est la seule qui rende les emoji et les flèches réellement lisibles.
 - **Cause** : Prawn n'embarque aucune police ; il utilise les polices **AFM intégrées** au format PDF (Helvetica), qui sont en **single-byte Windows-1252**. Devant un caractère hors de ce jeu, Prawn ne dégrade pas l'affichage — il **lève `Prawn::Errors::IncompatibleStringEncoding`**, et toute la génération tombe avec lui. La documentation de la gem ne propose qu'une issue : embarquer une police TTF.
 - **Mesuré** (sonde en transaction annulée sur la base de dev, 2026-09-01) : mémo d'une cotation réelle passé à `Prévoir 2 m³ de terreau ☀` → `TransformToPdf::Cotation.call(c).render` lève `Prawn::Errors::IncompatibleStringEncoding`. Donnée restaurée par `ActiveRecord::Rollback` (vérifié).
 - **Parcours de reproduction** :
@@ -291,6 +284,113 @@
   - **assainir le texte** avant de l'écrire, comme le fait `TransformToPdf::Intervention#texte_sûr` (substitutions connues, puis `encode('Windows-1252', undef: :replace, replace: '?')`) — quelques lignes, aucun ajout au dépôt, mais les caractères exotiques deviennent `?` ;
   - **embarquer une police TTF** (DejaVu Sans ou Open Sans, licence OFL donc compatible avec l'open-source envisagé) — UTF-8 complet, supprime le besoin d'assainir **dans les quatre services PDF à la fois**, au prix de 4 fichiers de police (~300–700 Ko) et de PDF un peu plus lourds. L'équipe y avait déjà pensé : le bloc est commenté dans [qrcode_modele_intervention.rb:27-32](app/services/transform_to_pdf/qrcode_modele_intervention.rb#L27-L32), avec un chemin `vendor/assets/fonts/Open_Sans/`.
 - **Non couvert par les tests** : aucun test n'exerce un caractère hors Windows-1252 sur les PDF CRM.
+
+### B103 — L'entrée « Tous » des filtres d'index a disparu du menu déroulant : on ne peut plus revenir à « tout afficher » que par la petite croix
+- **Signalé par** : l'agent, 2026-09-07, en instruisant l'effet du commit `c8c8b8ef` (Dani, « Fix blank sur mouvement »).
+- **Où** : [slim_select_controller.js:8-11](app/javascript/controllers/slim_select_controller.js#L8-L11) — `connect()` marque `data-placeholder = 'true'` sur l'option vide de **tous** les selects slim, sans regarder si le select est `required`. SlimSelect 2.13.1 masque alors cette option (`ss-option ss-hide`). Le garde visait les champs obligatoires (il y ferme le trou de B99/B102, cf. la fiche B99) ; il attrape au passage les filtres, dont l'option vide **est** un choix légitime.
+- **Vues concernées** : les 6 filtres à blanc étiqueté — `cotations/index:53`, `commandes/index:42`, `factures/index:36`, `conventions/index:27` et `:34`, `adherent_crm/index:32` (tous `include_blank: "Tous"`).
+- **Mesuré au navigateur (2026-09-07), preuve rouge/verte faite** : sur `/cotations?workflow_state=Envoyé`, menu du filtre Statut = `[["", ss-option ss-hide], ["Créé"], ["Envoyé" ss-selected], …]` — l'entrée « Tous » est là mais invisible et sans son libellé. Le bloc de 5 lignes retiré temporairement (copie de sauvegarde, jamais `git checkout`) → `[["Tous", ss-option], …]` : l'entrée revient. L'écart est donc bien imputable à ce commit.
+- **Parcours de reproduction** :
+  1. J'ouvre la liste des devis et je filtre sur le statut « Envoyé ».
+  2. Je rouvre le menu **Statut** pour revenir à tous les devis.
+  3. → La ligne **« Tous » n'est plus proposée** ; le menu ne liste que les six statuts. Il faut deviner la petite croix `×` du champ pour vider le filtre.
+- **Impact** : faible mais quotidien, et sur un public « peu à l'aise avec l'informatique ». Pas de cul-de-sac : la croix `×` fonctionne et re-soumet bien le formulaire (vérifié : `?workflow_state=` → liste complète). **Le champ replié affiche toujours « Tous » quand rien n'est filtré** (SlimSelect reprend le texte de l'option placeholder) — la perte ne concerne que le menu ouvert. Même chose pour les invites `prompt: "Choisir un adhérent"` des formulaires : elles restent affichées dans le champ replié, seule leur ligne de menu disparaît, ce qui est le comportement voulu là-bas.
+- **Correctif proposé, mesuré** : borner le garde aux champs obligatoires — `if (blankOption && this.element.required)`. Variante posée temporairement et relevée au navigateur : le filtre Statut retrouve son entrée « Tous », et les trois selects requis de `cotations/new` gardent `data-placeholder = "true"` et `valueMissing = true`. Les ~10 selects `required` du dépôt portent bien l'attribut (vérifié sur rôle, état et matériel d'un mouvement, adhérent/service/prestation d'un devis), donc aucun n'est déprotégé par ce bornage. C'était déjà le périmètre du garde de B99.
+- **Non couvert par un test** : plus aucun test ne surveille le comportement de l'option vide depuis la suppression de `test/system/slim_select_test.rb` par `#491`.
+
+<!-- B104 est pris par la branche `502` (flash qui fait déborder le cookie de session), non encore fusionnée dans staging : ne pas le réattribuer. -->
+
+### B105 — Le badge « + N » de la troncature annonce toujours une valeur masquée de trop dès qu'on touche au champ
+- **Signalé par** : l'agent, 2026-09-09 ; re-vérifié présent sur `staging` le 2026-09-14 (code identique).
+- **Où** : [slim_select_controller.js](app/javascript/controllers/slim_select_controller.js), `truncateChips` — les chips sont comptées **avant** que l'ancien badge soit retiré :
+  ```js
+  const chips = this.element.parentElement.querySelectorAll('.ss-value')   // ← compte AUSSI l'ancien badge
+  ...
+  const oldBadge = ...querySelector('.ss-more-badge')
+  if (oldBadge) oldBadge.remove()                                          // ← trop tard
+  const hidden = chips.length - maxValuesShown
+  ```
+- **Cause** : le badge porte lui-même la classe `ss-value`, et `querySelectorAll` rend une liste **statique** — retirer le badge du DOM ensuite ne le retire pas de `chips`. Le compte est gonflé de 1 à chaque passage où un badge existait déjà. Le fichier porte pourtant l'avertissement, resté en place : *« On enlève l'ancien badge AVANT de compter les chips (sinon il se compte lui-même) »* — l'ordre a été inversé en ajoutant la bascule `ss-multiple`, qui avait besoin du compte plus tôt.
+- **Mesuré au navigateur (2026-09-09, deux sondes jetables supprimées, aucune donnée écrite)** :
+  1. **Au clic** — `/users/:slug/edit`, champ **Service(s)** (seuil 1). Au chargement : 2 chips, 1 masquée, badge `+ 1` — juste. Je désélectionne un service → **1 chip, 0 masquée, et le badge affiche toujours `+ 1`**.
+  2. **Au redimensionnement** — `/mouvements` avec les 3 états sélectionnés (seuil mobile 2). Au chargement : badge `+ 1`, 1 chip masquée — juste. Après un redimensionnement **sans changer de palier** (544 → 560 px) : **badge `+ 2` pour toujours 1 seule chip masquée**. L'écart se stabilise à +1 (un seul badge existe à la fois).
+- **Parcours de reproduction** :
+  1. Je modifie un utilisateur rattaché à deux services — le champ Service(s) affiche « Informatique » et « + 1 ».
+  2. Je retire un service dans le menu.
+  3. → Il ne reste qu'un service, **rien n'est masqué**, et le champ affiche toujours « + 1 ». Sur téléphone, la barre d'URL qui se replie au défilement déclenche un `resize` : le même décalage apparaît sans action de l'utilisateur.
+- **Impact** : le badge est le **seul** indicateur de ce que le champ cache (les chips masquées sont en `display: none`). Le champ Service(s) d'un utilisateur est concerné, or c'est lui qui détermine l'organisation et le périmètre de visibilité.
+- **Ce qui n'est PAS touché, vérifié** : le `<select>` natif garde toujours les bonnes valeurs — **rien de faux n'est enregistré**, le défaut est d'affichage. Les chips restent correctement masquées : seul le nombre annoncé est faux.
+- **Correctif proposé** : retirer le badge avant la capture de `chips` — l'ordre que décrit le commentaire. La bascule `ss-multiple` se calcule alors sur la même liste.
+- **Défauts annexes de la même méthode** (aucun atteignable aujourd'hui) :
+  - Le badge est **cherché** dans `this.element.parentElement` mais **ajouté** dans `this.element.nextElementSibling`. Les deux coïncident tant que chaque select a son propre conteneur (vérifié sur les 24 emplacements) ; deux selects dans un même `<div>` mélangeraient leurs chips.
+  - `nextElementSibling.querySelector('.ss-values')` rend `null` sur un select **simple** → `TypeError`. Inatteignable : les 24 selects porteurs d'un seuil sont tous `multiple`.
+  - `resize` non débouncé : un écouteur par slim-select, chacun mutant le DOM à chaque événement.
+  - `parseInt(...) || null` transforme un seuil `0` en « désactivé » ; le seuil `768` est codé en dur.
+  - Rien ne recalcule le badge en dehors de `truncateChips` : après un `setData` de `dynamic_select_controller` qui **réduirait** la sélection, le badge garderait son ancien compte. Cas non mesuré.
+- ⚠ **Écarté par la mesure** : la troncature n'est **pas** perdue quand la cascade `dynamic-select` repeuple les agents en conservant la sélection (cas réel de `populateAgents`) — `setData` ne reconstruit alors pas le DOM des chips (sonde du 2026-09-09). Une déduction contraire de l'agent (2026-08-27) est donc fausse.
+- **Non couvert par un test** : aucun test ne touche `.ss-value`. ⚠ La suite tourne en largeur téléphone (544 px) : c'est toujours `max_values_shown_mobile` qui s'applique, jamais le seuil desktop.
+
+### B106 — La règle CSS qui rétrécit les chips quand il y en a plusieurs est rejetée par le navigateur : elle n'a jamais rien fait
+- **Signalé par** : l'agent, 2026-09-09 ; re-vérifié présent sur `staging` le 2026-09-14.
+- **Où** : [application.css](app/assets/stylesheets/application.css), section « TAILLE CONTENU SLIM-SELECT » :
+  ```css
+  .ss-main.ss-multiple .ss-values .ss-value .ss-value-text {
+    max-width: 5
+    rem;            /* ← valeur et unité séparées : « 5 rem » n'est pas une longueur valide */
+  ```
+- **Cause** : en CSS, un nombre et son unité ne peuvent pas être séparés par une espace (un saut de ligne en est une). Le navigateur **jette la déclaration entière**, en silence.
+- **Mesuré (2026-09-09, Chromium, sonde qui lit le bloc directement dans `application.css`)** : le CSSOM ne retient que quatre des cinq déclarations — `{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; }`, **sans `max-width`**. Le `max-width` calculé reste à **150px**, hérité de la règle générale juste au-dessus.
+- **Impact** : nul sur le fonctionnement, mais **toute la mécanique construite pour cette règle est morte**, y compris la bascule `ss-multiple` que `truncateChips` calcule sur chaque slim-select. La règle générale applique déjà l'ellipse à 150px : l'utilisateur ne voit aucune anomalie, c'est le rétrécissement à 5rem qui manque.
+- **Parcours de reproduction** : sélectionner plusieurs valeurs dans un champ multiple — les chips ne rétrécissent pas. Dans l'inspecteur, `max-width: 5 rem` apparaît barré comme invalide.
+- **Correctif proposé** : `max-width: 5rem;` sur une seule ligne. **À décider** : si le rétrécissement n'est pas voulu, supprimer la règle **et** la bascule `ss-multiple` plutôt que les réparer.
+- ⚠ **Masque B105** : `ss-multiple` est posée sur un compte de chips gonflé par l'ancien badge ; réparer ce CSS sans B105 rendrait visible une bascule tantôt juste, tantôt fausse.
+
+### B107 — `/mouvements` : un `id` posé à la main casse le lien entre le libellé « État » et son champ
+- **Signalé par** : l'agent, 2026-08-27 ; re-vérifié présent sur `staging` le 2026-09-14.
+- **Où** : [mouvements/index.html.erb:33](app/views/mouvements/index.html.erb#L33) — `id: 'etats-select'` sur le select du filtre État.
+- **Cause** : le `label_tag :etats` de la ligne précédente rend `for="etats"`, alors que le select s'appelle `etats-select`. Cet id n'est référencé nulle part (ni CSS, ni JS, ni test).
+- **Parcours de reproduction** : sur `/mouvements`, cliquer sur le libellé « État » — le champ ne prend pas le focus. Un lecteur d'écran n'annonce plus le libellé.
+- **Impact** : accessibilité, et tout futur `select`/`fill_in` par libellé en test système échouera sans raison lisible.
+- **Correctif proposé** : retirer la ligne.
+- **Test proposé** : sentinelle — sur les pages d'index, tout `for=` de `<label>` désigne un champ existant.
+
+### B108 — `absence-status` : deux valeurs sont déclarées et jamais lues, et le commentaire qui les accompagne égare
+- **Signalé par** : l'agent, 2026-08-27 ; re-vérifié présent sur `staging` le 2026-09-14.
+- **Où** : [absence_status_controller.js](app/javascript/controllers/absence_status_controller.js), qui recalcule « absence en cours » côté navigateur.
+- **Constat** : les `static values` `matin` et `apresMidi` sont posées par la vue et **aucune** n'est lue par `isEnCours()`, qui ne compare que `du` et `au`.
+- **Commentaire trompeur** : « Ajusta esta regla si `Absence#en_cours?` … es distinta (p.ej. corte a mediodía) » laisse croire à un écart avec le modèle. Il n'y en a pas : `Absence#en_cours?` est `(du..au).include?(Date.today)` et ignore lui aussi les demi-journées.
+- **Impact** : valeurs mortes et commentaire qui égare. **Aucune divergence de comportement.**
+- **À trancher** : les retirer, ou s'en servir — une absence du matin cesserait d'être « en cours » à 15 h, ce qui demande d'aligner `en_cours?` côté Ruby (`début_datetime` / `fin_datetime` font déjà la coupure à midi).
+- **Point annexe** : le JS lit la date **locale du navigateur**, `en_cours?` la date **serveur** — un téléphone mal réglé donne une ligne ambre que le serveur ne considère pas en cours.
+
+### B109 — Devis, commandes, factures : les tableaux d'une même fiche partagent le paramètre `page` et tournent ensemble
+- **Signalé par** : l'agent, 2026-08-27 ; re-vérifié présent sur `staging` le 2026-09-14.
+- **Où** : `cotations#show` (`@pagy_prestations`, `@pagy_envois`, `@pagy`), `commandes#show` et `factures#show` (`@pagy_prestations`, `@pagy`).
+- **Cause** : `Pagy::DEFAULT[:page_param]` est laissé au défaut `:page` ; aucun appel ne le surcharge. Les `pagy_nav` d'une même page émettent donc le même `?page=`.
+- **Parcours de reproduction** : sur une cotation à 25 prestations et 15 lignes d'activité, je clique « 2 » sous les prestations → l'historique des envois et l'activité basculent eux aussi en page 2.
+- **Impact** : sur les trois écrans « argent » du CRM, dès qu'un document dépasse 10 lignes.
+- **Correctif proposé** : `pagy(..., page_param: :page_prestations)` et `:page_envois` — `pagy_nav` reprend le `page_param` de son instance.
+- **Test proposé** : contrôleur — `get cotation_url(c, page_prestations: 2)` → les prestations bougent, l'activité reste en page 1.
+
+### B110 — Pagination des prestations à moitié câblée : `factures#show` l'ignore, `commandes#show` ne l'applique qu'au mobile
+- **Signalé par** : l'agent, 2026-08-27 ; re-vérifié présent sur `staging` le 2026-09-14.
+- **Où** : [factures/show.html.erb:150 et 197](app/views/factures/show.html.erb#L150), [commandes/show.html.erb:196 et 243](app/views/commandes/show.html.erb#L196).
+- **Cause** : les trois contrôleurs construisent `@prestations` + `pagy`, mais seule `cotations/show` a été convertie de bout en bout.
+  - **Factures** : la vue n'utilise **jamais** `@prestations` (mobile et desktop itèrent `@facture.facture_lignes`) et rend malgré tout un `pagy_nav`.
+  - **Commandes** : le mobile prend `@prestations` (l.196), mais le `<tbody>` desktop **réassigne** `commande_lignes = @commande.commande_lignes.includes(:prestation)` (l.243).
+- **Parcours de reproduction** : une facture de 25 lignes les liste **toutes** sous une pagination « 1-10 sur 25 » dont les numéros ne changent rien. Une commande de 25 lignes en montre 10 au téléphone, 25 à l'ordinateur.
+- **Impact** : incohérence affichée sur des documents financiers.
+- **Correctif proposé** : aligner les trois vues sur `@prestations`.
+- **Test proposé** : contrôleur — facture puis commande à 12 lignes → le tableau desktop n'en contient que 10.
+
+### B111 — `cotations#show` : l'état vide « Aucune prestation enregistrée. » a disparu
+- **Signalé par** : l'agent, 2026-08-27 ; re-vérifié présent sur `staging` le 2026-09-14 (chaîne absente de la vue, présente dans `commandes/show:258` et `factures/show:212`).
+- **Où** : [cotations/show.html.erb](app/views/cotations/show.html.erb), section Prestations.
+- **Cause** : la conversion à `@prestations` a retiré le `<% else %>` aux deux niveaux, là où commandes et factures l'ont gardé.
+- **Parcours de reproduction** : créer une cotation sans ligne et l'ouvrir → sous « Prestations », **plus rien** ; on ne sait pas si la page est cassée ou le document vide.
+- **Impact** : cosmétique, mais c'est le premier écran que voit un manager après avoir créé un devis.
+- **Correctif proposé** : restaurer la ligne d'état vide, sur le motif de commandes et factures.
+- **Test proposé** : contrôleur, cotation sans ligne → `assert_select` sur le libellé.
 
 ---
 
@@ -358,9 +458,21 @@
 
 ---
 
----
-
 ## ✅ Bugs corrigés (historique)
+
+### B102 — ✅ CORRIGÉ (2026-09-07, en deux commits) — Depuis le retour en arrière sur slim-select, deux champs obligatoires acceptaient d'être vidés : l'état d'un mouvement et le rôle d'un utilisateur
+- **Où** : `mouvements/_form.html.erb` (État) et `users/_form.html.erb:23` (Rôle). Conséquence directe de `#491`, qui avait retiré le garde JS de B99 : l'option vide d'un select obligatoire était de nouveau proposée au menu, et la choisir ne déclenchait **aucun** blocage du navigateur (mécanisme mesuré en B99 : SlimSelect duplique l'option en 2ᵉ position, la sélection ne porte plus sur un placeholder). Ces deux champs étaient les seuls des ~10 selects `required` du dépôt à n'avoir aucun filet serveur — les autres sont rattrapés par un `belongs_to` ou par une validation de présence (`Prestation#unité` depuis `#486`).
+- **Parcours de reproduction (avant correction)** :
+  1. En tant qu'administrateur, j'ouvre « Nouvel utilisateur », je remplis Nom, Email, Service.
+  2. J'ouvre le menu **Rôle** et je clique la ligne vide au-dessus de « agent ». J'enregistre.
+  3. → Autrefois annoncé ici comme « le compte est créé sans rôle » ; **c'était faux**, voir la rectification ci-dessous.
+  4. Même chose sur un mouvement dont on vidait l'**État**.
+- ⚠ **Rectification du symptôme (mesuré le 2026-09-07, en transaction annulée)** : le compte n'était **pas** créé sans rôle. `users.rôle` est `null: false` en base ([schema.rb:552](db/schema.rb#L552)) — l'`INSERT` levait `ActiveRecord::NotNullViolation`, que `save` ne convertit pas en `false` : elle remontait en **erreur 500**, à la création comme à la modification d'un compte existant. Aucune donnée corrompue, donc, mais une page d'erreur brute et la saisie perdue. Un manager n'était pas concerné (`admin_controller.rb:56` force `rôle = 'agent'`).
+- **Correctif, deux commits du même jour et deux approches différentes** :
+  - **côté modèle** — `9846a53a` (PE) : `validates :date, :état, presence: true` sur `Mouvement` ([mouvement.rb:29](app/models/mouvement.rb#L29)). Le navigateur laisse toujours soumettre, c'est le serveur qui refuse et le formulaire se ré-affiche avec l'erreur. Même parti pris que `Prestation#unité` sous `#486` ;
+  - **côté navigateur, et pour tous les selects à la fois** — `c8c8b8ef` (Dani) : `slim_select_controller.js#connect` marque l'option vide `data-placeholder = 'true'`, ce que SlimSelect 2.13.1 comprend en la masquant du menu (`ss-option ss-hide`). C'est ce commit qui ferme le cas **Rôle**, resté sans validation de modèle.
+- **Vérifié au navigateur le 2026-09-07** (sonde jetable, supprimée) : sur le champ Rôle, menu = `["" ss-hide, adhérent, agent, manager, administrateur]` → la ligne vide n'est plus choisissable ; après un clic sur la croix `×`, `selectedIndex = 0`, `value = ""`, **`valueMissing = true`**, le champ est `:invalid` (« Please select an item in the list ») et rien n'est enregistré.
+- ⚠ **Reliquats connus, assumés** : (1) `User#rôle` n'a toujours **aucune** validation de présence — une requête forgée avec `rôle=''` produit encore le 500 `NotNullViolation` ; c'est une *abuser story* au sens du critère de PE (2026-09-03 : un bug se juge sur un champ qui n'est **pas** caché à l'utilisateur), donc non traité. `validates :rôle, presence: true` reste une ligne sans risque si on veut un message lisible — aucun compte existant ne peut être figé, le `null: false` le garantit. (2) Le garde de `c8c8b8ef` ne teste pas `required` et s'applique donc aussi aux filtres → **B103**. (3) Aucun test ne couvre ce garde (l'ancien `test/system/slim_select_test.rb` a été supprimé par `#491`).
 
 ### B100 — ✅ CORRIGÉ (2026-08-31, décision Alex) — Un adhérent voyait dans la liste des documentations dont la page lui était refusée
 - **Où** : le filtre des listes n'excluait les pages privées que pour `nil` et `agent?`, mais `WikiPagePolicy#show?` exigeait `!record.private?` de tout non-manager, adhérent compris → l'adhérent voyait la carte et recevait un refus Pundit au clic.
@@ -382,6 +494,8 @@
 - **Correctif** : dans `slim_select_controller.js`, pour un select `required` **non `multiple`**, l'option vide est marquée `disabled` avant l'instanciation de SlimSelect. Elle reste dans le DOM — donc `required` continue de la voir comme placeholder — mais SlimSelect ne la propose plus au menu (elle porte alors `ss-option ss-disabled`, masquée par la règle CSS du même lot). Un champ obligatoire réellement vide déclenche la bulle native avant la soumission (`validationMessage` renseigné, contour `ss-error-native`, aucune création en base), c'est-à-dire le comportement d'un champ requis ordinaire.
 - **Ce qui compte est la POSITION de l'option sélectionnée, pas la duplication** — mesuré, et c'est ce qui rend `allowDeselect` indifférent : la croix `×` duplique elle aussi l'option vide, mais insère la copie **en première position** (`selectedIndex = 0`), donc la sélection reste sur un placeholder et `valueMissing` vaut `true` ; le menu, lui, l'insérait en **seconde** position. Après un clic sur la croix, le menu ne propose d'ailleurs aucune ligne vide (`["Heure(s)", "Forfait", "Jour"]`) : il n'y a rien à recliquer. ⚠ L'agent avait d'abord écrit qu'`allowDeselect: false` était indispensable — **c'est faux** : la mesure était faite avec le réglage actif, ce qui masquait le comportement réel de la croix. PE l'a retiré pour garder la croix cliquable partout, et le trou reste fermé.
 - **Périmètre** : la garde « `required` et non `multiple` » laisse intacts les ~30 filtres d'index (leur option « Tous » reste sélectionnable — c'est leur fonctionnalité) et les ~25 selects multiples (Rails n'y met pas d'option vide). Vérifié par test.
+- ⚠ **Correctif RETIRÉ par PE le 2026-09-02** (`#491`, « option blank sélectionnable pour les required => de nouveau visible ») : le garde JS et la règle CSS qui masquait l'option désactivée sont supprimés, l'option vide est de nouveau proposée au menu et `required` redevient inerte sur ces selects. La protection passe désormais **côté serveur** — `#486` a ajouté `validates :unité, presence: true` sur `Prestation`, ce qui ferme le parcours d'origine. `test/system/slim_select_test.rb`, qui n'existait que pour prouver le garde, a été supprimé. **Le trou reste ouvert pour les deux champs sans filet serveur : voir B102.**
+- ✅ **Un garde navigateur est REVENU le 2026-09-07** (`c8c8b8ef`, Dani, « Fix blank sur mouvement »), par une autre voie que celle du 27/08 : `slim_select_controller.js#connect` marque l'option vide `data-placeholder = 'true'`, ce que SlimSelect 2.13.1 comprend — il la rend `ss-option ss-hide` dans le menu (donc inchoisissable) au lieu de la désactiver. Mesuré au navigateur le 2026-09-07 sur le champ Rôle : menu = `["" ss-hide, adhérent, agent, manager, administrateur]` ; après un clic sur la croix `×`, `selectedIndex = 0`, `value = ""`, **`valueMissing = true`** et le champ est `:invalid` (« Please select an item in the list ») — `required` mord donc de nouveau. Le trou de `#491` est refermé, y compris pour les champs sans filet serveur. ⚠ Cette version-ci ne teste **pas** `required` : elle s'applique à **tous** les selects slim, d'où l'effet de bord **B103**. Aucun test ne couvre ce garde-ci (l'ancien fichier a été supprimé avec `#491`).
 - **Cascade `dynamic-select`** (mesuré) : après un changement d'adhérent, les options du select Service sont reconstruites et **perdent le `disabled`** (le contrôleur ne repasse qu'au `connect`). Sans conséquence : SlimSelect ne propose alors aucune ligne vide, la croix ne duplique rien et `checkValidity()` reste `false`. À re-mesurer si `dynamic_select_controller.js` change de façon de repeupler.
 - **Validation manuelle par PE (2026-08-31)** : rôle d'un utilisateur, ligne de devis/commande/facture, matériel + état d'un mouvement, adhérent + service des devis/commandes/factures, filtre d'index, selects multiples et « + » d'ajout — tout est conforme.
 - **Tests** : `test/system/slim_select_test.rb` (5 tests — le menu ne propose aucun choix vide, pas d'enregistrement sans unité, la croix laisse le champ refusé, un filtre d'index garde « Tous », un requis multiple reste désélectionnable), prouvés rouges en neutralisant la désactivation de l'option vide. ⚠ Une première version du test de la croix asserait la **liste des options** du select natif : elle figeait un détail d'implémentation de SlimSelect (le nombre d'options après duplication) au lieu du contrat, et tombait dès qu'`allowDeselect` changeait. Remplacée par `validity.valueMissing` + refus de la soumission.
@@ -490,7 +604,9 @@
 - **Vérifié** : suite non-système **2362 runs / 8 échecs / 2 erreurs** — les 10 sont **préexistants et sans rapport**, prouvé en remettant les 8 fichiers à HEAD par copie et en rejouant les fichiers concernés (mêmes 10). Sept viennent de `#463 Add slug to convention`, trois du travail « pause » en cours.
 - **Reste faisable** : `# :nocov:` autour des trois blocs parkés les sortirait du dénominateur de SimpleCov sans les supprimer — non appliqué, à décider.
 
-⚠️ **Collision de numérotation à connaître** : le **B30** du tableau ci-dessous (`calc_temps_total` sur une pause nulle, 2026-07-29) et le **B30** des fiches détaillées (météo `get_title`, 2026-08-06) sont **deux bugs différents** qui ont reçu le même numéro. Aucun n'est renuméroté ici (les deux sont cités tels quels dans CLAUDE.md et dans les tests) ; à ne pas confondre en lecture. Dans la même famille : CLAUDE.md cite un **B64** (compte-rendu de terminaison) qui n'a jamais eu de fiche dans ce registre.
+⚠️ **Collision de numérotation à connaître** : le **B30** du tableau ci-dessous (`calc_temps_total` sur une pause nulle, 2026-07-29) et le **B30** des fiches détaillées (météo `get_title`, 2026-08-06) sont **deux bugs différents** qui ont reçu le même numéro. Aucun n'est renuméroté ici (les deux sont cités tels quels dans CLAUDE.md et dans les tests) ; à ne pas confondre en lecture. Dans la même famille : CLAUDE.md cite un **B64** (compte-rendu de terminaison) qui n'a jamais eu de fiche dans ce registre, et `.claude/skills/tests-coopcomm/systeme.md` cite un **B97** (formulaire d'invitation dont le bouton était `disabled`, donc invalidable au navigateur alors que le POST passait) qui n'en a jamais eu non plus — le défaut n'est plus dans le code, mais son parcours de reproduction n'est reconstituable par personne d'autre qu'Alex, donc rien n'est inventé ici.
+
+⚠️ **Collision B100, résolue le 2026-09-03** : trois fiches distinctes avaient reçu ce numéro, écrites en parallèle sans se voir. Arbitrage chronologique — **B100** reste la fiche d'Alex (documentations visibles mais refusées à l'adhérent, corrigée le 31/08) ; le PDF Windows-1252 (01/09) est devenu **B101** et les selects slim-select sans filet serveur (02/09) sont devenus **B102**. Contrairement au double B30 ci-dessus, aucun de ces numéros n'était cité hors de ce fichier : la renumérotation ne casse aucun test ni aucune note.
 
 ### Corrections anciennes (récapitulatif)
 
@@ -713,6 +829,12 @@
 - **Où (corrigé le 2026-07-30 : la note désignait le mauvais fichier)** : le `render` fautif est [app/views/users/_absence.html.erb:72](app/views/users/_absence.html.erb#L72) — `render "absence_form"` **sans préfixe**. Dans `users#show` le contexte de recherche est `users/` et le partial est trouvé ; appelé depuis `AbsencesController`, il est cherché dans `absences/` puis `application/` → `ActionView::MissingTemplate`. Chaîne complète : `absences_controller.rb:20` → `users/_absences_section.html.erb:33` → `users/_absence.html.erb:72`.
 - **Impact réel** : `@absence.destroy` a lieu **avant** le rendu ([absences_controller.rb:10](app/controllers/absences_controller.rb#L10)) → **l'absence est bien supprimée**, mais le manager reçoit un écran d'erreur (et un mail `exception_notification` part en prod). Il ne sait qu'après rechargement que l'opération a réussi. La variante HTML, elle, fonctionne de bout en bout.
 - **Correctif proposé** : préfixer le partial → `render "users/absence_form", absence: absence` dans `users/_absence.html.erb`. Comportement actuel **épinglé** dans `absences_controller_test.rb`.
+
+### B51 — ✅ CORRIGÉ (2026-08-13) — Les réponses JSON des pages wiki levaient sur un attribut inexistant
+- **Signalé par** : agent, 2026-07-30 (reproduit par test).
+- **Où** : `app/views/wiki_pages/_wiki_page.json.jbuilder` — la vue générée interrogeait `nom`, absent de `WikiPage`.
+- **Impact** : toute requête JSON sur la ressource levait. Aucun appelant.
+- ✅ **Corrigé par suppression, sur décision d'Alex** : le format JSON de `wiki_pages` était du scaffold que rien ne consommait. Les 3 vues jbuilder (`index`, `show`, `_wiki_page`) et les 6 branches `format.json` de `create`/`update`/`destroy` ont été retirées ; les trois actions rendent désormais directement leur `redirect_to`/`render`. Le test qui épinglait le bug a disparu avec le format.
 
 ### B54 — ✅ CORRIGÉ (2026-07-30) — Une absence de **demi-journée** bloquait la journée entière à la création d'une intervention
 - **Signalé par** : agent, 2026-07-30 (revue de la fonctionnalité Absences demandée par PE) ; **corrigé le jour même sur demande de PE**.
@@ -1026,7 +1148,7 @@
 
 ## Comment s'en servir
 - **Retrouver la liste** : ouvrir ce fichier, ou demander à l'agent « ressors-moi les bugs ouverts » (il connaît ce registre via sa mémoire).
-- **À chaque nouveau bug signalé** : ajouter la fiche **dans « Bugs ouverts », rangée par numéro**, avec son parcours de reproduction, et référencer `Bn` depuis CLAUDE.md.
-- **À chaque correction** : **déplacer la fiche entière** dans « Fiches détaillées des bugs corrigés », préfixer le titre de `✅ CORRIGÉ (date)`, ajouter la ligne « Correctif appliqué » et mettre à jour CLAUDE.md. Ne jamais se contenter de marquer `✅` sur place : une fiche corrigée laissée dans « ouverts » fait croire à un bug en attente.
+- **À chaque nouveau bug signalé** : ajouter la fiche **dans « Bugs ouverts », rangée par numéro**, avec son parcours de reproduction. **Ne pas recopier le bug dans `CLAUDE.md`** : ce registre est la source de vérité, `CLAUDE.md` n'en porte que le pointeur.
+- **À chaque correction** : **déplacer la fiche entière** dans « Fiches détaillées des bugs corrigés », préfixer le titre de `✅ CORRIGÉ (date)`, ajouter la ligne « Correctif appliqué ». Rien à mettre à jour dans `CLAUDE.md`, sauf si la correction a livré une **leçon durable** (une ligne au §3) ou changé une convention. Ne jamais se contenter de marquer `✅` sur place : une fiche corrigée laissée dans « ouverts » fait croire à un bug en attente.
 - **Correction partielle** : la fiche **reste** dans « ouverts » (titre `⚠️ PARTIELLEMENT CORRIGÉ`), avec en tête ce qui reste à faire — cf. B19 et B28.
 - **Ne jamais ajouter de fiche après cette section** : tout ce qui vit sous « Comment s'en servir » échappe à la lecture des deux listes (c'est ce qui était arrivé à B73 et B74).

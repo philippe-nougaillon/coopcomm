@@ -47,7 +47,7 @@ class FacturesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'index : workflow_state → seulement cet état, quelle que soit la casse' do
-    get factures_url(workflow_state: @facture.workflow_state.capitalize)
+    get factures_url(workflow_state: @facture.workflow_state.humanize)
 
     assert_includes assigns(:factures), @facture
   end

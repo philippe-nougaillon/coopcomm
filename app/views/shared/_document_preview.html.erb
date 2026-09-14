@@ -1,0 +1,43 @@
+
+<% document = local_assigns.fetch(:document) %>
+<% width = local_assigns.fetch(:width, "md:w-64") %>
+
+<% if document.attached? %>
+  <div class="w-full <%= width %> flex-shrink-0">
+    <div class="w-full h-full min-h-64 border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white flex flex-col">
+      <% if document.content_type == "application/pdf" %>
+        <div class="relative flex-1 group cursor-pointer">
+          <iframe src="<%= rails_blob_path(document, disposition: "inline") %>#toolbar=0"
+                  class="w-full h-full border-none pointer-events-none"
+                  title="<%= document.filename %>">
+          </iframe>
+          <%= link_to rails_blob_path(document, disposition: "inline"),
+                  class: "absolute inset-0 z-10 flex items-center justify-center bg-black/0 hover:bg-slate-900/10 transition-colors duration-200",
+                  target: "_blank",
+                  title: "Cliquez pour ouvrir le document" do %>
+            <span class="opacity-0 group-hover:opacity-100 bg-slate-900/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg transition-opacity duration-200 pointer-events-none">
+              Cliquez pour ouvrir le document
+            </span>
+          <% end %>
+        </div>
+
+      <% elsif document.representable? %>
+        <%= link_to rails_blob_path(document, disposition: "inline"),
+                target: "_blank", title: document.filename.to_s,
+                class: "block w-full h-full" do %>
+          <%= image_tag document.representation(resize_to_limit: [400, 500]),
+                  alt: document.filename.to_s,
+                  class: "w-full h-full object-cover" %>
+        <% end %>
+
+      <% else %>
+        <%= link_to rails_blob_path(document, disposition: "inline"),
+                target: "_blank", title: document.filename.to_s,
+                class: "flex flex-col items-center justify-center gap-2 p-4 h-full text-slate-700 hover:bg-slate-50 transition" do %>
+          <%= embedded_svg "icons/article.svg", class: "text-4xl" %>
+          <span class="text-xs text-center truncate max-w-full"><%= document.filename %></span>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

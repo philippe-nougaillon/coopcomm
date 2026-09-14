@@ -38,4 +38,9 @@ class ConventionPolicy < ApplicationPolicy
   def destroy?
     manage?
   end
+
+  def pdf? 
+    show?
+  end  
+  
 end

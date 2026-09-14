@@ -20,7 +20,7 @@
       <% end %>
       <%= form.select :adherent_id,
                       options_from_collection_for_select(@adhérents, :id, :nom_prénom, intervention.adherent_id),
-                      { include_blank: true, required: true },
+                      { required: true },
                       class: "slim-select w-full h-10",
                       data: (policy(intervention).cascade_services? ? { dynamic_select_target: "adherent", action: "change->dynamic-select#updateServices" } : {}) %>
     </div>
@@ -122,7 +122,7 @@
   <%= render "shared/file_dropzone",
                form: form,
                attribute: :photos_demande,
-               placeholder: "Glissez les photos  ici ou cliquez pour parcourir",
+               placeholder: "Glissez les photos ici ou cliquez pour parcourir",
                label: "Photos",
                replace_hint: false %>
 </div>

@@ -45,14 +45,14 @@
       <%= render "shared/file_dropzone", 
                form: form, 
                attribute: :photo,
-               placeholder: "Glisser une image ou cliquer pour parcourir " %>
+               placeholder: "Glissez une image ou cliquez pour parcourir vos fichiers" %>
     </div>
     <hr class="border-slate-100 my-1" />
     <div class="form-control w-full">
       <%= render "shared/file_dropzone", 
              form: form, 
              attribute: :document,
-             placeholder: "Glissez un document (PDF, Notice, Carte grise, etc.) ici ou cliquez pour parcourir" %>
+             placeholder: "Glissez un document (PDF, Notice, Word, etc.) ici ou cliquez pour parcourir" %>
     </div>
     <div class="flex flex-col sm:flex-row gap-2 mt-4 w-full">
       <%= button_tag "Annuler", type: "button", onclick: "history.back();", class: "btn w-full sm:flex-1" %>

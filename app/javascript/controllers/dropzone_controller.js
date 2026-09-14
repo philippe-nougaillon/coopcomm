@@ -190,7 +190,7 @@ export default class extends Controller {
   renderFileList(files) {
     if (!this.hasFileListTarget) return
 
-    this.fileListTarget.innerHTML =  `<p class="text-sm font-semibold text-slate-700 mb-2">Fichiers sélectionnés</p>`
+    this.fileListTarget.innerHTML =  `<p class="text-sm font-semibold text-slate-700">Fichiers sélectionnés</p>`
     
     this.revokeObjectUrls()
     this.fileListTarget.innerHTML += files.map((file, i) => `

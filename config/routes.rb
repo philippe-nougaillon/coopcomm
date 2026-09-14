@@ -64,6 +64,10 @@ Rails.application.routes.draw do
       get :guide
       get :faq
     end
+    member do
+      delete :purge_photo
+      delete :purge_document
+    end
   end
   match 'doc', to: redirect('/documentation'), via: :get
 
@@ -148,6 +152,11 @@ Rails.application.routes.draw do
   resources :conventions do
     collection do
       get :services_for_adherent
+    end
+
+    member do
+      # Ajout de constraints: { filename: /.*/ } pour accepter les points (ex: .pdf) dans l'URL
+      get 'pdf(/*filename)', action: :pdf, as: :pdf, format: false, constraints: { filename: /.*/ }
     end
   end
 

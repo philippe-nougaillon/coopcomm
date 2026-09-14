@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ConventionsController < ApplicationController
-  before_action :set_convention, only: %i[show edit update destroy]
+  before_action :set_convention, only: %i[show edit update destroy pdf]
   before_action :is_user_authorized
 
   trie Convention, defaut: 'conventions.date_début', sens: :desc
@@ -47,7 +47,7 @@ class ConventionsController < ApplicationController
 
   # GET /conventions/new
   def new
-    @convention = Convention.new(heures_conventionnees: nil)
+    @convention = Convention.new
     @convention.user = find_adherent(params[:adherent_id]) if params[:adherent_id].present?
     set_form_collections
   end
@@ -86,6 +86,15 @@ class ConventionsController < ApplicationController
   def destroy
     @convention.destroy
     redirect_to conventions_path, notice: 'Convention supprimée.', status: :see_other
+  end
+
+  def pdf
+    pdf = TransformToPdf::Convention.call(@convention)
+
+    send_data pdf.render,
+              filename: @convention.pdf_filename,
+              type: 'application/pdf',
+              disposition: 'inline'
   end
 
   # GET /conventions/services_for_adherent (JSON) — services encore disponibles pour l'adhérent

@@ -51,7 +51,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
   test 'index : workflow_state → seulement cet état, quelle que soit la casse' do
     cotation = cotations(:cotation_paris)
 
-    get cotations_url(workflow_state: cotation.workflow_state.capitalize)
+    get cotations_url(workflow_state: cotation.workflow_state.humanize)
 
     assert_response :success
     assert_includes assigns(:cotations), cotation

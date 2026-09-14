@@ -44,7 +44,7 @@ class CotationLigneTest < ActiveSupport::TestCase
 
   test 'refresh_cotation_total : montant au-delà du million → total conservé sans débordement' do
     presta = Prestation.create!(organisation: organisations(:mairie_paris), code: 'BIG01', libellé: 'Gros lot',
-                                tarif: 600_000)
+                                unité: 'Forfait', tarif: 600_000)
 
     @cotation.cotation_lignes.create!(prestation: presta, qté: 2)
 

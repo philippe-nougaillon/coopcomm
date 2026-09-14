@@ -4,13 +4,11 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
 
   connect() {
-    // L'option vide d'un champ obligatoire est le placeholder dont dépend `required` :
-    // la choisir au menu la duplique en SECONDE position, la sélection ne porte alors
-    // plus sur la première option et la validation cesse de voir un vide.
-    if (this.element.hasAttribute('required') && !this.element.multiple) {
-      const vide = this.element.querySelector('option[value=""]')
-      if (vide) vide.disabled = true
-    }
+
+    const blankOption = this.element.querySelector('option[value=""]')
+      if (blankOption) {
+        blankOption.dataset.placeholder = 'true'
+      }
 
     // Paramètres communs
     const commonSettings = {
@@ -19,7 +17,14 @@ export default class extends Controller {
       searchText: 'Pas de résultat',
       searchingText: 'Recherche...',
       allowDeselect: true,
+      
     }
+
+    this.resizeHandler = () => this.truncateChips()
+    window.addEventListener('resize', this.resizeHandler)
+
+    this.maxValuesDesktop = parseInt(this.element.dataset.maxValuesShownDesktop, 10) || null
+    this.maxValuesMobile = parseInt(this.element.dataset.maxValuesShownMobile, 10) || null
 
     // Gestion des exceptions "addable"
     let specificSettings = {}
@@ -59,7 +64,8 @@ export default class extends Controller {
     // On fusionne les événements existants avec ce nouveau videur
     const events = {
       ...specificEvents,
-      beforeChange: beforeChangeFunction
+      beforeChange: beforeChangeFunction,
+      afterChange: () => this.truncateChips(),
     }
 
     // Initialisation
@@ -68,6 +74,8 @@ export default class extends Controller {
       settings: { ...commonSettings, ...specificSettings },
       events: events
     })
+
+    requestAnimationFrame(() => this.truncateChips())   // laisse SlimSelect finir son rendu avant de tronquer  
 
     // Ton fix pour les champs requis
     if (this.element.hasAttribute('required')) {
@@ -128,5 +136,34 @@ export default class extends Controller {
     if (this.select) {
       this.select.destroy()
     }
+
+    window.removeEventListener('resize', this.resizeHandler)
   }
+
+    truncateChips() {
+      const maxValuesShown = window.innerWidth < 768 ? this.maxValuesMobile : this.maxValuesDesktop
+      
+      // 1. Contamos los chips seleccionados
+      const chips = this.element.parentElement.querySelectorAll('.ss-value')
+      
+      // Activa la clase 'ss-multiple' si hay más de 1 elegido
+      const wrapper = this.element.nextElementSibling
+      if (wrapper) wrapper.classList.toggle('ss-multiple', chips.length > 1)
+      
+      if (!maxValuesShown) return
+
+      // On enlève l'ancien badge AVANT de compter les chips (sinon il se compte lui-même)
+      const oldBadge = this.element.parentElement.querySelector('.ss-more-badge')
+      if (oldBadge) oldBadge.remove()
+
+      chips.forEach((chip, i) => chip.classList.toggle('ss-hidden-chip', i >= maxValuesShown))
+      
+      const hidden = chips.length - maxValuesShown
+      if (hidden > 0) {
+        const b = document.createElement('div')
+        b.className = 'ss-value ss-more-badge'
+        b.textContent = `+ ${hidden}`
+        this.element.nextElementSibling.querySelector('.ss-values').appendChild(b)
+      }
+    }
 }

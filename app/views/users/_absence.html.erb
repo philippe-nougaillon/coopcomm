@@ -1,13 +1,13 @@
-<tr id="absence_<%= absence.id %>" 
-    class="transition-colors  duration-150 border-b border-slate-100 align-middle text-slate-700 <% if absence.en_cours? %>bg-amber-50/60 hover:bg-amber-50 text-amber-900<% else %>hover:bg-base-200/60 <% end %>">
-  <td class="py-4 text-sm whitespace-nowrap flex-1">
-  <% if absence.en_cours? %>
-        <span class="relative flex h-2 w-2 shrink-0 mx-auto">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-        </span>
-      <% end %>
-      </td>
+<tr id="absence_<%= absence.id %>"
+    class="transition-colors duration-150 border-b border-slate-100 align-middle text-slate-700 hover:bg-base-200/60"
+    data-controller="absence-status"
+    data-absence-status-du-value="<%= absence.du.to_date.iso8601 %>"
+    data-absence-status-au-value="<%= absence.au.to_date.iso8601 %>"
+    data-absence-status-matin-value="<%= absence.matin? %>"
+    data-absence-status-apres-midi-value="<%= absence.après_midi? %>">
+  <td class="py-4 text-sm whitespace-nowrap flex-1" data-absence-status-target="dot">
+    <%# Relleno por el controller si la absencia está en curso hoy %>
+  </td>
   <td class="py-4  text-sm whitespace-nowrap flex-1">
   <div class="grid items-center gap-2.5" style="grid-template-columns: 120px 1fr;">
     <span class="flex items-center gap-2.5 font-semibold">
@@ -15,7 +15,8 @@
     </span>
 
     <% if absence.matin || absence.après_midi %>
-      <span class="inline-flex justify-center items-center w-28 rounded-md text-xs border font-medium py-1 <%= absence.en_cours? ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-slate-100 text-slate-600 border-slate-300' %>">
+      <span class="inline-flex justify-center items-center w-28 rounded-md text-xs border font-medium py-1 bg-slate-100 text-slate-600 border-slate-300"
+            data-absence-status-target="badge">
         <%= absence.matin ? 'Matin' : 'Après-midi' %>
       </span>
     <% else %>
@@ -26,27 +27,22 @@
     <% end %>
   </div>
 </td>
-  <td class="py-3 px-4 text-sm capitalize font-medium">
+  <td class="py-3 px-4 text-sm first-letter:capitalize font-medium">
     <%= Absence::MOTIF_LABELS[absence.motif] %>
   </td>
-  <td class="py-3 px-4 text-sm <%= absence.en_cours? ? 'text-amber-800/80' : 'text-slate-500' %>">
+  <td class="py-3 px-4 text-sm text-slate-500" data-absence-status-target="observation">
     <% if absence.observation.present? %>
-      <%= absence.observation.capitalize %>
+      <%= absence.observation.humanize %>
     <% else %>
       <%= embedded_svg "icons/check_indeterminate_small.svg", title: "Aucun mot-clé" %>
     <% end %>
   </td>
   <td class="py-3 px-4 text-left">
     <% if current_user.manager_or_admin? %>
-      <% if absence.en_cours? %>
-        <button class="btn btn-soft bg-amber-600 hover:bg-amber-700 text-white border-none shadow-sm" onclick="edit_modal_<%= absence.id %>.showModal()">
-          Modifier
-        </button>
-      <% else %>
-        <button class="btn btn-primary btn-soft" onclick="edit_modal_<%= absence.id %>.showModal()">
-          Modifier
-        </button>
-      <% end %>
+      <button class="btn btn-primary btn-soft" onclick="edit_modal_<%= absence.id %>.showModal()"
+              data-absence-status-target="editBtn">
+        Modifier
+      </button>
       <dialog id="edit_modal_<%= absence.id %>" class="modal" <%= 'open' if absence.errors.any? %>>
         <div class="modal-box font-normal text-base-content text-left">
           <form method="dialog">
@@ -61,16 +57,15 @@
               <p class="text-sm text-slate-500">Complétez les informations ci-dessous.</p>
             </div>
           </div>
-          <% if absence.en_cours? %>
-            <div class="p-3 mb-4 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2.5 text-xs text-amber-800">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <div>
-                <span class="font-bold">Attention :</span> Vous modifiez une absence en cours. Cela peut impacter le planning en temps réel de cette journée.
-              </div>
+          <div class="p-3 mb-4 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2.5 text-xs text-amber-800 hidden"
+               data-absence-status-target="warning">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>
+              <span class="font-bold">Attention :</span> Vous modifiez une absence en cours. Cela peut impacter le planning en temps réel de cette journée.
             </div>
-          <% end %>
+          </div>
           <%= render "users/absence_form", absence: absence %>
         </div>
         <form method="dialog" class="modal-backdrop">

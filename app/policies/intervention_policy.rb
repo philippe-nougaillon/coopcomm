@@ -104,7 +104,7 @@ class InterventionPolicy < ApplicationPolicy
   end
 
   def fiche?
-    show? && manager_or_admin?
+    show?
   end
 
   # --- Blocs affichés sur la page d'une intervention ---
