@@ -95,6 +95,25 @@
 
 - **Template de PR GitHub** (mis de côté le 2026-07-10) : créer `.github/pull_request_template.md` avec 5-6 cases à cocher (une par famille d'erreur de `CONTRIBUTING.md` §2) — GitHub pré-remplit alors la description de chaque PR, cases cliquables. Décision client : **pour l'instant on utilise `CONTRIBUTING.md` seul** ; à réévaluer si la checklist n'est pas suivie en revue. Doc : <https://docs.github.com/fr/communities/using-templates-to-encourage-useful-issues-and-pull-requests/creating-a-pull-request-template-for-your-repository>.
 
+<!-- D15 à D17 n'existent pas sur staging : numéros perdus avec une copie de travail non commitée. D18 garde son numéro, cité dans CLAUDE.md. -->
+
+### D18 — Un champ obligatoire masqué bloque l'enregistrement sans aucun message : faut-il une sentinelle ? (ouvert le 2026-08-28, fiche reconstituée le 2026-09-14)
+
+- **Le problème, en une phrase** : quand un champ `required` est dans un conteneur que le navigateur ne peut pas atteindre (`display: none`, classe `hidden`, bloc replié), un clic sur « Enregistrer » **ne fait rien** — pas de bulle, pas de message, rien n'est envoyé au serveur.
+- **Mesuré (Chromium, 2026-09-14, sonde jetable hors dépôt)** : formulaire avec un `<input name="prenom" required>` vide dans un `<div style="display:none">`. Clic sur le bouton → **formulaire non soumis**, le focus **reste sur le bouton**, aucune bulle affichée. La seule trace est dans la console du navigateur, invisible pour l'utilisateur : `An invalid form control with name='prenom' is not focusable.`
+- **Pourquoi c'est sournois** : le serveur ne reçoit rien, donc aucun log, aucune erreur, aucun test de contrôleur ne peut le voir. Pour l'utilisateur, le bouton « est cassé ». Et un test système ne le voit que s'il remplit tous les champs **sauf** celui qui est masqué.
+- **État actuel du dépôt (vérifié le 2026-09-14) : aucun cas actif connu**, mais chaque cas existant ne tient qu'à un **contournement écrit à la main** :
+  - **Formulaire utilisateur** — `toggle_role_info_controller.js` masque *Prénom* pour un adhérent et *Localisation* pour les autres rôles ; il **retire `required`** du champ qu'il masque, et le remet quand il l'affiche. Le jour où quelqu'un ajoute un champ obligatoire dans une de ces zones sans penser à la bascule, le formulaire se bloque pour un rôle.
+  - **Absence en demi-journée** — le champ *Au* est `required` et son conteneur prend `hidden` ; il reste valide seulement parce que `syncDates` recopie *Du* dans *Au*.
+  - **Selects slim-select obligatoires** — le vrai `<select>` est masqué par le widget. `application.css` le garde volontairement *focusable* (`opacity: 0` et non `display: none`, commentaire en place) — c'est précisément ce piège qui est évité là.
+  - **Zones de dépôt de fichier** — l'input réel est caché : c'est pour cela qu'aucun champ fichier ne porte `required` (constat du 2026-08-04 sur l'import XLS).
+- **Ce qui manque** : rien ne détecte un **nouveau** cas. Le risque vient d'une modification future — un champ ajouté dans un bloc repliable, une bascule JS qui oublie `required` — et il passe tous les tests actuels.
+- **À trancher** :
+  1. **Sentinelle système** (recommandation) : sur chaque formulaire, pour chaque combinaison d'affichage qui compte (rôles du formulaire utilisateur, demi-journée d'absence…), vérifier par JavaScript que **tout champ `required` visible pour le serveur est atteignable** — c'est-à-dire que ni lui ni un ancêtre n'a un `display: none` calculé. Coût : un fichier de test, à étendre à chaque formulaire à bascule.
+  2. **Filet côté navigateur** : un petit contrôleur Stimulus global qui écoute l'événement `invalid` et, si le champ n'est pas visible, affiche un message générique (« Un champ obligatoire est incomplet ») au lieu du silence. Protège aussi les cas qu'aucun test n'anticipe, mais masque le défaut au lieu de le faire tomber en test.
+  3. **Ne rien faire** et s'en remettre aux contournements existants — acceptable tant qu'aucun formulaire à bascule n'est ajouté ; à revoir si la mise en prod fait remonter un « le bouton ne marche pas ».
+- **À rappeler à PE en début de session tant que ce point est ouvert** (demande du 2026-08-28, consignée dans `CLAUDE.md` §4).
+
 ---
 
 ## ✅ Tranchés (historique)
