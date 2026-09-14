@@ -1,28 +1,23 @@
-<div class="overflow-visible">
-  <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+ <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
     <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
     <span>Faire glisser pour voir plus</span>
   </div>
   <div class="overflow-x-auto">
-    <%# Añadimos border-separate y border-spacing-0 para que los bordes verticales no se corten %>
     <table id="tools" class="table table-sm w-full border-separate border-spacing-0 border-none">
       <thead class="bg-slate-100">
         <tr>
-          <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 text-left"><%= sort_link 'tools.name', 'Nom' %></th>
-          
+          <%= th_tri 'Nom', colonne: 'tools.name', class: 'px-4 py-3 font-semibold text-slate-500  tracking-wider bg-slate-100 text-left' %>
           <% (@date..@date_fin).each do |date| %>
             <% es_hoy = (date == Date.today) %>
-            
-            <%# Th con lógica de bordes morados para la cabecera si es el día actual %>
             <th class="text-center p-3 transition-all min-w-[90px]
                        <%= es_hoy ? 'text-purple-700 bg-purple-50/40 border-x-2 border-t border-purple-500 font-bold' : 'text-slate-500 bg-slate-100' %>">
               <div class="flex flex-col items-center">
-                <span class="capitalize text-xs tracking-wider"><%= l(date, format: :calendar).humanize %></span>
+                <span class="text-xs tracking-wider"><%= l(date, format: :calendar).humanize %></span>
                 <div class="flex items-center justify-center h-12 mt-1">
                   <% if @forecasts && icon_meteo = MeteoConceptConnexion.get_icon_meteo_by_date(date, @forecasts["forecast"])%>
                     <%= image_tag icon_meteo, class: "h-12 w-auto object-contain", title: MeteoConceptConnexion.get_title(date, @forecasts["forecast"]) %>
                   <% else %>
-                    <%= embedded_svg "icons/cloud_sign.svg", class: "w-8 h-8 text-slate-400", title: "Prévision météo indisponible" %>
+                    <%= embedded_svg "icons/cloud.svg", class: "w-8 h-8 text-slate-400", title: "Météo indisponible" %>
                   <% end %>
                 </div>
               </div>
@@ -34,23 +29,51 @@
         <% if @tools.present? %>
           <%= render @tools %>
         <% else %>
-          <tr>
-            <td colspan="<%= (@date..@date_fin).count + 1 %>" class="text-left md:text-center py-8 text-slate-400 text-base italic">
-              Aucun résultat trouvé pour cette recherche.
+          <tr class="relative h-24 bg-white">
+            <td class="bg-white border-b border-slate-100">
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                <span class="text-slate-400 bg-white text-base italic px-6 py-3 max-w-md text-center pointer-events-auto">
+                  Aucun résultat trouvé pour cette recherche.
+                </span>
+              </div>
             </td>
+            <% (@date..@date_fin).each do |date| %>
+              <% es_hoy = (date == Date.today) %>
+              <td class="p-0 bg-white transition-all
+                         <%= es_hoy ? 'border-x-2 border-b-2 border-purple-500 bg-purple-50/10' : 'border-b border-slate-100' %>">
+              </td>
+            <% end %>
           </tr>
         <% end %>
       </tbody>
     </table>
   </div>
-  <% if @pagy&.pages.to_i > 1 %>
-    <div class="flex flex-col justify-between items-center gap-4 p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
-      <div class="w-full sm:w-auto sm:flex-1 order-1 sm:order-2 flex justify-center">
+<div class="flex flex-row items-center gap-2 px-4 py-4 border-t border-slate-50 text-xs text-slate-500">
+  <div class="flex flex-col md:flex-row gap-2">
+    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 shrink-0 rounded-sm bg-green-500"></span>Disponible</span>
+    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 shrink-0 rounded-sm bg-red-500"></span>En panne</span>
+  </div>
+  <div class="flex flex-col md:flex-row gap-2">
+    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 shrink-0 rounded-sm bg-blue-600"></span>Réservé</span>
+    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 shrink-0 rounded-sm bg-blue-300"></span>Réservé par un autre</span>
+  </div>
+  <div class="flex flex-col md:flex-row gap-2">
+    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 shrink-0 border-2 border-purple-700"></span>Aujourd'hui</span>
+    <span class="flex items-center gap-1.5 invisible" aria-hidden="true"><span class="w-2.5 h-2.5 shrink-0"></span>Aujourd'hui</span>
+  </div>
+</div>
+  
+  <% if @pagy.pages > 1 %>
+    <div class=" flex flex-col justify-center  p-4 border-t border-slate-100 bg-slate-50/50 w-full">
+   
+      <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
         <%= pagy_nav(@pagy).html_safe %>
       </div>
-      <div class="text-base font-semibold text-slate-500 text-center sm:text-right w-full sm:flex-1 order-2 sm:order-3">
+      <div class=" text-slate-500 text-center text-sm w-full ">
         <%= pagy_info(@pagy).html_safe %>
       </div>
-    </div>
-  <% end %>
+    <% else %>
+      <div></div>
+    <% end %>
+  </div>
 </div>

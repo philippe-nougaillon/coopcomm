@@ -22,8 +22,10 @@ class CotationPolicy < ApplicationPolicy
     manage?
   end
 
+  # Un adhérent ne voit une cotation à lui qu'une fois envoyée (pas les
+  # brouillons « créé »), même via une URL directe.
   def show?
-    manage? || (adhérent? && record.adherent_id == user.id)
+    manage? || (adhérent? && record.adherent_id == user.id && !record.créé?)
   end
 
   # Modification (et edit?, qui en hérite) : réservée aux états modifiables,
@@ -50,7 +52,7 @@ class CotationPolicy < ApplicationPolicy
   end
 
   def refuser?
-    manage?
+    manage? || signer?
   end
 
   def create_commande?

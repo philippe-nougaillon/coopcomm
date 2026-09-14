@@ -1,31 +1,30 @@
-<tr class="border-b border-slate-100 hover:bg-base-200/60 transition-colors">
-  <td class="px-4 py-3 whitespace-nowrap">
-    <%= time_tag(audit.created_at, format: :long) { "Il y a #{time_ago_in_words(audit.created_at)}" } %>
-    <br>
-    <span class="text-slate-400 text-xs">(<%= l(audit.created_at, format: :long) %>)</span>
+<tr class="hover:bg-base-200/60 transition-colors duration-150 align-middle">
+  <td class="py-4 pl-4 text-sm whitespace-nowrap">
+    <div class="font-semibold text-slate-700 text-xs sm:text-sm leading-tight">
+      <%= time_tag(audit.created_at, format: :long) { "Il y a #{time_ago_in_words(audit.created_at)}" } %>
+    </div>
+    <div class="text-slate-400 text-xs mt-1">
+      <%= l(audit.created_at, format: :long) %>
+    </div>
   </td>
-  <td class="px-4 py-3">
-    <% if audit.user_id %>
-      <% if audit.user %>
+  <td class="px-4 py-3 text-sm">
+    <% if audit.user_id && audit.user %>
+      <div class="font-medium text-slate-700 leading-snug">
         <%= audit.user.email %>
-        (#<%= audit.user.id %>)
-        <br>
-        <span class="text-slate-400 text-xs"><%= audit.user.rôle.humanize %></span>
-      <% end %>
+      </div>
+      <div class="text-slate-400 text-xs flex items-center gap-1.5 mt-0.5">
+        <span><%= audit.user.rôle.to_s.humanize %></span>
+      </div>
     <% else %>
-      SYSTEM CONSOLE
+      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-wider">
+        System Console
+      </span>
     <% end %>
   </td>
-  <td class="px-4 py-3"><%= audit.auditable_type %></td>
-  <td class="px-4 py-3"><%= audit.action.humanize %></td>
-  <td class="px-4 py-3">
-    <% unless audit.comment %>
-      <% changes = prettify(audit, current_user) %>
-      <% if changes.any? %>
-        <%= sanitize changes.join('<br>') %>
-      <% end %>
-    <% else %>
-      <%= audit.comment %>
-    <% end %>
+  <td class="px-4 py-3 align-middle">
+    <%= audit_badge(audit) %>
+  </td>
+  <td class="px-4 py-3 text-sm max-w-xs md:max-w-md">
+    <%= audit_details(audit, current_user) %>
   </td>
 </tr>

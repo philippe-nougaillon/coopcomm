@@ -1,18 +1,26 @@
 class CommandesController < ApplicationController
-  before_action :set_commande, only: %i[ show edit update destroy pdf envoyer valider refuser create_facture ]
+  before_action :set_commande, only: %i[show edit update destroy pdf envoyer valider refuser create_facture]
   before_action :is_user_authorized
   before_action :set_form_collections, only: %i[edit update]
 
+  trie Commande, defaut: 'commandes.updated_at', sens: :desc
+
   # GET /commandes or /commandes.json
   def index
-    @services = current_user.get_services_by_role
-    @adhérents = User.by_service(@services).adhérent
+    base = policy_scope(Commande)
+             .kept
+             .includes(:adherent, :service, :organisation)
+             .ordered
 
-    @commandes = Commande
-                      .kept
-                      .includes(:adherent, :service, :organisation)
-                      .where(service: @services)
-                      .ordered
+    if current_user.adhérent?
+      @commandes = base
+      service_ids = base.reorder(nil).distinct.pluck(:service_id)
+      @services   = Service.where(id: service_ids).ordered
+    else
+      @services   = current_user.get_services_by_role
+      @adhérents  = User.by_service(@services).adhérent.ordered
+      @commandes  = base.where(service: @services)
+    end
 
     if params[:search].present?
       @commandes = @commandes.where('commandes.ref ILIKE :s OR commandes.intitulé ILIKE :s', s: "%#{params[:search]}%")
@@ -32,13 +40,17 @@ class CommandesController < ApplicationController
 
     @commandes = @commandes.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
 
-    @pagy, @commandes = pagy(@commandes, items: 15)
+    @pagy, @commandes = pagy(trier(@commandes), items: 10)
   end
 
   # GET /commandes/1 or /commandes/1.json
   def show
-    @audits = @commande.own_and_associated_audits.includes(:user).reorder(id: :desc)
+    @audits = trier(@commande.own_and_associated_audits.includes(:user))
     @pagy, @audits = pagy(@audits, items: 10)
+
+    @prestations = @commande.commande_lignes.includes(:prestation)
+    @pagy_prestations, @prestations = pagy(@prestations, items: 10)
+
   end
 
   # GET /commandes/new
@@ -146,7 +158,11 @@ class CommandesController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_commande
-    @commande = Commande.find_by(slug: params.expect(:id))
+    @commande = Commande.find_by(slug: params[:id])
+
+    if @commande.nil?
+      redirect_to root_path, alert: 'Commande introuvable'
+    end
   end
 
   # Only allow a list of trusted parameters through.
@@ -163,9 +179,7 @@ class CommandesController < ApplicationController
 
   def set_form_collections
     @services = current_user.get_services_by_role
-
     @adherents = User.by_service(@services).adhérent.ordered
-
     @prestations = current_organisation.prestations.ordered
   end
 end

@@ -1,7 +1,8 @@
-Bonjour,
-<br>
-<br>
-L'intervention "<%= @intervention.description.humanize %>", commencée le <%= @intervention.début&.strftime('%d/%m/%Y') %>, a été <b>clôturée automatiquement</b> à la date du <b><%= @intervention.fin&.strftime('%d/%m/%Y à %H:%M') %></b>.
-<br>
-<br>
+<h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">Bonjour,</h2>
+
+<p style="color: #475569; margin-bottom: 24px;">
+L'intervention « <b><%= @intervention.description.humanize %></b> », commencée le <%= @intervention.début&.strftime('%d/%m/%Y') %>, a été <b>clôturée automatiquement</b> à la date du <b><%= @intervention.fin&.strftime('%d/%m/%Y à %H:%M') %></b>.
+<br><br>
 <%= link_to "Voir l'intervention", intervention_url(@intervention) %>
+
+</p>

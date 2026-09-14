@@ -1,38 +1,41 @@
-<tr class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle">
-  <td class="px-4 py-3 whitespace-nowrap text-sm capitalize"><%= time_ago_in_words mail_log.created_at %></td>
+<tr class="hover:bg-base-200/60 transition-colors duration-150 align-middle">
+  <td class="px-4 py-3 whitespace-nowrap text-sm first-letter:capitalize"><%= time_ago_in_words mail_log.created_at %></td>
   <td class="px-4 py-3 text-sm font-semibold"><%= mail_log.channel.humanize %></td>
   <td class="px-4 py-3 whitespace-nowrap text-sm text-primary font-bold"><%= mail_log.user_id == 0 ? "Système" : User.with_discarded.find(mail_log.user_id).nom_prénom %></td>
   <td class="px-4 py-3  text-base font-mono text-slate-400 ">
-    <%= mail_log.to %></td>
+    <%= format_mail_recipients(mail_log.to) %></td>
   <td class="px-4 py-3 text-sm">
     <%= mail_log.subject %></td>
-  <td class="px-4 py-3 text-sm">
+  <td class="px-4 py-3 text-sm text-center">
     <% if mail_log.statut %>
-      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-700">
-        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>OK
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        Acheminé
       </span>
     <% else %>
-      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-700">
-        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>KO
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200" title="<%= mail_log.error_message rescue 'Échec de livraison' %>">
+        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+        Échec (KO)
       </span>
     <% end %>
   </td>
   <%# État %>
-  <td class="px-4 py-3 text-sm">
+  <td class="px-4 py-3 text-sm text-center">
     <% if mail_log.etat && mail_log.statut %>
-      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>Ouvert
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+        Ouvert
       </span>
     <% else %>
-      <span class="text-slate-400 text-sm">
-        <%= embedded_svg "icons/check_indeterminate_small.svg", class: "text-sm", title: "Aucun état" %>
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200">
+        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+        Non ouvert
       </span>
     <% end %>
   </td>
   <td class="pr-4 py-3 text-sm">
-  <%= link_to mail_log, class: "btn btn-sm btn-ghost text-info hover:bg-info/20 gap-1" do %>
-    Voir <i class="ti ti-eye"></i>
-  <% end %>
-</td>
+    <%= link_to mail_log, class: "btn btn-sm btn-ghost text-info hover:bg-info/20 gap-1" do %>
+      Voir <i class="ti ti-eye"></i>
+    <% end %>
+  </td>
 </tr>
-

@@ -37,8 +37,8 @@ export default class extends Controller {
       success: (response) => {
         const forecast = response["forecast"]
         console.log(forecast)
-        this.prévisionMétéoTarget.value = response["weather"] + " | Température : " + forecast["temp2m"] + "°C | Probabilité de pluie : " + forecast["probarain"] + "% | Vent : " + forecast["wind10m"] + " km/h"
-      },
+        this.prévisionMétéoTarget.value = `${response["weather"]}\nTempérature : ${forecast["temp2m"]}°C\nProbabilité de pluie : ${forecast["probarain"]}%\nVent : ${forecast["wind10m"]} km/h`
+    },
       error: (err) => {
         this.prévisionMétéoTarget.value = "Météo indisponible."
       }

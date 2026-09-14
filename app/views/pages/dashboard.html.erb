@@ -22,38 +22,51 @@
 </div>
 <% if current_user.manager_or_admin? %>
   <%= render partial:'pages/dashboard/dashboard_manager' %>
-  <h2 class="text-2xl text-secondary mt-16 font-bold">Historique des exports</h2>
-  <div class="overflow-x-auto mt-4 border border-base-200 rounded-xl">
-    <table class="table table-sm w-full">
-      <thead class="bg-base-200">
-        <tr>
-          <th>Date et Heure</th>
-          <th>Utilisateur</th>
-          <th>Type d'export</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @export_logs.each do |log| %>
-          <tr class="hover:bg-base-300">
-            <td><%= l(log.created_at, format: :long) %></td>
-            <td><%= log.user.try(:nom_prénom) || "Utilisateur supprimé" %></td>
-            <td>
-              <% if log.export_type == 'dashboard_manager' %>
-                <span class="badge badge-sm badge-outline">Dashboard (Manager)</span>
-              <% elsif log.export_type == 'dashboard_adherent' %>
-                <span class="badge badge-sm badge-outline">Dashboard (Adhérent)</span>
-              <% else %>
-                <%= log.export_type.humanize %>
-              <% end %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+  <h2 class="text-2xl text-secondary mt-16 font-bold mb-4">Historique des exports</h2>
+  <% if @export_logs.any? %>
+    <div class="flex flex-col bg-white border border-slate-200 rounded-xl  shadow-sm overflow-hidden">
+      <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+        <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+        <span>Faire glisser pour voir plus</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="table table-sm w-full border-none">
+          <thead class="bg-slate-100">
+            <tr>
+              <%= th_tri 'Date et heure', colonne: 'export_logs.created_at', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+              <%= th_tri 'Utilisateur', colonne: 'export_logs.user', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+              <%= th_tri "Type d'export", colonne: 'export_logs.export_type', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+            </tr>
+          </thead>
+          <tbody>
+            <% @export_logs.first(10).each do |log| %>
+              <tr class="hover:bg-base-200/60 transition-colors duration-150 align-middle">
+                <td class="whitespace-nowrap"><%= l(log.created_at, format: :long) %></td>
+                <td class="whitespace-nowrap"><%= log.user.try(:nom_prénom) || "Utilisateur supprimé" %></td>
+                <td>
+                  <span class="badge badge-sm badge-outline whitespace-nowrap px-3 py-3">
+                    <%= export_type_label(log.export_type) %>
+                  </span>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
+<% else %>
+  <div class="border border-base-200 rounded-xl p-4 bg-base-100">
+    <p class="text-slate-500">Aucun export effectué pour le moment.</p>
+  </div>
+<% end %>
 <% elsif current_user.adhérent? %>
   <%= render partial:'pages/dashboard/dashboard_adhérent' %>
 <% end %>
-<div class="mt-8">
-  <%= link_to "Exporter en XLS", url_for(params.permit!.merge(format: :xls)), class: "text-sm btn btn-sm btn-outline btn-success hover:text-white!" %>
+<div class="flex flex-wrap justify-end items-center gap-2 p-4">
+  <%= link_to url_for(params.permit!.merge(format: :xls)), 
+              class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base w-full sm:w-auto" do %>
+    <%= embedded_svg "icons/upload.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+    <span>Exporter en XLS</span>
+  <% end %>
 </div>

@@ -2,41 +2,40 @@
 
 require 'test_helper'
 
-# Rôles sans aucun droit sur les conventions (adhérent et agent regroupés :
-# tous deux n'ont aucune action autorisée, le test reste lisible groupé).
 class AdherentConventionPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    @adherent = users(:weil)            # adhérent, par ailleurs titulaire de convention_paris
-    @agent = users(:agent_whatsapp)     # agent
-    @convention = conventions(:convention_paris)
+    @adherent = users(:weil)
+
+    convention = conventions(:convention_paris)
+    convention_autre_adherent = conventions(:convention_marseille)
+
+    @policy = ConventionPolicy.new(@adherent, convention)
+    @policy_autre_adherent = ConventionPolicy.new(@adherent, convention_autre_adherent)
   end
 
-  test "un adhérent n'a aucun accès aux conventions" do
-    policy = ConventionPolicy.new(@adherent, @convention)
-    refute policy.index?
-    refute policy.new?
-    refute policy.services_for_adherent?
-    refute policy.show?
-    refute policy.create?
-    refute policy.update?
-    refute policy.destroy?
+  test 'accès autorisé pour un adhérent sur une convention dont il est titulaire' do
+    assert @policy.index?
+    assert @policy.show?
   end
 
-  test "un agent n'a aucun accès aux conventions" do
-    policy = ConventionPolicy.new(@agent, @convention)
-    refute policy.index?
-    refute policy.new?
-    refute policy.show?
-    refute policy.create?
-    refute policy.update?
-    refute policy.destroy?
+  test 'accès interdit pour un adhérent sur une convention dont il est titulaire' do
+    refute @policy.new?
+    refute @policy.create?
+    refute @policy.services_for_adherent?
+    refute @policy.edit?
+    refute @policy.update?
+    refute @policy.destroy?
   end
 
-  test 'scope : aucune convention visible pour un adhérent' do
-    assert_empty ConventionPolicy::Scope.new(@adherent, Convention.all).resolve
+  test "accès interdit pour un adhérent sur une convention d'un autre titulaire" do
+    refute @policy_autre_adherent.show?
+    refute @policy_autre_adherent.destroy?
   end
 
-  test 'scope : aucune convention visible pour un agent' do
-    assert_empty ConventionPolicy::Scope.new(@agent, Convention.all).resolve
+  test 'scope : un adhérent ne voit que ses propres conventions' do
+    scope = ConventionPolicy::Scope.new(@adherent, Convention.all).resolve
+
+    assert_includes scope, conventions(:convention_paris)
+    refute_includes scope, conventions(:convention_marseille)
   end
 end

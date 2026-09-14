@@ -24,6 +24,8 @@ nouvelle_intervention:
 #  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
   début: 2024-04-19 8:30:00
+  fin: 2024-04-19 17:30:00
+  temps_de_pause: 0
   description: Ramasser les feuilles
   workflow_state: nouveau
   slug: caa0d044-03c2-4533-abb7-0fc807051335
@@ -33,7 +35,8 @@ intervention_terminée:
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
 #  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
-  début: 2024-04-19 8:30:00
+  début: 2024-04-15 8:30:00
+  fin: 2024-04-15 17:30:00
   description: Tailler les arbres
   workflow_state: terminé
   slug: 7a2bff56-19e4-44aa-891a-441be6b62d6f
@@ -51,7 +54,8 @@ intervention_autre_agent:
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
 #  agent_id: <%#= ActiveRecord::FixtureSet.identify(:martin) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
-  début: 2024-04-19 8:30:00
+  début: 2024-04-16 8:30:00
+  fin: 2024-04-16 17:30:00
   description: L'intervetion d'un autre agent
   workflow_state: terminé
   slug: effe9850-4218-4f61-99df-a89b82a97de8
@@ -61,7 +65,8 @@ intervention_autre_adhérent:
 #  user_id: <%#= ActiveRecord::FixtureSet.identify(:électricité) %>
 #  agent_id: <%#= ActiveRecord::FixtureSet.identify(:bond) %>
   adherent_id: <%= ActiveRecord::FixtureSet.identify(:berthout) %>
-  début: 2024-04-19 8:30:00
+  début: 2024-04-17 8:30:00
+  fin: 2024-04-17 17:30:00
   description: L'intervetion d'un autre adhérent
   workflow_state: terminé
   slug: 49ff96b4-6e36-4636-a652-0f71b5888b12
@@ -92,7 +97,29 @@ intervention_fille:
   workflow_state: nouveau
   slug: <%= SecureRandom.uuid %>
   service: technique
-  début: <%= DateTime.now %>
+  # Démarrée il y a 4h (et non « pile maintenant ») : une fixture ancrée sur
+  # l'instant courant entrait en collision avec les pointages créés « maintenant »
+  # par les tests → depuis #357 (contrôle de disponibilité sur dates réelles), ce
+  # chevauchement faisait échouer à raison le terminer! du pointage. `fin` nulle +
+  # début décalé de 4h ⇒ jamais de recouvrement avec [maintenant, maintenant].
+  début: <%= 4.hours.ago %>
+
+intervention_with_location:
+  adherent: adherent_with_location
+  début: <%= (Date.today - 1).beginning_of_week + 8.hours + 30.minutes %>
+  fin: <%= (Date.today - 1).beginning_of_week + 17.hours + 30.minutes %>
+  temps_de_pause: 1
+  description: Tonte 
+  workflow_state: nouveau
+  temps_total: 9
+  commentaires: Mal tondre sur le bord des routes
+  note: 4
+  avis: Ça s'est très mal passé
+  repeter: false
+  slug: 0286beb1-7249-4a29-96c7-f7fd9196c1dc
+  début_prévue: <%= (Date.today + 14).beginning_of_week + 8.hours + 35.minutes %>
+  fin_prévue: <%= (Date.today + 14).beginning_of_week + 17.hours + 15.minutes %>
+  service: service_with_location
 
 # Organisation Marseille
 nettoyage_port:

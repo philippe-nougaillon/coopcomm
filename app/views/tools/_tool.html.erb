@@ -1,10 +1,10 @@
 <tr id="<%= dom_id tool %>" class="hover:bg-base-200/60 transition-colors duration-150 border-b border-slate-100 align-middle group">
   
   <td class="px-4 py-1.5 uppercase font-bold bg-white group-hover:bg-transparent">
-    <%= link_to tool.name.humanize, tool, class: 'text-base font-bold text-primary hover:underline', title: (tool.description.blank? ? 'Aucune description' : tool.description) %>
+    <%= link_to tool.name.humanize, tool, class: 'text-lg font-semibold text-primary hover:underline', title: (tool.description.blank? ? 'Aucune description' : tool.description) %>
   </td>
 
-  <% tool.get_etats_from_mouvements(@date, @date_fin, current_user.id).each_with_index do |etat, index| %>
+  <% tool.get_etats_from_mouvements(@date, @date_fin, current_user.id).each_with_index do |jour, index| %>
     <% celda_fecha = @date + index.day %>
     <% es_hoy = (celda_fecha == Date.today) %>
 
@@ -12,8 +12,9 @@
                <%= es_hoy ? 'bg-purple-50/40 border-x-2 border-purple-500 font-bold [tr:last-child_&]:border-b-2 [tr:last-child_&]:border-b-purple-500' : 'bg-slate-50/50 group-hover:bg-transparent' %>">
       
       <div class="flex justify-center items-center gap-1 ">
-        <%= render 'tools/mouvement', 
-                   etat:,
+        <%= render 'tools/mouvement',
+                   etat: jour.etat,
+                   reservataire_id: jour.reservataire_id,
                    tool:,
                    index:,
                    date: celda_fecha %>

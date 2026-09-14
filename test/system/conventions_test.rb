@@ -2,6 +2,7 @@
 
 require 'application_system_test_case'
 
+#TODO : A revoir (surtout les tests sur les dropzone, éviter les dupplications avec ceux dans l'integration)
 class ConventionsTest < ApplicationSystemTestCase
   setup do
     @admin = users(:administrateur_paris)
@@ -17,55 +18,129 @@ class ConventionsTest < ApplicationSystemTestCase
     Rails.root.join('test/fixtures/files/exemple.png').to_s
   end
 
-  test "la zone de dépôt s'affiche sur le formulaire d'édition" do
-    visit edit_convention_path(@convention)
-
-    assert_selector "[data-controller='dropzone']"
-    assert_text 'Glissez un fichier PDF ici ou cliquez pour parcourir'
+  def fichier_refusé_path
+    Rails.root.join('test/fixtures/files/responseMeteoConcept.json').to_s
   end
 
-  test 'déposer un fichier non PDF affiche une erreur et ne retient pas le fichier' do
-    visit edit_convention_path(@convention)
+  test "la zone de dépôt s'affiche sur le formulaire" do
+    visit new_convention_path
 
-    attach_file 'convention_document', image_path, make_visible: true
+    assert_selector "[data-controller='dropzone']"
+    assert_text 'Glissez un document (PDF, Word, Excel, photo) ici ou cliquez pour parcourir'
+  end
+
+  test 'déposer un fichier au mauvais format affiche une erreur et ne retient pas le fichier' do
+    visit new_convention_path
+
+    attach_file 'convention_document', fichier_refusé_path, make_visible: true
 
     assert_text 'Format non accepté'
     # La zone passe en rouge (couleur error daisyUI).
-    assert_selector "[data-controller='dropzone'].border-error"
+    assert_selector "[data-controller='dropzone'][data-dropzone-state='error']"
     # Le nom du fichier refusé ne remplace pas le libellé de la zone.
-    assert_no_text 'exemple.png'
+    assert_no_text 'responseMeteoConcept.json'
+  end
+
+  test 'survoler la zone avec un fichier annonce visuellement le dépôt' do
+    visit new_convention_path
+
+    survoler_avec_un_fichier
+    assert_selector "[data-controller='dropzone'][data-dropzone-dragging]"
+    assert_text 'Déposez le fichier ici'
+
+    # Passer d'un enfant à l'autre ne doit pas faire clignoter l'effet.
+    quitter_vers "document.querySelector(\"[data-controller='dropzone'] svg\")"
+    assert_selector "[data-controller='dropzone'][data-dropzone-dragging]"
+
+    quitter_vers 'document.body'
+    assert_no_selector "[data-controller='dropzone'][data-dropzone-dragging]"
+    assert_text 'Glissez un document (PDF, Word, Excel, photo) ici ou cliquez pour parcourir'
+  end
+
+  test 'la zone annonce les formats acceptés et la taille maximale' do
+    visit new_convention_path
+
+    assert_text 'Formats acceptés : PDF, DOC, DOCX'
+    assert_text '20 Mo maximum par fichier'
+  end
+
+  test 'un fichier de plus de 20 Mo est refusé sans être envoyé' do
+    visit new_convention_path
+
+    attach_file 'convention_document', fichier_volumineux('.pdf', 21.megabytes), make_visible: true
+
+    assert_text 'Fichier trop volumineux. Taille maximale : 20 Mo.'
+    assert_selector "[data-controller='dropzone'][data-dropzone-state='error']"
+    # Le champ est vidé : rien ne part au serveur.
+    assert_equal 0, evaluate_script("document.querySelector('#convention_document').files.length")
+  end
+
+  test "un fichier refusé bloque l'enregistrement de la convention" do
+    visit new_convention_path
+    remplir_convention
+
+    attach_file 'convention_document', fichier_refusé_path, make_visible: true
+    assert_text 'Format non accepté'
+
+    avant = Convention.count
+    cliquer_bouton 'Enregistrer'
+    assert_selector "[data-controller='dropzone'][data-dropzone-state='error']"
+
+    # Si la soumission était passée, `create` aurait redirigé vers l'index et il
+    # n'y aurait plus de zone de dépôt à remplir ici.
+    attach_file 'convention_document', pdf_path, make_visible: true
+    cliquer_bouton 'Enregistrer'
+
+    assert_current_path conventions_path
+    assert_equal avant + 1, Convention.count, "la soumission bloquée n'a pas dû créer de convention"
+    assert_equal 'exemple.pdf', users(:patrick_adherent_paris).conventions.last.document.filename.to_s
+  end
+
+  test 'déposer la photo du document signé est accepté' do
+    visit new_convention_path
+
+    attach_file 'convention_document', image_path, make_visible: true
+
+    assert_no_text 'Format non accepté'
+    assert_selector "[data-controller='dropzone'][data-dropzone-state='success']"
   end
 
   test "déposer un PDF affiche son nom et l'enregistre" do
-    visit edit_convention_path(@convention)
+    visit new_convention_path
 
     attach_file 'convention_document', pdf_path, make_visible: true
 
     assert_text 'exemple.pdf'
+    assert_text '1 fichier sélectionné'
     assert_no_text 'Format non accepté'
     # La zone passe en vert (couleur success daisyUI).
-    assert_selector "[data-controller='dropzone'].border-success"
+    assert_selector "[data-controller='dropzone'][data-dropzone-state='success']"
 
-    click_on 'Enregistrer'
+    remplir_convention
 
-    assert_text 'Convention mise à jour'
-    assert @convention.reload.document.attached?, 'le document aurait dû être attaché'
-    assert_equal 'exemple.pdf', @convention.document.filename.to_s
+    cliquer_bouton 'Enregistrer'
+
+    # État métier plutôt que le toast (il s'auto-détruit au bout de 5 s) :
+    # `create` redirige vers l'index, c'est ça le signal fiable de succès.
+    assert_current_path conventions_path
+    créée = users(:patrick_adherent_paris).conventions.last
+    assert créée.document.attached?, 'le document aurait dû être attaché'
+    assert_equal 'exemple.pdf', créée.document.filename.to_s
   end
 
   test "déposer un PDF après une erreur efface le message d'erreur" do
-    visit edit_convention_path(@convention)
+    visit new_convention_path
 
-    attach_file 'convention_document', image_path, make_visible: true
+    attach_file 'convention_document', fichier_refusé_path, make_visible: true
     assert_text 'Format non accepté'
-    assert_selector "[data-controller='dropzone'].border-error"
+    assert_selector "[data-controller='dropzone'][data-dropzone-state='error']"
 
     attach_file 'convention_document', pdf_path, make_visible: true
     assert_no_text 'Format non accepté'
     assert_text 'exemple.pdf'
     # Bascule rouge → vert, plus de classe d'erreur.
-    assert_selector "[data-controller='dropzone'].border-success"
-    assert_no_selector "[data-controller='dropzone'].border-error"
+    assert_selector "[data-controller='dropzone'][data-dropzone-state='success']"
+    assert_no_selector "[data-controller='dropzone'][data-dropzone-state='error']"
   end
 
   # --- Liste de services dépendante de l'adhérent (controller dynamic-select) ---
@@ -73,10 +148,41 @@ class ConventionsTest < ApplicationSystemTestCase
   test "le choix de l'adhérent peuple dynamiquement la liste des services" do
     visit new_convention_path
 
-    # patrick (Bruel Patrick) est rattaché au seul service Service_Paris, sans convention
-    select_option '#convention_user_id', 'Bruel Patrick'
+    # patrick est rattaché au seul service Service_Paris, sans convention
+    select_option '#convention_user_id', 'Patrick'
 
     # le JS appelle services_for_adherent et injecte les <option> dans le select (caché par slim_select)
     assert_selector '#convention_service_id option', text: 'Service_Paris', visible: false, wait: 5
+  end
+
+  private
+
+  def remplir_convention
+    select_option '#convention_user_id', 'Patrick'
+    assert_selector '#convention_service_id option', text: 'Service_Paris', visible: false, wait: 5
+    select_option '#convention_service_id', 'Service_Paris'
+    fill_in 'convention_date_début', with: Date.current
+    fill_in 'convention_date_fin_prévue', with: Date.current + 1.year
+    fill_in 'convention_heures_conventionnees', with: 10
+  end
+
+  # Selenium ne sait pas glisser un fichier du bureau vers la page : on émet les
+  # évènements de survol que le navigateur enverrait, depuis un enfant de la zone.
+  def survoler_avec_un_fichier
+    execute_script(<<~JS)
+      const enfant = document.querySelector("[data-dropzone-target='filename']");
+      const dt = new DataTransfer();
+      ['dragenter', 'dragover'].forEach(nom => {
+        enfant.dispatchEvent(new DragEvent(nom, { bubbles: true, cancelable: true, dataTransfer: dt }));
+      });
+    JS
+  end
+
+  def quitter_vers(cible_js)
+    execute_script(<<~JS)
+      document.querySelector("[data-dropzone-target='filename']").dispatchEvent(
+        new DragEvent('dragleave', { bubbles: true, cancelable: true, relatedTarget: #{cible_js} })
+      );
+    JS
   end
 end

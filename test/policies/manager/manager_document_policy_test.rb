@@ -4,20 +4,15 @@ require 'test_helper'
 
 class ManagerDocumentPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    manager_paris = users(:hidalgo)
+    manager = users(:hidalgo)
 
     document = documents(:carte_grise)
 
-    @policy = DocumentPolicy.new(manager_paris, document)
+    @policy = DocumentPolicy.new(manager, document)
   end
 
-  # Valider
-  test 'accès manager document valider autorisé' do
+  test "accès autorisé pour un manager sur un document d'un outil de son organisation" do
     assert @policy.valider?
-  end
-
-  # Refuser
-  test 'accès manager document refuser autorisé' do
     assert @policy.refuser?
   end
 end

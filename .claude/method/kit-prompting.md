@@ -343,7 +343,7 @@ Tickets : <tickets>
 
 ### T13 — Génération de tests
 ```
-NE MODIFIE PAS LE CODE DE PRODUCTION. Écris des tests.
+NE MODIFIE PAS LA *LOGIQUE* DE PRODUCTION. Écris des tests. Exception : tu peux ajouter un attribut `data-testid` sur un élément de vue quand c'est le moyen le plus fiable de le cibler — c'est préférable à un sélecteur fragile (CSS/XPath/`title=`/`data-action`) ou à un helper qui contourne un markup non ciblable. But : les tests les plus stables possible. Ces attributs sont inertes (aucun effet sur le comportement) ; signale-les. Toute autre modif de prod (logique, correction de bug) reste signalée sans être appliquée (point 5).
 
 Code à tester : <code>
 [COLLE LE MODULE / LA FONCTION]

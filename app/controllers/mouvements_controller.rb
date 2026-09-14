@@ -1,29 +1,33 @@
 # frozen_string_literal: true
 
 class MouvementsController < ApplicationController
-  before_action :set_mouvement, only: %i[show edit update destroy]
+  before_action :set_mouvement, only: %i[show edit update]
+  before_action :set_reservation_a_liberer, only: %i[libere]
   before_action :is_user_authorized
 
   # Défini la route du redirect
   before_action :set_redirect_path, only: %i[new edit create update]
 
+  trie Mouvement, defaut: 'mouvements.updated_at', sens: :desc
+
   # GET /mouvements or /mouvements.json
   def index
     @mouvements = current_organisation.mouvements
     @tools = current_organisation.tools.ordered
+    @users = current_organisation.users.ordered
     @états = Mouvement.états.keys
 
     @mouvements = @mouvements.where(tool_id: params[:tool_ids]) if params[:tool_ids].present?
 
-    # if params[:date].present?
-    #   @mouvements = @mouvements.joins(:intervention).where("DATE(interventions.début) = ?", params[:date])
-    # end
-
     @mouvements = @mouvements.where(état: params[:etats]) if params[:etats].present?
+
+    @mouvements = @mouvements.where(user_id: params[:user_ids]) if params[:user_ids].present?
+
+    @mouvements = @mouvements.where(date: params[:date]) if params[:date].present?
 
     @mouvements = @mouvements.includes(:tool, :user)
 
-    @mouvements = @mouvements.reorder(Arel.sql("#{sort_column} #{sort_direction}"))
+    @mouvements = trier(@mouvements)
     @pagy, @mouvements = pagy(@mouvements, items: 10)
   end
 
@@ -55,8 +59,8 @@ class MouvementsController < ApplicationController
         # Pas de params[:tool_id] = ... ici : le formulaire renvoie lui-même un tool_id
         # de premier niveau quand l'outil est imposé (cf. _form.html.erb). Le réécrire
         # cacherait à tort le select quand l'outil avait été librement choisi.
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @mouvement.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @mouvement.errors, status: :unprocessable_content }
       end
     end
   end
@@ -72,61 +76,27 @@ class MouvementsController < ApplicationController
         format.html { redirect_to @redirect_to, notice: 'Mouvement modifié avec succès.', status: :see_other }
         format.json { render :show, status: :ok, location: @mouvement }
       else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @mouvement.errors, status: :unprocessable_entity }
+        format.html { render :edit, status: :unprocessable_content }
+        format.json { render json: @mouvement.errors, status: :unprocessable_content }
       end
     end
-  end
-
-  # DELETE /mouvements/1 or /mouvements/1.json
-  def destroy
-    # On retrouve la paire (sortie + entrée) grâce au timestamp de création exact
-    mouvements_lies = Mouvement.where(
-      tool_id: @mouvement.tool_id,
-      user_id: @mouvement.user_id,
-      created_at: @mouvement.created_at
-    )
-
-    mouvement_date = mouvements_lies.first.date.to_date
-    # On supprime l'ensemble dans une transaction sécurisée
-    Mouvement.transaction do
-      mouvements_lies.destroy_all
-    end
-
-    redirect_back fallback_location: tools_path, notice: "La réservation du #{l mouvement_date} a bien été annulée."
-  rescue ActiveRecord::RecordNotDestroyed
-    redirect_back fallback_location: tools_path, alert: "Erreur lors de l'annulation de la réservation."
   end
 
   def reserve
     @tool = current_organisation.tools.find(params[:tool_id])
-    date = Date.parse(params[:date])
+    date = Date.parse(params[:date].to_s)
 
     @tool.mouvements.create!(état: :réservé, date: date, user: current_user)
-    redirect_back fallback_location: tools_path, notice: "Outil réservé le #{l date} avec succès."
+    redirect_back fallback_location: tools_path, notice: "#{@tool.name} réservé.e le #{l date} avec succès."
+  rescue Date::Error
+    redirect_back fallback_location: tools_path, alert: 'Date de réservation invalide.'
   end
 
   def libere
-    if params[:tool_id] && params[:date] && params[:user_id]
-      # Seul un manager/admin peut libérer la réservation d'un autre utilisateur
-      user_id = current_user.manager_or_admin? ? params[:user_id] : current_user.id
-
-      mouvement = current_organisation.mouvements.find_by(
-        tool_id: params[:tool_id],
-        date: params[:date],
-        user_id: user_id,
-        état: "réservé"
-      )
-
-      if mouvement
-        if mouvement.destroy
-          redirect_to tools_path, notice: "Outil libéré pour le #{l params[:date].to_date}."
-        else
-          redirect_to tools_path, alert: "L'outil n'a pas pu être libéré : #{mouvement.errors.full_messages.to_sentence}."
-        end
-      else
-        redirect_to tools_path, alert: "Il n'existe pas de réservation ce jour-là pour cet utilisateur."
-      end
+    if @mouvement.destroy
+      redirect_back fallback_location: tools_path, notice: "#{@mouvement.tool.name} libéré.e pour le #{l params[:date].to_date}."
+    else
+      redirect_back fallback_location: tools_path, alert: "#{@mouvement.tool.name} n'a pas pu être libéré.e : #{@mouvement.errors.full_messages.to_sentence}."
     end
   end
 
@@ -137,12 +107,28 @@ class MouvementsController < ApplicationController
     @redirect_to = params[:redirect_to].present? ? params[:redirect_to] : mouvements_path
   end
 
+  # Charge la réservation visée avant l'autorisation, pour que la policy statue
+  # sur l'enregistrement et non sur la classe.
+  def set_reservation_a_liberer
+    @mouvement = current_organisation.mouvements.find_by(
+      tool_id: params[:tool_id],
+      date: params[:date],
+      user_id: params[:user_id],
+      état: 'réservé'
+    )
+    return unless @mouvement.nil?
+
+    redirect_back fallback_location: tools_path,
+                  alert: "Il n'existe pas de réservation ce jour-là pour cet utilisateur."
+  end
+
   # Use callbacks to share common setup or constraints between actions.
   def set_mouvement
     @mouvement = Mouvement.find_by(slug: params[:id])
-    return unless @mouvement.nil?
-
-    redirect_to root_path, alert: 'Mouvement introuvable'
+    
+    if @mouvement.nil?
+      redirect_back fallback_location: root_path, alert: 'Mouvement introuvable'
+    end
   end
 
   # Only allow a list of trusted parameters through.
@@ -154,15 +140,4 @@ class MouvementsController < ApplicationController
     authorize @mouvement || Mouvement
   end
 
-  def sortable_columns
-    ['mouvements.updated_at', 'tools.name', 'mouvements.état']
-  end
-
-  def sort_column
-    sortable_columns.include?(params[:column]) ? params[:column] : 'mouvements.updated_at'
-  end
-
-  def sort_direction
-    %w[asc desc].include?(params[:direction]) ? params[:direction] : 'desc'
-  end
 end

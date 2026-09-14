@@ -40,9 +40,8 @@ class NotifPanneJobTest < ActiveJob::TestCase
     # Le MailLog porte le titre propre (variable locale `title` du job).
     assert_equal titre_propre, log.subject
 
-    # BUG (non corrigé, voir note bas de fichier) : le job passe `title:` en
-    # mot-clé alors que le mailer attend un positionnel → le SUJET DE L'EMAIL
-    # réellement envoyé est le hash sérialisé, pas le titre propre.
+    # BUG (non corrigé, voir note bas de fichier) : le job passe `title:` en mot-clé alors
+    # que le mailer attend un positionnel → le SUJET DE L'EMAIL réellement envoyé est…
     assert_equal "{title: #{titre_propre.inspect}}", mail.subject
     refute_equal log.subject, mail.subject
 
@@ -53,18 +52,4 @@ end
 
 # =============================================================================
 # ANOMALIES DÉTECTÉES — NON CORRIGÉES (signalées, hors périmètre)
-# -----------------------------------------------------------------------------
-# 1. SUJET DE L'EMAIL MALFORMÉ. NotifPanneJob#perform
-#    (app/jobs/notif_panne_job.rb:14) appelle
-#    NotificationMailer.avertissement_reservation(..., title: title), mais la
-#    méthode du mailer attend `title` en argument POSITIONNEL
-#    (def avertissement_reservation(user, tool, date_reservation, date_panne, title)).
-#    En Ruby 3, `title:` est alors collecté comme un hash positionnel → le sujet
-#    du mail devient littéralement {title: "[COOPCOMM] L'outil ... en panne"}.
-#    Le réserviste reçoit donc un objet sérialisé en guise de sujet.
-#    Correctif : passer le titre en positionnel (retirer le `title:`), OU déclarer
-#    le mailer avec un kwarg `title:`.
-#
-# 2. [CORRIGÉ le 2026-07-08] MailLog.to contenait un ID, pas un email :
-#    `to: réservation.user_id` → remplacé par `réservation.user.email`.
-# =============================================================================
+# ----------------------------------------------------------------------------- 1.

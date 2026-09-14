@@ -1,4 +1,4 @@
-<div class="max-w-3xl mx-auto my-6 bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+<div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
   <%= form_with(model: tool, class: "contents", html: { class: 'flex flex-col gap-2' }) do |form| %>
     <% if tool.errors.any? %>
       <div id="error_explanation" class="bg-red-50 text-red-500 px-4 py-3 font-medium rounded-lg mb-2 border border-red-200">
@@ -16,21 +16,23 @@
       <%= form.label :name, 'Nom', class: "label font-semibold text-slate-700 pt-0" do %>
         <span>Nom <span class="text-red-500">*</span></span>
       <% end %>
-      <%= form.text_field :name, class: 'input input-bordered input-sm w-full focus:input-primary', required: true, placeholder: 'Ex. Perceuse sans fil...' %>
+      <%= form.text_field :name, class: 'input input-bordered input-sm w-full focus:input-primary h-10', required: true, placeholder: 'Ex. Perceuse sans fil...' %>
     </div>
-    <div class="form-control w-full">
-      <%= form.label :icon_name, "Type", class: "label font-semibold text-slate-700" %>
-      <%= form.select :icon_name, options_for_select(Tool.icons.sort, @tool.icon_name),
-        { include_blank: true }, class: 'slim-select w-full' %>
-    </div>
+    <% if false %>
+      <%# <div class="form-control w-full"> %>
+      <%# form.label :icon_name, "Type", class: "label font-semibold text-slate-700" %>
+      <%# form.select :icon_name, options_for_select(TriTextuel.ranger(Tool.icons), @tool.icon_name),
+          { include_blank: true }, class: 'slim-select w-full h-10' %>
+      <%# </div> %>
+    <% end %>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
       <div class="form-control w-full">
         <%= form.label :marque, class: "label font-semibold text-slate-700" %>
-        <%= form.text_field :marque, class: 'input input-bordered input-sm w-full focus:input-primary' %>
+        <%= form.text_field :marque, class: 'input input-bordered input-sm w-full focus:input-primary h-10' %>
       </div>
       <div class="form-control w-full">
         <%= form.label :modèle, class: "label font-semibold text-slate-700 pt-0" %>
-        <%= form.text_field :modèle, class: 'input input-bordered input-sm w-full focus:input-primary' %>
+        <%= form.text_field :modèle, class: 'input input-bordered input-sm w-full focus:input-primary h-10' %>
       </div>
     </div>
     <div class="form-control w-full">
@@ -40,49 +42,25 @@
     </div>
     <hr class="border-slate-100 my-1" />
     <div class="form-control w-full">
-      <%= form.label :photo, 'Photo', class: "label font-semibold text-slate-700" %>
-      <label class="flex flex-col items-center p-6 justify-center w-full border border-dashed border-zinc-700/40 rounded-lg cursor-pointer hover:bg-primary transition-colors duration-150 group px-4">
-        <div class="flex items-center justify-center gap-2 text-sm font-medium">
-          <%= embedded_svg "icons/upload.svg", class: "w-5 h-5 text-slate-400 group-hover:text-white transition-colors duration-150", title: "Parcourir" %>
-          <span class="text-sm text-slate-500 font-semibold group-hover:text-white transition-colors duration-150">
-            Glisser une image ou cliquer pour parcourir  
-            <span class="text-xs block pt-1 text-center text-zinc-400 font-normal group-hover:text-white/90 transition-colors duration-150">
-              PNG, JPEG, WEBP, PDF
-            </span>
-          </span>
-        </div>
-        <%= form.file_field :photo, accept: 'image/png,image/jpeg,.pdf,image/avif,image/webp', class: 'hidden' %>
-      </label>
+      <%= render "shared/file_dropzone", 
+               form: form, 
+               attribute: :photo,
+               placeholder: "Glissez une image ou cliquez pour parcourir vos fichiers" %>
     </div>
     <hr class="border-slate-100 my-1" />
-
     <div class="form-control w-full">
-      <%= form.label :documents, 'Documents', class: "label font-semibold text-slate-700" %>
-      <label class="flex flex-col items-center p-6 justify-center w-full border border-dashed border-zinc-700/40 rounded-lg cursor-pointer hover:bg-primary transition-colors duration-150 group px-4">
-        <div class="flex items-center justify-center gap-2 text-sm font-medium">
-          <%= embedded_svg "icons/upload.svg", class: "w-8 h-8 text-slate-400 group-hover:text-white transition-colors duration-150", title: "Parcourir" %>
-          <span class="text-sm text-slate-500 font-semibold text-center group-hover:text-white transition-colors duration-150">
-            Glisser un document ou cliquer pour parcourir  
-            <span class="text-xs block pt-1 text-center text-zinc-400 font-normal group-hover:text-white/90 transition-colors duration-150">
-              PNG, JPEG, WEBP, PDF
-            </span>
-            <span class="text-xs block pt-4 text-center text-zinc-400 font-normal group-hover:text-white/90 transition-colors duration-150">
-              Exemple de document : Contrôle technique, Notice, Carte grise, Certificat d'assurance...
-            </span>
-          </span>
-        </div>
-        <%= form.file_field :documents, accept: 'image/png,image/jpeg,.pdf,image/avif,image/webp', class: 'hidden' %>
-      </label>
+      <%= render "shared/file_dropzone", 
+             form: form, 
+             attribute: :document,
+             placeholder: "Glissez un document (PDF, Notice, Word, etc.) ici ou cliquez pour parcourir" %>
     </div>
-
-
-    <div class="flex gap-2 mt-4 w-full">
-      <%= form.submit "Enregistrer", id: "enregistrer_tool", class: "btn btn-primary flex-1" %>
-      <button type="button" onclick="history.back();" class="btn flex-1">Annuler</button>      
-    </div>
+    <div class="flex flex-col sm:flex-row gap-2 mt-4 w-full">
+      <%= button_tag "Annuler", type: "button", onclick: "history.back();", class: "btn w-full sm:flex-1" %>
+      <%= form.submit "Enregistrer", id: "enregistrer_tool", class: "btn btn-primary text-white font-bold w-full sm:flex-1 order-1 sm:order-2 shadow-md hover:shadow-lg transition-all" %>
+  </div>
   <% end %>
 </div>
-<div class="pt-6 max-w-3xl mx-auto px-4">
+<div class="pt-6 pb-6 max-w-2xl mx-auto px-4 ">
   <%= link_to tools_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
     <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour" %>
     Retour à la réservation des matériels

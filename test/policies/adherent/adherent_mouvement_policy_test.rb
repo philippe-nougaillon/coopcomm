@@ -7,47 +7,24 @@ class AdherentMouvementPolicyTest < ActionDispatch::IntegrationTest
     adherent = users(:weil)
 
     mouvement = mouvements(:mouvement_tondeuse)
+    mouvement_sien = mouvements(:mouvement_adherent)
 
     @policy = MouvementPolicy.new(adherent, mouvement)
+    @policy_sien = MouvementPolicy.new(adherent, mouvement_sien)
   end
 
-  # Index
-  test 'accès interdit pour un adherent sur la page index des mouvements' do
+  test "accès interdit pour un adhérent sur la réservation d'un agent" do
     refute @policy.index?
-  end
-
-  # show
-  test "accès interdit pour un adherent sur la page show d'un mouvement" do
     refute @policy.show?
-  end
-
-  # New
-  test "accès interdit pour un adherent sur la page new d'un mouvement" do
     refute @policy.new?
-  end
-
-  # Create
-  test "accès interdit pour un adherent sur la page create d'un mouvement" do
     refute @policy.create?
-  end
-
-  # Edit
-  test "accès interdit pour un adherent sur la page edit d'un mouvement" do
     refute @policy.edit?
-  end
-
-  # Update
-  test "accès interdit pour un adherent sur la page update d'un mouvement" do
     refute @policy.update?
-  end
-
-  # destroy
-  test "accès interdit pour un adherent sur la page destroy d'un mouvement" do
-    refute @policy.destroy?
-  end
-
-  # reserve
-  test "accès interdit pour un adherent sur la page reserve d'un mouvement" do
     refute @policy.reserve?
+    refute @policy.libere?
+  end
+
+  test 'accès autorisé pour un adhérent sur une réservation dont il est propriétaire' do
+    assert @policy_sien.libere?
   end
 end

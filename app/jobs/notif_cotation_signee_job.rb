@@ -3,9 +3,7 @@
 class NotifCotationSigneeJob < ApplicationJob
   queue_as :default
 
-  # Prévient le créateur de la cotation qu'elle vient d'être signée et trace
-  # l'envoi dans un MailLog. `triggered_by_id` est l'utilisateur à l'origine de
-  # l'envoi (l'adhérent qui a signé), pas le destinataire.
+  # `triggered_by_id` = l'adhérent qui a signé, pas le destinataire.
   def perform(cotation, creator_id, triggered_by_id)
     creator = User.find_by(id: creator_id)
     return if creator&.email.blank?

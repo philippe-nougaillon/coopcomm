@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '3.4.9'
+ruby '3.4.10'
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem 'rails', '~> 8.0'
@@ -160,6 +160,11 @@ gem 'page_title_helper', '~> 9.1'
 
 gem 'solid_cache', '~> 1.0'
 
+# Vues (matérialisées) PostgreSQL versionnées via migrations — alimentent le dashboard
+gem 'scenic', '~> 1.8'
+# Fonctions et triggers PostgreSQL versionnés, et dumpés dans schema.rb (companion de scenic)
+gem 'fx', '~> 0.11'
+
 gem 'solid_cable', '~> 3.0'
 
 gem 'seed_dump', '~> 3.3'
@@ -178,8 +183,12 @@ gem 'capture_stdout', '~> 0.0.1'
 
 gem 'devise_invitable', '~> 2.0'
 
-gem 'htmlbeautifier'
-
 gem 'boxcars'
 
 gem 'openai'
+
+group :development do
+  gem 'htmlbeautifier'
+end
+
+gem "rack-attack", "~> 6.8"

@@ -1,7 +1,27 @@
-<p><%= t("devise.mailer.invitation_instructions.hello", email: @resource.email) %></p>
-<p><%= t("devise.mailer.invitation_instructions.someone_invited_you", url: root_url) %></p>
-<p><%= link_to t("devise.mailer.invitation_instructions.accept"), accept_invitation_url(@resource, invitation_token: @token) %></p>
+<% user_name = @resource.email.split('@').first.capitalize %>
+
+<h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">
+  <%= t("devise.mailer.invitation_instructions.hello", email: user_name) %>
+</h2>
+
+<p style="color: #475569; margin-bottom: 24px; font-size: 15px; line-height: 1.6;">
+  <%= t("devise.mailer.invitation_instructions.someone_invited_you", url: root_url) %>
+</p>
+
+<p style="margin: 32px 0; text-align: center;">
+  <%= link_to t("devise.mailer.invitation_instructions.accept"), 
+              accept_invitation_url(@resource, invitation_token: @token), 
+              style: "background-color: #3b82f6; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block; font-size: 14px;" %>
+</p>
+
 <% if @resource.invitation_due_at %>
-  <p><%= t("devise.mailer.invitation_instructions.accept_until", due_date: l(@resource.invitation_due_at, format: :'devise.mailer.invitation_instructions.accept_until_format')) %></p>
+  <div style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 0 4px 4px 0; margin-bottom: 24px;">
+    <p style="margin: 0; font-size: 13px; color: #64748b;">
+      <%= t("devise.mailer.invitation_instructions.accept_until", due_date: l(@resource.invitation_due_at, format: :'devise.mailer.invitation_instructions.accept_until_format')) %>
+    </p>
+  </div>
 <% end %>
-<p><%= t("devise.mailer.invitation_instructions.ignore") %></p>
+
+<p style="color: #94a3b8; font-size: 13px; line-height: 1.5; margin-top: 24px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+  <%= t("devise.mailer.invitation_instructions.ignore") %>
+</p>

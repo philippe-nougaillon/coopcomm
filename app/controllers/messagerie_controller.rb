@@ -36,9 +36,9 @@ class MessagerieController < ApplicationController
     @unread_counts = Message.where(to_id: current_user.id, read_at: nil).group(:from_id).count
   end
 
-  # Conversation avec un interlocuteur donné (:to_id)
+  # Conversation avec un interlocuteur donné
   def conversation
-    @destinataire = joignables.find_by(id: params[:to_id])
+    @destinataire = joignables.find_by(slug: params[:to_user_slug])
 
     # Interlocuteur inexistant ou soi-même → retour à l'accueil de la messagerie
     return redirect_to(messagerie_path) if @destinataire.nil? || @destinataire.id == current_user.id
@@ -57,10 +57,10 @@ class MessagerieController < ApplicationController
 
   def send_message
     # Evite que l'utilisateur courant envoie un message à lui-même
-    return unless params[:message].present? && params[:to_id].present? && (params[:to_id].to_i != current_user.id)
+    return unless params[:message].present? && params[:to_user_slug].present? && (params[:to_user_slug] != current_user.slug)
 
     # Le destinataire doit être joignable (to_id forgeable : inter-organisations sinon)
-    destinataire = joignables.find_by(id: params[:to_id])
+    destinataire = joignables.find_by(slug: params[:to_user_slug])
     return if destinataire.nil?
 
     Message.create!(message: params[:message], from_id: current_user.id, to_id: destinataire.id)

@@ -1,0 +1,19 @@
+<%# locals: (form:, intervention:, champ:) %>
+<%#
+  `tags_manager` pour les managers et administrateurs, `tags_intervenant` pour
+  les agents : le contrôleur lit l'un ou l'autre selon le rôle.
+  Sur un formulaire réaffiché après erreur, les valeurs soumises priment sur
+  celles de l'enregistrement, sinon la saisie serait perdue.
+%>
+<% soumis = params[form.object_name].present? %>
+<% tags_soumis = soumis ? Array(params.dig(form.object_name, champ)).reject(&:blank?) : intervention.tags.map(&:name) %>
+<% options = (@intervention_tags.map(&:name) + tags_soumis).uniq %>
+
+<%= form.label champ, "Mots clés", class: "label font-semibold text-slate-700" %>
+<%= form.select champ, options_for_select(options, tags_soumis), {},
+                multiple: true, 
+                class: 'slim-select w-full h-10',
+                  data: { addable: champ == :tags_manager, 
+                        max_values_shown_desktop: 6,
+                        max_values_shown_mobile: 3
+                } %>

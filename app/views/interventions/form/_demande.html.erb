@@ -1,0 +1,128 @@
+<%# locals: (form:, intervention:) %>
+
+<div class="border-b border-slate-100 pb-3 flex items-center gap-2">
+  <span class="w-2 h-6 bg-[#40b3db] rounded-full"></span>
+  <h2 class="text-xl text-slate-800 font-black tracking-tight uppercase">Demande</h2>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <% if policy(intervention).saisir_description? %>
+    <div class="col-span-1 md:col-span-2">
+      <%= form.label :description, class: "label font-semibold text-slate-700" %>
+      <%= form.text_field :description, class: "input input-bordered w-full focus:input-primary" %>
+    </div>
+  <% end %>
+
+  <% if policy(intervention).choisir_adherent? %>
+    <div>
+      <%= form.label :adherent_id, class: "label font-semibold text-slate-700" do %>
+        <span>Adhérent <span class="text-red-500">*</span></span>
+      <% end %>
+      <%= form.select :adherent_id,
+                      options_from_collection_for_select(@adhérents, :id, :nom_prénom, intervention.adherent_id),
+                      { required: true },
+                      class: "slim-select w-full h-10",
+                      data: (policy(intervention).cascade_services? ? { dynamic_select_target: "adherent", action: "change->dynamic-select#updateServices" } : {}) %>
+    </div>
+  <% else %>
+    <%= form.hidden_field :adherent_id, value: current_user.id %>
+  <% end %>
+
+  <div class="<%= 'col-span-1 md:col-span-2' unless policy(intervention).choisir_adherent? %> ">
+    <%= form.label :service_id, class: "label font-semibold text-slate-700" do %>
+      <span>Service <span class="text-red-500">*</span></span>
+    <% end %>
+    <%= form.select :service_id,
+                    options_from_collection_for_select(@services, :id, :nom, intervention.service_id),
+                    { include_blank: true, required: true },
+                    class: "slim-select w-full h-10 ",
+                    data: (policy(intervention).cascade_services? ? { dynamic_select_target: "service", action: "change->dynamic-select#updateAgents" } : {}) %>
+  </div>
+</div>
+
+<% if policy(intervention).planifier_dates? %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-dashed border-slate-100" <%= "data-controller=\"meteo-intervention\" data-action=\"change->verification-disponibilites#verificationWithInput\"".html_safe unless intervention.passed %>>
+
+    <div data-action="change->verification-disponibilites#verificationWithInput" class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:col-span-1">
+      <div data-action='change->meteo-intervention#afficher_meteo' class="col-span-1 sm:col-span-2">
+        <%= form.label :début_prévu, class: "label font-semibold text-slate-700" %>
+        <div class="flex flex-col sm:flex-row items-center gap-2 p-2 rounded-lg border border-slate-200 has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
+          <div class="w-full flex-1 cursor-pointer"
+               data-controller="date-picker"
+               data-action="click->date-picker#open">
+            <%= form.date_field :début_prévue,
+                                class: "w-full bg-transparent border-none outline-hidden text-sm cursor-pointer",
+                                value: intervention.début_prévue&.to_date,
+                                data: {
+                                  'date-picker-target': "input",
+                                  'verification-disponibilites-target': "debut_prevue",
+                                  'meteo-intervention-target': "debut_prevue"
+                                } %>
+          </div>
+
+          <div class="flex flex-1 items-center w-full gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
+            <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, { selected: heure_saisie(intervention, :début_prévue) }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'verification-disponibilites-target': "debut_prevue_hour", 'meteo-intervention-target': "debut_prevue_hour" } %>
+            <span class="text-slate-400 font-bold">:</span>
+            <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, { selected: minute_saisie(intervention, :début_prévue) }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'verification-disponibilites-target': "debut_prevue_minute" } %>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-span-1 sm:col-span-2">
+        <%= form.label :fin_prévue, class: "label font-semibold text-slate-700" %>
+        <div class="flex flex-col sm:flex-row items-center gap-2 p-2 rounded-lg border border-slate-200 has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
+          <div class="w-full flex-1 cursor-pointer"
+               data-controller="date-picker"
+               data-action="click->date-picker#open">
+            <%= form.date_field :fin_prévue,
+                                value: intervention.fin_prévue&.to_date,
+                                class: "w-full bg-transparent border-none outline-hidden text-sm cursor-pointer",
+                                data: {
+                                  'date-picker-target': "input",
+                                  'verification-disponibilites-target': "fin_prevue"
+                                } %>
+          </div>
+
+          <div class="flex flex-1 items-center w-full gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
+            <%= form.select :fin_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, { selected: heure_saisie(intervention, :fin_prévue) }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'verification-disponibilites-target': "fin_prevue_hour" } %>
+            <span class="text-slate-400 font-bold">:</span>
+            <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, { selected: minute_saisie(intervention, :fin_prévue) }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'verification-disponibilites-target': "fin_prevue_minute" } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col justify-between">
+      <div>
+        <%= form.label :meteo, "Prévision météo", class: "label font-semibold text-slate-700" %>
+        <div class="relative flex items-center">
+          <%= form.textarea   :meteo,
+                              rows: 4,  
+                              class: "textarea textarea-bordered w-full bg-slate-50 border-slate-200 text-slate-500 pl-10 font-medium leading-relaxed resize-none",
+                              readonly: true,
+                              disabled: intervention.passed || current_user.adhérent?,
+                              data: { 'meteo-intervention-target': "prévisionMétéo" } %>
+          <div class="absolute left-3 top-3 text-slate-400">
+            <%= embedded_svg "icons/cloud.svg", class: "w-5 h-5 fill-current" rescue nil %>
+          </div>
+        </div>
+        <p class="text-xs text-slate-400 mt-1.5">Généré automatiquement selon les dates choisies.</p>
+      </div>
+    </div>
+
+  </div>
+<% end %>
+
+<div class="col-span-1 md:col-span-2 pt-2">
+  <% intervention.photos_demande.each do |photo| %>
+    <% unless photo.new_record? %>
+      <%= form.hidden_field :photos_demande, multiple: true, value: photo.signed_id %>
+    <% end %>
+  <% end %>
+  <%= render "shared/file_dropzone",
+               form: form,
+               attribute: :photos_demande,
+               placeholder: "Glissez les photos ici ou cliquez pour parcourir",
+               label: "Photos",
+               replace_hint: false %>
+</div>

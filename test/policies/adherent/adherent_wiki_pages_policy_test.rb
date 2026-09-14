@@ -4,35 +4,34 @@ require 'test_helper'
 
 class AdherentWikiPagesPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    adherent_paris = users(:patrick_adherent_paris)
+    adherent = users(:weil)
 
-    wiki_page = wiki_pages(:blog)
-
-    @policy = WikiPagePolicy.new(adherent_paris, wiki_page)
+    @policy = WikiPagePolicy.new(adherent, wiki_pages(:blog_public))
+    @policy_privée = WikiPagePolicy.new(adherent, wiki_pages(:blog_privé))
+    @policy_non_publiée = WikiPagePolicy.new(adherent, wiki_pages(:blog_non_publié))
   end
 
-  # New
-  test 'accès interdit pour un adhérent pour un new de wiki pages' do
+  test 'accès autorisé pour un adhérent sur une documentation publiée et publique' do
+    assert @policy.index?
+    assert @policy.blog?
+    assert @policy.guide?
+    assert @policy.faq?
+    assert @policy.show?
+  end
+
+  test 'accès interdit pour un adhérent sur une documentation publiée et publique' do
     refute @policy.new?
-  end
-
-  # Create
-  test 'accès interdit pour un adhérent pour un create de wiki pages' do
     refute @policy.create?
-  end
-
-  # Edit
-  test 'accès interdit pour un adhérent pour un edit de wiki pages' do
     refute @policy.edit?
-  end
-
-  # Update
-  test 'accès interdit pour un adhérent pour un update de wiki pages' do
     refute @policy.update?
+    refute @policy.destroy?
   end
 
-  # Destroy
-  test 'accès interdit pour un adhérent pour un destroy de wiki pages' do
-    refute @policy.destroy?
+  test 'accès autorisé pour un adhérent sur une documentation privée' do
+    assert @policy_privée.show?
+  end
+
+  test 'accès interdit pour un adhérent sur une documentation non publiée' do
+    refute @policy_non_publiée.show?
   end
 end

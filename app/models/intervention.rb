@@ -3,8 +3,11 @@
 class Intervention < ApplicationRecord
   extend FriendlyId
   friendly_id :slug_candidates, use: :slugged
+
   include Workflow
   include WorkflowActiverecord
+  include PieceJointeValidable
+  include PieceJointeAuditable
 
   acts_as_taggable_on :tags
 
@@ -21,17 +24,23 @@ class Intervention < ApplicationRecord
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
 
   has_many :agent_interventions, dependent: :destroy
-  has_many :agents, through: :agent_interventions, class_name: 'User'
+  # dependent: :destroy — sans lui, retirer un agent supprime la jointure en
+  # delete_all, donc sans écrire d'audit (AgentIntervention est audited).
+  has_many :agents, through: :agent_interventions, class_name: 'User', dependent: :destroy
   has_many :tool_interventions, dependent: :destroy
-  has_many :tools, through: :tool_interventions
+  has_many :tools, through: :tool_interventions, dependent: :destroy
   has_many :mouvements
 
   has_one :organisation, through: :service
 
   has_many_attached :photos
+  has_many_attached :photos_demande
 
-  include PieceJointeValidable
-  valide_piece_jointe :photos, types: PieceJointeValidable::IMAGES
+  valide_image :photos
+  valide_image :photos_demande
+
+  MESSAGE_AGENT_UNIQUE = "Une intervention de pointage n'accepte qu'un seul agent"
+
 
   before_validation -> { combine_datetime(:début_prévue) }
   before_validation -> { combine_datetime(:fin_prévue) }
@@ -40,6 +49,8 @@ class Intervention < ApplicationRecord
   before_validation :check_absence
   before_validation :set_temporary_description, on: :create
   before_validation :check_workflow_pointage_mère
+  before_validation -> { self.temps_de_pause = 0 if temps_de_pause.nil? && terminé? }
+  before_validation :calc_temps_total
 
   validates :description, :adherent_id, :service_id, presence: true
 
@@ -47,21 +58,79 @@ class Intervention < ApplicationRecord
   validate :tools_must_be_available
   validate :agents_must_be_available
   validate :dates_cannot_be_in_the_future
-
-  before_save -> { self.temps_de_pause = 0 if temps_de_pause.nil? }
-  before_save :calc_temps_total
+  validate :dates_obligatoires_si_terminé
+  validate :agent_obligatoire_si_terminé
+  validate :agent_unique_si_pointage
+  validate :service_partagé_par_adherent_et_agents
+  validate :pas_de_temps_total_negatif
 
   scope :ordered, -> { order(updated_at: :desc) }
+
+  triable_par 'interventions.updated_at' => :brut,
+              'interventions.workflow_state' => :texte,
+              'interventions.description' => :texte,
+              'interventions.commentaires' => :texte,
+              'interventions.adherent' => ColonnesTri.utilisateur('interventions.adherent_id'),
+              'interventions.agent' => "(SELECT MIN(#{TriTextuel.expression('users.nom')}) FROM users " \
+                                       'INNER JOIN agent_interventions ON agent_interventions.agent_id = users.id ' \
+                                       'WHERE agent_interventions.intervention_id = interventions.id)',
+              'interventions.début_prévue' => :brut,
+              'interventions.début' => :brut,
+              'interventions.fin' => :brut,
+              'interventions.temps_total' => :brut
 
   # montre tout action ou intervention qui ont ce status
   scope :courantes, -> { where(workflow_state: ['nouveau', 'pointage activé', 'terminé']) }
 
+  # Pas de clause d'égalité pure : elle créerait de faux conflits entre
+  # intervalles ouverts.
+  def self.overlap_sql(debut_expr, fin_expr)
+    # <<-SQL...SQL = chaîne multi-ligne (heredoc) ; #squish l'aplatit en une seule
+    # ligne (retire retours à la ligne et espaces superflus) pour l'écrire lisiblement.
+    <<-SQL.squish
+      (#{debut_expr} BETWEEN :debut AND :fin) OR
+      (#{fin_expr} BETWEEN :debut AND :fin) OR
+      (:debut BETWEEN #{debut_expr} AND #{fin_expr}) OR
+      (:fin BETWEEN #{debut_expr} AND #{fin_expr}) OR
+      (#{debut_expr} <= :debut AND #{fin_expr} >= :fin) OR
+      (#{debut_expr} >= :debut AND #{fin_expr} <= :fin)
+    SQL
+  end
+
+  # Plage « effective » d'une intervention (côté BASE, ligne par ligne) : date
+  # réelle si présente, sinon prévue. En phase avec #effective_début / #effective_fin.
+  EFFECTIVE_DEBUT_SQL = 'COALESCE(interventions.début, interventions.début_prévue)'
+  EFFECTIVE_FIN_SQL   = 'COALESCE(interventions.fin, interventions.fin_prévue)'
+
+  # Chevauchement de la plage effective d'une intervention avec [:debut, :fin].
+  OVERLAP_SQL = overlap_sql(EFFECTIVE_DEBUT_SQL, EFFECTIVE_FIN_SQL).freeze
+  # Chevauchement d'une absence (colonnes du/au) avec [:debut, :fin].
+  ABSENCE_OVERLAP_SQL = overlap_sql('absences.du', 'absences.au').freeze
+
+  # Équivalent Ruby de EFFECTIVE_DEBUT_SQL / EFFECTIVE_FIN_SQL, à garder en phase.
+  def effective_début
+    début || début_prévue
+  end
+
+  def effective_fin
+    fin || fin_prévue
+  end
+
+  # Un pointage OUVERT = fille de pointage (template_slug) dont la fin n'est pas
+  # encore renseignée. Un agent ne peut en avoir qu'un seul à la fois.
+  def pointage_ouvert?
+    template_slug.present? && effective_fin.blank?
+  end
+
   after_create :replace_description_with_id
-  after_create :calculate_co2, if: proc(&:terminé?)
 
   # after_create_commit :broadcast_to_authorized_viewers
   # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
   after_create_commit :send_manager_notification
+
+  # Déclaré en dernier : le `save` de #calculate_co2 fait perdre aux callbacks
+  # suivants l'information « on sort d'une création ».
+  after_commit :apres_terminaison, on: %i[create update], if: :vient_de_terminer?
 
   # WORKFLOW
   NOUVEAU = 'nouveau'
@@ -74,7 +143,7 @@ class Intervention < ApplicationRecord
   ARCHIVE   = 'archivé'
 
   workflow do
-    state NOUVEAU, meta: { style: 'badge-primary text-white', rgba: '0,181,255,255' } do
+    state NOUVEAU, meta: { style: 'badge-secondary text-white ', rgba: '0,181,255,255' } do
       # event :accepter, transitions_to: ACCEPTE
       event :terminer, transitions_to: TERMINE
     end
@@ -88,21 +157,21 @@ class Intervention < ApplicationRecord
     #   event :terminer, transitions_to: TERMINE
     # end
 
-    state TERMINE, meta: { style: 'badge-accent text-white' } do
+    state TERMINE, meta: { style: ' badge-primary text-white ' } do
       event :valider, transitions_to: VALIDE
       event :refuser, transitions_to: REFUSE
     end
 
-    state VALIDE, meta: { style: 'badge-success text-white' } do
+    state VALIDE, meta: { style: ' badge-success text-white ' } do
       event :archiver, transitions_to: ARCHIVE
     end
 
-    state REFUSE, meta: { style: 'badge-error text-white' } do
+    state REFUSE, meta: { style: ' badge-error text-white ' } do
       # event :accepter, transitions_to: ACCEPTE
       event :archiver, transitions_to: ARCHIVE
     end
 
-    state ARCHIVE, meta: { style: 'badge-ghost' }
+    state ARCHIVE, meta: { style: 'badge-neutral' }
   end
 
   # pour que le changement de 'workflow_state' se voit dans l'audit trail
@@ -152,155 +221,137 @@ class Intervention < ApplicationRecord
     when 'adhérent'
       user.interventions_adherent.where(workflow_state: ['terminé']).ordered
     when 'agent'
-      user.interventions.where(workflow_state: ['nouveau']).where.not(template_slug: nil).ordered
+      user.interventions.where(workflow_state: ['nouveau']).ordered
     end
   end
 
   def check_absence
     return unless agents.any?
+    return if clôture_de_pointage?
 
-    absence_ids = agents.flat_map do |agent|
-      agent.absences.where(
-        " (absences.du = :debut) OR
-            (absences.du = :fin) OR
-            (absences.au = :debut) OR
-            (absences.au = :fin) OR
-            (absences.du BETWEEN :debut AND :fin) OR
-            (absences.au BETWEEN :debut AND :fin) OR
-            (:debut BETWEEN absences.du AND absences.au) OR
-            (:fin BETWEEN absences.du AND absences.au) OR
-            (absences.du <= :debut AND absences.au >= :fin) OR
-            (absences.du >= :debut AND absences.au <= :fin)
-          ",
-        debut: début_prévue.try(:to_date), fin: fin_prévue.try(:to_date)
-      ).pluck(:id)
+    absences = agents.flat_map do |agent|
+      agent.absences.includes(:user).where(
+        ABSENCE_OVERLAP_SQL,
+        debut: effective_début.try(:to_date), fin: effective_fin.try(:to_date)
+      ).select { |absence| absence.couvre?(effective_début, effective_fin) }
     end.uniq
 
-    return if absence_ids.empty?
+    return if absences.empty?
 
-    absences = Absence.where(id: absence_ids.uniq.flatten)
-    messages = absences.includes(:user).map do |absence|
+    messages = absences.map do |absence|
       "#{absence.user.nom_prénom} (du #{absence.du&.strftime('%d/%m/%Y')} au #{absence.au&.strftime('%d/%m/%Y')}, motif : '#{absence.motif}')"
     end
     errors.add(:interventions, ": Agent(s) indisponible(s) : #{messages.to_sentence}")
   end
 
-  def self.get_unavailable_agents_with_absences(agent_ids, début_prévue, fin_prévue)
+  # Check live du formulaire : ids des agents en absence sur [debut, fin].
+  def self.get_unavailable_agents_with_absences(agent_ids, debut, fin)
     conflicting_agents = []
 
     agent_ids.each do |agent_id|
       conflicting_agents += User
                             .find(agent_id)
                             .absences.where(
-                              " (absences.du = :debut) OR
-            (absences.du = :fin) OR
-            (absences.au = :debut) OR
-            (absences.au = :fin) OR
-            (absences.du BETWEEN :debut AND :fin) OR
-            (absences.au BETWEEN :debut AND :fin) OR
-            (:debut BETWEEN absences.du AND absences.au) OR
-            (:fin BETWEEN absences.du AND absences.au) OR
-            (absences.du <= :debut AND absences.au >= :fin) OR
-            (absences.du >= :debut AND absences.au <= :fin)
-          ",
-                              debut: début_prévue.try(:to_date), fin: fin_prévue.try(:to_date)
+                              ABSENCE_OVERLAP_SQL,
+                              debut: debut.try(:to_date), fin: fin.try(:to_date)
                             )
-                            .pluck(:user_id)
+                            .select { |absence| absence.couvre?(debut, fin) }
+                            .map(&:user_id)
     end
 
     conflicting_agents.uniq
   end
 
   def agents_must_be_available
-    return if début_prévue.blank? && fin_prévue.blank?
+    agents_must_not_have_open_pointage
+    return if effective_début.blank? && effective_fin.blank?
 
     agents.each do |agent|
       conflicting_interventions = Intervention
                                   .joins(:agents)
                                   .where(agents: { id: agent.id })
                                   .where.not(id: id)
-                                  .where(
-                                    " (interventions.début_prévue = :debut) OR
-            (interventions.début_prévue = :fin) OR
-            (interventions.fin_prévue = :debut) OR
-            (interventions.fin_prévue = :fin) OR
-            (interventions.début_prévue BETWEEN :debut AND :fin) OR
-            (interventions.fin_prévue BETWEEN :debut AND :fin) OR
-            (:debut BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
-            (:fin BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
-            (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
-            (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)
-          ",
-                                    debut: début_prévue, fin: fin_prévue
-                                  )
+                                  .where(OVERLAP_SQL, debut: effective_début, fin: effective_fin)
 
       next unless conflicting_interventions.exists?
 
-      messages = conflicting_interventions.map do |conflict|
-        " #{agent.nom} déjà sur l’intervention « #{conflict.description} » du #{conflict.début_prévue&.strftime('%d/%m/%Y %H:%M')} au #{conflict.fin_prévue&.strftime('%d/%m/%Y %H:%M')}"
+      message = if reprise_immediate_de_pointage?(conflicting_interventions)
+                  'Veuillez attendre une minute avant de recommencer à pointer.'
+                else
+                  conflincting_message = conflicting_interventions.map do |conflict|
+                    " #{agent.nom} déjà sur l’intervention « #{conflict.description} » du #{conflict.effective_début&.strftime('%d/%m/%Y %H:%M')} au #{conflict.effective_fin&.strftime('%d/%m/%Y %H:%M')}"
+                  end
+                  "Conflit(s) détecté(s) sur un agent :#{conflincting_message.to_sentence}"
+                end
+
+      errors.add('', message)
+    end
+  end
+
+  # Le nouveau pointage reprend là où le précédent s'est arrêté : les secondes
+  # étant écrasées par combine_datetime, deux scans dans la même minute donnent
+  # des bornes égales, que OVERLAP_SQL compte comme un chevauchement.
+  def reprise_immediate_de_pointage?(conflits)
+    template_slug != nil && conflits.last.template_slug == template_slug && conflits.last.effective_fin == effective_début
+  end
+
+  # Deux intervalles ouverts ne se chevauchent pas au sens SQL : ce cas échappe
+  # à OVERLAP_SQL.
+  def agents_must_not_have_open_pointage
+    return unless pointage_ouvert?
+
+    agents.each do |agent|
+      déjà_en_cours = Intervention
+                      .joins(:agents)
+                      .where(agents: { id: agent.id })
+                      .where.not(id: id)
+                      .where.not(template_slug: nil)
+                      .where(fin: nil, fin_prévue: nil)
+
+      next unless déjà_en_cours.exists?
+
+      # Pointage ouvert : pas de fin effective, on affiche le début effectif.
+      messages = déjà_en_cours.map do |conflict|
+        " #{agent.nom_prénom} a déjà un pointage en cours pour l’intervention « #{conflict.description} » commencée le #{conflict.effective_début&.strftime('%d/%m/%Y %H:%M')}. Merci de terminer d'abord la première intervention."
       end
-      errors.add('', "Conflit(s) détecté(s) sur un agent :#{messages.to_sentence}")
+      errors.add('', "Conflit(s) détecté(s) :#{messages.to_sentence}")
     end
   end
 
   # TODO VU : mettre le contenu dans "get_unavailable_agents_with_interventions". "get_unavailable_agents" doit appeler "get_unavailable_agents_with_interventions" et "get_unavailable_agents_with_absences"
-  def self.get_unavailable_agents(intervention_id, agent_ids, début_prévue, fin_prévue)
+  # Check live du formulaire : ids des agents déjà occupés sur [debut, fin].
+  def self.get_unavailable_agents(intervention_id, agent_ids, debut, fin)
     agents = User.joins(:interventions).where(id: agent_ids)
 
     # Condition nécessaire si on est sur la création d'une intervention
     agents = agents.where.not('interventions.id = ?', intervention_id) if intervention_id
 
-    agents = agents.where(
-      " (interventions.début_prévue = :debut) OR
-          (interventions.début_prévue = :fin) OR
-          (interventions.fin_prévue = :debut) OR
-          (interventions.fin_prévue = :fin) OR
-          (interventions.début_prévue BETWEEN :debut AND :fin) OR
-          (interventions.fin_prévue BETWEEN :debut AND :fin) OR
-          (:debut BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
-          (:fin BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
-          (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
-          (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)
-        ",
-      debut: début_prévue, fin: fin_prévue
-    )
+    agents = agents.where(OVERLAP_SQL, debut: debut, fin: fin)
 
     agents.pluck(:id).uniq
   end
 
   def tools_must_be_available
-    return if début_prévue.blank? && fin_prévue.blank?
+    return if effective_début.blank? && effective_fin.blank?
 
     tools.each do |tool|
       conflicting_interventions = Intervention
                                   .joins(:tools)
                                   .where(tools: { id: tool.id })
                                   .where.not(id: id)
-                                  .where(
-                                    " (interventions.début_prévue = :debut) OR
-            (interventions.début_prévue = :fin) OR
-            (interventions.fin_prévue = :debut) OR
-            (interventions.fin_prévue = :fin) OR
-            (interventions.début_prévue BETWEEN :debut AND :fin) OR
-            (interventions.fin_prévue BETWEEN :debut AND :fin) OR
-            (:debut BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
-            (:fin BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
-            (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
-            (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)
-          ",
-                                    debut: début_prévue, fin: fin_prévue
-                                  )
+                                  .where(OVERLAP_SQL, debut: effective_début, fin: effective_fin)
 
       next unless conflicting_interventions.exists?
 
       messages = conflicting_interventions.map do |conflict|
-        " #{tool.name} déjà utilisé pour l’intervention « #{conflict.description} » du #{conflict.début_prévue&.strftime('%d/%m/%Y %H:%M')} au #{conflict.fin_prévue&.strftime('%d/%m/%Y %H:%M')}"
+        " #{tool.name} déjà utilisé pour l’intervention « #{conflict.description} » du #{conflict.effective_début&.strftime('%d/%m/%Y %H:%M')} au #{conflict.effective_fin&.strftime('%d/%m/%Y %H:%M')}"
       end
       errors.add('', "Conflit(s) détecté(s) sur un outil :#{messages.to_sentence}")
     end
   end
 
-  def self.get_unavailable_tools(intervention_id, tools_ids, début_prévue, fin_prévue)
+  # Check live du formulaire : ids des outils déjà utilisés sur [debut, fin].
+  def self.get_unavailable_tools(intervention_id, tools_ids, debut, fin)
     conflicting_tools = []
 
     tools_ids.each do |_tool|
@@ -309,20 +360,7 @@ class Intervention < ApplicationRecord
       # Condition nécessaire si on est sur la création d'une intervention
       tools = tools.where.not('interventions.id = ?', intervention_id) if intervention_id
 
-      tools = tools.where(
-        " (interventions.début_prévue = :debut) OR
-            (interventions.début_prévue = :fin) OR
-            (interventions.fin_prévue = :debut) OR
-            (interventions.fin_prévue = :fin) OR
-            (interventions.début_prévue BETWEEN :debut AND :fin) OR
-            (interventions.fin_prévue BETWEEN :debut AND :fin) OR
-            (:debut BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
-            (:fin BETWEEN interventions.début_prévue AND interventions.fin_prévue) OR
-            (interventions.début_prévue <= :debut AND interventions.fin_prévue >= :fin) OR
-            (interventions.début_prévue >= :debut AND interventions.fin_prévue <= :fin)
-          ",
-        debut: début_prévue, fin: fin_prévue
-      )
+      tools = tools.where(OVERLAP_SQL, debut: debut, fin: fin)
 
       conflicting_tools += tools.pluck(:id)
     end
@@ -361,15 +399,15 @@ class Intervention < ApplicationRecord
   end
 
   def calc_temps_total
-    if !fin || !début
-      temps_total = 0
-    elsif fin > début
-      temps_total = (fin - début).seconds.in_hours - temps_de_pause
-      temps_total *= agents.count
-    else
-      temps_total = 0
-    end
-    temps_total
+    self.temps_total = if fin && début && fin > début
+                         # Les jointures, et non `agents` : ce dernier exclut les agents
+                         # désactivés, dont le temps resterait pourtant à répartir.
+                         # size et non count : sur un enregistrement neuf, count interroge la
+                         # base avec un owner_id nil et renvoie 0.
+                         ((fin - début).seconds.in_hours - temps_de_pause.to_f) * agent_interventions.size
+                       else
+                         0
+                       end
   end
 
   def en_cours?
@@ -434,23 +472,12 @@ class Intervention < ApplicationRecord
   end
 
   def calculate_co2
-    return if Rails.env.test?
-    # Les vérifications de base
-    return unless service&.calculate_distance?
-    return unless adherent && adherent.latitude.present? && adherent.longitude.present?
+    response = self.get_routes_info_from_location
 
-    origine = origin_location
-    return unless origine.present?
+    return if response['errors'].present? && response.dig('data_response', 'routes').blank?
 
-    destination = { lat: adherent.latitude, lng: adherent.longitude }
-
-    request = FetchRoutesInfos.new(origine, destination)
-    request.call
-
-    return unless request.errors.blank? && request.data_response['routes'].present?
-
-    self.trajet = request.routes_info
-    self.co2 = request.co2_consumption_by_route(request.data_response['routes'][0])
+    self.trajet = response['routes_info']
+    self.co2 = FetchRoutesInfos.co2_consumption_by_route(response.dig('data_response', 'routes', 0))
     save
   end
 
@@ -461,6 +488,39 @@ class Intervention < ApplicationRecord
 
   def intervention_mère
     Intervention.find_by(slug: template_slug)
+  end
+
+  def pointage_de?(user)
+    template_slug.present? && agents.include?(user)
+  end
+
+  # `pointer` ne retrouve que les pointages du jour : sur une fille restée ouverte
+  # un jour précédent, il en créerait une nouvelle au lieu de la fermer.
+  def pointage_du_jour_de?(user)
+    pointage_de?(user) && début&.to_date == Time.zone.today
+  end
+
+  def bon?
+    User.find_by(id: audits.first&.user_id)&.agent?
+  end
+
+  def pdf_filename
+    "Intervention-#{id}.pdf"
+  end
+
+  def get_routes_info_from_location
+    localisation_depart = self.origin_location
+
+    # On vérifie que l'intervention possède un adhérent localisé ET que le service nécessite le calcul
+    if localisation_depart && self.adherent.present? && self.adherent.latitude.present? && self.adherent.longitude.present? && self.service&.calculate_distance?
+
+      localisation_arrivee = { lat: self.adherent.latitude, lng: self.adherent.longitude }
+
+      # Création du service avec le départ et l'arrivée
+      FetchRoutesInfos.call(localisation_depart, localisation_arrivee)
+    else
+      {}
+    end
   end
 
   private
@@ -522,6 +582,50 @@ class Intervention < ApplicationRecord
     errors.add(:fin, 'ne peut pas être dans le futur')
   end
 
+  def dates_obligatoires_si_terminé
+    return unless terminé?
+
+    errors.add(:début, "est obligatoire pour terminer l'intervention") if début.blank?
+    errors.add(:fin, "est obligatoire pour terminer l'intervention") if fin.blank?
+  end
+
+  def agent_obligatoire_si_terminé
+    return unless terminé?
+    # size et non count : sur un enregistrement neuf, count interroge la base avec un owner_id nil.
+    return if agents.size.positive?
+
+    errors.add(:base, "Au moins un agent est obligatoire pour terminer l'intervention")
+  end
+
+  def agent_unique_si_pointage
+    return if template_slug.blank?
+    # size et non count : sur un enregistrement neuf, count interroge la base avec un owner_id nil.
+    return if agents.size == 1
+
+    errors.add(:base, MESSAGE_AGENT_UNIQUE)
+  end
+
+  def service_partagé_par_adherent_et_agents
+    return if service.blank?
+
+    if adherent.present? && !adherent.service_ids.include?(service_id)
+      errors.add(:base,
+                 "L'adhérent #{adherent.nom_prénom} n'appartient pas au service #{service.nom}")
+    end
+
+    agents.reject(&:administrateur?).each do |agent|
+      next if agent.service_ids.include?(service_id)
+
+      errors.add(:base, "L'agent #{agent.nom_prénom} n'appartient pas au service #{service.nom}")
+    end
+  end
+
+  def pas_de_temps_total_negatif
+    if self.temps_total < 0
+      errors.add(:base, "Le temps total ne peut pas être négatif.")
+    end
+  end
+
   def set_temporary_description
     # Si la description est vide, on lui donne une valeur bouchon pour passer la validation
     self.description = 'en_attente_id' if description.blank?
@@ -533,6 +637,27 @@ class Intervention < ApplicationRecord
     return unless description == 'en_attente_id'
 
     update_column(:description, "##{id}")
+  end
+
+  def vient_de_terminer?
+    terminé? && saved_change_to_workflow_state?
+    # =Est ce que dans la dernière save, le workflow_state est passé à l'état terminé ?
+  end
+
+  def apres_terminaison
+    calculate_co2
+
+    return if Rails.env.development?
+
+    Events.instance.publish('intervention.workflow_changed', payload: { intervention_id: id })
+
+    Events.instance.publish('intervention.done', payload: { intervention_id: id })
+  end
+
+  # Fermer un pointage déjà ouvert reste toujours possible, sinon une absence
+  # posée en cours de journée le figerait ouvert (clôture nocturne comprise).
+  def clôture_de_pointage?
+    persisted? && template_slug.present? && will_save_change_to_fin? && !will_save_change_to_début?
   end
 
   # Ajoute ou enlève l'état 'pointage activé' selon si c'est un modèle de pointage.

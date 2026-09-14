@@ -11,6 +11,14 @@ class Warehouse < ApplicationRecord
 
   validates :address, :latitude, :longitude, presence: true
 
+  scope :ordered, -> { trié_par(:name) }
+
+  triable_par 'warehouses.name' => :texte,
+              'warehouses.users' => "(SELECT STRING_AGG(#{TriTextuel.expression('users.nom')}, ',' " \
+                                    "ORDER BY #{TriTextuel.expression('users.nom')}) FROM users " \
+                                    'WHERE users.warehouse_id = warehouses.id AND users.discarded_at IS NULL)',
+              'warehouses.address' => :texte
+
   private
 
   def slug_candidates

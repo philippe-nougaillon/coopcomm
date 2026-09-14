@@ -52,6 +52,10 @@ class ApplicationPolicy
     user&.adhérent?
   end
 
+  def agent?
+    user&.agent?
+  end
+
   def shared_service?(record_services = record.services)
     # "&" désigne l'intersection entre deux listes
     (record_services & user.services).any?

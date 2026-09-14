@@ -1,45 +1,56 @@
 class FacturesController < ApplicationController
-  before_action :set_facture, only: %i[ show edit update destroy pdf envoyer valider refuser ]
+  before_action :set_facture, only: %i[show edit update destroy pdf envoyer valider refuser]
   before_action :is_user_authorized
   before_action :set_form_collections, only: %i[edit update]
 
+  trie Facture, defaut: 'factures.updated_at', sens: :desc
 
   # GET /factures or /factures.json
   def index
-    @services = current_user.get_services_by_role
-    @adhérents = User.by_service(@services).adhérent
+    base = policy_scope(Facture)
+             .kept
+             .includes(:adherent, :service, :organisation)
+             .ordered
 
-    @factures = Facture
-                   .kept
-                   .includes(:adherent, :service, :organisation)
-                   .where(service: @services)
-                   .ordered
+    if current_user.adhérent?
+      @factures = base
+      service_ids = base.reorder(nil).distinct.pluck(:service_id)
+      @services  = Service.where(id: service_ids).ordered
+    else
+      @services  = current_user.get_services_by_role
+      @adhérents = User.by_service(@services).adhérent.ordered
+      @factures  = base.where(service: @services)
+    end
 
     if params[:search].present?
       @factures = @factures.where('factures.ref ILIKE :s OR factures.intitulé ILIKE :s', s: "%#{params[:search]}%")
     end
 
-    if params[:adhérent_ids].present?
+   if params[:adhérent_ids].present?
       @factures = @factures.where(adherent_id: params[:adhérent_ids])
     end
 
     if params[:service_ids].present?
       @factures = @factures.where(service_id: params[:service_ids])
     end
-
+    
     if params[:workflow_state].present?
       @factures = @factures.where('factures.workflow_state = ?', params[:workflow_state].to_s.downcase)
     end
 
     @factures = @factures.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
 
-    @pagy, @factures = pagy(@factures, items: 15)
+    @pagy, @factures = pagy(trier(@factures), items: 10)
   end
 
   # GET /factures/1 or /factures/1.json
   def show
-    @audits = @facture.own_and_associated_audits.includes(:user).reorder(id: :desc)
+    @audits = trier(@facture.own_and_associated_audits.includes(:user))
     @pagy, @audits = pagy(@audits, items: 10)
+
+    @prestations = @facture.facture_lignes.includes(:prestation)
+    @pagy_prestations, @prestations = pagy(@prestations, items: 10)
+
   end
 
   # GET /factures/new
@@ -135,7 +146,11 @@ class FacturesController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_facture
-    @facture = Facture.find_by(slug: params.expect(:id))
+    @facture = Facture.find_by(slug: params[:id])
+
+    if @facture.nil?
+      redirect_to root_path, alert: 'Facture introuvable'
+    end
   end
 
   # Only allow a list of trusted parameters through.
@@ -152,9 +167,7 @@ class FacturesController < ApplicationController
 
   def set_form_collections
     @services = current_user.get_services_by_role
-
     @adherents = User.by_service(@services).adhérent.ordered
-
     @prestations = current_organisation.prestations.ordered
   end
 end

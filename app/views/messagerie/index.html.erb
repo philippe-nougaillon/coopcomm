@@ -14,24 +14,22 @@
     <div class="flex flex-col items-center justify-center flex-1 p-4 lg:p-8 text-center bg-slate-50">
       <div class="max-w-xl w-full">
         <% if @recent_conversations.present? && @recent_conversations.any? %>
-          <p class="text-slate-500 mb-8 lg:mt-8">Sélectionnez un contact pour démarrer une discussion, ou reprenez une conversation récente ci-dessous.</p>
           <div class="flex flex-col gap-3 text-left overflow-y-auto mb-20 lg:mb-0">
-            <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2">Discussions récentes</h3>
+            <h3 class="font-black text-xl flex items-center gap-3 uppercase">Discussions récentes</h3>
+                      <p class="text-slate-500 mb-8 ">Sélectionnez un contact pour démarrer une discussion, ou reprenez une conversation récente ci-dessous :</p>
             <% @recent_conversations.each do |user| %>
               <% last_message = @last_messages[user.id] %>
               <% unread_count = @unread_counts[user.id] || 0 %>
-              <%= link_to messagerie_conversation_path(user.id), "data-turbo": false, class: "card bg-white shadow-sm hover:shadow-md hover:border-primary transition-all border border-slate-200" do %>
+              <%= link_to messagerie_conversation_path(user.slug), "data-turbo": false, class: "card bg-white shadow-sm hover:shadow-md hover:border-primary transition-all border border-slate-200" do %>
                 <div class="card-body p-4 flex flex-row items-center gap-4">
                   <%= render partial: 'partials/user_profile_picture', locals: { user: user } %>
                   <div class="flex-1 min-w-0">
-                    <div class="flex justify-between items-baseline mb-1">
+                    <span class="text-xs whitespace-nowrap italic <%= unread_count > 0 ? 'text-primary font-bold' : 'text-slate-400' %>">
+                        Il y a <%= time_ago_in_words(last_message.created_at) %> 
+                      </span>
                       <h4 class="font-bold truncate <%= unread_count > 0 ? 'text-primary' : 'text-slate-800' %>">
                         <%= user.nom_prénom %>
                       </h4>
-                      <span class="text-xs whitespace-nowrap ml-2 <%= unread_count > 0 ? 'text-primary font-bold' : 'text-slate-400' %>">
-                        <%= message_time_format(last_message.created_at) %>
-                      </span>
-                    </div>
                     <div class="flex justify-between items-center gap-2">
                       <p class="text-sm truncate <%= unread_count > 0 ? 'text-slate-700 font-semibold' : 'text-slate-500' %>">
                         <% if last_message.from_id == current_user.id %>

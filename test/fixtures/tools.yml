@@ -17,7 +17,7 @@ rateau:
   slug: df4e2093-e388-4c99-933c-ff24288c29ea
 
 cisaille:
-  name: Cisaille
+  name: CISAILLE
   organisation: mairie_paris
   slug: b02a3472-017e-40ab-a4c0-e45f32b7092f
 
@@ -39,3 +39,7 @@ outil_marseille:
   organisation: mairie_marseille
   slug: 66b4fb95-037c-4e43-8bea-a36bd550978d
   
+outil_adherent:
+  name: Outil réservé par un adhérent
+  organisation: mairie_paris
+  slug: 6b0a1c2d-3e4f-4a5b-8c9d-0e1f2a3b4c5d

@@ -6,33 +6,44 @@ class ManagerWikiPagesPolicyTest < ActionDispatch::IntegrationTest
   def setup
     manager = users(:hidalgo)
 
-    wiki_page = wiki_pages(:blog)
-
-    @policy = WikiPagePolicy.new(manager, wiki_page)
+    @policy = WikiPagePolicy.new(manager, wiki_pages(:blog_public))
+    @policy_privée = WikiPagePolicy.new(manager, wiki_pages(:blog_privé))
+    @policy_non_publiée = WikiPagePolicy.new(manager, wiki_pages(:blog_non_publié))
+    @policy_autre_auteur = WikiPagePolicy.new(manager, wiki_pages(:blog_de_l_administrateur))
   end
 
-  # New
-  test 'accès autorisé pour un manager pour un new de wiki pages' do
+  test 'accès autorisé pour un manager sur une documentation dont il est l’auteur' do
+    assert @policy.index?
+    assert @policy.blog?
+    assert @policy.guide?
+    assert @policy.faq?
+    assert @policy.show?
     assert @policy.new?
-  end
-
-  # Create
-  test 'accès autorisé pour un manager pour un create de wiki pages' do
     assert @policy.create?
-  end
-
-  # Edit
-  test 'accès autorisé pour un manager pour un edit de wiki pages' do
     assert @policy.edit?
-  end
-
-  # Update
-  test 'accès autorisé pour un manager pour un update de wiki pages' do
     assert @policy.update?
+    assert @policy.destroy?
   end
 
-  # Destroy
-  test 'accès autorisé pour un manager pour un destroy de wiki pages' do
-    assert @policy.destroy?
+  test 'accès autorisé pour un manager sur une documentation privée' do
+    assert @policy_privée.show?
+    assert @policy_privée.edit?
+    assert @policy_privée.update?
+  end
+
+  test 'accès autorisé pour un manager sur une documentation non publiée' do
+    assert @policy_non_publiée.show?
+    assert @policy_non_publiée.edit?
+    assert @policy_non_publiée.update?
+  end
+
+  test 'accès autorisé pour un manager sur une documentation d’un autre auteur' do
+    assert @policy_autre_auteur.show?
+    assert @policy_autre_auteur.edit?
+    assert @policy_autre_auteur.update?
+  end
+
+  test 'accès interdit pour un manager sur une documentation d’un autre auteur' do
+    refute @policy_autre_auteur.destroy?
   end
 end

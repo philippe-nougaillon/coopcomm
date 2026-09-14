@@ -1,0 +1,55 @@
+<%# locals: (intervention:) %>
+<section class="flex flex-col mb-10">
+  <div class="pb-3 flex items-center gap-2 mb-3">
+    <span class="w-2 h-6 bg-[#681b98] rounded-full"></span>
+    <h2 class="text-xl text-slate-800 font-black tracking-tight uppercase">Assignation</h2>
+  </div>
+  <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex-1 h-full">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div>
+        <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Agents</span>
+        <% if !intervention.agents.any? %>
+          <p class="text-slate-400 italic text-sm">Aucun agent assigné</p>
+        <% else %>
+          <div class="space-y-1">
+            <% intervention.agents.each do |agent| %>
+              <p class="font-medium">
+                <% if current_user.manager_or_admin? %>
+                  <%= link_to agent.nom_prénom, user_path(agent), class: "text-primary hover:underline" %>
+                <% else %>
+                  <span class="text-slate-700"><%= agent.nom_prénom %></span>
+                <% end %>
+              </p>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+      <div>
+        <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Matériel(s)</span>
+        <% if !intervention.tools.any? %>
+          <p class="text-slate-400 italic text-sm">Aucun matériel</p>
+        <% else %>
+          <div class="space-y-1">
+            <% intervention.tools.each do |tool| %>
+              <p class="text-slate-700 font-medium"><%= tool.name %></p>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+      <div>
+        <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Mots clés</span>
+        <% if intervention.tags.any? %>
+          <div class="flex flex-wrap gap-1.5">
+            <% intervention.tags.each do |tag| %>
+              <span class="inline-flex items-center font-semibold text-slate-600">
+                <span class="badge badge-primary badge-outline text-[11px] h-auto py-0.5"><%= tag.name.humanize %></span>
+              </span>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-slate-400 italic text-sm">Aucun mot clé</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</section>

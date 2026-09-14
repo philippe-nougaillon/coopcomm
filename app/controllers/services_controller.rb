@@ -41,24 +41,32 @@ class ServicesController < ApplicationController
       if @service.save
         # Attribution du nouveau service à l'utilisateur courant pour qu'il ait accès.
         current_user.services << @service
-        format.html { redirect_to @service, notice: 'Service créé avec succès.' }
+        format.html do 
+          redirect_to admin_parametres_path(tab: 'services'), 
+                      notice: 'Service créé avec succès.' 
+        end
         format.json { render :show, status: :created, location: @service }
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @service.errors, status: :unprocessable_entity }
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: @service.errors, status: :unprocessable_content }
       end
     end
   end
+  
 
   # PATCH/PUT /services/1 or /services/1.json
   def update
     respond_to do |format|
       if @service.update(service_params)
-        format.html { redirect_to @service, notice: 'Service modifié avec succès.', status: :see_other }
+        format.html do 
+          redirect_to admin_parametres_path(tab: 'services'),
+                      notice: 'Service modifié avec succès.', 
+                      status: :see_other 
+        end
         format.json { render :show, status: :ok, location: @service }
       else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @service.errors, status: :unprocessable_entity }
+        format.html { render :edit, status: :unprocessable_content }
+        format.json { render json: @service.errors, status: :unprocessable_content }
       end
     end
   end
@@ -68,7 +76,7 @@ class ServicesController < ApplicationController
     @service.destroy!
 
     respond_to do |format|
-      format.html { redirect_to admin_parametres_path, notice: 'Service supprimé avec succès.', status: :see_other }
+      format.html { redirect_to admin_parametres_path(tab: 'services'), notice: 'Service supprimé avec succès.', status: :see_other }
       format.json { head :no_content }
     end
   end
@@ -77,7 +85,7 @@ class ServicesController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_service
-    @service = Service.find_by(slug: params.expect(:id))
+    @service = Service.find_by(slug: params[:id])
     return unless @service.nil?
 
     redirect_to root_path, alert: 'Service introuvable'
@@ -92,15 +100,4 @@ class ServicesController < ApplicationController
     authorize @service || Service
   end
 
-  def sortable_columns
-    ['services.nom']
-  end
-
-  def sort_column
-    sortable_columns.include?(params[:column]) ? params[:column] : 'services.nom'
-  end
-
-  def sort_direction
-    %w[asc desc].include?(params[:direction]) ? params[:direction] : 'asc'
-  end
 end

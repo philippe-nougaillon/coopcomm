@@ -30,21 +30,21 @@ class Cotation < ApplicationRecord
   ARCHIVE = 'archivé'
 
   workflow do
-    state CREE, meta: { style: 'badge-ghost' } do
+    state CREE, meta: { style: 'badge badge-secondary ' } do
       event :envoyer, transitions_to: ENVOYE
     end
-    state ENVOYE, meta: { style: 'badge-info text-white' } do
+    state ENVOYE, meta: { style: 'badge badge-primary ' } do
       event :signer, transitions_to: SIGNE
       event :refuser, transitions_to: REFUSE
     end
-    state SIGNE, meta: { style: 'badge-accent text-white' } do
+    state SIGNE, meta: { style: 'badge badge-outline badge-info ' } do
       event :valider, transitions_to: VALIDE
       event :refuser, transitions_to: REFUSE
     end
-    state VALIDE, meta: { style: 'badge-success text-white' } do
+    state VALIDE, meta: { style: 'badge badge-success ' } do
       event :archiver, transitions_to: ARCHIVE
     end
-    state REFUSE, meta: { style: 'badge-error text-white' } do
+    state REFUSE, meta: { style: 'badge badge-error text-white ' } do
       # Une cotation refusée peut être corrigée puis renvoyée (retour à « envoyé »).
       event :envoyer, transitions_to: ENVOYE
       event :archiver, transitions_to: ARCHIVE
@@ -57,6 +57,11 @@ class Cotation < ApplicationRecord
   before_create :assign_ref
 
   scope :ordered, -> { order(updated_at: :desc) }
+
+  triable_par ColonnesTri.document('cotations').merge(
+    'cotations.dernier_mail' => '(SELECT MAX(mail_logs.created_at) FROM mail_logs ' \
+                                'WHERE mail_logs.cotation_id = cotations.id)'
+  )
 
   # Permet au changement de 'workflow_state' d'apparaître dans l'audit trail
   def persist_workflow_state(new_value)
@@ -84,15 +89,13 @@ class Cotation < ApplicationRecord
     "Cotation-#{ref}.pdf"
   end
 
-  # Cotations visibles : un admin voit celles de son organisation,
-  # un manager celles de ses services, les autres rôles aucune.
   def self.visible_to(user)
     if user.administrateur?
       joins(:service).where(services: { organisation_id: user.organisation&.id })
     elsif user.manager?
       where(service_id: user.service_ids)
     elsif user.adhérent?
-      where(adherent_id: user.id)
+      where(adherent_id: user.id).where.not(workflow_state: CREE)
     else
       none
     end

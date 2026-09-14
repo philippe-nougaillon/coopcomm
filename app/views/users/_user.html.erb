@@ -7,7 +7,6 @@
   <%# Nom %>
   <td class="py-3 pr-4 text-lg font-semibold text-primary">
     <div class="flex flex-row items-center gap-2 w-full">
-      <%# min-w-0 es el secreto para que 'truncate' funcione sin romper el flexbox %>
       <div class="truncate min-w-0" title="<%= user.nom_prénom %>">
         <%= link_to user.nom_prénom, user, class: 'hover:underline' %>
       </div>
@@ -24,7 +23,6 @@
   <%# Rôle %>
   <td colspan="2" class="py-3 px-4 whitespace-nowrap">
     <div class="flex items-center gap-1.5 text-success font-bold tracking-wider">
-      <%= embedded_svg "icons/#{user.avatar}.svg", class: "w-6 h-6 fill-current shrink-0" %>
       <span><%= user.rôle.upcase %></span>
     </div>
   </td>
@@ -47,13 +45,13 @@
       + <%= extra %>
           </button>
            <div data-dropdown-target="menu"
-         class="hidden flex-col p-4 shadow-2xl bg-white border border-slate-200 rounded-xl w-58 max-h-60 overflow-y-auto">
+         class="hidden flex-col p-4 shadow-2xl bg-white border border-slate-200 rounded-xl w-40 max-h-60 overflow-y-auto">
       <span class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 px-1 block text-left">
        Autres services (<%= extra %>)
             </span>
             <div class="flex flex-col gap-1">
               <% services.drop(2).each do |extra_service| %>
-                <span class="text-sm text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-lg whitespace-normal break-words">
+                <span class="text-sm text-center text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-lg whitespace-normal break-words">
                   <%= extra_service %>
                 </span>
               <% end %>
@@ -92,12 +90,16 @@
   </td>
   <%# Absent %>
   <td class="py-3 px-4 text-center">
-    <% if user.agent? && user.absent? %>
+    <span class="flex justify-center">
+    <% if user.absent? %>
       <% title_absence = "Absent du #{l(user.current_absence.du)} au #{l(user.current_absence.au)}, motif : #{user.current_absence.motif}" %>
       <%= embedded_svg "icons/person_off.svg",
-  class: "text-amber-500 cursor-help hover:scale-110 transition-transform text-xl",
-  title: title_absence,
-  alt: "Utilisateur actuellement absent" %>    <% end %>
+        class: "text-amber-500 cursor-help hover:scale-110 transition-transform text-xl",
+        title: title_absence,
+        alt: "Utilisateur actuellement absent"
+       %>    
+    <% end %>
+  </span>
   </td>
   <%# Évaluation %>
   <td class="py-3 px-4">

@@ -4,6 +4,9 @@ class CotationsController < ApplicationController
   before_action :set_cotation, only: %i[show edit update destroy pdf envoyer valider refuser create_commande signer signer_do]
   before_action :is_user_authorized, except: :create
 
+  trie Cotation, defaut: 'cotations.updated_at', sens: :desc
+  trie MailLog, defaut: 'mail_logs.created_at', sens: :desc
+
   # GET /cotations
   def index
     base = policy_scope(Cotation)
@@ -18,7 +21,7 @@ class CotationsController < ApplicationController
       @services   = Service.where(id: service_ids).ordered
     else
       @services  = current_user.get_services_by_role
-      @adhérents = User.by_service(@services).adhérent
+      @adhérents = User.by_service(@services).adhérent.ordered
       @cotations = base.where(service: @services)
     end
 
@@ -40,7 +43,7 @@ class CotationsController < ApplicationController
 
     @cotations = @cotations.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
 
-    @pagy, @cotations = pagy(@cotations, items: 15)
+    @pagy, @cotations = pagy(trier(@cotations), items: 10)
 
     # Dernier mail_log par cotation, en une seule requête (DISTINCT ON, Postgres)
     # pour éviter un N+1 dans l'index.
@@ -52,9 +55,17 @@ class CotationsController < ApplicationController
   end
 
   # GET /cotations/1
+ 
+
   def show
-    @audits = @cotation.own_and_associated_audits.includes(:user).reorder(id: :desc)
+    @audits = trier(@cotation.own_and_associated_audits.includes(:user))
     @pagy, @audits = pagy(@audits, items: 10)
+
+    @prestations = @cotation.cotation_lignes.includes(:prestation)
+    @pagy_prestations, @prestations = pagy(@prestations, items: 10)
+
+    @mail_logs = trier(@cotation.mail_logs)
+    @pagy_envois, @mail_logs = pagy(@mail_logs, items: 10)
   end
 
   # GET /cotations/new
@@ -74,7 +85,7 @@ class CotationsController < ApplicationController
       redirect_to @cotation, notice: 'Cotation créée.'
     else
       set_form_collections
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -90,7 +101,7 @@ class CotationsController < ApplicationController
       redirect_to @cotation, notice: 'Cotation mise à jour.', status: :see_other
     else
       set_form_collections
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -122,7 +133,9 @@ class CotationsController < ApplicationController
   end
 
   def refuser
-    transition!(:refuser, 'Cotation refusée.')
+    transition!(:refuser, 'Cotation refusée.') do
+      notify_manager_cotation_refusee
+    end
   end
 
   def create_commande
@@ -154,7 +167,7 @@ class CotationsController < ApplicationController
       NotifCotationSigneeJob.perform_later(@cotation, creator.id, current_user.id)
       redirect_to @cotation, notice: "Cotation signée avec succès."
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -183,9 +196,20 @@ class CotationsController < ApplicationController
     NotifAdherentCotationEnvoyeeJob.perform_later(@cotation, adherent, current_user.id)
   end
 
+  # Notifie le manager qu'une cotation a été refusée par l'adhérent
+  def notify_manager_cotation_refusee
+    manager = User.find_by(id: @cotation.audits.first.user_id) # Manager ou administrateur possible
+    if manager && manager != current_user # Ne pas envoyer si c'est le manager lui-même
+      NotifManagerCotationRefuseeJob.perform_later(@cotation, manager, current_user.id)
+    end
+  end
+
   def set_cotation
     @cotation = Cotation.find_by(slug: params[:id])
-    redirect_to cotations_path, alert: 'Cotation introuvable' if @cotation.nil?
+
+    if @cotation.nil?
+      redirect_to root_path, alert: 'Cotation introuvable'
+    end
   end
 
   def is_user_authorized

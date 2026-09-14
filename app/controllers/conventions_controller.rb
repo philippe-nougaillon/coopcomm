@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 class ConventionsController < ApplicationController
-  before_action :set_convention, only: %i[show edit update destroy]
-  before_action :is_user_authorized, except: :create
+  before_action :set_convention, only: %i[show edit update destroy pdf]
+  before_action :is_user_authorized
+
+  trie Convention, defaut: 'conventions.date_début', sens: :desc
 
   # GET /conventions
   def index
@@ -12,10 +14,14 @@ class ConventionsController < ApplicationController
                    .includes(:user, :service, document_attachment: :blob)
                    .ordered
 
-    # Recherche sur le nom du document attaché
+    # Recherche sur le nom du document attaché, mémo et heures conventionnées 
     if params[:search].present?
-      @conventions = @conventions.joins(document_attachment: :blob)
-                                 .where('active_storage_blobs.filename ILIKE :s', s: "%#{params[:search]}%")
+      search_term = "%#{params[:search].strip}%"
+      @conventions = @conventions.left_joins(document_attachment: :blob)
+                                .where(
+                                  'conventions.mémo ILIKE :s OR CAST(conventions.heures_conventionnees AS TEXT) ILIKE :s OR active_storage_blobs.filename ILIKE :s',
+                                  s: search_term
+                                )
     end
 
     @conventions = @conventions.where(user_id: params[:adherent_id]) if params[:adherent_id].present?
@@ -30,12 +36,12 @@ class ConventionsController < ApplicationController
       )
     end
 
-    @pagy, @conventions = pagy(@conventions, items: 15)
+    @pagy, @conventions = pagy(trier(@conventions), items: 10)
   end
 
   # GET /conventions/1
   def show
-    @audits = @convention.audits.includes(:user).reorder(id: :desc)
+    @audits = trier(@convention.audits.includes(:user))
     @pagy, @audits = pagy(@audits, items: 10)
   end
 
@@ -55,22 +61,24 @@ class ConventionsController < ApplicationController
       redirect_to conventions_path, notice: 'Convention enregistrée.'
     else
       set_form_collections
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
+  # Aciton désactivée
   # GET /conventions/1/edit
   def edit
     set_form_collections
   end
-
+  
+  # Action désactivée
   # PATCH/PUT /conventions/1
   def update
     if @convention.update(convention_params)
       redirect_to conventions_path, notice: 'Convention mise à jour.', status: :see_other
     else
       set_form_collections
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -78,6 +86,15 @@ class ConventionsController < ApplicationController
   def destroy
     @convention.destroy
     redirect_to conventions_path, notice: 'Convention supprimée.', status: :see_other
+  end
+
+  def pdf
+    pdf = TransformToPdf::Convention.call(@convention)
+
+    send_data pdf.render,
+              filename: @convention.pdf_filename,
+              type: 'application/pdf',
+              disposition: 'inline'
   end
 
   # GET /conventions/services_for_adherent (JSON) — services encore disponibles pour l'adhérent
@@ -90,7 +107,10 @@ class ConventionsController < ApplicationController
   private
 
   def set_convention
-    @convention = Convention.find(params[:id])
+    @convention = Convention.find_by(slug: params[:id])
+    return unless @convention.nil?
+
+    redirect_to root_path, alert: 'Convention introuvable'
   end
 
   def is_user_authorized
@@ -126,8 +146,6 @@ class ConventionsController < ApplicationController
   def available_services_for(adherent)
     return Service.none if adherent.nil?
 
-    base = current_user.administrateur? ? adherent.services : adherent.services.where(id: current_user.service_ids)
-    used = adherent.conventions.where.not(id: @convention&.id).pluck(:service_id)
-    base.where.not(id: used).ordered
+    current_user.administrateur? ? adherent.services : adherent.services.where(id: current_user.service_ids)
   end
 end

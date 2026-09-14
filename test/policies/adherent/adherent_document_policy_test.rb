@@ -4,20 +4,15 @@ require 'test_helper'
 
 class AdherentDocumentPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    adherent_paris = users(:patrick_adherent_paris)
+    adherent = users(:weil)
 
     document = documents(:carte_grise)
 
-    @policy = DocumentPolicy.new(adherent_paris, document)
+    @policy = DocumentPolicy.new(adherent, document)
   end
 
-  # Valider
-  test 'accès adhérent document valider interdit' do
+  test "accès interdit pour un adhérent sur un document d'un outil de son organisation" do
     refute @policy.valider?
-  end
-
-  # Refuser
-  test 'accès adhérent document refuser interdit' do
     refute @policy.refuser?
   end
 end

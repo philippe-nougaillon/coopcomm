@@ -1,20 +1,44 @@
-<div class="simple-calendar">
-  <div class="calendar-heading">
-    <time datetime="<%= start_date.strftime('%Y-%m') %>" class="calendar-title text-2xl block text-center">
-      <%= t('date.month_names')[start_date.month].humanize %> <%= start_date.year %>
-    </time>
-    <nav class="flex w-full justify-center gap-2 mt-2">
-      <%= link_to t('simple_calendar.previous', default: 'Previous'), calendar.url_for_previous_view, class: 'flex-1 sm:flex-0 btn btn-outline btn-primary btn-sm hover:text-white!' %>
-      <%= link_to t('simple_calendar.today', default: 'Today'), calendar.url_for_today_view, class: 'flex-1 sm:flex-0 btn btn-outline btn-primary btn-sm hover:text-white!' %>
-      <%= link_to t('simple_calendar.next', default: 'Next'), calendar.url_for_next_view, class: 'flex-1 sm:flex-0 btn btn-outline btn-primary btn-sm hover:text-white!' %>
-    </nav>
+<div class="simple-calendar w-full m-0 p-0">
+  <div class="calendar-heading pt-4 pb-2">
+    <div class="flex flex-col items-center justify-center gap-2 mb-4">
+      
+      <div class="flex items-center justify-center gap-4">
+        <%= link_to calendar.url_for_previous_view,
+            class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10 flex-shrink-0 flex items-center justify-center", title: "Mois précédent", data: { turbo: false } do %>
+          <%= embedded_svg "icons/arrow_back.svg", class: "w-5 h-5 fill-current" %>
+        <% end %>
+
+        <span class="font-semibold text-primary text-base sm:text-lg whitespace-nowrap">
+          <%= t('date.month_names')[start_date.month].humanize %> <%= start_date.year %>
+        </span>
+
+        <%= link_to calendar.url_for_next_view,
+            class: "btn btn-sm btn-circle btn-ghost text-primary hover:bg-primary/10 flex-shrink-0 flex items-center justify-center", title: "Mois suivant", data: { turbo: false } do %>
+          <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current" %>
+        <% end %>
+      </div>
+
+      <div>
+        <% if start_date.month == Date.today.month && start_date.year == Date.today.year %>
+          <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm whitespace-nowrap">
+            Aujourd'hui
+          </span>
+        <% else %>
+          <%= link_to "Aujourd'hui",
+                calendar.url_for_today_view,
+                class: "inline-block text-xs font-semibold px-3 py-1 rounded-full bg-white text-purple-700 border border-purple-300 shadow-sm hover:bg-purple-50 transition-colors whitespace-nowrap",
+                data: { turbo: false } %>
+        <% end %>
+      </div>
+    </div>
   </div>
-  <div class="overflow-x-auto">
-    <table class="table table-xs table-striped">
+
+  <div class="overflow-x-auto w-full">
+    <table class="table table-xs table-striped w-full border-none">
       <thead>
         <tr>
           <% date_range.slice(0, 7).each do |day| %>
-            <th class="text-center"><%= t('date.abbr_day_names')[day.wday].upcase %>.</th>
+            <th class="text-center first-letter:capitalize text-xs tracking-wider py-2"><%= t('date.abbr_day_names')[day.wday].upcase %>.</th>
           <% end %>
         </tr>
       </thead>
@@ -22,7 +46,10 @@
         <% date_range.each_slice(7) do |week| %>
           <tr>
             <% week.each do |day| %>
-              <%= content_tag :td, class: calendar.td_classes_for(day) + ['align-top'] do %>
+              <% aujourdhui = (day == Date.today) %>
+              <% td_classes = calendar.td_classes_for(day) + ['align-top', 'text-center', 'p-2', 'transition-all', 'min-w-[80px]'] %>
+              <% td_classes += aujourdhui ? ['text-purple-700', 'bg-purple-50/40', 'font-bold'] : [] %>
+              <%= content_tag :td, class: td_classes, style: (aujourdhui ? "box-shadow: inset 0 0 0 2px #a855f7;" : nil) do %>
                 <% instance_exec(day, calendar.sorted_events_for(day), &passed_block) %>
               <% end %>
             <% end %>

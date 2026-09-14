@@ -1,3 +1,3 @@
 # frozen_string_literal: true
 
-PageTitleHelper.options[:app] = 'CoopComm. v1.5'
+PageTitleHelper.options[:app] = 'CoopComm. v1.8'

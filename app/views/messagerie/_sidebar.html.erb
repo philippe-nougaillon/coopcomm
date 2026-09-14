@@ -1,29 +1,27 @@
 <div class="drawer-side z-[100]">
   <label for="messagerie-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-  <div class="bg-base-100 min-h-screen w-72 lg:w-fit flex flex-col border-r overflow-y-auto pt-4 lg:pt-20">
+  <div class="bg-base-100 min-h-screen w-72 lg:w-fit flex flex-col border-r overflow-y-auto pt-4 lg:pt-16">
     <div class="p-4 border-b lg:hidden">
-      <h2 class="text-xl font-bold text-primary">Utilisateurs</h2>
+      <h2 class="text-xl font-bold text-primary">Contacts</h2>
     </div>
     <div class="p-4 border-b">
       <label class="input input-bordered flex items-center gap-2 w-full">
-  <%= embedded_svg "icons/loupe.svg", class: "w-6 h-6 fill-current text-gray-700" %>
-  
-  <input
-    type="search"
-    name="query"
-    placeholder="Rechercher un utilisateur..."
-    class="grow border-none outline-none p-0 focus:ring-0" 
-    hx-post="/messagerie/search_contact"
-    hx-trigger="input changed delay:10ms, search"
-    hx-target="#users-list"
-  />
-</label>
-
+        <input
+          type="search"
+          name="query"
+          placeholder="Rechercher..."
+          class="grow border-none outline-none p-0 focus:ring-0" 
+          hx-post="/messagerie/search_contact"
+          hx-trigger="<%= 'input changed delay:10ms, search' %>"
+          hx-target="#users-list"
+        />
+        <%= embedded_svg "icons/loupe.svg", class: "w-6 h-6 fill-current text-gray-700" %>
+      </label>
     </div>
     <div class="flex flex-col py-2">
       <div id="users-list">
         <%= render partial: 'users_list', locals: { users: @users } %>
       </div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>

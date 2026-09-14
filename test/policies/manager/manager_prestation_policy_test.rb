@@ -4,29 +4,26 @@ require 'test_helper'
 
 class ManagerPrestationPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    @manager = users(:manager_paris)
+    @manager = users(:hidalgo)
+
     prestation = prestations(:nettoyage_bureaux)
+
     @policy = PrestationPolicy.new(@manager, prestation)
   end
 
-  # Le catalogue est géré dans Paramètres, réservé aux administrateurs.
-  test 'new interdit pour un manager' do
+  test 'accès interdit pour un manager sur une prestation de son organisation' do
+    refute @policy.show?
     refute @policy.new?
-  end
-
-  test 'create interdit pour un manager' do
     refute @policy.create?
-  end
-
-  test 'edit interdit pour un manager' do
     refute @policy.edit?
-  end
-
-  test 'update interdit pour un manager' do
     refute @policy.update?
+    refute @policy.destroy?
   end
 
-  test 'destroy interdit pour un manager' do
-    refute @policy.destroy?
+  test 'scope : un manager ne voit que les prestations de son organisation' do
+    scope = PrestationPolicy::Scope.new(@manager, Prestation.all).resolve
+
+    assert_includes scope, prestations(:nettoyage_bureaux)
+    refute_includes scope, prestations(:prestation_marseille)
   end
 end

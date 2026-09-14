@@ -1,0 +1,48 @@
+<%# locals: (form:, intervention:, terminaison_demandee: false) %>
+<% agents_obligatoires = terminaison_demandee || intervention.terminé? %>
+
+<div class="border-b border-slate-100  pb-3 flex items-center gap-2">
+  <span class="w-2 h-6 bg-[#681b98] rounded-full"></span>
+  <h2 class="text-xl text-slate-800 font-black tracking-tight uppercase">Assignation</h2>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div data-verification-disponibilites-target="formAgents">
+    <%= form.label :agent_ids, class: "label font-semibold text-slate-700" do %>
+      Agents <%= raw('<span class="text-red-500">*</span>') if agents_obligatoires %>
+    <% end %>
+    <%= form.select :agent_ids,
+                    options_for_select(@agents, selected: intervention.agent_ids),
+                    {},
+                    class: "w-full h-10 #{'rounded-lg border border-amber-300 bg-amber-50' if agents_obligatoires && intervention.agents.empty?}",
+                    multiple: true,
+                    data: {
+                      controller: 'slim-select',
+                      'calc-temps-passe-target': 'agents',
+                      action: "change->calc-temps-passe#calc",
+                      'verification-disponibilites-target': "agents",
+                      'dynamic-select-target': "agents",
+                      max_values_shown_desktop: 3,
+                      max_values_shown_mobile: 2
+                    } %>
+  </div>
+
+  <div data-verification-disponibilites-target="formTools">
+    <%= form.label :tool_ids, "Matériel(s)", class: "label font-semibold text-slate-700" %>
+    <%= form.select :tool_ids,
+                    options_from_collection_for_select(@tools, 'id', 'name', intervention.tool_ids.presence || params[:tool_ids]),
+                    {},
+                    class: "slim-select w-full h-10",
+                    multiple: true,
+                    'data-verification-disponibilites-target': "tools",
+                    data: {
+                            max_values_shown_desktop: 4,
+                            max_values_shown_mobile: 2  
+                          } %>
+  </div>
+
+  <div class="col-span-1 md:col-span-2">
+    <%= render "interventions/form/mots_cles", form: form, intervention: intervention,
+               champ: (policy(intervention).mots_cles_manager? ? :tags_manager : :tags_intervenant) %>
+  </div>
+</div>

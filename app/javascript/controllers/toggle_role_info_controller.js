@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus";
 
 // Connects to data-controller="toggle-role-info"
 export default class extends Controller {
-  static targets = ["role", "localisation", "prenom", "tagLabel"];
+  static targets = ["role", "localisation", "prenom"];
 
   initialize() {
     this.localisationTarget.style.display = "none";
@@ -16,7 +16,6 @@ export default class extends Controller {
   change() {
     var role = this.roleTarget.value;
 
-    // On cible proprement les inputs pour éviter le piège des children[1]
     const addressInput =
       this.localisationTarget.querySelector('input[type="text"]');
     const prenomInput = this.prenomTarget.querySelector("input");
@@ -35,7 +34,6 @@ export default class extends Controller {
 
       this.prenomTarget.style.display = "block";
       if (prenomInput) prenomInput.required = true;
-      this.updateTagLabel("Équipe");
     } else if (role === "adhérent") {
       this.localisationTarget.style.display = "block";
       if (addressInput) addressInput.required = true;
@@ -45,13 +43,6 @@ export default class extends Controller {
         prenomInput.required = false;
         prenomInput.value = "";
       }
-      this.updateTagLabel("Secteur");
-    }
-  }
-
-  updateTagLabel(texte) {
-    if (this.hasTagLabelTarget) {
-      this.tagLabelTarget.textContent = texte;
     }
   }
 }

@@ -1,6 +1,5 @@
-<%= render partial: 'partials/navbar_homepage' %>
+<%= render partial: 'partials/navbar/navbar_homepage' %>
 <main>
-  <!--premier section hero-->
   <section
       class="min-h-[70vh] lg:min-h-[85vh] flex items-center px-6 lg:px-16 py-16"
       style="
@@ -15,7 +14,6 @@
     <div
         class="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12"
       >
-      <!--texte-->
       <div class="flex-1 max-w-xl">
         <h1 class="font-title text-3xl lg:text-5xl font-bold mb-6">
           <span
@@ -42,7 +40,6 @@
         </p>
         <%= link_to "Réserver une démo", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: "hidden md:inline-block bg-[#db2767] px-8 py-3 rounded-full text-white text-base font-semibold hover:bg-[#c51f5b] transition shadow-md" %>
       </div>
-      <!--imagenes-->
       <div
           class="flex-1 relative hidden lg:flex justify-center items-center min-h-[420px]"
         >
@@ -50,7 +47,6 @@
       </div>
     </div>
   </section>
-  <!--section deux-->
   <section class="bg-[#F4EFE6] m-6 lg:m-20 rounded-xl p-8">
     <div class="flex flex-col lg:flex-row gap-16">
       <div class="max-w-lg">
@@ -146,7 +142,6 @@
       </div>
     </div>
   </section>
-  <!--section tres-->
   <section class="lg:pt-20 lg:pb-24 lg:px-16">
     <div class="m-4 text-center lg:px-48 mb-12">
       <h2 class="text-2xl lg:text-3xl font-medium mb-8">
@@ -163,7 +158,6 @@
       </h3>
     </div>
     <div class="flex flex-col md:flex-row gap-6 gap-6 px-6">
-      <!-- columna 1-->
       <div class="flex flex-col gap-6 flex-1">
         <div class="bg-[#E5EFF9] rounded-xl p-6">
           <h3 class="font-bold mb-3">Gestion des Actifs</h3>
@@ -210,7 +204,6 @@
           </p>
         </div>
       </div>
-      <!-- columna 2-->
       <div class="flex flex-col gap-6 flex-1 lg:mt-16">
         <div class="bg-[#E5EFF9] rounded-xl p-6">
           <h3 class="font-bold mb-3">Interventions</h3>
@@ -260,7 +253,6 @@
           </p>
         </div>
       </div>
-      <!-- columna 3 mt-32 -->
       <div class="flex flex-col gap-6 flex-1">
         <div class="bg-[#E5EFF9] rounded-xl p-6">
           <h3 class="font-bold mb-3">Agents et Managers</h3>
@@ -307,7 +299,6 @@
       </div>
     </div>
   </section>
-  <!-- imagenes -->
   <section class="mb:mt-24 bg-[#F4EFE6] rounded-xl p-8 m-10">
     <h2 class="text-2xl lg:text-3xl font-medium text-center mb-12">
       <span class="text-[#47b5db] font-bold">Co</span
@@ -316,9 +307,7 @@
         ><span class="text-[#691E9A] font-bold">.</span>
       en images
     </h2>
-    <!-- carousel -->
     <div class="relative w-full md:w-3/4 mx-auto overflow-hidden">
-      <!-- slides -->
       <div id="carousel" class="flex transition-transform duration-500">
         <img src="slide1.png" class="w-full flex-shrink-0 object-contain" />
         <img src="new_intervention.png" class="w-full flex-shrink-0 object-contain" />
@@ -327,14 +316,12 @@
         <img src="tools.png" class="w-full flex-shrink-0 object-contain" />
         <img src="dashboard.png" class="w-full flex-shrink-0 object-contain" />
       </div>
-      <!-- bouton ga<uche -->
       <button
           id="prev"
           class="absolute left-4 top-1/2 -translate-y-1/2 bg-[#DCCDE8] text-[#6A1F9C] shadow-lg w-10 h-10 rounded-full flex items-center justify-center"
         >
         ❮
       </button>
-      <!-- bouton droite -->
       <button
           id="next"
           class="absolute right-4 top-1/2 -translate-y-1/2 bg-[#DCCDE8] text-[#6A1F9C] shadow-lg w-10 h-10 rounded-full flex items-center justify-center"
@@ -367,18 +354,16 @@
       });
     });
   </script>
-  <!-- savoir plus-->
   <section class="mt-24 mb-24">
     <h2 class="text-2xl lg:text-3xl font-medium text-center mb-12">
       Vous souhaitez en savoir plus ?
     </h2>
     <div class="flex flex-wrap items-center justify-around gap-4">
-      <%= link_to 'Consultez notre Wiki (Blog / FAQ / ...)', wiki_pages_path, class: 'inline-block bg-[#50b9df] px-4 py-2 rounded-full text-white text-sm font-medium hover:bg-[#48a7c8] transition' %>
+      <%= link_to 'Consultez notre documentation (Blog / FAQ / ...)', documentation_index_path, class: 'inline-block bg-[#50b9df] px-4 py-2 rounded-full text-white text-sm font-medium hover:bg-[#48a7c8] transition' %>
       <%= link_to "Réservez une démo personnalisée", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: 'inline-block bg-[#db2767] px-5 py-2 rounded-full text-white text-sm font-medium hover:bg-[#c51f5b] transition', title: "Réservez une démo personnalisée avec l'un de nos experts" %>
     </div>
   </section>
 </main>
-<!--footer-->
 <footer class="bg-[#E5EFF9] lg:bg-[#E5EFF9] shadow-lg px-6 py-4">
   <div class="flex flex-col md:flex-row items-center md:items-start p-8 justify-between text-center gap-8">
     <div class="flex flex-col text-center md:text-left">
@@ -389,9 +374,9 @@
     </div>
     <div class="flex flex-col text-center md:text-left">
       <p class="text-sm font-black mb-4">BESOIN D'AIDE</p>
-      <%= link_to "FAQ", wiki_pages_path(catégorie: "faq"), class: "mb-2 hover:text-[#50b9df]" %>
-      <%= link_to "Blog", wiki_pages_path(catégorie: "blog"), class: "mb-2 hover:text-[#50b9df]" %>
-      <%= link_to "Guide", wiki_pages_path(catégorie: "guide"), class: "mb-2 hover:text-[#50b9df]" %>
+      <%= link_to "FAQ", faq_documentation_index_path, class: "mb-2 hover:text-[#50b9df]" %>
+      <%= link_to "Blog", blog_documentation_index_path, class: "mb-2 hover:text-[#50b9df]" %>
+      <%= link_to "Guide", guide_documentation_index_path, class: "mb-2 hover:text-[#50b9df]" %>
     </div>
     <div class="flex flex-col text-center md:text-left">
       <p class="text-sm font-black mb-4">CONDITIONS</p>

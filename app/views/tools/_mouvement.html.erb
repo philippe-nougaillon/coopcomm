@@ -6,7 +6,7 @@
     ),
     data: { turbo_method: :post },
     title: "Réserver \"#{tool.name.humanize}\" pour le #{date.strftime('%d/%m')}" do %>
-    <span class="border-1 border-slate-400 rounded-sm bg-green-500 shadow-sm hover:opacity-75 h-4 inline-block align-middle"
+    <span class="border-1 border-slate-400 rounded-sm bg-green-500 shadow-sm h-5 w-5 inline-block align-middle hover:scale-110 transition-transform "
           style="padding-left: 15px;">
     </span>
   <% end %>
@@ -18,20 +18,55 @@
     ),
     data: { turbo_method: :post },
     title: "Réservé par vous (cliquez pour libérer)" do %>
-    <span class="border-1 border-slate-400 rounded-sm  bg-blue-600 hover:opacity-75 h-4 inline-block align-middle cursor-pointer shadow-sm"
+    <span class="border-1 border-slate-400 rounded-sm  bg-blue-600 hover:opacity-75 h-5 w-5 inline-block align-middle cursor-pointer shadow-sm"
           style="padding-left: 15px;">
     </span>
   <% end %>
 <% elsif etat == "I" %>
-  <span class="border-1 border-slate-400 rounded-sm bg-blue-300 h-4 inline-block align-middle cursor-default shadow-sm"
-        style="padding-left: 15px;"
-        title="Réservé par qqn d'autre">
-  </span>
+  <% if current_user.manager_or_admin? && reservataire_id.present? %>
+    <% modal_id = "liberer_modal_#{tool.id}_#{date.strftime('%Y%m%d')}" %>
+
+    <span class="border-1 border-slate-400 rounded-sm bg-blue-300 hover:opacity-75 h-5 w-5 inline-block align-middle cursor-pointer shadow-sm"
+          style="padding-left: 15px;"
+          title="Réservé par quelqu'un d'autre (cliquez pour libérer)"
+          onclick="<%= modal_id %>.showModal()">
+    </span>
+
+    <dialog id="<%= modal_id %>" class="modal">
+      <div class="modal-box">
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 class="text-lg font-bold text-warning flex items-center gap-2">
+          <%= embedded_svg "icons/warning.svg", title: "Libérer la réservation" %>
+          Libérer la réservation
+        </h3>
+        <p class="py-4 text-sm text-slate-600 text-left">
+          Libérer la réservation d'un autre utilisateur pour le <strong><%= date.strftime('%d/%m') %></strong> ?
+        </p>
+        <div class="modal-action">
+          <form method="dialog">
+            <button class="btn btn-ghost">Annuler</button>
+          </form>
+          <%= button_to "Oui, libérer",
+                libere_tool_mouvements_path(tool_id: tool.id, date: date, user_id: reservataire_id),
+                method: :post,
+                class: "btn btn-warning text-white" %>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>Fermer</button>
+      </form>
+    </dialog>
+  <% else %>
+    <span class="border-1 border-slate-400 rounded-sm bg-blue-300 h-5 w-5 inline-block align-middle cursor-default shadow-sm"
+          style="padding-left: 15px;"
+          title="Réservé par quelqu'un d'autre">
+    </span>
+  <% end %>
 <% elsif etat == "P" %>
-  <span class="border-1 border-slate-400 rounded-sm bg-red-500 h-4 inline-block align-middle shadow-sm "
+  <span class="border-1 border-slate-400 rounded-sm bg-red-500 h-5 w-5 inline-block hover:bg-[#e55387] align-middle shadow-sm "
         style="padding-left: 15px;"
         title="En panne">
   </span>
 <% end %>
-
-

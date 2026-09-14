@@ -29,3 +29,21 @@ cotation_marseille:
   workflow_state: "créé"
   total_ht: 0
   slug: <%= SecureRandom.uuid %>
+
+cotation_envoyée:
+  adherent: patrick_adherent_paris
+  service: informatique
+  ref: "2026-4"
+  intitulé: Devis informatique envoyé
+  workflow_state: "envoyé"
+  total_ht: 0
+  slug: <%= SecureRandom.uuid %>
+
+cotation_validée:
+  adherent: patrick_adherent_paris
+  service: informatique
+  ref: "2026-5"
+  intitulé: Devis informatique validé
+  workflow_state: "validé"
+  total_ht: 0
+  slug: <%= SecureRandom.uuid %>

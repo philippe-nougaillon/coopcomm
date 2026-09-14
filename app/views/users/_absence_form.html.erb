@@ -2,18 +2,24 @@
 <% is_half_day = absence.matin || absence.après_midi %>
 <%= form_with(model: @user, id: "absence_form_#{unique_id}") do |f| %>
   <%= hidden_field_tag :from_absence_modal, true %>
-  <% if absence.errors.any? %>
-    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
-      <h2 class="font-black!">
-        <%= pluralize(absence.errors.count, "erreur") %> empêche(nt) cette absence d'être sauvegardée :
-      </h2>
-      <ul class="list-disc list-inside">
-        <% absence.errors.each do |error| %>
-          <li><%= error.full_message %></li>
+  <% errors_list = absence.errors.full_messages.presence || @user.errors.full_messages.select { |m| m.downcase.include?('absence') || m.downcase.include?('chevauche') } %>
+
+  <% if errors_list.any? %>
+    <div id="error_explanation" class="bg-red-50 text-red-700 p-3.5 rounded-xl border border-red-200 mt-2 mb-4 text-xs">
+      <div class="font-bold text-sm mb-1 flex items-center gap-2 text-red-800">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <span>Impossible d'enregistrer l'absence :</span>
+      </div>
+      <ul class="list-disc list-inside space-y-1 pl-1">
+        <% errors_list.uniq.each do |msg| %>
+          <li><%= msg.gsub(/^Absences\s+/i, '') %></li>
         <% end %>
       </ul>
     </div>
   <% end %>
+
   <%= f.fields_for :absences, absence do |ff| %>
     <%= render 'users/absence_fields', f: ff %>
   <% end %>
@@ -29,13 +35,11 @@
     <div class="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
       <button type="button" 
               class="btn btn-soft btn-secondary inline-flex items-center gap-2 normal-case flex-1 sm:flex-none justify-center" 
-              onclick="this.closest('dialog').close()">
-        <%= embedded_svg "icons/cancel.svg", class: "w-4 h-4 fill-current" %>
+              onclick="this.closest('dialog').close(); this.closest('form').querySelector('#error_explanation')?.remove(); this.closest('form').reset();">
         <span>Annuler</span>
       </button>
       <%= f.button type: :submit, 
                    class: "btn btn-primary inline-flex items-center justify-center gap-2 normal-case px-6 flex-1 sm:flex-none" do %>
-        <%= embedded_svg "icons/check.svg", class: "w-4 h-4 fill-current" %>
         <span>Enregistrer</span>
       <% end %>
     </div>

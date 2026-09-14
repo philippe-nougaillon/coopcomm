@@ -13,20 +13,9 @@ class NotificationMailer < ApplicationMailer
     end
   end
 
-  def commentaires_changed(intervention, emails)
-    @intervention = intervention
-
-    mail(to: emails,
-         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
-         subject: '[COOPCOMM] Nouveau commentaire').tap do |message|
-      message.mailgun_options = {
-        'tag' => ['nouveau commentaire']
-      }
-    end
-  end
-
   def relance(intervention)
     @intervention = intervention
+    @user = intervention.adherent
 
     mail(to: intervention.adherent.email,
          bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
@@ -74,6 +63,13 @@ class NotificationMailer < ApplicationMailer
   def new_absence(absence, user_email)
     @absence = absence
     mail(to: user_email, subject: '[COOPCOMM] Nouvelle absence')
+  end
+
+  def absence_notification(action, resume, resume_avant, user_email)
+    @action = action
+    @resume = resume
+    @resume_avant = resume_avant
+    mail(to: user_email, subject: "[COOPCOMM] Absence #{action}")
   end
 
   def new_intervention_from_adherent(intervention, user_email, title)
@@ -133,6 +129,19 @@ class NotificationMailer < ApplicationMailer
          subject: '[COOPCOMM] Cotation signée').tap do |message|
       message.mailgun_options = {
         'tag' => ['cotation signée']
+      }
+    end
+  end
+
+  def cotation_refusee(cotation, email, cc_email = nil)
+    @cotation = cotation
+
+    mail(to: email,
+         cc: cc_email.presence,
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Cotation refusée').tap do |message|
+      message.mailgun_options = {
+        'tag' => ['cotation refusée']
       }
     end
   end

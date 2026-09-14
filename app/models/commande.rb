@@ -26,17 +26,17 @@ class Commande < ApplicationRecord
   ARCHIVE = 'archivé'
 
   workflow do
-    state CREE, meta: { style: 'badge-ghost' } do
+    state CREE, meta: { style: 'badge badge-secondary ' } do
       event :envoyer, transitions_to: ENVOYE
     end
-    state ENVOYE, meta: { style: 'badge-info text-white' } do
+    state ENVOYE, meta: { style: 'badge badge-primary ' } do
       event :valider, transitions_to: VALIDE
       event :refuser, transitions_to: REFUSE
     end
-    state VALIDE, meta: { style: 'badge-success text-white' } do
+    state VALIDE, meta: { style: 'badge badge-success ' } do
       event :archiver, transitions_to: ARCHIVE
     end
-    state REFUSE, meta: { style: 'badge-error text-white' } do
+    state REFUSE, meta: { style: 'badge badge-error text-white ' } do
       # Une commande refusée peut être corrigée puis renvoyée (retour à « envoyé »).
       event :envoyer, transitions_to: ENVOYE
       event :archiver, transitions_to: ARCHIVE
@@ -49,6 +49,8 @@ class Commande < ApplicationRecord
   before_create :assign_ref
 
   scope :ordered, -> { order(updated_at: :desc) }
+
+  triable_par ColonnesTri.document('commandes')
 
   # Permet au changement de 'workflow_state' d'apparaître dans l'audit trail
   def persist_workflow_state(new_value)
@@ -74,6 +76,21 @@ class Commande < ApplicationRecord
   # Nom du fichier PDF (utilisé dans l'URL et l'en-tête Content-Disposition)
   def pdf_filename
     "Commande-#{ref}.pdf"
+  end
+
+  # Commandes visibles : un admin voit celles de son organisation,
+  # un manager celles de ses services, un adhérent les siennes déjà envoyées
+  # (une commande/facture « créé » est un brouillon interne), les autres rôles aucune.
+  def self.visible_to(user)
+    if user.administrateur?
+      joins(:service).where(services: { organisation_id: user.organisation&.id })
+    elsif user.manager?
+      where(service_id: user.service_ids)
+    elsif user.adhérent?
+      where(adherent_id: user.id).where.not(workflow_state: CREE)
+    else
+      none
+    end
   end
 
   private

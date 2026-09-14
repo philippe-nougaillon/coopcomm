@@ -4,22 +4,43 @@ class MailLogsController < ApplicationController
   before_action :set_mail_log, only: %i[show]
   before_action :is_user_authorized
 
+  trie MailLog, defaut: 'mail_logs.created_at', sens: :desc
+
   # GET /mail_logs or /mail_logs.json
   def index
     @organisation_mail_logs = current_organisation.mail_logs
     @mail_logs = @organisation_mail_logs.ordered
 
-    @emails = User.by_service(current_user.services).pluck(:email).sort
+    @emails = TriTextuel.ranger(User.by_service(current_user.services).pluck(:email))
 
-    unless params[:search].blank?
-      @mail_logs = @mail_logs.where('LOWER(mail_logs.to) like :search', { search: "%#{params[:search]}%".downcase })
+    # Opciones del select "Sujet": se calculan SIN filtrar, así no desaparecen
+    # las demás opciones cuando el usuario ya seleccionó una.
+    @all_subjects = TriTextuel.ranger(@organisation_mail_logs.distinct.pluck(:subject))
+
+
+    # 1. Búsqueda por Destinataire (Maneja arrays provenientes de SlimSelect múltiple)
+    if params[:search].present?
+      # Convertimos params[:search] a un Array limpio de Strings
+      selected_emails = Array(params[:search]).flatten.reject(&:blank?)
+
+      if selected_emails.any?
+        # Genera condiciones ILIKE para cada email seleccionado (ej: to ILIKE '%email1%' OR to ILIKE '%email2%')
+        conditions = selected_emails.map { 'LOWER(mail_logs.to) LIKE ?' }.join(' OR ')
+        values = selected_emails.map { |email| "%#{email.downcase}%" }
+
+        @mail_logs = @mail_logs.where(conditions, *values)
+      end
     end
 
-    @mail_logs = @mail_logs.where(subject: params[:search_subject]) unless params[:search_subject].blank?
-
+    # 2. Búsqueda por Sujet (también aseguramos soporte para selección múltiple)
+    if params[:search_subject].present?
+      subjects = Array(params[:search_subject]).flatten.reject(&:blank?)
+      @mail_logs = @mail_logs.where(subject: subjects) if subjects.any?
+    end
+    
     @mail_logs = @mail_logs.where(statut: false) if params[:ko].present?
 
-    @pagy, @mail_logs = pagy(@mail_logs)
+    @pagy, @mail_logs = pagy(trier(@mail_logs))
   end
 
   # GET /mail_logs/1 or /mail_logs/1.json
@@ -43,8 +64,8 @@ class MailLogsController < ApplicationController
   #       format.html { redirect_to mail_log_url(@mail_log), notice: "Mail log was successfully created." }
   #       format.json { render :show, status: :created, location: @mail_log }
   #     else
-  #       format.html { render :new, status: :unprocessable_entity }
-  #       format.json { render json: @mail_log.errors, status: :unprocessable_entity }
+  #       format.html { render :new, status: :unprocessable_content }
+  #       format.json { render json: @mail_log.errors, status: :unprocessable_content }
   #     end
   #   end
   # end
@@ -56,8 +77,8 @@ class MailLogsController < ApplicationController
   #       format.html { redirect_to mail_log_url(@mail_log), notice: "Mail log was successfully updated." }
   #       format.json { render :show, status: :ok, location: @mail_log }
   #     else
-  #       format.html { render :edit, status: :unprocessable_entity }
-  #       format.json { render json: @mail_log.errors, status: :unprocessable_entity }
+  #       format.html { render :edit, status: :unprocessable_content }
+  #       format.json { render json: @mail_log.errors, status: :unprocessable_content }
   #     end
   #   end
   # end
@@ -83,14 +104,10 @@ class MailLogsController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_mail_log
     @mail_log = MailLog.find_by(slug: params[:id])
-    return unless @mail_log.nil?
-
-    redirect_to root_path, alert: 'Notification introuvable'
-  end
-
-  # Only allow a list of trusted parameters through.
-  def mail_log_params
-    params.require(:mail_log).permit(:to, :subject, :message_id, :user_id)
+    
+    if @mail_log.nil?
+      redirect_to root_path, alert: 'Notification introuvable'
+    end
   end
 
   def is_user_authorized

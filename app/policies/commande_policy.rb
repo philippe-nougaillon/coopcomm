@@ -3,12 +3,13 @@
 class CommandePolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
-      scope
+      Commande.visible_to(user)
     end
   end
 
+  
   def index?
-    manager_or_admin?
+    user&.manager_or_admin? || adhérent?
   end
 
   # def new?
@@ -19,8 +20,11 @@ class CommandePolicy < ApplicationPolicy
   #   manager_or_admin?
   # end
 
+
+  # Un adhérent voit le détail de n'importe laquelle de ses commandes,
+  # quel que soit son état.
   def show?
-    manage?
+    manage? || (adhérent? && record.adherent_id == user.id && !record.créé?)
   end
 
   # Modification (et edit?, qui en hérite) : réservée aux états modifiables,

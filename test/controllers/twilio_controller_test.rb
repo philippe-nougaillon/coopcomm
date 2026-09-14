@@ -13,18 +13,6 @@ class TwilioControllerTest < ActionDispatch::IntegrationTest
     ENV['TWILIO_AUTH_TOKEN'] = @ancien_token
   end
 
-  # Reproduit la signature HMAC-SHA1 que Twilio joint à chaque webhook
-  # (cf. TwilioController#validate_twilio_signature).
-  def signature_twilio(url, params)
-    data = url + params.sort.map { |k, v| "#{k}#{v}" }.join
-    Base64.strict_encode64(OpenSSL::HMAC.digest('sha1', ENV['TWILIO_AUTH_TOKEN'], data))
-  end
-
-  def post_signé(params)
-    url = twilio_whatsapp_reply_url
-    post url, params: params, headers: { 'X-Twilio-Signature' => signature_twilio(url, params) }
-  end
-
   test 'should create intervention when sender exists' do
     assert_difference('Intervention.count', 1) do
       post_signé('From' => @agent.téléphone, 'Body' => "Réparation fuite d'eau")
@@ -32,6 +20,26 @@ class TwilioControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match 'application/xml', response.content_type # On utilise un assert_match car content_type contient aussi le charset
+  end
+
+  test "un agent sans service ne crée pas d'intervention" do
+    @agent.services.clear
+
+    assert_no_difference 'Intervention.count' do
+      post_signé('From' => @agent.téléphone, 'Body' => 'Fuite rue des Lilas')
+    end
+
+    assert_response :success
+    assert_match 'rattaché à aucun service', response.body
+  end
+
+  test "un agent à plusieurs services : l'intervention prend le premier dans l'ordre" do
+    @agent.services << services(:informatique)
+
+    post_signé('From' => @agent.téléphone, 'Body' => 'Fuite rue des Lilas')
+
+    assert_equal services(:informatique), Intervention.last.service
+    assert_equal services(:informatique), @agent.services.ordered.first
   end
 
   test 'should return error message when sender is unknown' do
@@ -68,5 +76,19 @@ class TwilioControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :forbidden
+  end
+
+  private
+
+  # Reproduit la signature HMAC-SHA1 que Twilio joint à chaque webhook
+  # (cf. TwilioController#validate_twilio_signature).
+  def signature_twilio(url, params)
+    data = url + params.sort.map { |k, v| "#{k}#{v}" }.join
+    Base64.strict_encode64(OpenSSL::HMAC.digest('sha1', ENV['TWILIO_AUTH_TOKEN'], data))
+  end
+
+  def post_signé(params)
+    url = twilio_whatsapp_reply_url
+    post url, params: params, headers: { 'X-Twilio-Signature' => signature_twilio(url, params) }
   end
 end

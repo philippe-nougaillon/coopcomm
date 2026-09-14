@@ -1,61 +1,74 @@
 <div class="flex flex-wrap items-end gap-8 lg:px-48 md:-mt-8 lg:-mt-20 mb-5 lg:mb-10">
   <div class="flex flex-row w-full justify-between items-end ">
-  <div class="flex flex-col">
-    <h1 class="text-xl lg:text-3xl font-black mb-2">
-      <%= page_title!("Bonjour") %>, <%= current_user.prénom %>
-    </h1>
-    <span class="text-slate-600 text-sm lg:text-base">
-      <%= current_user.organisation.nom %>
-    </span>
+    <div class="flex flex-col">
+      <h1 class="text-xl lg:text-3xl font-black mb-2">
+        <%= page_title!("Bonjour") %>, <%= current_user.prénom %>
+      </h1>
+      <span class="text-slate-600 text-sm lg:text-base">
+        <%= current_user.organisation.nom %>
+      </span>
+    </div>
+    <div class="text-right hidden sm:block ">
+      <h2 class="text-sm lg:text-base text-slate-600">
+        Nous sommes le <%= l(Date.today, format: :custom) %>, il est <%= Time.now.strftime("%Hh%M") %>.
+      </h2>
+    </div>
   </div>
-
-  <div class="text-right hidden sm:block ">
-    <h2 class="text-sm lg:text-base text-slate-600">
-      Nous sommes le <%= l(Date.today, format: :custom) %>, il est <%= Time.now.strftime("%Hh%M") %>.
-    </h2>
-  </div>
-</div>
 </div>
 <div class="flex flex-wrap gap-8 lg:px-48">
-  <%# Interventions + Messages %>
   <div class="flex-1 min-w-[300px] w-full">
-    <%# 1. Bloque Actions / Interventions %>
     <div class="border shadow-sm p-4 rounded-2xl mb-8 bg-white">
       <div>
-        <h2 class="font-black text-lg mb-4 flex items-center gap-2">
-          <%= current_user.agent? ? "Interventions en cours" : "Actions en attente" %>
-          <span class="bg-primary text-white text-xs font-bold px-2 py-1 rounded-full min-w-[1.5rem] h-6 flex items-center justify-center shadow-sm">
-            <%= @interventions_count %>
-          </span>
+        <h2 class="font-black text-xl mb-6 flex items-center gap-3 uppercase">
+          <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#40b3db] via-[#72cfe8] via-[#a48ad5] to-[#681b98]"></span>
+          <%= current_user.agent? ? "Interventions récentes" : "Actions récentes" %>
         </h2>
       </div>
+      <% if current_user.adhérent? %>
+        <h2 class="font-black text-lg mb-4">Cotations à signer</h2>
+        <% if @cotations.any? %>
+          <div class="border border-slate-200 rounded-xl mb-4 p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
+            <% @cotations.each do |cotation| %>
+              <%= render partial: 'cotation', locals: {cotation: } %>
+            <% end %>
+            <span>
+              <%= link_to adherent_crm_path(tab: params[:tab] || 'cotations'), class: "inline-flex items-center gap-2 text-primary font-medium hover:underline transition group mt-8" do %>
+              <span>Voir toutes les cotations</span>
+                <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-transform duration-200 ease-out group-hover:translate-x-1" %>
+              <% end %>
+            </span>
+          </div>
+        <% else %>
+          <div class="border border-slate-200 rounded-xl mb-4 p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
+            <p class="text-slate-500">Pas de cotations à signer.</p>
+          </div>
+        <% end %>
+      <% end %>
+      <% if current_user.adhérent? %>
+        <h2 class="font-black text-lg mb-4">Interventions</h2>
+      <% end %>
       <% if @interventions.any? %>
         <div class="border border-slate-200 rounded-xl p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
           <% @interventions.each do |intervention| %>
             <%= render partial: 'intervention', locals: {intervention: } %>
           <% end %>
-          <span >
-            <%= link_to interventions_path, class: 'text-primary mt-8 hover:underline flex items-center flex-row justify-between gap-2' do %>
-              Voir toutes les interventions
-              <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
+          <span>
+            <%= link_to interventions_path, class: "inline-flex items-center gap-2 text-primary font-medium hover:underline transition group mt-8" do %>
+              <span>Voir toutes les interventions</span>
+              <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-transform duration-200 ease-out group-hover:translate-x-1" %>
             <% end %>
           </span>
         </div>
       <% else %>
-        <p class="text-slate-500">Il n'y a rien en attente, vous pouvez vous reposer :)</p>
-      <% end %>
-      <% if current_user.adhérent? && @cotations.any? %>
-        <div class="flex flex-col mt-8">
-          <h2 class="font-black text-lg mb-4">Cotations à signer</h2>
-          <% @cotations.each do |cotation| %>
-            <%= render partial: 'cotation', locals: {cotation: } %>
-          <% end %>
+        <div class="border border-slate-200 rounded-xl p-4 overflow-hidden flex flex-col divide-y divide-slate-200 bg-white">
+          <p class="text-slate-500">Il n'y a rien en attente, vous pouvez vous reposer :)</p>
         </div>
       <% end %>
     </div>
-    <%# 2.  Messages de l'équipe %>
     <div class="border shadow-sm p-4 rounded-2xl  bg-white">
-      <h2 class="font-black text-lg mb-4">Messages de votre équipe</h2>
+      <h2 class="font-black text-xl mb-6 flex items-center gap-3 uppercase">
+        <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#40b3db] via-[#72cfe8] via-[#a48ad5] to-[#681b98]"></span>
+        Messages de votre équipe      </h2>
       <% if @messages.any? %>
         <% @messages.each do |message| %>
           <%= render partial: 'message', locals: {message: }%>
@@ -66,95 +79,113 @@
         </div>
       <% end %>
       <span >
-        <%= link_to messagerie_path, class: 'text-primary mt-8 ml-4 hover:underline flex items-center flex-row justify-between gap-2' do %>
-          Ouvrir la messagerie
-          <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
+        <%= link_to messagerie_path, class: "inline-flex items-center gap-2 text-primary font-medium hover:underline transition group mt-8" do %>
+          <span> Ouvrir la messagerie</span>
+          <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-transform duration-200 ease-out group-hover:translate-x-1" %>
         <% end %>
       </span>
     </div>
   </div>
-  <%#  Actions rapides + Météo %>
   <div class="flex-1 min-w-[300px] w-full">
-    <%# 1. Bloque Actions Rapides %>
     <div class="border shadow-sm p-4 rounded-2xl mb-8 bg-white">
-      <h2 class="font-black text-lg mb-6">Actions rapides</h2>
+      <h2 class="font-black text-xl mb-6 flex items-center gap-3 uppercase">
+        <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#40b3db] via-[#72cfe8] via-[#a48ad5] to-[#681b98]"></span>
+        Actions rapides
+      </h2>
       <div class="flex flex-col gap-4">
-        <%# --- 1. INTERVENTION (Todos) --- %>
         <span>
-          <%= link_to new_intervention_path, class: 'btn btn-outline rounded-full w-full whitespace-nowrap px-6 flex items-center justify-start gap-2' do %>
-            <%= embedded_svg "icons/add.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
-            <%= current_user.agent? ? "Nouveau bon d'Intervention" : "Créer une Intervention" %>
+          <%= link_to new_intervention_path, class:" group flex items-center justify-between w-full rounded-full border border-slate-200 bg-white px-6 py-4 transition-all duration-300 hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5" do %>
+            <div class="flex items-center gap-4">
+              <%= embedded_svg "icons/add.svg", class:"w-6 h-6 text-violet-600" %>
+              <span class="font-medium">
+                <%= current_user.agent? ? "Nouveau bon d'Intervention" : "Créer une Intervention" %>
+              </span>
+            </div>
+            <%= embedded_svg "icons/arrow_forward.svg",
+              class:"w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" %>
           <% end %>
         </span>
-        <%# --- 2. MANAGER O ADMIN --- %>
         <% if current_user.manager_or_admin? %>
           <span>
-            <%= link_to new_tool_path, class: 'btn btn-outline rounded-full w-full whitespace-nowrap px-6 flex items-center justify-start gap-2' do %>
-              <%= embedded_svg "icons/box.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
-              Ajouter un nouveau Matériel
+            <%= link_to new_tool_path, class:" group flex items-center justify-between w-full rounded-full border border-slate-200 bg-white px-6 py-4 transition-all duration-300 hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5" do %>
+              <div class="flex items-center gap-4">
+                <%= embedded_svg "icons/box.svg", class:"w-6 h-6 text-violet-600" %>
+                <span class="font-medium">
+                  Ajouter un nouveau Matériel
+                </span>
+              </div>
+              <%= embedded_svg "icons/arrow_forward.svg",
+              class:"w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" %>
             <% end %>
           </span>
           <span>
-            <%= link_to messagerie_path, class: 'btn btn-outline rounded-full w-full whitespace-nowrap px-6 flex items-center justify-start gap-2' do %>
-              <%= embedded_svg "icons/chat.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
-              Lancer une discussion
+            <%= link_to admin_create_new_user_path, class:" group flex items-center justify-between w-full rounded-full border border-slate-200 bg-white px-6 py-4 transition-all duration-300 hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5" do %>
+              <div class="flex items-center gap-4">
+                <%= embedded_svg "icons/person_add.svg", class:"w-6 h-6 text-violet-600" %>
+                <span class="font-medium">
+                  Ajouter un nouvel Utilisateur
+                </span>
+              </div>
+              <%= embedded_svg "icons/arrow_forward.svg",
+              class:"w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" %>
             <% end %>
           </span>
-          <span>
-            <%= link_to new_user_path, class: 'btn btn-outline rounded-full w-full whitespace-nowrap px-6 flex items-center justify-start gap-2' do %>
-              <%= embedded_svg "icons/person_add.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
-              Ajouter un nouvel Utilisateur
-            <% end %>
-          </span>
-          <%# --- 3. ADHÉRENT --- %>
         <% elsif current_user.adhérent? %>
           <span>
-            <%= link_to messagerie_path, class: 'btn btn-outline rounded-full w-full whitespace-nowrap px-6 flex items-center justify-start gap-2' do %>
-              <%= embedded_svg "icons/chat.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
-              Lancer une discussion
+            <%= link_to dashboard_path, class:" group flex items-center justify-between w-full rounded-full border border-slate-200 bg-white px-6 py-4 transition-all duration-300 hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5" do %>
+              <div class="flex items-center gap-4">
+                <%= embedded_svg "icons/bar_chart.svg", class:"w-6 h-6 text-violet-600" %>
+                <span class="font-medium">
+                  Voir le tableau de bord
+                </span>
+              </div>
+              <%= embedded_svg "icons/arrow_forward.svg",
+              class:"w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" %>
             <% end %>
           </span>
-          <span>
-            <%= link_to dashboard_path, class: 'btn btn-outline rounded-full w-full whitespace-nowrap px-6 flex items-center justify-start gap-2' do %>
-              <%= embedded_svg "icons/bar_chart.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
-              Voir le tableau de bord
-            <% end %>
-          </span>
-          <%# --- 4. AGENT --- %>
         <% elsif current_user.agent? %>
           <span>
-            <%= link_to tools_path, class: 'btn btn-outline rounded-full w-full whitespace-nowrap px-6 flex items-center justify-start gap-2' do %>
-              <%= embedded_svg "icons/front_loader.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
-              Réserver du matériel
+            <%= link_to tools_path, class:" group flex items-center justify-between w-full rounded-full border border-slate-200 bg-white px-6 py-4 transition-all duration-300 hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5" do %>
+              <div class="flex items-center gap-4">
+                <%= embedded_svg "icons/front_loader.svg", class:"w-6 h-6 text-violet-600" %>
+                <span class="font-medium">
+                  Réserver du matériel
+                </span>
+              </div>
+              <%= embedded_svg "icons/arrow_forward.svg",
+              class:"w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" %>
             <% end %>
           </span>
           <span>
-            <%= link_to messagerie_path, class: 'btn btn-outline rounded-full w-full whitespace-nowrap px-6 flex items-center justify-start gap-2' do %>
-              <%= embedded_svg "icons/chat.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
-              Lancer une discussion
-            <% end %>
-          </span>
-          <span>
-            <%= link_to wiki_pages_path, class: 'btn btn-outline rounded-full w-full whitespace-nowrap px-6 flex items-center justify-start gap-2' do %>
-              <%= embedded_svg "icons/menu_book.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
-              Consulter le guide
+            <%= link_to documentation_index_path, class:" group flex items-center justify-between w-full rounded-full border border-slate-200 bg-white px-6 py-4 transition-all duration-300 hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5" do %>
+              <div class="flex items-center gap-4">
+                <%= embedded_svg "icons/menu_book.svg", class:"w-6 h-6 text-violet-600" %>
+                <span class="font-medium">
+                  Consulter le guide
+                </span>
+              </div>
+              <%= embedded_svg "icons/arrow_forward.svg",
+              class:"w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" %>
             <% end %>
           </span>
         <% end %>
       </div>
     </div>
-    <%# 2.  Météo %>
     <div class="border shadow-sm p-4 rounded-2xl bg-white">
       <% if @forecasts && @forecasts["city"] && @forecasts["forecast"] %>
-        <h2 class="font-black text-lg">Météo à <%= @forecasts["city"]["name"] %></h2>
+        <h2 class="font-black text-xl mb-6 flex items-center gap-3 uppercase">
+          <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#40b3db] via-[#72cfe8] via-[#a48ad5] to-[#681b98]"></span>
+          Météo à <%= @forecasts["city"]["name"] %>    </h2>
         <small class="text-slate-400 block mb-2">Dernière mise à jour : <%= l(Time.zone.parse(@forecasts[:last_fetched_at])) %></small>
         <div class="flex flex-col md:flex-row flex-wrap justify-center gap-2 my-2 mb-8">
           <%= render partial: 'pages/meteo', collection: [@forecasts["forecast"].first.third, @forecasts["forecast"].second.third], as: :forecast %>
         </div>
         <span >
-          <%= link_to meteo_path, class: 'text-primary mt-8 hover:underline flex items-center flex-row justify-between gap-2' do %>
-            Prévision pour les jours à venir
-            <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-colors duration-200" %>
+          <%= link_to meteo_path, class: "inline-flex items-center gap-2 text-primary font-medium hover:underline transition group mt-8" do %>
+            <span>
+              Prévision pour les jours à venir
+            </span>
+            <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-transform duration-200 ease-out group-hover:translate-x-1" %>
           <% end %>
         </span>
       <% else %>

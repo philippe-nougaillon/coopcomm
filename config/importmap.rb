@@ -16,3 +16,4 @@ pin '@stimulus-components/rails-nested-form', to: '@stimulus-components--rails-n
 pin 'trix'
 pin '@rails/actiontext', to: 'actiontext.esm.js'
 pin '@rails/ujs', to: '@rails--ujs.js' # @7.1.3
+pin "@rails/activestorage", to: "@rails--activestorage.js" # @7.2.302

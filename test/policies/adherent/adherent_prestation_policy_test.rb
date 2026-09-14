@@ -2,29 +2,28 @@
 
 require 'test_helper'
 
-# Rôles sans aucun droit sur le catalogue de prestations (adhérent et agent).
 class AdherentPrestationPolicyTest < ActionDispatch::IntegrationTest
   def setup
     @adherent = users(:weil)
-    @agent = users(:agent_whatsapp)
-    @prestation = prestations(:nettoyage_bureaux)
+
+    prestation = prestations(:nettoyage_bureaux)
+
+    @policy = PrestationPolicy.new(@adherent, prestation)
   end
 
-  test 'un adhérent ne peut pas gérer le catalogue' do
-    policy = PrestationPolicy.new(@adherent, @prestation)
-    refute policy.new?
-    refute policy.create?
-    refute policy.edit?
-    refute policy.update?
-    refute policy.destroy?
+  test 'accès interdit pour un adhérent sur une prestation de son organisation' do
+    refute @policy.show?
+    refute @policy.new?
+    refute @policy.create?
+    refute @policy.edit?
+    refute @policy.update?
+    refute @policy.destroy?
   end
 
-  test 'un agent ne peut pas gérer le catalogue' do
-    policy = PrestationPolicy.new(@agent, @prestation)
-    refute policy.new?
-    refute policy.create?
-    refute policy.edit?
-    refute policy.update?
-    refute policy.destroy?
+  test 'scope : un adhérent ne voit que les prestations de son organisation' do
+    scope = PrestationPolicy::Scope.new(@adherent, Prestation.all).resolve
+
+    assert_includes scope, prestations(:nettoyage_bureaux)
+    refute_includes scope, prestations(:prestation_marseille)
   end
 end

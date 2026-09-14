@@ -26,3 +26,24 @@ commande_marseille:
   workflow_state: "créé"
   total_ht: 0
   slug: <%= SecureRandom.uuid %>
+
+# Commande d'un service géré par hidalgo (informatique) mais dans un état
+# NON modifiable (« validé ») : sert à vérifier le verrou d'édition côté
+# contrôleur (update? = manage? && modifiable?) — miroir de facture_validée.
+commande_validée:
+  adherent: weil
+  service: informatique
+  ref: "2026-3"
+  intitulé: Commande validée informatique
+  workflow_state: "validé"
+  total_ht: 0
+  slug: <%= SecureRandom.uuid %>
+
+commande_envoyée:
+  adherent: weil
+  service: informatique
+  ref: "2026-4"
+  intitulé: Commande informatique envoyée
+  workflow_state: "envoyé"
+  total_ht: 0
+  slug: <%= SecureRandom.uuid %>

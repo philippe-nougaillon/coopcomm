@@ -2,45 +2,96 @@
 
 require 'test_helper'
 
+# `stats` est réservé au super administrateur, donc hors périmètre.
 class AdminControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @user = users(:bond)
-    sign_in users(:hidalgo)
-  end
-
-  test 'should get audits' do
-    get admin_audits_url
-    assert_response :success
-  end
-
-  test 'should get parametres (rend le catalogue de prestations)' do
+    @audit = Audited::Audit.create!(auditable: users(:bond), user: users(:hidalgo), action: 'update',
+                                    audited_changes: { 'nom' => %w[AVANT SONDEAUDIT] })
     sign_in users(:administrateur_paris)
+  end
+
+  test 'audits : sans paramètre → la page répond' do
+    get admin_audits_url
+
+    assert_response :success
+  end
+
+  test 'audits : recherche → seulement les audits dont les changements correspondent' do
+    get admin_audits_url(search: 'SONDEAUDIT')
+
+    assert_includes assigns(:audits), @audit
+    assert_equal 1, assigns(:audits).size
+  end
+
+  test 'audits : start_date → seulement les audits postérieurs' do
+    get admin_audits_url(start_date: (Date.current + 1).to_s)
+
+    assert_not_includes assigns(:audits), @audit
+  end
+
+  test 'audits : end_date → seulement les audits antérieurs' do
+    get admin_audits_url(end_date: (Date.current - 1).to_s)
+
+    assert_not_includes assigns(:audits), @audit
+  end
+
+  test 'audits : user_id → seulement les audits de cet utilisateur' do
+    get admin_audits_url(user_id: [users(:hidalgo).id])
+    assert_includes assigns(:audits), @audit
+
+    get admin_audits_url(user_id: [users(:bond).id])
+    assert_not_includes assigns(:audits), @audit
+  end
+
+  test 'audits : type → seulement les audits de ce type d’enregistrement' do
+    get admin_audits_url(type: ['User'])
+    assert_includes assigns(:audits), @audit
+
+    get admin_audits_url(type: ['Intervention'])
+    assert_not_includes assigns(:audits), @audit
+  end
+
+  test 'audits : action_name → seulement les audits de cette action' do
+    get admin_audits_url(action_name: ['update'])
+    assert_includes assigns(:audits), @audit
+
+    get admin_audits_url(action_name: ['destroy'])
+    assert_not_includes assigns(:audits), @audit
+  end
+
+  test 'parametres : sans paramètre → la page répond' do
     get admin_parametres_url
+
     assert_response :success
   end
 
-  test 'should get create new user' do
-    get admin_create_new_user_url
-    assert_response :success
+  test 'parametres : recherche → les trois catalogues sont filtrés' do
+    get admin_parametres_url(search: 'Technique')
+
+    assert_includes assigns(:services), services(:technique)
+    assert_not_includes assigns(:services), services(:comptabilite)
   end
 
-  test 'should create new user do' do
-    assert_difference('User.count') do
-      post admin_create_new_user_do_url, params: {
-        user: {
-          nom: 'Foo',
-          prénom: 'Bar',
-          email: 'email@example.com',
-          password: '0DcPIZIq0+f5SvCf',
-          rôle: 'adhérent',
-          téléphone: '0123456789',
-          address: 'Mairie de Paris',
-          latitude: 123.123,
-          longitude: 432.120398
-        }
-      }
-    end
+  test 'parametres : user_id → les services de cet utilisateur, sans prestation' do
+    get admin_parametres_url(user_id: [users(:weil).id])
 
-    assert_redirected_to users_url
+    assert_includes assigns(:services), services(:informatique)
+    assert_equal 0, assigns(:prestations_count)
+  end
+
+  test 'parametres : onglet sites → seuls les sites sont paginés' do
+    get admin_parametres_url(tab: 'sites')
+
+    assert_includes assigns(:warehouses), warehouses(:entrepot_paris)
+    assert_empty assigns(:services)
+    assert_empty assigns(:prestations)
+  end
+
+  test 'parametres : onglet prestations → seules les prestations sont paginées' do
+    get admin_parametres_url(tab: 'prestations')
+
+    assert_includes assigns(:prestations), prestations(:nettoyage_bureaux)
+    assert_empty assigns(:services)
+    assert_empty assigns(:warehouses)
   end
 end

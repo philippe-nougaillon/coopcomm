@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_06_111951) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_11_141121) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "unaccent"
 
   create_table "absences", force: :cascade do |t|
     t.date "du"
@@ -147,8 +148,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_06_111951) do
     t.datetime "updated_at", null: false
     t.text "mémo"
     t.decimal "heures_conventionnees", precision: 10, scale: 2, default: "0.0"
+    t.decimal "heures_consommees", precision: 8, scale: 2, default: "0.0"
+    t.string "ref"
+    t.string "slug"
     t.index ["service_id"], name: "index_conventions_on_service_id"
-    t.index ["user_id", "service_id"], name: "index_conventions_on_user_id_and_service_id", unique: true
+    t.index ["user_id", "service_id", "date_début", "date_fin_prévue"], name: "index_conventions_on_user_id_service_id_and_dates", unique: true
     t.index ["user_id"], name: "index_conventions_on_user_id"
   end
 
@@ -346,7 +350,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_06_111951) do
     t.string "nom"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "organisation_id", null: false
+    t.bigint "organisation_id"
     t.string "slug"
     t.boolean "calculate_distance", default: false
     t.index ["organisation_id"], name: "index_services_on_organisation_id"
@@ -666,4 +670,58 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_06_111951) do
   add_foreign_key "users", "warehouses"
   add_foreign_key "warehouses", "organisations"
   add_foreign_key "wiki_pages", "users"
+
+  create_view "dashboard_agent_stats", materialized: true, sql_definition: <<-SQL
+      SELECT services.organisation_id,
+      agent_interventions.agent_id,
+      COALESCE(sum((interventions.temps_total / (nb_agents.cnt)::numeric)), (0)::numeric) AS temps_total
+     FROM ((((agent_interventions
+       JOIN users ON ((users.id = agent_interventions.agent_id)))
+       JOIN interventions ON ((interventions.id = agent_interventions.intervention_id)))
+       JOIN services ON ((services.id = interventions.service_id)))
+       JOIN ( SELECT ai.intervention_id,
+              count(*) AS cnt
+             FROM (agent_interventions ai
+               JOIN users u ON ((u.id = ai.agent_id)))
+            GROUP BY ai.intervention_id) nb_agents ON ((nb_agents.intervention_id = agent_interventions.intervention_id)))
+    GROUP BY services.organisation_id, agent_interventions.agent_id;
+  SQL
+  add_index "dashboard_agent_stats", ["organisation_id", "agent_id"], name: "idx_dashboard_agent_stats_unique", unique: true
+
+  create_view "dashboard_intervention_stats", materialized: true, sql_definition: <<-SQL
+      SELECT services.organisation_id,
+      interventions.service_id,
+      interventions.adherent_id,
+      (date_trunc('month'::text, interventions."début"))::date AS mois,
+      interventions.workflow_state,
+      count(*) AS nb,
+      COALESCE(sum(interventions.temps_total), (0)::numeric) AS temps_total,
+      COALESCE(sum(interventions.co2), (0)::numeric) AS co2
+     FROM (interventions
+       JOIN services ON ((services.id = interventions.service_id)))
+    GROUP BY services.organisation_id, interventions.service_id, interventions.adherent_id, (date_trunc('month'::text, interventions."début")), interventions.workflow_state;
+  SQL
+  add_index "dashboard_intervention_stats", ["organisation_id", "service_id", "adherent_id", "mois", "workflow_state"], name: "idx_dashboard_intervention_stats_unique", unique: true
+
+
+  create_function :refresh_dashboard_views, sql_definition: <<-'SQL'
+      CREATE OR REPLACE FUNCTION public.refresh_dashboard_views()
+       RETURNS trigger
+       LANGUAGE plpgsql
+      AS $function$
+      BEGIN
+        REFRESH MATERIALIZED VIEW dashboard_intervention_stats;
+        REFRESH MATERIALIZED VIEW dashboard_agent_stats;
+        RETURN NULL;
+      END;
+      $function$
+  SQL
+
+  create_trigger :agent_interventions_refresh_dashboard, sql_definition: <<-SQL
+      CREATE TRIGGER agent_interventions_refresh_dashboard AFTER INSERT OR DELETE OR UPDATE OF agent_id, intervention_id ON public.agent_interventions FOR EACH STATEMENT EXECUTE FUNCTION refresh_dashboard_views()
+  SQL
+
+  create_trigger :interventions_refresh_dashboard, sql_definition: <<-SQL
+      CREATE TRIGGER interventions_refresh_dashboard AFTER INSERT OR DELETE OR UPDATE OF workflow_state, temps_total, co2, service_id, adherent_id, "début" ON public.interventions FOR EACH STATEMENT EXECUTE FUNCTION refresh_dashboard_views()
+  SQL
 end

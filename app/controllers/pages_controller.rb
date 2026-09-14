@@ -11,6 +11,8 @@ class PagesController < ApplicationController
 
   layout :define_layout
 
+  trie ExportLog, defaut: 'export_logs.created_at', sens: :desc
+
   def define_layout
     if params[:action] == 'welcome'
       'welcome'
@@ -53,7 +55,6 @@ class PagesController < ApplicationController
   def mentions_legales; end
 
   def welcome
-    @wiki_pages = WikiPage.where(publiée: true)
     @newsletter = Newsletter.new
   end
 
@@ -94,19 +95,11 @@ class PagesController < ApplicationController
     @banner_image_name = "banner/banner_#{base_hour}h.png"
     @banner_background_color = BACKGROUND_COLORS[base_hour]
 
-    # 1. on consulte combien des interventions 
-    base_interventions = Intervention
-                           .filter_by_service(current_user.services)
-                           .by_role_for_home(current_user)
-
-    # 2. on garde le vrai compte                  
-    @interventions_count = base_interventions.count
-
-    # montre 2 uniquement en home 
-    @interventions = base_interventions
+    @interventions = Intervention
+                     .filter_by_service(current_user.services)
+                     .by_role_for_home(current_user)
                      .includes(:service, :organisation)
                      .first(2)
-
 
     @messages = current_user.messages
                             .where(read_at: nil)
@@ -120,7 +113,6 @@ class PagesController < ApplicationController
 
     @forecasts = MeteoConceptConnexion.call
   end
-
 
   def meteo
     @forecasts = MeteoConceptConnexion.call

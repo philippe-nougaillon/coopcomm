@@ -8,7 +8,7 @@ class ConventionPolicy < ApplicationPolicy
   end
 
   def index?
-    user&.manager_or_admin?
+    user&.manager_or_admin? || adhérent?
   end
 
   def new?
@@ -20,18 +20,27 @@ class ConventionPolicy < ApplicationPolicy
   end
 
   def create?
-    organisation? && (administrateur? || (user.manager? && user.services.include?(record.service)))
+    new?
   end
 
   def show?
-    create?
+    manage? || (adhérent? && record.user == user)
+  end
+
+  def edit?
+    manage?
   end
 
   def update?
-    create?
+    edit?
   end
 
   def destroy?
-    create?
+    manage?
   end
+
+  def pdf? 
+    show?
+  end  
+  
 end

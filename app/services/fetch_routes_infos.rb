@@ -1,25 +1,31 @@
 # frozen_string_literal: true
 
 class FetchRoutesInfos < ApplicationService
-  attr_reader :localisation_depart, :localisation_destination, :errors, :routes_info, :data_response
 
-  # L'initialisation prend désormais le départ et la destination
-  def initialize(localisation_depart, localisation_destination)
+  # L'initialisation prend désormais le départ et l'arrivée
+  def initialize(localisation_depart, localisation_arrivee)
     @localisation_depart = localisation_depart
-    @localisation_destination = localisation_destination
+    @localisation_arrivee = localisation_arrivee
     prepare_request
   end
 
   def call
-    prepare_body_request(@localisation_depart, @localisation_destination)
-    @data_response = get_response
+    prepare_body_request(@localisation_depart, @localisation_arrivee)
 
-    if @data_response['error']
-      @errors = { position: @localisation_destination, message: @data_response['error']['message'] }
+    response = {}
+    response["data_response"] = get_response
+
+    if response.dig('data_response','error').present?
+      # Pas utilisé
+      response["errors"] = { position: @localisation_arrivee, message: response.dig('data_response', 'error', 'message') }
     else
-      @routes_info = get_trajet_from_response
-      @response = @data_response
+      response["routes_info"] = get_trajet_from_response(response["data_response"])
     end
+
+    response["localisation_depart"] = @localisation_depart
+    response["localisation_arrivee"] = @localisation_arrivee
+
+    return response
   end
 
   def prepare_request
@@ -71,9 +77,9 @@ class FetchRoutesInfos < ApplicationService
     }
   end
 
-  def get_trajet_from_response
-    if @response['routes'].present?
-      route = @response['routes'].first
+  def get_trajet_from_response(data_response)
+    if data_response['routes'].present?
+      route = data_response['routes'].first
 
       # Pour éviter que ça plante, lorsque le point de départ est le même que le point d'arrivé
       msg_distance = if route['distanceMeters']
@@ -82,17 +88,28 @@ class FetchRoutesInfos < ApplicationService
                        'Distance: 0km'
                      end
 
-      duree = (route['duration'].to_f * 2 / 60).to_i
-      essence = (route['travelAdvisory']['fuelConsumptionMicroliters'].to_f * 2 / 1_000_000).round(2)
-      co2 = co2_consumption_by_route(route)
+      total_minutes = (route['duration'].to_f * 2 / 60).to_i
+      heures = total_minutes / 60
+      minutes = total_minutes % 60
 
-      "#{msg_distance}, Durée: #{duree} min, Essence: #{essence} L, CO₂: #{co2} kg"
+      msg_duree = if heures > 0
+                    "#{heures}h #{minutes.to_s.rjust(2, '0')}min"
+                  else
+                    "#{minutes} min"
+                  end
+
+      essence = (route['travelAdvisory']['fuelConsumptionMicroliters'].to_f * 2 / 1_000_000).round(2)
+      co2 = FetchRoutesInfos.co2_consumption_by_route(route)
+
+      "#{msg_distance}, Durée: #{msg_duree}, Essence: #{essence} L, CO₂: #{co2} kg"
     else
       ''
     end
   end
 
-  def co2_consumption_by_route(route)
+  def self.co2_consumption_by_route(route)
+    return 0 if route.blank?
+    
     # 💡 Consommation de carburant
     fuel_microliters = route.dig('travelAdvisory', 'fuelConsumptionMicroliters')
     fuel_liters = fuel_microliters.to_f / 1_000_000 if fuel_microliters

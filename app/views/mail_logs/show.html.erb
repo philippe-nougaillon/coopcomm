@@ -1,42 +1,99 @@
 <% page_title!('Notification') %>
 
-<p class="mb-4">
-  <strong>Il y a :</strong>
-  <%= time_ago_in_words @mail_log.created_at %>
-</p>
-<p class="mb-4">
-  <strong>Destinataire :</strong>
-  <%= @mail_log.to %>
-</p>
-<p class="mb-4">
-  <strong>Sujet :</strong>
-  <%= @mail_log.subject %>
-</p>
-<p class="mb-4">
-  <strong>Date :</strong>
-  <%= l @mail_log.created_at %>
-</p>
-<p class="mb-4">
-  <strong>ID du message :</strong>
-  <%= @mail_log.message_id %>
-</p>
-<p class="mb-4">
-  <strong>Statut :</strong>
-  <% if @mail_log.statut %>
-    <span class="text-success">OK</span>
-  <% else %>
-    <span class="text-error break-words!">Erreur : {code : <%= @mail_log.error_message["delivery-status"]["code"] %>, reason : <%= @mail_log.error_message["reason"] %>, severity : <%= @mail_log.error_message["severity"] %>, recipient : <%= @mail_log.error_message["recipient"] %>, event : <%= @mail_log.error_message["event"] %>, message : <%= @mail_log.error_message["delivery-status"]["message"] %>}</span>
-  <% end %>
-</p>
-<p class="mb-4">
-  <strong>État :</strong>
-  <% if @mail_log.etat && @mail_log.statut %>
-    <span class="text-info">OUVERT</span>
-  <% end %>
-</p>
-<% if @mail_log.whatsapp? %>
-  <p class="mb-4">
-    <%= link_to "Voir le 'Message Details Twilio'", "https://console.twilio.com/us1/monitor/logs/sms/#{ENV['TWILIO_ACCOUNT_SID']}/#{@mail_log.message_id}", class: 'text-primary hover:underline', target:'_blank' %>
-  </p>
+<div class="max-w-xl mx-auto mt-8">
+  <div class="bg-white rounded-2xl border border-slate-200 p-5 mb-4">
+    <div class="flex items-start justify-between mb-3">
+      <div>
+        <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5">Notification</p>
+        <p class="font-medium text-base text-slate-800 mb-1"><%= @mail_log.subject %></p>
+        <p class="text-sm text-slate-500">
+          Il y a <%= time_ago_in_words @mail_log.created_at %> · <%= l @mail_log.created_at %>
+        </p>
+      </div>
+
+      <% if @mail_log.statut %>
+        <span class="inline-flex items-center gap-1 text-xs font-medium text-success bg-success/10 rounded-full px-3 py-1 whitespace-nowrap">
+          Acheminé
+        </span>
+      <% else %>
+        <span class="inline-flex items-center gap-1 text-xs font-medium text-error bg-error/10 rounded-full px-3 py-1 whitespace-nowrap">
+          Échec (KO)
+        </span>
+      <% end %>
+    </div>
+
+    <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
+      
+      <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+        <%= embedded_svg "icons/send.svg", class: "text-base", title: "Expéditeur" %> Expéditeur
+      </div>
+      <div class="py-2.5 text-slate-800 border-b border-slate-100 font-mono text-xs break-all">
+        <%= @mail_log.user_id == 0 ? "Système" : User.with_discarded.find(@mail_log.user_id).nom_prénom %>
+      </div>
+      
+      <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+        <%= embedded_svg "icons/mail.svg", class: "text-base", title: "Destinataire" %> Destinataire
+      </div>
+      <div class="py-2.5 text-slate-800 border-b border-slate-100 font-mono text-xs break-all">
+        <%= Array(@mail_log.to).join(', ') %>
+      </div>
+
+      <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+        <%= embedded_svg "icons/visibility.svg", class: "text-base", title: "État de lecture" %> État de lecture
+      </div>
+      <div class="py-2.5 border-b border-slate-100">
+        <% if @mail_log.etat && @mail_log.statut %>
+          <span class="text-info font-medium">Ouvert</span>
+        <% else %>
+          <span class="text-slate-400">Non ouvert</span>
+        <% end %>
+      </div>
+
+      <div class="flex items-center gap-2 py-2.5 text-slate-500" style="padding-right: 2rem;">
+        <%= embedded_svg "icons/tag.svg", class: "text-base", title: "ID du message" %> ID du message
+      </div>
+      <div class="py-2.5 flex items-center gap-1.5">
+        <span class="font-mono text-xs text-slate-400 truncate max-w-[220px]" title="<%= @mail_log.message_id %>">
+          <%= @mail_log.message_id %>
+        </span>
+        <button type="button" class="btn btn-ghost btn-xs btn-circle" onclick="navigator.clipboard.writeText('<%= @mail_log.message_id %>')" aria-label="Copier l'ID">
+          <%= embedded_svg "icons/content_copy.svg", class: "text-sm" %>
+        </button>
+      </div>
+    </div>
+
+    <% unless @mail_log.statut %>
+      <div class="mt-4 pt-3 border-t border-slate-100">
+        <p class="text-error text-sm font-medium mb-1">Échec de l'envoi</p>
+        <p class="text-sm text-slate-600 break-words!">
+          <%= @mail_log.error_message.dig("reason") %>
+          <% if @mail_log.error_message.dig("delivery-status", "message").present? %>
+            — <%= @mail_log.error_message.dig("delivery-status", "message") %>
+          <% end %>
+        </p>
+        <details class="mt-2">
+          <summary class="text-xs text-slate-400 cursor-pointer">Détails techniques</summary>
+          <p class="text-xs text-slate-400 mt-1 break-words!">
+            code: <%= @mail_log.error_message.dig("delivery-status", "code") %>,
+            severity: <%= @mail_log.error_message.dig("severity") %>,
+            recipient: <%= @mail_log.error_message.dig("recipient") %>,
+            event: <%= @mail_log.error_message.dig("event") %>
+          </p>
+        </details>
+      </div>
+    <% end %>
+
+    <% if @mail_log.whatsapp? %>
+      <div class="mt-4 pt-3 border-t border-slate-100">
+        <%= link_to "Voir le 'Message Details Twilio'", "https://console.twilio.com/us1/monitor/logs/sms/#{ENV['TWILIO_ACCOUNT_SID']}/#{@mail_log.message_id}", class: 'text-primary hover:underline text-sm', target: '_blank' %>
+      </div>
+    <% end %>
+  </div>
+
+ <%= link_to 'javascript:history.back()', class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+  <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour" %>
+  Retour
 <% end %>
-<%= link_to 'Retour', notifications_path, class: 'text-primary hover:underline' %>
+
+ 
+</div>

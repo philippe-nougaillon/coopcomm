@@ -3,13 +3,13 @@
     <h1 class="text-4xl text-primary font-bold">
       <%= page_title!('Activité') %>
     </h1>
-  
   </div>
   <p class="mb-8">
     Audits des modifications 
   </p>
   <%# FORMULARIO CON CONEXIÓN TURBO FRAME %>
-  <%= form_tag request.path, method: :get, data: { turbo_frame: "audits_table", turbo_action: "advance" },class: "pt-6"  do %>
+  <%= form_tag request.path, method: :get, data: { turbo_action: "advance" },class: "pt-6"  do %>
+    <%= champs_tri_caches %>
     <div class="flex flex-col gap-3 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <%# Filtros Principales %>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end w-full">
@@ -20,17 +20,19 @@
               class: 'input input-bordered input-md w-full',
               placeholder: 'Rechercher...' %>
         </div>
-        <div class="w-full">
+        <div class="w-full" data-controller="date-picker" data-action="click->date-picker#open">
           <%= label_tag :start_date, "Du", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
           <%= date_field_tag :start_date, params[:start_date], 
               class: 'input input-bordered input-md w-full ', 
-              onchange: 'this.form.requestSubmit()' %>
+              onchange: 'this.form.requestSubmit()',
+              data: { 'date-picker-target': "input" } %>
         </div>
-        <div class="w-full">
+        <div class="w-full" data-controller="date-picker" data-action="click->date-picker#open">
           <%= label_tag :end_date, "Au", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
           <%= date_field_tag :end_date, params[:end_date], 
               class: 'input input-bordered input-md w-full ', 
-              onchange: 'this.form.requestSubmit()' %>
+              onchange: 'this.form.requestSubmit()',
+               data: { 'date-picker-target': "input" } %>
         </div>
       </div>
       <%# Filtros Avanzados %>
@@ -46,7 +48,10 @@
             <%= select_tag :user_id, 
               options_from_collection_for_select(@users, 'id', 'nom', params[:user_id]), 
               multiple: true,
-              data: { placeholder: 'Tous les utilisateurs' },
+              data: { placeholder: 'Tous les utilisateurs',
+                      max_values_shown_desktop: 2,
+                      max_values_shown_mobile: 1 
+                    },
               onchange: 'this.form.requestSubmit()',
               class: 'slim-select w-full h-10' %>
           </div>
@@ -55,7 +60,10 @@
             <%= select_tag :type,
                 options_for_select(@types, params[:type]), 
                 multiple: true,
-                data: { placeholder: 'Tous les types' },
+                data: { placeholder: 'Tous les types',
+                        max_values_shown_desktop: 2,
+                        max_values_shown_mobile: 1 
+                      },
                 onchange: 'this.form.requestSubmit()',
                 class: 'slim-select w-full h-10' %>
           </div>
@@ -64,7 +72,10 @@
             <%= select_tag :action_name,
               options_for_select([['Création', 'create'], ['Modification', 'update'], ['Suppression', 'destroy']], params[:action_name]), 
               multiple: true,
-              data: { placeholder: 'Toutes les actions' },
+              data: { placeholder: 'Toutes les actions',
+                      max_values_shown_desktop: 3,
+                      max_values_shown_mobile: 1 
+                    },
               onchange: 'this.form.requestSubmit()',
               class: 'slim-select w-full h-10' %>
           </div>
@@ -72,71 +83,46 @@
       </details>
     </div>
   <% end %>
- <%= turbo_frame_tag "audits_table" do %>
-  <hr class="mt-6 mb-6">
-  
-  <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
-    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
-  </div>
-
-  <div class="flex flex-col bg-white border-x border-b border-slate-200 shadow-sm overflow-hidden rounded-b-xl">
-    <div class="overflow-x-auto">
-      <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-        <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
-        <span>Faire glisser pour voir plus</span>
-      </div>
-      
-      <table id="users" class="table table-sm w-full border-none">
-        <thead class="bg-slate-100">
-          <tr>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-              <div class="flex justify-center items-center w-full text-center">
-                <%= sort_link 'audits.created_at', 'Date' %>
-              </div>
-            </th>              
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-              <div class="flex justify-center items-center w-full text-center">
-                <%= sort_link 'audits.user_id', 'Utilisateur' %>
-              </div>
-            </th>
-            <th class="px-1 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-              <div class="flex justify-center items-center w-full text-center">
-                <%= sort_link 'audits.action', 'Action' %>
-              </div>
-            </th>
-            <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-              <div class="flex justify-center items-center w-full text-center">
-                <%= sort_link 'audits.audited_changes', 'Modifications' %>
-              </div>
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <% if @audits.any? %>
-            <%= render partial: 'audit', collection: @audits.includes(:user) %>
-          <% else %>
-            <tr>
-              <td colspan="4" class="text-left md:text-center py-8 text-slate-400 text-base italic">
-                Aucun résultat trouvé pour cette recherche.
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
+    <hr class="mt-6 mb-6">
+    <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
+      <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
     </div>
-
-    <%# PAGINACIÓN %>
-    <% if @pagy&.pages.to_i > 1 %>
-      <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
-        <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
-          <%= pagy_nav(@pagy).html_safe %>
+    <div class="flex flex-col bg-white border-x border-b border-slate-200 shadow-sm overflow-hidden rounded-b-xl">
+      <div class="overflow-x-auto">
+        <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+          <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+          <span>Faire glisser pour voir plus</span>
         </div>
-        <div class="text-slate-500 text-center text-sm w-full mt-2">
-          <%= pagy_info(@pagy, item_name: "audits").html_safe %>
-        </div>
+        <table id="users" class="table table-sm w-full border-none">
+          <thead class="bg-slate-100">
+            <tr>
+              <%= th_tri 'Date', colonne: 'audits.created_at', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
+              <%= th_tri 'Utilisateur', colonne: 'audits.user', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
+              <%= th_tri 'Action', colonne: 'audits.action', class: 'px-1 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center' %>
+              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider text-center">Modifications</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if @audits.any? %>
+              <%= render partial: 'audit', collection: grouper_audits(@audits.includes(:user)) %>
+            <% else %>
+              <tr>
+                <td colspan="4" class="text-left md:text-center py-8 text-slate-400 text-base italic">
+                  Aucun résultat trouvé pour cette recherche.
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
       </div>
-    <% end %>
-
-  </div>
-<% end %>
+    </div>
+  <% if @pagy&.pages.to_i > 1 %>
+        <div class="flex flex-col justify-center p-4 border-t border-slate-100 bg-slate-50/50 w-full rounded-b-xl">
+          <div class="w-full sm:w-auto sm:flex-1 flex justify-center">
+            <%= pagy_nav(@pagy).html_safe %>
+          </div>
+          <div class="text-slate-500 text-center text-sm w-full mt-2">
+            <%= pagy_info(@pagy, item_name: "audits").html_safe %>
+          </div>
+        </div>
+      <% end %>

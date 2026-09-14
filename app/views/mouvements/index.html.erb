@@ -5,15 +5,16 @@
     </h1>
     <% if policy(Mouvement).new? %>
       <%= link_to new_mouvement_path(redirect_to: mouvements_path), 
-            data: { 'testid': "Gestion panne" }, 
+            data: { 'testid': "Panne" }, 
             class: "btn btn-info btn-outline btn-md rounded flex items-center justify-center gap-2 text-base",
-            title: "Gestion panne" do %>
+            title: "Panne" do %>
         <%= embedded_svg "icons/cone.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
-        <span class="hidden md:block">Gestion panne</span>
+        <span class="hidden md:block">Panne</span>
       <% end %>
     <% end %>
   </div>
-  <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_frame: "tools_table", turbo_action: "advance" } do %>
+  <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_action: "advance" } do %>
+    <%= champs_tri_caches %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="w-full md:flex-1">
         <%= label_tag :tool_ids, "Matériel",  class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
@@ -27,28 +28,42 @@
       <div class="w-full md:flex-1">
         <%= label_tag :etats, "État", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
         <%= select_tag :etats, 
-            options_for_select(@états.map { |e| [field_label(e), e] }, params[:etats]), 
+            options_for_select(Mouvement.etats_for_select, params[:etats]), 
             multiple: true,
+            id: 'etats-select', 
             class: 'slim-select w-full h-10',
-            data: { placeholder: 'Tous les états' },
+            data: { placeholder: 'Tous les états' ,
+                    max_values_shown_desktop: 3,
+                    max_values_shown_mobile: 2 
+                  },
             onchange: 'this.form.requestSubmit()' %>
       </div>
-      <% if false %>
-        <!--
-        <div class="w-full md:w-fit">
-          <%= label_tag :date, "Date d'intervention" %>
-          <%= date_field_tag :date, params[:date], include_blank:true, onchange:'this.form.submit()', class: 'input input-sm w-full' %>
-        </div>
-      -->
-      <% end %>
+      <div class="w-full md:flex-1">
+        <%= label_tag :user_ids, "Par", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
+        <%= select_tag :user_ids,
+            options_from_collection_for_select(@users, 'id', 'nom_prénom', params[:user_ids]),
+            multiple: true,
+            class: 'slim-select w-full h-10',
+            data: { placeholder: 'Tous les utilisateurs',
+                    max_values_shown_desktop: 2,
+                    max_values_shown_mobile: 1 
+                  },
+            onchange: 'this.form.requestSubmit()' %>
+      </div>
+      <div class="w-full md:flex-1" data-controller="date-picker" data-action="click->date-picker#open">
+        <%= label_tag :date, "Date", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
+        <%= date_field_tag :date, params[:date],
+            class: 'input input-bordered input-md w-full',
+            onchange: 'this.form.requestSubmit()',
+            data: { 'date-picker-target': "input" } %>
+      </div>
     </div>
   <% end %>
   <hr class="mt-6 mb-6">
   <div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-none md:rounded-t-xl border-t border-x md:border-b-0 border-slate-200">
     <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
   </div>
-  <div class="flex flex-col bg-white border border-slate-200 rounded-b-xl rounded-t-none md:rounded-b-xl md:rounded-t-none shadow-sm overflow-visible">
-    <div class="overflow-visible">
+  <div class="flex flex-col bg-white border border-slate-200 rounded-b-xl rounded-t-none md:rounded-b-xl md:rounded-t-none shadow-sm overflow-hidden">
       <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
         <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
         <span>Faire glisser pour voir plus</span>
@@ -57,21 +72,11 @@
         <table id="tools" class="table table-sm w-full border-none">
           <thead class="bg-slate-100">
             <tr>
-              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-32">
-                <%= sort_link 'mouvements.updated_at', 'MÀJ'%>
-              </th>
-              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider">
-                <%= sort_link 'tools.name', 'Matériel'%>
-              </th>
-              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-36 text-center">
-                <%= sort_link 'mouvements.état', 'État'%>
-              </th>
-              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-48">
-                Par
-              </th>
-              <th class="px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-44">
-                Date
-              </th>
+              <%= th_tri 'MÀJ', colonne: 'mouvements.updated_at', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-32' %>
+              <%= th_tri 'Matériel', colonne: 'tools.name', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+              <%= th_tri 'État', colonne: 'mouvements.état', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-36 text-center' %>
+              <%= th_tri 'Par', colonne: 'mouvements.user', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-48' %>
+              <%= th_tri 'Date', colonne: 'mouvements.date', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-44' %>
             </tr>
           </thead>
           <tbody>
@@ -98,6 +103,4 @@
         </div>
       <% end %>
     </div>
-
-    
   </div>

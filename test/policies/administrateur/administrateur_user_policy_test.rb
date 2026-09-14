@@ -4,101 +4,67 @@ require 'test_helper'
 
 class AdministrateurUserPolicyTest < ActionDispatch::IntegrationTest
   def setup
-    administrateur_paris = users(:administrateur_paris)
+    administrateur = users(:administrateur_paris)
 
-    user_paris = users(:bond)
-    user_marseille_service_different = users(:agent_marseille)
+    user = users(:bond)
+    user_hors_de_ses_services = users(:john_wick)
+    user_autre_org = users(:agent_marseille)
 
-    @policy = UserPolicy.new(administrateur_paris, user_paris)
-    @policy_user_myself = UserPolicy.new(administrateur_paris, administrateur_paris)
-    @policy_organisation_differente = UserPolicy.new(administrateur_paris, user_marseille_service_different)
+    @policy = UserPolicy.new(administrateur, user)
+    @policy_autre_service = UserPolicy.new(administrateur, user_hors_de_ses_services)
+    @policy_autre_org = UserPolicy.new(administrateur, user_autre_org)
+    @policy_user_myself = UserPolicy.new(administrateur, administrateur)
   end
 
-  # Index
-  test 'accès autorisé pour un administrateur sur la page index des users' do
+  test 'accès autorisé pour un administrateur sur un user de son organisation' do
     assert @policy.index?
-  end
-
-  # Show
-  test "accès autorisé pour un administrateur sur la page show d'un user" do
     assert @policy.show?
-  end
-
-  test "accès interdit pour un administrateur sur la page show d'un user d'une autre organisation" do
-    refute @policy_organisation_differente.show?
-  end
-
-  test 'accès autorisé pour un administrateur sur sa page show' do
-    assert @policy_user_myself.show?
-  end
-
-  # New
-  test "accès autorisé pour un administrateur sur la page new d'un user" do
     assert @policy.new?
-  end
-
-  # Create
-  test "accès autorisé pour un administrateur sur la page create d'un user" do
     assert @policy.create?
-  end
-
-  # Edit
-  test "accès autorisé pour un administrateur sur la page edit d'un user" do
     assert @policy.edit?
-  end
-
-  # Update
-  test "accès autorisé pour un administrateur sur la page update d'un user" do
     assert @policy.update?
-  end
-
-  test "accès interdit pour un administrateur sur la page update d'un user d'une autre organisation" do
-    refute @policy_organisation_differente.update?
-  end
-
-  # Destroy
-  test "accès autorisé pour un administrateur sur la page destroy d'un user" do
     assert @policy.destroy?
-  end
-
-  test "accès interdit pour un administrateur sur la page destroy d'un user d'une autre organisation" do
-    refute @policy_organisation_differente.destroy?
-  end
-
-  # agent calendrier
-  test 'accès autorisé pour un administrateur sur la page agent_calendrier' do
-    assert @policy.agent_calendrier?
-  end
-
-  # Inviter
-  test "accès interdit pour un administrateur sur la page inviter d'un user" do
     assert @policy.inviter?
+    assert @policy.reactivate?
+    assert @policy.agent_calendrier?
+    assert @policy.import?
+    assert @policy.import_do?
   end
 
-  # Edit password
-  test 'accès autorisé pour un administrateur sur sa page edit_password' do
-    assert @policy_user_myself.edit_password?
-  end
-
-  test "accès interdit pour un administrateur sur sa page edit_password d'un autre user" do
+  test 'accès interdit pour un administrateur sur un user de son organisation' do
     refute @policy.edit_password?
-  end
-
-  # Update password
-  test 'accès autorisé pour un administrateur sur sa page update_password' do
-    assert @policy_user_myself.update_password?
-  end
-
-  test "accès interdit pour un administrateur sur sa page update_password d'un autre user" do
     refute @policy.update_password?
   end
 
-  # Reactivate
-  test "accès autorisé pour un administrateur sur la page reactivate d'un user" do
-    assert @policy.reactivate?
+  test 'accès autorisé pour un administrateur sur un user de son organisation hors de ses services' do
+    assert @policy_autre_service.show?
+    assert @policy_autre_service.edit?
+    assert @policy_autre_service.update?
+    assert @policy_autre_service.destroy?
+    assert @policy_autre_service.inviter?
+    assert @policy_autre_service.reactivate?
   end
 
-  test "accès interdit pour un administrateur sur la page reactivate d'un user d'une autre organisation" do
-    refute @policy_organisation_differente.reactivate?
+  test "accès interdit pour un administrateur sur un user d'une autre organisation" do
+    refute @policy_autre_org.show?
+    refute @policy_autre_org.edit?
+    refute @policy_autre_org.update?
+    refute @policy_autre_org.destroy?
+    refute @policy_autre_org.inviter?
+    refute @policy_autre_org.reactivate?
+  end
+
+  test 'accès autorisé pour un administrateur sur sa propre fiche' do
+    assert @policy_user_myself.show?
+    assert @policy_user_myself.edit?
+    assert @policy_user_myself.update?
+    assert @policy_user_myself.edit_password?
+    assert @policy_user_myself.update_password?
+    assert @policy_user_myself.reactivate?
+  end
+
+  test 'accès interdit pour un administrateur sur sa propre fiche' do
+    refute @policy_user_myself.destroy?
+    refute @policy_user_myself.inviter?
   end
 end

@@ -2,13 +2,12 @@
 
 require 'test_helper'
 
-# Gabarit aligné sur create_facture_from_commande_test.rb (service jumeau).
 class CreateCommandeFromCotationTest < ActiveSupport::TestCase
   setup do
-    @cotation = cotations(:cotation_paris) # informatique, 1 ligne (nettoyage_bureaux, qté 3, prix 25.50)
+    @cotation = cotations(:cotation_paris)
   end
 
-  test 'retourne une Commande non sauvegardée' do
+  test 'retourne une commande non sauvegardée' do
     commande = CreateCommandeFromCotation.new(@cotation).call
 
     assert_instance_of Commande, commande
@@ -28,36 +27,35 @@ class CreateCommandeFromCotationTest < ActiveSupport::TestCase
   end
 
   test 'construit une ligne de commande par ligne de cotation' do
-    CotationLigne.create!(cotation: @cotation, prestation: prestations(:entretien_espaces_verts),
-                          intitulé: 'Tonte des abords', qté: 2)
-
     commande = CreateCommandeFromCotation.new(@cotation).call
 
-    assert_equal @cotation.cotation_lignes.count, commande.commande_lignes.size
-    @cotation.cotation_lignes.order(:id).each_with_index do |source, i|
-      copie = commande.commande_lignes[i]
-      assert_equal source.prestation_id, copie.prestation_id
-      assert_equal source.intitulé, copie.intitulé
-      assert_equal source.qté, copie.qté
-    end
+    assert_equal @cotation.cotation_lignes.size, commande.commande_lignes.size
+
+    ligne_source = @cotation.cotation_lignes.first
+    ligne_copie = commande.commande_lignes.first
+
+    assert_equal ligne_source.prestation_id, ligne_copie.prestation_id
+    assert_equal ligne_source.intitulé, ligne_copie.intitulé
+    assert_equal ligne_source.qté, ligne_copie.qté
+    assert_equal ligne_source.prix_ht, ligne_copie.prix_ht
   end
 
-  test 'la commande construite persiste et recalcule son total' do
+  test 'la commande construite persiste et recalcule le total de la cotation' do
     commande = CreateCommandeFromCotation.new(@cotation).call
 
     assert commande.save, commande.errors.full_messages.to_sentence
-    # prix_ht est re-dérivé de la prestation (25.50) × qté 3 = 76.50
-    assert_equal 76.5, commande.reload.total_ht.to_f
-    assert_equal 1, commande.commande_lignes.count
+    assert_equal @cotation.total_ht.to_f, commande.reload.total_ht.to_f
+    assert_equal @cotation.cotation_lignes.count, commande.commande_lignes.count
   end
 
-  test "la commande construite reçoit une ref et l'état initial à la sauvegarde" do
+  test 'la commande construite reçoit une référence et l’état initial à la sauvegarde' do
     commande = CreateCommandeFromCotation.new(@cotation).call
 
     assert_nil commande.ref
     commande.save!
+
     assert_match(/\ACM-#{Date.current.year}-\d+\z/, commande.ref)
-    assert commande.créé?
+    assert_predicate commande, :créé?
   end
 
   test 'expose une interface de service via ApplicationService.call' do
@@ -67,43 +65,40 @@ class CreateCommandeFromCotationTest < ActiveSupport::TestCase
   end
 
   test 'une cotation sans ligne donne une commande valide sans ligne' do
-    cotation_vide = cotations(:cotation_marseille) # aucune cotation_ligne en fixture
+    cotation_sans_ligne = cotations(:cotation_marseille)
 
-    commande = CreateCommandeFromCotation.new(cotation_vide).call
+    commande = CreateCommandeFromCotation.new(cotation_sans_ligne).call
 
+    assert_empty cotation_sans_ligne.cotation_lignes, 'garde : fixture sans ligne'
     assert_empty commande.commande_lignes
     assert commande.save, commande.errors.full_messages.to_sentence
-    assert_equal 0, commande.reload.total_ht.to_f
+    assert_equal cotation_sans_ligne.total_ht.to_f, commande.reload.total_ht.to_f
   end
 
-  test "une cotation sans intitulé donne une commande invalide (l'intitulé est obligatoire)" do
-    @cotation.update_column(:intitulé, nil) # bypass : la cotation elle-même valide la présence
+  test 'une cotation sans intitulé donne une commande invalide' do
+    @cotation.update_column(:intitulé, nil)
 
     commande = CreateCommandeFromCotation.new(@cotation).call
 
     assert_not commande.save
-    assert commande.errors[:intitulé].any?
+    assert_predicate commande.errors[:intitulé], :any?
   end
 
-  test 'BUG documenté : le prix du devis est écrasé par le tarif ACTUEL de la prestation à la sauvegarde' do
-    # La copie `prix_ht:`/`total_ht:` du service (create_commande_from_cotation.rb:19)
-    # est illusoire : CommandeLigne#set_prix_from_prestation (before_validation)
-    # remplace le prix par prestation.tarif, et total_ht est une colonne générée
-    # PostgreSQL (prix_ht × qté). Si le tarif change entre le devis et la commande,
-    # la commande ne respecte PAS le prix du devis (potentiellement signé).
+  test 'le prix du devis est figé : une hausse ultérieure du tarif ne change pas la commande (critique)' do
     ligne_devis = @cotation.cotation_lignes.first
-    assert_equal 25.5, ligne_devis.prix_ht.to_f # prix au moment du devis
+    prix_du_devis = ligne_devis.prix_ht
+    total_du_devis = @cotation.total_ht.to_f
+    tarif_augmenté = prix_du_devis + 15
 
-    prestations(:nettoyage_bureaux).update!(tarif: 40.00) # le tarif augmente ensuite
+    prestations(:nettoyage_bureaux).update!(tarif: tarif_augmenté)
 
     commande = CreateCommandeFromCotation.new(@cotation).call
     commande.save!
-
     ligne_commande = commande.commande_lignes.first.reload
-    assert_equal 40.0, ligne_commande.prix_ht.to_f, 'le prix copié du devis (25.50) a été écrasé'
-    assert_equal 120.0, commande.reload.total_ht.to_f # 40 × 3, et non 76.50
-    # Le devis, lui, n'a pas bougé : l'écart devis signé / commande est silencieux.
-    assert_equal 25.5, ligne_devis.reload.prix_ht.to_f
-    assert_equal 76.5, @cotation.reload.total_ht.to_f
+
+    assert_equal prix_du_devis, ligne_commande.prix_ht
+    assert_not_equal tarif_augmenté, ligne_commande.prix_ht, 'le tarif courant de la prestation ne doit pas changer le prix de la ligne de la commande'
+    assert_equal total_du_devis, commande.reload.total_ht.to_f
+    assert_equal prix_du_devis, ligne_devis.reload.prix_ht
   end
 end

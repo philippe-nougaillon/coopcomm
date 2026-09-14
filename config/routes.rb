@@ -24,7 +24,10 @@ Rails.application.routes.draw do
 
   resources :absences, only: [:destroy]
 
-  resources :users do
+  # `POST /users` est réservé par Devise dès que :registerable est réactivé
+  # (devise_for est déclaré plus haut, il gagne) : la création d'un utilisateur
+  # passe par admin#create_new_user (formulaire) et admin#create_new_user_do.
+  resources :users, except: %i[new create] do
     member do
       post :inviter
       get :edit_password
@@ -45,7 +48,7 @@ Rails.application.routes.draw do
   end
   match 'notifications', to: 'mail_logs#index', via: :get
 
-  resources :mouvements, only: %i[index new create edit update destroy]
+  resources :mouvements, only: %i[index new create edit update]
   resources :tools do
     resources :mouvements, only: [] do
       collection do
@@ -55,8 +58,18 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :wiki_pages
-  match 'wiki', to: 'wiki_pages#index', via: :get
+  resources :documentation, controller: 'wiki_pages' do
+    collection do
+      get :blog
+      get :guide
+      get :faq
+    end
+    member do
+      delete :purge_photo
+      delete :purge_document
+    end
+  end
+  match 'doc', to: redirect('/documentation'), via: :get
 
   # resources :organisations, only: %i[ show edit update ]
 
@@ -69,6 +82,9 @@ Rails.application.routes.draw do
       post :refuser
       post :archiver
       delete :purge
+      delete :purger_photos_demande
+      # `fiche` et non `pdf` : le format pdf de `show` rend déjà l'affiche QRCode.
+      get 'fiche(/*filename)', action: :fiche, as: :fiche, format: false
       get :pointer
       get :pointage_statut
       patch :update_location
@@ -116,6 +132,8 @@ Rails.application.routes.draw do
   resources :services, except: %i[index]
   resources :warehouses, except: %i[index], path: 'sites'
 
+  get 'adherent_crm', to: 'adherent_crm#index', as: :adherent_crm
+
   resources :cotations do
     member do
       # Le nom de fichier termine l'URL (ex. .../Cotation-2026-1.pdf) pour que la
@@ -128,12 +146,17 @@ Rails.application.routes.draw do
       get  :signer
       post :signer_do
     end
-  end
-  resources :prestations, except: %i[index show]
+  end 
+  resources :prestations, except: %i[index]
 
   resources :conventions do
     collection do
       get :services_for_adherent
+    end
+
+    member do
+      # Ajout de constraints: { filename: /.*/ } pour accepter les points (ex: .pdf) dans l'URL
+      get 'pdf(/*filename)', action: :pdf, as: :pdf, format: false, constraints: { filename: /.*/ }
     end
   end
 
@@ -158,7 +181,7 @@ Rails.application.routes.draw do
 
   namespace :messagerie do
     get '/', to: 'index', as: ''
-    get 'conversation/:to_id', to: 'conversation', as: 'conversation'
+    get 'conversation/:to_user_slug', to: 'conversation', as: 'conversation'
     post :mark_as_read
     post :send_message
     post :search_contact

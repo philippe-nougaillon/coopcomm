@@ -1,30 +1,46 @@
+<style>
+  @keyframes close-ring {
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: 62.8; }
+  }
+</style>
 <div id="notification">
   <% flash.each do |type, msg| %>
-    <% if ["notice","alert"].include?(type) %>
-      <div data-controller="notification" data-notification-delay-value="5000" class="transition transform duration-1000 hidden fixed bottom-20 right-0 flex items-end justify-center px-4 py-6 pointer-events-none sm:p-6 sm:pt-16 sm:items-start z-50 mt-8 w-full mb-14 lg:mb-6" data-transition-enter-from="opacity-0 translate-x-96" data-transition-enter-to="opacity-100 translate-x-0" data-transition-leave-from="opacity-100 translate-x-0" data-transition-leave-to="opacity-0 translate-x-96">
-        <div class="max-w-md w-full <%= type == 'notice' ? 'bg-green-200' : 'bg-red-200' %> shadow-lg rounded-lg pointer-events-auto rounded-lg shadow-xs overflow-hidden p-4">
-          <div class="flex items-center">
-            <% if type == "notice" %>
-              <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBow="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    <% if ["notice", "alert"].include?(type) %>
+      <div data-controller="notification"
+        data-notification-delay-value="3600000"
+        data-notification-duration-value="10000"
+        class="group transition transform duration-1000 hidden fixed bottom-20 right-0 flex items-end justify-center px-4 py-6 pointer-events-none sm:p-6 sm:pt-16 sm:items-start z-50 mt-8 w-full mb-14 lg:mb-6"
+        data-transition-enter-from="opacity-0 translate-x-96"
+        data-transition-enter-to="opacity-100 translate-x-0"
+        data-transition-leave-from="opacity-100 translate-x-0"
+        data-transition-leave-to="opacity-0 translate-x-96">
+        <div class="max-w-lg w-full <%= type == 'notice' ? 'bg-green-200' : 'bg-red-200' %> shadow-xl rounded-xl pointer-events-auto overflow-hidden">
+
+          <div class="flex justify-end pt-2 pr-2">
+            <button data-action="notification#hide"
+                    class="relative p-1 rounded-md text-black hover:text-gray-700 focus:outline-none transition-colors"
+                    data-testid="close_notification">
+              <span class="sr-only">Close</span>
+              <svg class="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"
+                        class="fill-none stroke-current text-black/30 stroke-2" />
+                <circle cx="12" cy="12" r="10"
+                        class="fill-none stroke-current text-black stroke-2 [stroke-dasharray:62.8] animate-[close-ring_linear_forwards] [animation-duration:var(--duration,5000ms)] group-[.paused]:[animation-play-state:paused]" />
               </svg>
-            <% else %>
-              <svg class="h-6 w-6 mt-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBow="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"></path>
-              </svg>
-            <% end %>
-            <div class="ml-3 w-0 flex-1">
-              <p><%= notice || alert %></p>
-            </div>
-            <!--          <div class="ml-4 shrink-0 flex">-->
-            <!--            <button data-action="notification#hide" class="bg-white rounded-md inline-flex hover:text-gray-(àà focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500" data-testid="close_notification">-->
-            <!--              <span class="sr-only">Close</span>-->
-            <!--              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">-->
-            <!--                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>-->
-            <!--              </svg>-->
-            <!--            </button>-->
-            <!--          </div>-->
+              <%= embedded_svg "icons/close_small.svg", class: "w-4 h-4 fill-current text-black relative" %>
+            </button>
           </div>
+
+          <div class="flex items-center px-2 pb-4">
+            <% if type == "notice" %>
+            <% else %>
+            <% end %>
+            <div class="ml-4 w-0 flex-1 text-black font-medium text-base sm:text-lg">
+               <p class="break-words whitespace-pre-line"><%= notice || alert %></p>
+            </div>
+          </div>
+
         </div>
       </div>
     <% end %>

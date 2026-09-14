@@ -5,12 +5,23 @@ require 'rake'
 
 class CotationsRelancerASignerTaskTest < ActiveJob::TestCase
   setup do
-    Rails.application.load_tasks if Rake::Task.tasks.empty?
+    # Charge uniquement la tâche testée (pas de `load_tasks` complet) : sous `rails
+    # test:all`.
+    unless Rake::Task.task_defined?('cotations:relancer_adherents')
+      Rake::Task.define_task(:environment) # stub du prérequis, l'app est déjà bootée
+      load Rails.root.join('lib/tasks/cotations.rake')
+    end
     @task = Rake::Task['cotations:relancer_adherents']
     @task.reenable
 
     @adherent = users(:weil) # a cotation_secretariat en état « envoyé »
     @cotation = cotations(:cotation_secretariat)
+
+    # La tâche balaie TOUTE la base : sans ce nettoyage, chaque cotation « envoyé »
+    # ajoutée aux fixtures ferait échouer les comptages de jobs ci-dessous.
+    Cotation.where(workflow_state: Cotation::ENVOYE)
+            .where.not(id: @cotation.id)
+            .update_all(workflow_state: Cotation::CREE)
   end
 
   test 'enfile le job pour un adhérent ayant une cotation à signer, sans mail récent' do

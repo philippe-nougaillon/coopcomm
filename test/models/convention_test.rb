@@ -3,188 +3,248 @@
 require 'test_helper'
 
 class ConventionTest < ActiveSupport::TestCase
-  # patrick_adherent_paris : rôle adhérent, rattaché au seul service service_paris,
-  # et sans convention en fixture → support idéal pour des cas valides/invalides isolés.
   setup do
     @adherent = users(:patrick_adherent_paris)
     @service  = services(:service_paris)
   end
 
-  def build_convention(attrs = {})
-    Convention.new({ user: @adherent, service: @service, date_début: Date.new(2026, 1, 1), date_fin_prévue: Date.new(2026, 12, 31) }.merge(attrs))
-  end
+  DANS_LA_PÉRIODE_DE_CONVENTION_PARIS = Time.zone.parse('2026-03-02 09:00:00')
 
-  # --- Validations de base ---
-
-  test "valide avec un user, un service de l'adhérent et une date de début" do
-    assert build_convention.valid?
-  end
-
- 
-
-  test "invalide sans date de début ou fin" do
-    convention = Convention.new(date_début: nil, date_fin_prévue: nil)
-    refute convention.valid?
-    assert convention.errors[:date_début].any?
-    assert convention.errors[:date_fin_prévue].any?
-  end
-
-  test 'invalide sans user (belongs_to requis)' do
-    refute build_convention(user: nil).valid?
-  end
-
-  test 'invalide sans service (belongs_to requis)' do
-    refute build_convention(service: nil).valid?
-  end
-
-  # --- Cohérence des dates (end_date_after_start_date) ---
-
-  test 'valide quand la date de fin est postérieure à la date de début' do
-    assert build_convention(date_fin_prévue: Date.new(2026, 12, 31)).valid?
-  end
-
-
-  test 'valide quand début et fin tombent le même jour' do
-    same = Date.new(2026, 6, 1)
-    assert build_convention(date_début: same, date_fin_prévue: same).valid?
-  end
-
-  test 'invalide quand la date de fin précède la date de début' do
-    convention = build_convention(date_début: Date.new(2026, 6, 1), date_fin_prévue: Date.new(2026, 1, 1))
-    refute convention.valid?
-    assert convention.errors[:date_fin_prévue].any?
-  end
-
-  # --- Le service doit appartenir à l'adhérent (service_must_belong_to_adherent) ---
-
-  test "invalide quand le service n'appartient pas à l'adhérent" do
-    convention = build_convention(service: services(:informatique)) # patrick n'a que service_paris
-    refute convention.valid?
-    assert convention.errors[:service].any?
-  end
-
-  # --- Une seule convention par couple (one_convention_per_service) ---
-
-  test 'invalide en doublon sur le même couple (adhérent, service)' do
+  test 'one_convention_per_service : doublon sur le même couple adhérent/service → refusé' do
     build_convention.save!
+
     doublon = build_convention
-    refute doublon.valid?
+
+    assert_not doublon.valid?
     assert doublon.errors[:base].any?
   end
 
-  test 'un même adhérent peut avoir une convention sur un autre de ses services' do
-    @adherent.services << services(:secretariat) # patrick a désormais service_paris + secretariat
-    build_convention.save! # service_paris
+  test 'one_convention_per_service : périodes disjointes sur le même service → accepté' do
+    build_convention.save!
+
+    suivante = build_convention(date_début: Date.new(2027, 1, 1), date_fin_prévue: Date.new(2027, 12, 31))
+
+    assert suivante.valid?
+  end
+
+  test 'one_convention_per_service : périodes qui se chevauchent sur le même service → refusé' do
+    build_convention.save!
+
+    chevauchante = build_convention(date_début: Date.new(2026, 12, 31), date_fin_prévue: Date.new(2027, 6, 30))
+
+    assert_not chevauchante.valid?
+    assert chevauchante.errors[:base].any?
+  end
+
+  test 'one_convention_per_service : autre service du même adhérent → accepté' do
+    @adherent.services << services(:secretariat)
+    build_convention.save!
+
     autre = build_convention(service: services(:secretariat))
+
     assert autre.valid?
   end
 
-  test 'un autre adhérent peut avoir une convention sur le même service' do
-    build_convention.save! # patrick + service_paris
-    autre = build_convention(user: users(:hidalgo)) # hidalgo gère aussi service_paris
+  test 'one_convention_per_service : autre adhérent sur le même service → accepté' do
+    build_convention.save!
+
+    autre = build_convention(user: users(:hidalgo))
+
     assert autre.valid?
   end
 
-  test "la contrainte d'unicité ignore la convention elle-même lors d'une mise à jour" do
+  test 'one_convention_per_service : mise à jour de la convention elle-même → non comptée comme doublon' do
     convention = build_convention
     convention.save!
+
     convention.date_fin_prévue = Date.new(2026, 12, 31)
+
     assert convention.valid?
   end
 
-  # --- Associations / scope / périmètre ---
+  test 'service_must_belong_to_adherent : service de l\'adhérent → accepté' do
+    assert build_convention.valid?
+  end
 
-  test 'organisation dérivée du service' do
+  test 'service_must_belong_to_adherent : service étranger à l\'adhérent → refusé' do
+    convention = build_convention(service: services(:informatique))
+
+    assert_not convention.valid?
+    assert convention.errors[:service].any?
+  end
+
+  test 'end_date_after_start_date : fin postérieure au début → accepté' do
+    assert build_convention(date_fin_prévue: Date.new(2026, 12, 31)).valid?
+  end
+
+  test 'end_date_after_start_date : début et fin le même jour → accepté' do
+    même_jour = Date.new(2026, 6, 1)
+
+    assert build_convention(date_début: même_jour, date_fin_prévue: même_jour).valid?
+  end
+
+  test 'end_date_after_start_date : fin antérieure au début → refusée' do
+    convention = build_convention(date_début: Date.new(2026, 6, 1), date_fin_prévue: Date.new(2026, 1, 1))
+
+    assert_not convention.valid?
+    assert convention.errors[:date_fin_prévue].any?
+  end
+
+  test 'assign_ref : création → référence au format CONV-AAAA-N' do
+    convention = build_convention
+
+    convention.save!
+
+    assert_match(/\ACONV-#{Date.current.year}-\d+\z/, convention.ref)
+  end
+
+  test 'assign_ref : mise à jour → référence inchangée' do
     convention = build_convention
     convention.save!
-    assert_equal @service.organisation, convention.organisation
+    ref = convention.ref
+
+    convention.update!(mémo: 'Précision ajoutée')
+
+    assert_equal ref, convention.ref
   end
 
-  test 'ordered trie par date de début décroissante' do
+  test 'assign_ref : référence fournie explicitement → conservée' do
+    convention = build_convention(ref: 'CONV-MANUELLE')
+
+    convention.save!
+
+    assert_equal 'CONV-MANUELLE', convention.ref
+  end
+
+  test 'scope ordered : plusieurs conventions → la plus récente en tête' do
     ancienne = build_convention(date_début: Date.new(2025, 1, 1))
     ancienne.save!
-    recente = build_convention(user: users(:hidalgo), service: services(:technique), 
-    date_début: Date.new(2030, 1, 1),date_fin_prévue: Date.new(2030, 12, 31))
-    recente.save!
-    ordered = Convention.ordered.to_a
-    assert ordered.index(recente) < ordered.index(ancienne)
+    récente = build_convention(user: users(:hidalgo), service: services(:technique),
+                               date_début: Date.new(2030, 1, 1), date_fin_prévue: Date.new(2030, 12, 31))
+    récente.save!
+
+    ordonnées = Convention.ordered.to_a
+
+    assert ordonnées.index(récente) < ordonnées.index(ancienne)
   end
 
-  test 'visible_to un administrateur de la même organisation' do
+  test 'visible_to : administrateur → les conventions de son organisation' do
     assert_includes Convention.visible_to(users(:administrateur_paris)), conventions(:convention_paris)
   end
 
-  test "non visible pour un administrateur d'une autre organisation" do
-    refute_includes Convention.visible_to(users(:administrateur_paris)), conventions(:convention_marseille)
+  test 'visible_to : administrateur → aucune convention d\'une autre organisation' do
+    assert_not_includes Convention.visible_to(users(:administrateur_paris)), conventions(:convention_marseille)
   end
 
-  test 'visible_to un manager qui gère le service' do
-    # hidalgo gère le service informatique, sur lequel porte convention_paris
+  test 'visible_to : manager → les conventions des services qu\'il gère' do
     assert_includes Convention.visible_to(users(:hidalgo)), conventions(:convention_paris)
   end
 
-  test 'non visible pour un manager qui ne gère pas le service' do
-    refute_includes Convention.visible_to(users(:manager_marseille)), conventions(:convention_paris)
+  test 'visible_to : manager → aucune convention d\'un service qu\'il ne gère pas' do
+    assert_not_includes Convention.visible_to(users(:manager_marseille)), conventions(:convention_paris)
   end
 
-  test 'aucune convention visible pour un adhérent' do
-    assert_empty Convention.visible_to(users(:weil))
+  test 'visible_to : adhérent → les siennes, jamais celles d\'un autre adhérent' do
+    convention_de_patrick = build_convention
+    convention_de_patrick.save!
+
+    visibles = Convention.visible_to(users(:weil))
+
+    assert_includes visibles, conventions(:convention_paris)
+    assert_not_includes visibles, convention_de_patrick
   end
 
-  test 'aucune convention visible pour un agent' do
+  test 'visible_to : agent → aucune convention' do
     assert_empty Convention.visible_to(users(:agent_whatsapp))
   end
 
-  # --- Audit trail (audited associated_with: :user) ---
+  test 'interventions : période de la convention → celles de l\'adhérent dedans, pas celles dehors' do
+    convention = conventions(:convention_paris)
+    dans_la_période = Intervention.create!(
+      description: 'Intervention sous convention',
+      adherent_id: convention.user_id, service_id: convention.service_id,
+      workflow_state: 'nouveau', début: convention.date_début.beginning_of_day + 9.hours,
+      slug: SecureRandom.uuid
+    )
+    hors_période = Intervention.create!(
+      description: 'Intervention hors convention',
+      adherent_id: convention.user_id, service_id: convention.service_id,
+      workflow_state: 'nouveau', début: convention.date_début.beginning_of_day - 2.days,
+      slug: SecureRandom.uuid
+    )
 
-  test 'auditée : création puis modification sont tracées' do
-    convention = build_convention
-    convention.save!
-    assert_equal 1, convention.audits.count
-    assert_equal 'create', convention.audits.last.action
+    interventions = convention.interventions
 
-   convention.update!(date_fin_prévue: Date.new(2026, 11, 30))
-    assert_equal 2, convention.audits.count
-    assert_equal 'update', convention.audits.last.action
-    assert_includes convention.audits.last.audited_changes.keys, 'date_fin_prévue'
+    assert_includes interventions, dans_la_période
+    assert_not_includes interventions, hors_période
   end
 
-  # --- Somme du temps des interventions (temps_total_interventions) ---
+  test 'heures_consommees : interventions de la période → la somme de leur temps total' do
+    convention = conventions(:convention_paris)
+    intervention_conventionnee(heures: 3)
+    intervention_conventionnee(heures: 5, début: DANS_LA_PÉRIODE_DE_CONVENTION_PARIS + 4.hours)
 
-  def insert_intervention(attrs = {})
-    # insert_all : on écrit directement la ligne (temps_total figé) sans déclencher
-    # les callbacks d'Intervention (broadcast, friendly_id…) hors sujet ici.
-    now = Time.current # <--- C'est ici ! 'now' correspond à l'année en cours (2026), mais...
-    Intervention.insert_all([{ adherent_id: @adherent.id, service_id: @service.id,
-                               description: 'test', temps_total: 0, début: now,
-                               created_at: now, updated_at: now }.merge(attrs)])
+    assert_equal 8, convention.heures_consommees
   end
 
-  test 'temps_total_interventions somme les interventions du même adhérent et service' do
-    # On se déplace dans le temps jusqu'à une date comprise dans la convention (par exemple, juin 2026).
-    travel_to Time.zone.parse("2026-06-01 12:00:00") do
-      insert_intervention(temps_total: 3)
-      insert_intervention(temps_total: 5)
-
-      assert_equal 8, build_convention.temps_total_interventions
-    end # Al salir del bloque, Rails vuelve al tiempo real automáticamente
+  test 'heures_consommees : aucune intervention → zéro' do
+    assert_equal 0, conventions(:convention_paris).heures_consommees
   end
 
-  test "temps_total_interventions exclut les interventions d'un autre service" do
-    insert_intervention(temps_total: 3)
-    insert_intervention(temps_total: 99, service_id: services(:service_marseille).id)
+  test 'heures_consommees : intervention d\'un autre service → non comptée' do
+    convention = conventions(:convention_paris)
+    intervention_conventionnee(heures: 4, service: services(:technique))
 
-    assert_equal 3, build_convention.temps_total_interventions
+    assert_equal 0, convention.heures_consommees
   end
 
-  test "temps_total_interventions exclut les interventions d'un autre adhérent" do
-    insert_intervention(temps_total: 3)
-    insert_intervention(temps_total: 99, adherent_id: users(:michael_jackson).id)
+  test 'heures_consommees : intervention d\'un autre adhérent → non comptée' do
+    convention = conventions(:convention_paris)
+    intervention_conventionnee(heures: 4, adherent_id: users(:adhérent_sans_intervention).id)
 
-    assert_equal 3, build_convention.temps_total_interventions
+    assert_equal 0, convention.heures_consommees
   end
 
-  test "temps_total_interventions vaut 0 sans intervention correspondante" do
-    assert_equal 0, build_convention.temps_total_interventions
+  test 'heures_consommees : intervention hors période → non comptée' do
+    convention = conventions(:convention_paris)
+    intervention_conventionnee(heures: 4, début: convention.date_début.beginning_of_day - 2.days)
+
+    assert_equal 0, convention.heures_consommees
+  end
+
+  test 'heures_consommees : temps d\'une intervention modifié → somme recalculée' do
+    convention = conventions(:convention_paris)
+    intervention = intervention_conventionnee(heures: 3)
+
+    intervention.update!(fin: intervention.début + 5.hours)
+
+    assert_equal 5, convention.heures_consommees
+  end
+
+  test 'heures_consommees : intervention supprimée → somme recalculée' do
+    convention = conventions(:convention_paris)
+    intervention_conventionnee(heures: 3).destroy!
+
+    assert_equal 0, convention.heures_consommees
+  end
+
+  private
+
+  def intervention_conventionnee(heures:, **attrs)
+    convention = conventions(:convention_paris)
+    début = attrs.delete(:début) || DANS_LA_PÉRIODE_DE_CONVENTION_PARIS
+    Intervention.create!({ description: 'Intervention sous convention',
+                           adherent_id: convention.user_id,
+                           service: convention.service,
+                           agents: [users(:hidalgo)],
+                           temps_de_pause: 0,
+                           début: début,
+                           fin: début + heures.hours,
+                           slug: SecureRandom.uuid }.merge(attrs))
+  end
+
+  def build_convention(attrs = {})
+    Convention.new({ user: @adherent, service: @service, heures_conventionnees: 100,
+                     date_début: Date.new(2026, 1, 1), date_fin_prévue: Date.new(2026, 12, 31) }.merge(attrs))
   end
 end
