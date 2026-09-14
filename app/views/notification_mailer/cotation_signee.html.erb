@@ -1,7 +1,7 @@
 <h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">Bonjour,</h2>
 
 <p style="color: #475569; margin-bottom: 24px;">
-La cotation  « <%= @cotation.intitulé.capitalize %> » (<b>N°<%= @cotation.ref %></b>) vient d'être <b>signée</b> par <%= @cotation.adherent&.nom %>.
+La cotation  « <%= @cotation.intitulé.humanize %> » (<b>N°<%= @cotation.ref %></b>) vient d'être <b>signée</b> par <%= @cotation.adherent&.nom %>.
 <br><br>
 Vous pouvez également la voir directement sur votre espace : <%= link_to "Voir la cotation", cotation_url(@cotation) %>
 
