@@ -84,6 +84,7 @@ class MessagerieController < ApplicationController
     @users = User
              .by_service(current_user.services)
              .where.not(id: current_user.id)
+             .or(User.where(id: ENV["UUID_AIBOT"]))
              .ordered
 
     if params[:query].present?
@@ -108,6 +109,7 @@ class MessagerieController < ApplicationController
     @users = User
              .by_service(current_user.services)
              .where.not(id: current_user.id)
+             .or(User.where(id: ENV["UUID_AIBOT"]))
              .ordered
              .with_attached_profile_picture
   end
