@@ -70,8 +70,6 @@ Rails.application.routes.draw do
   end
   match 'doc', to: redirect('/documentation'), via: :get
 
-  # resources :organisations, only: %i[ show edit update ]
-
   resources :interventions do
     member do
       # post :accepter
