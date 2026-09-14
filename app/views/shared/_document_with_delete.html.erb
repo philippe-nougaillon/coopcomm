@@ -1,0 +1,86 @@
+<%#
+  Document avec bouton de suppression optionnel et aperçu PDF/Download.
+
+  Locals requis :
+    document           - un ActiveStorage::Attached::One attaché (document.attached? doit être true)
+
+  Locals optionnels :
+    supprimable        - bool : affiche le bouton de suppression (défaut false)
+    chemin_suppression - String : route DELETE à appeler (obligatoire si supprimable est true)
+%>
+<%
+  supprimable        = local_assigns.fetch(:supprimable, false)
+  chemin_suppression = local_assigns[:chemin_suppression]
+
+  raise ArgumentError, "chemin_suppression requis quand supprimable: true" if supprimable && chemin_suppression.blank?
+%>
+
+<% if document.attached? %>
+
+  <div class="relative w-80">
+
+      <% if supprimable %>
+        <button type="button"
+                onclick="document.getElementById('delete_doc_modal_<%= document.id %>').showModal()"
+                class="absolute -top-2 -right-2 bg-white text-red-500 rounded-full p-1.5 shadow-md border border-slate-200 hover:bg-red-50 hover:text-red-600 transition-all z-20"
+                title="Supprimer le document">
+          <%= embedded_svg "icons/delete.svg", class: "w-3.5 h-3.5", title: "Supprimer" rescue nil %>
+        </button>
+
+        <dialog id="delete_doc_modal_<%= document.id %>" class="modal">
+          <div class="modal-box">
+            <form method="dialog">
+              <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="text-lg font-bold text-error flex items-center gap-2">
+              <%= embedded_svg "icons/delete.svg", class: "w-6 h-6 fill-current text-error", title: "Supprimer" rescue nil %>
+              Supprimer le document
+            </h3>
+            <p class="py-4 text-sm text-slate-600 text-left">
+              Êtes-vous bien certain.e de vouloir supprimer définitivement ce document ?
+              Cette action est irréversible.
+            </p>
+            <div class="modal-action">
+              <form method="dialog">
+                <button class="btn btn-ghost">Annuler</button>
+              </form>
+
+              <%= button_to chemin_suppression, method: :delete, class: "btn btn-error text-white" do %>
+                Oui, supprimer
+              <% end %>
+            </div>
+          </div>
+          <form method="dialog" class="modal-backdrop">
+            <button>Fermer</button>
+          </form>
+        </dialog>
+      <% end %>
+
+      <%= link_to rails_blob_path(document, disposition: "inline"),
+                  target: "_blank",
+                  data: { turbo: false },
+                  title: "Cliquez pour télécharger le document" do %>
+
+        <% if document.image? %>
+          <div class="w-full h-48 overflow-hidden rounded">
+            <%= image_tag rails_blob_path(document),
+                  class: "w-full h-full object-cover pointer-events-none" %>
+          </div>
+        <% else %>
+          <div class="w-full h-48 overflow-hidden rounded">
+            <iframe
+              src="<%= rails_blob_path(document, disposition: "inline") %>#view=FitH&toolbar=0&navpanes=0"
+              class="border-none pointer-events-none"
+              style="width: calc(100% + 24px); height: 100%;"
+              title="Aperçu du document">
+            </iframe>
+          </div>
+        <% end %>
+
+      <% end %>
+
+  </div>
+<% end %>
+
+
+  

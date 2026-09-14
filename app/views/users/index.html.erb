@@ -27,7 +27,7 @@
                 options_for_select(
                 [["Tous les rôles", ""]] + User.rôles.sort_by { |k, _| I18n.transliterate(k) },
                 params[:rôle]),
-              class: 'slim-select w-full h-10 capitalize',
+              class: 'slim-select w-full h-10 first-letter:capitalize',
               data: { placeholder: 'Tous les rôles' },
               onchange: 'this.form.requestSubmit()' %>
       </div>
@@ -56,7 +56,7 @@
         <%= select_tag :user_tag,
                 options_from_collection_for_select(@users_tags, :name, :name, params[:user_tag]),
                 include_blank: true,
-                class: 'slim-select w-full h-10 capitalize',
+                class: 'slim-select w-full h-10 first-letter:capitalize',
                 data: { placeholder: 'Tous les mots-clés' },
                 onchange: 'this.form.requestSubmit()' %>
       </div>

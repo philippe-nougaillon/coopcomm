@@ -141,7 +141,7 @@
                 <td class="px-4 py-3 text-slate-500 break-all"><%= ligne.email %></td>
                 <td class="px-4 py-3 text-slate-500"><%= ligne.service %></td>
                 <td class="px-4 py-3">
-                  <span class="text-error"><%= ligne.messages.join(' · ').capitalize %></span>
+                  <span class="text-error"><%= ligne.messages.join(' · ').humanize %></span>
                 </td>
               </tr>
             <% end %>

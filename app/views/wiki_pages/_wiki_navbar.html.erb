@@ -1,6 +1,6 @@
 <div class="drawer sm:drawer-open w-min lg:mr-6">
   <input id="my-drawer" type="checkbox" class="sm:hidden drawer-toggle" />
-  
+
   <div class="drawer-content fixed top-0 left-0 z-40 ml-4 mt-7">
     <div class="sm:hidden">
       <label id="drawer-label" for="my-drawer">
@@ -13,33 +13,41 @@
 
   <div class="drawer-side">
     <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-    
+
     <nav class="min-h-screen h-96 bg-base-100 shadow w-64 fixed top-0 -ml-4 2xl:-ml-8 overflow-y-auto flex flex-col justify-between">
       <div>
         <div class="h-18 <%= 'lg:h-16' if user_signed_in? %>"></div>
-        
+
         <%= link_to documentation_index_path do %>
           <div class="flex gap-2 items-center text-xl mt-4 hover:bg-slate-200 py-3 pl-8 <%= 'bg-slate-100 hover:bg-base-300' if (action_name == "index") %>">
             Commencez ici
           </div>
         <% end %>
+
         <% WikiPage.catégories.keys.each do |catégorie| %>
-          <%= link_to public_send("#{catégorie}_documentation_index_path") do %>
-            <div class="flex gap-2 items-center text-xl mt-4 hover:bg-slate-200 py-3 pl-8 <%= 'bg-slate-100 hover:bg-base-300' if (action_name == catégorie) %>">
-              <%= catégorie.humanize %>
-            </div>
-          <% end %>
-          <% WikiPage.by_role_for(current_user).by_categorie(catégorie).first(3).each do |wiki| %>
-            <%= link_to documentation_path(wiki) do %>
-              <div class="flex gap-2 items-center text-sm mt-2 hover:bg-slate-200 pl-12 capitalize <%= 'bg-slate-100 hover:bg-base-300' if @wiki_page == wiki %>">
-                <%= wiki.titre %>
-              </div>
+          <%
+            pages_categorie   = WikiPage.by_role_for(current_user).by_categorie(catégorie)
+            categorie_active  = (action_name == catégorie) || pages_categorie.include?(@wiki_page)
+          %>
+          <details class="group" <%= "open" if categorie_active %>>
+            <summary class="flex items-center justify-between gap-2 text-xl mt-4 hover:bg-slate-200 py-3 pl-8 pr-4 cursor-pointer list-none <%= 'bg-slate-100' if categorie_active %>">
+              <%= link_to catégorie.humanize, public_send("#{catégorie}_documentation_index_path"),
+                    class: "flex-1", onclick: "event.stopPropagation()" %>
+              <span class="transition-transform group-open:rotate-90"> 
+                <%= embedded_svg "icons/arrow_right.svg", class: "w-5 h-5 fill-current" %>
+              </span>
+            </summary>
+
+            <% pages_categorie.each do |wiki| %>
+              <%= link_to documentation_path(wiki) do %>
+                <div class="flex gap-2 items-center text-base py-2 pl-12 hover:bg-slate-200 <%= 'bg-slate-100 hover:bg-base-300' if @wiki_page == wiki %>">
+                  <%= wiki.titre.humanize %>
+                </div>
+              <% end %>
             <% end %>
-          <% end %>
+          </details>
         <% end %>
       </div>
-
-      <%= link_to 'Retour vers CoopComm', root_path, class: 'mb-8 mx-8 mt-12 text-primary hover:underline' %>
     </nav>
   </div>
 </div>

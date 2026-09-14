@@ -86,7 +86,7 @@ class TransformToPdfBasePdfForCrmTest < ActiveSupport::TestCase
   test 'la date de livraison souhaitée est imprimée quand elle est renseignée' do
     texte = texte_pdf(TransformToPdf::Commande.call(@commande))
 
-    assert_includes texte, I18n.l(@commande.date_livraison_souhaitée, format: :long).capitalize
+    assert_includes texte, I18n.l(@commande.date_livraison_souhaitée, format: :long).humanize
   end
 
   test 'sans date de livraison souhaitée, un tiret est imprimé' do

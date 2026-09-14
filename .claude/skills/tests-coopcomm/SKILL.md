@@ -103,7 +103,7 @@ Plusieurs blocs par fichier sont normaux — chacun vit auprès de ce qu'il vise
 
 **Helpers de test** *(vaut pour tous les types de tests, **sauf** les tests système)*. Une méthode utilisée par **un seul** fichier vit sous `private`, en fin de classe, avec le commentaire qui l'explique **collé à elle**. Utilisée par **plusieurs** fichiers, elle devient un module de `test/support/` que les fichiers `require_relative` et `include` — comme `fabrique_xls.rb`, `interventions_matrice.rb` et `lecture_pdf.rb` qui s'y trouvent déjà.
 
-**Déplacer du test, c'est déplacer son voisinage** — règle générale du projet, énoncée dans `CLAUDE.md` §1 : après tout déplacement outillé de méthode, de test, de bloc ou de constante, relire le voisinage du point de départ **et** du point d'arrivée ; relancer la suite ne suffit pas.
+**Déplacer du test, c'est déplacer son voisinage** — règle générale du projet, énoncée dans `CLAUDE.md` §2 : après tout déplacement outillé de méthode, de test, de bloc ou de constante, relire le voisinage du point de départ **et** du point d'arrivée ; relancer la suite ne suffit pas.
 
 ## Savoir ce qui est rouge
 

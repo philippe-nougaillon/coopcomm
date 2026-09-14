@@ -298,6 +298,100 @@
 - **Correctif proposé, mesuré** : borner le garde aux champs obligatoires — `if (blankOption && this.element.required)`. Variante posée temporairement et relevée au navigateur : le filtre Statut retrouve son entrée « Tous », et les trois selects requis de `cotations/new` gardent `data-placeholder = "true"` et `valueMissing = true`. Les ~10 selects `required` du dépôt portent bien l'attribut (vérifié sur rôle, état et matériel d'un mouvement, adhérent/service/prestation d'un devis), donc aucun n'est déprotégé par ce bornage. C'était déjà le périmètre du garde de B99.
 - **Non couvert par un test** : plus aucun test ne surveille le comportement de l'option vide depuis la suppression de `test/system/slim_select_test.rb` par `#491`.
 
+<!-- B104 est pris par la branche `502` (flash qui fait déborder le cookie de session), non encore fusionnée dans staging : ne pas le réattribuer. -->
+
+### B105 — Le badge « + N » de la troncature annonce toujours une valeur masquée de trop dès qu'on touche au champ
+- **Signalé par** : l'agent, 2026-09-09 ; re-vérifié présent sur `staging` le 2026-09-14 (code identique).
+- **Où** : [slim_select_controller.js](app/javascript/controllers/slim_select_controller.js), `truncateChips` — les chips sont comptées **avant** que l'ancien badge soit retiré :
+  ```js
+  const chips = this.element.parentElement.querySelectorAll('.ss-value')   // ← compte AUSSI l'ancien badge
+  ...
+  const oldBadge = ...querySelector('.ss-more-badge')
+  if (oldBadge) oldBadge.remove()                                          // ← trop tard
+  const hidden = chips.length - maxValuesShown
+  ```
+- **Cause** : le badge porte lui-même la classe `ss-value`, et `querySelectorAll` rend une liste **statique** — retirer le badge du DOM ensuite ne le retire pas de `chips`. Le compte est gonflé de 1 à chaque passage où un badge existait déjà. Le fichier porte pourtant l'avertissement, resté en place : *« On enlève l'ancien badge AVANT de compter les chips (sinon il se compte lui-même) »* — l'ordre a été inversé en ajoutant la bascule `ss-multiple`, qui avait besoin du compte plus tôt.
+- **Mesuré au navigateur (2026-09-09, deux sondes jetables supprimées, aucune donnée écrite)** :
+  1. **Au clic** — `/users/:slug/edit`, champ **Service(s)** (seuil 1). Au chargement : 2 chips, 1 masquée, badge `+ 1` — juste. Je désélectionne un service → **1 chip, 0 masquée, et le badge affiche toujours `+ 1`**.
+  2. **Au redimensionnement** — `/mouvements` avec les 3 états sélectionnés (seuil mobile 2). Au chargement : badge `+ 1`, 1 chip masquée — juste. Après un redimensionnement **sans changer de palier** (544 → 560 px) : **badge `+ 2` pour toujours 1 seule chip masquée**. L'écart se stabilise à +1 (un seul badge existe à la fois).
+- **Parcours de reproduction** :
+  1. Je modifie un utilisateur rattaché à deux services — le champ Service(s) affiche « Informatique » et « + 1 ».
+  2. Je retire un service dans le menu.
+  3. → Il ne reste qu'un service, **rien n'est masqué**, et le champ affiche toujours « + 1 ». Sur téléphone, la barre d'URL qui se replie au défilement déclenche un `resize` : le même décalage apparaît sans action de l'utilisateur.
+- **Impact** : le badge est le **seul** indicateur de ce que le champ cache (les chips masquées sont en `display: none`). Le champ Service(s) d'un utilisateur est concerné, or c'est lui qui détermine l'organisation et le périmètre de visibilité.
+- **Ce qui n'est PAS touché, vérifié** : le `<select>` natif garde toujours les bonnes valeurs — **rien de faux n'est enregistré**, le défaut est d'affichage. Les chips restent correctement masquées : seul le nombre annoncé est faux.
+- **Correctif proposé** : retirer le badge avant la capture de `chips` — l'ordre que décrit le commentaire. La bascule `ss-multiple` se calcule alors sur la même liste.
+- **Défauts annexes de la même méthode** (aucun atteignable aujourd'hui) :
+  - Le badge est **cherché** dans `this.element.parentElement` mais **ajouté** dans `this.element.nextElementSibling`. Les deux coïncident tant que chaque select a son propre conteneur (vérifié sur les 24 emplacements) ; deux selects dans un même `<div>` mélangeraient leurs chips.
+  - `nextElementSibling.querySelector('.ss-values')` rend `null` sur un select **simple** → `TypeError`. Inatteignable : les 24 selects porteurs d'un seuil sont tous `multiple`.
+  - `resize` non débouncé : un écouteur par slim-select, chacun mutant le DOM à chaque événement.
+  - `parseInt(...) || null` transforme un seuil `0` en « désactivé » ; le seuil `768` est codé en dur.
+  - Rien ne recalcule le badge en dehors de `truncateChips` : après un `setData` de `dynamic_select_controller` qui **réduirait** la sélection, le badge garderait son ancien compte. Cas non mesuré.
+- ⚠ **Écarté par la mesure** : la troncature n'est **pas** perdue quand la cascade `dynamic-select` repeuple les agents en conservant la sélection (cas réel de `populateAgents`) — `setData` ne reconstruit alors pas le DOM des chips (sonde du 2026-09-09). Une déduction contraire de l'agent (2026-08-27) est donc fausse.
+- **Non couvert par un test** : aucun test ne touche `.ss-value`. ⚠ La suite tourne en largeur téléphone (544 px) : c'est toujours `max_values_shown_mobile` qui s'applique, jamais le seuil desktop.
+
+### B106 — La règle CSS qui rétrécit les chips quand il y en a plusieurs est rejetée par le navigateur : elle n'a jamais rien fait
+- **Signalé par** : l'agent, 2026-09-09 ; re-vérifié présent sur `staging` le 2026-09-14.
+- **Où** : [application.css](app/assets/stylesheets/application.css), section « TAILLE CONTENU SLIM-SELECT » :
+  ```css
+  .ss-main.ss-multiple .ss-values .ss-value .ss-value-text {
+    max-width: 5
+    rem;            /* ← valeur et unité séparées : « 5 rem » n'est pas une longueur valide */
+  ```
+- **Cause** : en CSS, un nombre et son unité ne peuvent pas être séparés par une espace (un saut de ligne en est une). Le navigateur **jette la déclaration entière**, en silence.
+- **Mesuré (2026-09-09, Chromium, sonde qui lit le bloc directement dans `application.css`)** : le CSSOM ne retient que quatre des cinq déclarations — `{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; }`, **sans `max-width`**. Le `max-width` calculé reste à **150px**, hérité de la règle générale juste au-dessus.
+- **Impact** : nul sur le fonctionnement, mais **toute la mécanique construite pour cette règle est morte**, y compris la bascule `ss-multiple` que `truncateChips` calcule sur chaque slim-select. La règle générale applique déjà l'ellipse à 150px : l'utilisateur ne voit aucune anomalie, c'est le rétrécissement à 5rem qui manque.
+- **Parcours de reproduction** : sélectionner plusieurs valeurs dans un champ multiple — les chips ne rétrécissent pas. Dans l'inspecteur, `max-width: 5 rem` apparaît barré comme invalide.
+- **Correctif proposé** : `max-width: 5rem;` sur une seule ligne. **À décider** : si le rétrécissement n'est pas voulu, supprimer la règle **et** la bascule `ss-multiple` plutôt que les réparer.
+- ⚠ **Masque B105** : `ss-multiple` est posée sur un compte de chips gonflé par l'ancien badge ; réparer ce CSS sans B105 rendrait visible une bascule tantôt juste, tantôt fausse.
+
+### B107 — `/mouvements` : un `id` posé à la main casse le lien entre le libellé « État » et son champ
+- **Signalé par** : l'agent, 2026-08-27 ; re-vérifié présent sur `staging` le 2026-09-14.
+- **Où** : [mouvements/index.html.erb:33](app/views/mouvements/index.html.erb#L33) — `id: 'etats-select'` sur le select du filtre État.
+- **Cause** : le `label_tag :etats` de la ligne précédente rend `for="etats"`, alors que le select s'appelle `etats-select`. Cet id n'est référencé nulle part (ni CSS, ni JS, ni test).
+- **Parcours de reproduction** : sur `/mouvements`, cliquer sur le libellé « État » — le champ ne prend pas le focus. Un lecteur d'écran n'annonce plus le libellé.
+- **Impact** : accessibilité, et tout futur `select`/`fill_in` par libellé en test système échouera sans raison lisible.
+- **Correctif proposé** : retirer la ligne.
+- **Test proposé** : sentinelle — sur les pages d'index, tout `for=` de `<label>` désigne un champ existant.
+
+### B108 — `absence-status` : deux valeurs sont déclarées et jamais lues, et le commentaire qui les accompagne égare
+- **Signalé par** : l'agent, 2026-08-27 ; re-vérifié présent sur `staging` le 2026-09-14.
+- **Où** : [absence_status_controller.js](app/javascript/controllers/absence_status_controller.js), qui recalcule « absence en cours » côté navigateur.
+- **Constat** : les `static values` `matin` et `apresMidi` sont posées par la vue et **aucune** n'est lue par `isEnCours()`, qui ne compare que `du` et `au`.
+- **Commentaire trompeur** : « Ajusta esta regla si `Absence#en_cours?` … es distinta (p.ej. corte a mediodía) » laisse croire à un écart avec le modèle. Il n'y en a pas : `Absence#en_cours?` est `(du..au).include?(Date.today)` et ignore lui aussi les demi-journées.
+- **Impact** : valeurs mortes et commentaire qui égare. **Aucune divergence de comportement.**
+- **À trancher** : les retirer, ou s'en servir — une absence du matin cesserait d'être « en cours » à 15 h, ce qui demande d'aligner `en_cours?` côté Ruby (`début_datetime` / `fin_datetime` font déjà la coupure à midi).
+- **Point annexe** : le JS lit la date **locale du navigateur**, `en_cours?` la date **serveur** — un téléphone mal réglé donne une ligne ambre que le serveur ne considère pas en cours.
+
+### B109 — Devis, commandes, factures : les tableaux d'une même fiche partagent le paramètre `page` et tournent ensemble
+- **Signalé par** : l'agent, 2026-08-27 ; re-vérifié présent sur `staging` le 2026-09-14.
+- **Où** : `cotations#show` (`@pagy_prestations`, `@pagy_envois`, `@pagy`), `commandes#show` et `factures#show` (`@pagy_prestations`, `@pagy`).
+- **Cause** : `Pagy::DEFAULT[:page_param]` est laissé au défaut `:page` ; aucun appel ne le surcharge. Les `pagy_nav` d'une même page émettent donc le même `?page=`.
+- **Parcours de reproduction** : sur une cotation à 25 prestations et 15 lignes d'activité, je clique « 2 » sous les prestations → l'historique des envois et l'activité basculent eux aussi en page 2.
+- **Impact** : sur les trois écrans « argent » du CRM, dès qu'un document dépasse 10 lignes.
+- **Correctif proposé** : `pagy(..., page_param: :page_prestations)` et `:page_envois` — `pagy_nav` reprend le `page_param` de son instance.
+- **Test proposé** : contrôleur — `get cotation_url(c, page_prestations: 2)` → les prestations bougent, l'activité reste en page 1.
+
+### B110 — Pagination des prestations à moitié câblée : `factures#show` l'ignore, `commandes#show` ne l'applique qu'au mobile
+- **Signalé par** : l'agent, 2026-08-27 ; re-vérifié présent sur `staging` le 2026-09-14.
+- **Où** : [factures/show.html.erb:150 et 197](app/views/factures/show.html.erb#L150), [commandes/show.html.erb:196 et 243](app/views/commandes/show.html.erb#L196).
+- **Cause** : les trois contrôleurs construisent `@prestations` + `pagy`, mais seule `cotations/show` a été convertie de bout en bout.
+  - **Factures** : la vue n'utilise **jamais** `@prestations` (mobile et desktop itèrent `@facture.facture_lignes`) et rend malgré tout un `pagy_nav`.
+  - **Commandes** : le mobile prend `@prestations` (l.196), mais le `<tbody>` desktop **réassigne** `commande_lignes = @commande.commande_lignes.includes(:prestation)` (l.243).
+- **Parcours de reproduction** : une facture de 25 lignes les liste **toutes** sous une pagination « 1-10 sur 25 » dont les numéros ne changent rien. Une commande de 25 lignes en montre 10 au téléphone, 25 à l'ordinateur.
+- **Impact** : incohérence affichée sur des documents financiers.
+- **Correctif proposé** : aligner les trois vues sur `@prestations`.
+- **Test proposé** : contrôleur — facture puis commande à 12 lignes → le tableau desktop n'en contient que 10.
+
+### B111 — `cotations#show` : l'état vide « Aucune prestation enregistrée. » a disparu
+- **Signalé par** : l'agent, 2026-08-27 ; re-vérifié présent sur `staging` le 2026-09-14 (chaîne absente de la vue, présente dans `commandes/show:258` et `factures/show:212`).
+- **Où** : [cotations/show.html.erb](app/views/cotations/show.html.erb), section Prestations.
+- **Cause** : la conversion à `@prestations` a retiré le `<% else %>` aux deux niveaux, là où commandes et factures l'ont gardé.
+- **Parcours de reproduction** : créer une cotation sans ligne et l'ouvrir → sous « Prestations », **plus rien** ; on ne sait pas si la page est cassée ou le document vide.
+- **Impact** : cosmétique, mais c'est le premier écran que voit un manager après avoir créé un devis.
+- **Correctif proposé** : restaurer la ligne d'état vide, sur le motif de commandes et factures.
+- **Test proposé** : contrôleur, cotation sans ligne → `assert_select` sur le libellé.
+
 ---
 
 ## 🟡 Risques surveillés (non reproductibles aujourd'hui — re-signaler si les gardes tombent)
@@ -1054,7 +1148,7 @@
 
 ## Comment s'en servir
 - **Retrouver la liste** : ouvrir ce fichier, ou demander à l'agent « ressors-moi les bugs ouverts » (il connaît ce registre via sa mémoire).
-- **À chaque nouveau bug signalé** : ajouter la fiche **dans « Bugs ouverts », rangée par numéro**, avec son parcours de reproduction, et référencer `Bn` depuis CLAUDE.md.
-- **À chaque correction** : **déplacer la fiche entière** dans « Fiches détaillées des bugs corrigés », préfixer le titre de `✅ CORRIGÉ (date)`, ajouter la ligne « Correctif appliqué » et mettre à jour CLAUDE.md. Ne jamais se contenter de marquer `✅` sur place : une fiche corrigée laissée dans « ouverts » fait croire à un bug en attente.
+- **À chaque nouveau bug signalé** : ajouter la fiche **dans « Bugs ouverts », rangée par numéro**, avec son parcours de reproduction. **Ne pas recopier le bug dans `CLAUDE.md`** : ce registre est la source de vérité, `CLAUDE.md` n'en porte que le pointeur.
+- **À chaque correction** : **déplacer la fiche entière** dans « Fiches détaillées des bugs corrigés », préfixer le titre de `✅ CORRIGÉ (date)`, ajouter la ligne « Correctif appliqué ». Rien à mettre à jour dans `CLAUDE.md`, sauf si la correction a livré une **leçon durable** (une ligne au §3) ou changé une convention. Ne jamais se contenter de marquer `✅` sur place : une fiche corrigée laissée dans « ouverts » fait croire à un bug en attente.
 - **Correction partielle** : la fiche **reste** dans « ouverts » (titre `⚠️ PARTIELLEMENT CORRIGÉ`), avec en tête ce qui reste à faire — cf. B19 et B28.
 - **Ne jamais ajouter de fiche après cette section** : tout ce qui vit sous « Comment s'en servir » échappe à la lecture des deux listes (c'est ce qui était arrivé à B73 et B74).

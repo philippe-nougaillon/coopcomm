@@ -63,6 +63,10 @@ Rails.application.routes.draw do
       get :guide
       get :faq
     end
+    member do
+      delete :purge_photo
+      delete :purge_document
+    end
   end
   match 'doc', to: redirect('/documentation'), via: :get
 
