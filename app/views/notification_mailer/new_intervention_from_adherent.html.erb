@@ -3,7 +3,7 @@
 <p style="color: #475569; margin-bottom: 24px;">
 Un adhérent a créé une intervention.
 <br><br>
-Description : <b><%= @intervention.description %></b>
+Description : <b><%= @intervention.description.humanize %></b>
 <br><br>
 <%= link_to "Voir l'intervention", intervention_url(@intervention) %>
 </p>

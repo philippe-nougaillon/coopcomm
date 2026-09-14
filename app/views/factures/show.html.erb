@@ -198,7 +198,7 @@
         <% if facture_lignes.any? %>
           <% facture_lignes.each do |ligne| %>
             <tr class="hover:bg-base-200/60 transition-colors duration-150 align-middle">
-              <td class="px-4 py-3 font-semibold text-sm text-center"><%= ligne.prestation&.code %></td>
+              <td class="px-4 py-3 font-semibold  text-sm text-left max-w-48 truncate cursor-help" title="<%= ligne.prestation&.code %>"><%= ligne.prestation&.code %></td>
               <td class="px-4 py-3 text-sm text-primary font-bold first-letter:capitalize"><%= ligne.intitulé.presence || ligne.prestation&.libellé %></td>
               <td class="px-4 py-3 text-right text-sm whitespace-nowrap"><%= number_to_currency(ligne.prix_ht) %></td>
               <td class="px-6 py-4 text-center font-medium">

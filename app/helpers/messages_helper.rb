@@ -6,7 +6,7 @@ module MessagesHelper
       "Hier"
     elsif date > 7.days.ago
       l(date, format: "%A") # Ej: "Lundi"
-     elsif date.year == Date.current.year
+    elsif date.year == Date.current.year
       l(date, format: "%a %d %b")                # "mer. 19 août"
     else
       l(date, format: "%a %d %b %Y")             # "sam. 16 janv. 2026"

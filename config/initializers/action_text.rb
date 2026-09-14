@@ -6,7 +6,7 @@ Rails.application.config.after_initialize do
       "figure",
       "figcaption"
     ])
-
+    
   custom_allowed_tags = Set.new(%w[
     video
     source
