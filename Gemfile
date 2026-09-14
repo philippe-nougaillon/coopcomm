@@ -93,8 +93,6 @@ gem 'workflow-activerecord', '~> 6.0'
 
 gem 'acts-as-taggable-on'
 
-gem 'view_component', '~> 3.12'
-
 gem 'audited', '~> 5.6'
 
 gem 'mailgun-ruby', '~> 1.2'
@@ -124,7 +122,7 @@ gem 'tiktoken_ruby', '~> 0.0.9'
 
 gem 'omniauth', '~> 2.1'
 
-gem 'omniauth-rails_csrf_protection', '~> 1.0'
+gem 'omniauth-rails_csrf_protection', '~> 2.0'
 
 gem 'friendly_id', '~> 5.5'
 gem 'omniauth-google-oauth2', '~> 1.1'
