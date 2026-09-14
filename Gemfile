@@ -2,10 +2,10 @@
 
 source 'https://rubygems.org'
 
-ruby '3.4.10'
+ruby '4.0.6'
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem 'rails', '~> 8.0'
+gem 'rails', '~> 8.1.3'
 
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem 'sprockets-rails'
@@ -157,7 +157,7 @@ gem 'sitemap_generator', '~> 6.3'
 
 gem 'meta-tags', '~> 2.22'
 
-gem 'page_title_helper', '~> 9.1'
+gem 'page_title_helper', '~> 10.0'
 
 gem 'solid_cache', '~> 1.0'
 
