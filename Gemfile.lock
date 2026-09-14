@@ -721,7 +721,6 @@ DEPENDENCIES
   recaptcha (~> 5.19)
   redcarpet (~> 3.6)
   rqrcode (~> 2.2)
-  ruby-openai (~> 7.1)
   scenic (~> 1.8)
   seed_dump (~> 3.3)
   selenium-webdriver

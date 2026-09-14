@@ -13,17 +13,19 @@ class FetchBoxcarsInfos < ApplicationService
     @boxcars_builder = Boxcars.train.new(boxcars: boxcars)
   end
 
-  def call(demande)
+  def call(current_user, demande)
+    ENV["ORGANISATION_ID_FOR_BOXCARS"] = current_user.organisation.id.to_s
+
     @boxcars_builder.run(demande)
   end
 
   def get_models
-    [Cotation, User, Service]
+    [User, InterventionForBoxcars]
   end
 
   def get_context
     "
-    Le workflow_state peut avoir #{Cotation.workflow_state_humanized}, en minuscules.
+    The user is french, so you should to return response in french
     "
     # [Convention, User]
     # "
