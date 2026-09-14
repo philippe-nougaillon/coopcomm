@@ -389,12 +389,30 @@ class InterventionTest < ActiveSupport::TestCase
     assert_not interventions(:nouvelle_intervention).pointage_ouvert?
   end
 
-  test 'durée_humanized : début et fin réels → durée en heures et minutes' do
+  test 'la durée d’une intervention est affichée en heures, minutes et secondes' do
     intervention = interventions(:nouvelle_intervention)
     intervention.début = Time.zone.local(2030, 5, 4, 9, 0)
-    intervention.fin = Time.zone.local(2030, 5, 4, 11, 30)
+    intervention.fin = Time.zone.local(2030, 5, 4, 11, 30, 12)
 
-    assert_equal '02h 30min', intervention.durée_humanized
+    assert_equal '02h 30min 12sec', intervention.durée_humanized
+  end
+
+  test 'les dates d’un pointage sont affichées avec les secondes' do
+    mère = interventions(:intervention_repete)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+
+    assert_equal :very_long, fille.format_date
+  end
+
+  test 'les dates d’une intervention ordinaire sont affichées sans les secondes' do
+    assert_equal :long, interventions(:nouvelle_intervention).format_date
+  end
+
+  test 'le format réservé aux pointages affiche réellement les secondes' do
+    horaire = Time.zone.local(2030, 5, 4, 9, 0, 12)
+
+    assert_includes I18n.l(horaire, format: :very_long), '12s'
+    assert_not_includes I18n.l(horaire, format: :long), '12s'
   end
 
   test 'passed : intervention encore à l\'état nouveau et non finie → faux' do

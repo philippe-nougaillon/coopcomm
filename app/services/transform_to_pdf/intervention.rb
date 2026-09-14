@@ -195,8 +195,8 @@ module TransformToPdf
 
     def lignes_dates_et_temps
       [
-        ['Début', date_ou(@intervention.début, 'Non renseigné')],
-        ['Fin', date_ou(@intervention.fin, 'Non renseignée')],
+        ['Début', date_ou(@intervention.début, 'Non renseigné', format: @intervention.format_date)],
+        ['Fin', date_ou(@intervention.fin, 'Non renseignée', format: @intervention.format_date)],
         ['Temps passé', "#{@intervention.temps_par_agent} h"],
         ['Temps total', "#{@intervention.temps_total} h"],
         ['Pause', "#{@intervention.temps_de_pause} h"]
@@ -239,8 +239,8 @@ module TransformToPdf
 
     def ligne_pointage(pointage)
       ligne = [
-        date_ou(pointage.début, '—'),
-        date_ou(pointage.fin, '—'),
+        date_ou(pointage.début, '—', format: pointage.format_date),
+        date_ou(pointage.fin, '—', format: pointage.format_date),
         "#{pointage.temps_total} h",
         pointage.workflow_state.to_s.humanize,
         pointage.commentaires.presence || '—'
@@ -402,8 +402,8 @@ module TransformToPdf
       texte.encode('Windows-1252', invalid: :replace, undef: :replace, replace: '?').encode('UTF-8')
     end
 
-    def date_ou(valeur, defaut)
-      valeur.present? ? l(valeur, format: :long) : defaut
+    def date_ou(valeur, defaut, format: :long)
+      valeur.present? ? l(valeur, format: format) : defaut
     end
 
     def liste_ou(valeurs, defaut)

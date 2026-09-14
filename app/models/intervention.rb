@@ -411,7 +411,12 @@ class Intervention < ApplicationRecord
   end
 
   def durée_humanized
-    Time.at(fin - début).utc.strftime('%Hh %Mmin')
+    Time.at(fin - début).utc.strftime('%Hh %Mmin %Ssec')
+  end
+
+  # Format de date pour les interventions pointages avec les secondes
+  def format_date
+    template_slug.present? ? :very_long : :long
   end
 
   def self.dernière_en_cours(interventions)
