@@ -1054,7 +1054,7 @@
 
 ## Comment s'en servir
 - **Retrouver la liste** : ouvrir ce fichier, ou demander à l'agent « ressors-moi les bugs ouverts » (il connaît ce registre via sa mémoire).
-- **À chaque nouveau bug signalé** : ajouter la fiche **dans « Bugs ouverts », rangée par numéro**, avec son parcours de reproduction, et référencer `Bn` depuis CLAUDE.md.
-- **À chaque correction** : **déplacer la fiche entière** dans « Fiches détaillées des bugs corrigés », préfixer le titre de `✅ CORRIGÉ (date)`, ajouter la ligne « Correctif appliqué » et mettre à jour CLAUDE.md. Ne jamais se contenter de marquer `✅` sur place : une fiche corrigée laissée dans « ouverts » fait croire à un bug en attente.
+- **À chaque nouveau bug signalé** : ajouter la fiche **dans « Bugs ouverts », rangée par numéro**, avec son parcours de reproduction. **Ne pas recopier le bug dans `CLAUDE.md`** : ce registre est la source de vérité, `CLAUDE.md` n'en porte que le pointeur.
+- **À chaque correction** : **déplacer la fiche entière** dans « Fiches détaillées des bugs corrigés », préfixer le titre de `✅ CORRIGÉ (date)`, ajouter la ligne « Correctif appliqué ». Rien à mettre à jour dans `CLAUDE.md`, sauf si la correction a livré une **leçon durable** (une ligne au §3) ou changé une convention. Ne jamais se contenter de marquer `✅` sur place : une fiche corrigée laissée dans « ouverts » fait croire à un bug en attente.
 - **Correction partielle** : la fiche **reste** dans « ouverts » (titre `⚠️ PARTIELLEMENT CORRIGÉ`), avec en tête ce qui reste à faire — cf. B19 et B28.
 - **Ne jamais ajouter de fiche après cette section** : tout ce qui vit sous « Comment s'en servir » échappe à la lecture des deux listes (c'est ce qui était arrivé à B73 et B74).
