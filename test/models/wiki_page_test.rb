@@ -111,7 +111,7 @@ class WikiPageTest < ActiveSupport::TestCase
   end
 
   test 'refuse un nouveau fichier trop volumineux collé dans le contenu' do
-    blob = blob_attaché(nom_fichier: 'gros.pdf', content_type: 'application/pdf', octets: 21.megabytes)
+    blob = blob_attaché(nom_fichier: 'gros.pdf', content_type: 'application/pdf', octets: 111.megabytes)
     page = wiki_page_valide(contenu: html_attachment_pour(blob))
 
     assert_not page.valid?
