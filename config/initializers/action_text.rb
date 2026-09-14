@@ -1,9 +1,29 @@
-Rails.application.reloader.to_prepare do
-  helper = ActionText::ContentHelper
+Rails.application.config.after_initialize do
+  default_allowed_tags =
+    Rails::HTML5::Sanitizer.safe_list_sanitizer.allowed_tags +
+    Set.new([
+      ActionText::Attachment.tag_name,
+      "figure",
+      "figcaption"
+    ])
+    
+  custom_allowed_tags = Set.new(%w[
+    video
+    source
+  ])
 
-  base_tags = helper.respond_to?(:sanitizer_allowed_tags) ? helper.sanitizer_allowed_tags : helper.allowed_tags
-  base_attrs = helper.respond_to?(:sanitizer_allowed_attributes) ? helper.sanitizer_allowed_attributes : helper.allowed_attributes
+  ActionText::ContentHelper.allowed_tags =
+    (default_allowed_tags + custom_allowed_tags).freeze
 
-  helper.allowed_tags = base_tags + %w[iframe]
-  helper.allowed_attributes = base_attrs + %w[src allow allowfullscreen frameborder loading title]
+  default_allowed_attributes =
+    Rails::HTML5::Sanitizer.safe_list_sanitizer.allowed_attributes +
+    ActionText::Attachment::ATTRIBUTES.to_set
+
+  custom_allowed_attributes = Set.new(%w[
+    controls
+    preload
+  ])
+
+  ActionText::ContentHelper.allowed_attributes =
+    (default_allowed_attributes + custom_allowed_attributes).freeze
 end

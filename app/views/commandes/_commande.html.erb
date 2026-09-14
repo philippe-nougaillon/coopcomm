@@ -43,7 +43,7 @@
       <% end %>
     </div>
   </td>
-  <td class="px-4 py-3 text-base first-letter:capitalize"><%= commande.intitulé %></td>
+  <td class="px-4 py-3 text-base"><%= commande.intitulé.humanize %></td>
   <td class="px-4 py-3 text-nowrap text-center text-base">
     <% if commande.date_livraison_souhaitée.present? %>
       <% formatted_date = l(commande.date_livraison_souhaitée, format: :long) %>

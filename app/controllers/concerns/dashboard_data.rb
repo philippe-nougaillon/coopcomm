@@ -124,7 +124,7 @@ module DashboardData
 
     labels = par_mois.keys
     datasets = workflows.map do |wf|
-      { label: wf[0]&.capitalize, data: labels.map { |m| par_mois[m][wf] }, backgroundColor: workflow_color(wf) }
+      { label: wf.humanize, data: labels.map { |m| par_mois[m][wf] }, backgroundColor: workflow_color(wf) }
     end
 
     { labels: labels, datasets: datasets }

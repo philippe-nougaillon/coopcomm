@@ -2,7 +2,7 @@
 
 class WikiPagesController < ApplicationController
   skip_before_action :authenticate_user!, only: %i[index show blog guide faq]
-  before_action :set_wiki_page, only: %i[show edit update destroy]
+  before_action :set_wiki_page, only: %i[show edit update destroy purge_photo purge_document]
   before_action :is_user_authorized
 
   # GET /documentation
@@ -88,6 +88,18 @@ class WikiPagesController < ApplicationController
     render :index_by_categorie
   end
 
+  def purge_photo
+    authorize @wiki_page, :edit?
+    @wiki_page.photo.purge
+    redirect_to documentation_path(@wiki_page), notice: 'Photo supprimée avec succès.'
+  end
+
+  def purge_document
+    authorize @wiki_page, :purge_document?
+    @wiki_page.document.purge
+    redirect_to documentation_path(@wiki_page), notice: "Le document a été supprimé."
+  end
+
   private
 
   # Use callbacks to share common setup or constraints between actions.
@@ -100,10 +112,11 @@ class WikiPagesController < ApplicationController
   # Only allow a list of trusted parameters through.
   def wiki_page_params
     params.require(:wiki_page).permit(:titre, :sous_titre, :publiée, :poids, :contenu, :catégorie, :épinglée,
-                                      :document, :private)
+                                      :document, :photo, :private)
   end
 
   def is_user_authorized
     authorize @wiki_page || WikiPage
   end
+
 end

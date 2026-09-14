@@ -57,12 +57,12 @@ module TransformToPdf
       livraison = @record.date_livraison_souhaitée ? I18n.l(@record.date_livraison_souhaitée, format: :long).humanize : '—'
 
       data = [
-        ['Le :', I18n.l(@record.updated_at, format: :long)],
+        ['Le :', I18n.l(@record.updated_at, format: :long).humanize],
         ['Réf :', @record.ref.to_s],
         ['Statut :', @record.workflow_state.to_s.humanize],
-        ['Adhérent :', @record.adherent&.nom_prénom.humanize],
-        ['Service :', @record.service&.nom.humanize],
-        ['Intitulé :', @record.intitulé.humanize],
+        ['Adhérent :', @record.adherent&.nom_prénom.to_s.humanize],
+        ['Service :', @record.service&.nom.to_s.humanize],
+        ['Intitulé :', @record.intitulé.to_s.humanize],
         ['Livraison souhaitée :', livraison],
         ['Total HT :', number_to_currency(@record.total_ht || 0)]
       ]
@@ -90,7 +90,7 @@ module TransformToPdf
 
         [
           ligne.prestation&.code,
-          intitule_texte.humanize,
+          intitule_texte.to_s.humanize,
           number_to_currency(ligne.prix_ht),
           ligne.qté,
           number_to_currency(ligne.total_ht)
