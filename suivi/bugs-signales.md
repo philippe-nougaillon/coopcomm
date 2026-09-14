@@ -298,7 +298,7 @@
 - **Correctif proposé, mesuré** : borner le garde aux champs obligatoires — `if (blankOption && this.element.required)`. Variante posée temporairement et relevée au navigateur : le filtre Statut retrouve son entrée « Tous », et les trois selects requis de `cotations/new` gardent `data-placeholder = "true"` et `valueMissing = true`. Les ~10 selects `required` du dépôt portent bien l'attribut (vérifié sur rôle, état et matériel d'un mouvement, adhérent/service/prestation d'un devis), donc aucun n'est déprotégé par ce bornage. C'était déjà le périmètre du garde de B99.
 - **Non couvert par un test** : plus aucun test ne surveille le comportement de l'option vide depuis la suppression de `test/system/slim_select_test.rb` par `#491`.
 
-<!-- B104 est pris par la branche `502` (flash qui fait déborder le cookie de session), non encore fusionnée dans staging : ne pas le réattribuer. -->
+<!-- B104 est dans un stash (flash qui fait déborder le cookie de session), non encore fusionnée dans staging : ne pas le réattribuer. -->
 
 ### B105 — Le badge « + N » de la troncature annonce toujours une valeur masquée de trop dès qu'on touche au champ
 - **Signalé par** : l'agent, 2026-09-09 ; re-vérifié présent sur `staging` le 2026-09-14 (code identique).
