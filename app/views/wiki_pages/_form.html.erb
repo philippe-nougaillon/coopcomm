@@ -83,27 +83,6 @@
   </div>
 
 
-  <div class="form-control w-full">
-    <%= render "shared/file_dropzone",
-               form: form,
-               attribute: :photo,
-               placeholder: "Glisser une image ou cliquer pour parcourir" %>
-  </div>
-
-  <hr class="border-slate-100 my-1" />
-
-  <div class="form-control w-full">
-    <%= render "shared/file_dropzone",
-               form: form,
-               attribute: :document,
-               placeholder: "Glissez un document (PDF, Notice, Carte grise, etc.) ici ou cliquez pour parcourir" %>
-  </div>
-
-  <div class="flex flex-col sm:flex-row gap-3 mt-4 pt-4">
-    <%= button_tag "Annuler", type: "button", onclick: "history.back();", class: "btn w-full sm:flex-1" %>
-    <%= form.submit "Enregistrer", class: "btn btn-primary text-white font-bold w-full sm:flex-1 order-1 sm:order-2 shadow-md hover:shadow-lg transition-all" %>
-
-
   <div class="form-control w-full mt-6">
     <%= render "shared/file_dropzone",
                form: form,
