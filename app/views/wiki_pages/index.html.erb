@@ -11,27 +11,37 @@
     </div>
 
     <p class="mb-6 max-w-4xl text-slate-600 text-justify">
-      CoopComm est un outil <strong>très complet</strong>. C'est pour cela que l'on vous propose une documentation détaillée des différentes interactions possibles.
-      <br>
-      <br>
       Le <strong>Blog</strong> rassemble les actualités et les nouveautés de CoopComm.
       Les <strong>Guides</strong> expliquent pas à pas comment utiliser l'application au quotidien.
       La <strong>FAQ</strong> répond aux questions les plus fréquentes.
     </p>
 
-      <% WikiPage.catégories.keys.each do |categorie| %>
-        <section>
-          <div class="mt-6 ">
-            <h3 class="text-2xl mb-2 text-primary font-bold"><%= categorie.humanize %></h3>
-            <% if @wiki_pages.by_categorie(categorie).any? %>
-              <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <%= render partial: "carte", collection: @wiki_pages.by_categorie(categorie).first(3), as: :wiki_page %>
-              </div>
-            <% else %>
-              <p>Aucune page de cette catégorie n'a été créée pour le moment.</p>
+    <% WikiPage.catégories.keys.each do |categorie| %>
+      <section>
+        <div class="mt-6">
+          <%
+            categorie_path = case categorie
+                              when "blog"  then blog_documentation_index_path
+                              when "guide" then guide_documentation_index_path
+                              when "faq"   then faq_documentation_index_path
+                              else documentation_index_path
+                              end
+          %>
+          <%= link_to categorie_path, class: "inline-flex items-center gap-1.5 group hover:underline" do %>
+            <h3 class="text-2xl mb-2 text-primary font-bold transition">
+              <%= categorie.humanize %>
             <% end %>
-          </div>
-        </section>
-      <% end %>
+          </h3>
+
+          <% if @wiki_pages.by_categorie(categorie).any? %>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <%= render partial: "carte", collection: @wiki_pages.by_categorie(categorie).first(3), as: :wiki_page %>
+            </div>
+          <% else %>
+            <p>Aucune page de cette catégorie n'a été créée pour le moment.</p>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
   </div>
 </div>

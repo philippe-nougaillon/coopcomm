@@ -63,7 +63,7 @@
     </label>
 
     <label class="flex items-center gap-2 hover:cursor-help" title="Position de la page dans l'index (plus le poids est bas, plus la page est affichée en premier)">
-      <%= form.number_field :poids, class: "input w-16", min: 0 %>
+      <%= form.number_field :poids, class: "input w-16" %>
       <%= form.label :poids do %>
         <span class="text-sm text-slate-500">
           Rang de la page dans l'index (un poids plus faible donne la priorité d'affichage).
@@ -79,7 +79,7 @@
     <%= render "shared/file_dropzone",
                form: form,
                attribute: :photo,
-               placeholder: "Glisser une image ou cliquer pour parcourir" %>
+               placeholder: "Glissez une image ou cliquez pour parcourir vos fichiers" %>
   </div>
 
 
@@ -87,7 +87,7 @@
     <%= render "shared/file_dropzone",
                form: form,
                attribute: :document,
-               placeholder: "Glissez un document (PDF, Notice, Carte grise, etc.) ici ou cliquez pour parcourir" %>
+               placeholder: "Glissez un document (PDF, Word, etc.) ici ou cliquez pour parcourir" %>
   </div>
 
   <div class="flex flex-col sm:flex-row gap-3 mt-4 pt-4">
