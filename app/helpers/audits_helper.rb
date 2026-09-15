@@ -33,9 +33,6 @@ module AuditsHelper
   # de suppression, le tableau stocké est la liste, pas un couple avant/après.
   CHAMPS_LISTE = %w[tag_list].freeze
 
-  # Heures réelles d'une intervention : la seconde y est significative (pointage).
-  CHAMPS_AVEC_SECONDES = %w[début fin].freeze
-
   # Tables de liaison : leur audit ne se lit pas comme une liste de colonnes mais
   # comme une phrase (« X ajouté à l'intervention »).
   LIAISONS = %w[AgentIntervention ToolIntervention UserService].freeze
@@ -250,17 +247,13 @@ module AuditsHelper
     return '—' if value.nil? || value.to_s.strip.empty? || value.to_s == '—'
     return value.to_s == 'true' ? 'Oui' : 'Non' if [true, false].include?(value) || %w[true false].include?(value.to_s)
 
-    # Détection générique des dates/heures — indépendante du nom de la clé,
-    # évite les bugs d'accents (ex: "prévue" vs "prevue")
-    format_heure = CHAMPS_AVEC_SECONDES.include?(key) ? '%d/%m/%Y à %H:%M:%S' : '%d/%m/%Y à %H:%M'
-
     if value.respond_to?(:strftime)
-      return value.is_a?(Date) && !value.is_a?(DateTime) ? l(value, format: '%d/%m/%Y') : l(value, format: format_heure)
+      return value.is_a?(Date) && !value.is_a?(DateTime) ? l(value, format: '%d/%m/%Y') : l(value, format: "%d/%m/%Y à %H:%M:%S")
     elsif value.to_s.match?(/\A\d{4}-\d{2}-\d{2}([ T]\d{2}:\d{2})?/)
       begin
         if value.to_s.length > 10
           parsed = Time.zone.parse(value.to_s)
-          return parsed ? l(parsed, format: format_heure) : value.to_s
+          return parsed ? l(parsed, format: "%d/%m/%Y à %H:%M:%S") : value.to_s
         else
           parsed = Date.parse(value.to_s)
           return parsed ? l(parsed, format: '%d/%m/%Y') : value.to_s
