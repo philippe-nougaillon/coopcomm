@@ -81,10 +81,8 @@ class MessagerieController < ApplicationController
   end
 
   def search_contact
-    @users = User
-             .by_service(current_user.services)
+    @users = joignables
              .where.not(id: current_user.id)
-             .or(User.where(id: ENV["UUID_AIBOT"]))
              .ordered
 
     if params[:query].present?
@@ -101,15 +99,13 @@ class MessagerieController < ApplicationController
   # Le même périmètre que la sidebar et la recherche : on ne peut ni écrire à,
   # ni lire une conversation avec, un utilisateur hors de ses services.
   def joignables
-    User.by_service(current_user.services)
+    User.by_service(current_user.services).or(User.where(id: ENV["UUID_AIBOT"]))
   end
 
   # Utilisateurs joignables, affichés dans la sidebar partagée (accueil + conversation)
   def set_sidebar_users
-    @users = User
-             .by_service(current_user.services)
+    @users = joignables
              .where.not(id: current_user.id)
-             .or(User.where(id: ENV["UUID_AIBOT"]))
              .ordered
              .with_attached_profile_picture
   end
