@@ -1,7 +1,7 @@
 <figure class="my-4 attachment attachment--content attachment--mp4">
   <video controls class="w-full max-h-[500px] rounded-lg shadow-md">
     <source src="<%= rails_blob_path(blob) %>" type="<%= blob.content_type %>">
-    Tu navegador no soporta el reproductor de video.
+      Votre navigateur ne supporte pas la lecture de cette vidéo.
   </video>
   <% if blob.caption.present? %>
     <figcaption class="text-center text-sm text-gray-500 mt-1"><%= blob.caption %></figcaption>

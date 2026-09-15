@@ -36,12 +36,10 @@
       <% end %>
       <%= form.text_field :nom, class: 'input input-bordered input-sm w-full focus:input-primary h-10', required: true %>
     </div>
-    <%# Pleine largeur : toggle-role-info n'affiche qu'un seul de ces deux champs à la fois. %>
     <div data-toggle-role-info-target="localisation" class="form-control w-full" data-controller="places" data-places-center-lat-value="<%= ENV['MAPS_CENTER_LAT'] %>" data-places-center-lng-value="<%= ENV['MAPS_CENTER_LNG'] %>">
       <%= form.label :address, class: "label font-semibold text-slate-700" do %>
         Localisation <span class="text-red-500">*</span>
       <% end %>
-      <%# Quitamos el required nativo aquí por si Stimulus oculta este campo temporalmente en base al rol %>
       <%= form.text_field :address,
           class: 'input input-bordered select-sm w-full focus:input-primary h-10',
           placeholder: 'Commencez à tapez une adresse...',
