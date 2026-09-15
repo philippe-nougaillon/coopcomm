@@ -63,10 +63,16 @@ class MessagerieController < ApplicationController
     destinataire = joignables.find_by(slug: params[:to_user_slug])
     return if destinataire.nil?
 
-    Message.create!(message: params[:message], from_id: current_user.id, to_id: destinataire.id)
+    message = Message.create!(message: params[:message], from_id: current_user.id, to_id: destinataire.id)
     
-    if destinataire.is_aibot?
-      # Connecter avec Boxcars
+    if message.valid?
+      if destinataire.is_aibot?
+        SendRequestToBoxcarsJob.perform_later(current_user, params[:message])
+      end
+
+      head :created
+    else
+      head :bad_request
     end
   end
 
