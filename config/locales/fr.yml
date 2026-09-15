@@ -261,6 +261,7 @@ fr:
     formats:
       default: "%d %B %Y %Hh %Mmin %Ss"
       long: "%A %d %B %Y %Hh%M"
+      very_long: "%A %d %B %Y %Hh%Mm%Ss"
       short: "%d %b %Hh%M"
       custom: "%d %b %Y %Hh%M"
     pm: pm

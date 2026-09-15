@@ -15,8 +15,6 @@ class Intervention < ApplicationRecord
 
   # Autorise Rails à lire et écrire ces champs virtuels pour le formulaire
   attr_accessor :tags_manager
-  attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute, :début_hour,
-                :début_minute, :fin_hour, :fin_minute
 
   before_destroy :must_not_have_any_mouvements
 
@@ -42,10 +40,6 @@ class Intervention < ApplicationRecord
   MESSAGE_AGENT_UNIQUE = "Une intervention de pointage n'accepte qu'un seul agent"
 
 
-  before_validation -> { combine_datetime(:début_prévue) }
-  before_validation -> { combine_datetime(:fin_prévue) }
-  before_validation -> { combine_datetime(:début) }
-  before_validation -> { combine_datetime(:fin) }
   before_validation :check_absence
   before_validation :set_temporary_description, on: :create
   before_validation :check_workflow_pointage_mère
@@ -276,7 +270,7 @@ class Intervention < ApplicationRecord
       next unless conflicting_interventions.exists?
 
       message = if reprise_immediate_de_pointage?(conflicting_interventions)
-                  'Veuillez attendre une minute avant de recommencer à pointer.'
+                  'Veuillez attendre quelques secondes avant de recommencer à pointer.'
                 else
                   conflincting_message = conflicting_interventions.map do |conflict|
                     " #{agent.nom} déjà sur l’intervention « #{conflict.description} » du #{conflict.effective_début&.strftime('%d/%m/%Y %H:%M')} au #{conflict.effective_fin&.strftime('%d/%m/%Y %H:%M')}"
@@ -417,7 +411,12 @@ class Intervention < ApplicationRecord
   end
 
   def durée_humanized
-    Time.at(fin - début).utc.strftime('%Hh %Mmin')
+    Time.at(fin - début).utc.strftime('%Hh %Mmin %Ssec')
+  end
+
+  # Format de date pour les interventions pointages avec les secondes
+  def format_date
+    template_slug.present? ? :very_long : :long
   end
 
   def self.dernière_en_cours(interventions)
@@ -527,15 +526,6 @@ class Intervention < ApplicationRecord
 
   def slug_candidates
     [SecureRandom.uuid]
-  end
-
-  def combine_datetime(field)
-    datetime = send(field)
-    return if datetime.blank?
-
-    hour = send("#{field}_hour").presence || datetime.hour
-    minute = send("#{field}_minute").presence || datetime.min
-    send("#{field}=", datetime.change(hour: hour.to_i, min: minute.to_i))
   end
 
   def broadcast_to_authorized_viewers
