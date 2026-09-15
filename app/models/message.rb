@@ -12,6 +12,7 @@ class Message < ApplicationRecord
 
   def interlocuteurs_de_la_même_organisation
     return if from_user.nil? || to_user.nil?
+    return if from_user.is_aibot? || to_user.is_aibot?
     return if from_user.organisation == to_user.organisation
 
     errors.add(:base, 'Destinataire injoignable')

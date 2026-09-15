@@ -64,6 +64,10 @@ class MessagerieController < ApplicationController
     return if destinataire.nil?
 
     Message.create!(message: params[:message], from_id: current_user.id, to_id: destinataire.id)
+    
+    if destinataire.is_aibot?
+      # Connecter avec Boxcars
+    end
   end
 
   def mark_as_read

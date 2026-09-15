@@ -395,6 +395,10 @@ class User < ApplicationRecord
     end
   end
 
+  def is_aibot?
+    self.id == ENV["UUID_AIBOT"].to_i
+  end
+
   private
 
   def slug_candidates
