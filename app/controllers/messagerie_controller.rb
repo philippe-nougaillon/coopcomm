@@ -96,13 +96,14 @@ class MessagerieController < ApplicationController
 
   private
 
-  # Le même périmètre que la sidebar et la recherche : on ne peut ni écrire à,
-  # ni lire une conversation avec, un utilisateur hors de ses services.
+  # Renvoie les utilisateurs joignables avec le meme service, et l'AIBOT en premier
   def joignables
-    User.by_service(current_user.services).or(User.where(id: ENV["UUID_AIBOT"]))
+    User.by_service(current_user.services)
+        .or(User.where(id: ENV["UUID_AIBOT"]))
+        .order(Arel.sql("CASE WHEN id = '#{ENV["UUID_AIBOT"]}' THEN 0 ELSE 1 END")) # Met AIBOT en premier (0 pour le plus légé)
   end
 
-  # Utilisateurs joignables, affichés dans la sidebar partagée (accueil + conversation)
+  # Utilisateurs joignables, affichés dans la sidebar des contacts de la messagerie
   def set_sidebar_users
     @users = joignables
              .where.not(id: current_user.id)
