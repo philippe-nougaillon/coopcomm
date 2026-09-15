@@ -13,7 +13,7 @@
 **Pour qui** — aujourd'hui une seule communauté de communes (Est de la France). **Vision** : produit commercialisable auprès d'autres communes ou organismes → garder le code **multi-organisations** et générique, aucune spécificité du client actuel codée en dur.
 
 **Stack**
-- **Ruby 3.4.10 + Rails 8.0** (monolithe). Front : Hotwire (Turbo + Stimulus) via **importmap**, **TailwindCSS 4.1**. PDF : Prawn (+ qrcode). Export Excel : `spreadsheet`. Pas de bundler JS, pas de linter (ni RuboCop ni Standard).
+- **Ruby 4.0.7 + Rails 8.1** (monolithe), Bundler 4.0.20 (celui livré avec Ruby — jamais une bêta ni un Bundler plus récent que RubyGems). Front : Hotwire (Turbo + Stimulus) via **importmap**, **TailwindCSS 4.1**. PDF : Prawn (+ qrcode). Export Excel : `spreadsheet`. Pas de bundler JS, pas de linter (ni RuboCop ni Standard).
 - **PostgreSQL** ; **Solid Queue / Cache / Cable** adossés à la base (pas de Redis). Jobs : Mission Control sur `/jobs`. Mail en dev : `letter_opener_web` sur `/letter_opener`.
 - APIs tierces : Mailgun (emails), Twilio (SMS/WhatsApp), AWS S3, Google OAuth2, Google Maps, Météo Concept, OpenAI + Mistral via `langchainrb`.
 - Transverses : `audited` (audit trail), `acts-as-taggable-on`, `friendly_id`, `pg_search`, `discard` (soft-delete), `pagy`, `workflow` (machine à états des `Intervention` — standard de l'équipe, ne pas remplacer sans raison forte), `pundit`, `rack-attack`.
