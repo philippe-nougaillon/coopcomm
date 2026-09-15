@@ -265,6 +265,16 @@ class InterventionPointageTest < ActiveSupport::TestCase
     assert_equal Date.today, fille.début.to_date
   end
 
+  test 'create_next_intervention : scan du modèle → le début enregistré est l\'instant du scan' do
+    mère = interventions(:intervention_repete)
+
+    travel_to Time.current.middle_of_day.change(sec: 37) do
+      fille = mère.create_next_intervention(mère, users(:bond))
+
+      assert_equal Time.current, fille.reload.début
+    end
+  end
+
   # Le modèle est RECHARGÉ avant chaque scan : au scan réel, `set_intervention` vient de
   # le lire et personne n'a touché à `tag_list`. Sur un enregistrement dont le cache de
   # mots clés est froid, `dup` n'en copie aucun — sans la ligne `new_intervention.tags`,

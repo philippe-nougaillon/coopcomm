@@ -24,7 +24,7 @@ class WikiPagesController < ApplicationController
 
   # GET /documentation/new
   def new
-    @wiki_page = WikiPage.new
+    @wiki_page = WikiPage.new(catégorie: "blog")
   end
 
   # GET /documentation/1/edit
