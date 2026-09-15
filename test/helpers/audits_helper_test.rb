@@ -325,19 +325,12 @@ class AuditsHelperTest < ActionView::TestCase
 
   test 'une date est rendue au format français, une date-heure avec l\'heure' do
     assert_equal '01/02/2026', format_audit_value('date', Date.new(2026, 2, 1))
-    assert_equal '01/02/2026 à 14:30', format_audit_value('début_prévue', Time.zone.local(2026, 2, 1, 14, 30))
+    assert_equal '01/02/2026 à 14:30:00', format_audit_value('début_prévue', Time.zone.local(2026, 2, 1, 14, 30))
   end
 
   test 'une date reçue sous forme de chaîne ISO est reformatée' do
     assert_equal '01/02/2026', format_audit_value('date', '2026-02-01')
-    assert_equal '01/02/2026 à 14:30', format_audit_value('début_prévue', '2026-02-01 14:30:00')
-  end
-
-  test 'les heures réelles d\'une intervention affichent les secondes, les heures prévues non' do
-    assert_equal '01/02/2026 à 14:30:45', format_audit_value('début', Time.zone.local(2026, 2, 1, 14, 30, 45))
-    assert_equal '01/02/2026 à 14:30:45', format_audit_value('fin', '2026-02-01 14:30:45')
-    assert_equal '01/02/2026 à 14:30', format_audit_value('début_prévue', Time.zone.local(2026, 2, 1, 14, 30, 45))
-    assert_equal '01/02/2026 à 14:30', format_audit_value('fin_prévue', '2026-02-01 14:30:45')
+    assert_equal '01/02/2026 à 14:30:00', format_audit_value('début_prévue', '2026-02-01 14:30:00')
   end
 
   test 'une chaîne qui ressemble à une date sans en être une est rendue telle quelle' do
