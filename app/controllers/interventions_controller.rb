@@ -599,6 +599,7 @@ class InterventionsController < ApplicationController
     true
   end
 
+  # Combine la date l'heure et la minute pour les 4 dates différentes (début_prévue fin_prévue début fin)
   def format_datetime_from_form
     %i[début_prévue fin_prévue début fin].each do |champ_date|
       # Permet de ne pas écraser la date si elle n'est pas dans params
@@ -608,10 +609,9 @@ class InterventionsController < ApplicationController
 
       # Si la date n'a pas changé ?
       if only_seconds_changed?(champ_date, nouvelle_date)
-        # On ne change pas la date
+        # On supprime la date dans les params pour ne pas la prendre en compte
         params[:intervention].delete(champ_date)
-      # Si la date a changé ?
-      else
+      else # Sinon on modifie la date
         params[:intervention][champ_date] = nouvelle_date
       end
     end
@@ -622,7 +622,7 @@ class InterventionsController < ApplicationController
     actuelle = @intervention&.public_send(champ_date)
     return false if actuelle.blank? || nouvelle_date.blank?
 
-    # Dates à 0 secondes
+    # Dates à 0 secondes (Ex: actuelle(14h12m50s -> 14h12m00s), nouvelle_date(14h12m00s -> 14h12m00s))
     actuelle.change(sec: 0) == nouvelle_date.change(sec: 0)
   end
 
