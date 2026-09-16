@@ -47,3 +47,4 @@ coverage
 # Liste locale des tests en échec (bin/rails test:failed)
 /test/failed_tests.rb
 .vscode/settings.json
+.vscode
