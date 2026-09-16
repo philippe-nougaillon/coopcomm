@@ -13,7 +13,7 @@
   hover_text  = styles[:hover_text]
 %>
 
-<%= link_to documentation_path(wiki_page), class: "group relative card flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden h-[420px] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200" do %>
+<%= link_to documentation_path(wiki_page), class: "group relative card flex flex-col bg-white rounded-2xl border border-slate-200 overflow-hidden h-[380px] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200" do %>
 
   <% if wiki_page.photo.attached? && wiki_page.photo.representable? %>
 
@@ -74,7 +74,7 @@
 
     <span class="absolute left-0 top-0 bottom-0 w-1 <%= accent_bg %>"></span>
 
-    <div class="lex flex-col flex-1 h-full p-5 overflow-hidden">
+    <div class="flex flex-col flex-1 h-full p-5 overflow-hidden">
 
       <h3 class="font-extrabold text-xl text-slate-900 mt-4  hover:underline <%= hover_text %> transition-colors">
         <%= wiki_page.titre.sub(/\A\s*-\s*/, '').upcase_first %>
@@ -111,7 +111,7 @@
       <% end %>
 
       <% if wiki_page.sous_titre.present? %>
-        <p class="my-2 text-base font-semibold text-slate-800 leading-snug line-clamp-5">
+        <p class="my-2 text-base font-semibold text-slate-800 leading-snug line-clamp-3">
           <%= wiki_page.sous_titre.strip.upcase_first %>
         </p>
       <% end %>
@@ -124,11 +124,11 @@
             plain_text.upcase_first
           end
         %>
-        <p class="my-2 text-base text-slate-500 leading-relaxed line-clamp-3">
+        <p class="my-2 text-base text-slate-500 leading-relaxed line-clamp-2">
           <%= display_text %>
         </p>
       <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-        <span>Modifié <%= time_ago_in_words wiki_page.updated_at %></span>
+        <span>Modifié il y a <%= time_ago_in_words wiki_page.updated_at %></span>
         <span class="inline-flex items-center gap-1 text-slate-400 font-semibold <%= hover_text %> group-hover:translate-x-1 transition-transform">
           En savoir plus 
           <%= embedded_svg "icons/arrow_forward.svg", class: "w-4 h-4 transition-transform group-hover:translate-x-1 fill-current hidden md:block" %>
