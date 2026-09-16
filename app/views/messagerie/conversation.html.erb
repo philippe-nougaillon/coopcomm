@@ -14,11 +14,18 @@
           </div>
         </div>
         <div class="flex items-center gap-4">
-          <%= link_to user_path(@destinataire), class: "flex items-center gap-4 " do %>
+          <% user_line = capture do %>
             <%= render partial: "partials/user_profile_picture", locals: { user: @destinataire } %>
-            <h1 class="text-xl sm:text-2xl text-primary font-bold truncate hover:underline hover:underline-primary">
+            <h1 class="text-xl sm:text-2xl text-primary font-bold truncate <%= "hover:underline hover:underline-primary" if !@destinataire.is_aibot?%>">
               <span class="block"><%= @destinataire.nom_prénom %></span>
             </h1>
+          <% end %>
+          <% if @destinataire.is_aibot? %>
+            <%= user_line %>
+          <% else %>
+            <%= link_to user_path(@destinataire), class: "flex items-center gap-4 " do %>
+              <%= user_line %>
+            <% end %>
           <% end %>
         </div>
       </div>
