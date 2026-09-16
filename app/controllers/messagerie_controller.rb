@@ -67,7 +67,13 @@ class MessagerieController < ApplicationController
     
     if message.valid?
       if destinataire.is_aibot?
-        SendRequestToBoxcarsJob.perform_later(current_user, params[:message])
+        response = FetchBoxcarsInfos.new.call(current_user, params[:message])
+
+        Message.create!(message: response[:response], from_id: ENV["UUID_AIBOT"], to_id: current_user.id)
+        
+        if ENV["DEBUG_AIBOT"].to_bool == true
+          Message.create!(message: response[:log_stream], from_id: ENV["UUID_AIBOT"], to_id: current_user.id)
+        end
       end
 
       head :created
