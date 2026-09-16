@@ -5,27 +5,30 @@ class FetchBoxcarsInfos < ApplicationService
   def initialize
     # Outil boxcars utilisé pour la requete
     boxcars = [Boxcars::ActiveRecord.new(
-      models: self.get_models,
-      context: self.get_context
-    )]
+                  name: "AIBOT",
+                  models: self.MODELS
+                )]
 
     # Train permet de rebondir sur ses propres réponses pour épurer la réponse
     @boxcars_builder = Boxcars.train.new(boxcars: boxcars)
   end
 
-  def call(current_user, demande)
+  def call(current_user, request)
     ENV["ORGANISATION_ID_FOR_BOXCARS"] = current_user.organisation.id.to_s
 
-    @boxcars_builder.run(demande)
+    @boxcars_builder.run(request + self.CONTEXT_REQUEST + "\n Tu t'appelles AIBOT, l'utilisateur s'appelle #{current_user.nom_prénom}, il a le rôle #{current_user.rôle}. Les attributs de l'utilisateur sont : \n #{current_user.inspect}")
   end
 
-  def get_models
+  def MODELS
     [User, InterventionForBoxcars]
   end
 
-  def get_context
+  def CONTEXT_REQUEST
     "
-    The user is french, so you should to return response in french
+    RÈGLES IMPORTANTES :
+      - Tu dois TOUJOURS répondre par une phrase complète et naturelle en français à l'utilisateur.
+      - Ne donne jamais un résultat brut (comme un simple chiffre ou une donnée JSON).
+      - Après avoir trouvé l'information avec l'outil, reformule-la dans ta réponse finale.
     "
     # [Convention, User]
     # "
