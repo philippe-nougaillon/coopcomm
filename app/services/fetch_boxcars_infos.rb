@@ -26,11 +26,15 @@ class FetchBoxcarsInfos < ApplicationService
 
       begin
         response = @boxcars_builder.run(request + self.CONTEXT_REQUEST(current_user))
+        succes = true
+      rescue StandardError => e
+        Boxcars.configuration.logger.error(e.full_message(highlight: true))
+        succes = true
       ensure
         Boxcars.configuration.logger = origin_logger
       end
 
-      { response: response, log_stream: log_stream.string.gsub(/\e\[[\d;]*m/, "") } # gsub pour enlever les couleurs
+      { response: response, log_stream: log_stream.string, succes: succes }
     else
       response = @boxcars_builder.run(request + self.CONTEXT_REQUEST(current_user))
       { response: response }
@@ -53,6 +57,7 @@ class FetchBoxcarsInfos < ApplicationService
       - Tu dois TOUJOURS répondre par une phrase complète et naturelle en français à l'utilisateur.
       - Ne donne jamais un résultat brut (comme un simple chiffre ou une donnée JSON).
       - Après avoir trouvé l'information avec l'outil, reformule-la dans ta réponse finale.
+      - Tu dois vouvoyer l'utilisateur
     " +
     "
     Tu t'appelles AIBOT, l'utilisateur s'appelle #{current_user.nom_prénom}, il a le rôle #{current_user.rôle}. 

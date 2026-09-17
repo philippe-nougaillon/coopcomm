@@ -74,7 +74,7 @@ class MessagerieController < ApplicationController
     
     if message.valid?
       if destinataire.is_aibot?
-        SendRequestToBoxcarsJob.perform_later(current_user, params[:message])
+        SendRequestToBoxcarsJob.perform_later(current_user, message)
       end
 
       head :created
