@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_11_141121) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_17_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -83,6 +83,21 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_11_141121) do
     t.index ["agent_id", "intervention_id"], name: "index_agent_interventions_on_agent_id_and_intervention_id", unique: true
     t.index ["agent_id"], name: "index_agent_interventions_on_agent_id"
     t.index ["intervention_id"], name: "index_agent_interventions_on_intervention_id"
+  end
+
+  create_table "aibot_logs", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "request_message_id", null: false
+    t.bigint "response_message_id", null: false
+    t.boolean "succes", default: false, null: false
+    t.text "log_stream"
+    t.string "slug"
+    t.string "string"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["request_message_id"], name: "index_aibot_logs_on_request_message_id"
+    t.index ["response_message_id"], name: "index_aibot_logs_on_response_message_id"
+    t.index ["user_id"], name: "index_aibot_logs_on_user_id"
   end
 
   create_table "audits", force: :cascade do |t|
@@ -630,6 +645,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_11_141121) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "agent_interventions", "interventions"
   add_foreign_key "agent_interventions", "users", column: "agent_id"
+  add_foreign_key "aibot_logs", "messages", column: "request_message_id", on_delete: :cascade
+  add_foreign_key "aibot_logs", "messages", column: "response_message_id", on_delete: :cascade
+  add_foreign_key "aibot_logs", "users", on_delete: :cascade
   add_foreign_key "commande_lignes", "commandes"
   add_foreign_key "commande_lignes", "prestations"
   add_foreign_key "commandes", "services"

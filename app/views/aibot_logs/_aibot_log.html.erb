@@ -1,0 +1,17 @@
+<tr class="hover:bg-base-200/60 transition-colors duration-150 align-middle">
+  <td class="px-4 py-3 whitespace-nowrap text-sm first-letter:capitalize"><%= time_ago_in_words aibot_log.created_at %></td>
+  <td class="px-4 py-3 whitespace-nowrap text-sm text-primary font-bold">
+    <div class="truncate min-w-0" title="<%= aibot_log.user.nom_prénom %>">
+      <%= link_to aibot_log.user.nom_prénom, aibot_log.user, class: 'hover:underline' %>
+    </div>
+  </td>
+  <td class="px-4 py-3 text-sm"><%= truncate(aibot_log.request_message.message, length: 80) %></td>
+  <td class="px-4 py-3 text-sm text-center">
+    <%= render partial: "statut", locals: { aibot_log: aibot_log } %>
+  </td>
+  <td class="pr-4 py-3 text-sm">
+    <%= link_to aibot_log, class: "btn btn-sm btn-ghost text-info hover:bg-info/20 gap-1" do %>
+      Voir <i class="ti ti-eye"></i>
+    <% end %>
+  </td>
+</tr>

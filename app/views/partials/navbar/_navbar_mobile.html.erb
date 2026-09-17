@@ -70,7 +70,7 @@
             <% end %>
 
           <% elsif current_user.rôle == 'administrateur' || current_user.rôle == 'manager' %>
-            <% if policy(:admin).parametres? || policy(User).index? || policy(:admin).audits? %>
+            <% if policy(:admin).parametres? || policy(User).index? || policy(:admin).audits? || policy(AibotLog).index? %>
               <li class="menu-title px-4 py-1 text-xs uppercase font-bold text-slate-400">Admin</li>
               <% if policy(:admin).parametres? %>
                 <li>
@@ -104,6 +104,13 @@
                 <li>
                   <%= link_to assistant_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'assistant'}" do %>
                     <%= embedded_svg "icons/smart_toy.svg", class: "w-5 h-5 inline mr-2" %> Assistant (IA)
+                  <% end %>
+                </li>
+              <% end %>
+              <% if policy(AibotLog).index? %>
+                <li>
+                  <%= link_to aibot_logs_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'aibot_logs'}" do %>
+                    <%= embedded_svg "icons/smart_toy.svg", class: "w-5 h-5 inline mr-2" %> Logs AIBOT
                   <% end %>
                 </li>
               <% end %>

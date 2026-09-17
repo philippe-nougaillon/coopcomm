@@ -1,0 +1,81 @@
+<div class="mx-auto lg:w-2/3 w-full mt-8">
+  <% page_title!('Log AIBOT') %>
+
+  <div class="flex justify-between flex-wrap items-center mt-4 mb-2">
+    <h2 class="text-2xl text-secondary font-semibold">Log AIBOT de l'utilisateur <%= current_user.nom_prénom %></h2>
+  </div>
+  <div class="flex flex-col gap-4">
+    <div class="bg-white border border-slate-200 rounded-2xl w-full" style="padding: 1.25rem;">
+      <div class="mb-3">
+        <%= render partial: "statut", locals: { aibot_log: @aibot_log } %>
+      </div>
+      <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
+        <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+          <%= embedded_svg "icons/send.svg", class: "text-base", title: "Expéditeur" %> Expéditeur
+        </div>
+        <div class="py-2.5 border-b border-slate-100 break-all flex justify-end items-center">
+          <span class="text-slate-800"><%= @aibot_log.user.nom_prénom %></span>
+        </div>
+
+        <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+          <%= embedded_svg "icons/group.svg", class: "text-base", title: "Rôle" %> Rôle
+        </div>
+        <div class="py-2.5 border-b border-slate-100 break-all flex justify-end items-center">
+          <span class="text-slate-800"><%= @aibot_log.user.rôle.humanize %></span>
+        </div>
+
+        <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+          <%= embedded_svg "icons/schedule.svg", class: "text-base", title: "Date" %> Date
+        </div>
+        <div class="py-2.5 border-b border-slate-100 break-all flex justify-end items-center">
+          <span class="text-slate-800"><%= l @aibot_log.created_at %></span>
+        </div>
+
+        <div class="flex items-center gap-2 py-2.5 text-slate-500" style="padding-right: 2rem;">
+          <%= embedded_svg "icons/schedule.svg", class: "text-base", title: "Durée" %> Durée
+        </div>
+        <div class="py-2.5 break-all flex justify-end items-center">
+          <span class="text-slate-800"><%= number_with_precision(@aibot_log.duree, precision: 1) %> s</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="flex justify-between flex-wrap items-center mt-4 mb-2">
+        <h2 class="text-2xl text-secondary font-semibold">Demande de l'utilisateur</h2>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl w-full" style="padding: 1.25rem;">
+        <p class="text-sm text-slate-800 whitespace-pre-line break-words"><%= @aibot_log.request_message.message %></p>
+        <small class="block mt-2 text-slate-400"><%= l @aibot_log.request_message.created_at %></small>
+      </div>
+    </div>
+
+    <div>
+      <div class="flex justify-between flex-wrap items-center mt-4 mb-2">
+        <h2 class="text-2xl text-secondary font-semibold">Réponse de AIBOT</h2>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl w-full" style="padding: 1.25rem;">
+        <p class="text-sm text-slate-800 whitespace-pre-line break-words"><%= @aibot_log.response_message.message %></p>
+        <small class="block mt-2 text-slate-400"><%= l @aibot_log.response_message.created_at %></small>
+      </div>
+    </div>
+    
+    <div>
+      <div class="flex justify-between flex-wrap items-center mt-4 mb-2">
+        <h2 class="text-2xl text-secondary font-semibold">Trace du log durant le traitement de la demande par AIBOT</h2>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl w-full" style="padding: 1.25rem;">
+        <% if @aibot_log.log_stream.present? %>
+          <pre class="bg-slate-900 text-slate-200 text-xs font-mono rounded-xl p-4 overflow-x-auto whitespace-pre"><%= ansi_en_html(@aibot_log.log_stream) %></pre>
+        <% else %>
+          <span class="text-slate-400 italic text-xs">Aucun log</span>
+        <% end %>
+      </div>
+    </div>
+
+    <%= link_to aibot_logs_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+      <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour" %>
+      Retour
+    <% end %>
+  </div>
+</div>

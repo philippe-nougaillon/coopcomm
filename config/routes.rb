@@ -48,6 +48,8 @@ Rails.application.routes.draw do
   end
   match 'notifications', to: 'mail_logs#index', via: :get
 
+  resources :aibot_logs, only: %i[index show]
+
   resources :mouvements, only: %i[index new create edit update]
   resources :tools do
     resources :mouvements, only: [] do
