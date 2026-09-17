@@ -76,16 +76,24 @@ class MessagerieController < ApplicationController
       if destinataire.is_aibot?
         stream = "chat_#{current_user.id}_with_#{ENV["UUID_AIBOT"]}"
 
+        # Ajoute un message d'attente pour prévenir l'utilisateur que AIBOT réfléchit
         Turbo::StreamsChannel.broadcast_append_to(
           stream,
           partial: 'messagerie/waiting_message',
           target: 'chat-messages-container'
         )
 
-        begin
+        begin # Récupération de la réponse de Boxcars
           response = FetchBoxcarsInfos.new.call(current_user, params[:message])
-          Message.create!(message: response[:response], from_id: ENV["UUID_AIBOT"], to_id: current_user.id)
-        ensure
+          Message.create!(from_id: ENV["UUID_AIBOT"], to_id: current_user.id)
+        rescue # Si erreur, cela créé un message d'erreur
+          Turbo::StreamsChannel.broadcast_append_to(
+            stream,
+            partial: 'messagerie/message',
+            locals: { message: Message.create(message: "Un problème est survenue avec AIBOT, veuillez attendre quelques instants et rééssayez.", from_id: ENV["UUID_AIBOT"], to_id: current_user.id, created_at: DateTime.now), my_message: false },
+            target: 'chat-messages-container'
+          )
+        ensure # Enlève le message d'attente dans tous les cas
           Turbo::StreamsChannel.broadcast_remove_to(stream, target: 'waiting_message')
         end
 
