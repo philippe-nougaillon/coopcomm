@@ -74,10 +74,21 @@ class MessagerieController < ApplicationController
     
     if message.valid?
       if destinataire.is_aibot?
-        response = FetchBoxcarsInfos.new.call(current_user, params[:message])
+        stream = "chat_#{current_user.id}_with_#{ENV["UUID_AIBOT"]}"
 
-        Message.create!(message: response[:response], from_id: ENV["UUID_AIBOT"], to_id: current_user.id)
-        
+        Turbo::StreamsChannel.broadcast_append_to(
+          stream,
+          partial: 'messagerie/waiting_message',
+          target: 'chat-messages-container'
+        )
+
+        begin
+          response = FetchBoxcarsInfos.new.call(current_user, params[:message])
+          Message.create!(message: response[:response], from_id: ENV["UUID_AIBOT"], to_id: current_user.id)
+        ensure
+          Turbo::StreamsChannel.broadcast_remove_to(stream, target: 'waiting_message')
+        end
+
         if ENV["DEBUG_AIBOT"] == "true"
           Message.create!(message: response[:log_stream], from_id: ENV["UUID_AIBOT"], to_id: current_user.id)
         end

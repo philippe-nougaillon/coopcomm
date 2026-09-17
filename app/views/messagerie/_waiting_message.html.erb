@@ -1,0 +1,11 @@
+<div id="waiting_message" class="mt-2 message-wrapper">
+  <div class="chat chat-start">
+    <div class="chat-bubble chat-bubble-info max-w-full">
+      <div class="flex items-center gap-1 h-6 px-1" data-controller="typing-indicator">
+        <% 3.times do %>
+          <span class="block w-2 h-2 rounded-full bg-current" data-typing-indicator-target="dot"></span>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
