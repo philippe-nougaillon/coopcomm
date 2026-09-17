@@ -4,12 +4,6 @@
       <%= image_tag(user.profile_picture) %>
     </div>
   </div>
-<% elsif user.is_aibot? %>
-  <div class="avatar">
-    <div class="w-10 rounded-full">
-      <%= image_tag "aibot.png" %>
-    </div>
-  </div>
 <% else %>
   <div class="avatar avatar-placeholder">
     <div class="bg-secondary text-neutral-content w-10 rounded-full">

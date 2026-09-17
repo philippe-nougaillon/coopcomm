@@ -10,6 +10,8 @@ class MessagerieController < ApplicationController
     recent_messages = Message
                       .where(from_id: current_user.id)
                       .or(Message.where(to_id: current_user.id))
+                      .where.not(from_id: ENV["UUID_AIBOT"])
+                      .where.not(to_id: ENV["UUID_AIBOT"])
                       .order(created_at: :desc)
 
     @last_messages = {}
@@ -38,7 +40,7 @@ class MessagerieController < ApplicationController
 
   # Conversation avec un interlocuteur donné
   def conversation
-    @destinataire = joignables.find_by(slug: params[:to_user_slug])
+    @destinataire = joinables_et_aibot.find_by(slug: params[:to_user_slug])
 
     # Interlocuteur inexistant ou soi-même → retour à l'accueil de la messagerie
     return redirect_to(messagerie_path) if @destinataire.nil? || @destinataire.id == current_user.id
@@ -48,6 +50,11 @@ class MessagerieController < ApplicationController
                 .where(from_id: current_user.id, to_id: @destinataire.id)
                 .or(Message.where(from_id: @destinataire.id, to_id: current_user.id))
                 .order(:created_at)
+
+    # Message de bienvenue d'aibot pour la première fois
+    if @messages.empty? && @destinataire.is_aibot?
+      Message.create(message: "Bonjour #{current_user.nom_prénom}, je m'appelle AIBOT. Comment puis-je vous aider ? \n Vous pouvez me posez des questions comme; 'Combien j'ai d'interventions dans la journée ?' " ,from_id: ENV["UUID_AIBOT"], to_id: current_user.id)
+    end
 
     unread_messages = @messages.select { |n| n.to_id == current_user.id && n.read_at.nil? }
 
@@ -60,7 +67,7 @@ class MessagerieController < ApplicationController
     return unless params[:message].present? && params[:to_user_slug].present? && (params[:to_user_slug] != current_user.slug)
 
     # Le destinataire doit être joignable (to_id forgeable : inter-organisations sinon)
-    destinataire = joignables.find_by(slug: params[:to_user_slug])
+    destinataire = joinables_et_aibot.find_by(slug: params[:to_user_slug])
     return if destinataire.nil?
 
     message = Message.create!(message: params[:message], from_id: current_user.id, to_id: destinataire.id)
@@ -71,7 +78,7 @@ class MessagerieController < ApplicationController
 
         Message.create!(message: response[:response], from_id: ENV["UUID_AIBOT"], to_id: current_user.id)
         
-        if ENV["DEBUG_AIBOT"].to_bool == true
+        if ENV["DEBUG_AIBOT"] == "true"
           Message.create!(message: response[:log_stream], from_id: ENV["UUID_AIBOT"], to_id: current_user.id)
         end
       end
@@ -112,11 +119,13 @@ class MessagerieController < ApplicationController
 
   private
 
-  # Renvoie les utilisateurs joignables avec le meme service, et l'AIBOT en premier
+  # Renvoie les utilisateurs joignables (du même service)
   def joignables
     User.by_service(current_user.services)
-        .or(User.where(id: ENV["UUID_AIBOT"]))
-        .order(Arel.sql("CASE WHEN id = '#{ENV["UUID_AIBOT"]}' THEN 0 ELSE 1 END")) # Met AIBOT en premier (0 pour le plus légé)
+  end
+
+  def joinables_et_aibot
+    joignables.or(User.where(id: ENV["UUID_AIBOT"]))
   end
 
   # Utilisateurs joignables, affichés dans la sidebar des contacts de la messagerie

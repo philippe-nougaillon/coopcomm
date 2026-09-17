@@ -1,3 +1,20 @@
+<% aibot = User.find(ENV["UUID_AIBOT"]) %>
+
+<%= link_to messagerie_conversation_path(aibot.slug), "data-turbo": false do %>
+  <div class="p-3 whitespace-nowrap hover:bg-slate-100 transition-colors <%= (aibot.slug == params[:to_user_slug]) ? "bg-gray-200 font-semibold" : "" %>">
+    <div class="flex items-center gap-3">
+      <div class="avatar">
+        <div class="w-10 rounded-full">
+          <%= image_tag "aibot.png" %>
+        </div>
+      </div>        
+      <span><%= truncate(aibot.nom_prénom, length: 25) %></span>
+    </div>
+  </div>
+<% end %>
+
+<hr/>
+
 <% users.each do |user| %>
   <%= link_to messagerie_conversation_path(user.slug), "data-turbo": false do %>
     <div class="p-3 whitespace-nowrap hover:bg-slate-100 transition-colors <%= (user.slug == params[:to_user_slug]) ? "bg-gray-200 font-semibold" : "" %>">
