@@ -17,17 +17,24 @@ class FetchBoxcarsInfos < ApplicationService
   def call(current_user, request)
     ENV["ORGANISATION_ID_FOR_BOXCARS"] = current_user.organisation.id.to_s
 
-    log_stream = StringIO.new
-    origin_logger = Boxcars.configuration.logger
-    Boxcars.configuration.logger = ActiveSupport::BroadcastLogger.new(ActiveSupport::TaggedLogging.new(Logger.new(log_stream)).tagged("AIBOT"), origin_logger)
+    if ENV["DEBUG_AIBOT"] == "true"
+      # Création d'un logger pour que boxcars écrivent les logs dessus
+      # Nécessaire à chaque call pour récupérer les logs juste pour cet appel 
+      log_stream = StringIO.new
+      origin_logger = Boxcars.configuration.logger
+      Boxcars.configuration.logger = ActiveSupport::BroadcastLogger.new(ActiveSupport::TaggedLogging.new(Logger.new(log_stream)).tagged("AIBOT"), origin_logger)
 
-    begin
+      begin
+        response = @boxcars_builder.run(request + self.CONTEXT_REQUEST(current_user))
+      ensure
+        Boxcars.configuration.logger = origin_logger
+      end
+
+      { response: response, log_stream: log_stream.string.gsub(/\e\[[\d;]*m/, "") } # gsub pour enlever les couleurs
+    else
       response = @boxcars_builder.run(request + self.CONTEXT_REQUEST(current_user))
-    ensure
-      Boxcars.configuration.logger = origin_logger
+      { response: response }
     end
-
-    { response: response, log_stream: log_stream.string.gsub(/\e\[[\d;]*m/, "") } # gsub pour enlever les couleurs
   end
 
   def MODELS
@@ -36,7 +43,7 @@ class FetchBoxcarsInfos < ApplicationService
 
   def CONTEXT_ACTIVERECORD
     "
-    Sauf le rôle adhérent, tous les utilisateurs peuvent être associé à une intervention via (agent_interventions: :agent)
+    Intervention belongs_to :agent, class_name: 'User'
     "
   end
 
