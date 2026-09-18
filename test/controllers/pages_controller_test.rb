@@ -182,7 +182,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_equal ApplicationController::BACKGROUND_COLORS[20], assigns(:banner_background_color)
-    assert_equal 'banner/banner_20h.png', assigns(:banner_image_name)
+    assert_equal 'banner/banner_20h.jpg', assigns(:banner_image_name)
   end
 
   test 'home : à 7h → la bannière retombe sur le créneau plancher 8h' do
