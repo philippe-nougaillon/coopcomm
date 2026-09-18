@@ -158,7 +158,7 @@
                   class: "block w-full h-full" do %>
             <%= image_tag doc.representation(resize_to_limit: [400, 500]),
                     alt: doc.filename.to_s,
-                    class: "w-full h-full object-fit" %>
+                    class: "w-full h-full object-contain" %>
           <% end %>
         <% else %>
            <%= link_to rails_blob_path(doc, disposition: "inline"),
