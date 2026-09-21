@@ -11,7 +11,7 @@ class NotifManagersWorkflowChangedJobTest < ActiveJob::TestCase
     @user_id      = users(:weil).id
   end
 
-  test 'envoie un mail groupé aux managers et crée un MailLog tracé' do
+  test 'les managers reçoivent un seul mail groupé et un mail log est créé lorsque le statut d’une intervention change' do
     assert_emails 1 do
       assert_difference -> { MailLog.count }, 1 do
         NotifManagersWorkflowChangedJob.perform_now(@intervention, @managers.map(&:id), @user_id)
@@ -29,9 +29,15 @@ class NotifManagersWorkflowChangedJobTest < ActiveJob::TestCase
     assert_equal mail.message_id, log.message_id
   end
 
-  test 'avec un seul manager : un mail à ce seul destinataire' do
+  test 'un manager seul est l’unique destinataire du mail' do
     NotifManagersWorkflowChangedJob.perform_now(@intervention, [users(:hidalgo).id], @user_id)
 
     assert_equal [users(:hidalgo).email], ActionMailer::Base.deliveries.last.to
+  end
+
+  test 'un mail log sans auteur est attribué au Système' do
+    assert_difference -> { MailLog.where(user_id: 0).count }, 1 do
+      NotifManagersWorkflowChangedJob.perform_now(@intervention, @managers.map(&:id), nil)
+    end
   end
 end
