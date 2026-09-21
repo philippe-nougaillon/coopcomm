@@ -1,0 +1,26 @@
+<%# locals: (extra_class: "") %>
+<div class="border shadow-sm p-6 rounded-2xl bg-white w-full flex flex-col <%= extra_class %>">
+  <h2 class="font-black text-xl mb-6 flex items-center gap-3 uppercase">
+    <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#40b3db] via-[#72cfe8] via-[#a48ad5] to-[#681b98]"></span>
+    Messages de votre équipe
+  </h2>
+
+  <% if @messages.any? %>
+    <div class="divide-y divide-slate-100">
+      <% @messages.each do |message| %>
+        <%= render partial: 'message', locals: { message: message } %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="border border-slate-200 rounded-xl p-4 bg-white">
+      <p class="text-slate-500">Aucun nouveau message</p>
+    </div>
+  <% end %>
+
+  <div class="mt-auto pt-6 flex justify-end">
+    <%= link_to messagerie_path, class: "inline-flex items-center gap-2 text-primary font-medium hover:underline transition group" do %>
+      <span>Ouvrir la messagerie</span>
+      <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-transform duration-200 ease-out group-hover:translate-x-1" %>
+    <% end %>
+  </div>
+</div>
