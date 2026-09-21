@@ -73,7 +73,9 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     documentations.each do |documentation|
-      assert_dom '.card a[href=?]', documentation_path(documentation), text: documentation.titre
+      assert_dom 'a.card[href=?]', documentation_path(documentation) do
+        assert_dom 'h3', text: documentation.titre
+      end
     end
   end
 
@@ -137,10 +139,23 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test 'le formulaire de création propose la catégorie blog par défaut' do
+  test 'le formulaire de création ne présélectionne aucune catégorie' do
     get new_documentation_url
 
-    assert_equal 'blog', assigns(:wiki_page).catégorie
+    assert_nil assigns(:wiki_page).catégorie
+  end
+
+  test 'le formulaire de création ouvert depuis une catégorie la présélectionne' do
+    get new_documentation_url(catégorie: 'guide')
+
+    assert_equal 'guide', assigns(:wiki_page).catégorie
+  end
+
+  test 'le formulaire de création ne présélectionne rien lorsque la catégorie demandée n’existe pas' do
+    get new_documentation_url(catégorie: 'astrologie')
+
+    assert_response :success
+    assert_nil assigns(:wiki_page).catégorie
   end
 
   test 'une documentation est créée avec son auteur' do
