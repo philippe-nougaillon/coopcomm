@@ -350,7 +350,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_085403) do
     t.boolean "calculate_distance", default: false
     t.datetime "created_at", null: false
     t.string "nom"
-    t.bigint "organisation_id", null: false
+    t.bigint "organisation_id"
     t.string "slug"
     t.datetime "updated_at", null: false
     t.index ["organisation_id"], name: "index_services_on_organisation_id"
