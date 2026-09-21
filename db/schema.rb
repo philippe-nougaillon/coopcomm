@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_11_141121) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_21_085403) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -282,7 +282,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_141121) do
     t.string "subject"
     t.string "to"
     t.datetime "updated_at", null: false
-    t.integer "user_id"
+    t.integer "user_id", default: 0
     t.index ["cotation_id"], name: "index_mail_logs_on_cotation_id"
     t.index ["organisation_id"], name: "index_mail_logs_on_organisation_id"
   end
