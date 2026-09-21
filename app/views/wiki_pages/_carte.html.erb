@@ -117,7 +117,7 @@
       <% end %>
 
         <%
-          plain_text = wiki_page.rich_text_content.to_plain_text.sub(/\A\s*-\s*/, '').strip
+          plain_text = wiki_page.rich_text_content&.to_plain_text&.sub(/\A\s*-\s*/, '')&.strip.to_s
           display_text = if plain_text.match?(/\A\[.+\]\z/)
             "Pièce jointe"
           else
