@@ -211,7 +211,7 @@ class AuditsHelperTest < ActionView::TestCase
 
   test 'l\'invitation, la connexion, la déconnexion et le maintien de session ont chacun leur pictogramme' do
     assert_equal tracé_fichier('mail'),   tracé_icône(audit(type: 'User', changes: { 'invitation_token' => %w[a b] }))
-    assert_nil tracé_fichier(audit(type: 'User', changes: { 'sign_in_count' => [1, 2] }))
+    assert_equal tracé_fichier('login'),  tracé_icône(audit(type: 'User', changes: { 'sign_in_count' => [1, 2] }))
     assert_equal tracé_fichier('logout'),
                  tracé_icône(audit(type: 'User', changes: { 'remember_created_at' => ['2026-07-01 10:00:00', nil] }))
     assert_equal tracé_fichier('key'),
