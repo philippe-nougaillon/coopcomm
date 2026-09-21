@@ -7,32 +7,36 @@
             title: "Cotation à signer" %>
       </div>
     </div>
-    <div class="flex-1 min-w-0">
-      <%= link_to cotation_path(cotation.slug), class: "block group/title" do %>
-        <h3 class="font-bold text-lg leading-6 text-primary group-hover/title:underline break-words">
-          <%= cotation.ref %>
-        </h3>
-      <% end %>
 
-      <p class="text-slate-700 text-sm mt-1">
-        <%= cotation.service.nom %> (<%= number_to_currency(cotation.total_ht) %> HT)
-      </p>
 
-      <small class="text-slate-500 mt-2 block">
-        Créée il y a <%= time_ago_in_words cotation.created_at %>
-      </small>
+    <div class="flex-1 min-w-0 flex flex-col md:flex-row justify-between">
+      <div class="flex flex-col"> 
+        <%= link_to cotation_path(cotation.slug), class: "block group/title" do %>
+          <h3 class="font-bold text-lg leading-6 text-primary group-hover/title:underline break-words">
+            <%= cotation.ref %>
+          </h3>
+        <% end %>
+
+        <p class="text-slate-700 text-sm mt-1">
+          <%= cotation.service.nom %> (<%= number_to_currency(cotation.total_ht) %> HT)
+        </p>
+
+        <small class="text-slate-500 mt-2 block">
+          Créée il y a <%= time_ago_in_words cotation.created_at %>
+        </small>
+      </div> 
 
       <!-- Boutons -->
       <div class="flex flex-wrap gap-3 mt-5">
         <% if policy(cotation).signer? && cotation.can_signer? %>
           <%= link_to 'Signer', signer_cotation_path(cotation), 
-                class: "btn btn-accent btn-outline w-24 text-sm transition-all duration-300 hover:scale-105 hover:text-white! justify-center",
+                class: "btn btn-accent btn-outline w-20 md:w-22 text-sm transition-all duration-300 hover:scale-105 hover:text-white! justify-center",
                 data: { turbo: false } %>
         <% end %>
 
         <% if policy(cotation).signer? && cotation.can_refuser? %>
           <%= button_to 'Refuser', refuser_cotation_path(cotation), 
-                class: "btn btn-error btn-outline w-24 text-sm transition-all duration-300 hover:scale-105 hover:text-white!",
+                class: "btn btn-error btn-outline  w-20 md:w-22 transition-all duration-300 hover:scale-105 hover:text-white!",
                 form: { data: { turbo: false } } %>
         <% end %>
       </div>

@@ -31,7 +31,7 @@
         <% end %>
       </div>
       <% if !(intervention.validé? || intervention.refusé?) %>
-        <div class="flex justify-center gap-2">
+        <div class="flex justify-start gap-2">
           <%= render "interventions/boutons_workflow", intervention: intervention,
                      styles: InterventionsHelper::STYLES_LISTE,
                      titres: InterventionsHelper::TITRES_LISTE,
