@@ -129,6 +129,7 @@
 - Ne poser une sentinelle « ceci n'existe plus » que si la disparition peut être annulée **par accident et sans bruit**.
 - Ce qui relève du rendu se vérifie **au navigateur** (capture d'écran), pas par déduction — la suite tourne en largeur téléphone, où les grilles s'effondrent et masquent les défauts.
 - Une **sonde jetable** avant de rédiger une matrice de cas déplace des déductions vers des faits (et a déjà invalidé plusieurs hypothèses).
+- **`embedded_svg` rend `''` sans bruit quand le fichier manque**, et plusieurs icônes sont référencées par un chemin **dynamique** (`"icons/#{nom}.svg"`) : avant d'en supprimer une, chercher aussi son nom nu (`'login'`), pas seulement `login.svg`.
 
 ---
 
@@ -139,7 +140,6 @@
 - **Jalons** : **mise en prod client début septembre 2026** (aujourd'hui, seuls les comptes support/test servent) ; ~10 jours de dev restants, nouvelles fonctionnalités **en pause** ; fin de contrat mars 2028 ; **open-source envisagé mi-novembre 2026** (penser à purger la config Claude de l'historique). ~220 utilisateurs attendus, peu à l'aise avec l'informatique, agents sur Samsung S8, **zones blanches** pour le service technique.
 - **Parcours critiques** : pointage QR (4 scans/agent/jour), bon d'intervention, réservation de matériel, dashboard manager, validation adhérent. **« Catastrophique » = tout ce qui touche à l'argent**, et un agent qui verrait son évaluation (le CCTP les réserve aux gestionnaires).
 - **Équipe** : Dani = front, Alexandre + PE = back, PE merge `main` et déploie. Les issues GitHub (backlog) sont privées, inaccessibles à l'agent.
-- ⚠ **À rappeler à PE en début de session tant que ce n'est pas tranché — D18** : un champ `required` que le navigateur ne peut pas focaliser (masqué, `display:none`, ancêtre replié) annule la soumission **sans aucune bulle** — l'utilisateur clique « Enregistrer » et rien ne se passe. Il manque une sentinelle vérifiant que tout champ `required` est atteignable.
 - ⚠ **A4 — aucune sauvegarde de la base de prod** alors que le CCTP exige quotidien + rétention 365 j + restauration. À traiter avant la mise en prod.
 
 **Prochain jalon — tableau de bord CRM demandé au CCTP** (branche `CRM`, en sommeil) : demandes par statut ; devis en attente de réponse avec relances automatiques (livré : `cotations:relancer_adherents`) ; CA prévisionnel et réalisé ; taux de transformation devis/commandes ; note moyenne de satisfaction ; répartition par type de prestation et par commune. *(Trois de ces indicateurs restent bloqués par le modèle de données : la commune n'est pas modélisée, aucun lien `Cotation` ↔ `Intervention`, le type de prestation n'est lié que via `cotation_lignes`.)*
