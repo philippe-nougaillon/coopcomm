@@ -17,12 +17,10 @@
 /****** DIVERS *****/
 
 /* Font family pour le thème aikku*/
-*[data-theme="aikku"] {
+[data-theme="aikku"] {
   font-family: "Inter", serif;
-}
 
-*[data-theme="aikku"]{
-  h1, h2, h3, h4, h5, h6{
+  h1, h2, h3, h4, h5, h6 {
     font-family: "Montserrat", serif;
   }
 }
@@ -416,8 +414,7 @@ select.slim-select[multiple],
 
   /* Aplica los '...' solo cuando hay múltiples ítems seleccionados */
   .ss-main.ss-multiple .ss-values .ss-value .ss-value-text {
-    max-width: 5
-    rem;
+    max-width: 5rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

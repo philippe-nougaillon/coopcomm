@@ -143,18 +143,15 @@ export default class extends Controller {
     truncateChips() {
       const maxValuesShown = window.innerWidth < 768 ? this.maxValuesMobile : this.maxValuesDesktop
       
-      // 1. Contamos los chips seleccionados
-      const chips = this.element.parentElement.querySelectorAll('.ss-value')
-      
-      // Activa la clase 'ss-multiple' si hay más de 1 elegido
+      const oldBadge = this.element.parentElement.querySelector('.ss-more-badge')
+      if (oldBadge) oldBadge.remove()
+
+      const chips = this.element.parentElement.querySelectorAll('.ss-value:not(.ss-more-badge)')
+
       const wrapper = this.element.nextElementSibling
       if (wrapper) wrapper.classList.toggle('ss-multiple', chips.length > 1)
       
       if (!maxValuesShown) return
-
-      // On enlève l'ancien badge AVANT de compter les chips (sinon il se compte lui-même)
-      const oldBadge = this.element.parentElement.querySelector('.ss-more-badge')
-      if (oldBadge) oldBadge.remove()
 
       chips.forEach((chip, i) => chip.classList.toggle('ss-hidden-chip', i >= maxValuesShown))
       

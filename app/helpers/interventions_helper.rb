@@ -110,16 +110,4 @@ module InterventionsHelper
     ETATS_SANS_COMPTE_RENDU.exclude?(intervention.current_state.to_s) ||
       (intervention.nouveau? && terminaison_demandee)
   end
-
-  # --- Heures des formulaires ---
-
-  # L'accesseur virtuel d'abord : il porte la saisie même quand la date qui
-  # l'accompagne est absente, donc quand `combine_datetime` n'a rien pu fusionner.
-  def heure_saisie(intervention, champ)
-    intervention.public_send(:"#{champ}_hour").presence || intervention.public_send(champ)&.hour
-  end
-
-  def minute_saisie(intervention, champ)
-    intervention.public_send(:"#{champ}_minute").presence || intervention.public_send(champ)&.min
-  end
 end

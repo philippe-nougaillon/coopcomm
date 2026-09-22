@@ -17,12 +17,13 @@
 
   <div class="my-5">
     <%= form.label :catégorie, class: "label font-semibold text-slate-700" do %>
-      <span>Catégorie</span>
+      <span>Catégorie <span class="text-red-500">*</span></span>
     <% end %>
     <%= form.select :catégorie,
-                     options_for_select(WikiPage.catégories.keys, wiki_page.catégorie || params["catégorie"]),
+                     options_for_select(WikiPage.catégories.keys, wiki_page.catégorie),
                      { include_blank: "Choisir une catégorie" },
-                     class: "select select-sm w-full" %>
+                     class: "select select-sm w-full",
+                     required: true %>
   </div>
 
   <div class="my-5">
@@ -71,9 +72,6 @@
       <% end %>
     </label>
   </div>
-
-
-
 
   <div class="form-control w-full">
     <%= render "shared/file_dropzone",
