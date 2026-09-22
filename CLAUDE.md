@@ -130,6 +130,7 @@
 - Ce qui relève du rendu se vérifie **au navigateur** (capture d'écran), pas par déduction — la suite tourne en largeur téléphone, où les grilles s'effondrent et masquent les défauts.
 - Une **sonde jetable** avant de rédiger une matrice de cas déplace des déductions vers des faits (et a déjà invalidé plusieurs hypothèses).
 - **`embedded_svg` rend `''` sans bruit quand le fichier manque**, et plusieurs icônes sont référencées par un chemin **dynamique** (`"icons/#{nom}.svg"`) : avant d'en supprimer une, chercher aussi son nom nu (`'login'`), pas seulement `login.svg`.
+- **Un statut « ouvert » ne se déduit pas du registre non plus** : un correctif posé par un collègue ne met aucune fiche à jour (B2 est resté six semaines en tête des bloquants après sa correction). Sonder le code avant de s'appuyer sur une fiche.
 
 ---
 
@@ -153,7 +154,7 @@
 | Un bug connu, son parcours de reproduction, son statut | `suivi/bugs-ouverts.md` (3 niveaux 🔴🟠⚪) · `suivi/bugs-corriges.md` |
 | Un défaut non reproductible, gardé, à re-signaler si la garde tombe | `suivi/risques-surveilles.md` · `suivi/risques-clos.md` |
 | Une décision en attente, une action humaine à faire, une dette actée | `suivi/points-a-trancher.md` · `suivi/actions-a-faire.md` · `suivi/dettes-ouvertes.md` (clos : `points-tranches`, `actions-faites`, `dettes-reglees`) |
-| **Pourquoi** telle décision a été prise, ce qu'une session a mesuré | `suivi/journal-decisions.md` (index, 109 entrées) → `suivi/journal/AAAA-MM.md` |
+| **Pourquoi** telle décision a été prise, ce qu'une session a mesuré | `suivi/journal-decisions.md` (index, 110 entrées) → `suivi/journal/AAAA-MM.md` |
 | Comment écrire un test ici | skill `tests-coopcomm` (à invoquer, pas à lire) |
 | Contexte client détaillé, CCTP, modèle de menace | `.claude/method/fiches/contexte-projet.md` *(hors dépôt)* |
 | Erreurs récurrentes du projet, checklist avant PR | `CONTRIBUTING.md` |

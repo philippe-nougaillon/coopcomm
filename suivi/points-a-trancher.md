@@ -16,10 +16,7 @@
 
 ## 🔴 Bloque la prod ou l'argent
 
-### D1 — Prix du devis vs tarif courant (= bug **B2** du registre)
-- **Question** : quand une commande est créée depuis une cotation signée (puis une facture depuis la commande), quel prix fait foi — celui **signé sur le devis** ou le **tarif courant** de la prestation ?
-- **Contexte** : aujourd'hui le tarif courant écrase silencieusement le prix du devis (confirmé : commande à 120 € pour un devis signé à 76,50 €). Correctif technique trivial une fois tranché.
-- **Statut** : **en réflexion** (2026-07-10 : « je ne sais pas encore »). **Éclairage 2026-07-28** (fiche contexte) : PE décrit le cycle voulu par « **le tarif est stocké dans la commande** » et « on ne peut pas modifier le prix d'une facture » — ce qui suggère la sémantique *prix figé au moment du devis signé* ; le CCTP (§5.5.7) va dans le même sens : facturation « aux temps réels » mais **comparée au devis initial avec explication des écarts** (donc le devis reste la référence). Confirmation explicite demandée à PE ; si oui, correctif = ne pas appliquer `set_prix_from_prestation` quand la ligne porte déjà un prix hérité d'une cotation/commande.
+_Aucun._
 
 ## 🟠 Attendu avant la montée en charge
 
@@ -27,6 +24,7 @@
 - **Question** : la refonte UX (Dani Isaza, commits `3ae4f02e` du 2026-07-02 « UX - corriger github actions » et `42085022` du 2026-07-03 « UX - solution github ») a **désactivé toute la fonctionnalité** valider/refuser des documents d'outil : actions commentées dans `documents_controller.rb`, routes commentées (`resources :documents, only: %i[]`), workflow commenté dans `document.rb`, boutons retirés du partial `_document.html.erb` (colonne État vide). Le formulaire outil est passé des nested attributes (fichier + état par document) à une **dropzone unique** `form.file_field :documents`. Est-ce une suppression **assumée** de la fonctionnalité, ou un débranchement **temporaire** pour faire passer la CI (les noms de commits le suggèrent) ?
 - **Conséquence immédiate** : les 3 system tests de `test/system/documents_test.rb` échouaient (ils testent l'UI disparue) → **commentés le 2026-07-13** (décision client : « pour l'instant on ne l'utilise pas ») avec renvoi vers ce point. À trancher avec Dani : si suppression assumée → supprimer le fichier de test ; si temporaire → réactiver la fonctionnalité et décommenter/adapter les tests.
 - **Incohérence à signaler au passage** : `tools_controller#tool_params` permet toujours `documents_attributes` alors que le formulaire n'envoie plus que `documents` (fichier simple) — l'upload de documents depuis le formulaire est probablement cassé aussi côté serveur (non vérifié).
+- **Rebalayé le 2026-09-22** : `tool_params` ne permet plus `documents_attributes` mais `:document` ([tools_controller.rb:132](app/controllers/tools_controller.rb#L132)) — l'incohérence signalée n'existe plus ; `test/system/documents_test.rb` a été supprimé le 2026-08-26 (`c0a719b9`, #483). La question de fond est inchangée : routes `only: %i[]`, actions du contrôleur et workflow du modèle toujours commentés.
 
 ### D7 — Absences : les 3 écarts restants après le lot du 2026-07-30 (`#419`, `eaa5ac86`, `967781b7`)
 - **Contexte** : le CCTP ne contient **aucune exigence** sur les absences (vérifié dans le digest anonymisé de `fiches/contexte-projet.md` ; PE n'a pas transmis le PDF complet, à recouper si un doute contractuel apparaît). La fonctionnalité est un *moyen* du planning, pas un livrable exigé → rien de bloquant pour septembre. Les 5 demandes de PE du 2026-07-30 sont livrées ; ce qui suit ne l'est pas.
@@ -35,6 +33,7 @@
 - **③ Calendrier des agents illisible sur les absences** ([users/_agent.html.erb:62-71](app/views/users/_agent.html.erb#L62)) — même carré `bg-[#db2767]` pour « occupé » et « absent », l'information ne vit que dans le `title` au survol, donc invisible sur le Samsung S8 des agents. Le filtre « absent » est commenté dans le contrôleur ([users_controller.rb:179-186](app/controllers/users_controller.rb#L179)) avec un TODO proposant le bon remède (cases grisées). *À traiter seulement si `agent_calendrier` est réellement utilisé — la fiche contexte le donne comme « la seule fonctionnalité qui risquerait d'être ignorée ».*
 - **Plus mineur, non chiffré** : aucune vue d'ensemble des absences (routes `only: [:destroy]`, il faut ouvrir chaque fiche agent) ; suppression via `link_to … turbo_method: :delete` ([_absence_form.html.erb:64](app/views/users/_absence_form.html.erb#L64)) au lieu de `button_to`, contraire à la doctrine « plus jamais de GET mutant » de l'audit 2026-06-12 §3.
 - **Asymétrie restante, assumée** : `Absence#no_overlapping_interventions` et `Intervention#check_absence` sont désormais alignés (demi-journées + dates réelles des deux côtés). Le seul écart conservé est volontaire : la **clôture d'un pointage déjà ouvert** échappe au contrôle (`Intervention#clôture_de_pointage?`), sans quoi une absence posée en cours de journée figerait le pointage ouvert et ferait échouer la clôture nocturne.
+- **Rebalayé le 2026-09-22** : ① toujours 4 motifs ; ② export inchangé ([export_to_xls/agents.rb:31](app/services/export_to_xls/agents.rb#L31)) ; ③ même carré `bg-[#db2767]` ([_agent.html.erb:68](app/views/users/_agent.html.erb#L68) et `:81`) ; le filtre « absent » est **actif** dans `users#index` ([users_controller.rb:32](app/controllers/users_controller.rb#L32)) et seulement commenté dans `agent_calendrier` (`:154`) ; suppression toujours en `link_to … turbo_method: :delete` ([_absence_form.html.erb:68](app/views/users/_absence_form.html.erb#L68)).
 
 ### D9 — Incohérences de visibilité entre la liste et la page d'une intervention (signalées le 2026-08-05, aucune corrigée)
 Toutes sont **figées par les matrices de caractérisation** : elles ne peuvent plus bouger par accident, mais elles ne sont pas résolues.
@@ -91,6 +90,7 @@ Le découpage du 2026-08-05 a ramené `_form` à 83 lignes d'ossature et `_form_
 - l'adhérent n'est modifiable que sur un bon saisi par un agent (`bon?` et hors pointage) ;
 - les dates réelles sont **toujours** obligatoires et disposées côte à côte, là où l'autre formulaire ne les exige qu'à la terminaison.
 Les deux premières s'expriment déjà par des prédicats de policy (`saisir_description?`, `choisir_service?`, `choisir_adherent?`). **À trancher : fusionne-t-on ?** Le gain serait un seul formulaire ; le coût, une troisième condition sur la disposition et l'obligation des dates.
+- **Rebalayé le 2026-09-22** : toujours deux formulaires, 76 et 192 lignes.
 
 ### D14 — Angles morts assumés de la convention de tests de contrôleurs (2026-08-13)
 
@@ -106,3 +106,4 @@ Les deux premières s'expriment déjà par des prédicats de policy (`saisir_des
    ⚠ **B13** — le filtre opère au grain des cellules pré-agrégées, un −3 h pouvant être « netté » par un +8 h de la même cellule — **perd ses 2 seuls tests d'épinglage** avec ce lot : le comportement n'est plus figé nulle part.
 7. **Twilio hors périmètre** : si le webhook WhatsApp est réactivé, il repart de zéro. C'est aussi le seul endroit du dépôt autorisé à écrire en `save!(validate: false)` — la sentinelle structurelle qui l'impose vit dans `test/integration/intervention_sans_adherent_test.rb` et n'est, elle, pas concernée par cette convention.
 8. **Fonctions « primaires » (retour d'une couleur, d'un libellé) hors périmètre** : deux bugs de cette famille sont déjà passés — **B80** (libellés de motif d'absence et d'état de mouvement écrits en dur, ne correspondant à aucun enum) et **B36**. Le risque n'y est jamais la logique, c'est la table de correspondance qui diverge de sa source.
+- **Re-mesuré le 2026-09-22 (§6)** : 7 interventions à `temps_total` négatif sur 262 en base de dev, toutes modifiées avant le 2026-08-10, aucune depuis #462.

@@ -15,17 +15,6 @@
 
 ## 🔴 Bloquants
 
-### B2 — Prix du devis écrasé par le tarif courant à la création de la commande (décision métier à prendre)
-- **Où** : [create_commande_from_cotation.rb:19](app/services/create_commande_from_cotation.rb#L19) + `CommandeLigne#set_prix_from_prestation` ; symétrique dans `create_facture_from_commande.rb:19`
-- **Cause** : le service copie bien `prix_ht`/`total_ht` du devis, mais le callback de `CommandeLigne` les **écrase avec le tarif actuel** de la prestation (`total_ht` est de toute façon une colonne générée).
-- **Parcours de reproduction** (confirmé empiriquement le 2026-07-08) :
-  1. En tant que **manager**, je crée une cotation avec une prestation à **25,50 € HT** (3 unités → devis à 76,50 €). Je l'envoie, l'**adhérent la signe**.
-  2. Entre-temps, le **tarif de la prestation** est modifié à **40 € HT** (admin, écran Prestations).
-  3. Je crée la **commande depuis la cotation signée** → les lignes de commande affichent **40 €** : commande à **120 €** pour un devis signé à **76,50 €**.
-  4. Même mécanique de la commande vers la **facture**.
-- **Impact** : l'adhérent est facturé à un prix différent de celui qu'il a signé.
-- **À trancher (client)** : le prix contractuel est-il celui du devis signé (probable) ou le tarif courant ? Correctif technique trivial une fois tranché (ne pas écraser si `prix_ht` déjà renseigné). **Statut 2026-07-10 : en réflexion** — suivi comme **D1** dans `points-a-trancher.md`.
-
 ### B14 — Éditer une intervention dont le service n'est plus proposé pour son adhérent **change le service silencieusement** (le formulaire ne sait pas conserver la valeur d'origine)
 - **Signalé le** : 2026-07-15 (découvert en écrivant les tests système du refresh dashboard).
 - **Où** : [interventions_controller.rb:455-461](app/controllers/interventions_controller.rb#L455-L461) (`services_for_adherent` : options = services de l'adhérent ∩ services du manager) + [dynamic_select_controller.js](app/javascript/controllers/dynamic_select_controller.js) (`updateServices` → `populateSelect` **remplace** les options au chargement de l'édition, la valeur d'origine est perdue si elle n'est pas dans la liste).
@@ -37,6 +26,7 @@
 - **Quirk lié (comportement, pas bug)** : quand la liste ne contient qu'une option, elle est auto-sélectionnée, et **re-cliquer dessus la désélectionne** (toggle slim-select) — un utilisateur peut se retrouver avec un champ vide sans comprendre.
 - **Correctif proposé** (décision métier à prendre) : inclure le service ACTUEL de l'intervention dans les options renvoyées à l'édition (union avec la valeur d'origine), ou avertir explicitement du changement.
 - **Trace test** : contrainte documentée dans l'en-tête de `test/system/manager/dashboard_refresh_manager_flow_test.rb` (les tests contournent en préparant des données cohérentes : agents ajoutés à Informatique ; ⚠ la fixture `bond_informatique` pointe en réalité vers **service_paris** — nom trompeur).
+- **Rebalayé le 2026-09-22** : inchangé (`services_for_adherent`, [interventions_controller.rb:382](app/controllers/interventions_controller.rb#L382)). Depuis, la cascade sait conserver une option marquée `data-mandatory` ([dynamic_select_controller.js:48](app/javascript/controllers/dynamic_select_controller.js#L48)), utilisée seulement par `_form_for_agents` pour l'agent courant : marquer de la même manière le service actuel de l'intervention serait le correctif le plus court.
 
 ### B19 — ⚠️ PARTIELLEMENT CORRIGÉ (2026-07-29, garde vue restaurée ; garde contrôleur toujours absente) — Un outil rattaché à des interventions peut être supprimé
 - **Signalé par** : agent, 2026-07-24 (surfacé en fiabilisant `tools_test` : l'assertion « bouton masqué » visait un id disparu → faux positif qui masquait la régression).
@@ -72,6 +62,7 @@
   - **assainir le texte** avant de l'écrire, comme le fait `TransformToPdf::Intervention#texte_sûr` (substitutions connues, puis `encode('Windows-1252', undef: :replace, replace: '?')`) — quelques lignes, aucun ajout au dépôt, mais les caractères exotiques deviennent `?` ;
   - **embarquer une police TTF** (DejaVu Sans ou Open Sans, licence OFL donc compatible avec l'open-source envisagé) — UTF-8 complet, supprime le besoin d'assainir **dans les quatre services PDF à la fois**, au prix de 4 fichiers de police (~300–700 Ko) et de PDF un peu plus lourds. L'équipe y avait déjà pensé : le bloc est commenté dans [qrcode_modele_intervention.rb:27-32](app/services/transform_to_pdf/qrcode_modele_intervention.rb#L27-L32), avec un chemin `vendor/assets/fonts/Open_Sans/`.
 - **Non couvert par les tests** : aucun test n'exerce un caractère hors Windows-1252 sur les PDF CRM.
+- ✅ **Remède disponible depuis le 2026-09-01** (#485, PDF d'intervention) : `TransformToPdf::Intervention#texte_sûr` ([intervention.rb:433](app/services/transform_to_pdf/intervention.rb#L433)) traduit `₂` et `→` puis remplace par « ? » tout caractère hors Windows-1252. Les trois PDF du CRM ne l'utilisent pas (rebalayage 2026-09-22) : à mutualiser dans `base_pdf_for_crm.rb`.
 
 ## 🟠 Gênants
 
@@ -104,6 +95,7 @@
 - **Cause/scénario (déduction, non reproduit)** : la photo est purgée **avant** l'update ; si les validations échouent (ex. `agents_must_be_available` #357 devenue fausse depuis la création), l'audit « Photo n°X supprimée » n'est **pas** écrit, mais l'utilisateur voit quand même la notice « Photo supprimée ». Le cas nominal est couvert par un test (« la suppression est tracée dans l'audit trail », vert).
 - **Impact** : trou ponctuel d'audit trail, faible.
 - **Correctif proposé** : à instruire — écrire l'audit sans dépendre des validations de l'intervention (ou au minimum logguer/alerter en cas d'échec de l'update).
+- ⚠️ **Rebalayé le 2026-09-22** : `purger_photos_demande` ([interventions_controller.rb:273](app/controllers/interventions_controller.rb#L273)) a le même `update(audit_comment: …)` sans bang ; même correctif à appliquer aux deux.
 
 ### B28 — ⚠️ PARTIELLEMENT CORRIGÉ (2026-07-28) — Terminer/valider/refuser une intervention en conflit de disponibilité → erreur 500, et intervention définitivement figée
 - **Signalé par** : PE, 2026-07-28, **rencontré en usage réel** (agent voulant terminer une intervention ordinaire) : `ActiveRecord::RecordInvalid` — « Conflit(s) détecté(s) sur un agent : MARTIN déjà sur l'intervention « #217 » du 19/03/2026 15:15 au 24/03/2026 16:25 ».
@@ -190,7 +182,8 @@
 - **Correctif proposé** : sortir l'écriture du callback (`update_columns(trajet:, co2:)` — ces colonnes ne demandent aucune validation), ce qui supprime d'un coup le rejeu des validations, le changement d'état et la perte silencieuse. ⚠️ `co2` est dans la liste surveillée par le trigger du dashboard : `update_columns` déclenche bien le refresh, le comportement de B71 est préservé.
 - **Note connexe** : ce `save` imbriqué est déjà la raison pour laquelle `apres_terminaison` doit être déclaré **en dernier** dans le modèle (cf. décision 2026-07-29-h) — le défaut a donc déjà coûté une fois.
 
-### B98 — L'œil qui révèle le mot de passe est inutilisable dès qu'on a tapé dedans
+### B98 — ⚠️ PARTIELLEMENT CORRIGÉ (2026-08-26, formulaire de connexion seul) — L'œil qui révèle le mot de passe est inutilisable dès qu'on a tapé dedans
+- ⚠️ **Reliquat (rebalayage 2026-09-22)** : `devise/sessions/new.html.erb` porte `z-10` depuis le 2026-08-26 (commit `60509511`, Dani). Les trois autres formulaires — `users/_form_password.html.erb`, `devise/passwords/edit.html.erb`, `devise/invitations/edit.html.erb` — ont chacun deux boutons sans la classe (mesuré).
 - **Où** : le bouton `data-action="click->password-visibility#toggle"` des formulaires Devise (connexion, invitation, mot de passe oublié, changement de mot de passe).
 - **Cause** : daisyUI donne `z-index: 1` au champ **quand il a le focus** ; le bouton, en `position: absolute`, reste à `z-index: auto`. Le champ passe donc **au-dessus** de l'œil et intercepte le clic.
 - **Mesuré** (sonde navigateur, 2026-08-26) : champ non focalisé → `elementFromPoint` au centre du bouton renvoie le `<svg>` de l'œil ; champ focalisé après saisie → il renvoie l'`INPUT`, avec `z-index: 1` sur le champ et `auto` sur le bouton.
@@ -216,36 +209,6 @@
 - **Non couvert par un test** : plus aucun test ne surveille le comportement de l'option vide depuis la suppression de `test/system/slim_select_test.rb` par `#491`.
 
 <!-- B104 est dans un stash (flash qui fait déborder le cookie de session), non encore fusionnée dans staging : ne pas le réattribuer. -->
-
-### B105 — Le badge « + N » de la troncature annonce toujours une valeur masquée de trop dès qu'on touche au champ
-- **Signalé par** : l'agent, 2026-09-09 ; re-vérifié présent sur `staging` le 2026-09-14 (code identique).
-- **Où** : [slim_select_controller.js](app/javascript/controllers/slim_select_controller.js), `truncateChips` — les chips sont comptées **avant** que l'ancien badge soit retiré :
-  ```js
-  const chips = this.element.parentElement.querySelectorAll('.ss-value')   // ← compte AUSSI l'ancien badge
-  ...
-  const oldBadge = ...querySelector('.ss-more-badge')
-  if (oldBadge) oldBadge.remove()                                          // ← trop tard
-  const hidden = chips.length - maxValuesShown
-  ```
-- **Cause** : le badge porte lui-même la classe `ss-value`, et `querySelectorAll` rend une liste **statique** — retirer le badge du DOM ensuite ne le retire pas de `chips`. Le compte est gonflé de 1 à chaque passage où un badge existait déjà. Le fichier porte pourtant l'avertissement, resté en place : *« On enlève l'ancien badge AVANT de compter les chips (sinon il se compte lui-même) »* — l'ordre a été inversé en ajoutant la bascule `ss-multiple`, qui avait besoin du compte plus tôt.
-- **Mesuré au navigateur (2026-09-09, deux sondes jetables supprimées, aucune donnée écrite)** :
-  1. **Au clic** — `/users/:slug/edit`, champ **Service(s)** (seuil 1). Au chargement : 2 chips, 1 masquée, badge `+ 1` — juste. Je désélectionne un service → **1 chip, 0 masquée, et le badge affiche toujours `+ 1`**.
-  2. **Au redimensionnement** — `/mouvements` avec les 3 états sélectionnés (seuil mobile 2). Au chargement : badge `+ 1`, 1 chip masquée — juste. Après un redimensionnement **sans changer de palier** (544 → 560 px) : **badge `+ 2` pour toujours 1 seule chip masquée**. L'écart se stabilise à +1 (un seul badge existe à la fois).
-- **Parcours de reproduction** :
-  1. Je modifie un utilisateur rattaché à deux services — le champ Service(s) affiche « Informatique » et « + 1 ».
-  2. Je retire un service dans le menu.
-  3. → Il ne reste qu'un service, **rien n'est masqué**, et le champ affiche toujours « + 1 ». Sur téléphone, la barre d'URL qui se replie au défilement déclenche un `resize` : le même décalage apparaît sans action de l'utilisateur.
-- **Impact** : le badge est le **seul** indicateur de ce que le champ cache (les chips masquées sont en `display: none`). Le champ Service(s) d'un utilisateur est concerné, or c'est lui qui détermine l'organisation et le périmètre de visibilité.
-- **Ce qui n'est PAS touché, vérifié** : le `<select>` natif garde toujours les bonnes valeurs — **rien de faux n'est enregistré**, le défaut est d'affichage. Les chips restent correctement masquées : seul le nombre annoncé est faux.
-- **Correctif proposé** : retirer le badge avant la capture de `chips` — l'ordre que décrit le commentaire. La bascule `ss-multiple` se calcule alors sur la même liste.
-- **Défauts annexes de la même méthode** (aucun atteignable aujourd'hui) :
-  - Le badge est **cherché** dans `this.element.parentElement` mais **ajouté** dans `this.element.nextElementSibling`. Les deux coïncident tant que chaque select a son propre conteneur (vérifié sur les 24 emplacements) ; deux selects dans un même `<div>` mélangeraient leurs chips.
-  - `nextElementSibling.querySelector('.ss-values')` rend `null` sur un select **simple** → `TypeError`. Inatteignable : les 24 selects porteurs d'un seuil sont tous `multiple`.
-  - `resize` non débouncé : un écouteur par slim-select, chacun mutant le DOM à chaque événement.
-  - `parseInt(...) || null` transforme un seuil `0` en « désactivé » ; le seuil `768` est codé en dur.
-  - Rien ne recalcule le badge en dehors de `truncateChips` : après un `setData` de `dynamic_select_controller` qui **réduirait** la sélection, le badge garderait son ancien compte. Cas non mesuré.
-- ⚠ **Écarté par la mesure** : la troncature n'est **pas** perdue quand la cascade `dynamic-select` repeuple les agents en conservant la sélection (cas réel de `populateAgents`) — `setData` ne reconstruit alors pas le DOM des chips (sonde du 2026-09-09). Une déduction contraire de l'agent (2026-08-27) est donc fausse.
-- **Non couvert par un test** : aucun test ne touche `.ss-value`. ⚠ La suite tourne en largeur téléphone (544 px) : c'est toujours `max_values_shown_mobile` qui s'applique, jamais le seuil desktop.
 
 ### B109 — Devis, commandes, factures : les tableaux d'une même fiche partagent le paramètre `page` et tournent ensemble
 - **Signalé par** : l'agent, 2026-08-27 ; re-vérifié présent sur `staging` le 2026-09-14.
@@ -329,6 +292,7 @@
 - **Cause racine** : on n'entre dans ce bloc de repli que si `humanize_changes` est vide, c'est-à-dire si **tous** les champs modifiés sont dans `FILTERED_FIELDS`. Or ni `discarded_at` ni `warehouse_id` n'y figurent → ils produisent toujours une ligne de changement, et le repli n'est jamais atteint. Vérifié : une désactivation affiche « Statut du compte : Réactivé → Désactivé » (comportement correct, mais pas celui que le code croit produire).
 - **Impact** : nul pour l'utilisateur (le rendu de repli est moins bon que celui qui s'applique), mais 5 lignes de code trompeuses qui font croire à un comportement inexistant.
 - **Correctif proposé** : supprimer les deux branches, ou — si les messages sont voulus — les déplacer **avant** le test `humanize_changes.blank?`. Décision d'affichage à prendre.
+- ⚠️ **Rebalayé le 2026-09-22 — fiche à re-mesurer** : `audit_changes_list` a été réécrit le 2026-08-06 ([audits_helper.rb:177](app/helpers/audits_helper.rb#L177)), les lignes citées n'existent plus. Mesuré : `remember_created_at` et `sign_in_count` figurent dans `FILTERED_FIELDS`, donc les branches « Connexion », « Déconnexion » et « Maintien de la connexion » sont atteignables ; `discarded_at` n'y figure pas et `format_audit_value` rend déjà « Désactivé »/« Réactivé », donc les deux messages de la branche `discarded_at` restent inatteignables. `warehouse_id` non vérifié.
 
 ### B46 — Code mort : `prettify` et `audited_view_path`
 - **Signalé par** : agent, 2026-07-29.
@@ -342,10 +306,11 @@
 - **Où** :
   - [app/controllers/twilio_controller.rb:60-75](app/controllers/twilio_controller.rb#L60) — `terminer_intervention` référence un `sender` inexistant → `NameError`. `send_options` (l. 48-58) n'est appelée par personne.
   - [app/models/user.rb:260-266](app/models/user.rb#L260) — `nb_bad_words` itère sur `Notification`, **classe absente du projet** → `NameError`.
-  - [app/controllers/users_controller.rb:362](app/controllers/users_controller.rb#L362) — `interventions_average` appelle `interventions` (méthode de modèle) depuis un contrôleur → `NameError`. Action non routée.
+  - ~~[app/controllers/users_controller.rb:362](app/controllers/users_controller.rb#L362) — `interventions_average` appelle `interventions` (méthode de modèle) depuis un contrôleur → `NameError`. Action non routée.~~ — **supprimé avec B89 (2026-08-10)**, constaté le 2026-09-22.
   - [app/models/user.rb:178-204](app/models/user.rb#L178) — `from_omniauth` : `:omniauthable` et la route sont commentés ; contient par ailleurs le bug `user.organisation=` déjà signalé.
 - **Impact** : nul tant que rien ne les appelle ; pièges à la réactivation.
 - **Correctif proposé** : suppression (voir aussi B46 et le récapitulatif de code mort du 2026-07-30 dans CLAUDE.md).
+- **Rebalayé le 2026-09-22** : `nb_bad_words` ([user.rb:279](app/models/user.rb#L279)), `send_options` et `terminer_intervention` ([twilio_controller.rb:55](app/controllers/twilio_controller.rb#L55) et `:67`, `sender` toujours indéfini) et `from_omniauth` sont toujours là.
 
 ### B91 — Un adhérent peut écraser les mots clés par un paramètre `tag_list` forgé — ⏸️ MIS DE CÔTÉ (décision PE, 2026-08-11)
 - **Décision PE** : « il y a plein de champs qui ne devraient pas être permis pour certains rôles parce qu'ils sont cachés selon le `workflow_state` ou le rôle ; c'est un sujet à part, la majorité de ces cas sont des *abuser stories* ». Le critère retenu : **un bug est un bug quand un utilisateur modifie un champ qui ne lui est PAS caché** (c'était le cas de B90) ; forger un paramètre absent de son formulaire n'en est pas un. Fiche conservée pour mémoire, à traiter avec l'ensemble des permits le jour où le sujet sera ouvert.
@@ -357,21 +322,6 @@
   3. Les mots clés de l'intervention deviennent `forgé` — alors que le champ ne m'est jamais proposé et que la garde de **B90** est précisément là pour m'empêcher d'y toucher.
 - **Correctif proposé** : retirer `:tag_list` de `intervention_params`. Aucun formulaire ne le soumet, donc aucune régression attendue.
 - **Épinglé par** : `interventions_controller_test`, « un adhérent écrase les mots clés par un paramètre tag_list forgé » — à inverser à la correction.
-
-### B106 — La règle CSS qui rétrécit les chips quand il y en a plusieurs est rejetée par le navigateur : elle n'a jamais rien fait
-- **Signalé par** : l'agent, 2026-09-09 ; re-vérifié présent sur `staging` le 2026-09-14.
-- **Où** : [application.css](app/assets/stylesheets/application.css), section « TAILLE CONTENU SLIM-SELECT » :
-  ```css
-  .ss-main.ss-multiple .ss-values .ss-value .ss-value-text {
-    max-width: 5
-    rem;            /* ← valeur et unité séparées : « 5 rem » n'est pas une longueur valide */
-  ```
-- **Cause** : en CSS, un nombre et son unité ne peuvent pas être séparés par une espace (un saut de ligne en est une). Le navigateur **jette la déclaration entière**, en silence.
-- **Mesuré (2026-09-09, Chromium, sonde qui lit le bloc directement dans `application.css`)** : le CSSOM ne retient que quatre des cinq déclarations — `{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; }`, **sans `max-width`**. Le `max-width` calculé reste à **150px**, hérité de la règle générale juste au-dessus.
-- **Impact** : nul sur le fonctionnement, mais **toute la mécanique construite pour cette règle est morte**, y compris la bascule `ss-multiple` que `truncateChips` calcule sur chaque slim-select. La règle générale applique déjà l'ellipse à 150px : l'utilisateur ne voit aucune anomalie, c'est le rétrécissement à 5rem qui manque.
-- **Parcours de reproduction** : sélectionner plusieurs valeurs dans un champ multiple — les chips ne rétrécissent pas. Dans l'inspecteur, `max-width: 5 rem` apparaît barré comme invalide.
-- **Correctif proposé** : `max-width: 5rem;` sur une seule ligne. **À décider** : si le rétrécissement n'est pas voulu, supprimer la règle **et** la bascule `ss-multiple` plutôt que les réparer.
-- ⚠ **Masque B105** : `ss-multiple` est posée sur un compte de chips gonflé par l'ancien badge ; réparer ce CSS sans B105 rendrait visible une bascule tantôt juste, tantôt fausse.
 
 ### B107 — `/mouvements` : un `id` posé à la main casse le lien entre le libellé « État » et son champ
 - **Signalé par** : l'agent, 2026-08-27 ; re-vérifié présent sur `staging` le 2026-09-14.

@@ -54,6 +54,53 @@
 - **Précédent** : la même ligne existait dans `on_intervention_done` et a été **gardée le 2026-07-29-h** (`User.find_by(id: intervention.audits.last&.user_id)` + `return unless user&.agent?`, [l.15](app/subscriptions/email_subscription.rb#L15)) — le correctif est donc déjà écrit juste en dessous, il reste à l'appliquer ligne 7.
 - **Correctif proposé à l’origine pour ① (repris dans R5)** : `last_audit = intervention.audits.last` + `return if last_audit.nil?` (le suivi **D3** de `points-a-trancher.md` ne concernait que la partie dormante ; cette partie-ci est active).
 
+### B106 — ✅ CORRIGÉ (2026-09-16, commit `aabee194` de Daniela) — La règle CSS qui rétrécit les chips quand il y en a plusieurs est rejetée par le navigateur : elle n'a jamais rien fait
+- **Signalé par** : l'agent, 2026-09-09 ; re-vérifié présent sur `staging` le 2026-09-14.
+- **Où** : [application.css](app/assets/stylesheets/application.css), section « TAILLE CONTENU SLIM-SELECT » :
+  ```css
+  .ss-main.ss-multiple .ss-values .ss-value .ss-value-text {
+    max-width: 5
+    rem;            /* ← valeur et unité séparées : « 5 rem » n'est pas une longueur valide */
+  ```
+- **Cause** : en CSS, un nombre et son unité ne peuvent pas être séparés par une espace (un saut de ligne en est une). Le navigateur **jette la déclaration entière**, en silence.
+- **Mesuré (2026-09-09, Chromium, sonde qui lit le bloc directement dans `application.css`)** : le CSSOM ne retient que quatre des cinq déclarations — `{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; }`, **sans `max-width`**. Le `max-width` calculé reste à **150px**, hérité de la règle générale juste au-dessus.
+- **Impact** : nul sur le fonctionnement, mais **toute la mécanique construite pour cette règle est morte**, y compris la bascule `ss-multiple` que `truncateChips` calcule sur chaque slim-select. La règle générale applique déjà l'ellipse à 150px : l'utilisateur ne voit aucune anomalie, c'est le rétrécissement à 5rem qui manque.
+- **Parcours de reproduction** : sélectionner plusieurs valeurs dans un champ multiple — les chips ne rétrécissent pas. Dans l'inspecteur, `max-width: 5 rem` apparaît barré comme invalide.
+- **Correctif proposé** : `max-width: 5rem;` sur une seule ligne. **À décider** : si le rétrécissement n'est pas voulu, supprimer la règle **et** la bascule `ss-multiple` plutôt que les réparer.
+- ⚠ **Masque B105** : `ss-multiple` est posée sur un compte de chips gonflé par l'ancien badge ; réparer ce CSS sans B105 rendrait visible une bascule tantôt juste, tantôt fausse.
+- ✅ **Correctif appliqué** (constaté au rebalayage du 2026-09-22) : `max-width: 5rem;` tient sur une ligne ([application.css:417](app/assets/stylesheets/application.css#L417)) ; la bascule `ss-multiple` n'a pas été retirée, la règle est donc désormais active.
+
+### B105 — ✅ CORRIGÉ (2026-09-14, commit `78f5c69d` #505 de Dani) — Le badge « + N » de la troncature annonce toujours une valeur masquée de trop dès qu'on touche au champ
+- **Signalé par** : l'agent, 2026-09-09 ; re-vérifié présent sur `staging` le 2026-09-14 (code identique).
+- **Où** : [slim_select_controller.js](app/javascript/controllers/slim_select_controller.js), `truncateChips` — les chips sont comptées **avant** que l'ancien badge soit retiré :
+  ```js
+  const chips = this.element.parentElement.querySelectorAll('.ss-value')   // ← compte AUSSI l'ancien badge
+  ...
+  const oldBadge = ...querySelector('.ss-more-badge')
+  if (oldBadge) oldBadge.remove()                                          // ← trop tard
+  const hidden = chips.length - maxValuesShown
+  ```
+- **Cause** : le badge porte lui-même la classe `ss-value`, et `querySelectorAll` rend une liste **statique** — retirer le badge du DOM ensuite ne le retire pas de `chips`. Le compte est gonflé de 1 à chaque passage où un badge existait déjà. Le fichier porte pourtant l'avertissement, resté en place : *« On enlève l'ancien badge AVANT de compter les chips (sinon il se compte lui-même) »* — l'ordre a été inversé en ajoutant la bascule `ss-multiple`, qui avait besoin du compte plus tôt.
+- **Mesuré au navigateur (2026-09-09, deux sondes jetables supprimées, aucune donnée écrite)** :
+  1. **Au clic** — `/users/:slug/edit`, champ **Service(s)** (seuil 1). Au chargement : 2 chips, 1 masquée, badge `+ 1` — juste. Je désélectionne un service → **1 chip, 0 masquée, et le badge affiche toujours `+ 1`**.
+  2. **Au redimensionnement** — `/mouvements` avec les 3 états sélectionnés (seuil mobile 2). Au chargement : badge `+ 1`, 1 chip masquée — juste. Après un redimensionnement **sans changer de palier** (544 → 560 px) : **badge `+ 2` pour toujours 1 seule chip masquée**. L'écart se stabilise à +1 (un seul badge existe à la fois).
+- **Parcours de reproduction** :
+  1. Je modifie un utilisateur rattaché à deux services — le champ Service(s) affiche « Informatique » et « + 1 ».
+  2. Je retire un service dans le menu.
+  3. → Il ne reste qu'un service, **rien n'est masqué**, et le champ affiche toujours « + 1 ». Sur téléphone, la barre d'URL qui se replie au défilement déclenche un `resize` : le même décalage apparaît sans action de l'utilisateur.
+- **Impact** : le badge est le **seul** indicateur de ce que le champ cache (les chips masquées sont en `display: none`). Le champ Service(s) d'un utilisateur est concerné, or c'est lui qui détermine l'organisation et le périmètre de visibilité.
+- **Ce qui n'est PAS touché, vérifié** : le `<select>` natif garde toujours les bonnes valeurs — **rien de faux n'est enregistré**, le défaut est d'affichage. Les chips restent correctement masquées : seul le nombre annoncé est faux.
+- **Correctif proposé** : retirer le badge avant la capture de `chips` — l'ordre que décrit le commentaire. La bascule `ss-multiple` se calcule alors sur la même liste.
+- **Défauts annexes de la même méthode** (aucun atteignable aujourd'hui) :
+  - Le badge est **cherché** dans `this.element.parentElement` mais **ajouté** dans `this.element.nextElementSibling`. Les deux coïncident tant que chaque select a son propre conteneur (vérifié sur les 24 emplacements) ; deux selects dans un même `<div>` mélangeraient leurs chips.
+  - `nextElementSibling.querySelector('.ss-values')` rend `null` sur un select **simple** → `TypeError`. Inatteignable : les 24 selects porteurs d'un seuil sont tous `multiple`.
+  - `resize` non débouncé : un écouteur par slim-select, chacun mutant le DOM à chaque événement.
+  - `parseInt(...) || null` transforme un seuil `0` en « désactivé » ; le seuil `768` est codé en dur.
+  - Rien ne recalcule le badge en dehors de `truncateChips` : après un `setData` de `dynamic_select_controller` qui **réduirait** la sélection, le badge garderait son ancien compte. Cas non mesuré.
+- ⚠ **Écarté par la mesure** : la troncature n'est **pas** perdue quand la cascade `dynamic-select` repeuple les agents en conservant la sélection (cas réel de `populateAgents`) — `setData` ne reconstruit alors pas le DOM des chips (sonde du 2026-09-09). Une déduction contraire de l'agent (2026-08-27) est donc fausse.
+- **Non couvert par un test** : aucun test ne touche `.ss-value`. ⚠ La suite tourne en largeur téléphone (544 px) : c'est toujours `max_values_shown_mobile` qui s'applique, jamais le seuil desktop.
+- ✅ **Correctif appliqué** (constaté au rebalayage du 2026-09-22) : `truncateChips` retire l'ancien badge **avant** de capturer les chips, et le sélecteur exclut le badge (`.ss-value:not(.ss-more-badge)`) — commit `78f5c69d`, #505, le jour même du signalement.
+
 ### B102 — ✅ CORRIGÉ (2026-09-07, en deux commits) — Depuis le retour en arrière sur slim-select, deux champs obligatoires acceptaient d'être vidés : l'état d'un mouvement et le rôle d'un utilisateur
 - **Où** : `mouvements/_form.html.erb` (État) et `users/_form.html.erb:23` (Rôle). Conséquence directe de `#491`, qui avait retiré le garde JS de B99 : l'option vide d'un select obligatoire était de nouveau proposée au menu, et la choisir ne déclenchait **aucun** blocage du navigateur (mécanisme mesuré en B99 : SlimSelect duplique l'option en 2ᵉ position, la sélection ne porte plus sur un placeholder). Ces deux champs étaient les seuls des ~10 selects `required` du dépôt à n'avoir aucun filet serveur — les autres sont rattrapés par un `belongs_to` ou par une validation de présence (`Prestation#unité` depuis `#486`).
 - **Parcours de reproduction (avant correction)** :
@@ -161,6 +208,18 @@
 ### B52 — ✅ SANS OBJET (2026-08-11) — `TagCloudComponent` appelé avec le mauvais mot-clé
 - Le composant et son gabarit ont été **supprimés** : plus aucun appelant depuis le retrait des deux vues non routées (`carte_interventions`, `route_interventions`) du 2026-08-10-c. Vérifié avant suppression : aucune vue, aucun contrôleur, aucun test, aucun preview ViewComponent ne le référence ; boot de l'application contrôlé après coup.
 - ⚠️ `app/components/` est désormais **vide** : la gem `view_component` n'a plus un seul composant dans le dépôt. À retirer du Gemfile si aucun composant n'est prévu.
+
+### B2 — ✅ CORRIGÉ (2026-08-11, commit `0a83223d` #465 d'Alex) — Prix du devis écrasé par le tarif courant à la création de la commande (décision métier à prendre)
+- **Où** : [create_commande_from_cotation.rb:19](app/services/create_commande_from_cotation.rb#L19) + `CommandeLigne#set_prix_from_prestation` ; symétrique dans `create_facture_from_commande.rb:19`
+- **Cause** : le service copie bien `prix_ht`/`total_ht` du devis, mais le callback de `CommandeLigne` les **écrase avec le tarif actuel** de la prestation (`total_ht` est de toute façon une colonne générée).
+- **Parcours de reproduction** (confirmé empiriquement le 2026-07-08) :
+  1. En tant que **manager**, je crée une cotation avec une prestation à **25,50 € HT** (3 unités → devis à 76,50 €). Je l'envoie, l'**adhérent la signe**.
+  2. Entre-temps, le **tarif de la prestation** est modifié à **40 € HT** (admin, écran Prestations).
+  3. Je crée la **commande depuis la cotation signée** → les lignes de commande affichent **40 €** : commande à **120 €** pour un devis signé à **76,50 €**.
+  4. Même mécanique de la commande vers la **facture**.
+- **Impact** : l'adhérent est facturé à un prix différent de celui qu'il a signé.
+- **À trancher (client)** : le prix contractuel est-il celui du devis signé (probable) ou le tarif courant ? Correctif technique trivial une fois tranché (ne pas écraser si `prix_ht` déjà renseigné). **Statut 2026-07-10 : en réflexion** — suivi comme **D1** dans `points-a-trancher.md`.
+- ✅ **Correctif appliqué** (constaté au rebalayage du 2026-09-22, non rejoué par un parcours) : commit `0a83223d` d'Alexandre Meunier, #465 « Freeze the price of prestations for commandes and factures » — le callback `set_prix_from_prestation` a disparu de `CommandeLigne` et de `FactureLigne`, qui ne portent plus que `refresh_*_total` ; `create_commande_from_cotation.rb` copie `prix_ht`/`total_ht` de la ligne de devis. = D1 tranché par le code.
 
 ### B89 — ✅ CORRIGÉ (2026-08-10) — Code mort accumulé, et distinction faite avec le code « parké »
 - **Signalé** le 2026-08-10 en balayant les lignes non couvertes de `bin/coverage`, chaque absence d'appelant vérifiée par `grep` sur `app/`, `lib/`, `config/`.

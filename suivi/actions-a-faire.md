@@ -17,6 +17,7 @@
 
 ### A2 — Confirmations prod restantes de l'audit sécurité (2026-06-12)
 - Purge des exports **XLS dans `public/`** ; **rotation des comptes seedés** ; `APP_HOSTS` renseigné ; **signature du webhook entrant** vérifiée.
+- **Rebalayé le 2026-09-22** : la signature du webhook est vérifiée dans le code depuis le 2026-06-11 (`validate_twilio_signature`, `Twilio::Security::RequestValidator`) ; il ne reste à confirmer en prod que la variable `TWILIO_AUTH_TOKEN`. `public/` ne contient qu'un modèle d'import (`Exemple_import_utilisateurs.xls`), aucun export. Comptes seedés et `APP_HOSTS` : non vérifiables depuis le dépôt.
 
 ### A4 — ❗ Sauvegardes de la base de production (à traiter AVANT la mise en prod de septembre)
 - **Constat (PE, 2026-07-28, fiche contexte)** : « on ne fait pas de backup de la base de données ».
@@ -35,3 +36,4 @@
 ### A3 — CI : job `test:system` séparé
 - **Quoi** : exécuter les tests système dans un job CI distinct des tests unitaires/intégration.
 - **Pourquoi** : les tests système non transactionnels laissent des résidus qui, depuis #357 (dispos sur dates réelles), font échouer les tests de pointage lancés dans le même run.
+- **Rebalayé le 2026-09-22** : la CI ([rails.yml](.github/workflows/rails.yml)) ne lance que `PARALLEL_WORKERS=2 bin/rails test` ; la ligne `bin/rails test:system` est commentée (l. 115). Les tests système ne tournent donc **jamais** en CI — le point n'est plus « séparer » mais « brancher ».
