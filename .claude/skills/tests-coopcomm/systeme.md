@@ -98,7 +98,7 @@ L'**état métier** et ce que la personne voit : un texte à l'écran, une URL d
 
 Un test système fait remonter deux natures de problèmes, à **ne jamais mélanger dans le compte rendu** :
 
-- **Anomalies côté utilisateur** — l'application se comporte mal : message absent, page cassée, bouton inopérant. Elles vont au registre `suivi/bugs-signales.md` et se corrigent (ou s'épinglent avec « à inverser à la correction »).
+- **Anomalies côté utilisateur** — l'application se comporte mal : message absent, page cassée, bouton inopérant. Elles vont au registre `suivi/bugs-ouverts.md` et se corrigent (ou s'épinglent avec « à inverser à la correction »).
 - **Anomalies côté tests** — l'environnement d'exécution : lenteur, parallélisation, session résiduelle, navigateur. Elles se signalent, **jamais en tordant l'assertion pour les contourner**.
 
 La frontière est parfois instructive : un clic perdu parce que le bouton se déplace pendant une animation d'une seconde est une anomalie **utilisateur**, pas de test.

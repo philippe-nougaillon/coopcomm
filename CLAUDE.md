@@ -2,7 +2,7 @@
 
 > **Mémoire de travail de l'agent** : à lire en premier, à chaque session.
 >
-> **Ce fichier reste court** (objectif : < 30 000 caractères). Il ne contient que ce qui doit être vrai **à chaque conversation** : identité du projet, conventions, pièges, état courant, périmètre. Les notes de session vont dans `suivi/journal-decisions.md`, **jamais ici** — seule une leçon durable y remonte, en une ligne dans « Pièges & leçons apprises ».
+> **Ce fichier reste court** (objectif : < 30 000 caractères). Il ne contient que ce qui doit être vrai **à chaque conversation** : identité du projet, conventions, pièges, état courant, périmètre. Les notes de session vont dans `suivi/journal/` (index : `suivi/journal-decisions.md`), **jamais ici** — seule une leçon durable y remonte, en une ligne dans « Pièges & leçons apprises ».
 
 ---
 
@@ -150,9 +150,10 @@
 
 | Besoin | Fichier (aucun n'est chargé automatiquement) |
 |---|---|
-| Un bug connu, son parcours de reproduction, son statut | `suivi/bugs-signales.md` |
-| Une décision métier ou une action humaine en attente | `suivi/points-a-trancher.md` |
-| **Pourquoi** telle décision a été prise, ce qu'une session a mesuré | `suivi/journal-decisions.md` (index en tête, 105 entrées) |
+| Un bug connu, son parcours de reproduction, son statut | `suivi/bugs-ouverts.md` (3 niveaux 🔴🟠⚪) · `suivi/bugs-corriges.md` |
+| Un défaut non reproductible, gardé, à re-signaler si la garde tombe | `suivi/risques-surveilles.md` · `suivi/risques-clos.md` |
+| Une décision en attente, une action humaine à faire, une dette actée | `suivi/points-a-trancher.md` · `suivi/actions-a-faire.md` · `suivi/dettes-ouvertes.md` (clos : `points-tranches`, `actions-faites`, `dettes-reglees`) |
+| **Pourquoi** telle décision a été prise, ce qu'une session a mesuré | `suivi/journal-decisions.md` (index, 109 entrées) → `suivi/journal/AAAA-MM.md` |
 | Comment écrire un test ici | skill `tests-coopcomm` (à invoquer, pas à lire) |
 | Contexte client détaillé, CCTP, modèle de menace | `.claude/method/fiches/contexte-projet.md` *(hors dépôt)* |
 | Erreurs récurrentes du projet, checklist avant PR | `CONTRIBUTING.md` |
@@ -160,7 +161,7 @@
 
 **Ouvrir le journal des décisions** avant de revenir sur un choix ancien, ou avant de toucher à une zone qui a déjà coûté cher : pointage, tests système, cache de fragments, validations d'intervention, filtres d'index, audit.
 
-**Tenue des registres** : un bug corrigé **quitte** « ouverts » pour « corrigés » — on ne le marque pas sur place. Une note de session s'écrit dans `journal-decisions.md`. Ne remonte dans ce fichier-ci qu'une **leçon durable** (une ligne au §3), un **changement de convention**, ou une **mise à jour de l'état courant** — en *remplaçant* la ligne précédente, jamais en l'empilant.
+**Tenue des registres** : chaque registre a un fichier **ouvert** (classé 🔴🟠⚪, définitions en tête, **prochain numéro libre** à incrémenter) et un fichier **clos** (du plus récent au plus ancien) : une fiche close **quitte** l'un pour l'autre, on ne la marque pas sur place. Une note de session s'écrit dans `suivi/journal/AAAA-MM.md`, avec sa ligne dans l'index `journal-decisions.md`. Ne remonte dans ce fichier-ci qu'une **leçon durable** (une ligne au §3), un **changement de convention**, ou une **mise à jour de l'état courant** — en *remplaçant* la ligne précédente, jamais en l'empilant.
 
 ---
 
