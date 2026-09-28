@@ -6,6 +6,10 @@
     </div>
   </td>
   <td class="px-4 py-3 text-sm"><%= truncate(aibot_log.request_message.message, length: 80) %></td>
+  <td class="px-4 py-3 text-sm">
+    <%= ":-(" if aibot_log.response_message.message.include?("Je suis désolé")%>
+    <%= truncate(aibot_log.response_message.message, length: 80) %>
+    </td>
   <td class="px-4 py-3 text-sm text-center">
     <%= render partial: "statut", locals: { aibot_log: aibot_log } %>
   </td>

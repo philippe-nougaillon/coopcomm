@@ -16,7 +16,7 @@ class AibotLogsController < ApplicationController
     @aibot_logs = @aibot_logs.where(user_id: params[:user_id]) if params[:user_id].present?
     @aibot_logs = @aibot_logs.where(succes: false) if params[:ko].present?
 
-    @pagy, @aibot_logs = pagy(@aibot_logs)
+    @pagy, @aibot_logs = pagy(@aibot_logs, items: 25)
   end
 
   def show; end
