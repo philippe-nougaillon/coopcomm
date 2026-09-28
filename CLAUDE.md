@@ -47,8 +47,8 @@
 - ⚠ **Invoquer la skill `tests-coopcomm` avant d'écrire, de modifier ou de relire un test.** Elle porte les gabarits imposés (policies, contrôleurs, modèles, services, système), les règles de fixtures, le marquage des tests critiques et le placement des helpers. Les faire évoluer = éditer la skill, pas ce fichier.
 - **Exigence : tout ce qui peut être testé doit l'être.** Minitest, fixtures dans `test/fixtures/`, système en Capybara + Selenium.
 - **Modèle de menace** : aucun utilisateur ne fera de mass assignment ou de requête forgée (seul scénario : compte volé). La menace réaliste, ce sont **les curieux via l'UI normale** — surtout leur propre évaluation (note/avis) et les infos privées d'autrui. Donc : matrice de tests centrée sur les **parcours réels et les données visibles** (pages, exports XLS/PDF, mails) ; tests de forge réservés à l'argent ou sur demande.
-- **Un bug trouvé pendant une session de tests est signalé, pas corrigé** sans accord explicite : fiche au registre + test `skip` documenté (si le correctif est évident) ou test d'**ÉPINGLAGE** du comportement actuel avec « à inverser à la correction » (si une décision métier manque).
-- **`data-testid` autorisé** : sous `/tests`, droit d'ajouter un `data-testid` **inerte** sur une vue quand c'est le moyen le plus fiable de cibler un élément, plutôt qu'un sélecteur fragile. Uniquement `data-testid` (pas d'`id` ajouté) ; toute autre modification de prod reste signalée, non appliquée ; signaler les vues touchées.
+- **Un bug trouvé pendant une session de tests est signalé, pas corrigé** sans accord explicite : fiche au registre, et le test **reste rouge** — c'est le signal. Le `skip` est réservé à une **décision métier en attente** (son message dit ce qu'il faut trancher) ; quand la décision manque mais que le comportement actuel doit être figé, test d'**ÉPINGLAGE** avec « à inverser à la correction ». `flunk` est l'outil de l'équipe, pas de l'agent.
+- **`data-testid` autorisé** : sous `/tests`, droit d'ajouter un `data-testid` **inerte** sur une vue, aux conditions de la skill `tests-coopcomm` (tests système, élément sans texte ciblable, dernier attribut). Uniquement `data-testid` (pas d'`id` ajouté) ; toute autre modification de prod reste signalée, non appliquée ; signaler les vues touchées.
 - **Un correctif se prouve rouge** : saboter le code corrigé, vérifier que le test tombe, restaurer. Voir « Pièges — méthode » pour la manière de saboter sans rien casser.
 
 **Git**
@@ -130,6 +130,7 @@
 - Ce qui relève du rendu se vérifie **au navigateur** (capture d'écran), pas par déduction — la suite tourne en largeur téléphone, où les grilles s'effondrent et masquent les défauts.
 - Une **sonde jetable** avant de rédiger une matrice de cas déplace des déductions vers des faits (et a déjà invalidé plusieurs hypothèses).
 - **`embedded_svg` rend `''` sans bruit quand le fichier manque**, et plusieurs icônes sont référencées par un chemin **dynamique** (`"icons/#{nom}.svg"`) : avant d'en supprimer une, chercher aussi son nom nu (`'login'`), pas seulement `login.svg`.
+- **Un fichier donné comme référence par une consigne peut la contredire** : `SKILL.md` désignait `commandes_controller_test.rb` comme modèle de nommage, or 22 de ses 24 noms portent la forme que la même page interdit. Ouvrir la référence avant de s'appuyer dessus.
 - **Un statut « ouvert » ne se déduit pas du registre non plus** : un correctif posé par un collègue ne met aucune fiche à jour (B2 est resté six semaines en tête des bloquants après sa correction). Sonder le code avant de s'appuyer sur une fiche.
 
 ---

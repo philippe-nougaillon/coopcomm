@@ -3,9 +3,9 @@ description: Génération de tests (matrice de cas, CoT, bugs détectés mais no
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
-**NE MODIFIE PAS LA *LOGIQUE* DE PRODUCTION** (contrôleurs, models, workflow, services, comportement des vues). **Exception explicite (décision PE 2026-07-22)** : tu **peux** ajouter un attribut `data-testid` sur un élément de vue quand c'est le moyen le plus fiable de le cibler. Préfère **toujours** ça à un sélecteur CSS/XPath/`title=`/`data-action` fragile ou à un helper de test qui contourne un markup non ciblable — **objectif : les tests les plus stables possible**. Ces attributs sont **inertes** (aucun effet sur le comportement, donc hors de l'interdit ci-dessus) ; signale-les dans ta réponse (ce sont des modifs de vue à relire). Toute **autre** modif de prod (logique, correction de bug) reste **signalée, non appliquée** (point 5).
+**NE MODIFIE PAS LA *LOGIQUE* DE PRODUCTION** (contrôleurs, models, workflow, services, comportement des vues). **Seule exception** : l'ajout d'un attribut `data-testid` **inerte** sur un élément de vue, aux conditions fixées par la skill `tests-coopcomm` (tests système, élément sans texte ciblable, dernier attribut de la balise) ; signale les vues touchées dans ta réponse. Toute **autre** modif de prod (logique, correction de bug) reste **signalée, non appliquée** (point 5).
 
-**Invoque d'abord la skill `tests-coopcomm`** (`.claude/skills/tests-coopcomm/`) : elle porte les gabarits imposés du projet (policies, contrôleurs), les règles de fixtures, le marquage des tests critiques et le placement des helpers. Le template T13 ci-dessous dit *comment conduire la session* ; la skill dit *à quoi doit ressembler le test écrit*.
+**Invoque d'abord la skill `tests-coopcomm`** (`.claude/skills/tests-coopcomm/`) : son `SKILL.md` porte les règles transverses (nommage, commentaires, ordre, tests critiques, helpers, `skip`, fixtures) et renvoie aux gabarits imposés par type de test. Le template T13 ci-dessous dit *comment conduire la session* ; la skill dit *à quoi doit ressembler le test écrit* — **en cas d'écart, la skill l'emporte**.
 
 Lis le **template T13 — « Génération de tests »** dans `.claude/method/kit-prompting.md` (dans `.claude/method/` — sinon `~/aikku/CLAUDE/kit-prompting.md`). Applique-le rigoureusement au code suivant : $ARGUMENTS
 
@@ -15,4 +15,4 @@ Ordre strict :
 3. **Tests** : un comportement par test, AAA clair, mocks minimaux, pas de logique dans les tests, pas de dépendance à l'ordre. Conventions du projet (`CLAUDE.md`).
 4. **Cas non couverts** : pourquoi (ex. « nécessite une refacto d'injection de dépendance »). Proposition de refacto séparée, pas appliquée ici.
 5. **Bugs détectés dans la prod** : fichier:ligne + scénario, **sans les corriger**.
-6. **Porte de sortie** : comportement attendu non spécifié → `xfail`/`skip` + commentaire « à clarifier », ne devine pas.
+6. **Porte de sortie** : comportement attendu non spécifié → `skip` dont le message dit **ce qu'il faut trancher**, ne devine pas. Un test qui ne passe pas parce que l'application est cassée **reste rouge** : ni `skip`, ni assertion affaiblie.

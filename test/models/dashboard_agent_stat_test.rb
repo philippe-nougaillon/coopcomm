@@ -26,10 +26,12 @@ class DashboardAgentStatTest < ActiveSupport::TestCase
 
   test 'parité : agent désactivé → garde sa part du temps' do
     discarded = User.with_discarded.discarded.agent.first
-    skip 'aucun agent supprimé dans les fixtures' if discarded.nil?
+
+    assert_not_nil discarded, 'aucun agent supprimé dans les fixtures'
 
     iv = discarded.interventions.find { |i| i.temps_total.to_f.positive? }
-    skip 'agent supprimé sans intervention chiffrée' if iv.nil?
+
+    assert_not_nil iv, 'agent supprimé sans intervention chiffrée dans les fixtures'
     part = iv.temps_total / AgentIntervention.where(intervention_id: iv.id).count
 
     assert_in_delta part, DashboardAgentStat.where(agent_id: discarded.id).sum(:temps_total), 0.01

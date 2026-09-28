@@ -9,7 +9,7 @@
 >
 > **Règle de tenue** : prochain numéro libre ci-dessous (préfixe `DT`), rangement **par numéro** dans la section. Une dette réglée quitte ce fichier pour `dettes-reglees.md`, titre préfixé `✅ RÉGLÉE (AAAA-MM-JJ)`.
 >
-> **Prochain numéro libre : DT12**
+> **Prochain numéro libre : DT13**
 
 ---
 
@@ -34,6 +34,12 @@ _Aucune._
 - au-delà du « Signé » manquant, le menu Statut de `adherent_crm` n'est pas dérivé de l'onglet courant. À traiter avec B33.
 
 ## ⚪ Confort
+
+### DT12 — Déplacements de tests annoncés, jamais faits (sortis de la skill le 2026-09-28)
+- La skill `tests-coopcomm` portait dans son gabarit des contrôleurs une liste de déplacements à faire, qui n'a pas sa place dans un gabarit permanent. Elle est déplacée ici, **rebalayée contre le dépôt le 2026-09-28** :
+  - **`test/controllers/tris_test.rb` existe toujours.** La note disait « passe en tests système » ; le fichier est en réalité un `ActionDispatch::IntegrationTest` (sentinelle des colonnes triables, exercées par `get`), donc sa place au regard de la hiérarchie actuelle est **`test/integration/`**, pas `test/system/`. Déplacement à faire, ou fiche à clore si on assume qu'il reste là.
+  - **`menus_deroulants_test` et `securite_regressions_test` n'existent plus** nulle part dans `test/` : les deux points de la note sont sans objet.
+  - **Tests des temps négatifs d'intervention** : la note demandait de les retirer, « patchés par #462 ». Il en reste un, [intervention_pointage_test.rb:197](test/models/intervention_pointage_test.rb#L197), qui asserte le message de validation — il paraît légitime aujourd'hui (cf. DT2 : 7 lignes négatives pré-existantes en base de dev). À confirmer avant toute suppression.
 
 ### DT3 — Doublon Solid Queue potentiel
 - plugin Puma `solid_queue` **et** ligne `worker:` du `Procfile.dev` — vérifier qu'on ne fait pas tourner deux workers.

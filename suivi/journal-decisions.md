@@ -133,3 +133,4 @@
 - `2026-09-15` — Veille des signalements sur la montée de version : passage à Ruby 4.0.7 (SEGV de la 4.0.6)
 - `2026-09-22` — Registres de suivi découpés en dix fichiers ouvert/clos, journal par mois
 - `2026-09-22-b` — Rebalayage des 66 fiches ouvertes contre le code : 6 passées en clos, 17 complétées
+- `2026-09-28` — Dédoublonnage de la skill `tests-coopcomm` : transverses dans `SKILL.md`, nommage tranché, 5 `skip` supprimés
