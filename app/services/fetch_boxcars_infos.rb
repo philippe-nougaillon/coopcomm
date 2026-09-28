@@ -3,15 +3,22 @@
 # Prototype de l'appel de boxcars, en développement
 class FetchBoxcarsInfos < ApplicationService
   def initialize
+    if ENV.fetch("AI_PROVIDER") == "vllm"
+      engine = Boxcars::Ollama.new(uri_base: self.AIBOT_URI_BASE, model: ENV.fetch("AIBOT_MODEL"))
+    else
+      engine = Boxcars::Openai.new(model: "gpt-5.5")
+    end
+
     # Outil boxcars utilisé pour la requete
     boxcars = [Boxcars::ActiveRecord.new(
                   name: "AIBOT",
                   models: self.MODELS,
-                  context: self.CONTEXT_ACTIVERECORD
+                  context: self.CONTEXT_ACTIVERECORD,
+                  engine: engine
                 )]
 
     # Train permet de rebondir sur ses propres réponses pour épurer la réponse
-    @boxcars_builder = Boxcars.train.new(boxcars: boxcars)
+    @boxcars_builder = Boxcars.train.new(boxcars: boxcars, engine: engine)
   end
 
   def call(current_user, request)
@@ -63,5 +70,11 @@ class FetchBoxcarsInfos < ApplicationService
     Tu t'appelles AIBOT, l'utilisateur s'appelle #{current_user.nom_prénom}, il a le rôle #{current_user.rôle}. 
     Les attributs de l'utilisateur sont : \n #{current_user.inspect}
     "
+  end
+
+  private
+
+  def AIBOT_URI_BASE
+    "http://#{ENV.fetch('AIBOT_HOST')}:#{ENV.fetch('AIBOT_PORT')}/v1"
   end
 end
