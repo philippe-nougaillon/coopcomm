@@ -1,5 +1,7 @@
 # Tests d'intégration — gabarit imposé
 
+> Les règles transverses (commentaires, ordre, tests critiques, helpers, `skip`) sont dans `SKILL.md`. Ce fichier ne porte que ce qui est propre à l'intégration.
+
 Un test d'intégration rejoue un **parcours utilisateur**, mais au niveau HTTP : une suite de `get` et de `post`, comme un test de contrôleur, sauf qu'il en enchaîne plusieurs.
 
 Il vit dans `test/integration/`, sur la même classe qu'un test de contrôleur (`ActionDispatch::IntegrationTest`). La différence n'est donc pas technique, elle est de **portée** : une action contre une chaîne d'actions.
@@ -25,7 +27,7 @@ je crée → je suis redirigé sur le record → sa donnée est là, le flash au
 
 ## Les liens de navigation
 
-**Un lien qui ne fait que naviguer se teste ici, jamais en système.** Deux assertions suffisent : le lien existe **avec le bon chemin**, et la destination répond.
+**Un lien qui ne fait que naviguer se teste ici, jamais en système** (règle transverse). Deux assertions suffisent : le lien existe **avec le bon chemin**, et la destination répond.
 
 ```ruby
 get root_path
@@ -35,22 +37,28 @@ get dashboard_path
 assert_response :success
 ```
 
-Cliquer réellement dessus n'apprend rien de plus : c'est un `GET`, sans Turbo à intercepter. **On ne clique en système que lorsque le clic change l'état d'un enregistrement** — cf. `systeme.md`.
-
 Quand plusieurs liens partagent le même `href` (le menu et l'accès rapide mènent souvent au même endroit), on les distingue par leur libellé avec `text:`.
 
 ## Assertions
 
-Les mêmes que pour un contrôleur (`controleurs.md`), à chaque étape de la chaîne : la réponse aboutit, la redirection mène à la bonne page, la **donnée du record** est rendue (`assert_dom`, jamais le titre de la page), le flash porte le bon message, l'état en base a changé.
+Les mêmes que pour un contrôleur (`controleurs.md`), **à chaque étape de la chaîne**.
 
 `follow_redirect!` entre deux étapes : sans lui on asserte sur la réponse 302, qui ne contient rien.
 
+## Acteurs
+
+Comme pour les contrôleurs : **le parcours se joue en administrateur**, sauf quand il porte précisément sur un autre rôle (une invitation reçue, un adhérent qui valide).
+
 ## Nommage
 
-`test/integration/<parcours>_test.rb` — le nom du fichier dit le parcours, pas le contrôleur : `invitation_utilisateur_test.rb`, `formulaires_conservent_la_saisie_test.rb`.
+**Fichier** : `test/integration/<parcours>_test.rb` — le nom du fichier dit le parcours, pas le contrôleur : `invitation_utilisateur_test.rb`, `formulaires_conservent_la_saisie_test.rb`.
 
-Le nom d'un test est une phrase qui énonce le comportement (règle transverse de `SKILL.md`).
+**Nom du test : une user story**, comme les tests système et à la différence de tous les autres types (règle de `SKILL.md`) :
+
+```ruby
+test "En tant qu'administrateur, je veux retrouver la commande que je viens de créer dans la liste"
+```
 
 ## Fixtures
 
-Une fixture principale dans le `setup`, des dérivées au besoin — même règle que pour les contrôleurs.
+Voir `fixtures.md`.

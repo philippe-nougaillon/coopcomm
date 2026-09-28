@@ -3,6 +3,14 @@
 require 'test_helper'
 
 class PagesControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    @clé_mistral_initiale = ENV.fetch('MISTRAL_AI_API_KEY', nil)
+    ENV['MISTRAL_AI_API_KEY'] = 'clé-de-test'
+  end
+
+  teardown do
+    ENV['MISTRAL_AI_API_KEY'] = @clé_mistral_initiale
+  end
 
   test 'assistant : sans soumission → rien n’est généré' do
     sign_in users(:administrateur_paris)
@@ -49,8 +57,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'assistant : proposition du LLM → elle est mise en forme' do
-    skip 'Mistral API key not available in CI' if ENV['CI'].present?
-
     sign_in users(:administrateur_paris)
     cree_interventions_planifiees(10)
     stub_request(:post, %r{api\.mistral\.ai})

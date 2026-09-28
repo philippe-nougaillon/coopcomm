@@ -20,7 +20,8 @@ class DashboardInterventionStatTest < ActiveSupport::TestCase
 
   test 'scope for_adherent : adhérent → ses interventions seulement' do
     adherent = User.where(rôle: :adhérent).joins(:interventions_adherent).first
-    skip 'aucun adhérent avec interventions dans les fixtures' if adherent.nil?
+
+    assert_not_nil adherent, 'aucun adhérent avec interventions dans les fixtures'
     live = adherent.interventions_adherent.where.not(service_id: nil).count
 
     vue = DashboardInterventionStat.for_adherent(adherent).sum(:nb)
@@ -34,7 +35,8 @@ class DashboardInterventionStatTest < ActiveSupport::TestCase
 
   test 'readonly? : mise à jour d\'une ligne existante → refusée' do
     stat = DashboardInterventionStat.first
-    skip 'aucune ligne agrégée dans les fixtures' if stat.nil?
+
+    assert_not_nil stat, 'aucune ligne agrégée dans les fixtures'
 
     assert_raises(ActiveRecord::ReadOnlyRecord) { stat.update!(nb: 999) }
   end
