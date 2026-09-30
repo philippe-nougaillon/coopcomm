@@ -112,6 +112,21 @@ class MouvementTest < ActiveSupport::TestCase
     assert réservation.valid?
   end
 
+  test 'une panne ne peut pas être déclarée dans le futur (critique)' do
+    future = Mouvement.new(tool: @outil, user: @declarant, état: :panne, date: t('2099-06-02'))
+    assert_not future.valid?
+    assert_includes future.errors[:état], 'Impossible : une panne ne peut pas être créée dans le future.'
+  end
+
+  test 'une fin de panne ne peut pas être déclarée dans le futur (critique)' do
+    panne(@outil, '2026-06-02')
+
+    future = Mouvement.new(tool: @outil, user: @declarant, état: :fin_de_panne, date: t('2099-06-02'))
+
+    assert_not future.valid?
+    assert_includes future.errors[:état], 'Impossible : une fin de panne ne peut pas être créée dans le future.'
+  end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'avertir_reservations_futures : réservation à venir d\'un tiers → un NotifPanneJob avec les deux ids' do

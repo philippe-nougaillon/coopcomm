@@ -30,6 +30,8 @@ class Mouvement < ApplicationRecord
   validates :date, :état, presence: true
   validate :coherence_panne, if: :panne?
   validate :coherence_fin_de_panne, if: :fin_de_panne?
+  validate :cant_create_panne_in_futur, if: :panne?
+  validate :cant_create_fin_de_panne_in_futur, if: :fin_de_panne?
 
   after_create :avertir_reservations_futures, if: :panne?
   after_save :nettoyer_reservations_pendant_panne, if: :fin_de_panne?
@@ -139,5 +141,17 @@ class Mouvement < ApplicationRecord
     event_suivant = mouvements_panne_et_fin_de_panne.where('date > ?', date).order(date: :asc).first
 
     [event_precedent, event_suivant]
+  end
+
+  def cant_create_panne_in_futur
+    if self.date && self.date > Date.today
+      errors.add(:état, 'Impossible : une panne ne peut pas être créée dans le future.')
+    end
+  end
+
+  def cant_create_fin_de_panne_in_futur
+    if self.date && self.date > Date.today
+      errors.add(:état, 'Impossible : une fin de panne ne peut pas être créée dans le future.')
+    end
   end
 end

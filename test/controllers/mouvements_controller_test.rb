@@ -86,7 +86,7 @@ class MouvementsControllerTest < ActionDispatch::IntegrationTest
 
   test 'update : paramètres valides → le mouvement est modifié' do
     patch mouvement_url(@mouvement), params: { mouvement: { tool_id: @mouvement.tool_id, état: @mouvement.état,
-                                                            date: DateTime.now + 1.day } }
+                                                            date: DateTime.now } }
 
     assert_redirected_to mouvements_path
   end
