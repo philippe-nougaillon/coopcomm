@@ -112,13 +112,6 @@
 - **Correctif proposé** : afficher un message explicite quand les coordonnées manquent, ou re-remplir le champ avec la valeur saisie. **Non corrigé** (front, non demandé).
 - **Effet de bord constaté sur les tests** : les tests système du formulaire Sites font désormais de **vraies requêtes réseau à `maps.googleapis.com`** (clé d'API présente en test) — dépendance externe + quota consommé à chaque run. `warehouses_test` a été réécrit pour poser adresse et coordonnées comme le fait l'autocomplétion (chemin nominal réel), donc il passe avec ou sans réseau.
 
-### B32 — `Absence` : une absence sans dates est enregistrable et casse ensuite l'affichage
-- **Signalé par** : agent, 2026-07-29 (hors périmètre de la session, découvert en analysant la couverture), **prouvé empiriquement** en environnement de test : `Absence.new(user: u).valid?` → `true`, puis `nb_jours` → `NoMethodError: undefined method '-' for nil` et `en_cours?` → `TypeError: cannot determine inclusion in beginless/endless ranges`.
-- **Parcours de reproduction** : aucun depuis le formulaire (les champs date sont requis côté HTML) ; atteignable par requête forgée ou par tout code créant une `Absence` sans dates. La fiche utilisateur affichant l'absence lèverait alors une 500.
-- **Cause** : `Absence` ([absence.rb:24-26](app/models/absence.rb#L24)) n'a **aucune validation de présence** sur `du`/`au` ; les trois validations métier commencent toutes par `return if du.blank? || au.blank?`, donc une absence sans dates les traverse toutes.
-- **Correctif proposé** : `validates :du, :au, presence: true`. ⚠️ À vérifier avant application : cela rendrait invalides d'éventuelles absences existantes sans dates en prod (un `Absence.where(du: nil).or(...)` avant migration).
-- **Non corrigé** (méthode /tests, et lot `Absence` non retenu par PE pour cette session — aucun test écrit dessus).
-
 ### B33 — CRM adhérent : le filtre Statut n'offre jamais l'état « Signé » sur l'onglet Cotations
 - **Signalé par** : agent, 2026-07-29 (session /tests lot B).
 - **Parcours de reproduction** : se connecter en adhérent (ou manager) → CRM → onglet « Mes Cotations » → dérouler le filtre **Statut** → les états proposés sont Créé / Envoyé / Validé / Refusé / Archivé. **« Signé » est absent**, alors que c'est un état propre à `Cotation` et une étape centrale de son workflow : un adhérent ne peut pas filtrer ses devis signés.
