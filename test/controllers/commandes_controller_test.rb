@@ -47,7 +47,7 @@ class CommandesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'index : workflow_state → seulement cet état, quelle que soit la casse' do
-    get commandes_url(workflow_state: @commande.workflow_state.capitalize)
+    get commandes_url(workflow_state: @commande.workflow_state.humanize)
 
     assert_includes assigns(:commandes), @commande
   end

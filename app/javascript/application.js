@@ -4,6 +4,23 @@ import "controllers";
 
 import "trix";
 import "@rails/actiontext";
+import "@rails/activestorage";
+
+// Limite les fichiers acceptés par Trix aux mêmes types que ceux validés
+// côté serveur (PieceJointeValidable::DOCUMENTS). Ceci est un simple confort
+// visuel — la vraie barrière de sécurité est la validation Ruby.
+
+const TAILLE_MAX_TRIX = 110 * 1024 * 1024; // 110 Mo (100 Mo + marge)
+
+document.addEventListener("trix-initialize", (event) => {
+  const input = event.target.querySelector("input[type=file]");
+  if (input) {
+    input.setAttribute(
+      "accept",
+      ".pdf,.doc,.docx,.xls,.xlsx,.odt,.ods,.txt,.csv,.png,.jpg,.jpeg,.gif,.webp,.avif,.heic,.heif,.mp4,.webm,.ogg,.mov"
+    );
+  }
+});
 
 const autoInjectSlimSelect = () => {
   // On ajoute les IDs spécifiques à notre recherche

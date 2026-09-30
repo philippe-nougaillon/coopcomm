@@ -92,7 +92,7 @@ class PagesController < ApplicationController
                   ((hour / 2) * 2).clamp(8, 18)
                 end
 
-    @banner_image_name = "banner/banner_#{base_hour}h.png"
+    @banner_image_name = "banner/banner_#{base_hour}h.jpg"
     @banner_background_color = BACKGROUND_COLORS[base_hour]
 
     @interventions = Intervention

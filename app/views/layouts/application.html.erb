@@ -8,6 +8,7 @@
     <%= display_meta_tags keywords: "Communautés de Communes, Mutualisation, EPCI, Intercommunalité" %>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <meta name="direct-upload-url" content="<%= rails_direct_uploads_url %>">
     <meta name="google-maps-api-key" content="<%= ENV['GOOGLE_MAPS_FRONTEND_API_KEY'] %>">
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
@@ -35,11 +36,6 @@
   <% end %>
   <main>
     <%= render 'partials/notification' %>
-    <% if params[:action] == 'home' %>
-      <div class="w-full lg:mt-16" style="background-color: <%= @banner_background_color %>">
-        <%= image_tag @banner_image_name, class: "w-full h-24 lg:h-36 object-none mb-6" %>
-      </div>
-    <% end %>
     <div class="min-h-screen mx-auto <%= content_for?(:full_width) ? "" : "px-4 2xl:px-8 py-4 pb-24 #{user_signed_in? ? 'md:pt-8 lg:pt-20' : 'pt-16 lg:pt-24'}" %>">
       <%= yield %>
     </div>

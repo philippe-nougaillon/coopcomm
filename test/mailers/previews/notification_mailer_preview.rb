@@ -11,7 +11,7 @@ class NotificationMailerPreview < ActionMailer::Preview
   end
 
   def intervention_pointage
-    NotificationMailer.intervention_pointage(Intervention.last)
+    NotificationMailer.intervention_pointage(Intervention.where.not(template_slug:nil).last)
   end
 
   def welcome
@@ -52,6 +52,6 @@ class NotificationMailerPreview < ActionMailer::Preview
   end
 
   def intervention_pointage_terminee_automatiquement
-    NotificationMailer.intervention_pointage_terminee_automatiquement(Intervention.last, User.last.email)
+    NotificationMailer.intervention_pointage_terminee_automatiquement(Intervention.where.not(template_slug:nil).where.not(fin:nil).last, User.last.email)
   end
 end

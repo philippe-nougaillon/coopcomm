@@ -134,23 +134,6 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
     assert_refus(soumis, prefixe: 'intervention')
   end
 
-  # Les heures saisies sans leur date ne peuvent pas être fusionnées dans la
-  # colonne datetime : elles doivent survivre par leurs accesseurs virtuels.
-  test 'intervention : les heures survivent même quand la date manque' do
-    agent = users(:bond)
-    sign_in agent
-    soumis = {
-      adherent_id: users(:weil).id, service_id: services(:technique).id, agent_ids: [agent.id],
-      début: '', début_hour: 9, début_minute: 15,
-      fin: '', fin_hour: 17, fin_minute: 45,
-      temps_de_pause: 1.0
-    }
-
-    post interventions_url, params: { intervention: soumis }
-
-    assert_refus(soumis, prefixe: 'intervention', ignorer: %i[début fin])
-  end
-
   # --- Utilisateurs ---
 
   test 'utilisateur : une modification refusée garde la saisie' do

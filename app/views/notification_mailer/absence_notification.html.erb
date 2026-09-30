@@ -12,7 +12,7 @@
       <% ancienne = @resume_avant && @resume_avant[champ] %>
       <tr style="border-bottom: 1px solid #f1f5f9;">
         <td style="padding: 10px 0; font-weight: 600; color: #334155; width: 40%;">
-          <%= champ.capitalize %>
+          <%= champ.humanize %>
         </td>
         <td style="padding: 10px 0; color: #0f172a; text-align: right;">
           <% if @resume_avant && ancienne != valeur %>

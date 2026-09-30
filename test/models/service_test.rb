@@ -8,6 +8,16 @@ class ServiceTest < ActiveSupport::TestCase
   # de visibilité et le cloisonnement entre communes en dérivent tous. Un service en
   # double, sans nom ou supprimé alors qu'il porte encore des données casse cette chaîne.
 
+  # Sentinelle : `schema.rb` est régénéré depuis la base de dev de celui qui migre. Si sa
+  # base a perdu cette contrainte, le dump la retire sans bruit, et toute la suite tourne
+  # alors sur un schéma plus permissif que la prod (c'est déjà arrivé). Sans elle, un
+  # service sans organisation redevient possible, et tout le cloisonnement en dérive.
+  test 'organisation_id : schéma de la base → NOT NULL (critique)' do
+    assert_not Service.columns_hash['organisation_id'].null,
+               'services.organisation_id doit être NOT NULL : schema.rb a sans doute été régénéré ' \
+               'depuis une base de dev qui a perdu la contrainte'
+  end
+
   test 'unicité du nom : doublon dans la même organisation → refusé (critique)' do
     doublon = Service.new(nom: services(:technique).nom, organisation: organisations(:mairie_paris))
 

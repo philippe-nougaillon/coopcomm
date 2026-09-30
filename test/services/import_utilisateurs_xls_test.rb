@@ -117,7 +117,8 @@ class ImportUtilisateursXlsTest < ActiveSupport::TestCase
 
   test 'une image renommée en .xls est refusée sans lever' do
     image = Rails.root.join('test/fixtures/files/exemple.png')
-    skip 'pas d’image de fixture' unless File.exist?(image)
+
+    assert File.exist?(image), "fixture manquante : #{image}"
 
     rapport = ImportUtilisateursXls.call(fichier: image.to_s, importateur: @importateur,
                                          organisation: @organisation, appliquer: true)

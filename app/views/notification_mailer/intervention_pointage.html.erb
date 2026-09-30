@@ -1,12 +1,12 @@
 <h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">Bonjour,</h2>
 
 <p style="color: #475569; margin-bottom: 24px;">
-Le QR code de l'intervention « <b><%= @intervention.description.humanize %></b> » vient d'être flashé.
+Le QR code de l'intervention « <b><%= @intervention.description %></b> » vient d'être flashé.
 <br><br>
-Arrivée : <b style="text-transform: capitalize;"><%= I18n.l(@intervention.début, format: :long) %></b>
+Arrivée : <b style="text-transform: capitalize;"><%= I18n.l(@intervention.début, format: :very_long) %></b>
 <% if @intervention.fin %>
 <br><br>
-Départ : <b style="text-transform: capitalize;"><%= I18n.l(@intervention.fin, format: :long) %></b>
+Départ : <b style="text-transform: capitalize;"><%= I18n.l(@intervention.fin, format: :very_long) %></b>
 <br><br>
 Durée : <b><%= @intervention.durée_humanized %></b>
 <% end %>

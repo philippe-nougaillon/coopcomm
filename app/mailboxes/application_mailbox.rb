@@ -2,5 +2,5 @@
 
 class ApplicationMailbox < ActionMailbox::Base
   # routing /something/i => :somewhere
-  routing 'support@mg.coopcom.fr' => :support
+  routing 'support@mg.coopcomm.fr' => :support
 end
