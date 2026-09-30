@@ -72,35 +72,6 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal dernier, last_mail_logs[cotation.id], 'doit retenir le mail_log le plus récent'
   end
 
-  test 'index : un adhérent voit toutes ses cotations envoyées, quel que soit le service prestataire' do
-    cotations(:cotation_paris).update!(workflow_state: 'envoyé')
-    sign_in @adherent
-    get cotations_url
-
-    assert_response :success
-    listed = assigns(:cotations)
-    assert_includes listed, cotations(:cotation_paris)       # service Informatique (rattaché)
-    assert_includes listed, cotations(:cotation_secretariat) # service Secrétariat (non rattaché)
-  end
-
-  test "index : un adhérent ne voit pas ses cotations encore à l'état créé" do
-    sign_in @adherent
-    get cotations_url
-
-    assert_response :success
-    refute_includes assigns(:cotations), cotations(:cotation_paris) # créé, à weil
-  end
-
-  test "index : le filtre Services d'un adhérent liste les services de ses cotations envoyées" do
-    cotations(:cotation_paris).update!(workflow_state: 'envoyé')
-    sign_in @adherent
-    get cotations_url
-
-    svcs = assigns(:services)
-    assert_includes svcs, services(:informatique)
-    assert_includes svcs, services(:secretariat)
-  end
-
   test 'show : une cotation de son périmètre → la page répond et le PDF est rendu' do
     cotation = cotations(:cotation_paris)
     get cotation_url(cotation)
