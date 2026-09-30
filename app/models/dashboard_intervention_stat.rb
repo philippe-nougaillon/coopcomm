@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Lecture seule : vue matérialisée rafraîchie par DashboardRefreshable, au grain
+# Lecture seule : vue matérialisée rafraîchie après chaque commit d'Intervention ou d'AgentIntervention, au grain
 # (organisation, service, adhérent, mois, statut).
 class DashboardInterventionStat < ApplicationRecord
   belongs_to :organisation
