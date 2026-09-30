@@ -46,3 +46,5 @@ coverage
 .claude/method/fiches/contexte-projet.md
 # Liste locale des tests en échec (bin/rails test:failed)
 /test/failed_tests.rb
+.vscode/settings.json
+.vscode

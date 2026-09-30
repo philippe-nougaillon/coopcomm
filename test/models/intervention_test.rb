@@ -59,26 +59,20 @@ class InterventionTest < ActiveSupport::TestCase
     assert_predicate intervention, :valid?
   end
 
-  test 'combine_datetime : heure et minute saisies à part → reportées sur la date' do
+  test 'dates : changement des quatre dates → chacune ressort identique à celle fournie' do
     intervention = interventions(:nouvelle_intervention)
-    intervention.début_prévue = Time.zone.local(2030, 5, 4, 8, 0)
-    intervention.début_prévue_hour = '14'
-    intervention.début_prévue_minute = '45'
+    début = Time.zone.local(2024, 4, 19, 9, 5, 37)
+    fin = Time.zone.local(2024, 4, 19, 18, 45, 12)
+    début_prévue = Time.zone.local(2030, 5, 4, 8, 15, 3)
+    fin_prévue = Time.zone.local(2030, 5, 4, 17, 45, 59)
 
-    intervention.valid?
+    intervention.update!(début: début, fin: fin, début_prévue: début_prévue, fin_prévue: fin_prévue)
 
-    assert_equal 14, intervention.début_prévue.hour
-    assert_equal 45, intervention.début_prévue.min
-  end
-
-  test 'combine_datetime : date absente → aucune heure inventée' do
-    intervention = interventions(:nouvelle_intervention)
-    intervention.début_prévue = nil
-    intervention.début_prévue_hour = '14'
-
-    intervention.valid?
-
-    assert_nil intervention.début_prévue
+    intervention.reload
+    assert_equal début, intervention.début
+    assert_equal fin, intervention.fin
+    assert_equal début_prévue, intervention.début_prévue
+    assert_equal fin_prévue, intervention.fin_prévue
   end
 
   test 'set_temporary_description : création sans description → bouchon posé puis remplacé par l\'identifiant' do
@@ -395,12 +389,30 @@ class InterventionTest < ActiveSupport::TestCase
     assert_not interventions(:nouvelle_intervention).pointage_ouvert?
   end
 
-  test 'durée_humanized : début et fin réels → durée en heures et minutes' do
+  test 'la durée d’une intervention est affichée en heures, minutes et secondes' do
     intervention = interventions(:nouvelle_intervention)
     intervention.début = Time.zone.local(2030, 5, 4, 9, 0)
-    intervention.fin = Time.zone.local(2030, 5, 4, 11, 30)
+    intervention.fin = Time.zone.local(2030, 5, 4, 11, 30, 12)
 
-    assert_equal '02h 30min', intervention.durée_humanized
+    assert_equal '02h 30min 12sec', intervention.durée_humanized
+  end
+
+  test 'les dates d’un pointage sont affichées avec les secondes' do
+    mère = interventions(:intervention_repete)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+
+    assert_equal :very_long, fille.format_date
+  end
+
+  test 'les dates d’une intervention ordinaire sont affichées sans les secondes' do
+    assert_equal :long, interventions(:nouvelle_intervention).format_date
+  end
+
+  test 'le format réservé aux pointages affiche réellement les secondes' do
+    horaire = Time.zone.local(2030, 5, 4, 9, 0, 12)
+
+    assert_includes I18n.l(horaire, format: :very_long), '12s'
+    assert_not_includes I18n.l(horaire, format: :long), '12s'
   end
 
   test 'passed : intervention encore à l\'état nouveau et non finie → faux' do

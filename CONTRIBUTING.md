@@ -1,7 +1,7 @@
 # Guide de contribution — CoopComm
 
 > Erreurs récurrentes constatées dans l'historique du projet, et checklist pour ne plus les refaire.
-> Chaque règle est tirée d'un **vrai correctif** du dépôt (commit ou bug du registre `suivi/bugs-signales.md`).
+> Chaque règle est tirée d'un **vrai correctif** du dépôt (commit ou bug du registre `suivi/bugs-corriges.md`).
 > Principes de base déjà acquis : **une fonction ne fait qu'une chose · KISS · DRY**. Ce guide couvre le reste.
 
 ---
@@ -200,5 +200,5 @@ réécrits intégralement le 2026-07-09).
 
 ---
 
-*Registre détaillé des bugs ouverts (B1–B10, avec parcours de reproduction) :
-`suivi/bugs-signales.md`. Décisions en attente : `suivi/points-a-trancher.md`.*
+*Registre détaillé des bugs ouverts (avec parcours de reproduction) : `suivi/bugs-ouverts.md`.
+Décisions en attente : `suivi/points-a-trancher.md` ; actions : `suivi/actions-a-faire.md` ; dette : `suivi/dettes-ouvertes.md`.*

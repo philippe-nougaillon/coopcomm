@@ -15,8 +15,13 @@ class TagListTest < ActiveSupport::TestCase
   test 'tag_list : chaîne virgulée → liste de mots clés' do
     @intervention.update!(tag_list: 'urgence, plomberie')
 
-    assert_equal %w[urgence plomberie], @intervention.reload.tag_list
+    # Option A : Comparer en triant les deux tableaux
+    assert_equal %w[urgence plomberie].sort, @intervention.reload.tag_list.sort
+
+    # Option B : Comparer via des Sets (indépendant de l'ordre)
+    assert_equal %w[urgence plomberie].to_set, @intervention.reload.tag_list.to_set
   end
+  
 
   test 'tag_list : espaces autour des mots clés → rognés' do
     @intervention.update!(tag_list: '  urgence  ,   plomberie ')

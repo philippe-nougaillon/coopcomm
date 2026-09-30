@@ -47,4 +47,13 @@ class WikiPagePolicy < ApplicationPolicy
   def faq?
     index?
   end
+
+  def purge_photo?
+    destroy?
+  end
+
+  def purge_document?
+    destroy?
+  end
+  
 end

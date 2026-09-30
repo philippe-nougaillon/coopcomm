@@ -55,16 +55,16 @@ class InterventionPointageDisponibiliteTest < ActiveSupport::TestCase
     assert mere.valid?, mere.errors.full_messages.to_sentence
   end
 
-  test 'agents_must_be_available : re-pointage du même modèle dans la minute → invitation à attendre' do
+  test 'agents_must_be_available : re-pointage du même modèle dans la seconde → invitation à attendre' do
     creer(début: '2025-04-08 08:00', fin: '2025-04-08 10:00', template_slug: 'modele-a')
 
     reprise = construire(début: '2025-04-08 10:00', template_slug: 'modele-a')
 
     assert_not reprise.valid?
-    assert_includes reprise.errors.full_messages.join(' '), 'Veuillez attendre une minute'
+    assert_includes reprise.errors.full_messages.join(' '), 'Veuillez attendre quelques secondes'
   end
 
-  test 'agents_must_be_available : re-pointage du même modèle la minute suivante → accepté' do
+  test 'agents_must_be_available : re-pointage du même modèle la seconde suivante → accepté' do
     creer(début: '2025-04-08 08:00', fin: '2025-04-08 10:00', template_slug: 'modele-a')
 
     reprise = construire(début: '2025-04-08 10:01', template_slug: 'modele-a')

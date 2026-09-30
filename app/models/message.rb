@@ -36,9 +36,9 @@ class Message < ApplicationRecord
       connard connasse con enfoirée enfoiré putain merde couille
       salope pute enculée enculé bâtarde bâtard
       trouducul trouduc merde chiant chieuse
-      abrutie abruti débile crétine crétin
+      abrutie abruti débile crétine crétin fuck-you
       emmerdeuse emmerdeur casse-couilles
-      glandu gland trou-du-cul
+      glandu gland trou-du-cul bordel Teube Teubê 
       bouffonne bouffon baltringue fumier ordure foutre
     ]
 

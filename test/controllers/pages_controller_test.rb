@@ -3,6 +3,14 @@
 require 'test_helper'
 
 class PagesControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    @clé_mistral_initiale = ENV.fetch('MISTRAL_AI_API_KEY', nil)
+    ENV['MISTRAL_AI_API_KEY'] = 'clé-de-test'
+  end
+
+  teardown do
+    ENV['MISTRAL_AI_API_KEY'] = @clé_mistral_initiale
+  end
 
   test 'assistant : sans soumission → rien n’est généré' do
     sign_in users(:administrateur_paris)
@@ -49,8 +57,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'assistant : proposition du LLM → elle est mise en forme' do
-    skip 'Mistral API key not available in CI' if ENV['CI'].present?
-
     sign_in users(:administrateur_paris)
     cree_interventions_planifiees(10)
     stub_request(:post, %r{api\.mistral\.ai})
@@ -182,7 +188,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_equal ApplicationController::BACKGROUND_COLORS[20], assigns(:banner_background_color)
-    assert_equal 'banner/banner_20h.png', assigns(:banner_image_name)
+    assert_equal 'banner/banner_20h.jpg', assigns(:banner_image_name)
   end
 
   test 'home : à 7h → la bannière retombe sur le créneau plancher 8h' do

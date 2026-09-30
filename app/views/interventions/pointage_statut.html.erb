@@ -51,7 +51,7 @@
             </svg>
           </div>
           <div class="timeline-end timeline-box bg-slate-50 border-slate-200 text-slate-700 text-xs font-semibold my-2">
-            <%= l(@intervention.début, format: :short) %>
+            <%= l(@intervention.début, format: :very_long) %>
           </div>
           <hr class="<%= @intervention.fin ? 'bg-success' : 'bg-slate-200' %>" />
         </li>
@@ -67,7 +67,7 @@
           <div class="timeline-end my-2">
             <% if @intervention.fin %>
               <div class="timeline-box bg-slate-50 border-slate-200 text-slate-700 text-xs font-semibold">
-                <%= l(@intervention.fin, format: :short) %>
+                <%= l(@intervention.fin, format: :very_long) %>
               </div>
             <% else %>
               <span class="text-xs text-slate-400 italic">En attente</span>

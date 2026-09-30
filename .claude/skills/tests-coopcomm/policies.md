@@ -1,5 +1,7 @@
 # Tests de policies — gabarit imposé
 
+> Les règles transverses (commentaires, tests critiques, helpers, `skip`) sont dans `SKILL.md`. Ce fichier ne porte que ce qui est propre aux policies.
+
 Un fichier par couple **rôle × ressource** : `test/policies/<rôle>/<rôle>_<ressource>_policy_test.rb`.
 
 ## Setup
@@ -10,7 +12,7 @@ La fixture `user` porte le rôle testé, puis les fixtures de record, puis une p
 
 **Un test = un bloc d'autorisations homogène** : que des `assert`, ou que des `refute`, jamais les deux dans le même test.
 
-**Nom du test** = `accès ` + `autorisé`|`interdit` + ` pour un ` + rôle + ` sur un(e) ` + type de record + spécificité éventuelle.
+**Nom du test** — formule contrainte, spécialisation de la règle générale de `SKILL.md` : `accès ` + `autorisé`|`interdit` + ` pour un ` + rôle + ` sur un(e) ` + type de record + spécificité éventuelle.
 Ex. : `accès interdit pour un administrateur sur une convention d'une autre organisation`.
 **Aucun nom d'action dans le titre** — c'est le bloc qui les regroupe.
 
@@ -28,7 +30,7 @@ Même formule de nom, seul le premier mot change (`affichage autorisé pour un a
 
 ## Périmètre
 
-**On ne teste QUE les prédicats écrits dans le fichier de policy du record.** Ni les défauts hérités d'`ApplicationPolicy` que la policy ne redéfinit pas (`edit?` sur `CommandePolicy`, `new?`/`create?` sur `FacturePolicy`…), ni ceux qu'elle a **mis en commentaire** (`ServicePolicy#index?`). Un fichier qui n'aurait qu'un seul bloc est normal.
+**On ne teste QUE les prédicats écrits dans le fichier de policy du record.** Ni les défauts hérités d'`ApplicationPolicy` que la policy ne redéfinit pas (`edit?` sur `CommandePolicy`, `new?`/`create?` sur `FacturePolicy`…), ni ceux qu'elle a **mis en commentaire** (`ServicePolicy#index?`, règle transverse). Un fichier qui n'aurait qu'un seul bloc est normal.
 
 ⚠ Une action **qui ne regarde pas le record** (`index?`, `new?`, `create?` quand ils ne dépendent que du rôle) n'appartient qu'au **bloc nominal** : hors de lui il n'y a pas d'organisation précise à opposer, donc l'y inscrire n'a aucun sens — et rend le test faux.
 
@@ -38,11 +40,11 @@ Même formule de nom, seul le premier mot change (`affichage autorisé pour un a
 
 ## Ordre du fichier
 
+Seule exception à la règle transverse « l'ordre suit celui du fichier source » : ici l'ordre est celui des **situations**.
+
 nominal → variantes d'état ou de type du record → autre service → autre organisation → cas particuliers → **scope**.
 
 **Le scope en dernier, et seulement s'il filtre vraiment** (`visible_to`, `where(organisation:)`…) — un scope pass-through (`resolve = scope`) ne se teste pas. Nom **explicite** : `scope : un <rôle> ne voit que <ce qu'il voit>`, ou `scope : un <rôle> ne voit aucune <ressource>` quand il ne voit rien.
-
-**On asserte toujours les enregistrements réellement reçus**, nommés — jamais « une relation est revenue », jamais un simple compte : c'est la seule assertion qui tombe si quelqu'un remplace le filtre par `scope.all`.
 
 **Combien de situations, selon ce que fait `resolve` :**
 

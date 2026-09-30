@@ -2,7 +2,7 @@
 """Auto-approbation PreToolUse des fichiers de suivi de l'agent.
 
 PE a accordé (2026-07-13, élargi 2026-07-27) l'écriture SANS demander dans
-`suivi/` (registre `bugs-signales.md`, `points-a-trancher.md`), dans
+`suivi/` (registres et journal), dans
 `.claude/method/` (journal, fiches…) et dans le répertoire de mémoire de
 l'agent. Cet accord
 tenait dans les instructions, donc l'agent le « savait » — mais c'est le
@@ -14,7 +14,7 @@ Reçoit le JSON du hook sur stdin. Si le chemin visé est dans un des dossiers
 autorisés, écrit une décision "allow" sur stdout ; sinon ne dit rien (la
 chaîne de permissions normale décide). Aucune dépendance externe (pas de jq).
 
-  echo '{"tool_input":{"file_path":"suivi/bugs-signales.md"}}' \
+  echo '{"tool_input":{"file_path":"suivi/bugs-ouverts.md"}}' \
       | python3 allow-notes.py
 
 Fail-open : si le JSON est illisible ou le chemin absent, on se tait et on
