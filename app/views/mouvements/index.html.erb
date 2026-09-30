@@ -73,10 +73,11 @@
           <thead class="bg-slate-100">
             <tr>
               <%= th_tri 'MÀJ', colonne: 'mouvements.updated_at', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-32' %>
-              <%= th_tri 'Matériel', colonne: 'tools.name', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider' %>
+              <%= th_tri 'Matériel', colonne: 'tools.name', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-44' %>
               <%= th_tri 'État', colonne: 'mouvements.état', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-36 text-center' %>
               <%= th_tri 'Par', colonne: 'mouvements.user', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-48' %>
-              <%= th_tri 'Date', colonne: 'mouvements.date', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-44' %>
+              <%= th_tri 'Date', colonne: 'mouvements.date', class: 'px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-32' %>
+              <th class='px-4 py-3 font-semibold text-slate-500 uppercase tracking-wider w-44 uppercase'>Commentaires</th>
             </tr>
           </thead>
           <tbody>

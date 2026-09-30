@@ -8,12 +8,15 @@
     </td>
   <% end %>
   <td class="align-middle px-4 py-1.5 text-center w-36">
-    <span class="font-bold w-34 text-center badge badge-<%= mouvement.style %> h-fit px-3 py-1">
-      <%= mouvement.état.to_s.capitalize %>
+    <span class="font-bold w-34 text-center badge badge-<%= mouvement.style %> h-fit px-3 py-1 uppercase">
+      <%= mouvement.état.to_s.humanize %>
     </span>
   </td>
   <td class="px-4 py-1.5 text-sm text-slate-600"><%= mouvement.user&.nom_prénom %></td>
   <td class="px-4 py-1.5 text-sm text-slate-600 whitespace-nowrap">
     <%= l mouvement.date, format: :long %>
+  </td>
+  <td class="px-4 py-1.5 text-sm text-slate-600">
+    <%= mouvement.commentaires %>
   </td>
 </tr>
