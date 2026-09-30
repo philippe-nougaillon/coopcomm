@@ -8,6 +8,6 @@ class CrmPolicy < ApplicationPolicy
   end
 
   def index?
-    manager_or_admin? || user&.adhérent?
+    user&.adhérent?
   end
 end

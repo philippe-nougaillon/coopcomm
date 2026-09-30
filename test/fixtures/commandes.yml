@@ -47,3 +47,16 @@ commande_envoyée:
   workflow_state: "envoyé"
   total_ht: 0
   slug: <%= SecureRandom.uuid %>
+
+# Commande d'un AUTRE adhérent de la même organisation que weil, dans un état
+# visible : sert à prouver que le cloisonnement entre adhérents tient, là où une
+# commande d'une autre organisation ou un brouillon serait écarté pour une autre
+# raison — miroir de facture_autre_adherent.
+commande_autre_adherent:
+  adherent: patrick_adherent_paris
+  service: informatique
+  ref: "2026-5"
+  intitulé: Commande informatique de Patrick
+  workflow_state: "envoyé"
+  total_ht: 0
+  slug: <%= SecureRandom.uuid %>

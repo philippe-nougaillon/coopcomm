@@ -135,6 +135,10 @@ class CommandeTest < ActiveSupport::TestCase
     assert_includes Commande.visible_to(@adherent), sienne
   end
 
+  test 'visible_to : adhérent → jamais la commande envoyée d\'un autre adhérent de son organisation (critique)' do
+    assert_not_includes Commande.visible_to(@adherent), commandes(:commande_autre_adherent)
+  end
+
   test 'visible_to : agent → aucune commande' do
     assert_empty Commande.visible_to(users(:bond))
   end
