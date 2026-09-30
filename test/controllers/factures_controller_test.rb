@@ -17,17 +17,6 @@ class FacturesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test 'index : un adhérent ne voit que ses factures envoyées, et ses services en sont déduits' do
-    envoyée = factures(:facture_secretariat)
-    sign_in users(:weil)
-
-    get factures_url
-
-    assert_includes assigns(:factures), envoyée
-    assert_not_includes assigns(:factures), @facture
-    assert_includes assigns(:services), services(:secretariat)
-  end
-
   test 'index : recherche → seulement les factures correspondantes' do
     get factures_url(search: @facture.ref)
 

@@ -16,7 +16,6 @@ class AdherentCotationPolicyTest < ActionDispatch::IntegrationTest
   end
 
   test 'accès autorisé pour un adhérent sur une cotation envoyée dont il est le destinataire' do
-    assert @policy.index?
     assert @policy.show?
     assert @policy.pdf?
     assert @policy.signer?
@@ -25,6 +24,7 @@ class AdherentCotationPolicyTest < ActionDispatch::IntegrationTest
   end
 
   test 'accès interdit pour un adhérent sur une cotation envoyée dont il est le destinataire' do
+    refute @policy.index?
     refute @policy.new?
     refute @policy.create?
     refute @policy.update?

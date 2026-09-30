@@ -17,17 +17,6 @@ class CommandesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test 'index : un adhérent ne voit que ses commandes envoyées, et ses services en sont déduits' do
-    envoyée = commandes(:commande_secretariat)
-    sign_in users(:weil)
-
-    get commandes_url
-
-    assert_includes assigns(:commandes), envoyée
-    assert_not_includes assigns(:commandes), @commande
-    assert_includes assigns(:services), envoyée.service
-  end
-
   test 'index : recherche → seulement les commandes correspondantes' do
     get commandes_url(search: @commande.ref)
 
