@@ -21,7 +21,7 @@ class NotifPanneJobTest < ActiveJob::TestCase
     ActionMailer::Base.deliveries.clear
   end
 
-  test 'avertit le réserviste de la panne et crée un MailLog tracé' do
+  test "le réserviste reçoit un mail et un mail log est créé lorsque l'outil est déclaré en panne" do
     assert_emails 1 do
       assert_difference -> { MailLog.count }, 1 do
         NotifPanneJob.perform_now(@panne.id, @reservation.id)

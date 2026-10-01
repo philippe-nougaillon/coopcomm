@@ -141,7 +141,7 @@
 ## 4. État d'avancement
 
 - **Branche courante : `502`** ; `staging` = intégration et démo client ; `main` = prod.
-- **Suite de tests** : `bundle exec rails test:all` → **2222 runs / 0 échec / 0 skip** en **3 min 29** (référence 2026-09-23, rafraîchissement du dashboard à chaque commit inclus — il ne coûte que 9 s ; les 7 min 27 de la veille venaient des triggers en transaction et de 5 flakes système). Flakes connus sous charge parallèle : les deux fichiers système Devise (famille R3), verts en isolation ; la suite système ne compte plus que 12 fichiers depuis #489. Couverture `bin/coverage` : **~96,7 %** — les ~160 lignes restantes sont du code mort inventorié (B89 au registre) ; « 100 % » s'atteindrait par suppression, pas par test.
+- **Suite de tests** : `bundle exec rails test:all` → **2196 runs / 0 échec / 0 skip** en **2 min 40** (référence 2026-10-01, rafraîchissement du dashboard à chaque commit inclus — il ne coûte que 9 s ; les 7 min 27 de la veille venaient des triggers en transaction et de 5 flakes système). Flakes connus sous charge parallèle : les deux fichiers système Devise (famille R3), verts en isolation ; la suite système ne compte plus que 12 fichiers depuis #489. Couverture `bin/coverage` : **~96,7 %** — les ~160 lignes restantes sont du code mort inventorié (B89 au registre) ; « 100 % » s'atteindrait par suppression, pas par test.
 - **Jalons** : **mise en prod client début septembre 2026** (aujourd'hui, seuls les comptes support/test servent) ; ~10 jours de dev restants, nouvelles fonctionnalités **en pause** ; fin de contrat mars 2028 ; **open-source envisagé mi-novembre 2026** (penser à purger la config Claude de l'historique). ~220 utilisateurs attendus, peu à l'aise avec l'informatique, agents sur Samsung S8, **zones blanches** pour le service technique.
 - **Parcours critiques** : pointage QR (4 scans/agent/jour), bon d'intervention, réservation de matériel, dashboard manager, validation adhérent. **« Catastrophique » = tout ce qui touche à l'argent**, et un agent qui verrait son évaluation (le CCTP les réserve aux gestionnaires).
 - **Équipe** : Dani = front, Alexandre + PE = back, PE merge `main` et déploie. Les issues GitHub (backlog) sont privées, inaccessibles à l'agent.
@@ -197,4 +197,4 @@ Le détail générique de la méthode (conduite de conversation, *context rot*, 
 
 | Date | Règle sautée | Contexte |
 |------|--------------|----------|
-| — | — | — |
+| 2026-10-01 | « Jamais de passe globale » de la migration des noms de tests (skill `tests-coopcomm`) | Demande PE : convertir d'un coup tous les fichiers de test encore à l'ancienne forme, sauf contre-indication |

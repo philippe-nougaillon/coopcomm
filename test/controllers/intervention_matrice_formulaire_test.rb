@@ -25,7 +25,7 @@ class InterventionMatriceFormulaireTest < ActionDispatch::IntegrationTest
 
   setup { mere_matrice }
 
-  test "instantané : l'inventaire des champs est inchangé" do
+  test "l'inventaire des champs du formulaire est inchangé (instantané)" do
     reel = inventaire_complet
     reference = INSTANTANE.read.split("\n")
 

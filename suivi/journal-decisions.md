@@ -138,3 +138,7 @@
 - `2026-09-22-b` — Rebalayage des 66 fiches ouvertes contre le code : 6 passées en clos, 17 complétées
 - `2026-09-23` — Dashboard : rafraîchissement des vues après chaque commit, triggers Postgres et gem `fx` supprimés, `DashboardData` fondu dans `PagesController`, sentinelle contre les écritures sans callbacks
 - `2026-09-28` — Dédoublonnage de la skill `tests-coopcomm` : transverses dans `SKILL.md`, nommage tranché, 5 `skip` supprimés
+
+### 2026-10 — `journal/2026-10.md`
+
+- `2026-10-01` — Passe globale de nommage des tests : 1 179 noms en phrases de comportement dans 101 fichiers, suite verte (2196 runs)

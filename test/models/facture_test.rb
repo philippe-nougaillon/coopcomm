@@ -9,7 +9,7 @@ class FactureTest < ActiveSupport::TestCase
     @service = services(:informatique)
   end
 
-  test 'assign_ref : première facture d\'une organisation → FA-AAAA-1' do
+  test "la première facture d'une organisation reçoit la référence FA-AAAA-1" do
     org = Organisation.create!(nom: 'Org neuve E')
     service = Service.create!(nom: 'Service E', organisation: org)
     facture = build_facture(service: service)
@@ -19,7 +19,7 @@ class FactureTest < ActiveSupport::TestCase
     assert_equal "FA-#{Date.current.year}-1", facture.ref
   end
 
-  test 'assign_ref : seconde facture de la même organisation → numéro incrémenté' do
+  test 'la seconde facture de la même organisation reçoit le numéro suivant' do
     org = Organisation.create!(nom: 'Org neuve F')
     service = Service.create!(nom: 'Service F', organisation: org)
     build_facture(service: service).save!
@@ -30,7 +30,7 @@ class FactureTest < ActiveSupport::TestCase
     assert_equal "FA-#{Date.current.year}-2", deuxième.ref
   end
 
-  test 'assign_ref : deux organisations → numérotations indépendantes' do
+  test 'les factures de deux organisations sont numérotées indépendamment' do
     org1 = Organisation.create!(nom: 'Org neuve G')
     org2 = Organisation.create!(nom: 'Org neuve H')
     facture1 = build_facture(service: Service.create!(nom: 'Service G', organisation: org1))
@@ -43,7 +43,7 @@ class FactureTest < ActiveSupport::TestCase
     assert_equal "FA-#{Date.current.year}-1", facture2.ref
   end
 
-  test 'assign_ref : référence fournie explicitement → conservée' do
+  test 'une référence de facture fournie explicitement est conservée' do
     facture = build_facture(ref: 'REF-MANUELLE')
 
     facture.save!
@@ -51,7 +51,7 @@ class FactureTest < ActiveSupport::TestCase
     assert_equal 'REF-MANUELLE', facture.ref
   end
 
-  test 'style : chaque état → la classe du badge qui le distingue à l\'écran' do
+  test "chaque état d'une facture se distingue à l'écran par la classe de son badge" do
     facture = build_facture
 
     assert_equal 'badge badge-secondary ', facture.style
@@ -62,18 +62,18 @@ class FactureTest < ActiveSupport::TestCase
     assert_equal 'badge badge-primary ', facture.style
   end
 
-  test 'workflow_state_humanized : appel → les états humanisés du workflow' do
+  test "les états du workflow d'une facture ont un libellé humanisé" do
     humanized = Facture.workflow_state_humanized
 
     assert_includes humanized, 'Créé'
     assert_includes humanized, 'Archivé'
   end
 
-  test 'modifiable? : état créé → vrai' do
+  test "une facture à l'état créé est modifiable" do
     assert build_facture.modifiable?
   end
 
-  test 'modifiable? : états envoyé, validé et archivé → faux' do
+  test "une facture à l'état envoyé, validé ou archivé n'est pas modifiable" do
     facture = build_facture
     facture.save!
 
@@ -90,7 +90,7 @@ class FactureTest < ActiveSupport::TestCase
     assert_not facture.modifiable?
   end
 
-  test 'modifiable? : état refusé → vrai, pour corriger avant de renvoyer' do
+  test "une facture à l'état refusé est modifiable, pour être corrigée avant renvoi" do
     facture = build_facture
     facture.save!
     facture.envoyer!
@@ -99,32 +99,32 @@ class FactureTest < ActiveSupport::TestCase
     assert facture.modifiable?
   end
 
-  test 'pdf_filename : facture référencée → nom de fichier bâti sur la référence' do
+  test "le nom du fichier PDF d'une facture est bâti sur sa référence" do
     assert_equal 'Facture-2026-9.pdf', build_facture(ref: '2026-9').pdf_filename
   end
 
-  test 'visible_to : administrateur → les factures de son organisation' do
+  test 'un administrateur voit les factures de son organisation' do
     document = build_facture
     document.save!
 
     assert_includes Facture.visible_to(users(:administrateur_paris)), document
   end
 
-  test 'visible_to : manager → celles des services qu\'il gère' do
+  test 'un manager voit les factures de ses services' do
     document = build_facture
     document.save!
 
     assert_includes Facture.visible_to(users(:hidalgo)), document
   end
 
-  test 'visible_to : manager d\'une autre organisation → aucune' do
+  test "un manager ne voit pas les factures d'une autre organisation" do
     document = build_facture
     document.save!
 
     assert_not_includes Facture.visible_to(users(:manager_marseille)), document
   end
 
-  test 'visible_to : adhérent → les siennes envoyées, jamais un brouillon' do
+  test 'un adhérent voit ses factures envoyées, jamais un brouillon' do
     sienne = build_facture
     sienne.save!
 
@@ -135,11 +135,11 @@ class FactureTest < ActiveSupport::TestCase
     assert_includes Facture.visible_to(@adherent), sienne
   end
 
-  test 'visible_to : adhérent → jamais la facture envoyée d\'un autre adhérent de son organisation (critique)' do
+  test "un adhérent ne voit jamais la facture envoyée d'un autre adhérent de son organisation (critique)" do
     assert_not_includes Facture.visible_to(@adherent), factures(:facture_autre_adherent)
   end
 
-  test 'visible_to : agent → aucune facture' do
+  test 'un agent ne voit aucune facture' do
     assert_empty Facture.visible_to(users(:bond))
   end
 

@@ -21,7 +21,7 @@ class AdherentFlowOnDashboardsTest < ApplicationSystemTestCase
     fermer_notification
   end
 
-  test 'tous les graphes du tableau de bord sont dessinés' do
+  test "En tant qu'adhérent, je veux voir tous les graphes de mon tableau de bord dessinés" do
     # Deux services : sous ce seuil, la vue remplace deux des graphes par une
     # tuile chiffrée — c'est voulu, mais on ne verrait alors pas tous les types.
     intervention_dans(services(:technique))
