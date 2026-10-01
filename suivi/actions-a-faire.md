@@ -9,7 +9,7 @@
 >
 > **Règle de tenue** : prochain numéro libre ci-dessous, rangement **par numéro** dans la section. Une action faite quitte ce fichier pour `actions-faites.md`, titre préfixé `✅ FAIT (AAAA-MM-JJ)`.
 >
-> **Prochain numéro libre : A5**
+> **Prochain numéro libre : A6**
 
 ---
 
@@ -30,8 +30,6 @@
 ### A1 — Planifier la relance des cotations sur Hatchbox
 - **Quoi** : déclarer `bin/rails cotations:relancer_adherents` dans le planificateur Hatchbox, 1×/jour (la garde 48h est dans la tâche).
 - ⚠ **Piège** : syntaxe cron Hatchbox limitée (`0/10` non supporté ; une expression invalide bloque TOUTES les tâches planifiées — incident déjà vécu).
-
-## ⚪ Confort
 
 ### A3 — CI : job `test:system` séparé
 - **Quoi** : exécuter les tests système dans un job CI distinct des tests unitaires/intégration.
