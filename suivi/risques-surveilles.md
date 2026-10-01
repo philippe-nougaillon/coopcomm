@@ -9,7 +9,7 @@
 >
 > **Règle de tenue** : prochain numéro libre ci-dessous, rangement **par numéro** dans la section. Un risque corrigé ou devenu sans objet quitte ce fichier pour `risques-clos.md`, titre préfixé `✅ CORRIGÉ (AAAA-MM-JJ)` ou `✅ SANS OBJET (AAAA-MM-JJ)`.
 >
-> **Prochain numéro libre : R7**
+> **Prochain numéro libre : R8**
 
 ---
 
@@ -42,14 +42,6 @@
 
 ## 🟠 Limité si la garde tombe
 
-### R4 — Deadlock Postgres entre le `REFRESH MATERIALIZED VIEW` synchrone du dashboard et une écriture `agent_interventions`, DANS un run `test:all` unique (flakiness rare, test uniquement — mais le mécanisme existe aussi en prod)
-- **Signalé le** : 2026-07-17 (2 runs `test:all` consécutifs de l'agent : `InterventionManagerFlowTest#test_Modifier_intervention`, `ActiveRecord::Deadlocked: PG::TRDeadlockDetected` sur `DELETE FROM agent_interventions` dans `interventions_controller.rb:237`, l'autre processus détenant un verrou `ShareRowExclusiveLock` ; 2e erreur du même run non capturée, vraisemblablement l'effet domino du même deadlock). Vert en isolation (10/10). Un 3e run n'a montré ni deadlock ni erreur (1 flake de sync sans rapport, `InterventionAdherentFlowTest`, vert en isolation 8/8).
-- **Fait nouveau vs 2026-07-16** : le deadlock `REFRESH` avait été attribué au lancement **simultané** de deux runs ; ici **un seul run** était en cours (sauf run parallèle de PE non signalé). Le serveur Capybara est multi-threads : deux requêtes navigateur concurrentes suffisent — T1 committe une écriture d'intervention puis son `after_commit` lance `refresh_views!` (`concurrently: false` = verrou exclusif sur la vue, puis lecture des tables sources) pendant que T2 fait `DELETE agent_interventions` puis attend à son tour le refresh → étreinte mortelle.
-- **Portée prod (déduction)** : le refresh synchrone en prod est `CONCURRENTLY` (pas de verrou de lecture) mais deux écritures simultanées d'interventions par deux utilisateurs peuvent toujours se disputer vues + tables sources ; à volumétrie actuelle, probabilité faible ; un deadlock y ferait échouer la requête web de l'utilisateur (500).
-- **Pistes si récurrent** (trade-offs actés par PE le 2026-07-15 « volume faible, code minimal ») : (a) `rescue ActiveRecord::Deadlocked` + retry unique autour du refresh ; (b) sérialiser les refresh via un verrou consultatif Postgres ; (c) rebrancher le `RefreshDashboardViewsJob` dormant (coalescé, un seul refresh en vol — la conception 2026-06-18 éliminait ce deadlock par construction).
-- ⚠️ **La surface du risque a AUGMENTÉ le 2026-08-05** (passage aux triggers Postgres, cf. B71). Avant, le `REFRESH` avait lieu dans un `after_commit`, donc **après** la libération des verrous de la transaction. Désormais il s'exécute **dans** la transaction de la requête qui écrit : celle-ci détient ses verrous de lignes sur `interventions`/`agent_interventions` **pendant** qu'elle demande le verrou exclusif sur la vue matérialisée — exactement la configuration d'étreinte mortelle décrite ci-dessus. Le raisonnement est structurel, pas mesuré : deux `test:all` complets (2199 runs) n'en ont produit aucun, ce qui ne prouve pas l'absence d'un flake rare.
-- **Statut : risque surveillé, non corrigé** — re-signaler chaque occurrence pour suivre la fréquence. Si des `ActiveRecord::Deadlocked` apparaissent en CI ou en prod après le 2026-08-05, c'est la première piste, et le remède le plus direct est la piste (c) : rebrancher le `RefreshDashboardViewsJob` dormant.
-
 ### R5 — `EmailSubscription#on_intervention_workflow_changed` lit `audits.last.user_id` sans garde : crash si une intervention n'avait AUCUN audit au moment d'une transition
 - **Signalé le** : 2026-06-23 (cause ① de **B8**, relocalisée le 2026-07-31 sur la ligne 7). Reclassé ici le 2026-09-21 à la correction de B8, sur décision de PE : « c'est plutôt une mise en garde d'un potentiel futur bug ».
 - **Scénario redouté** : [email_subscription.rb:7](app/subscriptions/email_subscription.rb#L7) fait `intervention.audits.last.user_id`. Si `audits.last` valait `nil` → `NoMethodError` dans la souscription, qui s'exécute **en synchrone** : 500 pour l'utilisateur qui valide, refuse, archive ou termine.
@@ -61,6 +53,12 @@
   2. Une purge ou une rétention de la table `audits` (RGPD, volumétrie), des interventions insérées en SQL brut ou par `insert_all`, un import sous `without_auditing` → la garde 1 tombe.
   3. Un **nouveau point de publication** de `intervention.workflow_changed` qui ne suivrait pas une sauvegarde auditée (tâche rake, job).
 - **Remède si besoin** : `intervention.audits.last&.user_id`, déjà écrit ligne 15 pour le handler voisin. Le `nil` qui en sortirait est désormais sans danger : le job écrit 0 (B8).
+
+### R7 — Dashboard : une écriture qui contourne les callbacks (`update_all`, `update_columns`, `delete_all`, SQL brut — dans le code, en console ou en migration) laisse les vues matérialisées périmées jusqu'à la prochaine écriture normale, et n'est pas auditée
+- **Signalé le** : 2026-09-23 (reprise de B71 après le retour au rafraîchissement par `after_commit`, décision PE ; à déplacer plus tard dans un fichier « à savoir » du suivi). Élargi au code de l'application le 2026-10-01.
+- **Scénario redouté** : une correction de données en console (`Intervention.where(…).update_all(…)`, `update_columns`, `delete_all`), une migration de données en SQL brut, ou un `update_all` glissé dans un contrôleur ou un job, modifie `interventions` ou `agent_interventions` sans passer par un callback → aucun `REFRESH` → le tableau de bord reste faux, pour tous les utilisateurs de l'organisation touchée, jusqu'au prochain enregistrement normal d'une intervention ou d'une affectation, sans aucun message. L'audit trail est contourné de la même façon, sur tout modèle `audited`.
+- **Gardes** : **aucune automatique**. Une sentinelle (`contournement_des_callbacks_test`, interdiction de ces méthodes dans `app/` et `lib/` et de `dependent: :delete_all` dans les modèles, exceptions nommées) a été écrite le 2026-09-23 puis écartée par l'équipe le 2026-10-01 (« petite équipe, on forme les devs et on y pense » — stashée). Restent la règle de `CONTRIBUTING.md` et la revue. Au 2026-10-01, aucun code de production n'utilise ces méthodes, hors les trois `update_column(:total_ht, …)` des lignes de devis/commande/facture (total dérivé, lignes elles-mêmes auditées) ; les tests qui écrivent par `update_columns` appellent `refresh_dashboard_views!` ensuite.
+- **Remède** : terminer toute correction par `ActualiserDashboard.call` (console comme migration, dans le bloc `up`). Aucune donnée n'est perdue, le dashboard se répare seul à la prochaine écriture normale ; l'audit manqué, lui, ne se rattrape pas.
 
 ## ⚪ Hors production
 

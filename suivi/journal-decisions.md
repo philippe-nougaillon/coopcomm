@@ -131,6 +131,10 @@
 - `2026-09-14` — Montée Ruby 4.0.6 / Rails 8.1.3.1 / Bundler 4.0.16, retrait de Bundler 4.1.0.beta1
 - `2026-09-14-b` — Warnings rdoc en double et dépréciations Rails 8.2 supprimés (view_component retiré, omniauth-rails_csrf_protection 2.0)
 - `2026-09-15` — Veille des signalements sur la montée de version : passage à Ruby 4.0.7 (SEGV de la 4.0.6)
+- `2026-09-21` — Crash prod `mail_logs#index` (B8) : `user_id` 0 = « Système » plutôt que NULL ; `NOT NULL` perdu sur `services.organisation_id` (B112)
+- `2026-09-21-b` — Cinq tests rouges après les merges de Dani : test périmé ou vrai défaut, B112 à B115, R6
+- `2026-09-21-c` — Pannes et réservations de matériel : plus de panne dans le futur, B40 corrigé, B116 à B120, grille réécrite en 3 lignes
 - `2026-09-22` — Registres de suivi découpés en dix fichiers ouvert/clos, journal par mois
 - `2026-09-22-b` — Rebalayage des 66 fiches ouvertes contre le code : 6 passées en clos, 17 complétées
+- `2026-09-23` — Dashboard : rafraîchissement des vues après chaque commit, triggers Postgres et gem `fx` supprimés, `DashboardData` fondu dans `PagesController`, sentinelle contre les écritures sans callbacks
 - `2026-09-28` — Dédoublonnage de la skill `tests-coopcomm` : transverses dans `SKILL.md`, nommage tranché, 5 `skip` supprimés
