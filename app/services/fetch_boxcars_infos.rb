@@ -6,7 +6,7 @@ class FetchBoxcarsInfos < ApplicationService
     if ENV.fetch("AI_PROVIDER") == "vllm"
       engine = Boxcars::Ollama.new(uri_base: self.AIBOT_URI_BASE, model: ENV.fetch("AIBOT_MODEL"))
     else
-      engine = Boxcars::Openai.new(model: "gpt-5.5")
+      engine = Boxcars::Openai.new(model: "gpt-4o-mini")
     end
 
     # Outil boxcars utilisé pour la requete
