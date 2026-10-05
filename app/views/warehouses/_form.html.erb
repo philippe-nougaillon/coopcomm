@@ -25,15 +25,11 @@
       <%= form.label :user_ids, class: "label font-semibold text-slate-700 " do %>
         <span>Équipe (Utilisateurs rattachés) <span class="text-red-500">*</span></span>
       <% end %>
-      <%# 
-      Note: Remplace `User.all` par la variable de ton contrôleur (ex: @users) si tu veux filtrer.
-      Remplace `:email` par `:nom_complet` ou l'attribut que tu veux afficher dans la liste déroulante.
-    %>
       <%= form.collection_select :user_ids, @users, :id, :nom_prénom, {}, { 
         multiple: true, 
-        class: 'w-full h-10 slim-select', 
+        class: 'w-full h-10', 
         required: true,
-        data: {  max_values_shown_desktop: 2,
+        data: { controller: 'slim-select', max_values_shown_desktop: 2,
                  max_values_shown_mobile: 1 
               }
         }
@@ -43,13 +39,11 @@
       <%= form.label :address, class: "label font-semibold text-slate-700" do %>
         <span>Localisation <span class="text-red-500">*</span></span>
       <% end %>
-      <%# Le champ visible par l'utilisateur pour chercher l'adresse %>
       <%= form.text_field :address, 
           required: true, 
           class: 'input input-bordered w-full focus:input-primary', 
           placeholder: 'Commencez à taper une adresse...', 
           data: { places_target: "address" } %>
-      <%# Les champs cachés qui seront remplis automatiquement par le JS %>
       <%= form.hidden_field :latitude, data: { places_target: "latitude" } %>
       <%= form.hidden_field :longitude, data: { places_target: "longitude" } %>
     </div>

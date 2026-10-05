@@ -26,8 +26,8 @@
         <% else %>
           <%= f.collection_select :user_id, @adherents, :id, :nom_prénom,
                 { prompt: "Choisir un adhérent" },
-                { class: "slim-select w-full h-10", required: true,
-                  data: { dynamic_select_target: "adherent", action: "change->dynamic-select#updateServices" } } %>
+                { class: "w-full h-10", required: true,
+                  data: { controller: "slim-select", dynamic_select_target: "adherent", action: "change->dynamic-select#updateServices" } } %>
         <% end %>
       </div>
       <%# Service : figé en modification (clé d'unicité) ; sinon dépend de l'adhérent choisi %>
@@ -41,8 +41,8 @@
         <% else %>
           <%= f.collection_select :service_id, @available_services, :id, :nom,
                 { prompt: "Choisir un service" },
-                { class: "slim-select w-full h-10", required: true,
-                  data: { dynamic_select_target: "service" } } %>
+                { class: "w-full h-10", required: true,
+                  data: { controller: "slim-select", dynamic_select_target: "service" } } %>
         <% end %>
       </div>
       <div class="form-control w-full">

@@ -25,7 +25,7 @@
         <% else %>
           <%= f.collection_select :adherent_id, @adherents, :id, :nom_prénom,
                 { prompt: "Choisir un adhérent" },
-                { class: "slim-select w-full h-10", required: true, data: { controller: "slim-select" } } %>
+                { class: "w-full h-10", required: true, data: { controller: "slim-select" } } %>
         <% end %>
       </div>
       <%# Service : détermine l'organisation et le périmètre de visibilité %>
@@ -35,7 +35,7 @@
         <% end %>
         <%= f.collection_select :service_id, @services, :id, :nom,
               { prompt: "Choisir un service" },
-              { class: "slim-select w-full h-10", required: true, data: { controller: "slim-select" } } %>
+              { class: "w-full h-10", required: true, data: { controller: "slim-select" } } %>
       </div>
       <div class="form-control w-full">
         <%= f.label :intitulé, "Intitulé", class: "label font-semibold text-slate-700" do%>

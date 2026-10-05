@@ -34,8 +34,8 @@
         <% end %>
         <%= f.select :catégorie, options_for_select(%w[A B C] | Array(catégorie), catégorie),
           { include_blank: true },
-          class: 'slim-select w-full h-10',
-          data: { addable: true } %>
+          class: 'w-full h-10',
+          data: { controller: 'slim-select', addable: true } %>
       </div>
       <div class="flex flex-col gap-1">
         <%= f.label :sous_catégorie, class: "label font-semibold text-slate-700"  do %>
@@ -49,8 +49,8 @@
         <% end %>
         <%= f.select :unité, options_for_select(['Heure(s)', 'Forfait', 'Jour'] | Array(unité), unité),
              { required: true },
-            class: 'slim-select w-full h-10',
-            data: { addable: true } %>
+            class: 'w-full h-10',
+            data: { controller: 'slim-select', addable: true } %>
       </div>
       <div class="flex flex-col gap-1">
         <%= f.label :tarif, class: "label font-semibold text-slate-700"  do %>
