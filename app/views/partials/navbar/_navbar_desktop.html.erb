@@ -18,7 +18,7 @@
       <% if current_user.rôle == 'adhérent' %>
         <% if policy(Intervention).index? %>
           <li>
-            <%= link_to interventions_path, class: class_names("h-16 py-0 px-3 flex items-center text-secondary hover:border-b-2 border-primary", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => params[:controller] == 'interventions'), title: "Liste des interventions", data: { testid: "menu_interventions" } do %>
+            <%= link_to interventions_path, class: class_names("h-16 py-0 px-3 flex items-center text-secondary hover:border-b-2 border-primary focus:bg-base-300! focus:outline-none! navbar-icon-trigger", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => params[:controller] == 'interventions'), title: "Liste des interventions", data: { testid: "menu_interventions" } do %>
               <%= embedded_svg "icons/construction.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
             <% end %>
           </li>
@@ -32,7 +32,7 @@
           </li>
         <% end %>
 
-        <% if policy(Commande).index? || policy(Facture).index? || policy(Cotation).index? %>
+        <% if policy(:crm).index? %>
           <li>
             <%= link_to adherent_crm_path, class: class_names("h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => params[:controller] == 'adherent_crm'), title: "Adhérent CRM" do %>
               <%= embedded_svg "icons/contract.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
@@ -60,7 +60,7 @@
 
           <% if policy(Intervention).index? %>
             <li>
-              <%= link_to interventions_path, class: class_names("h-16 py-0 px-3 flex items-center text-secondary hover:border-b-2 border-primary", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => params[:controller] == 'interventions'), title: "Liste des interventions", data: { testid: "menu_interventions" } do %>
+              <%= link_to interventions_path, class: class_names("h-16 py-0 px-3 flex items-center text-secondary hover:border-b-2 border-primary focus:bg-base-300! focus:outline-none! navbar-icon-trigger", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => params[:controller] == 'interventions'), title: "Liste des interventions", data: { testid: "menu_interventions" } do %>
                 <%= embedded_svg "icons/construction.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
               <% end %>
             </li>
@@ -86,7 +86,7 @@
               <ul tabindex="0" class="dropdown-content z-[210] menu p-0! py-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 text-slate-700 left-0! top-full mt-0!" style="margin-left: 0px;">
                 <% if policy(Intervention).index? %>
                   <li>
-                    <%= link_to interventions_path, class: "py-2.5 px-3 flex items-center gap-1.5 rounded-none #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'interventions'}" do %>
+                    <%= link_to interventions_path, class: "py-2.5 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'interventions'}" do %>
                       <%= embedded_svg "icons/construction.svg", class: "w-5 h-5 fill-current" %>
                       <span>Interventions</span>
                     <% end %>
@@ -94,7 +94,7 @@
                 <% end %>
                 <% if policy(Tool).index? %>
                   <li>
-                    <%= link_to tools_path, class: "py-2.5 px-3 flex items-center gap-1.5 rounded-none #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'tools'}" do %>
+                    <%= link_to tools_path, class: "py-2.5 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'tools'}" do %>
                       <%= embedded_svg "icons/front_loader.svg", class: "w-5 h-5 fill-current" %>
                       <span>Matériels</span>
                     <% end %>
@@ -102,7 +102,7 @@
                 <% end %>
                 <% if policy(User).agent_calendrier? %>
                   <li>
-                    <%= link_to agent_calendrier_users_path, class: "py-2.5 px-3 flex items-center gap-1.5 rounded-none #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'agent_calendrier'}" do %>
+                    <%= link_to agent_calendrier_users_path, class: "py-2.5 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'agent_calendrier'}" do %>
                       <%= embedded_svg "icons/productivity.svg", class: "w-5 h-5 fill-current" %>
                       <span>Agents</span>
                     <% end %>
@@ -110,7 +110,7 @@
                 <% end %>
                 <% if policy(Mouvement).index? %>
                   <li>
-                    <%= link_to mouvements_path, class: "py-2.5 px-3 flex items-center gap-1.5 rounded-none #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'mouvements'}" do %>
+                    <%= link_to mouvements_path, class: "py-2.5 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'mouvements'}" do %>
                       <%= embedded_svg "icons/compare_arrows.svg", class: "w-5 h-5 fill-current" %>
                       <span>Mouvements</span>
                     <% end %>
@@ -130,35 +130,35 @@
               <ul tabindex="0" class="dropdown-content z-[210] menu p-0! py-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 text-slate-700 left-0! top-full mt-0!" style="margin-left: 0px;">
                 <% if policy(Convention).index? %>
                   <li>
-                    <%= link_to conventions_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'conventions'}" do %>
+                    <%= link_to conventions_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'conventions'}" do %>
                       <%= embedded_svg "icons/contract.svg", class: "w-5 h-5 fill-current" %> <span>Conventions</span>
                     <% end %>
                   </li>
                 <% end %>
                 <% if policy(Cotation).index? %>
                   <li>
-                    <%= link_to cotations_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'cotations'}" do %>
+                    <%= link_to cotations_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'cotations'}" do %>
                       <%= embedded_svg "icons/request_quote.svg", class: "w-5 h-5 fill-current" %> <span>Cotations</span>
                     <% end %>
                   </li>
                 <% end %>
                 <% if policy(Commande).index? %>
                   <li>
-                    <%= link_to commandes_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'commandes'}" do %>
+                    <%= link_to commandes_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'commandes'}" do %>
                       <%= embedded_svg "icons/order_approve.svg", class: "w-5 h-5 fill-current" %> <span>Commandes</span>
                     <% end %>
                   </li>
                 <% end %>
                 <% if policy(Facture).index? %>
                   <li>
-                    <%= link_to factures_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'factures'}" do %>
+                    <%= link_to factures_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'factures'}" do %>
                       <%= embedded_svg "icons/receipt.svg", class: "w-5 h-5 fill-current" %> <span>Factures</span>
                     <% end %>
                   </li>
                 <% end %>
                 <% if policy(:pages).dashboard? %>
                   <li>
-                    <%= link_to dashboard_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'dashboard'}", 'data-turbo': false do %>
+                    <%= link_to dashboard_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'dashboard'}", 'data-turbo': false do %>
                       <%= embedded_svg "icons/bar_chart.svg", class: "w-5 h-5 fill-current" %> <span>Tableau de bord</span>
                     <% end %>
                   </li>
@@ -177,35 +177,35 @@
               <ul tabindex="0" class="dropdown-content z-[210] menu p-0! py-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 text-slate-700 left-0! top-full mt-0!" style="margin-left: 0px;">
                 <% if policy(:admin).parametres? %>
                   <li>
-                    <%= link_to admin_parametres_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none #{'bg-slate-100 text-primary font-semibold' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres'))}" do %>
+                    <%= link_to admin_parametres_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres'))}" do %>
                       <%= embedded_svg "icons/settings.svg", class: "w-5 h-5 fill-current" %> <span>Paramètres</span>
                     <% end %>
                   </li>
                 <% end %>
                 <% if policy(User).index? %>
                   <li>
-                    <%= link_to users_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none #{'bg-slate-100 text-primary font-semibold' if (params[:controller] == 'users' && params[:action] != 'agent_calendrier' && !(params[:id] == current_user.slug)) || params[:action] == 'create_new_user'}" do %>
+                    <%= link_to users_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if (params[:controller] == 'users' && params[:action] != 'agent_calendrier' && !(params[:id] == current_user.slug)) || params[:action] == 'create_new_user'}" do %>
                       <%= embedded_svg "icons/group.svg", class: "w-5 h-5 fill-current" %> <span>Utilisateurs</span>
                     <% end %>
                   </li>
                 <% end %>
                 <% if policy(:admin).audits? %>
                   <li>
-                    <%= link_to admin_audits_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none #{'bg-slate-100 text-primary font-semibold' if (params[:action] == 'audits') || (params[:controller] == 'admin/audits')}" do %>
+                    <%= link_to admin_audits_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if (params[:action] == 'audits') || (params[:controller] == 'admin/audits')}" do %>
                       <%= embedded_svg "icons/history.svg", class: "w-5 h-5 fill-current" %> <span>Activité</span>
                     <% end %>
                   </li>
                 <% end %>
                 <% if policy(MailLog).index? %>
                   <li>
-                    <%= link_to notifications_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'mail_logs'}" do %>
+                    <%= link_to notifications_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'mail_logs'}" do %>
                       <%= embedded_svg "icons/mail.svg", class: "w-5 h-5 fill-current" %> <span>Notifications (Mails)</span>
                     <% end %>
                   </li>
                 <% end %>
                 <% if policy(:pages).assistant? %>
                   <li>
-                    <%= link_to assistant_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'assistant'}" do %>
+                    <%= link_to assistant_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'assistant'}" do %>
                       <%= embedded_svg "icons/smart_toy.svg", class: "w-5 h-5 fill-current" %> <span>Assistant (IA)</span>
                     <% end %>
                   </li>

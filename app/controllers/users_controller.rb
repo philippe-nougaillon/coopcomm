@@ -144,11 +144,11 @@ class UsersController < ApplicationController
 
     # Initialisation + filtre service
     @agents = User.by_service(scoped_services(:services)).agent
-    
+
     if params[:search].present?
       @agents = @agents.where('users.nom ILIKE :search OR users.prénom ILIKE :search OR users.email ILIKE :search',
                               { search: "%#{params[:search]}%" })
-    end
+  end
 
     # Le code actuel n'est pas utile. Si besoin on peut le faire sur la période (@date..@date_fin). Le mieux serait p-e de faire des cases grises directement dans le calendrier.
     # if params[:absent].present?

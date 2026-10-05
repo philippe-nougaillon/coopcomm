@@ -8,7 +8,7 @@ class InterventionTest < ActiveSupport::TestCase
 
   # Un attachement n'étant pas une colonne, audited n'écrit une ligne que si le
   # commentaire est renseigné : c'est ce commentaire qui fait exister l'audit.
-  test 'pièce jointe : une photo ajoutée → un audit portant le libellé au singulier' do
+  test 'une photo ajoutée est auditée avec un libellé au singulier' do
     intervention = intervention_avec_photos
 
     assert_difference -> { intervention.audits.count }, 1 do
@@ -17,7 +17,7 @@ class InterventionTest < ActiveSupport::TestCase
     assert_match(/1 photo ajoutée/i, intervention.audits.last.comment)
   end
 
-  test 'pièce jointe : deux photos ajoutées → le libellé s\'accorde au pluriel' do
+  test 'deux photos ajoutées sont auditées avec un libellé au pluriel' do
     intervention = intervention_avec_photos
     intervention.update!(photos: [png])
 
@@ -26,7 +26,7 @@ class InterventionTest < ActiveSupport::TestCase
     assert_match(/2 photos ajoutées/i, intervention.audits.last.comment)
   end
 
-  test 'pièce jointe : photo existante ré-émise par le formulaire → aucun faux message d\'ajout' do
+  test 'une photo existante ré-émise par le formulaire n’est pas auditée comme un ajout' do
     intervention = intervention_avec_photos
     intervention.update!(photos: [png])
     existante = intervention.photos.first
@@ -39,7 +39,7 @@ class InterventionTest < ActiveSupport::TestCase
 
   # C'est la clé qui fait foi, pas l'association : User porte un default_scope
   # :kept, donc `adherent` rend nil dès que le compte est désactivé.
-  test 'adhérent : compte désactivé après la création → intervention toujours valide' do
+  test 'une intervention reste valide lorsque son adhérent est désactivé après avoir été rattaché' do
     adherent = users(:weil)
     intervention = intervention_sans_dates(adherent: adherent, service: services(:informatique))
     adherent.discard
@@ -48,7 +48,7 @@ class InterventionTest < ActiveSupport::TestCase
     assert_predicate intervention, :valid?
   end
 
-  test 'adhérent : intervention existante dont l\'adhérent est désactivé → toujours enregistrable' do
+  test 'une intervention existante dont l’adhérent est désactivé reste enregistrable' do
     intervention = interventions(:tonte_locaux)
     intervention.adherent.discard
 
@@ -59,42 +59,36 @@ class InterventionTest < ActiveSupport::TestCase
     assert_predicate intervention, :valid?
   end
 
-  test 'combine_datetime : heure et minute saisies à part → reportées sur la date' do
+  test 'les quatre dates d’une intervention sont enregistrées telles que fournies' do
     intervention = interventions(:nouvelle_intervention)
-    intervention.début_prévue = Time.zone.local(2030, 5, 4, 8, 0)
-    intervention.début_prévue_hour = '14'
-    intervention.début_prévue_minute = '45'
+    début = Time.zone.local(2024, 4, 19, 9, 5, 37)
+    fin = Time.zone.local(2024, 4, 19, 18, 45, 12)
+    début_prévue = Time.zone.local(2030, 5, 4, 8, 15, 3)
+    fin_prévue = Time.zone.local(2030, 5, 4, 17, 45, 59)
 
-    intervention.valid?
+    intervention.update!(début: début, fin: fin, début_prévue: début_prévue, fin_prévue: fin_prévue)
 
-    assert_equal 14, intervention.début_prévue.hour
-    assert_equal 45, intervention.début_prévue.min
+    intervention.reload
+    assert_equal début, intervention.début
+    assert_equal fin, intervention.fin
+    assert_equal début_prévue, intervention.début_prévue
+    assert_equal fin_prévue, intervention.fin_prévue
   end
 
-  test 'combine_datetime : date absente → aucune heure inventée' do
-    intervention = interventions(:nouvelle_intervention)
-    intervention.début_prévue = nil
-    intervention.début_prévue_hour = '14'
-
-    intervention.valid?
-
-    assert_nil intervention.début_prévue
-  end
-
-  test 'set_temporary_description : création sans description → bouchon posé puis remplacé par l\'identifiant' do
+  test 'une intervention créée sans description reçoit son identifiant comme description' do
     intervention = Intervention.create!(description: '', adherent: users(:weil), service: services(:informatique))
 
     assert_equal "##{intervention.id}", intervention.reload.description
   end
 
-  test 'replace_description_with_id : création avec description → description conservée' do
+  test 'une intervention créée avec une description la conserve' do
     intervention = Intervention.create!(description: 'Réparer la porte', adherent: users(:weil),
                                         service: services(:informatique))
 
     assert_equal 'Réparer la porte', intervention.reload.description
   end
 
-  test 'must_not_have_any_mouvements : intervention encore liée à un mouvement → suppression refusée' do
+  test 'une intervention encore liée à un mouvement ne peut pas être supprimée' do
     intervention = interventions(:tonte_locaux)
     Mouvement.create!(tool: tools(:tondeuse), user: users(:bond), intervention: intervention,
                       état: :réservé, date: Time.zone.parse('2026-06-02 09:00'))
@@ -104,7 +98,7 @@ class InterventionTest < ActiveSupport::TestCase
     assert Intervention.exists?(intervention.id)
   end
 
-  test 'check_workflow_pointage_mère : modèle qui cesse de se répéter → repasse à nouveau' do
+  test 'un modèle de pointage qui cesse de se répéter repasse à l’état nouveau' do
     intervention = interventions(:intervention_repete)
     intervention.update_columns(workflow_state: 'pointage activé')
 
@@ -114,7 +108,7 @@ class InterventionTest < ActiveSupport::TestCase
     assert_equal 'nouveau', intervention.workflow_state
   end
 
-  test 'check_workflow_pointage_mère : intervention qui devient un modèle → passe à pointage activé' do
+  test 'une intervention qui devient un modèle de pointage passe à l’état pointage activé' do
     intervention = interventions(:nouvelle_intervention)
 
     intervention.repeter = true
@@ -123,7 +117,7 @@ class InterventionTest < ActiveSupport::TestCase
     assert_equal 'pointage activé', intervention.workflow_state
   end
 
-  test 'dates_obligatoires_si_terminé : terminée sans date de début → refusée' do
+  test 'une intervention terminée sans date de début est refusée' do
     intervention = interventions(:nouvelle_intervention)
     intervention.assign_attributes(workflow_state: Intervention::TERMINE, début: nil)
 
@@ -131,7 +125,7 @@ class InterventionTest < ActiveSupport::TestCase
     assert_includes intervention.errors.full_messages.join, 'obligatoire pour terminer'
   end
 
-  test 'dates_obligatoires_si_terminé : terminée sans date de fin → refusée' do
+  test 'une intervention terminée sans date de fin est refusée' do
     intervention = interventions(:nouvelle_intervention)
     intervention.assign_attributes(workflow_state: Intervention::TERMINE, fin: nil)
 
@@ -139,21 +133,21 @@ class InterventionTest < ActiveSupport::TestCase
     assert_includes intervention.errors.full_messages.join, 'obligatoire pour terminer'
   end
 
-  test 'dates_obligatoires_si_terminé : terminée avec ses deux dates → acceptée' do
+  test 'une intervention terminée avec ses deux dates est acceptée' do
     intervention = interventions(:nouvelle_intervention)
     intervention.workflow_state = Intervention::TERMINE
 
     assert_predicate intervention, :valid?
   end
 
-  test 'dates_obligatoires_si_terminé : autre état sans dates → accepté' do
+  test 'une intervention non terminée est acceptée sans dates' do
     intervention = interventions(:nouvelle_intervention)
     intervention.assign_attributes(début: nil, fin: nil)
 
     assert_predicate intervention, :valid?
   end
 
-  test 'agent_obligatoire_si_terminé : terminée sans agent → refusée' do
+  test 'une intervention terminée sans agent est refusée' do
     intervention = interventions(:nouvelle_intervention)
     intervention.agents.destroy_all
     intervention.reload.workflow_state = Intervention::TERMINE
@@ -163,7 +157,7 @@ class InterventionTest < ActiveSupport::TestCase
                     "Au moins un agent est obligatoire pour terminer l'intervention"
   end
 
-  test 'agent_obligatoire_si_terminé : terminée avec un agent → acceptée' do
+  test 'une intervention terminée avec un agent est acceptée' do
     intervention = interventions(:nouvelle_intervention)
     intervention.workflow_state = Intervention::TERMINE
 
@@ -171,21 +165,21 @@ class InterventionTest < ActiveSupport::TestCase
     assert_predicate intervention, :valid?
   end
 
-  test 'agent_obligatoire_si_terminé : autre état sans agent → accepté' do
+  test 'une intervention non terminée est acceptée sans agent' do
     intervention = interventions(:nouvelle_intervention)
     intervention.agents.destroy_all
 
     assert_predicate intervention.reload, :valid?
   end
 
-  test 'agent_obligatoire_si_terminé : intervention déjà terminée privée de ses agents → plus enregistrable' do
+  test 'une intervention déjà terminée privée de ses agents n’est plus enregistrable' do
     intervention = interventions(:intervention_terminée)
     intervention.agents.destroy_all
 
     assert_not intervention.reload.update(commentaires: 'peu importe')
   end
 
-  test 'agent_obligatoire_si_terminé : agents retirés d\'une intervention terminée → refusé' do
+  test 'le retrait de tous les agents d’une intervention terminée est refusé' do
     intervention = interventions(:intervention_terminée)
     intervention.agent_ids = []
 
@@ -194,7 +188,7 @@ class InterventionTest < ActiveSupport::TestCase
 
   # Seuls les administrateurs échappent à la règle côté agents.
 
-  test 'service_partagé : adhérent étranger au service → refusé' do
+  test 'un adhérent étranger au service de l’intervention est refusé' do
     intervention = intervention_sans_dates(adherent: users(:berthout), service: services(:informatique))
 
     assert_not intervention.valid?
@@ -202,13 +196,13 @@ class InterventionTest < ActiveSupport::TestCase
                     "L'adhérent #{users(:berthout).nom_prénom} n'appartient pas au service Informatique"
   end
 
-  test 'service_partagé : adhérent du service → accepté' do
+  test 'un adhérent du service de l’intervention est accepté' do
     intervention = intervention_sans_dates(adherent: users(:weil), service: services(:informatique))
 
     assert intervention.valid?, intervention.errors.full_messages.to_sentence
   end
 
-  test 'service_partagé : agent étranger au service → refusé' do
+  test 'un agent étranger au service de l’intervention est refusé' do
     intervention = intervention_sans_dates(adherent: users(:weil), service: services(:technique))
     intervention.agents = [users(:john_wick)]
 
@@ -217,14 +211,14 @@ class InterventionTest < ActiveSupport::TestCase
                     "L'agent #{users(:john_wick).nom_prénom} n'appartient pas au service Technique"
   end
 
-  test 'service_partagé : agent du service → accepté' do
+  test 'un agent du service de l’intervention est accepté' do
     intervention = intervention_sans_dates(adherent: users(:weil), service: services(:technique))
     intervention.agents = [users(:martin_technique_paris)]
 
     assert intervention.valid?, intervention.errors.full_messages.to_sentence
   end
 
-  test 'service_partagé : administrateur comme agent → accepté quel que soit son service' do
+  test 'un administrateur est accepté comme agent quel que soit son service' do
     admin = users(:philippe_super_admin)
     intervention = intervention_sans_dates(adherent: users(:weil), service: services(:technique))
     intervention.agents = [admin]
@@ -233,7 +227,7 @@ class InterventionTest < ActiveSupport::TestCase
     assert intervention.valid?, intervention.errors.full_messages.to_sentence
   end
 
-  test 'service_partagé : manager comme agent hors de son service → refusé, aucune exemption' do
+  test 'un manager étranger au service de l’intervention est refusé comme agent, sans exemption' do
     manager = users(:manager_paris)
     intervention = intervention_sans_dates(adherent: users(:weil), service: services(:technique))
     intervention.agents = [manager]
@@ -244,7 +238,7 @@ class InterventionTest < ActiveSupport::TestCase
                     "L'agent #{manager.nom_prénom} n'appartient pas au service Technique"
   end
 
-  test 'service_partagé : service étranger à l\'adhérent comme aux agents → refusé des deux côtés' do
+  test 'un service étranger à l’adhérent comme aux agents est refusé des deux côtés' do
     intervention = interventions(:tonte_locaux)
     intervention.service = services(:secretariat)
 
@@ -255,7 +249,7 @@ class InterventionTest < ActiveSupport::TestCase
   # Le créateur est déduit de l'audit de création : au niveau modèle, il faut `as_user`
   # pour le poser (dans l'app, `audited` capte le current_user du contrôleur).
 
-  test 'send_manager_notification : création non terminée par un agent → aucune notification' do
+  test 'aucun manager n’est notifié lorsqu’un agent crée une intervention non terminée' do
     agent = users(:martin_technique_paris)
 
     assert_no_enqueued_jobs only: [NotifManagersNewInterventionFromAdherentJob,
@@ -270,7 +264,7 @@ class InterventionTest < ActiveSupport::TestCase
     end
   end
 
-  test 'send_manager_notification : création sans utilisateur d\'audit → aucune notification' do
+  test 'aucun manager n’est notifié lorsqu’une intervention est créée sans auteur connu' do
     assert_no_enqueued_jobs only: [NotifManagersNewInterventionFromAdherentJob,
                                    NotifManagersInterventionDoneByAgentJob] do
       Intervention.create!(description: 'Création système',
@@ -284,7 +278,7 @@ class InterventionTest < ActiveSupport::TestCase
   # Les événements sont observés par les jobs qu'ils déclenchent : les mêmes
   # sondes que test/subscription.
 
-  test 'apres_terminaison : intervention ordinaire terminée → workflow_changed et done publiés' do
+  test 'la terminaison d’une intervention ordinaire notifie les managers et l’adhérent' do
     intervention = interventions(:nouvelle_intervention)
 
     assert_enqueued_with(job: NotifManagersWorkflowChangedJob) do
@@ -294,7 +288,7 @@ class InterventionTest < ActiveSupport::TestCase
     end
   end
 
-  test 'apres_terminaison : pointage terminé → workflow_changed et done publiés' do
+  test 'la terminaison d’un pointage notifie les managers et l’adhérent' do
     pointage = cree_pointage_termine_par(users(:martin_technique_paris))
 
     assert_enqueued_with(job: NotifManagersWorkflowChangedJob) do
@@ -304,7 +298,7 @@ class InterventionTest < ActiveSupport::TestCase
     end
   end
 
-  test 'apres_terminaison : modification sans changement d\'état → aucun événement publié' do
+  test 'une modification sans changement d’état ne notifie ni les managers ni l’adhérent' do
     intervention = interventions(:intervention_terminée)
 
     assert_no_enqueued_jobs only: [NotifManagersWorkflowChangedJob, NotifAdherentInterventionTermineeJob] do
@@ -312,14 +306,14 @@ class InterventionTest < ActiveSupport::TestCase
     end
   end
 
-  test 'scope ordered : plusieurs interventions → la plus récemment mise à jour en tête' do
+  test 'la liste ordonnée des interventions place la plus récemment mise à jour en tête' do
     récente = interventions(:nouvelle_intervention)
     récente.update_columns(updated_at: 1.minute.from_now)
 
     assert_equal récente, Intervention.ordered.first
   end
 
-  test 'scope courantes : tous les états → seuls nouveau, pointage activé et terminé' do
+  test 'les interventions courantes sont celles aux états nouveau, pointage activé et terminé' do
     états = Intervention.courantes.pluck(:workflow_state).uniq
 
     assert_includes états, 'nouveau'
@@ -327,27 +321,27 @@ class InterventionTest < ActiveSupport::TestCase
     assert_not_includes états, 'archivé'
   end
 
-  test 'filter_by_service : services demandés → leurs interventions seulement' do
+  test 'le filtre par service ne retourne que les interventions de ces services' do
     filtrées = Intervention.filter_by_service([services(:technique)])
 
     assert filtrées.all? { |i| i.service_id == services(:technique).id }
     assert_includes filtrées, interventions(:tonte_locaux)
   end
 
-  test 'by_role_for : manager → toutes les interventions, triées' do
+  test 'la liste des interventions d’un manager contient toutes les interventions' do
     listées = Intervention.by_role_for(users(:hidalgo))
 
     assert_includes listées, interventions(:tonte_locaux)
     assert_includes listées, interventions(:intervention_autre_adhérent)
   end
 
-  test 'by_role_for : adhérent → seulement les siennes' do
+  test 'la liste des interventions d’un adhérent ne contient que les siennes' do
     listées = Intervention.by_role_for(users(:weil))
 
     assert listées.all? { |i| i.adherent_id == users(:weil).id }
   end
 
-  test 'by_role_for : agent → seulement celles où il est affecté' do
+  test 'la liste des interventions d’un agent ne contient que celles où il est affecté' do
     agent = users(:martin_technique_paris)
 
     listées = Intervention.by_role_for(agent)
@@ -356,7 +350,7 @@ class InterventionTest < ActiveSupport::TestCase
     assert_not_includes listées, interventions(:intervention_with_location)
   end
 
-  test 'effective_début / effective_fin : dates réelles renseignées → elles priment sur les prévues' do
+  test 'les dates effectives sont les dates réelles lorsqu’elles sont renseignées' do
     intervention = interventions(:nouvelle_intervention)
     intervention.assign_attributes(début: Time.zone.local(2030, 5, 4, 9), fin: Time.zone.local(2030, 5, 4, 11),
                                    début_prévue: Time.zone.local(2030, 5, 4, 14),
@@ -366,7 +360,7 @@ class InterventionTest < ActiveSupport::TestCase
     assert_equal Time.zone.local(2030, 5, 4, 11), intervention.effective_fin
   end
 
-  test 'effective_début / effective_fin : dates réelles absentes → repli sur les prévues' do
+  test 'les dates effectives se replient sur les dates prévues lorsque les réelles manquent' do
     intervention = interventions(:nouvelle_intervention)
     intervention.assign_attributes(début: nil, fin: nil,
                                    début_prévue: Time.zone.local(2030, 5, 4, 14),
@@ -376,14 +370,14 @@ class InterventionTest < ActiveSupport::TestCase
     assert_equal Time.zone.local(2030, 5, 4, 16), intervention.effective_fin
   end
 
-  test 'pointage_ouvert? : fille de pointage sans fin → vrai' do
+  test 'une fille de pointage sans fin est un pointage ouvert' do
     mère = interventions(:intervention_repete)
     fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
 
     assert fille.pointage_ouvert?
   end
 
-  test 'pointage_ouvert? : fille de pointage clôturée → faux' do
+  test 'une fille de pointage clôturée n’est pas un pointage ouvert' do
     mère = interventions(:intervention_repete)
     fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
     fille.update_columns(fin: Time.current)
@@ -391,50 +385,68 @@ class InterventionTest < ActiveSupport::TestCase
     assert_not fille.reload.pointage_ouvert?
   end
 
-  test 'pointage_ouvert? : intervention hors pointage → faux' do
+  test 'une intervention hors pointage n’est pas un pointage ouvert' do
     assert_not interventions(:nouvelle_intervention).pointage_ouvert?
   end
 
-  test 'durée_humanized : début et fin réels → durée en heures et minutes' do
+  test 'la durée d’une intervention est affichée en heures, minutes et secondes' do
     intervention = interventions(:nouvelle_intervention)
     intervention.début = Time.zone.local(2030, 5, 4, 9, 0)
-    intervention.fin = Time.zone.local(2030, 5, 4, 11, 30)
+    intervention.fin = Time.zone.local(2030, 5, 4, 11, 30, 12)
 
-    assert_equal '02h 30min', intervention.durée_humanized
+    assert_equal '02h 30min 12sec', intervention.durée_humanized
   end
 
-  test 'passed : intervention encore à l\'état nouveau et non finie → faux' do
+  test 'les dates d’un pointage sont affichées avec les secondes' do
+    mère = interventions(:intervention_repete)
+    fille = mère.create_next_intervention(mère, users(:martin_technique_paris))
+
+    assert_equal :very_long, fille.format_date
+  end
+
+  test 'les dates d’une intervention ordinaire sont affichées sans les secondes' do
+    assert_equal :long, interventions(:nouvelle_intervention).format_date
+  end
+
+  test 'le format réservé aux pointages affiche réellement les secondes' do
+    horaire = Time.zone.local(2030, 5, 4, 9, 0, 12)
+
+    assert_includes I18n.l(horaire, format: :very_long), '12s'
+    assert_not_includes I18n.l(horaire, format: :long), '12s'
+  end
+
+  test 'une intervention à l’état nouveau dont la fin n’est pas atteinte n’est pas passée' do
     intervention = interventions(:nouvelle_intervention)
     intervention.fin = 1.hour.from_now
 
     assert_not intervention.passed
   end
 
-  test 'passed : intervention nouveau dont la fin est dépassée → vrai' do
+  test 'une intervention à l’état nouveau dont la fin est dépassée est passée' do
     intervention = interventions(:nouvelle_intervention)
     intervention.fin = 1.hour.ago
 
     assert intervention.passed
   end
 
-  test 'passed : intervention sortie de l\'état nouveau → vrai' do
+  test 'une intervention sortie de l’état nouveau est passée' do
     assert interventions(:tonte_locaux).passed
   end
 
-  test 'temps_par_agent : plusieurs agents affectés → le temps divisé entre eux' do
+  test 'le temps par agent divise le temps total entre les agents affectés' do
     intervention = interventions(:tonte_locaux)
 
     assert_in_delta intervention.temps_total / intervention.agents.count, intervention.temps_par_agent, 1e-6
   end
 
-  test 'temps_par_agent : aucun agent → le temps entier, sans division par zéro' do
+  test 'le temps par agent vaut le temps total entier lorsqu’aucun agent n’est affecté' do
     intervention = interventions(:nouvelle_intervention)
     intervention.agents.destroy_all
 
     assert_equal intervention.reload.temps_total, intervention.temps_par_agent
   end
 
-  test 'bon? : intervention créée par un agent → vrai' do
+  test 'une intervention créée par un agent est un bon d’intervention' do
     intervention = nil
     Audited.audit_class.as_user(users(:martin_technique_paris)) do
       intervention = Intervention.create!(description: 'Bon agent', adherent: users(:weil),
@@ -444,7 +456,7 @@ class InterventionTest < ActiveSupport::TestCase
     assert intervention.bon?
   end
 
-  test 'bon? : intervention créée par un manager → faux' do
+  test 'une intervention créée par un manager n’est pas un bon d’intervention' do
     intervention = nil
     Audited.audit_class.as_user(users(:hidalgo)) do
       intervention = Intervention.create!(description: 'Demande manager', adherent: users(:weil),
@@ -454,11 +466,11 @@ class InterventionTest < ActiveSupport::TestCase
     assert_not intervention.bon?
   end
 
-  test 'rgba : état courant → la couleur déclarée sur cet état' do
+  test 'la couleur d’une intervention est celle déclarée sur son état' do
     assert_equal '0,181,255,255', interventions(:nouvelle_intervention).rgba
   end
 
-  test 'workflow_states_count : un lot d\'interventions → chaque état compté, y compris à zéro' do
+  test 'le décompte par état d’un lot d’interventions compte chaque état, y compris à zéro' do
     comptes = Intervention.workflow_states_count(Intervention.where(id: interventions(:tonte_locaux).id))
 
     assert_equal 1, comptes['Validé']
@@ -469,7 +481,7 @@ class InterventionTest < ActiveSupport::TestCase
   # Côté agent le périmètre n'est pas restreint aux filles de pointage :
   # toutes ses interventions « nouveau » sont listées.
 
-  test 'by_role_for_home : agent, intervention ordinaire à l\'état nouveau → listée' do
+  test 'la page d’accueil d’un agent liste ses interventions ordinaires à l’état nouveau' do
     agent = users(:martin_technique_paris)
     intervention = interventions(:nouvelle_intervention)
 
@@ -479,7 +491,7 @@ class InterventionTest < ActiveSupport::TestCase
     assert_includes Intervention.by_role_for_home(agent), intervention
   end
 
-  test 'by_role_for_home : agent, fille de pointage à l\'état nouveau → listée' do
+  test 'la page d’accueil d’un agent liste ses filles de pointage à l’état nouveau' do
     agent = users(:martin_technique_paris)
     fille = interventions(:intervention_fille)
     fille.update_columns(template_slug: interventions(:intervention_repete).slug)
@@ -487,14 +499,14 @@ class InterventionTest < ActiveSupport::TestCase
     assert_includes Intervention.by_role_for_home(agent), fille
   end
 
-  test 'by_role_for_home : agent, interventions sorties de l\'état nouveau → exclues' do
+  test 'la page d’accueil d’un agent exclut ses interventions sorties de l’état nouveau' do
     listées = Intervention.by_role_for_home(users(:martin_technique_paris))
 
     assert_not_includes listées, interventions(:intervention_terminée)
     assert_not_includes listées, interventions(:intervention_validé)
   end
 
-  test 'by_role_for_home : agent, intervention nouveau d\'un autre agent → exclue' do
+  test 'la page d’accueil d’un agent exclut une intervention à l’état nouveau d’un autre agent' do
     agent = users(:martin_technique_paris)
     intervention = interventions(:intervention_with_location)
 
@@ -504,14 +516,14 @@ class InterventionTest < ActiveSupport::TestCase
     assert_not_includes Intervention.by_role_for_home(agent), intervention
   end
 
-  test 'by_role_for_home : agent, plusieurs interventions → triées par mise à jour décroissante' do
+  test 'la page d’accueil d’un agent trie ses interventions par mise à jour décroissante' do
     agent = users(:martin_technique_paris)
     interventions(:intervention_paris).update_columns(updated_at: 1.minute.from_now)
 
     assert_equal interventions(:intervention_paris), Intervention.by_role_for_home(agent).first
   end
 
-  test 'by_role_for_home : adhérent → seulement ses interventions terminées' do
+  test 'la page d’accueil d’un adhérent ne liste que ses interventions terminées' do
     listées = Intervention.by_role_for_home(users(:weil))
 
     assert_includes listées, interventions(:intervention_terminée)
@@ -519,7 +531,7 @@ class InterventionTest < ActiveSupport::TestCase
     assert_not_includes listées, interventions(:intervention_autre_adhérent)
   end
 
-  test 'by_role_for_home : manager → interventions validées, refusées et archivées exclues' do
+  test 'la page d’accueil d’un manager exclut les interventions validées, refusées et archivées' do
     listées = Intervention.by_role_for_home(users(:hidalgo))
 
     assert_includes listées, interventions(:nouvelle_intervention)
@@ -527,13 +539,13 @@ class InterventionTest < ActiveSupport::TestCase
     assert_not_includes listées, interventions(:tonte_locaux)
   end
 
-  test 'qrcode : URL fournie → un SVG' do
+  test 'le QR code d’une intervention est rendu en SVG' do
     svg = interventions(:intervention_repete).qrcode('https://example.test/pointer')
 
     assert_includes svg, '<svg'
   end
 
-  test 'dernière_en_cours : intervention qui recouvre l\'instant présent → retenue' do
+  test 'la dernière intervention en cours est celle qui recouvre l’instant présent' do
     agent = users(:nettoyage)
     en_cours = Intervention.create!(
       description: 'En cours maintenant', adherent: users(:weil), service: services(:technique),
@@ -544,11 +556,11 @@ class InterventionTest < ActiveSupport::TestCase
     assert_equal en_cours, Intervention.dernière_en_cours(agent.interventions)
   end
 
-  test 'dernière_en_cours : interventions sans date prévue → nil' do
+  test 'aucune dernière intervention en cours n’est retenue parmi des interventions sans date prévue' do
     assert_nil Intervention.dernière_en_cours(Intervention.where(id: interventions(:nouvelle_intervention).id))
   end
 
-  test 'broadcast_channels : intervention complète → organisation, service, adhérent et agents' do
+  test 'une intervention complète est diffusée à son organisation, son service, son adhérent et ses agents' do
     intervention = interventions(:tonte_locaux)
 
     channels = intervention.send(:broadcast_channels)
@@ -559,7 +571,7 @@ class InterventionTest < ActiveSupport::TestCase
     assert_includes channels, "interventions_user_#{users(:bond).id}"
   end
 
-  test 'broadcast_channels : intervention sans adhérent → aucun canal adhérent' do
+  test 'une intervention sans adhérent n’est diffusée sur aucun canal adhérent' do
     intervention = interventions(:tonte_locaux)
     intervention.update_columns(adherent_id: nil)
 

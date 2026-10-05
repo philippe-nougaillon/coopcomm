@@ -8,11 +8,11 @@ require 'test_helper'
 class DashboardAgentStatTest < ActiveSupport::TestCase
   setup { refresh_dashboard_views! }
 
-  test 'readonly? : n\'importe quelle ligne → lecture seule' do
+  test "une statistique d'agent du tableau de bord est en lecture seule" do
     assert DashboardAgentStat.new.readonly?
   end
 
-  test 'parité : temps par agent → identique au calcul live' do
+  test 'le temps par agent du tableau de bord est identique au calcul live' do
     User.with_discarded.where(rôle: :agent).find_each do |agent|
       live = Intervention.joins(:agent_interventions).where(agent_interventions: { agent_id: agent.id }).sum do |i|
         n = AgentIntervention.where(intervention_id: i.id).count
@@ -24,18 +24,20 @@ class DashboardAgentStatTest < ActiveSupport::TestCase
     end
   end
 
-  test 'parité : agent désactivé → garde sa part du temps' do
+  test 'un agent désactivé garde sa part du temps dans le tableau de bord' do
     discarded = User.with_discarded.discarded.agent.first
-    skip 'aucun agent supprimé dans les fixtures' if discarded.nil?
+
+    assert_not_nil discarded, 'aucun agent supprimé dans les fixtures'
 
     iv = discarded.interventions.find { |i| i.temps_total.to_f.positive? }
-    skip 'agent supprimé sans intervention chiffrée' if iv.nil?
+
+    assert_not_nil iv, 'agent supprimé sans intervention chiffrée dans les fixtures'
     part = iv.temps_total / AgentIntervention.where(intervention_id: iv.id).count
 
     assert_in_delta part, DashboardAgentStat.where(agent_id: discarded.id).sum(:temps_total), 0.01
   end
 
-  test 'parité : temps d\'une intervention → intégralement réparti entre ses agents' do
+  test "le temps d'une intervention est intégralement réparti entre ses agents dans le tableau de bord" do
     affectées = Intervention.where(id: AgentIntervention.select(:intervention_id))
 
     assert_in_delta affectées.sum(:temps_total), DashboardAgentStat.sum(:temps_total), 0.01

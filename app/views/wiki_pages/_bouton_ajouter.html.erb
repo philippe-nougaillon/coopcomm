@@ -1,6 +1,5 @@
-<%# locals: (catégorie: '') %>
 <% if policy(WikiPage).new? %>
-  <%= link_to new_documentation_path(catégorie: catégorie),
+  <%= link_to new_documentation_path,
       data: { testid: "Ajouter_une_Page" },
       class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary",
       title: "Créer une nouvelle page" do %>

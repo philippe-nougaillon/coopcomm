@@ -6,11 +6,6 @@
 # Les enregistrements sont posés sans validation : les contrôles de disponibilité
 # entreraient sinon en conflit avec les fixtures, et plusieurs états ne sont pas
 # atteignables par une transition depuis `nouveau`.
-#
-# ⚠ Le trigger Postgres `interventions_refresh_dashboard` rafraîchit les deux vues
-# matérialisées à CHAQUE écriture : au-delà d'une centaine d'écritures dans la même
-# transaction, Postgres épuise `max_locks_per_transaction`. D'où `etat_en_memoire`,
-# qui évite une écriture par état.
 module InterventionsMatrice
   TYPES = %i[classique modele fille].freeze
 

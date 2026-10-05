@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class OnInterventionDoneTest < ActionDispatch::IntegrationTest
-  test "NotifAdherentInterventionTermineeJob mis en file d'attente quand un agent termine une intervention avec un adhérent" do
+  test "le mail d'intervention terminée à l'adhérent est mis en file lorsqu'un agent termine son intervention" do
     sign_in users(:martin_technique_paris)
     intervention = interventions(:nouvelle_intervention)
 

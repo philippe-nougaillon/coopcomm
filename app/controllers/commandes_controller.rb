@@ -12,15 +12,9 @@ class CommandesController < ApplicationController
              .includes(:adherent, :service, :organisation)
              .ordered
 
-    if current_user.adhérent?
-      @commandes = base
-      service_ids = base.reorder(nil).distinct.pluck(:service_id)
-      @services   = Service.where(id: service_ids).ordered
-    else
-      @services   = current_user.get_services_by_role
-      @adhérents  = User.by_service(@services).adhérent.ordered
-      @commandes  = base.where(service: @services)
-    end
+    @services  = current_user.get_services_by_role
+    @adhérents = User.by_service(@services).adhérent.ordered
+    @commandes = base.where(service: @services)
 
     if params[:search].present?
       @commandes = @commandes.where('commandes.ref ILIKE :s OR commandes.intitulé ILIKE :s', s: "%#{params[:search]}%")
@@ -47,6 +41,10 @@ class CommandesController < ApplicationController
   def show
     @audits = trier(@commande.own_and_associated_audits.includes(:user))
     @pagy, @audits = pagy(@audits, items: 10)
+
+    @prestations = @commande.commande_lignes.includes(:prestation)
+    @pagy_prestations, @prestations = pagy(@prestations, items: 10)
+
   end
 
   # GET /commandes/new

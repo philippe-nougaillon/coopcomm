@@ -27,19 +27,19 @@ class ApplicationHelperTest < ActionView::TestCase
 
   # ==================== Bandeau de démonstration ====================
 
-  test 'instance de démonstration reconnue quelles que soient la casse et les espaces' do
+  test 'une instance de démonstration est reconnue quelles que soient la casse et les espaces' do
     ENV['APP_INSTANCE'] = ' DEMO '
 
     assert_predicate self, :demo_instance?
   end
 
-  test 'instance de production : pas de bandeau de démonstration' do
+  test "une instance de production n'affiche pas le bandeau de démonstration" do
     ENV['APP_INSTANCE'] = 'production'
 
     assert_not demo_instance?
   end
 
-  test 'variable absente : pas de bandeau de démonstration' do
+  test "une instance sans variable d'environnement n'affiche pas le bandeau de démonstration" do
     ENV.delete('APP_INSTANCE')
 
     assert_not demo_instance?
@@ -47,25 +47,25 @@ class ApplicationHelperTest < ActionView::TestCase
 
   # ==================== Horodatage de la messagerie ====================
 
-  test 'message du jour : seule l\'heure est affichée' do
+  test "un message du jour n'est horodaté que par son heure" do
     travel_to Time.zone.local(2026, 7, 15, 18, 0) do
       assert_equal '09:30', message_time_format(Time.zone.local(2026, 7, 15, 9, 30))
     end
   end
 
-  test 'message de la semaine écoulée : le jour de la semaine' do
+  test 'un message de la semaine écoulée est horodaté par son jour de la semaine' do
     travel_to Time.zone.local(2026, 7, 15, 18, 0) do
-      assert_equal 'Vendredi', message_time_format(Time.zone.local(2026, 7, 10, 9, 30))
+      assert_equal 'vendredi', message_time_format(Time.zone.local(2026, 7, 10, 9, 30))
     end
   end
 
-  test 'message plus ancien : la date complète' do
+  test 'un message plus ancien est horodaté par sa date complète' do
     travel_to Time.zone.local(2026, 7, 15, 18, 0) do
       assert_equal '01/06/2026', message_time_format(Time.zone.local(2026, 6, 1, 9, 30))
     end
   end
 
-  test 'horodatage absent : chaîne vide' do
+  test 'un horodatage absent est rendu par une chaîne vide' do
     assert_equal '', message_time_format(nil)
   end
 

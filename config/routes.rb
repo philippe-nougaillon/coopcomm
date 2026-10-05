@@ -8,7 +8,6 @@ Rails.application.routes.draw do
 
   devise_for :users
   # devise_for :users, controllers: {
-  #   registrations: 'users/registrations',
   #   omniauth_callbacks: 'users/omniauth_callbacks'
   # }
 
@@ -64,10 +63,12 @@ Rails.application.routes.draw do
       get :guide
       get :faq
     end
+    member do
+      delete :purge_photo
+      delete :purge_document
+    end
   end
   match 'doc', to: redirect('/documentation'), via: :get
-
-  # resources :organisations, only: %i[ show edit update ]
 
   resources :interventions do
     member do
@@ -149,6 +150,11 @@ Rails.application.routes.draw do
     collection do
       get :services_for_adherent
     end
+
+    member do
+      # Ajout de constraints: { filename: /.*/ } pour accepter les points (ex: .pdf) dans l'URL
+      get 'pdf(/*filename)', action: :pdf, as: :pdf, format: false, constraints: { filename: /.*/ }
+    end
   end
 
   resources :commandes do
@@ -182,8 +188,8 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get 'up' => 'rails/health#show', as: :rails_health_check
 
-  get '/service-worker.js' => 'service_worker#service_worker'
-  get '/manifest.json' => 'service_worker#manifest'
+  get 'service-worker' => 'rails/pwa#service_worker', as: :pwa_service_worker
+  get 'manifest' => 'rails/pwa#manifest', as: :pwa_manifest
 
   post '/twilio/whatsapp_reply', to: 'twilio#whatsapp_reply'
 

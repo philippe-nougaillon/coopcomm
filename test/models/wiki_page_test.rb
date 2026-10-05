@@ -96,4 +96,89 @@ class WikiPageTest < ActiveSupport::TestCase
   end
 
   # ==================== /TESTS CRITIQUES ====================
+
+  # ==================== PIÈCES JOINTES DANS LE CONTENU (TRIX) ====================
+  # `valide_piece_jointe_riche` protège contre l'upload de fichiers non
+  # autorisés (sécurité) ou trop volumineux (stockage) directement dans le
+  # rich text, un point d'entrée distinct de `document` et `photo`.
+
+  test 'un nouveau fichier de format non autorisé collé dans le contenu d’une documentation est refusé' do
+    blob = blob_attaché(nom_fichier: 'virus.exe', content_type: 'application/x-msdownload')
+    page = wiki_page_valide(contenu: html_attachment_pour(blob))
+
+    assert_not page.valid?
+    assert_includes page.errors.full_messages.join(' '), 'format non pris en charge'
+  end
+
+  test 'un nouveau fichier trop volumineux collé dans le contenu d’une documentation est refusé' do
+    blob = blob_attaché(nom_fichier: 'gros.pdf', content_type: 'application/pdf', octets: 111.megabytes)
+    page = wiki_page_valide(contenu: html_attachment_pour(blob))
+
+    assert_not page.valid?
+    assert_includes page.errors.full_messages.join(' '), 'trop volumineux'
+  end
+
+  test 'un PDF de taille correcte collé dans le contenu d’une documentation est accepté' do
+    blob = blob_attaché(nom_fichier: 'note.pdf', content_type: 'application/pdf', octets: 1.megabyte)
+    page = wiki_page_valide(contenu: html_attachment_pour(blob))
+
+    assert page.valid?, page.errors.full_messages.to_sentence
+  end
+
+  test 'un fichier déjà présent dans le contenu d’une documentation n’est pas revalidé quand seul le titre change' do
+    page = wiki_page_valide(contenu: 'Contenu initial')
+    page.save!
+
+    blob_invalide = blob_attaché(nom_fichier: 'vieux.exe', content_type: 'application/x-msdownload')
+    page.rich_text_content.update_column(:body, html_attachment_pour(blob_invalide))
+    page.reload
+
+    page.titre = 'Nouveau titre'
+
+    assert page.valid?, page.errors.full_messages.to_sentence
+  end
+
+  test 'un nouveau fichier invalide ajouté à un contenu existant valide est refusé' do
+    blob_valide = blob_attaché(nom_fichier: 'ok.pdf', content_type: 'application/pdf')
+    page = wiki_page_valide(contenu: html_attachment_pour(blob_valide))
+    page.save!
+
+    blob_invalide = blob_attaché(nom_fichier: 'nouveau.exe', content_type: 'application/x-msdownload')
+    page.contenu = html_attachment_pour(blob_valide) + html_attachment_pour(blob_invalide)
+
+    assert_not page.valid?
+    assert_includes page.errors.full_messages.join(' '), 'format non pris en charge'
+  end
+
+  # ==================== /PIÈCES JOINTES DANS LE CONTENU (TRIX) ====================
+
+  private
+
+  def blob_attaché(nom_fichier:, content_type:, octets: 1.kilobyte)
+    ActiveStorage::Blob.create_and_upload!(
+      io: StringIO.new('x' * octets),
+      filename: nom_fichier,
+      content_type: content_type
+    )
+  end
+
+  def html_attachment_pour(blob)
+    %(<action-text-attachment sgid="#{blob.attachable_sgid}" content-type="#{blob.content_type}" filename="#{blob.filename}" filesize="#{blob.byte_size}"></action-text-attachment>)
+  end
+
+ # Construit une WikiPage valide par ailleurs (titre, sous_titre, etc.), pour
+  # isoler les tests sur la seule validation du contenu riche.
+  def wiki_page_valide(**attrs)
+    WikiPage.new(
+      titre: 'Titre de test',
+      sous_titre: 'Sous-titre de test',
+      catégorie: :guide,
+      publiée: true,
+      private: false,
+      épinglée: false,
+      poids: 99,
+      user: users(:hidalgo),
+      **attrs
+    )
+  end
 end

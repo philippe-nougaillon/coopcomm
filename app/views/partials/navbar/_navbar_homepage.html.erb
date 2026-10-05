@@ -10,7 +10,7 @@
       <% end %>
     </div>
     <button id="menu-btn" class="md:hidden text-3xl focus:outline-none" data-testid="dropdown_mobile">
-      ☰
+      <%= embedded_svg "icons/menu.svg", class: "text-sm", title: "Menu" %>
     </button>
     <nav class="hidden md:block">
       <ul class="flex flex-row items-center gap-4">
@@ -39,9 +39,12 @@
     const menuMobile = document.getElementById("menu-mobile");
     menuBtn.addEventListener("click", () => {
       menuMobile.classList.toggle("hidden");
-      menuBtn.textContent = menuMobile.classList.contains("hidden")
-        ? "☰"
-        : "✕";
+      menuBtn.innerHTML = menuMobile.classList.contains("hidden")
+        ? `<%= embedded_svg "icons/menu.svg", class: "text-sm", title: "Menu" %>`
+        : `<%= embedded_svg "icons/close_small.svg", class: "text-sm", title: "Fermer" %>`;
     });
   });
 </script>
+
+
+

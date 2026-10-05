@@ -1,65 +1,102 @@
+<div class="max-w-7xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
 <%= form_with(model: wiki_page,
               url: wiki_page.persisted? ? documentation_path(wiki_page) : documentation_index_path,
               class: "contents") do |form| %>
   <% if wiki_page.errors.any? %>
-    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3 mb-4">
-      <h2 class="font-black!">
+    <div class="bg-red-50 text-red-500 px-4 py-3 font-medium rounded-lg mb-4 border border-red-200">
+      <h2 class="font-black mb-2 text-sm md:text-base">
         <%= pluralize(wiki_page.errors.count, "erreur") %> empêche(nt) cette page wiki d'être sauvegardée :
       </h2>
-      <ul class="list-disc list-inside">
+      <ul class="list-disc list-inside text-xs opacity-90">
         <% wiki_page.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
       </ul>
     </div>
   <% end %>
+
   <div class="my-5">
-    <%= form.label :catégorie %>
-    <%= form.select :catégorie, options_for_select(WikiPage.catégories.keys, (@wiki_page.catégorie || params["catégorie"])), {}, class: 'select select-sm w-full' %>
+    <%= form.label :catégorie, class: "label font-semibold text-slate-700" do %>
+      <span>Catégorie <span class="text-red-500">*</span></span>
+    <% end %>
+    <%= form.select :catégorie,
+                     options_for_select(WikiPage.catégories.keys, wiki_page.catégorie),
+                     { include_blank: "Choisir une catégorie" },
+                     class: "select select-sm w-full",
+                     required: true %>
   </div>
+
   <div class="my-5">
-    <%= form.label :titre do %>
-      <span>Titre <span class="text-red-500">*</span></span>
+    <%= form.label :titre, class: "label font-semibold text-slate-700" do %>
+     <span> Titre <span class="text-red-500">*</span></span>
     <% end %>
     <%= form.text_field :titre, class: "input w-full", placeholder: "Titre", required: true %>
   </div>
+
   <div class="my-5">
-    <%= form.label :sous_titre do %>
-      <span>Sous-titre <span class="text-red-500">*</span></span>
+    <%= form.label :sous_titre, class: "label font-semibold text-slate-700" do %>
+     <span> Sous-titre <span class="text-red-500">*</span></span>
     <% end %>
     <%= form.text_field :sous_titre, class: "input w-full", placeholder: "Sous-titre", required: true %>
   </div>
+
   <div class="my-5">
-    <%= form.rich_text_area :contenu, style: 'min-height: 50vh' %>
+    <%= form.label :contenu, class: "label font-semibold text-slate-700" do %>
+      <span class="mb-1 flex justify-center">Contenu</span>
+    <% end %>
+    <%= form.rich_text_area :contenu, class: "min-h-[50vh] max-h-[50vh] overflow-y-auto" %>
   </div>
-  <div class="flex gap-4">
-    <div class="hover:cursor-help" title="Visible uniquement par les managers et administrateurs si pas publiée ?">
-      <%= form.label :publiée, "Publiée ?", class:'whitespace-nowrap' %>
-      <br>
+
+  <div class="flex flex-row gap-6 my-5">
+    <label class="flex items-center gap-2 hover:cursor-help" title="Visible uniquement par les managers et administrateurs si pas publiée">
       <%= form.check_box :publiée, class: "checkbox checkbox-lg checkbox-primary" %>
-    </div>
-    <div class="hover:cursor-help" title="Visible sur l'index et affichée en premier ?">
-      <%= form.label :épinglée, "Épinglée ?", class:'whitespace-nowrap' %>
-      <br>
+      <span class="text-sm text-slate-500 whitespace-nowrap">Publiée ?</span>
+    </label>
+
+    <label class="flex items-center gap-2 hover:cursor-help" title="Visible sur l'index et affichée en premier">
       <%= form.check_box :épinglée, class: "checkbox checkbox-lg checkbox-primary" %>
-    </div>
-    <div class="hover:cursor-help" title="Non visible par les agents et les personnes non connectées ?">
-      <%= form.label :private, "Privé ?", class:'whitespace-nowrap hover:cursor-help' %>
-      <br>
+      <span class="text-sm text-slate-500 whitespace-nowrap">Épinglée ?</span>
+    </label>
+
+    <label class="flex items-center gap-2 hover:cursor-help" title="Non visible par les agents et les personnes non connectées">
       <%= form.check_box :private, class: "checkbox checkbox-lg checkbox-primary" %>
-    </div>
-    <div>
-      <%= form.label :poids %>
-      <%= form.number_field :poids, class: "input input-bordered w-full focus:input-primary" %>
-    </div>
+      <span class="text-sm text-slate-500 whitespace-nowrap">Privé ?</span>
+    </label>
+
+    <label class="flex items-center gap-2 hover:cursor-help" title="Position de la page dans l'index (plus le poids est bas, plus la page est affichée en premier)">
+      <%= form.number_field :poids, class: "input w-16" %>
+      <%= form.label :poids do %>
+        <span class="text-sm text-slate-500">
+          Rang de la page dans l'index (un poids plus faible donne la priorité d'affichage).
+        </span>
+      <% end %>
+    </label>
   </div>
-  <div class="my-5">
-      <%= render "shared/file_dropzone",
-                 form: form,
-                 attribute: :document,
-                 placeholder: "Glissez un document (PDF, Word, Excel, photo) ici ou cliquez pour parcourir" %>
-    </div>
-  <div class="inline">
-    <%= form.submit "Enregistrer", class: "btn btn-primary" %>
+
+  <div class="form-control w-full">
+    <%= render "shared/file_dropzone",
+               form: form,
+               attribute: :photo,
+               placeholder: "Glissez une image ou cliquez pour parcourir vos fichiers" %>
+  </div>
+
+
+  <div class="form-control w-full mt-6">
+    <%= render "shared/file_dropzone",
+               form: form,
+               attribute: :document,
+               placeholder: "Glissez un document (PDF, Word, etc.) ici ou cliquez pour parcourir" %>
+  </div>
+
+  <div class="flex flex-col sm:flex-row gap-3 mt-4 pt-4">
+    <%= button_tag "Annuler", type: "button", onclick: "history.back();", class: "btn w-full sm:flex-1" %>
+    <%= form.submit "Enregistrer", class: "btn btn-primary text-white font-bold w-full sm:flex-1 order-1 sm:order-2 shadow-md hover:shadow-lg transition-all" %>
   </div>
 <% end %>
+
+<div class="pt-8">
+    <%= link_to documentation_index_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+      <%= embedded_svg "icons/arrow_back.svg", class: "w-4 h-4 transition-transform group-hover:-translate-x-1 fill-current" rescue nil %>
+      Retour à la liste des pages wiki
+    <% end %>
+  </div>

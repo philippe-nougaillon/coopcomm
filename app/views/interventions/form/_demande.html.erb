@@ -20,7 +20,7 @@
       <% end %>
       <%= form.select :adherent_id,
                       options_from_collection_for_select(@adhérents, :id, :nom_prénom, intervention.adherent_id),
-                      { include_blank: true, required: true },
+                      { required: true },
                       class: "slim-select w-full h-10",
                       data: (policy(intervention).cascade_services? ? { dynamic_select_target: "adherent", action: "change->dynamic-select#updateServices" } : {}) %>
     </div>
@@ -61,9 +61,9 @@
           </div>
 
           <div class="flex flex-1 items-center w-full gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
-            <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, { selected: heure_saisie(intervention, :début_prévue) }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'verification-disponibilites-target': "debut_prevue_hour", 'meteo-intervention-target': "debut_prevue_hour" } %>
+            <%= form.select :début_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, { selected: params[:début_prévue_hour] || intervention.début_prévue&.hour }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'verification-disponibilites-target': "debut_prevue_hour", 'meteo-intervention-target': "debut_prevue_hour" } %>
             <span class="text-slate-400 font-bold">:</span>
-            <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, { selected: minute_saisie(intervention, :début_prévue) }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'verification-disponibilites-target': "debut_prevue_minute" } %>
+            <%= form.select :début_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, { selected: params[:début_prévue_minute] || intervention.début_prévue&.min }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'verification-disponibilites-target': "debut_prevue_minute" } %>
           </div>
         </div>
       </div>
@@ -84,9 +84,9 @@
           </div>
 
           <div class="flex flex-1 items-center w-full gap-1 bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs has-[:disabled]:bg-[#e7e7e7] has-[:disabled]:text-[#93939a]">
-            <%= form.select :fin_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, { selected: heure_saisie(intervention, :fin_prévue) }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'verification-disponibilites-target': "fin_prevue_hour" } %>
+            <%= form.select :fin_prévue_hour, (0..23).map { |h| [format('%02d', h), h] }, { selected: params[:fin_prévue_hour] || intervention.fin_prévue&.hour }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'verification-disponibilites-target': "fin_prevue_hour" } %>
             <span class="text-slate-400 font-bold">:</span>
-            <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, { selected: minute_saisie(intervention, :fin_prévue) }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'verification-disponibilites-target': "fin_prevue_minute" } %>
+            <%= form.select :fin_prévue_minute, (0..55).step(5).map { |m| [format('%02d', m), m] }, { selected: params[:fin_prévue_minute] || intervention.fin_prévue&.min }, class: "bg-transparent border-none outline-hidden text-sm cursor-pointer w-full", data: { 'verification-disponibilites-target': "fin_prevue_minute" } %>
           </div>
         </div>
       </div>
@@ -122,7 +122,7 @@
   <%= render "shared/file_dropzone",
                form: form,
                attribute: :photos_demande,
-               placeholder: "Glissez les photos  ici ou cliquez pour parcourir",
+               placeholder: "Glissez les photos ici ou cliquez pour parcourir",
                label: "Photos",
                replace_hint: false %>
 </div>

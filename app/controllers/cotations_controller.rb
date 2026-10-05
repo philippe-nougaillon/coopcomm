@@ -14,16 +14,9 @@ class CotationsController < ApplicationController
           .includes(:adherent, :service, :organisation)
           .ordered
 
-    # Un adhérent doit voir toutes ses cotations, même si elles ne sont pas de son service
-    if current_user.adhérent?
-      @cotations = base
-      service_ids = base.reorder(nil).distinct.pluck(:service_id)
-      @services   = Service.where(id: service_ids).ordered
-    else
-      @services  = current_user.get_services_by_role
-      @adhérents = User.by_service(@services).adhérent.ordered
-      @cotations = base.where(service: @services)
-    end
+    @services  = current_user.get_services_by_role
+    @adhérents = User.by_service(@services).adhérent.ordered
+    @cotations = base.where(service: @services)
 
     if params[:search].present?
       @cotations = @cotations.where('cotations.ref ILIKE :s OR cotations.intitulé ILIKE :s', s: "%#{params[:search]}%")
@@ -55,10 +48,17 @@ class CotationsController < ApplicationController
   end
 
   # GET /cotations/1
+ 
+
   def show
-    @mail_logs = trier(@cotation.mail_logs)
     @audits = trier(@cotation.own_and_associated_audits.includes(:user))
     @pagy, @audits = pagy(@audits, items: 10)
+
+    @prestations = @cotation.cotation_lignes.includes(:prestation)
+    @pagy_prestations, @prestations = pagy(@prestations, items: 10)
+
+    @mail_logs = trier(@cotation.mail_logs)
+    @pagy_envois, @mail_logs = pagy(@mail_logs, items: 10)
   end
 
   # GET /cotations/new

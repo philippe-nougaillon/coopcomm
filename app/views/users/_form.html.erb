@@ -36,12 +36,10 @@
       <% end %>
       <%= form.text_field :nom, class: 'input input-bordered input-sm w-full focus:input-primary h-10', required: true %>
     </div>
-    <%# Pleine largeur : toggle-role-info n'affiche qu'un seul de ces deux champs à la fois. %>
     <div data-toggle-role-info-target="localisation" class="form-control w-full" data-controller="places" data-places-center-lat-value="<%= ENV['MAPS_CENTER_LAT'] %>" data-places-center-lng-value="<%= ENV['MAPS_CENTER_LNG'] %>">
       <%= form.label :address, class: "label font-semibold text-slate-700" do %>
         Localisation <span class="text-red-500">*</span>
       <% end %>
-      <%# Quitamos el required nativo aquí por si Stimulus oculta este campo temporalmente en base al rol %>
       <%= form.text_field :address,
           class: 'input input-bordered select-sm w-full focus:input-primary h-10',
           placeholder: 'Commencez à tapez une adresse...',
@@ -71,7 +69,8 @@
     <div class="grid grid-cols-1 <%= current_user.manager? ? 'md:grid-cols-1' : 'md:grid-cols-2' %> gap-4 w-full">
       <% if current_user.manager_or_admin? %>
         <div class="form-control w-full">
-          <%= form.label :tag_list, "Mots clé", class: "label font-semibold text-slate-700" %>
+          <%= form.label :tag_list, "Mots clé", 
+                          class: "label font-semibold text-slate-700" %>
           <%
             est_soumission = params[form.object_name].present?
             if est_soumission
@@ -81,7 +80,14 @@
             end
             options_users = (@users_tags.map(&:name) + tags_users_soumis).uniq
           %>
-          <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, { multiple: true, class: 'w-full h-10', data: { controller: 'slim-select', addable: true } } %>
+          <%= form.select :tag_list, options_for_select(options_users, tags_users_soumis), {}, 
+          { multiple: true, 
+            class: 'w-full h-10', 
+            data: { controller: 'slim-select', 
+                    addable: true,
+                    max_values_shown_desktop: 2,
+                    max_values_shown_mobile: 2  }
+          } %>
         </div>
       <% end %>
       <% if current_user.manager_or_admin? %>
@@ -99,22 +105,27 @@
             <% end %>
             <%
               services_assignables = services_assignables_par(current_user)
-              services_sélectionnés = user.services.ids
+              services_sélectionnés = user.services.ids.reject(&:blank?)
               services_sélectionnés = services_assignables.ids if services_sélectionnés.empty? && services_assignables.size == 1
             %>
+        
             <%# `data-controller` déclaré plutôt que laissé à l'injection d'application.js,
                 qui n'écoute que turbo:load/render : sans widget, la CSS de
                 `select.slim-select[required]` rend le champ invisible. %>
             <%= form.select :service_ids,
                             options_from_collection_for_select(services_assignables, 'id', 'nom', services_sélectionnés),
                             { required: true },
-                            { multiple: true, class: 'slim-select w-full h-10',
-                              data: { controller: 'slim-select' } } %>
+                            multiple: true,
+                            class: 'slim-select w-full h-10',
+                            data: { controller: 'slim-select',
+                                    placeholder: 'Tous les services',
+                                    max_values_shown_desktop: 1,
+                                    max_values_shown_mobile: 1 
+                                  }
+                             %>
           </div>
         <% end %>
       <% else %>
-        <%# ¡IMPORTANTE! Si el usuario no es admin/manager, enviamos sus service_ids asignados de forma oculta %>
-        <%# para que al guardar no falle la validación de presencia de servicios si existe en el modelo %>
         <% user.services.ids.each do |service_id| %>
           <%= hidden_field_tag "#{form.object_name}[service_ids][]", service_id %>
         <% end %>

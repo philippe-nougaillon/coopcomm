@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
 class ApplicationMailer < ActionMailer::Base
-  default from: 'support@mg.coopcom.fr'
+  default from: ENV['MAIL_FROM']
   layout 'mailer'
 end

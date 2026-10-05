@@ -18,27 +18,27 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   ATTRIBUTS_BASE = { nom: 'Nouveau', prénom: 'Venu', email: 'nouveau.venu@example.test' }.freeze
 
   # Index
-  test 'index : sans paramètre → la page répond' do
+  test 'la liste des utilisateurs est affichée avec succès' do
     get users_url
     assert_response :success
   end
 
-  test 'index : recherche → seulement les utilisateurs correspondants' do
+  test 'la liste des utilisateurs filtrée par une recherche est affichée avec succès' do
     get users_url(search: 'tonte')
     assert_response :success
   end
 
-  test 'index : filtre rôle → seulement les utilisateurs de ce rôle' do
+  test 'la liste des utilisateurs filtrée par rôle est affichée avec succès' do
     get users_url(rôle: 'agent')
     assert_response :success
   end
 
-  test 'index : filtre absent → seulement les utilisateurs absents' do
+  test 'la liste des utilisateurs filtrée sur les absents est affichée avec succès' do
     get users_url(absent: true)
     assert_response :success
   end
 
-  test 'index : un administrateur ne voit que ses services par défaut' do
+  test 'un administrateur ne voit par défaut que les utilisateurs de ses services' do
     hors_perimetre = users(:john_wick) # service comptabilite
 
     get users_url
@@ -48,7 +48,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
                   'un utilisateur hors des services de l\'administrateur ne doit pas apparaître par défaut'
   end
 
-  test 'index : un administrateur peut filtrer sur un autre service de son organisation' do
+  test 'un administrateur peut filtrer la liste des utilisateurs sur un autre service de son organisation' do
     hors_perimetre = users(:john_wick) # service comptabilite
 
     get users_url, params: { services: [services(:comptabilite).id] }
@@ -58,14 +58,14 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
                   "l'administrateur peut voir les utilisateurs d'un service de son organisation hors des siens"
   end
 
-  test "index : le menu services propose toute l'organisation à un administrateur" do
+  test 'le filtre par service propose à un administrateur tous les services de l’organisation' do
     get users_url
 
     assert_response :success
     assert_select "select[name='services[]'] option", { text: 'Comptabilité' }
   end
 
-  test 'index : un manager ne peut pas forger un service hors de son périmètre' do
+  test 'un manager ne peut pas filtrer la liste des utilisateurs sur un service hors de son périmètre' do
     sign_in users(:hidalgo) # manager : service_paris / informatique / technique
     hors_perimetre = users(:john_wick) # service comptabilite
 
@@ -77,7 +77,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_select "select[name='services[]'] option", { text: 'Comptabilité', count: 0 }
   end
 
-  test 'index : format xls → un classeur Excel est téléchargé' do
+  test 'la liste des utilisateurs est exportée en classeur Excel' do
     get users_url,  params: {
       format: :xls
     }
@@ -87,18 +87,18 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Show
-  test 'show : un utilisateur de son organisation → la page répond' do
+  test 'un utilisateur est affiché avec succès' do
     get user_url(@user)
     assert_response :success
   end
 
-  test 'show : un adhérent → la section Cotations est rendue' do
+  test 'la fiche d’un adhérent est affichée avec succès' do
     get user_url(users(:weil))
     assert_response :success
   end
 
   # `associated_with: :user`) traversent le filtre sans être écartés.
-  test 'show : conserve les audits associés qui ne portent pas sur le compte' do
+  test 'la fiche d’un utilisateur conserve les audits associés qui ne portent pas sur le compte' do
     Absence.create!(user: @user, du: Date.new(2030, 7, 1), au: Date.new(2030, 7, 2), motif: :formation)
 
     get user_url(@user)
@@ -107,7 +107,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert assigns(:audits).any? { |audit| audit.auditable_type == 'Absence' }
   end
 
-  test 'show : la fiche d un utilisateur affiche ses mots clés' do
+  test 'la fiche d’un utilisateur affiche ses mots clés' do
     agent = users(:bond)
     agent.update!(tag_list: 'secteur-nord')
 
@@ -117,7 +117,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_match 'secteur-nord', response.body
   end
 
-  test 'create_new_user : le select des services ne propose aucune option vide' do
+  test 'la liste des services du formulaire de création ne propose aucune option vide' do
     get admin_create_new_user_url
 
     select_html = response.body[/<select[^>]*id="user_service_ids".*?<\/select>/m]
@@ -126,7 +126,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'create_new_user : le rôle est le premier champ du formulaire (critique)' do
+  test 'le rôle est le premier champ du formulaire de création (critique)' do
     get admin_create_new_user_url
 
     champs = response.body.scan(/(?:name|id)="user(?:\[)?(rôle|nom)/).flatten
@@ -135,7 +135,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'create_new_user : un manager ne se voit proposer que ses propres services' do
+  test 'le formulaire de création ne propose à un manager que ses propres services' do
     sign_in users(:hidalgo)
 
     get admin_create_new_user_url
@@ -144,20 +144,20 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_equal users(:hidalgo).services.ids.sort, proposés.sort
   end
 
-  test 'create_new_user : un administrateur se voit proposer tous les services de son organisation' do
+  test 'le formulaire de création propose à un administrateur tous les services de son organisation' do
     get admin_create_new_user_url
 
     proposés = ids_du_select_services(response.body)
     assert_equal organisations(:mairie_paris).services.ids.sort, proposés.sort
   end
 
-  test 'create_new_user : aucun service d’une autre organisation n’est proposé' do
+  test 'le formulaire de création ne propose aucun service d’une autre organisation' do
     get admin_create_new_user_url
 
     assert_not_includes ids_du_select_services(response.body), services(:service_marseille).id
   end
 
-  test 'create_new_user : un manager mono-service voit son service déjà sélectionné' do
+  test 'le formulaire de création présélectionne le service d’un manager mono-service' do
     mono = users(:michael_jackson) # manager, uniquement service_marseille2
     sign_in mono
 
@@ -166,7 +166,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_select "select#user_service_ids option[selected][value=?]", services(:service_marseille2).id.to_s
   end
 
-  test 'create_new_user : un manager multi-services n’a aucun service présélectionné' do
+  test 'le formulaire de création ne présélectionne aucun service pour un manager multi-services' do
     sign_in users(:hidalgo)
 
     get admin_create_new_user_url
@@ -174,26 +174,26 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_select 'select#user_service_ids option[selected]', count: 0
   end
 
-  test 'create_new_user : le champ Équipe accepte la création d’un mot clé' do
+  test 'le champ Équipe du formulaire de création accepte la création d’un mot clé' do
     get admin_create_new_user_url
 
     assert_select 'select#user_tag_list[data-addable=?]', 'true'
   end
 
-  test 'create_new_user : sans paramètre → la page répond' do
+  test 'le formulaire de création est affiché avec succès' do
     get admin_create_new_user_url
 
     assert_response :success
   end
 
-  test 'create_new_user : le formulaire s’ouvre sur le rôle agent' do
+  test 'le formulaire de création s’ouvre sur le rôle agent' do
     get admin_create_new_user_url
 
     assert_equal 'agent', assigns(:user).rôle
   end
 
   # l'inscription publique et aucun compte n'est créé.
-  test 'create_new_user : le formulaire poste sur le chemin dédié, pas sur POST /users' do
+  test 'le formulaire de création poste sur le chemin dédié, pas sur l’inscription publique' do
     get admin_create_new_user_url
 
     assert_select 'form[action=?][method=?]', admin_create_new_user_do_path, 'post'
@@ -201,7 +201,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'create_new_user_do : un agent est créé rattaché à son service et invité (critique)' do
+  test 'un agent est créé rattaché à son service et invité (critique)' do
     assert_emails 1 do
       créé = créer(rôle: 'agent', service_ids: [services(:informatique).id])
 
@@ -213,7 +213,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   # exactement ce qui était arrivé à l'ancienne action create_new_user_do.
-  test 'create_new_user_do : tous les champs du formulaire sont acceptés (critique)' do
+  test 'tous les champs du formulaire de création sont enregistrés (critique)' do
     post admin_create_new_user_do_url, params: {
       user: { nom: 'Complet', prénom: 'Champs', email: 'complet@example.test',
               rôle: 'adhérent', téléphone: '0102030405', memo: 'Note interne',
@@ -237,7 +237,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert créé.profile_picture.attached?
   end
 
-  test 'create_new_user_do : sans service → aucun compte créé (critique)' do
+  test 'un utilisateur sans service n’est pas créé (critique)' do
     assert_no_emails do
       assert_no_difference -> { User.count } do
         créer(rôle: 'adhérent', address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35)
@@ -249,7 +249,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   # qui n'est PAS `blank?` : la garde doit dépiler le tableau, pas le tester tel quel.
-  test 'create_new_user_do : sélection de services vidée → aucun compte créé (critique)' do
+  test 'un utilisateur dont la sélection de services est vidée n’est pas créé (critique)' do
     assert_no_difference -> { User.count } do
       créer(rôle: 'adhérent', address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35,
             service_ids: [''])
@@ -258,7 +258,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
-  test 'create_new_user_do : un service d’une autre organisation → aucun compte créé (critique)' do
+  test 'un utilisateur rattaché à un service d’une autre organisation n’est pas créé (critique)' do
     assert_no_difference -> { User.count } do
       créer(rôle: 'agent', service_ids: [services(:service_marseille).id])
     end
@@ -266,7 +266,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
-  test 'create_new_user_do : un agent avec deux services → refusé (critique)' do
+  test 'un agent rattaché à deux services n’est pas créé (critique)' do
     assert_no_difference -> { User.count } do
       créer(rôle: 'agent', service_ids: [services(:informatique).id, services(:technique).id])
     end
@@ -277,7 +277,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'create_new_user_do : un adhérent peut être créé avec plusieurs services' do
+  test 'un adhérent peut être créé avec plusieurs services' do
     créé = créer(rôle: 'adhérent', address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35,
                  service_ids: [services(:informatique).id, services(:technique).id])
 
@@ -287,7 +287,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'create_new_user_do : un manager ne rattache qu’à ses propres services (critique)' do
+  test 'un manager ne peut pas créer un utilisateur rattaché à un service hors de son périmètre (critique)' do
     hors_périmètre = services(:comptabilite) # aucun manager de Paris n'y est rattaché
 
     assert_no_difference -> { User.count } do
@@ -299,7 +299,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'create_new_user_do : un manager rattache à l’un de ses services' do
+  test 'un manager peut créer un utilisateur rattaché à l’un de ses services' do
     créé = créer(connecté: users(:hidalgo), rôle: 'agent', service_ids: [services(:technique).id])
 
     assert_not_nil créé
@@ -308,7 +308,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'create_new_user_do : un administrateur rattache à tout service de son organisation et garde la main (critique)' do
+  test 'un administrateur crée un utilisateur dans tout service de son organisation et y garde accès (critique)' do
     hors_de_ses_services = services(:comptabilite)
 
     créé = créer(rôle: 'agent', service_ids: [hors_de_ses_services.id])
@@ -329,7 +329,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   # ==================== /TESTS CRITIQUES ====================
 
   # Bornage silencieux : les identifiants hors périmètre sont retirés, les valides gardés.
-  test 'create_new_user_do : un service hors périmètre soumis avec un service valide est ignoré' do
+  test 'un service hors périmètre soumis avec un service valide est ignoré à la création d’un utilisateur' do
     créé = créer(connecté: users(:hidalgo), rôle: 'adhérent',
                  address: 'Mairie', latitude: 1.0, longitude: 2.0,
                  service_ids: [services(:technique).id, services(:comptabilite).id,
@@ -351,7 +351,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'create_new_user_do : un manager ne crée que des agents, quel que soit le rôle demandé (critique)' do
+  test 'un manager ne crée que des agents, quel que soit le rôle demandé (critique)' do
     sign_in users(:hidalgo)
 
     %w[adhérent manager administrateur].each do |demandé|
@@ -367,7 +367,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Un compte antérieur à la validation n'en a pas : le mail doit partir quand même.
-  test 'create_new_user_do : une notification Devise sur un compte sans service n’explose pas (critique)' do
+  test 'le mail de réinitialisation de mot de passe part, sans mail log, même pour un compte sans service (critique)' do
     orphelin = User.new(nom: 'Orphelin', prénom: 'Sans', email: 'orphelin@example.test',
                         rôle: 'adhérent', password: 'qtDug$d843sqACz?V')
     orphelin.save(validate: false)
@@ -383,7 +383,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # Un compte dont le mot de passe est perdu n'a pas d'autre porte d'entrée que
   # ce mail : sans lui, son titulaire est enfermé dehors.
-  test 'mot de passe oublié : une adresse connue reçoit son mail de réinitialisation (critique)' do
+  test 'une adresse connue reçoit son mail de réinitialisation de mot de passe (critique)' do
     # Doit etre déconnecté
     sign_out @user
 
@@ -397,7 +397,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # `config.paranoid = true` : le message est le même qu'avec une adresse connue,
   # pour qu'on ne puisse pas deviner qui a un compte. Seul l'envoi les distingue.
-  test 'mot de passe oublié : une adresse inconnue ne déclenche aucun mail (critique)' do
+  test 'une adresse inconnue ne déclenche aucun mail de réinitialisation de mot de passe (critique)' do
     # Doit etre déconnecté
     sign_out @user
 
@@ -410,7 +410,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'create_new_user_do : paramètres invalides → formulaire réaffiché en 422' do
+  test 'un utilisateur sans email n’est pas créé' do
     assert_no_difference('User.count') do
       post admin_create_new_user_do_url, params: { user: { nom: 'SANS', prénom: 'Email', email: '' } }
     end
@@ -418,14 +418,14 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
-  test 'edit : un utilisateur de son organisation → la page répond' do
+  test 'le formulaire de modification est affiché avec succès' do
     get edit_user_url(@user)
     assert_response :success
   end
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'edit : les services actuels sont présélectionnés (critique)' do
+  test 'le formulaire de modification présélectionne les services actuels (critique)' do
     adhérent = users(:weil)
     adhérent.service_ids = [services(:informatique).id, services(:technique).id]
 
@@ -437,7 +437,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   # unique sérialise le tableau en une chaîne que `permit(service_ids: [])` rejette.
-  test 'edit : un manager renvoie un champ caché par service (critique)' do
+  test 'le formulaire de modification ouvert par un manager renvoie un champ caché par service (critique)' do
     adhérent = users(:weil)
     adhérent.service_ids = [services(:informatique).id, services(:comptabilite).id]
     sign_in users(:hidalgo)
@@ -451,7 +451,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'edit : le formulaire de modification propose les mots clés déjà utilisés' do
+  test 'le formulaire de modification propose les mots clés déjà utilisés' do
     users(:bond).update!(tag_list: 'secteur-nord')
 
     get edit_user_url(users(:martin_technique_paris))
@@ -462,7 +462,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'edit : les mots clés d’une autre organisation ne sont pas proposés (critique)' do
+  test 'le formulaire de modification ne propose pas les mots clés d’une autre organisation (critique)' do
     users(:nettoyeur_marseille).update!(tag_list: 'secret-marseille')
 
     get edit_user_url(users(:martin_technique_paris))
@@ -473,7 +473,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test "update : paramètres valides → l'utilisateur est modifié" do
+  test 'un utilisateur est modifié lorsque les paramètres sont valides' do
     patch user_url(@user), params: {
       user: {
         email: @user.email,
@@ -487,7 +487,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'update : par un agent sur lui-même, rôle administrateur soumis → rôle inchangé (critique)' do
+  test 'un agent qui soumet le rôle administrateur sur sa propre fiche garde son rôle (critique)' do
     bond = users(:bond)
     sign_in bond
 
@@ -496,7 +496,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert bond.reload.agent?
   end
 
-  test 'update : par un manager, rôle manager soumis sur un agent → rôle inchangé (critique)' do
+  test 'un manager qui soumet le rôle manager sur un agent laisse son rôle inchangé (critique)' do
     sign_in users(:hidalgo)
     bond = users(:bond)
 
@@ -505,7 +505,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert bond.reload.agent?
   end
 
-  test 'update : service_ids d’une autre organisation soumis → services inchangés (critique)' do
+  test 'un service d’une autre organisation soumis sur un utilisateur laisse ses services inchangés (critique)' do
     sign_in users(:hidalgo)
     bond = users(:bond)
     services_avant = bond.services.sort_by(&:id)
@@ -518,7 +518,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'update : invalide réaffiche le formulaire en 422' do
+  test 'un utilisateur dont l’email est vidé n’est pas modifié' do
     patch user_url(@user), params: { user: { email: '' } }
 
     assert_response :unprocessable_content
@@ -526,7 +526,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   # les laisserait invisibles. Seule la modale d'absence reste en turbo-stream.
-  test 'update : invalide réaffiche le formulaire complet en HTML, pas en turbo-stream' do
+  test 'un refus de modification réaffiche le formulaire complet en HTML, pas en turbo-stream' do
     patch user_url(@user), params: { user: { email: '' } }, as: :turbo_stream
 
     assert_response :unprocessable_content
@@ -535,7 +535,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_select 'select#user_service_ids[data-controller~=?]', 'slim-select'
   end
 
-  test "update : invalide depuis la modale d\'absence → le formulaire d\'absence est remplacé" do
+  test 'un refus de modification depuis la modale d’absence remplace le formulaire d’absence' do
     patch user_url(@user),
           params: { user: { absences_attributes: { '0' => { du: '2030-08-10', au: '2030-08-01',
                                                             motif: 'formation' } } },
@@ -546,7 +546,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_match(/absence_form/, response.body)
   end
 
-  test 'update : un refus de validation ne laisse pas les services modifiés en base' do
+  test 'un refus de validation à la modification ne laisse pas les services modifiés en base' do
     agent = users(:bond)
     services_avant = agent.services.ids
     ajout = services(:service_paris).id
@@ -559,7 +559,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_equal services_avant, agent.reload.services.ids
   end
 
-  test 'update : changer le service d un agent est enregistré' do
+  test 'le changement de service d’un agent est enregistré' do
     agent = users(:bond)
     nouveau = services(:service_paris)
 
@@ -568,7 +568,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_equal [nouveau.id], agent.reload.services.ids
   end
 
-  test 'update : enregistrer une fiche sans toucher aux services les conserve' do
+  test 'une fiche enregistrée sans toucher aux services les conserve' do
     agent = users(:bond)
     services_avant = agent.services.ids
 
@@ -577,7 +577,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_equal services_avant, agent.reload.services.ids
   end
 
-  test 'update : un manager qui enregistre une fiche ne perd pas les services hors de son périmètre' do
+  test 'un manager qui enregistre une fiche ne perd pas les services hors de son périmètre' do
     adhérent = users(:weil)
     adhérent.service_ids = [services(:informatique).id, services(:comptabilite).id]
     sign_in users(:hidalgo) # rattaché à service_paris / informatique / technique
@@ -588,7 +588,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_includes adhérent.services, services(:comptabilite)
   end
 
-  test 'update : un agent ne peut pas se créer une absence depuis son propre profil' do
+  test 'un agent ne peut pas se créer une absence depuis son propre profil' do
     agent = users(:bond)
     sign_in agent
 
@@ -599,7 +599,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'update : un agent ne peut pas supprimer une absence via les paramètres de son profil' do
+  test 'un agent ne peut pas supprimer une absence depuis son propre profil' do
     agent = users(:bond)
     absence = absences(:one)
     sign_in agent
@@ -610,7 +610,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'update : les mots clés d un utilisateur sont modifiables depuis sa fiche' do
+  test 'les mots clés d’un utilisateur sont modifiables depuis sa fiche' do
     agent = users(:bond)
 
     patch user_url(agent), params: { user: { nom: agent.nom, tag_list: ['', 'secteur-nord', 'astreinte'] } }
@@ -618,7 +618,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_equal %w[secteur-nord astreinte], agent.reload.tag_list
   end
 
-  test 'update : vider le champ Mots clés les retire vraiment' do
+  test 'les mots clés sont retirés lorsque leur champ est vidé' do
     agent = users(:bond)
     agent.update!(tag_list: 'secteur-nord')
 
@@ -629,7 +629,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'update : un administrateur ne touche pas à un utilisateur d’une autre organisation (critique)' do
+  test 'un administrateur ne peut ni afficher ni modifier un utilisateur d’une autre organisation (critique)' do
     autre_org = users(:agent_marseille)
 
     get user_url(autre_org)
@@ -642,7 +642,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'destroy : un utilisateur de son organisation → il est désactivé' do
+  test 'un utilisateur est désactivé lorsqu’il est supprimé' do
     assert_difference('User.count', -1) do
       delete user_url(@user)
     end
@@ -651,12 +651,12 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Agent calendrier
-  test 'le calendrier des agents répond sans paramètre' do
+  test 'le calendrier des agents est affiché avec succès' do
     get agent_calendrier_users_url
     assert_response :success
   end
 
-  test 'la recherche dans le calendrier des agents ne retourne que les agents correspondants' do
+  test 'le calendrier des agents filtré par une recherche est affiché avec succès' do
     get agent_calendrier_users_url(search: 'algo')
     assert_response :success
   end
@@ -716,26 +716,26 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'import_do : sans paramètre → la page répond' do
+  test 'l’import d’utilisateurs appelé en GET redirige vers l’accueil sans planter' do
     get import_do_users_url
 
     assert_redirected_to root_path
   end
 
-  test 'import_do : un champ upload vide ramène au formulaire' do
+  test 'un import d’utilisateurs avec un champ de fichier vide ramène au formulaire' do
     post import_do_users_url(upload: '')
 
     assert_redirected_to import_users_url
   end
 
-  test 'import_do : sans fichier joint, une alerte nomme le fichier manquant' do
+  test 'un import d’utilisateurs sans fichier joint affiche une alerte nommant le fichier manquant' do
     post import_do_users_url
 
     assert_redirected_to import_users_url
     assert_equal 'Manque le fichier source pour pouvoir lancer l\'importation !', flash[:alert]
   end
 
-  test "inviter : le lien d'accès est renvoyé" do
+  test 'le lien d’accès d’un utilisateur est renvoyé' do
     post inviter_user_url(@user)
 
     assert_redirected_to user_path(@user)
@@ -743,14 +743,14 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   # compte peut changer son mot de passe.
-  test 'edit_password : sans paramètre → la page répond' do
+  test 'le formulaire de changement de mot de passe est affiché avec succès' do
     sign_in @user
     get edit_password_user_url(@user)
 
     assert_response :success
   end
 
-  test 'update_password : enregistre un nouveau mot de passe' do
+  test 'un nouveau mot de passe est enregistré' do
     sign_in @user
     patch update_password_user_url(@user),
           params: { user: { password: 'Nouveau-MotDePasse-42!', password_confirmation: 'Nouveau-MotDePasse-42!' } }
@@ -759,7 +759,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert @user.reload.valid_password?('Nouveau-MotDePasse-42!')
   end
 
-  test 'update_password : avec une confirmation qui diffère est refusé en 422' do
+  test 'un nouveau mot de passe dont la confirmation diffère n’est pas enregistré' do
     sign_in @user
     patch update_password_user_url(@user),
           params: { user: { password: 'Nouveau-MotDePasse-42!', password_confirmation: 'autre-chose' } }
@@ -768,7 +768,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_not @user.reload.valid_password?('Nouveau-MotDePasse-42!')
   end
 
-  test 'reactivate : réhabilite un compte désactivé' do
+  test 'un compte désactivé est réactivé' do
     desactive = users(:agent_whatsapp) # service_paris, donc dans le périmètre de l'administrateur
     desactive.discard
 
@@ -778,7 +778,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_not desactive.reload.discarded?
   end
 
-  test 'reactivate : échoue proprement si le compte est déjà actif' do
+  test 'la réactivation d’un compte déjà actif est refusée avec une alerte' do
     patch reactivate_user_url(@user)
 
     assert_redirected_to users_path(discarded: true)

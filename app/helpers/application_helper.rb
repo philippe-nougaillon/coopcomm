@@ -174,7 +174,7 @@ module ApplicationHelper
     if date == today
       time.strftime('%H:%M')
     elsif date >= (today - 6.days)
-      I18n.l(time, format: '%A').capitalize
+      I18n.l(time, format: '%A')
     else
       time.strftime('%d/%m/%Y')
     end

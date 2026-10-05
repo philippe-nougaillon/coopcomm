@@ -73,7 +73,7 @@ class CacheFragmentsTest < ActionDispatch::IntegrationTest
 
   # --- Fuites, vue par vue ----------------------------------------------------
 
-  test 'absences : l’agent ne reçoit pas les boutons mis en cache par le manager' do
+  test 'l’agent ne reçoit pas les boutons des absences mis en cache par le manager' do
     agent = users(:bond)
     absence = absences(:one)
 
@@ -88,7 +88,7 @@ class CacheFragmentsTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'index des interventions : l’agent ne reçoit pas les actions du manager' do
+  test 'l’agent ne reçoit pas les actions de la liste des interventions mises en cache par le manager' do
     intervention = interventions(:intervention_terminée)
     intervention.touch
 
@@ -104,7 +104,7 @@ class CacheFragmentsTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'index compact des interventions : l’agent ne reçoit pas les actions du manager' do
+  test 'l’agent ne reçoit pas les actions de la liste compacte des interventions mises en cache par le manager' do
     intervention = interventions(:intervention_terminée)
     intervention.touch
 
@@ -124,7 +124,7 @@ class CacheFragmentsTest < ActionDispatch::IntegrationTest
   # l'action (seul un manager peut libérer celle d'un autre). Les lignes de
   # l'index ne sont pas mises en cache aujourd'hui : ces deux tests sont là pour
   # que l'ajout d'un `cached:` sur cette collection ne passe pas inaperçu.
-  test 'index outils : l’agent ne reçoit pas le lien de libération du manager' do
+  test 'l’agent ne reçoit pas le lien de libération mis en cache par le manager dans la liste des outils' do
     outil = tools(:cisaille)
     Mouvement.create!(tool: outil, user: users(:bond), état: :réservé, date: Date.today)
     liberer = libere_tool_mouvements_path(tool_id: outil.id, date: Date.today, user_id: users(:bond).id)
@@ -132,18 +132,18 @@ class CacheFragmentsTest < ActionDispatch::IntegrationTest
     avec_cache do
       sign_in users(:hidalgo)
       get tools_url
-      assert_select 'a[href=?]', liberer
+      assert_select 'form[action=?]', liberer
 
       sign_in users(:martin_technique_paris)
       get tools_url
-      assert_select 'a[href=?]', liberer, count: 0
+      assert_select 'form[action=?]', liberer, count: 0
     end
   end
 
   # bond voit sa réservation en « R » (cliquable pour libérer), martin la voit
   # en « I » (carré inerte, il n'est pas manager). Deux HTML différents pour la
   # même case, le même jour.
-  test 'index outils : la case de ma réservation n’est pas celle du voisin' do
+  test 'un agent ne reçoit pas la case de réservation mise en cache par un autre agent dans la liste des outils' do
     outil = tools(:cisaille)
     Mouvement.create!(tool: outil, user: users(:bond), état: :réservé, date: Date.today)
     liberer = libere_tool_mouvements_path(tool_id: outil.id, date: Date.today, user_id: users(:bond).id)
@@ -165,7 +165,7 @@ class CacheFragmentsTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'fiche outil : l’agent ne reçoit pas le lien de libération du manager' do
+  test 'l’agent ne reçoit pas le lien de libération mis en cache par le manager sur la fiche d’un outil' do
     outil = tools(:cisaille)
     Mouvement.create!(tool: outil, user: users(:bond), état: :réservé,
                       date: Time.zone.parse('2026-06-15 09:00'))
@@ -175,17 +175,17 @@ class CacheFragmentsTest < ActionDispatch::IntegrationTest
     avec_cache do
       sign_in users(:hidalgo)
       get tool_url(outil, date: '2026-06-15')
-      assert_select 'a[href=?]', liberer
+      assert_select 'form[action=?]', liberer
 
       sign_in users(:martin_technique_paris)
       get tool_url(outil, date: '2026-06-15')
-      assert_select 'a[href=?]', liberer, count: 0
+      assert_select 'form[action=?]', liberer, count: 0
     end
   end
 
   # john_wick est agent de la même organisation mais n'est affecté à aucune
   # intervention : la policy lui refuse le lien que le manager, lui, obtient.
-  test 'fiche outil : l’agent ne reçoit pas le lien d’édition du manager' do
+  test 'l’agent ne reçoit pas le lien vers l’intervention mis en cache par le manager sur la fiche d’un outil' do
     intervention = interventions(:tonte_locaux)
 
     avec_cache do

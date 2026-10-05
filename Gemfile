@@ -2,10 +2,10 @@
 
 source 'https://rubygems.org'
 
-ruby '3.4.10'
+ruby '4.0.7'
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem 'rails', '~> 8.0'
+gem 'rails', '~> 8.1.3'
 
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem 'sprockets-rails'
@@ -93,8 +93,6 @@ gem 'workflow-activerecord', '~> 6.0'
 
 gem 'acts-as-taggable-on'
 
-gem 'view_component', '~> 3.12'
-
 gem 'audited', '~> 5.6'
 
 gem 'mailgun-ruby', '~> 1.2'
@@ -124,7 +122,7 @@ gem 'tiktoken_ruby', '~> 0.0.9'
 
 gem 'omniauth', '~> 2.1'
 
-gem 'omniauth-rails_csrf_protection', '~> 1.0'
+gem 'omniauth-rails_csrf_protection', '~> 2.0'
 
 gem 'friendly_id', '~> 5.5'
 gem 'omniauth-google-oauth2', '~> 1.1'
@@ -157,14 +155,12 @@ gem 'sitemap_generator', '~> 6.3'
 
 gem 'meta-tags', '~> 2.22'
 
-gem 'page_title_helper', '~> 9.1'
+gem 'page_title_helper', '~> 10.0'
 
 gem 'solid_cache', '~> 1.0'
 
 # Vues (matérialisées) PostgreSQL versionnées via migrations — alimentent le dashboard
 gem 'scenic', '~> 1.8'
-# Fonctions et triggers PostgreSQL versionnés, et dumpés dans schema.rb (companion de scenic)
-gem 'fx', '~> 0.11'
 
 gem 'solid_cable', '~> 3.0'
 

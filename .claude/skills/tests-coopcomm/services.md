@@ -1,8 +1,12 @@
-# Tests de services — gabarit imposé
+# Tests d'objets de service — gabarit imposé
 
-Un test de service vérifie **ce que le service renvoie**, pas comment il s'y prend. Les services du projet font trois choses : produire un fichier (`ExportToXls::*`, `TransformToPdf::*`), interroger une API tierce (`MeteoConceptConnexion`, `FetchRoutesInfos`, `FetchMailgunInfos`, `FetchTwilioInfos`), ou écrire en base (`ImportUtilisateursXls`, `CreateCommandeFromCotation`, `CreateFactureFromCommande`).
+> Les règles transverses (nommage, commentaires, ordre, tests critiques, helpers, `private`, `skip`) sont dans `SKILL.md`. Ce fichier ne porte que ce qui est propre aux objets de service.
+>
+> ⚠ Il s'agit des classes de `app/services/`, **pas** du modèle métier `Service`.
 
-## Un fichier par classe de service
+Un test d'objet de service vérifie **ce qu'il renvoie**, pas comment il s'y prend. Ceux du projet font trois choses : produire un fichier (`ExportToXls::*`, `TransformToPdf::*`), interroger une API tierce (`MeteoConceptConnexion`, `FetchRoutesInfos`, `FetchMailgunInfos`, `FetchTwilioInfos`), ou écrire en base (`ImportUtilisateursXls`, `CreateCommandeFromCotation`, `CreateFactureFromCommande`).
+
+## Un fichier par classe
 
 `test/services/<répertoire>_<fichier>_test.rb` — le répertoire, s'il y en a un, puis `_`, puis le nom du fichier source, puis `_test.rb`. **Jamais le mot `service` en plus.**
 
@@ -12,7 +16,7 @@ Un test de service vérifie **ce que le service renvoie**, pas comment il s'y pr
 | `app/services/transform_to_pdf/base_pdf_for_crm.rb` | `test/services/transform_to_pdf_base_pdf_for_crm_test.rb` |
 | `app/services/fetch_routes_infos.rb` | `test/services/fetch_routes_infos_test.rb` |
 
-**Une classe de service = un fichier de test.** Deux services jumeaux (`DashboardManager` et `DashboardAdherent`, `Cotation`/`Commande`/`Facture`) ne partagent pas un fichier : ils ont chacun le leur, avec **exactement les mêmes tests**, pour que l'écart entre deux jumeaux se voie au diff.
+**Une classe = un fichier de test.** Deux services jumeaux (`DashboardManager` et `DashboardAdherent`, `Cotation`/`Commande`/`Facture`) ne partagent pas un fichier : ils ont chacun le leur, avec **exactement les mêmes tests**, pour que l'écart entre deux jumeaux se voie au diff.
 
 ## Ordre du fichier
 
@@ -44,59 +48,38 @@ Pour un PDF, le niveau 2 n'a pas d'équivalent : ce sont les niveaux 1 et 3, et 
 
 ## Services appelant une API tierce
 
-**La requête se mocke, jamais le client.** `stub_request` (WebMock), avec la réponse rangée dans `test/fixtures/files/` — comme `responseMeteoConcept.json` et `responseRoutesInfos.json`. Stubber `Mailgun::Client.new` ou `Twilio::REST::Client.new` ne teste plus rien du service : ni l'URL appelée, ni les en-têtes, ni le décodage de la réponse.
+**La requête se mocke, jamais le client.** `stub_request` (WebMock), avec la réponse rangée dans `test/fixtures/files/`. Stubber `Mailgun::Client.new` ou `Twilio::REST::Client.new` ne teste plus rien du service : ni l'URL appelée, ni les en-têtes, ni le décodage de la réponse.
 
 - Le **chemin nominal** est stubé une fois pour toutes dans le `setup` de `test_helper.rb`, pour que toute la suite en profite.
 - Les **cas particuliers** (API injoignable, réponse en erreur, corps illisible, réponse tronquée) redéclarent leur propre `stub_request` dans le test qui les vise.
 - **Chaque service d'API a au moins un test « l'API tombe et l'utilisateur ne le voit pas »**, marqué critique : ces services décorent des pages que rien ne doit faire tomber. C'est le test le plus rentable du fichier.
-- La réponse mise en fixture est **écrite à la main**, réduite aux champs que le service lit réellement. On ne capture une réponse réelle que si la forme ne se déduit pas du code — et alors elle est **relue et expurgée** avant d'être commitée : clé d'API, jeton, identifiant de compte, adresse et numéro de téléphone réels n'ont rien à y faire, le dépôt est candidat à l'open-source.
+- La forme des fixtures de réponse est dans `fixtures.md`.
 
 ⚠ `WebMock.disable_net_connect!` ne garantit rien tant qu'on stube le **client** : aucune requête n'étant émise, WebMock n'a rien à intercepter et l'URL appelée n'est vérifiée par personne.
+
+⚠ Une **clé d'API lue par le code de production** se pose dans le test qui en a besoin et se restaure — elle ne se `skip` pas (règle transverse).
 
 ## Services qui écrivent en base
 
 Ce qui se teste, en plus de la valeur de retour : ce qui est **réellement en base** après l'appel (et **rien** en mode simulation), les lignes refusées, et le fait qu'un refus **ne laisse rien derrière lui**.
 
-⚠ **Les audits ne se testent pas ici** — même règle que pour les modèles : la trace laissée par la gem est l'affaire d'`audited`.
-
 ⚠ **Un changement de rôle ne se teste pas ici** : c'est le contrat de `User`, il se teste dans `test/models/user_test.rb`. Le service teste que la ligne est refusée, pas ce que le rôle devient.
 
 ## Frontière avec le test de contrôleur
 
-Le **service** teste le contenu de ce qu'il produit. Le **contrôleur** teste l'autorisation, la route, le type MIME et le nom du fichier téléchargé. Aucun des deux ne refait le travail de l'autre : un total faux se voit dans le test de service, un export ouvert à un rôle qui ne devrait pas y avoir droit se voit dans le test de contrôleur.
+L'**objet de service** teste le contenu de ce qu'il produit. Le **contrôleur** teste l'autorisation, la route, le type MIME et le nom du fichier téléchargé. Aucun des deux ne refait le travail de l'autre : un total faux se voit dans le test de service, un export ouvert à un rôle qui ne devrait pas y avoir droit se voit dans le test de contrôleur.
 
-## Ce qui ne se teste pas
+## Ce qui ne se teste pas, en plus des trois familles transverses
 
 - **`ApplicationService`** — la classe ne vient pas de nous, c'est un motif repris d'une source extérieure. Ses services filles, oui ;
 - `initialize` qui se contente de ranger ses arguments (voir plus haut) ;
 - la valeur de retour vérifiée **deux fois** — `assert result.is_a?(String)` puis `Spreadsheet.open(result)` : la seconde contient la première, la première se supprime ;
 - les **tables de correspondance parcourues en entier** (`WEATHER.keys.each { … }`) — **un seul cas** suffit, plus un cas hors table. Une sentinelle qui balaie toute la table contredit cette règle et se supprime ;
-- les audits, les rôles (voir plus haut) ;
-- tout ce qui est **commenté**, et le **code mort** (règles transverses de `SKILL.md`).
+- les **audits** et les **rôles** (voir plus haut).
 
-## Tests critiques
-
-Marqueur **et** bannière (règle transverse). Sont critiques, dans ce répertoire :
+## Ce qui est critique ici
 
 - **tout montant imprimé ou exporté** — total d'un PDF, prix unitaire distingué du total de ligne, colonne d'évaluation masquée selon le rôle ;
 - **le cloisonnement multi-organisations** d'un service qui écrit (import) ou qui exporte ;
 - **la charge utile du QRCode de pointage** — le premier maillon du parcours le plus utilisé de l'application ;
 - **le fait qu'une API tierce en panne ne remonte pas jusqu'à l'utilisateur**.
-
-## Aucune classe déclarée dans un fichier de test
-
-Pas de sous-classe de circonstance (`class ImportQuiEchoue < ImportUtilisateursXls`) sous la classe de test : elle est chargée par toute la suite, hors de sa portée. Ce qu'il faut à sa place, dans l'ordre de préférence : provoquer le cas par les **données** ; sinon un `stub` posé **dans le test qui en a besoin** ; en dernier recours seulement, si rien d'autre ne marche, une fabrique sous `private`.
-
-## Nommage
-
-**Nom d'un test** : une phrase qui énonce le comportement, cf. `SKILL.md`. Ex. : `aucun agent donne un classeur réduit à sa ligne d'en-tête`, `un code météo inconnu retombe sur l'icône du jour`.
-
-**Nom d'un helper** : il dit **ce qu'il rend**, pas ce qu'il fait en général — `dashboard_manager_xls` et `dashboard_manager_xls_vide` plutôt que `export` et `export_vide`, `lire_fichier_xls` plutôt que `lire`. Un fichier de test se lit sans remonter à la définition du helper.
-
-**Pas de `**options` ni d'argument générique dans un helper de test** : le helper reproduit un appel que l'application fait vraiment, avec ses valeurs. Le test qui exerce une variante appelle le service **explicitement**, en écrivant l'option sur place — sinon on ne voit plus, en lisant le test, ce qui est réellement passé au service.
-
-**Aucun commentaire** dans le fichier (règle transverse), et **rien après `private`** que des méthodes privées — un `test` écrit sous `private` reste collecté par Minitest, personne ne le voit passer, et le relecteur est trompé.
-
-## Fixtures
-
-Voir `fixtures.md`. Les réponses d'API vivent dans `test/fixtures/files/`, une par service et par cas.

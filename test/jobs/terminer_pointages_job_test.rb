@@ -19,7 +19,7 @@ class TerminerPointagesJobTest < ActiveJob::TestCase
     ActionMailer::Base.deliveries.clear
   end
 
-  test 'clôture le pointage : état terminé et date de fin à maintenant' do
+  test 'la clôture automatique termine le pointage et pose sa date de fin à maintenant' do
     TerminerPointagesJob.perform_now
 
     @pointage.reload
@@ -38,7 +38,7 @@ class TerminerPointagesJobTest < ActiveJob::TestCase
     assert_in_delta 3.0, @pointage.temps_total, 0.05
   end
 
-  test 'clôture le pointage même si une absence a été posée après son ouverture' do
+  test 'la clôture automatique termine le pointage même si une absence a été posée après son ouverture' do
     Absence.create!(user: @agent, du: Date.today, au: Date.today, motif: 0)
 
     TerminerPointagesJob.perform_now
@@ -48,7 +48,7 @@ class TerminerPointagesJobTest < ActiveJob::TestCase
     assert @pointage.fin.present?
   end
 
-  test 'envoie un mail à l’unique agent et crée un MailLog' do
+  test 'l’agent reçoit un mail et un mail log est créé lorsque son pointage est terminé automatiquement' do
     assert_difference -> { ActionMailer::Base.deliveries.size } => 1,
                       -> { MailLog.count } => 1 do
       TerminerPointagesJob.perform_now
@@ -76,7 +76,7 @@ class TerminerPointagesJobTest < ActiveJob::TestCase
     assert @pointage.reload.terminé?, 'garde : la clôture doit bien avoir eu lieu'
   end
 
-  test 'ignore les interventions « nouveau » sans template_slug' do
+  test 'la clôture automatique ignore une intervention nouvelle qui n’est pas un pointage' do
     cible = interventions(:nouvelle_intervention)
     assert cible.nouveau?
     assert cible.template_slug.blank?
@@ -86,7 +86,7 @@ class TerminerPointagesJobTest < ActiveJob::TestCase
     assert cible.reload.nouveau?
   end
 
-  test 'ignore les interventions déjà terminées' do
+  test 'la clôture automatique ignore les interventions déjà terminées' do
     déjà_terminée = interventions(:intervention_terminée)
 
     assert_no_changes -> { déjà_terminée.reload.workflow_state } do

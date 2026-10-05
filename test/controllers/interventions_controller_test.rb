@@ -13,14 +13,14 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   # Marqueur planté dans l'avis : il ne doit jamais atteindre l'agent noté.
   AVIS_SENTINELLE = /AVIS-RESERVE-AUX-GESTIONNAIRES/
 
-  test 'set_intervention : un slug inconnu redirige sans planter' do
+  test 'un slug d’intervention inconnu redirige sans planter' do
     get intervention_url('abcdefg')
     assert_redirected_to root_path
   end
 
   # ==================== TESTS CRITIQUES ====================
 
-  test "index : un mot clé d'une autre organisation → aucune intervention (critique)" do
+  test "le filtre par un mot clé d'une autre organisation ne retourne aucune intervention (critique)" do
     sign_in users(:administrateur_paris)
     interventions(:nettoyage_port).update!(tag_list: 'secret-marseille')
 
@@ -30,7 +30,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_empty assigns(:interventions)
   end
 
-  test "index : liste des mots clés proposée → bornée à l'organisation (critique)" do
+  test "la liste des mots clés proposée au filtre est bornée à l'organisation (critique)" do
     sign_in users(:administrateur_paris)
     interventions(:nettoyage_port).update!(tag_list: 'secret-marseille')
     @intervention.update!(tag_list: 'urgence')
@@ -43,7 +43,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes noms, 'secret-marseille'
   end
 
-  test "index : l'export XLS ne contient aucune intervention d'une autre organisation (critique)" do
+  test "l'export XLS ne contient aucune intervention d'une autre organisation (critique)" do
     get interventions_url(format: :xls)
 
     assert_response :success
@@ -55,7 +55,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'index : rendu nominal' do
+  test 'la liste des interventions est affichée avec succès' do
     sign_in users(:administrateur_paris)
 
     get interventions_url
@@ -63,7 +63,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test 'index : filtre service non soumis par un administrateur → toute son organisation' do
+  test 'un administrateur sans filtre service voit les interventions de toute son organisation' do
     sign_in users(:administrateur_paris)
     hors_perimetre = cree_intervention_hors_services
 
@@ -74,7 +74,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_empty assigns(:selected_service_ids)
   end
 
-  test 'index : filtre service sur un service de son organisation → seulement ce service' do
+  test 'un administrateur qui filtre sur un service ne voit que les interventions de ce service' do
     sign_in users(:administrateur_paris)
     comptabilite = cree_intervention_hors_services
 
@@ -85,7 +85,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), interventions(:nouvelle_intervention)
   end
 
-  test 'index : filtre service non soumis par un manager → tous ses services' do
+  test 'un manager sans filtre service voit les interventions de tous ses services' do
     technique = cree_intervention_index('Dans ses services', service: services(:technique))
 
     get interventions_url
@@ -95,7 +95,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_empty assigns(:selected_service_ids)
   end
 
-  test 'index : filtre service forgé hors périmètre par un manager → repli sur ses services' do
+  test 'un filtre service forgé hors périmètre par un manager se replie sur ses services' do
     hors_perimetre = cree_intervention_hors_services
 
     get interventions_url, params: { service: [services(:comptabilite).id] }
@@ -104,7 +104,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), hors_perimetre
   end
 
-  test 'index : filtre service non soumis par un adhérent → toutes ses interventions' do
+  test 'un adhérent sans filtre service voit toutes ses interventions' do
     weil = users(:weil)
     UserService.create!(user: weil, service: services(:technique))
     hors_services_membres = interventions(:tonte_locaux)
@@ -118,7 +118,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:interventions), hors_services_membres
   end
 
-  test 'index : filtre service choisi par un adhérent → seulement ce service' do
+  test 'un adhérent qui filtre sur un service ne voit que les interventions de ce service' do
     weil = users(:weil)
     UserService.create!(user: weil, service: services(:technique))
     autre_service = interventions(:tonte_locaux)
@@ -132,7 +132,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), autre_service
   end
 
-  test 'index : aucun filtre → les archivées sont exclues' do
+  test 'la liste sans filtre exclut les interventions archivées' do
     sign_in users(:administrateur_paris)
     archivee = cree_intervention_index('Intervention archivée', workflow_state: 'archivé')
 
@@ -142,7 +142,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), archivee
   end
 
-  test 'index : archives → seulement les archivées' do
+  test 'la liste des archives ne retourne que les interventions archivées' do
     sign_in users(:administrateur_paris)
     archivee = cree_intervention_index('Intervention archivée', workflow_state: 'archivé')
 
@@ -153,7 +153,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), @intervention
   end
 
-  test 'index : un statut → seulement les interventions de cet état' do
+  test 'la liste filtrée par un statut ne retourne que les interventions de cet état' do
     sign_in users(:administrateur_paris)
 
     get interventions_url, params: { workflow_state: ['Nouveau'] }
@@ -163,7 +163,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), @intervention
   end
 
-  test 'index : plusieurs statuts → les interventions de ces états' do
+  test 'la liste filtrée par plusieurs statuts retourne les interventions de chacun de ces états' do
     sign_in users(:administrateur_paris)
 
     get interventions_url, params: { workflow_state: %w[Nouveau Terminé] }
@@ -174,7 +174,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), @intervention
   end
 
-  test 'index : statut vide → retombe sur le défaut, les non archivées' do
+  test 'un filtre de statut vidé retombe sur les interventions non archivées' do
     sign_in users(:administrateur_paris)
     archivee = cree_intervention_index('Intervention archivée', workflow_state: 'archivé')
 
@@ -185,7 +185,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), archivee
   end
 
-  test 'index : recherche sur la description → les interventions correspondantes' do
+  test 'la recherche sur la description ne retourne que les interventions correspondantes' do
     sign_in users(:administrateur_paris)
 
     get interventions_url(search: 'Tonte locaux')
@@ -195,7 +195,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), interventions(:nouvelle_intervention)
   end
 
-  test 'index : recherche sur les commentaires → les interventions correspondantes' do
+  test 'la recherche trouve une intervention par ses commentaires' do
     sign_in users(:administrateur_paris)
 
     get interventions_url(search: 'bord des routes')
@@ -204,7 +204,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:interventions), @intervention
   end
 
-  test 'index : recherche sans correspondance → liste vide' do
+  test 'une recherche sans correspondance renvoie une liste vide' do
     sign_in users(:administrateur_paris)
 
     get interventions_url(search: 'zzz-aucune-correspondance-zzz')
@@ -213,7 +213,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_empty assigns(:interventions)
   end
 
-  test 'index : du et au → les interventions qui commencent dans l’intervalle' do
+  test 'la liste filtrée par un intervalle de dates ne retourne que les interventions qui commencent dans l’intervalle' do
     sign_in users(:administrateur_paris)
     jour = @intervention.début.to_date
 
@@ -224,7 +224,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), interventions(:nouvelle_intervention)
   end
 
-  test 'index : du seul → les interventions qui commencent ou finissent ce jour' do
+  test 'la liste filtrée par la seule date de début retourne les interventions qui commencent ou finissent ce jour' do
     sign_in users(:administrateur_paris)
 
     get interventions_url(du: @intervention.début.to_date.to_s)
@@ -233,7 +233,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:interventions), @intervention
   end
 
-  test 'index : au seul → les interventions qui finissent ce jour' do
+  test 'la liste filtrée par la seule date de fin retourne les interventions qui finissent ce jour' do
     sign_in users(:administrateur_paris)
 
     get interventions_url(au: @intervention.fin.to_date.to_s)
@@ -242,7 +242,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:interventions), @intervention
   end
 
-  test 'index : intervalle de dates hors période → liste vide' do
+  test 'un intervalle de dates sans intervention renvoie une liste vide' do
     sign_in users(:administrateur_paris)
 
     get interventions_url(du: '1900-01-01', au: '1900-01-02')
@@ -251,7 +251,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_empty assigns(:interventions)
   end
 
-  test 'index : adherent_id → seulement les interventions de cet adhérent' do
+  test 'la liste filtrée par adhérent ne retourne que les interventions de cet adhérent' do
     sign_in users(:administrateur_paris)
 
     get interventions_url(adherent_id: users(:weil).id)
@@ -261,7 +261,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), interventions(:intervention_autre_adhérent)
   end
 
-  test 'index : agent_ids → seulement les interventions de cet agent' do
+  test 'la liste filtrée par agent ne retourne que les interventions de cet agent' do
     sign_in users(:administrateur_paris)
 
     get interventions_url(agent_ids: [users(:bond).id])
@@ -271,7 +271,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), interventions(:intervention_autre_agent)
   end
 
-  test 'index : tool_ids → seulement les interventions utilisant cet outil' do
+  test 'la liste filtrée par outil ne retourne que les interventions utilisant cet outil' do
     sign_in users(:administrateur_paris)
 
     get interventions_url(tool_ids: [tools(:tondeuse).id])
@@ -281,7 +281,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), interventions(:intervention_terminée)
   end
 
-  test 'index : paramètre équipe forgé → ignoré, liste non restreinte' do
+  test 'un paramètre équipe forgé est ignoré et ne restreint pas la liste' do
     sign_in users(:administrateur_paris)
     temoin = cree_intervention_index('Témoin équipe')
 
@@ -293,7 +293,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'index : un mot clé → seulement les interventions qui le portent' do
+  test 'la liste filtrée par un mot clé ne retourne que les interventions qui le portent' do
     sign_in users(:administrateur_paris)
     urgente = cree_intervention_index('Urgente', tag_list: 'urgence')
     ordinaire = cree_intervention_index('Ordinaire')
@@ -305,7 +305,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), ordinaire
   end
 
-  test 'index : aucun mot clé soumis → liste non restreinte' do
+  test 'la liste sans mot clé soumis n’est pas restreinte' do
     sign_in users(:administrateur_paris)
     temoin = cree_intervention_index('Sans mot clé')
 
@@ -315,7 +315,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:interventions), temoin
   end
 
-  test 'index : deux mots clés → seulement les interventions qui portent les deux' do
+  test 'la liste filtrée par deux mots clés ne retourne que les interventions qui portent les deux' do
     sign_in users(:administrateur_paris)
     les_deux = cree_intervention_index('Porte les deux', tag_list: 'urgence, plomberie')
     un_seul = cree_intervention_index('N’en porte qu’un', tag_list: 'urgence')
@@ -327,7 +327,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), un_seul
   end
 
-  test 'index : mot clé dans une autre casse → les interventions correspondantes' do
+  test 'le filtre par mot clé est insensible à la casse' do
     sign_in users(:administrateur_paris)
     urgente = cree_intervention_index('Urgente', tag_list: 'urgence')
 
@@ -337,7 +337,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:interventions), urgente
   end
 
-  test 'index : mot clé inconnu → liste vide' do
+  test 'un mot clé inconnu renvoie une liste vide' do
     sign_in users(:administrateur_paris)
 
     get interventions_url, params: { tags: ['mot-clé-qui-n-existe-pas'] }
@@ -346,7 +346,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_empty assigns(:interventions)
   end
 
-  test 'index : filtre de mots clés vidé → liste non restreinte' do
+  test 'un filtre de mots clés vidé ne restreint pas la liste' do
     sign_in users(:administrateur_paris)
     temoin = cree_intervention_index('Témoin filtre vidé')
 
@@ -356,7 +356,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:interventions), temoin
   end
 
-  test 'index : paramètre tags scalaire → accepté au lieu de faire tomber la page' do
+  test 'un paramètre tags scalaire filtre comme un mot clé au lieu de faire tomber la page' do
     sign_in users(:administrateur_paris)
     urgente = cree_intervention_index('Urgente', tag_list: 'urgence')
 
@@ -366,7 +366,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:interventions), urgente
   end
 
-  test 'index : paramètre tags non textuel → ignoré, liste non restreinte' do
+  test 'un paramètre tags non textuel est ignoré et ne restreint pas la liste' do
     sign_in users(:administrateur_paris)
     temoin = cree_intervention_index('Témoin tags non textuel')
 
@@ -376,7 +376,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:interventions), temoin
   end
 
-  test 'index : liste des services proposée à un administrateur → toute son organisation' do
+  test 'la liste des services proposée au filtre à un administrateur couvre toute son organisation' do
     sign_in users(:administrateur_paris)
 
     get interventions_url
@@ -385,14 +385,14 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:services), services(:comptabilite)
   end
 
-  test 'index : liste des services proposée à un manager → ses services seulement' do
+  test 'la liste des services proposée au filtre à un manager ne contient que ses services' do
     get interventions_url
 
     assert_response :success
     assert_not_includes assigns(:services), services(:comptabilite)
   end
 
-  test 'index : liste des adhérents pour un administrateur → non restreinte par le filtre service' do
+  test 'la liste des adhérents proposée à un administrateur n’est pas restreinte par le filtre service' do
     sign_in users(:administrateur_paris)
 
     get interventions_url, params: { service: [services(:service_paris).id] }
@@ -401,14 +401,14 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:adhérents), users(:weil)
   end
 
-  test 'index : liste des adhérents pour un manager → restreinte au filtre service' do
+  test 'la liste des adhérents proposée à un manager est restreinte au filtre service' do
     get interventions_url, params: { service: [services(:service_paris).id] }
 
     assert_response :success
     assert_not_includes assigns(:adhérents), users(:weil)
   end
 
-  test 'index : format xls → un classeur Excel est téléchargé' do
+  test 'la liste des interventions est téléchargée au format XLS' do
     sign_in users(:administrateur_paris)
 
     get interventions_url(format: :xls)
@@ -421,7 +421,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   # ==================== TESTS CRITIQUES ====================
 
   # rôles.
-  test "index : l'export XLS d'un agent ne contient ni évaluation ni avis (critique)" do
+  test "l'export XLS d'un agent ne contient ni évaluation ni avis (critique)" do
     agent = users(:électricité)
     intervention = cree_intervention_evaluee(agent)
     sign_in agent
@@ -440,7 +440,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # (la correction B25 ne doit pas les faire disparaître pour tout le monde).
-  test "index : l'export XLS d'un manager contient les évaluations et avis (critique)" do
+  test "l'export XLS d'un manager contient les évaluations et les avis (critique)" do
     get interventions_url(format: :xls) # hidalgo (manager) connecté par le setup
 
     assert_response :success
@@ -454,12 +454,12 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'show : une intervention de son périmètre → la page répond' do
+  test 'une intervention est affichée avec succès' do
     get intervention_url(@intervention)
     assert_response :success
   end
 
-  test 'show : une intervention géolocalisée → la page répond' do
+  test 'une intervention géolocalisée est affichée avec sa carte' do
     get intervention_url(interventions(:intervention_with_location))
     assert_response :success
     assert_select "#map"
@@ -468,7 +468,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   # ==================== TESTS CRITIQUES ====================
 
   # contenir ni l'avis ni la section Évaluation.
-  test 'show : un agent ne voit pas son évaluation (critique)' do
+  test 'un agent ne voit pas son évaluation sur la page de l’intervention (critique)' do
     agent = users(:électricité)
     intervention = cree_intervention_evaluee(agent)
     sign_in agent
@@ -481,7 +481,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test "show : format pdf → l'affiche QRCode du modèle de pointage" do
+  test "l'affiche QRCode d'un modèle de pointage est téléchargée au format PDF" do
     # hidalgo (manager, service technique) est connecté via le setup.
     get intervention_url(interventions(:intervention_repete), format: :pdf)
 
@@ -497,12 +497,12 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/Intervention-#{@intervention.id}\.pdf/, response.headers['Content-Disposition'])
   end
 
-  test 'new : sans paramètre → la page répond' do
+  test 'le formulaire de création est affiché avec succès' do
     get new_intervention_url
     assert_response :success
   end
 
-  test 'new : par un manager → liste des agents à plat, câblée au service' do
+  test 'le formulaire de création d’un manager propose une liste d’agents à plat, rechargée selon le service' do
     get new_intervention_url
     assert_response :success
 
@@ -515,7 +515,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "select[name='intervention[service_id]'][data-action*='dynamic-select#updateAgents']"
   end
 
-  test 'new : par un agent → le formulaire agent est rendu' do
+  test 'le formulaire de création d’un agent rend cet agent obligatoire dans la liste des agents' do
     sign_in users(:martin_technique_paris)
     get new_intervention_url
     assert_response :success
@@ -523,7 +523,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "select[name='intervention[agent_ids][]'] option[data-mandatory='true']"
   end
 
-  test 'create : paramètres valides → l’intervention est créée' do
+  test 'une intervention est créée lorsque les paramètres sont valides' do
     assert_difference('Intervention.count') do
       post interventions_url, params: {
         intervention: {
@@ -550,7 +550,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to intervention_url(Intervention.last)
   end
 
-  test "create : par un agent à postériori → l'intervention est terminée d'emblée" do
+  test "une intervention saisie a posteriori par un agent naît à l'état terminé" do
     # nettoyage n'a aucune intervention de fixture, donc jamais de conflit d'horaire
     # avec la plage créée ici.
     agent = users(:nettoyage)
@@ -580,7 +580,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # transformer en 0, qui se lirait comme un choix de l'utilisateur.
-  test 'create : par un manager → aucun temps de pause inventé' do
+  test 'une intervention créée par un manager sans temps de pause n’en reçoit aucun' do
     post interventions_url, params: {
       intervention: {
         description: 'Élagage à planifier',
@@ -595,6 +595,80 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     intervention = Intervention.find_by(description: 'Élagage à planifier')
     assert intervention, 'garde : la création doit avoir abouti'
     assert_nil intervention.temps_de_pause
+  end
+
+  test 'une intervention créée sans aucune date naît avec ses quatre dates vides' do
+    post interventions_url, params: {
+      intervention: {
+        description: 'Demande sans aucune date',
+        adherent_id: users(:patrick_adherent_paris).id,
+        service_id: services(:technique).id,
+        début_prévue: '', début_prévue_hour: '', début_prévue_minute: '',
+        fin_prévue: '', fin_prévue_hour: '', fin_prévue_minute: '',
+        début: '', début_hour: '', début_minute: '',
+        fin: '', fin_hour: '', fin_minute: ''
+      }
+    }
+
+    intervention = Intervention.find_by(description: 'Demande sans aucune date')
+    assert intervention, 'garde : la création doit avoir abouti'
+    assert_nil intervention.début_prévue
+    assert_nil intervention.fin_prévue
+    assert_nil intervention.début
+    assert_nil intervention.fin
+  end
+
+  test 'les dates prévues sont enregistrées avec l’heure et la minute choisies dans le formulaire' do
+    post interventions_url, params: {
+      intervention: {
+        description: 'Élagage planifié à l’heure',
+        adherent_id: users(:patrick_adherent_paris).id,
+        service_id: services(:technique).id,
+        début_prévue: '2030-05-04', début_prévue_hour: '8', début_prévue_minute: '15',
+        fin_prévue: '2030-05-04', fin_prévue_hour: '17', fin_prévue_minute: '45'
+      }
+    }
+
+    intervention = Intervention.find_by(description: 'Élagage planifié à l’heure')
+    assert intervention, 'garde : la création doit avoir abouti'
+    assert_equal Time.zone.local(2030, 5, 4, 8, 15), intervention.début_prévue
+    assert_equal Time.zone.local(2030, 5, 4, 17, 45), intervention.fin_prévue
+  end
+
+  test 'les dates réelles sont enregistrées avec l’heure et la minute choisies dans le formulaire' do
+    post interventions_url, params: {
+      intervention: {
+        description: 'Élagage réalisé à l’heure',
+        adherent_id: users(:patrick_adherent_paris).id,
+        service_id: services(:technique).id,
+        début: '2024-04-19', début_hour: '9', début_minute: '5',
+        fin: '2024-04-19', fin_hour: '18', fin_minute: '45'
+      }
+    }
+
+    intervention = Intervention.find_by(description: 'Élagage réalisé à l’heure')
+    assert intervention, 'garde : la création doit avoir abouti'
+    assert_equal Time.zone.local(2024, 4, 19, 9, 5), intervention.début
+    assert_equal Time.zone.local(2024, 4, 19, 18, 45), intervention.fin
+  end
+
+  test 'une intervention créée avec une date de début sans heure ni minute démarre à minuit' do
+    date_saisie = interventions(:nouvelle_intervention).début.to_date
+    expected = date_saisie.beginning_of_day
+
+    post interventions_url, params: {
+      intervention: {
+        description: 'Élagage sans heure saisie',
+        adherent_id: users(:patrick_adherent_paris).id,
+        service_id: services(:technique).id,
+        début: date_saisie.to_s, début_hour: '', début_minute: ''
+      }
+    }
+
+    intervention = Intervention.find_by(description: 'Élagage sans heure saisie')
+    assert intervention, 'garde : la création doit avoir abouti'
+    actual = intervention.début
+    assert_equal expected, actual
   end
 
   test 'une intervention créée par un adhérent naît à l’état nouveau' do
@@ -614,7 +688,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal Intervention::NOUVEAU, créée.workflow_state
   end
 
-  test 'create : par un adhérent → la notification managers « nouvelle demande » est enfilée' do
+  test 'une intervention créée par un adhérent enfile la notification « nouvelle demande » destinée aux managers' do
     adherent = users(:weil)
     sign_in adherent
 
@@ -632,7 +706,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_enqueued_with(job: NotifManagersNewInterventionFromAdherentJob, args: [intervention, adherent])
   end
 
-  test 'create : par un agent à postériori → la notification managers « réalisée » est enfilée' do
+  test 'une intervention saisie a posteriori par un agent enfile la notification « réalisée » destinée aux managers' do
     # nettoyage et pas martin : cf. le test « à postériori » ci-dessus (B10).
     agent = users(:nettoyage)
     sign_in agent
@@ -656,7 +730,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_enqueued_with(job: NotifManagersInterventionDoneByAgentJob, args: [intervention, agent])
   end
 
-  test 'create : par un manager → aucune notification managers' do
+  test 'une intervention créée par un manager n’enfile aucune notification destinée aux managers' do
     # hidalgo (manager) est connecté via le setup.
     assert_no_enqueued_jobs only: [NotifManagersNewInterventionFromAdherentJob,
                                    NotifManagersInterventionDoneByAgentJob] do
@@ -672,7 +746,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'create : par un manager avec des mots clés → ils sont enregistrés' do
+  test 'les mots clés saisis par un manager à la création sont enregistrés' do
     post interventions_url,
          params: { intervention: { description: 'Création avec mots clés',
                                    adherent_id: users(:weil).id,
@@ -684,7 +758,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal %w[urgence plomberie], créée.tag_list
   end
 
-  test 'create : par un agent avec des mots clés → ils sont enregistrés' do
+  test 'les mots clés saisis par un agent à la création sont enregistrés' do
     agent = users(:nettoyage) # aucune intervention de fixture : jamais de conflit d'horaire
     sign_in agent
 
@@ -729,7 +803,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
-  test 'create : refusée → la liste des agents suit le service soumis' do
+  test 'le formulaire de création réaffiché après un refus propose les agents du service soumis' do
     post interventions_url, params: {
       intervention: { service_id: services(:informatique).id,
                       adherent_id: users(:weil).id,
@@ -743,7 +817,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes ids, users(:martin_technique_paris).id
   end
 
-  test 'create : un modèle de pointage → ses mots clés sont enregistrés' do
+  test 'les mots clés saisis à la création d’un modèle de pointage sont enregistrés' do
     post create_intervention_modele_pointage_interventions_url,
          params: { intervention: { description: 'Modèle avec mots clés',
                                    adherent_id: users(:weil).id,
@@ -755,12 +829,12 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal ['tonte'], modele.tag_list
   end
 
-  test 'edit : une intervention de son périmètre → la page répond' do
+  test 'le formulaire de modification est affiché avec succès' do
     get edit_intervention_url(@intervention)
     assert_response :success
   end
 
-  test 'edit : une intervention avec des photos → la page répond' do
+  test 'le formulaire de modification d’une intervention avec des photos garde un champ photos multiple' do
     @intervention.photos.attach(file_fixture('exemple.png'))
     @intervention.save
 
@@ -771,7 +845,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[type=file][name='intervention[photos][]'][multiple]"
   end
 
-  test 'edit : une intervention avec des photos de demande → la page répond' do
+  test 'le formulaire de modification d’une intervention avec des photos de demande garde un champ photos de demande multiple' do
     @intervention.photos_demande.attach(file_fixture('exemple.png'))
     @intervention.save
 
@@ -783,7 +857,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'edit : le formulaire de terminaison rend la pause obligatoire (critique)' do
+  test 'le formulaire de terminaison rend la pause obligatoire (critique)' do
     intervention = interventions(:intervention_paris)
 
     get edit_intervention_url(intervention, terminer: 1)
@@ -792,7 +866,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'select#intervention_temps_de_pause[required]'
   end
 
-  test 'edit : le formulaire de terminaison rend les agents obligatoires (critique)' do
+  test 'le formulaire de terminaison rend les agents obligatoires (critique)' do
     intervention = interventions(:intervention_paris)
 
     get edit_intervention_url(intervention, terminer: 1)
@@ -803,7 +877,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'edit : formulaire ordinaire → les agents restent facultatifs' do
+  test 'le formulaire de modification ordinaire laisse les agents facultatifs' do
     intervention = interventions(:intervention_paris)
 
     get edit_intervention_url(intervention)
@@ -813,7 +887,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'label[for=intervention_agent_ids] span.text-red-500', false
   end
 
-  test 'edit : formulaire ordinaire → la pause reste facultative' do
+  test 'le formulaire de modification ordinaire laisse la pause facultative' do
     intervention = interventions(:intervention_paris)
 
     get edit_intervention_url(intervention)
@@ -823,7 +897,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'select#intervention_temps_de_pause[required]', false
   end
 
-  test "edit : une fille de pointage → aucun choix d'adhérent" do
+  test "le formulaire de modification d'une fille de pointage ne propose aucun choix d'adhérent" do
     agent = users(:martin_technique_paris)
     sign_in agent
     modele = interventions(:intervention_repete)
@@ -837,7 +911,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'input#intervention_adherent_id[disabled]'
   end
 
-  test "edit : une fille de pointage → le champ Agents est désactivé pour l'agent" do
+  test "le formulaire de modification d'une fille de pointage désactive le champ agents pour l'agent" do
     agent = users(:martin_technique_paris)
     sign_in agent
     modele = interventions(:intervention_repete)
@@ -850,7 +924,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'select#intervention_agent_ids[disabled]'
   end
 
-  test 'edit : hors pointage → un agent garde le choix des agents' do
+  test 'le formulaire de modification d’une intervention hors pointage laisse à un agent le choix des agents' do
     agent = users(:martin_technique_paris)
     sign_in agent
 
@@ -860,7 +934,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'select#intervention_agent_ids[disabled]', false
   end
 
-  test 'update : paramètres valides → l’intervention est modifiée' do
+  test 'une intervention est modifiée lorsque les paramètres sont valides' do
     patch intervention_url(@intervention), params: {
       intervention: {
         début: @intervention.début,
@@ -881,9 +955,119 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to intervention_url(@intervention)
   end
 
+  test 'une modification qui ne soumet aucune date laisse les quatre dates intactes' do
+    intervention = interventions(:tonte_locaux)
+    dates_avant = intervention.slice(:début, :fin, :début_prévue, :fin_prévue)
+
+    patch intervention_url(intervention), params: { intervention: { commentaires: 'Commentaire seul' } }
+
+    intervention.reload
+    assert_equal 'Commentaire seul', intervention.commentaires
+    assert_equal dates_avant['début'], intervention.début
+    assert_equal dates_avant['fin'], intervention.fin
+    assert_equal dates_avant['début_prévue'], intervention.début_prévue
+    assert_equal dates_avant['fin_prévue'], intervention.fin_prévue
+  end
+
+  test 'modifier l’heure de début d’un pointage enregistre la nouvelle heure' do
+    sign_in users(:martin_technique_paris)
+    scan_time = Time.current.change(sec: 27) - 2.hours
+    intervention_modele = interventions(:intervention_repete)
+
+    travel_to scan_time do
+      get pointer_intervention_url(intervention_modele)
+    end
+
+    intervention_fille = Intervention.reorder(created_at: :desc).where(template_slug: intervention_modele.slug).first
+    début_avant = intervention_fille.début
+    début_saisi = début_avant - 1.hour
+    expected = début_saisi.change(sec: 0)
+
+    patch intervention_url(intervention_fille), params: {
+      intervention: { début: début_saisi.to_date.to_s,
+                      début_hour: début_saisi.hour,
+                      début_minute: début_saisi.min }
+    }
+
+    actual = intervention_fille.reload.début
+    assert_equal expected, actual
+  end
+
+  test 'modifier uniquement la date de début d’un pointage conserve l’heure et la minute' do
+    sign_in users(:martin_technique_paris)
+    scan_time = Time.current.change(sec: 27) - 2.hours
+    intervention_modele = interventions(:intervention_repete)
+
+    travel_to scan_time do
+      get pointer_intervention_url(intervention_modele)
+    end
+
+    intervention_fille = Intervention.reorder(created_at: :desc).where(template_slug: intervention_modele.slug).first
+    début_avant = intervention_fille.début
+    date_saisie = début_avant.to_date - 1
+    expected = début_avant.change(year: date_saisie.year, month: date_saisie.month,
+                                  day: date_saisie.day, sec: 0)
+
+    patch intervention_url(intervention_fille), params: {
+      intervention: { début: date_saisie.to_s,
+                      début_hour: début_avant.hour,
+                      début_minute: début_avant.min }
+    }
+
+    actual = intervention_fille.reload.début
+    assert_equal expected, actual
+  end
+
+  test 'modifier uniquement le commentaire d’un pointage laisse sa date de début inchangée' do
+    sign_in users(:martin_technique_paris)
+    scan_time = Time.current.change(sec: 27) - 2.hours
+    intervention_modele = interventions(:intervention_repete)
+
+    travel_to scan_time do
+      get pointer_intervention_url(intervention_modele)
+    end
+
+    intervention_fille = Intervention.reorder(created_at: :desc).where(template_slug: intervention_modele.slug).first
+    expected = intervention_fille.début
+
+    patch intervention_url(intervention_fille), params: {
+      intervention: { commentaires: 'Remarque saisie après le scan',
+                      début: expected.to_date.to_s,
+                      début_hour: expected.hour,
+                      début_minute: expected.min }
+    }
+
+    intervention_fille.reload
+    actual = intervention_fille.début
+    assert_equal 'Remarque saisie après le scan', intervention_fille.commentaires
+    assert_equal expected, actual
+  end
+
+  test 'renvoyer le formulaire sans changer les dates ne crée aucun audit sur début ni fin' do
+    intervention = interventions(:tonte_locaux)
+
+    # Changement des secondes, qui ne doit pas créer d'audit après le formulaire qui change à 0 seconde
+    intervention.update_columns(début: intervention.début.change(sec: 32), fin: intervention.fin.change(sec: 32))
+    
+    début_avant = intervention.début
+    fin_avant = intervention.fin
+    audits_avant = intervention.audits.pluck(:id)
+
+    patch intervention_url(intervention), params: {
+      intervention: { début: début_avant.to_date.to_s, début_hour: début_avant.hour, début_minute: début_avant.min,
+                      fin: fin_avant.to_date.to_s, fin_hour: fin_avant.hour, fin_minute: fin_avant.min }
+    }
+
+    # Derniers audits après la modification
+    derniers_audits = intervention.audits.where.not(id: audits_avant).pluck(:audited_changes)
+    
+    # Aucun début ou fin ne doit apparaitre dans les audits
+    refute derniers_audits.any? { |change| change.key?("début") || change.key?("fin") }
+  end
+
   # ==================== TESTS CRITIQUES ====================
 
-  test 'update : workflow_state soumis en paramètre → état inchangé (critique)' do
+  test 'un paramètre workflow_state forgé à la modification laisse l’état inchangé (critique)' do
     intervention = interventions(:nouvelle_intervention)
     état_avant = intervention.workflow_state
 
@@ -893,7 +1077,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal état_avant, intervention.reload.workflow_state
   end
 
-  test 'update : par un agent, note et avis soumis → évaluation inchangée (critique)' do
+  test 'une note et un avis soumis par un agent laissent l’évaluation inchangée (critique)' do
     sign_in users(:bond)
     intervention = interventions(:nouvelle_intervention)
     note_avant = intervention.note
@@ -907,7 +1091,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # formulaire, et l'enregistrement termine l'intervention.
-  test 'update : demande de terminaison → l’intervention est terminée (critique)' do
+  test 'une intervention est terminée lorsque le formulaire de terminaison est enregistré (critique)' do
     intervention = interventions(:intervention_paris)
 
     patch intervention_url(intervention), params: {
@@ -920,7 +1104,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Intervention terminée', flash[:notice]
   end
 
-  test 'update : demande de terminaison sans date de fin → refusé (critique)' do
+  test 'le formulaire de terminaison refuse une intervention sans date de fin (critique)' do
     intervention = interventions(:intervention_paris)
 
     patch intervention_url(intervention), params: {
@@ -934,7 +1118,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # terminée sans agent vaut 0 heure et ne doit pas pouvoir être enregistrée.
-  test 'update : demande de terminaison sans agent → refusé (critique)' do
+  test 'le formulaire de terminaison refuse une intervention sans agent (critique)' do
     intervention = interventions(:intervention_paris)
 
     patch intervention_url(intervention), params: {
@@ -948,7 +1132,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # modifier une intervention, mais jamais la terminer.
-  test 'update : un adhérent ne peut pas terminer via le paramètre (critique)' do
+  test 'un paramètre de terminaison forgé par un adhérent laisse l’intervention inchangée (critique)' do
     intervention = interventions(:intervention_paris)
     sign_in users(:patrick_adherent_paris)
 
@@ -962,7 +1146,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'update : sans demande de terminaison → état inchangé' do
+  test 'une modification sans demande de terminaison laisse l’état inchangé' do
     intervention = interventions(:intervention_paris)
 
     patch intervention_url(intervention), params: {
@@ -972,14 +1156,14 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert intervention.reload.nouveau?
   end
 
-  test 'update : paramètres invalides → formulaire réaffiché en 422' do
+  test 'une intervention dont la description est vidée n’est pas modifiée' do
     patch intervention_url(@intervention), params: { intervention: { description: '' } }
 
     assert_response :unprocessable_content
     assert_not_equal '', @intervention.reload.description
   end
 
-  test 'update : une photo soumise en tableau → elle est ajoutée' do
+  test 'une photo soumise à la modification est ajoutée' do
     assert_difference('@intervention.photos.count', 1) do
       patch intervention_url(@intervention), params: {
         intervention: { photos: [fixture_file_upload('exemple.png', 'image/png')] }
@@ -987,7 +1171,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'update : photos ré-émises en signed_id → conservées, la nouvelle ajoutée' do
+  test 'les photos ré-émises en signed_id sont conservées et la nouvelle ajoutée' do
     @intervention.photos.attach(file_fixture('exemple.png'))
     @intervention.save
     existante = @intervention.photos.first
@@ -999,7 +1183,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 2, @intervention.reload.photos.count
   end
 
-  test 'update : une photo de demande → les photos de réalisation restent intactes' do
+  test 'l’ajout d’une photo de demande laisse les photos de réalisation intactes' do
     @intervention.photos.attach(file_fixture('exemple.png'))
     @intervention.save
 
@@ -1012,7 +1196,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'update : photos de demande ré-émises en signed_id → conservées, la nouvelle ajoutée' do
+  test 'les photos de demande ré-émises en signed_id sont conservées et la nouvelle ajoutée' do
     @intervention.photos_demande.attach(file_fixture('exemple.png'))
     @intervention.save
     existante = @intervention.photos_demande.first
@@ -1024,7 +1208,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 2, @intervention.reload.photos_demande.count
   end
 
-  test "update : une photo de demande → l'ajout est tracé dans l'audit" do
+  test "l'ajout d'une photo de demande est tracé dans l'audit" do
     assert_difference('@intervention.audits.count', 1) do
       patch intervention_url(@intervention), params: {
         intervention: { photos_demande: [fixture_file_upload('exemple.png', 'image/png')] }
@@ -1034,7 +1218,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'photo de la demande ajoutée', @intervention.audits.last.comment.sub(/\A\d+ /, '')
   end
 
-  test "update : depuis le pointage statut → redirection vers l'accueil" do
+  test "l'enregistrement du commentaire depuis le pointage statut redirige vers l'accueil" do
     intervention = interventions(:intervention_fille)
 
     patch intervention_url(intervention),
@@ -1045,7 +1229,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Terminé côté agent', intervention.reload.commentaires
   end
 
-  test 'update : saisie a posteriori, fin antérieure au début → refusé en 422' do
+  test 'une saisie a posteriori dont la fin précède le début n’est pas enregistrée' do
     agent = users(:martin_technique_paris)
     sign_in agent
 
@@ -1065,7 +1249,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
-  test 'update : saisie a posteriori, dates futures → refusé en 422' do
+  test 'une saisie a posteriori aux dates futures n’est pas enregistrée' do
     agent = users(:martin_technique_paris)
     sign_in agent
 
@@ -1083,7 +1267,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
-  test "update : par un agent hors pointage → l'adhérent reste modifiable" do
+  test "un agent peut changer l'adhérent d'une intervention hors pointage" do
     agent = users(:martin_technique_paris)
     intervention = interventions(:nouvelle_intervention)
     sign_in agent
@@ -1095,7 +1279,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal users(:patrick_adherent_paris), intervention.reload.adherent
   end
 
-  test "update : par un manager sur une fille de pointage → l'adhérent reste modifiable" do
+  test "un manager peut changer l'adhérent d'une fille de pointage" do
     sign_in users(:martin_technique_paris)
     modele = interventions(:intervention_repete)
     get pointer_intervention_url(modele)
@@ -1109,7 +1293,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal users(:patrick_adherent_paris), fille.reload.adherent
   end
 
-  test 'update : un second agent sur une fille de pointage → refusé' do
+  test 'une fille de pointage n’accepte pas un second agent' do
     sign_in users(:martin_technique_paris)
     modele = interventions(:intervention_repete)
     get pointer_intervention_url(modele)
@@ -1128,7 +1312,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_equal 'Pointage à deux', fille.description
   end
 
-  test 'update : après ce refus → le formulaire réaffiché conserve la saisie' do
+  test 'le formulaire réaffiché après le refus d’un second agent conserve la saisie' do
     sign_in users(:martin_technique_paris)
     modele = interventions(:intervention_repete)
     get pointer_intervention_url(modele)
@@ -1145,7 +1329,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'textarea#intervention_commentaires', text: /Commentaire saisi/
   end
 
-  test 'update : après un refus → les agents et outils soumis sont conservés' do
+  test 'le formulaire réaffiché après un refus conserve les agents et les outils soumis' do
     sign_in users(:martin_technique_paris)
     modele = interventions(:intervention_repete)
     get pointer_intervention_url(modele)
@@ -1165,7 +1349,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_empty fille.reload.tool_ids, "les outils soumis ne doivent pas être écrits en base"
   end
 
-  test 'update : réussi → les outils sont enregistrés' do
+  test 'les outils soumis à la modification sont enregistrés' do
     sign_in users(:hidalgo)
     intervention = interventions(:nouvelle_intervention)
     outil = tools(:outil_paris)
@@ -1177,7 +1361,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [outil.id], intervention.reload.tool_ids
   end
 
-  test 'update : une fille de pointage → son agent reste remplaçable' do
+  test 'l’agent d’une fille de pointage reste remplaçable' do
     sign_in users(:martin_technique_paris)
     modele = interventions(:intervention_repete)
     get pointer_intervention_url(modele)
@@ -1191,7 +1375,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [users(:électricité).id], fille.reload.agent_ids
   end
 
-  test 'update : hors pointage → plusieurs agents restent acceptés' do
+  test 'une intervention hors pointage accepte plusieurs agents' do
     sign_in users(:hidalgo)
     intervention = interventions(:nouvelle_intervention)
 
@@ -1203,7 +1387,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [users(:bond).id, users(:électricité).id].sort, intervention.reload.agent_ids.sort
   end
 
-  test 'update : refusé → la liste des agents suit le service soumis' do
+  test 'le formulaire de modification réaffiché après un refus propose les agents du service soumis' do
     intervention = interventions(:nouvelle_intervention)
 
     patch intervention_url(intervention), params: {
@@ -1218,7 +1402,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes ids, users(:martin_technique_paris).id
   end
 
-  test 'update : par un adhérent → les mots clés sont conservés' do
+  test 'une modification par un adhérent conserve les mots clés' do
     @intervention.update!(tag_list: 'urgence, plomberie')
     sign_in users(:weil)
 
@@ -1229,7 +1413,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal %w[urgence plomberie], @intervention.reload.tag_list
   end
 
-  test 'update : par un manager qui vide les mots clés → ils sont retirés' do
+  test 'un manager qui vide les mots clés les retire' do
     @intervention.update!(tag_list: 'urgence, plomberie')
 
     # Un select multiple vidé reste soumis, grâce au champ caché de Rails.
@@ -1240,7 +1424,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_empty @intervention.reload.tag_list
   end
 
-  test 'update : par un manager → les mots clés sont modifiés' do
+  test 'un manager peut modifier les mots clés' do
     @intervention.update!(tag_list: 'urgence')
 
     patch intervention_url(@intervention),
@@ -1250,7 +1434,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal %w[urgence plomberie], @intervention.reload.tag_list
   end
 
-  test 'update : par un agent → les mots clés sont modifiés' do
+  test 'un agent peut modifier les mots clés' do
     @intervention.update!(tag_list: 'urgence')
     sign_in users(:bond)
 
@@ -1261,7 +1445,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal ['élagage'], @intervention.reload.tag_list
   end
 
-  test "update : un manager qui soumet tags_intervenant → le champ de l'autre rôle est ignoré" do
+  test "le champ tags_intervenant soumis par un manager est ignoré" do
     @intervention.update!(tag_list: 'urgence')
 
     patch intervention_url(@intervention),
@@ -1271,7 +1455,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal ['urgence'], @intervention.reload.tag_list
   end
 
-  test "update : un agent qui soumet tags_manager → le champ de l'autre rôle est ignoré" do
+  test "le champ tags_manager soumis par un agent est ignoré" do
     @intervention.update!(tag_list: 'urgence')
     sign_in users(:bond)
 
@@ -1283,7 +1467,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # À inverser à la correction (retrait de :tag_list des permits).
-  test 'update : un adhérent qui forge tag_list → les mots clés sont écrasés' do
+  test 'un adhérent qui forge tag_list écrase les mots clés' do
     @intervention.update!(tag_list: 'urgence')
     sign_in users(:weil)
 
@@ -1293,7 +1477,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal ['forgé'], @intervention.reload.tag_list
   end
 
-  test 'update : formulaire refusé → les mots clés saisis sont réaffichés, mot clé inédit compris' do
+  test 'le formulaire réaffiché après un refus conserve les mots clés saisis, mot clé inédit compris' do
     @intervention.update!(tag_list: 'urgence')
 
     # Sans adhérent, la création est refusée : une description vide ne suffirait pas,
@@ -1308,7 +1492,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'select#intervention_tags_manager option[selected]', text: 'mot-clé-inédit'
   end
 
-  test 'destroy : sans mouvement → l’intervention est supprimée' do
+  test 'une intervention sans mouvement est supprimée' do
     assert_difference('Intervention.count', -1) do
       delete intervention_url(interventions(:nouvelle_intervention))
     end
@@ -1316,7 +1500,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to interventions_url
   end
 
-  test 'destroy : avec des mouvements → aucune suppression' do
+  test 'une intervention avec des mouvements n’est pas supprimée' do
     assert_no_difference('Intervention.count') do
       delete intervention_url(@intervention)
     end
@@ -1325,7 +1509,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # filet ne doit pas bloquer le parcours nominal.
-  test 'terminer : une intervention saine → elle est terminée' do
+  test 'le bouton Terminer termine une intervention saine' do
     agent = users(:électricité)
     intervention = cree_intervention_en_conflit(agent, avec_conflit: false)
     sign_in agent
@@ -1338,7 +1522,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   # ==================== TESTS CRITIQUES ====================
 
   # le chemin de terminaison, sans qu'aucun formulaire ne le fournisse.
-  test 'terminer : le temps total et une pause à 0 sont enregistrés (critique)' do
+  test 'le bouton Terminer enregistre le temps total et une pause à 0 (critique)' do
     agent = users(:électricité)
     intervention = cree_intervention_en_conflit(agent, avec_conflit: false)
     intervention.update_columns(temps_de_pause: nil, temps_total: nil)
@@ -1352,7 +1536,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_in_delta 2.0, intervention.temps_total, 1e-6
   end
 
-  test 'terminer : sans agent → refusé (critique)' do
+  test 'le bouton Terminer refuse une intervention sans agent (critique)' do
     intervention = interventions(:intervention_paris)
     intervention.agents.destroy_all
 
@@ -1364,7 +1548,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Test critique — parcours quotidien de l'agent : terminer son intervention.
-  test 'terminer : intervention en conflit → redirection au lieu d’une erreur (critique)' do
+  test 'le bouton Terminer sur une intervention en conflit redirige avec une alerte au lieu d’une erreur (critique)' do
     agent = users(:électricité)
     intervention = cree_intervention_en_conflit(agent)
     sign_in agent
@@ -1379,7 +1563,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'terminer : une intervention déjà validée → refusé' do
+  test 'le bouton Terminer refuse une intervention déjà validée' do
     intervention = cree_intervention_validee
 
     post terminer_intervention_url(intervention)
@@ -1392,7 +1576,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   # ==================== TESTS CRITIQUES ====================
 
   # Test critique — parcours quotidien : l'adhérent valide le travail terminé.
-  test 'valider : l’adhérent valide une intervention terminée (critique)' do
+  test 'l’adhérent valide une intervention terminée (critique)' do
     intervention = interventions(:intervention_terminée)
     sign_in users(:weil)
 
@@ -1403,7 +1587,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # re-valider une intervention déjà validée.
-  test 'valider : une intervention déjà validée → redirection avec un message (critique)' do
+  test 'une seconde validation d’une intervention déjà validée redirige sans erreur (critique)' do
     intervention = interventions(:intervention_terminée)
     sign_in users(:weil)
     post valider_intervention_url(intervention)
@@ -1415,7 +1599,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Même filet côté adhérent, sur les deux transitions qu'il déclenche.
-  test 'valider : intervention en conflit → redirection au lieu d’une erreur (critique)' do
+  test 'valider une intervention en conflit redirige avec une alerte au lieu d’une erreur (critique)' do
     intervention = cree_intervention_en_conflit(users(:électricité), workflow_state: 'terminé')
     sign_in users(:weil)
 
@@ -1427,7 +1611,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Test critique — parcours quotidien : l'adhérent refuse le travail terminé.
-  test 'refuser : l’adhérent refuse une intervention terminée (critique)' do
+  test 'l’adhérent refuse une intervention terminée (critique)' do
     intervention = interventions(:intervention_terminée)
     sign_in users(:weil)
 
@@ -1437,7 +1621,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert intervention.reload.refusé?, "l'intervention doit passer à l'état refusé"
   end
 
-  test 'refuser : intervention en conflit → redirection au lieu d’une erreur (critique)' do
+  test 'refuser une intervention en conflit redirige avec une alerte au lieu d’une erreur (critique)' do
     intervention = cree_intervention_en_conflit(users(:électricité), workflow_state: 'terminé')
     sign_in users(:weil)
 
@@ -1450,7 +1634,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'archiver : une intervention validée → elle est archivée' do
+  test 'une intervention validée est archivée' do
     intervention = cree_intervention_validee
 
     post archiver_intervention_url(intervention)
@@ -1459,7 +1643,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'archivé', intervention.reload.workflow_state
   end
 
-  test 'archiver : une intervention déjà archivée → signalé' do
+  test 'archiver une intervention déjà archivée est signalé par une alerte' do
     intervention = cree_intervention_validee
     intervention.update_columns(workflow_state: 'archivé')
 
@@ -1468,7 +1652,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/déjà archivée/i, flash[:alert].to_s)
   end
 
-  test 'archiver : depuis un état impossible → refusé' do
+  test 'une intervention à l’état nouveau ne peut pas être archivée' do
     intervention = interventions(:nouvelle_intervention)
 
     post archiver_intervention_url(intervention)
@@ -1477,7 +1661,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'nouveau', intervention.reload.workflow_state
   end
 
-  test 'archiver : une intervention invalide → refusé avec son motif' do
+  test 'une intervention invalide n’est pas archivée et le motif est affiché' do
     intervention = cree_intervention_en_conflit(users(:électricité), workflow_state: 'validé')
 
     post archiver_intervention_url(intervention)
@@ -1486,7 +1670,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'validé', intervention.reload.workflow_state
   end
 
-  test 'purge : une photo → elle est supprimée' do
+  test 'un manager peut supprimer une photo' do
     @intervention.photos.attach(file_fixture('exemple.png'))
     @intervention.save
 
@@ -1499,7 +1683,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to @intervention
   end
 
-  test "purge : un agent affecté à l'intervention peut supprimer une photo" do
+  test "un agent affecté à l'intervention peut supprimer une photo" do
     @intervention.photos.attach(file_fixture('exemple.png'))
     @intervention.save
     sign_in users(:bond)
@@ -1513,7 +1697,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to @intervention
   end
 
-  test 'purge : la photo est réellement supprimée (blob détruit et fichier effacé du stockage)' do
+  test 'une photo supprimée est réellement effacée, blob détruit et fichier retiré du stockage' do
     @intervention.photos.attach(file_fixture('exemple.png'))
     @intervention.save
     blob = @intervention.photos.first.blob
@@ -1530,7 +1714,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
                'le fichier doit être effacé du service de stockage (purge synchrone)'
   end
 
-  test "purge : la suppression est tracée dans l'audit trail" do
+  test "la suppression d'une photo est tracée dans l'audit" do
     @intervention.photos.attach(file_fixture('exemple.png'))
     @intervention.save
     photo_id = @intervention.photos.first.id
@@ -1542,7 +1726,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Photo supprimée', @intervention.audits.last.comment
   end
 
-  test "purge : l'adhérent de l'intervention peut supprimer une photo (épinglage : purge? = show?)" do
+  test "l'adhérent de l'intervention peut supprimer une photo (épinglage : purge? = show?)" do
     # Comportement ACTUEL épinglé : la policy autorise aussi l'adhérent (client) à
     # supprimer les photos posées par les agents.
     @intervention.photos.attach(file_fixture('exemple.png'))
@@ -1556,7 +1740,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'purge : photo_id inexistant → 404, rien ne se passe' do
+  test 'la suppression d’une photo inexistante répond introuvable sans rien supprimer' do
     @intervention.photos.attach(file_fixture('exemple.png'))
     @intervention.save
 
@@ -1567,7 +1751,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "purge : impossible de supprimer la photo d'une AUTRE intervention (find scopé)" do
+  test "la photo d'une autre intervention ne peut pas être supprimée depuis celle-ci" do
     autre = interventions(:nouvelle_intervention)
     autre.photos.attach(file_fixture('exemple.png'))
     autre.save
@@ -1580,7 +1764,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test 'purge : la redirection après un DELETE Turbo est en 303 see_other' do
+  test 'la suppression d’une photo redirige avec le statut attendu par Turbo' do
     # 303 après
     # toute soumission destructrice Turbo, comme le reste de l'app.
     @intervention.photos.attach(file_fixture('exemple.png'))
@@ -1593,7 +1777,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :see_other
   end
 
-  test 'purge : une photo de demande est supprimée par la même action que les photos' do
+  test 'un manager peut supprimer une photo de demande' do
     @intervention.photos_demande.attach(file_fixture('exemple.png'))
     @intervention.save
 
@@ -1606,7 +1790,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to @intervention
   end
 
-  test 'purge : la photo de demande est réellement supprimée (blob détruit et fichier effacé)' do
+  test 'une photo de demande supprimée est réellement effacée, blob détruit et fichier retiré du stockage' do
     @intervention.photos_demande.attach(file_fixture('exemple.png'))
     @intervention.save
     blob = @intervention.photos_demande.first.blob
@@ -1621,7 +1805,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not ActiveStorage::Blob.service.exist?(blob.key)
   end
 
-  test 'purge : supprimer une photo de demande laisse les photos de réalisation intactes' do
+  test 'supprimer une photo de demande laisse les photos de réalisation intactes' do
     @intervention.photos.attach(file_fixture('exemple.png'))
     @intervention.photos_demande.attach(file_fixture('exemple.png'))
     @intervention.save
@@ -1635,7 +1819,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, @intervention.reload.photos_demande.count
   end
 
-  test "purge : un agent affecté à l'intervention peut supprimer une photo de réalisation" do
+  test "un agent affecté à l'intervention peut supprimer une photo de réalisation" do
     @intervention.photos.attach(file_fixture('exemple.png'))
     @intervention.save
     sign_in users(:bond)
@@ -1647,7 +1831,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'purge : les deux actions sont cloisonnées par type de photo' do
+  test 'la suppression des photos est cloisonnée par type de photo' do
     @intervention.photos.attach(file_fixture('exemple.png'))
     @intervention.photos_demande.attach(file_fixture('exemple.png'))
     @intervention.save
@@ -1662,7 +1846,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "purge : l'adhérent de l'intervention peut supprimer une photo de demande" do
+  test "l'adhérent de l'intervention peut supprimer une photo de demande" do
     @intervention.photos_demande.attach(file_fixture('exemple.png'))
     @intervention.save
     sign_in users(:weil)
@@ -1674,7 +1858,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "purge : impossible de supprimer la photo de demande d'une AUTRE intervention" do
+  test "la photo de demande d'une autre intervention ne peut pas être supprimée depuis celle-ci" do
     autre = interventions(:nouvelle_intervention)
     autre.photos_demande.attach(file_fixture('exemple.png'))
     autre.save
@@ -1687,7 +1871,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test 'pointer : un modèle → une fille est créée' do
+  test 'le pointage d’un modèle crée une fille' do
     # Le sign_in gère tout seul la déconnexion du premier sign_in dans le setup
     sign_in users(:martin_technique_paris)
 
@@ -1698,7 +1882,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "pointer : l'agent absent aujourd'hui → refusé avec le motif" do
+  test "le pointage d'un agent absent aujourd'hui est refusé avec le motif" do
     agent = users(:martin_technique_paris)
     sign_in agent
     Absence.create!(user: agent, du: Date.today, au: Date.today, motif: 0)
@@ -1711,7 +1895,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_match 'Agent(s) indisponible(s)', flash[:alert]
   end
 
-  test "pointer : l'après-midi alors que l'agent est absent le matin → accepté" do
+  test "le pointage de l'après-midi est accepté lorsque l'agent n'est absent que le matin" do
     agent = users(:martin_technique_paris)
     sign_in agent
     Absence.create!(user: agent, du: Date.today, au: Date.today, motif: 0, matin: true)
@@ -1723,7 +1907,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'pointer : un modèle déjà pointé → la fille est terminée' do
+  test 'le pointage d’un modèle déjà pointé termine la fille' do
     # Le sign_in gère tout seul la déconnexion du premier sign_in dans le setup
     sign_in users(:martin_technique_paris)
     intervention = interventions(:intervention_repete)
@@ -1742,7 +1926,70 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil intervention_créée
   end
 
-  test "pointer : une intervention qui n'est pas un modèle → aucune fille créée" do
+  test 'le pointage de début enregistre l’instant exact du scan' do
+    sign_in users(:bond)
+    modele = interventions(:intervention_repete)
+    scan = Time.current.middle_of_day.change(sec: 12)
+
+    travel_to scan do
+      get pointer_intervention_url(modele)
+    end
+
+    assert_equal scan, Intervention.find_by(template_slug: modele.slug).début
+  end
+
+  test 'le pointage de fin enregistre l’instant exact du scan' do
+    sign_in users(:bond)
+    modele = interventions(:intervention_repete)
+    scan_de_fin = Time.current.middle_of_day.change(sec: 41)
+
+    travel_to Time.current.middle_of_day.change(sec: 12) do
+      get pointer_intervention_url(modele)
+    end
+    travel_to scan_de_fin do
+      get pointer_intervention_url(modele)
+    end
+
+    assert_equal scan_de_fin, Intervention.find_by(template_slug: modele.slug).fin
+  end
+
+  test 'terminer un pointage en saisissant sa date de fin laisse sa date de début inchangée' do
+    sign_in users(:bond)
+    scan_time = Time.current.change(sec: 27) - 2.hour
+
+    modele = interventions(:intervention_repete)
+
+    travel_to scan_time do
+      get pointer_intervention_url(modele)
+    end
+
+    intervention_fille = Intervention.reorder(created_at: :desc).where(template_slug: modele.slug).first
+
+    expected_début = intervention_fille.début
+    fin_saisie = scan_time + 2.hours
+    expected_fin = fin_saisie.change(sec: 0)
+
+    travel_to fin_saisie do
+      patch intervention_url(intervention_fille), params: {
+        terminer: 1,
+        intervention: {
+          début: expected_début.to_date.to_s,
+          début_hour: expected_début.hour, début_minute: expected_début.min,
+          fin: fin_saisie.to_date.to_s,
+          fin_hour: fin_saisie.hour, fin_minute: fin_saisie.min,
+          temps_de_pause: 0
+        }
+      }
+    end
+
+    intervention_fille.reload
+    actual_début = intervention_fille.début
+    actual_fin = intervention_fille.fin
+    assert_equal expected_début, actual_début
+    assert_equal expected_fin, actual_fin
+  end
+
+  test "le pointage d'une intervention qui n'est pas un modèle ne crée aucune fille" do
     intervention = interventions(:intervention_repete)
     intervention.repeter = false
     intervention.save
@@ -1752,7 +1999,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'pointer : un modèle à plusieurs agents → une fille par agent' do
+  test 'le pointage d’un modèle à plusieurs agents crée une fille par agent' do
     intervention = interventions(:intervention_repete)
 
     # Pointage avec le 1er agent
@@ -1773,7 +2020,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal expected_nb_intervention_filles, actual_nb_intervention_filles
   end
 
-  test "pointer : un enregistrement en échec → l'erreur est remontée, pas un 404" do
+  test "un pointage dont l'enregistrement échoue affiche l'erreur au lieu d'une page introuvable" do
     agent = users(:martin_technique_paris)
     sign_in agent
 
@@ -1793,7 +2040,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # pas ; l'état est ici reconstitué à la main.
-  test "pointer : une fille close restée nouveau → une reprise d'activité est enregistrée" do
+  test "le pointage sur une fille close restée à l'état nouveau enregistre une reprise d'activité" do
     agent = users(:martin_technique_paris)
     sign_in agent
     modele = interventions(:intervention_repete)
@@ -1810,7 +2057,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/Reprise d'activité/i, flash[:notice].to_s)
   end
 
-  test "pointer : une intervention qui n'est pas un modèle → refusé" do
+  test "le pointage d'une intervention qui n'est pas un modèle est refusé avec une alerte" do
     intervention = interventions(:nouvelle_intervention) # bond y est agent affecté
     sign_in users(:bond)
 
@@ -1819,7 +2066,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/n'est pas un modèle de pointage/i, flash[:alert].to_s)
   end
 
-  test 'pointer : le second scan termine la fille (état terminé, fin renseignée)' do
+  test 'le second scan termine la fille, état terminé et fin renseignée' do
     sign_in users(:martin_technique_paris)
     modele = interventions(:intervention_repete)
 
@@ -1834,7 +2081,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil fille.fin, 'le second scan renseigne la fin'
   end
 
-  test 'pointer : plusieurs scans dans la journée → plusieurs filles' do
+  test 'plusieurs scans dans la journée créent plusieurs filles' do
       intervention = interventions(:intervention_repete)
 
       sign_in users(:martin_technique_paris)
@@ -1857,7 +2104,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
       assert_equal expected_nb_intervention_filles, actual_nb_intervention_filles
   end
 
-  test 'pointage_statut : un modèle répété → redirection vers la fille du pointeur' do
+  test 'le statut de pointage d’un modèle redirige vers la fille du pointeur' do
     sign_in users(:martin_technique_paris)
     modele = interventions(:intervention_repete)
 
@@ -1868,7 +2115,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
-  test 'update_location : une fille de pointage → la géolocalisation est ajoutée' do
+  test 'la géolocalisation d’une fille de pointage est enregistrée' do
     intervention = interventions(:intervention_repete)
 
     sign_in users(:martin_technique_paris)
@@ -1887,7 +2134,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil intervention_fille.localisation, 'La localisation doit être mise à jour après pointage'
   end
 
-  test 'update_location : une intervention invalide → erreurs en 422' do
+  test 'la géolocalisation d’une intervention invalide est refusée avec ses erreurs' do
     sign_in users(:martin_technique_paris)
     get pointer_intervention_url(interventions(:intervention_repete))
     fille = Intervention.where(template_slug: interventions(:intervention_repete).slug).last
@@ -1901,7 +2148,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.parsed_body['errors'].to_s, 'Adherent'
   end
 
-  test 'get_unavailable_elements : agent occupé sur les dates réelles → son id est renvoyé' do
+  test 'un agent occupé sur les dates réelles est renvoyé indisponible' do
     sign_in users(:administrateur_paris)
     cree_intervention_occupante(début: '2025-04-08 09:00', fin: '2025-04-08 12:00')
 
@@ -1910,7 +2157,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes json['agents'], users(:bond).id
   end
 
-  test 'get_unavailable_elements : dates réelles disjointes → aucun agent renvoyé' do
+  test 'un agent occupé sur des dates réelles disjointes n’est pas renvoyé indisponible' do
     sign_in users(:administrateur_paris)
     cree_intervention_occupante(début: '2025-04-08 09:00', fin: '2025-04-08 12:00')
 
@@ -1919,7 +2166,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes json['agents'], users(:bond).id
   end
 
-  test 'get_unavailable_elements : réel disjoint mais prévu chevauchant → aucun agent renvoyé' do
+  test 'un agent dont le réel est disjoint mais le prévu chevauchant n’est pas renvoyé indisponible' do
     sign_in users(:administrateur_paris)
     cree_intervention_occupante(début: '2025-04-08 09:00', fin: '2025-04-08 12:00',
                                 début_prévue: '2025-04-08 14:00', fin_prévue: '2025-04-08 17:00')
@@ -1929,7 +2176,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes json['agents'], users(:bond).id
   end
 
-  test 'get_unavailable_elements : réel absent → repli sur les dates prévues' do
+  test 'les disponibilités se replient sur les dates prévues lorsque le réel est absent' do
     sign_in users(:administrateur_paris)
     cree_intervention_occupante(début_prévue: '2025-04-08 09:00', fin_prévue: '2025-04-08 12:00')
 
@@ -1939,7 +2186,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes json['agents'], users(:bond).id
   end
 
-  test 'get_unavailable_elements : bornes mixtes réelle et prévue → conflit détecté' do
+  test 'des bornes mixtes réelle et prévue détectent le conflit' do
     sign_in users(:administrateur_paris)
     cree_intervention_occupante(début: '2025-04-08 09:00', fin: '2025-04-08 12:00')
 
@@ -1948,7 +2195,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes json['agents'], users(:bond).id
   end
 
-  test 'get_unavailable_elements : le réel prime sur le prévu borne par borne → aucun conflit' do
+  test 'le réel prime sur le prévu borne par borne et aucun conflit n’est détecté' do
     sign_in users(:administrateur_paris)
     cree_intervention_occupante(début: '2025-04-08 09:00', fin: '2025-04-08 12:00')
 
@@ -1959,7 +2206,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes json['agents'], users(:bond).id
   end
 
-  test 'get_unavailable_elements : outil occupé sur la plage → son id est renvoyé' do
+  test 'un outil occupé sur la plage est renvoyé indisponible' do
     sign_in users(:administrateur_paris)
     tool = tools(:tondeuse)
     adherent = users(:weil)
@@ -1973,7 +2220,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes json['tools'], tool.id
   end
 
-  test 'get_unavailable_elements : agent absent sur la plage → son id est renvoyé' do
+  test 'un agent absent sur la plage est renvoyé indisponible' do
     sign_in users(:administrateur_paris)
     Absence.create!(du: '2025-04-08', au: '2025-04-08', motif: 0, user: users(:bond))
 
@@ -1982,7 +2229,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes json['agents'], users(:bond).id
   end
 
-  test 'get_unavailable_elements : aucune date fournie → réponse vide sans erreur' do
+  test 'les disponibilités sans aucune date répondent vide sans erreur' do
     sign_in users(:administrateur_paris)
     cree_intervention_occupante(début: '2025-04-08 09:00', fin: '2025-04-08 12:00')
 
@@ -1992,7 +2239,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_empty json['tools']
   end
 
-  test 'services_for_adherent : un adhérent du périmètre → ses services en JSON' do
+  test 'les services d’un adhérent sont retournés en JSON' do
     get services_for_adherent_interventions_url(adherent_id: users(:weil).id)
 
     assert_response :success
@@ -2000,20 +2247,20 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes noms, services(:informatique).nom
   end
 
-  test 'services_for_adherent : les services hors du périmètre du current_user sont exclus' do
+  test 'aucun service n’est retourné pour un adhérent hors périmètre' do
     get services_for_adherent_interventions_url(adherent_id: users(:adherent_marseille).id)
 
     assert_response :success
     assert_empty response.parsed_body
   end
 
-  test 'services_for_adherent : un adherent_id inconnu répond 404 sans planter' do
+  test 'un adhérent inconnu répond introuvable sans planter' do
     get services_for_adherent_interventions_url(adherent_id: 0)
 
     assert_response :not_found
   end
 
-  test 'agents_for_service : un service → ses agents en JSON' do
+  test 'les agents d’un service sont retournés en JSON' do
     get agents_for_service_interventions_url(service_id: services(:technique).id), as: :json
 
     assert_response :success
@@ -2027,7 +2274,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal users(:martin_technique_paris).nom_prénom, agent['nom']
   end
 
-  test 'agents_for_service : le résultat est borné au périmètre du current_user' do
+  test 'les agents d’un service hors périmètre ne sont pas retournés et le résultat se replie sur le périmètre' do
     # service_marseille est hors du périmètre de hidalgo : on ne fuite pas ses agents
     get agents_for_service_interventions_url(service_id: services(:service_marseille).id), as: :json
 
@@ -2039,7 +2286,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_includes ids, users(:martin_technique_paris).id
   end
 
-  test 'agents_for_service : sans service → tous les agents du périmètre' do
+  test 'sans service, tous les agents du périmètre sont retournés' do
     get agents_for_service_interventions_url, as: :json
 
     assert_response :success
@@ -2050,14 +2297,14 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes ids, users(:agent_marseille).id
   end
 
-  test 'new_intervention_modele_pointage : sans paramètre → une intervention répétée est préparée' do
+  test 'le formulaire de création d’un modèle de pointage prépare une intervention répétée' do
     get new_intervention_modele_pointage_interventions_url
 
     assert_response :success
     assert assigns(:intervention).repeter
   end
 
-  test "create_intervention_modele_pointage : paramètres valides → un modèle à l'état pointage activé" do
+  test "un modèle de pointage est créé à l'état pointage activé lorsque les paramètres sont valides" do
     assert_difference('Intervention.count', 1) do
       post create_intervention_modele_pointage_interventions_url,
            params: { intervention: { description: 'Modèle de pointage du test',
@@ -2071,7 +2318,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to intervention_url(modele)
   end
 
-  test 'create_intervention_modele_pointage : paramètres invalides → formulaire réaffiché en 422' do
+  test 'un modèle de pointage sans description n’est pas créé' do
     assert_no_difference('Intervention.count') do
       post create_intervention_modele_pointage_interventions_url,
            params: { intervention: { description: '' } }
@@ -2079,8 +2326,6 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_content
   end
-
-  # L'agent affecté ouvre SA propre intervention validée : la page ne doit
 
   private
 

@@ -10,7 +10,7 @@ class DocumentationTest < ActionDispatch::IntegrationTest
     sign_in @manager
   end
 
-  test 'une documentation créée est affichée sur sa page avec son titre et son contenu' do
+  test "En tant que manager, je veux créer une documentation et la voir affichée avec son titre et son contenu" do
     documentation = créer_documentation
 
     assert_redirected_to documentation_url(documentation)
@@ -22,7 +22,7 @@ class DocumentationTest < ActionDispatch::IntegrationTest
     assert_dom 'p', text: /La réservation se fait auprès du secrétariat/
   end
 
-  test 'une documentation créée est retrouvée par la recherche sur son titre' do
+  test "En tant que manager, je veux retrouver la documentation que je viens de créer en cherchant son titre" do
     documentation = créer_documentation
 
     get documentation_index_url(search: 'salle')
@@ -31,7 +31,7 @@ class DocumentationTest < ActionDispatch::IntegrationTest
     assert_dom 'a[href=?]', documentation_path(documentation), text: documentation.titre
   end
 
-  test 'une documentation créée est retrouvée par la recherche sur son contenu' do
+  test "En tant que manager, je veux retrouver la documentation que je viens de créer en cherchant dans son contenu" do
     documentation = créer_documentation
 
     get documentation_index_url(search: 'secrétariat')
@@ -40,7 +40,7 @@ class DocumentationTest < ActionDispatch::IntegrationTest
     assert_dom 'a[href=?]', documentation_path(documentation), text: documentation.titre
   end
 
-  test 'une documentation créée est listée sur la page de sa catégorie' do
+  test "En tant que manager, je veux voir la documentation que je viens de créer listée sur la page de sa catégorie" do
     documentation = créer_documentation
 
     get guide_documentation_index_url

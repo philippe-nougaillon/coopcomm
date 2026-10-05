@@ -7,14 +7,14 @@ class CreateFactureFromCommandeTest < ActiveSupport::TestCase
     @commande = commandes(:commande_paris)
   end
 
-  test 'retourne une facture non sauvegardée' do
+  test 'la facture construite n’est pas encore sauvegardée' do
     facture = CreateFactureFromCommande.new(@commande).call
 
     assert_instance_of Facture, facture
     assert facture.new_record?
   end
 
-  test 'recopie les attributs de la commande' do
+  test 'la facture construite recopie les attributs de la commande' do
     @commande.update!(mémo: 'Accès par la cour', date_livraison_souhaitée: Date.new(2026, 9, 1))
 
     facture = CreateFactureFromCommande.new(@commande).call
@@ -26,7 +26,7 @@ class CreateFactureFromCommandeTest < ActiveSupport::TestCase
     assert_equal @commande.date_livraison_souhaitée, facture.date_livraison_souhaitée
   end
 
-  test 'construit une ligne de facture par ligne de commande' do
+  test 'la facture construite recopie chaque ligne de la commande' do
     facture = CreateFactureFromCommande.new(@commande).call
 
     assert_equal @commande.commande_lignes.size, facture.facture_lignes.size
@@ -58,7 +58,7 @@ class CreateFactureFromCommandeTest < ActiveSupport::TestCase
     assert_predicate facture, :créé?
   end
 
-  test 'expose une interface de service via ApplicationService.call' do
+  test 'une facture se construit aussi par un appel de classe' do
     facture = CreateFactureFromCommande.call(@commande)
 
     assert_instance_of Facture, facture

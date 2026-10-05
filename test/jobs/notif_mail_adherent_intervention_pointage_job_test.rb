@@ -13,7 +13,7 @@ class NotifMailAdherentInterventionPointageJobTest < ActiveJob::TestCase
     @agent        = users(:bond)
   end
 
-  test 'envoie un mail de pointage à l\'adhérent et crée un MailLog tracé' do
+  test "l'adhérent reçoit un mail et un mail log est créé lorsque son intervention est pointée" do
     assert_emails 1 do
       assert_difference -> { MailLog.count }, 1 do
         NotifMailAdherentInterventionPointageJob.perform_now(@intervention)
@@ -30,7 +30,7 @@ class NotifMailAdherentInterventionPointageJobTest < ActiveJob::TestCase
     assert_equal ActionMailer::Base.deliveries.last.message_id, log.message_id
   end
 
-  test 'le destinataire est l\'adhérent résolu via adherent_id' do
+  test "le mail est adressé à l'adhérent de l'intervention" do
     NotifMailAdherentInterventionPointageJob.perform_now(@intervention)
 
     assert_equal [@adherent.email], ActionMailer::Base.deliveries.last.to

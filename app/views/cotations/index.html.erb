@@ -19,24 +19,29 @@
         <%= text_field_tag :search, params[:search], class: "input input-bordered input-md w-full",
               placeholder: "Réf, intitulé", onchange: "this.form.submit()" %>
       </div>
-      <% unless current_user.adhérent? %>
-        <div class="w-full md:flex-1">
-          <%= label_tag :adhérent_ids, "Adhérents", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
-          <%= select_tag :adhérent_ids,
-                  options_from_collection_for_select(@adhérents, 'id', 'nom_prénom', params[:adhérent_ids]),
-                  multiple: true,
-                  class: 'slim-select w-full h-10',
-                  data: { placeholder: 'Tous les adhérents', turbo: false },
-                  onchange: 'this.form.requestSubmit()' %>
-        </div>
-      <% end %>
+      <div class="w-full md:flex-1">
+        <%= label_tag :adhérent_ids, "Adhérents", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
+        <%= select_tag :adhérent_ids,
+                options_from_collection_for_select(@adhérents, 'id', 'nom_prénom', params[:adhérent_ids]),
+                multiple: true,
+                class: 'slim-select w-full h-10',
+                data: { placeholder: 'Tous les adhérents', 
+                        turbo: false,
+                        max_values_shown_desktop: 2,
+                        max_values_shown_mobile: 2 
+                      },
+                onchange: 'this.form.requestSubmit()' %>
+      </div>
       <div class="w-full md:flex-1">
         <%= label_tag :service_ids, "Services", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
         <%= select_tag :service_ids,
                 options_from_collection_for_select(@services, 'id', 'nom', params[:service_ids]),
                 multiple: true,
                 class: 'slim-select w-full h-10',
-                data: { placeholder: 'Tous les services' },
+                data: { placeholder: 'Tous les services',
+                        max_values_shown_desktop: 2,
+                        max_values_shown_mobile: 2 
+                      },
                 onchange: 'this.form.requestSubmit()' %>
       </div>
       <div class="w-full md:flex-1">

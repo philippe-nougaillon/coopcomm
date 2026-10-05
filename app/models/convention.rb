@@ -66,6 +66,11 @@ class Convention < ApplicationRecord
     self.interventions.sum(:temps_total)
   end
 
+  # Nom du fichier PDF (utilisé dans l'URL et l'en-tête Content-Disposition)
+  def pdf_filename
+    "Convention-#{ref}.pdf"
+  end
+
   private
 
   def one_convention_per_service
