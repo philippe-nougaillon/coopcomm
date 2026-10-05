@@ -142,3 +142,4 @@
 ### 2026-10 — `journal/2026-10.md`
 
 - `2026-10-01` — Passe globale de nommage des tests : 1 179 noms en phrases de comportement dans 101 fichiers, suite verte (2196 runs)
+- `2026-10-05` — Pièces jointes : piège `attach` re-mesuré sous Rails 8.1 (validation consommée par `attach`, pas sautée ; aucun parcours utilisateur concerné, rien de grave), doublon `valide_image :photo` du wiki retiré

@@ -109,7 +109,7 @@
 - Une **variable d'environnement lue par du code de prod** doit être posée **par le test qui en a besoin**, et restaurée : héritée de `.env`, elle marche en local et casse en CI.
 - `ActionView::TestCase` ne charge **que** le helper testé : prévoir `include ApplicationHelper`, `include ERB::Util`, et `@request.path_parameters` pour que `url_for` trouve une route.
 - `Devise.mappings` est **vide** hors test d'intégration → `Rails.application.reload_routes_unless_loaded` en `setup`.
-- `record.attach(...)` sur un enregistrement **persisté** enregistre aussitôt : la pièce jointe n'est plus « nouvelle » et **échappe à la validation**. Tester par **assignation**.
+- `record.attach(...)` sur un enregistrement **persisté** enregistre aussitôt, validation comprise : ensuite la pièce jointe n'est plus « nouvelle » et **plus rien ne la revalide** (un test qui attache, modifie, puis asserte l'acceptation passe à vide). Tester par **assignation**. Piège de test seulement : aucun parcours utilisateur ne passe par `attach`.
 - Les bases parallèles `coopcom_test-N` périment : un premier run massivement rouge (erreurs `RecordNotFound` ou `create_and_load_schema`) est auto-réparant — relancer avant de diagnostiquer.
 
 **Système / Capybara**
