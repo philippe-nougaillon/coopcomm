@@ -1,6 +1,6 @@
 # Points à trancher — CoopComm
 
-> **Décisions** (métier ou de conception) qui attendent PE, l'équipe ou le client. Ce que l'agent n'a pas le droit de faire seul est dans `actions-a-faire.md`, la dette actée dans `dettes-ouvertes.md`, les décisions prises dans `points-tranches.md`.
+> **Décisions** (métier ou de conception) qui attendent PE, l'équipe ou le client. Ce que l'agent n'a pas le droit de faire seul est dans `actions-a-faire.md`, la dette actée dans `dettes-ouvertes.md`, ce qui serait mieux sans rien bloquer dans `perfectionnements-a-faire.md`, un fait à connaître dans `a-savoir.md`, les décisions prises dans `points-tranches.md`.
 >
 > **Gravité** — la fiche va dans la section de ce qui **reste cassé ou exposé tant que le point attend** :
 > - 🔴 **Bloque la prod ou l'argent** : obligation contractuelle, argent, sécurité devant de vrais utilisateurs.
@@ -9,7 +9,7 @@
 >
 > **Règle de tenue** : prochain numéro libre ci-dessous, rangement **par numéro** dans la section. Un point tranché quitte ce fichier pour `points-tranches.md`, titre préfixé `✅ TRANCHÉ (AAAA-MM-JJ)`, décision et date dans la fiche ; l'agent reporte ensuite dans `CLAUDE.md` ce qui change une convention.
 >
-> **Prochain numéro libre : D19**
+> **Prochain numéro libre : D21**
 <!-- D15 à D17 n'existent pas sur staging : numéros perdus avec une copie de travail non commitée. D18 garde son numéro, cité dans CLAUDE.md. -->
 
 ---
@@ -81,6 +81,12 @@ Toutes sont **figées par les matrices de caractérisation** : elles ne peuvent 
   2. **Filet côté navigateur** : un petit contrôleur Stimulus global qui écoute l'événement `invalid` et, si le champ n'est pas visible, affiche un message générique (« Un champ obligatoire est incomplet ») au lieu du silence. Protège aussi les cas qu'aucun test n'anticipe, mais masque le défaut au lieu de le faire tomber en test.
   3. **Ne rien faire** et s'en remettre aux contournements existants — acceptable tant qu'aucun formulaire à bascule n'est ajouté ; à revoir si la mise en prod fait remonter un « le bouton ne marche pas ».
 - **À rappeler à PE en début de session tant que ce point est ouvert** (demande du 2026-08-28, consignée dans `CLAUDE.md` §4).
+
+### D19 — slim-select chargé depuis unpkg à l'exécution, sans copie locale (constat 2026-10-05)
+- **Constat** : [application.html.erb:21-22](app/views/layouts/application.html.erb#L21) charge `slimselect.umd.min.js` et `slimselect.css` depuis `https://unpkg.com/slim-select@2.13.1/…` ; aucun pin importmap, aucune copie dans `vendor/`. Tout le reste du JavaScript est servi par l'application.
+- **Ce qui casse sans la bibliothèque** (déduit de la CSS, non simulé) : [application.css:322](app/assets/stylesheets/application.css#L322) applique à tout `select[data-controller~="slim-select"][required]` `opacity: 0`, `pointer-events: none` et `position: absolute` **dès le rendu HTML**, widget ou pas. Si le script ne se charge pas (unpkg indisponible, proxy filtrant d'une collectivité, service worker de la PWA #514 s'il sert un jour les pages hors-ligne), `new SlimSelect` lève dans `connect()` et les champs obligatoires des formulaires — adhérent et service d'une intervention, rôle et services d'un utilisateur, lignes de devis/commande/facture, matériel et état d'un mouvement, unité d'une prestation, utilisateurs d'un site — **disparaissent sans message** ; les filtres d'index, eux, retombent sur un select natif utilisable.
+- **À trancher** : (1) servir la bibliothèque depuis l'application — copie de l'UMD et de la feuille dans les assets, aucun changement de code, mise à jour manuelle ; ou (2) `bin/importmap pin slim-select --download` et `import SlimSelect from 'slim-select'` dans `slim_select_controller.js` et `dynamic_select_controller.js` ; ou (3) garder le CDN. Arguments pour (1) ou (2), au-delà de la robustesse : l'ouverture du code prévue mi-novembre 2026 (un dépôt qui tourne sans appel sortant) et les zones blanches du service technique.
+- **Steelman du statu quo** : version épinglée (`@2.13.1`), cache long, CDN mondial ; l'application elle-même est inutilisable sans réseau, donc la bibliothèque ne tombe seule que sur panne unpkg ou filtrage du domaine.
 
 ## ⚪ Confort
 

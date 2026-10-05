@@ -21,7 +21,7 @@
         <%= form.select :rôle,
                         User.rôles.keys,
                         { selected: user.rôle, required: true },
-                        class: 'slim-select w-full h-10',
+                        class: 'w-full h-10',
                         data: { controller: 'slim-select',
                                 'toggle-role-info-target': 'role',
                                 action: 'change->toggle-role-info#change'
@@ -109,14 +109,11 @@
               services_sélectionnés = services_assignables.ids if services_sélectionnés.empty? && services_assignables.size == 1
             %>
         
-            <%# `data-controller` déclaré plutôt que laissé à l'injection d'application.js,
-                qui n'écoute que turbo:load/render : sans widget, la CSS de
-                `select.slim-select[required]` rend le champ invisible. %>
             <%= form.select :service_ids,
                             options_from_collection_for_select(services_assignables, 'id', 'nom', services_sélectionnés),
                             { required: true },
                             multiple: true,
-                            class: 'slim-select w-full h-10',
+                            class: 'w-full h-10',
                             data: { controller: 'slim-select',
                                     placeholder: 'Tous les services',
                                     max_values_shown_desktop: 1,

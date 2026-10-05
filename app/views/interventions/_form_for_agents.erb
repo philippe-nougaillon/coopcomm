@@ -48,7 +48,7 @@
               <%= form.select :adherent_id,
                               options_from_collection_for_select(@adhérents, :id, :nom_prénom, intervention.adherent_id),
                               { include_blank: true, required: true },
-                              class: "slim-select w-full h-10" %>
+                              class: "w-full h-10", data: { controller: "slim-select" } %>
             </div>
           <% end %>
           <%= form.hidden_field :service_id, value: current_user.services.first.id %>
@@ -89,7 +89,7 @@
           <%= form.select :tool_ids,
                           options_from_collection_for_select(@tools, 'id', 'name', intervention.tool_ids.presence || params[:tool_ids]),
                           {},
-                          class: "slim-select w-full h-10", multiple: true,
+                          class: "w-full h-10", data: { controller: "slim-select" }, multiple: true,
                           'data-verification-disponibilites-target': "tools" %>
         </div>
         <div class="col-span-1 md:col-span-2">

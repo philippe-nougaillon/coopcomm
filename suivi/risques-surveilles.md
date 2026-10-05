@@ -1,19 +1,19 @@
 # Risques surveillés — CoopComm
 
-> Défauts **non reproductibles aujourd'hui** parce qu'une ou plusieurs gardes les empêchent. Chaque fiche dit quelles gardes, et ce qui les ferait tomber : **re-signaler** dès qu'une de ces conditions survient ou qu'une occurrence est mesurée. Risques clos : `risques-clos.md`. Bugs reproductibles : `bugs-ouverts.md`.
+> **Ce à quoi le projet est exposé, à surveiller** : soit un **défaut connu** qu'une ou plusieurs gardes rendent inatteignable aujourd'hui, soit un **angle mort** où une régression passerait sans être vue — zone sans test, environnement jamais vérifié, procédure jamais répétée. Chaque fiche dit ce qui protège ou ce qui manque, et ce qui ferait basculer : **re-signaler** dès qu'une garde tombe ou qu'une occurrence est mesurée. Risques clos : `risques-clos.md`. Bugs reproductibles : `bugs-ouverts.md`. Le code livré à réécrire est une dette : `dettes-ouvertes.md`.
 >
-> **Gravité** — la fiche va dans la section de ce qui arriverait **le jour où la garde tombe** ; une occurrence mesurée en prod fait monter le niveau :
-> - 🔴 **Grave** : argent, données, fuite, parcours critique, ou un écran entier en 500 pour tous.
-> - 🟠 **Limité** : un utilisateur, une action, réessayable.
+> **Gravité** — la fiche va dans la section de ce qui arriverait **le jour où ça se produit** ; une occurrence mesurée en prod fait monter le niveau :
+> - 🔴 **Grave** : argent, données, fuite, sécurité, parcours critique, ou un écran entier en 500 pour tous.
+> - 🟠 **Limité** : un utilisateur, une action, réessayable ; l'interface se dégrade sans perte de données.
 > - ⚪ **Hors production** : tests, CI, outillage.
 >
-> **Règle de tenue** : prochain numéro libre ci-dessous, rangement **par numéro** dans la section. Un risque corrigé ou devenu sans objet quitte ce fichier pour `risques-clos.md`, titre préfixé `✅ CORRIGÉ (AAAA-MM-JJ)` ou `✅ SANS OBJET (AAAA-MM-JJ)`.
+> **Règle de tenue** : prochain numéro libre ci-dessous (préfixe `R`), rangement **par numéro** dans la section. Un risque quitte ce fichier pour `risques-clos.md` quand il est corrigé, couvert par un test ou une garde, ou devenu sans objet, titre préfixé `✅ CORRIGÉ`, `✅ COUVERT` ou `✅ SANS OBJET (AAAA-MM-JJ)` ; une occurrence réelle en fait un bug (fiche B), le risque est alors clos avec le renvoi.
 >
-> **Prochain numéro libre : R8**
+> **Prochain numéro libre : R9**
 
 ---
 
-## 🔴 Grave si la garde tombe
+## 🔴 Grave si ça se produit
 
 ### R1 — Pointage : une fille de la veille non terminée ferait pointer une NOUVELLE intervention au lieu de terminer la sienne
 - **Signalé par** : PE, 2026-07-10 (point sensible vécu/craint sur la page d'accueil).
@@ -40,7 +40,7 @@
 
 ---
 
-## 🟠 Limité si la garde tombe
+## 🟠 Limité si ça se produit
 
 ### R5 — `EmailSubscription#on_intervention_workflow_changed` lit `audits.last.user_id` sans garde : crash si une intervention n'avait AUCUN audit au moment d'une transition
 - **Signalé le** : 2026-06-23 (cause ① de **B8**, relocalisée le 2026-07-31 sur la ligne 7). Reclassé ici le 2026-09-21 à la correction de B8, sur décision de PE : « c'est plutôt une mise en garde d'un potentiel futur bug ».
@@ -71,3 +71,8 @@
 - **Signature caractéristique** : `audits_pkey` avec un id **très inférieur** au `last_value` attendu de `audits_id_seq`. Auto-réparant : le chargement de fixtures suivant refait DELETE + INSERT + `setval` cohérents.
 - **Statut 2026-07-16 : reclassé risque surveillé — la parade retenue est le workflow, pas le code.** PE a découvert que `bin/rails test:all` lance toute la suite (système incluse) en **un seul run** → plus de double run en usage normal (validé empiriquement : 3 × `test:all` verts, seeds 8236/511/42077, 1336 runs / 0 échec). Règle consignée dans CONTRIBUTING §⑦. Deux correctifs successivement implémentés, vérifiés puis **abandonnés sur décision PE** : la base dédiée `coopcom_test_system` (2026-07-13-d, aiguillage `ARGV` non standard) et le durcissement `_fixture: model_class: Audited::Audit` en tête d'`audits.yml` (ids `identify` stables — abandonné le 2026-07-16 : « pas de modification qui ne sert à rien si `test:all` est utilisé »).
 - **La fragilité de fond demeure** : les fixtures `audits.yml` tirent toujours la séquence. Un double run accidentel (deux terminaux, `guard` actif pendant un run manuel) peut reproduire le symptôme — dans ce cas, re-signaler ; le durcissement d'une ligne reste documenté ci-dessus.
+
+### R8 — Fixture d'API mal formée : le chemin nominal du connecteur de trajets n'est exercé par aucun test de la suite (constat 2026-07-29, session `/tests` lot D ; ex-DT7, requalifié risque le 2026-10-05)
+- **Angle mort** : `test/fixtures/files/responseRoutesInfos.json`, utilisée par le stub WebMock global du `test_helper`, contient la **sortie du service `FetchRoutesInfos`** (`{"data_response":…, "routes_info":…, "localisation_depart":…}`) et non la **réponse brute de Google** (`{"routes":[…]}`). Conséquence : dans toute la suite, `get_trajet_from_response` reçoit un objet sans clé `routes` → renvoie `''`, et `Intervention#calculate_co2` calcule toujours **co2 = 0**. Le chemin nominal du connecteur n'était donc exercé nulle part. Les nouveaux tests de `fetch_routes_infos_service_test.rb` posent leurs propres stubs au bon format ; **la fixture globale n'a pas été corrigée** (elle est utilisée implicitement par toute la suite, un changement de forme y modifierait le `trajet`/`co2` de nombreux tests d'intervention — à faire dans un lot dédié).
+- **Ce qui avertirait** : rien dans la suite — une régression du calcul de trajet ou de CO₂ sur le chemin nominal passerait verte ; seul `fetch_routes_infos_service_test.rb` la verrait, pour le service seul.
+- **Ce qui ferait basculer** : un trajet vide ou un CO₂ faux constaté sur une intervention réelle → fiche B, risque clos avec le renvoi.

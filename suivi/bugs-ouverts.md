@@ -9,7 +9,7 @@
 >
 > **Règle de tenue** : une fiche nouvelle prend le **prochain numéro libre** ci-dessous (et l'incrémente) et se range dans sa section **par numéro**. Un bug corrigé **quitte ce fichier** pour `bugs-corriges.md` — fiche entière, titre préfixé `✅ CORRIGÉ (AAAA-MM-JJ)`, ligne « Correctif appliqué » ; ne jamais marquer ✅ sur place. Une correction **partielle** reste ici, titre `⚠️ PARTIELLEMENT CORRIGÉ`, reliquat en tête de fiche.
 >
-> **Prochain numéro libre : B121**
+> **Prochain numéro libre : B122**
 
 ---
 
@@ -172,19 +172,6 @@
 - **Impact** : la fonction est inatteignable dans son usage normal, sur les quatre formulaires. Gênant surtout sur téléphone, où l'on ne relit pas sa saisie autrement.
 - **Correctif proposé** : une classe sur le bouton — `relative z-10`.
 - **Test** : `test/system/adherent/devise_adherent_flow_test.rb`, assertion sur le `type` du champ (`password` → `text`), **rouge volontairement** jusqu'à la correction.
-
-### B103 — L'entrée « Tous » des filtres d'index a disparu du menu déroulant : on ne peut plus revenir à « tout afficher » que par la petite croix
-- **Signalé par** : l'agent, 2026-09-07, en instruisant l'effet du commit `c8c8b8ef` (Dani, « Fix blank sur mouvement »).
-- **Où** : [slim_select_controller.js:8-11](app/javascript/controllers/slim_select_controller.js#L8-L11) — `connect()` marque `data-placeholder = 'true'` sur l'option vide de **tous** les selects slim, sans regarder si le select est `required`. SlimSelect 2.13.1 masque alors cette option (`ss-option ss-hide`). Le garde visait les champs obligatoires (il y ferme le trou de B99/B102, cf. la fiche B99) ; il attrape au passage les filtres, dont l'option vide **est** un choix légitime.
-- **Vues concernées** : les 6 filtres à blanc étiqueté — `cotations/index:53`, `commandes/index:42`, `factures/index:36`, `conventions/index:27` et `:34`, `adherent_crm/index:32` (tous `include_blank: "Tous"`).
-- **Mesuré au navigateur (2026-09-07), preuve rouge/verte faite** : sur `/cotations?workflow_state=Envoyé`, menu du filtre Statut = `[["", ss-option ss-hide], ["Créé"], ["Envoyé" ss-selected], …]` — l'entrée « Tous » est là mais invisible et sans son libellé. Le bloc de 5 lignes retiré temporairement (copie de sauvegarde, jamais `git checkout`) → `[["Tous", ss-option], …]` : l'entrée revient. L'écart est donc bien imputable à ce commit.
-- **Parcours de reproduction** :
-  1. J'ouvre la liste des devis et je filtre sur le statut « Envoyé ».
-  2. Je rouvre le menu **Statut** pour revenir à tous les devis.
-  3. → La ligne **« Tous » n'est plus proposée** ; le menu ne liste que les six statuts. Il faut deviner la petite croix `×` du champ pour vider le filtre.
-- **Impact** : faible mais quotidien, et sur un public « peu à l'aise avec l'informatique ». Pas de cul-de-sac : la croix `×` fonctionne et re-soumet bien le formulaire (vérifié : `?workflow_state=` → liste complète). **Le champ replié affiche toujours « Tous » quand rien n'est filtré** (SlimSelect reprend le texte de l'option placeholder) — la perte ne concerne que le menu ouvert. Même chose pour les invites `prompt: "Choisir un adhérent"` des formulaires : elles restent affichées dans le champ replié, seule leur ligne de menu disparaît, ce qui est le comportement voulu là-bas.
-- **Correctif proposé, mesuré** : borner le garde aux champs obligatoires — `if (blankOption && this.element.required)`. Variante posée temporairement et relevée au navigateur : le filtre Statut retrouve son entrée « Tous », et les trois selects requis de `cotations/new` gardent `data-placeholder = "true"` et `valueMissing = true`. Les ~10 selects `required` du dépôt portent bien l'attribut (vérifié sur rôle, état et matériel d'un mouvement, adhérent/service/prestation d'un devis), donc aucun n'est déprotégé par ce bornage. C'était déjà le périmètre du garde de B99.
-- **Non couvert par un test** : plus aucun test ne surveille le comportement de l'option vide depuis la suppression de `test/system/slim_select_test.rb` par `#491`.
 
 <!-- B104 est dans un stash (flash qui fait déborder le cookie de session), non encore fusionnée dans staging : ne pas le réattribuer. -->
 
