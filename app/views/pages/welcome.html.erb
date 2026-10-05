@@ -1,374 +1,460 @@
+
+
 <%= render partial: 'partials/navbar/navbar_homepage' %>
-<main>
-  <section
-      class="min-h-[70vh] lg:min-h-[85vh] flex items-center px-6 lg:px-16 py-16"
-      style="
-        background: radial-gradient(
-          ellipse 80% 80% at 70% 50%,
-          #ddeeff 0%,
-          #eef4fb 40%,
-          transparent 100%
-        );
-      "
-    >
-    <div
-        class="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12"
-      >
-      <div class="flex-1 max-w-xl">
-        <h1 class="font-title text-3xl lg:text-5xl font-bold mb-6">
-          <span
-              class="bg-clip-text text-transparent"
-              style="
-                background-image: linear-gradient(
-                  to right,
-                  #47b5db,
-                  #bc437e,
-                  #8043ad
-                );
-              "
-            >
-            Mutualisez mieux,
-          </span>
-          <br />
-          dépensez moins !
-        </h1>
-        <p class="lg:text-xl mb-8 text-black">
-          CoopComm accompagne les
-          <b>communautés de communes</b> dans la <b>mutualisation</b> de
-          leurs
-          <b>agents, investissements et moyens techniques</b>
-        </p>
-        <%= link_to "Réserver une démo", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: "hidden md:inline-block bg-[#db2767] px-8 py-3 rounded-full text-white text-base font-semibold hover:bg-[#c51f5b] transition shadow-md" %>
-      </div>
-      <div
-          class="flex-1 relative hidden lg:flex justify-center items-center min-h-[420px]"
-        >
-        <%= image_tag "ecrans.png", class: "absolute top-0 left-0" %>
+
+<%
+  demo_url = "https://calendar.app.google/a52LSSCoXsdwz7A2A"
+  logo   = '<span class="font-extrabold whitespace-nowrap"><span class="text-[#47b5db]">Co</span><span class="text-[#691E9A]">op</span><span class="text-[#47b5db]">Comm</span><span class="text-[#691E9A]">.</span></span>'.html_safe
+  logo_d = '<span class="font-extrabold whitespace-nowrap"><span class="text-[#47b5db]">Co</span><span class="text-white">op</span><span class="text-[#47b5db]">Comm</span><span class="text-white">.</span></span>'.html_safe
+  logo_l = '<span class="font-extrabold whitespace-nowrap"><span class="text-white">Co</span><span class="text-[#691E9A]">op</span><span class="text-white">Comm</span><span class="text-[#691E9A]">.</span></span>'.html_safe
+
+  focus_ring = "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+%>
+
+
+
+
+
+
+
+<main class="bg-gradient-to-b from-blue-50 via-blue-100 to-blue-20">
+
+  <!-- HERO -->
+  <section class="py-16 lg:py-24 px-6 lg:px-16 flex flex-col gap-6 md:flex-row">
+    <div class="flex-1 m-10">
+      <h1 class="text-4xl text-center lg:text-7xl font-extrabold text-slate-900 tracking-tight">
+        <span class="bg-clip-text text-transparent" style="background-image: linear-gradient(to right, #47b5db, #bc437e, #8043ad);">
+          Mutualisez mieux,
+        </span>
+        <br/>
+        dépensez moins !
+      </h1>
+
+      <section aria-label="Nos engagements" class="px-6 lg:px-16 pb-4">
+    <ul class="max-w-6xl mx-auto flex flex-wrap justify-center gap-x-10 gap-y-3 text-sm font-semibold text-slate-700">
+      <% ["Développée et hébergée en France", "Code source ouvert", "Conforme RGPD"].each do |label| %>
+        <li class="flex items-center gap-2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-[#691E9A]" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          <%= label %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+      <p class="text-lg lg:text-2xl text-justify text-slate-600 mt-18 m-4 leading-relaxed">
+        CoopComm est la plateforme collaborative pensée pour les communautés de communes : gérez vos plannings d'agents, partagez votre matériel et automatisez votre facturation en un clic.
+      </p>
+
+      <div class="flex flex-col mt-10 sm:flex-row justify-center text-center items-center gap-4 pt-4">
+        <%= link_to "Planifier une démonstration", "https://calendar.app.google/a52LSSCoXsdwz7A2A",
+              class: "w-72 md:inline-block bg-[#db2767] px-8 py-3 rounded-full text-white text-base font-semibold hover:bg-[#c51f5b] transition shadow-md" %>
+        <%= link_to "Voir les fonctionnalités", "#features",
+              class: "md:inline-block px-8 py-3 w-72 rounded-full bg-white font-semibold border border-slate-200 transition text-base hover:bg-transparent" %>
+
       </div>
     </div>
+
+    <div class="flex-1 pt-10 max-w-4xl mx-auto">
+      <%= image_tag "ecrans(1).png", class: "w-full", alt: "Plateforme CoopComm" %>
+    </div>
   </section>
-  <section class="bg-[#F4EFE6] m-6 lg:m-20 rounded-xl p-8">
-    <div class="flex flex-col lg:flex-row gap-16">
-      <div class="max-w-lg">
-        <h2 class="text-lg lg:text-3xl font-medium mb-4">
+
+  <!-- POURQUOI CHOISIR -->
+  <%
+    benefits = [
+      { title: "Réduction des coûts",    tag: "Mutualisation",         blob: "bg-[#47b5db]", tagc: "border-black/30", shift: "",
+        text: "Diminuez vos dépenses de fonctionnement grâce à la mutualisation intelligente des ressources." },
+      { title: "Optimisation RH",        tag: "Coopération", blob: "bg-[#691E9A]", tagc: "border-black/20", shift: "xl:translate-y-12",
+        text: "Maximisez l'efficacité de vos équipes en partageant les compétences entre communes." },
+      { title: "Conformité garantie",    tag: "RGPD",                  blob: "bg-[#47b5db]", tagc: "border-black/20", shift: "",
+        text: "Respectez toutes les réglementations avec une solution conforme au RGPD." },
+      { title: "Souveraineté numérique", tag: "100 % France",          blob: "bg-[#691E9A]", tagc: "border-black/20", shift: "xl:translate-y-10",
+        text: "Profitez d'une solution développée, hébergée et maintenue à 100 % en France." },
+      { title: "Code source ouvert",     tag: "Open source",           blob: "bg-[#47b5db]", tagc: "border-black/20", shift: "",
+        text: "Développé en France et publié en toute transparence sur GitHub." }
+    ]
+  %>
+
+  <section id="pourquoi" class="scroll-mt-24 bg-[#F4EFE6] m-6 lg:m-20 rounded-3xl px-6 py-12 lg:p-16 overflow-hidden  shadow-sm">
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col lg:flex-row gap-4 lg:gap-8 lg:items-center mb-6">
+        <h2 class="text-4xl lg:text-5xl font-semibold tracking-tight">
           Pourquoi choisir
-          <span class="text-[#47b5db] font-bold">Co</span
-            ><span class="text-[#691E9A] font-bold">op</span
-            ><span class="text-[#47b5db] font-bold">Comm</span
-            ><span class="text-[#691E9A] font-bold">.</span> ?
+          <span class="font-bold whitespace-nowrap">
+            <span class="text-[#47b5db]">Co</span><span class="text-[#691E9A]">op</span><span class="text-[#47b5db]">Comm</span><span class="text-[#691E9A]">.</span> ?
+          </span>
         </h2>
-        <h3 class="text-black text-lg">
-          Une solution complète pour optimiser la gestion de votre
-          intercommunalité
-        </h3>
+        <p class="text-xl lg:text-2xl text-black/70">
+          Une solution complète pour optimiser la gestion de votre intercommunalité.
+        </p>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-        <div>
-          <h4 class="flex items-center gap-2 text-xl font-semibold mb-2">
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="w-5 h-5 text-black"
-              >
-              <path d="M21.801 10A10 10 0 1 1 17 3.335" />
-              <path d="m9 11 3 3L22 4" />
-            </svg>
-            Réduction des coûts
-          </h4>
-          <p class="text-black">
-            Diminuez vos dépenses de fonctionnement grâce à la mutualisation
-            intelligente des ressources.
-          </p>
-        </div>
-        <div>
-          <h4 class="flex items-center gap-2 text-xl font-semibold mb-2">
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="w-5 h-5 text-black"
-              >
-              <path d="M21.801 10A10 10 0 1 1 17 3.335" />
-              <path d="m9 11 3 3L22 4" />
-            </svg>
-            Optimisation RH
-          </h4>
-          <p class="text-black">
-            Maximisez l'efficacité de vos équipes en partageant les
-            compétences entre communes.
-          </p>
-        </div>
-        <div>
-          <h4 class="flex items-center gap-2 text-xl font-semibold mb-2">
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="w-5 h-5 text-black"
-              >
-              <path d="M21.801 10A10 10 0 1 1 17 3.335" />
-              <path d="m9 11 3 3L22 4" />
-            </svg>
-            Conformité garantie
-          </h4>
-          <p class="text-black">
-            Respectez toutes les réglementations avec une solution conforme
-            au RGPD.
-          </p>
-        </div>
-        <div>
-          <h4 class="flex items-center gap-2 text-xl font-semibold mb-2">
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="w-5 h-5 text-black"
-              >
-              <path d="M21.801 10A10 10 0 1 1 17 3.335" />
-              <path d="m9 11 3 3L22 4" />
-            </svg>
-            Souveraineté numérique
-          </h4>
-          <p class="text-black">
-            Profitez d'une solution développée, hébergée et maintenue à 100
-            % en France.
-          </p>
-        </div>
-      </div>
+
+      <ul class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 xl:pb-12">
+        <% benefits.each do |b| %>
+          <li class="group relative overflow-hidden rounded-3xl p-8 min-h-[280px] flex flex-col text-black
+                     shadow-sm hover:shadow-2xl hover:translate-x-2
+                     transition duration-500 ease-out motion-reduce:transition-none
+                     <%= b[:shift] %>">
+
+            <!-- Bulle décorative -->
+            <span aria-hidden="true"
+                  class="absolute -bottom-16 -right-16 w-36 h-36 rounded-full <%= b[:blob] %>
+                         transition-transform duration-700 group-hover:scale-150 motion-reduce:transition-none"></span>
+
+            <div class="relative mt-10">
+              <h3 class="text-2xl font-semibold mb-2"><%= b[:title] %></h3>
+              <span class="text-xs font-medium uppercase tracking-wider border rounded-full px-3 py-1 <%= b[:tagc] %>">
+                <%= b[:tag] %>
+              </span>
+              <p class="opacity-80 mt-8 leading-relaxed"><%= b[:text] %></p>
+            </div>
+          </li>
+        <% end %>
+      </ul>
     </div>
   </section>
-  <section class="lg:pt-20 lg:pb-24 lg:px-16">
-    <div class="m-4 text-center lg:px-48 mb-12">
-      <h2 class="text-2xl lg:text-3xl font-medium mb-8">
-        Des fonctionnalités <b> pensées pour votre quotidien </b>
-      </h2>
-      <h3 class="m-4">
-        De la coordination des agents à la gestion du matériel en passant
-        par la traçabilité des interventions,
-        <span class="text-[#47b5db] font-bold">Co</span
-          ><span class="text-[#691E9A] font-bold">op</span
-          ><span class="text-[#47b5db] font-bold">Comm</span
-          ><span class="text-[#691E9A] font-bold">.</span>
-        centralise vos opérations dans une interface intuitive et sécurisée.
-      </h3>
+
+
+ 
+<!-- EN IMAGES : showcase interactif, tout dans un seul fichier -->
+<%
+  slides = [
+    ["/slide1.png", "Une vue d'ensemble", "Toute l'activité de votre intercommunalité sur un seul écran."],
+    ["/new_intervention.png", "Créer une intervention", "Une demande se saisit en quelques secondes, depuis un ordinateur ou un téléphone."],
+    ["/interventions.png", "Suivre les interventions", "Retrouvez toutes les demandes et leur état d'avancement."],
+    ["/intervention.png", "Le détail d'une intervention", "Agents, matériel, échanges et historique réunis au même endroit."],
+    ["/tools.png", "Gérer le matériel", "Inventaire, prêts et utilisation du matériel partagé."],
+    ["/dashboard.png", "Piloter avec le tableau de bord", "Les indicateurs clés pour garder la maîtrise de vos budgets."]
+  ]
+%>
+<section id="images" class="scroll-mt-24 bg-[#F6F2F9] px-6 lg:px-16 py-20 lg:py-28">
+  <div class="max-w-6xl mx-auto">
+    <h2 class="text-4xl lg:text-5xl font-extrabold tracking-tight max-w-3xl">La plateforme en images</h2>
+    <p class="mt-3 text-lg text-black/70 max-w-2xl">Choisissez une fonctionnalité pour voir l'écran correspondant.</p>
+
+    <div class="mt-12 grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-8 lg:gap-14 items-start">
+
+      <!-- Liste des fonctionnalités (onglets) -->
+      <div role="tablist" aria-orientation="vertical" aria-label="Écrans de CoopComm"
+           class="order-2 lg:order-1 flex flex-col">
+        <% slides.each_with_index do |(src, title, text), i| %>
+          <button type="button" role="tab" id="tab-<%= i %>" aria-controls="shot-<%= i %>"
+                  aria-selected="<%= i.zero? %>" tabindex="<%= i.zero? ? 0 : -1 %>"
+                  data-tab data-active="<%= i.zero? %>"
+                  class="group text-left border-l-2 border-[#691E9A]/15 data-[active=true]:border-[#691E9A]
+                         pl-5 py-3 transition-colors motion-reduce:transition-none
+                         focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#691E9A]">
+            <span class="block text-lg font-bold text-black/55 group-hover:text-black/80 group-data-[active=true]:text-[#691E9A] transition-colors">
+              <%= title %>
+            </span>
+            <span class="grid grid-rows-[0fr] group-data-[active=true]:grid-rows-[1fr] transition-[grid-template-rows] duration-300 motion-reduce:transition-none">
+              <span class="overflow-hidden">
+                <span class="block pt-1 pb-1 text-black/70 leading-relaxed"><%= text %></span>
+              </span>
+            </span>
+          </button>
+        <% end %>
+      </div>
+
+      <!-- Capture dans un cadre de navigateur -->
+      <div class="order-1 lg:order-2 lg:sticky lg:top-28">
+        <div class="rounded-xl overflow-hidden bg-white shadow-2xl ring-1 ring-black/5">
+          <div class="flex gap-1.5 px-3 py-2 bg-slate-100" aria-hidden="true">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#ff6b6b]"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-[#ffd166]"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-[#06d6a0]"></span>
+          </div>
+          <div class="relative aspect-[16/10] bg-white">
+            <% slides.each_with_index do |(src, title, text), i| %>
+              <div role="tabpanel" id="shot-<%= i %>" aria-labelledby="tab-<%= i %>"
+                   data-panel data-active="<%= i.zero? %>"
+                   class="absolute inset-0 opacity-0 data-[active=true]:opacity-100 transition-opacity duration-300 motion-reduce:transition-none
+                          pointer-events-none data-[active=true]:pointer-events-auto">
+                <%= image_tag src, alt: title, class: "h-full w-full object-contain object-top",
+                      loading: (i.zero? ? nil : "lazy") %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
     </div>
-    <div class="flex flex-col md:flex-row gap-6 gap-6 px-6">
-      <div class="flex flex-col gap-6 flex-1">
-        <div class="bg-[#E5EFF9] rounded-xl p-6">
-          <h3 class="font-bold mb-3">Gestion des Actifs</h3>
-          <p class="text-sm text-black">
-            Suivi de l'inventaire du matériel et des prêts. Gardez une trace
-            de toutes les utilisations de vos actifs lors d'interventions
-            terrain. Localisez facilement votre matériel grâce à notre carte
-            interactive.
-          </p>
-        </div>
-        <div class="bg-[#E5EFF9] rounded-xl p-6">
-          <h3 class="font-bold mb-3">Pointage par QR Code</h3>
-          <p class="text-sm text-black">
-            Pour les interventions récurrentes, il suffit de créer une
-            intervention modèle et d'imprimer son QR Code. En le scannant
-            avec l'application, l'agent ouvre directement l'intervention.
-            L'adhérent est alors automatiquement notifié. Une seconde
-            utilisation du QR Code marquera la fin de l'intervention.
-          </p>
-        </div>
-        <div class="border-2 border-[#E5EFF9] rounded-xl p-6">
-          <h3 class="font-bold mb-3">Maîtrise budgétaire</h3>
-          <p class="text-sm text-black">
-            Un tableau de bord de gestion permet aux adhérents et managers
-            de suivre leurs indicateurs clés.
-          </p>
-        </div>
-        <div class="border-2 border-[#E5EFF9] rounded-xl p-6">
-          <h3 class="font-bold mb-3">Workflow</h3>
-          <p class="text-sm text-black">
-            Chaque intervention passe d'un état à un autre grâce à des
-            actions déterminées à l'avance. Certaines actions provoquent
-            l'envoi de notifications.
-          </p>
-        </div>
-        <div class="border-2 border-[#ECE88F] rounded-xl p-6">
-          <span class="text-xs font-bold bg-[#ECE88F] px-2 py-1 rounded-xl"
-              >NOUVEAUTÉ</span
-            >
-          <h3 class="font-bold mb-3 mt-2">Prévision d'intervention (IA)</h3>
-          <p class="text-sm text-black">
-            Sur la base des interventions précédentes, une intelligence
-            Artificielle va proposer des interventions à prevoir
-          </p>
-        </div>
-      </div>
-      <div class="flex flex-col gap-6 flex-1 lg:mt-16">
-        <div class="bg-[#E5EFF9] rounded-xl p-6">
-          <h3 class="font-bold mb-3">Interventions</h3>
-          <p class="text-sm text-black">
-            Une demande d'intervention est émise par l'adhérent à
-            destination d'une équipe locale via l'application, téléphone,
-            etc. L'équipe se rend sur le terrain et enregistre les
-            informations de l'intervention dans l'outil. Une fois
-            l'intervention terminée, l'adhérent devra la valider ou donner
-            son avis.
-          </p>
-        </div>
-        <div class="border-2 border-[#E5EFF9] rounded-xl p-6">
-          <h3 class="font-bold mb-3">Adhérents</h3>
-          <p class="text-sm text-black">
-            Les adhérents ont un accès à la plateforme limité aux données
-            relatives à leurs demandes d'interventions.
-          </p>
-        </div>
-        <div class="border-2 border-[#E5EFF9] rounded-xl p-6">
-          <h3 class="font-bold mb-3">Une information claire et partagée</h3>
-          <p class="text-sm text-black">
-            Plateforme numérique fournissant une source unique de référence
-            (SSOT), robuste et fiable. Chaque modification de données est
-            auditée.
-          </p>
-        </div>
-        <div class="border-2 border-[#E5EFF9] rounded-xl p-6">
-          <h3 class="font-bold mb-3">Messagerie instantanée</h3>
-          <p class="text-sm text-black">
-            Un espace de communication instantanée permet aux managers de
-            discuter directement avec les agents. Un système de modération
-            du vocabulaire inapproprié veille à la bonne qualité des
-            discussions.
-          </p>
-        </div>
-        <div class="border-2 border-[#F4EFE6] rounded-xl p-6">
-          <span class="text-xs font-bold bg-[#F4EFE6] px-2 py-1 rounded-xl">
-            À VENIR
-          </span>
-          <h3 class="font-bold mt-2 mb-3">Maintenance préventive (IA)</h3>
-          <p class="text-sm text-black">
-            Grâce au machine learning, à l'analyse des données
-            opérationnelles et à la surveillance prédictive de l'état des
-            actifs, les utilisateurs peuvent optimiser la maintenance et
-            réduire les risques de défaillance des opérations.
-          </p>
-        </div>
-      </div>
-      <div class="flex flex-col gap-6 flex-1">
-        <div class="bg-[#E5EFF9] rounded-xl p-6">
-          <h3 class="font-bold mb-3">Agents et Managers</h3>
-          <p class="text-sm text-black">
-            Les agents ont un accès à la plateforme limité aux
-            données relatives à leurs interventions. Quant aux managers, ils
-            disposent d'un accès complet aux données de leur organisation.
-          </p>
-        </div>
-        <div class="border-2 border-[#E5EFF9] rounded-xl p-6">
-          <h3 class="font-bold mb-3">Gestion des Absences</h3>
-          <p class="text-sm text-black">
-            Bloque la planification ou l'attribution d'une intervention à un
-            agent pour lequel une absence est prévue.
-          </p>
-        </div>
-        <div class="border-2 border-[#E5EFF9] rounded-xl p-6">
-          <h3 class="font-bold mb-3">
-            Une référence unique sur tous supports
-          </h3>
-          <p class="text-sm text-black">
-            Design Responsive pour une utilisation sur
-            smartphone/PC/tablette.
-          </p>
-        </div>
-        <div class="border-2 border-[#E5EFF9] rounded-xl p-6">
-          <h3 class="font-bold mb-3">Notifications et alertes</h3>
-          <p class="text-sm text-black">
-            Certains changements d'état provoquent l'envoi d'email ou de
-            message WhatsApp afin d'en informer toutes les parties
-            prenantes.
-          </p>
-        </div>
-        <div class="border-2 border-[#F4EFE6] rounded-xl p-6">
-          <span class="text-xs font-bold bg-[#F4EFE6] px-2 py-1 rounded-xl">
-            À VENIR
-          </span>
-          <h3 class="font-bold mt-2 mb-3">Maintenance préventive (IA)</h3>
-          <p class="text-sm text-black">
-            La maintenance prédictive est conçue pour programmer des actions
-            de maintenance corrective avant qu'une panne ne se produise.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-  <section class="mb:mt-24 bg-[#F4EFE6] rounded-xl p-8 m-10">
-    <h2 class="text-2xl lg:text-3xl font-medium text-center mb-12">
-      <span class="text-[#47b5db] font-bold">Co</span
-        ><span class="text-[#691E9A] font-bold">op</span
-        ><span class="text-[#47b5db] font-bold">Comm</span
-        ><span class="text-[#691E9A] font-bold">.</span>
-      en images
-    </h2>
-    <div class="relative w-full md:w-3/4 mx-auto overflow-hidden">
-      <div id="carousel" class="flex transition-transform duration-500">
-        <img src="slide1.png" class="w-full flex-shrink-0 object-contain" />
-        <img src="new_intervention.png" class="w-full flex-shrink-0 object-contain" />
-        <img src="interventions.png" class="w-full flex-shrink-0 object-contain" />
-        <img src="intervention.png" class="w-full flex-shrink-0 object-contain" />
-        <img src="tools.png" class="w-full flex-shrink-0 object-contain" />
-        <img src="dashboard.png" class="w-full flex-shrink-0 object-contain" />
-      </div>
-      <button
-          id="prev"
-          class="absolute left-4 top-1/2 -translate-y-1/2 bg-[#DCCDE8] text-[#6A1F9C] shadow-lg w-10 h-10 rounded-full flex items-center justify-center"
-        >
-        ❮
-      </button>
-      <button
-          id="next"
-          class="absolute right-4 top-1/2 -translate-y-1/2 bg-[#DCCDE8] text-[#6A1F9C] shadow-lg w-10 h-10 rounded-full flex items-center justify-center"
-        >
-        ❯
-      </button>
-    </div>
-  </section>
+  </div>
+
+  <!-- JS inline : aucun contrôleur Stimulus nécessaire -->
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const carousel = document.getElementById("carousel");
-      const slides = document.querySelectorAll("#carousel img");
-      const prev = document.getElementById("prev");
-      const next = document.getElementById("next");
+    (function () {
+      var section = document.currentScript.closest("section");
+      if (!section || section.dataset.bound) return;
+      section.dataset.bound = "true";
 
-      let index = 0;
+      var tabs = Array.prototype.slice.call(section.querySelectorAll("[data-tab]"));
+      var panels = Array.prototype.slice.call(section.querySelectorAll("[data-panel]"));
+      var current = 0;
 
-      function updateCarousel() {
-        carousel.style.transform = `translateX(-${index * 100}%)`;
+      function select(i, focus) {
+        current = i;
+        tabs.forEach(function (tab, j) {
+          var on = j === i;
+          tab.dataset.active = on;
+          tab.setAttribute("aria-selected", on);
+          tab.tabIndex = on ? 0 : -1;
+        });
+        panels.forEach(function (panel, j) { panel.dataset.active = j === i; });
+        if (focus) tabs[i].focus();
       }
 
-      next.addEventListener("click", () => {
-        index = (index + 1) % slides.length;
-        updateCarousel();
+      tabs.forEach(function (tab, i) {
+        tab.addEventListener("click", function () { select(i, false); });
+        tab.addEventListener("keydown", function (e) {
+          var last = tabs.length - 1, next = current;
+          if (e.key === "ArrowDown" || e.key === "ArrowRight") next = current === last ? 0 : current + 1;
+          else if (e.key === "ArrowUp" || e.key === "ArrowLeft") next = current === 0 ? last : current - 1;
+          else if (e.key === "Home") next = 0;
+          else if (e.key === "End") next = last;
+          else return;
+          e.preventDefault();
+          select(next, true);
+        });
+      });
+    })();
+  </script>
+</section>
+
+
+
+<!-- FONCTIONNALITÉS : onglets par catégorie, tout dans un seul fichier -->
+<%
+  groups = [
+    { id: "terrain", title: "Sur le terrain", intro: "Organiser et suivre les interventions au quotidien.", items: [
+      ["Interventions", "L'adhérent émet une demande, l'équipe locale se rend sur place et enregistre l'intervention. Une fois terminée, l'adhérent la valide ou donne son avis.", '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>'],
+      ["Pointage par QR Code", "Pour les interventions récurrentes, générez un QR code depuis un modèle. Un scan démarre la mission, un second la termine.", '<rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/>'],
+      ["Gestion des actifs et des absences", "Suivi de l'inventaire et des prêts, avec la trace de chaque utilisation. Bloque l'attribution à un agent absent.", '<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>'],
+      ["Workflow", "Chaque intervention change d'état via des actions définies à l'avance. Certaines déclenchent des notifications.", '<line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>'] ] },
+    { id: "pilotage", title: "Pilotage et gestion", intro: "Garder une vision claire de l'activité et des budgets.", items: [
+      ["Maîtrise budgétaire", "Un tableau de bord permet aux adhérents et aux managers de suivre leurs indicateurs clés.", '<line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/>'],
+      ["CRM", "En un clic, un devis devient une commande, puis une facture, avec signature électronique.", '<path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/>'],
+      ["Une information claire et partagée", "Une source unique de référence (SSOT), robuste et fiable. Chaque modification de données est auditée.", '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>'] ] },
+    { id: "communication", title: "Communication et accès", intro: "Chacun trouve l'information qui le concerne.", items: [
+      ["Adhérents", "Suivre ses demandes, gérer ses devis et retrouver conventions, commandes et factures, signables en ligne.", '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'],
+      ["Agents et managers", "Les agents voient uniquement leurs interventions. Les managers accèdent aux données de leur organisation.", '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>'],
+      ["Messagerie instantanée", "Les managers échangent avec les agents, avec une modération du vocabulaire inapproprié.", '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>'],
+      ["Notifications et alertes", "Un email ou un message WhatsApp informe toutes les parties prenantes lors de certains changements d'état.", '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>'] ] },
+    { id: "ia", title: "Intelligence artificielle", intro: "Une IA développée et hébergée en France.", items: [
+      ["AIBOT IA", "Elle vous aide à créer des interventions et analyse les données du site pour vous donner rapidement l'information recherchée.", '<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>'],
+      ["Prévision d'intervention", "À partir des interventions passées, l'IA vous propose celles qu'il faut prévoir.", '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>', true] ] }
+  ]
+%>
+
+<section id="features" class="scroll-mt-24 px-6 lg:px-16 py-20 lg:py-28">
+  <style>
+    @media (prefers-reduced-motion: no-preference) {
+      #features [data-panel]:not([hidden]) { animation: features-in .3s ease-out; }
+    }
+    @keyframes features-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  </style>
+
+  <div class="max-w-6xl mx-auto">
+
+    <div class="max-w-3xl">
+      <h2 class="text-4xl lg:text-5xl font-extrabold tracking-tight">Des fonctionnalités pensées pour votre quotidien</h2>
+      <p class="mt-4 text-xl text-slate-600">Découvrez l'ensemble de nos outils conçus pour simplifier la gestion de votre organisation.</p>
+    </div>
+
+    <!-- Onglets : défilement horizontal sur mobile -->
+    <div role="tablist" aria-label="Catégories de fonctionnalités"
+         class="mt-10 flex gap-2 overflow-x-auto pb-2 -mx-6 px-6 lg:mx-0 lg:px-0">
+      <% groups.each_with_index do |g, i| %>
+        <button type="button" role="tab" id="gtab-<%= g[:id] %>" aria-controls="group-<%= g[:id] %>"
+                aria-selected="<%= i.zero? %>" tabindex="<%= i.zero? ? 0 : -1 %>"
+                data-tab data-id="<%= g[:id] %>" data-active="<%= i.zero? %>"
+                class="shrink-0 rounded-full border border-[#691E9A]/25 px-5 py-2.5 text-sm lg:text-base font-semibold text-[#691E9A]
+                       transition-colors motion-reduce:transition-none hover:bg-[#691E9A]/10
+                       data-[active=true]:bg-[#691E9A] data-[active=true]:border-[#691E9A] data-[active=true]:text-white
+                       focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#691E9A]">
+          <%= g[:title] %>
+        </button>
+      <% end %>
+    </div>
+
+    <!-- Panneaux : intro à gauche, liste des fonctionnalités à droite -->
+    <div class="mt-10 lg:mt-14">
+      <% groups.each_with_index do |g, i| %>
+        <div role="tabpanel" id="group-<%= g[:id] %>" aria-labelledby="gtab-<%= g[:id] %>"
+             data-panel <%= "hidden" unless i.zero? %>
+             class="grid lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] gap-6 lg:gap-14">
+
+          <div>
+            <h3 class="text-2xl lg:text-3xl font-bold text-[#691E9A]"><%= g[:title] %></h3>
+            <p class="mt-2 text-lg text-slate-600 max-w-sm"><%= g[:intro] %></p>
+          </div>
+
+          <ul class="divide-y divide-[#691E9A]/10 border-y border-[#691E9A]/10">
+            <% g[:items].each do |t, d, icon, new_flag| %>
+              <li class="flex gap-4 py-6">
+                <span class="shrink-0 w-11 h-11 rounded-full bg-[#F6F2F9] text-[#691E9A] flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true"><%= raw icon %></svg>
+                </span>
+                <div>
+                  <h4 class="font-semibold text-lg flex flex-wrap items-center gap-2">
+                    <%= t %>
+                    <% if new_flag %>
+                      <span class="text-xs font-bold bg-[#ECE88F] text-slate-800 px-2.5 py-0.5 rounded-full">Nouveau</span>
+                    <% end %>
+                  </h4>
+                  <p class="mt-1 text-black/75 leading-relaxed max-w-xl"><%= d %></p>
+                </div>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var section = document.currentScript.closest("section");
+      if (!section || section.dataset.bound) return;
+      section.dataset.bound = "true";
+
+      var tabs = Array.prototype.slice.call(section.querySelectorAll("[data-tab]"));
+      var panels = Array.prototype.slice.call(section.querySelectorAll("[data-panel]"));
+      var current = 0;
+
+      function select(i, focus) {
+        current = i;
+        tabs.forEach(function (tab, j) {
+          var on = j === i;
+          tab.dataset.active = on;
+          tab.setAttribute("aria-selected", on);
+          tab.tabIndex = on ? 0 : -1;
+        });
+        panels.forEach(function (panel, j) { panel.hidden = j !== i; });
+        if (focus) tabs[i].focus();
+      }
+
+      tabs.forEach(function (tab, i) {
+        tab.addEventListener("click", function () { select(i, false); });
+        tab.addEventListener("keydown", function (e) {
+          var last = tabs.length - 1, next = current;
+          if (e.key === "ArrowRight" || e.key === "ArrowDown") next = current === last ? 0 : current + 1;
+          else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = current === 0 ? last : current - 1;
+          else if (e.key === "Home") next = 0;
+          else if (e.key === "End") next = last;
+          else return;
+          e.preventDefault();
+          select(next, true);
+        });
       });
 
-      prev.addEventListener("click", () => {
-        index = (index - 1 + slides.length) % slides.length;
-        updateCarousel();
-      });
-    });
+      // Liens externes du type /#group-ia : ouvre le bon onglet
+      function fromHash() {
+        var id = location.hash.replace("#group-", "");
+        var i = tabs.findIndex(function (t) { return t.dataset.id === id; });
+        if (i >= 0 && location.hash.indexOf("#group-") === 0) {
+          select(i, false);
+          section.scrollIntoView();
+        }
+      }
+      window.addEventListener("hashchange", fromHash);
+      fromHash();
+    })();
   </script>
-  <section class="mt-24 mb-24">
-    <h2 class="text-2xl lg:text-3xl font-medium text-center mb-12">
+</section>
+
+
+
+ <!-- ils nous font confiance -->
+<section id="confiance" class="scroll-mt-24 m-6 lg:m-20 rounded-3xl p-6 lg:p-12 bg-white border border-slate-100 shadow-sm">
+  
+  <!-- En-tête -->
+  <div class="max-w-3xl mx-auto text-center mb-10 lg:mb-14">
+    <h2 class="text-3xl lg:text-5xl font-bold tracking-tight text-[#691E9A] mb-4">
+      Ils nous font confiance
+    </h2>
+    <p class="text-base lg:text-lg text-slate-600">
+      Découvrez en vidéo comment CoopComm simplifie le quotidien des équipes.
+    </p>
+  </div>
+
+  <!-- Layout vidéo + client -->
+  <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+
+    <!-- Carte Logo / Témoignage client (Occupe 1 colonne) -->
+    <div class="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col items-center justify-between text-center">
+      
+      <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#691E9A]">
+        <span class="w-4 h-px bg-[#691E9A]/40" aria-hidden="true"></span>
+        Déjà déployé chez
+        <span class="w-4 h-px bg-[#691E9A]/40" aria-hidden="true"></span>
+      </p>
+
+      <div class="my-6 p-4 bg-slate-50 rounded-xl w-full flex items-center justify-center">
+        <img src="madmoselle.png" alt="Logo Communauté de Communes Mad & Moselle" class="h-32 w-auto object-contain" />
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="font-bold text-slate-900 text-lg">CC Mad & Moselle</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          Une collectivité qui mutualise ses agents et ses équipements grâce à CoopComm.
+        </p>
+      </div>
+    </div>
+
+      <!-- Bloc Vidéo (Occupe 2 colonnes sur grand écran) -->
+    <div class="lg:col-span-2 bg-white rounded-2xl shadow-lg overflow-hidden flex items-center justify-center border border-slate-200">
+      <div class="w-full aspect-video">
+        <video
+          controls
+          playsinline
+          preload="metadata"
+          poster="<%= image_path('New_logo.png') %>"
+          class="w-full h-full object-contain">
+          <source src="aikkucoopcomm.mp4" type="video/mp4">
+          Votre navigateur ne prend pas en charge la lecture de vidéos.
+        </video>
+      </div>
+    </div>
+
+  </div>
+</section>
+ 
+ <!-- CTA -->
+<section id="savoir-plus" class="scroll-mt-24 relative overflow-hidden m-6 lg:m-20 rounded-3xl px-6 py-12 lg:p-16 bg-[#F4EFE6] shadow-sm">
+
+  <!-- Bulles décoratives -->
+  <span aria-hidden="true" class="absolute -bottom-20 -right-20 w-64 h-64 rounded-full bg-[#47b5db]/30"></span>
+  <span aria-hidden="true" class="absolute -top-16 -left-16 w-48 h-48 rounded-full bg-[#db2767]/25"></span>
+
+  <div class="relative max-w-3xl mx-auto text-center">
+    <h2 class="text-3xl lg:text-5xl font-bold tracking-tight text-black mb-4">
       Vous souhaitez en savoir plus ?
     </h2>
-    <div class="flex flex-wrap items-center justify-around gap-4">
-      <%= link_to 'Consultez notre documentation (Blog / FAQ / ...)', documentation_index_path, class: 'inline-block bg-[#50b9df] px-4 py-2 rounded-full text-white text-sm font-medium hover:bg-[#48a7c8] transition' %>
-      <%= link_to "Réservez une démo personnalisée", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: 'inline-block bg-[#db2767] px-5 py-2 rounded-full text-white text-sm font-medium hover:bg-[#c51f5b] transition', title: "Réservez une démo personnalisée avec l'un de nos experts" %>
+    <p class="text-base lg:text-lg text-black mb-10 lg:mb-12">
+      Échangez avec l'un de nos experts ou explorez notre documentation pour découvrir comment
+<span class="font-bold whitespace-nowrap">
+            <span class="text-[#47b5db]">Co</span><span class="text-[#691E9A]">op</span><span class="text-[#47b5db]">Comm</span><span class="text-[#691E9A]">.</span>
+          </span>      s'adapte à votre intercommunalité.
+    </p>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <%= link_to "Réservez une démo personnalisée", "https://calendar.app.google/a52LSSCoXsdwz7A2A",
+            class: "w-full sm:w-auto bg-[#db2767] px-8 py-3 rounded-full text-white text-base font-semibold shadow-md hover:bg-[#c51f5b] transition",
+            title: "Réservez une démo personnalisée avec l'un de nos experts" %>
+      <%= link_to "Consultez notre documentation", documentation_index_path,
+            class: "w-full sm:w-auto bg-white px-8 py-3 rounded-full text-[#691E9A] text-base font-semibold shadow-md hover:bg-[#F4EFE6] transition" %>
     </div>
-  </section>
+
+  </div>
+</section>
 </main>
-<footer class="bg-[#E5EFF9] lg:bg-[#E5EFF9] shadow-lg px-6 py-4">
+
+<!-- FOOTER -->
+<footer class="bg-[#E5EFF9] shadow-lg px-6 py-4">
   <div class="flex flex-col md:flex-row items-center md:items-start p-8 justify-between text-center gap-8">
     <div class="flex flex-col text-center md:text-left">
       <p class="text-sm font-black mb-4">NOUS CONTACTER</p>
-      <%= link_to "www.aikku.eu", "https://www.aikku.eu/", target: "_blank", class: 'mb-2 hover:text-[#50b9df]' %>
+      <%= link_to "www.aikku.fr", "https://www.aikku.eu/", target: "_blank", class: 'mb-2 hover:text-[#50b9df]' %>
       <%= link_to "LinkedIn", "https://www.linkedin.com/showcase/coopcomm", target: "_blank", class: 'mb-2 hover:text-[#50b9df]' %>
       <%= mail_to 'contact@coopcomm.fr', 'E-mail', class: 'mb-2 hover:text-[#50b9df]' %>
     </div>
@@ -380,29 +466,32 @@
     </div>
     <div class="flex flex-col text-center md:text-left">
       <p class="text-sm font-black mb-4">CONDITIONS</p>
-      <%= link_to "Mentions légales", mentions_legales_path, class:'mb-2 hover:text-[#50b9df]' %>
-      <a href="#" class="mb-2 hover:text-[#50b9df]"
-          >Protection des Données</a
-        >
+      <%= link_to "Mentions légales", mentions_legales_path, class: 'mb-2 hover:text-[#50b9df]' %>
+      <a href="#" class="mb-2 hover:text-[#50b9df]">Protection des Données</a>
       <a href="#" class="mb-2 hover:text-[#50b9df]">Préférences Cookies</a>
     </div>
     <div class="flex flex-col max-w-xs">
       <p class="mb-2 text-sm">
-        <b>S'inscrire à la Newsletter</b> pour recevoir les dernières
-        actualités
+        <b>S'inscrire à la Newsletter</b> pour recevoir les dernières actualités
       </p>
-      <%= form_with(model: @newsletter, id: "nouvelle_newsletter", method: "post", html: { autocomplete: "off", class: 'w-full flex flex-col justify-center', onsubmit: "event.preventDefault();",  'data-controller':"newsletter" }) do |form| %>
-        <input id="newsletter_form_email" type="email" placeholder="Entrez votre adresse email" data-newsletter-target="email" required class="border border-gray-300 rounded-md py-2 px-4 mb-2" />
-        <%= form.submit "JE M'INSCRIS", 'data-action': 'click->newsletter#print_result', class: "bg-black text-white rounded-md py-2 hover:bg-gray-800" %>
+      <%= form_with(model: @newsletter, id: "nouvelle_newsletter", method: "post",
+            html: { autocomplete: "off", class: 'w-full flex flex-col justify-center',
+                    onsubmit: "event.preventDefault();", 'data-controller': "newsletter" }) do |form| %>
+        <input id="newsletter_form_email" type="email" placeholder="Entrez votre adresse email"
+               data-newsletter-target="email" required
+               class="border border-gray-300 rounded-md py-2 px-4 mb-2" />
+        <%= form.submit "JE M'INSCRIS", 'data-action': 'click->newsletter#print_result',
+              class: "bg-black text-white rounded-md py-2 hover:bg-gray-800" %>
         <%= render "result_newsletter" %>
       <% end %>
     </div>
   </div>
-  <div
-      class="flex flex-col md:flex-row text-sm justify-between gap-4 p-8 border-t border-gray-300 text-center md:text-left"
-    >
+  <div class="flex flex-col md:flex-row text-sm justify-between gap-4 p-8 border-t border-gray-300 text-center md:text-left">
     <p>© <%= Date.current.year %> AÏKKU SAS. Tous droits réservés.</p>
-    <p>AÏKKU SAS, 5 Place de la Pyramide, 92800 PUTEAUX</p>
+    <div class="text-center">
+      <p> Aïkku - La Défense. 5 Place de la Pyramide, 92800 PUTEAUX</p>
+      <p>Aïkku - Montfermeil. 112 Allée de Notre Dame des Anges, 93370 MONTFERMEIL</p>
+    </div>
     <p>SIREN : 934 780 735 R.C.S Nanterre</p>
   </div>
 </footer>
