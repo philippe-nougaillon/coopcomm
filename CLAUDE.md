@@ -43,6 +43,7 @@
 - **Pas de nouveau concern** (règle PE, 2026-09-23 — « personne n'utilise du concern à part toi ») : une méthode vit dans la classe qui s'en sert ; un comportement partagé par plusieurs classes va dans `app/services/`.
 - **Déplacer du code, c'est déplacer son voisinage** : commentaire d'en-tête, `end` de bloc, `<div>`, constantes, variables utilisées. Après tout déplacement outillé, relire le voisinage du point de départ **et** d'arrivée — deux défauts sur trois ne font rien tomber.
 - **Checklist avant commit/PR : `CONTRIBUTING.md`** (8 familles d'erreurs récurrentes du projet). L'agent l'applique à tout code qu'il écrit.
+- **Un select slim-select se câble par `data: { controller: 'slim-select' }`**, jamais par une classe (l'injection par classe a disparu le 2026-10-05) : la CSS `select[data-controller~="slim-select"]` en dépend, et un select `required` sans widget reste invisible.
 
 **Tests**
 - ⚠ **Invoquer la skill `tests-coopcomm` avant d'écrire, de modifier ou de relire un test.** Elle porte les gabarits imposés (policies, contrôleurs, modèles, services, système), les règles de fixtures, le marquage des tests critiques et le placement des helpers. Les faire évoluer = éditer la skill, pas ce fichier.
@@ -140,7 +141,7 @@
 
 ## 4. État d'avancement
 
-- **Branche courante : `502`** ; `staging` = intégration et démo client ; `main` = prod.
+- **Branche courante : `496`** ; `staging` = intégration et démo client ; `main` = prod.
 - **Suite de tests** : `bundle exec rails test:all` → **2196 runs / 0 échec / 0 skip** en **2 min 40** (référence 2026-10-01, rafraîchissement du dashboard à chaque commit inclus — il ne coûte que 9 s ; les 7 min 27 de la veille venaient des triggers en transaction et de 5 flakes système). Flakes connus sous charge parallèle : les deux fichiers système Devise (famille R3), verts en isolation ; la suite système ne compte plus que 12 fichiers depuis #489. Couverture `bin/coverage` : **~96,7 %** — les ~160 lignes restantes sont du code mort inventorié (B89 au registre) ; « 100 % » s'atteindrait par suppression, pas par test.
 - **Jalons** : **mise en prod client début septembre 2026** (aujourd'hui, seuls les comptes support/test servent) ; ~10 jours de dev restants, nouvelles fonctionnalités **en pause** ; fin de contrat mars 2028 ; **open-source envisagé mi-novembre 2026** (penser à purger la config Claude de l'historique). ~220 utilisateurs attendus, peu à l'aise avec l'informatique, agents sur Samsung S8, **zones blanches** pour le service technique.
 - **Parcours critiques** : pointage QR (4 scans/agent/jour), bon d'intervention, réservation de matériel, dashboard manager, validation adhérent. **« Catastrophique » = tout ce qui touche à l'argent**, et un agent qui verrait son évaluation (le CCTP les réserve aux gestionnaires).
@@ -156,8 +157,10 @@
 | Besoin | Fichier (aucun n'est chargé automatiquement) |
 |---|---|
 | Un bug connu, son parcours de reproduction, son statut | `suivi/bugs-ouverts.md` (3 niveaux 🔴🟠⚪) · `suivi/bugs-corriges.md` |
-| Un défaut non reproductible, gardé, à re-signaler si la garde tombe | `suivi/risques-surveilles.md` · `suivi/risques-clos.md` |
+| Un défaut connu retenu par une garde, un angle mort sans test, à re-signaler si ça bascule | `suivi/risques-surveilles.md` · `suivi/risques-clos.md` |
 | Une décision en attente, une action humaine à faire, une dette actée | `suivi/points-a-trancher.md` · `suivi/actions-a-faire.md` · `suivi/dettes-ouvertes.md` (clos : `points-tranches`, `actions-faites`, `dettes-reglees`) |
+| Un perfectionnement repéré, ni bug ni dette | `suivi/perfectionnements-a-faire.md` · `suivi/perfectionnements-faits.md` |
+| Un fait à connaître avant de toucher au code, trop détaillé pour le §3 | `suivi/a-savoir.md` |
 | **Pourquoi** telle décision a été prise, ce qu'une session a mesuré | `suivi/journal-decisions.md` (index, 110 entrées) → `suivi/journal/AAAA-MM.md` |
 | Comment écrire un test ici | skill `tests-coopcomm` (à invoquer, pas à lire) |
 | Contexte client détaillé, CCTP, modèle de menace | `.claude/method/fiches/contexte-projet.md` *(hors dépôt)* |
@@ -166,7 +169,7 @@
 
 **Ouvrir le journal des décisions** avant de revenir sur un choix ancien, ou avant de toucher à une zone qui a déjà coûté cher : pointage, tests système, cache de fragments, validations d'intervention, filtres d'index, audit.
 
-**Tenue des registres** : chaque registre a un fichier **ouvert** (classé 🔴🟠⚪, définitions en tête, **prochain numéro libre** à incrémenter) et un fichier **clos** (du plus récent au plus ancien) : une fiche close **quitte** l'un pour l'autre, on ne la marque pas sur place. Une note de session s'écrit dans `suivi/journal/AAAA-MM.md`, avec sa ligne dans l'index `journal-decisions.md`. Ne remonte dans ce fichier-ci qu'une **leçon durable** (une ligne au §3), un **changement de convention**, ou une **mise à jour de l'état courant** — en *remplaçant* la ligne précédente, jamais en l'empilant.
+**Tenue des registres** : chaque registre a un fichier **ouvert** (classé 🔴🟠⚪, définitions en tête, **prochain numéro libre** à incrémenter, rangement par numéro) et un fichier **clos** (du plus récent au plus ancien) : une fiche close **quitte** l'un pour l'autre, on ne la marque pas sur place. Un bug trouvé est **signalé** (fiche B), pas corrigé sans accord explicite. **Toute limite, angle mort ou « non vérifié » cité dans une réponse devient une fiche P, DT ou R, ou complète la sienne, dans le même tour**, et la réponse le dit en une ligne. Une note de session s'écrit dans `suivi/journal/AAAA-MM.md`, avec sa ligne dans l'index `journal-decisions.md` ; on ajoute, on ne réécrit pas. L'agent écrit dans `suivi/` sans demander. Ne remonte dans ce fichier-ci qu'une **leçon durable** (une ligne au §3), un **changement de convention**, ou une **mise à jour de l'état courant** — en *remplaçant* la ligne précédente, jamais en l'empilant.
 
 ---
 

@@ -1,8 +1,8 @@
 # Risques clos — CoopComm
 
-> Risques corrigés ou devenus sans objet, **du plus récent au plus ancien**. Chaque fiche garde son scénario et ses gardes d'origine. Risques surveillés : `risques-surveilles.md`.
+> Risques corrigés, couverts ou devenus sans objet, **du plus récent au plus ancien**. Chaque fiche garde son scénario et ses gardes d'origine. Risques surveillés : `risques-surveilles.md`.
 >
-> **Règle de tenue** : une fiche arrive ici **entière** depuis `risques-surveilles.md`, **en tête de liste**, titre préfixé `✅ CORRIGÉ (AAAA-MM-JJ)` ou `✅ SANS OBJET (AAAA-MM-JJ)`.
+> **Règle de tenue** : une fiche arrive ici **entière** depuis `risques-surveilles.md`, **en tête de liste**, titre préfixé `✅ CORRIGÉ`, `✅ COUVERT` ou `✅ SANS OBJET (AAAA-MM-JJ)`.
 
 ---
 
