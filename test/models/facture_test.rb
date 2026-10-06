@@ -135,6 +135,10 @@ class FactureTest < ActiveSupport::TestCase
     assert_includes Facture.visible_to(@adherent), sienne
   end
 
+  test 'visible_to : adhérent → jamais la facture envoyée d\'un autre adhérent de son organisation (critique)' do
+    assert_not_includes Facture.visible_to(@adherent), factures(:facture_autre_adherent)
+  end
+
   test 'visible_to : agent → aucune facture' do
     assert_empty Facture.visible_to(users(:bond))
   end

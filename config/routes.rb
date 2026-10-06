@@ -8,7 +8,6 @@ Rails.application.routes.draw do
 
   devise_for :users
   # devise_for :users, controllers: {
-  #   registrations: 'users/registrations',
   #   omniauth_callbacks: 'users/omniauth_callbacks'
   # }
 
@@ -70,8 +69,6 @@ Rails.application.routes.draw do
     end
   end
   match 'doc', to: redirect('/documentation'), via: :get
-
-  # resources :organisations, only: %i[ show edit update ]
 
   resources :interventions do
     member do

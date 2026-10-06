@@ -173,18 +173,19 @@ class CotationTest < ActiveSupport::TestCase
     assert_not_includes Cotation.visible_to(users(:manager_marseille)), cotation
   end
 
-  test 'visible_to : adhérent → ses cotations envoyées, jamais un brouillon ni celle d\'un autre' do
+  test 'visible_to : adhérent → ses cotations envoyées, jamais un brouillon' do
     sienne = build_cotation
     sienne.save!
 
-    visibles = Cotation.visible_to(@adherent)
-
-    assert_not_includes visibles, sienne
+    assert_not_includes Cotation.visible_to(@adherent), sienne
 
     sienne.envoyer!
 
     assert_includes Cotation.visible_to(@adherent), sienne
-    assert_not_includes visibles, cotations(:cotation_marseille)
+  end
+
+  test 'visible_to : adhérent → jamais la cotation envoyée d\'un autre adhérent de son organisation (critique)' do
+    assert_not_includes Cotation.visible_to(@adherent), cotations(:cotation_envoyée)
   end
 
   private

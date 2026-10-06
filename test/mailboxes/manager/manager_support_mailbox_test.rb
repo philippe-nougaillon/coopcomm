@@ -3,14 +3,14 @@
 require 'test_helper'
 
 class ManagerSupportMailboxTest < ActionMailbox::TestCase
-  test 'Créer une intervention quand un manager envoie un mail au support' do
+  test "aucune intervention n'est créée quand un manager envoie un mail au support" do
     user = users(:hidalgo)
     subject = 'Dératiser ma ville'
     body = "Bonjour, serait-il possible de dératiser Paris, tout le monde s'en plaint"
 
     assert_no_changes -> { Intervention.count } do
       receive_inbound_email_from_mail(
-        to: 'support@mg.coopcom.fr',
+        to: 'support@mg.coopcomm.fr',
         from: user.email,
         subject: subject,
         body: body,

@@ -215,16 +215,9 @@ class User < ApplicationRecord
 
         user.save
 
-        Events.instance.publish('organisation.created', payload: { user_id: user.id }) unless Rails.env.development?
-
         user
       end
     end
-  end
-
-  def dispatch_email_to_nom_prénom
-    nom_prénom = email.split('@').first
-    self.nom, self.prénom = nom_prénom.split('.')
   end
 
   def avatar
