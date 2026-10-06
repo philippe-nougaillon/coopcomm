@@ -1,6 +1,22 @@
-<header class="bg-white shadow-lg px-6 py-4 relative z-10">
+<%
+  feature_links = [
+    { label: "Sur le terrain",            hint: "Interventions, QR code, actifs, workflow", anchor: "terrain" },
+    { label: "Pilotage et gestion",       hint: "Budget, CRM, information partagée",        anchor: "pilotage" },
+    { label: "Communication et accès",    hint: "Adhérents, messagerie, notifications",     anchor: "communication" },
+    { label: "Intelligence artificielle", hint: "AIBOT et prévision d'intervention",        anchor: "ia" }
+  ]
+
+  main_links_before = [{ label: "Pourquoi CoopComm", anchor: "pourquoi" },
+   { label: "En images",     anchor: "images" }]
+  main_links_after  = [
+    { label: "Ils nous font confiance", anchor: "confiance" },
+    { label: "En savoir plus", anchor: "savoir-plus" }
+  ]
+%>
+
+<header class="bg-white shadow-lg px-6 py-4 sticky top-0 z-50">
   <div class="flex items-center justify-between">
-    <!--nav ordenador-->
+    <!--logo-->
     <div class="flex items-center gap-2">
       <%= link_to root_path do %>
         <%= image_tag "CoopComm.png", class: "h-6 md:h-10 #{'ml-6 sm:ml-0' if params[:controller] == 'wiki_pages'}" %>
@@ -9,42 +25,121 @@
         <span data-theme="corporate" class="hidden lg:inline-flex badge badge-warning font-bold gap-1 shadow-sm">🧪 DÉMO</span>
       <% end %>
     </div>
-    <button id="menu-btn" class="md:hidden text-3xl focus:outline-none" data-testid="dropdown_mobile">
+
+    <button id="menu-btn" class="md:hidden text-3xl focus:outline-none" data-testid="dropdown_mobile"
+            aria-label="Menu" aria-controls="menu-mobile" aria-expanded="false">
       <%= embedded_svg "icons/menu.svg", class: "text-sm", title: "Menu" %>
     </button>
-    <nav class="hidden md:block">
-      <ul class="flex flex-row items-center gap-4">
-        <li>
-          <%= link_to "Se connecter", '/users/sign_in', class: "inline-block bg-[#50b9df] px-4 py-2 rounded-full text-white text-sm font-medium hover:bg-[#48a7c8] transition" %>
+
+    <!--nav ordinateur-->
+    <nav class="hidden md:block" aria-label="Navigation principale">
+      <ul class="flex flex-row items-center gap-4 lg:gap-6">
+
+        <% main_links_before.each do |l| %>
+          <li><%= link_to l[:label], root_path(anchor: l[:anchor]), class: "text-sm font-medium text-gray-700 hover:text-[#50b9df] transition py-2" %></li>
+        <% end %>
+
+        <!-- Fonctionnalités + sous-menu -->
+        <li class="relative group">
+          <%= link_to root_path(anchor: "features"),
+                class: "flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-[#50b9df] transition py-2",
+                aria: { haspopup: "true" } do %>
+            Fonctionnalités
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round"
+                 class="w-4 h-4 transition-transform group-hover:rotate-180 group-focus-within:rotate-180"
+                 aria-hidden="true">
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          <% end %>
+
+          <!-- pt-4 = zone "pont" pour que le menu ne se ferme pas en descendant la souris -->
+          <div class="absolute left-1/2 -translate-x-1/2 top-full pt-4 w-80
+                      invisible opacity-0 translate-y-1
+                      group-hover:visible group-hover:opacity-100 group-hover:translate-y-0
+                      group-focus-within:visible group-focus-within:opacity-100 group-focus-within:translate-y-0
+                      transition duration-150 motion-reduce:transition-none">
+            <ul class="bg-white rounded-2xl shadow-xl border border-black/5 p-2">
+              <% feature_links.each do |l| %>
+                <li>
+                  <%= link_to root_path(anchor: l[:anchor]),
+                        class: "block rounded-xl px-4 py-3 hover:bg-[#F4EFE6] focus:bg-[#F4EFE6] focus:outline-none transition" do %>
+                    <span class="block text-base font-semibold text-[#691E9A]"><%= l[:label] %></span>
+                    <span class="block text-sm text-black/60"><%= l[:hint] %></span>
+                  <% end %>
+                </li>
+              <% end %>
+            </ul>
+          </div>
         </li>
+
+        <% main_links_after.each do |l| %>
+          <li><%= link_to l[:label], root_path(anchor: l[:anchor]), class: "text-sm font-medium text-gray-700 hover:text-[#50b9df] transition py-2" %></li>
+        <% end %>
+
         <li>
-          <%= link_to "Réserver une démo", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: "inline-block bg-[#db2767] px-5 py-2 rounded-full text-white text-sm font-medium hover:bg-[#c51f5b] transition" %>
+          <%= link_to "Se connecter", '/users/sign_in',
+                class: "inline-block bg-[#50b9df] px-4 py-2 rounded-full text-white text-sm font-medium hover:bg-[#48a7c8] transition" %>
         </li>
       </ul>
     </nav>
   </div>
+
   <!--mobile-->
-  <div
-    id="menu-mobile"
-    class="hidden md:hidden bg-white pt-6 pb-2 flex flex-col items-center gap-3"
-  >
-    <%= link_to "Se connecter", '/users/sign_in', class: "w-full max-w-xs text-center bg-[#50b9df] px-5 py-2 rounded-full text-white text-sm font-medium hover:bg-[#48a7c8] transition" %>
-    <%= link_to "Réserver une démo", "https://calendar.app.google/a52LSSCoXsdwz7A2A", class: "hidden md:block w-full max-w-xs text-center bg-[#db2767] px-5 py-2 rounded-full text-white text-sm font-medium hover:bg-[#c51f5b] transition" %>
-  </a>
-</div>
+  <div id="menu-mobile" class="hidden md:hidden bg-white pt-6 pb-2 flex flex-col items-center gap-3">
+    <% main_links_before.each do |l| %>
+      <%= link_to l[:label], root_path(anchor: l[:anchor]), class: "menu-link block text-center px-5 py-3 text-base font-medium text-gray-700" %>
+    <% end %>
+
+    <details class="w-full max-w-xs group/details">
+      <summary class="list-none flex items-center justify-center gap-2 cursor-pointer px-5 py-2 text-base font-medium text-gray-700">
+        Fonctionnalités
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round"
+             class="w-4 h-4 transition-transform group-open/details:rotate-180" aria-hidden="true">
+          <path d="m6 9 6 6 6-6"/>
+        </svg>
+      </summary>
+      <ul class="mt-2 flex flex-col gap-1">
+        <% feature_links.each do |l| %>
+          <li>
+            <%= link_to l[:label], root_path(anchor: l[:anchor]),
+                  class: "menu-link block text-center rounded-xl px-5 py-3 text-base font-semibold text-[#691E9A] bg-[#F4EFE6]" %>
+          </li>
+        <% end %>
+      </ul>
+    </details>
+
+    <% main_links_after.each do |l| %>
+      <%= link_to l[:label], root_path(anchor: l[:anchor]), class: "menu-link block text-center px-5 py-3 text-base font-medium text-gray-700" %>
+    <% end %>
+
+    <%= link_to "Se connecter", '/users/sign_in',
+          class: "w-full max-w-xs text-center bg-[#50b9df] px-5 py-3 rounded-full text-white text-base font-medium hover:bg-[#48a7c8] transition" %>
+  </div>
 </header>
+
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     const menuBtn = document.getElementById("menu-btn");
     const menuMobile = document.getElementById("menu-mobile");
-    menuBtn.addEventListener("click", () => {
-      menuMobile.classList.toggle("hidden");
-      menuBtn.innerHTML = menuMobile.classList.contains("hidden")
-        ? `<%= embedded_svg "icons/menu.svg", class: "text-sm", title: "Menu" %>`
-        : `<%= embedded_svg "icons/close_small.svg", class: "text-sm", title: "Fermer" %>`;
-    });
+
+    const menuIcon = <%= j embedded_svg("icons/menu.svg", class: "text-sm", title: "Menu") %>;
+    const closeIcon = <%= j embedded_svg("icons/close_small.svg", class: "text-sm", title: "Fermer") %>;
+
+    const toggleMenu = (forceClose = false) => {
+      if (forceClose) menuMobile.classList.add("hidden");
+      else menuMobile.classList.toggle("hidden");
+      const isHidden = menuMobile.classList.contains("hidden");
+      menuBtn.innerHTML = isHidden ? menuIcon : closeIcon;
+      menuBtn.setAttribute("aria-expanded", String(!isHidden));
+    };
+
+    menuBtn.addEventListener("click", () => toggleMenu());
+
+    // Ferme le menu mobile quand on choisit une section
+    document.querySelectorAll(".menu-link").forEach(link =>
+      link.addEventListener("click", () => toggleMenu(true))
+    );
   });
 </script>
-
-
-
