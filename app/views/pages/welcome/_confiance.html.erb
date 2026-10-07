@@ -1,0 +1,47 @@
+<section id="confiance" class="scroll-mt-24 bg-gradient-to-b from-blue-50 via-blue-100 to-blue-200 px-6 py-12 lg:px-16 lg:py-20">
+  <div class="max-w-6xl mx-auto">
+    <div class="bg-white border border-slate-100 rounded-3xl p-6 lg:p-12 shadow-sm">
+
+      <div class="max-w-3xl mx-auto text-center mb-10 lg:mb-14">
+        <h2 class="text-3xl lg:text-5xl font-bold tracking-tight text-[#691E9A] mb-4">Ils nous font confiance</h2>
+        <p class="text-base lg:text-lg text-slate-600">
+          Découvrez en vidéo comment CoopComm simplifie le quotidien des équipes.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+
+        <div class="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col items-center justify-between text-center">
+          <p class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#691E9A]">
+            <span class="w-4 h-px bg-[#691E9A]/40" aria-hidden="true"></span>
+            Déjà déployé chez
+            <span class="w-4 h-px bg-[#691E9A]/40" aria-hidden="true"></span>
+          </p>
+
+          <div class="my-6 p-4 bg-slate-50 rounded-xl w-full flex items-center justify-center">
+            <img src="/madmoselle.png" alt="Logo Communauté de Communes Mad &amp; Moselle" class="h-32 w-auto object-contain" />
+          </div>
+
+          <div class="space-y-2">
+            <h3 class="font-bold text-slate-900 text-lg">CC Mad &amp; Moselle</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Une collectivité qui mutualise ses agents et ses équipements grâce à CoopComm.
+            </p>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-lg overflow-hidden flex items-center justify-center border border-slate-200">
+          <div class="w-full aspect-video">
+            <video controls playsinline preload="metadata"
+                   poster="<%= image_path("New_logo.png") %>"
+                   class="w-full h-full object-contain">
+              <source src="/aikkucoopcomm.mp4" type="video/mp4">
+              Votre navigateur ne prend pas en charge la lecture de vidéos.
+            </video>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

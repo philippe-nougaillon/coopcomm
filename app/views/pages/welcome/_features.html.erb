@@ -1,0 +1,114 @@
+ <%
+  feature_groups = [
+    { id: "terrain", title: "Sur le terrain", intro: "Organiser et suivre les interventions au quotidien.", items: [
+      { title: "Interventions",
+        text: "L'adhérent émet une demande, l'équipe locale se rend sur place et enregistre l'intervention. Une fois terminée, l'adhérent la valide ou donne son avis.",
+        icon: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>' },
+      { title: "Pointage par QR Code",
+        text: "Pour les interventions récurrentes, générez un QR code depuis un modèle. Un scan démarre la mission, un second la termine.",
+        icon: '<rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/>' },
+      { title: "Gestion des actifs et des absences",
+        text: "Suivi de l'inventaire et des prêts, avec la trace de chaque utilisation. Bloque l'attribution à un agent absent.",
+        icon: '<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>' },
+      { title: "Workflow",
+        text: "Chaque intervention change d'état via des actions définies à l'avance. Certaines déclenchent des notifications.",
+        icon: '<line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>' }
+    ] },
+    { id: "pilotage", title: "Pilotage et gestion", intro: "Garder une vision claire de l'activité et des budgets.", items: [
+      { title: "Maîtrise budgétaire",
+        text: "Un tableau de bord permet aux adhérents et aux managers de suivre leurs indicateurs clés.",
+        icon: '<line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/>' },
+      { title: "CRM",
+        text: "En un clic, un devis devient une commande, puis une facture, avec signature électronique.",
+        icon: '<path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/>' },
+      { title: "Une information claire et partagée",
+        text: "Une source unique de référence (SSOT), robuste et fiable. Chaque modification de données est auditée.",
+        icon: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>' }
+    ] },
+    { id: "communication", title: "Communication et accès", intro: "Chacun trouve l'information qui le concerne.", items: [
+      { title: "Adhérents",
+        text: "Suivre ses demandes, gérer ses devis et retrouver conventions, commandes et factures, signables en ligne.",
+        icon: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' },
+      { title: "Agents et managers",
+        text: "Les agents voient uniquement leurs interventions. Les managers accèdent aux données de leur organisation.",
+        icon: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>' },
+      { title: "Messagerie instantanée",
+        text: "Les managers échangent avec les agents, avec une modération du vocabulaire inapproprié.",
+        icon: '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>' },
+      { title: "Notifications et alertes",
+        text: "Un email ou un message WhatsApp informe toutes les parties prenantes lors de certains changements d'état.",
+        icon: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>' }
+    ] },
+    { id: "ia", title: "Intelligence artificielle", intro: "Une IA développée et hébergée en France.", items: [
+      { title: "AIBOT IA",
+        text: "Elle vous aide à créer des interventions et analyse les données du site pour vous donner rapidement l'information recherchée.",
+        icon: '<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>',
+        new: true },
+      { title: "Prévision d'intervention",
+        text: "À partir des interventions passées, l'IA vous propose celles qu'il faut prévoir.",
+        icon: '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>',
+        }
+    ] }
+  ]
+ %>
+<section id="features" data-controller="welcome" data-welcome-hash-prefix-value="group-"
+         class="bg-white px-6 py-16 lg:px-16">
+
+  <div class="max-w-6xl mx-auto">
+
+    <h2 class="text-3xl lg:text-5xl font-bold">
+      Des fonctionnalités pensées pour votre quotidien
+    </h2>
+    <p class="mt-4 text-lg text-gray-600">
+      Découvrez l'ensemble de nos outils conçus pour simplifier la gestion de votre organisation.
+    </p>
+
+    <div role="tablist" class="mt-8 flex flex-wrap gap-2">
+      <% feature_groups.each_with_index do |group, i| %>
+        <button type="button" role="tab" id="gtab-<%= group[:id] %>"
+                aria-selected="<%= i.zero? %>" tabindex="<%= i.zero? ? 0 : -1 %>"
+                data-welcome-target="tab" data-id="<%= group[:id] %>" data-active="<%= i.zero? %>"
+                data-action="click->welcome#select keydown->welcome#keydown"
+                class="px-4 py-2 rounded-full border border-purple-300 text-[#691E9A] font-semibold
+                       hover:bg-purple-50
+                       data-[active=true]:bg-[#691E9A] data-[active=true]:text-white">
+          <%= group[:title] %>
+        </button>
+      <% end %>
+    </div>
+
+    <div class="mt-10">
+      <% feature_groups.each_with_index do |group, i| %>
+        <div role="tabpanel" id="group-<%= group[:id] %>"
+             data-welcome-target="panel" data-active="<%= i.zero? %>"
+             class="hidden data-[active=true]:grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          <div>
+            <h3 class="text-2xl font-bold text-[#691E9A]"><%= group[:title] %></h3>
+            <p class="mt-2 text-gray-600"><%= group[:intro] %></p>
+          </div>
+
+          <ul class="lg:col-span-2 divide-y divide-gray-200 border-y border-gray-200">
+            <% group[:items].each do |item| %>
+              <li class="flex gap-4 py-5">
+                <span class="shrink-0 w-10 h-10 rounded-full bg-purple-50 text-[#691E9A] flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><%= raw item[:icon] %></svg>
+                </span>
+                <div>
+                  <h4 class="font-semibold text-lg">
+                    <%= item[:title] %>
+                    <% if item[:new] %>
+                      <span class="ml-2 text-xs font-bold bg-yellow-200 px-2 py-1 rounded-full">Nouveau</span>
+                    <% end %>
+                  </h4>
+                  <p class="mt-1 text-gray-700"><%= item[:text] %></p>
+                </div>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+
+  </div>
+</section>

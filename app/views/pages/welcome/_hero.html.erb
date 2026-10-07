@@ -1,0 +1,46 @@
+<%
+    commitments = 
+    [
+      "Développée et hébergée en France",
+      "Code source ouvert",
+      "Conforme RGPD"
+    ]
+%>
+
+<section class=" bg-gradient-to-b from-blue-50 via-blue-100 to-blue-200 py-16 lg:py-24 px-6 lg:px-16 flex flex-col gap-6 md:flex-row">
+  <div class="flex-1 md:m-10">
+    <h1 class="text-4xl text-center lg:text-7xl font-extrabold text-slate-900 tracking-tight">
+      <span class="bg-clip-text text-transparent" style="background-image: linear-gradient(to right, #47b5db, #bc437e, #8043ad);">
+        Mutualisez mieux,
+      </span>
+      <br/>
+      dépensez moins !
+    </h1>
+
+    <section aria-label="Nos engagements" class="pt-2 pb-2 md:pb-8">
+      <ul class=" my-8  flex flex-wrap justify-center gap-2 md:gap-6 text-sm font-semibold text-slate-700">
+        <% commitments.each do |label| %>
+          <li class="flex items-center gap-2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-[#691E9A]" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            <%= label %>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+
+    <p class="text-lg lg:text-2xl text-justify text-slate-600  m-4 leading-relaxed">
+      CoopComm est la plateforme collaborative pensée pour les communautés de communes : gérez vos plannings d'agents, partagez votre matériel et automatisez votre facturation en un clic.
+    </p>
+
+    <div class="flex flex-col mt-10 sm:flex-row justify-center text-center items-center gap-4 pt-4">
+      <%= link_to "Planifier une démonstration", PagesHelper::DEMO_URL,
+            class: "#{PagesHelper::BUTTON_BASE} w-72 md:inline-block bg-[#db2767] text-white shadow-md hover:bg-[#c51f5b]" %>
+      <%= link_to "Voir les fonctionnalités", "#features",
+            class: "#{PagesHelper::BUTTON_BASE} w-72 md:inline-block bg-white border border-slate-200 hover:bg-transparent" %>
+    </div>
+  </div>
+
+  <div class="flex-1 pt-10 max-w-4xl mx-auto">
+    <%= image_tag "ecrans.png", class: "w-full", alt: "Plateforme CoopComm" %>
+  </div>
+</section>
