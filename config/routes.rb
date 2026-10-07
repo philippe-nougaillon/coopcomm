@@ -123,6 +123,10 @@ Rails.application.routes.draw do
       # post :refuser
     end
   end
+  
+  controller :documents do
+    get :documents, to: 'documents#documents', as: :documents
+  end
 
   resources :newsletters, only: %i[index new destroy]
 

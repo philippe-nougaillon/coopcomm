@@ -14,7 +14,6 @@ class Tool < ApplicationRecord
   has_many :tool_interventions, dependent: :destroy
   has_many :interventions, through: :tool_interventions
   has_many :mouvements, dependent: :destroy
-  has_many :documents, dependent: :destroy  
   
   has_one_attached :photo
   has_one_attached :document

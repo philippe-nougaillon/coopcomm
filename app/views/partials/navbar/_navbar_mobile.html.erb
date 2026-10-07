@@ -45,6 +45,13 @@
                 <% end %>
               </li>
             <% end %>
+            <% if policy(:documents).documents? %>
+              <li>
+                <%= link_to documents_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'documents'}", 'data-turbo': false do %>
+                  <%= embedded_svg "icons/contract.svg", class: "w-5 h-5 inline mr-2" %> Documents
+                <% end %>
+              </li>
+            <% end %>
             <% if policy(WikiPage).index? %>
               <li>
                 <%= link_to documentation_index_path, class: "py-2 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'wiki_pages'}" do %>
@@ -170,6 +177,13 @@
                 <li>
                   <%= link_to mouvements_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'mouvements'}" do %>
                     <%= embedded_svg "icons/compare_arrows.svg", class: "w-5 h-5 inline mr-2" %> Mouvements
+                  <% end %>
+                </li>
+              <% end %>
+              <% if policy(:documents).documents? %>
+                <li>
+                  <%= link_to documents_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'documents'}" do %>
+                    <%= embedded_svg "icons/contract.svg", class: "w-5 h-5 inline mr-2" %> Documents
                   <% end %>
                 </li>
               <% end %>

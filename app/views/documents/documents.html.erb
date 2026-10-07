@@ -1,0 +1,92 @@
+<div class="flex flex-col">
+  <div class="flex flex-row justify-between items-center my-4 gap-2">
+    <h1 class="text-4xl text-primary font-bold">
+      <%= page_title!("Documents") %>
+    </h1>
+  </div>
+  <%= form_tag conventions_path, method: :get, class: "pt-6", data: { turbo_action: "advance" } do %>
+    <%= champs_tri_caches %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-4 w-full bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div class="w-full md:flex-1">
+        <%= label_tag :search, "Rechercher", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
+        <%= text_field_tag :search, params[:search], class: "input input-bordered input-md w-full",
+              placeholder: "Mémo, Heures, Nom du document", onchange: "this.form.submit()" %>
+      </div>
+      <% if current_user.manager_or_admin? %>
+        <div class="w-full md:flex-1">
+          <%= label_tag :adherent_id, "Adhérent", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
+          <%= select_tag :adherent_id,
+              options_from_collection_for_select(@adherents, :id, :nom_prénom, params[:adherent_id]),
+              include_blank: "Tous les adhérents",
+              class: "w-full h-10", data: { controller: "slim-select" }, 
+              onchange: "this.form.submit()" %>
+        </div>
+      <% end %>
+      <div class="w-full md:flex-1">
+        <%= label_tag :service_id, "Service", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
+        <%= select_tag :service_id,
+              options_from_collection_for_select(@services, :id, :nom, params[:service_id]),
+              multiple: true,
+              class: "w-full h-10",
+               data: { controller: "slim-select", placeholder: 'Tous les services',
+                        max_values_shown_desktop: 2,
+                        max_values_shown_mobile: 2 
+                      }, 
+              onchange: "this.form.submit()" %>
+      </div>
+      <div class="w-full md:flex-1" data-controller="date-picker" data-action="click->date-picker#open">
+        <%= label_tag :active_on, "Active au", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
+        <%= date_field_tag :active_on, params[:active_on], class: "input input-bordered input-md w-full h-10",
+              onchange: "this.form.submit()",
+              data: { 'date-picker-target': "input" } %>
+      </div>
+    </div>
+  <% end %>
+</div>
+<hr class="mt-6 mb-6">
+
+<div class="flex flex-row justify-between items-center w-full bg-slate-100 px-4 py-2 rounded-t-xl border-t border-x border-slate-200">
+  <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Résultats</span>
+</div>
+<div class="flex flex-col bg-white border-x border-b border-slate-200 shadow-sm overflow-hidden <%= 'rounded-b-xl' unless @pagy&.pages.to_i > 1 %>">
+  <div class="overflow-x-auto">
+    <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+      <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+      <span>Faire glisser pour voir plus</span>
+    </div>
+    <table class="table table-sm w-full border-none">
+      <thead class="bg-slate-100">
+        <tr>
+          <th></th>
+          <th>Nom</th>
+          <th>Créé le</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if @documents.any? %>
+          <% @documents.each do |doc| %>
+            <tr>
+              <td>
+                <% if doc.previewable? %>
+                  <%= link_to image_tag(doc.preview(resize_to_limit: [150, 150]), class: 'max-w-none shadow-xl'), doc %>
+                <% end %>
+              </td>
+              <td>
+                <%= link_to doc.filename.base, rails_blob_path(doc, disposition: "attachment"), class:'text-primary', target: "_blank" %>
+              </td>
+              <td>
+                <%= time_ago_in_words doc.created_at %>
+              </td>
+            </tr>
+          <% end %>
+        <% else %>
+          <tr>
+            <td colspan="7" class="text-center py-8 text-slate-400 text-base italic">
+              Aucun document.
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

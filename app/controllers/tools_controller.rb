@@ -44,7 +44,6 @@ class ToolsController < ApplicationController
   # GET /tools/1 or /tools/1.json
   def show
     params[:vue] ||= 'calendrier'
-    @documents = @tool.documents
 
     # start_date est le paramètre de navigation de simple_calendar
     start_date = params[:start_date].presence || params[:date]

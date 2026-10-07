@@ -48,6 +48,14 @@
           </li>
         <% end %>
 
+        <% if policy(:documents).documents? %>
+          <li>
+            <%= link_to documents_path, class: class_names("h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => params[:controller] == 'documents'), title: "Documents", 'data-turbo': false do %>
+              <%= embedded_svg "icons/contract.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
+            <% end %>
+          </li>
+        <% end %>
+
       <% else %>
         <% if current_user.rôle == 'agent' %>
           <% if policy(User).agent_calendrier? %>
@@ -77,7 +85,7 @@
         <% elsif current_user.rôle == 'administrateur' || current_user.rôle == 'manager' %>
           <% if policy(Tool).index? || policy(User).agent_calendrier? %>
             <li class="dropdown dropdown-start relative">
-              <div tabindex="0" role="button" class="<%= class_names("h-16 py-0 px-3 flex items-center gap-1.5 text-secondary hover:border-b-2 border-primary cursor-pointer focus:bg-base-300! focus:outline-none! navbar-icon-trigger", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => (params[:controller] == 'tools' || params[:action] == 'agent_calendrier')) %>" title="Ressources">
+              <div tabindex="0" role="button" class="<%= class_names("h-16 py-0 px-3 flex items-center gap-1.5 text-secondary hover:border-b-2 border-primary cursor-pointer focus:bg-base-300! focus:outline-none! navbar-icon-trigger", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => (params[:controller] == 'tools' || params[:action] == 'agent_calendrier' || params[:controller] == 'documents')) %>" title="Ressources">
                 <%= embedded_svg "icons/construction.svg", class: "w-5 h-5 fill-current" %>
                 <span class="text-sm">Ressources</span>
                 <%= embedded_svg "icons/expand_more.svg", class: "w-4 h-4 fill-current opacity-70" %>
@@ -113,6 +121,14 @@
                     <%= link_to mouvements_path, class: "py-2.5 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'mouvements'}" do %>
                       <%= embedded_svg "icons/compare_arrows.svg", class: "w-5 h-5 fill-current" %>
                       <span>Mouvements</span>
+                    <% end %>
+                  </li>
+                <% end %>
+                <% if policy(:documents).documents? %>
+                  <li>
+                    <%= link_to documents_path, class: "py-2.5 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'documents'}" do %>
+                      <%= embedded_svg "icons/contract.svg", class: "w-5 h-5 fill-current" %>
+                      <span>Documents</span>
                     <% end %>
                   </li>
                 <% end %>

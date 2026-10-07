@@ -1,50 +1,21 @@
 # frozen_string_literal: true
 
 class DocumentsController < ApplicationController
-  before_action :set_document, only: %i[valider refuser]
   before_action :is_user_authorized
 
-  # def valider
-  #   if @document.valid?
-  #     if @document.can_valider?
-  #       @document.valider!
-  #       redirect_to @document.tool, notice: 'Document accepté'
-  #     elsif @document.validé?
-  #       redirect_to @document.tool, alert: 'Le document est déjà validé'
-  #     else
-  #       redirect_to @document.tool, alert: 'Le document ne peut pas être validé'
-  #     end
-  #   else
-  #     redirect_to @document.tool, alert: "Le document n'est pas valide. Elle ne peut pas être validé"
-  #   end
-  # end
+  def documents
+    @documents = ActiveStorage::Attachment.where(record_type: ["Convention", "Tool"])
+                                        .order('created_at DESC')
+                                        .order('created_at DESC')
 
-  # def refuser
-  #   if @document.valid?
-  #     if @document.can_refuser?
-  #       @document.refuser!
-  #       redirect_to @document.tool, notice: 'Document refusé'
-  #     elsif @document.refusé?
-  #       redirect_to @document.tool, alert: 'Le document est déjà refusé'
-  #     else
-  #       redirect_to @document.tool, alert: 'Le document ne peut pas être refusé'
-  #     end
-  #   else
-  #     redirect_to @document.tool, alert: "Le document n'est pas valide. Elle ne peut pas être refusé"
-  #   end
-  # end
-
-  private
-
-  def set_document
-    @document = Document.find_by(slug: params[:id])
-    
-    if @document.nil?
-      redirect_to root_path, alert: 'Document introuvable'
-    end
+    @services  = current_user.get_services_by_role
+    @adherents = User.by_service(@services).adhérent.ordered
   end
 
+  private 
+
+
   def is_user_authorized
-    authorize @document || Document
+    authorize :documents
   end
 end
