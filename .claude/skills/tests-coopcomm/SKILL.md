@@ -66,7 +66,7 @@ test "En tant qu'administrateur, je veux créer un adhérent depuis la page d'ac
 
 Les tests de **policy** ont une formule contrainte (`accès interdit pour un adhérent sur une convention d'un autre titulaire`) : c'est une **spécialisation** de la règle générale, pas une dérogation — voir `policies.md`.
 
-**Migration au fil de l'eau : à chaque fois qu'on touche un fichier de test, on convertit *tous* ses noms à la forme attendue**, même ceux qu'on ne modifiait pas. Jamais de passe globale sur le dépôt : la reprise se fait fichier par fichier, au moment où l'on y travaille de toute façon.
+**Tout le dépôt est à cette forme depuis le 2026-10-01.** Un nom non conforme rencontré dans un fichier qu'on touche se convertit au passage, même si on ne modifiait pas ce test.
 
 **Chaque chose porte son nom, et un seul.** Aucune ambiguïté dans les noms de tests, les messages d'assertion, les variables et les commentaires : trois objets voisins se confondent sans arrêt, alors qu'ils n'ont rien à voir.
 

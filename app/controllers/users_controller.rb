@@ -109,8 +109,7 @@ class UsersController < ApplicationController
 
         # Seule la modale d'absence est réaffichée par turbo-stream : le format
         # n'est déclaré que pour elle, sinon la négociation le préférerait au HTML
-        # pour le formulaire principal. Un turbo-stream n'émet ni turbo:load ni
-        # turbo:render, donc les slim-select réinjectés n'y sont pas recâblés.
+        # pour le formulaire principal.
         if params[:from_absence_modal]
           format.turbo_stream do
             absence_en_erreur = @user.absences.to_a.find(&:invalid?) || Absence.new(user_id: @user.id)
@@ -141,9 +140,9 @@ class UsersController < ApplicationController
     @date = fecha_base.beginning_of_week 
     @date_fin = fecha_base.end_of_week   
 
-    @services = current_user.services.ordered
-    @selected_service_ids = params[:services]&.reject(&:blank?) || []
-    @agents = User.by_service(@selected_service_ids.presence || @services).agent
+
+    # Initialisation + filtre service
+    @agents = User.by_service(scoped_services(:services)).agent
 
     if params[:search].present?
       @agents = @agents.where('users.nom ILIKE :search OR users.prénom ILIKE :search OR users.email ILIKE :search',

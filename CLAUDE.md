@@ -28,7 +28,7 @@
 - `app/models/` : `Intervention` (entité centrale), `Organisation`, `Service`, `User`, `Convention`, `Cotation`/`CotationLigne`, `Commande`, `Facture`, `Prestation`, `Warehouse`/`Tool`/`Mouvement`, `Absence`, `Message`, `WikiPage`.
 - `app/controllers/` : un contrôleur par ressource, autorisations via **Pundit** (`app/policies/`), filet global `after_action :verify_authorized`.
 - `app/services/` (exports XLS, connecteurs), `app/jobs/` (notifications asynchrones), `app/pdfs/` (Prawn), `app/views/`.
-- **Dashboard** : vues matérialisées **Scenic** (`db/views/`, modèles `DashboardAgentStat` / `DashboardInterventionStat`), rafraîchies **en synchrone** à chaque écriture d'intervention (`DashboardRefreshable.refresh_views!`). Le job coalescé `RefreshDashboardViewsJob` est conservé **dormant**, à rebrancher si la volumétrie monte.
+- **Dashboard** : vues matérialisées **Scenic** (`db/views/`, modèles `DashboardAgentStat` / `DashboardInterventionStat`), rafraîchies **après chaque commit** d'`Intervention` et d'`AgentIntervention` (`after_commit` → `ActualiserDashboard.call`, `REFRESH … CONCURRENTLY` hors de la transaction d'écriture). Les calculs du tableau de bord sont des méthodes privées de `PagesController`. ⚠ Une écriture **sans callbacks** (`update_all`, `update_columns`, `delete_all`, SQL) ne rafraîchit rien et n'est pas auditée : règle de `CONTRIBUTING.md`, **aucune garde automatique** (décision équipe 2026-10-01), suivi en **R7**.
 
 ---
 
@@ -40,8 +40,10 @@
 - **Le service est la racine du système** — l'organisation d'un utilisateur, son périmètre de visibilité, les listes d'agents, le cloisonnement entre communes : **tout dérive du rattachement aux services**. Un compte sans service n'appartient à aucune organisation et fait échouer tout ce qui lit `current_organisation`. Conséquence : **tout code touchant aux services doit être testé**, et ces tests sont **critiques** — aucun ne se supprime au titre d'une règle générale.
 - **`private` clôt la classe** — dans **toute** classe Ruby du projet, fichiers de test compris : après `private`, rien d'autre que des méthodes privées. Jamais une constante, jamais un test. Rien ne le signale à l'exécution ; seul le relecteur est trompé.
 - **Une nouvelle fonction se place en dernier dans son groupe de même catégorie** (actions de contrôleur, méthodes privées, scopes, callbacks…), jamais au milieu ni en tête.
+- **Pas de nouveau concern** (règle PE, 2026-09-23 — « personne n'utilise du concern à part toi ») : une méthode vit dans la classe qui s'en sert ; un comportement partagé par plusieurs classes va dans `app/services/`.
 - **Déplacer du code, c'est déplacer son voisinage** : commentaire d'en-tête, `end` de bloc, `<div>`, constantes, variables utilisées. Après tout déplacement outillé, relire le voisinage du point de départ **et** d'arrivée — deux défauts sur trois ne font rien tomber.
 - **Checklist avant commit/PR : `CONTRIBUTING.md`** (8 familles d'erreurs récurrentes du projet). L'agent l'applique à tout code qu'il écrit.
+- **Un select slim-select se câble par `data: { controller: 'slim-select' }`**, jamais par une classe (l'injection par classe a disparu le 2026-10-05) : la CSS `select[data-controller~="slim-select"]` en dépend, et un select `required` sans widget reste invisible.
 
 **Tests**
 - ⚠ **Invoquer la skill `tests-coopcomm` avant d'écrire, de modifier ou de relire un test.** Elle porte les gabarits imposés (policies, contrôleurs, modèles, services, système), les règles de fixtures, le marquage des tests critiques et le placement des helpers. Les faire évoluer = éditer la skill, pas ce fichier.
@@ -81,6 +83,7 @@
 - `association.count` sur un enregistrement **neuf** fait un SQL avec `owner_id` nil et rend **0** ; `association.size` rend la taille en mémoire. Dans une validation ou un calcul appelé à la création, c'est toujours `size`.
 - `assign_attributes(x_ids:)` sur un `has_many :through` **écrit les lignes de jointure immédiatement**, avant le `save` : un refus de validation laisse la base modifiée. D'où la **transaction avec rollback** dans `interventions#update` et `users#update`.
 - Un `has_many :through` **sans `dependent:`** supprime ses lignes de liaison par `delete_all`, donc **sans callback ni audit** : un retrait n'est pas tracé.
+- `update_all`, `update_column(s)`, `delete_all`, `insert_all`, `upsert_all` n'exécutent **aucun** callback : ni audit, ni rafraîchissement du dashboard. Proscrits dans `app/` et `lib/` — règle de `CONTRIBUTING.md`, sans sentinelle (décision équipe 2026-10-01), seule exception les trois `update_column(:total_ht, …)` des lignes de devis/commande/facture ; en console, relancer `ActualiserDashboard.call` après une correction de données.
 - `mark_for_destruction` n'est **pas** honoré par `save` si l'association n'est pas en autosave — l'enregistrement peut être `valid?` tout en portant en base l'état que la validation interdit.
 - `belongs_to_required_validates_foreign_key` vaut **`false`** (défaut Rails 7.1) : la présence n'est vérifiée que **si la clé est assignée**, pas à chaque `save`.
 - Un `save` **à l'intérieur** d'une chaîne `after_commit` réinitialise `@_trigger_create_callback` : les callbacks déclarés **après** cessent de s'exécuter. Déclarer en dernier ce qui sauvegarde.
@@ -89,6 +92,7 @@
 - `where(colonne_datetime: une_Date)` couvre la **journée entière**, pas minuit.
 - `GlobalID::Locator` **n'applique pas** `default_scope :kept` : un enregistrement soft-deleté reste désérialisable par un job, qui s'exécute alors sur un zombie.
 - Postgres : `SELECT DISTINCT … ORDER BY <expression>` est refusé si l'expression n'est pas au SELECT ; et une requête refusée **empoisonne la transaction** → point de sauvegarde (`transaction(requires_new: true)`) pour toute sonde de requête.
+- `REFRESH MATERIALIZED VIEW CONCURRENTLY` **passe dans une transaction** (mesuré) : le projet a cru l'inverse trois mois et maintenu une variante `concurrently: false` pour les tests. Un seul chemin de refresh, `CONCURRENTLY` partout.
 - `validates numericality` refuse `nil` par défaut : le combiner à `presence` sans `allow_nil: true` produit **deux** messages pour un champ vide.
 - Rails accompagne tout `<select multiple>` d'un **champ caché vide** → une sélection vidée arrive en `['']`, qui n'est **pas** `blank?`. Utiliser `Array(...).compact_blank`.
 - Rails ajoute d'office une option vide à tout select **`required`** (inutile d'écrire `include_blank`) ; et sur un select simple, une option vide n'est un placeholder que **si elle est en première position** — d'où la garde de `slim_select_controller`.
@@ -106,7 +110,7 @@
 - Une **variable d'environnement lue par du code de prod** doit être posée **par le test qui en a besoin**, et restaurée : héritée de `.env`, elle marche en local et casse en CI.
 - `ActionView::TestCase` ne charge **que** le helper testé : prévoir `include ApplicationHelper`, `include ERB::Util`, et `@request.path_parameters` pour que `url_for` trouve une route.
 - `Devise.mappings` est **vide** hors test d'intégration → `Rails.application.reload_routes_unless_loaded` en `setup`.
-- `record.attach(...)` sur un enregistrement **persisté** enregistre aussitôt : la pièce jointe n'est plus « nouvelle » et **échappe à la validation**. Tester par **assignation**.
+- `record.attach(...)` sur un enregistrement **persisté** enregistre aussitôt, validation comprise : ensuite la pièce jointe n'est plus « nouvelle » et **plus rien ne la revalide** (un test qui attache, modifie, puis asserte l'acceptation passe à vide). Tester par **assignation**. Piège de test seulement : aucun parcours utilisateur ne passe par `attach`.
 - Les bases parallèles `coopcom_test-N` périment : un premier run massivement rouge (erreurs `RecordNotFound` ou `create_and_load_schema`) est auto-réparant — relancer avant de diagnostiquer.
 
 **Système / Capybara**
@@ -137,8 +141,8 @@
 
 ## 4. État d'avancement
 
-- **Branche courante : `502`** ; `staging` = intégration et démo client ; `main` = prod.
-- **Suite de tests** : `bundle exec rails test:all` → **2529 runs / 0 échec / 0 skip** (référence 2026-08-11 ; plus aucun `skip` dans la suite). Couverture `bin/coverage` : **~96,7 %** — les ~160 lignes restantes sont du code mort inventorié (B89 au registre) ; « 100 % » s'atteindrait par suppression, pas par test.
+- **Branche courante : `496`** ; `staging` = intégration et démo client ; `main` = prod.
+- **Suite de tests** : `bundle exec rails test:all` → **2196 runs / 0 échec / 0 skip** en **2 min 40** (référence 2026-10-01, rafraîchissement du dashboard à chaque commit inclus — il ne coûte que 9 s ; les 7 min 27 de la veille venaient des triggers en transaction et de 5 flakes système). Flakes connus sous charge parallèle : les deux fichiers système Devise (famille R3), verts en isolation ; la suite système ne compte plus que 12 fichiers depuis #489. Couverture `bin/coverage` : **~96,7 %** — les ~160 lignes restantes sont du code mort inventorié (B89 au registre) ; « 100 % » s'atteindrait par suppression, pas par test.
 - **Jalons** : **mise en prod client début septembre 2026** (aujourd'hui, seuls les comptes support/test servent) ; ~10 jours de dev restants, nouvelles fonctionnalités **en pause** ; fin de contrat mars 2028 ; **open-source envisagé mi-novembre 2026** (penser à purger la config Claude de l'historique). ~220 utilisateurs attendus, peu à l'aise avec l'informatique, agents sur Samsung S8, **zones blanches** pour le service technique.
 - **Parcours critiques** : pointage QR (4 scans/agent/jour), bon d'intervention, réservation de matériel, dashboard manager, validation adhérent. **« Catastrophique » = tout ce qui touche à l'argent**, et un agent qui verrait son évaluation (le CCTP les réserve aux gestionnaires).
 - **Équipe** : Dani = front, Alexandre + PE = back, PE merge `main` et déploie. Les issues GitHub (backlog) sont privées, inaccessibles à l'agent.
@@ -153,8 +157,10 @@
 | Besoin | Fichier (aucun n'est chargé automatiquement) |
 |---|---|
 | Un bug connu, son parcours de reproduction, son statut | `suivi/bugs-ouverts.md` (3 niveaux 🔴🟠⚪) · `suivi/bugs-corriges.md` |
-| Un défaut non reproductible, gardé, à re-signaler si la garde tombe | `suivi/risques-surveilles.md` · `suivi/risques-clos.md` |
+| Un défaut connu retenu par une garde, un angle mort sans test, à re-signaler si ça bascule | `suivi/risques-surveilles.md` · `suivi/risques-clos.md` |
 | Une décision en attente, une action humaine à faire, une dette actée | `suivi/points-a-trancher.md` · `suivi/actions-a-faire.md` · `suivi/dettes-ouvertes.md` (clos : `points-tranches`, `actions-faites`, `dettes-reglees`) |
+| Un perfectionnement repéré, ni bug ni dette | `suivi/perfectionnements-a-faire.md` · `suivi/perfectionnements-faits.md` |
+| Un fait à connaître avant de toucher au code, trop détaillé pour le §3 | `suivi/a-savoir.md` |
 | **Pourquoi** telle décision a été prise, ce qu'une session a mesuré | `suivi/journal-decisions.md` (index, 110 entrées) → `suivi/journal/AAAA-MM.md` |
 | Comment écrire un test ici | skill `tests-coopcomm` (à invoquer, pas à lire) |
 | Contexte client détaillé, CCTP, modèle de menace | `.claude/method/fiches/contexte-projet.md` *(hors dépôt)* |
@@ -163,7 +169,7 @@
 
 **Ouvrir le journal des décisions** avant de revenir sur un choix ancien, ou avant de toucher à une zone qui a déjà coûté cher : pointage, tests système, cache de fragments, validations d'intervention, filtres d'index, audit.
 
-**Tenue des registres** : chaque registre a un fichier **ouvert** (classé 🔴🟠⚪, définitions en tête, **prochain numéro libre** à incrémenter) et un fichier **clos** (du plus récent au plus ancien) : une fiche close **quitte** l'un pour l'autre, on ne la marque pas sur place. Une note de session s'écrit dans `suivi/journal/AAAA-MM.md`, avec sa ligne dans l'index `journal-decisions.md`. Ne remonte dans ce fichier-ci qu'une **leçon durable** (une ligne au §3), un **changement de convention**, ou une **mise à jour de l'état courant** — en *remplaçant* la ligne précédente, jamais en l'empilant.
+**Tenue des registres** : chaque registre a un fichier **ouvert** (classé 🔴🟠⚪, définitions en tête, **prochain numéro libre** à incrémenter, rangement par numéro) et un fichier **clos** (du plus récent au plus ancien) : une fiche close **quitte** l'un pour l'autre, on ne la marque pas sur place. Un bug trouvé est **signalé** (fiche B), pas corrigé sans accord explicite. **Toute limite, angle mort ou « non vérifié » cité dans une réponse devient une fiche P, DT ou R, ou complète la sienne, dans le même tour**, et la réponse le dit en une ligne. Une note de session s'écrit dans `suivi/journal/AAAA-MM.md`, avec sa ligne dans l'index `journal-decisions.md` ; on ajoute, on ne réécrit pas. L'agent écrit dans `suivi/` sans demander. Ne remonte dans ce fichier-ci qu'une **leçon durable** (une ligne au §3), un **changement de convention**, ou une **mise à jour de l'état courant** — en *remplaçant* la ligne précédente, jamais en l'empilant.
 
 ---
 
@@ -194,4 +200,4 @@ Le détail générique de la méthode (conduite de conversation, *context rot*, 
 
 | Date | Règle sautée | Contexte |
 |------|--------------|----------|
-| — | — | — |
+| 2026-10-01 | « Jamais de passe globale » de la migration des noms de tests (skill `tests-coopcomm`) | Demande PE : convertir d'un coup tous les fichiers de test encore à l'ancienne forme, sauf contre-indication |

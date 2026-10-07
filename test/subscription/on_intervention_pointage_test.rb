@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class OnInterventionPointageTest < ActionDispatch::IntegrationTest
-  test "NotifMailAdherentInterventionPointageJob est mis en file d'attente quand une intervention est pointée" do
+  test "le mail de pointage à l'adhérent est mis en file lorsqu'une intervention est pointée" do
     sign_in users(:martin_technique_paris)
     intervention = interventions(:intervention_repete)
 
@@ -12,7 +12,7 @@ class OnInterventionPointageTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "NotifWhatsappAdherentInterventionPointageJob est mis en file d'attente quand une intervention est pointée" do
+  test "le WhatsApp de pointage à l'adhérent est mis en file lorsqu'une intervention est pointée" do
     sign_in users(:martin_technique_paris)
     intervention = interventions(:intervention_repete)
 

@@ -9,7 +9,7 @@
 >
 > **Règle de tenue** : prochain numéro libre ci-dessous, rangement **par numéro** dans la section. Une action faite quitte ce fichier pour `actions-faites.md`, titre préfixé `✅ FAIT (AAAA-MM-JJ)`.
 >
-> **Prochain numéro libre : A5**
+> **Prochain numéro libre : A7**
 
 ---
 
@@ -25,13 +25,19 @@
 - **Risque** : ~200 interventions/jour refacturées aux communes = données d'argent ; une perte = incident métier ET contractuel.
 - **Piste** : `pg_dump` quotidien planifié (Hatchbox — ⚠ syntaxe cron, cf. A1) vers un stockage séparé (S3 déjà dans la stack), chiffré, avec test de restauration documenté. L'agent peut préparer la tâche + la procédure sur demande.
 
+### A6 — Relever la répartition des navigateurs des utilisateurs, et la version exacte de celui de l'agent de B122
+- **Pourquoi** : B122 (bouton de soumission invisible) est entièrement expliqué par l'absence de `oklch()`, mais **la marque et la version du navigateur de l'agent ne sont pas mesurées**. Et l'ampleur — combien d'utilisateurs sont sous Chrome 111 / Samsung Internet 22 — décide entre « un repli CSS suffit » et « il faut faire mettre à jour la flotte ».
+- **À faire** : (a) Google Analytics est actif hors développement ([_gtag.html.erb](app/views/partials/_gtag.html.erb)) → lire les rapports **Technologie > Navigateur** et **Version du navigateur** ; (b) demander à l'agent concerné sa marque et sa version (Samsung Internet : ⋮ > Paramètres > À propos de Samsung Internet ; Chrome : `chrome://version`), et par quoi il ouvre l'application — navigateur ou raccourci PWA, la WebView système pouvant être plus ancienne que le navigateur installé.
+- **Contrôle d'une minute, en attendant** : faire regarder à l'agent une page portant une photo ou le logo en couleur. Photo en couleur + interface en noir et blanc → c'est le CSS, pas le mode noir et blanc du téléphone.
+- **Seuil à retenir** : le navigateur par défaut d'un Galaxy (XCover compris) est **Samsung Internet**, préinstallé à côté de Chrome. Il connaît `oklch()` **à partir de la version 22** (Chromium 111, sortie le **14 juillet 2023**) ; 21 et en dessous, non. Donc : *Samsung Internet mis à jour pour la dernière fois avant juillet 2023 → pas de `oklch()`*. Corollaire : les XCover 4s (2019), 5 (2021) et 6 Pro (2022) sont tous sortis **avant** cette date, leur Samsung Internet d'usine est forcément sous le seuil ; seuls les XCover 7 (janvier 2024) et 7 Pro (mai 2025) sont bons d'origine. Une mise à jour suffit à repasser au-dessus sur tous ces modèles (Samsung Internet 28 descend jusqu'à Android 9, la 29 jusqu'à Android 10) — **c'est donc une question de mise à jour, pas de modèle**.
+- **Mesure à faire en premier, 30 secondes, sur le XCover déjà en main** : rouvrir le test dans **Samsung Internet** (pas Chrome, qui se met à jour tout seul par le Play Store) et lire ⋮ > Paramètres > À propos de Samsung Internet. C'est le seul point qui dise si le test du 2026-10-07 portait sur le bon moteur.
+- **Déduit, non mesuré** : le layout sert un manifeste PWA ([application.html.erb:17](app/views/layouts/application.html.erb#L17)) ; sur un Galaxy, un raccourci d'écran d'accueil s'ouvre dans le moteur de Samsung Internet — un agent peut donc tomber sur le vieux moteur même si Chrome est son navigateur par défaut.
+
 ## 🟠 Attendu avant la montée en charge
 
 ### A1 — Planifier la relance des cotations sur Hatchbox
 - **Quoi** : déclarer `bin/rails cotations:relancer_adherents` dans le planificateur Hatchbox, 1×/jour (la garde 48h est dans la tâche).
 - ⚠ **Piège** : syntaxe cron Hatchbox limitée (`0/10` non supporté ; une expression invalide bloque TOUTES les tâches planifiées — incident déjà vécu).
-
-## ⚪ Confort
 
 ### A3 — CI : job `test:system` séparé
 - **Quoi** : exécuter les tests système dans un job CI distinct des tests unitaires/intégration.

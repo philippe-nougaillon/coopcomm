@@ -16,12 +16,12 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
   # SVG vide encodé en base64 : la charge utile que le pad de signature envoie.
   SIGNATURE = 'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4='
 
-  test 'index : sans paramètre → la page répond' do
+  test 'la liste des cotations est affichée avec succès' do
     get cotations_url
     assert_response :success
   end
 
-  test 'index : recherche → seulement les cotations correspondantes' do
+  test 'la recherche dans la liste ne retourne que les cotations correspondantes' do
     cotation = cotations(:cotation_paris)
 
     get cotations_url(search: cotation.intitulé)
@@ -30,7 +30,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:cotations), cotation
   end
 
-  test 'index : adhérent_ids → seulement les cotations de ces adhérents' do
+  test 'la liste filtrée par adhérents ne retourne que les cotations de ces adhérents' do
     cotation = cotations(:cotation_paris)
 
     get cotations_url(adhérent_ids: [cotation.adherent_id])
@@ -39,7 +39,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:cotations), cotation
   end
 
-  test 'index : service_ids → seulement les cotations de ces services' do
+  test 'la liste filtrée par services ne retourne que les cotations de ces services' do
     cotation = cotations(:cotation_paris)
 
     get cotations_url(service_ids: [cotation.service_id])
@@ -48,7 +48,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:cotations), cotation
   end
 
-  test 'index : workflow_state → seulement cet état, quelle que soit la casse' do
+  test 'la liste filtrée par état ne retourne que les cotations de cet état, quelle que soit la casse' do
     cotation = cotations(:cotation_paris)
 
     get cotations_url(workflow_state: cotation.workflow_state.humanize)
@@ -57,7 +57,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:cotations), cotation
   end
 
-  test 'index : le dernier mail_log de chaque cotation est exposé' do
+  test 'le dernier mail log de chaque cotation est exposé à la vue' do
     cotation = cotations(:cotation_paris)
     organisation = cotation.organisation
     MailLog.create!(organisation:, cotation:, user_id: 0, to: 'a@b.fr',
@@ -72,7 +72,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal dernier, last_mail_logs[cotation.id], 'doit retenir le mail_log le plus récent'
   end
 
-  test 'show : une cotation de son périmètre → la page répond et le PDF est rendu' do
+  test 'une cotation est affichée avec succès et rendue en PDF sous son nom de fichier' do
     cotation = cotations(:cotation_paris)
     get cotation_url(cotation)
     assert_response :success
@@ -86,7 +86,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'application/pdf', response.media_type
   end
 
-  test "show : l'historique des envois de la cotation est affiché" do
+  test "l'historique des envois d'une cotation est affiché" do
     cotation = cotations(:cotation_paris)
     MailLog.create!(organisation: cotation.organisation, cotation:, user_id: 0,
                     to: 'destinataire@exemple.fr', subject: 'Votre cotation',
@@ -99,7 +99,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'td', text: 'destinataire@exemple.fr'
   end
 
-  test "show : le journal d'activité est affiché à un manager ou un administrateur" do
+  test "une modification de cotation apparaît dans son journal d'activité" do
     cotation = cotations(:cotation_paris)
     # Une modification génère un audit (gem `audited`) ; on vérifie qu'il
     # apparaît dans la section « Activité » (rendue par le partial _audit + prettify).
@@ -112,12 +112,12 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'td', text: /Intitulé révisé/
   end
 
-  test 'new : avec un adhérent en paramètre → il est préchargé' do
+  test 'le formulaire de création ouvert depuis un adhérent est affiché avec succès' do
     get new_cotation_url(adherent_id: @adherent.slug)
     assert_response :success
   end
 
-  test 'create : paramètres valides → total calculé depuis les tarifs et ref générée' do
+  test 'une cotation est créée avec un total calculé depuis les tarifs et une référence générée' do
     presta2 = prestations(:entretien_espaces_verts)    # tarif 30.00
 
     assert_difference -> { Cotation.count } => 1, -> { CotationLigne.count } => 2 do
@@ -139,7 +139,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/\ACO-#{Date.current.year}-\d+\z/, cotation.ref)
   end
 
-  test 'create : sans intitulé → aucune création et formulaire réaffiché' do
+  test "une cotation sans intitulé n'est pas créée" do
     assert_no_difference -> { Cotation.count } do
       post cotations_url, params: { cotation: {
         adherent_id: @adherent.id, service_id: @service.id, intitulé: ''
@@ -148,7 +148,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
-  test 'edit : une cotation sans ligne → une ligne vide est amorcée' do
+  test "le formulaire de modification d'une cotation sans ligne amorce une ligne vide" do
     cotation = Cotation.create!(intitulé: 'Cotation sans ligne', adherent: @adherent, service: @service,
                                 organisation: organisations(:mairie_paris))
 
@@ -158,20 +158,20 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, assigns(:cotation).cotation_lignes.size
   end
 
-  test 'edit : une cotation envoyée → édition refusée' do
+  test 'une cotation envoyée ne peut pas être ouverte en modification' do
     cotation = cotations(:cotation_secretariat) # envoyé
     get edit_cotation_url(cotation)
     assert_redirected_to root_path
   end
 
-  test "update : une cotation à l'état créé → elle est modifiée" do
+  test "une cotation à l'état créé peut être modifiée" do
     cotation = cotations(:cotation_paris) # créé
     patch cotation_url(cotation), params: { cotation: { intitulé: 'Titre corrigé' } }
     assert_redirected_to cotation_path(cotation)
     assert_equal 'Titre corrigé', cotation.reload.intitulé
   end
 
-  test 'update : une cotation envoyée → données inchangées' do
+  test "une cotation envoyée n'est pas modifiée" do
     cotation = cotations(:cotation_secretariat) # envoyé
     titre = cotation.intitulé
     patch cotation_url(cotation), params: { cotation: { intitulé: 'Tentative de modif' } }
@@ -179,7 +179,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal titre, cotation.reload.intitulé
   end
 
-  test 'update : paramètres invalides → formulaire réaffiché en 422' do
+  test "une cotation dont l'intitulé est vidé n'est pas modifiée" do
     cotation = cotations(:cotation_paris)
 
     patch cotation_url(cotation), params: { cotation: { intitulé: '' } }
@@ -191,7 +191,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
   # ==================== TESTS CRITIQUES ====================
 
   # Le prix d'un devis vient toujours du tarif des prestations, jamais de la requête.
-  test 'update : prix de ligne forgé dans les paramètres → prix inchangé (critique)' do
+  test 'un prix de ligne forgé dans les paramètres est ignoré (critique)' do
     post cotations_url, params: { cotation: {
       adherent_id: @adherent.id, service_id: @service.id, intitulé: 'Devis',
       cotation_lignes_attributes: { '0' => { prestation_id: @prestation.id, qté: 1, prix_ht: 1 } }
@@ -202,7 +202,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'destroy : une cotation de son périmètre → soft delete' do
+  test "une cotation est archivée lorsqu'elle est supprimée" do
     cotation = cotations(:cotation_paris)
     assert_no_difference -> { Cotation.count } do
       delete cotation_url(cotation)
@@ -211,21 +211,21 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to cotations_path
   end
 
-  test "envoyer : depuis l'état créé → envoyé" do
+  test "une cotation à l'état créé peut être envoyée" do
     cotation = cotations(:cotation_paris) # créé
     post envoyer_cotation_url(cotation)
     assert_redirected_to cotation_path(cotation)
     assert_equal 'envoyé', cotation.reload.workflow_state
   end
 
-  test "envoyer : la notification de l'adhérent est enfilée" do
+  test "la notification de l'adhérent est enfilée lorsqu'une cotation est envoyée" do
     cotation = cotations(:cotation_paris) # créé, adhérent avec email
     assert_enqueued_with(job: NotifAdherentCotationEnvoyeeJob) do
       post envoyer_cotation_url(cotation)
     end
   end
 
-  test "envoyer : depuis l'état refusé → la notification est renvoyée" do
+  test "une cotation à l'état refusé peut être renvoyée et la notification de l'adhérent est enfilée de nouveau" do
     cotation = cotations(:cotation_secretariat) # envoyé
     cotation.refuser!
     assert_enqueued_with(job: NotifAdherentCotationEnvoyeeJob) do
@@ -234,33 +234,33 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'envoyé', cotation.reload.workflow_state
   end
 
-  test 'envoyer : depuis un état impossible → aucune notification' do
+  test "aucune notification n'est enfilée lorsqu'une cotation déjà envoyée est envoyée de nouveau" do
     cotation = cotations(:cotation_secretariat) # envoyé : envoyer n'est pas possible
     assert_no_enqueued_jobs only: NotifAdherentCotationEnvoyeeJob do
       post envoyer_cotation_url(cotation)
     end
   end
 
-  test "valider : depuis l'état signé → validé" do
+  test "une cotation à l'état signé peut être validée" do
     cotation = cotations(:cotation_secretariat) # envoyé
     cotation.update!(workflow_state: 'signé')   # la validation n'est possible qu'après signature
     post valider_cotation_url(cotation)
     assert_equal 'validé', cotation.reload.workflow_state
   end
 
-  test "valider : depuis l'état créé → sans effet" do
+  test "une cotation à l'état créé ne peut pas être validée" do
     cotation = cotations(:cotation_paris) # créé
     post valider_cotation_url(cotation)
     assert_equal 'créé', cotation.reload.workflow_state
   end
 
-  test "refuser : depuis l'état envoyé → refusé" do
+  test "une cotation à l'état envoyé peut être refusée" do
     cotation = cotations(:cotation_secretariat) # envoyé
     post refuser_cotation_url(cotation)
     assert_equal 'refusé', cotation.reload.workflow_state
   end
 
-  test 'refuser : le créateur de la cotation est notifié' do
+  test "le créateur d'une cotation est notifié lorsqu'un adhérent la refuse" do
     sign_in @adherent
     cotation = cotations(:cotation_secretariat) # envoyé, audit create = administrateur_paris
 
@@ -270,7 +270,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "refuser : le créateur qui refuse lui-même n'est pas notifié" do
+  test "le créateur d'une cotation qui la refuse lui-même n'est pas notifié" do
     cotation = cotations(:cotation_secretariat) # envoyé, créée par @admin, qui est connecté
 
     assert_no_enqueued_jobs only: NotifManagerCotationRefuseeJob do
@@ -279,7 +279,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'refusé', cotation.reload.workflow_state
   end
 
-  test 'refuser : un autre gestionnaire notifie bien le créateur' do
+  test "le créateur d'une cotation est notifié lorsqu'un autre gestionnaire la refuse" do
     sign_in users(:manager_paris)
     cotation = cotations(:cotation_secretariat) # envoyé, audit create = administrateur_paris
 
@@ -289,7 +289,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'refuser : depuis un état impossible → aucune notification' do
+  test "une cotation à l'état créé ne peut pas être refusée et aucune notification n'est enfilée" do
     cotation = cotations(:cotation_paris) # créé : refuser n'est pas possible
 
     assert_no_enqueued_jobs only: NotifManagerCotationRefuseeJob do
@@ -298,7 +298,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'créé', cotation.reload.workflow_state
   end
 
-  test 'create_commande : depuis une cotation validée → la commande et ses lignes' do
+  test 'une commande est créée avec ses lignes depuis une cotation validée' do
     cotation = cotations(:cotation_paris)
     cotation.update!(workflow_state: 'validé')
 
@@ -313,7 +313,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'créé', commande.workflow_state
   end
 
-  test 'create_commande : commande invalide → aucune création et retour à la cotation' do
+  test "aucune commande n'est créée lorsque la commande copiée depuis la cotation est invalide" do
     cotation = cotations(:cotation_paris)
     cotation.update!(workflow_state: 'validé')
     cotation.update_column(:intitulé, nil) # bypass : rend la commande copiée invalide
@@ -326,13 +326,13 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Impossible de créer la commande.', flash[:alert]
   end
 
-  test 'signer : un adhérent accède au formulaire de signature' do
+  test 'un adhérent accède au formulaire de signature' do
     sign_in @adherent
     get signer_cotation_url(cotations(:cotation_secretariat)) # envoyé
     assert_response :success
   end
 
-  test 'signer_do : un adhérent signe une cotation envoyée → signée, signature et ip persistées' do
+  test "une cotation envoyée signée par un adhérent passe à l'état signé avec sa signature et son ip" do
     sign_in @adherent
     cotation = cotations(:cotation_secretariat) # envoyé, audit create = administrateur_paris (a un email)
 
@@ -348,7 +348,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert cotation.ip.present?
   end
 
-  test 'signer_do : le créateur de la cotation est notifié' do
+  test "le créateur d'une cotation est notifié lorsqu'elle est signée" do
     sign_in @adherent
     cotation = cotations(:cotation_secretariat) # envoyé, audit create = administrateur_paris
 
@@ -357,7 +357,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'signer_do : sans créateur identifiable → aucune notification' do
+  test "aucune notification n'est enfilée lorsqu'une cotation signée n'a pas de créateur identifiable" do
     sign_in @adherent
     cotation = cotations(:cotation_paris)
     cotation.update!(workflow_state: 'envoyé') # signable, mais sans audit create
@@ -375,7 +375,7 @@ class CotationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :no_content
   end
 
-  test "signer_do : une cotation non envoyée → rien n'est signé" do
+  test 'une cotation non envoyée ne peut pas être signée' do
     # CotationPolicy#signer? exige `record.can_signer?` : sur une cotation `créé`,
     # l'autorisation échoue en amont (redirection root), avant toute signature.
     sign_in @adherent

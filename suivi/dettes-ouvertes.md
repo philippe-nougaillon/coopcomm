@@ -1,6 +1,6 @@
 # Dettes ouvertes — CoopComm
 
-> **Dette technique actée** : ce qu'on sait imparfait et qu'on a choisi de ne pas traiter maintenant. Dettes réglées : `dettes-reglees.md`. Décisions en attente : `points-a-trancher.md`.
+> **Dette technique actée** : du **code livré** — application, scripts, schéma, données — qu'il faudra réécrire ou nettoyer parce qu'il rend la maintenance plus dure ou l'outil plus lent avec le temps : structure, doublon, code mort, dépendance fragile ou obsolète, donnée fausse, script sans filet. Ce qui manque **autour** du code (tests, CI, bancs, procédures) est un risque s'il laisse passer une régression (`risques-surveilles.md`), sinon un perfectionnement ; ce qui serait mieux sans coûter davantage à attendre est un perfectionnement (`perfectionnements-a-faire.md`). Dettes réglées : `dettes-reglees.md`. Décisions en attente : `points-a-trancher.md`.
 >
 > **Gravité** — la fiche va dans la section de ce qui **reste cassé ou exposé tant que la dette attend** :
 > - 🔴 **Bloque la prod ou l'argent** : obligation contractuelle, argent, sécurité devant de vrais utilisateurs.
@@ -9,7 +9,7 @@
 >
 > **Règle de tenue** : prochain numéro libre ci-dessous (préfixe `DT`), rangement **par numéro** dans la section. Une dette réglée quitte ce fichier pour `dettes-reglees.md`, titre préfixé `✅ RÉGLÉE (AAAA-MM-JJ)`.
 >
-> **Prochain numéro libre : DT13**
+> **Prochain numéro libre : DT14**
 
 ---
 
@@ -26,9 +26,6 @@ _Aucune._
 ### DT2 — Donnée en base : `temps_total` négatif pré-existant
 - un `temps_total` **négatif** pré-existant (repéré le 2026-06-18) — nettoyer à l'occasion (lié à B1).
 - **Re-mesuré le 2026-09-22** : 7 interventions à `temps_total` négatif sur 262 en base de dev, toutes modifiées avant le 2026-08-10, aucune depuis #462.
-
-### DT8 — Selects d'identité sans invite (constat 2026-08-31, lot B99)
-- sur un formulaire d'intervention neuf, les widgets **Adhérent** et **Service** s'affichent complètement vides, sans aucune invite — le placeholder d'un select requis est vide par construction. Comportement antérieur au lot B99, mais plus visible depuis que la ligne vide a disparu du menu. Le remède est déjà pratiqué dans le dépôt : `prompt: "Choisir un adhérent"` (`commandes/_form`), là où les trois `_prestation_form` ont au contraire `prompt: ""`. Décision d'ergonomie à prendre en une fois pour les ~8 selects concernés.
 
 ### DT10 — Onglets CRM figés sur les états de `Commande` (= bug B33)
 - au-delà du « Signé » manquant, le menu Statut de `adherent_crm` n'est pas dérivé de l'onglet courant. À traiter avec B33.
@@ -49,12 +46,6 @@ _Aucune._
 - ~~**Code mort de l'import XLS**~~ — **résolu le 2026-08-07, sauf le job** : le bilan riche prévu a été branché (décision PE), donc `@stream`/`capture_stdout`, `@success_logs`, `@error_logs` et `@mdp` (accumulation de mots de passe en clair) ont disparu avec la réécriture de `import_do` en service. **Reste** : `WelcomeImportNotificationJob` et son test, toujours **appelés par personne** (l'import envoie une invitation Devise), et porteurs du bug **B5** ; `lib/capture_stdout.rb` n'a plus non plus d'appelant. À supprimer quand PE le voudra.
 - **Rebalayé le 2026-09-22** : `lib/capture_stdout.rb` n'existe plus ; reste uniquement le job et son test, toujours sans appelant.
 
-### DT7 — Fixture d'API mal formée (constat 2026-07-29, session `/tests` lot D)
-- `test/fixtures/files/responseRoutesInfos.json`, utilisée par le stub WebMock global du `test_helper`, contient la **sortie du service `FetchRoutesInfos`** (`{"data_response":…, "routes_info":…, "localisation_depart":…}`) et non la **réponse brute de Google** (`{"routes":[…]}`). Conséquence : dans toute la suite, `get_trajet_from_response` reçoit un objet sans clé `routes` → renvoie `''`, et `Intervention#calculate_co2` calcule toujours **co2 = 0**. Le chemin nominal du connecteur n'était donc exercé nulle part. Les nouveaux tests de `fetch_routes_infos_service_test.rb` posent leurs propres stubs au bon format ; **la fixture globale n'a pas été corrigée** (elle est utilisée implicitement par toute la suite, un changement de forme y modifierait le `trajet`/`co2` de nombreux tests d'intervention — à faire dans un lot dédié).
-
 ### DT9 — `include_blank: true` redondant (mesuré 2026-08-31)
 - à côté de `required: true`, il produit **exactement le même** `<option value="" label=" ">` — Rails l'impose de toute façon. Les cinq endroits qui écrivent les deux (interventions adhérent/service ×2 formulaires, mouvements matériel/état) peuvent le perdre. Ménage, sans effet fonctionnel.
 - **Rebalayé le 2026-09-22** : il en reste deux, [_form_for_agents.erb:50](app/views/interventions/_form_for_agents.erb#L50) et [form/_demande.html.erb:37](app/views/interventions/form/_demande.html.erb#L37) ; les mouvements ont été nettoyés.
-
-### DT11 — Template de PR GitHub (mis de côté le 2026-07-10)
-- créer `.github/pull_request_template.md` avec 5-6 cases à cocher (une par famille d'erreur de `CONTRIBUTING.md` §2) — GitHub pré-remplit alors la description de chaque PR, cases cliquables. Décision client : **pour l'instant on utilise `CONTRIBUTING.md` seul** ; à réévaluer si la checklist n'est pas suivie en revue. Doc : <https://docs.github.com/fr/communities/using-templates-to-encourage-useful-issues-and-pull-requests/creating-a-pull-request-template-for-your-repository>.

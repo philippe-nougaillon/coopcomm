@@ -6,7 +6,7 @@
 >
 > **Règle de tenue** : on ajoute, on ne réécrit pas l'historique. Une note de fin de session s'écrit **dans le fichier du mois** (à créer s'il n'existe pas) et sa ligne **dans l'index ci-dessous** ; jamais dans `CLAUDE.md`, où seule une leçon durable remonte, en une ligne dans « Pièges & leçons apprises ».
 >
-> Registres voisins : `bugs-ouverts.md` / `bugs-corriges.md`, `risques-surveilles.md` / `risques-clos.md`, `points-a-trancher.md` / `points-tranches.md`, `actions-a-faire.md` / `actions-faites.md`, `dettes-ouvertes.md` / `dettes-reglees.md`. Jusqu'au 2026-09-22, bugs et risques vivaient dans `bugs-signales.md`, actions et dette dans `points-a-trancher.md` : les entrées antérieures les nomment ainsi.
+> Registres voisins : `bugs-ouverts.md` / `bugs-corriges.md`, `risques-surveilles.md` / `risques-clos.md`, `points-a-trancher.md` / `points-tranches.md`, `actions-a-faire.md` / `actions-faites.md`, `dettes-ouvertes.md` / `dettes-reglees.md`, `perfectionnements-a-faire.md` / `perfectionnements-faits.md`, `a-savoir.md`. Jusqu'au 2026-09-22, bugs et risques vivaient dans `bugs-signales.md`, actions et dette dans `points-a-trancher.md` : les entrées antérieures les nomment ainsi.
 
 ---
 
@@ -131,6 +131,20 @@
 - `2026-09-14` — Montée Ruby 4.0.6 / Rails 8.1.3.1 / Bundler 4.0.16, retrait de Bundler 4.1.0.beta1
 - `2026-09-14-b` — Warnings rdoc en double et dépréciations Rails 8.2 supprimés (view_component retiré, omniauth-rails_csrf_protection 2.0)
 - `2026-09-15` — Veille des signalements sur la montée de version : passage à Ruby 4.0.7 (SEGV de la 4.0.6)
+- `2026-09-21` — Crash prod `mail_logs#index` (B8) : `user_id` 0 = « Système » plutôt que NULL ; `NOT NULL` perdu sur `services.organisation_id` (B112)
+- `2026-09-21-b` — Cinq tests rouges après les merges de Dani : test périmé ou vrai défaut, B112 à B115, R6
+- `2026-09-21-c` — Pannes et réservations de matériel : plus de panne dans le futur, B40 corrigé, B116 à B120, grille réécrite en 3 lignes
 - `2026-09-22` — Registres de suivi découpés en dix fichiers ouvert/clos, journal par mois
 - `2026-09-22-b` — Rebalayage des 66 fiches ouvertes contre le code : 6 passées en clos, 17 complétées
+- `2026-09-23` — Dashboard : rafraîchissement des vues après chaque commit, triggers Postgres et gem `fx` supprimés, `DashboardData` fondu dans `PagesController`, sentinelle contre les écritures sans callbacks
 - `2026-09-28` — Dédoublonnage de la skill `tests-coopcomm` : transverses dans `SKILL.md`, nommage tranché, 5 `skip` supprimés
+
+### 2026-10 — `journal/2026-10.md`
+
+- `2026-10-01` — Passe globale de nommage des tests : 1 179 noms en phrases de comportement dans 101 fichiers, suite verte (2196 runs)
+- `2026-10-05` — Pièces jointes : piège `attach` re-mesuré sous Rails 8.1 (validation consommée par `attach`, pas sautée ; aucun parcours utilisateur concerné, rien de grave), doublon `valide_image :photo` du wiki retiré
+- `2026-10-05` — Fusion `staging` → `496` : 3 conflits résolus (calendrier des agents sur `scoped_services`), B103 de #496 renuméroté B121, suite verte (2202 runs) ; tour slim-select : aucun doublon au retour arrière Turbo, 7ᵉ vue B103, bibliothèque servie par unpkg sans copie locale (D19), incohérences de câblage/soumission/troncature (DT13)
+- `2026-10-05` — Registres alignés sur le suivi commun : perfectionnements (P) et à-savoir (S) créés, en-têtes dettes/risques réécrits avec les frontières de PE ; DT13 scindé (dette = doublon de câblage + code mort, P1 = soumission, troncature, labels, filtres Service) ; DT8, DT11 et DT7 à requalifier
+- `2026-10-05` — B103 tranché en D20 (option vide = placeholder, croix pour vider : comportement voulu) ; DT8 → P2, DT11 → P3, DT7 → R8 ; prestation 7 invalide et devis 10/11 vides supprimés en base locale (demande PE)
+- `2026-10-05` — slim-select : 43 selects passés en `data-controller` explicite, classe et injection `application.js` supprimées, CSS sur l'attribut, CAS B et vue `services/index` retirés ; cascades vérifiées au navigateur, suite verte (2202 runs) ; DT13 réglée
+- `2026-10-07` — Bouton « Enregistrer » invisible chez un agent : couleurs `oklch()` non supportées par son navigateur, pas le mode noir et blanc du téléphone (B122, R9, A6)

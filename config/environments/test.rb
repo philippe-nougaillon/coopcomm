@@ -49,6 +49,10 @@ Rails.application.configure do
   # incoming request so you'll need to provide the :host parameter yourself.
   config.action_mailer.default_url_options = { host: 'www.example.com' }
 
+  # Le livreur de test refuse un expéditeur vide ; ici plutôt que dans test_helper pour
+  # précéder Devise et les mailers quel que soit le chemin d'entrée (test, test:all, CI).
+  ENV['MAIL_FROM'] = 'CoopComm <ne-pas-repondre@mg.exemple.fr>'
+
   # Certains services (ex. génération du QRCode de pointage) construisent des URL
   # absolues via `config.default_url_options[:host]`. Défini en dev et prod, il
   # manquait en test → le PDF de l'affiche QRCode y levait une erreur. On l'aligne

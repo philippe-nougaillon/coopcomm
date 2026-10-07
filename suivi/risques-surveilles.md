@@ -1,19 +1,19 @@
 # Risques surveillés — CoopComm
 
-> Défauts **non reproductibles aujourd'hui** parce qu'une ou plusieurs gardes les empêchent. Chaque fiche dit quelles gardes, et ce qui les ferait tomber : **re-signaler** dès qu'une de ces conditions survient ou qu'une occurrence est mesurée. Risques clos : `risques-clos.md`. Bugs reproductibles : `bugs-ouverts.md`.
+> **Ce à quoi le projet est exposé, à surveiller** : soit un **défaut connu** qu'une ou plusieurs gardes rendent inatteignable aujourd'hui, soit un **angle mort** où une régression passerait sans être vue — zone sans test, environnement jamais vérifié, procédure jamais répétée. Chaque fiche dit ce qui protège ou ce qui manque, et ce qui ferait basculer : **re-signaler** dès qu'une garde tombe ou qu'une occurrence est mesurée. Risques clos : `risques-clos.md`. Bugs reproductibles : `bugs-ouverts.md`. Le code livré à réécrire est une dette : `dettes-ouvertes.md`.
 >
-> **Gravité** — la fiche va dans la section de ce qui arriverait **le jour où la garde tombe** ; une occurrence mesurée en prod fait monter le niveau :
-> - 🔴 **Grave** : argent, données, fuite, parcours critique, ou un écran entier en 500 pour tous.
-> - 🟠 **Limité** : un utilisateur, une action, réessayable.
+> **Gravité** — la fiche va dans la section de ce qui arriverait **le jour où ça se produit** ; une occurrence mesurée en prod fait monter le niveau :
+> - 🔴 **Grave** : argent, données, fuite, sécurité, parcours critique, ou un écran entier en 500 pour tous.
+> - 🟠 **Limité** : un utilisateur, une action, réessayable ; l'interface se dégrade sans perte de données.
 > - ⚪ **Hors production** : tests, CI, outillage.
 >
-> **Règle de tenue** : prochain numéro libre ci-dessous, rangement **par numéro** dans la section. Un risque corrigé ou devenu sans objet quitte ce fichier pour `risques-clos.md`, titre préfixé `✅ CORRIGÉ (AAAA-MM-JJ)` ou `✅ SANS OBJET (AAAA-MM-JJ)`.
+> **Règle de tenue** : prochain numéro libre ci-dessous (préfixe `R`), rangement **par numéro** dans la section. Un risque quitte ce fichier pour `risques-clos.md` quand il est corrigé, couvert par un test ou une garde, ou devenu sans objet, titre préfixé `✅ CORRIGÉ`, `✅ COUVERT` ou `✅ SANS OBJET (AAAA-MM-JJ)` ; une occurrence réelle en fait un bug (fiche B), le risque est alors clos avec le renvoi.
 >
-> **Prochain numéro libre : R7**
+> **Prochain numéro libre : R10**
 
 ---
 
-## 🔴 Grave si la garde tombe
+## 🔴 Grave si ça se produit
 
 ### R1 — Pointage : une fille de la veille non terminée ferait pointer une NOUVELLE intervention au lieu de terminer la sienne
 - **Signalé par** : PE, 2026-07-10 (point sensible vécu/craint sur la page d'accueil).
@@ -40,15 +40,14 @@
 
 ---
 
-## 🟠 Limité si la garde tombe
+### R9 — Rien ne vérifie le rendu de l'application sous le plancher navigateur de Tailwind 4 : une couleur qui disparaît sur la flotte Samsung ne se voit nulle part
+- **Signalé par** : agent, 2026-10-07, en diagnostiquant B122.
+- **Angle mort** : la suite système tourne sur Selenium/Chrome à jour ; aucun test ni aucune sonde n'exerce un moteur sous Chromium 111. Aucun bandeau n'avertit l'utilisateur dont le navigateur est trop ancien. Et le CSS compilé n'offre **aucun repli** pour ses 101 variables `--color-*` écrites en `oklch()`. Sur un tel navigateur, l'application perd toutes ses couleurs **en silence** : B122 n'a été connu que parce qu'un agent a écrit.
+- **Ce qui ferait basculer** : toute vue qui s'appuie sur la couleur pour porter du sens — pastilles d'état, surlignage ambre des champs manquants, `text-white` sur fond de thème (93 lignes de vue aujourd'hui) — devient illisible ou invisible sur les appareils concernés, sans qu'aucun test ne tombe. Chaque `text-white` ajouté sur un fond de thème agrandit la surface.
+- **Ce qui manque pour mesurer l'exposition** : la répartition réelle des navigateurs des ~220 utilisateurs attendus. Google Analytics est câblé hors développement ([_gtag.html.erb](app/views/partials/_gtag.html.erb), `GOOGLE_ANALYTICS_ID`) → rapport **Technologie > Navigateur / Version du navigateur** à lire (A6).
+- **Pistes de garde** : repli hexadécimal des couleurs du thème (correctif proposé en B122) ; bandeau conditionné à `CSS.supports('color', 'oklch(0 0 0)')`, qui a le mérite de nommer le problème à l'utilisateur. Un test système sur un moteur ancien n'est pas une piste réaliste : Tailwind 4 ne prétend pas supporter ces versions.
 
-### R4 — Deadlock Postgres entre le `REFRESH MATERIALIZED VIEW` synchrone du dashboard et une écriture `agent_interventions`, DANS un run `test:all` unique (flakiness rare, test uniquement — mais le mécanisme existe aussi en prod)
-- **Signalé le** : 2026-07-17 (2 runs `test:all` consécutifs de l'agent : `InterventionManagerFlowTest#test_Modifier_intervention`, `ActiveRecord::Deadlocked: PG::TRDeadlockDetected` sur `DELETE FROM agent_interventions` dans `interventions_controller.rb:237`, l'autre processus détenant un verrou `ShareRowExclusiveLock` ; 2e erreur du même run non capturée, vraisemblablement l'effet domino du même deadlock). Vert en isolation (10/10). Un 3e run n'a montré ni deadlock ni erreur (1 flake de sync sans rapport, `InterventionAdherentFlowTest`, vert en isolation 8/8).
-- **Fait nouveau vs 2026-07-16** : le deadlock `REFRESH` avait été attribué au lancement **simultané** de deux runs ; ici **un seul run** était en cours (sauf run parallèle de PE non signalé). Le serveur Capybara est multi-threads : deux requêtes navigateur concurrentes suffisent — T1 committe une écriture d'intervention puis son `after_commit` lance `refresh_views!` (`concurrently: false` = verrou exclusif sur la vue, puis lecture des tables sources) pendant que T2 fait `DELETE agent_interventions` puis attend à son tour le refresh → étreinte mortelle.
-- **Portée prod (déduction)** : le refresh synchrone en prod est `CONCURRENTLY` (pas de verrou de lecture) mais deux écritures simultanées d'interventions par deux utilisateurs peuvent toujours se disputer vues + tables sources ; à volumétrie actuelle, probabilité faible ; un deadlock y ferait échouer la requête web de l'utilisateur (500).
-- **Pistes si récurrent** (trade-offs actés par PE le 2026-07-15 « volume faible, code minimal ») : (a) `rescue ActiveRecord::Deadlocked` + retry unique autour du refresh ; (b) sérialiser les refresh via un verrou consultatif Postgres ; (c) rebrancher le `RefreshDashboardViewsJob` dormant (coalescé, un seul refresh en vol — la conception 2026-06-18 éliminait ce deadlock par construction).
-- ⚠️ **La surface du risque a AUGMENTÉ le 2026-08-05** (passage aux triggers Postgres, cf. B71). Avant, le `REFRESH` avait lieu dans un `after_commit`, donc **après** la libération des verrous de la transaction. Désormais il s'exécute **dans** la transaction de la requête qui écrit : celle-ci détient ses verrous de lignes sur `interventions`/`agent_interventions` **pendant** qu'elle demande le verrou exclusif sur la vue matérialisée — exactement la configuration d'étreinte mortelle décrite ci-dessus. Le raisonnement est structurel, pas mesuré : deux `test:all` complets (2199 runs) n'en ont produit aucun, ce qui ne prouve pas l'absence d'un flake rare.
-- **Statut : risque surveillé, non corrigé** — re-signaler chaque occurrence pour suivre la fréquence. Si des `ActiveRecord::Deadlocked` apparaissent en CI ou en prod après le 2026-08-05, c'est la première piste, et le remède le plus direct est la piste (c) : rebrancher le `RefreshDashboardViewsJob` dormant.
+## 🟠 Limité si ça se produit
 
 ### R5 — `EmailSubscription#on_intervention_workflow_changed` lit `audits.last.user_id` sans garde : crash si une intervention n'avait AUCUN audit au moment d'une transition
 - **Signalé le** : 2026-06-23 (cause ① de **B8**, relocalisée le 2026-07-31 sur la ligne 7). Reclassé ici le 2026-09-21 à la correction de B8, sur décision de PE : « c'est plutôt une mise en garde d'un potentiel futur bug ».
@@ -62,6 +61,12 @@
   3. Un **nouveau point de publication** de `intervention.workflow_changed` qui ne suivrait pas une sauvegarde auditée (tâche rake, job).
 - **Remède si besoin** : `intervention.audits.last&.user_id`, déjà écrit ligne 15 pour le handler voisin. Le `nil` qui en sortirait est désormais sans danger : le job écrit 0 (B8).
 
+### R7 — Dashboard : une écriture qui contourne les callbacks (`update_all`, `update_columns`, `delete_all`, SQL brut — dans le code, en console ou en migration) laisse les vues matérialisées périmées jusqu'à la prochaine écriture normale, et n'est pas auditée
+- **Signalé le** : 2026-09-23 (reprise de B71 après le retour au rafraîchissement par `after_commit`, décision PE ; à déplacer plus tard dans un fichier « à savoir » du suivi). Élargi au code de l'application le 2026-10-01.
+- **Scénario redouté** : une correction de données en console (`Intervention.where(…).update_all(…)`, `update_columns`, `delete_all`), une migration de données en SQL brut, ou un `update_all` glissé dans un contrôleur ou un job, modifie `interventions` ou `agent_interventions` sans passer par un callback → aucun `REFRESH` → le tableau de bord reste faux, pour tous les utilisateurs de l'organisation touchée, jusqu'au prochain enregistrement normal d'une intervention ou d'une affectation, sans aucun message. L'audit trail est contourné de la même façon, sur tout modèle `audited`.
+- **Gardes** : **aucune automatique**. Une sentinelle (`contournement_des_callbacks_test`, interdiction de ces méthodes dans `app/` et `lib/` et de `dependent: :delete_all` dans les modèles, exceptions nommées) a été écrite le 2026-09-23 puis écartée par l'équipe le 2026-10-01 (« petite équipe, on forme les devs et on y pense » — stashée). Restent la règle de `CONTRIBUTING.md` et la revue. Au 2026-10-01, aucun code de production n'utilise ces méthodes, hors les trois `update_column(:total_ht, …)` des lignes de devis/commande/facture (total dérivé, lignes elles-mêmes auditées) ; les tests qui écrivent par `update_columns` appellent `refresh_dashboard_views!` ensuite.
+- **Remède** : terminer toute correction par `ActualiserDashboard.call` (console comme migration, dans le bloc `up`). Aucune donnée n'est perdue, le dashboard se répare seul à la prochaine écriture normale ; l'audit manqué, lui, ne se rattrape pas.
+
 ## ⚪ Hors production
 
 ### R2 — `duplicate key … audits_pkey` : deux runs de test simultanés sur `coopcom_test` rembobinent la séquence des audits (test uniquement — sans objet depuis l'adoption de `rails test:all`)
@@ -73,3 +78,8 @@
 - **Signature caractéristique** : `audits_pkey` avec un id **très inférieur** au `last_value` attendu de `audits_id_seq`. Auto-réparant : le chargement de fixtures suivant refait DELETE + INSERT + `setval` cohérents.
 - **Statut 2026-07-16 : reclassé risque surveillé — la parade retenue est le workflow, pas le code.** PE a découvert que `bin/rails test:all` lance toute la suite (système incluse) en **un seul run** → plus de double run en usage normal (validé empiriquement : 3 × `test:all` verts, seeds 8236/511/42077, 1336 runs / 0 échec). Règle consignée dans CONTRIBUTING §⑦. Deux correctifs successivement implémentés, vérifiés puis **abandonnés sur décision PE** : la base dédiée `coopcom_test_system` (2026-07-13-d, aiguillage `ARGV` non standard) et le durcissement `_fixture: model_class: Audited::Audit` en tête d'`audits.yml` (ids `identify` stables — abandonné le 2026-07-16 : « pas de modification qui ne sert à rien si `test:all` est utilisé »).
 - **La fragilité de fond demeure** : les fixtures `audits.yml` tirent toujours la séquence. Un double run accidentel (deux terminaux, `guard` actif pendant un run manuel) peut reproduire le symptôme — dans ce cas, re-signaler ; le durcissement d'une ligne reste documenté ci-dessus.
+
+### R8 — Fixture d'API mal formée : le chemin nominal du connecteur de trajets n'est exercé par aucun test de la suite (constat 2026-07-29, session `/tests` lot D ; ex-DT7, requalifié risque le 2026-10-05)
+- **Angle mort** : `test/fixtures/files/responseRoutesInfos.json`, utilisée par le stub WebMock global du `test_helper`, contient la **sortie du service `FetchRoutesInfos`** (`{"data_response":…, "routes_info":…, "localisation_depart":…}`) et non la **réponse brute de Google** (`{"routes":[…]}`). Conséquence : dans toute la suite, `get_trajet_from_response` reçoit un objet sans clé `routes` → renvoie `''`, et `Intervention#calculate_co2` calcule toujours **co2 = 0**. Le chemin nominal du connecteur n'était donc exercé nulle part. Les nouveaux tests de `fetch_routes_infos_service_test.rb` posent leurs propres stubs au bon format ; **la fixture globale n'a pas été corrigée** (elle est utilisée implicitement par toute la suite, un changement de forme y modifierait le `trajet`/`co2` de nombreux tests d'intervention — à faire dans un lot dédié).
+- **Ce qui avertirait** : rien dans la suite — une régression du calcul de trajet ou de CO₂ sur le chemin nominal passerait verte ; seul `fetch_routes_infos_service_test.rb` la verrait, pour le service seul.
+- **Ce qui ferait basculer** : un trajet vide ou un CO₂ faux constaté sur une intervention réelle → fiche B, risque clos avec le renvoi.

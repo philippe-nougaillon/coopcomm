@@ -50,7 +50,7 @@ class InterventionMatriceIndexTest < ActionDispatch::IntegrationTest
 
   ACTEURS.each_key do |nom_acteur|
     %w[normal compact].each do |vue|
-      test "#{nom_acteur} / vue #{vue} : contenu de la ligne, type par type et état par état" do
+      test "la ligne de la vue #{vue} porte pour #{nom_acteur} le contenu attendu, type par type et état par état" do
         InterventionsMatrice::TYPES.each do |type|
           InterventionsMatrice::ETATS.each do |etat|
             jeton = "SONDEIDX#{SecureRandom.hex(4)}"
@@ -69,7 +69,7 @@ class InterventionMatriceIndexTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "accueil : le manager peut terminer, l'agent aussi, l'adhérent valide et refuse" do
+  test "la page d'accueil propose de terminer au manager et à l'agent, de valider et de refuser à l'adhérent" do
     attendus = {
       hidalgo: [Intervention::NOUVEAU, services(:technique), %w[action:terminer]],
       martin_technique_paris: [Intervention::NOUVEAU, services(:technique), %w[action:terminer]],

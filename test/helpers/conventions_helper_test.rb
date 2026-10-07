@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class ConventionsHelperTest < ActionView::TestCase
-  test 'convention à venir : 0 % et couleur info' do
+  test 'une convention à venir est annoncée à 0 % avec la couleur info' do
     prog = convention_progress(convention(Date.new(2026, 7, 1), Date.new(2026, 12, 31)),
                                today: Date.new(2026, 6, 1))
     assert_equal 0, prog[:percent]
@@ -11,7 +11,7 @@ class ConventionsHelperTest < ActionView::TestCase
     assert_equal 'progress-info', prog[:color]
   end
 
-  test 'convention à mi-parcours : ~50 % et couleur success' do
+  test 'une convention à mi-parcours est à 50 % environ avec la couleur success' do
     prog = convention_progress(convention(Date.new(2026, 1, 1), Date.new(2026, 12, 31)),
                                today: Date.new(2026, 7, 1))
     assert_in_delta 50, prog[:percent], 1
@@ -19,14 +19,14 @@ class ConventionsHelperTest < ActionView::TestCase
     refute prog[:indeterminate]
   end
 
-  test "convention proche de l'échéance : couleur warning au-delà de 80 %" do
+  test "une convention proche de l'échéance passe en couleur warning au-delà de 80 %" do
     prog = convention_progress(convention(Date.new(2026, 1, 1), Date.new(2026, 12, 31)),
                                today: Date.new(2026, 12, 1))
     assert_operator prog[:percent], :>=, 80
     assert_equal 'progress-warning', prog[:color]
   end
 
-  test 'convention expirée : 100 % et couleur error' do
+  test 'une convention expirée est annoncée à 100 % avec la couleur error' do
     prog = convention_progress(convention(Date.new(2026, 1, 1), Date.new(2026, 6, 30)),
                                today: Date.new(2026, 8, 1))
     assert_equal 100, prog[:percent]
@@ -42,18 +42,18 @@ class ConventionsHelperTest < ActionView::TestCase
 
   # ==================== Indicateur d'heures consommées ====================
 
-  test 'aucune heure conventionnée : indicateur à zéro, pas de division par zéro' do
+  test 'une convention sans heures conventionnées a un indicateur à zéro, sans division par zéro' do
     prog = heures(conventionnees: nil, consommees: 12)
 
     assert_equal 0, prog[:indicateur]
     assert_equal 'bg-neutral', prog[:indicateur_color]
   end
 
-  test 'heures conventionnées à zéro : indicateur à zéro' do
+  test 'des heures conventionnées à zéro donnent un indicateur à zéro' do
     assert_equal 0, heures(conventionnees: 0, consommees: 12)[:indicateur]
   end
 
-  test 'consommation en deçà du contrat : indicateur proportionnel et couleur neutre' do
+  test 'une consommation en deçà du contrat donne un indicateur proportionnel en couleur neutre' do
     prog = heures(conventionnees: 10, consommees: 5)
 
     assert_equal 50.0, prog[:indicateur]
@@ -62,14 +62,14 @@ class ConventionsHelperTest < ActionView::TestCase
     assert_match 'Temps écoulé', prog[:indicateur_label]
   end
 
-  test 'consommation exactement au contrat : encore neutre' do
+  test 'une consommation exactement au contrat reste en couleur neutre' do
     prog = heures(conventionnees: 10, consommees: 10)
 
     assert_equal 100.0, prog[:indicateur]
     assert_equal 'bg-neutral', prog[:indicateur_color]
   end
 
-  test 'dépassement du contrat : indicateur plafonné, couleur d\'alerte et écart annoncé' do
+  test "un dépassement du contrat plafonne l'indicateur, passe en couleur d'alerte et annonce l'écart" do
     prog = heures(conventionnees: 10, consommees: 15)
 
     assert_equal 100, prog[:indicateur]
@@ -78,7 +78,7 @@ class ConventionsHelperTest < ActionView::TestCase
     assert_match 'Durée dépassée de 5.0h', prog[:indicateur_label]
   end
 
-  test 'consommation négative : indicateur à zéro et invitation à corriger les interventions' do
+  test "une consommation négative met l'indicateur à zéro et invite à corriger les interventions" do
     prog = heures(conventionnees: 10, consommees: -3)
 
     assert_equal 0, prog[:indicateur]

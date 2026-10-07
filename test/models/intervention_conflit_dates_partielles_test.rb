@@ -16,7 +16,7 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
 
   # --- A. Complétude côté NOUVELLE (l'existante est fermée, réelle [10h, 12h]) --
 
-  test 'A1 nouvelle avec début réel seul DANS le créneau → conflit' do
+  test 'une nouvelle intervention avec un début réel seul dans le créneau est en conflit (A1)' do
     creer_existante_agent
 
     nouvelle = construire_agent(début: "#{JOUR} 11:00")
@@ -25,7 +25,7 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
     assert_includes nouvelle.errors.full_messages.join(' '), 'Conflit(s) détecté(s) sur un agent'
   end
 
-  test 'A2 nouvelle avec début réel seul HORS créneau → valide' do
+  test 'une nouvelle intervention avec un début réel seul hors du créneau est valide (A2)' do
     creer_existante_agent
 
     nouvelle = construire_agent(début: "#{JOUR} 08:00")
@@ -33,7 +33,7 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
     assert nouvelle.valid?, nouvelle.errors.full_messages.to_sentence
   end
 
-  test 'A3 nouvelle avec fin réelle seule DANS le créneau → conflit' do
+  test 'une nouvelle intervention avec une fin réelle seule dans le créneau est en conflit (A3)' do
     creer_existante_agent
 
     nouvelle = construire_agent(fin: "#{JOUR} 11:00")
@@ -42,7 +42,7 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
     assert_includes nouvelle.errors.full_messages.join(' '), 'Conflit(s) détecté(s) sur un agent'
   end
 
-  test 'A4 nouvelle avec fin réelle seule HORS créneau → valide' do
+  test 'une nouvelle intervention avec une fin réelle seule hors du créneau est valide (A4)' do
     creer_existante_agent
 
     nouvelle = construire_agent(fin: "#{JOUR} 08:00")
@@ -50,7 +50,7 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
     assert nouvelle.valid?, nouvelle.errors.full_messages.to_sentence
   end
 
-  test 'A5 nouvelle avec début prévu seul DANS le créneau (repli sur une borne) → conflit' do
+  test 'une nouvelle intervention avec un début prévu seul dans le créneau est en conflit (repli sur une borne) (A5)' do
     creer_existante_agent
 
     nouvelle = construire_agent(début_prévue: "#{JOUR} 11:00")
@@ -59,7 +59,7 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
     assert_includes nouvelle.errors.full_messages.join(' '), 'Conflit(s) détecté(s) sur un agent'
   end
 
-  test 'A5bis nouvelle avec fin prévue seule DANS le créneau (repli sur une borne) → conflit' do
+  test 'une nouvelle intervention avec une fin prévue seule dans le créneau est en conflit (repli sur une borne) (A5bis)' do
     creer_existante_agent
 
     nouvelle = construire_agent(fin_prévue: "#{JOUR} 11:00")
@@ -68,7 +68,7 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
     assert_includes nouvelle.errors.full_messages.join(' '), 'Conflit(s) détecté(s) sur un agent'
   end
 
-  test 'A6 nouvelle MIXTE (début réel + fin prévue) chevauchant le créneau → conflit' do
+  test 'une nouvelle intervention mixte (début réel et fin prévue) chevauchant le créneau est en conflit (A6)' do
     creer_existante_agent
 
     nouvelle = construire_agent(début: "#{JOUR} 09:00", fin_prévue: "#{JOUR} 11:00")
@@ -77,7 +77,7 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
     assert_includes nouvelle.errors.full_messages.join(' '), 'Conflit(s) détecté(s) sur un agent'
   end
 
-  test 'A7 nouvelle MIXTE (début réel + fin prévue) hors créneau → valide' do
+  test 'une nouvelle intervention mixte (début réel et fin prévue) hors du créneau est valide (A7)' do
     creer_existante_agent
 
     nouvelle = construire_agent(début: "#{JOUR} 13:00", fin_prévue: "#{JOUR} 14:00")
@@ -85,7 +85,7 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
     assert nouvelle.valid?, nouvelle.errors.full_messages.to_sentence
   end
 
-  test 'A8 nouvelle sans aucune date : la validation est sautée même si l’agent est occupé → valide' do
+  test 'une nouvelle intervention sans aucune date est valide même si l’agent est occupé, la validation étant sautée (A8)' do
     creer_existante_agent
 
     nouvelle = construire_agent
@@ -93,7 +93,7 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
     assert nouvelle.valid?, nouvelle.errors.full_messages.to_sentence
   end
 
-  test 'A9 priorité PAR BORNE : début réel hors créneau prime sur début prévu dans le créneau → valide' do
+  test 'un début réel hors du créneau prime, borne par borne, sur un début prévu dans le créneau (A9)' do
     creer_existante_agent
 
     nouvelle = construire_agent(début: "#{JOUR} 13:00", début_prévue: "#{JOUR} 11:00")
@@ -103,13 +103,13 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
 
   # --- B. Complétude côté EXISTANTE (la nouvelle est fermée, réelle [10h, 12h]) --
 
-  test 'B1 existante avec début réel seul DANS la fenêtre de la nouvelle → conflit' do
+  test 'une intervention existante avec un début réel seul dans la fenêtre met la nouvelle en conflit (B1)' do
     creer_agent(début: "#{JOUR} 11:00")
 
     assert_conflit_nouvelle_fermee
   end
 
-  test 'B2 existante « ouverte » AVANT la fenêtre (début réel seul hors) → valide, borne NULL = inconnue' do
+  test 'une intervention existante « ouverte » avant la fenêtre (début réel seul hors) laisse la nouvelle valide, une borne absente étant inconnue (B2)' do
     # Comportement décidé : une fin absente n'est PAS traitée comme « toujours en
     # cours » ; l'existante ne conflicte que si sa borne connue tombe dans la fenêtre.
     creer_agent(début: "#{JOUR} 08:00")
@@ -117,31 +117,31 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
     assert_valide_nouvelle_fermee
   end
 
-  test 'B3 existante avec fin réelle seule DANS la fenêtre → conflit' do
+  test 'une intervention existante avec une fin réelle seule dans la fenêtre met la nouvelle en conflit (B3)' do
     creer_agent(fin: "#{JOUR} 11:00")
 
     assert_conflit_nouvelle_fermee
   end
 
-  test 'B4 existante MIXTE (début réel + fin prévue) chevauchant la fenêtre → conflit' do
+  test 'une intervention existante mixte (début réel et fin prévue) chevauchant la fenêtre met la nouvelle en conflit (B4)' do
     creer_agent(début: "#{JOUR} 09:00", fin_prévue: "#{JOUR} 11:00")
 
     assert_conflit_nouvelle_fermee
   end
 
-  test 'B5 existante MIXTE (début réel + fin prévue) hors fenêtre → valide' do
+  test 'une intervention existante mixte (début réel et fin prévue) hors de la fenêtre laisse la nouvelle valide (B5)' do
     creer_agent(début: "#{JOUR} 07:00", fin_prévue: "#{JOUR} 08:00")
 
     assert_valide_nouvelle_fermee
   end
 
-  test 'B6 existante sans aucune date → valide' do
+  test 'une intervention existante sans aucune date laisse la nouvelle valide (B6)' do
     creer_agent
 
     assert_valide_nouvelle_fermee
   end
 
-  test 'B7 existante avec début prévu seul DANS la fenêtre → conflit' do
+  test 'une intervention existante avec un début prévu seul dans la fenêtre met la nouvelle en conflit (B7)' do
     creer_agent(début_prévue: "#{JOUR} 11:00")
 
     assert_conflit_nouvelle_fermee
@@ -149,7 +149,7 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
 
   # --- C. Outils : mêmes règles de complétude (contraste minimal) ---------------
 
-  test 'C1 nouvelle avec début réel seul dans le créneau de l’outil → conflit outil' do
+  test 'une nouvelle intervention avec un début réel seul dans le créneau de l’outil est en conflit d’outil (C1)' do
     creer_outil(début: "#{JOUR} 10:00", fin: "#{JOUR} 12:00")
 
     nouvelle = construire_outil(début: "#{JOUR} 11:00")
@@ -158,7 +158,7 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
     assert_includes nouvelle.errors.full_messages.join(' '), 'Conflit(s) détecté(s) sur un outil'
   end
 
-  test 'C2 existante outil avec début réel seul dans la fenêtre de la nouvelle → conflit outil' do
+  test 'une intervention existante sur l’outil avec un début réel seul dans la fenêtre met la nouvelle en conflit d’outil (C2)' do
     creer_outil(début: "#{JOUR} 11:00")
 
     nouvelle = construire_outil(début: "#{JOUR} 10:00", fin: "#{JOUR} 12:00")
@@ -167,7 +167,7 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
     assert_includes nouvelle.errors.full_messages.join(' '), 'Conflit(s) détecté(s) sur un outil'
   end
 
-  test 'C2bis nouvelle avec fin prévue seule DANS le créneau de l’outil → conflit outil' do
+  test 'une nouvelle intervention avec une fin prévue seule dans le créneau de l’outil est en conflit d’outil (C2bis)' do
     creer_outil(début: "#{JOUR} 10:00", fin: "#{JOUR} 12:00")
 
     nouvelle = construire_outil(fin_prévue: "#{JOUR} 11:00")
@@ -176,7 +176,7 @@ class InterventionConflitDatesPartiellesTest < ActiveSupport::TestCase
     assert_includes nouvelle.errors.full_messages.join(' '), 'Conflit(s) détecté(s) sur un outil'
   end
 
-  test 'C3 nouvelle sans dates avec un outil occupé → valide (validation sautée)' do
+  test 'une nouvelle intervention sans dates avec un outil occupé est valide (validation sautée) (C3)' do
     creer_outil(début: "#{JOUR} 10:00", fin: "#{JOUR} 12:00")
 
     nouvelle = construire_outil
