@@ -13,7 +13,7 @@
         </span>
       </div>
     </div>
-    <div class="flex flex-col justify-end gap-2">
+    <div class="flex flex-row justify-end gap-2">
       <% if policy(@cotation).update? %>
         <%= link_to edit_cotation_path(@cotation), class: "btn flex-1 sm:flex-none" do %>
           <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
