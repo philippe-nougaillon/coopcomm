@@ -9,7 +9,7 @@
 >
 > **Règle de tenue** : prochain numéro libre ci-dessous (préfixe `R`), rangement **par numéro** dans la section. Un risque quitte ce fichier pour `risques-clos.md` quand il est corrigé, couvert par un test ou une garde, ou devenu sans objet, titre préfixé `✅ CORRIGÉ`, `✅ COUVERT` ou `✅ SANS OBJET (AAAA-MM-JJ)` ; une occurrence réelle en fait un bug (fiche B), le risque est alors clos avec le renvoi.
 >
-> **Prochain numéro libre : R9**
+> **Prochain numéro libre : R10**
 
 ---
 
@@ -39,6 +39,13 @@
 - **Remède si besoin** : `wiki_page.sous_titre.presence&.upcase_first`, ou la même garde `if present?` que la branche sans photo.
 
 ---
+
+### R9 — Rien ne vérifie le rendu de l'application sous le plancher navigateur de Tailwind 4 : une couleur qui disparaît sur la flotte Samsung ne se voit nulle part
+- **Signalé par** : agent, 2026-10-07, en diagnostiquant B122.
+- **Angle mort** : la suite système tourne sur Selenium/Chrome à jour ; aucun test ni aucune sonde n'exerce un moteur sous Chromium 111. Aucun bandeau n'avertit l'utilisateur dont le navigateur est trop ancien. Et le CSS compilé n'offre **aucun repli** pour ses 101 variables `--color-*` écrites en `oklch()`. Sur un tel navigateur, l'application perd toutes ses couleurs **en silence** : B122 n'a été connu que parce qu'un agent a écrit.
+- **Ce qui ferait basculer** : toute vue qui s'appuie sur la couleur pour porter du sens — pastilles d'état, surlignage ambre des champs manquants, `text-white` sur fond de thème (93 lignes de vue aujourd'hui) — devient illisible ou invisible sur les appareils concernés, sans qu'aucun test ne tombe. Chaque `text-white` ajouté sur un fond de thème agrandit la surface.
+- **Ce qui manque pour mesurer l'exposition** : la répartition réelle des navigateurs des ~220 utilisateurs attendus. Google Analytics est câblé hors développement ([_gtag.html.erb](app/views/partials/_gtag.html.erb), `GOOGLE_ANALYTICS_ID`) → rapport **Technologie > Navigateur / Version du navigateur** à lire (A6).
+- **Pistes de garde** : repli hexadécimal des couleurs du thème (correctif proposé en B122) ; bandeau conditionné à `CSS.supports('color', 'oklch(0 0 0)')`, qui a le mérite de nommer le problème à l'utilisateur. Un test système sur un moteur ancien n'est pas une piste réaliste : Tailwind 4 ne prétend pas supporter ces versions.
 
 ## 🟠 Limité si ça se produit
 

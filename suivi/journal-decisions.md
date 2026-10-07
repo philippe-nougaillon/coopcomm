@@ -147,3 +147,4 @@
 - `2026-10-05` — Registres alignés sur le suivi commun : perfectionnements (P) et à-savoir (S) créés, en-têtes dettes/risques réécrits avec les frontières de PE ; DT13 scindé (dette = doublon de câblage + code mort, P1 = soumission, troncature, labels, filtres Service) ; DT8, DT11 et DT7 à requalifier
 - `2026-10-05` — B103 tranché en D20 (option vide = placeholder, croix pour vider : comportement voulu) ; DT8 → P2, DT11 → P3, DT7 → R8 ; prestation 7 invalide et devis 10/11 vides supprimés en base locale (demande PE)
 - `2026-10-05` — slim-select : 43 selects passés en `data-controller` explicite, classe et injection `application.js` supprimées, CSS sur l'attribut, CAS B et vue `services/index` retirés ; cascades vérifiées au navigateur, suite verte (2202 runs) ; DT13 réglée
+- `2026-10-07` — Bouton « Enregistrer » invisible chez un agent : couleurs `oklch()` non supportées par son navigateur, pas le mode noir et blanc du téléphone (B122, R9, A6)

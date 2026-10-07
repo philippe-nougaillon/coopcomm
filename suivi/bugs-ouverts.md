@@ -9,7 +9,7 @@
 >
 > **Règle de tenue** : une fiche nouvelle prend le **prochain numéro libre** ci-dessous (et l'incrémente) et se range dans sa section **par numéro**. Un bug corrigé **quitte ce fichier** pour `bugs-corriges.md` — fiche entière, titre préfixé `✅ CORRIGÉ (AAAA-MM-JJ)`, ligne « Correctif appliqué » ; ne jamais marquer ✅ sur place. Une correction **partielle** reste ici, titre `⚠️ PARTIELLEMENT CORRIGÉ`, reliquat en tête de fiche.
 >
-> **Prochain numéro libre : B122**
+> **Prochain numéro libre : B123**
 
 ---
 
@@ -63,6 +63,18 @@
   - **embarquer une police TTF** (DejaVu Sans ou Open Sans, licence OFL donc compatible avec l'open-source envisagé) — UTF-8 complet, supprime le besoin d'assainir **dans les quatre services PDF à la fois**, au prix de 4 fichiers de police (~300–700 Ko) et de PDF un peu plus lourds. L'équipe y avait déjà pensé : le bloc est commenté dans [qrcode_modele_intervention.rb:27-32](app/services/transform_to_pdf/qrcode_modele_intervention.rb#L27-L32), avec un chemin `vendor/assets/fonts/Open_Sans/`.
 - **Non couvert par les tests** : aucun test n'exerce un caractère hors Windows-1252 sur les PDF CRM.
 - ✅ **Remède disponible depuis le 2026-09-01** (#485, PDF d'intervention) : `TransformToPdf::Intervention#texte_sûr` ([intervention.rb:433](app/services/transform_to_pdf/intervention.rb#L433)) traduit `₂` et `→` puis remplace par « ? » tout caractère hors Windows-1252. Les trois PDF du CRM ne l'utilisent pas (rebalayage 2026-09-22) : à mutualiser dans `base_pdf_for_crm.rb`.
+
+### B122 — Bon d'intervention : le bouton « Enregistrer » est invisible (texte blanc, fond absent) sur un navigateur sans `oklch()` — l'agent ne peut pas terminer son intervention
+- **Signalé par** : un agent via PE, 2026-10-07 (capture d'écran du formulaire ; « le bouton n'est pas du tout visible, tout son écran est en noir et blanc »).
+- **Où** : [_form_for_agents.erb:183](app/views/interventions/_form_for_agents.erb#L183) et [_form.html.erb:67](app/views/interventions/_form.html.erb#L67) — `btn btn-primary text-white …`. Même forme sur **93 lignes de vue** (`text-white` posé sur un fond de thème `btn-*` / `bg-*`), tous concernés.
+- **Parcours de reproduction** : ouvrir n'importe quel formulaire (ici le bon d'intervention) depuis **Chromium < 111**, **Samsung Internet < 22**, Firefox < 113 ou Safari < 15.4 → le bouton de soumission perd son fond et garde son texte blanc : il disparaît dans la page.
+- **Cause racine** : `--color-white` est la **seule** couleur que Tailwind 4 écrit en hexadécimal (`#fff`) ; les **101 autres** variables `--color-*` du CSS compilé sont en `oklch()` **sans repli** (les 305 `color-mix()`, eux, sont bien derrière `@supports`). Sur un navigateur qui ignore `oklch()`, chaque `background-color: var(--color-…)` est *invalide au calcul* et retombe à `transparent`, pendant que `.text-white{color:var(--color-white)}` reste valide → **texte blanc sur fond de page blanc**. `border-color` retombe sur son initiale `currentColor`, d'où les bordures noires de la capture.
+- **Mesuré sur la capture** : l'intérieur du bouton vaut `#FFFFFF`, **et celui du bouton « Annuler » aussi** — or `.btn` lui donne `--color-base-200` = `oklch(93% 0 0)` ≈ `#E8E8E8`. Un filtre de niveaux de gris laisse un gris gris : la déclaration n'a donc pas été appliquée du tout. Saturation maximale de l'image 0,0197 (bruit de palette). Du bouton, seul le `shadow-md` se voit encore, parce que Tailwind l'écrit `#0000001a`.
+- **Donc ce n'est pas le mode noir et blanc du téléphone** : l'écran est monochrome parce que l'application a perdu toutes ses couleurs. Cohérent avec le test de PE sur un XCover (mode noir et blanc activé, bouton visible en gris) : ce navigateur-là connaît `oklch()`.
+- **Déduit, non mesuré** : le navigateur de l'agent est sous le plancher documenté de Tailwind 4 (Chrome 111 / Safari 16.4 / Firefox 128). Candidat le plus probable sur la flotte (Samsung S8, XCover) : **Samsung Internet ≤ 21** (Chromium ≤ 110), ou la WebView système si l'application est ouverte depuis le raccourci PWA. **Marque et version à confirmer → A6.**
+- **Impact au-delà du bouton** : sur ce navigateur l'application perd **tout son code couleur** — pastilles d'état des interventions, surlignage ambre des champs manquants à la terminaison, astérisques rouges des champs obligatoires, alertes. Parcours critique (bon d'intervention) bloqué : l'agent ne voit pas comment soumettre.
+- **Correctif proposé (à valider)** : un bloc `@supports not (color: oklch(0 0 0))` dans `app/assets/stylesheets/application.css` qui redéclare les couleurs en hexadécimal. Il l'emporte sans condition : le bloc `[data-theme=corporate]` de daisyUI est dans `@layer base` (vérifié), et une règle hors couche bat toute règle en couche. Version courte : les 20 variables de couleur de `[data-theme=corporate]` — rend son fond à chacun des 93 éléments. Version complète : les 101 `--color-*`, l'application garde toutes ses couleurs. Aucun effet sur un navigateur moderne, qui saute le bloc. Équivalents calculés : `--color-primary` = `#0082CE` (4,13:1 avec le blanc), `--color-info` = `#0090B5`, `--color-base-200` = `#E8E8E8`, `--color-base-content` = `#181A2A`.
+- **Angle mort associé** : R9 — rien ne vérifie le rendu sous le plancher navigateur.
 
 ## 🟠 Gênants
 
