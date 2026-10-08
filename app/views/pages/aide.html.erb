@@ -1,0 +1,186 @@
+
+<%
+  sections = [
+    ["demarrage", "Prise en main"],
+    ["roles", "Rôles et accès"],
+    ["guides", "Guides par fonctionnalité"],
+    ["faq", "Questions fréquentes"],
+    ["donnees", "Données et RGPD"],
+    ["support", "Signaler un problème"]
+  ]
+
+  etapes = [
+    { title: "Recevez votre invitation", text: "Votre manager crée votre compte. Vous recevez un e-mail pour choisir votre mot de passe." },
+    { title: "Connectez-vous", text: "Ouvrez CoopComm depuis l'adresse de votre communauté et saisissez vos identifiants." },
+    { title: "Repérez votre tableau de bord", text: "Selon votre rôle, vous voyez vos interventions, le matériel disponible ou les indicateurs de votre organisation." },
+    { title: "Lancez votre première action", text: "Créez une demande d'intervention ou consultez le matériel partagé sur la carte." }
+  ]
+
+  roles = [
+    { title: "Adhérent", text: "Fait une demande d'intervention, suit son avancement et la valide une fois réalisée.", color: "bg-[#47b5db]" },
+    { title: "Agent", text: "Accède uniquement aux données liées à ses interventions. Réalise le travail sur le terrain et renseigne les informations.", color: "bg-[#691E9A]" },
+    { title: "Manager", text: "Voit l'ensemble des données de son organisation : planning, matériel, budget et indicateurs.", color: "bg-[#db2767]" }
+  ]
+
+  guides = [
+    { title: "Gérer le matériel et les prêts",
+      text: "Chaque équipement est enregistré dans l'inventaire. Vous pouvez suivre les prêts en cours et localiser le matériel sur la carte interactive.",
+      steps: ["Ouvrez la section Matériel.", "Ajoutez un équipement ou sélectionnez-en un existant.", "Enregistrez un prêt, puis clôturez-le au retour du matériel."] },
+    { title: "Créer et suivre une intervention",
+      text: "Une demande est émise par l'adhérent, réalisée par l'agent sur le terrain, puis validée par l'adhérent en un clic.",
+      steps: ["Cliquez sur Nouvelle intervention.", "Décrivez la demande et choisissez l'équipe concernée.", "Suivez l'état de la demande jusqu'à sa validation."] },
+    { title: "Utiliser le pointage par QR code",
+      text: "Pour les interventions récurrentes, créez une intervention modèle et imprimez son QR code. L'agent le scanne et ouvre directement l'intervention, sans saisie manuelle.",
+      steps: ["Créez une intervention modèle.", "Imprimez son QR code et placez-le sur le lieu ou l'équipement.", "L'agent scanne le code avec son téléphone."] },
+    { title: "Échanger avec la messagerie",
+      text: "Un espace de discussion en temps réel permet aux managers et aux agents de communiquer directement, avec modération intégrée.", steps: [] },
+    { title: "Configurer les notifications",
+      text: "Certains changements d'état déclenchent des alertes par e-mail ou WhatsApp pour informer toutes les parties prenantes.", steps: [] },
+    { title: "Suivre le budget",
+      text: "Le tableau de bord présente en temps réel les indicateurs clés et les dépenses, pour les adhérents comme pour les managers.", steps: [] },
+    { title: "Comprendre le workflow",
+      text: "Chaque intervention passe d'un état à un autre grâce à des actions prédéfinies. Certaines actions envoient automatiquement une notification.", steps: [] },
+    { title: "Anticiper avec l'IA",
+      text: "À partir de l'historique des interventions, l'intelligence artificielle suggère celles à prévoir. Ce sont des suggestions : vous restez libre de les accepter ou non.", steps: [] }
+  ]
+
+  faq = [
+    { q: "J'ai oublié mon mot de passe. Que faire ?",
+      a: "Utilisez le lien « Mot de passe oublié » sur la page de connexion. Si vous ne recevez pas l'e-mail, vérifiez vos courriers indésirables, puis contactez le support." },
+    { q: "Qui peut voir mes données ?",
+      a: "Les agents ne voient que les données liées à leurs interventions. Les managers ont accès à celles de leur organisation uniquement." },
+    { q: "Puis-je utiliser CoopComm sur mobile ?",
+      a: "Oui, l'interface s'adapte aux téléphones, ce qui est pratique pour les agents sur le terrain et le scan des QR codes." },
+    { q: "Comment demander une nouvelle fonctionnalité ?",
+      a: "Écrivez-nous à support@coopcomm.fr en décrivant votre besoin. Le code étant ouvert, vous pouvez aussi nous écrire pour contribuer." },
+    { q: "Où sont hébergées mes données ?",
+      a: "CoopComm est développé, hébergé et maintenu en France." }
+  ]
+%>
+
+<div class="bg-gradient-to-b from-[#eef5ff] to-white">
+  <header class="max-w-7xl mx-auto px-6 pt-16 pb-10 lg:px-16 lg:pt-24">
+    <h1 class="text-4xl lg:text-6xl font-semibold tracking-tight text-slate-900">
+      Documentation <%= coopcomm_logo %>
+    </h1>
+    <p class="mt-4 max-w-2xl text-xl text-slate-600">
+      Tout ce qu'il faut pour prendre en main la plateforme, de la première connexion au suivi budgétaire.
+    </p>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-6 pb-20 lg:px-16 lg:grid lg:grid-cols-[14rem_1fr] lg:gap-12">
+
+    <nav aria-label="Sommaire" class="mb-10 lg:mb-0">
+      <ul class="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-1 lg:sticky lg:top-24 lg:overflow-visible">
+        <% sections.each do |id, label| %>
+          <li class="shrink-0">
+            <a href="#<%= id %>"
+               class="block rounded-full lg:rounded-xl px-4 py-2 text-slate-700 bg-white lg:bg-transparent border border-slate-200 lg:border-transparent
+                      hover:border-[#691E9A] hover:text-[#691E9A] lg:hover:bg-[#691E9A]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#691E9A]">
+              <%= label %>
+            </a>
+          </li>
+        <% end %>
+      </ul>
+    </nav>
+
+    <main class="min-w-0 space-y-20">
+
+      <section id="demarrage" class="scroll-mt-24">
+        <h2 class="text-3xl font-semibold tracking-tight">Prise en main</h2>
+        <p class="mt-2 text-lg text-slate-600">Quatre étapes pour commencer.</p>
+        <ol class="mt-8 space-y-4">
+          <% etapes.each_with_index do |e, i| %>
+            <li class="flex gap-4 rounded-3xl bg-white border border-slate-200 p-5">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#691E9A] text-white font-semibold"><%= i + 1 %></span>
+              <div>
+                <h3 class="text-lg font-semibold"><%= e[:title] %></h3>
+                <p class="mt-1 text-slate-600"><%= e[:text] %></p>
+              </div>
+            </li>
+          <% end %>
+        </ol>
+      </section>
+
+      <section id="roles" class="scroll-mt-24">
+        <h2 class="text-3xl font-semibold tracking-tight">Rôles et accès</h2>
+        <p class="mt-2 text-lg text-slate-600">Chaque profil accède aux données dont il a besoin, pas plus.</p>
+        <ul class="mt-8 grid gap-6 md:grid-cols-3">
+          <% roles.each do |r| %>
+            <li class="relative overflow-hidden rounded-3xl border-2 border-black/10 bg-white p-6 pb-20 min-h-[220px]">
+              <span aria-hidden="true" class="absolute -bottom-12 -right-12 h-28 w-28 rounded-full <%= r[:color] %>"></span>
+              <h3 class="relative text-xl font-semibold"><%= r[:title] %></h3>
+              <p class="relative mt-2 text-slate-700 leading-relaxed"><%= r[:text] %></p>
+            </li>
+          <% end %>
+        </ul>
+      </section>
+
+      <section id="guides" class="scroll-mt-24">
+        <h2 class="text-3xl font-semibold tracking-tight">Guides par fonctionnalité</h2>
+        <p class="mt-2 text-lg text-slate-600">Cliquez sur un sujet pour afficher le détail.</p>
+        <div class="mt-8 space-y-3">
+          <% guides.each do |g| %>
+            <details class="group rounded-2xl bg-white border border-slate-200 open:border-[#47b5db] open:shadow-md">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-lg font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#691E9A] rounded-2xl">
+                <%= g[:title] %>
+                <span aria-hidden="true" class="text-2xl text-[#691E9A] transition-transform group-open:rotate-45">+</span>
+              </summary>
+              <div class="px-5 pb-5 text-slate-700 leading-relaxed">
+                <p><%= g[:text] %></p>
+                <% if g[:steps].any? %>
+                  <ol class="mt-4 list-decimal space-y-1 pl-6">
+                    <% g[:steps].each do |s| %><li><%= s %></li><% end %>
+                  </ol>
+                <% end %>
+              </div>
+            </details>
+          <% end %>
+        </div>
+      </section>
+
+      <section id="faq" class="scroll-mt-24">
+        <h2 class="text-3xl font-semibold tracking-tight">Questions fréquentes</h2>
+        <div class="mt-8 space-y-3">
+          <% faq.each do |item| %>
+            <details class="group rounded-2xl bg-white border border-slate-200 open:border-[#47b5db]">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#691E9A] rounded-2xl">
+                <%= item[:q] %>
+                <span aria-hidden="true" class="text-2xl text-[#691E9A] transition-transform group-open:rotate-45">+</span>
+              </summary>
+              <p class="px-5 pb-5 text-slate-700 leading-relaxed"><%= item[:a] %></p>
+            </details>
+          <% end %>
+        </div>
+      </section>
+
+      <section id="donnees" class="scroll-mt-24">
+        <h2 class="text-3xl font-semibold tracking-tight">Données et RGPD</h2>
+        <div class="mt-6 rounded-3xl bg-[#F4EFE6] p-6 lg:p-8 text-slate-800 leading-relaxed space-y-3">
+          <p>CoopComm est conforme au RGPD. La solution est développée, hébergée et maintenue en France.</p>
+          <p>Le code source est ouvert et publié en toute transparence sur GitHub.
+            <a href="#" class="font-semibold text-[#691E9A] underline underline-offset-4 hover:text-[#db2767]">Consulter le dépôt</a>.</p>
+          <p>Pour exercer vos droits d'accès, de rectification ou de suppression, écrivez à
+            <a href="mailto:support@coopcomm.fr" class="font-semibold text-[#691E9A] underline underline-offset-4 hover:text-[#db2767]">support@coopcomm.fr</a>.</p>
+        </div>
+      </section>
+
+      <section id="support" class="scroll-mt-24">
+        <h2 class="text-3xl font-semibold tracking-tight">Comment signaler un problème ou déposer une demande ?</h2>
+        <div class="mt-6 rounded-3xl bg-white border-2 border-[#db2767]/30 p-6 lg:p-8">
+          <h3 class="text-xl font-semibold">Support technique</h3>
+          <p class="mt-2 text-slate-700 leading-relaxed">
+            Si, en utilisant CoopComm, vous constatez des améliorations à apporter ou rencontrez des problèmes, envoyez un e-mail à :
+          </p>
+          <%= link_to "support@coopcomm.fr", "mailto:support@coopcomm.fr",
+                class: "mt-5 inline-block rounded-full bg-[#db2767] px-8 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#a8174f] hover:shadow-xl hover:-translate-y-0.5" %>
+          <p class="mt-5 text-slate-600">Nous ferons tout notre possible pour vous répondre dans les meilleurs délais. Merci !</p>
+          <p class="mt-4 text-sm text-slate-500">
+            Pour accélérer le traitement, indiquez la page concernée, ce que vous attendiez et ce qui s'est passé.
+          </p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>

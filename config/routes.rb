@@ -107,6 +107,7 @@ Rails.application.routes.draw do
   controller :pages do
     get :welcome, to: 'pages#welcome', as: :welcome
     get :assistant, to: 'pages#assistant', as: :assistant
+    get :aide, to: 'pages#aide', as: :aide
     get :mentions_legales, to: 'pages#mentions_legales', as: :mentions_legales
     get :dashboard, to: 'pages#dashboard', as: :dashboard
     get :solution, to: 'pages#solution', as: :solution
