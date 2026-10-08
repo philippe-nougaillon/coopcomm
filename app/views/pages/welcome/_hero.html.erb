@@ -34,13 +34,17 @@
 
     <div class="flex flex-col mt-10 sm:flex-row justify-center text-center items-center gap-4 pt-4">
       <%= link_to "Planifier une démonstration", PagesHelper::DEMO_URL,
-            class: "#{PagesHelper::BUTTON_BASE} w-72 md:inline-block bg-[#db2767] text-white shadow-md hover:bg-[#c51f5b]" %>
+          class: "#{PagesHelper::BUTTON_BASE} w-72 md:inline-block bg-[#db2767] text-white shadow-md
+                  transition-all duration-200
+                  hover:bg-[#a8174f] hover:shadow-xl hover:-translate-y-0.5" %>
       <%= link_to "Voir les fonctionnalités", "#features",
-            class: "#{PagesHelper::BUTTON_BASE} w-72 md:inline-block bg-white border border-slate-200 hover:bg-transparent" %>
+          class: "#{PagesHelper::BUTTON_BASE} w-72 md:inline-block bg-white border border-slate-200
+                  transition-all duration-200
+                  hover:bg-[#db2767]/10 hover:border-[#db2767] hover:text-[#db2767] hover:-translate-y-0.5" %>
     </div>
   </div>
 
   <div class="flex-1 pt-10 max-w-4xl mx-auto">
-    <%= image_tag "ecrans.png", class: "w-full", alt: "Plateforme CoopComm" %>
+    <%= image_tag "ecrans.webp", class: "w-full", alt: "Plateforme CoopComm" %>
   </div>
 </section>

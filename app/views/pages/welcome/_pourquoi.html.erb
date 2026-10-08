@@ -1,20 +1,20 @@
 <%
   pourquoi = [
-    { title: "Réduction des coûts",    tag: "Mutualisation", shift: "",
+    { title: "Réduction des coûts",    tag: "Mutualisation", shift: "",                  color: "bg-[#47b5db]",
       text: "Diminuez vos dépenses de fonctionnement grâce à la mutualisation intelligente des ressources." },
-    { title: "Optimisation RH",        tag: "Coopération",   shift: "xl:translate-y-12",
+    { title: "Optimisation RH",        tag: "Coopération",   shift: "xl:translate-y-12", color: "bg-[#691E9A]",
       text: "Maximisez l'efficacité de vos équipes en partageant les compétences entre communes." },
-    { title: "Conformité garantie",    tag: "RGPD",          shift: "",
+    { title: "Conformité garantie",    tag: "RGPD",          shift: "",                  color: "bg-[#47b5db]",
       text: "Respectez toutes les réglementations avec une solution conforme au RGPD." },
-    { title: "Souveraineté numérique", tag: "100 % France",  shift: "xl:translate-y-10",
+    { title: "Souveraineté numérique", tag: "100 % France",  shift: "xl:translate-y-10", color: "bg-[#691E9A]",
       text: "Profitez d'une solution développée, hébergée et maintenue à 100 % en France." },
-    { title: "Code source ouvert",     tag: "Open source",   shift: "",
+    { title: "Code source ouvert",     tag: "Open source",   shift: "",                  color: "bg-[#47b5db]",
       text: "Développé en France et publié en toute transparence sur GitHub." }
   ]
 %>
 
-<section id="pourquoi" class="scroll-mt-18 bg-white px-6 py-12 lg:px-16 lg:py-20">
-  <div class=" mx-auto">
+<section id="pourquoi" class="scroll-mt-20 bg-white px-6 py-12 lg:px-16 lg:py-20">
+  <div class="max-w-7xl mx-auto">
 
     <div class="bg-[#F4EFE6] rounded-3xl p-6 lg:p-10 overflow-hidden shadow-sm">
       <div class="flex flex-col gap-4">
@@ -28,26 +28,26 @@
           </p>
         </div>
 
-       <ul class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 xl:pb-12">
-        <% pourquoi.each_with_index do |benefit, index| %>
-          <li class="group relative overflow-hidden rounded-3xl border-2 border-black/10 p-6 xl:p-5 pb-24 min-h-[280px] flex flex-col text-black
-                    shadow-sm hover:shadow-2xl hover:translate-x-2
-                    transition duration-500 ease-out motion-reduce:transition-none
-                    <%= benefit[:shift] %>">
-            <span aria-hidden="true"
-                  class="absolute -bottom-16 -right-16 w-36 h-36 rounded-full <%= index.even? ? "bg-[#47b5db]" : "bg-[#691E9A]" %>
-                        transition-transform duration-700 group-hover:scale-150 motion-reduce:transition-none"></span>
+        <ul class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 xl:pb-12">
+          <% pourquoi.each do |benefit| %>
+            <li class="group relative overflow-hidden rounded-3xl border-2 border-black/10 bg-white p-6 xl:p-5 pb-24 min-h-[280px] flex flex-col text-black
+           shadow-sm hover:shadow-2xl hover:translate-x-2
+           transition duration-500 ease-out motion-reduce:transition-none
+           <%= benefit[:shift] %>">
+              <span aria-hidden="true"
+                    class="absolute -bottom-16 -right-16 w-36 h-36 rounded-full <%= benefit[:color] %>
+                           transition-transform duration-700 group-hover:scale-150 motion-reduce:transition-none"></span>
 
-            <div class="relative mt-10">
-              <h3 class="text-2xl xl:text-xl font-semibold mb-2"><%= benefit[:title] %></h3>
-              <span class="inline-block whitespace-nowrap text-xs font-medium uppercase tracking-wider border border-black/20 rounded-full px-3 py-1">
-                <%= benefit[:tag] %>
-              </span>
-              <p class="opacity-80 mt-6 leading-relaxed"><%= benefit[:text] %></p>
-            </div>
-          </li>
-        <% end %>
-      </ul>
+              <div class="relative mt-10">
+                <h3 class="text-2xl xl:text-xl font-semibold mb-2"><%= benefit[:title] %></h3>
+                <span class="inline-block whitespace-nowrap text-xs font-medium uppercase tracking-wider border border-black/20 rounded-full px-3 py-1">
+                  <%= benefit[:tag] %>
+                </span>
+                <p class="opacity-80 mt-6 leading-relaxed"><%= benefit[:text] %></p>
+              </div>
+            </li>
+          <% end %>
+        </ul>
 
       </div>
     </div>
