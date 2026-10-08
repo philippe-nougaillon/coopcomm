@@ -71,7 +71,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
 
   # --- Interventions ---
 
-  test 'intervention : un manager qui crée garde sa saisie' do
+  test "En tant que manager, je veux garder ma saisie quand ma création d'intervention est refusée" do
     sign_in users(:hidalgo)
     soumis = {
       description: 'Élaguer les tilleuls',
@@ -89,7 +89,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
     assert_refus(soumis, prefixe: 'intervention')
   end
 
-  test 'intervention : un manager qui modifie garde sa saisie' do
+  test "En tant que manager, je veux garder ma saisie quand ma modification d'intervention est refusée" do
     sign_in users(:hidalgo)
     soumis = {
       description: 'Description corrigée',
@@ -105,7 +105,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
 
   # C'est le formulaire où la saisie se perdait : les heures étaient
   # délibérément ignorées tant que l'intervention n'était pas enregistrée.
-  test 'intervention : un agent qui crée un bon garde ses heures' do
+  test "En tant qu'agent, je veux garder mes heures quand la création de mon bon d'intervention est refusée" do
     agent = users(:bond)
     sign_in agent
     soumis = {
@@ -120,7 +120,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
     assert_refus(soumis, prefixe: 'intervention')
   end
 
-  test 'intervention : un agent qui modifie garde ses heures' do
+  test "En tant qu'agent, je veux garder mes heures quand ma modification d'intervention est refusée" do
     agent = users(:bond)
     sign_in agent
     soumis = {
@@ -136,7 +136,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
 
   # --- Utilisateurs ---
 
-  test 'utilisateur : une modification refusée garde la saisie' do
+  test "En tant qu'administrateur, je veux garder ma saisie quand ma modification d'utilisateur est refusée" do
     sign_in users(:administrateur_paris)
     soumis = {
       nom: 'BOND', prénom: 'James', email: 'bond@paris.fr',
@@ -149,7 +149,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
     assert_refus(soumis, prefixe: 'user')
   end
 
-  test 'utilisateur : une création refusée garde la saisie' do
+  test "En tant qu'administrateur, je veux garder ma saisie quand ma création d'utilisateur est refusée" do
     sign_in users(:administrateur_paris)
     soumis = {
       nom: 'DUPONT', prénom: 'Jeanne', email: '',
@@ -164,7 +164,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
 
   # --- Autres ressources ---
 
-  test 'outil : une création refusée garde la saisie' do
+  test "En tant qu'administrateur, je veux garder ma saisie quand ma création d'outil est refusée" do
     sign_in users(:administrateur_paris)
     soumis = { name: '', marque: 'Husqvarna', mod: 'LC 140',
                description: 'Doublon volontaire du nom' }
@@ -174,7 +174,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
     assert_refus(soumis, prefixe: 'tool')
   end
 
-  test 'outil : une modification refusée garde la saisie' do
+  test "En tant qu'administrateur, je veux garder ma saisie quand ma modification d'outil est refusée" do
     sign_in users(:administrateur_paris)
     soumis = { name: '', marque: 'Stihl', mod: 'MS 180', description: 'Nom vidé volontairement' }
 
@@ -183,7 +183,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
     assert_refus(soumis, prefixe: 'tool')
   end
 
-  test 'convention : une création refusée garde la saisie' do
+  test "En tant qu'administrateur, je veux garder ma saisie quand ma création de convention est refusée" do
     sign_in users(:administrateur_paris)
     soumis = { user_id: users(:weil).id, service_id: services(:technique).id,
                date_début: '2026-09-01', date_fin_prévue: '',
@@ -194,7 +194,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
     assert_refus(soumis, prefixe: 'convention')
   end
 
-  test 'service : une création refusée garde la saisie' do
+  test "En tant qu'administrateur, je veux garder ma saisie quand ma création de service est refusée" do
     sign_in users(:administrateur_paris)
     soumis = { nom: services(:technique).nom }
 
@@ -203,7 +203,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
     assert_refus(soumis, prefixe: 'service')
   end
 
-  test 'prestation : une création refusée garde la saisie' do
+  test "En tant qu'administrateur, je veux garder ma saisie quand ma création de prestation est refusée" do
     sign_in users(:administrateur_paris)
     # `code`, `catégorie` et `sous_catégorie` sont soumis déjà normalisés : le
     # modèle les passe en majuscules, ce que le formulaire ré-affiche.
@@ -219,7 +219,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
 
   # Sans option vide en tête, aucune option n'est marquée `selected` et le
   # navigateur retient la première du menu.
-  test 'prestation : une catégorie vidée ne revient pas à la première du menu' do
+  test "En tant qu'administrateur, je veux qu'une catégorie de prestation vidée ne revienne pas à la première du menu" do
     sign_in users(:administrateur_paris)
 
     post prestations_url, params: { prestation: { code: '', libellé: 'Tonte', tarif: 25.5, catégorie: '' } }
@@ -229,7 +229,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
     assert_dom 'select#prestation_catégorie option[selected]', 0
   end
 
-  test 'site : une création refusée garde la saisie' do
+  test "En tant qu'administrateur, je veux garder ma saisie quand ma création de site est refusée" do
     sign_in users(:administrateur_paris)
     soumis = { name: 'Atelier municipal', address: 'Adresse sans coordonnées',
                latitude: '', longitude: '' }

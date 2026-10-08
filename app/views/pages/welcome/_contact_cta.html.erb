@@ -15,12 +15,12 @@
         </p>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <%= link_to "Réservez une démo personnalisée", PagesHelper::DEMO_URL,
-                class: "#{PagesHelper::BUTTON_BASE} w-full sm:w-auto bg-[#db2767] text-white shadow-md hover:bg-[#c51f5b]",
-                title: "Réservez une démo personnalisée avec l'un de nos experts" %>
+          <%= link_to "Réservez une démonstration", PagesHelper::DEMO_URL,
+                class: "#{PagesHelper::BUTTON_BASE} w-full md:inline-block bg-[#db2767] text-white shadow-md
+                  hover:bg-[#a8174f] hover:shadow-xl hover:-translate-y-0.5" %>
           <%= link_to "Consultez notre documentation", documentation_index_path,
-                class: "#{PagesHelper::BUTTON_BASE} w-full sm:w-auto bg-white text-[#691E9A] shadow-md hover:bg-[#F4EFE6]" %>
-        </div>
+                class: "#{PagesHelper::BUTTON_BASE}  w-full md:inline-block bg-white border border-slate-200
+                  hover:bg-[#db2767]/10 hover:border-[#db2767] hover:text-[#db2767] hover:-translate-y-0.5" %>
       </div>
 
     </div>

@@ -8,7 +8,7 @@ class CotationTest < ActiveSupport::TestCase
     @service = services(:informatique)
   end
 
-  test 'lignes imbriquées : ligne sans prestation → ignorée' do
+  test 'une ligne sans prestation soumise avec la cotation est ignorée' do
     cotation = build_cotation(cotation_lignes_attributes: { '0' => { qté: 5 } })
 
     cotation.save!
@@ -16,7 +16,7 @@ class CotationTest < ActiveSupport::TestCase
     assert_equal 0, cotation.cotation_lignes.count
   end
 
-  test 'lignes imbriquées : ligne avec prestation → créée avec la cotation' do
+  test 'une ligne avec prestation soumise avec la cotation est créée avec elle' do
     cotation = build_cotation(cotation_lignes_attributes: {
                                 '0' => { prestation_id: prestations(:nettoyage_bureaux).id, qté: 2 }
                               })
@@ -26,7 +26,7 @@ class CotationTest < ActiveSupport::TestCase
     assert_equal 1, cotation.cotation_lignes.count
   end
 
-  test 'lignes imbriquées : _destroy sur une ligne existante → ligne supprimée' do
+  test 'une ligne existante marquée pour suppression est retirée de la cotation' do
     cotation = build_cotation
     cotation.save!
     ligne = cotation.cotation_lignes.create!(prestation: prestations(:nettoyage_bureaux), qté: 1)
@@ -36,7 +36,7 @@ class CotationTest < ActiveSupport::TestCase
     assert_equal 0, cotation.cotation_lignes.count
   end
 
-  test 'assign_ref : création → référence au format CO-AAAA-N' do
+  test 'une cotation créée reçoit une référence au format CO-AAAA-N' do
     cotation = build_cotation
 
     cotation.save!
@@ -44,7 +44,7 @@ class CotationTest < ActiveSupport::TestCase
     assert_match(/\ACO-#{Date.current.year}-\d+\z/, cotation.ref)
   end
 
-  test 'assign_ref : mise à jour → référence inchangée' do
+  test "la référence d'une cotation ne change pas à la mise à jour" do
     cotation = build_cotation
     cotation.save!
     ref = cotation.ref
@@ -54,7 +54,7 @@ class CotationTest < ActiveSupport::TestCase
     assert_equal ref, cotation.ref
   end
 
-  test 'assign_ref : seconde cotation de l\'organisation → numéro incrémenté' do
+  test 'la seconde cotation de la même organisation reçoit le numéro suivant' do
     première = build_cotation
     première.save!
     seconde = build_cotation
@@ -63,7 +63,7 @@ class CotationTest < ActiveSupport::TestCase
     assert_equal première.ref.split('-').last.to_i + 1, seconde.ref.split('-').last.to_i
   end
 
-  test 'scope ordered : plusieurs cotations → la plus récemment mise à jour en tête' do
+  test 'la cotation la plus récemment mise à jour est listée en tête' do
     ancienne = build_cotation
     ancienne.save!
     récente = build_cotation
@@ -75,7 +75,7 @@ class CotationTest < ActiveSupport::TestCase
     assert_operator ordonnées.index(récente), :<, ordonnées.index(ancienne)
   end
 
-  test 'style : chaque état → la classe du badge qui le distingue à l\'écran' do
+  test "chaque état d'une cotation se distingue à l'écran par la classe de son badge" do
     cotation = build_cotation
 
     assert_equal 'badge badge-secondary ', cotation.style
@@ -90,15 +90,15 @@ class CotationTest < ActiveSupport::TestCase
     assert_equal 'badge badge-outline badge-info ', cotation.style
   end
 
-  test 'workflow_state_humanized : appel → les états humanisés dans l\'ordre du workflow' do
+  test "les états du workflow d'une cotation ont un libellé humanisé, dans l'ordre du workflow" do
     assert_equal %w[Créé Envoyé Signé Validé Refusé Archivé], Cotation.workflow_state_humanized
   end
 
-  test 'modifiable? : état créé → vrai' do
+  test "une cotation à l'état créé est modifiable" do
     assert build_cotation.modifiable?
   end
 
-  test 'modifiable? : état envoyé → faux' do
+  test "une cotation à l'état envoyé n'est pas modifiable" do
     cotation = build_cotation
     cotation.save!
     cotation.envoyer!
@@ -106,7 +106,7 @@ class CotationTest < ActiveSupport::TestCase
     assert_not cotation.modifiable?
   end
 
-  test 'modifiable? : état signé → faux' do
+  test "une cotation à l'état signé n'est pas modifiable" do
     cotation = build_cotation
     cotation.save!
     cotation.envoyer!
@@ -115,7 +115,7 @@ class CotationTest < ActiveSupport::TestCase
     assert_not cotation.modifiable?
   end
 
-  test 'modifiable? : état validé → faux' do
+  test "une cotation à l'état validé n'est pas modifiable" do
     cotation = build_cotation
     cotation.save!
     cotation.envoyer!
@@ -125,7 +125,7 @@ class CotationTest < ActiveSupport::TestCase
     assert_not cotation.modifiable?
   end
 
-  test 'modifiable? : état refusé → vrai, pour corriger avant de renvoyer' do
+  test "une cotation à l'état refusé est modifiable, pour être corrigée avant renvoi" do
     cotation = build_cotation
     cotation.save!
     cotation.envoyer!
@@ -134,7 +134,7 @@ class CotationTest < ActiveSupport::TestCase
     assert cotation.modifiable?
   end
 
-  test 'modifiable? : état archivé → faux' do
+  test "une cotation à l'état archivé n'est pas modifiable" do
     cotation = build_cotation
     cotation.save!
     cotation.envoyer!
@@ -145,35 +145,35 @@ class CotationTest < ActiveSupport::TestCase
     assert_not cotation.modifiable?
   end
 
-  test 'pdf_filename : cotation référencée → nom de fichier bâti sur la référence' do
+  test "le nom du fichier PDF d'une cotation est bâti sur sa référence" do
     cotation = build_cotation
     cotation.save!
 
     assert_equal "Cotation-#{cotation.ref}.pdf", cotation.pdf_filename
   end
 
-  test 'visible_to : administrateur → les cotations de son organisation' do
+  test 'un administrateur voit les cotations de son organisation' do
     cotation = build_cotation
     cotation.save!
 
     assert_includes Cotation.visible_to(users(:administrateur_paris)), cotation
   end
 
-  test 'visible_to : manager → les cotations des services qu\'il gère' do
+  test 'un manager voit les cotations de ses services' do
     cotation = build_cotation
     cotation.save!
 
     assert_includes Cotation.visible_to(users(:hidalgo)), cotation
   end
 
-  test 'visible_to : manager d\'une autre organisation → aucune' do
+  test "un manager ne voit pas les cotations d'une autre organisation" do
     cotation = build_cotation
     cotation.save!
 
     assert_not_includes Cotation.visible_to(users(:manager_marseille)), cotation
   end
 
-  test 'visible_to : adhérent → ses cotations envoyées, jamais un brouillon' do
+  test 'un adhérent voit ses cotations envoyées, jamais un brouillon' do
     sienne = build_cotation
     sienne.save!
 
@@ -184,7 +184,7 @@ class CotationTest < ActiveSupport::TestCase
     assert_includes Cotation.visible_to(@adherent), sienne
   end
 
-  test 'visible_to : adhérent → jamais la cotation envoyée d\'un autre adhérent de son organisation (critique)' do
+  test "un adhérent ne voit jamais la cotation envoyée d'un autre adhérent de son organisation (critique)" do
     assert_not_includes Cotation.visible_to(@adherent), cotations(:cotation_envoyée)
   end
 

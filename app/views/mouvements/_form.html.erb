@@ -30,7 +30,7 @@
            <%= form.select :tool_id,
             options_from_collection_for_select(@tools, :id, :name, @mouvement.tool_id),
             { required: true },
-            { class: "slim-select w-full h-10",
+            { class: "w-full h-10",
               data: { controller: "slim-select", placeholder: "Sélectionner un matériel" } } %>
       </div>
     <% end %>
@@ -40,7 +40,7 @@
       <% end %>
       <%= form.select :état,  options_for_select([['Panne', 'panne'], ['Fin de panne', 'fin_de_panne']], mouvement.état),
       { required: true, },
-      { class: "slim-select w-full h-10",
+      { class: "w-full h-10",
         data: { controller: "slim-select",  placeholder: "Sélectionner un état" } } %>
     </div>
     <div class="w-full">

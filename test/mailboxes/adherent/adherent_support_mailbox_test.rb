@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require_relative '../../support/adresse_support'
 
 class AdherentSupportMailboxTest < ActionMailbox::TestCase
   include ActiveJob::TestHelper
+  include AdresseSupport
 
   def recevoir(from:, subject: 'Gestion de paperasse', body: "Bonjour, j'ai besoin d'aide")
     receive_inbound_email_from_mail(
-      to: 'support@mg.coopcomm.fr',
+      to: ADRESSE_SUPPORT,
       from: from,
       subject: subject,
       body: body,
@@ -96,5 +98,18 @@ class AdherentSupportMailboxTest < ActionMailbox::TestCase
     assert_difference 'Intervention.count', 1 do
       recevoir(from: user.email, subject: nil, body: nil)
     end
+  end
+
+  test "un mail adressé à une autre adresse que celle du support n'est pas routé" do
+    user = users(:berthout)
+
+    assert_no_difference 'Intervention.count' do
+      assert_raises(ActionMailbox::Router::RoutingError) do
+        receive_inbound_email_from_mail(to: 'support-autre-instance@mg.exemple.fr', from: user.email,
+                                        subject: 'Autre instance', body: 'Bonjour', charset: 'UTF-8')
+      end
+    end
+
+    assert_predicate ActionMailbox::InboundEmail.last, :bounced?
   end
 end
