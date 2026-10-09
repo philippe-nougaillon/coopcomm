@@ -3,7 +3,7 @@
 # Handles public and authenticated pages for the application.
 class PagesController < ApplicationController
   # Pages publiques (vitrine) : pas d'utilisateur, donc pas d'authorize
-  skip_after_action :verify_authorized, only: %i[welcome mentions_legales solution tarifs contact]
+  skip_after_action :verify_authorized, only: %i[welcome mentions_legales solution tarifs contact aide]
 
   before_action :is_user_authorized, except: %i[welcome mentions_legales solution tarifs contact aide]
   skip_before_action :authenticate_user!, only: %i[welcome mentions_legales solution tarifs contact aide]

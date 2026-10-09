@@ -148,3 +148,4 @@
 - `2026-10-05` — B103 tranché en D20 (option vide = placeholder, croix pour vider : comportement voulu) ; DT8 → P2, DT11 → P3, DT7 → R8 ; prestation 7 invalide et devis 10/11 vides supprimés en base locale (demande PE)
 - `2026-10-05` — slim-select : 43 selects passés en `data-controller` explicite, classe et injection `application.js` supprimées, CSS sur l'attribut, CAS B et vue `services/index` retirés ; cascades vérifiées au navigateur, suite verte (2202 runs) ; DT13 réglée
 - `2026-10-07` — Bouton « Enregistrer » invisible chez un agent : couleurs `oklch()` non supportées par son navigateur, pas le mode noir et blanc du téléphone (B122, R9, A6)
+- `2026-10-09` — Page /aide réorganisée en aide pratique autonome, fidèle aux rôles, états d'intervention et fonctions vérifiés ; contenu RGPD/hébergement/code ouvert et contact conservés sur confirmation PE.
