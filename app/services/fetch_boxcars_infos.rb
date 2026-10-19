@@ -49,12 +49,13 @@ class FetchBoxcarsInfos < ApplicationService
   end
 
   def MODELS
-    [User, InterventionForBoxcars, AgentIntervention]
+    [User, InterventionForBoxcars]
   end
 
   def CONTEXT_ACTIVERECORD
     "
-    Intervention belongs_to :agent, class_name: 'User'
+    Date now : #{DateTime.now},
+    Intervention workflow states : #{InterventionForBoxcars.pluck(:workflow_state).uniq}
     "
   end
 
@@ -65,9 +66,8 @@ class FetchBoxcarsInfos < ApplicationService
       - Ne donne jamais un résultat brut (comme un simple chiffre ou une donnée JSON).
       - Après avoir trouvé l'information avec l'outil, reformule-la dans ta réponse finale.
       - Tu dois vouvoyer l'utilisateur
-    " +
-    "
-    Tu t'appelles AIBOT, l'utilisateur s'appelle #{current_user.nom_prénom}, il a le rôle #{current_user.rôle}. 
+
+    Tu t'appelles AIBOT, l'utilisateur s'appelle #{current_user.nom_prénom}, il a le rôle #{current_user.rôle}.
     Les attributs de l'utilisateur sont : \n #{current_user.inspect}
     "
   end
