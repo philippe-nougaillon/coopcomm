@@ -60,14 +60,14 @@ class NotificationMailerPreview < ActionMailer::Preview
       user: User.first,
       request_message: Message.new(message: "Quel est le nombre d'interventions en tout ?", from_id: User.first.id, to_id: User.find(ENV["UUID_AIBOT"]).id),
       response_message: Message.new(message: "Le nombre d'interventions est de 42", from_id: User.find(ENV["UUID_AIBOT"]).id, to_id: User.first.id),
-      log_stream: "[AIBOT] \e[1;30m> Entering Zero Shot#run\e[0m\n" \
-                  "[AIBOT] \e[0;34mQuel est le nombre d'interventions en tout ?\e[0m\n" \
-                  "[AIBOT] \e[0;36m>>>>>> Role: user <<<<<<\e[0m\n" \
-                  "[AIBOT] \e[0;33mAction: AIBOT\e[0m\n" \
-                  "[AIBOT] \e[0;35m{\"status\":\"ok\",\"answer\":42}\e[0m\n" \
-                  "[AIBOT] \e[0;32mObservation: 42\e[0m\n" \
-                  "[AIBOT] \e[1;33mFinal Answer: Le nombre d'interventions est de 42.\e[0m\n" \
-                  "[AIBOT] \e[1;30m< Exiting Zero Shot#run\e[0m\n"
+      log_stream: "AÏBBO] \e[1;30m> Entering Zero Shot#run\e[0m\n" \
+                  "AÏBBO] \e[0;34mQuel est le nombre d'interventions en tout ?\e[0m\n" \
+                  "AÏBBO] \e[0;36m>>>>>> Role: user <<<<<<\e[0m\n" \
+                  "AÏBBO] \e[0;33mAction: AIBOT\e[0m\n" \
+                  "AÏBBO] \e[0;35m{\"status\":\"ok\",\"answer\":42}\e[0m\n" \
+                  "AÏBBO] \e[0;32mObservation: 42\e[0m\n" \
+                  "AÏBBO] \e[1;33mFinal Answer: Le nombre d'interventions est de 42.\e[0m\n" \
+                  "AÏBBO] \e[1;30m< Exiting Zero Shot#run\e[0m\n"
     )
     NotificationMailer.aibbo_request(aibot_log)
   end

@@ -1,8 +1,8 @@
 <div class="mx-auto lg:w-2/3 w-full mt-8">
-  <% page_title!('Log AIBOT') %>
+  <% page_title!('Log AÏBBO') %>
 
   <div class="flex justify-between flex-wrap items-center mt-4 mb-2">
-    <h2 class="text-2xl text-secondary font-semibold">Log AIBOT de l'utilisateur <%= current_user.nom_prénom %></h2>
+    <h2 class="text-2xl text-secondary font-semibold">Log AÏBBO de l'utilisateur <%= current_user.nom_prénom %></h2>
   </div>
   <div class="flex flex-col gap-4">
     <div class="bg-white border border-slate-200 rounded-2xl w-full" style="padding: 1.25rem;">
@@ -52,7 +52,7 @@
 
     <div>
       <div class="flex justify-between flex-wrap items-center mt-4 mb-2">
-        <h2 class="text-2xl text-secondary font-semibold">Réponse de AIBOT</h2>
+        <h2 class="text-2xl text-secondary font-semibold">Réponse de AÏBBO</h2>
       </div>
       <div class="bg-white border border-slate-200 rounded-2xl w-full" style="padding: 1.25rem;">
         <p class="text-sm text-slate-800 whitespace-pre-line break-words"><%= @aibot_log.response_message.message %></p>
@@ -62,7 +62,7 @@
     
     <div>
       <div class="flex justify-between flex-wrap items-center mt-4 mb-2">
-        <h2 class="text-2xl text-secondary font-semibold">Trace du log durant le traitement de la demande par AIBOT</h2>
+        <h2 class="text-2xl text-secondary font-semibold">Trace du log durant le traitement de la demande par AÏBBO</h2>
       </div>
       <div class="bg-white border border-slate-200 rounded-2xl w-full" style="padding: 1.25rem;">
         <% if @aibot_log.log_stream.present? %>

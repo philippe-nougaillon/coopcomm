@@ -29,7 +29,7 @@ class FetchBoxcarsInfos < ApplicationService
       # Nécessaire à chaque call pour récupérer les logs juste pour cet appel 
       log_stream = StringIO.new
       origin_logger = Boxcars.configuration.logger
-      Boxcars.configuration.logger = ActiveSupport::BroadcastLogger.new(ActiveSupport::TaggedLogging.new(Logger.new(log_stream)).tagged("AIBOT"), origin_logger)
+      Boxcars.configuration.logger = ActiveSupport::BroadcastLogger.new(ActiveSupport::TaggedLogging.new(Logger.new(log_stream)).tagged("AÏBBO"), origin_logger)
 
       begin
         response = @boxcars_builder.run(request + self.CONTEXT_REQUEST(current_user))
