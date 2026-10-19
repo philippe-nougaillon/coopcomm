@@ -7,7 +7,7 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
     travel_to Time.current.change(hour: 12)
   end
 
-  test 'dashboard : kpi_temps_total → somme des temps du périmètre du manager' do
+  test 'le temps total du tableau de bord d’un manager est la somme des temps de ses interventions' do
     cree_intervention_avec_temps(8, adherent: users(:weil), service: services(:technique), debut: mois(3))
     refresh_dashboard_views!
     sign_in users(:hidalgo)
@@ -17,7 +17,7 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
     assert_equal '17.0h', assigns(:kpi_temps_total)
   end
 
-  test 'dashboard : temps_total_par_service → temps cumulé par service' do
+  test 'le tableau de bord d’un manager cumule le temps par service' do
     cree_intervention_avec_temps(8, adherent: users(:weil), service: services(:technique), debut: mois(3))
     refresh_dashboard_views!
     sign_in users(:hidalgo)
@@ -27,7 +27,7 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
     assert_in_delta 17.0, assigns(:temps_total_par_service)['Technique']
   end
 
-  test 'dashboard : temps_total_par_agent → temps réparti par agent' do
+  test 'le tableau de bord d’un manager répartit le temps par agent' do
     cree_intervention_avec_temps(6, adherent: users(:weil), service: services(:technique),
                                     debut: mois(3), agent: users(:martin_technique_paris))
     refresh_dashboard_views!
@@ -38,7 +38,7 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
     assert_in_delta 6.0, assigns(:temps_total_par_agent)['Martin Michel']
   end
 
-  test 'dashboard : temps_total_par_adherent → temps cumulé par adhérent' do
+  test 'le tableau de bord d’un manager cumule le temps par adhérent' do
     cree_intervention_avec_temps(8, adherent: users(:weil), service: services(:technique), debut: mois(3))
     refresh_dashboard_views!
     sign_in users(:hidalgo)
@@ -48,7 +48,7 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
     assert_in_delta 17.0, assigns(:temps_total_par_adherent)['Weil Ariel']
   end
 
-  test 'dashboard : un adhérent reçoit le temps consommé et le temps restant de son service' do
+  test 'le tableau de bord d’un adhérent montre le temps consommé et le temps restant de son service' do
     cree_donnees_adherent_informatique
     sign_in users(:adhérent_sans_intervention)
 
@@ -58,7 +58,7 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
     assert_in_delta 94.0, assigns(:proportion_temps_consomme)['temps_restant']
   end
 
-  test 'dashboard : kpi_temps_total d’un adhérent → temps de son service' do
+  test 'le temps total du tableau de bord d’un adhérent est celui de son service' do
     cree_donnees_adherent_informatique
     sign_in users(:adhérent_sans_intervention)
 
@@ -67,7 +67,7 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
     assert_equal '6.0h', assigns(:kpi_temps_total)
   end
 
-  test 'dashboard : temps_total_par_service d’un adhérent → temps de son service' do
+  test 'le temps par service du tableau de bord d’un adhérent est celui de son service' do
     cree_donnees_adherent_informatique
     sign_in users(:adhérent_sans_intervention)
 
@@ -76,7 +76,7 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
     assert_in_delta 6.0, assigns(:temps_total_par_service)['Informatique']
   end
 
-  test 'dashboard : temps_total_par_mois d’un adhérent → 0 sur un mois sans intervention' do
+  test 'le temps par mois du tableau de bord d’un adhérent vaut 0 sur un mois sans intervention' do
     cree_donnees_adherent_informatique
     sign_in users(:adhérent_sans_intervention)
 

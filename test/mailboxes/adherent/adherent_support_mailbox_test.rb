@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require_relative '../../support/adresse_support'
 
 class AdherentSupportMailboxTest < ActionMailbox::TestCase
   include ActiveJob::TestHelper
+  include AdresseSupport
 
   def recevoir(from:, subject: 'Gestion de paperasse', body: "Bonjour, j'ai besoin d'aide")
     receive_inbound_email_from_mail(
-      to: 'support@mg.coopcom.fr',
+      to: ADRESSE_SUPPORT,
       from: from,
       subject: subject,
       body: body,
@@ -15,7 +17,7 @@ class AdherentSupportMailboxTest < ActionMailbox::TestCase
     )
   end
 
-  test 'Créer une intervention quand un adhérent envoie un mail au support' do
+  test "une intervention est créée quand un adhérent envoie un mail au support" do
     user = users(:weil)
     subject = 'Gestion de paperasse'
     body = "Bonjour, j'ai besoin d'aide du côté administratif"
@@ -28,7 +30,9 @@ class AdherentSupportMailboxTest < ActionMailbox::TestCase
     assert_equal "De #{user.nom_prenom_role} : #{body}", intervention.commentaires
   end
 
-  test "L'intervention est rattachée à un service de l'adhérent" do
+  # ==================== TESTS CRITIQUES ====================
+  # Le service rattaché décide de l'organisation de l'intervention et de qui est prévenu.
+  test "l'intervention créée par mail est rattachée à un service de l'adhérent (critique)" do
     user = users(:berthout)
 
     recevoir(from: user.email, subject: 'Un seul service')
@@ -38,7 +42,7 @@ class AdherentSupportMailboxTest < ActionMailbox::TestCase
     assert_includes user.service_ids, intervention.service_id
   end
 
-  test 'Adhérent mono-service : les managers et admins du service sont prévenus' do
+  test "les managers et administrateurs du service sont prévenus quand l'adhérent n'a qu'un service (critique)" do
     user = users(:berthout)
 
     assert_equal 1, user.services.count
@@ -55,7 +59,7 @@ class AdherentSupportMailboxTest < ActionMailbox::TestCase
     end
   end
 
-  test "Adhérent multi-services : seuls les administrateurs de l'organisation sont prévenus" do
+  test "seuls les administrateurs de l'organisation sont prévenus quand l'adhérent a plusieurs services (critique)" do
     user = users(:weil)
 
     assert_operator user.services.count, :>, 1
@@ -75,7 +79,7 @@ class AdherentSupportMailboxTest < ActionMailbox::TestCase
     end
   end
 
-  test "Un adhérent sans service ne crée ni intervention ni notification" do
+  test "un mail d'un adhérent sans service ne crée ni intervention ni notification (critique)" do
     user = users(:berthout)
     user.services.clear
 
@@ -86,11 +90,26 @@ class AdherentSupportMailboxTest < ActionMailbox::TestCase
     end
   end
 
-  test 'Un mail sans sujet ni corps crée quand même une intervention' do
+  # ==================== /TESTS CRITIQUES ====================
+
+  test 'un mail sans sujet ni corps crée quand même une intervention' do
     user = users(:berthout)
 
     assert_difference 'Intervention.count', 1 do
       recevoir(from: user.email, subject: nil, body: nil)
     end
+  end
+
+  test "un mail adressé à une autre adresse que celle du support n'est pas routé" do
+    user = users(:berthout)
+
+    assert_no_difference 'Intervention.count' do
+      assert_raises(ActionMailbox::Router::RoutingError) do
+        receive_inbound_email_from_mail(to: 'support-autre-instance@mg.exemple.fr', from: user.email,
+                                        subject: 'Autre instance', body: 'Bonjour', charset: 'UTF-8')
+      end
+    end
+
+    assert_predicate ActionMailbox::InboundEmail.last, :bounced?
   end
 end

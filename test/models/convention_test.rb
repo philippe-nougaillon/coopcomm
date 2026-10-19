@@ -10,7 +10,7 @@ class ConventionTest < ActiveSupport::TestCase
 
   DANS_LA_PÉRIODE_DE_CONVENTION_PARIS = Time.zone.parse('2026-03-02 09:00:00')
 
-  test 'one_convention_per_service : doublon sur le même couple adhérent/service → refusé' do
+  test 'une seconde convention du même adhérent sur le même service et la même période est refusée' do
     build_convention.save!
 
     doublon = build_convention
@@ -19,7 +19,7 @@ class ConventionTest < ActiveSupport::TestCase
     assert doublon.errors[:base].any?
   end
 
-  test 'one_convention_per_service : périodes disjointes sur le même service → accepté' do
+  test 'deux conventions du même adhérent sur le même service à des périodes disjointes sont acceptées' do
     build_convention.save!
 
     suivante = build_convention(date_début: Date.new(2027, 1, 1), date_fin_prévue: Date.new(2027, 12, 31))
@@ -27,7 +27,7 @@ class ConventionTest < ActiveSupport::TestCase
     assert suivante.valid?
   end
 
-  test 'one_convention_per_service : périodes qui se chevauchent sur le même service → refusé' do
+  test 'une convention qui chevauche une autre convention du même adhérent sur le même service est refusée' do
     build_convention.save!
 
     chevauchante = build_convention(date_début: Date.new(2026, 12, 31), date_fin_prévue: Date.new(2027, 6, 30))
@@ -36,7 +36,7 @@ class ConventionTest < ActiveSupport::TestCase
     assert chevauchante.errors[:base].any?
   end
 
-  test 'one_convention_per_service : autre service du même adhérent → accepté' do
+  test 'une convention sur un autre service du même adhérent est acceptée' do
     @adherent.services << services(:secretariat)
     build_convention.save!
 
@@ -45,7 +45,7 @@ class ConventionTest < ActiveSupport::TestCase
     assert autre.valid?
   end
 
-  test 'one_convention_per_service : autre adhérent sur le même service → accepté' do
+  test "une convention d'un autre adhérent sur le même service est acceptée" do
     build_convention.save!
 
     autre = build_convention(user: users(:hidalgo))
@@ -53,7 +53,7 @@ class ConventionTest < ActiveSupport::TestCase
     assert autre.valid?
   end
 
-  test 'one_convention_per_service : mise à jour de la convention elle-même → non comptée comme doublon' do
+  test "une convention modifiée n'est pas comptée comme son propre doublon" do
     convention = build_convention
     convention.save!
 
@@ -62,35 +62,35 @@ class ConventionTest < ActiveSupport::TestCase
     assert convention.valid?
   end
 
-  test 'service_must_belong_to_adherent : service de l\'adhérent → accepté' do
+  test "une convention sur un service de l'adhérent est acceptée" do
     assert build_convention.valid?
   end
 
-  test 'service_must_belong_to_adherent : service étranger à l\'adhérent → refusé' do
+  test "une convention sur un service étranger à l'adhérent est refusée" do
     convention = build_convention(service: services(:informatique))
 
     assert_not convention.valid?
     assert convention.errors[:service].any?
   end
 
-  test 'end_date_after_start_date : fin postérieure au début → accepté' do
+  test 'une convention dont la fin est postérieure au début est acceptée' do
     assert build_convention(date_fin_prévue: Date.new(2026, 12, 31)).valid?
   end
 
-  test 'end_date_after_start_date : début et fin le même jour → accepté' do
+  test 'une convention qui commence et finit le même jour est acceptée' do
     même_jour = Date.new(2026, 6, 1)
 
     assert build_convention(date_début: même_jour, date_fin_prévue: même_jour).valid?
   end
 
-  test 'end_date_after_start_date : fin antérieure au début → refusée' do
+  test 'une convention dont la fin est antérieure au début est refusée' do
     convention = build_convention(date_début: Date.new(2026, 6, 1), date_fin_prévue: Date.new(2026, 1, 1))
 
     assert_not convention.valid?
     assert convention.errors[:date_fin_prévue].any?
   end
 
-  test 'assign_ref : création → référence au format CONV-AAAA-N' do
+  test 'une convention créée reçoit une référence au format CONV-AAAA-N' do
     convention = build_convention
 
     convention.save!
@@ -98,7 +98,7 @@ class ConventionTest < ActiveSupport::TestCase
     assert_match(/\ACONV-#{Date.current.year}-\d+\z/, convention.ref)
   end
 
-  test 'assign_ref : mise à jour → référence inchangée' do
+  test "la référence d'une convention ne change pas à la mise à jour" do
     convention = build_convention
     convention.save!
     ref = convention.ref
@@ -108,7 +108,7 @@ class ConventionTest < ActiveSupport::TestCase
     assert_equal ref, convention.ref
   end
 
-  test 'assign_ref : référence fournie explicitement → conservée' do
+  test 'une référence de convention fournie explicitement est conservée' do
     convention = build_convention(ref: 'CONV-MANUELLE')
 
     convention.save!
@@ -116,7 +116,7 @@ class ConventionTest < ActiveSupport::TestCase
     assert_equal 'CONV-MANUELLE', convention.ref
   end
 
-  test 'scope ordered : plusieurs conventions → la plus récente en tête' do
+  test 'la convention la plus récente est listée en tête' do
     ancienne = build_convention(date_début: Date.new(2025, 1, 1))
     ancienne.save!
     récente = build_convention(user: users(:hidalgo), service: services(:technique),
@@ -128,23 +128,23 @@ class ConventionTest < ActiveSupport::TestCase
     assert ordonnées.index(récente) < ordonnées.index(ancienne)
   end
 
-  test 'visible_to : administrateur → les conventions de son organisation' do
+  test 'un administrateur voit les conventions de son organisation' do
     assert_includes Convention.visible_to(users(:administrateur_paris)), conventions(:convention_paris)
   end
 
-  test 'visible_to : administrateur → aucune convention d\'une autre organisation' do
+  test "un administrateur ne voit pas les conventions d'une autre organisation" do
     assert_not_includes Convention.visible_to(users(:administrateur_paris)), conventions(:convention_marseille)
   end
 
-  test 'visible_to : manager → les conventions des services qu\'il gère' do
+  test 'un manager voit les conventions de ses services' do
     assert_includes Convention.visible_to(users(:hidalgo)), conventions(:convention_paris)
   end
 
-  test 'visible_to : manager → aucune convention d\'un service qu\'il ne gère pas' do
+  test 'un manager ne voit pas les conventions des autres services' do
     assert_not_includes Convention.visible_to(users(:manager_marseille)), conventions(:convention_paris)
   end
 
-  test 'visible_to : adhérent → les siennes, jamais celles d\'un autre adhérent' do
+  test "un adhérent voit ses conventions, jamais celles d'un autre adhérent" do
     convention_de_patrick = build_convention
     convention_de_patrick.save!
 
@@ -154,11 +154,11 @@ class ConventionTest < ActiveSupport::TestCase
     assert_not_includes visibles, convention_de_patrick
   end
 
-  test 'visible_to : agent → aucune convention' do
+  test 'un agent ne voit aucune convention' do
     assert_empty Convention.visible_to(users(:agent_whatsapp))
   end
 
-  test 'interventions : période de la convention → celles de l\'adhérent dedans, pas celles dehors' do
+  test "les interventions d'une convention sont celles de l'adhérent dans sa période, pas celles en dehors" do
     convention = conventions(:convention_paris)
     dans_la_période = Intervention.create!(
       description: 'Intervention sous convention',
@@ -179,7 +179,7 @@ class ConventionTest < ActiveSupport::TestCase
     assert_not_includes interventions, hors_période
   end
 
-  test 'heures_consommees : interventions de la période → la somme de leur temps total' do
+  test "les heures consommées d'une convention sont la somme du temps total de ses interventions" do
     convention = conventions(:convention_paris)
     intervention_conventionnee(heures: 3)
     intervention_conventionnee(heures: 5, début: DANS_LA_PÉRIODE_DE_CONVENTION_PARIS + 4.hours)
@@ -187,32 +187,32 @@ class ConventionTest < ActiveSupport::TestCase
     assert_equal 8, convention.heures_consommees
   end
 
-  test 'heures_consommees : aucune intervention → zéro' do
+  test "les heures consommées d'une convention sans intervention valent zéro" do
     assert_equal 0, conventions(:convention_paris).heures_consommees
   end
 
-  test 'heures_consommees : intervention d\'un autre service → non comptée' do
+  test "une intervention d'un autre service n'est pas comptée dans les heures consommées" do
     convention = conventions(:convention_paris)
     intervention_conventionnee(heures: 4, service: services(:technique))
 
     assert_equal 0, convention.heures_consommees
   end
 
-  test 'heures_consommees : intervention d\'un autre adhérent → non comptée' do
+  test "une intervention d'un autre adhérent n'est pas comptée dans les heures consommées" do
     convention = conventions(:convention_paris)
     intervention_conventionnee(heures: 4, adherent_id: users(:adhérent_sans_intervention).id)
 
     assert_equal 0, convention.heures_consommees
   end
 
-  test 'heures_consommees : intervention hors période → non comptée' do
+  test "une intervention hors période n'est pas comptée dans les heures consommées" do
     convention = conventions(:convention_paris)
     intervention_conventionnee(heures: 4, début: convention.date_début.beginning_of_day - 2.days)
 
     assert_equal 0, convention.heures_consommees
   end
 
-  test 'heures_consommees : temps d\'une intervention modifié → somme recalculée' do
+  test "les heures consommées sont recalculées lorsque le temps d'une intervention est modifié" do
     convention = conventions(:convention_paris)
     intervention = intervention_conventionnee(heures: 3)
 
@@ -221,7 +221,7 @@ class ConventionTest < ActiveSupport::TestCase
     assert_equal 5, convention.heures_consommees
   end
 
-  test 'heures_consommees : intervention supprimée → somme recalculée' do
+  test "les heures consommées sont recalculées lorsqu'une intervention est supprimée" do
     convention = conventions(:convention_paris)
     intervention_conventionnee(heures: 3).destroy!
 

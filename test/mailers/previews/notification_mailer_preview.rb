@@ -14,14 +14,6 @@ class NotificationMailerPreview < ActionMailer::Preview
     NotificationMailer.intervention_pointage(Intervention.where.not(template_slug:nil).last)
   end
 
-  def welcome
-    NotificationMailer.welcome(User.last)
-  end
-
-  def new_organisation
-    NotificationMailer.new_organisation(Organisation.last)
-  end
-
   def confirm_email_newsletter
     NotificationMailer.confirm_email_newsletter(User.last.email)
   end

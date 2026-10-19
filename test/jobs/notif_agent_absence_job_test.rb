@@ -11,7 +11,7 @@ class NotifAgentAbsenceJobTest < ActiveJob::TestCase
     ActionMailer::Base.deliveries.clear
   end
 
-  test 'envoie le mail à la personne concernée et trace le MailLog' do
+  test 'l’agent reçoit un mail et un mail log est créé lorsque son absence est créée' do
     assert_difference -> { ActionMailer::Base.deliveries.size } => 1, -> { MailLog.count } => 1 do
       NotifAgentAbsenceJob.perform_now('créée', @resume, nil, @agent.email,
                                        @agent.organisation.id, @manager.id)
@@ -44,7 +44,7 @@ class NotifAgentAbsenceJobTest < ActiveJob::TestCase
     assert_match 'Formation', corps
   end
 
-  test 'sans auteur identifié le MailLog est tracé au compte système' do
+  test 'un mail log sans auteur est attribué au Système' do
     NotifAgentAbsenceJob.perform_now('supprimée', @resume, nil, @agent.email,
                                      @agent.organisation.id, nil)
 

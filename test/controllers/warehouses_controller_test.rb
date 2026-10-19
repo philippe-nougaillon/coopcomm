@@ -8,19 +8,19 @@ class WarehousesControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:administrateur_paris)
   end
 
-  test 'show : un site de son organisation → la page répond' do
+  test 'un site est affiché avec succès' do
     get warehouse_url(@warehouse)
 
     assert_response :success
   end
 
-  test 'new : sans paramètre → la page répond' do
+  test 'le formulaire de création est affiché avec succès' do
     get new_warehouse_url
 
     assert_response :success
   end
 
-  test 'new : le formulaire ne propose que les non-adhérents des services du current_user' do
+  test "le formulaire de création ne propose que les non-adhérents des services de l'utilisateur connecté" do
     get new_warehouse_url
 
     assert_includes assigns(:users), users(:bond)
@@ -28,13 +28,13 @@ class WarehousesControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:users), users(:agent_marseille)
   end
 
-  test 'edit : un site de son organisation → la page répond' do
+  test 'le formulaire de modification est affiché avec succès' do
     get edit_warehouse_url(@warehouse)
 
     assert_response :success
   end
 
-  test 'create : paramètres valides → le site est créé' do
+  test 'un site est créé lorsque les paramètres sont valides' do
     assert_difference('Warehouse.count') do
       post warehouses_url, params: { warehouse: { address: @warehouse.address, name: 'Nouveau site',
                                                   latitude: '1.234', longitude: '5.678' } }
@@ -43,7 +43,7 @@ class WarehousesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_parametres_path(tab: 'sites')
   end
 
-  test 'create : sans adresse → aucune création et formulaire réaffiché' do
+  test "un site sans adresse n'est pas créé" do
     assert_no_difference('Warehouse.count') do
       post warehouses_url, params: { warehouse: { name: 'Sans adresse' } }
     end
@@ -51,7 +51,7 @@ class WarehousesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
-  test 'update : paramètres valides → le site est modifié' do
+  test 'un site est modifié lorsque les paramètres sont valides' do
     patch warehouse_url(@warehouse),
           params: { warehouse: { address: '7 Rue Francis de Pressensé, 75014 Paris',
                                  name: 'Entrepôt de Paris', latitude: '2.345', longitude: '6.789' } }
@@ -60,14 +60,14 @@ class WarehousesControllerTest < ActionDispatch::IntegrationTest
     assert_equal '7 Rue Francis de Pressensé, 75014 Paris', @warehouse.reload.address
   end
 
-  test 'update : adresse vidée → formulaire réaffiché en 422 et site inchangé' do
+  test "un site dont l'adresse est vidée n'est pas modifié" do
     patch warehouse_url(@warehouse), params: { warehouse: { address: '' } }
 
     assert_response :unprocessable_content
     assert_not_equal '', @warehouse.reload.address
   end
 
-  test 'destroy : un site de son organisation → il est supprimé' do
+  test 'un site est supprimé' do
     assert_difference('Warehouse.count', -1) do
       delete warehouse_url(@warehouse)
     end
@@ -75,7 +75,7 @@ class WarehousesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_parametres_path(tab: 'sites')
   end
 
-  test 'set_warehouse : un slug inconnu redirige sans planter' do
+  test 'un slug de site inconnu redirige sans planter' do
     get edit_warehouse_url('site-inexistant')
 
     assert_redirected_to root_path

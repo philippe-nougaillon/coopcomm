@@ -27,8 +27,8 @@
                 options_for_select(
                 [["Tous les rôles", ""]] + User.rôles.sort_by { |k, _| I18n.transliterate(k) },
                 params[:rôle]),
-              class: 'slim-select w-full h-10 first-letter:capitalize',
-              data: { placeholder: 'Tous les rôles' },
+              class: 'w-full h-10 first-letter:capitalize',
+              data: { controller: 'slim-select', placeholder: 'Tous les rôles' },
               onchange: 'this.form.requestSubmit()' %>
       </div>
       <%# Filtre masqué si le current_user n'a qu'un seul service (sauf administrateur). %>
@@ -43,9 +43,9 @@
           <%= select_tag :services,
                   options_from_collection_for_select(@services, 'id', 'nom', @selected_service_ids),
                   multiple: true,
-                  class: 'slim-select w-full h-10',
-                  data: { placeholder: 'Tous les services',
-                          max_values_shown_desktop: 1,
+                  class: 'w-full h-10',
+                  data: { controller: 'slim-select', placeholder: 'Tous les services',
+                          max_values_shown_desktop: 2,
                           max_values_shown_mobile: 1 
                         },
                   onchange: 'this.form.requestSubmit()' %>
@@ -56,8 +56,8 @@
         <%= select_tag :user_tag,
                 options_from_collection_for_select(@users_tags, :name, :name, params[:user_tag]),
                 include_blank: true,
-                class: 'slim-select w-full h-10 first-letter:capitalize',
-                data: { placeholder: 'Tous les mots-clés' },
+                class: 'w-full h-10 first-letter:capitalize',
+                data: { controller: 'slim-select', placeholder: 'Tous les mots-clés' },
                 onchange: 'this.form.requestSubmit()' %>
       </div>
 

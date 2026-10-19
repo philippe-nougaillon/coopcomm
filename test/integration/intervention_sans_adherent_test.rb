@@ -24,7 +24,7 @@ class InterventionSansAdherentTest < ActionDispatch::IntegrationTest
     assert_equal @service.organisation, @brouillon.organisation
   end
 
-  test 'le brouillon apparaît dans l’index du manager' do
+  test "En tant que manager, je veux voir une intervention sans adhérent dans la liste des interventions" do
     sign_in @manager
     get interventions_url
 
@@ -32,7 +32,7 @@ class InterventionSansAdherentTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", intervention_path(@brouillon)
   end
 
-  test 'la page du brouillon s’affiche pour le manager et pour l’agent' do
+  test "En tant que manager ou agent, je veux ouvrir la page d'une intervention sans adhérent" do
     [@manager, @agent].each do |utilisateur|
       sign_in utilisateur
       get intervention_url(@brouillon)
@@ -43,14 +43,14 @@ class InterventionSansAdherentTest < ActionDispatch::IntegrationTest
   end
 
   # Sans garde nil sur l'adhérent, le formulaire agent lève dans la vue.
-  test 'l’agent peut ouvrir le formulaire d’édition du brouillon' do
+  test "En tant qu'agent, je veux ouvrir le formulaire d'une intervention sans adhérent" do
     sign_in @agent
     get edit_intervention_url(@brouillon)
 
     assert_response :success
   end
 
-  test 'le manager complète le brouillon et l’intervention devient valide' do
+  test "En tant que manager, je veux compléter une intervention sans adhérent pour la rendre valide" do
     adherent = users(:patrick_adherent_paris)
 
     assert_includes adherent.service_ids, @service.id

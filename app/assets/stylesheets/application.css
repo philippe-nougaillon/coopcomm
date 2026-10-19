@@ -265,10 +265,8 @@ label#drawer-label div:nth-child(2) {
 /***** SLIM-SELECT  *****/
 
 
-/* 1. Style global (S'applique à la classe .slim-select ET aux IDs spécifiques) */
-select.slim-select,
-#intervention_tags,
-#intervention_tags_manager {
+/* 1. Style global : tous les selects pilotés par slim-select */
+select[data-controller~="slim-select"] {
   /* Reset agressif du style navigateur */
   -webkit-appearance: none !important;
   -moz-appearance: none !important;
@@ -298,9 +296,7 @@ select.slim-select,
 
 /* 2. CAS MULTIPLE (Agent, Matériel, et vos TAGS) */
 /* S'applique si l'élément a l'attribut 'multiple' */
-select.slim-select[multiple],
-#intervention_tags[multiple],
-#intervention_tags_manager[multiple] {
+select[data-controller~="slim-select"][multiple] {
   /* Force une hauteur de ligne unique */
   height: 32px !important;
   overflow: hidden;
@@ -314,9 +310,7 @@ select.slim-select[multiple],
 }
 
   /* 3. Focus (pour tous) */
-  select.slim-select:focus,
-  #intervention_tags:focus,
-  #intervention_tags_manager:focus {
+  select[data-controller~="slim-select"]:focus {
     border-color: #5897fb;
   }
 
@@ -325,7 +319,7 @@ select.slim-select[multiple],
 
   /* SLIM-SELECT REQUIRED */
 
-  select.slim-select[required] {
+  select[data-controller~="slim-select"][required] {
     
     /* NE PAS remettre `visibility: hidden` ni `display: none` ici : le select doit
        rester focusable pour que la validation HTML5 puisse l'atteindre au submit

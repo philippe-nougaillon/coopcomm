@@ -16,12 +16,12 @@ class AdherentFacturePolicyTest < ActionDispatch::IntegrationTest
   end
 
   test 'accès autorisé pour un adhérent sur une facture envoyée dont il est le destinataire' do
-    assert @policy.index?
     assert @policy.show?
     assert @policy.pdf?
   end
 
   test 'accès interdit pour un adhérent sur une facture envoyée dont il est le destinataire' do
+    refute @policy.index?
     refute @policy.update?
     refute @policy.destroy?
     refute @policy.envoyer?

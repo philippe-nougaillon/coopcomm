@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class NotificationMailerTest < ActionMailer::TestCase
-  test 'cotation_envoyee : destinataire, copie, sujet, corps et PDF en pièce jointe' do
+  test 'le mail de cotation envoyée est adressé au destinataire, met en copie son émetteur, cite la référence de la cotation et joint son PDF' do
     cotation = cotations(:cotation_paris)
     mail = NotificationMailer.cotation_envoyee(cotation, 'client@example.com', 'emetteur@example.com')
 
@@ -20,7 +20,7 @@ class NotificationMailerTest < ActionMailer::TestCase
     assert_equal 'application/pdf', attachment.mime_type
   end
 
-  test 'cotation_envoyee : aucune copie quand cc_email est absent' do
+  test 'le mail de cotation envoyée ne met personne en copie sans adresse de copie' do
     cotation = cotations(:cotation_paris)
     mail = NotificationMailer.cotation_envoyee(cotation, 'client@example.com')
 

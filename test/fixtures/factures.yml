@@ -45,3 +45,16 @@ facture_envoyée:
   workflow_state: "envoyé"
   total_ht: 0
   slug: <%= SecureRandom.uuid %>
+
+# Facture d'un AUTRE adhérent de la même organisation que weil, dans un état
+# visible : sert à prouver que le cloisonnement entre adhérents tient, là où une
+# facture d'une autre organisation ou un brouillon serait écarté pour une autre
+# raison — miroir de commande_autre_adherent.
+facture_autre_adherent:
+  adherent: patrick_adherent_paris
+  service: informatique
+  ref: "2026-5"
+  intitulé: Facture informatique de Patrick
+  workflow_state: "envoyé"
+  total_ht: 0
+  slug: <%= SecureRandom.uuid %>

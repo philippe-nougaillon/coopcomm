@@ -24,19 +24,19 @@ class CotationsRelancerASignerTaskTest < ActiveJob::TestCase
             .update_all(workflow_state: Cotation::CREE)
   end
 
-  test 'enfile le job pour un adhérent ayant une cotation à signer, sans mail récent' do
+  test "la tâche met en file la relance d'un adhérent qui a une cotation à signer et aucun mail récent" do
     assert_enqueued_with(job: NotifAdherentCotationsASignerRelanceJob, args: [@adherent]) do
       @task.invoke
     end
   end
 
-  test 'un seul job est enfilé quand un seul adhérent a des cotations à signer' do
+  test "une seule relance est mise en file lorsqu'un seul adhérent a des cotations à signer" do
     assert_enqueued_jobs 1, only: NotifAdherentCotationsASignerRelanceJob do
       @task.invoke
     end
   end
 
-  test 'ne relance pas si un mail cotation a été reçu il y a moins de 48h' do
+  test "aucune relance n'est mise en file lorsqu'un mail de cotation a été reçu il y a moins de 48h" do
     creer_mail_log(created_at: 1.hour.ago)
 
     assert_no_enqueued_jobs only: NotifAdherentCotationsASignerRelanceJob do
@@ -44,7 +44,7 @@ class CotationsRelancerASignerTaskTest < ActiveJob::TestCase
     end
   end
 
-  test 'relance si le dernier mail cotation date de plus de 48h' do
+  test 'la relance est mise en file lorsque le dernier mail de cotation date de plus de 48h' do
     creer_mail_log(created_at: 49.hours.ago)
 
     assert_enqueued_with(job: NotifAdherentCotationsASignerRelanceJob, args: [@adherent]) do
@@ -52,7 +52,7 @@ class CotationsRelancerASignerTaskTest < ActiveJob::TestCase
     end
   end
 
-  test 'un mail sans cotation_id n\'entre pas dans la garde des 48h' do
+  test "un mail non rattaché à une cotation n'entre pas dans la garde des 48h" do
     # Un mail récent mais NON lié à une cotation (ex. commande/facture) ne doit
     # pas empêcher la relance des cotations à signer.
     MailLog.create!(to: @adherent.email, cotation_id: nil,
@@ -65,7 +65,7 @@ class CotationsRelancerASignerTaskTest < ActiveJob::TestCase
     end
   end
 
-  test 'ne relance aucun adhérent quand aucune cotation n\'est à signer' do
+  test "aucune relance n'est mise en file lorsqu'aucune cotation n'est à signer" do
     @cotation.update_column(:workflow_state, Cotation::SIGNE)
 
     assert_no_enqueued_jobs only: NotifAdherentCotationsASignerRelanceJob do

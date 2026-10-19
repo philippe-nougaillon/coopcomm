@@ -121,6 +121,7 @@ class Intervention < ApplicationRecord
   # after_create_commit :broadcast_to_authorized_viewers
   # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
   after_create_commit :send_manager_notification
+  after_commit :actualiser_dashboard
 
   # Déclaré en dernier : le `save` de #calculate_co2 fait perdre aux callbacks
   # suivants l'information « on sort d'une création ».
@@ -657,5 +658,9 @@ class Intervention < ApplicationRecord
     elsif repeter? && workflow_state != 'pointage activé'
       self.workflow_state = 'pointage activé'
     end
+  end
+
+  def actualiser_dashboard
+    ActualiserDashboard.call
   end
 end

@@ -12,15 +12,9 @@ class FacturesController < ApplicationController
              .includes(:adherent, :service, :organisation)
              .ordered
 
-    if current_user.adhérent?
-      @factures = base
-      service_ids = base.reorder(nil).distinct.pluck(:service_id)
-      @services  = Service.where(id: service_ids).ordered
-    else
-      @services  = current_user.get_services_by_role
-      @adhérents = User.by_service(@services).adhérent.ordered
-      @factures  = base.where(service: @services)
-    end
+    @services  = current_user.get_services_by_role
+    @adhérents = User.by_service(@services).adhérent.ordered
+    @factures  = base.where(service: @services)
 
     if params[:search].present?
       @factures = @factures.where('factures.ref ILIKE :s OR factures.intitulé ILIKE :s', s: "%#{params[:search]}%")

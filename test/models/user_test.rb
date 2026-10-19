@@ -5,7 +5,7 @@ require 'test_helper'
 class UserTest < ActiveSupport::TestCase
   include ActionMailer::TestHelper
 
-  test 'absences imbriquées : ligne sans dates → ignorée' do
+  test 'une absence sans dates saisie en même temps que le compte est ignorée' do
     agent = users(:bond)
 
     assert_no_difference('Absence.count') do
@@ -13,7 +13,7 @@ class UserTest < ActiveSupport::TestCase
     end
   end
 
-  test 'normalisation : nom et prénom saisis à la volée → nom en capitales, prénom humanisé' do
+  test 'le nom est mis en capitales et le prénom humanisé à la création du compte' do
     utilisateur = User.create!(nom: '  dupont ', prénom: '  jeanne ', email: "n-#{SecureRandom.hex(4)}@example.test",
                                rôle: 'adhérent', password: 'qtDug$d843sqACz?V',
                                service_ids: [services(:informatique).id],
@@ -30,19 +30,19 @@ class UserTest < ActiveSupport::TestCase
   # joint `user_services`) et fait échouer tout ce qui lit `current_organisation`.
 
   User.rôles.each_key do |rôle|
-    test "must_have_at_least_one_service : un #{rôle} sans service → refusé (critique)" do
+    test "un #{rôle} sans service est refusé (critique)" do
       user = nouveau(rôle: rôle)
 
       assert_not user.valid?
       assert_includes user.errors[:services], 'doit comporter au moins un service'
     end
 
-    test "must_have_at_least_one_service : un #{rôle} avec un service → accepté (critique)" do
+    test "un #{rôle} avec un service est accepté (critique)" do
       assert nouveau(rôle: rôle, service_ids: [services(:informatique).id]).valid?
     end
   end
 
-  test 'must_have_at_least_one_service : dernier service retiré → refusé (critique)' do
+  test 'un utilisateur dont le dernier service est retiré est refusé (critique)' do
     agent = users(:martin_technique_paris)
 
     agent.user_services.each(&:mark_for_destruction)
@@ -51,7 +51,7 @@ class UserTest < ActiveSupport::TestCase
     assert_includes agent.errors[:services], 'doit comporter au moins un service'
   end
 
-  test 'must_have_at_least_one_service : service remplacé dans le même enregistrement → accepté (critique)' do
+  test 'un utilisateur dont le service est remplacé en une seule opération est accepté (critique)' do
     agent = users(:martin_technique_paris)
 
     agent.user_services.load
@@ -61,14 +61,14 @@ class UserTest < ActiveSupport::TestCase
     assert agent.valid?, agent.errors.full_messages.to_s
   end
 
-  test 'agent_must_have_exactly_one_service : agent créé avec deux services → refusé (critique)' do
+  test 'un agent créé avec deux services est refusé (critique)' do
     agent = nouveau(rôle: 'agent', service_ids: [services(:informatique).id, services(:technique).id])
 
     assert_not agent.valid?
     assert_includes agent.errors[:services], "ne doit comporter qu'un seul service pour un agent"
   end
 
-  test 'agent_must_have_exactly_one_service : second service ajouté à un agent existant → refusé (critique)' do
+  test 'un agent existant qui reçoit un second service est refusé (critique)' do
     agent = users(:martin_technique_paris)
 
     agent.user_services.build(service: services(:informatique))
@@ -77,7 +77,7 @@ class UserTest < ActiveSupport::TestCase
     assert_includes agent.errors[:services], "ne doit comporter qu'un seul service pour un agent"
   end
 
-  test 'agent_must_have_exactly_one_service : multi-services basculé en agent → refusé (critique)' do
+  test 'un utilisateur de plusieurs services basculé en agent est refusé (critique)' do
     utilisateur = users(:hidalgo)
 
     utilisateur.rôle = 'agent'
@@ -86,7 +86,7 @@ class UserTest < ActiveSupport::TestCase
     assert_includes utilisateur.errors[:services], "ne doit comporter qu'un seul service pour un agent"
   end
 
-  test 'agent_must_have_exactly_one_service : adhérent, manager et administrateur → plusieurs services acceptés (critique)' do
+  test 'un adhérent, un manager et un administrateur peuvent avoir plusieurs services (critique)' do
     %w[adhérent manager administrateur].each do |rôle|
       user = nouveau(rôle: rôle, service_ids: [services(:informatique).id, services(:technique).id])
 
@@ -96,7 +96,7 @@ class UserTest < ActiveSupport::TestCase
 
   # Sans `dependent: :destroy` sur la through, Rails retire la ligne de liaison
   # par delete_all : aucun callback, donc aucune trace du service retiré.
-  test 'services : service retiré à un utilisateur → trace dans l\'audit (critique)' do
+  test "un service retiré à un utilisateur laisse une trace dans l'audit (critique)" do
     manager = users(:hidalgo)
     retiré = manager.services.first
     restants = manager.services.where.not(id: retiré.id)
@@ -111,7 +111,7 @@ class UserTest < ActiveSupport::TestCase
     assert_equal manager.id, audit.associated_id
   end
 
-  test 'services : rattachement à un service → l\'organisation en dérive (critique)' do
+  test "l'organisation d'un utilisateur dérive de son service (critique)" do
     utilisateur = nouveau(rôle: 'adhérent', service_ids: [services(:informatique).id])
 
     utilisateur.save!
@@ -119,33 +119,33 @@ class UserTest < ActiveSupport::TestCase
     assert_equal services(:informatique).organisation, utilisateur.organisation
   end
 
-  test 'by_service : services demandés → leurs utilisateurs, jamais ceux des autres services (critique)' do
+  test 'le filtre par service ne retourne que les utilisateurs des services demandés (critique)' do
     utilisateurs = User.by_service([services(:informatique)])
 
     assert_includes utilisateurs, users(:weil)
     assert_not_includes utilisateurs, users(:agent_marseille)
   end
 
-  test 'by_service : utilisateur de deux services demandés → rendu une seule fois (critique)' do
+  test 'le filtre par service retourne une seule fois un utilisateur rattaché à deux des services demandés (critique)' do
     utilisateurs = User.by_service([services(:service_paris), services(:technique)])
 
     assert_equal 1, utilisateurs.to_a.count(users(:hidalgo))
   end
 
-  test 'by_service : utilisateur désactivé → exclu (critique)' do
+  test 'le filtre par service exclut un utilisateur désactivé (critique)' do
     users(:weil).discard
 
     assert_not_includes User.by_service([services(:informatique)]), users(:weil)
   end
 
-  test 'get_services_by_role : administrateur → tous les services de son organisation (critique)' do
+  test 'un administrateur se voit proposer tous les services de son organisation (critique)' do
     services_proposés = users(:administrateur_paris).get_services_by_role
 
     assert_includes services_proposés, services(:secretariat)
     assert_not_includes services_proposés, services(:service_marseille)
   end
 
-  test 'get_services_by_role : manager → seulement les siens (critique)' do
+  test 'un manager ne se voit proposer que ses propres services (critique)' do
     manager = users(:manager_paris)
 
     assert_equal manager.services.sort_by(&:id), manager.get_services_by_role.sort_by(&:id)
@@ -154,7 +154,7 @@ class UserTest < ActiveSupport::TestCase
   # Liste PLATE (sans groupe) des intervenants d'un ou plusieurs services, au format
   # [["NOM Prénom", id], …], triée par nom puis prénom.
 
-  test 'agents_for_services : service demandé → ses intervenants (critique)' do
+  test 'la liste des intervenants par service comprend les agents, les managers et les administrateurs du service (critique)' do
     ids = User.agents_for_services([services(:technique)]).map(&:last)
 
     assert_includes ids, users(:martin_technique_paris).id, 'agent du service attendu'
@@ -163,20 +163,20 @@ class UserTest < ActiveSupport::TestCase
     assert_includes ids, users(:nettoyage).id,              'agent du service attendu'
   end
 
-  test 'agents_for_services : adhérent du service → exclu (critique)' do
+  test 'la liste des intervenants par service exclut un adhérent du service (critique)' do
     ids = User.agents_for_services([services(:informatique)]).map(&:last)
 
     assert_not_includes ids, users(:weil).id
   end
 
-  test 'agents_for_services : intervenant d\'un autre service ou d\'une autre organisation → exclu (critique)' do
+  test "la liste des intervenants par service exclut un intervenant d'un autre service ou d'une autre organisation (critique)" do
     ids = User.agents_for_services([services(:technique)]).map(&:last)
 
     assert_not_includes ids, users(:agent_whatsapp).id
     assert_not_includes ids, users(:agent_marseille).id
   end
 
-  test 'agents_for_services : intervenant retenu → rendu au format [nom complet, id] (critique)' do
+  test 'la liste des intervenants par service rend chaque intervenant sous la forme [nom complet, id] (critique)' do
     cible = users(:martin_technique_paris)
 
     agent = User.agents_for_services([services(:technique)]).find { |_nom, id| id == cible.id }
@@ -188,7 +188,7 @@ class UserTest < ActiveSupport::TestCase
     assert_kind_of Integer, id
   end
 
-  test 'agents_for_services : intervenant de deux services demandés → rendu une seule fois (critique)' do
+  test 'la liste des intervenants par service retourne une seule fois un intervenant rattaché à deux des services demandés (critique)' do
     ids = User.agents_for_services([services(:service_paris), services(:technique)]).map(&:last)
 
     assert_equal 1, ids.count(users(:hidalgo).id)
@@ -196,13 +196,13 @@ class UserTest < ActiveSupport::TestCase
 
   # Les noms (premier mot) sont distincts et purement ASCII ici : un tri
   # croissant stable est vérifiable sans dépendre de la collation SQL.
-  test 'agents_for_services : plusieurs intervenants → triés par nom croissant (critique)' do
+  test 'la liste des intervenants par service est triée par nom croissant (critique)' do
     noms = User.agents_for_services([services(:technique)]).map { |nom, _id| nom.split.first }
 
     assert_equal noms.sort, noms
   end
 
-  test 'agents_for_services : administrateur hors du service demandé → proposé quand même (critique)' do
+  test 'la liste des intervenants par service comprend un administrateur non rattaché au service demandé (critique)' do
     admin = users(:philippe_super_admin)
 
     ids = User.agents_for_services([services(:technique)]).map(&:last)
@@ -211,7 +211,7 @@ class UserTest < ActiveSupport::TestCase
     assert_includes ids, admin.id
   end
 
-  test 'agents_for_services : administrateur d\'une autre organisation → exclu (critique)' do
+  test "la liste des intervenants par service exclut un administrateur d'une autre organisation (critique)" do
     ids = User.agents_for_services([services(:service_marseille)]).map(&:last)
 
     assert_not_includes ids, users(:philippe_super_admin).id
@@ -220,7 +220,7 @@ class UserTest < ActiveSupport::TestCase
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'scope ordered : plusieurs comptes → triés sans tenir compte des accents ni de la casse' do
+  test 'les utilisateurs sont triés sans tenir compte des accents ni de la casse' do
     service = services(:menage)
     %w[Élan aiguille Zoé].each do |nom|
       User.create!(nom: nom, prénom: 'Test', email: "#{SecureRandom.hex(4)}@example.test",
@@ -233,19 +233,19 @@ class UserTest < ActiveSupport::TestCase
     assert_operator noms.index('ÉLAN'), :<, noms.index('ZOÉ')
   end
 
-  test 'nom_prénom : nom et prénom renseignés → les deux accolés' do
+  test 'le nom complet accole le nom et le prénom' do
     assert_equal 'Bond James', users(:bond).nom_prénom
   end
 
-  test 'nom_prenom_role : compte quelconque → nom, prénom et rôle en capitales' do
+  test 'le nom complet avec rôle accole le nom, le prénom et le rôle en capitales' do
     assert_equal 'Bond James (AGENT)', users(:bond).nom_prenom_role
   end
 
-  test 'initiales : nom et prénom renseignés → deux capitales' do
+  test 'les initiales sont la première lettre du nom et celle du prénom en capitales' do
     assert_equal 'BJ', users(:bond).initiales
   end
 
-  test 'super_admin? : email listé dans SUPER_ADMIN → vrai' do
+  test "un utilisateur dont l'email est listé dans SUPER_ADMIN est super administrateur" do
     précédent = ENV.fetch('SUPER_ADMIN', nil)
     ENV['SUPER_ADMIN'] = "autre@example.test,#{users(:bond).email}"
 
@@ -255,7 +255,7 @@ class UserTest < ActiveSupport::TestCase
     ENV['SUPER_ADMIN'] = précédent
   end
 
-  test 'super_admin? : variable d\'environnement absente → faux' do
+  test "aucun utilisateur n'est super administrateur quand la variable SUPER_ADMIN est absente" do
     précédent = ENV.fetch('SUPER_ADMIN', nil)
     ENV['SUPER_ADMIN'] = nil
 
@@ -264,24 +264,24 @@ class UserTest < ActiveSupport::TestCase
     ENV['SUPER_ADMIN'] = précédent
   end
 
-  test 'moyenne : interventions notées → la moyenne de leurs notes' do
+  test "la note moyenne d'un agent est la moyenne des notes de ses interventions" do
     agent = users(:bond)
 
     assert_in_delta agent.rated_interventions.average(:note).to_f, agent.moyenne, 1e-6
   end
 
-  test 'moyenne : aucune intervention notée → nil' do
+  test "un utilisateur sans intervention notée n'a pas de note moyenne" do
     assert_nil users(:weil).moyenne
   end
 
-  test 'rated_interventions : interventions de l\'agent → celles notées, hors modèles de pointage' do
+  test "les interventions notées d'un agent excluent les modèles de pointage" do
     notées = users(:bond).rated_interventions
 
     assert notées.all? { |i| i.note.present? && i.repeter == false }
     assert_equal notées.count, users(:bond).total_rating
   end
 
-  test 'star_count : note donnée → sa part en pourcentage des interventions notées' do
+  test "la part d'une note est son pourcentage parmi les interventions notées" do
     agent = users(:bond)
     total = (1..5).sum { |note| agent.interventions.where(note: note, repeter: false).count }
     quatre_étoiles = agent.interventions.where(note: 4, repeter: false).count
@@ -289,59 +289,41 @@ class UserTest < ActiveSupport::TestCase
     assert_in_delta (quatre_étoiles.to_f / total) * 100, agent.star_count(4), 1e-6
   end
 
-  test 'star_count : aucune intervention notée → zéro, sans division par zéro' do
+  test "la part d'une note vaut zéro sans intervention notée, sans division par zéro" do
     assert_equal 0.0, users(:adhérent_sans_intervention).star_count(3)
   end
 
-  test 'dispatch_email_to_nom_prénom : adresse avec séparateur → nom et prénom déduits' do
-    utilisateur = User.new(email: 'dupont.jeanne@mairie.fr')
-
-    utilisateur.dispatch_email_to_nom_prénom
-
-    assert_equal 'DUPONT', utilisateur.nom
-    assert_equal 'Jeanne', utilisateur.prénom
-  end
-
-  test 'dispatch_email_to_nom_prénom : adresse sans séparateur → prénom laissé vide' do
-    utilisateur = User.new(email: 'accueil@mairie.fr')
-
-    utilisateur.dispatch_email_to_nom_prénom
-
-    assert_equal 'ACCUEIL', utilisateur.nom
-    assert_nil utilisateur.prénom
-  end
-
-  test 'avatar : chaque rôle → l\'icône qui le distingue à l\'écran' do
+  test "chaque rôle a l'icône qui le distingue à l'écran" do
     assert_equal 'manage_accounts', users(:hidalgo).avatar
     assert_equal 'person', users(:bond).avatar
     assert_equal 'corporate_fare', users(:weil).avatar
     assert_equal 'supervisor_account', users(:administrateur_paris).avatar
   end
 
-  test 'new_messages? : message non lu reçu d\'un collègue de service → vrai' do
+  test 'un message reçu non lu compte comme nouveau message' do
     Message.create!(from_user: users(:hidalgo), to_user: users(:weil), message: 'Bonjour', read_at: nil)
 
     assert users(:weil).new_messages?
   end
 
-  test 'new_messages? : message déjà lu → faux' do
+  test 'un message déjà lu ne compte pas comme nouveau message' do
     Message.create!(from_user: users(:hidalgo), to_user: users(:weil), message: 'Bonjour', read_at: Time.current)
 
     assert_not users(:weil).new_messages?
   end
 
-  test 'current_absence : sans période demandée → l\'absence du jour' do
+  test "l'absence du jour est trouvée sans préciser de période" do
     agent = users(:john_wick)
     absence = Absence.create!(user: agent, du: Date.new(2030, 9, 2), au: Date.new(2030, 9, 2), motif: :formation)
 
     assert_equal absence, agent.current_absence(Date.new(2030, 9, 2))
   end
 
-  test 'current_absence : aucune absence à cette date → nil' do
+  test "aucune absence n'est trouvée à une date sans absence" do
     assert_nil users(:john_wick).current_absence(Date.new(2030, 9, 3))
   end
 
-  test 'current_absence : absence journée entière → répond à n\'importe quelle période' do
+  test "une absence de journée entière est trouvée pour le matin comme pour l'après-midi" do
     agent = users(:john_wick)
     absence = Absence.create!(user: agent, du: Date.new(2030, 9, 4), au: Date.new(2030, 9, 4), motif: :formation)
 
@@ -349,7 +331,7 @@ class UserTest < ActiveSupport::TestCase
     assert_equal absence, agent.current_absence(Date.new(2030, 9, 4), :apres_midi)
   end
 
-  test 'current_absence : absence du matin → répond au matin, pas à l\'après-midi' do
+  test "une absence du matin est trouvée pour le matin mais pas pour l'après-midi" do
     agent = users(:john_wick)
     absence = Absence.create!(user: agent, du: Date.new(2030, 9, 5), au: Date.new(2030, 9, 5),
                               motif: :formation, matin: true, après_midi: false)
@@ -358,7 +340,7 @@ class UserTest < ActiveSupport::TestCase
     assert_nil agent.current_absence(Date.new(2030, 9, 5), :apres_midi)
   end
 
-  test 'current_absence : absence de l\'après-midi → répond à l\'après-midi, pas au matin' do
+  test "une absence de l'après-midi est trouvée pour l'après-midi mais pas pour le matin" do
     agent = users(:john_wick)
     absence = Absence.create!(user: agent, du: Date.new(2030, 9, 6), au: Date.new(2030, 9, 6),
                               motif: :formation, matin: false, après_midi: true)
@@ -367,7 +349,7 @@ class UserTest < ActiveSupport::TestCase
     assert_nil agent.current_absence(Date.new(2030, 9, 6), :matin)
   end
 
-  test 'absent? : absence du matin → absent le matin, présent l\'après-midi' do
+  test "un agent absent le matin est présent l'après-midi" do
     agent = users(:john_wick)
     Absence.create!(user: agent, du: Date.new(2030, 9, 7), au: Date.new(2030, 9, 7),
                     motif: :formation, matin: true, après_midi: false)
@@ -376,7 +358,7 @@ class UserTest < ActiveSupport::TestCase
     assert_not agent.absent?(Date.new(2030, 9, 7), :apres_midi)
   end
 
-  test 'nb_bad_words : messages envoyés contenant des insultes → total cumulé sur tous les messages' do
+  test "les insultes d'un utilisateur sont comptées sur l'ensemble de ses messages envoyés" do
     auteur = users(:hidalgo)
     Message.create!(from_user: auteur, to_user: users(:weil), message: 'Quel abruti, quel crétin !')
     Message.create!(from_user: auteur, to_user: users(:weil), message: 'Espèce de bouffon')
@@ -384,30 +366,30 @@ class UserTest < ActiveSupport::TestCase
     assert_equal 3, auteur.nb_bad_words
   end
 
-  test 'nb_bad_words : messages corrects → zéro' do
+  test 'un utilisateur aux messages corrects compte zéro insulte' do
     auteur = users(:hidalgo)
     Message.create!(from_user: auteur, to_user: users(:weil), message: 'Bonjour, merci pour votre travail.')
 
     assert_equal 0, auteur.nb_bad_words
   end
 
-  test 'nb_bad_words : messages reçus mais aucun envoyé → zéro, seul l\'auteur est compté' do
+  test 'les insultes reçues ne comptent pas pour le destinataire, seulement pour leur auteur' do
     Message.create!(from_user: users(:hidalgo), to_user: users(:weil), message: 'Quel abruti')
 
     assert_equal 0, users(:weil).nb_bad_words
   end
 
-  test 'find_by_whatsapp_phone : numéro préfixé par whatsapp → le compte correspondant' do
+  test 'un utilisateur est retrouvé par son numéro préfixé par whatsapp' do
     agent = users(:agent_whatsapp)
 
     assert_equal agent, User.find_by_whatsapp_phone("whatsapp:#{agent.téléphone}")
   end
 
-  test 'find_by_whatsapp_phone : numéro inconnu → nil' do
+  test 'un numéro whatsapp inconnu ne retrouve aucun utilisateur' do
     assert_nil User.find_by_whatsapp_phone('whatsapp:330000000000')
   end
 
-  test 'intervention_en_cours : pointage ouvert sur le créneau courant → l\'intervention' do
+  test "l'intervention en cours d'un agent est celle prévue sur le créneau courant" do
     agent = users(:martin_technique_paris)
     en_cours = Intervention.create!(
       description: 'Pointage ouvert', adherent: users(:weil), service: services(:technique),
@@ -418,11 +400,11 @@ class UserTest < ActiveSupport::TestCase
     assert_equal en_cours, agent.intervention_en_cours
   end
 
-  test 'intervention_en_cours : aucune intervention sur le créneau courant → nil' do
+  test "un agent sans intervention prévue sur le créneau courant n'a aucune intervention en cours" do
     assert_nil users(:john_wick).intervention_en_cours
   end
 
-  test 'generate_random_password : appel → douze caractères, un de chaque famille, sans caractère ambigu' do
+  test 'un mot de passe engendré fait douze caractères, un de chaque famille, sans caractère ambigu' do
     mot_de_passe = User.generate_random_password
 
     assert_equal 12, mot_de_passe.length
@@ -433,14 +415,14 @@ class UserTest < ActiveSupport::TestCase
     assert_no_match(/[lOI0]/, mot_de_passe)
   end
 
-  test 'manager_or_admin? : manager et administrateur → vrai, agent et adhérent → faux' do
+  test 'un manager et un administrateur sont des gestionnaires, un agent et un adhérent non' do
     assert users(:hidalgo).manager_or_admin?
     assert users(:administrateur_paris).manager_or_admin?
     assert_not users(:bond).manager_or_admin?
     assert_not users(:weil).manager_or_admin?
   end
 
-  test 'intervenants : tous les comptes → agents, managers et administrateurs, jamais les adhérents' do
+  test 'les intervenants sont les agents, les managers et les administrateurs, jamais les adhérents' do
     rôles = User.intervenants.pluck(:rôle).uniq
 
     assert_includes rôles, 'agent'
@@ -449,22 +431,22 @@ class UserTest < ActiveSupport::TestCase
     assert_not_includes rôles, 'adhérent'
   end
 
-  test 'assignable_roles : manager → le rôle agent seulement' do
+  test 'un manager ne peut attribuer que le rôle agent' do
     assert_equal ['agent'], users(:hidalgo).assignable_roles
   end
 
-  test 'assignable_roles : agent → le rôle agent seulement' do
+  test 'un agent ne peut attribuer que le rôle agent' do
     assert_equal ['agent'], users(:bond).assignable_roles
   end
 
-  test 'assignable_roles : administrateur → tous les rôles' do
+  test 'un administrateur peut attribuer tous les rôles' do
     assert_equal User.rôles.keys, users(:administrateur_paris).assignable_roles
   end
 
   # Cœur du « re-scan » du QRCode : retrouve l'intervention fille EN COURS (état
   # « nouveau ») de CET agent, datée d'AUJOURD'HUI, pour le modèle scanné.
 
-  test 'find_current_intervention : fille du jour de l\'agent en état nouveau → trouvée' do
+  test "l'intervention fille du jour de l'agent, à l'état nouveau, est retrouvée" do
     mère = interventions(:intervention_repete)
     agent = users(:martin_technique_paris)
     fille = mère.create_next_intervention(mère, agent)
@@ -472,14 +454,14 @@ class UserTest < ActiveSupport::TestCase
     assert_equal fille, agent.find_current_intervention(mère.slug)
   end
 
-  test 'find_current_intervention : fille d\'un autre agent → nil' do
+  test "l'intervention fille d'un autre agent n'est pas retrouvée" do
     mère = interventions(:intervention_repete)
     mère.create_next_intervention(mère, users(:bond))
 
     assert_nil users(:martin_technique_paris).find_current_intervention(mère.slug)
   end
 
-  test 'find_current_intervention : fille datée d\'un autre jour → nil' do
+  test "l'intervention fille datée d'un autre jour n'est pas retrouvée" do
     mère = interventions(:intervention_repete)
     agent = users(:martin_technique_paris)
     fille = mère.create_next_intervention(mère, agent)
@@ -488,7 +470,7 @@ class UserTest < ActiveSupport::TestCase
     assert_nil agent.find_current_intervention(mère.slug)
   end
 
-  test 'find_current_intervention : fille déjà terminée → nil' do
+  test "l'intervention fille déjà terminée n'est pas retrouvée" do
     mère = interventions(:intervention_repete)
     agent = users(:martin_technique_paris)
     fille = mère.create_next_intervention(mère, agent)
@@ -497,7 +479,7 @@ class UserTest < ActiveSupport::TestCase
     assert_nil agent.find_current_intervention(mère.slug)
   end
 
-  test 'find_current_intervention : plusieurs filles ouvertes → la plus récemment mise à jour' do
+  test 'entre plusieurs interventions filles ouvertes, la plus récemment mise à jour est retrouvée' do
     mère = interventions(:intervention_repete)
     agent = users(:martin_technique_paris)
     récente = mère.create_next_intervention(mère, agent)
@@ -515,11 +497,11 @@ class UserTest < ActiveSupport::TestCase
              address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35)
   end
 
-  test 'xls_headers : modèle XLS proposé aux utilisateurs → en-têtes figées' do
+  test 'le modèle XLS des utilisateurs a des en-têtes figées' do
     assert_equal %w[Nom Prénom Email Téléphone Service Mémo], User.xls_headers
   end
 
-  test 'generate_random_password : mot de passe engendré → satisfait la politique de complexité' do
+  test 'un mot de passe engendré satisfait la politique de complexité' do
     mot_de_passe = User.generate_random_password
 
     candidat = User.new(nom: 'DURAND', prénom: 'Marie', email: 'marie.durand@example.test',

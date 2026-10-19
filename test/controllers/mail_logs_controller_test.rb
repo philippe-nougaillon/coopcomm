@@ -8,13 +8,13 @@ class MailLogsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:hidalgo)
   end
 
-  test 'index : sans paramètre → la page répond' do
+  test 'la liste des mail logs est affichée avec succès' do
     get mail_logs_url
 
     assert_response :success
   end
 
-  test 'index : filtre destinataire → seulement les envois à ces adresses' do
+  test 'la liste filtrée par destinataire ne retourne que les mail logs envoyés à ces adresses' do
     autre = cree_mail_log(to: 'ailleurs@example.com', subject: 'Autre sujet', message_id: '999')
 
     get mail_logs_url(search: [@mail_log.to, ''])
@@ -23,19 +23,19 @@ class MailLogsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:mail_logs), autre
   end
 
-  test 'index : filtre destinataire insensible à la casse' do
+  test 'le filtre par destinataire est insensible à la casse' do
     get mail_logs_url(search: [@mail_log.to.upcase])
 
     assert_includes assigns(:mail_logs), @mail_log
   end
 
-  test 'index : filtre destinataire entièrement vide → liste non restreinte' do
+  test 'un filtre par destinataire entièrement vide ne restreint pas la liste' do
     get mail_logs_url(search: [''])
 
     assert_includes assigns(:mail_logs), @mail_log
   end
 
-  test 'index : filtre sujet → seulement les envois de ce sujet' do
+  test 'la liste filtrée par sujet ne retourne que les mail logs de ce sujet' do
     autre = cree_mail_log(to: 'ailleurs@example.com', subject: 'Autre sujet', message_id: '999')
 
     get mail_logs_url(search_subject: [@mail_log.subject])
@@ -44,13 +44,13 @@ class MailLogsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:mail_logs), autre
   end
 
-  test 'index : filtre sujet vide → liste non restreinte' do
+  test 'un filtre par sujet vide ne restreint pas la liste' do
     get mail_logs_url(search_subject: [''])
 
     assert_includes assigns(:mail_logs), @mail_log
   end
 
-  test 'index : filtre ko → seulement les envois en échec' do
+  test 'la liste filtrée sur les échecs ne retourne que les mail logs en échec' do
     en_echec = cree_mail_log(to: 'echec@example.com', subject: 'Échec', message_id: '888', statut: false)
 
     get mail_logs_url(ko: '1')
@@ -59,13 +59,13 @@ class MailLogsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:mail_logs), @mail_log
   end
 
-  test 'show : une notification de son organisation → la page répond' do
+  test 'un mail log est affiché avec succès' do
     get mail_log_url(@mail_log)
 
     assert_response :success
   end
 
-  test 'refresh : les deux fournisseurs sont interrogés → retour aux notifications' do
+  test "l'actualisation auprès des deux fournisseurs ramène à la liste des mail logs" do
     FetchMailgunInfos.stub :call, nil do
       FetchTwilioInfos.stub :call, nil do
         get refresh_mail_logs_url
@@ -76,7 +76,7 @@ class MailLogsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/Actualisation réussie/i, flash[:notice].to_s)
   end
 
-  test 'set_mail_log : un slug inconnu redirige sans planter' do
+  test 'un slug de mail log inconnu redirige sans planter' do
     get mail_log_url('slug-inexistant')
 
     assert_redirected_to root_path

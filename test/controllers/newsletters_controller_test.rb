@@ -10,7 +10,7 @@ class NewslettersControllerTest < ActionDispatch::IntegrationTest
     @newsletter = newsletters(:bond)
   end
 
-  test 'destroy : depuis le lien de désinscription → l’inscription est supprimée' do
+  test 'une inscription est supprimée depuis le lien de désinscription' do
     assert_difference('Newsletter.count', -1) do
       delete newsletter_url(@newsletter)
     end
@@ -18,7 +18,7 @@ class NewslettersControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_url
   end
 
-  test 'set_newsletter : un identifiant inconnu redirige sans planter' do
+  test 'un identifiant d’inscription inconnu redirige sans planter' do
     assert_no_difference('Newsletter.count') do
       delete newsletter_url(id: 0)
     end
@@ -26,7 +26,7 @@ class NewslettersControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
-  test 'new : une adresse inédite → l’inscription est enregistrée' do
+  test 'l’inscription d’une adresse inédite est enregistrée' do
     assert_difference('Newsletter.count') do
       get new_newsletter_url, params: { email: "autre-#{@newsletter.email}" }
     end
@@ -34,7 +34,7 @@ class NewslettersControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test 'new : une adresse déjà connue → signalée sans doublon' do
+  test 'une adresse déjà inscrite est signalée sans créer de doublon' do
     assert_no_difference('Newsletter.count') do
       get new_newsletter_url(email: @newsletter.email)
     end

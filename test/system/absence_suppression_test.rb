@@ -3,7 +3,7 @@ require 'application_system_test_case'
 class AbsenceSuppressionTest < ApplicationSystemTestCase
 
   #TODO : A revoir, devra etre testé pour un manager et pour un agent
-  test 'un manager supprime une absence depuis la modale' do
+  test 'En tant que manager, je veux supprimer une absence depuis la modale' do
     absence = absences(:one)
     login(users(:hidalgo))
     visit user_path(absence.user)

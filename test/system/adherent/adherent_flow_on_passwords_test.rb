@@ -57,7 +57,7 @@ class AdherentFlowOnPasswordsTest < ApplicationSystemTestCase
     assert_field 'user_password', with: ''
   end
 
-  test 'les critères se valident au fil de la saisie et un mot de passe trop faible est refusé' do
+  test "En tant qu'adhérent, je veux voir les critères se valider au fil de la saisie et un mot de passe trop faible refusé" do
     visit lien_du_mail_de_reinitialisation
 
     assert_equal %w[○ ○ ○ ○ ○], pastilles_des_criteres, 'aucun critère ne doit être validé au départ'

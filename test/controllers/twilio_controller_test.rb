@@ -13,7 +13,7 @@ class TwilioControllerTest < ActionDispatch::IntegrationTest
     ENV['TWILIO_AUTH_TOKEN'] = @ancien_token
   end
 
-  test 'should create intervention when sender exists' do
+  test "une intervention est créée lorsque l'expéditeur est un agent connu" do
     assert_difference('Intervention.count', 1) do
       post_signé('From' => @agent.téléphone, 'Body' => "Réparation fuite d'eau")
     end
@@ -33,7 +33,7 @@ class TwilioControllerTest < ActionDispatch::IntegrationTest
     assert_match 'rattaché à aucun service', response.body
   end
 
-  test "un agent à plusieurs services : l'intervention prend le premier dans l'ordre" do
+  test "l'intervention d'un agent à plusieurs services prend le premier service dans l'ordre" do
     @agent.services << services(:informatique)
 
     post_signé('From' => @agent.téléphone, 'Body' => 'Fuite rue des Lilas')
@@ -42,7 +42,7 @@ class TwilioControllerTest < ActionDispatch::IntegrationTest
     assert_equal services(:informatique), @agent.services.ordered.first
   end
 
-  test 'should return error message when sender is unknown' do
+  test "aucune intervention n'est créée lorsque l'expéditeur est inconnu" do
     assert_no_difference 'Intervention.count' do
       post_signé('From' => 'whatsapp:+33000000000', 'Body' => 'Hello')
     end
@@ -51,7 +51,7 @@ class TwilioControllerTest < ActionDispatch::IntegrationTest
     assert_match 'application/xml', response.content_type
   end
 
-  test 'should handle missing params gracefully' do
+  test "un webhook sans paramètre est traité sans planter ni créer d'intervention" do
     assert_no_difference 'Intervention.count' do
       post_signé({})
     end
@@ -60,7 +60,7 @@ class TwilioControllerTest < ActionDispatch::IntegrationTest
     assert_match 'application/xml', response.content_type
   end
 
-  test 'rejette un webhook sans signature' do
+  test 'un webhook sans signature est rejeté' do
     assert_no_difference 'Intervention.count' do
       post twilio_whatsapp_reply_url, params: { 'From' => @agent.téléphone, 'Body' => 'forgé' }
     end
@@ -68,7 +68,7 @@ class TwilioControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
-  test 'rejette un webhook avec une signature invalide' do
+  test 'un webhook avec une signature invalide est rejeté' do
     assert_no_difference 'Intervention.count' do
       post twilio_whatsapp_reply_url,
            params: { 'From' => @agent.téléphone, 'Body' => 'forgé' },

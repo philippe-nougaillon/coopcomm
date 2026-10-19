@@ -7,7 +7,7 @@ require 'test_helper'
 class PiecesJointesFormulairesTest < ActionDispatch::IntegrationTest
   # --- Sentinelle : couvre aussi les formulaires qui n'existent pas encore ----
 
-  test 'aucun champ de pièce jointe hors du partial file_dropzone' do
+  test 'aucun champ de pièce jointe n’est posé hors du partial file_dropzone' do
     partial = Rails.root.join('app/views/shared/_file_dropzone.html.erb').to_s
 
     fautifs = Dir.glob(Rails.root.join('app/views/**/*.erb')).sort.reject { |chemin| chemin == partial }
@@ -23,14 +23,14 @@ class PiecesJointesFormulairesTest < ActionDispatch::IntegrationTest
 
   # --- Alignement réel, page par page ----------------------------------------
 
-  test 'formulaire de convention' do
+  test 'le formulaire de convention passe par la zone de dépôt partagée pour son document' do
     sign_in users(:administrateur_paris)
     get new_convention_url
 
     assert_dropzone Convention, :document
   end
 
-  test 'formulaire d’outil' do
+  test 'le formulaire d’outil passe par la zone de dépôt partagée pour sa photo et son document' do
     sign_in users(:hidalgo)
     get new_tool_url
 
@@ -38,28 +38,28 @@ class PiecesJointesFormulairesTest < ActionDispatch::IntegrationTest
     assert_dropzone Tool, :document
   end
 
-  test 'formulaire de documentation' do
+  test 'le formulaire de documentation passe par la zone de dépôt partagée pour son document' do
     sign_in users(:administrateur_paris)
     get new_documentation_url
 
     assert_dropzone WikiPage, :document
   end
 
-  test 'formulaire d’utilisateur' do
+  test 'le formulaire d’utilisateur passe par la zone de dépôt partagée pour sa photo de profil' do
     sign_in users(:administrateur_paris)
     get edit_user_url(users(:martin_technique_paris))
 
     assert_dropzone User, :profile_picture
   end
 
-  test 'formulaire d’intervention' do
+  test 'le formulaire d’intervention passe par la zone de dépôt partagée pour ses photos de réalisation' do
     sign_in users(:hidalgo)
     get new_intervention_url
 
     assert_dropzone Intervention, :photos, multiple: true
   end
 
-  test 'formulaire d’intervention : Photos pour l/intervention' do
+  test 'le formulaire d’intervention passe par la zone de dépôt partagée pour ses photos de demande' do
     sign_in users(:hidalgo)
     get new_intervention_url
 

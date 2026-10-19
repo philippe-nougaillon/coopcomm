@@ -14,14 +14,4 @@ class Organisation < ApplicationRecord
   has_many :users, -> { distinct }, through: :services
   has_many :messages, -> { distinct }, through: :users
   has_many :interventions, through: :services
-
-  def numero
-    nom.split('_').last
-  end
-
-  def tags
-    # assemblees_tags_ids = self.assemblees.tag_counts_on(:tags).pluck(:id)
-    # users_tags_ids = self.users.tag_counts_on(:tags).pluck(:id)
-    # return ActsAsTaggableOn::Tag.where(id: assemblees_tags_ids).or(ActsAsTaggableOn::Tag.where(id: users_tags_ids)).order(:name)
-  end
 end

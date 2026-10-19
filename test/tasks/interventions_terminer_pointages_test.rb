@@ -15,7 +15,7 @@ class InterventionsTerminerPointagesTaskTest < ActiveJob::TestCase
     @task.reenable
   end
 
-  test 'la task enfile le TerminerPointagesJob' do
+  test 'la tâche met en file la clôture des pointages' do
     assert_enqueued_with(job: TerminerPointagesJob) do
       @task.invoke
     end

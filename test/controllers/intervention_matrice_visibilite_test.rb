@@ -107,7 +107,7 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
 
   ACTEURS.each_key do |nom_acteur|
     InterventionsMatrice::TYPES.each do |type|
-      test "#{nom_acteur} / #{type} : blocs visibles sur la page, état par état" do
+      test "la page d'une intervention de type #{type} montre à #{nom_acteur} les blocs attendus, état par état" do
         sign_in users(ACTEURS[nom_acteur])
 
         InterventionsMatrice::ETATS.each do |etat|
@@ -122,7 +122,7 @@ class InterventionMatriceVisibiliteTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "garde anti-faux-positif : chaque sonde apparaît au moins une fois dans la matrice" do
+  test "chaque sonde apparaît au moins une fois dans la matrice (garde anti-faux-positif)" do
     couvertes = ACTEURS.keys.product(InterventionsMatrice::TYPES, InterventionsMatrice::ETATS)
                        .flat_map { |acteur, type, etat| attendu(acteur, type, etat) }.uniq
 

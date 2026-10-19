@@ -226,7 +226,7 @@
     <% if policy(@convention).destroy? %>
       <button class="btn btn-soft btn-error hover:!text-white" onclick="delete_convention_modal_<%= @convention.id %>.showModal()" title="Supprimer">
         <%= embedded_svg "icons/delete.svg", class: "w-4 h-4 fill-current transition-colors duration-200" %>
-        <span class="hidden lg:inline">Supprimer la convention</span>
+        <span>Supprimer la convention</span>
       </button>
 
       <dialog id="delete_convention_modal_<%= @convention.id %>" class="modal">

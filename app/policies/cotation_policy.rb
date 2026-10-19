@@ -8,7 +8,7 @@ class CotationPolicy < ApplicationPolicy
   end
 
   def index?
-    user&.manager_or_admin? || adhérent?
+    user&.manager_or_admin?
   end
 
   # Ouverture du formulaire (niveau classe) : tout manager/admin.

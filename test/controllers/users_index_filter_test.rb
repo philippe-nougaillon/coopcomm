@@ -12,7 +12,7 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
     @temoin = users(:john_wick)
   end
 
-  test 'admin : premier affichage → pré-filtré sur ses services (témoin masqué)' do
+  test 'la liste des utilisateurs est pré-filtrée sur les services de l’administrateur au premier affichage (témoin masqué)' do
     get users_url # aucun paramètre soumis
 
     assert_response :success
@@ -20,7 +20,7 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
                   'par défaut, un utilisateur hors des services de l\'admin ne doit pas apparaître'
   end
 
-  test 'admin : filtre vidé (services[] soumis vide) → tous les utilisateurs de l\'organisation' do
+  test 'un administrateur qui vide le filtre des services voit tous les utilisateurs de l’organisation' do
     # L'index /users pagine (10/page) : on cible la recherche sur le témoin pour un
     # résultat déterministe, indépendant de la page.
     get users_url, params: { services: [''], search: @temoin.nom }
@@ -32,7 +32,7 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
                   'filtre vidé → aucun service présélectionné'
   end
 
-  test 'admin : sans vider le filtre, un utilisateur hors de ses services reste masqué' do
+  test 'un utilisateur hors des services de l’administrateur reste masqué tant que le filtre n’est pas vidé' do
     # services non soumis → défaut = ses services présélectionnés. Même avec une
     # recherche ciblée, john_wick (comptabilite) reste hors périmètre.
     get users_url, params: { search: @temoin.nom }
@@ -42,14 +42,14 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
                   'par défaut (services présélectionnés), un utilisateur hors de ses services ne doit pas apparaître'
   end
 
-  test 'admin : choix explicite d\'un service → seulement ses utilisateurs' do
+  test 'un administrateur qui choisit explicitement un service voit les utilisateurs de ce service' do
     get users_url, params: { services: [services(:comptabilite).id] }
 
     assert_response :success
     assert_select 'a[href=?]', user_path(@temoin), { minimum: 1 } # john_wick est dans comptabilite
   end
 
-  test 'admin : tous les services sélectionnés → tous les utilisateurs de l\'organisation' do
+  test 'un administrateur qui sélectionne tous les services voit tous les utilisateurs de l’organisation' do
     tous = organisations(:mairie_paris).services.ids
 
     get users_url, params: { services: tous, search: @temoin.nom }
@@ -61,7 +61,7 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
 
   # Un administrateur peut créer un compte dans n'importe quel service de son
   # organisation : ce compte doit être atteignable depuis l'index.
-  test 'admin : un compte créé dans un service qui n\'est pas le sien est retrouvable' do
+  test 'un compte créé dans un service hors de ceux de l’administrateur est retrouvable dans la liste' do
     créé = User.create!(nom: 'Neuf', prénom: 'Venu', email: 'neuf.venu@example.test',
                         rôle: 'agent', password: 'qtDug$d843sqACz?V',
                         service_ids: [services(:comptabilite).id])
@@ -72,7 +72,7 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
     assert_select 'a[href=?]', user_path(créé), { minimum: 1 }
   end
 
-  test 'le formulaire /users fournit le champ caché services[] (permet de vider le filtre)' do
+  test 'le filtre des services de la liste porte un champ caché services[] qui permet de le vider' do
     get users_url
 
     assert_response :success
@@ -82,7 +82,7 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
 
   # --- Manager : filtre vide par défaut (pas de présélection) -----------------
 
-  test 'manager : premier affichage → aucun service présélectionné (filtre vide)' do
+  test 'aucun service n’est présélectionné pour un manager au premier affichage de la liste' do
     sign_in users(:hidalgo) # manager, 3 services
 
     get users_url
@@ -92,7 +92,7 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
                   'un manager ne doit avoir aucun service présélectionné par défaut'
   end
 
-  test 'manager mono-service : le filtre services est masqué' do
+  test 'le filtre des services est masqué pour un manager mono-service' do
     sign_in users(:manager_marseille) # un seul service
 
     get users_url
@@ -105,7 +105,7 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
   # --- Filtre Mots clés ---
   # bond est dans technique, donc dans le périmètre par défaut de administrateur_paris.
 
-  test 'le filtre user_tag ne garde que les utilisateurs porteurs du mot clé' do
+  test 'le filtre par mot clé ne garde que les utilisateurs porteurs du mot clé' do
     porteur = users(:bond)
     porteur.update!(tag_list: 'secteur-nord')
 
@@ -124,7 +124,7 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'index : le filtre par mot clé ne franchit pas la frontière d’organisation (critique)' do
+  test 'le filtre par mot clé ne franchit pas la frontière d’organisation (critique)' do
     paris = users(:bond)
     marseille = users(:nettoyeur_marseille)
     paris.update!(tag_list: 'commun')
@@ -137,7 +137,7 @@ class UsersIndexFilterTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:users).map(&:id), marseille.id
   end
 
-  test 'index : la liste des mots clés proposée est bornée à l’organisation (critique)' do
+  test 'la liste des mots clés proposée est bornée à l’organisation (critique)' do
     users(:nettoyeur_marseille).update!(tag_list: 'secret-marseille')
     users(:bond).update!(tag_list: 'secteur-nord')
 

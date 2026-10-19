@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class HistoriqueDesExportsTest < ActionDispatch::IntegrationTest
-  test "l'export du tableau de bord au format xls figure aussitôt dans l'historique des exports" do
+  test "En tant qu'administrateur, je veux voir mon export xls du tableau de bord figurer aussitôt dans l'historique des exports" do
     sign_in users(:administrateur_paris)
 
     get dashboard_url(format: :xls)

@@ -7,14 +7,14 @@ class CreateCommandeFromCotationTest < ActiveSupport::TestCase
     @cotation = cotations(:cotation_paris)
   end
 
-  test 'retourne une commande non sauvegardée' do
+  test 'la commande construite n’est pas encore sauvegardée' do
     commande = CreateCommandeFromCotation.new(@cotation).call
 
     assert_instance_of Commande, commande
     assert commande.new_record?
   end
 
-  test 'recopie les attributs de la cotation' do
+  test 'la commande construite recopie les attributs de la cotation' do
     @cotation.update!(mémo: 'Accès par la cour', date_livraison_souhaitée: Date.new(2026, 9, 1))
 
     commande = CreateCommandeFromCotation.new(@cotation).call
@@ -26,7 +26,7 @@ class CreateCommandeFromCotationTest < ActiveSupport::TestCase
     assert_equal @cotation.date_livraison_souhaitée, commande.date_livraison_souhaitée
   end
 
-  test 'construit une ligne de commande par ligne de cotation' do
+  test 'la commande construite recopie chaque ligne de la cotation' do
     commande = CreateCommandeFromCotation.new(@cotation).call
 
     assert_equal @cotation.cotation_lignes.size, commande.commande_lignes.size
@@ -58,7 +58,7 @@ class CreateCommandeFromCotationTest < ActiveSupport::TestCase
     assert_predicate commande, :créé?
   end
 
-  test 'expose une interface de service via ApplicationService.call' do
+  test 'une commande se construit aussi par un appel de classe' do
     commande = CreateCommandeFromCotation.call(@cotation)
 
     assert_instance_of Commande, commande

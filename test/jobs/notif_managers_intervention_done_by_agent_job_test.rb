@@ -12,7 +12,7 @@ class NotifManagersInterventionDoneByAgentJobTest < ActiveJob::TestCase
     @managers = @intervention.service.managers_and_admin.to_a
   end
 
-  test 'envoie un mail à chaque manager du service de l\'intervention (un MailLog par mail)' do
+  test "chaque manager du service de l'intervention reçoit un mail, avec un mail log par mail, lorsqu'un agent la termine" do
     assert_equal 2, @managers.size, 'pré-condition : 2 managers attendus sur le service technique'
 
     assert_emails @managers.size do
@@ -48,7 +48,7 @@ class NotifManagersInterventionDoneByAgentJobTest < ActiveJob::TestCase
     assert_not_includes destinataires, users(:administrateur_paris).email
   end
 
-  test "un service sans manager ne déclenche aucune notification" do
+  test "aucun mail n'est envoyé lorsque le service de l'intervention n'a pas de manager" do
     @intervention.update_columns(service_id: services(:menage).id)
     @intervention.reload
     assert_empty @intervention.service.managers_and_admin

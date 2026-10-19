@@ -34,7 +34,7 @@ class AdherentFlowOnInvitationsTest < ApplicationSystemTestCase
     assert @adherent.reload.invitation_accepted_at, "l'invitation n'a pas été acceptée"
   end
 
-  test "En tant qu'adhérent invité, je ne peux pas enregistrer avec un mot de passe inccorect" do
+  test "En tant qu'adhérent invité, je ne peux pas enregistrer avec un mot de passe incorrect" do
     visit lien_du_mail_d_invitation
 
     fill_in 'user_password', with: 'abcd'

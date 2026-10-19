@@ -18,6 +18,8 @@ class Absence < ApplicationRecord
 
   MOTIF_LABELS = motifs.keys.index_with(&:humanize).freeze
 
+  validates :du, :au, presence: true
+
   validate :dates_must_make_sense
   validate :no_overlapping_absences
   validate :no_overlapping_interventions

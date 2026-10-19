@@ -41,7 +41,7 @@ class InterventionConflitAgentMatrixTest < ActiveSupport::TestCase
 
   COMBOS.each do |combo_label, type_existante, type_nouvelle|
     TOPOLOGIES.each do |topo_label, debut_new, fin_new, conflit_attendu|
-      test "#{combo_label} — #{topo_label}" do
+      test "avec des dates #{combo_label}, la détection de conflit d’agent #{conflit_attendu ? 'bloque' : 'accepte'} la topologie « #{topo_label} »" do
         creer_existante(type_existante)
         nouvelle = construire_nouvelle(type_nouvelle, debut_new, fin_new)
 

@@ -34,8 +34,8 @@
         <% end %>
         <%= f.select :catégorie, options_for_select(%w[A B C] | Array(catégorie), catégorie),
           { include_blank: true },
-          class: 'slim-select w-full h-10',
-          data: { addable: true } %>
+          class: 'w-full h-10',
+          data: { controller: 'slim-select', addable: true } %>
       </div>
       <div class="flex flex-col gap-1">
         <%= f.label :sous_catégorie, class: "label font-semibold text-slate-700"  do %>
@@ -49,8 +49,8 @@
         <% end %>
         <%= f.select :unité, options_for_select(['Heure(s)', 'Forfait', 'Jour'] | Array(unité), unité),
              { required: true },
-            class: 'slim-select w-full h-10',
-            data: { addable: true } %>
+            class: 'w-full h-10',
+            data: { controller: 'slim-select', addable: true } %>
       </div>
       <div class="flex flex-col gap-1">
         <%= f.label :tarif, class: "label font-semibold text-slate-700"  do %>
@@ -78,10 +78,16 @@
         <%= f.text_area :description, rows: 3, class: "textarea textarea-bordered w-full" %>
       </div>
     </div>
-    <div class="flex flex-col sm:flex-row gap-2 mt-4 w-full">
-      <%= button_tag "Annuler", type: "button", onclick: "history.back();", class: "btn w-full sm:flex-1" %>
-      <%= f.submit "Enregistrer",   class: "btn btn-primary text-white font-bold w-full sm:flex-1 order-1 sm:order-2 shadow-md hover:shadow-lg transition-all" %>
-  </div>
+    
+
+  <div class="flex flex-row gap-3 mt-4 pt-4">
+      <%= button_tag "Annuler", type: "button", onclick: "history.back();",
+            class: "btn w-1/3 sm:w-1/4 shrink-0" %>
+
+      <%= f.submit "Enregistrer", 
+            class: "btn btn-primary text-white font-bold flex-1 shadow-md hover:shadow-lg transition-all" %>
+    </div>
+
   <% end %>
   <div class="pt-6 max-w-3xl mx-auto ">
     <%= link_to admin_parametres_path(tab: params[:tab] || 'prestations'), class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>

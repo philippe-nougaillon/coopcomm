@@ -22,14 +22,14 @@ class ConventionsTest < ApplicationSystemTestCase
     Rails.root.join('test/fixtures/files/responseMeteoConcept.json').to_s
   end
 
-  test "la zone de dépôt s'affiche sur le formulaire" do
+  test "En tant qu'administrateur, je veux voir la zone de dépôt sur le formulaire de convention" do
     visit new_convention_path
 
     assert_selector "[data-controller='dropzone']"
     assert_text 'Glissez un document (PDF, Word, Excel, photo) ici ou cliquez pour parcourir'
   end
 
-  test 'déposer un fichier au mauvais format affiche une erreur et ne retient pas le fichier' do
+  test "En tant qu'administrateur, je veux qu'un fichier au mauvais format soit signalé en erreur et ne soit pas retenu" do
     visit new_convention_path
 
     attach_file 'convention_document', fichier_refusé_path, make_visible: true
@@ -41,7 +41,7 @@ class ConventionsTest < ApplicationSystemTestCase
     assert_no_text 'responseMeteoConcept.json'
   end
 
-  test 'survoler la zone avec un fichier annonce visuellement le dépôt' do
+  test "En tant qu'administrateur, je veux voir la zone de dépôt réagir quand je la survole avec un fichier" do
     visit new_convention_path
 
     survoler_avec_un_fichier
@@ -57,14 +57,14 @@ class ConventionsTest < ApplicationSystemTestCase
     assert_text 'Glissez un document (PDF, Word, Excel, photo) ici ou cliquez pour parcourir'
   end
 
-  test 'la zone annonce les formats acceptés et la taille maximale' do
+  test "En tant qu'administrateur, je veux lire les formats acceptés et la taille maximale sur la zone de dépôt" do
     visit new_convention_path
 
     assert_text 'Formats acceptés : PDF, DOC, DOCX'
     assert_text '20 Mo maximum par fichier'
   end
 
-  test 'un fichier de plus de 20 Mo est refusé sans être envoyé' do
+  test "En tant qu'administrateur, je veux qu'un fichier de plus de 20 Mo soit refusé sans être envoyé" do
     visit new_convention_path
 
     attach_file 'convention_document', fichier_volumineux('.pdf', 21.megabytes), make_visible: true
@@ -75,7 +75,7 @@ class ConventionsTest < ApplicationSystemTestCase
     assert_equal 0, evaluate_script("document.querySelector('#convention_document').files.length")
   end
 
-  test "un fichier refusé bloque l'enregistrement de la convention" do
+  test "En tant qu'administrateur, je ne peux pas enregistrer une convention tant que le fichier déposé est refusé" do
     visit new_convention_path
     remplir_convention
 
@@ -96,7 +96,7 @@ class ConventionsTest < ApplicationSystemTestCase
     assert_equal 'exemple.pdf', users(:patrick_adherent_paris).conventions.last.document.filename.to_s
   end
 
-  test 'déposer la photo du document signé est accepté' do
+  test "En tant qu'administrateur, je veux déposer la photo du document signé" do
     visit new_convention_path
 
     attach_file 'convention_document', image_path, make_visible: true
@@ -105,7 +105,7 @@ class ConventionsTest < ApplicationSystemTestCase
     assert_selector "[data-controller='dropzone'][data-dropzone-state='success']"
   end
 
-  test "déposer un PDF affiche son nom et l'enregistre" do
+  test "En tant qu'administrateur, je veux déposer un PDF, voir son nom et l'enregistrer avec la convention" do
     visit new_convention_path
 
     attach_file 'convention_document', pdf_path, make_visible: true
@@ -128,7 +128,7 @@ class ConventionsTest < ApplicationSystemTestCase
     assert_equal 'exemple.pdf', créée.document.filename.to_s
   end
 
-  test "déposer un PDF après une erreur efface le message d'erreur" do
+  test "En tant qu'administrateur, je veux que le message d'erreur disparaisse quand je dépose un PDF après un fichier refusé" do
     visit new_convention_path
 
     attach_file 'convention_document', fichier_refusé_path, make_visible: true
@@ -145,7 +145,7 @@ class ConventionsTest < ApplicationSystemTestCase
 
   # --- Liste de services dépendante de l'adhérent (controller dynamic-select) ---
 
-  test "le choix de l'adhérent peuple dynamiquement la liste des services" do
+  test "En tant qu'administrateur, je veux voir la liste des services se remplir selon l'adhérent choisi" do
     visit new_convention_path
 
     # patrick est rattaché au seul service Service_Paris, sans convention

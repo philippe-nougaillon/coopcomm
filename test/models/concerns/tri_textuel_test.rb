@@ -7,14 +7,14 @@ class TriTextuelTest < ActiveSupport::TestCase
     @organisation = organisations(:mairie_paris)
   end
 
-  test 'expression : accents et majuscules → ignorés dans la clé de tri' do
+  test 'les accents et les majuscules sont ignorés dans la clé de tri' do
     clé = ->(mot) { ActiveRecord::Base.connection.select_value("SELECT #{TriTextuel.expression("'#{mot}'")}") }
 
     assert_equal clé.call('École'), clé.call('ecole')
     assert_equal clé.call('ÉTUVE'), clé.call('étuve')
   end
 
-  test 'scope ordered : nom accentué → rangé à sa place alphabétique' do
+  test 'un nom accentué est rangé à sa place alphabétique' do
     %w[Zoo Élan Duval].each { |nom| @organisation.services.create!(nom: nom) }
 
     rangés = @organisation.services.ordered.pluck(:nom)
@@ -22,7 +22,7 @@ class TriTextuelTest < ActiveSupport::TestCase
     assert_equal %w[Duval Élan Zoo], rangés & %w[Duval Élan Zoo]
   end
 
-  test 'scope ordered : homonymes → départagés par le prénom' do
+  test 'les homonymes sont départagés par le prénom' do
     %w[Zoé Amélie].each do |prénom|
       User.create!(nom: 'Dupont', prénom: prénom, email: "#{prénom.parameterize}@aikku.eu",
                    password: 'Motdepasse1!', rôle: :adhérent, address: 'Paris',
@@ -34,11 +34,11 @@ class TriTextuelTest < ActiveSupport::TestCase
     assert_equal %w[Amélie Zoé], dupont
   end
 
-  test 'scope ordered : prestations à code égal → départagées par le libellé' do
+  test 'les prestations à code égal sont départagées par le libellé' do
     assert_equal Prestation.ordered.to_sql, Prestation.order(Prestation.tri_texte(:code, :libellé)).to_sql
   end
 
-  test 'expression : colonne qualifiée par sa table → tri non ambigu sous jointure' do
+  test 'la colonne de tri est qualifiée par sa table pour rester non ambiguë sous jointure' do
     assert_includes Service.tri_texte(:nom), '"services"."nom"'
   end
 end

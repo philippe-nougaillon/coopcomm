@@ -9,26 +9,26 @@ class ExportToXlsBaseTest < ActiveSupport::TestCase
     @base = ExportToXls::Base.new
   end
 
-  test 'add_worksheet crée la feuille et renvoie le service pour le chaînage' do
+  test 'ajouter une feuille la crée sous son nom et rend l’export pour le chaînage' do
     retour = @base.add_worksheet('Liste des agents')
 
     assert_same @base, retour
     assert_equal ['Liste des agents'], lire_fichier_xls(@base.build_file).worksheets.map(&:name)
   end
 
-  test 'deux appels à add_worksheet créent deux feuilles dans l’ordre' do
+  test 'deux feuilles ajoutées sont créées dans l’ordre' do
     @base.add_worksheet('Première').add_worksheet('Seconde')
 
     assert_equal %w[Première Seconde], lire_fichier_xls(@base.build_file).worksheets.map(&:name)
   end
 
-  test 'add_headers écrit les en-têtes sur la première ligne' do
+  test 'les en-têtes sont écrits sur la première ligne' do
     @base.add_worksheet('Feuille').add_headers(%w[Nom Prénom Email])
 
     assert_equal %w[Nom Prénom Email], premiere_feuille(@base).row(0).to_a
   end
 
-  test 'setup_data écrit une ligne par donnée, sous l’en-tête' do
+  test 'chaque donnée occupe une ligne, sous l’en-tête' do
     @base.add_worksheet('Feuille').add_headers(%w[Nom Prénom])
     @base.setup_data([%w[Weil Ariel], %w[Bond James], %w[Martin Michel]])
 
@@ -37,21 +37,21 @@ class ExportToXlsBaseTest < ActiveSupport::TestCase
     assert_equal %w[Martin Michel], premiere_feuille(@base).row(3).to_a
   end
 
-  test 'setup_data sans donnée laisse le classeur à sa seule ligne d’en-tête' do
+  test 'sans donnée, le classeur est réduit à sa ligne d’en-tête' do
     @base.add_worksheet('Feuille').add_headers(%w[Nom Prénom])
     @base.setup_data([])
 
     assert_equal 1, premiere_feuille(@base).rows.count
   end
 
-  test 'setup_data écrit une cellule nulle sans lever' do
+  test 'une donnée nulle est écrite sans lever' do
     @base.add_worksheet('Feuille').add_headers(%w[Nom Téléphone])
     @base.setup_data([['Weil', nil]])
 
     assert_equal ['Weil', nil], premiere_feuille(@base).row(1).to_a
   end
 
-  test 'setup_data ne centre que les valeurs numériques' do
+  test 'seules les valeurs numériques sont centrées' do
     @base.add_worksheet('Feuille').add_headers(['Nom', 'Service', 'Interventions'])
     @base.setup_data([['Weil', 'Informatique', 4]])
 
@@ -61,7 +61,7 @@ class ExportToXlsBaseTest < ActiveSupport::TestCase
     assert_not_equal :center, ligne.format(1).horizontal_align
   end
 
-  test 'build_file renvoie un binaire relu par Spreadsheet' do
+  test 'le classeur construit est un binaire relu comme un fichier XLS' do
     @base.add_worksheet('Feuille').add_headers(%w[Nom])
     @base.setup_data([['Weil']])
 
@@ -71,7 +71,7 @@ class ExportToXlsBaseTest < ActiveSupport::TestCase
     assert_equal ['Weil'], lire_fichier_xls(binaire).worksheet(0).row(1).to_a
   end
 
-  test 'build_file appelé deux fois renvoie le même classeur' do
+  test 'construire le classeur deux fois rend le même binaire' do
     @base.add_worksheet('Feuille').add_headers(%w[Nom])
     @base.setup_data([['Weil']])
 

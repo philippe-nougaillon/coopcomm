@@ -11,7 +11,7 @@ class JobsReliabilityTest < ActiveJob::TestCase
   # --- ANGLE 1a : argument SUPPRIMÉ (hard delete) ----------------------------
   # Les jobs reçoivent des objets ActiveRecord sérialisés via GlobalID.
 
-  test 'un argument détruit entre l\'enqueue et l\'exécution lève DeserializationError' do
+  test "un job dont l'argument a été supprimé entre la mise en file et l'exécution échoue à la désérialisation sans envoyer de mail" do
     # Intervention non référencée par des enfants (agent/tool/mouvement) → suppression nette.
     intervention = interventions(:intervention_sans_manager)
     # On fige la charge enqueue-ée (arguments → GlobalID) puis on supprime
@@ -29,7 +29,7 @@ class JobsReliabilityTest < ActiveJob::TestCase
   # --- ANGLE 1b : argument SOFT-DELETED (discard) ----------------------------
   # Piège subtil : User/Commande/Cotation sont *discardables* (default_scope :kept).
 
-  test 'un argument User soft-deleted (discard) N\'est PAS attrapé à la désérialisation (GlobalID ignore default_scope :kept)' do
+  test "un utilisateur désactivé est encore retrouvé à la désérialisation d'un job (GlobalID ignore default_scope :kept)" do
     adherent = users(:weil)
     gid = adherent.to_global_id.to_s
     adherent.discard
@@ -45,7 +45,7 @@ class JobsReliabilityTest < ActiveJob::TestCase
   # --- ANGLE 3 : idempotence / rejeu (retry) ---------------------------------
   # Aucun de ces jobs n'est idempotent : ils n'ont pas de clé de déduplication.
 
-  test 'rejouer un job de notification double ses effets (mail + MailLog)' do
+  test 'un job de notification rejoué envoie un second mail et crée un second mail log' do
     intervention = interventions(:tonte_locaux)
     adherent     = users(:weil)
     user_id      = users(:administrateur_paris).id

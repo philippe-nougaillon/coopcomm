@@ -15,8 +15,8 @@
         <%= label_tag :adhérent_ids, "Adhérents", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
         <%= select_tag :adhérent_ids,
                       options_from_collection_for_select(@adhérents || [], 'id', 'nom_prénom', params[:adhérent_ids]),                       multiple: true,
-                      class: 'slim-select w-full h-10',
-                      data: { placeholder: 'Tous les adhérents',
+                      class: 'w-full h-10',
+                      data: { controller: 'slim-select', placeholder: 'Tous les adhérents',
                               max_values_shown_desktop: 2,
                               max_values_shown_mobile: 2 
                             },
@@ -25,10 +25,10 @@
       <div class="w-full md:flex-1">
         <%= label_tag :service_ids, "Services", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1"  %>
         <%= select_tag :service_ids,
-                      options_from_collection_for_select(@services || [], 'id', 'nom', params[:service_ids]),                       class: 'slim-select w-full h-10',
+                      options_from_collection_for_select(@services || [], 'id', 'nom', params[:service_ids]),
                       multiple: true,
-                      class: 'slim-select w-full h-10',
-                      data: { placeholder: 'Tous les services',
+                      class: 'w-full h-10',
+                      data: { controller: 'slim-select', placeholder: 'Tous les services',
                         max_values_shown_desktop: 2,
                         max_values_shown_mobile: 2 
                       },
@@ -38,7 +38,7 @@
         <%= label_tag :workflow_state, "Statut", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
         <%= select_tag :workflow_state,
                        options_for_select(Facture.workflow_state_humanized, params[:workflow_state]),
-                       include_blank: "Tous", class: "slim-select w-full h-10",
+                       include_blank: "Tous", class: "w-full h-10", data: { controller: "slim-select" },
                        onchange: "this.form.submit()" %>
       </div>
     </div>
