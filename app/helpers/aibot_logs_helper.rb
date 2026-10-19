@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module AibotLogsHelper
-  # ANSI équivalent à la couleur
+  # ANSI équivalent à la couleur en Tailwind
   ANSI_COULEURS = {
     '30' => 'text-slate-500', '31' => 'text-red-400', '32' => 'text-green-400', '33' => 'text-yellow-300',
     '34' => 'text-blue-400', '35' => 'text-fuchsia-400', '36' => 'text-cyan-300', '37' => 'text-slate-100',

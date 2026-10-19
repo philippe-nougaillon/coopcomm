@@ -204,4 +204,15 @@ class NotificationMailer < ApplicationMailer
       }
     end
   end
+
+  def aibbo_request(aibot_log)
+    @aibot_log = aibot_log
+
+    mail(to: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Requête AIBOT').tap do |message|
+      message.mailgun_options = {
+        'tag' => ['requête aibot']
+      }
+    end
+  end
 end

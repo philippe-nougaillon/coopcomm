@@ -27,7 +27,8 @@ class SendRequestToBoxcarsJob < ApplicationJob
     end
 
     if ENV["DEBUG_AIBOT"] == "true"
-      AibotLog.create!(user: user_sender, request_message: request_message, response_message: response_message, succes: succes, log_stream: response_boxcars[:log_stream])
+      aibot_log = AibotLog.create!(user: user_sender, request_message: request_message, response_message: response_message, succes: succes, log_stream: response_boxcars[:log_stream])
+      Events.instance.publish('aibbo.request', payload: { aibot_log_id: aibot_log.id }) if Rails.env.production?
     end
   end
 end

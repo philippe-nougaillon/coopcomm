@@ -40,4 +40,9 @@ class EmailSubscription
     email = Newsletter.find(event[:payload][:newsletter_id]).email
     NotifConfirmEmailNewsletterJob.perform_later(email)
   end
+
+  def on_aibbo_request(event)
+    aibot_log = AibotLog.find(event[:payload][:aibot_log_id])
+    NotifAibboRequestJob.perform_later(aibot_log)
+  end
 end
