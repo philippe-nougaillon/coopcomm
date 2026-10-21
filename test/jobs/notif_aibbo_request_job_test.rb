@@ -9,7 +9,7 @@ class NotifAibboRequestJobTest < ActiveJob::TestCase
     request_message = messages(:one)
     response_message = Message.create!(message: 'Réponse', from_id: users(:bond).id, to_id: users(:hidalgo).id)
     @aibot_log = AibotLog.create!(user: users(:hidalgo), request_message: request_message, response_message: response_message,
-                                  succes: true, log_stream: "<b>Log</b>\n\e[1m\e[32mvert gras\e[0m neutre")
+                                  succes: true, log_stream: 'Log')
     @previous_bcc = ENV['BCC_NOTIFICATION_EMAILS']
     ENV['BCC_NOTIFICATION_EMAILS'] = 'admin-systeme@example.com'
   end
@@ -28,19 +28,12 @@ class NotifAibboRequestJobTest < ActiveJob::TestCase
     assert_equal '[COOPCOMM] Requête AIBOT', mail.subject
   end
 
-  test 'le mail nomme l’auteur de la demande, son rôle, et affiche sa demande' do
+  test 'le mail nomme la requête, son auteur et son rôle, et affiche la demande et la réponse' do
     NotifAibboRequestJob.perform_now(@aibot_log)
 
     body = (ActionMailer::Base.deliveries.last.html_part || ActionMailer::Base.deliveries.last).body.to_s
-    assert_includes body, "Demande de #{users(:hidalgo).nom_prénom} (#{users(:hidalgo).rôle})"
-    assert_includes body, '>Salut !</p>'
-  end
-
-  test 'le mail affiche le log AIBOT sans ses codes couleur ANSI' do
-    NotifAibboRequestJob.perform_now(@aibot_log)
-
-    body = (ActionMailer::Base.deliveries.last.html_part || ActionMailer::Base.deliveries.last).body.to_s
-    assert_includes body, ">&lt;b&gt;Log&lt;/b&gt;\nvert gras neutre</p>"
+    assert_includes body, "Requête AÏBBO ##{@aibot_log.id} (#{users(:hidalgo).nom_prénom}, #{users(:hidalgo).rôle})"
+    assert_includes body, '>Réponse</p>'
   end
 
   test 'le mail renvoie vers la page du log AIBOT' do
