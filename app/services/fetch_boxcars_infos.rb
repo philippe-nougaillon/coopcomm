@@ -55,7 +55,7 @@ class FetchBoxcarsInfos < ApplicationService
   def CONTEXT_ACTIVERECORD
     "
     Date now : #{DateTime.now},
-    Intervention workflow states : #{InterventionForBoxcars.pluck(:workflow_state).uniq}
+    Intervention workflow states : #{Intervention.workflow_spec.state_names}
     "
   end
 
@@ -67,8 +67,7 @@ class FetchBoxcarsInfos < ApplicationService
       - Après avoir trouvé l'information avec l'outil, reformule-la dans ta réponse finale.
       - Tu dois vouvoyer l'utilisateur
 
-    Tu t'appelles AIBOT, l'utilisateur s'appelle #{current_user.nom_prénom}, il a le rôle #{current_user.rôle}.
-    Les attributs de l'utilisateur sont : \n #{current_user.inspect}
+    Tu t'appelles #{User.find(ENV["UUID_AIBOT"]).nom}, l'utilisateur s'appelle #{current_user.nom_prénom}, il a le rôle #{current_user.rôle}.
     "
   end
 
