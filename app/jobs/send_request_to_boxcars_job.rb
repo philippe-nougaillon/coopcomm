@@ -21,7 +21,7 @@ class SendRequestToBoxcarsJob < ApplicationJob
       response_message = Message.create!(message: response_boxcars[:response], from_id: ENV["UUID_AIBOT"], to_id: user_sender.id)
     rescue # Si erreur, cela créé un message d'erreur
       succes = false
-      response_message = Message.create!(message: "Un problème est survenue avec AIBOT, veuillez attendre quelques instants et rééssayez.", from_id: ENV["UUID_AIBOT"], to_id: user_sender.id, created_at: DateTime.now)
+      response_message = Message.create!(message: "Un problème est survenue avec AÏBBO, veuillez attendre quelques instants et rééssayez.", from_id: ENV["UUID_AIBOT"], to_id: user_sender.id, created_at: DateTime.now)
     ensure # Enlève le message d'attente dans tous les cas
       Turbo::StreamsChannel.broadcast_remove_to(stream, target: 'waiting_message')
     end

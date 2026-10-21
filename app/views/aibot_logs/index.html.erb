@@ -1,7 +1,7 @@
 <div class="flex flex-col">
   <div class="flex flex-row justify-between items-center my-4 gap-2">
     <h1 class="text-4xl text-primary font-bold">
-      <%= page_title!('Logs AIBOT') %>
+      <%= page_title!('Logs AÏBBO') %>
     </h1>
     <% if ENV["DEBUG_AIBOT"] == "true" %>
       <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
@@ -16,7 +16,7 @@
     <% end %>
   </div>
   <p class="mb-4">
-    Historique des appels à AIBOT, enregistrés uniquement lorsque le mode debug est actif.
+    Historique des appels à AÏBBO, enregistrés uniquement lorsque le mode debug est actif.
   </p>
 
   <%= form_tag request.path, method: :get, class: "pt-6", data: { turbo_action: "advance" } do %>
