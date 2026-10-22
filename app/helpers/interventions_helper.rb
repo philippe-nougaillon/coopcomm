@@ -120,13 +120,13 @@ module InterventionsHelper
   end
 
   def minutes_proposées(intervention)
-    plage = intervention.template_slug.blank? ? (0..55).step(5) : (0..59)
+    plage = intervention.template_slug.blank? ? (0..59).step(15) : (0..59)
     plage.map { |m| [format('%02d', m), m] }
   end
 
   def minute_présélectionnée(intervention, date)
     return if date.blank?
 
-    intervention.template_slug.blank? ? date.min - date.min % 5 : date.min
+    intervention.template_slug.blank? ? date.min - date.min % 15 : date.min
   end
 end

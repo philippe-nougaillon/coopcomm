@@ -181,10 +181,10 @@ class InterventionsHelperTest < ActionView::TestCase
     assert_equal (0..23).to_a, heures_proposées(@fille).map(&:last)
   end
 
-  test 'une intervention hors pointage ne propose que les minutes de 5 en 5' do
+  test 'une intervention hors pointage ne propose que les minutes de 15 en 15' do
     options = minutes_proposées(interventions(:tonte_locaux))
 
-    assert_equal (0..55).step(5).to_a, options.map(&:last)
+    assert_equal (0..45).step(15).to_a, options.map(&:last)
     assert_equal ['00', 0], options.first
   end
 
@@ -192,8 +192,8 @@ class InterventionsHelperTest < ActionView::TestCase
     assert_equal (0..59).to_a, minutes_proposées(@fille).map(&:last)
   end
 
-  test 'la minute présélectionnée d’une intervention hors pointage est ramenée au cran de 5 minutes inférieur' do
-    assert_equal 25, minute_présélectionnée(interventions(:tonte_locaux), Time.zone.local(2026, 9, 14, 15, 29))
+  test 'la minute présélectionnée d’une intervention hors pointage est ramenée au cran de 15 minutes inférieur' do
+    assert_equal 15, minute_présélectionnée(interventions(:tonte_locaux), Time.zone.local(2026, 9, 14, 15, 29))
   end
 
   test 'la minute présélectionnée d’une fille de pointage est celle du scan' do
