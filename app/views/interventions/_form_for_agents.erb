@@ -113,8 +113,8 @@
                                 required: true %>
             <div class="flex items-center justify-center gap-1 w-full sm:w-auto bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs shrink-0">
               <%= form.select :début_hour, 
-                               options_for_select((0..23).map { |h| [format('%02d', h), h] },
-                                                  params[:début_hour] || intervention.début&.hour ),
+                               options_for_select(heures_proposées(intervention),
+                                                  params[:début_hour] || intervention.début&.hour),
                               { include_blank: '--' },
                               class: "bg-transparent border-none outline-hidden text-sm cursor-pointer",
                               data: { 'calc-temps-passe-target': 'debut_hour',
@@ -123,8 +123,8 @@
                               required: true %>
               <span class="text-slate-400 font-bold">:</span>
               <%= form.select :début_minute, 
-                              options_for_select((0..59).map { |m| [format('%02d', m), m] },
-                                                 params[:début_minute] || intervention.début&.min ),
+                              options_for_select(minutes_proposées(intervention),
+                                                 params[:début_minute] || minute_présélectionnée(intervention, intervention.début)),
                               { include_blank: '--' },
                               class: "bg-transparent border-none outline-hidden text-sm cursor-pointer",
                               data: { 'calc-temps-passe-target': 'debut_minute',
@@ -148,8 +148,8 @@
                                 required: true %>
             <div class="flex items-center justify-center gap-1 w-full sm:w-auto bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs shrink-0">
               <%= form.select :fin_hour, 
-                              options_for_select((0..23).map { |h| [format('%02d', h), h] },
-                              params[:fin_hour] || intervention.fin&.hour ),
+                              options_for_select(heures_proposées(intervention),
+                              params[:fin_hour] || intervention.fin&.hour),
                               { include_blank: '--' },
                               class: "bg-transparent border-none outline-hidden text-sm cursor-pointer",
                               data: { 'calc-temps-passe-target': 'fin_hour',
@@ -158,8 +158,8 @@
                               required: true %>
               <span class="text-slate-400 font-bold">:</span>
               <%= form.select :fin_minute, 
-                              options_for_select((0..59).map { |m| [format('%02d', m), m] },
-                              params[:fin_minute] || intervention.fin&.min ),
+                              options_for_select(minutes_proposées(intervention),
+                              params[:fin_minute] || minute_présélectionnée(intervention, intervention.fin)),
                               { include_blank: '--' },
                               class: "bg-transparent border-none outline-hidden text-sm cursor-pointer",
                               data: { 'calc-temps-passe-target': 'fin_minute',
