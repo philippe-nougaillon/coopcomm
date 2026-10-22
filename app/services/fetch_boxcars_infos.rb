@@ -3,12 +3,7 @@
 # Appel de boxcars pour répondre aux demandes de l'utilisateur via AÏBBO
 class FetchBoxcarsInfos < ApplicationService
   def initialize
-    # Utilisation de AÏKKU AI ou de GPT
-    if ENV.fetch("AI_PROVIDER") == "vllm"
-      engine = Boxcars::Ollama.new(uri_base: self.AIKKU_AI_URI_BASE, model: ENV.fetch("AIBOT_MODEL"))
-    else
-      engine = Boxcars::Openai.new(model: "gpt-4o-mini")
-    end
+    engine = get_engine
 
     # Outils boxcars utilisé pour le train
     boxcars = [Boxcars::ActiveRecord.new(
@@ -36,14 +31,22 @@ class FetchBoxcarsInfos < ApplicationService
   end
 
   def ACTIVERECORD_CONTEXT
-    "
-    Date now : #{DateTime.now},
-    Intervention workflow states : #{Intervention.workflow_spec.state_names}
-    "
+    <<~ACTIVERECORD_CONTEXT
+      Date now : #{DateTime.now}
+      Intervention workflow states : #{Intervention.workflow_spec.state_names}
+    
+      If answering the question requires data that is not in the models and attributes listed above, the ARCode must be only this string:
+      ARCode: "Informations indisponibles"
+      Never answer a different question than the one asked: do not replace the requested data with similar data from another model.
+      
+      Example:
+      Question: Combien de factures ont été émises ce mois-ci ?
+      ARCode: "Informations indisponibles"
+    ACTIVERECORD_CONTEXT
   end
 
   def REQUEST_CONTEXT(user_request, current_user)
-    "
+    <<~REQUEST_CONTEXT
     Question de l'utilisateur: #{user_request}
 
     RÈGLES IMPORTANTES:
@@ -53,10 +56,24 @@ class FetchBoxcarsInfos < ApplicationService
       - Tu dois vouvoyer l'utilisateur
 
     Tu t'appelles #{User.find(ENV["UUID_AIBOT"]).nom}, l'utilisateur s'appelle #{current_user.nom_prénom}, il a le rôle #{current_user.rôle}.
-    "
+    
+    Si tu recois l'observation "Informations indisponibles", tu dois renvoyer anwser avec le message suivant :
+    "Désolé, je ne peux pas répondre. Avez-vous pensé à redémarrer l'ordinateur ;-) ?
+    \\n(AÏBBO est en cours de développement, merci de votre patience)"
+    Sinon, tu dois respecter les RÈGLES IMPORTANTES.
+    REQUEST_CONTEXT
   end
 
   private
+
+  # Utilisation de AÏKKU AI ou de GPT
+  def get_engine
+    if ENV.fetch("AI_PROVIDER") == "vllm"
+      Boxcars::Ollama.new(uri_base: self.AIKKU_AI_URI_BASE, model: ENV.fetch("AIBOT_MODEL"))
+    else
+      Boxcars::Openai.new(model: ENV.fetch("AIBOT_MODEL"))
+    end
+  end
 
   # Configure le chemin vers AÏKKU AI
   def AIKKU_AI_URI_BASE
