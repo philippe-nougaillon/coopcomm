@@ -22,7 +22,7 @@ class FetchBoxcarsInfos < ApplicationService
   end
 
   def call(current_user, request)
-    ENV["ORGANISATION_ID_FOR_BOXCARS"] = current_user.organisation.id.to_s
+    limit_to_organisation(current_user.organisation)
 
     if ENV["DEBUG_AIBOT"] == "true"
       # Création d'un logger pour que boxcars écrivent les logs dessus
@@ -46,6 +46,8 @@ class FetchBoxcarsInfos < ApplicationService
       response = @boxcars_builder.run(request + self.CONTEXT_REQUEST(current_user))
       { response: response }
     end
+  ensure
+    remove_limit_to_organisation
   end
 
   def MODELS
@@ -75,5 +77,15 @@ class FetchBoxcarsInfos < ApplicationService
 
   def AIBOT_URI_BASE
     "http://#{ENV.fetch('AIBOT_HOST')}:#{ENV.fetch('AIBOT_PORT')}/v1"
+  end
+
+  def limit_to_organisation(organisation)
+    ActiveRecord::Base.lease_connection.execute(
+      ActiveRecord::Base.sanitize_sql_array(["SELECT set_config('app.organisation_id', ?, false)", organisation.id.to_s])
+    )
+  end
+
+  def remove_limit_to_organisation
+    ActiveRecord::Base.lease_connection.execute("RESET app.organisation_id")
   end
 end

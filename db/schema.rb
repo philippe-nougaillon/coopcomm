@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_09_17_090000) do
+ActiveRecord::Schema[8.0].define(version: 2026_10_22_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -741,5 +741,34 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_17_090000) do
 
   create_trigger :interventions_refresh_dashboard, sql_definition: <<-SQL
       CREATE TRIGGER interventions_refresh_dashboard AFTER INSERT OR DELETE OR UPDATE OF workflow_state, temps_total, co2, service_id, adherent_id, "début" ON public.interventions FOR EACH STATEMENT EXECUTE FUNCTION refresh_dashboard_views()
+  SQL
+
+  create_view "interventions_for_boxcars", sql_definition: <<-SQL
+      SELECT interventions.id,
+      interventions."début",
+      interventions.fin,
+      interventions.temps_de_pause,
+      interventions.description,
+      interventions.workflow_state,
+      interventions.created_at,
+      interventions.updated_at,
+      interventions.adherent_id,
+      interventions.temps_total,
+      interventions.commentaires,
+      interventions.note,
+      interventions.avis,
+      interventions.slug,
+      interventions.repeter,
+      interventions.template_slug,
+      interventions."début_prévue",
+      interventions."fin_prévue",
+      interventions.meteo,
+      interventions.co2,
+      interventions.trajet,
+      interventions.service_id,
+      interventions.localisation
+     FROM (interventions
+       JOIN services ON ((services.id = interventions.service_id)))
+    WHERE (services.organisation_id = (NULLIF(current_setting('app.organisation_id'::text, true), ''::text))::bigint);
   SQL
 end

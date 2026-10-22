@@ -1,7 +1,7 @@
 require "test_helper"
 
 class FetchBoxcarsInfosTest < ActiveSupport::TestCase
-  VARIABLES_ENV = %w[AI_PROVIDER OPENAI_ACCESS_TOKEN DEBUG_AIBOT ORGANISATION_ID_FOR_BOXCARS].freeze
+  VARIABLES_ENV = %w[AI_PROVIDER OPENAI_ACCESS_TOKEN DEBUG_AIBOT].freeze
 
   setup do
     @env_initial = ENV.to_h.slice(*VARIABLES_ENV)
@@ -43,6 +43,16 @@ class FetchBoxcarsInfosTest < ActiveSupport::TestCase
                                           .pluck(:id)
 
     assert_equal interventions_attendues.sort, interventions_renvoyees_au_llm(utilisateur).sort
+  end
+
+  test "après une question à AÏBBO, la connexion ne donne plus accès aux interventions de l’organisation de l’utilisateur (critique)" do
+    interventions_renvoyees_au_llm(users(:manager_marseille))
+
+    assert_equal 0, InterventionForBoxcars.count
+  end
+
+  test "sans organisation posée sur la connexion, aucune intervention n’est visible par AÏBBO (critique)" do
+    assert_equal 0, InterventionForBoxcars.count
   end
 
   # ==================== /TESTS CRITIQUES ====================

@@ -1,7 +1,11 @@
 # frozen_string_literal: true
 
-class InterventionForBoxcars < Intervention
-  self.table_name = "interventions"
+class InterventionForBoxcars < ApplicationRecord
+  # N'hérite pas du model Intervention car Boxcars n'a pas besoin des callbacks et du trie
+  self.table_name = "interventions_for_boxcars"
+  self.primary_key = "id"
 
-  default_scope -> { joins(:service).where("service.organisation_id": ENV["ORGANISATION_ID_FOR_BOXCARS"])}
+  def readonly?
+    true
+  end
 end
