@@ -64,7 +64,7 @@ class FetchBoxcarsInfosTest < ActiveSupport::TestCase
   # (boxcars réduit un tableau d'un élément à cet élément, et un tableau vide à 0).
   def interventions_renvoyees_au_llm(utilisateur)
     stub_openai_repondant(
-      "Action: AIBOT\nAction Input: Quelles sont les interventions ?",
+      "Action: AÏBBO\nAction Input: Quelles sont les interventions ?",
       "ARCode: InterventionForBoxcars.pluck(:id)",
       "Final Answer: Voici vos interventions."
     )
