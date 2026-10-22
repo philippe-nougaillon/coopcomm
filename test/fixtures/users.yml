@@ -219,3 +219,4 @@ AIBBO:
   id: <%= ENV["UUID_AIBOT"] %>
   nom: AÏBBO
   slug: <%= SecureRandom.uuid %>
+  email: aibbo@gmail.commmmmm
