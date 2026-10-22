@@ -22,38 +22,11 @@ class FetchBoxcarsInfos < ApplicationService
     @boxcars_builder = Boxcars.train.new(boxcars: boxcars, engine: engine)
   end
 
-  def call(current_user, request)
+  def call(current_user, user_request)
     limit_to_organisation(current_user.organisation)
 
-    # Si le debug AÏBBO est activé, on créé un logger
-    if ENV["DEBUG_AIBOT"] == "true"
-      # Création d'un logger pour que Boxcars écrivent les logs dessus
-      # Nécessaire à chaque call pour récupérer les logs juste pour cet appel 
-      log_stream = StringIO.new
-      origin_logger = Boxcars.configuration.logger
-      Boxcars.configuration.logger = ActiveSupport::BroadcastLogger.new(
-        ActiveSupport::TaggedLogging.new(Logger.new(log_stream)).tagged("AÏBBO"), 
-        origin_logger
-      )
-
-      begin
-        # Lance le train Boxcars pour récupérer la réponse
-        response = @boxcars_builder.run(request + self.REQUEST_CONTEXT(current_user))
-        succes = true
-      rescue StandardError => e
-        # Renvoie dans le logger Boxcars l'erreur de l'exception
-        Boxcars.configuration.logger.error(e.full_message)
-        succes = false
-      ensure
-        # Réattribution du logger Boxcars à celui de base
-        Boxcars.configuration.logger = origin_logger
-      end
-
-      { response: response, log_stream: log_stream.string, succes: succes }
-    else
-      response = @boxcars_builder.run(request + self.REQUEST_CONTEXT(current_user))
-      { response: response }
-    end
+    # Lance le train Boxcars pour renvoyer la réponse du LLM
+    { response: @boxcars_builder.run(self.REQUEST_CONTEXT(user_request, current_user)) }
   ensure
     remove_limit_to_organisation
   end
@@ -69,9 +42,11 @@ class FetchBoxcarsInfos < ApplicationService
     "
   end
 
-  def REQUEST_CONTEXT(current_user)
+  def REQUEST_CONTEXT(user_request, current_user)
     "
-    RÈGLES IMPORTANTES :
+    Question de l'utilisateur: #{user_request}
+
+    RÈGLES IMPORTANTES:
       - Tu dois TOUJOURS répondre par une phrase complète et naturelle en français à l'utilisateur.
       - Ne donne jamais un résultat brut (comme un simple chiffre ou une donnée JSON).
       - Après avoir trouvé l'information avec l'outil, reformule-la dans ta réponse finale.
