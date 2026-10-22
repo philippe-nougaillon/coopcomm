@@ -169,4 +169,38 @@ class InterventionsHelperTest < ActionView::TestCase
 
     assert_equal '8 km aller-retour', trajet_texte(@fille, { 'routes_info' => '8 km aller-retour' })
   end
+
+  test 'une intervention hors pointage ne propose que les heures de 5 h à 18 h' do
+    options = heures_proposées(interventions(:tonte_locaux))
+
+    assert_equal (5..18).to_a, options.map(&:last)
+    assert_equal ['05', 5], options.first
+  end
+
+  test 'une fille de pointage propose toutes les heures de la journée' do
+    assert_equal (0..23).to_a, heures_proposées(@fille).map(&:last)
+  end
+
+  test 'une intervention hors pointage ne propose que les minutes de 5 en 5' do
+    options = minutes_proposées(interventions(:tonte_locaux))
+
+    assert_equal (0..55).step(5).to_a, options.map(&:last)
+    assert_equal ['00', 0], options.first
+  end
+
+  test 'une fille de pointage propose chacune des 60 minutes' do
+    assert_equal (0..59).to_a, minutes_proposées(@fille).map(&:last)
+  end
+
+  test 'la minute présélectionnée d’une intervention hors pointage est ramenée au cran de 5 minutes inférieur' do
+    assert_equal 25, minute_présélectionnée(interventions(:tonte_locaux), Time.zone.local(2026, 9, 14, 15, 29))
+  end
+
+  test 'la minute présélectionnée d’une fille de pointage est celle du scan' do
+    assert_equal 29, minute_présélectionnée(@fille, Time.zone.local(2026, 9, 14, 15, 29))
+  end
+
+  test 'aucune minute n’est présélectionnée sans date' do
+    assert_nil minute_présélectionnée(interventions(:tonte_locaux), nil)
+  end
 end

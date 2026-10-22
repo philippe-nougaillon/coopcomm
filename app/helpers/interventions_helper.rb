@@ -110,4 +110,23 @@ module InterventionsHelper
     ETATS_SANS_COMPTE_RENDU.exclude?(intervention.current_state.to_s) ||
       (intervention.nouveau? && terminaison_demandee)
   end
+
+  # --- Heures réelles (début, fin) ---
+
+  # Une fille de pointage garde l'heure exacte du scan.
+  def heures_proposées(intervention)
+    plage = intervention.template_slug.blank? ? (5..18) : (0..23)
+    plage.map { |h| [format('%02d', h), h] }
+  end
+
+  def minutes_proposées(intervention)
+    plage = intervention.template_slug.blank? ? (0..55).step(5) : (0..59)
+    plage.map { |m| [format('%02d', m), m] }
+  end
+
+  def minute_présélectionnée(intervention, date)
+    return if date.blank?
+
+    intervention.template_slug.blank? ? date.min - date.min % 5 : date.min
+  end
 end

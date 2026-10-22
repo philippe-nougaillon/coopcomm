@@ -523,6 +523,46 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "select[name='intervention[agent_ids][]'] option[data-mandatory='true']"
   end
 
+  test 'le formulaire de création borne les heures réelles de 5 h à 18 h et les minutes de 5 en 5' do
+    get new_intervention_url
+
+    assert_equal (5..18).map(&:to_s), valeurs_des_options('début_hour')
+    assert_equal (0..55).step(5).map(&:to_s), valeurs_des_options('début_minute')
+    assert_equal (5..18).map(&:to_s), valeurs_des_options('fin_hour')
+    assert_equal (0..55).step(5).map(&:to_s), valeurs_des_options('fin_minute')
+  end
+
+  test 'le formulaire de création d’un agent borne les heures réelles de 5 h à 18 h et les minutes de 5 en 5' do
+    sign_in users(:martin_technique_paris)
+
+    get new_intervention_url
+
+    assert_equal (5..18).map(&:to_s), valeurs_des_options('début_hour')
+    assert_equal (0..55).step(5).map(&:to_s), valeurs_des_options('début_minute')
+    assert_equal (5..18).map(&:to_s), valeurs_des_options('fin_hour')
+    assert_equal (0..55).step(5).map(&:to_s), valeurs_des_options('fin_minute')
+  end
+
+  test 'le formulaire de création d’un agent présélectionne la fin au cran de 5 minutes inférieur à l’heure courante' do
+    sign_in users(:martin_technique_paris)
+
+    travel_to Time.zone.local(2026, 9, 14, 15, 29) do
+      get new_intervention_url
+    end
+
+    assert_dom "select[name='intervention[fin_hour]'] option[selected][value=?]", '15'
+    assert_dom "select[name='intervention[fin_minute]'] option[selected][value=?]", '25'
+  end
+
+  test 'le formulaire de création ne présélectionne aucune heure réelle' do
+    get new_intervention_url
+
+    %w[début_hour début_minute fin_hour fin_minute].each do |champ|
+      assert_dom "select[name='intervention[#{champ}]'] option:first-child[value='']"
+      assert_dom "select[name='intervention[#{champ}]'] option[selected]", count: 0
+    end
+  end
+
   test 'create : paramètres valides → l’intervention est créée' do
     assert_difference('Intervention.count') do
       post interventions_url, params: {
@@ -932,6 +972,32 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'select#intervention_agent_ids[disabled]', false
+  end
+
+  test "le formulaire de modification d'une fille de pointage propose toutes les heures et toutes les minutes" do
+    agent = users(:martin_technique_paris)
+    sign_in agent
+    modele = interventions(:intervention_repete)
+    get pointer_intervention_url(modele)
+    fille = Intervention.find_by(template_slug: modele.slug)
+
+    get edit_intervention_url(fille)
+
+    assert_equal (0..23).map(&:to_s), valeurs_des_options('début_hour')
+    assert_equal (0..59).map(&:to_s), valeurs_des_options('début_minute')
+    assert_equal (0..23).map(&:to_s), valeurs_des_options('fin_hour')
+    assert_equal (0..59).map(&:to_s), valeurs_des_options('fin_minute')
+  end
+
+  test 'le formulaire de modification d’une intervention hors pointage présélectionne la minute au cran de 5 inférieur' do
+    intervention = interventions(:intervention_paris)
+
+    get edit_intervention_url(intervention)
+
+    assert_response :success
+    assert_equal 26, intervention.début.min, 'garde : la fixture doit commencer à une minute hors du pas de 5'
+    assert_dom "select[name='intervention[début_hour]'] option[selected][value=?]", intervention.début.hour.to_s
+    assert_dom "select[name='intervention[début_minute]'] option[selected][value=?]", '25'
   end
 
   test 'update : paramètres valides → l’intervention est modifiée' do
@@ -2427,5 +2493,10 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     JSON.parse(response.body)
+  end
+
+  # Valeurs des options d'un select du formulaire d'intervention, option vide exclue.
+  def valeurs_des_options(champ)
+    css_select("select[name='intervention[#{champ}]'] option").map { |option| option['value'] }.compact_blank
   end
 end
