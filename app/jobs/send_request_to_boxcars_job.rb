@@ -26,7 +26,7 @@ class SendRequestToBoxcarsJob < ApplicationJob
 
   rescue StandardError => e
     # Si erreur de boxcars ou du message, cela créé un message d'erreur
-    response_message = Message.create!(message: "Un problème est survenue avec AÏBBO, veuillez attendre quelques instants et rééssayez.", from_id: ENV["UUID_AIBOT"], to_id: user_sender.id, created_at: DateTime.now)
+    response_message = Message.create!(message: "Un problème est survenu avec AÏBBO, veuillez attendre quelques instants et rééssayer.", from_id: ENV["UUID_AIBOT"], to_id: user_sender.id, created_at: DateTime.now)
     
     # Et on inscrit l'erreur dans le log de Boxcars avec un succès de la requête à false
     if ENV["DEBUG_AIBOT"] == "true"
@@ -39,7 +39,7 @@ class SendRequestToBoxcarsJob < ApplicationJob
 
     if ENV["DEBUG_AIBOT"] == "true"
       aibot_log = AibotLog.create!(user: user_sender, request_message: request_message, response_message: response_message, succes: success, log_stream: loggerBoxcars.call)
-      
+
       # Envoie du mail sur le log AÏBBO créé
       Events.instance.publish('aibbo.request', payload: { aibot_log_id: aibot_log.id }) if Rails.env.production?
     end

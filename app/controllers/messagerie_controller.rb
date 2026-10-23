@@ -53,7 +53,7 @@ class MessagerieController < ApplicationController
 
     # Message de bienvenue d'aibot pour la première fois
     if @messages.empty? && @destinataire.is_aibot?
-      Message.create(message: "Bonjour #{current_user.nom_prénom}, je m'appelle AIBOT. Comment puis-je vous aider ? \n Vous pouvez me posez des questions comme; 'Combien j'ai d'interventions dans la journée ?' " ,from_id: ENV["UUID_AIBOT"], to_id: current_user.id)
+      Message.create(message: "Bonjour #{current_user.nom_prénom}, je m'appelle AÏBBO. Je suis un outil de requêtage qui permet d'écrire, d'exécuter et d'analyser les requêtes sur votre base de données.\nComment puis-je vous aider ? \n Vous pouvez me poser des questions comme; 'Combien j'ai d'interventions dans la journée ?' ", from_id: ENV["UUID_AIBOT"], to_id: current_user.id)
     end
 
     unread_messages = @messages.select { |n| n.to_id == current_user.id && n.read_at.nil? }
