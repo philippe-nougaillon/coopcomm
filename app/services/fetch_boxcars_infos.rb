@@ -35,13 +35,9 @@ class FetchBoxcarsInfos < ApplicationService
       Date now : #{DateTime.now}
       Intervention workflow states : #{Intervention.workflow_spec.state_names}
     
-      If answering the question requires data that is not in the models and attributes listed above, the ARCode must be only this string:
-      ARCode: "Informations indisponibles"
       Never answer a different question than the one asked: do not replace the requested data with similar data from another model.
       
-      Example:
-      Question: Combien de factures ont été émises ce mois-ci ?
-      ARCode: "Informations indisponibles"
+
     ACTIVERECORD_CONTEXT
   end
 
@@ -56,11 +52,6 @@ class FetchBoxcarsInfos < ApplicationService
       - Tu dois vouvoyer l'utilisateur
 
     Tu t'appelles #{User.find(ENV["UUID_AIBOT"]).nom}, l'utilisateur s'appelle #{current_user.nom_prénom}, il a le rôle #{current_user.rôle}.
-    
-    Si tu recois l'observation "Informations indisponibles", tu dois renvoyer anwser avec le message suivant :
-    "Désolé, je ne peux pas répondre. Avez-vous pensé à redémarrer l'ordinateur ;-) ?
-    \\n(AÏBBO est en cours de développement, merci de votre patience)"
-    Sinon, tu dois respecter les RÈGLES IMPORTANTES.
     REQUEST_CONTEXT
   end
 
