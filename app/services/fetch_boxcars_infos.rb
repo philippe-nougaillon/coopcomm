@@ -34,6 +34,9 @@ class FetchBoxcarsInfos < ApplicationService
     <<~ACTIVERECORD_CONTEXT
       Date now : #{DateTime.now}
       Intervention workflow states : #{Intervention.workflow_spec.state_names}
+      User rôles : #{User.rôles}
+
+      Intervention belongs_to :adherent, class_name: :User, foreign_key: :adherent_id
     
       Never answer a different question than the one asked: do not replace the requested data with similar data from another model.
       
