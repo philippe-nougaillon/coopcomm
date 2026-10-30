@@ -42,8 +42,6 @@
 dump.rdb
 coverage
 
-# Fiche de contexte projet locale (contient le CCTP anonymisé et des détails client)
-.claude/method/fiches/contexte-projet.md
 # Liste locale des tests en échec (bin/rails test:failed)
 /test/failed_tests.rb
 .vscode/settings.json

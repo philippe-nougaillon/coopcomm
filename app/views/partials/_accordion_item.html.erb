@@ -1,0 +1,20 @@
+<% steps = local_assigns.fetch(:steps, []) %>
+
+<details class="group rounded-2xl bg-white border border-slate-200 open:border-[#47b5db] open:shadow-md">
+  <summary class="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-lg font-semibold rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#691E9A]">
+    <%= title %>
+    <span aria-hidden="true" class="text-2xl text-[#691E9A] transition-transform group-open:rotate-45">+</span>
+  </summary>
+
+  <div class="px-5 pb-5 text-slate-700 leading-relaxed">
+    <p><%= body %></p>
+
+    <% if steps.any? %>
+      <ol class="mt-4 list-decimal space-y-1 pl-6">
+        <% steps.each do |step| %>
+          <li><%= step %></li>
+        <% end %>
+      </ol>
+    <% end %>
+  </div>
+</details>
