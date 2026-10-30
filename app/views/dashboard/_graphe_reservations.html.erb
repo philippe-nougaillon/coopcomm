@@ -1,0 +1,55 @@
+<section class="card <%= classes_carte %> min-h-0" data-carte="reservations">
+  <div class="card-body p-2 sm:p-3 gap-2 min-h-0">
+    <div class="flex flex-wrap items-start justify-between gap-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <h2 class="text-lg font-bold uppercase">Outils</h2>
+        <div class="flex items-center px-2 py-1 bg-success/10 rounded-selector shrink-0">
+          <span class="text-success text-xs font-semibold" data-total></span>
+        </div>
+        <span class="hidden" data-periode>
+          <span class="flex items-center gap-1.5 text-xs text-base-content/40">
+            <span class="size-3 rounded-sm border-2 border-aikku-rose-500"></span>Période du tableau de bord
+          </span>
+        </span>
+      </div>
+      <div class="flex flex-wrap items-center justify-end gap-2 max-sm:w-full">
+        <%= link_to 'Grandes cases', dashboard_path(request.query_parameters.to_options.except(:outils)),
+                    class: 'text-primary text-xs font-semibold hover:underline', data: { turbo: false } %>
+        <div class="join" data-granularite>
+          <label class="btn btn-primary btn-outline join-item btn-active text-white!">
+            <input type="radio" name="granularite-reservations" value="semaines" class="hidden" checked>
+            <span class="text-[11px] font-medium">Semaines</span>
+          </label>
+          <label class="btn btn-primary btn-outline join-item">
+            <input type="radio" name="granularite-reservations" value="mois" class="hidden">
+            <span class="text-[11px] font-medium">Mois</span>
+          </label>
+        </div>
+        <%= form_tag dashboard_path, method: :get, class: 'flex-1 sm:flex-none', data: { turbo: false } do %>
+          <% request.query_parameters.except('annee').each do |clé, valeurs| %>
+            <%= safe_join(Array(valeurs).map { |valeur| hidden_field_tag(valeurs.is_a?(Array) ? "#{clé}[]" : clé, valeur, id: nil) }) %>
+          <% end %>
+          <div class="sm:w-28">
+            <%= select_tag :annee, options_for_select(@annees, @annee), onchange: 'this.form.requestSubmit()',
+                class: 'w-full h-10', data: { controller: 'slim-select' } %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+    <div class="flex-1 min-h-0 overflow-x-auto overflow-y-hidden">
+      <div class="w-full h-full flex flex-col justify-end <%= classes_graphe %>" data-graphe data-type="calendrier" data-hauteur="tuile"></div>
+    </div>
+    <dialog class="modal" data-url="<%= dashboard_reservations_du_jour_path %>">
+      <div class="modal-box max-w-4xl">
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 class="text-lg font-bold" data-titre></h3>
+        <div class="mt-4 overflow-x-auto" data-contenu></div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>Fermer</button>
+      </form>
+    </dialog>
+  </div>
+</section>

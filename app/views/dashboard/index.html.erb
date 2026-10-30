@@ -1,0 +1,18 @@
+<% content_for :full_width, true %>
+<%= javascript_include_tag 'apexcharts-6.min', defer: true %>
+<div class="flex flex-col gap-4 px-4 2xl:px-8 py-4 max-lg:pb-24 md:pt-8 lg:pt-20 lg:h-screen">
+  <%= render 'dashboard/en_tete', titre: 'Tableau de bord', chemin: dashboard_path %>
+  <div class="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-2 gap-4 lg:flex-1 lg:min-h-0">
+    <%= render 'dashboard/activite_agents' %>
+    <%= render 'dashboard/graphe_etats_par_mois' %>
+    <% if current_user.adhérent? %>
+      <div class="min-h-0">
+        <%= render 'pages/conventions_block', hauteur_minimale: 'max-lg:min-h-[28rem] lg:min-h-0' %>
+      </div>
+    <% else %>
+      <%= render params[:outils] == 'petites' ? 'dashboard/graphe_reservations' : 'dashboard/graphe_reservations_large' %>
+    <% end %>
+    <%= render 'dashboard/graphe_crm' %>
+  </div>
+</div>
+<%= render 'dashboard/script_dashboard' %>

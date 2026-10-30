@@ -119,34 +119,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_template layout: 'layouts/welcome'
   end
 
-  test 'le tableau de bord est affiché pour un manager' do
-    sign_in users(:hidalgo)
-
-    get dashboard_url
-    assert_response :success
-  end
-
-  test 'le tableau de bord est affiché pour un adhérent' do
-    sign_in users(:weil)
-
-    get dashboard_url
-    assert_response :success
-  end
-
-  test 'le tableau de bord est affiché pour un manager sans intervention' do
-    sign_in users(:michael_jackson)
-
-    get dashboard_url
-    assert_response :success
-  end
-
-  test 'le tableau de bord est affiché pour un adhérent sans intervention' do
-    sign_in users(:emmanuel_valls)
-
-    get dashboard_url
-    assert_response :success
-  end
-
   test 'les pages solution, tarifs et contact sont affichées sans être connecté' do
     %i[solution_url tarifs_url contact_url].each do |route|
       get send(route)
@@ -260,6 +232,98 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
       assert_select "input[type=hidden][name=terminer][value=?]", '1'
     end
     assert_select "form[action=?]", terminer_intervention_path(intervention), count: 0
+  end
+
+  # ==================== TESTS CRITIQUES ====================
+  # Les conventions de la page d'accueil suivent la visibilité de leur liste : les services du manager,
+  # l'organisation de l'administrateur, les siennes pour l'adhérent — jamais celles d'une autre organisation.
+  test 'la page d’accueil d’un manager porte les conventions de l’année de ses services, avec leurs heures (critique)' do
+    sign_in users(:hidalgo)
+
+    travel_to Time.zone.local(2026, 10, 26, 12) do
+      get home_url
+    end
+
+    assert_equal [{ service: 'Informatique', adherent: 'Weil Ariel', du: '2026-01-01', au: '2026-12-31',
+                    conventionnees: 100.0, consommees: 0.0, prevues: 0.0 }], assigns(:conventions)
+  end
+
+  test 'la page d’accueil d’un administrateur porte les conventions de l’année de sa seule organisation (critique)' do
+    sign_in users(:administrateur_paris)
+
+    travel_to Time.zone.local(2026, 10, 26, 12) do
+      get home_url
+    end
+
+    assert_equal ['Weil Ariel'], assigns(:conventions).map { |convention| convention[:adherent] }
+  end
+
+  test 'la page d’accueil d’un adhérent porte ses conventions de l’année (critique)' do
+    sign_in users(:weil)
+
+    travel_to Time.zone.local(2026, 10, 26, 12) do
+      get home_url
+    end
+
+    assert_equal ['Weil Ariel'], assigns(:conventions).map { |convention| convention[:adherent] }
+  end
+
+  test 'la page d’accueil d’un adhérent ne porte pas les conventions des autres adhérents (critique)' do
+    sign_in users(:berthout)
+
+    travel_to Time.zone.local(2026, 10, 26, 12) do
+      get home_url
+    end
+
+    assert_empty assigns(:conventions)
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
+  test 'la page d’accueil d’un agent ne porte aucune convention' do
+    sign_in users(:bond)
+
+    get home_url
+
+    assert_nil assigns(:conventions)
+  end
+
+  test 'une convention d’une autre année n’est pas sur la page d’accueil' do
+    sign_in users(:hidalgo)
+
+    travel_to Time.zone.local(2027, 3, 1, 12) do
+      get home_url
+    end
+
+    assert_empty assigns(:conventions)
+  end
+
+  test 'les heures planifiées d’une convention de la page d’accueil sont la durée prévue des interventions pas encore commencées, par agent affecté' do
+    Intervention.create!(adherent: users(:weil), service: services(:informatique), description: 'Audit planifié',
+                         workflow_state: Intervention::NOUVEAU, agents: [users(:hidalgo), users(:administrateur_paris)],
+                         début_prévue: Time.zone.local(2026, 5, 10, 9), fin_prévue: Time.zone.local(2026, 5, 10, 11))
+    sign_in users(:hidalgo)
+
+    travel_to Time.zone.local(2026, 10, 26, 12) do
+      get home_url
+    end
+
+    assert_equal 4.0, assigns(:conventions).first[:prevues]
+  end
+
+  test 'les heures planifiées d’une convention de la page d’accueil ignorent les interventions commencées et les modèles de pointage' do
+    Intervention.create!(adherent: users(:weil), service: services(:informatique), description: 'Maintenance du serveur',
+                         workflow_state: Intervention::VALIDE, début: Time.zone.local(2026, 2, 10, 9)).update_columns(temps_total: 6)
+    Intervention.create!(adherent: users(:weil), service: services(:informatique), description: 'Pointage du site', repeter: true,
+                         début_prévue: Time.zone.local(2026, 5, 11, 8), fin_prévue: Time.zone.local(2026, 5, 11, 18))
+    sign_in users(:hidalgo)
+
+    travel_to Time.zone.local(2026, 10, 26, 12) do
+      get home_url
+    end
+
+    assert_equal [{ service: 'Informatique', adherent: 'Weil Ariel', du: '2026-01-01', au: '2026-12-31',
+                    conventionnees: 100.0, consommees: 6.0, prevues: 0.0 }], assigns(:conventions)
   end
 
   test 'la page météo est affichée avec des prévisions' do

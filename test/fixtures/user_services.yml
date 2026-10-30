@@ -124,6 +124,10 @@ adherent_marseille_service_marseille:
   user: adherent_marseille
   service: service_marseille
 
+adherent_nom_long_service_marseille:
+  user: adherent_nom_long
+  service: service_marseille
+
 george_lucas_comptabilite:
   user: george_lucas
   service: comptabilite

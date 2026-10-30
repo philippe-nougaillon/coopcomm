@@ -10,7 +10,6 @@ class AdherentPagesPolicyTest < ActionDispatch::IntegrationTest
   end
 
   test 'accès autorisé pour un adhérent sur les pages sans record' do
-    assert @policy.dashboard?
     assert @policy.home?
     assert @policy.meteo?
     assert @policy.meteo_by_day?

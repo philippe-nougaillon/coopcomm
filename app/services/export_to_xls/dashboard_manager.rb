@@ -5,8 +5,11 @@ module ExportToXls
   class DashboardManager < ExportToXls::Base
     # Ajout de data_workflow_chart en 3ème argument
     def initialize(temps_total_par_adherent, temps_total_par_agent, data_workflow_chart, qte_interventions_par_service,
-                   temps_total_par_service, co2_total_par_mois)
+                   temps_total_par_service, co2_total_par_mois, activite, annee, agents)
       super()
+      @activite = activite
+      @annee = annee
+      @agents = agents
       @temps_total_par_adherent = temps_total_par_adherent
       @temps_total_par_agent = temps_total_par_agent
       @data_workflow_chart = data_workflow_chart
@@ -16,6 +19,19 @@ module ExportToXls
     end
 
     def call
+      # 0. Onglet : Activité de l'année, en tête comme sur le tableau de bord (jours ouvrés, comme lui)
+      add_worksheet("Activité #{@annee}")
+      add_headers(['Jour', 'Interventions', 'Temps total'])
+      setup_data(@activite.sort.filter_map { |jour, (nombre, temps)| [jour, nombre, temps] if Date.parse(jour).on_weekday? })
+
+      # 0 bis. Onglet : Activité des agents, dans l'ordre et le tri du tableau de bord
+      add_worksheet('Activité des agents')
+      add_headers(['Agent', 'Temps total', 'Interventions', 'Validées (%)', 'Note moyenne', 'Avis'])
+      setup_data(@agents.map do |ligne|
+        [ligne[:libellé], ligne[:temps], ligne[:nb],
+         (ligne[:nb].positive? ? (100.0 * ligne[:validees] / ligne[:nb]).round : nil), ligne[:note], ligne[:avis]]
+      end)
+
       # 1. Onglet : Temps total par adhérent
       add_worksheet('Temps par adhérent')
       add_headers(['Adhérent', 'Temps total'])

@@ -12,8 +12,8 @@ class DashboardAgentDesactiveTest < ActionDispatch::IntegrationTest
     sign_in users(:hidalgo)
   end
 
-  test "le nom d'un agent désactivé n'apparaît pas dans le graphique du temps par agent" do
-    get dashboard_url
+  test "le nom d'un agent désactivé n'apparaît pas dans le temps par agent exporté" do
+    get dashboard_url(format: :xls)
 
     assert_not_includes assigns(:temps_total_par_agent).keys, @desactive.nom_prénom
   end
@@ -22,11 +22,11 @@ class DashboardAgentDesactiveTest < ActionDispatch::IntegrationTest
     tonte = interventions(:tonte_locaux)
     part = tonte.temps_total / AgentIntervention.where(intervention_id: tonte.id).count
 
-    get dashboard_url
+    get dashboard_url(format: :xls)
     par_agent = assigns(:temps_total_par_agent)
 
-    assert_includes par_agent.keys, PagesController::LIBELLE_AGENT_DESACTIVE
-    assert_in_delta part, par_agent[PagesController::LIBELLE_AGENT_DESACTIVE], 0.01
+    assert_includes par_agent.keys, DashboardController::LIBELLE_AGENT_DESACTIVE
+    assert_in_delta part, par_agent[DashboardController::LIBELLE_AGENT_DESACTIVE], 0.01
   end
 
   test 'deux agents désactivés ont chacun leur entrée, la seconde numérotée' do
@@ -35,9 +35,9 @@ class DashboardAgentDesactiveTest < ActionDispatch::IntegrationTest
     bond.discard
     refresh_dashboard_views!
 
-    get dashboard_url
+    get dashboard_url(format: :xls)
     par_agent = assigns(:temps_total_par_agent)
-    libellé = PagesController::LIBELLE_AGENT_DESACTIVE
+    libellé = DashboardController::LIBELLE_AGENT_DESACTIVE
 
     assert_includes par_agent.keys, libellé
     assert_includes par_agent.keys, "#{libellé} #2"
@@ -49,18 +49,26 @@ class DashboardAgentDesactiveTest < ActionDispatch::IntegrationTest
     AgentIntervention.where(agent_id: @desactive.id).destroy_all
     refresh_dashboard_views!
 
-    get dashboard_url
+    get dashboard_url(format: :xls)
 
-    assert_not_includes assigns(:temps_total_par_agent).keys, PagesController::LIBELLE_AGENT_DESACTIVE
+    assert_not_includes assigns(:temps_total_par_agent).keys, DashboardController::LIBELLE_AGENT_DESACTIVE
   end
 
   test 'le temps des agents actifs reste inchangé' do
     tonte = interventions(:tonte_locaux)
     part = tonte.temps_total / AgentIntervention.where(intervention_id: tonte.id).count
 
-    get dashboard_url
+    get dashboard_url(format: :xls)
 
     assert_in_delta part, assigns(:temps_total_par_agent)[users(:bond).nom_prénom], 0.01
+  end
+
+  test "un agent désactivé figure dans l'activité des agents sous « Utilisateur désactivé », sans son nom" do
+    get dashboard_url
+    libellés = assigns(:activite_agents)[:lignes].map { |ligne| ligne[:libellé] }
+
+    assert_includes libellés, DashboardController::LIBELLE_AGENT_DESACTIVE
+    assert_not_includes libellés, @desactive.nom_prénom
   end
 
   private

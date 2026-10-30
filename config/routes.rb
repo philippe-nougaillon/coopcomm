@@ -108,13 +108,17 @@ Rails.application.routes.draw do
     get :welcome, to: 'pages#welcome', as: :welcome
     get :assistant, to: 'pages#assistant', as: :assistant
     get :mentions_legales, to: 'pages#mentions_legales', as: :mentions_legales
-    get :dashboard, to: 'pages#dashboard', as: :dashboard
     get :solution, to: 'pages#solution', as: :solution
     get :tarifs, to: 'pages#tarifs', as: :tarifs
     get :contact, to: 'pages#contact', as: :contact
     get :home, to: 'pages#home', as: :home
     get :meteo, to: 'pages#meteo', as: :meteo
     get :meteo_by_day
+  end
+
+  scope :dashboard, controller: :dashboard, as: :dashboard do
+    get '/', action: :index, as: ''
+    get :reservations_du_jour
   end
 
   resources :documents, only: %i[] do

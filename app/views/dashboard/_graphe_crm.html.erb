@@ -1,0 +1,9 @@
+<section class="card <%= classes_carte %> min-h-0" data-carte="crm">
+  <div class="card-body p-2 sm:p-3 gap-2 min-h-0">
+    <div class="flex flex-wrap items-start justify-between gap-2">
+      <h2 class="text-lg font-bold">CRM</h2>
+      <%= filtre_services_graphe('crm', @donnees_graphes[:services]) %>
+    </div>
+    <div class="flex-1 min-h-0 <%= classes_graphe %>" data-graphe data-type="aire" data-hauteur="tuile"></div>
+  </div>
+</section>

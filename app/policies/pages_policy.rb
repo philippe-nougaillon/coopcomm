@@ -11,10 +11,6 @@ class PagesPolicy < ApplicationPolicy
     administrateur?
   end
 
-  def dashboard?
-    user && (manager_or_admin? || user.adhérent?)
-  end
-
   def home?
     user
   end

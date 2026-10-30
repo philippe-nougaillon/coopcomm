@@ -1,0 +1,33 @@
+<% if @mouvements.empty? %>
+  <p class="text-sm text-base-content/50">Aucune réservation.</p>
+<% else %>
+  <table class="table table-sm">
+    <thead class="bg-slate-100">
+      <tr class="font-semibold text-slate-500 uppercase tracking-wider">
+        <th>Jour</th>
+        <th>Outil</th>
+        <th>Réservé par</th>
+        <th>Intervention</th>
+        <th>Réservé le</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @mouvements.each do |mouvement| %>
+        <tr class="hover:bg-base-200/60">
+          <td class="whitespace-nowrap"><%= l(mouvement.date, format: :day) %></td>
+          <td><%= link_to mouvement.tool.name, tool_path(mouvement.tool), class: 'link link-hover font-medium' %></td>
+          <td class="whitespace-nowrap"><%= mouvement.user.nom_prénom %></td>
+          <td>
+            <% if mouvement.intervention %>
+              <%= link_to mouvement.intervention.description, intervention_path(mouvement.intervention), class: 'link link-hover' %>
+              <span class="text-base-content/50 whitespace-nowrap">à <%= mouvement.intervention.effective_début.strftime('%H:%M') %></span>
+            <% else %>
+              <span class="text-base-content/40">journée entière</span>
+            <% end %>
+          </td>
+          <td class="whitespace-nowrap text-base-content/60"><%= l(mouvement.created_at, format: :short) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

@@ -218,6 +218,14 @@ class UserTest < ActiveSupport::TestCase
     assert_not_includes ids, users(:administrateur_paris).id
   end
 
+  test "les intervenants possibles d'un service sont rendus comme enregistrements, administrateur d'un autre service compris (critique)" do
+    intervenants = User.intervenants_pour([services(:technique)])
+
+    assert_includes intervenants, users(:martin_technique_paris)
+    assert_includes intervenants, users(:philippe_super_admin)
+    assert_not_includes intervenants, users(:agent_marseille)
+  end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'les utilisateurs sont triés sans tenir compte des accents ni de la casse' do

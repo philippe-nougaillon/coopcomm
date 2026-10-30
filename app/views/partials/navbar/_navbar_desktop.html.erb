@@ -40,9 +40,9 @@
           </li>
         <% end %>
 
-        <% if policy(:pages).dashboard? %>
+        <% if policy(:dashboard).index? %>
           <li>
-            <%= link_to dashboard_path, class: class_names("h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => params[:action] == 'dashboard'), title: "Dashboard", 'data-turbo': false do %>
+            <%= link_to dashboard_path, class: class_names("h-16 py-0 px-3 flex items-center gap-1 text-secondary hover:border-b-2 border-primary", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => params[:controller] == 'dashboard'), title: "Dashboard", 'data-turbo': false do %>
               <%= embedded_svg "icons/bar_chart.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
             <% end %>
           </li>
@@ -156,9 +156,9 @@
                     <% end %>
                   </li>
                 <% end %>
-                <% if policy(:pages).dashboard? %>
+                <% if policy(:dashboard).index? %>
                   <li>
-                    <%= link_to dashboard_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if params[:action] == 'dashboard'}", 'data-turbo': false do %>
+                    <%= link_to dashboard_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'dashboard'}", 'data-turbo': false do %>
                       <%= embedded_svg "icons/bar_chart.svg", class: "w-5 h-5 fill-current" %> <span>Tableau de bord</span>
                     <% end %>
                   </li>

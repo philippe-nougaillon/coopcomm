@@ -181,7 +181,7 @@ class TrisTest < ActionDispatch::IntegrationTest
       ['CRM adhérent : commandes', AdherentCrmController, 'Commande', users(:weil),
        adherent_crm_path(tab: 'commandes')],
       ['CRM adhérent : factures', AdherentCrmController, 'Facture', users(:weil), adherent_crm_path(tab: 'factures')],
-      ['historique des exports', PagesController, 'ExportLog', users(:hidalgo), dashboard_path]
+      ['activité des agents', DashboardController, 'User', users(:hidalgo), dashboard_path]
     ]
   end
 
