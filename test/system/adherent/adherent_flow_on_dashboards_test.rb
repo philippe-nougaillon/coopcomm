@@ -17,7 +17,7 @@ class AdherentFlowOnDashboardsTest < ApplicationSystemTestCase
                     workflow_state: Facture::VALIDE, total_ht: 120, created_at: Time.zone.local(2026, 3, 1, 9))
     refresh_dashboard_views!
 
-    cliquer_lien_navbar 'Tableau de bord'
+    cliquer_lien_navbar 'Tableaux de bord'
 
     assert_current_path dashboard_path
     assert_selector "section[data-carte='activiteAgents'] [data-etincelle='#{users(:martin_technique_paris).id}'] svg"
@@ -33,7 +33,7 @@ class AdherentFlowOnDashboardsTest < ApplicationSystemTestCase
     intervention_dans(services(:informatique), users(:agent_whatsapp), debut: Time.zone.local(2026, 2, 11, 9))
     refresh_dashboard_views!
 
-    cliquer_lien_navbar 'Tableau de bord'
+    cliquer_lien_navbar 'Tableaux de bord'
     select_option('#service', 'Technique')
 
     assert_current_path(/service%5B%5D=#{services(:technique).id}/)
@@ -48,7 +48,7 @@ class AdherentFlowOnDashboardsTest < ApplicationSystemTestCase
     intervention_dans(services(:technique), users(:bond), debut: Time.zone.local(2023, 3, 15, 9))
     refresh_dashboard_views!
 
-    cliquer_lien_navbar 'Tableau de bord'
+    cliquer_lien_navbar 'Tableaux de bord'
     fill_in 'du', with: Date.new(2023, 1, 1)
     assert_current_path(/du=2023-01-01/)
     fill_in 'au', with: Date.new(2023, 2, 28)
@@ -61,7 +61,7 @@ class AdherentFlowOnDashboardsTest < ApplicationSystemTestCase
   end
 
   test "En tant qu'adhérent, je veux lire mon tableau de bord sans déborder de l'écran d'un téléphone" do
-    cliquer_lien_navbar 'Tableau de bord'
+    cliquer_lien_navbar 'Tableaux de bord'
 
     assert_current_path dashboard_path
     assert_selector "[data-carte='etatsParMois'] [data-graphe] svg"

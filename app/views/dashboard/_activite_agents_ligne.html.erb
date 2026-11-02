@@ -3,7 +3,7 @@
 <% repartition = { 'terminée' => ligne[:terminees], 'validée' => ligne[:validees], 'refusée' => ligne[:refusees], 'archivée' => ligne[:archivees] }
                    .select { |_, nombre| nombre.positive? }.map { |etat, nombre| pluralize(nombre, etat) }.join(' · ') %>
 <% prenom = agent.administrateur? ? 'font-bold bg-aikku-violet-100 rounded-sm px-1 w-fit' : ('font-bold' if agent.manager?) %>
-<tr class="hover:bg-base-100/70 transition-colors duration-150 <%= 'opacity-50' if inactif %>" data-agent="<%= agent.id %>">
+<tr class="hover:bg-base-300 transition-colors duration-150 <%= 'opacity-50' if inactif %>" data-agent="<%= agent.id %>">
   <td>
     <div class="flex items-center gap-2">
       <% if agent.discarded? %>

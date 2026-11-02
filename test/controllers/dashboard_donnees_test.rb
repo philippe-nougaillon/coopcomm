@@ -1,130 +1,22 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require_relative '../support/donnees_dashboard'
 
 class DashboardDonneesTest < ActionDispatch::IntegrationTest
+  include DonneesDashboard
+
   setup do
     travel_to Time.current.change(hour: 12)
   end
 
-  test 'le tableau de bord d’un manager cumule le temps par service' do
-    cree_intervention_avec_temps(8, adherent: users(:weil), service: services(:technique), debut: mois(3))
-    refresh_dashboard_views!
+  test 'les états par mois n’ont de série ni pour les modèles de pointage ni pour les interventions archivées' do
     sign_in users(:hidalgo)
 
-    get dashboard_url(format: :xls)
+    get dashboard_url(du: '2023-01-01', au: '2023-01-31')
 
-    assert_in_delta 17.0, assigns(:temps_total_par_service)['Technique']
-  end
-
-  test 'le tableau de bord d’un manager répartit le temps par agent' do
-    cree_intervention_avec_temps(6, adherent: users(:weil), service: services(:technique),
-                                    debut: mois(3), agent: users(:martin_technique_paris))
-    refresh_dashboard_views!
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls)
-
-    assert_in_delta 6.0, assigns(:temps_total_par_agent)['Martin Michel']
-  end
-
-  test 'le tableau de bord d’un manager cumule le temps par adhérent' do
-    cree_intervention_avec_temps(8, adherent: users(:weil), service: services(:technique), debut: mois(3))
-    refresh_dashboard_views!
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls)
-
-    assert_in_delta 17.0, assigns(:temps_total_par_adherent)['Weil Ariel']
-  end
-
-  test 'les indicateurs d’un manager ne comptent que la période affichée' do
-    cree_intervention_avec_temps(8, adherent: users(:weil), service: services(:technique), debut: Time.zone.local(2023, 1, 15, 9))
-    cree_intervention_avec_temps(5, adherent: users(:weil), service: services(:technique), debut: Time.zone.local(2023, 3, 15, 9))
-    refresh_dashboard_views!
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-02-28')
-
-    assert_in_delta 8.0, assigns(:temps_total_par_service)['Technique']
-  end
-
-  test 'le temps par adhérent d’un manager ne compte que la période affichée' do
-    cree_intervention_avec_temps(8, adherent: users(:weil), service: services(:technique), debut: Time.zone.local(2023, 1, 15, 9))
-    cree_intervention_avec_temps(5, adherent: users(:weil), service: services(:technique), debut: Time.zone.local(2023, 3, 15, 9))
-    refresh_dashboard_views!
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-02-28')
-
-    assert_in_delta 8.0, assigns(:temps_total_par_adherent)['Weil Ariel']
-  end
-
-  test 'le temps par adhérent d’un manager est trié du plus chargé au moins chargé' do
-    cree_intervention_avec_temps(3, adherent: users(:weil), service: services(:technique), debut: Time.zone.local(2023, 1, 15, 9))
-    cree_intervention_avec_temps(6, adherent: users(:berthout), service: services(:technique), debut: Time.zone.local(2023, 1, 16, 9))
-    refresh_dashboard_views!
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-01-31')
-
-    assert_equal [users(:berthout).nom_prénom, 'Weil Ariel'], assigns(:temps_total_par_adherent).keys.first(2)
-  end
-
-  test 'le temps par agent d’un manager ne compte que la période affichée' do
-    cree_intervention_avec_temps(6, adherent: users(:weil), service: services(:technique),
-                                    debut: Time.zone.local(2023, 1, 15, 9), agent: users(:martin_technique_paris))
-    cree_intervention_avec_temps(3, adherent: users(:weil), service: services(:technique),
-                                    debut: Time.zone.local(2023, 3, 15, 9), agent: users(:martin_technique_paris))
-    refresh_dashboard_views!
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-02-28')
-
-    assert_in_delta 6.0, assigns(:temps_total_par_agent)['Martin Michel']
-  end
-
-  test 'le temps par agent d’un manager inclut les managers et administrateurs affectés' do
-    cree_intervention_avec_temps(2, adherent: users(:weil), service: services(:technique),
-                                    debut: Time.zone.local(2023, 1, 15, 9), agent: users(:administrateur_paris))
-    refresh_dashboard_views!
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-01-31')
-
-    assert_in_delta 2.0, assigns(:temps_total_par_agent)[users(:administrateur_paris).nom_prénom]
-  end
-
-  test 'le temps par agent d’un manager inclut un administrateur affecté hors de ses services' do
-    cree_intervention_avec_temps(2, adherent: users(:weil), service: services(:technique),
-                                    debut: Time.zone.local(2023, 1, 15, 9), agent: users(:philippe_super_admin))
-    refresh_dashboard_views!
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-01-31')
-
-    assert_in_delta 2.0, assigns(:temps_total_par_agent)[users(:philippe_super_admin).nom_prénom]
-  end
-
-  test 'le temps par agent d’un manager est trié du plus chargé au moins chargé' do
-    cree_intervention_avec_temps(3, adherent: users(:weil), service: services(:technique),
-                                    debut: Time.zone.local(2023, 1, 15, 9), agent: users(:bond))
-    cree_intervention_avec_temps(6, adherent: users(:weil), service: services(:technique),
-                                    debut: Time.zone.local(2023, 1, 16, 9), agent: users(:martin_technique_paris))
-    refresh_dashboard_views!
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-01-31')
-
-    assert_equal ['Martin Michel', users(:bond).nom_prénom], assigns(:temps_total_par_agent).keys.first(2)
-  end
-
-  test 'le graphe des états par mois n’a de série ni pour les modèles de pointage ni pour les interventions archivées' do
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls)
-
-    assert_equal %w[Nouveau Terminé Validé Refusé], assigns(:data_workflow_chart)[:datasets].map { |serie| serie[:label] }
+    assert_equal [Intervention::NOUVEAU, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE],
+                 assigns(:donnees_graphes)[:etats]['Technique']['2023-01'].keys
   end
 
   test 'une intervention prévue et non commencée compte dans le mois de son début prévu' do
@@ -135,32 +27,6 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
     get dashboard_url(du: '2023-02-01', au: '2023-02-28')
 
     assert_equal 1, assigns(:donnees_graphes)[:etats]['Technique']['2023-02'][Intervention::NOUVEAU]
-  end
-
-  test 'l’empreinte CO₂ d’un manager est arrondie à deux décimales' do
-    intervention = cree_intervention_avec_temps(1, adherent: users(:weil), service: services(:technique),
-                                                   debut: Time.zone.local(2023, 1, 15, 9))
-    intervention.update_columns(co2: 1.2345678)
-    refresh_dashboard_views!
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-01-31')
-
-    assert_in_delta 1.23, assigns(:co2_total_par_mois)['2023-01'], 0.0001
-  end
-
-  test 'l’activité des agents d’un manager lit le temps d’un agent dans la vue, comme le temps par agent exporté' do
-    cree_intervention_avec_temps(6, adherent: users(:weil), service: services(:technique),
-                                    debut: Time.zone.local(2023, 1, 15, 9), agent: users(:martin_technique_paris))
-    cree_intervention_avec_temps(3, adherent: users(:weil), service: services(:technique),
-                                    debut: Time.zone.local(2023, 3, 15, 9), agent: users(:martin_technique_paris))
-    refresh_dashboard_views!
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-02-28')
-
-    assert_in_delta 6.0, ligne_agent(users(:martin_technique_paris))[:temps]
-    assert_in_delta assigns(:temps_total_par_agent)['Martin Michel'], ligne_agent(users(:martin_technique_paris))[:temps]
   end
 
   test 'l’activité des agents compte les pointages, mais ni les modèles de pointage ni les interventions nouvelles' do
@@ -228,12 +94,11 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
     refresh_dashboard_views!
     sign_in users(:hidalgo)
 
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-01-31', agents_service: 'Technique')
+    get dashboard_url(du: '2023-01-01', au: '2023-01-31', agents_service: 'Technique')
 
     assert_equal 'Technique', assigns(:activite_agents)[:service]
     assert_in_delta 6.0, ligne_agent(users(:martin_technique_paris))[:temps]
     assert_nil ligne_agent(users(:agent_whatsapp))
-    assert_in_delta 3.0, assigns(:temps_total_par_agent)[users(:agent_whatsapp).nom_prénom]
   end
 
   test 'un service hors périmètre demandé pour l’activité des agents est ignoré (critique)' do
@@ -259,12 +124,11 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
     refresh_dashboard_views!
     sign_in users(:hidalgo)
 
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-06-30', agents_periode: 3)
+    get dashboard_url(du: '2023-01-01', au: '2023-06-30', agents_periode: 3)
 
     assert_equal %w[2023-04 2023-05 2023-06], assigns(:activite_agents)[:mois]
     assert_equal 3, assigns(:activite_agents)[:periode]
     assert_in_delta 3.0, ligne_agent(users(:martin_technique_paris))[:temps]
-    assert_in_delta 9.0, assigns(:temps_total_par_agent)['Martin Michel']
   end
 
   test 'les derniers mois de l’activité des agents retombent sur la période affichée quand ils ne sont pas proposés' do
@@ -374,55 +238,6 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
     assert_nil assigns(:activite_agents)
   end
 
-  test 'l’activité par jour d’un manager compte les interventions et leur temps, celles d’un jour à venir pesant leur durée prévue par agent' do
-    travel_to Time.zone.local(2022, 3, 15, 12)
-    cree_intervention_avec_temps(6, adherent: users(:weil), service: services(:technique), debut: Time.zone.local(2022, 2, 10, 9))
-    cree_intervention_avec_temps(2, adherent: users(:weil), service: services(:informatique), debut: Time.zone.local(2022, 2, 10, 14))
-    cree_intervention_prevue(Time.zone.local(2022, 2, 1, 9))
-    Intervention.create!(adherent: users(:weil), service: services(:informatique), description: 'Audit planifié',
-                         workflow_state: Intervention::NOUVEAU, agents: [users(:hidalgo), users(:administrateur_paris)],
-                         début_prévue: Time.zone.local(2022, 5, 11, 9), fin_prévue: Time.zone.local(2022, 5, 11, 11))
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls)
-
-    assert_equal({ '2022-02-01' => [1, 0.0], '2022-02-10' => [2, 8.0], '2022-05-11' => [1, 4.0] }, assigns(:donnees_graphes)[:activite])
-  end
-
-  test 'l’activité par jour d’un manager couvre l’année en cours, quelle que soit la période affichée' do
-    travel_to Time.zone.local(2022, 3, 15, 12)
-    cree_intervention_avec_temps(6, adherent: users(:weil), service: services(:technique), debut: Time.zone.local(2022, 2, 10, 9))
-    cree_intervention_avec_temps(4, adherent: users(:weil), service: services(:technique), debut: Time.zone.local(2021, 12, 31, 9))
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-01-31')
-
-    assert_equal({ '2022-02-10' => [1, 6.0] }, assigns(:donnees_graphes)[:activite])
-  end
-
-  test 'l’activité par jour d’un manager ignore les modèles de pointage' do
-    travel_to Time.zone.local(2022, 3, 15, 12)
-    Intervention.create!(adherent: users(:weil), service: services(:informatique), description: 'Pointage du site', repeter: true,
-                         début_prévue: Time.zone.local(2022, 5, 11, 8), fin_prévue: Time.zone.local(2022, 5, 11, 18))
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls)
-
-    assert_empty assigns(:donnees_graphes)[:activite]
-  end
-
-  test 'l’activité par jour d’un manager porte l’année demandée' do
-    travel_to Time.zone.local(2022, 3, 15, 12)
-    cree_intervention_avec_temps(4, adherent: users(:weil), service: services(:technique), debut: Time.zone.local(2021, 12, 31, 9))
-    refresh_dashboard_views!
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls, annee: 2021)
-
-    assert_equal 2021, assigns(:annee)
-    assert_equal({ '2021-12-31' => [1, 4.0] }, assigns(:donnees_graphes)[:activite])
-  end
-
   test 'une année sans statistique est remplacée par l’année en cours' do
     travel_to Time.zone.local(2022, 3, 15, 12)
     sign_in users(:hidalgo)
@@ -446,29 +261,29 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
   # Le filtre par service borne le tableau de bord au périmètre de services de l'utilisateur.
-  test 'le filtre par service restreint les indicateurs d’un manager à ce service (critique)' do
+  test 'le filtre par service restreint les tuiles d’un manager à ce service (critique)' do
     cree_intervention_avec_temps(4, adherent: users(:weil), service: services(:informatique), debut: Time.zone.local(2023, 1, 15, 9))
     cree_intervention_avec_temps(8, adherent: users(:weil), service: services(:technique),
                                     debut: Time.zone.local(2023, 1, 16, 9), agent: users(:bond))
     refresh_dashboard_views!
     sign_in users(:hidalgo)
 
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-01-31', service: [services(:informatique).id])
+    get dashboard_url(du: '2023-01-01', au: '2023-01-31', service: [services(:informatique).id])
 
-    assert_equal({ 'Informatique' => 1 }, assigns(:qte_interventions_par_service))
-    assert_in_delta 4.0, assigns(:temps_total_par_adherent)['Weil Ariel']
-    assert_not_includes assigns(:temps_total_par_agent).keys, users(:bond).nom_prénom
+    assert_equal %w[Informatique], assigns(:donnees_graphes)[:services]
+    assert_equal 1, assigns(:donnees_graphes)[:etats]['Informatique']['2023-01'][Intervention::VALIDE]
+    assert_nil ligne_agent(users(:bond))
   end
 
   test 'un service hors du périmètre d’un manager est ignoré et tout son périmètre reste affiché (critique)' do
     cree_intervention_avec_temps(4, adherent: users(:weil), service: services(:informatique), debut: Time.zone.local(2023, 1, 15, 9))
-    cree_intervention_avec_temps(8, adherent: users(:weil), service: services(:technique), debut: Time.zone.local(2023, 1, 16, 9))
     refresh_dashboard_views!
     sign_in users(:hidalgo)
 
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-01-31', service: [services(:service_marseille).id])
+    get dashboard_url(du: '2023-01-01', au: '2023-01-31', service: [services(:service_marseille).id])
 
-    assert_equal({ 'Informatique' => 1, 'Service_Paris' => 0, 'Technique' => 1 }, assigns(:qte_interventions_par_service))
+    assert_equal %w[Informatique Service_Paris Technique], assigns(:donnees_graphes)[:services]
+    assert_equal 1, assigns(:donnees_graphes)[:etats]['Informatique']['2023-01'][Intervention::VALIDE]
     assert_empty assigns(:selected_service_ids)
   end
 
@@ -489,129 +304,29 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
     assert_equal users(:administrateur_paris).service_ids.sort, assigns(:selected_service_ids).sort
   end
 
-  test 'un service sélectionné sans intervention sur la période apparaît à zéro dans l’export d’un manager (critique)' do
+  test 'un service sélectionné sans intervention sur la période apparaît à zéro dans les tuiles d’un manager (critique)' do
     cree_intervention_avec_temps(4, adherent: users(:weil), service: services(:informatique),
                                     debut: Time.zone.local(2023, 1, 15, 9))
     refresh_dashboard_views!
     sign_in users(:hidalgo)
 
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-01-31',
-                      service: [services(:informatique).id, services(:technique).id])
+    get dashboard_url(du: '2023-01-01', au: '2023-01-31', service: [services(:informatique).id, services(:technique).id])
 
-    assert_equal({ 'Informatique' => 1, 'Technique' => 0 }, assigns(:qte_interventions_par_service))
-    assert_equal %w[Informatique Technique], assigns(:temps_total_par_service).keys
-    assert_equal 0, assigns(:temps_total_par_service)['Technique']
+    assert_equal %w[Informatique Technique], assigns(:donnees_graphes)[:services]
+    assert_equal 0, assigns(:donnees_graphes)[:etats]['Technique']['2023-01'].values.sum
+    assert_equal 0, assigns(:donnees_graphes)[:temps]['Technique']['2023-01']
   end
 
-  test 'le filtre par service restreint l’activité par jour d’un manager à ce service (critique)' do
-    travel_to Time.zone.local(2022, 3, 15, 12)
-    cree_intervention_avec_temps(4, adherent: users(:weil), service: services(:informatique), debut: Time.zone.local(2022, 2, 10, 9))
-    cree_intervention_avec_temps(8, adherent: users(:weil), service: services(:technique), debut: Time.zone.local(2022, 2, 10, 14))
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls, service: [services(:informatique).id])
-
-    assert_equal({ '2022-02-10' => [1, 4.0] }, assigns(:donnees_graphes)[:activite])
-  end
-
-  test 'l’activité par jour d’un manager est bornée à ses services (critique)' do
-    travel_to Time.zone.local(2022, 3, 15, 12)
-    cree_intervention_avec_temps(1, adherent: users(:george_lucas), service: services(:comptabilite), debut: Time.zone.local(2022, 2, 10, 9))
-    sign_in users(:hidalgo)
-
-    get dashboard_url(format: :xls)
-
-    assert_empty assigns(:donnees_graphes)[:activite]
-  end
-
-  # ==================== /TESTS CRITIQUES ====================
-
-  test 'l’export du tableau de bord d’un adhérent porte le temps consommé et le temps restant de son service' do
-    cree_donnees_adherent_informatique
-    sign_in users(:adhérent_sans_intervention)
-
-    get dashboard_url(format: :xls)
-
-    assert_in_delta 6.0, assigns(:proportion_temps_consomme)['temps_consomme']
-    assert_in_delta 94.0, assigns(:proportion_temps_consomme)['temps_restant']
-  end
-
-  test 'le temps total exporté d’un adhérent est celui de son service' do
-    cree_donnees_adherent_informatique
-    sign_in users(:adhérent_sans_intervention)
-
-    get dashboard_url(format: :xls)
-
-    assert_equal '6.0h', assigns(:kpi_temps_total)
-  end
-
-  test 'le temps par service exporté d’un adhérent est celui de son service' do
-    cree_donnees_adherent_informatique
-    sign_in users(:adhérent_sans_intervention)
-
-    get dashboard_url(format: :xls)
-
-    assert_in_delta 6.0, assigns(:temps_total_par_service)['Informatique']
-  end
-
-  test 'le temps par mois exporté d’un adhérent vaut 0 sur un mois sans intervention' do
-    cree_donnees_adherent_informatique
-    sign_in users(:adhérent_sans_intervention)
-
-    get dashboard_url(format: :xls)
-
-    data = assigns(:temps_total_par_mois)
-    assert_in_delta 6.0, data[mois(2).strftime('%Y-%m')]
-    assert_in_delta 0.0, data[mois(1).strftime('%Y-%m')]
-  end
-
-  test 'les indicateurs exportés d’un adhérent ne comptent que la période affichée' do
-    cree_intervention_avec_temps(8, adherent: users(:weil), service: services(:technique), debut: Time.zone.local(2023, 1, 15, 9))
-    cree_intervention_avec_temps(5, adherent: users(:weil), service: services(:technique), debut: Time.zone.local(2023, 3, 15, 9))
-    refresh_dashboard_views!
-    sign_in users(:weil)
-
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-02-28')
-
-    data = assigns(:temps_total_par_mois)
-    assert_equal '8.0h', assigns(:kpi_temps_total)
-    assert_equal %w[2023-01 2023-02], data.keys
-    assert_in_delta 8.0, data['2023-01']
-    assert_in_delta 0.0, data['2023-02']
-  end
-
-  test 'les agents assignés exportés d’un adhérent comptent les intervenants de ses services et les administrateurs de l’organisation' do
-    sign_in users(:weil)
-
-    get dashboard_url(format: :xls)
-
-    assert_equal User.intervenants_pour(users(:weil).services).count, assigns(:kpi_agents_actifs)
-  end
-
-  test 'l’empreinte CO₂ exportée d’un adhérent est arrondie à deux décimales' do
-    intervention = cree_intervention_avec_temps(1, adherent: users(:weil), service: services(:technique),
-                                                   debut: Time.zone.local(2023, 1, 15, 9))
-    intervention.update_columns(co2: 1.2345678)
-    refresh_dashboard_views!
-    sign_in users(:weil)
-
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-01-31')
-
-    assert_equal '1.23 kg', assigns(:kpi_co2_total)
-  end
-
-  # ==================== TESTS CRITIQUES ====================
-  # Le filtre par service borne le tableau de bord au périmètre de services de l'adhérent.
-  test 'le filtre par service restreint les indicateurs exportés d’un adhérent à ce service (critique)' do
+  test 'le filtre par service restreint les tuiles d’un adhérent à ce service (critique)' do
     cree_intervention_avec_temps(4, adherent: users(:weil), service: services(:informatique), debut: Time.zone.local(2023, 1, 15, 9))
     cree_intervention_avec_temps(8, adherent: users(:weil), service: services(:technique), debut: Time.zone.local(2023, 1, 16, 9))
     refresh_dashboard_views!
     sign_in users(:weil)
 
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-01-31', service: [services(:informatique).id])
+    get dashboard_url(du: '2023-01-01', au: '2023-01-31', service: [services(:informatique).id])
 
-    assert_equal({ 'Informatique' => 1 }, assigns(:qte_interventions_par_service))
-    assert_in_delta 4.0, assigns(:proportion_temps_consomme)['temps_consomme']
+    assert_equal %w[Informatique], assigns(:donnees_graphes)[:services]
+    assert_equal 1, assigns(:donnees_graphes)[:etats]['Informatique']['2023-01'][Intervention::VALIDE]
   end
 
   test 'le filtre par service d’un adhérent ne propose que ses services (critique)' do
@@ -622,18 +337,16 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
     assert_equal [services(:informatique), services(:technique)], assigns(:services).to_a
   end
 
-  test 'un service sélectionné sans intervention sur la période apparaît à zéro dans l’export d’un adhérent (critique)' do
+  test 'un service sélectionné sans intervention sur la période apparaît à zéro dans les tuiles d’un adhérent (critique)' do
     cree_intervention_avec_temps(4, adherent: users(:weil), service: services(:informatique),
                                     debut: Time.zone.local(2023, 1, 15, 9))
     refresh_dashboard_views!
     sign_in users(:weil)
 
-    get dashboard_url(format: :xls, du: '2023-01-01', au: '2023-01-31',
-                      service: [services(:informatique).id, services(:technique).id])
+    get dashboard_url(du: '2023-01-01', au: '2023-01-31', service: [services(:informatique).id, services(:technique).id])
 
-    assert_equal({ 'Informatique' => 1, 'Technique' => 0 }, assigns(:qte_interventions_par_service))
-    assert_equal %w[Informatique Technique], assigns(:temps_total_par_service).keys
-    assert_equal 0, assigns(:temps_total_par_service)['Technique']
+    assert_equal %w[Informatique Technique], assigns(:donnees_graphes)[:services]
+    assert_equal 0, assigns(:donnees_graphes)[:etats]['Technique']['2023-01'].values.sum
   end
 
   # ==================== /TESTS CRITIQUES ====================
@@ -653,11 +366,11 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
   test 'la période demandée est étendue aux mois entiers' do
     sign_in users(:hidalgo)
 
-    get dashboard_url(format: :xls, du: '2023-01-10', au: '2023-02-20')
+    get dashboard_url(du: '2023-01-10', au: '2023-02-20')
 
     assert_equal Date.new(2023, 1, 1), assigns(:du)
     assert_equal Date.new(2023, 2, 28), assigns(:au)
-    assert_equal %w[2023-01 2023-02], assigns(:data_workflow_chart)[:labels]
+    assert_equal %w[2023-01 2023-02], assigns(:donnees_graphes)[:mois]
   end
 
   test 'une date illisible est remplacée par la borne par défaut' do
@@ -884,44 +597,5 @@ class DashboardDonneesTest < ActionDispatch::IntegrationTest
     get dashboard_url
 
     assert_nil assigns(:donnees_graphes)[:reservations]
-  end
-
-  private
-
-  def cree_intervention_avec_temps(temps, adherent:, service:, debut:, agent: nil)
-    intervention = Intervention.create!(
-      adherent: adherent,
-      service: service,
-      description: "Intervention de #{temps} h",
-      début: debut,
-      workflow_state: Intervention::VALIDE
-    )
-    intervention.update_columns(temps_total: temps)
-    AgentIntervention.create!(agent: agent, intervention: intervention) if agent
-    intervention
-  end
-
-  def cree_intervention_prevue(debut_prevu)
-    Intervention.create!(adherent: users(:weil), service: services(:technique), description: 'Intervention planifiée',
-                         début_prévue: debut_prevu, fin_prévue: debut_prevu + 2.hours, workflow_state: Intervention::NOUVEAU)
-  end
-
-  def reserve(outil, date, agent)
-    Mouvement.create!(tool: outil, user: agent, état: :réservé, date: date)
-  end
-
-  def mois(n)
-    n.months.ago.beginning_of_month.change(hour: 9) + 14.days
-  end
-
-  def cree_donnees_adherent_informatique
-    cree_intervention_avec_temps(6, adherent: users(:adhérent_sans_intervention),
-                                    service: services(:informatique), debut: mois(2))
-    refresh_dashboard_views!
-  end
-
-  # La ligne d'un agent dans l'activité des agents, nil s'il n'y figure pas.
-  def ligne_agent(agent)
-    assigns(:activite_agents)[:lignes].find { |ligne| ligne[:agent] == agent }
   end
 end

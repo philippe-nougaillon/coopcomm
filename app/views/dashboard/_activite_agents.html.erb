@@ -36,7 +36,7 @@
     </defs>
   </svg>
   <div class="flex-1 min-h-0 overflow-auto max-lg:max-h-[28rem] [scrollbar-gutter:stable]">
-    <table class="table table-sm table-pin-rows w-full [&_td]:py-1 [&_td]:px-3 [&_th]:px-3 [&_thead_tr]:bg-slate-100" data-tranches="<%= @activite_agents[:tranches].to_json %>">
+    <table class="table table-sm table-pin-rows table-zebra w-full [&_td]:py-1 [&_td]:px-3 [&_th]:px-3 [&_thead_tr]:bg-slate-100" data-tranches="<%= @activite_agents[:tranches].to_json %>">
       <thead>
         <tr>
           <%= th_tri 'Agent', colonne: 'agents.nom', ancre: 'activite-agents', class: en_tete %>

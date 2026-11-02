@@ -19,19 +19,10 @@ class DashboardController < ApplicationController
                'WHERE ai.intervention_id = interventions.id), 1)'
 
   def index
+    assigner(accueil(@perimetre, @du, @au))
     respond_to do |format|
-      format.html do
-        assigner(accueil(@perimetre, @du, @au))
-        render partial: 'dashboard/activite_agents' if turbo_frame_request?
-      end
-      format.xls do
-        assigner(if current_user.manager_or_admin?
-                   build_dashboard_for_manager(User.by_service(@perimetre), @perimetre, @du, @au)
-                 else
-                   build_dashboard_for_adherent(@perimetre, @du, @au)
-                 end)
-        export_xls
-      end
+      format.html { render partial: 'dashboard/activite_agents' if turbo_frame_request? }
+      format.xls { export_xls }
     end
   end
 
@@ -49,102 +40,11 @@ class DashboardController < ApplicationController
     authorize :dashboard
   end
 
-  def build_dashboard_for_manager(users, services, start_date, end_date)
-    # Lecture des pré-agrégats (vue matérialisée) au lieu de scanner interventions.
-    stats = statistiques(services).between_months(start_date, end_date)
-    co2 = build_co2_par_mois(stats, start_date, end_date)
-    ordonnés = services.sort_by(&:nom)
-    libellés = libellés_agents(services, start_date, end_date)
-    adherents = temps_par_adherent_et_service(users, ordonnés, stats)
-    agents = temps_par_agent_et_service(ordonnés, libellés, start_date, end_date)
-    qte_par_service = fill_services(services, stats.joins(:service).group('services.nom').sum(:nb))
-    bornes = bornes_des_stats(services)
-    _, annee = annees_proposees(bornes)
-
-    {
-      temps_total_par_adherent: cumuler_services(adherents),
-      temps_total_par_agent: cumuler_services(agents),
-      data_workflow_chart: build_workflow_chart(stats, start_date, end_date),
-      qte_interventions_par_service: qte_par_service,
-      temps_total_par_service: fill_services(services,
-                                             stats.joins(:service).where("temps_total >= 0")
-                                                  .group('services.nom').sum(:temps_total)),
-      co2_total_par_mois: co2,
-      annee: annee,
-      activite_agents: activite_des_agents(ordonnés, start_date, end_date),
-      donnees_graphes: {
-        activite: activite_par_jour(services, annee)
-      }.deep_transform_values { |valeur| valeur.is_a?(BigDecimal) ? valeur.to_f : valeur }
-    }
-  end
-
-  def build_dashboard_for_adherent(services, start_date, end_date)
-    stats = statistiques(services, current_user).between_months(start_date, end_date)
-    temps_consommable = 100
-    temps_consomme = stats.where("temps_total >= 0").sum(:temps_total)
-    co2 = build_co2_par_mois(stats, start_date, end_date)
-
-    {
-      proportion_temps_consomme: {
-        'temps_consomme' => temps_consomme,
-        'temps_restant' => temps_consommable - temps_consomme
-      },
-      temps_total_par_mois: build_temps_par_mois(stats, start_date, end_date),
-      data_workflow_chart: build_workflow_chart(stats, start_date, end_date),
-      qte_interventions_par_service: fill_services(services, stats.joins(:service).group('services.nom').sum(:nb)),
-      temps_total_par_service: fill_services(services,
-                                             stats.joins(:service).where("temps_total >= 0")
-                                                  .group('services.nom').sum(:temps_total)),
-      co2_total_par_mois: co2,
-      kpi_total_interventions: stats.sum(:nb),
-      kpi_temps_total: "#{temps_consomme.round(1)}h",
-      kpi_agents_actifs: User.intervenants_pour(services).count,
-      kpi_co2_total: "#{co2.values.sum.round(2)} kg"
-    }
-  end
-
   def export_xls
-    if current_user.manager_or_admin?
-      xls = ExportToXls::DashboardManager.new(
-        @temps_total_par_adherent, @temps_total_par_agent,
-        @data_workflow_chart, @qte_interventions_par_service,
-        @temps_total_par_service, @co2_total_par_mois, @donnees_graphes[:activite], @annee, @activite_agents[:lignes]
-      ).call
-      ExportLog.create!(user: current_user, organisation: current_organisation, export_type: 'dashboard_manager')
-    else
-      xls = ExportToXls::DashboardAdherent.new(
-        @proportion_temps_consomme, @temps_total_par_mois,
-        @data_workflow_chart, @qte_interventions_par_service,
-        @temps_total_par_service, @co2_total_par_mois
-      ).call
-      ExportLog.create!(user: current_user, organisation: current_organisation, export_type: 'dashboard_adherent')
-    end
+    xls = ExportToXls::Dashboard.new(@activite_agents[:lignes], @donnees_graphes, @conventions).call
+    ExportLog.create!(user: current_user, organisation: current_organisation,
+                      export_type: current_user.manager_or_admin? ? 'dashboard_manager' : 'dashboard_adherent')
     send_data xls, filename: "Dashboard_#{l Date.today}.xls"
-  end
-
-  def temps_par_adherent_et_service(users, services, stats)
-    adherents = users.adhérent.to_a
-    totals = stats.where(adherent_id: adherents.map(&:id))
-                  .where("temps_total >= 0")
-                  .group(:service_id, :adherent_id).sum(:temps_total)
-    services.each_with_object({}) do |service, par_service|
-      par_service[service.nom] = adherents.each_with_object({}) do |adherent, ligne|
-        ligne[adherent.nom_prénom] = totals[[service.id, adherent.id]] || 0
-      end
-    end
-  end
-
-  def temps_par_agent_et_service(services, libellés, start_date, end_date)
-    # La vue dashboard_agent_stats porte déjà la répartition temps_total / nb d'agents.
-    totals = DashboardAgentStat.where(agent_id: libellés.keys)
-                               .for_services(services).between_months(start_date, end_date)
-                               .where("temps_total >= 0")
-                               .group(:service_id, :agent_id).sum(:temps_total)
-    services.each_with_object({}) do |service, par_service|
-      par_service[service.nom] = libellés.each_with_object({}) do |(id, libellé), ligne|
-        ligne[libellé] = totals[[service.id, id]] || 0
-      end
-    end
   end
 
   # Un libellé par intervenant du périmètre — pour un adhérent, par agent affecté à ses interventions —, jamais le
@@ -166,78 +66,6 @@ class DashboardController < ApplicationController
       rang = hash.values.count { |libellé| libellé.start_with?(LIBELLE_AGENT_DESACTIVE) } + 1
       hash[agent.id] = rang == 1 ? LIBELLE_AGENT_DESACTIVE : "#{LIBELLE_AGENT_DESACTIVE} ##{rang}"
     end
-  end
-
-  def cumuler_services(par_service)
-    par_service.values
-               .each_with_object(Hash.new(0)) { |ligne, cumul| ligne.each { |clé, valeur| cumul[clé] += valeur } }
-               .sort_by { |_, valeur| -valeur }.to_h
-  end
-
-  def build_workflow_chart(stats, start_date, end_date)
-    workflows = [Intervention::NOUVEAU, Intervention::TERMINE, Intervention::VALIDE, Intervention::REFUSE]
-
-    raw = stats.between_months(start_date, end_date)
-               .group(:mois, :workflow_state)
-               .sum(:nb)
-
-    par_mois = fill_months(start_date, end_date, raw.each_with_object({}) do |(k, v), h|
-      month = k[0].to_date.strftime('%Y-%m')
-      h[month] ||= {}
-      h[month][k[1]] = v
-    end, workflows)
-
-    labels = par_mois.keys
-    datasets = workflows.map do |wf|
-      { label: wf.capitalize, data: labels.map { |m| par_mois[m][wf] }, backgroundColor: workflow_color(wf) }
-    end
-
-    { labels: labels, datasets: datasets }
-  end
-
-  def build_co2_par_mois(stats, start_date, end_date)
-    raw = stats.between_months(start_date, end_date)
-               .group(:mois)
-               .sum(:co2)
-               .transform_keys { |m| m.to_date.strftime('%Y-%m') }
-               .transform_values { |co2| co2.round(2) }
-
-    fill_months(start_date, end_date, raw).sort.to_h
-  end
-
-  def build_temps_par_mois(stats, start_date, end_date)
-    raw = stats.between_months(start_date, end_date).where("temps_total >= 0")
-               .group(:mois)
-               .sum(:temps_total)
-               .transform_keys { |m| m.to_date.strftime('%Y-%m') }
-    fill_months(start_date, end_date, raw, nil, 0.0).sort.to_h
-  end
-
-  def fill_months(start_date, end_date, hash, keys_to_fill = nil, default = 0)
-    mois_de_la_periode(start_date, end_date).each do |month|
-      m = month.strftime('%Y-%m')
-      if keys_to_fill
-        hash[m] ||= {}
-        keys_to_fill.each { |k| hash[m][k] ||= default }
-      else
-        hash[m] ||= default
-      end
-    end
-    hash.sort.to_h
-  end
-
-  def fill_services(services, hash)
-    services.each { |service| hash[service.nom] ||= 0 }
-    hash.sort.to_h
-  end
-
-  def workflow_color(workflow)
-    {
-      Intervention::NOUVEAU => 'rgba(0,181,255,255)',
-      Intervention::TERMINE => 'rgba(77,110,255,255)',
-      Intervention::VALIDE => 'rgba(0,169,110,255)',
-      Intervention::REFUSE => 'rgba(255,88,97,255)'
-    }[workflow]
   end
 
   def date_param(clé)
@@ -289,22 +117,8 @@ class DashboardController < ApplicationController
     statistiques(services, adherent).pick(Arel.sql('MIN(mois), MAX(mois)'))
   end
 
-  # Par jour de l'année, au début réel ou prévu : [interventions, temps total ou, jour à venir, durée prévue × agents].
-  def activite_par_jour(services, annee)
-    jour = Arel.sql("(#{Intervention::EFFECTIVE_DEBUT_SQL})::date")
-    temps = Intervention.sanitize_sql_array(["CASE WHEN #{jour} > ? THEN " \
-            "GREATEST(EXTRACT(EPOCH FROM (#{Intervention::EFFECTIVE_FIN_SQL} - #{Intervention::EFFECTIVE_DEBUT_SQL})) / 3600, 0) " \
-            '* GREATEST((SELECT COUNT(*) FROM agent_interventions WHERE agent_interventions.intervention_id = interventions.id), 1) ' \
-            'ELSE interventions.temps_total END', Date.current])
-    Intervention.where(service: services).where.not(workflow_state: Intervention::POINTAGE_ACTIVE)
-                .where("#{jour} BETWEEN ? AND ?", Date.new(annee, 1, 1), Date.new(annee, 12, 31))
-                .group(jour)
-                .pluck(jour, Arel.sql('COUNT(*)'), Arel.sql("COALESCE(SUM(#{temps}), 0)"))
-                .to_h { |date, nombre, temps| [date.iso8601, [nombre, temps]] }
-  end
-
-  # Une ligne par intervenant, sur le service et les derniers mois propres à la carte : temps lu dans la vue comme
-  # le temps par agent exporté, interventions hors modèles de pointage et hors « nouveau », note des interventions
+  # Une ligne par intervenant, sur le service et les derniers mois propres à la carte : temps lu dans la vue
+  # dashboard_agent_stats, interventions hors modèles de pointage et hors « nouveau », note des interventions
   # validées ou refusées notées, et les deux séries mensuelles de la courbe. Pour un adhérent : les agents affectés
   # à ses interventions, et leur temps sur celles-ci seulement.
   def activite_des_agents(services, start_date, end_date, adherent = nil)
@@ -462,7 +276,7 @@ class DashboardController < ApplicationController
   end
 
   # Les interventions « nouveau » n'ont pas de temps réel : durée prévue × agents affectés, par service et par mois
-  # du début prévu, comme l'activité par jour pour les jours à venir.
+  # du début prévu.
   def temps_prevus_par_mois_et_service(services, start_date, end_date, adherent = nil)
     mois_sql = Arel.sql("date_trunc('month', #{Intervention::EFFECTIVE_DEBUT_SQL})::date")
     heures = "GREATEST(EXTRACT(EPOCH FROM (#{Intervention::EFFECTIVE_FIN_SQL} - #{Intervention::EFFECTIVE_DEBUT_SQL})) / 3600, 0) " \
