@@ -9,7 +9,7 @@ class AgentFlowOnInterventionDateTest < ActionDispatch::IntegrationTest
 
     début_avant = intervention.début
     heure_saisie = début_avant.hour + 1
-    minute_saisie = début_avant.min + 5
+    minute_saisie = début_avant.min + 15
     
     expected = début_avant.change(hour: heure_saisie, min: minute_saisie, sec: 0)
     rejected_début = (Date.current + 1).to_s
