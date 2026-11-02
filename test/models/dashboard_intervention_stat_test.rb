@@ -7,15 +7,27 @@ require 'test_helper'
 class DashboardInterventionStatTest < ActiveSupport::TestCase
   setup { refresh_dashboard_views! }
 
-  test "le nombre d'interventions du tableau de bord sur une période est identique au filtre live sur la date de début" do
+  test "le nombre d'interventions du tableau de bord sur une période est identique au filtre live sur la date de début effective" do
     org = Organisation.first
     début_période = 9.months.ago.beginning_of_month
     fin_période = Time.current.end_of_month
-    live = org.interventions.where(début: début_période..fin_période).count
+    live = org.interventions.where("#{Intervention::EFFECTIVE_DEBUT_SQL} BETWEEN ? AND ?", début_période, fin_période).count
 
     vue = DashboardInterventionStat.for_organisation(org).between_months(début_période, fin_période).sum(:nb)
 
     assert_equal live, vue
+  end
+
+  test "une intervention prévue et non commencée est comptée dans le mois de son début prévu" do
+    Intervention.create!(adherent: users(:weil), service: services(:technique), description: 'Intervention planifiée',
+                         début_prévue: Time.zone.local(2023, 2, 10, 9), fin_prévue: Time.zone.local(2023, 2, 10, 11),
+                         workflow_state: Intervention::NOUVEAU)
+    refresh_dashboard_views!
+
+    vue = DashboardInterventionStat.for_organisation(organisations(:mairie_paris)).between_months(Date.new(2023, 2, 1), Date.new(2023, 2, 28))
+
+    assert_equal 1, vue.sum(:nb)
+    assert_equal [Intervention::NOUVEAU], vue.pluck(:workflow_state)
   end
 
   test "le tableau de bord d'un adhérent ne compte que ses interventions" do

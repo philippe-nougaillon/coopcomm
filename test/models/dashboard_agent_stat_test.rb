@@ -3,8 +3,9 @@
 require 'test_helper'
 
 # La vue dashboard_agent_stats répartit le temps d'une intervention entre TOUS ses
-# agents, désactivés compris (v03) : le total est ainsi conservé quand un compte est
-# désactivé, et la vue ne dépend plus de users.discarded_at.
+# agents, désactivés compris : le total est ainsi conservé quand un compte est
+# désactivé, et la vue ne dépend pas de users.discarded_at. Depuis la v04 elle est
+# au grain (organisation, service, agent, mois), pour le filtre du tableau de bord.
 class DashboardAgentStatTest < ActiveSupport::TestCase
   setup { refresh_dashboard_views! }
 
@@ -42,4 +43,17 @@ class DashboardAgentStatTest < ActiveSupport::TestCase
 
     assert_in_delta affectées.sum(:temps_total), DashboardAgentStat.sum(:temps_total), 0.01
   end
+
+  # ==================== TESTS CRITIQUES ====================
+  # Le filtre du tableau de bord par service et par période repose sur ce grain.
+  test 'le temps par agent du tableau de bord est réparti par service et par mois (critique)' do
+    tonte = interventions(:tonte_locaux)
+    part = tonte.temps_total / AgentIntervention.where(intervention_id: tonte.id).count
+    ligne = DashboardAgentStat.where(agent_id: users(:bond).id, service_id: services(:technique).id,
+                                     mois: tonte.début.to_date.beginning_of_month)
+
+    assert_in_delta part, ligne.sum(:temps_total), 0.01
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
 end

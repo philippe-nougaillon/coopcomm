@@ -58,8 +58,58 @@
   }
 }
 
-@theme {
+@theme static {
   --font-sans: "Google Sans Flex", sans-serif;
   --font-title: "Montserrat", sans-serif;
+  --color-aikku: #6A219C;
+  --color-aikku-cyan: #50B9DF;
+  --color-aikku-indigo: #5275D2;
+  --color-aikku-violet: #6A219C;
+  --color-aikku-magenta: #A5208D;
+  --color-aikku-rose: #D92666;
+  --color-aikku-violet-50: #ECE5F4;
+  --color-aikku-violet-100: #D9CBE9;
+  --color-aikku-violet-200: #BEA4D8;
+  --color-aikku-violet-300: #A07AC4;
+  --color-aikku-violet-400: #834FB0;
+  --color-aikku-violet-500: #6A219C;
+  --color-aikku-violet-600: #53187B;
+  --color-aikku-violet-700: #3C0F5B;
+  --color-aikku-violet-800: #27073D;
+  --color-aikku-violet-900: #130221;
+  --color-aikku-bleu-50: #ECF7FC;
+  --color-aikku-bleu-100: #D9EFF8;
+  --color-aikku-bleu-200: #BBE2F2;
+  --color-aikku-bleu-300: #9AD4EC;
+  --color-aikku-bleu-400: #76C6E5;
+  --color-aikku-bleu-500: #50B9DF;
+  --color-aikku-bleu-600: #3E92B1;
+  --color-aikku-bleu-700: #2C6D84;
+  --color-aikku-bleu-800: #1C4A5B;
+  --color-aikku-bleu-900: #0C2934;
+  --color-aikku-rose-50: #FFE8EB;
+  --color-aikku-rose-100: #FDD1D8;
+  --color-aikku-rose-200: #F9AEBC;
+  --color-aikku-rose-300: #F0869D;
+  --color-aikku-rose-400: #E55A80;
+  --color-aikku-rose-500: #D92666;
+  --color-aikku-rose-600: #AC1C4F;
+  --color-aikku-rose-700: #81123A;
+  --color-aikku-rose-800: #580925;
+  --color-aikku-rose-900: #320312;
+  --color-aikku-neutre-50: #E5E7E9;
+  --color-aikku-neutre-100: #CCCFD3;
+  --color-aikku-neutre-200: #A7ACB3;
+  --color-aikku-neutre-300: #808691;
+  --color-aikku-neutre-400: #5A626F;
+  --color-aikku-neutre-500: #3B4453;
+  --color-aikku-neutre-600: #2D3440;
+  --color-aikku-neutre-700: #1F252E;
+  --color-aikku-neutre-800: #12161D;
+  --color-aikku-neutre-900: #07090D;
+  /* Dégradés de la charte : interface et hero, action et CTA, splash et branding. */
+  --gradient-aikku-interface: linear-gradient(to right, var(--color-aikku-cyan), var(--color-aikku-violet));
+  --gradient-aikku-action: linear-gradient(to right, var(--color-aikku-cyan), var(--color-aikku-rose));
+  --gradient-aikku-branding: linear-gradient(to right, var(--color-aikku-cyan), var(--color-aikku-violet), var(--color-aikku-rose));
 }
 

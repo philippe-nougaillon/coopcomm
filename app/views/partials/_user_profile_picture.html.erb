@@ -1,12 +1,13 @@
+<% taille = local_assigns.fetch(:taille, 'w-10') %>
 <% if user.profile_picture.attached? %>
   <div class="avatar">
-    <div class="w-10 rounded-full">
-      <%= image_tag(user.profile_picture) %>
+    <div class="<%= taille %> rounded-full">
+      <%= image_tag(user.profile_picture.variable? ? user.profile_picture.variant(resize_to_fill: [80, 80]) : user.profile_picture, loading: 'lazy') %>
     </div>
   </div>
 <% else %>
   <div class="avatar avatar-placeholder">
-    <div class="bg-secondary text-neutral-content w-10 rounded-full">
+    <div class="bg-secondary text-neutral-content <%= taille %> rounded-full">
       <span class="text-xs"><%= user.initiales %></span>
     </div>
   </div>
