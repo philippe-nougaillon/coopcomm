@@ -123,7 +123,7 @@ class Intervention < ApplicationRecord
   after_create_commit :send_manager_notification
   after_commit :actualiser_dashboard
 
-  # Déclaré en dernier : le `save` de #calculate_co2 fait perdre aux callbacks
+  # Déclaré en dernier : le `save` de #calculer_trajet fait perdre aux callbacks
   # suivants l'information « on sort d'une création ».
   after_commit :apres_terminaison, on: %i[create update], if: :vient_de_terminer?
 
@@ -471,14 +471,15 @@ class Intervention < ApplicationRecord
     end
   end
 
-  def calculate_co2
-    response = self.get_routes_info_from_location
-
-    return if response['errors'].present? && response.dig('data_response', 'routes').blank?
+  # Sans validation : l'intervention vient d'être validée et enregistrée, rejouer les validations
+  # ici changeait son état ; le trajet n'est l'œuvre d'aucun utilisateur, l'audit le dit.
+  def calculer_trajet
+    response = get_routes_info_from_location
+    return if response.dig('data_response', 'routes').blank?
 
     self.trajet = response['routes_info']
     self.co2 = FetchRoutesInfos.co2_consumption_by_route(response.dig('data_response', 'routes', 0))
-    save
+    Audited.audit_class.as_user('Système') { save(validate: false) }
   end
 
   def temps_par_agent
@@ -636,7 +637,7 @@ class Intervention < ApplicationRecord
   end
 
   def apres_terminaison
-    calculate_co2
+    calculer_trajet
 
     return if Rails.env.development?
 

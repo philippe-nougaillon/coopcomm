@@ -306,6 +306,50 @@ class InterventionTest < ActiveSupport::TestCase
     end
   end
 
+  test 'la terminaison d’une intervention dont le service calcule les distances enregistre son trajet et son CO₂' do
+    intervention = interventions(:intervention_with_location)
+    simuler_route_google
+
+    Audited.audit_class.as_user(users(:martin_technique_paris)) { intervention.terminer! }
+
+    intervention.reload
+    assert_equal 'Distance: 3 km, Durée: 22 min, Essence: 0.37 L, CO₂: 0.86 kg', intervention.trajet
+    assert_in_delta 0.86, intervention.co2
+  end
+
+  test 'le trajet calculé à la terminaison est audité au nom du système' do
+    intervention = interventions(:intervention_with_location)
+    simuler_route_google
+
+    Audited.audit_class.as_user(users(:martin_technique_paris)) { intervention.terminer! }
+
+    audit = intervention.audits.last
+    assert_equal 'Système', audit.username
+    assert_nil audit.user_id
+    assert_equal %w[co2 trajet], audit.audited_changes.keys.sort
+  end
+
+  test 'le calcul du trajet ne rejoue pas les validations : un modèle de pointage terminé reste terminé' do
+    intervention = interventions(:intervention_with_location)
+    intervention.assign_attributes(repeter: true, workflow_state: Intervention::TERMINE)
+    simuler_route_google
+
+    intervention.save!(validate: false)
+
+    assert_equal Intervention::TERMINE, intervention.reload.workflow_state
+    assert_in_delta 0.86, intervention.co2
+  end
+
+  test 'la terminaison d’une intervention dont le service ne calcule pas les distances n’écrit aucun trajet' do
+    intervention = interventions(:nouvelle_intervention)
+
+    Audited.audit_class.as_user(users(:martin_technique_paris)) { intervention.terminer! }
+
+    intervention.reload
+    assert_nil intervention.trajet
+    assert_not_equal 'Système', intervention.audits.last.username
+  end
+
   test 'la liste ordonnée des interventions place la plus récemment mise à jour en tête' do
     récente = interventions(:nouvelle_intervention)
     récente.update_columns(updated_at: 1.minute.from_now)
@@ -594,6 +638,14 @@ class InterventionTest < ActiveSupport::TestCase
 
   def png
     fixture_file_upload('exemple.png', 'image/png')
+  end
+
+  # Le stub global de test_helper renvoie la sortie du service, pas le corps de l'API Google :
+  # il ne porte aucune route exploitable par FetchRoutesInfos.
+  def simuler_route_google
+    stub_request(:post, /routes.googleapis.com/)
+      .to_return(status: 200, body: file_fixture('responseGoogleRoutes.json').read,
+                 headers: { 'Content-Type' => 'application/json' })
   end
 
   def cree_pointage_termine_par(agent)

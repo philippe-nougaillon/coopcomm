@@ -28,6 +28,19 @@ class TerminerPointagesJobTest < ActiveJob::TestCase
     assert_in_delta Time.current, @pointage.fin, 1.minute
   end
 
+  test 'un pointage oublié clôturé des jours plus tard est borné à la fin de sa journée' do
+    @pointage.update_columns(début: Time.zone.local(2026, 9, 4, 12, 7))
+
+    travel_to Time.zone.local(2026, 10, 1, 12, 26) do
+      TerminerPointagesJob.perform_now
+    end
+
+    @pointage.reload
+    assert @pointage.terminé?
+    assert_equal Time.zone.local(2026, 9, 4).end_of_day.to_i, @pointage.fin.to_i
+    assert_in_delta 11.88, @pointage.temps_total, 0.05
+  end
+
   test 'la clôture automatique enregistre le temps total et une pause à 0' do
     @pointage.update_columns(début: 3.hours.ago, temps_de_pause: nil, temps_total: nil)
 

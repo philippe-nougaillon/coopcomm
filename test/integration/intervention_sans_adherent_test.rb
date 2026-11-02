@@ -64,10 +64,12 @@ class InterventionSansAdherentTest < ActionDispatch::IntegrationTest
     assert_predicate @brouillon, :valid?
   end
 
-  # Le contournement des validations doit rester cantonné au webhook : partout
-  # ailleurs, une intervention sans service ni adhérent ne doit pas pouvoir naître.
+  # Le contournement des validations doit rester cantonné au webhook et au trajet
+  # calculé à la terminaison (écriture système sur une intervention qui vient
+  # d'être validée) : partout ailleurs, une intervention sans service ni adhérent
+  # ne doit pas pouvoir naître.
   test 'aucun autre point du code ne contourne les validations d’une intervention' do
-    connus = [%r{twilio_controller\.rb}, /associated_convention/]
+    connus = [%r{twilio_controller\.rb}, /associated_convention/, /as_user\('Système'\)/]
 
     coupables = Dir.glob('{app,lib}/**/*.{rb,rake}').flat_map do |fichier|
       File.readlines(fichier).each_with_index.filter_map do |ligne, i|
@@ -77,6 +79,6 @@ class InterventionSansAdherentTest < ActionDispatch::IntegrationTest
     end
 
     assert_empty coupables,
-                 "save(validate: false) hors du webhook : #{coupables.join(', ')}"
+                 "save(validate: false) hors du webhook et du calcul de trajet : #{coupables.join(', ')}"
   end
 end

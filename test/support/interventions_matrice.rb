@@ -44,11 +44,6 @@ module InterventionsMatrice
     # `update_columns` n'écrit pas d'audit : sans lui, l'historique d'activité
     # afficherait les sondes et fausserait la matrice de visibilité.
     intervention.update_columns(attributs_complets) if complete
-    # Un modèle de pointage sauvegardé à l'état `terminé` en ressort à
-    # « pointage activé » : after_commit → apres_terminaison → calculate_co2 fait
-    # un `save` validé, qui rejoue check_workflow_pointage_mère. On force l'état
-    # demandé pour que la matrice teste bien ce qu'elle annonce.
-    intervention.update_columns(workflow_state: etat) if intervention.reload.workflow_state != etat
     intervention.reload
   end
 
