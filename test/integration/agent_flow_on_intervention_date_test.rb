@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class AgentFlowOnInterventionDateTest < ActionDispatch::IntegrationTest
-  test 'un agent corrige une date refusée et retrouve l’heure et la minute qu’il avait choisies' do
+  test "En tant qu'agent, je veux corriger une date refusée sans ressaisir l'heure et la minute" do
     sign_in users(:martin_technique_paris)
     intervention = interventions(:nouvelle_intervention)
 

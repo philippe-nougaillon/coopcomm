@@ -11,7 +11,7 @@ class NotifCotationSigneeJobTest < ActiveJob::TestCase
     @signataire  = @cotation.adherent # l'adhérent qui déclenche l'envoi en signant
   end
 
-  test 'envoie un mail au créateur et crée un MailLog tracé' do
+  test 'le créateur de la cotation reçoit un mail et un mail log attribué au signataire est créé lorsque la cotation est signée' do
     assert_emails 1 do
       assert_difference -> { MailLog.count }, 1 do
         NotifCotationSigneeJob.perform_now(@cotation, @creator.id, @signataire.id)
@@ -37,7 +37,7 @@ class NotifCotationSigneeJobTest < ActiveJob::TestCase
     assert_equal [@creator.email], ActionMailer::Base.deliveries.last.to
   end
 
-  test "n'envoie rien si le créateur est introuvable" do
+  test "aucun mail n'est envoyé lorsque le créateur est introuvable" do
     assert_no_emails do
       assert_no_difference -> { MailLog.count } do
         NotifCotationSigneeJob.perform_now(@cotation, -1, @signataire.id)
@@ -45,7 +45,7 @@ class NotifCotationSigneeJobTest < ActiveJob::TestCase
     end
   end
 
-  test "n'envoie rien si le créateur n'a pas d'email" do
+  test "aucun mail n'est envoyé lorsque le créateur n'a pas d'email" do
     @creator.update_columns(email: '')
 
     assert_no_emails do

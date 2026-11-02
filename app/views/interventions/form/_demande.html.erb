@@ -21,8 +21,8 @@
       <%= form.select :adherent_id,
                       options_from_collection_for_select(@adhérents, :id, :nom_prénom, intervention.adherent_id),
                       { required: true },
-                      class: "slim-select w-full h-10",
-                      data: (policy(intervention).cascade_services? ? { dynamic_select_target: "adherent", action: "change->dynamic-select#updateServices" } : {}) %>
+                      class: "w-full h-10",
+                      data: { controller: "slim-select", **(policy(intervention).cascade_services? ? { dynamic_select_target: "adherent", action: "change->dynamic-select#updateServices" } : {}) } %>
     </div>
   <% else %>
     <%= form.hidden_field :adherent_id, value: current_user.id %>
@@ -35,8 +35,8 @@
     <%= form.select :service_id,
                     options_from_collection_for_select(@services, :id, :nom, intervention.service_id),
                     { include_blank: true, required: true },
-                    class: "slim-select w-full h-10 ",
-                    data: (policy(intervention).cascade_services? ? { dynamic_select_target: "service", action: "change->dynamic-select#updateAgents" } : {}) %>
+                    class: "w-full h-10",
+                    data: { controller: "slim-select", **(policy(intervention).cascade_services? ? { dynamic_select_target: "service", action: "change->dynamic-select#updateAgents" } : {}) } %>
   </div>
 </div>
 

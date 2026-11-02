@@ -7,7 +7,7 @@ class UserFlowOnConnexionTest < ActionDispatch::IntegrationTest
     @utilisateur = users(:weil)
   end
 
-  test 'un mot de passe incorrect est refusé, puis le bon mot de passe connecte' do
+  test "En tant qu'utilisateur, je veux me connecter après un mot de passe refusé et arriver sur la page que je demandais" do
     get root_path
 
     assert_response :success

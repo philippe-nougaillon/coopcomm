@@ -3,15 +3,12 @@
 # Handles public and authenticated pages for the application.
 class PagesController < ApplicationController
   # Pages publiques (vitrine) : pas d'utilisateur, donc pas d'authorize
-  skip_after_action :verify_authorized, only: %i[welcome mentions_legales solution tarifs contact]
-  include DashboardData
+  skip_after_action :verify_authorized, only: %i[welcome mentions_legales solution tarifs contact aide]
 
-  before_action :is_user_authorized, except: %i[welcome mentions_legales solution tarifs contact]
-  skip_before_action :authenticate_user!, only: %i[welcome mentions_legales solution tarifs contact]
+  before_action :is_user_authorized, except: %i[welcome mentions_legales solution tarifs contact aide]
+  skip_before_action :authenticate_user!, only: %i[welcome mentions_legales solution tarifs contact aide]
 
   layout :define_layout
-
-  trie ExportLog, defaut: 'export_logs.created_at', sens: :desc
 
   def define_layout
     if params[:action] == 'welcome'
@@ -54,27 +51,10 @@ class PagesController < ApplicationController
 
   def mentions_legales; end
 
+  def aide; end
+
   def welcome
     @newsletter = Newsletter.new
-  end
-
-  def dashboard
-    start_date = 9.months.ago.beginning_of_month
-    end_date = 3.months.from_now.end_of_month
-
-    data = if current_user.manager_or_admin?
-             users = User.by_service(current_user.services)
-             build_dashboard_for_manager(users, start_date, end_date)
-           else
-             build_dashboard_for_adherent(start_date, end_date)
-           end
-
-    data.each { |key, value| instance_variable_set("@#{key}", value) }
-
-    respond_to do |format|
-      format.html {}
-      format.xls { export_xls }
-    end
   end
 
   def solution; end
@@ -111,6 +91,7 @@ class PagesController < ApplicationController
       @cotations = current_user.cotations_adherent.where(workflow_state: Cotation::ENVOYE)
     end
 
+    @conventions = ConventionsDeLAnnee.call(current_user) if policy(Convention).index?
     @forecasts = MeteoConceptConnexion.call
   end
 

@@ -7,7 +7,7 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= render 'partials/favicon' %>
-    <link rel="manifest" crossorigin="use-credentials" href="/manifest.json" />
+    <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json), crossorigin: "use-credentials" %>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">

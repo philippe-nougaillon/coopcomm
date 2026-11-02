@@ -1,7 +1,7 @@
 # Guide de contribution — CoopComm
 
 > Erreurs récurrentes constatées dans l'historique du projet, et checklist pour ne plus les refaire.
-> Chaque règle est tirée d'un **vrai correctif** du dépôt (commit ou bug du registre `suivi/bugs-signales.md`).
+> Chaque règle est tirée d'un **vrai correctif** du dépôt (commit ou bug du registre `suivi/bugs-corriges.md`).
 > Principes de base déjà acquis : **une fonction ne fait qu'une chose · KISS · DRY**. Ce guide couvre le reste.
 
 ---
@@ -24,6 +24,7 @@ Règles :
 - `params.require(...).permit(...)` en **liste blanche** ; les attributs sensibles (`rôle`, `workflow_state`, ids d'association) sont réservés aux rôles qui y ont droit, et les ids bornés à l'organisation courante.
 - `find_by` peut renvoyer `nil` : gérer le cas (404), sinon c'est un 500 (`authorize nil` → NoMethodError — bug B9 du registre, cotations/commandes/factures).
 - Transition workflow dans un contrôleur : **toujours** la garde `can_xxx?` (ou `rescue Workflow::NoTransitionAllowed`) — un double-clic ou un retour navigateur ne doit pas faire un 500 (bug B3 : `valider!`/`refuser!` sans garde, alors que `terminer`/`archiver` l'ont).
+- **Jamais `update_all`, `update_column(s)`, `delete_all`, `insert_all`, `upsert_all` ni `dependent: :delete_all`** sur un modèle `audited` ou lu par le dashboard (`Intervention`, `AgentIntervention`) : ces méthodes ne passent par **aucun callback** — ni audit trail, ni rafraîchissement des vues du dashboard — et rien ne le signale (risque R7). Seule exception admise : les `update_column(:total_ht, …)` des lignes de devis/commande/facture (total dérivé des lignes, elles-mêmes auditées). En console, finir une correction de données par `ActualiserDashboard.call`.
 
 ### ② Vérifier que ce qu'on appelle existe vraiment (schéma, associations, signatures)
 
@@ -143,6 +144,7 @@ si le job `test` est vert (`.github/workflows/rails.yml`). Conséquences :
 - [ ] Actions mutantes en POST/PATCH/DELETE (`button_to`), aucune route GET qui modifie
 - [ ] `authorize` présent (ou skip justifié) ; permits en liste blanche ; ids scopés à l'organisation
 - [ ] `find_by` → cas `nil` géré ; transitions workflow gardées par `can_xxx?`
+- [ ] Aucun `update_all` / `update_column(s)` / `delete_all` / `insert_all` / `upsert_all` ni `dependent: :delete_all` sur un modèle audité ou lu par le dashboard (aucun callback : ni audit, ni rafraîchissement — R7)
 
 **Solidité**
 - [ ] Colonnes/associations/signatures **vérifiées** (schema.rb, console) — pas supposées
@@ -200,5 +202,5 @@ réécrits intégralement le 2026-07-09).
 
 ---
 
-*Registre détaillé des bugs ouverts (B1–B10, avec parcours de reproduction) :
-`suivi/bugs-signales.md`. Décisions en attente : `suivi/points-a-trancher.md`.*
+*Registre détaillé des bugs ouverts (avec parcours de reproduction) : `suivi/bugs-ouverts.md`.
+Décisions en attente : `suivi/points-a-trancher.md` ; actions : `suivi/actions-a-faire.md` ; dette : `suivi/dettes-ouvertes.md`.*

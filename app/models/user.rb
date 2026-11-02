@@ -141,16 +141,8 @@ class User < ApplicationRecord
   end
 
   # Liste plate au format [["NOM Prénom", id], …].
-  # Les administrateurs sont proposés quel que soit leur service, cf. la
-  # validation Intervention#service_partagé_par_adherent_et_agents qui les exempte.
   def self.agents_for_services(services)
-    organisation_ids = Service.where(id: services).select(:organisation_id)
-    admins = administrateur.by_service(Service.where(organisation_id: organisation_ids))
-
-    intervenants
-      .where(id: by_service(services).ids | admins.ids)
-      .ordered
-      .map { |agent| ["#{agent.nom} #{agent.prénom}", agent.id] }
+    intervenants_pour(services).ordered.map { |agent| ["#{agent.nom} #{agent.prénom}", agent.id] }
   end
 
   def nom_prénom
@@ -215,16 +207,9 @@ class User < ApplicationRecord
 
         user.save
 
-        Events.instance.publish('organisation.created', payload: { user_id: user.id }) unless Rails.env.development?
-
         user
       end
     end
-  end
-
-  def dispatch_email_to_nom_prénom
-    nom_prénom = email.split('@').first
-    self.nom, self.prénom = nom_prénom.split('.')
   end
 
   def avatar
@@ -361,6 +346,15 @@ class User < ApplicationRecord
 
   def self.intervenants
     where(rôle: %w[agent manager administrateur])
+  end
+
+  # Les administrateurs sont proposés quel que soit leur service, cf. la
+  # validation Intervention#service_partagé_par_adherent_et_agents qui les exempte.
+  def self.intervenants_pour(services)
+    organisation_ids = Service.where(id: services).select(:organisation_id)
+    admins = administrateur.by_service(Service.where(organisation_id: organisation_ids))
+
+    intervenants.where(id: by_service(services).ids | admins.ids)
   end
 
   # Retourne la liste des roles que l'utilisateur a le droit de voir

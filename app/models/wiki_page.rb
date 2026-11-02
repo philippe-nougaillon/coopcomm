@@ -14,7 +14,6 @@ class WikiPage < ApplicationRecord
   has_one_attached :document
   has_one_attached :photo
 
-  valide_image :photo
   valide_document :document
   valide_image :photo
   valide_piece_jointe_riche :contenu, types: CONTENU_RICHE, max_octets: TAILLE_MAX_CONTENU_RICHE

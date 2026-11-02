@@ -8,7 +8,6 @@ class Events
 
   register_event('intervention.workflow_changed')
   register_event('intervention.done')
-  register_event('organisation.created')
   register_event('intervention.pointage')
   register_event('create.newsletter')
 end

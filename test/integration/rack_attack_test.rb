@@ -38,7 +38,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_equal [20, 1.minute.to_i], [regles['devise/ip'].limit, regles['devise/ip'].period]
   end
 
-  test "logins/email surveille le paramètre par lequel Devise authentifie réellement" do
+  test 'le throttle des connexions par email surveille le paramètre par lequel Devise authentifie réellement' do
     # Si l'authentification passait un jour à :login / :username, le throttle
     # lirait user[email] dans le vide et deviendrait inopérant.
     assert_includes Devise.authentication_keys, :email
@@ -46,7 +46,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
 
   # ----- logins/ip : brute-force depuis une même IP -----
 
-  test 'logins/ip : la 6e tentative de connexion depuis la même IP est bloquée' do
+  test 'la 6e tentative de connexion depuis la même IP est bloquée' do
     5.times do |i|
       post user_session_path, params: identifiants("essai#{i}@exemple.fr"), headers: ip('1.2.3.4')
 
@@ -58,7 +58,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_equal 429, response.status, "logins/ip #{ROUTE_HINT}"
   end
 
-  test "logins/ip : le compteur est par IP — une autre IP n'est pas bloquée" do
+  test "le compteur des connexions est par IP : une autre IP n'est pas bloquée" do
     5.times { |i| post user_session_path, params: identifiants("essai#{i}@exemple.fr"), headers: ip('1.2.3.4') }
 
     post user_session_path, params: identifiants('essai5@exemple.fr'), headers: ip('9.9.9.9')
@@ -66,7 +66,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_not_equal 429, response.status
   end
 
-  test 'logins/ip : les GET sur la page de connexion ne sont pas comptés' do
+  test 'afficher la page de connexion ne compte pas comme une tentative de connexion' do
     7.times { get new_user_session_path, headers: ip('1.2.3.4') }
 
     assert_not_equal 429, response.status
@@ -74,7 +74,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
 
   # ----- logins/email : brute-force distribué sur un même compte -----
 
-  test "logins/email : la 6e tentative sur le même email est bloquée même en changeant d'IP" do
+  test "la 6e tentative de connexion sur le même email est bloquée même en changeant d'IP" do
     5.times do |i|
       post user_session_path, params: identifiants('cible@exemple.fr'), headers: ip("10.0.0.#{i + 1}")
 
@@ -86,7 +86,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_equal 429, response.status, "logins/email #{ROUTE_HINT}"
   end
 
-  test "logins/email : l'email est normalisé (casse, espaces) avant comptage" do
+  test "les variantes de casse et d'espaces d'un email alimentent le même compteur" do
     variantes = ['cible@exemple.fr', ' CIBLE@exemple.fr', 'cible@EXEMPLE.FR ',
                  'Cible@Exemple.fr', '  cible@exemple.fr  ']
     variantes.each_with_index do |email, i|
@@ -99,14 +99,14 @@ class RackAttackTest < ActionDispatch::IntegrationTest
                  'les variantes de casse/espaces devraient alimenter le même compteur'
   end
 
-  test "logins/email : pas de compteur sans email (sinon tous les POST sans email partageraient le compteur vide)" do
+  test "une tentative de connexion sans email n'alimente aucun compteur" do
     assert_nil discriminant('logins/email', user_session_path, params: { 'user' => { 'email' => '   ' } })
     assert_nil discriminant('logins/email', user_session_path, params: {})
   end
 
   # ----- password_resets/ip : rafale de demandes de reset (mails Mailgun) -----
 
-  test 'password_resets/ip : la 6e demande de reset depuis la même IP est bloquée' do
+  test 'la 6e demande de réinitialisation de mot de passe depuis la même IP est bloquée' do
     5.times do |i|
       post user_password_path, params: { user: { email: 'inconnu@exemple.fr' } }, headers: ip('1.2.3.4')
 
@@ -121,7 +121,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
   # ----- devise/ip : anti-bots sur les pages Devise (remplace le rate_limit
   # natif retiré d'ApplicationController, mêmes seuils : 20/min par IP) -----
 
-  test 'devise/ip : la 21e requête sur une page Devise depuis la même IP est bloquée' do
+  test 'la 21e requête sur une page Devise depuis la même IP est bloquée' do
     20.times do |i|
       get new_user_session_path, headers: ip('5.6.7.8')
 
@@ -133,14 +133,14 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_equal 429, response.status, "devise/ip #{ROUTE_HINT}"
   end
 
-  test 'devise/ip : couvre sessions, mots de passe et invitations' do
+  test "les pages de session, de mot de passe et d'invitation sont toutes comptées comme pages Devise" do
     assert_equal '1.2.3.4', discriminant('devise/ip', new_user_session_path, method: 'GET')
     assert_equal '1.2.3.4', discriminant('devise/ip', destroy_user_session_path, method: 'DELETE')
     assert_equal '1.2.3.4', discriminant('devise/ip', new_user_password_path, method: 'GET')
     assert_equal '1.2.3.4', discriminant('devise/ip', accept_user_invitation_path, method: 'GET')
   end
 
-  test "devise/ip : ne couvre PAS la ressource User de l'admin (/users)" do
+  test "la liste des utilisateurs n'est pas comptée comme une page Devise" do
     # Un manager qui navigue dans la liste des utilisateurs ne doit pas être limité à 20
     # pages/min.
     assert_nil discriminant('devise/ip', '/users', method: 'GET')
@@ -151,26 +151,26 @@ class RackAttackTest < ActionDispatch::IntegrationTest
   # seraient prohibitives ; le moteur de comptage est déjà prouvé full-stack par les
   # règles login, qui partagent le même mécanisme)
 
-  test 'req/ip : une requête applicative est comptée par IP' do
+  test 'une requête applicative est comptée dans le throttle global par IP' do
     assert_equal '1.2.3.4', discriminant('req/ip', '/', method: 'GET')
   end
 
-  test 'req/ip : les assets ne sont pas comptés' do
+  test 'les assets ne sont pas comptés dans le throttle global' do
     assert_nil discriminant('req/ip', '/assets/application-abc123.css', method: 'GET')
   end
 
-  test 'req/ip : les fichiers ActiveStorage (photos) ne sont pas comptés' do
+  test 'les fichiers ActiveStorage ne sont pas comptés dans le throttle global' do
     assert_nil discriminant('req/ip', '/rails/active_storage/blobs/redirect/xyz/photo.jpg', method: 'GET')
   end
 
   # ----- fail2ban pentesters : bannissement automatique des scanners -----
   # (réponse = 403 Forbidden : c'est une blocklist, pas un throttle 429)
 
-  test 'fail2ban : la blocklist est déclarée' do
+  test 'la blocklist fail2ban est déclarée' do
     assert_includes Rack::Attack.blocklists.keys, 'fail2ban pentesters'
   end
 
-  test "fail2ban : dès la PREMIÈRE sonde scanner, la requête est bloquée ET l'IP bannie pour tout le site" do
+  test "dès la première sonde de scanner, la requête est bloquée et l'IP bannie pour tout le site" do
     get '/wp-admin/setup.php', headers: ip('66.66.66.66')
 
     assert_equal 403, response.status,
@@ -181,7 +181,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_equal 403, response.status, "une seule sonde doit suffire à bannir l'IP partout (maxretry: 1)"
   end
 
-  test 'fail2ban : toutes les familles de motifs scanner sont reconnues' do
+  test 'toutes les familles de motifs de scanner sont reconnues' do
     scanners = ['/wp-admin', '/blog/wp-login.php', '/xmlrpc.php', '/index.php', '/login.aspx',
                 '/cgi-bin/test-cgi', '/phpmyadmin/index', '/adminer', '/administrator/index',
                 '/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php',
@@ -195,7 +195,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "fail2ban : JAMAIS un chemin légitime de l'app (faux positif = IP d'une mairie bannie 2 semaines)" do
+  test "un chemin légitime de l'application n'est jamais pris pour une sonde de scanner" do
     legitimes = ['/', '/users/sign_in', '/interventions', '/messagerie', '/cotations',
                  '/admin/audits', '/admin/stats', '/admin/parametres', # routes réelles ≠ /adminer, /administrator
                  '/jobs', # Mission Control ≠ /jenkins
@@ -208,7 +208,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "fail2ban : le ban est par IP — une autre IP n'est pas affectée" do
+  test "le bannissement est par IP : une autre IP n'est pas affectée" do
     get '/wp-admin', headers: ip('66.66.66.66')
 
     get root_path, headers: ip('9.9.9.9')
@@ -216,7 +216,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_not_equal 403, response.status
   end
 
-  test 'fail2ban : le ban tient dans la durée (2 semaines, plafond du max_age Solid Cache)' do
+  test 'le bannissement tient deux semaines puis expire' do
     get '/wp-admin', headers: ip('66.66.66.66')
 
     travel 13.days
@@ -232,7 +232,7 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_not_equal 403, response.status, 'le bantime de 2 semaines devrait avoir expiré'
   end
 
-  test 'fail2ban : la commande console de débannissement lève le ban immédiatement' do
+  test 'la commande console de débannissement lève le bannissement immédiatement' do
     # C'est la commande à utiliser en prod (avec l'IP publique concernée).
     get '/wp-admin', headers: ip('66.66.66.66')
 

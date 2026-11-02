@@ -11,7 +11,7 @@ class NotifManagersNewAbsenceJobTest < ActiveJob::TestCase
     @managers = @absence.user.services.flat_map(&:managers_and_admin).uniq
   end
 
-  test 'notifie tous les managers du service de l\'absent (un MailLog par mail)' do
+  test "chaque manager du service de l'absent reçoit un mail, avec un mail log par mail, lorsqu'une absence est créée" do
     assert_equal 2, @managers.size, 'pré-condition : 2 managers attendus sur le service technique'
 
     assert_emails @managers.size do
@@ -30,7 +30,7 @@ class NotifManagersNewAbsenceJobTest < ActiveJob::TestCase
     assert_equal 0, log.user_id
   end
 
-  test 'exclut le manager qui a lui-même créé l\'absence' do
+  test "le manager qui a lui-même créé l'absence ne reçoit pas de mail mais est l'auteur des mail logs" do
     auteur = users(:hidalgo) # manager du service_paris
     absence = nil
     # On rejoue le chemin réel : l'absence est créée PAR un manager → audit

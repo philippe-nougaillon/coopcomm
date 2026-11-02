@@ -17,6 +17,5 @@ class AgentPagesPolicyTest < ActionDispatch::IntegrationTest
 
   test 'accès interdit pour un agent sur les pages sans record' do
     refute @policy.assistant?
-    refute @policy.dashboard?
   end
 end

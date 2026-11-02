@@ -25,7 +25,7 @@
           <%= select_tag :adherent_id,
               options_from_collection_for_select(@adherents, :id, :nom_prénom, params[:adherent_id]),
               include_blank: "Tous les adhérents",
-              class: "slim-select w-full h-10", 
+              class: "w-full h-10", data: { controller: "slim-select" }, 
               onchange: "this.form.submit()" %>
         </div>
       <% end %>
@@ -34,8 +34,8 @@
         <%= select_tag :service_id,
               options_from_collection_for_select(@services, :id, :nom, params[:service_id]),
               multiple: true,
-              class: "slim-select w-full h-10",
-               data: { placeholder: 'Tous les services',
+              class: "w-full h-10",
+               data: { controller: "slim-select", placeholder: 'Tous les services',
                         max_values_shown_desktop: 2,
                         max_values_shown_mobile: 2 
                       }, 

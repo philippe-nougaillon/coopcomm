@@ -7,7 +7,7 @@ class DashboardAdherentTest < ActionDispatch::IntegrationTest
     sign_in users(:weil)
   end
 
-  test 'le tableau de bord est accessible depuis le menu' do
+  test "En tant qu'adhérent, je veux ouvrir mon tableau de bord depuis le menu" do
     get home_path
 
     assert_response :success
@@ -16,18 +16,18 @@ class DashboardAdherentTest < ActionDispatch::IntegrationTest
     get dashboard_path
 
     assert_response :success
-    assert_dom 'h1', text: 'Tableau de bord - Adhérent'
+    assert_dom 'section[data-carte=activiteAgents]'
   end
 
-  test 'le tableau de bord est accessible depuis les accès rapides' do
+  test "En tant qu'adhérent, je veux ouvrir mon tableau de bord depuis les accès rapides" do
     get home_path
 
     assert_response :success
-    assert_dom "a[href=?]", dashboard_path, text: /Voir le tableau de bord/
+    assert_dom "a[href=?][data-turbo=false]", dashboard_path, text: /Voir le tableau de bord/
 
     get dashboard_path
 
     assert_response :success
-    assert_dom 'h1', text: 'Tableau de bord - Adhérent'
+    assert_dom 'section[data-carte=activiteAgents]'
   end
 end

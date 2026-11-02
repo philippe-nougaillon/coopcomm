@@ -1,0 +1,171 @@
+<%
+  sections = [
+    ["demarrage", "Prise en main"],
+    ["roles", "Rôles et accès"],
+    ["guides", "Guides par fonctionnalité"],
+    ["faq", "Questions fréquentes"],
+    ["donnees", "Données et RGPD"],
+    ["support", "Signaler un problème"]
+  ]
+
+  etapes = [
+    { title: "Repérez votre rôle et votre périmètre", text: "Les pages et les actions disponibles dépendent de votre rôle et des services auxquels votre compte est rattaché. Cette aide reste consultable sans connexion." },
+    { title: "Choisissez le bon espace", text: "Selon vos droits, CoopComm vous donne accès au suivi des interventions, au matériel partagé, à la messagerie ou aux indicateurs." },
+    { title: "Suivez une intervention", text: "Une intervention passe généralement de « Nouveau » à « Terminé », puis est validée ou refusée avant son archivage." },
+    { title: "Consultez le guide adapté", text: "Les rubriques ci-dessous expliquent les fonctions courantes. Pour accéder aux espaces privés, utilisez le compte fourni par votre organisation." }
+  ]
+
+  roles = [
+    { title: "Adhérent", text: "Crée ou suit les interventions de son périmètre, puis peut valider ou refuser une intervention terminée." },
+    { title: "Agent", text: "Consulte les interventions qui lui sont attribuées, renseigne leur réalisation et peut effectuer le pointage lorsqu'il est activé." },
+    { title: "Manager", text: "Organise les interventions et les ressources de ses services, suit leur activité et peut archiver les interventions traitées." },
+    { title: "Administrateur", text: "Dispose des fonctions d'administration et de suivi dans le périmètre auquel son compte est rattaché." }
+  ]
+
+  guides = [
+    { title: "Créer et suivre une intervention",
+      text: "Les états actifs sont « Nouveau », « Terminé », « Validé », « Refusé » et « Archivé ». Les actions disponibles dépendent du rôle : il n'y a pas d'étapes « Accepté » ou « En cours » dans le parcours actuel.",
+      steps: ["Selon votre rôle, créez l'intervention ou consultez celle qui vous concerne.", "L'agent renseigne la réalisation et termine l'intervention.", "L'adhérent peut ensuite la valider ou la refuser ; un manager ou un administrateur peut l'archiver."] },
+    { title: "Utiliser le pointage par QR code",
+      text: "Un manager ou un administrateur peut créer un modèle de pointage récurrent et en imprimer le QR code. L'agent le scanne pour ouvrir le pointage et renseigner l'intervention réalisée.",
+      steps: ["Créez un modèle de pointage récurrent si vous disposez des droits nécessaires.", "Téléchargez ou imprimez son QR code et placez-le à l'endroit prévu.", "L'agent scanne le code avec son téléphone, puis renseigne le pointage."] },
+    { title: "Réserver ou signaler un problème de matériel",
+      text: "L'inventaire et le calendrier permettent de consulter le matériel partagé et ses disponibilités.",
+      steps: ["Choisissez le matériel et la date souhaitée pour vérifier sa disponibilité.", "Réservez-le pour cette date si l'action est proposée.", "Si un équipement est en panne, signalez la panne ; indiquez sa fin lorsqu'il est réparé, selon vos droits."] },
+    { title: "Échanger avec la messagerie",
+      text: "La messagerie permet d'échanger avec les personnes joignables dans un périmètre de services commun. Les contacts proposés et les conversations accessibles dépendent de vos droits.",
+      steps: ["Ouvrez la messagerie.", "Choisissez un contact proposé dans votre périmètre.", "Consultez la conversation ou envoyez un message."] },
+    { title: "Comprendre les notifications",
+      text: "Certaines actions déclenchent des notifications par e-mail ou WhatsApp. Elles ne sont pas envoyées à toutes les personnes pour chaque changement d'état.", steps: [] },
+    { title: "Consulter les tableaux de bord",
+      text: "Les tableaux de bord présentent des indicateurs d'activité, comme le nombre d'interventions, le temps réalisé et les agents actifs. Les indicateurs affichés dépendent du rôle et du périmètre de services.", steps: [] },
+    { title: "Suivre les devis, commandes et factures",
+      text: "CoopComm propose aussi des espaces de suivi administratif. Les documents et actions accessibles dépendent de votre rôle et de vos autorisations.", steps: [] },
+    { title: "Utiliser l'assistant de planification",
+      text: "À partir d'au moins dix interventions datées de l'organisation, l'assistant peut proposer des idées de tâches à partir des descriptions et des dates. Il s'agit de suggestions à relire, pas d'une prévision ni d'une création automatique.", steps: [] }
+  ]
+
+  faq = [
+    { q: "J'ai oublié mon mot de passe. Que faire ?",
+      a: "Utilisez le lien « Mot de passe oublié » sur la page de connexion. Si vous ne recevez pas l'e-mail, vérifiez vos courriers indésirables, puis contactez le support." },
+    { q: "Qui peut voir mes données ?",
+      a: "L'accès dépend de votre rôle, de vos services et de votre lien avec les interventions. Un agent consulte les interventions qui lui sont attribuées ; les adhérents, managers et administrateurs voient les informations permises dans leur périmètre." },
+    { q: "Puis-je utiliser CoopComm sur mobile ?",
+      a: "Oui, l'interface s'adapte aux téléphones, notamment pour consulter les interventions et scanner un QR code de pointage." },
+    { q: "Comment demander une nouvelle fonctionnalité ?",
+      a: "Écrivez à support@coopcomm.fr en décrivant le besoin rencontré. Le code source est publié sur GitHub." },
+    { q: "Où sont hébergées mes données ?",
+      a: "CoopComm est développé, hébergé et maintenu en France." },
+    { q: "Les suggestions de l'assistant sont-elles automatiques ?",
+      a: "Non. L'assistant propose des idées à partir des interventions disponibles ; elles restent à examiner et ne créent pas automatiquement de nouvelles interventions." }
+  ]
+
+  inline_link_class = "font-semibold text-[#691E9A] underline underline-offset-4 hover:text-[#db2767]"
+%>
+
+<div class="bg-gradient-to-b from-[#eef5ff] to-white">
+  <header class="max-w-7xl mx-auto px-6 pt-16 pb-10 lg:px-16 lg:pt-24">
+    <h1 class="text-4xl lg:text-6xl font-semibold tracking-tight text-slate-900">
+      Documentation <%= coopcomm_logo %>
+    </h1>
+    <p class="mt-4 text-xl text-slate-600">
+      Des repères simples pour comprendre les profils, les interventions et les fonctions de CoopComm.
+    </p>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-6 pb-20 lg:px-16 lg:grid lg:grid-cols-[14rem_1fr] lg:gap-12">
+
+    <nav aria-label="Sommaire" class="mb-10 lg:mb-0">
+      <ul class="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-1 lg:sticky lg:top-24 lg:overflow-visible">
+        <% sections.each do |id, label| %>
+          <li class="shrink-0">
+            <%= link_to label, "##{id}",
+                  class: "block rounded-full lg:rounded-xl px-4 py-2 text-slate-700 bg-white lg:bg-transparent border border-slate-200 lg:border-transparent hover:border-[#691E9A] hover:text-[#691E9A] lg:hover:bg-[#691E9A]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#691E9A]" %>
+          </li>
+        <% end %>
+      </ul>
+    </nav>
+
+    <div class="min-w-0 space-y-20">
+
+      <section id="demarrage" class="scroll-mt-24">
+        <h2 class="text-3xl font-semibold tracking-tight">Prise en main</h2>
+        <p class="mt-2 text-lg text-slate-600">Quatre repères pour découvrir la plateforme et savoir où chercher.</p>
+        <ol class="mt-8 space-y-4">
+          <% etapes.each_with_index do |e, i| %>
+            <li class="flex gap-4 rounded-3xl bg-white border border-slate-200 p-5">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#691E9A] text-white font-semibold"><%= i + 1 %></span>
+              <div>
+                <h3 class="text-lg font-semibold"><%= e[:title] %></h3>
+                <p class="mt-1 text-slate-600"><%= e[:text] %></p>
+              </div>
+            </li>
+          <% end %>
+        </ol>
+      </section>
+
+      <section id="roles" class="scroll-mt-24">
+        <h2 class="text-3xl font-semibold tracking-tight">Rôles et accès</h2>
+        <p class="mt-2 text-lg text-slate-600">Les rôles et les services associés au compte déterminent les données et les actions accessibles.</p>
+        <ul class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <% roles.each do |r| %>
+            <li class="relative overflow-hidden rounded-3xl border-2 border-black/10 bg-white p-6">
+              <h3 class="relative text-xl font-semibold"><%= r[:title] %></h3>
+              <p class="relative mt-2 text-slate-700 leading-relaxed"><%= r[:text] %></p>
+            </li>
+          <% end %>
+        </ul>
+      </section>
+
+      <section id="guides" class="scroll-mt-24">
+        <h2 class="text-3xl font-semibold tracking-tight">Guides par fonctionnalité</h2>
+        <p class="mt-2 text-lg text-slate-600">Cliquez sur un sujet pour afficher le détail.</p>
+        <div class="mt-8 space-y-3">
+          <% guides.each do |g| %>
+            <%= render "partials/accordion_item", title: g[:title], body: g[:text], steps: g[:steps] %>
+          <% end %>
+        </div>
+      </section>
+
+      <section id="faq" class="scroll-mt-24">
+        <h2 class="text-3xl font-semibold tracking-tight">Questions fréquentes</h2>
+        <div class="mt-8 space-y-3">
+          <% faq.each do |item| %>
+            <%= render "partials/accordion_item", title: item[:q], body: item[:a] %>
+          <% end %>
+        </div>
+      </section>
+
+      <section id="donnees" class="scroll-mt-24">
+        <h2 class="text-3xl font-semibold tracking-tight">Données et RGPD</h2>
+        <div class="mt-6 rounded-3xl bg-[#F4EFE6] p-6 lg:p-8 text-slate-800 leading-relaxed space-y-3">
+          <p>CoopComm est conforme au RGPD. La solution est développée, hébergée et maintenue en France.</p>
+          <p>
+            Le code source est ouvert et publié en toute transparence sur GitHub.
+            <%= link_to "Consulter le dépôt", "https://github.com/philippe-nougaillon/coopcomm", class: inline_link_class %>.
+          </p>
+          <p>
+            Pour exercer vos droits d'accès, de rectification ou de suppression, écrivez à
+            <%= link_to "support@coopcomm.fr", "mailto:support@coopcomm.fr", class: inline_link_class %>.
+          </p>
+        </div>
+      </section>
+
+      <section id="support" class="scroll-mt-24">
+        <h2 class="text-3xl font-semibold tracking-tight">Comment obtenir de l'aide ou signaler un problème ?</h2>
+        <div class="mt-6 rounded-3xl bg-white border-2 border-[#db2767]/30 p-6 lg:p-8">
+          <h3 class="text-xl font-semibold">Support technique</h3>
+          <p class="mt-2 text-slate-700 leading-relaxed">
+            Pour poser une question, signaler un problème ou partager une amélioration, envoyez un e-mail à :
+          </p>
+          <%= link_to "support@coopcomm.fr", "mailto:support@coopcomm.fr",
+                class: "mt-5 inline-block rounded-full bg-[#db2767] px-8 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#a8174f] hover:shadow-xl hover:-translate-y-0.5" %>
+          <p class="mt-5 text-slate-600">
+            Pour accélérer le traitement, indiquez la page concernée, ce que vous attendiez et ce qui s'est passé.
+          </p>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>

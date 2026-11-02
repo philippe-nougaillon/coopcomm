@@ -67,7 +67,7 @@ module ActiveSupport
     fixtures :all
 
     def refresh_dashboard_views!
-      DashboardRefreshable.refresh_views!
+      ActualiserDashboard.call
     end
 
     # Peut servir par la suite : permet de nettoyer le cache après chaque test

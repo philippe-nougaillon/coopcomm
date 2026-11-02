@@ -8,25 +8,25 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:administrateur_paris)
   end
 
-  test 'show : un service de son organisation → la page répond' do
+  test 'un service est affiché avec succès' do
     get service_url(@service)
 
     assert_response :success
   end
 
-  test 'new : sans paramètre → la page répond' do
+  test 'le formulaire de création est affiché avec succès' do
     get new_service_url
 
     assert_response :success
   end
 
-  test 'edit : un service de son organisation → la page répond' do
+  test 'le formulaire de modification est affiché avec succès' do
     get edit_service_url(@service)
 
     assert_response :success
   end
 
-  test 'create : paramètres valides → le service est créé' do
+  test 'un service est créé lorsque les paramètres sont valides' do
     assert_difference('Service.count') do
       post services_url, params: { service: { nom: "Nouveau #{SecureRandom.uuid}",
                                               organisation_id: organisations(:mairie_paris).id } }
@@ -39,7 +39,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
   # ==================== TESTS CRITIQUES ====================
 
   # utilisateur : les comptes qu'on y rattache paraissent sans service.
-  test 'create : nom vide → aucune création (critique)' do
+  test "un service sans nom n'est pas créé (critique)" do
     assert_no_difference('Service.count') do
       post services_url, params: { service: { nom: '' } }
     end
@@ -50,7 +50,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'create : nom déjà pris → aucune création et formulaire réaffiché' do
+  test "un service dont le nom est déjà pris n'est pas créé" do
     assert_no_difference('Service.count') do
       post services_url, params: { service: { nom: services(:technique).nom } }
     end
@@ -58,7 +58,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
-  test 'update : paramètres valides → le service est modifié' do
+  test 'un service est modifié lorsque les paramètres sont valides' do
     nouveau_nom = "Renommé #{SecureRandom.uuid}"
 
     patch service_url(@service), params: { service: { nom: nouveau_nom,
@@ -70,7 +70,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'update : nom vidé → le service garde son nom (critique)' do
+  test 'un service dont le nom est vidé garde son nom (critique)' do
     service = services(:technique)
 
     patch service_url(service), params: { service: { nom: '  ' } }
@@ -81,14 +81,14 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'update : nom déjà pris → le service est inchangé' do
+  test 'un service renommé avec un nom déjà pris est inchangé' do
     patch service_url(@service), params: { service: { nom: services(:technique).nom } }
 
     assert_response :unprocessable_content
     assert_not_equal services(:technique).nom, @service.reload.nom
   end
 
-  test 'destroy : un service sans rattachement → il est supprimé' do
+  test 'un service sans rattachement est supprimé' do
     assert_difference('Service.count', -1) do
       delete service_url(services(:menage))
     end
@@ -98,7 +98,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test 'destroy : un service encore rattaché → aucune suppression (critique)' do
+  test "un service encore rattaché n'est pas supprimé (critique)" do
     assert_no_difference('Service.count') do
       delete service_url(@service)
     end
@@ -109,7 +109,7 @@ class ServicesControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'set_service : un slug inconnu redirige sans planter' do
+  test 'un slug de service inconnu redirige sans planter' do
     get service_url('service-inexistant')
 
     assert_redirected_to root_path

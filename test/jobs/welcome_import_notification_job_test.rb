@@ -12,7 +12,7 @@ class WelcomeImportNotificationJobTest < ActiveJob::TestCase
     @encrypted    = encrypt_import_password(@password)
   end
 
-  test 'envoie le mail de bienvenue import avec le mot de passe déchiffré' do
+  test 'un utilisateur importé reçoit le mail de bienvenue avec son mot de passe déchiffré' do
     assert_emails 1 do
       WelcomeImportNotificationJob.perform_now(@user, @current_user.id, @encrypted)
     end
@@ -32,7 +32,7 @@ class WelcomeImportNotificationJobTest < ActiveJob::TestCase
     end
   end
 
-  test 'QUIRK : le MailLog n\'est pas tracé (organisation_id manquant)' do
+  test "aucun mail log n'est créé pour le mail de bienvenue (QUIRK : organisation_id manquant)" do
     # Le job appelle MailLog.create SANS organisation_id ; la colonne est NOT NULL →
     # l'enregistrement échoue silencieusement (create, pas create!).
     assert_no_difference -> { MailLog.count } do

@@ -21,7 +21,7 @@ class TerminerPointagesJob < ApplicationJob
   def terminer_pointage(intervention)
     agent = intervention.agents.first
 
-    intervention.fin = Time.current
+    intervention.fin = [Time.current, intervention.début.end_of_day].min
     intervention.terminer!
 
     # Quand il y a un template_slug, l'intervention n'a toujours qu'un seul agent.

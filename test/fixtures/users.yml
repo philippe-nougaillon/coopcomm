@@ -188,6 +188,13 @@ adherent_marseille:
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: ee438223-a203-43f4-9d97-1654c24d2520
 
+adherent_nom_long:
+  nom: THIAUCOURT-REGNIÉVILLE
+  email: thiaucourt-regnieville@gmail.commmmm
+  rôle: adhérent
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
+  slug: b740618c-0461-4dc2-82b5-41d71dbe44dd
+
 # Organisation sans manager
 
 john_wick:

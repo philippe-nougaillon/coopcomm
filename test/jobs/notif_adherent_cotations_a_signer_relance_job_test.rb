@@ -12,7 +12,7 @@ class NotifAdherentCotationsASignerRelanceJobTest < ActiveJob::TestCase
     @a_signer  = cotations(:cotation_secretariat)
   end
 
-  test 'envoie un mail à l\'adhérent et crée un MailLog tracé' do
+  test "l'adhérent reçoit un mail de relance et un mail log est créé lorsqu'il a une cotation à signer" do
     assert_emails 1 do
       assert_difference -> { MailLog.count }, 1 do
         NotifAdherentCotationsASignerRelanceJob.perform_now(@adherent)
@@ -37,7 +37,7 @@ class NotifAdherentCotationsASignerRelanceJobTest < ActiveJob::TestCase
     assert_equal [@adherent.email], ActionMailer::Base.deliveries.last.to
   end
 
-  test 'liste toutes les cotations à signer de l\'adhérent' do
+  test "le mail de relance liste toutes les cotations à signer de l'adhérent" do
     # On bascule une seconde cotation de weil en « envoyé ».
     cotations(:cotation_paris).update_column(:workflow_state, Cotation::ENVOYE)
 
@@ -48,7 +48,7 @@ class NotifAdherentCotationsASignerRelanceJobTest < ActiveJob::TestCase
     assert_includes body, cotations(:cotation_paris).ref
   end
 
-  test 'n\'envoie rien si l\'adhérent n\'a aucune cotation à signer' do
+  test "aucun mail n'est envoyé lorsque l'adhérent n'a aucune cotation à signer" do
     sans_cotation = users(:adhérent_sans_intervention)
 
     assert_no_emails do
@@ -58,7 +58,7 @@ class NotifAdherentCotationsASignerRelanceJobTest < ActiveJob::TestCase
     end
   end
 
-  test 'n\'envoie rien si une cotation a été signée entre-temps' do
+  test "aucun mail n'est envoyé lorsque la cotation a été signée entre-temps" do
     # La cotation quitte l'état « envoyé » après la sélection de la tâche.
     @a_signer.update_column(:workflow_state, Cotation::SIGNE)
 
@@ -69,7 +69,7 @@ class NotifAdherentCotationsASignerRelanceJobTest < ActiveJob::TestCase
     end
   end
 
-  test 'n\'envoie rien si l\'adhérent est nil' do
+  test "aucun mail n'est envoyé sans adhérent" do
     assert_no_emails do
       assert_no_difference -> { MailLog.count } do
         NotifAdherentCotationsASignerRelanceJob.perform_now(nil)
@@ -77,7 +77,7 @@ class NotifAdherentCotationsASignerRelanceJobTest < ActiveJob::TestCase
     end
   end
 
-  test 'n\'envoie rien si l\'adhérent n\'a pas d\'email' do
+  test "aucun mail n'est envoyé lorsque l'adhérent n'a pas d'email" do
     @adherent.update_columns(email: '')
 
     assert_no_emails do

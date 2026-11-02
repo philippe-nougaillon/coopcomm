@@ -25,7 +25,7 @@ ExceptionNotification.configure do |config|
   # Email notifier sends notifications by email.
   config.add_notifier :email, {
     email_prefix: '[COOPCOMM ERROR] ',
-    sender_address: %("COOPCOMM Notifier" <contact@philnoug.com>),
+    sender_address: ENV['MAIL_FROM'],
     exception_recipients: ENV["EXCEPTION_NOTIFICATION_RECIPIENTS"]
   }
 

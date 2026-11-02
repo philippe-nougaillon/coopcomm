@@ -11,7 +11,6 @@ class AdministrateurPagesPolicyTest < ActionDispatch::IntegrationTest
 
   test 'accès autorisé pour un administrateur sur les pages sans record' do
     assert @policy.assistant?
-    assert @policy.dashboard?
     assert @policy.home?
     assert @policy.meteo?
     assert @policy.meteo_by_day?

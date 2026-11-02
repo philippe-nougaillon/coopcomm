@@ -9,7 +9,7 @@ class AbsencesControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:administrateur_paris)
   end
 
-  test 'destroy : une absence de son périmètre → elle est supprimée' do
+  test 'une absence est supprimée' do
     assert_difference('Absence.count', -1) do
       delete absence_url(@absence)
     end
@@ -17,7 +17,7 @@ class AbsencesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to user_path(@agent)
   end
 
-  test 'destroy : en turbo_stream → la section des absences est mise à jour' do
+  test 'une absence supprimée en turbo stream est retirée de la section des absences' do
     assert_difference('Absence.count', -1) do
       delete absence_url(@absence), as: :turbo_stream
     end

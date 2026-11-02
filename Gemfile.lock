@@ -222,9 +222,6 @@ GEM
     fugit (1.11.2)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
-    fx (0.11.0)
-      activerecord (>= 7.2)
-      railties (>= 7.2)
     globalid (1.4.0)
       activesupport (>= 6.1)
     guard (2.20.1)
@@ -677,7 +674,6 @@ DEPENDENCIES
   exception_notification!
   fetch-api (~> 0.6.0)
   friendly_id (~> 5.5)
-  fx (~> 0.11)
   guard
   guard-livereload
   guard-minitest

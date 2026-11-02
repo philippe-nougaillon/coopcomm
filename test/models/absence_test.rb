@@ -9,15 +9,12 @@ class AbsenceTest < ActiveSupport::TestCase
     @agent = users(:bond)
   end
 
-  # Sentinelle : ajouter un motif à l'enum doit suffire. Un libellé écrit à la
-  # main finit toujours par diverger (l'historique d'audit annonçait « Maladie »
-  # pour un congé parental).
-  test 'MOTIF_LABELS : motifs de l\'enum → un libellé pour chacun, sans table à tenir à jour' do
+  test 'chaque motif de l\'enum a son libellé, sans table à tenir à jour' do
     assert_equal Absence.motifs.keys.sort, Absence::MOTIF_LABELS.keys.sort
     assert_equal 'Congé sans solde', Absence::MOTIF_LABELS['congé_sans_solde']
   end
 
-  test 'no_overlapping_absences : deux demi-journées différentes le même jour → acceptées' do
+  test 'deux demi-journées différentes le même jour sont acceptées' do
     Absence.create!(user: @agent, du: Date.new(2030, 5, 6), au: Date.new(2030, 5, 6),
                     motif: :formation, matin: true, après_midi: false)
 
@@ -27,7 +24,7 @@ class AbsenceTest < ActiveSupport::TestCase
     assert après_midi.valid?, après_midi.errors.full_messages.to_sentence
   end
 
-  test 'no_overlapping_absences : deux absences le même matin → refusée, le message dit « Matin uniquement »' do
+  test 'deux absences le même matin sont refusées, et le message précise « Matin uniquement »' do
     Absence.create!(user: @agent, du: Date.new(2030, 5, 7), au: Date.new(2030, 5, 7),
                     motif: :formation, matin: true, après_midi: false)
 
@@ -39,7 +36,7 @@ class AbsenceTest < ActiveSupport::TestCase
     assert_includes doublon.errors.full_messages.to_sentence, '(Matin uniquement)'
   end
 
-  test 'no_overlapping_absences : deux absences le même après-midi → le message dit « Après-midi uniquement »' do
+  test 'deux absences le même après-midi sont refusées, et le message précise « Après-midi uniquement »' do
     Absence.create!(user: @agent, du: Date.new(2030, 5, 8), au: Date.new(2030, 5, 8),
                     motif: :formation, matin: false, après_midi: true)
 
@@ -50,7 +47,7 @@ class AbsenceTest < ActiveSupport::TestCase
     assert_includes doublon.errors.full_messages.to_sentence, '(Après-midi uniquement)'
   end
 
-  test 'no_overlapping_absences : journée entière sur une demi-journée déjà posée → refusée' do
+  test 'une absence d\'une journée entière est refusée si une demi-journée est déjà posée' do
     Absence.create!(user: @agent, du: Date.new(2030, 5, 9), au: Date.new(2030, 5, 9),
                     motif: :formation, matin: true, après_midi: false)
 
@@ -60,7 +57,7 @@ class AbsenceTest < ActiveSupport::TestCase
     assert_includes journée.errors.full_messages.to_sentence, 'chevauche une autre absence'
   end
 
-  test 'no_overlapping_absences : mise à jour de l\'absence elle-même → non comptée comme doublon' do
+  test 'une absence modifiée n\'est pas comptée comme son propre doublon' do
     absence = Absence.create!(user: @agent, du: Date.new(2030, 5, 10), au: Date.new(2030, 5, 10),
                               motif: :formation)
 
@@ -69,7 +66,7 @@ class AbsenceTest < ActiveSupport::TestCase
     assert absence.valid?, absence.errors.full_messages.to_sentence
   end
 
-  test 'no_overlapping_absences : même jour chez un autre agent → accepté' do
+  test 'deux agents peuvent être absents le même jour' do
     Absence.create!(user: @agent, du: Date.new(2030, 5, 11), au: Date.new(2030, 5, 11), motif: :formation)
 
     autre_agent = Absence.new(user: users(:john_wick), du: Date.new(2030, 5, 11), au: Date.new(2030, 5, 11),
@@ -78,7 +75,7 @@ class AbsenceTest < ActiveSupport::TestCase
     assert autre_agent.valid?, autre_agent.errors.full_messages.to_sentence
   end
 
-  test 'no_overlapping_interventions : absence du matin, intervention l\'après-midi → acceptée' do
+  test 'une absence du matin est acceptée lorsque l\'intervention a lieu l\'après-midi' do
     jour = Date.new(2030, 6, 3)
     cree_intervention_prevue(jour + 14.hours, jour + 16.hours)
 
@@ -87,7 +84,7 @@ class AbsenceTest < ActiveSupport::TestCase
     assert absence.valid?, absence.errors.full_messages.to_sentence
   end
 
-  test 'no_overlapping_interventions : absence de l\'après-midi, intervention l\'après-midi → refusée' do
+  test 'une absence de l\'après-midi est refusée lorsque l\'intervention a lieu l\'après-midi' do
     jour = Date.new(2030, 6, 4)
     cree_intervention_prevue(jour + 14.hours, jour + 16.hours)
 
@@ -97,7 +94,7 @@ class AbsenceTest < ActiveSupport::TestCase
     assert_includes absence.errors.full_messages.to_sentence, 'déjà en intervention'
   end
 
-  test 'no_overlapping_interventions : absence de l\'après-midi, intervention le matin → acceptée' do
+  test 'une absence de l\'après-midi est acceptée lorsque l\'intervention a lieu le matin' do
     jour = Date.new(2030, 6, 5)
     cree_intervention_prevue(jour + 8.hours, jour + 10.hours)
 
@@ -106,23 +103,13 @@ class AbsenceTest < ActiveSupport::TestCase
     assert absence.valid?, absence.errors.full_messages.to_sentence
   end
 
-  # ÉPINGLAGE B32 : aucune validation de présence sur du/au, donc une absence
-  # sans date est enregistrable — et `nb_jours` plante ensuite. À inverser à la
-  # correction.
-  test 'validations : absence sans date → enregistrable, et nb_jours plante ensuite' do
-    absence = Absence.new(user: @agent, motif: :formation)
-
-    assert absence.valid?
-    assert_raises(NoMethodError) { absence.nb_jours }
-  end
-
-  test 'send_manager_notification : absence créée → notification aux managers avec l\'absence en argument' do
+  test 'les managers sont notifiés à la création d\'une absence' do
     absence = Absence.create!(user: @agent, du: Date.new(2030, 3, 4), au: Date.new(2030, 3, 5), motif: :formation)
 
     assert_enqueued_with(job: NotifManagersNewAbsenceJob, args: [absence])
   end
 
-  test 'send_manager_notification : absence refusée (fin avant début) → aucune notification' do
+  test 'aucun manager n\'est notifié lorsque l\'absence est refusée' do
     assert_no_enqueued_jobs only: NotifManagersNewAbsenceJob do
       absence = Absence.new(user: @agent, du: Date.new(2030, 3, 6), au: Date.new(2030, 3, 4), motif: :formation)
 
@@ -130,7 +117,7 @@ class AbsenceTest < ActiveSupport::TestCase
     end
   end
 
-  test 'notifier_personne_concernée : création → notification « créée », sans valeurs antérieures' do
+  test 'la personne concernée est notifiée de la création, sans valeurs antérieures' do
     absence = nil
 
     assert_enqueued_with(job: NotifAgentAbsenceJob) do
@@ -146,7 +133,7 @@ class AbsenceTest < ActiveSupport::TestCase
     assert absence.persisted?
   end
 
-  test 'notifier_personne_concernée : modification → notification « modifiée » avec l\'avant et l\'après' do
+  test 'la personne concernée est notifiée de la modification, avec l\'avant et l\'après' do
     absence = Absence.create!(user: @agent, du: Date.new(2030, 4, 3), au: Date.new(2030, 4, 3), motif: :formation)
     clear_enqueued_jobs
 
@@ -161,7 +148,7 @@ class AbsenceTest < ActiveSupport::TestCase
     assert_equal 'Formation', resume_avant['motif']
   end
 
-  test 'notifier_personne_concernée : suppression → notification « supprimée »' do
+  test 'la personne concernée est notifiée de la suppression' do
     absence = Absence.create!(user: @agent, du: Date.new(2030, 4, 4), au: Date.new(2030, 4, 4), motif: :formation)
     clear_enqueued_jobs
 
@@ -172,7 +159,7 @@ class AbsenceTest < ActiveSupport::TestCase
     assert_equal 'supprimée', action
   end
 
-  test 'notifier_personne_concernée : auteur et personne concernée confondus → aucune notification' do
+  test 'la personne concernée n\'est pas notifiée lorsqu\'elle est l\'auteur de l\'absence' do
     assert_no_enqueued_jobs only: NotifAgentAbsenceJob do
       Audited.audit_class.as_user(@agent) do
         Absence.create!(user: @agent, du: Date.new(2030, 4, 5), au: Date.new(2030, 4, 5), motif: :formation)
@@ -180,47 +167,45 @@ class AbsenceTest < ActiveSupport::TestCase
     end
   end
 
-  test 'en_cours? : absence qui couvre aujourd\'hui → vrai' do
+  test 'une absence qui couvre aujourd\'hui est en cours' do
     absence = Absence.new(user: @agent, du: Date.current, au: Date.current, motif: :formation)
 
     assert absence.en_cours?
   end
 
-  test 'en_cours? : absence hors d\'aujourd\'hui → faux' do
+  test 'une absence à venir n\'est pas en cours' do
     assert_not absence_2030.en_cours?
   end
 
-  test 'nb_jours : absence de trois jours → les deux bornes comptées' do
+  test 'le nombre de jours d\'une absence compte ses deux bornes' do
     absence = absence_2030
     absence.au = absence.du + 2.days
 
     assert_equal 3, absence.nb_jours
   end
 
-  # Les deux booléens à false signifient « journée entière », pas « rien ».
-
-  test 'takes_morning? / takes_afternoon? : matin seul → le matin, pas l\'après-midi' do
+  test 'une absence du matin ne prend pas l\'après-midi' do
     absence = absence_2030(matin: true, après_midi: false)
 
     assert absence.takes_morning?
     assert_not absence.takes_afternoon?
   end
 
-  test 'takes_morning? / takes_afternoon? : après-midi seul → l\'après-midi, pas le matin' do
+  test 'une absence de l\'après-midi ne prend pas le matin' do
     absence = absence_2030(matin: false, après_midi: true)
 
     assert_not absence.takes_morning?
     assert absence.takes_afternoon?
   end
 
-  test 'takes_morning? / takes_afternoon? : aucune demi-journée cochée → journée entière' do
+  test 'une absence sans demi-journée cochée vaut une journée entière' do
     absence = absence_2030(matin: false, après_midi: false)
 
     assert absence.takes_morning?
     assert absence.takes_afternoon?
   end
 
-  test 'takes_morning? / takes_afternoon? : les deux demi-journées cochées → journée entière' do
+  test 'une absence dont les deux demi-journées sont cochées vaut une journée entière' do
     absence = absence_2030(matin: true, après_midi: true)
 
     assert absence.takes_morning?

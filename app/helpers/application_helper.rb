@@ -127,21 +127,21 @@ module ApplicationHelper
                hidden_field_tag('direction', sort_direction, id: nil)])
   end
 
-  def th_tri(titre, colonne: nil, **options)
+  def th_tri(titre, colonne: nil, ancre: nil, **options)
     options = options.merge(scope: 'col')
     options[:'aria-sort'] = aria_sort(colonne) if colonne.present? && colonne_triable?(colonne)
 
-    content_tag(:th, colonne.present? ? sort_link(colonne, titre) : titre, options)
+    content_tag(:th, colonne.present? ? sort_link(colonne, titre, ancre: ancre) : titre, options)
   end
 
-  def sort_link(column, title = nil)
+  def sort_link(column, title = nil, ancre: nil)
     title ||= (@model_class ? @model_class.human_attribute_name(column) : column.titleize)
     return content_tag(:span, title) unless colonne_triable?(column)
 
     active = column == sort_column
     direction = active && sort_direction == 'asc' ? 'desc' : 'asc'
 
-    link_to url_for(request.parameters.merge('column' => column, 'direction' => direction, 'page' => nil)),
+    link_to url_for(request.parameters.merge('column' => column, 'direction' => direction, 'page' => nil, 'anchor' => ancre)),
             class: 'group inline-flex items-center cursor-pointer hover:text-primary',
             title: direction == 'asc' ? 'Trier par ordre croissant' : 'Trier par ordre décroissant' do
       safe_join([content_tag(:span, title), icone_tri(active, active ? sort_direction : direction)])

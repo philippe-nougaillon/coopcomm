@@ -1,0 +1,12 @@
+<section class="card <%= classes_carte %> min-h-0" data-carte="etatsParMois">
+  <div class="card-body p-2 sm:p-3 gap-2 min-h-0">
+    <div class="flex flex-wrap items-start justify-between gap-2">
+      <h2 class="text-lg font-bold uppercase">Interventions</h2>
+      <div class="flex flex-wrap items-center justify-end gap-2 max-sm:w-full">
+        <%= filtre_services_graphe('etatsParMois', @donnees_graphes[:services]) %>
+        <%= filtre_graphe('etatsParMois', 'granularite', [['Par mois', ''], ['Par trimestre', 'trimestre']]) %>
+      </div>
+    </div>
+    <div class="flex-1 min-h-0 overflow-x-auto <%= classes_graphe %>" data-graphe data-type="colonnes" data-hauteur="tuile" data-defilant></div>
+  </div>
+</section>

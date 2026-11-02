@@ -10,7 +10,7 @@ class DemandeInterventionAdherentTest < ActionDispatch::IntegrationTest
     sign_in @adherent
   end
 
-  test 'le formulaire de demande est accessible depuis les accès rapides' do
+  test "En tant qu'adhérent, je veux ouvrir le formulaire de demande d'intervention depuis les accès rapides" do
     get home_path
 
     assert_response :success
@@ -22,7 +22,7 @@ class DemandeInterventionAdherentTest < ActionDispatch::IntegrationTest
     assert_dom "form[action=?]", interventions_path
   end
 
-  test 'la description d’une intervention est modifiée depuis son bouton Modifier' do
+  test "En tant qu'adhérent, je veux modifier la description de mon intervention depuis son bouton Modifier" do
     get intervention_path(@intervention)
 
     assert_response :success

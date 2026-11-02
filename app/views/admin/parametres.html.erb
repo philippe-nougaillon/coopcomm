@@ -30,8 +30,8 @@
           <%= label_tag :user_id, "Utilisateur", class: "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1" %>
           <%= select_tag :user_id, options_from_collection_for_select(@users, :id, :nom_prénom, params[:user_id]),
                       multiple: true,
-                      class: 'slim-select w-full h-10',
-                      data: { placeholder: 'Tous les utilisateurs',
+                      class: 'w-full h-10',
+                      data: { controller: 'slim-select', placeholder: 'Tous les utilisateurs',
                               max_values_shown_desktop: 4,
                               max_values_shown_mobile: 2 
                             },
