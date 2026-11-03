@@ -158,7 +158,7 @@
                 <% if policy(:dashboard).index? %>
                   <li>
                     <%= link_to dashboard_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if params[:controller] == 'dashboard'}", 'data-turbo': false do %>
-                      <%= embedded_svg "icons/bar_chart.svg", class: "w-5 h-5 fill-current" %> <span>Tableaux de bord</span>
+                      <%= embedded_svg "icons/bar_chart.svg", class: "w-5 h-5 fill-current" %> <span>Tableau de bord</span>
                     <% end %>
                   </li>
                 <% end %>

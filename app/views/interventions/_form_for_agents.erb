@@ -19,7 +19,7 @@
       <%= embedded_svg "icons/info.svg", class: "w-5 h-5 shrink-0 mt-0.5" rescue nil %>
       <div>
         <p class="font-semibold">Complétez les informations pour terminer cette intervention</p>
-        <p class="text-sm mt-1">Les champs <strong>Agents</strong>, <strong>Début</strong>, <strong>Fin</strong> et <strong>Pause</strong> ci-dessous sont obligatoires. Une fois enregistrés, l'intervention passera automatiquement au statut « Terminé ».</p>
+        <p class="text-sm mt-1">Les champs <strong>Agents</strong>, <strong>Date d’intervention</strong>, <strong>Début</strong>, <strong>Fin</strong> et <strong>Pause</strong> ci-dessous sont obligatoires. Une fois enregistrés, l'intervention passera automatiquement au statut « Terminé ».</p>
       </div>
     </div>
   <% end %>
@@ -98,20 +98,31 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
-        <div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 pt-4 border-t border-slate-100">
+        <div class="col-span-2">
           <%= form.label :début, class: "label font-semibold text-slate-700" do %>
-            Début <span class="text-red-500">*</span>
+            Date d’intervention <span class="text-red-500">*</span>
           <% end %>
-          <div class="flex flex-col sm:flex-row sm:items-center gap-2 <%= terminaison_demandee && intervention.début.blank? ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200' %> p-2 rounded-lg border">
+          <div class="flex items-center <%= terminaison_demandee && intervention.début.blank? ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200' %> p-2 rounded-lg border">
             <%= form.date_field :début,
-                                class: "w-full sm:flex-1 bg-transparent border-none outline-hidden text-sm",
-                                value: (intervention.début&.to_date || (intervention.new_record? ? Date.current : nil)),
+                                class: "w-full bg-transparent border-none outline-hidden text-sm",
+                                value: date_intervention(intervention, neuve: Date.current),
                                 data: { 'calc-temps-passe-target': 'debut_date',
                                         'verification-disponibilites-target': 'debut',
-                                        action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" },
+                                        action: "input->calc-temps-passe#copierDate change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" },
                                 required: true %>
-            <div class="flex items-center justify-center gap-1 w-full sm:w-auto bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs shrink-0">
+            <%= form.hidden_field :fin,
+                                  value: date_intervention(intervention, neuve: Date.current),
+                                  data: { 'calc-temps-passe-target': 'fin_date',
+                                          'verification-disponibilites-target': 'fin' } %>
+          </div>
+        </div>
+        <div>
+          <%= form.label :début_hour, class: "label font-semibold text-slate-700" do %>
+            Début <span class="text-red-500">*</span>
+          <% end %>
+          <div class="flex items-center <%= terminaison_demandee && intervention.début.blank? ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200' %> p-2 rounded-lg border">
+            <div class="flex items-center justify-center gap-1 w-full bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs">
               <%= form.select :début_hour, 
                                options_for_select(heures_proposées(intervention),
                                                   params[:début_hour] || intervention.début&.hour),
@@ -135,18 +146,11 @@
           </div>
         </div>
         <div>
-          <%= form.label :fin, class: "label font-semibold text-slate-700" do %>
+          <%= form.label :fin_hour, class: "label font-semibold text-slate-700" do %>
             Fin <span class="text-red-500">*</span>
           <% end %>
-          <div class="flex flex-col sm:flex-row sm:items-center gap-2 <%= terminaison_demandee && intervention.fin.blank? ?  'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200' %> p-2 rounded-lg border">
-            <%= form.date_field :fin,
-                                class: "w-full sm:flex-1 bg-transparent border-none outline-hidden text-sm",
-                                value: intervention.fin&.to_date,
-                                data: { 'calc-temps-passe-target': 'fin_date',
-                                        'verification-disponibilites-target': 'fin',
-                                        action: "change->calc-temps-passe#calc change->verification-disponibilites#verificationWithInput" },
-                                required: true %>
-            <div class="flex items-center justify-center gap-1 w-full sm:w-auto bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs shrink-0">
+          <div class="flex items-center <%= terminaison_demandee && intervention.fin.blank? ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200' %> p-2 rounded-lg border">
+            <div class="flex items-center justify-center gap-1 w-full bg-white px-2 py-1 rounded-md border border-slate-200 shadow-2xs">
               <%= form.select :fin_hour, 
                               options_for_select(heures_proposées(intervention),
                               params[:fin_hour] || intervention.fin&.hour),

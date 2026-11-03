@@ -203,4 +203,26 @@ class InterventionsHelperTest < ActionView::TestCase
   test 'aucune minute n’est présélectionnée sans date' do
     assert_nil minute_présélectionnée(interventions(:tonte_locaux), nil)
   end
+
+  test "la date d'intervention est celle du début" do
+    intervention = Intervention.new(début: Time.zone.local(2026, 9, 14, 8, 30), fin: Time.zone.local(2026, 9, 15, 17, 0))
+
+    assert_equal Date.new(2026, 9, 14), date_intervention(intervention)
+  end
+
+  test "sans début, la date d'intervention est celle de la fin" do
+    assert_equal Date.new(2026, 9, 15), date_intervention(Intervention.new(fin: Time.zone.local(2026, 9, 15, 17, 0)))
+  end
+
+  test "une intervention enregistrée sans début ni fin n'a pas de date d'intervention, même avec une date proposée aux neuves" do
+    assert_nil date_intervention(interventions(:intervention_repete), neuve: Date.new(2026, 11, 3))
+  end
+
+  test 'une intervention neuve sans date prend la date proposée aux neuves' do
+    assert_equal Date.new(2026, 11, 3), date_intervention(Intervention.new, neuve: Date.new(2026, 11, 3))
+  end
+
+  test "une intervention neuve sans date ni date proposée n'a pas de date d'intervention" do
+    assert_nil date_intervention(Intervention.new)
+  end
 end

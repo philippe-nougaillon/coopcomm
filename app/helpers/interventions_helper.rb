@@ -129,4 +129,8 @@ module InterventionsHelper
 
     intervention.template_slug.blank? ? date.min - date.min % 15 : date.min
   end
+
+  def date_intervention(intervention, neuve: nil)
+    (intervention.début || intervention.fin)&.to_date || (neuve if intervention.new_record?)
+  end
 end
