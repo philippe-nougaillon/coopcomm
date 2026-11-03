@@ -607,8 +607,7 @@ class InterventionsController < ApplicationController
 
       nouvelle_date = combine_datetime(champ_date)
 
-      # Si la date n'a pas changé ?
-      if only_seconds_changed?(champ_date, nouvelle_date)
+      if heure_incomplète?(champ_date) || only_seconds_changed?(champ_date, nouvelle_date)
         # On supprime la date dans les params pour ne pas la prendre en compte
         params[:intervention].delete(champ_date)
       else # Sinon on modifie la date
@@ -640,5 +639,11 @@ class InterventionsController < ApplicationController
 
   def dates_params
     params.require(:intervention).permit(:début, :début_hour, :début_minute, :fin, :fin_hour, :fin_minute, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute)
+  end
+
+  # Le formulaire poste l'heure à part : vide, `date.hour` en ferait minuit.
+  def heure_incomplète?(champ_date)
+    dates_params[champ_date].present? && dates_params.key?("#{champ_date}_hour") &&
+      (dates_params["#{champ_date}_hour"].blank? || dates_params["#{champ_date}_minute"].blank?)
   end
 end

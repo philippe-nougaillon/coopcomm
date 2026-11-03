@@ -692,9 +692,8 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal Time.zone.local(2024, 4, 19, 18, 45), intervention.fin
   end
 
-  test 'une intervention créée avec une date de début sans heure ni minute démarre à minuit' do
+  test 'une intervention créée avec une date de début sans heure ni minute n’a pas de date de début' do
     date_saisie = interventions(:nouvelle_intervention).début.to_date
-    expected = date_saisie.beginning_of_day
 
     post interventions_url, params: {
       intervention: {
@@ -707,8 +706,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
 
     intervention = Intervention.find_by(description: 'Élagage sans heure saisie')
     assert intervention, 'garde : la création doit avoir abouti'
-    actual = intervention.début
-    assert_equal expected, actual
+    assert_nil intervention.début
   end
 
   test 'une intervention créée par un adhérent naît à l’état nouveau' do
@@ -1131,6 +1129,30 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     refute derniers_audits.any? { |change| change.key?("début") || change.key?("fin") }
   end
 
+  test 'une date saisie sans heure laisse la date enregistrée intacte' do
+    intervention = interventions(:tonte_locaux)
+    début_avant = intervention.début
+
+    patch intervention_url(intervention), params: {
+      intervention: { début: (début_avant.to_date - 1).to_s, début_hour: '', début_minute: '' }
+    }
+
+    assert_redirected_to intervention_url(intervention)
+    assert_equal début_avant, intervention.reload.début
+  end
+
+  test 'une date saisie avec une heure mais sans minute laisse la date enregistrée intacte' do
+    intervention = interventions(:tonte_locaux)
+    début_avant = intervention.début
+
+    patch intervention_url(intervention), params: {
+      intervention: { début: (début_avant.to_date - 1).to_s, début_hour: 9, début_minute: '' }
+    }
+
+    assert_redirected_to intervention_url(intervention)
+    assert_equal début_avant, intervention.reload.début
+  end
+
   # ==================== TESTS CRITIQUES ====================
 
   test 'un paramètre workflow_state forgé à la modification laisse l’état inchangé (critique)' do
@@ -1208,6 +1230,20 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     }
 
     assert intervention.reload.nouveau?, "l'état ne doit pas avoir changé"
+  end
+
+  test 'le formulaire de terminaison refuse une date sans heure (critique)' do
+    intervention = interventions(:intervention_paris)
+
+    patch intervention_url(intervention), params: {
+      terminer: 1,
+      intervention: { début: '2025-04-23', début_hour: '', début_minute: '',
+                      fin: '2025-04-23', fin_hour: '', fin_minute: '', description: intervention.description }
+    }
+
+    assert_response :unprocessable_content
+    assert intervention.reload.nouveau?, "l'état ne doit pas avoir changé"
+    assert_match(/est obligatoire pour terminer l.*intervention/, response.body)
   end
 
   # ==================== /TESTS CRITIQUES ====================
