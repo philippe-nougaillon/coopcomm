@@ -26,16 +26,17 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_includes noms, 'Rack::Attack'
   end
 
-  test 'les cinq règles de throttle sont déclarées avec leurs seuils' do
+  test 'les six règles de throttle sont déclarées avec leurs seuils' do
     regles = Rack::Attack.throttles
 
-    assert_equal %w[devise/ip logins/email logins/ip password_resets/ip req/ip], regles.keys.sort
+    assert_equal %w[devise/ip logins/email logins/ip password_resets/ip req/ip sign_ups/ip], regles.keys.sort
     assert_equal [300, 5.minutes.to_i], [regles['req/ip'].limit, regles['req/ip'].period]
     assert_equal [5, 20], [regles['logins/ip'].limit, regles['logins/ip'].period]
     assert_equal [5, 20], [regles['logins/email'].limit, regles['logins/email'].period]
     assert_equal [5, 15.minutes.to_i],
                  [regles['password_resets/ip'].limit, regles['password_resets/ip'].period]
     assert_equal [20, 1.minute.to_i], [regles['devise/ip'].limit, regles['devise/ip'].period]
+    assert_equal [5, 15.minutes.to_i], [regles['sign_ups/ip'].limit, regles['sign_ups/ip'].period]
   end
 
   test 'le throttle des connexions par email surveille le paramètre par lequel Devise authentifie réellement' do
@@ -133,11 +134,12 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     assert_equal 429, response.status, "devise/ip #{ROUTE_HINT}"
   end
 
-  test "les pages de session, de mot de passe et d'invitation sont toutes comptées comme pages Devise" do
+  test "les pages de session, de mot de passe, d'invitation et d'inscription sont toutes comptées comme pages Devise" do
     assert_equal '1.2.3.4', discriminant('devise/ip', new_user_session_path, method: 'GET')
     assert_equal '1.2.3.4', discriminant('devise/ip', destroy_user_session_path, method: 'DELETE')
     assert_equal '1.2.3.4', discriminant('devise/ip', new_user_password_path, method: 'GET')
     assert_equal '1.2.3.4', discriminant('devise/ip', accept_user_invitation_path, method: 'GET')
+    assert_equal '1.2.3.4', discriminant('devise/ip', new_user_registration_path, method: 'GET')
   end
 
   test "la liste des utilisateurs n'est pas comptée comme une page Devise" do
@@ -145,6 +147,24 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     # pages/min.
     assert_nil discriminant('devise/ip', '/users', method: 'GET')
     assert_nil discriminant('devise/ip', '/users/42', method: 'GET')
+  end
+
+  # ----- sign_ups/ip : rafale d'inscriptions sur l'instance de démo -----
+
+  test "la 6e inscription depuis la même IP est bloquée" do
+    5.times do |i|
+      post user_registration_path, params: { user: { email: 'inconnu@exemple.fr' } }, headers: ip('1.2.3.4')
+
+      assert_not_equal 429, response.status, "l'inscription n°#{i + 1} devrait encore passer"
+    end
+
+    post user_registration_path, params: { user: { email: 'inconnu@exemple.fr' } }, headers: ip('1.2.3.4')
+
+    assert_equal 429, response.status, "sign_ups/ip #{ROUTE_HINT}"
+  end
+
+  test "la liste des utilisateurs n'est pas comptée comme une inscription" do
+    assert_nil discriminant('sign_ups/ip', '/users', method: 'GET')
   end
 
   # ----- req/ip : throttle global (discriminant seul : 301 requêtes full-stack

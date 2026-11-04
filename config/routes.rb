@@ -6,7 +6,7 @@ Rails.application.routes.draw do
 
   mount LetterOpenerWeb::Engine, at: '/letter_opener' if Rails.env.development?
 
-  devise_for :users
+  devise_for :users, skip: :registrations
   # devise_for :users, controllers: {
   #   omniauth_callbacks: 'users/omniauth_callbacks'
   # }
@@ -19,6 +19,9 @@ Rails.application.routes.draw do
     unauthenticated do
       root 'pages#welcome', as: :unauthenticated_root
     end
+
+    get 'users/sign_up', to: 'users/registrations#new', as: :new_user_registration
+    post 'users', to: 'users/registrations#create', as: :user_registration
   end
 
   resources :absences, only: [:destroy]

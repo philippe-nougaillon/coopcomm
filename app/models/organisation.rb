@@ -14,4 +14,6 @@ class Organisation < ApplicationRecord
   has_many :users, -> { distinct }, through: :services
   has_many :messages, -> { distinct }, through: :users
   has_many :interventions, through: :services
+
+  validates :nom, presence: true
 end

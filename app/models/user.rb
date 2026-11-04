@@ -21,8 +21,8 @@ class User < ApplicationRecord
          #  :lockable,
          :secure_validatable,
          :invitable,
-         :rememberable
-  #  :registerable,
+         :rememberable,
+         :registerable
   #  :omniauthable,
   #  omniauth_providers: [:google_oauth2]
 

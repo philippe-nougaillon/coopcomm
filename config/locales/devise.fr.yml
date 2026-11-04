@@ -15,6 +15,7 @@ fr:
         last_sign_in_at: Date de la dernière connexion
         last_sign_in_ip: IP de la dernière connexion
         locked_at: Verrouillé à
+        nom_organisation: Organisation
         password: Mot de passe
         password_confirmation: Confirmation du mot de passe
         remember_created_at: Mémorisé à
@@ -102,7 +103,7 @@ fr:
         we_need_your_current_password_to_confirm_your_changes: nous avons besoin de votre mot de passe actuel pour valider ces modifications
       new:
         sign_up: Inscription
-      signed_up: Bienvenue ! Votre compte a bien été créé. Vous pouvez maintenant vous connecter.
+      signed_up: Bienvenue ! Votre compte a bien été créé.
       signed_up_but_inactive: Vous vous êtes bien enregistré(e). Cependant, nous n’avons pas pu vous connecter car votre compte n’a pas encore été activé.
       signed_up_but_locked: Vous vous êtes bien enregistré(e). Cependant, nous n’avons pas pu vous connecter car votre compte est verrouillé.
       signed_up_but_unconfirmed: Un message avec un lien de confirmation vous a été envoyé par mail. Veuillez suivre ce lien pour activer votre compte.

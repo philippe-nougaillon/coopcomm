@@ -2,7 +2,7 @@
   Vous avez déjà un compte ?
   <%= link_to "Se connecter", new_session_path(resource_name), class: 'text-primary' %><br />
 <% end %>
-<%- if devise_mapping.registerable? && controller_name != 'registrations' %>
+<%- if devise_mapping.registerable? && controller_name != 'registrations' && demo_instance? %>
   <p>Vous n'avez pas de compte ?</p>
   <%= link_to "S'inscrire", new_registration_path(resource_name), class: 'text-success' %><br />
 <% end %>
