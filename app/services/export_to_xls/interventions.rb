@@ -39,7 +39,7 @@ module ExportToXls
           intervention.tag_list.join(', '),
           intervention.workflow_state.to_s.humanize,
           intervention.adherent.try(:nom_prénom),
-          intervention.service.nom,
+          intervention.service&.nom,
           agent_columns,
           tool_columns,
           intervention.début ? I18n.l(intervention.début) : '',

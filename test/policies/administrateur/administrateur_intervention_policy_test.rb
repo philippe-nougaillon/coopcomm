@@ -9,10 +9,14 @@ class AdministrateurInterventionPolicyTest < ActionDispatch::IntegrationTest
     intervention = interventions(:intervention_paris)
     intervention_pointage = interventions(:intervention_repete)
     intervention_autre_org = interventions(:nettoyage_port)
+    demande_sans_service = interventions(:demande_par_mail)
+    demande_sans_service_autre_org = interventions(:demande_par_mail_marseille)
 
     @policy = InterventionPolicy.new(administrateur, intervention)
     @policy_pointage = InterventionPolicy.new(administrateur, intervention_pointage)
     @policy_autre_org = InterventionPolicy.new(administrateur, intervention_autre_org)
+    @policy_sans_service = InterventionPolicy.new(administrateur, demande_sans_service)
+    @policy_sans_service_autre_org = InterventionPolicy.new(administrateur, demande_sans_service_autre_org)
   end
 
   test 'accès autorisé pour un administrateur sur une intervention de son organisation' do
@@ -93,6 +97,13 @@ class AdministrateurInterventionPolicyTest < ActionDispatch::IntegrationTest
     refute @policy_pointage.verifier_disponibilites?
   end
 
+  test "accès autorisé pour un administrateur sur une demande sans service d'un adhérent de son organisation" do
+    assert @policy_sans_service.show?
+    assert @policy_sans_service.edit?
+    assert @policy_sans_service.update?
+    assert @policy_sans_service.destroy?
+  end
+
   test "accès interdit pour un administrateur sur une intervention d'une autre organisation" do
     refute @policy_autre_org.show?
     refute @policy_autre_org.edit?
@@ -113,5 +124,12 @@ class AdministrateurInterventionPolicyTest < ActionDispatch::IntegrationTest
     refute @policy_autre_org.voir_realisation?
     refute @policy_autre_org.voir_activite?
     refute @policy_autre_org.voir_dates_prevues?
+  end
+
+  test "accès interdit pour un administrateur sur une demande sans service d'un adhérent d'une autre organisation" do
+    refute @policy_sans_service_autre_org.show?
+    refute @policy_sans_service_autre_org.edit?
+    refute @policy_sans_service_autre_org.update?
+    refute @policy_sans_service_autre_org.destroy?
   end
 end

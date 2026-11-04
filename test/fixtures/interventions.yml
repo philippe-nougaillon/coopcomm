@@ -143,3 +143,18 @@ intervention_sans_manager:
   workflow_state: nouveau
   slug: 8f69ed4e-cc58-4ecc-ab2b-57377f525bd4
   service: service_marseille
+
+# Demandes arrivées par mail d'un adhérent à plusieurs services : sans service
+
+demande_par_mail:
+  adherent_id: <%= ActiveRecord::FixtureSet.identify(:weil) %>
+  description: "[MAIL] Fuite dans la salle des fêtes"
+  commentaires: "De Weil Ariel (ADHÉRENT) : Bonjour, il y a une fuite"
+  workflow_state: nouveau
+  slug: 6f2d1c3b-8a4e-4b7d-9c1e-2a5f7b8d9e0f
+
+demande_par_mail_marseille:
+  adherent_id: <%= ActiveRecord::FixtureSet.identify(:adherent_marseille) %>
+  description: "[MAIL] Lampadaire en panne"
+  workflow_state: nouveau
+  slug: 1b9e7a2c-5d3f-4e8b-a6c0-9f4d2e1b7c3a

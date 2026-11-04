@@ -10,8 +10,10 @@ class AdherentInterventionPolicyTest < ActionDispatch::IntegrationTest
     intervention_pointage = interventions(:intervention_repete)
     intervention_autre_adherent = interventions(:intervention_paris)
     intervention_autre_org = interventions(:nettoyage_port)
+    demande_sans_service = interventions(:demande_par_mail)
 
     @policy = InterventionPolicy.new(adherent, intervention)
+    @policy_sans_service = InterventionPolicy.new(adherent, demande_sans_service)
     @policy_pointage = InterventionPolicy.new(adherent, intervention_pointage)
     @policy_autre_adherent = InterventionPolicy.new(adherent, intervention_autre_adherent)
     @policy_autre_org = InterventionPolicy.new(adherent, intervention_autre_org)
@@ -98,6 +100,12 @@ class AdherentInterventionPolicyTest < ActionDispatch::IntegrationTest
   test 'saisie interdite pour un adhérent sur un modèle de pointage dont il est le demandeur' do
     refute @policy_pointage.planifier_dates?
     refute @policy_pointage.saisir_realisation?
+  end
+
+  test 'accès autorisé pour un adhérent sur une demande sans service dont il est le demandeur' do
+    assert @policy_sans_service.show?
+    assert @policy_sans_service.edit?
+    assert @policy_sans_service.update?
   end
 
   test "accès interdit pour un adhérent sur une intervention d'un autre demandeur" do

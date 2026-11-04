@@ -52,6 +52,16 @@ class AdherentSupportMailboxTest < ActionMailbox::TestCase
     assert_includes user.service_ids, intervention.service_id
   end
 
+  test "l'intervention créée par mail n'a pas de service quand l'adhérent en a plusieurs (critique)" do
+    user = users(:weil)
+
+    assert_operator user.services.count, :>, 1
+
+    recevoir(from: user.email, subject: 'Plusieurs services')
+
+    assert_nil Intervention.find_by(description: '[MAIL] Plusieurs services').service
+  end
+
   test "les managers et administrateurs du service sont prévenus quand l'adhérent n'a qu'un service (critique)" do
     user = users(:berthout)
 

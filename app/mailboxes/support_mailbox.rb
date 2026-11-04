@@ -7,14 +7,17 @@ class SupportMailbox < ApplicationMailbox
     adherent = User.adhérent.find_by(email: mail.from_address&.address)
     return if adherent.nil?
 
-    service = adherent.services.ordered.first
-    return if service.nil?
+    services = adherent.services.to_a
+    return if services.empty?
 
-    intervention = service.interventions.new(
+    # Plusieurs services : la demande naît sans, un administrateur de l'organisation l'affecte.
+    intervention = Intervention.new(
       adherent_id: adherent.id,
+      service: (services.first if services.one?),
+      service_facultatif: true,
       description: "[MAIL] #{mail.subject}",
       commentaires: "De #{adherent.nom_prenom_role} : #{safe_mail_body(mail)}",
-      destinataires_notification: destinataires(adherent, service)
+      destinataires_notification: destinataires(adherent, services)
     )
 
     unless Audited.audit_class.as_user(adherent) { intervention.save }
@@ -26,10 +29,10 @@ class SupportMailbox < ApplicationMailbox
   private
 
   # to_a : ActiveJob ne sait pas sérialiser une relation, seulement des objets.
-  def destinataires(adherent, service)
-    return service.managers_and_admin.to_a if adherent.services.size == 1
+  def destinataires(adherent, services)
+    return services.first.managers_and_admin.to_a if services.one?
 
-    service.organisation.users.administrateur.to_a
+    adherent.organisation.users.administrateur.to_a
   end
 
   def safe_mail_body(mail)

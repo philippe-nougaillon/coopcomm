@@ -15,12 +15,12 @@ class Intervention < ApplicationRecord
 
   # Autorise Rails à lire et écrire ces champs virtuels pour le formulaire
   attr_accessor :tags_manager
-  # Posés par la mailbox, qui devine le service ; à défaut le job prévient ceux du service.
-  attr_accessor :destinataires_notification
+  # Posés par la mailbox : ses destinataires (à défaut ceux du service), et le droit de naître sans service.
+  attr_accessor :destinataires_notification, :service_facultatif
 
   before_destroy :must_not_have_any_mouvements
 
-  belongs_to :service
+  belongs_to :service, optional: true
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
 
   has_many :agent_interventions, dependent: :destroy
@@ -48,7 +48,8 @@ class Intervention < ApplicationRecord
   before_validation -> { self.temps_de_pause = 0 if temps_de_pause.nil? && terminé? }
   before_validation :calc_temps_total
 
-  validates :description, :adherent_id, :service_id, presence: true
+  validates :description, :adherent_id, presence: true
+  validates :service_id, presence: true, unless: :service_facultatif
 
   validate :schedules_must_make_sense
   validate :tools_must_be_available
@@ -524,6 +525,11 @@ class Intervention < ApplicationRecord
     else
       {}
     end
+  end
+
+  # Sans service (demande arrivée par mail), l'organisation est celle de l'adhérent.
+  def organisation
+    super || adherent&.organisation
   end
 
   private
