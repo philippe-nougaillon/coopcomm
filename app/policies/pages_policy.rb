@@ -8,7 +8,7 @@ class PagesPolicy < ApplicationPolicy
   end
 
   def assistant?
-    administrateur?
+    user&.super_admin?
   end
 
   def home?
