@@ -132,6 +132,55 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:interventions), autre_service
   end
 
+  # ==================== TESTS CRITIQUES ====================
+  # Une demande arrivée par mail n'a pas de service : elle n'appartient qu'à l'organisation de son adhérent.
+
+  test 'un administrateur sans filtre service voit les demandes sans service des adhérents de son organisation (critique)' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url
+
+    assert_response :success
+    assert_includes assigns(:interventions), interventions(:demande_par_mail)
+    assert_not_includes assigns(:interventions), interventions(:demande_par_mail_marseille)
+  end
+
+  test 'un administrateur qui sélectionne tous les services voit aussi les demandes sans service (critique)' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url, params: { service: organisations(:mairie_paris).services.ids }
+
+    assert_response :success
+    assert_includes assigns(:interventions), interventions(:demande_par_mail)
+  end
+
+  test 'un administrateur qui filtre sur une partie des services ne voit pas les demandes sans service (critique)' do
+    sign_in users(:administrateur_paris)
+
+    get interventions_url, params: { service: [services(:technique).id] }
+
+    assert_response :success
+    assert_not_includes assigns(:interventions), interventions(:demande_par_mail)
+  end
+
+  test 'un manager ne voit pas les demandes sans service (critique)' do
+    get interventions_url
+
+    assert_response :success
+    assert_not_includes assigns(:interventions), interventions(:demande_par_mail)
+  end
+
+  test 'un adhérent voit ses demandes sans service (critique)' do
+    sign_in users(:weil)
+
+    get interventions_url
+
+    assert_response :success
+    assert_includes assigns(:interventions), interventions(:demande_par_mail)
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
   test 'la liste sans filtre exclut les interventions archivées' do
     sign_in users(:administrateur_paris)
     archivee = cree_intervention_index('Intervention archivée', workflow_state: 'archivé')
@@ -465,6 +514,14 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "#map"
   end
 
+  test 'une demande sans service est affichée avec succès' do
+    sign_in users(:administrateur_paris)
+
+    get intervention_url(interventions(:demande_par_mail))
+
+    assert_response :success
+  end
+
   # ==================== TESTS CRITIQUES ====================
 
   # contenir ni l'avis ni la section Évaluation.
@@ -741,7 +798,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     intervention = Intervention.order(:id).last
-    assert_enqueued_with(job: NotifManagersNewInterventionFromAdherentJob, args: [intervention, adherent])
+    assert_enqueued_with(job: NotifManagersNewInterventionFromAdherentJob, args: [intervention, adherent, nil])
   end
 
   test 'une intervention saisie a posteriori par un agent enfile la notification « réalisée » destinée aux managers' do
@@ -894,6 +951,22 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==================== TESTS CRITIQUES ====================
+
+  test 'le formulaire de modification propose les services de l’éditeur (critique)' do
+    get edit_intervention_url(@intervention)
+
+    assert_response :success
+    assert_equal users(:hidalgo).services.ordered.to_a, assigns(:services).to_a
+  end
+
+  test 'le formulaire de modification d’une demande sans service propose les services de son adhérent (critique)' do
+    sign_in users(:administrateur_paris)
+
+    get edit_intervention_url(interventions(:demande_par_mail))
+
+    assert_response :success
+    assert_equal [services(:informatique), services(:technique)], assigns(:services).to_a
+  end
 
   test 'le formulaire de terminaison rend la pause obligatoire (critique)' do
     intervention = interventions(:intervention_paris)

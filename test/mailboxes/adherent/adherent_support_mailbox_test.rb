@@ -30,6 +30,16 @@ class AdherentSupportMailboxTest < ActionMailbox::TestCase
     assert_equal "De #{user.nom_prenom_role} : #{body}", intervention.commentaires
   end
 
+  test "l'audit de création d'une intervention créée par mail porte l'adhérent" do
+    user = users(:weil)
+
+    recevoir(from: user.email, subject: 'Auteur de la demande')
+
+    intervention = Intervention.find_by(description: '[MAIL] Auteur de la demande')
+
+    assert_equal user, intervention.audits.find_by(action: 'create').user
+  end
+
   # ==================== TESTS CRITIQUES ====================
   # Le service rattaché décide de l'organisation de l'intervention et de qui est prévenu.
   test "l'intervention créée par mail est rattachée à un service de l'adhérent (critique)" do
@@ -40,6 +50,16 @@ class AdherentSupportMailboxTest < ActionMailbox::TestCase
     intervention = Intervention.find_by(description: '[MAIL] Un seul service')
 
     assert_includes user.service_ids, intervention.service_id
+  end
+
+  test "l'intervention créée par mail n'a pas de service quand l'adhérent en a plusieurs (critique)" do
+    user = users(:weil)
+
+    assert_operator user.services.count, :>, 1
+
+    recevoir(from: user.email, subject: 'Plusieurs services')
+
+    assert_nil Intervention.find_by(description: '[MAIL] Plusieurs services').service
   end
 
   test "les managers et administrateurs du service sont prévenus quand l'adhérent n'a qu'un service (critique)" do
@@ -76,6 +96,14 @@ class AdherentSupportMailboxTest < ActionMailbox::TestCase
                              args[2].all?(&:administrateur?)
                          }) do
       recevoir(from: user.email, subject: 'Multi services')
+    end
+  end
+
+  test "un mail d'un adhérent n'enfile qu'une seule notification aux managers (critique)" do
+    user = users(:weil)
+
+    assert_enqueued_jobs 1, only: NotifManagersNewInterventionFromAdherentJob do
+      recevoir(from: user.email, subject: 'Une seule notification')
     end
   end
 

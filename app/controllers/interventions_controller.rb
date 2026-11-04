@@ -424,7 +424,7 @@ class InterventionsController < ApplicationController
   private
 
   def filtrer(interventions, services_demandes)
-    interventions = interventions.filter_by_service(services_demandes) if filtre_service_applicable?
+    interventions = filtrer_par_service(interventions, services_demandes) if filtre_service_applicable?
     interventions = filtrer_par_etat(interventions)
     interventions = filtrer_par_recherche(interventions)
     interventions = filtrer_par_dates(interventions)
@@ -494,6 +494,14 @@ class InterventionsController < ApplicationController
     interventions.tagged_with(mots_cles)
   end
 
+  # Sans service (demande par mail) : visible de l'administrateur et de l'adhérent tant que le filtre n'écarte aucun service.
+  def filtrer_par_service(interventions, services_demandes)
+    filtrees = interventions.filter_by_service(services_demandes)
+    return filtrees unless (current_user.administrateur? || current_user.adhérent?) && (@services.ids - services_demandes.ids).empty?
+
+    filtrees.or(interventions.where(service: nil, adherent: User.by_service(@services)))
+  end
+
   # Alimente les listes déroulantes du bandeau de filtres.
   def charger_options_de_filtre(services_demandes)
     services_des_adherents = current_user.administrateur? ? @services : services_demandes
@@ -535,6 +543,10 @@ class InterventionsController < ApplicationController
   def set_form_variables
     services = current_user.services.ordered
     @services = services unless current_user.agent?
+    # Une demande arrivée par mail n'a pas de service : ceux de son adhérent, sans attendre la cascade.
+    if @intervention&.persisted? && @intervention.service.nil? && @intervention.adherent
+      @services = @intervention.adherent.services.where(id: current_user.service_ids).ordered
+    end
 
     users_in_same_services = User.by_service(services)
 

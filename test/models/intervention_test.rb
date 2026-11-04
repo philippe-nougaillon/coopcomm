@@ -186,6 +186,30 @@ class InterventionTest < ActiveSupport::TestCase
     assert_not intervention.valid?
   end
 
+  # ==================== TESTS CRITIQUES ====================
+  # Le service ne manque qu'à une demande arrivée par mail, et seulement à sa naissance.
+
+  test 'une intervention sans service est refusée (critique)' do
+    intervention = intervention_sans_dates(adherent: users(:weil), service: nil)
+
+    assert_not intervention.valid?
+    assert_includes intervention.errors.attribute_names, :service_id
+  end
+
+  test 'une demande arrivée par mail est enregistrée sans service (critique)' do
+    intervention = intervention_sans_dates(adherent: users(:weil), service: nil)
+    intervention.service_facultatif = true
+
+    assert intervention.save
+    assert_nil intervention.reload.service
+  end
+
+  test 'une demande née sans service en exige un à la modification (critique)' do
+    assert_not interventions(:demande_par_mail).update(commentaires: 'Affectation en attente')
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
   # Seuls les administrateurs échappent à la règle côté agents.
 
   test 'un adhérent étranger au service de l’intervention est refusé' do
@@ -508,6 +532,14 @@ class InterventionTest < ActiveSupport::TestCase
     end
 
     assert_not intervention.bon?
+  end
+
+  test 'l’organisation d’une intervention est celle de son service (critique)' do
+    assert_equal organisations(:mairie_paris), interventions(:tonte_locaux).organisation
+  end
+
+  test 'l’organisation d’une demande sans service est celle de son adhérent (critique)' do
+    assert_equal organisations(:mairie_marseille), interventions(:demande_par_mail_marseille).organisation
   end
 
   test 'la couleur d’une intervention est celle déclarée sur son état' do
