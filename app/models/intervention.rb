@@ -15,6 +15,8 @@ class Intervention < ApplicationRecord
 
   # Autorise Rails à lire et écrire ces champs virtuels pour le formulaire
   attr_accessor :tags_manager
+  # Posés par la mailbox, qui devine le service ; à défaut le job prévient ceux du service.
+  attr_accessor :destinataires_notification
 
   before_destroy :must_not_have_any_mouvements
 
@@ -454,7 +456,7 @@ class Intervention < ApplicationRecord
   def send_manager_notification
     user = User.find_by(id: audits.find_by(action: 'create')&.user&.id)
     if user&.adhérent?
-      NotifManagersNewInterventionFromAdherentJob.perform_later(self, user)
+      NotifManagersNewInterventionFromAdherentJob.perform_later(self, user, destinataires_notification)
     elsif user&.agent? && terminé?
       NotifManagersInterventionDoneByAgentJob.perform_later(self, user)
     end

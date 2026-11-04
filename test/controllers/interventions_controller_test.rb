@@ -741,7 +741,7 @@ class InterventionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     intervention = Intervention.order(:id).last
-    assert_enqueued_with(job: NotifManagersNewInterventionFromAdherentJob, args: [intervention, adherent])
+    assert_enqueued_with(job: NotifManagersNewInterventionFromAdherentJob, args: [intervention, adherent, nil])
   end
 
   test 'une intervention saisie a posteriori par un agent enfile la notification « réalisée » destinée aux managers' do

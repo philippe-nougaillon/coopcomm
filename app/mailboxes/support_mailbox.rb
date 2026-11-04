@@ -13,13 +13,11 @@ class SupportMailbox < ApplicationMailbox
     intervention = service.interventions.new(
       adherent_id: adherent.id,
       description: "[MAIL] #{mail.subject}",
-      commentaires: "De #{adherent.nom_prenom_role} : #{safe_mail_body(mail)}"
+      commentaires: "De #{adherent.nom_prenom_role} : #{safe_mail_body(mail)}",
+      destinataires_notification: destinataires(adherent, service)
     )
 
-    if intervention.save
-      NotifManagersNewInterventionFromAdherentJob.perform_later(intervention, adherent,
-                                                               destinataires(adherent, service))
-    else
+    unless Audited.audit_class.as_user(adherent) { intervention.save }
       Rails.logger.error "SupportMailbox: intervention non créée pour #{adherent.email} : " \
                          "#{intervention.errors.full_messages.to_sentence}"
     end
