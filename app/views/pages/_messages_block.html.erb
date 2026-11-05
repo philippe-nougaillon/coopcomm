@@ -2,11 +2,14 @@
 <div class="border shadow-sm p-6 rounded-2xl bg-white w-full flex flex-col <%= extra_class %>">
   <h2 class="font-black text-xl mb-6 flex items-center gap-3 uppercase">
     <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#40b3db] via-[#72cfe8] via-[#a48ad5] to-[#681b98]"></span>
-    Messages de votre équipe
+    Messages
   </h2>
 
-  <% if @messages.any? %>
+  <% if @annonces.any? || @messages.any? %>
     <div class="divide-y divide-slate-100">
+      <% @annonces.each do |annonce| %>
+        <%= render partial: 'annonce', locals: { message: annonce } %>
+      <% end %>
       <% @messages.each do |message| %>
         <%= render partial: 'message', locals: { message: message } %>
       <% end %>

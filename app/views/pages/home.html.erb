@@ -59,7 +59,7 @@
           <div>
             <h2 class="font-black text-xl mb-6 flex items-center gap-3 uppercase">
               <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#40b3db] via-[#72cfe8] via-[#a48ad5] to-[#681b98]"></span>
-              <%= current_user.agent? ? "Interventions récentes" : "Actions récentes" %>
+              <%= current_user.agent? ? "Interventions récentes" : "En attente" %>
             </h2>
 
             <% if current_user.adhérent? %>

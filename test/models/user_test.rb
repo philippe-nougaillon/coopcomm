@@ -5,6 +5,10 @@ require 'test_helper'
 class UserTest < ActiveSupport::TestCase
   include ActionMailer::TestHelper
 
+  test "les messages reçus d'un utilisateur ne comprennent pas les annonces portant son id (critique)" do
+    assert_empty users(:martin_technique_paris).messages
+  end
+
   test 'une absence sans dates saisie en même temps que le compte est ignorée' do
     agent = users(:bond)
 
@@ -318,6 +322,10 @@ class UserTest < ActiveSupport::TestCase
     Message.create!(from_user: users(:hidalgo), to_user: users(:weil), message: 'Bonjour', read_at: Time.current)
 
     assert_not users(:weil).new_messages?
+  end
+
+  test "une annonce adressée à un service portant l'id de l'utilisateur ne compte pas comme nouveau message (critique)" do
+    assert_not users(:martin_technique_paris).new_messages?
   end
 
   test "l'absence du jour est trouvée sans préciser de période" do

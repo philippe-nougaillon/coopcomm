@@ -87,6 +87,8 @@ class PagesController < ApplicationController
                             .ordered
                             .first(3)
 
+    @annonces = Message.annonces_pour(current_user).ordered.first(3)
+
     if current_user.adhérent?
       @cotations = current_user.cotations_adherent.where(workflow_state: Cotation::ENVOYE)
     end
