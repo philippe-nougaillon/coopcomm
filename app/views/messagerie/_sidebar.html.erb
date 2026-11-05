@@ -31,8 +31,7 @@
           <%= link_to messagerie_annonces_path, "data-turbo": false do %>
             <div class="p-3 whitespace-nowrap hover:bg-slate-100 transition-colors <%= 'bg-gray-200 font-semibold' if action_name == 'annonces' && params[:service_slug].blank? %>">
               <div class="flex items-center gap-3">
-                <%= embedded_svg "icons/campaign.svg", class: "w-10 h-10 fill-current text-primary" %>
-                <span>Annonces générales</span>
+                <span>Tout le monde</span>
               </div>
             </div>
           <% end %>

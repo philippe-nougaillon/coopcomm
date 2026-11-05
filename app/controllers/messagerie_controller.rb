@@ -106,7 +106,7 @@ class MessagerieController < ApplicationController
     authorize @cible, :annonces?, policy_class: MessageriePolicy
 
     @messages = Message.annonces_de(@cible).order(:created_at)
-    @titre = @cible.is_a?(Service) ? "Annonces · #{@cible.nom}" : 'Annonces générales'
+    @titre = @cible.is_a?(Service) ? "Annonces · #{@cible.nom}" : 'Tout le monde'
     @flux = Message.flux_annonces(@cible)
     @url_envoi = messagerie_send_annonce_path
     @peut_ecrire = MessageriePolicy.new(current_user, @cible).send_annonce?
