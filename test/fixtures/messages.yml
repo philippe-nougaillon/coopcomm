@@ -4,3 +4,66 @@ one:
   message: "Salut !"
   from_id: <%= ActiveRecord::FixtureSet.identify(:hidalgo) %>
   to_id: <%= ActiveRecord::FixtureSet.identify(:bond) %>
+
+annonce_service_paris:
+  message: "Nouveaux horaires du dépôt"
+  genre: annonce
+  from_id: <%= ActiveRecord::FixtureSet.identify(:hidalgo) %>
+  to_id: <%= ActiveRecord::FixtureSet.identify(:service_paris) %>
+  created_at: 2026-03-01 09:00:00
+
+annonce_technique:
+  message: "Réunion d'équipe vendredi"
+  genre: annonce
+  from_id: <%= ActiveRecord::FixtureSet.identify(:hidalgo) %>
+  to_id: <%= ActiveRecord::FixtureSet.identify(:technique) %>
+  created_at: 2026-03-02 09:00:00
+
+annonce_secretariat:
+  message: "Permanence du secrétariat le samedi"
+  genre: annonce
+  from_id: <%= ActiveRecord::FixtureSet.identify(:manager_paris) %>
+  to_id: <%= ActiveRecord::FixtureSet.identify(:secretariat) %>
+  created_at: 2026-03-03 09:00:00
+
+annonce_générale_paris:
+  message: "Fermeture exceptionnelle le 15"
+  genre: annonce_générale
+  from_id: <%= ActiveRecord::FixtureSet.identify(:administrateur_paris) %>
+  to_id: <%= ActiveRecord::FixtureSet.identify(:mairie_paris) %>
+  created_at: 2026-03-04 09:00:00
+
+annonce_informatique:
+  message: "Mise à jour des postes jeudi"
+  genre: annonce
+  from_id: <%= ActiveRecord::FixtureSet.identify(:administrateur_paris) %>
+  to_id: <%= ActiveRecord::FixtureSet.identify(:informatique) %>
+  created_at: 2026-03-05 09:00:00
+
+annonce_marseille:
+  message: "Annonce du service de Marseille"
+  genre: annonce
+  from_id: <%= ActiveRecord::FixtureSet.identify(:manager_marseille) %>
+  to_id: <%= ActiveRecord::FixtureSet.identify(:service_marseille) %>
+  created_at: 2026-03-06 09:00:00
+
+annonce_générale_marseille:
+  message: "Annonce générale de Marseille"
+  genre: annonce_générale
+  from_id: <%= ActiveRecord::FixtureSet.identify(:manager_marseille) %>
+  to_id: <%= ActiveRecord::FixtureSet.identify(:mairie_marseille) %>
+  created_at: 2026-03-07 09:00:00
+
+annonce_piège:
+  message: "Annonce dont le destinataire porte l'id d'un utilisateur"
+  genre: annonce
+  from_id: <%= ActiveRecord::FixtureSet.identify(:hidalgo) %>
+  to_id: <%= ActiveRecord::FixtureSet.identify(:martin_technique_paris) %>
+  created_at: 2026-03-08 09:00:00
+
+message_piège:
+  message: "Message dont le destinataire porte l'id d'un service"
+  genre: message
+  from_id: <%= ActiveRecord::FixtureSet.identify(:hidalgo) %>
+  to_id: <%= ActiveRecord::FixtureSet.identify(:technique) %>
+  created_at: 2026-03-09 09:00:00

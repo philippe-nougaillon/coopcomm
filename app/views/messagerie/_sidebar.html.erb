@@ -10,18 +10,54 @@
           type="search"
           name="query"
           placeholder="Rechercher..."
-          class="grow border-none outline-none p-0 focus:ring-0" 
+          class="grow border-none outline-none p-0 focus:ring-0"
           hx-post="/messagerie/search_contact"
           hx-trigger="<%= 'input changed delay:10ms, search' %>"
           hx-target="#users-list"
+          oninput="document.getElementById('message-prive').open = true"
         />
         <%= embedded_svg "icons/loupe.svg", class: "w-6 h-6 fill-current text-gray-700" %>
       </label>
     </div>
     <div class="flex flex-col py-2">
-      <div id="users-list">
-        <%= render partial: 'users_list', locals: { users: @users } %>
-      </div>
+      <% if @services_annonces %>
+        <details class="group" data-controller="pli" data-pli-cookie-value="pli_annonces" data-action="toggle->pli#memoriser" <%= 'open' unless cookies[:pli_annonces] == 'ferme' %>>
+          <summary class="flex items-center justify-between gap-2 px-4 py-3 text-xs font-bold uppercase text-slate-400 hover:bg-slate-100 cursor-pointer list-none">
+            Annonces
+            <span class="transition-transform group-open:rotate-90">
+              <%= embedded_svg "icons/arrow_right.svg", class: "w-5 h-5 fill-current" %>
+            </span>
+          </summary>
+          <%= link_to messagerie_annonces_path, "data-turbo": false do %>
+            <div class="p-3 whitespace-nowrap hover:bg-slate-100 transition-colors <%= 'bg-gray-200 font-semibold' if action_name == 'annonces' && params[:service_slug].blank? %>">
+              <div class="flex items-center gap-3">
+                <%= embedded_svg "icons/campaign.svg", class: "w-10 h-10 fill-current text-primary" %>
+                <span>Annonces générales</span>
+              </div>
+            </div>
+          <% end %>
+          <% @services_annonces.each do |service| %>
+            <%= link_to messagerie_annonces_path(service_slug: service.slug), "data-turbo": false do %>
+              <div class="p-3 whitespace-nowrap hover:bg-slate-100 transition-colors <%= 'bg-gray-200 font-semibold' if service.slug == params[:service_slug] %>">
+                <div class="flex items-center gap-3">
+                  <span><%= truncate(service.nom, length: 25) %></span>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+        </details>
+      <% end %>
+      <details id="message-prive" class="group" data-controller="pli" data-pli-cookie-value="pli_message_prive" data-action="toggle->pli#memoriser" <%= 'open' unless cookies[:pli_message_prive] == 'ferme' %>>
+        <summary class="flex items-center justify-between gap-2 px-4 py-3 text-xs font-bold uppercase text-slate-400 hover:bg-slate-100 cursor-pointer list-none">
+          Message privé
+          <span class="transition-transform group-open:rotate-90">
+            <%= embedded_svg "icons/arrow_right.svg", class: "w-5 h-5 fill-current" %>
+          </span>
+        </summary>
+        <div id="users-list">
+          <%= render partial: 'users_list', locals: { users: @users } %>
+        </div>
+      </details>
         </div>
       </div>
     </div>

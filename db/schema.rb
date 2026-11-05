@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_23_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_04_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -290,6 +290,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_130000) do
   create_table "messages", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "from_id"
+    t.integer "genre", default: 0, null: false
     t.text "message"
     t.datetime "read_at"
     t.bigint "to_id"

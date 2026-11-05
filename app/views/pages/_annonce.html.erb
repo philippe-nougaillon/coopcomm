@@ -1,0 +1,21 @@
+<% auteur = User.with_discarded.find_by(id: message.from_id) %>
+<% service = message.destinataire if message.annonce? %>
+<div class="flex flex-wrap lg:flex-nowrap items-center gap-4 border px-4 py-4">
+  <div class="w-10">
+    <% if auteur %>
+      <%= render partial: 'partials/user_profile_picture', locals: { user: auteur } %>
+    <% else %>
+      <%= embedded_svg "icons/campaign.svg", class: "text-primary", title: "annonce" %>
+    <% end %>
+  </div>
+  <div>
+    <b class="lg:line-clamp-2"><%= link_to truncate(message.moderation, length: 100), messagerie_annonces_path(service_slug: service&.slug), class: 'hover:underline hover:text-primary' %></b>
+    <div>
+      <small>
+        il y a <%= time_ago_in_words message.created_at %>
+      </small>
+    </div>
+    <%= auteur&.nom_prenom_role || "Message automatique" %>
+    <span class="badge badge-primary badge-sm ml-1"><%= message.annonce? ? "Annonce · #{service&.nom}" : "Annonce générale" %></span>
+  </div>
+</div>

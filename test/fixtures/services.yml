@@ -50,3 +50,9 @@ service_with_location:
   organisation: mairie_paris
   slug: <%= SecureRandom.uuid %>
   calculate_distance: true
+
+service_portant_l_id_de_martin:
+  id: <%= ActiveRecord::FixtureSet.identify(:martin_technique_paris) %>
+  nom: Service homonyme
+  organisation: mairie_paris
+  slug: <%= SecureRandom.uuid %>
