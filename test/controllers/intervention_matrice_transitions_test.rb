@@ -42,7 +42,7 @@ class InterventionMatriceTransitionsTest < ActionDispatch::IntegrationTest
   }.freeze
 
   ACTEURS.each_key do |nom_acteur|
-    test "#{nom_acteur} : transitions acceptées et refusées, état par état" do
+    test "seules les transitions permises à #{nom_acteur} aboutissent, état par état" do
       InterventionsMatrice::ETATS.each do |etat|
         ACTIONS.each do |action|
           verifie_transition(nom_acteur, etat, action)
@@ -54,7 +54,7 @@ class InterventionMatriceTransitionsTest < ActionDispatch::IntegrationTest
   # La garde `redirect_si_invalide` ne couvre que les validations du modèle : une
   # intervention valide dont l'état interdit la transition doit être arrêtée par
   # `can_valider?` / `can_refuser?`, pas par une exception.
-  test 'valider hors état redirige avec un message au lieu de lever' do
+  test 'valider une intervention hors état redirige avec une alerte au lieu de lever' do
     intervention = intervention_matrice(type: :classique, etat: Intervention::NOUVEAU, complete: true)
     assert intervention.valid?, "garde : l'intervention doit être valide, sinon le bug est masqué"
     sign_in users(:administrateur_paris)
@@ -66,7 +66,7 @@ class InterventionMatriceTransitionsTest < ActionDispatch::IntegrationTest
     assert_equal Intervention::NOUVEAU, intervention.reload.workflow_state
   end
 
-  test 'refuser hors état redirige avec un message au lieu de lever' do
+  test 'refuser une intervention hors état redirige avec une alerte au lieu de lever' do
     intervention = intervention_matrice(type: :classique, etat: Intervention::VALIDE, complete: true)
     assert intervention.valid?, "garde : l'intervention doit être valide, sinon le bug est masqué"
     sign_in users(:administrateur_paris)

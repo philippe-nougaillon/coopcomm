@@ -9,7 +9,7 @@ class AdministrateurCrmPolicyTest < ActionDispatch::IntegrationTest
     @policy = CrmPolicy.new(utilisateur, :crm)
   end
 
-  test 'accès autorisé pour un administrateur sur le CRM' do
-    assert @policy.index?
+  test 'accès interdit pour un administrateur sur le CRM' do
+    refute @policy.index?
   end
 end

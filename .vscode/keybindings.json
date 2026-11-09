@@ -1,8 +1,0 @@
-[
-  {
-    "key": "shift+alt+f",
-    "command": "workbench.action.tasks.runTask",
-    "args": "Format ERB: Current File",
-    "when": "editorLangId == erb || resourceExtname == .erb"
-  }
-]

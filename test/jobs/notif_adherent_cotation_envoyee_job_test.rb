@@ -11,7 +11,7 @@ class NotifAdherentCotationEnvoyeeJobTest < ActiveJob::TestCase
     @sender   = users(:administrateur_paris)
   end
 
-  test 'envoie un mail à l\'adhérent et crée un MailLog tracé' do
+  test "l'adhérent reçoit un mail et un mail log est créé lorsque sa cotation est envoyée" do
     assert_emails 1 do
       assert_difference -> { MailLog.count }, 1 do
         NotifAdherentCotationEnvoyeeJob.perform_now(@cotation, @adherent, @sender.id)
@@ -29,7 +29,7 @@ class NotifAdherentCotationEnvoyeeJobTest < ActiveJob::TestCase
     assert_equal @cotation.id, log.cotation_id
   end
 
-  test 'met l\'émetteur en copie du mail' do
+  test "l'émetteur est mis en copie du mail" do
     NotifAdherentCotationEnvoyeeJob.perform_now(@cotation, @adherent, @sender.id)
 
     assert_equal [@sender.email], ActionMailer::Base.deliveries.last.cc

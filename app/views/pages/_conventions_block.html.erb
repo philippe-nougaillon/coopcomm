@@ -1,0 +1,46 @@
+<% implicite = current_user.adhérent? ? 'adherent' : ('service' if current_user.manager? && current_user.services.one?) %>
+<div class="relative border shadow-sm p-6 rounded-2xl bg-white w-full h-full <%= local_assigns.fetch(:hauteur_minimale, 'min-h-[28rem]') %> flex flex-col" data-conventions>
+  <div class="absolute z-20 hidden bg-base-100 border border-base-content/10 shadow-xl rounded-box pointer-events-none" data-infobulle></div>
+  <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+    <h2 class="font-black text-xl flex items-center gap-3 uppercase">
+      <span class="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#40b3db] via-[#72cfe8] via-[#a48ad5] to-[#681b98]"></span>
+      Suivi des heures
+    </h2>
+    <% unless implicite %>
+      <div class="join" data-groupement>
+        <label class="btn btn-primary btn-outline btn-xs sm:btn-sm join-item btn-active text-white!">
+          <input type="radio" name="groupement" value="adherent" class="hidden" checked>
+          <%= embedded_svg "icons/person.svg", class: "w-4 h-4 sm:w-6 sm:h-6 fill-current transition-colors duration-200" %>
+          <span class="text-[10px] sm:text-[11px] font-medium">Par adhérent</span>
+        </label>
+        <label class="btn btn-primary btn-outline btn-xs sm:btn-sm join-item">
+          <input type="radio" name="groupement" value="service" class="hidden">
+          <%= embedded_svg "icons/group.svg", class: "w-4 h-4 sm:w-6 sm:h-6 fill-current transition-colors duration-200" %>
+          <span class="text-[10px] sm:text-[11px] font-medium">Par service</span>
+        </label>
+      </div>
+    <% end %>
+  </div>
+  <div class="flex-1 min-h-0 overflow-y-auto [contain:size]" data-defilement>
+    <div class="sticky top-0 z-10 bg-white pb-1" data-annee>
+      <div class="relative h-10 text-[10px] leading-none text-base-content/60" data-ligne>
+        <span class="absolute top-0 left-0">1ᵉʳ janv.</span>
+        <span class="absolute top-0 right-0">31 déc.</span>
+        <span class="absolute top-4 left-0 border-t-2 border-base-content" data-ecoule></span>
+        <span class="absolute top-4 right-0 border-t-2 border-dashed border-base-content/50" data-restant></span>
+        <span class="absolute top-2.5 h-5 border-l-2 border-base-content" data-aujourdhui></span>
+        <span class="absolute top-7 -translate-x-1/2 font-medium text-base-content" data-libelle-aujourdhui>aujourd’hui</span>
+      </div>
+    </div>
+    <div class="flex flex-col gap-2" data-groupes></div>
+  </div>
+  <div class="mt-auto pt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+    <div class="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-base-content/60" data-legende></div>
+    <%= link_to conventions_path, class: "inline-flex items-center gap-2 text-primary font-medium hover:underline transition group" do %>
+      <span>Voir toutes les conventions</span>
+      <%= embedded_svg "icons/arrow_forward.svg", class: "w-5 h-5 fill-current transition-transform duration-200 ease-out group-hover:translate-x-1" %>
+    <% end %>
+  </div>
+</div>
+<script id="donnees-conventions" type="application/json"><%= { aujourdhui: Date.current.iso8601, conventions: @conventions, implicite: implicite }.to_json.html_safe %></script>
+<%= render 'pages/script_conventions' %>

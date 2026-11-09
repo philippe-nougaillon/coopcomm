@@ -8,7 +8,6 @@ Rails.application.routes.draw do
 
   devise_for :users
   # devise_for :users, controllers: {
-  #   registrations: 'users/registrations',
   #   omniauth_callbacks: 'users/omniauth_callbacks'
   # }
 
@@ -73,8 +72,6 @@ Rails.application.routes.draw do
   end
   match 'doc', to: redirect('/documentation'), via: :get
 
-  # resources :organisations, only: %i[ show edit update ]
-
   resources :interventions do
     member do
       # post :accepter
@@ -112,14 +109,19 @@ Rails.application.routes.draw do
   controller :pages do
     get :welcome, to: 'pages#welcome', as: :welcome
     get :assistant, to: 'pages#assistant', as: :assistant
+    get :aide, to: 'pages#aide', as: :aide
     get :mentions_legales, to: 'pages#mentions_legales', as: :mentions_legales
-    get :dashboard, to: 'pages#dashboard', as: :dashboard
     get :solution, to: 'pages#solution', as: :solution
     get :tarifs, to: 'pages#tarifs', as: :tarifs
     get :contact, to: 'pages#contact', as: :contact
     get :home, to: 'pages#home', as: :home
     get :meteo, to: 'pages#meteo', as: :meteo
     get :meteo_by_day
+  end
+
+  scope :dashboard, controller: :dashboard, as: :dashboard do
+    get '/', action: :index, as: ''
+    get :reservations_du_jour
   end
 
   resources :documents, only: %i[] do
@@ -184,17 +186,19 @@ Rails.application.routes.draw do
   namespace :messagerie do
     get '/', to: 'index', as: ''
     get 'conversation/:to_user_slug', to: 'conversation', as: 'conversation'
+    get 'annonces(/:service_slug)', to: 'annonces', as: 'annonces'
     post :mark_as_read
     post :send_message
     post :search_contact
+    post :send_annonce
   end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get 'up' => 'rails/health#show', as: :rails_health_check
 
-  get '/service-worker.js' => 'service_worker#service_worker'
-  get '/manifest.json' => 'service_worker#manifest'
+  get 'service-worker' => 'rails/pwa#service_worker', as: :pwa_service_worker
+  get 'manifest' => 'rails/pwa#manifest', as: :pwa_manifest
 
   post '/twilio/whatsapp_reply', to: 'twilio#whatsapp_reply'
 

@@ -3,7 +3,7 @@
 require 'test_helper'
 
 class WarehouseTest < ActiveSupport::TestCase
-  test 'scope ordered : plusieurs sites → triés sans tenir compte des accents ni de la casse' do
+  test 'les sites sont triés sans tenir compte des accents ni de la casse' do
     organisation = organisations(:mairie_paris)
     %w[Éclairage atelier Zone].each do |nom|
       Warehouse.create!(name: nom, organisation: organisation, address: 'Paris', latitude: 48.85, longitude: 2.35)

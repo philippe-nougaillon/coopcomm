@@ -29,7 +29,7 @@ class AuditsHelperTest < ActionView::TestCase
     Nokogiri::HTML::DocumentFragment.parse(svg).at_css('path')['d']
   end
 
-  test 'commentaire sans changement significatif : le commentaire seul, sans liste vide' do
+  test 'un audit sans changement significatif n\'affiche que son commentaire' do
     html = audit_details(audit(comment: '2 photos ajoutées', changes: { 'updated_at' => %w[a b] }), nil)
 
     assert_match '2 photos ajoutées', html
@@ -38,7 +38,7 @@ class AuditsHelperTest < ActionView::TestCase
     assert_no_match(/—/, html)
   end
 
-  test 'commentaire ET changements : les deux sont rendus (ils ne s\'excluent pas)' do
+  test 'un commentaire et des changements sont rendus tous les deux' do
     html = audit_details(audit(comment: '1 photo ajoutée',
                                changes: { 'description' => ['Ancienne', 'Nouvelle'] }), nil)
 
@@ -47,20 +47,20 @@ class AuditsHelperTest < ActionView::TestCase
     assert_match 'Nouvelle', html
   end
 
-  test 'commentaire vide : on retombe sur les changements' do
+  test 'un commentaire vide laisse la place aux changements' do
     html = audit_details(audit(comment: '', changes: { 'description' => ['Ancienne', 'Nouvelle'] }), nil)
 
     assert_match 'Description', html
   end
 
-  test 'sans commentaire : la liste des changements' do
+  test 'un audit sans commentaire affiche la liste de ses changements' do
     html = audit_details(audit(changes: { 'description' => ['Ancienne', 'Nouvelle'] }), nil)
 
     assert_match 'Description', html
     assert_match 'Nouvelle', html
   end
 
-  test 'suppression d\'absence : la période remplace la liste des changements' do
+  test 'la suppression d\'une absence affiche sa période plutôt que ses changements' do
     html = audit_details(audit(type: 'Absence', action: 'destroy',
                                changes: { 'du' => '2026-07-01', 'au' => '2026-07-03' }), nil)
 
@@ -68,7 +68,7 @@ class AuditsHelperTest < ActionView::TestCase
     assert_match '→', html
   end
 
-  test 'invitation renvoyée : le résumé dédié, pas la liste brute' do
+  test 'une invitation renvoyée affiche son résumé plutôt que la liste brute' do
     html = audit_details(audit(type: 'User', changes: { 'invitation_token' => %w[abc def] }), nil)
 
     # L'apostrophe est échappée par content_tag (&#39;) : on n'asserte que la fin.
@@ -85,17 +85,17 @@ class AuditsHelperTest < ActionView::TestCase
 
   # ==================== BLOC A — libellé du badge ====================
 
-  test 'badge Absence : un libellé par action' do
+  test 'chaque action sur une absence porte son propre libellé de badge' do
     assert_equal 'Absence ajoutée',   libellé_badge(audit(type: 'Absence', action: 'create'))
     assert_equal 'Absence modifiée',  libellé_badge(audit(type: 'Absence', action: 'update'))
     assert_equal 'Absence supprimée', libellé_badge(audit(type: 'Absence', action: 'destroy'))
   end
 
-  test 'badge Absence : action inattendue → libellé générique' do
+  test 'une action inattendue sur une absence porte un libellé générique' do
     assert_equal 'Absence', libellé_badge(audit(type: 'Absence', action: 'restore'))
   end
 
-  test 'badge User : désactivation et réactivation du compte' do
+  test 'la désactivation et la réactivation d\'un compte sont badgées' do
     désactivé = audit(type: 'User', changes: { 'discarded_at' => [nil, '2026-07-01 10:00:00'] })
     réactivé  = audit(type: 'User', changes: { 'discarded_at' => ['2026-07-01 10:00:00', nil] })
 
@@ -103,7 +103,7 @@ class AuditsHelperTest < ActionView::TestCase
     assert_equal 'Compte réactivé',  libellé_badge(réactivé)
   end
 
-  test 'badge User : verrouillage et déverrouillage du compte' do
+  test 'le verrouillage et le déverrouillage d\'un compte sont badgés' do
     bloqué  = audit(type: 'User', changes: { 'locked_at' => [nil, '2026-07-01 10:00:00'] })
     débloqué = audit(type: 'User', changes: { 'locked_at' => ['2026-07-01 10:00:00', nil] })
 
@@ -111,34 +111,34 @@ class AuditsHelperTest < ActionView::TestCase
     assert_equal 'Compte débloqué', libellé_badge(débloqué)
   end
 
-  test 'badge User : connexion' do
+  test 'une connexion est badgée' do
     assert_equal 'Connexion', libellé_badge(audit(type: 'User', changes: { 'sign_in_count' => [1, 2] }))
   end
 
-  test 'badge User : déconnexion quand le jeton de session est effacé' do
+  test 'un jeton de session effacé est badgé comme une déconnexion' do
     audit = audit(type: 'User', changes: { 'remember_created_at' => ['2026-07-01 10:00:00', nil] })
 
     assert_equal 'Déconnexion', libellé_badge(audit)
   end
 
-  test 'badge User : maintien de session quand le jeton est posé' do
+  test 'un jeton de session posé est badgé comme un maintien de connexion' do
     audit = audit(type: 'User', changes: { 'remember_created_at' => [nil, '2026-07-01 10:00:00'] })
 
     assert_equal 'Session', libellé_badge(audit)
   end
 
-  test 'badge User : invitation relancée' do
+  test 'une invitation relancée est badgée comme telle' do
     assert_equal 'Invitation relancée', libellé_badge(audit(type: 'User', changes: { 'invitation_token' => %w[abc def] }))
   end
 
-  test 'badge User : première invitation' do
+  test 'une première invitation est badgée comme un envoi' do
     audit = audit(type: 'User', changes: { 'invitation_token' => [nil, 'abc'],
                                            'invitation_created_at' => [nil, '2026-07-01 10:00:00'] })
 
     assert_equal 'Invitation envoyée', libellé_badge(audit)
   end
 
-  test 'badge User : invitation acceptée' do
+  test 'une invitation acceptée est badgée comme telle' do
     audit = audit(type: 'User', changes: { 'invitation_token' => ['abc', nil],
                                            'invitation_accepted_at' => [nil, '2026-07-01 10:00:00'] })
 
@@ -146,70 +146,70 @@ class AuditsHelperTest < ActionView::TestCase
   end
 
   # L'audit de création porte TOUTES les colonnes, invitation_token comprise.
-  test 'badge User : une création de compte n\'est pas une invitation' do
+  test 'une création de compte n\'est pas badgée comme une invitation' do
     audit = audit(type: 'User', action: 'create', changes: { 'email' => 'a@b.fr', 'invitation_token' => nil })
 
     assert_equal 'Compte créé', libellé_badge(audit)
     assert_equal tracé_fichier('add'), tracé_icône(audit)
   end
 
-  test 'badge User : changement d\'entrepôt' do
+  test 'un changement d\'entrepôt est badgé' do
     assert_equal 'Logistique', libellé_badge(audit(type: 'User', changes: { 'warehouse_id' => [1, 2] }))
   end
 
-  test 'badge User : création, modification de profil et suppression' do
+  test 'la création, la modification et la suppression d\'un compte sont badgées' do
     assert_equal 'Compte créé',    libellé_badge(audit(type: 'User', action: 'create', changes: { 'email' => 'a@b.fr' }))
     assert_equal 'Profil modifié', libellé_badge(audit(type: 'User', changes: { 'nom' => %w[Dupont Durand] }))
     assert_equal 'Compte supprimé', libellé_badge(audit(type: 'User', action: 'destroy', changes: { 'nom' => 'Dupont' }))
   end
 
-  test 'badge User : la désactivation prime sur la connexion simultanée' do
+  test 'la désactivation prime sur une connexion enregistrée dans le même audit' do
     audit = audit(type: 'User', changes: { 'discarded_at' => [nil, '2026-07-01 10:00:00'], 'sign_in_count' => [1, 2] })
 
     assert_equal 'Compte désactivé', libellé_badge(audit)
   end
 
-  test 'badge UserService : association, retrait et cas restant' do
+  test 'le rattachement et le retrait d\'un service sont badgés' do
     assert_equal 'Service ajouté',     libellé_badge(audit(type: 'UserService', action: 'create'))
     assert_equal 'Service retiré',     libellé_badge(audit(type: 'UserService', action: 'destroy'))
     assert_equal 'Services modifiés',  libellé_badge(audit(type: 'UserService', action: 'update'))
   end
 
-  test 'badge des tables de liaison : agents et outils d\'une intervention' do
+  test 'les agents et les outils d\'une intervention portent leur propre badge' do
     assert_equal 'Agent ajouté', libellé_badge(audit(type: 'AgentIntervention', action: 'create'))
     assert_equal 'Agent retiré', libellé_badge(audit(type: 'AgentIntervention', action: 'destroy'))
     assert_equal 'Outil ajouté', libellé_badge(audit(type: 'ToolIntervention', action: 'create'))
     assert_equal 'Outil retiré', libellé_badge(audit(type: 'ToolIntervention', action: 'destroy'))
   end
 
-  test 'badge des autres modèles : création, modification, suppression' do
+  test 'les autres modèles sont badgés selon leur action' do
     assert_equal 'Création',     libellé_badge(audit(action: 'create'))
     assert_equal 'Modification', libellé_badge(audit(action: 'update'))
     assert_equal 'Suppression',  libellé_badge(audit(action: 'destroy'))
   end
 
-  test 'badge : action inconnue rendue humainement plutôt qu\'en erreur' do
+  test 'une action inconnue est badgée humainement plutôt qu\'en erreur' do
     assert_equal 'Restore', libellé_badge(audit(action: 'restore'))
   end
 
   # ==================== BLOC B — icône du badge ====================
 
-  test 'icône : une création porte le pictogramme add' do
+  test 'une création porte le pictogramme add' do
     assert_equal tracé_fichier('add'), tracé_icône(audit(type: 'Absence', action: 'create'))
   end
 
-  test 'icône : une action sans pictogramme rend le libellé seul' do
+  test 'une action sans pictogramme rend le libellé seul' do
     assert_nil tracé_icône(audit(type: 'Absence', action: 'restore'))
   end
 
-  test 'icône : désactivation et réactivation de compte' do
+  test 'la désactivation et la réactivation d\'un compte ont chacune leur pictogramme' do
     assert_equal tracé_fichier('no_accounts'),
                  tracé_icône(audit(type: 'User', changes: { 'discarded_at' => [nil, '2026-07-01 10:00:00'] }))
     assert_equal tracé_fichier('account_circle'),
                  tracé_icône(audit(type: 'User', changes: { 'discarded_at' => ['2026-07-01 10:00:00', nil] }))
   end
 
-  test 'icône : invitation, connexion, déconnexion et maintien de session' do
+  test 'l\'invitation, la connexion, la déconnexion et le maintien de session ont chacun leur pictogramme' do
     assert_equal tracé_fichier('mail'),   tracé_icône(audit(type: 'User', changes: { 'invitation_token' => %w[a b] }))
     assert_equal tracé_fichier('login'),  tracé_icône(audit(type: 'User', changes: { 'sign_in_count' => [1, 2] }))
     assert_equal tracé_fichier('logout'),
@@ -218,45 +218,45 @@ class AuditsHelperTest < ActionView::TestCase
                  tracé_icône(audit(type: 'User', changes: { 'remember_created_at' => [nil, '2026-07-01 10:00:00'] }))
   end
 
-  test 'icône : retrait de service' do
+  test 'le retrait d\'un service a son propre pictogramme' do
     assert_equal tracé_fichier('delete'), tracé_icône(audit(type: 'UserService', action: 'destroy'))
   end
 
   # ==================== BLOC C — repli quand rien de significatif n'a changé ====================
 
-  test 'User désactivé : le détail montre le passage de Réactivé à Désactivé' do
+  test 'un compte désactivé montre le passage de Réactivé à Désactivé' do
     html = audit_details(audit(type: 'User', changes: { 'discarded_at' => [nil, '2026-07-01 10:00:00'] }), nil)
 
     assert_match 'Statut du compte', html
     assert_match 'Désactivé', html
   end
 
-  test 'User réactivé : le détail montre le passage de Désactivé à Réactivé' do
+  test 'un compte réactivé montre le passage de Désactivé à Réactivé' do
     html = audit_details(audit(type: 'User', changes: { 'discarded_at' => ['2026-07-01 10:00:00', nil] }), nil)
 
     assert_match 'Statut du compte', html
     assert_match 'Réactivé', html
   end
 
-  test 'User connecté : le détail annonce la connexion' do
+  test 'le détail d\'un audit de connexion annonce la connexion' do
     html = audit_details(audit(type: 'User', changes: { 'sign_in_count' => [1, 2] }), nil)
 
     assert_match "Connexion à l&#39;application", html
   end
 
-  test 'User déconnecté : le détail annonce la déconnexion' do
+  test 'le détail d\'un audit de déconnexion annonce la déconnexion' do
     html = audit_details(audit(type: 'User', changes: { 'remember_created_at' => ['2026-07-01 10:00:00', nil] }), nil)
 
     assert_match "Déconnexion de l&#39;application", html
   end
 
-  test 'User avec jeton de session posé : le détail annonce le maintien de connexion' do
+  test 'le détail d\'un jeton de session posé annonce le maintien de la connexion' do
     html = audit_details(audit(type: 'User', changes: { 'remember_created_at' => [nil, '2026-07-01 10:00:00'] }), nil)
 
     assert_match 'Maintien de la connexion (Cookie)', html
   end
 
-  test 'autre modèle sans changement significatif : un tiret' do
+  test 'un audit sans changement significatif est rendu par un tiret' do
     html = audit_details(audit(changes: { 'updated_at' => %w[a b] }), nil)
 
     assert_match '—', html
@@ -269,7 +269,7 @@ class AuditsHelperTest < ActionView::TestCase
     assert_no_match(/Maintien de la connexion/, audit_details(audit, nil))
   end
 
-  test 'invitation datée : les dates remplacent le message générique' do
+  test 'une invitation datée affiche ses dates plutôt que le message générique' do
     html = audit_details(audit(type: 'User',
                                changes: { 'invitation_token' => %w[abc def],
                                           'invitation_sent_at' => [nil, '2026-07-01 10:00:00'] }), nil)
@@ -278,7 +278,7 @@ class AuditsHelperTest < ActionView::TestCase
     assert_no_match(/renvoyé/, html)
   end
 
-  test 'création de compte : les champs du compte, pas le résumé d\'invitation' do
+  test 'une création de compte affiche ses champs, pas le résumé d\'invitation' do
     html = audit_details(audit(type: 'User', action: 'create',
                                changes: { 'email' => 'a@b.fr', 'nom' => 'Dupont', 'invitation_token' => nil }), nil)
 
@@ -287,7 +287,7 @@ class AuditsHelperTest < ActionView::TestCase
     assert_no_match(/renvoyé/, html)
   end
 
-  test 'invitation acceptée : le message dédié, pas « lien renvoyé »' do
+  test 'une invitation acceptée affiche son message dédié, pas « lien renvoyé »' do
     html = audit_details(audit(type: 'User', changes: { 'invitation_token' => ['abc', nil],
                                                         'invitation_accepted_at' => [nil, '2026-07-01 10:00:00'] }), nil)
 
@@ -325,12 +325,12 @@ class AuditsHelperTest < ActionView::TestCase
 
   test 'une date est rendue au format français, une date-heure avec l\'heure' do
     assert_equal '01/02/2026', format_audit_value('date', Date.new(2026, 2, 1))
-    assert_equal '01/02/2026 à 14:30', format_audit_value('début_prévue', Time.zone.local(2026, 2, 1, 14, 30))
+    assert_equal '01/02/2026 à 14:30:00', format_audit_value('début_prévue', Time.zone.local(2026, 2, 1, 14, 30))
   end
 
   test 'une date reçue sous forme de chaîne ISO est reformatée' do
     assert_equal '01/02/2026', format_audit_value('date', '2026-02-01')
-    assert_equal '01/02/2026 à 14:30', format_audit_value('début_prévue', '2026-02-01 14:30:00')
+    assert_equal '01/02/2026 à 14:30:00', format_audit_value('début_prévue', '2026-02-01 14:30:00')
   end
 
   test 'une chaîne qui ressemble à une date sans en être une est rendue telle quelle' do
@@ -708,7 +708,7 @@ class AuditsHelperTest < ActionView::TestCase
     assert_equal 'urgence', changements.first[:to]
   end
 
-  test 'tous les mots clés retirés : la nouvelle valeur est le tiret, pas un tableau vide' do
+  test 'des mots clés tous retirés donnent un tiret, pas un tableau vide' do
     changements = humanize_changes({ 'tag_list' => [%w[urgence], []] })
 
     assert_equal 'urgence', changements.first[:from]

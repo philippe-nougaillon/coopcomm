@@ -10,32 +10,32 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:administrateur_paris)
   end
 
-  test 'audits : sans paramètre → la page répond' do
+  test 'la liste des audits est affichée avec succès' do
     get admin_audits_url
 
     assert_response :success
   end
 
-  test 'audits : recherche → seulement les audits dont les changements correspondent' do
+  test 'la recherche dans la liste ne retourne que les audits dont les changements correspondent' do
     get admin_audits_url(search: 'SONDEAUDIT')
 
     assert_includes assigns(:audits), @audit
     assert_equal 1, assigns(:audits).size
   end
 
-  test 'audits : start_date → seulement les audits postérieurs' do
+  test 'la liste filtrée par date de début ne retourne que les audits postérieurs' do
     get admin_audits_url(start_date: (Date.current + 1).to_s)
 
     assert_not_includes assigns(:audits), @audit
   end
 
-  test 'audits : end_date → seulement les audits antérieurs' do
+  test 'la liste filtrée par date de fin ne retourne que les audits antérieurs' do
     get admin_audits_url(end_date: (Date.current - 1).to_s)
 
     assert_not_includes assigns(:audits), @audit
   end
 
-  test 'audits : user_id → seulement les audits de cet utilisateur' do
+  test 'la liste filtrée par utilisateur ne retourne que les audits de cet utilisateur' do
     get admin_audits_url(user_id: [users(:hidalgo).id])
     assert_includes assigns(:audits), @audit
 
@@ -43,7 +43,7 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:audits), @audit
   end
 
-  test 'audits : type → seulement les audits de ce type d’enregistrement' do
+  test 'la liste filtrée par type ne retourne que les audits de ce type d’enregistrement' do
     get admin_audits_url(type: ['User'])
     assert_includes assigns(:audits), @audit
 
@@ -51,7 +51,7 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:audits), @audit
   end
 
-  test 'audits : action_name → seulement les audits de cette action' do
+  test 'la liste filtrée par action ne retourne que les audits de cette action' do
     get admin_audits_url(action_name: ['update'])
     assert_includes assigns(:audits), @audit
 
@@ -59,27 +59,27 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:audits), @audit
   end
 
-  test 'parametres : sans paramètre → la page répond' do
+  test 'la page des paramètres est affichée avec succès' do
     get admin_parametres_url
 
     assert_response :success
   end
 
-  test 'parametres : recherche → les trois catalogues sont filtrés' do
+  test 'la recherche dans les paramètres ne retourne que les services correspondants' do
     get admin_parametres_url(search: 'Technique')
 
     assert_includes assigns(:services), services(:technique)
     assert_not_includes assigns(:services), services(:comptabilite)
   end
 
-  test 'parametres : user_id → les services de cet utilisateur, sans prestation' do
+  test 'les paramètres filtrés par utilisateur ne retournent que les services de cet utilisateur, sans prestation' do
     get admin_parametres_url(user_id: [users(:weil).id])
 
     assert_includes assigns(:services), services(:informatique)
     assert_equal 0, assigns(:prestations_count)
   end
 
-  test 'parametres : onglet sites → seuls les sites sont paginés' do
+  test 'l’onglet sites des paramètres ne pagine que les sites' do
     get admin_parametres_url(tab: 'sites')
 
     assert_includes assigns(:warehouses), warehouses(:entrepot_paris)
@@ -87,7 +87,7 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
     assert_empty assigns(:prestations)
   end
 
-  test 'parametres : onglet prestations → seules les prestations sont paginées' do
+  test 'l’onglet prestations des paramètres ne pagine que les prestations' do
     get admin_parametres_url(tab: 'prestations')
 
     assert_includes assigns(:prestations), prestations(:nettoyage_bureaux)

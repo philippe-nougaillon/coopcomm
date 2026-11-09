@@ -1,0 +1,526 @@
+<script id="donnees-dashboard" type="application/json"><%= @donnees_graphes.to_json.html_safe %></script>
+<script>
+  (function () {
+    const donnees = JSON.parse(document.getElementById('donnees-dashboard').textContent)
+    const instances = {}
+
+    // Couleur rendue en hexadécimal, quel que soit l'espace colorimétrique de la variable CSS.
+    function versHex(couleur) {
+      const contexte = document.createElement('canvas').getContext('2d')
+      contexte.fillStyle = '#000000'
+      contexte.fillStyle = couleur
+      contexte.fillRect(0, 0, 1, 1)
+      const [r, g, b] = contexte.getImageData(0, 0, 1, 1).data
+      return '#' + [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('')
+    }
+
+    function couleurCss(variable, secours) {
+      return versHex(getComputedStyle(document.documentElement).getPropertyValue(variable).trim() || secours)
+    }
+
+    const couleurTheme = nom => couleurCss(`--color-${nom}`, '#000000')
+    const VIOLET = couleurCss('--color-aikku', '#6A219C')
+    const SOURD = couleurTheme('base-300')
+    const TEXTE = couleurTheme('base-content')
+    const ETATS = { 'validé': couleurTheme('success'), 'terminé': couleurTheme('primary'),
+                    'nouveau': couleurTheme('secondary'), 'refusé': couleurTheme('error') }
+    const VIOLETS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map(palier => couleurCss(`--color-aikku-violet-${palier}`, VIOLET))
+    const BLEU = couleurCss('--color-aikku-bleu-500', couleurTheme('primary'))
+    const ROSE = couleurCss('--color-aikku-rose-500', couleurTheme('secondary'))
+    const JOUR = 86400000
+    // Diagonale du motif de 6 px des hachures, prolongée aux deux autres coins pour se raccorder d'un motif à l'autre (comme l'accueil).
+    const HACHURE = 'M0 0L6 6M4 -2L8 2M-2 4L2 8'
+
+    const nombre = (valeur, decimales = 0) => Number(valeur).toLocaleString('fr-FR', { maximumFractionDigits: decimales })
+    const heures = valeur => `${nombre(valeur, 1)} h`
+    const euros = valeur => `${nombre(valeur)} €`
+    const moisLisible = (mois, options) => new Date(`${mois}-01T00:00:00Z`)
+      .toLocaleDateString('fr-FR', Object.assign({ timeZone: 'UTC' }, options))
+    const capitaliser = texte => texte.charAt(0).toUpperCase() + texte.slice(1)
+    const echapper = texte => String(texte).replace(/[&<>"']/g,
+      caractere => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[caractere])
+
+    const dans = (carte, selecteur) => document.querySelector(`[data-carte="${carte}"] ${selecteur}`)
+
+    // Une tuile de l'accueil remplit la hauteur qui lui reste ; ailleurs, la hauteur du rendu.
+    function hauteurDe(carte, defaut) {
+      const cible = dans(carte, '[data-graphe]')
+      return cible.dataset.hauteur && cible.clientHeight > 0 ? cible.clientHeight : defaut
+    }
+
+    function ecrire(carte, attribut, texte) {
+      const cible = dans(carte, `[data-${attribut}]`)
+      if (cible) cible.textContent = texte
+    }
+
+    function valeurFiltre(carte, filtre) {
+      const select = document.querySelector(`select[data-carte="${carte}"][data-filtre="${filtre}"]`)
+      return select ? select.value : ''
+    }
+
+    function servicesDe(carte) {
+      const choisi = valeurFiltre(carte, 'services')
+      return choisi ? [choisi] : donnees.services
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Rendus : un type de graphe = une fonction. Tous reçoivent le même graphe normalisé
+    //   { categories, series: [{ name, data }], couleurs (par série), teintes (par catégorie, option),
+    //     format, textes (par catégorie, option), detail, marque et cliquer (par cellule, option), zone (par colonne, option),
+    //     maximum (option), largeurLibelle (option) }
+    // et chaque carte choisit son type par l'attribut data-type de son conteneur [data-graphe].
+    // ---------------------------------------------------------------------------------------------
+    const AXE = { axisBorder: { show: false }, axisTicks: { show: false }, tooltip: { enabled: false },
+                  labels: { style: { colors: TEXTE, fontSize: '11px' } } }
+    const teinte = (g, rang) => (g.teintes && g.teintes[rang]) || g.couleurs[Math.min(rang, g.couleurs.length - 1)]
+    const texteDe = (g, rang) => g.textes ? g.textes[rang] : g.format(g.series[0].data[rang])
+    const infobulle = (couleur, texte) => `<div class="p-3 text-xs flex items-center gap-2 text-base-content">
+      <span class="size-2 rounded-full shrink-0" style="background-color: ${couleur}"></span><span>${texte}</span></div>`
+
+    function infobulleSeries(g, series, point, w) {
+      const lignes = g.series.map((serie, rang) => `<div class="flex items-center justify-between gap-4">
+        <span class="flex items-center gap-2"><span class="size-2 rounded-full" style="background-color: ${w.globals.colors[rang]}"></span>${echapper(serie.name)}</span>
+        <b>${((g.formats && g.formats[rang]) || g.format)(series[rang][point])}</b></div>`)
+      return `<div class="p-3 text-xs flex flex-col gap-1 text-base-content">
+        <div class="font-semibold text-base-content/60">${echapper(g.categories[point])}</div>${lignes.join('')}</div>`
+    }
+
+    function legende(carte, entrees) {
+      const cible = dans(carte, '[data-legende]')
+      if (cible) cible.innerHTML = entrees.map(([libellé, couleur, texte]) => `
+        <span class="flex items-center gap-1.5 text-xs text-base-content/60">
+          <span class="size-2 rounded-full shrink-0" style="background-color: ${couleur}"></span>
+          <span class="truncate">${echapper(libellé)}${texte ? ` <span class="text-base-content/40">· ${texte}</span>` : ''}</span>
+        </span>`).join('')
+    }
+
+    function dessiner(carte, options, cible = dans(carte, '[data-graphe]')) {
+      if (instances[carte]) instances[carte].destroy()
+      instances[carte] = new ApexCharts(cible, Object.assign({
+        noData: { text: 'Aucune donnée sur la période', style: { color: TEXTE, fontSize: '12px' } },
+        dataLabels: { enabled: false },
+        legend: { show: false }
+      }, options, {
+        chart: Object.assign({ id: carte, fontFamily: 'inherit', background: 'transparent', toolbar: { show: false },
+                               zoom: { enabled: false }, parentHeightOffset: 0 }, options.chart)
+      }))
+      instances[carte].render()
+    }
+
+    function courbe(carte, g, type) {
+      legende(carte, g.series.length > 1 ? g.series.map((serie, rang) => [serie.name, g.couleurs[rang]]) : [])
+      dessiner(carte, {
+        chart: { type, height: hauteurDe(carte, 200) },
+        series: g.series,
+        colors: g.couleurs,
+        fill: type === 'area' ? { type: 'gradient', gradient: Object.assign({ opacityFrom: 0.35, opacityTo: 0 }, g.remplissage) } : { type: 'solid' },
+        stroke: { width: 2, curve: 'smooth' },
+        markers: { size: 0, hover: { size: 5 } },
+        xaxis: Object.assign({ categories: g.categories }, AXE),
+        yaxis: g.axes ? { labels: { style: { colors: TEXTE, fontSize: '11px' }, formatter: valeur => g.format(valeur) } } : { show: false },
+        grid: g.axes ? { borderColor: couleurTheme('base-200'), strokeDashArray: 0, xaxis: { lines: { show: false } }, padding: { left: 12, right: 12, top: 0, bottom: 0 } }
+                     : { show: false, padding: { left: 16, right: 16, top: 0, bottom: 0 } },
+        tooltip: { shared: true, intersect: false, custom: ({ series, dataPointIndex, w }) => infobulleSeries(g, series, dataPointIndex, w) }
+      })
+    }
+
+    // Après le dessin d'un calendrier : clic sur une cellule, hachures des cellules à venir, cadre de celle d'aujourd'hui.
+    function decorer(carte, g) {
+      const svg = dans(carte, 'svg.apexcharts-svg')
+      svg.querySelectorAll('.apexcharts-aujourdhui, .apexcharts-periode').forEach(trace => trace.remove())
+      svg.querySelectorAll('rect.apexcharts-heatmap-rect').forEach(rect => {
+        const serie = Number(rect.getAttribute('i'))
+        const point = Number(rect.getAttribute('j'))
+        if (g.cliquer) {
+          rect.style.cursor = 'pointer'
+          // ApexCharts rejoue le survol du clic jusqu'à 20 ms plus tard : l'infobulle se masque après ce délai.
+          rect.onclick = () => {
+            setTimeout(() => dans(carte, '.apexcharts-tooltip').classList.remove('apexcharts-active'), 50)
+            g.cliquer(serie, point)
+          }
+        }
+        const marque = g.marque && g.marque(serie, point)
+        if (marque === 'avenir' && Number(rect.getAttribute('val')) > 0) hachurer(svg, rect, carte)
+        if (marque === 'aujourdhui') {
+          const cadre = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+          ;['x', 'y', 'width', 'height', 'rx', 'ry'].forEach(attribut => cadre.setAttribute(attribut, rect.getAttribute(attribut)))
+          cadre.setAttribute('class', 'apexcharts-aujourdhui')
+          cadre.setAttribute('fill', 'none')
+          cadre.setAttribute('stroke', BLEU)
+          cadre.setAttribute('stroke-width', 2)
+          cadre.setAttribute('pointer-events', 'none')
+          svg.querySelector('.apexcharts-inner').appendChild(cadre)
+          centrer(carte, rect)
+        }
+      })
+      if (g.zone) contourer(svg, g.zone)
+    }
+
+    // Épaisseur des barres de défilement du navigateur : 0 quand elles se superposent au contenu.
+    function epaisseurBarre() {
+      const sonde = document.body.appendChild(Object.assign(document.createElement('div'),
+                                                            { style: 'position:absolute;top:-100px;width:100px;height:100px;overflow:scroll' }))
+      const epaisseur = sonde.offsetHeight - sonde.clientHeight
+      sonde.remove()
+      return epaisseur
+    }
+
+    // Quand le calendrier déborde de son cadre et défile, la case d'aujourd'hui est amenée au milieu.
+    function centrer(carte, rect) {
+      const cadre = dans(carte, '[data-graphe]').parentElement
+      if (cadre.scrollWidth <= cadre.clientWidth) return
+      const boite = rect.getBoundingClientRect()
+      cadre.scrollLeft += boite.left + boite.width / 2 - cadre.getBoundingClientRect().left - cadre.clientWidth / 2
+    }
+
+    // Contour d'une zone de cellules : zone[colonne] = [première ligne, dernière ligne] ou null, colonnes retenues contiguës.
+    function contourer(svg, zone) {
+      const colonnes = [...zone.keys()].filter(colonne => zone[colonne])
+      if (!colonnes.length) return
+      const boite = (ligne, colonne) => {
+        const rect = svg.querySelector(`rect.apexcharts-heatmap-rect[i="${ligne}"][j="${colonne}"]`)
+        const [x, y, largeur, hauteur] = ['x', 'y', 'width', 'height'].map(attribut => Number(rect.getAttribute(attribut)))
+        return { gauche: x - 1, droite: x + largeur + 1, haut: y - 1, bas: y + hauteur + 1 }
+      }
+      const haut = colonne => boite(zone[colonne][0], colonne)
+      const bas = colonne => boite(zone[colonne][1], colonne)
+      const inverses = [...colonnes].reverse()
+      let d = `M${haut(colonnes[0]).gauche} ${haut(colonnes[0]).haut}`
+      colonnes.forEach((colonne, rang) => {
+        d += ` H${haut(colonne).droite}`
+        if (rang < colonnes.length - 1) d += ` V${haut(colonnes[rang + 1]).haut}`
+      })
+      d += ` V${bas(inverses[0]).bas}`
+      inverses.forEach((colonne, rang) => {
+        d += ` H${bas(colonne).gauche}`
+        if (rang < inverses.length - 1) d += ` V${bas(inverses[rang + 1]).bas}`
+      })
+      const trace = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      trace.setAttribute('d', `${d} Z`)
+      trace.setAttribute('class', 'apexcharts-periode')
+      trace.setAttribute('fill', 'none')
+      trace.setAttribute('stroke', ROSE)
+      trace.setAttribute('stroke-width', 2)
+      trace.setAttribute('stroke-linejoin', 'round')
+      trace.setAttribute('pointer-events', 'none')
+      svg.querySelector('.apexcharts-inner').appendChild(trace)
+    }
+
+    function hachurer(svg, rect, carte) {
+      const couleur = rect.getAttribute('color')
+      const id = `hachures-${carte}-${couleur.slice(1)}`
+      if (!svg.querySelector(`#${id}`)) svg.querySelector('defs').insertAdjacentHTML('beforeend',
+        `<pattern id="${id}" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="${couleur}"/>` +
+        `<path d="${HACHURE}" stroke="${couleurTheme('base-100')}" stroke-width="1.5"/></pattern>`)
+      rect.setAttribute('fill', `url(#${id})`)
+    }
+
+    const rendus = {
+      barres(carte, g) {
+        const valeurs = g.series[0].data
+        const maximum = g.maximum || Math.max(1, ...valeurs)
+        dans(carte, '[data-graphe]').innerHTML = `<div class="flex flex-col gap-3" data-barres>${g.categories.map((libellé, rang) => `
+          <div class="flex items-center gap-3 text-xs">
+            <span class="${g.largeurLibelle || 'w-24 sm:w-32'} shrink-0 truncate text-base-content/70" title="${echapper(libellé)}">${echapper(libellé)}</span>
+            <span class="flex-1 h-2.5 rounded-full bg-base-200 overflow-hidden">
+              <span class="block h-full rounded-full" style="width: ${valeurs[rang] > 0 ? Math.min(100, Math.max(3, 100 * valeurs[rang] / maximum)) : 0}%; background-color: ${teinte(g, rang)}"></span>
+            </span>
+            <span class="min-w-20 shrink-0 text-right font-medium text-base-content/70">${texteDe(g, rang)}</span>
+          </div>`).join('')}</div>`
+      },
+
+      barresApex(carte, g) {
+        const valeurs = g.series[0].data
+        dessiner(carte, {
+          chart: { type: 'bar', height: Math.max(120, 28 * valeurs.length + 40) },
+          series: [{ name: g.series[0].name, data: valeurs }],
+          colors: g.categories.map((_, rang) => teinte(g, rang)),
+          plotOptions: { bar: { horizontal: true, distributed: true, barHeight: '45%', borderRadius: 4, borderRadiusApplication: 'around',
+                                colors: { backgroundBarColors: [couleurTheme('base-200')], backgroundBarOpacity: 1, backgroundBarRadius: 4 } } },
+          xaxis: Object.assign({ categories: g.categories }, AXE, { labels: { show: false } }),
+          yaxis: { labels: { maxWidth: 160, style: { colors: TEXTE, fontSize: '11px' } } },
+          grid: { show: false, padding: { top: -16, bottom: -8 } },
+          tooltip: { custom: ({ dataPointIndex, w }) =>
+            infobulle(w.globals.colors[dataPointIndex], `${echapper(g.categories[dataPointIndex])} : <b>${texteDe(g, dataPointIndex)}</b>`) }
+        })
+      },
+
+      // Colonnes empilées dès qu'il y a plusieurs séries ; avec `courbe` ({ name, data, format }), une ligne en pointillé
+      // sur un second axe par-dessus les colonnes (gabarit daisyUI Mixed Chart).
+      colonnes(carte, g) {
+        legende(carte, g.series.length > 1 ? g.series.map((serie, rang) => [serie.name, g.couleurs[rang]]) : [])
+        const colonnes = g.series.map(serie => Object.assign({ type: 'column' }, serie))
+        const courbe = g.courbe ? [{ name: g.courbe.name, type: 'line', data: g.courbe.data }] : []
+        const toutes = Object.assign({}, g, { series: colonnes.concat(courbe),
+                                              formats: colonnes.map(() => g.format).concat(courbe.map(() => g.courbe.format)) })
+        const etiquettes = { style: { colors: TEXTE, fontSize: '11px' } }
+        // `data-defilant` : en largeur téléphone, 56 px par catégorie au moins et la carte défile.
+        const conteneur = dans(carte, '[data-graphe]')
+        const largeur = 'defilant' in conteneur.dataset && window.matchMedia('(max-width: 639px)').matches
+          ? Math.max(conteneur.clientWidth, 56 * g.categories.length) : '100%'
+        dessiner(carte, {
+          chart: { type: courbe.length ? 'line' : 'bar', stacked: g.series.length > 1, stackOnlyBar: true, height: hauteurDe(carte, 300), width: largeur },
+          series: toutes.series,
+          colors: g.couleurs.concat(courbe.map(() => VIOLET)),
+          plotOptions: { bar: { columnWidth: '55%', borderRadius: 4, borderRadiusApplication: 'end', borderRadiusWhenStacked: 'last' } },
+          stroke: { show: true, width: colonnes.map(() => 2).concat(courbe.map(() => 3)), curve: 'straight',
+                    colors: colonnes.map(() => 'transparent').concat(courbe.map(() => VIOLET)), dashArray: colonnes.map(() => 0).concat(courbe.map(() => 6)) },
+          markers: { size: colonnes.map(() => 0).concat(courbe.map(() => 4)), colors: [VIOLET], strokeColors: couleurTheme('base-100'), strokeWidth: 2 },
+          xaxis: Object.assign({ categories: g.categories }, AXE),
+          yaxis: courbe.length
+            ? [Object.assign({ seriesName: colonnes.map(serie => serie.name), labels: Object.assign({ formatter: valeur => g.format(valeur) }, etiquettes) }),
+               // Une courbe toute à zéro laisse ApexCharts sans échelle (libellés « NaN ») : un plafond à 1 l'en sort.
+               { seriesName: g.courbe.name, opposite: true, min: 0, max: Math.max(...g.courbe.data) > 0 ? undefined : 1,
+                 labels: Object.assign({ formatter: valeur => g.courbe.format(valeur) }, etiquettes) }]
+            : { labels: etiquettes },
+          grid: { borderColor: couleurTheme('base-200'), strokeDashArray: 0, xaxis: { lines: { show: false } }, padding: { left: 12, right: 12, top: -8, bottom: -4 } },
+          tooltip: { shared: true, intersect: false, custom: ({ series, dataPointIndex, w }) => infobulleSeries(toutes, series, dataPointIndex, w) }
+        })
+      },
+
+      aire(carte, g) { courbe(carte, g, 'area') },
+
+      ligne(carte, g) { courbe(carte, g, 'line') },
+
+      // Calendrier : un palier par nuance de violet, du clair au foncé jusqu'au maximum ; en largeur mobile, des cellules
+      // assez grandes pour le doigt, quitte à défiler, alors qu'en PC tout tient dans la largeur. Dans une tuile, des cases
+      // carrées qui tiennent en hauteur comme en largeur, arrondies et espacées comme le calendrier d'activité de GitHub ;
+      // `data-cases="hauteur"` les dimensionne sur la seule hauteur, quitte à défiler en largeur.
+      calendrier(carte, g) {
+        const conteneur = dans(carte, '[data-graphe]')
+        const parHauteur = conteneur.dataset.cases === 'hauteur'
+        const minimum = window.matchMedia('(max-width: 1023px)').matches ? 28 : 20
+        const parLargeur = Math.min(56, (Math.max(conteneur.clientWidth, g.categories.length * minimum + 60) - 60) / g.categories.length)
+        const tuile = Boolean(conteneur.dataset.hauteur) && conteneur.clientHeight > 0
+        // `remplir` (vue par mois) : les cases s'étirent à toute la tuile, quitte à ne plus être carrées.
+        const remplir = tuile && g.remplir
+        const parLigne = (conteneur.clientHeight - 50) / g.series.length
+        let cote = tuile ? Math.max(4, parHauteur ? parLigne : Math.min((conteneur.clientWidth - 60) / g.categories.length, parLigne)) : parLargeur
+        // La barre de défilement horizontale, quand elle a une épaisseur, se prend sur la hauteur des cases.
+        if (tuile && parHauteur && g.categories.length * cote + 60 > conteneur.clientWidth) cote = Math.max(4, parLigne - epaisseurBarre() / g.series.length)
+        const largeur = remplir ? conteneur.clientWidth : g.categories.length * cote + 60
+        const hauteur = remplir ? conteneur.clientHeight : g.series.length * cote + 50
+        const petitCote = remplir ? Math.min((largeur - 60) / g.categories.length, (hauteur - 50) / g.series.length) : cote
+        const espace = Math.max(3, Math.round(petitCote * 0.23))
+        const maximum = Math.max(1, ...g.series.flatMap(serie => serie.data))
+        const paliers = g.couleurs.map((couleur, rang) =>
+          ({ from: maximum * rang / g.couleurs.length, to: maximum * (rang + 1) / g.couleurs.length, color: couleur }))
+        const couleurDe = valeur => valeur > 0 ? paliers.filter(palier => valeur >= palier.from && valeur <= palier.to).pop().color : SOURD
+        dessiner(carte, {
+          chart: { type: 'heatmap', width: tuile || largeur > conteneur.clientWidth ? largeur : '100%', height: hauteur, animations: { enabled: false },
+                   events: { mounted: () => decorer(carte, g), updated: () => decorer(carte, g) } },
+          series: g.series,
+          // ApexCharts retient la dernière plage qui contient la valeur : du foncé au clair, une borne va au palier du dessous, et 0 reste sourd.
+          plotOptions: { heatmap: { radius: Math.max(2, Math.round((petitCote - espace) * 0.2)), enableShades: false,
+                                    colorScale: { ranges: paliers.slice().reverse().concat({ from: 0, to: 0, color: SOURD }) } } },
+          stroke: { width: espace, colors: [couleurTheme('base-200')] },
+          xaxis: Object.assign({ type: 'category', categories: g.categories }, AXE, { labels: { rotate: 0, style: { colors: TEXTE, fontSize: '10px' } } }),
+          yaxis: { reversed: true, labels: { style: { colors: TEXTE, fontSize: '10px' } } },
+          grid: { show: false, padding: { left: 8, right: 0, top: -12, bottom: 0 } },
+          tooltip: { custom: ({ series, seriesIndex, dataPointIndex }) =>
+            infobulle(couleurDe(series[seriesIndex][dataPointIndex]), g.detail(seriesIndex, dataPointIndex)) }
+        })
+      }
+    }
+
+    function afficher(carte, g, type = dans(carte, '[data-graphe]').dataset.type || 'barres') {
+      rendus[type](carte, g)
+    }
+
+    // Une courbe par ligne d'un tableau d'agents, en SVG inline : une instance ApexCharts par ligne figeait la page au
+    // carré du nombre d'agents (DT20). Temps ou interventions par tranche de la période selon la bascule de la carte.
+    function courbesAgents(carte) {
+      const mesure = dans(carte, '[data-mesure] input:checked').value
+      const format = mesure === 'temps' ? heures : nombre
+      const tranches = JSON.parse(dans(carte, 'table').dataset.tranches)
+      const [largeur, hauteur] = [96, 32]
+      document.querySelectorAll(`[data-carte="${carte}"] [data-etincelle]`).forEach(cible => {
+        const valeurs = JSON.parse(cible.dataset[mesure])
+        const maximum = Math.max(1, ...valeurs)
+        const pas = valeurs.length > 1 ? largeur / (valeurs.length - 1) : largeur
+        const points = valeurs.map((valeur, rang) => [(rang * pas).toFixed(1), (hauteur - 2 - (hauteur - 4) * valeur / maximum).toFixed(1)])
+        const trace = points.map(([x, y], rang) => `${rang ? 'L' : 'M'}${x} ${y}`).join(' ')
+        cible.dataset.valeurs = JSON.stringify(valeurs)
+        cible.innerHTML = `<svg viewBox="0 0 ${largeur} ${hauteur}" preserveAspectRatio="none" class="w-full h-full overflow-visible">
+          <path d="${trace} L${largeur} ${hauteur} L0 ${hauteur} Z" fill="url(#degrade-etincelle)"/>
+          <path d="${trace}" fill="none" stroke="${VIOLET}" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+          ${points.map(([x], rang) => `<rect x="${(x - pas / 2).toFixed(1)}" y="0" width="${pas.toFixed(1)}" height="${hauteur}" fill="transparent">
+            <title>${echapper(tranches[rang])} : ${format(valeurs[rang])}</title></rect>`).join('')}
+        </svg>`
+      })
+    }
+
+    // Calendrier d'une année, valeurs par jour : parJour[jour ISO] = [mesure 0, mesure 1]. La bascule Semaines / Mois
+    // de la carte choisit la grille (`jours` lignes par semaine, du lundi), les textes disent ce qui est compté, la modale
+    // liste ce que porte une case.
+    function calendrierJournalier(carte, parJour, mesure, textes, jours = 5) {
+      const parMois = dans(carte, '[data-granularite] input:checked').value === 'mois'
+      const lignes = Array.from({ length: parMois ? 5 : jours }, (_, rang) => rang)
+      const aujourdhui = Date.parse(`${donnees.aujourdhui}T00:00:00Z`)
+      const premier = Date.UTC(donnees.annee, 0, 1)
+      const lundi = premier - ((new Date(premier).getUTCDay() + 6) % 7) * JOUR
+      const debut = lundi + 4 * JOUR < premier ? lundi + 7 * JOUR : lundi
+      const colonnes = parMois ? 12 : Math.floor((Date.UTC(donnees.annee, 11, 31) - debut) / (7 * JOUR)) + 1
+      const grille = lignes.map(() => Array.from({ length: colonnes }, () => [0, 0]))
+      Object.entries(parJour || {}).forEach(([jour, valeurs]) => {
+        const date = new Date(`${jour}T00:00:00Z`)
+        const rangJour = (date.getUTCDay() + 6) % 7
+        if (rangJour >= jours) return
+        const cellule = parMois ? grille[Math.floor((date.getUTCDate() - 1) / 7)][date.getUTCMonth()]
+                                : grille[rangJour][Math.floor((date - debut) / (7 * JOUR))]
+        cellule[0] += valeurs[0] || 0
+        cellule[1] += valeurs[1] || 0
+      })
+      const iso = date => new Date(date).toISOString().slice(0, 10)
+      const lisible = (date, options) => new Date(date).toLocaleDateString('fr-FR', Object.assign({ timeZone: 'UTC' }, options))
+      const bornes = (ligne, colonne) => parMois
+        ? [Date.UTC(donnees.annee, colonne, 7 * ligne + 1), Math.min(Date.UTC(donnees.annee, colonne, 7 * ligne + 7), Date.UTC(donnees.annee, colonne + 1, 0))]
+        : Array(2).fill(debut + (7 * colonne + ligne) * JOUR)
+      const moisDe = (colonne, format) => lisible(parMois ? Date.UTC(donnees.annee, colonne, 1) : debut + (7 * colonne + 4) * JOUR, { month: format })
+      const quand = (ligne, colonne) => parMois
+        ? `semaine ${ligne + 1} ${/^[aeiouy]/.test(moisDe(colonne, 'long')) ? 'd’' : 'de '}${moisDe(colonne, 'long')}`
+        : lisible(bornes(ligne, colonne)[0], { weekday: 'long', day: 'numeric', month: 'long' })
+      const total = grille.flat().reduce((somme, cellule) => somme + cellule[mesure], 0)
+      // Période du tableau de bord, contournée quand elle n'est pas l'année affichée entière ; ses bornes sont des mois entiers.
+      const periode = donnees.du === `${donnees.annee}-01-01` && donnees.au === `${donnees.annee}-12-31` ? null
+        : [Date.parse(`${donnees.du}T00:00:00Z`), Date.parse(`${donnees.au}T00:00:00Z`)]
+      const zone = periode && Array.from({ length: colonnes }, (_, colonne) => {
+        if (parMois) return Date.UTC(donnees.annee, colonne, 1) <= periode[1] && Date.UTC(donnees.annee, colonne + 1, 0) >= periode[0] ? [0, 4] : null
+        const retenues = lignes.filter(ligne => bornes(ligne, colonne)[0] >= periode[0] && bornes(ligne, colonne)[0] <= periode[1])
+        return retenues.length ? [retenues[0], retenues[retenues.length - 1]] : null
+      })
+      const contour = Boolean(zone && zone.some(Boolean))
+
+      ecrire(carte, 'total', textes.total(total))
+      dans(carte, '[data-periode]').classList.toggle('hidden', !contour)
+      afficher(carte, {
+        categories: Array.from({ length: colonnes }, (_, colonne) =>
+          !parMois && colonne && moisDe(colonne, 'short') === moisDe(colonne - 1, 'short') ? '' : moisDe(colonne, 'short')),
+        series: grille.map((ligne, rang) => ({ name: parMois ? `Sem. ${rang + 1}` : lisible(debut + rang * JOUR, { weekday: 'short' }),
+                                               data: ligne.map(cellule => cellule[mesure]) })),
+        couleurs: VIOLETS,
+        remplir: parMois,
+        zone: contour ? zone : undefined,
+        detail: (ligne, colonne) => {
+          const [du, au] = bornes(ligne, colonne)
+          return `${textes.detail(grille[ligne][colonne])} · <b>${quand(ligne, colonne)}</b>` +
+            (parMois ? ` (du ${new Date(du).getUTCDate()} au ${new Date(au).getUTCDate()})` : '')
+        },
+        marque: (ligne, colonne) => {
+          const [du, au] = bornes(ligne, colonne)
+          return du > aujourdhui ? 'avenir' : du <= aujourdhui && aujourdhui <= au ? 'aujourdhui' : undefined
+        },
+        cliquer: (ligne, colonne) => {
+          const [du, au] = bornes(ligne, colonne)
+          ouvrirJour(carte, textes.titre(quand(ligne, colonne), parMois), { du: iso(du), au: iso(au) })
+        }
+      })
+    }
+
+    const cartes = {
+      etatsParMois() {
+        const services = servicesDe('etatsParMois')
+        const etats = Object.keys(ETATS)
+        // Temps du mois : temps réel des interventions, plus la durée prévue des « nouveau », qui n'en ont pas encore.
+        const parMois = donnees.mois.map(mois => ({
+          mois,
+          ligne: Object.fromEntries(etats.map(etat =>
+            [etat, services.reduce((somme, service) => somme + donnees.etats[service][mois][etat], 0)])),
+          temps: services.reduce((somme, service) => somme + donnees.temps[service][mois] + donnees.prevus[service][mois], 0)
+        }))
+        const points = valeurFiltre('etatsParMois', 'granularite') === 'trimestre'
+          ? parTrimestre(parMois, etats)
+          : parMois.map(({ mois, ligne, temps }) => ({ libellé: moisLisible(mois, { month: 'short' }), ligne, temps }))
+
+        afficher('etatsParMois', { categories: points.map(point => point.libellé),
+                                   series: etats.map(etat => ({ name: capitaliser(etat), data: points.map(point => point.ligne[etat]) })),
+                                   couleurs: etats.map(etat => ETATS[etat]), format: valeur => nombre(valeur),
+                                   courbe: { name: 'Temps', data: points.map(point => Math.round(point.temps * 10) / 10), format: heures } })
+      },
+
+      // Le tableau est rendu par le serveur ; seule la courbe de chaque ligne est dessinée ici.
+      activiteAgents() { courbesAgents('activiteAgents') },
+
+      // Devis, commandes et factures : trois courbes superposées.
+      crm() {
+        const services = servicesDe('crm')
+        const types = { devis: 'Devis', commandes: 'Commandes', factures: 'Factures' }
+        afficher('crm', { categories: donnees.mois.map(mois => moisLisible(mois, { month: 'short' })),
+                          series: Object.entries(types).map(([type, nom]) => ({ name: nom,
+                            data: donnees.mois.map(mois => services.reduce((somme, service) => somme + donnees.crm[service][mois][type], 0)) })),
+                          couleurs: [couleurTheme('primary'), couleurTheme('accent'), VIOLET], format: euros,
+                          remplissage: { opacityFrom: 0.55, opacityTo: 0.1 }, axes: true })
+      },
+
+      // Le calendrier journalier, pour les réservations de matériel de l'organisation.
+      reservations() {
+        calendrierJournalier('reservations', donnees.reservations, 0, {
+          total: total => `${nombre(total)} réservation${total > 1 ? 's' : ''} en ${donnees.annee}`,
+          detail: ([reservations]) => `${nombre(reservations)} réservation${reservations > 1 ? 's' : ''}`,
+          titre: (quand, parMois) => `Matériel réservé ${parMois ? 'la' : 'le'} ${quand} ${donnees.annee}`
+        }, 7)
+      }
+    }
+
+    function ouvrirJour(carte, titre, parametres) {
+      const dialogue = dans(carte, 'dialog')
+      ecrire(carte, 'titre', titre)
+      dans(carte, '[data-contenu]').innerHTML = '<p class="text-sm text-base-content/50">Chargement…</p>'
+      dialogue.showModal()
+      fetch(`${dialogue.dataset.url}${dialogue.dataset.url.includes('?') ? '&' : '?'}${new URLSearchParams(parametres)}`)
+        .then(reponse => reponse.text())
+        .then(html => { dans(carte, '[data-contenu]').innerHTML = html })
+    }
+
+    function parTrimestre(parMois, etats) {
+      const groupes = new Map()
+      parMois.forEach(({ mois, ligne, temps }) => {
+        const [annee, numero] = mois.split('-').map(Number)
+        const clé = `T${Math.ceil(numero / 3)} ${annee}`
+        const cumul = groupes.get(clé) || { ligne: Object.fromEntries(etats.map(etat => [etat, 0])), temps: 0 }
+        etats.forEach(etat => cumul.ligne[etat] += ligne[etat])
+        cumul.temps += temps
+        groupes.set(clé, cumul)
+      })
+      return [...groupes.entries()].map(([libellé, { ligne, temps }]) => ({ libellé, ligne, temps }))
+    }
+
+    function cablerBascules(racine) {
+      racine.querySelectorAll('[data-carte] .join').forEach(bascule => bascule.onchange = () => {
+        bascule.querySelectorAll('input').forEach(entree =>
+          ['btn-active', 'text-white!'].forEach(classe => entree.parentElement.classList.toggle(classe, entree.checked)))
+        cartes[bascule.closest('[data-carte]').dataset.carte]()
+      })
+    }
+
+    // ApexCharts est chargé en `defer` : tout dessin attend qu'il soit là (après une visite Turbo aussi, B136).
+    const pret = window.ApexCharts ? Promise.resolve()
+      : new Promise(charge => document.querySelector('script[src*="apexcharts-6"]').addEventListener('load', charge))
+    pret.then(() => {
+      // Chaque page ne porte qu'une partie des cartes. Un select qui porte un `name` est soumis au serveur par le
+      // formulaire de sa carte, pas relu ici.
+      const presente = nom => document.querySelector(`[data-carte="${nom}"]`)
+      Object.entries(cartes).forEach(([nom, dessin]) => {
+        if (!presente(nom)) return
+        document.querySelectorAll(`select[data-carte="${nom}"]:not([name])`).forEach(select => select.onchange = dessin)
+        dessin()
+      })
+
+      // Quand la fenêtre change : les tuiles (hauteur) se redessinent.
+      const redessinables = [...document.querySelectorAll('[data-graphe][data-hauteur]')].map(cible => cible.closest('[data-carte]').dataset.carte)
+      let redessin
+      window.addEventListener('resize', () => {
+        clearTimeout(redessin)
+        redessin = setTimeout(() => redessinables.forEach(nom => cartes[nom]()), 200)
+      })
+      cablerBascules(document)
+
+      // Le tri de la carte des agents passe par son cadre Turbo : la carte revient du serveur, ses courbes et ses bascules avec.
+      document.addEventListener('turbo:frame-load', ({ target }) => {
+        if (target.id !== 'activite-agents') return
+        cablerBascules(target)
+        cartes.activiteAgents()
+      })
+    })
+  })()
+</script>

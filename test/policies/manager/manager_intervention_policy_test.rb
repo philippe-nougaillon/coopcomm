@@ -9,8 +9,10 @@ class ManagerInterventionPolicyTest < ActionDispatch::IntegrationTest
     intervention = interventions(:intervention_paris)
     intervention_pointage = interventions(:intervention_repete)
     intervention_autre_org = interventions(:nettoyage_port)
+    demande_sans_service = interventions(:demande_par_mail)
 
     @policy = InterventionPolicy.new(manager, intervention)
+    @policy_sans_service = InterventionPolicy.new(manager, demande_sans_service)
     @policy_pointage = InterventionPolicy.new(manager, intervention_pointage)
     @policy_autre_service = InterventionPolicy.new(users(:manager_paris), intervention)
     @policy_autre_org = InterventionPolicy.new(manager, intervention_autre_org)
@@ -101,6 +103,12 @@ class ManagerInterventionPolicyTest < ActionDispatch::IntegrationTest
     assert @policy_autre_service.destroy?
     assert @policy_autre_service.valider?
     assert @policy_autre_service.archiver?
+  end
+
+  test "accès autorisé pour un manager sur une demande sans service d'un adhérent de son organisation" do
+    assert @policy_sans_service.show?
+    assert @policy_sans_service.edit?
+    assert @policy_sans_service.update?
   end
 
   test "accès interdit pour un manager sur une intervention d'une autre organisation" do

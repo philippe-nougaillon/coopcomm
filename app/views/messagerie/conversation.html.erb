@@ -1,5 +1,5 @@
 <% content_for :full_width, true %>
-<%= turbo_stream_from "chat_#{current_user.id}_with_#{@destinataire.id}" %>
+<%= turbo_stream_from @flux %>
 <% page_title!("Messagerie") %>
 <div class="drawer lg:drawer-open w-full mx-auto">
   <input id="messagerie-drawer" type="checkbox" class="drawer-toggle" />
@@ -9,33 +9,38 @@
         <div class="lg:hidden flex-shrink-0">
           <div class="btn btn-sm bg-transparent border-none text-black hover:bg-primary/20 rounded-lg">
             <%= link_to messagerie_path, class: "flex items-center gap-2" do %>
-             <%= embedded_svg "icons/arrow_back.svg", class: "w-6 h-6 fill-current" %> 
+             <%= embedded_svg "icons/arrow_back.svg", class: "w-6 h-6 fill-current" %>
             <% end %>
           </div>
         </div>
         <div class="flex items-center gap-4">
-          <% if @destinataire.is_aibot? %>
-            <div class="avatar">
-              <div class="w-10 rounded-full">
-                <%= image_tag "aibot.png" %>
-              </div>
-            </div>  
-            <h1 class="text-xl sm:text-2xl text-primary font-bold truncate">
-              <span class="block"><%= @destinataire.nom_prénom %></span>
-            </h1>
-          <% else %>
-            <%= link_to user_path(@destinataire), class: "flex items-center gap-4 " do %>
-              <%= render partial: "partials/user_profile_picture", locals: { user: @destinataire } %>
-              <h1 class="text-xl sm:text-2xl text-primary font-bold truncate hover:underline hover:underline-primary">
+          <% if @destinataire %>
+            <% if @destinataire.is_aibot? %>
+              <div class="avatar">
+                <div class="w-10 rounded-full">
+                  <%= image_tag "aibot.png" %>
+                </div>
+              </div>  
+              <h1 class="text-xl sm:text-2xl text-primary font-bold truncate">
                 <span class="block"><%= @destinataire.nom_prénom %></span>
               </h1>
+            <% else %>
+              <%= link_to user_path(@destinataire), class: "flex items-center gap-4 " do %>
+                <%= render partial: "partials/user_profile_picture", locals: { user: @destinataire } %>
+                <h1 class="text-xl sm:text-2xl text-primary font-bold truncate hover:underline hover:underline-primary">
+                  <span class="block"><%= @destinataire.nom_prénom %></span>
+                </h1>
+              <% end %>
             <% end %>
+          <% else %>
+            <%= embedded_svg "icons/campaign.svg", class: "w-10 h-10 fill-current text-primary flex-shrink-0" %>
+            <h1 class="text-xl sm:text-2xl text-primary font-bold truncate"><%= @titre %></h1>
           <% end %>
         </div>
       </div>
     </div>
-    <div class="flex-1 min-h-0 w-full relative flex flex-col" data-controller="conversation" data-conversation-to-user-slug-value="<%= @destinataire.slug %>">
-      <div id="chat-messages-container" data-conversation-target="container" class="flex-1 min-h-0 overflow-y-auto px-2 pt-4 pb-4 w-full lg:w-3/5 mx-auto">
+    <div class="flex-1 min-h-0 w-full relative flex flex-col" data-controller="conversation" data-conversation-to-user-slug-value="<%= @destinataire&.slug %>" data-conversation-service-slug-value="<%= params[:service_slug] %>" data-conversation-url-value="<%= @url_envoi %>" data-conversation-current-user-id-value="<%= current_user.id %>">
+      <div id="chat-messages-container" data-conversation-target="container" class="flex-1 min-h-0 overflow-y-auto px-2 py-4 w-full lg:w-3/5 mx-auto">
         <% @messages.group_by { |m| m.created_at.to_date }.each do |date, day_messages| %>
           <div class="sticky top-0 z-20 flex justify-center py-2 pointer-events-none">
             <span class="text-xs font-semibold text-gray-600 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm">
@@ -55,7 +60,7 @@
             <% end %>
             <div class="message-wrapper"
                 data-message-id="<%= message.id %>"
-                data-unread="<%= message.to_id == current_user.id && message.read_at.nil? ? 'true' : 'false' %>">
+                data-unread="<%= message.message? && message.to_id == current_user.id && message.read_at.nil? ? 'true' : 'false' %>">
               <%= render partial: "messagerie/message", locals: { message: message } %>
             </div>
           <% end %>
@@ -69,6 +74,7 @@
               <span class="text-sm font-semibold text-white">Nouveau message</span>
             </div>
           </div>
+          <% if @peut_ecrire %>
           <form data-action="submit->conversation#send" class="flex gap-2 items-center w-full p-4 md:px-2 ">
             <input
               data-conversation-target="input"
@@ -78,10 +84,13 @@
               name="message"
               placeholder="Écrivez votre message"
             >
-              <button type="submit" class="btn btn-primary btn-circle shadow-sm flex-shrink-0" aria-label="Envoyer">
+              <button type="submit" class="btn btn-primary btn-circle shadow-sm flex-shrink-0" aria-label="Envoyer" data-testid="envoyer_message">
                 <%= embedded_svg "icons/send.svg", class: "w-6 h-6 fill-current" %>
               </button>
             </form>
+          <% else %>
+          <p class="text-center text-sm text-slate-500 p-4">Seuls les administrateurs et les managers publient des annonces.</p>
+          <% end %>
           </div>
         </div>
       </div>

@@ -31,7 +31,7 @@
         <% end %>
       </div>
       <% if !(intervention.validé? || intervention.refusé?) %>
-        <div class="flex justify-center gap-2">
+        <div class="flex justify-start gap-2">
           <%= render "interventions/boutons_workflow", intervention: intervention,
                      styles: InterventionsHelper::STYLES_LISTE,
                      titres: InterventionsHelper::TITRES_LISTE,
@@ -71,7 +71,7 @@
         <div>
           <strong class="block text-xs font-bold text-slate-400 uppercase">Début / Fin</strong>
             <% if intervention.début %>
-              <%= l(intervention.début, format: :short) %>
+              <%= l(intervention.début, format: :short ) %>
             <% else %>
               <p class="text-xs text-slate-400">
                non renseigné
@@ -79,7 +79,7 @@
             <% end %>
           </p>
             <% if intervention.fin %>
-              <%= l(intervention.fin, format: :short) %>
+              <%= l(intervention.fin, format: :short ) %>
             <% else %>
               <p class="text-xs text-slate-400">
                 non renseignée

@@ -1,15 +1,25 @@
 <div class="drawer sm:drawer-open w-min lg:mr-6">
   <input id="my-drawer" type="checkbox" class="sm:hidden drawer-toggle" />
 
-  <div class="drawer-content fixed top-0 left-0 z-40 ml-4 mt-7">
-    <div class="sm:hidden">
-      <label id="drawer-label" for="my-drawer">
-        <div></div>
-        <div></div>
-        <div></div>
-      </label>
-    </div>
+<div class="drawer-content fixed top-0 left-0 right-0 z-40">
+  <div id="mobile-topbar" class="sm:hidden flex items-center justify-items-start h-14 px-4 transition-colors duration-200">
+    <label id="drawer-label" for="my-drawer" class="flex items-center flex-1">
+      <%= embedded_svg "icons/menu.svg", class: "text-base", title: "Menu" %>
+    </label>
+    <span></span>
   </div>
+</div>
+
+<script>
+  document.addEventListener("scroll", function () {
+    const bar = document.getElementById("mobile-topbar");
+    if (bar && window.scrollY > 10) {
+      bar.classList.add("bg-white", "shadow-md");
+    } else if (bar) {
+      bar.classList.remove("bg-white", "shadow-md");
+    }
+  });
+</script>
 
   <div class="drawer-side">
     <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>

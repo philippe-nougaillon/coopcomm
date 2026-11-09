@@ -1,0 +1,62 @@
+<div class="flex flex-col xl:flex-row justify-between items-center gap-3 w-full">
+  <% page_title!(titre) %>
+  <div class="flex flex-wrap items-center justify-between gap-3 w-full">
+    <%= form_tag chemin, method: :get, class: "flex flex-wrap items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm",
+                 data: { turbo: false } do %>
+      <% request.query_parameters.except('du', 'au', 'service').each do |clé, valeurs| %>
+        <%= safe_join(Array(valeurs).map { |valeur| hidden_field_tag(valeurs.is_a?(Array) ? "#{clé}[]" : clé, valeur, id: nil) }) %>
+      <% end %>
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <%= label_tag :periode, 'Période', class: "text-xs font-semibold text-slate-500 uppercase tracking-wider" %>
+        <div class="flex-1 sm:w-56">
+        <%= select_tag :periode,
+            options_for_select(@periodes.map { |periode| [periode[:libellé], "#{periode[:du]} #{periode[:au]}"] }, "#{@du} #{@au}"),
+            include_blank: true, name: nil,
+            class: 'w-full h-10',
+            data: { controller: 'slim-select', placeholder: 'Période personnalisée' },
+            onchange: "if (this.value) { [this.form.du.value, this.form.au.value] = this.value.split(' '); this.form.requestSubmit() }" %>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 flex-1 sm:flex-none">
+        <%= label_tag :du, 'Du', class: "text-xs font-semibold text-slate-500 uppercase tracking-wider" %>
+        <div class="flex-1 sm:w-40" data-controller="date-picker" data-action="click->date-picker#open">
+        <%= date_field_tag :du, @du,
+            class: 'input input-bordered input-md w-full',
+            onchange: 'this.form.requestSubmit()',
+            data: { 'date-picker-target': "input" } %>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 flex-1 sm:flex-none">
+        <%= label_tag :au, 'Au', class: "text-xs font-semibold text-slate-500 uppercase tracking-wider" %>
+        <div class="flex-1 sm:w-40" data-controller="date-picker" data-action="click->date-picker#open">
+        <%= date_field_tag :au, @au,
+            class: 'input input-bordered input-md w-full',
+            onchange: 'this.form.requestSubmit()',
+            data: { 'date-picker-target': "input" } %>
+        </div>
+      </div>
+      <% if @services.size > 1 %>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <%= label_tag :service, "Service", class: "text-xs font-semibold text-slate-500 uppercase tracking-wider" %>
+          <div class="flex-1 sm:w-76">
+          <%= hidden_field_tag 'service[]', '', id: nil %>
+          <%= select_tag :service, options_from_collection_for_select(@services, 'id', 'nom', @selected_service_ids),
+              multiple: true,
+              class: 'w-full h-10',
+              data: { controller: 'slim-select', placeholder: 'Tous les services',
+                      max_values_shown_desktop: 2, max_values_shown_mobile: 1 },
+              onchange: 'this.form.requestSubmit()' %>
+          </div>
+        </div>
+      <% end %>
+      <%= link_to 'Réinitialiser', chemin,
+                  class: 'text-primary font-semibold text-sm hover:underline h-10 flex items-center', data: { turbo: false } %>
+    <% end %>
+    <%= link_to dashboard_path(request.query_parameters.to_options.merge(format: :xls)),
+                class: "btn btn-primary btn-outline btn-md rounded flex items-center justify-center gap-2 text-base",
+                title: "Exporter en XLS" do %>
+      <%= embedded_svg "icons/download.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+      <span class="hidden md:max-lg:block 2xl:block">Exporter en XLS</span>
+    <% end %>
+  </div>
+</div>

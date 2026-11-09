@@ -25,7 +25,7 @@
   chemin_suppression = local_assigns[:chemin_suppression]
   alt_text           = local_assigns.fetch(:alt_text, "")
   wrapper_class      = local_assigns.fetch(:wrapper_class,
-    "float-right mt-6 w-full sm:w-2/5 md:w-2/4 ml-6 mb-4 rounded-2xl overflow-hidden  shadow-sm"
+    "float-right mt-6 w-full sm:w-2/5 md:w-2/4 ml-6 mb-4 rounded-2xl overflow-hidden shadow-sm"
   )
 
   raise ArgumentError, "chemin_suppression requis quand supprimable: true" if supprimable && chemin_suppression.blank?

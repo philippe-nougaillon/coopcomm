@@ -67,7 +67,7 @@ export default class extends Controller {
     // On met à jour via l'instance SlimSelect existante (sans la recréer) pour
     // préserver sa logique anti-désélection (beforeChange). Repli sur le select
     // natif si l'instance n'est pas disponible.
-    const slim = this.agentsSlimSelect()
+    const slim = this.slimSelectDe(this.agentsTarget)
     if (slim) {
       slim.setData(data)
     } else {
@@ -104,53 +104,32 @@ export default class extends Controller {
     if (verif) verif.change()
   }
 
-  agentsSlimSelect() {
-    const controller = this.application.getControllerForElementAndIdentifier(this.agentsTarget, "slim-select")
+  slimSelectDe(select) {
+    const controller = this.application.getControllerForElementAndIdentifier(select, "slim-select")
     return controller ? controller.select : null
   }
 
   populateSelect(services) {
     const select = this.serviceTarget
 
-    // 1. On met à jour le select natif (toujours utile pour le formulaire)
     select.innerHTML = "<option value=''></option>"
-
     const slimData = [{ text: '', value: '', placeholder: true }]
 
     services.forEach(service => {
-      // On vérifie si cet ID est celui qu'on doit restaurer
-
       const option = document.createElement("option")
       option.value = service.id
       option.text = service.nom
       select.appendChild(option)
-
-      // 2. On prépare les données au format exigé par l'API de Slim-Select
       slimData.push({ text: service.nom, value: service.id })
     })
 
-    // Règle métier : S'il y a un seul service, on le sélectionne
+    // Un seul service possible : il est présélectionné.
     if (services.length === 1) {
       slimData[1].selected = true
-      select.value = services[0].id // On met aussi à jour le select natif
+      select.value = services[0].id
     }
 
-    // 3. LA MAGIE SLIM-SELECT
-    // Il faut passer ces nouvelles données à l'instance de Slim-Select.
-
-    // CAS A : Si vous êtes sur SlimSelect v1 (l'instance est souvent sur l'élément)
-    if (select.slim) {
-      select.slim.setData(slimData)
-    }
-    // CAS B : Méthode force brute si vous n'avez pas accès à l'instance
-    else {
-      // On cherche l'interface générée par SlimSelect juste après notre vrai select
-      const slimWrapper = select.nextElementSibling
-      if (slimWrapper && slimWrapper.classList.contains('ss-main')) {
-        slimWrapper.remove() // On détruit l'ancien visuel
-        select.style.display = 'block' // On rend le select visible temporairement
-        new SlimSelect({ select: select }) // On relance SlimSelect
-      }
-    }
+    const slim = this.slimSelectDe(select)
+    if (slim) slim.setData(slimData)
   }
 }

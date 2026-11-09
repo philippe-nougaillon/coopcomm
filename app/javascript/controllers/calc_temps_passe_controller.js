@@ -83,6 +83,10 @@ export default class extends Controller {
     }
   }
 
+  copierDate() {
+    this.fin_dateTarget.value = this.debut_dateTarget.value
+  }
+
   buildDate(dateStr, hourStr, minuteStr) {
     // Passer d'une String à un Nombre pour la création 
     const [year, month, day] = dateStr.split('-').map(Number)

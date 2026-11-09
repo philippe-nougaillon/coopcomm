@@ -47,6 +47,13 @@ class ExportToXlsInterventionsTest < ActiveSupport::TestCase
     assert_equal 'urgence, plomberie', feuille.row(1)[feuille.row(0).index('Mots clés')]
   end
 
+  test 'une demande sans service occupe sa ligne, avec une colonne Service vide' do
+    ligne = feuille_des_interventions(Intervention.where(id: interventions(:demande_par_mail).id)).row(1)
+
+    assert_equal interventions(:demande_par_mail).description, ligne[1]
+    assert_nil ligne[5]
+  end
+
   private
 
   def feuille_des_interventions(interventions)

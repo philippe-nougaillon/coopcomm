@@ -28,8 +28,8 @@
                 <% if policy(intervention).voir_agent_des_pointages? %>
                   <td class="py-3 px-4 font-medium text-slate-700"><%= pointage.agents.first&.nom_prénom %></td>
                 <% end %>
-                <td class="py-3 px-4"><%= l pointage.début %></td>
-                <td class="py-3 px-4"><%= l pointage.fin if pointage.fin %></td>
+                <td class="py-3 px-4"><%= l(pointage.début, format: pointage.format_date) %></td>
+                <td class="py-3 px-4"><%= l(pointage.fin, format: pointage.format_date) if pointage.fin %></td>
                 <td class="py-3 px-4 font-medium"><%= pointage.temps_total %></td>
                 <td class="py-3 px-4 text-center">
                   <span class="badge font-medium text-xs px-2.5 py-1 rounded-full <%= pointage.style %>">

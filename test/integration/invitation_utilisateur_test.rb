@@ -14,7 +14,7 @@ class InvitationUtilisateurTest < ActionDispatch::IntegrationTest
   # Sans ce mail, ou avec un lien qui ne porte pas le bon jeton, le compte créé
   # est inaccessible à son destinataire.
 
-  test "création d'un utilisateur → un mail d'invitation part vers lui (critique)" do
+  test "En tant qu'administrateur, je veux qu'un mail d'invitation parte vers l'utilisateur que je crée (critique)" do
     assert_emails 1 do
       créer_adherent
     end
@@ -24,7 +24,7 @@ class InvitationUtilisateurTest < ActionDispatch::IntegrationTest
     assert_equal 'Vous avez reçu une invitation', mail.subject
   end
 
-  test "le mail porte le lien d'acceptation et son jeton (critique)" do
+  test "En tant qu'administrateur, je veux que l'utilisateur que je crée reçoive le lien d'acceptation portant son jeton (critique)" do
     adherent_créé = créer_adherent
 
     jeton = jeton_invitation(ActionMailer::Base.deliveries.last)
@@ -34,7 +34,7 @@ class InvitationUtilisateurTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test "l'envoi de l'invitation est tracé dans un mail log" do
+  test "En tant qu'administrateur, je veux que l'envoi de l'invitation soit tracé dans un mail log" do
     adherent_créé = nil
     assert_difference 'MailLog.count', 1 do
       adherent_créé = créer_adherent
@@ -46,7 +46,7 @@ class InvitationUtilisateurTest < ActionDispatch::IntegrationTest
     assert_equal @admin.organisation, trace.organisation
   end
 
-  test "renvoyer l'invitation depuis la fiche → un nouveau mail part" do
+  test "En tant qu'administrateur, je veux renvoyer l'invitation depuis la fiche de l'utilisateur" do
     adherent_créé = créer_adherent
 
     assert_emails 1 do

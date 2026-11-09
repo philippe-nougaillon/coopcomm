@@ -8,7 +8,7 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     sign_in users(:hidalgo)
   end
 
-  test 'index : sans paramètre → la page répond' do
+  test 'la liste du matériel est affichée avec succès' do
     get tools_url
 
     assert_response :success
@@ -16,7 +16,7 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== TESTS CRITIQUES ====================
 
-  test "index : le matériel d'une autre organisation n'apparaît pas (critique)" do
+  test 'le matériel d’une autre organisation n’apparaît pas dans la liste (critique)' do
     get tools_url
 
     assert_not_includes assigns(:tools), tools(:camion)
@@ -24,14 +24,14 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'index : sans date → la semaine en cours' do
+  test 'la liste du matériel s’ouvre sur la semaine en cours' do
     get tools_url
 
     assert_equal Date.today.beginning_of_week, assigns(:date)
     assert_equal Date.today.end_of_week, assigns(:date_fin)
   end
 
-  test 'index : une date → la semaine qui la contient' do
+  test 'la liste du matériel s’ouvre sur la semaine qui contient la date demandée' do
     jeudi = Date.new(2026, 6, 4)
 
     get tools_url(date: jeudi.to_s)
@@ -40,14 +40,14 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_equal jeudi.end_of_week, assigns(:date_fin)
   end
 
-  test 'index : une date illisible → retour à la semaine en cours' do
+  test 'une date illisible ramène la liste du matériel à la semaine en cours' do
     get tools_url(date: 'pas-une-date')
 
     assert_response :success
     assert_equal Date.today.beginning_of_week, assigns(:date)
   end
 
-  test 'index : recherche → seulement le matériel correspondant' do
+  test 'la recherche dans la liste ne retourne que le matériel correspondant' do
     get tools_url(search: 'Rateau')
 
     assert_includes assigns(:tools), tools(:rateau)
@@ -62,13 +62,13 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
   #   assert_not_includes assigns(:tools), tools(:rateau)
   # end
 
-  test 'show : un outil de son organisation → la page répond' do
+  test 'un outil est affiché avec succès' do
     get tool_url(@tool)
 
     assert_response :success
   end
 
-  test 'show : une date → le mois qui la contient et la grille qui l’entoure' do
+  test 'la fiche d’un outil s’ouvre sur le mois qui contient la date demandée et la grille qui l’entoure' do
     quinze = Date.new(2026, 6, 15)
 
     get tool_url(@tool, date: quinze.to_s)
@@ -79,7 +79,7 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_equal quinze.end_of_month.end_of_week, assigns(:date_fin_grid)
   end
 
-  test 'show : une date illisible → retour au mois en cours' do
+  test 'une date illisible ramène la fiche d’un outil au mois en cours' do
     get tool_url(@tool, date: 'pas-une-date')
 
     assert_response :success
@@ -88,14 +88,14 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
 
   # Les flèches du calendrier émettent start_date sans effacer un date= plus ancien :
   # la grille d'états doit suivre le mois réellement affiché.
-  test 'show : start_date prime sur un date= plus ancien' do
+  test 'la date émise par les flèches du calendrier prime sur une date plus ancienne restée dans l’adresse' do
     get tool_url(@tool, date: '2026-01-05', start_date: '2026-06-15')
 
     assert_equal Date.new(2026, 6, 1), assigns(:date)
     assert_equal Date.new(2026, 6, 1).beginning_of_week, assigns(:date_inicio_grid)
   end
 
-  test 'show : un manager reçoit l’historique des modifications de l’outil' do
+  test 'un manager reçoit l’historique des modifications de l’outil' do
     @tool.update!(name: 'Tondeuse thermique')
 
     get tool_url(@tool)
@@ -104,7 +104,7 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     assert assigns(:audits).any? { |audit| audit.auditable_type == 'Tool' }
   end
 
-  test 'show : l’historique ne répète pas les mouvements, déjà affichés au-dessus' do
+  test 'l’historique d’un outil ne répète pas les mouvements, déjà affichés au-dessus' do
     Mouvement.create!(tool: @tool, user: users(:bond), date: Date.today, état: :panne)
 
     get tool_url(@tool)
@@ -112,7 +112,7 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_not assigns(:audits).any? { |audit| audit.auditable_type == 'Mouvement' }
   end
 
-  test 'show : un agent ne reçoit pas l’historique des modifications' do
+  test 'un agent ne reçoit pas l’historique des modifications de l’outil' do
     sign_in users(:bond)
 
     get tool_url(@tool)
@@ -121,19 +121,19 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_nil assigns(:audits)
   end
 
-  test 'new : sans paramètre → la page répond' do
+  test 'le formulaire de création est affiché avec succès' do
     get new_tool_url
 
     assert_response :success
   end
 
-  test 'edit : un outil de son organisation → la page répond' do
+  test 'le formulaire de modification est affiché avec succès' do
     get edit_tool_url(@tool)
 
     assert_response :success
   end
 
-  test 'create : paramètres valides → l’outil est créé' do
+  test 'un outil est créé lorsque les paramètres sont valides' do
     assert_difference('Tool.count') do
       post tools_url, params: { tool: { name: nom_unique, description: @tool.description,
                                         organisation_id: @tool.organisation_id, icon_name: @tool.icon_name,
@@ -143,7 +143,7 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to tool_url(Tool.last)
   end
 
-  test 'create : nom vide → aucune création et formulaire réaffiché' do
+  test 'un outil sans nom n’est pas créé' do
     assert_no_difference('Tool.count') do
       post tools_url, params: { tool: { name: '' } }
     end
@@ -151,7 +151,7 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
   end
 
-  test 'update : paramètres valides → l’outil est modifié' do
+  test 'un outil est modifié lorsque les paramètres sont valides' do
     nouveau_nom = nom_unique
 
     patch tool_url(@tool), params: { tool: { name: nouveau_nom, description: @tool.description,
@@ -162,7 +162,7 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_equal nouveau_nom, @tool.reload.name
   end
 
-  test 'update : nom vidé → formulaire réaffiché en 422 et outil inchangé' do
+  test 'un outil dont le nom est vidé n’est pas modifié' do
     patch tool_url(@tool), params: { tool: { name: '' } }
 
     assert_response :unprocessable_content
@@ -172,7 +172,7 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
   # ÉPINGLAGE B19 : la vue masque le bouton depuis #412, mais `destroy` ne garde
   # rien — une requête directe emporte l'outil et ses tool_interventions en
   # cascade. À inverser à la correction.
-  test 'destroy : un outil utilisé par une intervention est quand même supprimé' do
+  test 'un outil utilisé par une intervention est quand même supprimé' do
     assert_predicate @tool.interventions, :any?
 
     delete tool_url(@tool)
@@ -180,7 +180,7 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_not Tool.exists?(@tool.id)
   end
 
-  test 'destroy : un outil inutilisé → il est supprimé' do
+  test 'un outil inutilisé est supprimé' do
     assert_difference('Tool.count', -1) do
       delete tool_url(tools(:rateau))
     end
@@ -188,7 +188,7 @@ class ToolsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to tools_url
   end
 
-  test 'set_tool : un slug inconnu redirige sans planter' do
+  test 'un slug d’outil inconnu redirige sans planter' do
     get tool_url(id: 'slug-inexistant')
 
     assert_redirected_to root_path

@@ -15,12 +15,12 @@ class Intervention < ApplicationRecord
 
   # Autorise Rails à lire et écrire ces champs virtuels pour le formulaire
   attr_accessor :tags_manager
-  attr_accessor :début_prévue_hour, :début_prévue_minute, :fin_prévue_hour, :fin_prévue_minute, :début_hour,
-                :début_minute, :fin_hour, :fin_minute
+  # Posés par la mailbox : ses destinataires (à défaut ceux du service), et le droit de naître sans service.
+  attr_accessor :destinataires_notification, :service_facultatif
 
   before_destroy :must_not_have_any_mouvements
 
-  belongs_to :service
+  belongs_to :service, optional: true
   belongs_to :adherent, class_name: :User, foreign_key: :adherent_id, optional: true
 
   has_many :agent_interventions, dependent: :destroy
@@ -42,17 +42,14 @@ class Intervention < ApplicationRecord
   MESSAGE_AGENT_UNIQUE = "Une intervention de pointage n'accepte qu'un seul agent"
 
 
-  before_validation -> { combine_datetime(:début_prévue) }
-  before_validation -> { combine_datetime(:fin_prévue) }
-  before_validation -> { combine_datetime(:début) }
-  before_validation -> { combine_datetime(:fin) }
   before_validation :check_absence
   before_validation :set_temporary_description, on: :create
   before_validation :check_workflow_pointage_mère
   before_validation -> { self.temps_de_pause = 0 if temps_de_pause.nil? && terminé? }
   before_validation :calc_temps_total
 
-  validates :description, :adherent_id, :service_id, presence: true
+  validates :description, :adherent_id, presence: true
+  validates :service_id, presence: true, unless: :service_facultatif
 
   validate :schedules_must_make_sense
   validate :tools_must_be_available
@@ -127,8 +124,9 @@ class Intervention < ApplicationRecord
   # after_create_commit :broadcast_to_authorized_viewers
   # after_create_commit au lieu de after_create pour être sûr que l'audit de création soit créé et utilisable
   after_create_commit :send_manager_notification
+  after_commit :actualiser_dashboard
 
-  # Déclaré en dernier : le `save` de #calculate_co2 fait perdre aux callbacks
+  # Déclaré en dernier : le `save` de #calculer_trajet fait perdre aux callbacks
   # suivants l'information « on sort d'une création ».
   after_commit :apres_terminaison, on: %i[create update], if: :vient_de_terminer?
 
@@ -276,7 +274,7 @@ class Intervention < ApplicationRecord
       next unless conflicting_interventions.exists?
 
       message = if reprise_immediate_de_pointage?(conflicting_interventions)
-                  'Veuillez attendre une minute avant de recommencer à pointer.'
+                  'Veuillez attendre quelques secondes avant de recommencer à pointer.'
                 else
                   conflincting_message = conflicting_interventions.map do |conflict|
                     " #{agent.nom} déjà sur l’intervention « #{conflict.description} » du #{conflict.effective_début&.strftime('%d/%m/%Y %H:%M')} au #{conflict.effective_fin&.strftime('%d/%m/%Y %H:%M')}"
@@ -417,7 +415,12 @@ class Intervention < ApplicationRecord
   end
 
   def durée_humanized
-    Time.at(fin - début).utc.strftime('%Hh %Mmin')
+    Time.at(fin - début).utc.strftime('%Hh %Mmin %Ssec')
+  end
+
+  # Format de date pour les interventions pointages avec les secondes
+  def format_date
+    template_slug.present? ? :very_long : :long
   end
 
   def self.dernière_en_cours(interventions)
@@ -454,7 +457,7 @@ class Intervention < ApplicationRecord
   def send_manager_notification
     user = User.find_by(id: audits.find_by(action: 'create')&.user&.id)
     if user&.adhérent?
-      NotifManagersNewInterventionFromAdherentJob.perform_later(self, user)
+      NotifManagersNewInterventionFromAdherentJob.perform_later(self, user, destinataires_notification)
     elsif user&.agent? && terminé?
       NotifManagersInterventionDoneByAgentJob.perform_later(self, user)
     end
@@ -471,14 +474,15 @@ class Intervention < ApplicationRecord
     end
   end
 
-  def calculate_co2
-    response = self.get_routes_info_from_location
-
-    return if response['errors'].present? && response.dig('data_response', 'routes').blank?
+  # Sans validation : l'intervention vient d'être validée et enregistrée, rejouer les validations
+  # ici changeait son état ; le trajet n'est l'œuvre d'aucun utilisateur, l'audit le dit.
+  def calculer_trajet
+    response = get_routes_info_from_location
+    return if response.dig('data_response', 'routes').blank?
 
     self.trajet = response['routes_info']
     self.co2 = FetchRoutesInfos.co2_consumption_by_route(response.dig('data_response', 'routes', 0))
-    save
+    Audited.audit_class.as_user('Système') { save(validate: false) }
   end
 
   def temps_par_agent
@@ -523,19 +527,15 @@ class Intervention < ApplicationRecord
     end
   end
 
+  # Sans service (demande arrivée par mail), l'organisation est celle de l'adhérent.
+  def organisation
+    super || adherent&.organisation
+  end
+
   private
 
   def slug_candidates
     [SecureRandom.uuid]
-  end
-
-  def combine_datetime(field)
-    datetime = send(field)
-    return if datetime.blank?
-
-    hour = send("#{field}_hour").presence || datetime.hour
-    minute = send("#{field}_minute").presence || datetime.min
-    send("#{field}=", datetime.change(hour: hour.to_i, min: minute.to_i))
   end
 
   def broadcast_to_authorized_viewers
@@ -645,7 +645,7 @@ class Intervention < ApplicationRecord
   end
 
   def apres_terminaison
-    calculate_co2
+    calculer_trajet
 
     return if Rails.env.development?
 
@@ -667,5 +667,9 @@ class Intervention < ApplicationRecord
     elsif repeter? && workflow_state != 'pointage activé'
       self.workflow_state = 'pointage activé'
     end
+  end
+
+  def actualiser_dashboard
+    ActualiserDashboard.call
   end
 end

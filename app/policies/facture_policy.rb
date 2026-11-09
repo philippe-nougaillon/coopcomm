@@ -8,7 +8,7 @@ class FacturePolicy < ApplicationPolicy
   end
 
   def index?
-    user&.manager_or_admin? || adhérent?
+    user&.manager_or_admin?
   end
 
   # def new?

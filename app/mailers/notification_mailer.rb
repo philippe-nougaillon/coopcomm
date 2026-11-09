@@ -38,16 +38,6 @@ class NotificationMailer < ApplicationMailer
     end
   end
 
-  def welcome(user)
-    @user = user
-    mail(to: @user.email, subject: '[COOPCOMM] Bienvenue !')
-  end
-
-  def new_organisation(organisation)
-    @organisation = organisation
-    mail(to: ENV['BCC_NOTIFICATION_EMAILS'].presence, subject: '[COOPCOMM] Nouvelle Organisation')
-  end
-
   def confirm_email_newsletter(email)
     mail(to: email,
          bcc: ENV['SUPER_ADMIN'].presence,

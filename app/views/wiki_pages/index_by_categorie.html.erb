@@ -5,7 +5,7 @@
 
     <div class="flex flex-wrap justify-between items-center mb-12 min-h-12 sm:min-h-16">
       <h1 class="text-2xl sm:text-4xl text-primary font-bold"><%= @catégorie.humanize %></h1>
-      <%= render "bouton_ajouter", catégorie: @catégorie %>
+      <%= render "bouton_ajouter" %>
     </div>
 
     <div id="wiki_pages" class="min-w-full">
@@ -14,7 +14,39 @@
           <%= render partial: "carte", collection: @wiki_pages, as: :wiki_page %>
         </div>
       <% else %>
-        <p class="text-sm text-slate-400">Aucune page dans cette catégorie pour le moment.</p>
+        <div class="border border-slate-200 rounded-xl shadow-sm bg-white p-6 sm:p-8">
+          <div class="flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50/50 max-w-2xl mx-auto my-2 transition-all">
+            <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <%= embedded_svg "icons/#{@catégorie == "guide" ? "book" : @catégorie == "faq" ? "help" : "newspaper"}.svg", class: "w-6 h-6 text-primary opacity-70", title: "" rescue nil %>
+            </div>
+
+            <% titre, description = case @catégorie
+                                      when "guide"
+                                        ["Aucun guide pour le moment",
+                                         "Les guides expliquent pas à pas comment utiliser l'application — parfait pour un premier pas-à-pas sur le CRM ou une interventio"]
+                                      when "faq"
+                                        ["Aucune question pour le moment",
+                                         "Revenez bientôt : les réponses aux questions les plus fréquentes seront rassemblées ici."]
+                                      else
+                                        ["Aucun article pour le moment",
+                                         "Les actualités et nouveautés de CoopComm apparaîtront ici."]
+                                      end %>
+
+            <h4 class="text-base sm:text-lg font-bold text-slate-800">
+              <%= titre %>
+            </h4>
+            <p class="text-xs sm:text-sm text-slate-500 max-w-sm mt-1 leading-relaxed mb-4">
+              <%= description %>
+            </p>
+
+            <% if current_user&.manager_or_admin? %>
+              <%= link_to new_documentation_path(catégorie: @catégorie), class: "btn btn-outline btn-primary" do %>
+                <%= embedded_svg "icons/add.svg", class: "w-5 h-5 fill-current", title: "" rescue nil %>
+                <span>Créer <%= @catégorie == "guide" ? "le premier guide" : @catégorie == "faq" ? "la première question" : "le premier article" %></span>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
       <% end %>
     </div>
   </div>

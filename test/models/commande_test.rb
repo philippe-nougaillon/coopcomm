@@ -9,7 +9,7 @@ class CommandeTest < ActiveSupport::TestCase
     @service = services(:informatique)
   end
 
-  test 'assign_ref : première commande d\'une organisation → CM-AAAA-1' do
+  test "la première commande d'une organisation reçoit la référence CM-AAAA-1" do
     org = Organisation.create!(nom: 'Org neuve A')
     service = Service.create!(nom: 'Service A', organisation: org)
     commande = build_commande(service: service)
@@ -19,7 +19,7 @@ class CommandeTest < ActiveSupport::TestCase
     assert_equal "CM-#{Date.current.year}-1", commande.ref
   end
 
-  test 'assign_ref : seconde commande de la même organisation → numéro incrémenté' do
+  test 'la seconde commande de la même organisation reçoit le numéro suivant' do
     org = Organisation.create!(nom: 'Org neuve B')
     service = Service.create!(nom: 'Service B', organisation: org)
     build_commande(service: service).save!
@@ -30,7 +30,7 @@ class CommandeTest < ActiveSupport::TestCase
     assert_equal "CM-#{Date.current.year}-2", deuxième.ref
   end
 
-  test 'assign_ref : deux organisations → numérotations indépendantes' do
+  test 'les commandes de deux organisations sont numérotées indépendamment' do
     org1 = Organisation.create!(nom: 'Org neuve C')
     org2 = Organisation.create!(nom: 'Org neuve D')
     commande1 = build_commande(service: Service.create!(nom: 'Service C', organisation: org1))
@@ -43,7 +43,7 @@ class CommandeTest < ActiveSupport::TestCase
     assert_equal "CM-#{Date.current.year}-1", commande2.ref
   end
 
-  test 'assign_ref : référence fournie explicitement → conservée' do
+  test 'une référence de commande fournie explicitement est conservée' do
     commande = build_commande(ref: 'REF-MANUELLE')
 
     commande.save!
@@ -51,7 +51,7 @@ class CommandeTest < ActiveSupport::TestCase
     assert_equal 'REF-MANUELLE', commande.ref
   end
 
-  test 'style : chaque état → la classe du badge qui le distingue à l\'écran' do
+  test "chaque état d'une commande se distingue à l'écran par la classe de son badge" do
     commande = build_commande
 
     assert_equal 'badge badge-secondary ', commande.style
@@ -62,18 +62,18 @@ class CommandeTest < ActiveSupport::TestCase
     assert_equal 'badge badge-primary ', commande.style
   end
 
-  test 'workflow_state_humanized : appel → les états humanisés du workflow' do
+  test "les états du workflow d'une commande ont un libellé humanisé" do
     humanized = Commande.workflow_state_humanized
 
     assert_includes humanized, 'Créé'
     assert_includes humanized, 'Archivé'
   end
 
-  test 'modifiable? : état créé → vrai' do
+  test "une commande à l'état créé est modifiable" do
     assert build_commande.modifiable?
   end
 
-  test 'modifiable? : états envoyé, validé et archivé → faux' do
+  test "une commande à l'état envoyé, validé ou archivé n'est pas modifiable" do
     commande = build_commande
     commande.save!
 
@@ -90,7 +90,7 @@ class CommandeTest < ActiveSupport::TestCase
     assert_not commande.modifiable?
   end
 
-  test 'modifiable? : état refusé → vrai, pour corriger avant de renvoyer' do
+  test "une commande à l'état refusé est modifiable, pour être corrigée avant renvoi" do
     commande = build_commande
     commande.save!
     commande.envoyer!
@@ -99,32 +99,32 @@ class CommandeTest < ActiveSupport::TestCase
     assert commande.modifiable?
   end
 
-  test 'pdf_filename : commande référencée → nom de fichier bâti sur la référence' do
+  test "le nom du fichier PDF d'une commande est bâti sur sa référence" do
     assert_equal 'Commande-2026-9.pdf', build_commande(ref: '2026-9').pdf_filename
   end
 
-  test 'visible_to : administrateur → les commandes de son organisation' do
+  test 'un administrateur voit les commandes de son organisation' do
     document = build_commande
     document.save!
 
     assert_includes Commande.visible_to(users(:administrateur_paris)), document
   end
 
-  test 'visible_to : manager → celles des services qu\'il gère' do
+  test 'un manager voit les commandes de ses services' do
     document = build_commande
     document.save!
 
     assert_includes Commande.visible_to(users(:hidalgo)), document
   end
 
-  test 'visible_to : manager d\'une autre organisation → aucune' do
+  test "un manager ne voit pas les commandes d'une autre organisation" do
     document = build_commande
     document.save!
 
     assert_not_includes Commande.visible_to(users(:manager_marseille)), document
   end
 
-  test 'visible_to : adhérent → les siennes envoyées, jamais un brouillon' do
+  test 'un adhérent voit ses commandes envoyées, jamais un brouillon' do
     sienne = build_commande
     sienne.save!
 
@@ -135,7 +135,11 @@ class CommandeTest < ActiveSupport::TestCase
     assert_includes Commande.visible_to(@adherent), sienne
   end
 
-  test 'visible_to : agent → aucune commande' do
+  test "un adhérent ne voit jamais la commande envoyée d'un autre adhérent de son organisation (critique)" do
+    assert_not_includes Commande.visible_to(@adherent), commandes(:commande_autre_adherent)
+  end
+
+  test 'un agent ne voit aucune commande' do
     assert_empty Commande.visible_to(users(:bond))
   end
 

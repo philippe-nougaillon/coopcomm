@@ -12,7 +12,7 @@ class CotationsTest < ApplicationSystemTestCase
   end
 
   # Parcours bout-en-bout : slim_select (service + prestation) et ligne imbriquée.
-  test "création d'une cotation avec une ligne via le formulaire" do
+  test "En tant qu'administrateur, je veux créer une cotation avec une ligne de prestation" do
     visit new_cotation_path(adherent_id: @adherent.slug) # adhérent figé
 
     fill_in 'Intitulé', with: 'Devis système', match: :first
@@ -35,7 +35,7 @@ class CotationsTest < ApplicationSystemTestCase
 
   # Comportement client pur (controller Stimulus nested-form), non atteignable
   # par les tests de contrôleur.
-  test 'le formulaire ajoute et retire des lignes de prestation' do
+  test "En tant qu'administrateur, je veux ajouter et retirer des lignes de prestation dans une cotation" do
     visit new_cotation_path(adherent_id: @adherent.slug)
 
     assert_selector '.nested-form-wrapper', count: 1
@@ -53,7 +53,7 @@ class CotationsTest < ApplicationSystemTestCase
   # administrateur_paris (créateur notifiable → chemin nominal avec redirection).
 
   # Parcours bout-en-bout : l'adhérent trace une signature sur le pad puis signe.
-  test 'un adhérent signe une cotation en traçant sa signature' do
+  test "En tant qu'adhérent, je veux signer une cotation en traçant ma signature" do
     login(@adherent)
     cotation = cotations(:cotation_secretariat) # envoyé, à weil
 
@@ -63,7 +63,8 @@ class CotationsTest < ApplicationSystemTestCase
     draw_signature
     assert_no_selector '#save[disabled]' # le tracé active le bouton
 
-    accept_confirm { find('#save').click }
+    cliquer_bouton 'Signer'
+    within('#confirm_signature_modal') { cliquer_bouton 'Oui, signer' }
 
     # État métier durable (les toasts de flash sont instables après navigation).
     assert_current_path cotation_path(cotation)
@@ -76,7 +77,7 @@ class CotationsTest < ApplicationSystemTestCase
 
   # Câblage JS pur ajouté au pad (`refreshSaveButton`) : le bouton « Signer » est
   # désactivé tant que le cadre est vide, activé dès un trait, et « Effacer » le re-
-  test 'le bouton Signer est désactivé tant que le cadre de signature est vide' do
+  test "En tant qu'adhérent, je ne peux pas signer une cotation tant que le cadre de signature est vide" do
     login(@adherent)
 
     visit signer_cotation_path(cotations(:cotation_secretariat))

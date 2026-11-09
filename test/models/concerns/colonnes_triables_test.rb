@@ -9,19 +9,19 @@ class ColonnesTriablesTest < ActiveSupport::TestCase
     @service = services(:technique)
   end
 
-  test 'clé de tri « évaluation » : lecture → la moyenne calculée par le modèle' do
+  test 'la clé de tri « évaluation » reflète la moyenne calculée par le modèle' do
     assert_equal User.all.to_h { |user| [user.id, user.moyenne&.round(4)] },
                  clés_sql(User, 'users.moyenne') { |valeur| valeur&.to_f&.round(4) }
   end
 
-  test 'clé de tri « absent » : lecture → ce que répond le modèle' do
+  test 'la clé de tri « absent » reflète ce que répond le modèle' do
     users(:bond).absences.create!(du: Date.current, au: Date.current, motif: :congés_payés)
 
     assert_equal User.all.to_h { |user| [user.id, user.absent?] },
                  clés_sql(User, 'users.absent')
   end
 
-  test 'clé de tri « service » : lecture → le premier service de l\'utilisateur' do
+  test "la clé de tri « service » reflète le premier service de l'utilisateur" do
     attendu = User.all.to_h do |user|
       [user.id, user.services.map { |service| TriTextuel.clé_de_tri(service.nom) }.min]
     end
@@ -29,7 +29,7 @@ class ColonnesTriablesTest < ActiveSupport::TestCase
     assert_equal attendu, clés_sql(User, 'users.service')
   end
 
-  test 'clé de tri « mots clés » : lecture → la liste des mots clés de l\'utilisateur' do
+  test "la clé de tri « mots clés » reflète la liste des mots clés de l'utilisateur" do
     users(:bond).update!(tag_list: 'Zonage, entretien, Élagage')
 
     attendu = User.all.to_h do |user|
@@ -39,13 +39,13 @@ class ColonnesTriablesTest < ActiveSupport::TestCase
     assert_equal attendu, clés_sql(User, 'users.tags')
   end
 
-  test 'clé de tri « nombre d\'utilisateurs » : lecture → le compte du service' do
+  test "la clé de tri « nombre d'utilisateurs » reflète le compte du service" do
     attendu = Service.all.to_h { |service| [service.id, service.users.count] }
 
     assert_equal attendu, clés_sql(Service, 'services.users_count', &:to_i)
   end
 
-  test 'clé de tri « dernier mail » : lecture → la date du dernier envoi de la cotation' do
+  test 'la clé de tri « dernier mail » reflète la date du dernier envoi de la cotation' do
     cotation = cotations(:cotation_paris)
     MailLog.create!(to: 'x@aikku.eu', subject: 'Devis', organisation: cotation.organisation,
                     user_id: users(:hidalgo).id, cotation: cotation)
@@ -55,7 +55,7 @@ class ColonnesTriablesTest < ActiveSupport::TestCase
     assert_equal attendu, clés_sql(Cotation, 'cotations.dernier_mail') { |valeur| valeur&.round }
   end
 
-  test 'clé de tri « heures consommées » : lecture → la somme calculée par la convention' do
+  test 'la clé de tri « heures consommées » reflète la somme calculée par la convention' do
     convention = conventions(:convention_paris)
     début = Time.zone.parse('2026-03-02 09:00:00')
     Intervention.create!(description: 'Intervention sous convention', adherent_id: convention.user_id,
@@ -68,7 +68,7 @@ class ColonnesTriablesTest < ActiveSupport::TestCase
     assert_equal attendu, clés_sql(Convention, 'conventions.heures_consommees', &:to_f)
   end
 
-  test 'triable_par : toute colonne déclarée → expression exécutable en base' do
+  test 'toute colonne de tri déclarée a une expression exécutable en base' do
     Rails.application.eager_load!
 
     déclarées = 0

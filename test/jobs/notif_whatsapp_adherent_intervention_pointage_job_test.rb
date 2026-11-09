@@ -26,7 +26,7 @@ class NotifWhatsappAdherentInterventionPointageJobTest < ActiveJob::TestCase
     @fake_client  = FakeTwilioClient.new
   end
 
-  test 'envoie un WhatsApp d\'arrivée (sans date de fin) et trace un MailLog canal whatsapp' do
+  test "l'adhérent reçoit un WhatsApp d'arrivée et un mail log sur le canal whatsapp est créé lorsque son intervention est pointée sans date de fin" do
     @intervention.update_column(:fin, nil)
 
     assert_difference -> { MailLog.count }, 1 do
@@ -50,7 +50,7 @@ class NotifWhatsappAdherentInterventionPointageJobTest < ActiveJob::TestCase
     assert_equal @agent.id, log.user_id
   end
 
-  test 'envoie un WhatsApp de départ quand l\'intervention a une date de fin' do
+  test "l'adhérent reçoit un WhatsApp de départ lorsque son intervention pointée a une date de fin" do
     @intervention.update_column(:fin, Time.current)
 
     Twilio::REST::Client.stub(:new, @fake_client) do

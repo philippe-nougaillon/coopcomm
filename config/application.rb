@@ -38,8 +38,6 @@ module Coopcomm
     # To make this easier, you can specify a different controller as the base class
     config.mission_control.jobs.base_controller_class = 'MissionControlAdminController'
 
-    config.active_support.to_time_preserves_timezone = :zone
-
     # config/application.rb
     config.i18n.load_path += Dir[Rails.root.join('config/locales/**/*.yml')]
   end

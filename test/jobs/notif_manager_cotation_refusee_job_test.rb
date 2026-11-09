@@ -11,7 +11,7 @@ class NotifManagerCotationRefuseeJobTest < ActiveJob::TestCase
     @adherent = @cotation.adherent           # l'adhérent qui refuse, donc déclenche l'envoi
   end
 
-  test 'envoie un mail au créateur et crée un MailLog tracé' do
+  test "le créateur de la cotation reçoit un mail et un mail log attribué à l'adhérent est créé lorsque celui-ci refuse la cotation" do
     assert_emails 1 do
       assert_difference -> { MailLog.count }, 1 do
         NotifManagerCotationRefuseeJob.perform_now(@cotation, @manager, @adherent.id)

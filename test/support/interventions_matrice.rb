@@ -6,11 +6,6 @@
 # Les enregistrements sont posés sans validation : les contrôles de disponibilité
 # entreraient sinon en conflit avec les fixtures, et plusieurs états ne sont pas
 # atteignables par une transition depuis `nouveau`.
-#
-# ⚠ Le trigger Postgres `interventions_refresh_dashboard` rafraîchit les deux vues
-# matérialisées à CHAQUE écriture : au-delà d'une centaine d'écritures dans la même
-# transaction, Postgres épuise `max_locks_per_transaction`. D'où `etat_en_memoire`,
-# qui évite une écriture par état.
 module InterventionsMatrice
   TYPES = %i[classique modele fille].freeze
 
@@ -49,11 +44,6 @@ module InterventionsMatrice
     # `update_columns` n'écrit pas d'audit : sans lui, l'historique d'activité
     # afficherait les sondes et fausserait la matrice de visibilité.
     intervention.update_columns(attributs_complets) if complete
-    # Un modèle de pointage sauvegardé à l'état `terminé` en ressort à
-    # « pointage activé » : after_commit → apres_terminaison → calculate_co2 fait
-    # un `save` validé, qui rejoue check_workflow_pointage_mère. On force l'état
-    # demandé pour que la matrice teste bien ce qu'elle annonce.
-    intervention.update_columns(workflow_state: etat) if intervention.reload.workflow_state != etat
     intervention.reload
   end
 

@@ -20,7 +20,7 @@ class ImportUtilisateursTest < ActionDispatch::IntegrationTest
   # L'organisation et l'importateur viennent de la session : c'est le contrôleur
   # qui les transmet, et rien d'autre ne le vérifie.
 
-  test 'un manager n’importe que dans le périmètre de son organisation (critique)' do
+  test "En tant que manager, je veux que mon import reste dans le périmètre de mon organisation (critique)" do
     sign_in users(:hidalgo)
     Service.create!(nom: 'Voirie', organisation: organisations(:mairie_marseille))
 
@@ -35,7 +35,7 @@ class ImportUtilisateursTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
-  test 'un fichier qui n’est pas un classeur affiche une alerte et aucun bilan' do
+  test "En tant qu'administrateur, je veux une alerte et aucun bilan quand mon fichier n'est pas un classeur" do
     fichier = Rack::Test::UploadedFile.new(Rails.root.join('test/fixtures/files/exemple.png'), 'image/png')
 
     assert_no_difference 'User.count' do
@@ -47,7 +47,7 @@ class ImportUtilisateursTest < ActionDispatch::IntegrationTest
     assert_nil bilan, 'un import interrompu n’affiche aucun compteur de lignes'
   end
 
-  test 'une colonne obligatoire manquante affiche une alerte et aucun bilan' do
+  test "En tant qu'administrateur, je veux une alerte et aucun bilan quand une colonne obligatoire manque" do
     assert_no_difference 'User.count' do
       importer([%w[Nom Prénom Email], ['Durand', 'Marie', 'marie.durand@example.test']], save: 'true')
     end
@@ -57,7 +57,7 @@ class ImportUtilisateursTest < ActionDispatch::IntegrationTest
     assert_nil bilan, 'un import interrompu n’affiche aucun compteur de lignes'
   end
 
-  test 'un import réussi annonce son succès et compte les lignes importées' do
+  test "En tant qu'administrateur, je veux que mon import réussi annonce son succès et compte les lignes importées" do
     assert_difference 'User.count', 1 do
       importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test',
                                service: 'Informatique')], save: 'true')
@@ -70,7 +70,7 @@ class ImportUtilisateursTest < ActionDispatch::IntegrationTest
     assert_bilan importés: 1, erreurs: 0
   end
 
-  test 'le bilan détaille chaque ligne importée' do
+  test "En tant qu'administrateur, je veux lire le détail de chaque ligne importée dans le bilan" do
     importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test',
                              téléphone: '0102030405')], save: 'true')
 
@@ -81,7 +81,7 @@ class ImportUtilisateursTest < ActionDispatch::IntegrationTest
     assert_match(/Téléphone : 0102030405/, tableau_succès)
   end
 
-  test 'le bilan d’un remplacement de service nomme l’ancien et le nouveau' do
+  test "En tant qu'administrateur, je veux lire l'ancien et le nouveau service dans le bilan d'un remplacement de service" do
     importer([ENTETES, ligne(nom: 'Martin', prénom: 'Michel',
                              email: users(:martin_technique_paris).email, service: 'Informatique')],
              save: 'true')
@@ -90,7 +90,7 @@ class ImportUtilisateursTest < ActionDispatch::IntegrationTest
     assert_match(/Service : Technique → Informatique/, tableau_succès)
   end
 
-  test 'un import partiellement en échec annonce l’échec partiel et compte les deux' do
+  test "En tant qu'administrateur, je veux que mon import partiellement en échec annonce l'échec partiel et compte les réussites et les erreurs" do
     lignes = [
       ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test', service: 'Informatique'),
       ligne(nom: 'Dupuis', prénom: 'Paul', email: 'paul.dupuis@example.test', service: 'Zorglub')
@@ -105,7 +105,7 @@ class ImportUtilisateursTest < ActionDispatch::IntegrationTest
     assert_match(/Zorglub/, tableau_erreurs)
   end
 
-  test 'un import entièrement en échec annonce l’échec' do
+  test "En tant qu'administrateur, je veux que mon import entièrement en échec annonce l'échec" do
     importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: '')], save: 'true')
 
     assert_equal "L'importation a échouée.", flash[:alert]
@@ -113,7 +113,7 @@ class ImportUtilisateursTest < ActionDispatch::IntegrationTest
     assert_match(/Email manquant/, tableau_erreurs)
   end
 
-  test 'le tableau d’erreurs nomme le numéro de la ligne fautive du classeur' do
+  test "En tant qu'administrateur, je veux lire le numéro de la ligne fautive du classeur dans le tableau d'erreurs" do
     assert_difference 'User.count', 1 do
       importer([ENTETES,
                 ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test'),
@@ -126,7 +126,7 @@ class ImportUtilisateursTest < ActionDispatch::IntegrationTest
     assert_equal '3', premiere_ligne_en_erreur.at_css('td').text.strip
   end
 
-  test 'sans paramètre save, l’import est simulé et annoncé comme tel' do
+  test "En tant qu'administrateur, je veux que mon import sans choix d'enregistrement soit simulé et annoncé comme tel" do
     assert_no_difference 'User.count' do
       importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test')])
     end
@@ -135,7 +135,7 @@ class ImportUtilisateursTest < ActionDispatch::IntegrationTest
     assert_bilan importés: 1, erreurs: 0
   end
 
-  test 'save à false ne crée ni n’invite personne' do
+  test "En tant qu'administrateur, je veux qu'un import en simulation ne crée ni n'invite personne" do
     assert_no_emails do
       assert_no_difference 'User.count' do
         importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test')],
@@ -144,14 +144,14 @@ class ImportUtilisateursTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test 'un import appliqué n’affiche pas l’avertissement de simulation' do
+  test "En tant qu'administrateur, je veux qu'un import enregistré n'affiche pas l'avertissement de simulation" do
     importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test')],
              save: 'true')
 
     assert_no_match(/n'ont pas été enregistrées/i, response.body)
   end
 
-  test 'aucun mot de passe en clair dans la page de bilan' do
+  test "En tant qu'administrateur, je veux une page de bilan sans aucun mot de passe en clair" do
     importer([ENTETES, ligne(nom: 'Durand', prénom: 'Marie', email: 'marie.durand@example.test')],
              save: 'true')
 

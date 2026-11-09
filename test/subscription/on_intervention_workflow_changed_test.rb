@@ -7,7 +7,7 @@ class OnInterventionWorkflowChangedTest < ActionDispatch::IntegrationTest
     sign_in users(:martin_technique_paris)
   end
 
-  test "NotifManagersWorkflowChangedJob mis en file d'attente quand un agent termine une intervention avec un manageur dans l'organisation" do
+  test "le mail de changement de statut aux managers est mis en file lorsqu'un agent termine une intervention" do
     intervention = interventions(:nouvelle_intervention)
 
     assert_enqueued_with(job: NotifManagersWorkflowChangedJob) do
@@ -15,7 +15,7 @@ class OnInterventionWorkflowChangedTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "NotifManagersWorkflowChangedJob mis en file d'attente quand un agent valide une intervention avec un manager dans l'organisation" do
+  test "le mail de changement de statut aux managers n'est pas mis en file lorsqu'un agent valide une intervention" do
     intervention = interventions(:intervention_terminée)
 
     assert_no_enqueued_jobs only: NotifManagersWorkflowChangedJob do
@@ -23,7 +23,7 @@ class OnInterventionWorkflowChangedTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "NotifManagersWorkflowChangedJob pas mis en file d'attente quand un agent refuse une intervention avec un manager dans l'organisation" do
+  test "le mail de changement de statut aux managers n'est pas mis en file lorsqu'un agent refuse une intervention" do
     intervention = interventions(:intervention_terminée)
 
     assert_no_enqueued_jobs only: NotifManagersWorkflowChangedJob do
@@ -31,7 +31,7 @@ class OnInterventionWorkflowChangedTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "NotifManagersWorkflowChangedJob mis en file d'attente quand un agent archive une intervention avec un manager dans l'organisation" do
+  test "le mail de changement de statut aux managers n'est pas mis en file lorsqu'un agent archive une intervention" do
     intervention = interventions(:intervention_validé)
 
     assert_no_enqueued_jobs only: NotifManagersWorkflowChangedJob do
@@ -49,7 +49,7 @@ class OnInterventionWorkflowChangedTest < ActionDispatch::IntegrationTest
   # end
 
   # Permet de tester quand un manager termine une intervention, que ca ne notifie pas les manager, comme lui-même est un utilisateur
-  test "NotifManagersWorkflowChangedJob n'est pas mis en file d'attente si un manager modifie le statut" do
+  test "le mail de changement de statut aux managers n'est pas mis en file lorsqu'un manager termine lui-même une intervention" do
     sign_in users(:manager_marseille)
     intervention = interventions(:nettoyage_port)
 

@@ -158,7 +158,7 @@
                   class: "block w-full h-full" do %>
             <%= image_tag doc.representation(resize_to_limit: [400, 500]),
                     alt: doc.filename.to_s,
-                    class: "w-full h-full object-fit" %>
+                    class: "w-full h-full object-contain" %>
           <% end %>
         <% else %>
            <%= link_to rails_blob_path(doc, disposition: "inline"),
@@ -226,7 +226,7 @@
     <% if policy(@convention).destroy? %>
       <button class="btn btn-soft btn-error hover:!text-white" onclick="delete_convention_modal_<%= @convention.id %>.showModal()" title="Supprimer">
         <%= embedded_svg "icons/delete.svg", class: "w-4 h-4 fill-current transition-colors duration-200" %>
-        <span class="hidden lg:inline">Supprimer la convention</span>
+        <span>Supprimer la convention</span>
       </button>
 
       <dialog id="delete_convention_modal_<%= @convention.id %>" class="modal">

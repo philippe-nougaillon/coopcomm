@@ -66,6 +66,19 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
     assert_empty assigns(:wiki_pages)
   end
 
+  test 'la page de résultats affiche toutes les documentations trouvées d’une même catégorie' do
+    documentations = Array.new(4) { |i| créer_documentation(titre: "Documentation de remplissage #{i}") }
+
+    get documentation_index_url(search: 'remplissage')
+
+    assert_response :success
+    documentations.each do |documentation|
+      assert_dom 'a.card[href=?]', documentation_path(documentation) do
+        assert_dom 'h3', text: documentation.titre
+      end
+    end
+  end
+
   # ==================== TESTS CRITIQUES ====================
   # Chaque page de la documentation doit passer par `by_role_for` : la matrice
   # rôle par rôle est éprouvée dans `wiki_page_test`, ce qui reste ici, c'est
@@ -124,6 +137,25 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
     get new_documentation_url
 
     assert_response :success
+  end
+
+  test 'le formulaire de création ne présélectionne aucune catégorie' do
+    get new_documentation_url
+
+    assert_nil assigns(:wiki_page).catégorie
+  end
+
+  test 'le formulaire de création ouvert depuis une catégorie la présélectionne' do
+    get new_documentation_url(catégorie: 'guide')
+
+    assert_equal 'guide', assigns(:wiki_page).catégorie
+  end
+
+  test 'le formulaire de création ne présélectionne rien lorsque la catégorie demandée n’existe pas' do
+    get new_documentation_url(catégorie: 'astrologie')
+
+    assert_response :success
+    assert_nil assigns(:wiki_page).catégorie
   end
 
   test 'une documentation est créée avec son auteur' do

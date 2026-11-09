@@ -8,18 +8,28 @@ class ServiceTest < ActiveSupport::TestCase
   # de visibilité et le cloisonnement entre communes en dérivent tous. Un service en
   # double, sans nom ou supprimé alors qu'il porte encore des données casse cette chaîne.
 
-  test 'unicité du nom : doublon dans la même organisation → refusé (critique)' do
+  # Sentinelle : `schema.rb` est régénéré depuis la base de dev de celui qui migre. Si sa
+  # base a perdu cette contrainte, le dump la retire sans bruit, et toute la suite tourne
+  # alors sur un schéma plus permissif que la prod (c'est déjà arrivé). Sans elle, un
+  # service sans organisation redevient possible, et tout le cloisonnement en dérive.
+  test 'la colonne organisation_id des services est NOT NULL (critique)' do
+    assert_not Service.columns_hash['organisation_id'].null,
+               'services.organisation_id doit être NOT NULL : schema.rb a sans doute été régénéré ' \
+               'depuis une base de dev qui a perdu la contrainte'
+  end
+
+  test 'un service dont le nom existe déjà dans la même organisation est refusé (critique)' do
     doublon = Service.new(nom: services(:technique).nom, organisation: organisations(:mairie_paris))
 
     assert_not doublon.valid?
     assert_includes doublon.errors[:nom], 'est déjà utilisé(e)'
   end
 
-  test 'unicité du nom : même nom dans une autre organisation → accepté (critique)' do
+  test 'un service dont le nom existe dans une autre organisation est accepté (critique)' do
     assert Service.new(nom: services(:technique).nom, organisation: organisations(:mairie_marseille)).valid?
   end
 
-  test 'normalisation du nom : espaces et casse → humanisé et détouré (critique)' do
+  test 'le nom de service saisi avec des espaces et en minuscules est humanisé et détouré (critique)' do
     service = Service.create!(nom: '  espaces verts  ', organisation: organisations(:mairie_paris))
 
     assert_equal 'Espaces verts', service.nom
@@ -29,14 +39,14 @@ class ServiceTest < ActiveSupport::TestCase
   # utilisateur : impossible de distinguer un vrai service d'une ligne accidentelle, et
   # les utilisateurs qu'on y rattache semblent « sans service ». La normalisation vide
   # un nom fait d'espaces, c'est elle qui déclenche alors le refus.
-  test 'normalisation du nom : nom fait uniquement d\'espaces → refusé (critique)' do
+  test "un service dont le nom n'est fait que d'espaces est refusé (critique)" do
     service = Service.new(nom: '   ', organisation: organisations(:mairie_paris))
 
     assert_not service.valid?
     assert_includes service.errors[:nom], 'doit être rempli(e)'
   end
 
-  test 'scope ordered : plusieurs services → triés sans tenir compte des accents ni de la casse (critique)' do
+  test 'les services sont triés sans tenir compte des accents ni de la casse (critique)' do
     organisation = organisations(:mairie_marseille)
     %w[Élagage aiguillage Zonage].each { |nom| Service.create!(nom: nom, organisation: organisation) }
 
@@ -46,7 +56,7 @@ class ServiceTest < ActiveSupport::TestCase
     assert_operator noms.index('Élagage'), :<, noms.index('Zonage')
   end
 
-  test 'managers_and_admin : service peuplé → ses managers et administrateurs seulement (critique)' do
+  test "la liste des managers et administrateurs d'un service exclut ses agents (critique)" do
     encadrants = services(:technique).managers_and_admin
 
     assert_includes encadrants, users(:hidalgo)
@@ -54,11 +64,11 @@ class ServiceTest < ActiveSupport::TestCase
     assert_not_includes encadrants, users(:martin_technique_paris)
   end
 
-  test 'can_be_destroyed? : service sans aucun rattachement → vrai (critique)' do
+  test 'un service sans aucun rattachement peut être supprimé (critique)' do
     assert services(:menage).can_be_destroyed?
   end
 
-  test 'can_be_destroyed? : service porteur d\'une intervention → faux (critique)' do
+  test "un service porteur d'une intervention ne peut pas être supprimé (critique)" do
     service = service_vide_avec_administrateur
     creer_intervention(service)
 
@@ -66,7 +76,7 @@ class ServiceTest < ActiveSupport::TestCase
     assert_includes service.text_for_unauthorized_destroy, 'des interventions'
   end
 
-  test 'can_be_destroyed? : service porteur d\'une convention → faux (critique)' do
+  test "un service porteur d'une convention ne peut pas être supprimé (critique)" do
     service = service_vide_avec_administrateur
     creer_convention(service)
 
@@ -74,7 +84,7 @@ class ServiceTest < ActiveSupport::TestCase
     assert_includes service.text_for_unauthorized_destroy, 'des conventions'
   end
 
-  test 'can_be_destroyed? : service porteur d\'une cotation → faux (critique)' do
+  test "un service porteur d'une cotation ne peut pas être supprimé (critique)" do
     service = service_vide_avec_administrateur
     Cotation.create!(adherent: @administrateur, service: service, intitulé: 'Devis')
 
@@ -82,7 +92,7 @@ class ServiceTest < ActiveSupport::TestCase
     assert_includes service.text_for_unauthorized_destroy, 'des cotations'
   end
 
-  test 'can_be_destroyed? : service porteur d\'une commande → faux (critique)' do
+  test "un service porteur d'une commande ne peut pas être supprimé (critique)" do
     service = service_vide_avec_administrateur
     Commande.create!(adherent: @administrateur, service: service, intitulé: 'Commande')
 
@@ -90,7 +100,7 @@ class ServiceTest < ActiveSupport::TestCase
     assert_includes service.text_for_unauthorized_destroy, 'des commandes'
   end
 
-  test 'can_be_destroyed? : service porteur d\'une facture → faux (critique)' do
+  test "un service porteur d'une facture ne peut pas être supprimé (critique)" do
     service = service_vide_avec_administrateur
     Facture.create!(adherent: @administrateur, service: service, intitulé: 'Facture')
 
@@ -98,7 +108,7 @@ class ServiceTest < ActiveSupport::TestCase
     assert_includes service.text_for_unauthorized_destroy, 'des factures'
   end
 
-  test 'can_be_destroyed? : service rattaché à un utilisateur non administrateur → faux (critique)' do
+  test 'un service rattaché à un utilisateur non administrateur ne peut pas être supprimé (critique)' do
     service = services(:menage)
     service.users << users(:weil)
 
@@ -108,15 +118,15 @@ class ServiceTest < ActiveSupport::TestCase
 
   # Un administrateur ne compte pas : il peut être rattaché à tous les services de son
   # organisation sans pour autant les rendre indestructibles.
-  test 'can_be_destroyed? : service rattaché à un seul administrateur → vrai (critique)' do
+  test 'un service rattaché à un seul administrateur peut être supprimé (critique)' do
     assert service_vide_avec_administrateur.reload.can_be_destroyed?
   end
 
-  test 'text_for_unauthorized_destroy : service supprimable → texte vide (critique)' do
+  test 'le texte de refus de suppression est vide pour un service supprimable (critique)' do
     assert_equal '', services(:menage).text_for_unauthorized_destroy
   end
 
-  test 'text_for_unauthorized_destroy : motif unique → une phrase qui le nomme (critique)' do
+  test 'le texte de refus de suppression nomme le seul motif présent et aucun autre (critique)' do
     texte = services(:service_paris).text_for_unauthorized_destroy
 
     assert_includes texte, 'Impossible de supprimer ce service'
@@ -124,7 +134,7 @@ class ServiceTest < ActiveSupport::TestCase
     assert_not_includes texte, 'des interventions'
   end
 
-  test 'text_for_unauthorized_destroy : tous les rattachements → tous énumérés (critique)' do
+  test 'le texte de refus de suppression énumère tous les rattachements du service (critique)' do
     service = service_vide_avec_administrateur
     creer_intervention(service)
     creer_convention(service)

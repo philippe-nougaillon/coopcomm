@@ -49,11 +49,11 @@ class WikiPagePolicy < ApplicationPolicy
   end
 
   def purge_photo?
-    edit?
+    destroy?
   end
 
   def purge_document?
-    edit?
+    destroy?
   end
   
 end

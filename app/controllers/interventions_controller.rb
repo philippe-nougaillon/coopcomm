@@ -12,6 +12,8 @@ class InterventionsController < ApplicationController
   before_action :set_interventions_tags,
                 only: %i[index new edit create update new_intervention_modele_pointage create_intervention_modele_pointage]
 
+  before_action :format_datetime_from_form, only: %i[create update]
+
   trie Intervention, defaut: 'interventions.updated_at', sens: :desc
 
   # GET /interventions or /interventions.json
@@ -88,10 +90,10 @@ class InterventionsController < ApplicationController
   # GET /interventions/new
   def new
     @intervention = Intervention.new(début_prévue: params[:début_prévue], fin_prévue: params[:fin_prévue])
-    @intervention.début_prévue_hour = params[:début_prévue_hour] || 8
-    @intervention.début_prévue_minute = params[:début_prévue_minute] || 0
-    @intervention.fin_prévue_hour = params[:fin_prévue_hour] || 16
-    @intervention.fin_prévue_minute = params[:fin_prévue_minute] || 0
+    params[:début_prévue_hour] ||= 8
+    params[:début_prévue_minute] ||= 0
+    params[:fin_prévue_hour] ||= 16
+    params[:fin_prévue_minute] ||= 0
 
     if current_user.agent?
       @intervention.agent_ids = current_user.id
@@ -422,7 +424,7 @@ class InterventionsController < ApplicationController
   private
 
   def filtrer(interventions, services_demandes)
-    interventions = interventions.filter_by_service(services_demandes) if filtre_service_applicable?
+    interventions = filtrer_par_service(interventions, services_demandes) if filtre_service_applicable?
     interventions = filtrer_par_etat(interventions)
     interventions = filtrer_par_recherche(interventions)
     interventions = filtrer_par_dates(interventions)
@@ -492,6 +494,14 @@ class InterventionsController < ApplicationController
     interventions.tagged_with(mots_cles)
   end
 
+  # Sans service (demande par mail) : visible de l'administrateur et de l'adhérent tant que le filtre n'écarte aucun service.
+  def filtrer_par_service(interventions, services_demandes)
+    filtrees = interventions.filter_by_service(services_demandes)
+    return filtrees unless (current_user.administrateur? || current_user.adhérent?) && (@services.ids - services_demandes.ids).empty?
+
+    filtrees.or(interventions.where(service: nil, adherent: User.by_service(@services)))
+  end
+
   # Alimente les listes déroulantes du bandeau de filtres.
   def charger_options_de_filtre(services_demandes)
     services_des_adherents = current_user.administrateur? ? @services : services_demandes
@@ -533,6 +543,10 @@ class InterventionsController < ApplicationController
   def set_form_variables
     services = current_user.services.ordered
     @services = services unless current_user.agent?
+    # Une demande arrivée par mail n'a pas de service : ceux de son adhérent, sans attendre la cascade.
+    if @intervention&.persisted? && @intervention.service.nil? && @intervention.adherent
+      @services = @intervention.adherent.services.where(id: current_user.service_ids).ordered
+    end
 
     users_in_same_services = User.by_service(services)
 
@@ -562,8 +576,8 @@ class InterventionsController < ApplicationController
   # Only allow a list of trusted parameters through.
   # :workflow_state, :note et :avis sont volontairement exclus du mass assignment.
   def intervention_params
-    permitted = params.require(:intervention).permit(:adherent_id, :service_id, :début, :début_hour, :début_minute, :fin,
-                                                     :fin_hour, :fin_minute, :temps_de_pause, :temps_total, :description, :commentaires, :tag_list, :repeter, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute, :meteo, photos: [], agent_ids: [], tool_ids: [], photos_demande: [])
+    permitted = params.require(:intervention).permit(:adherent_id, :service_id, :début, :fin,
+                                                      :temps_de_pause, :temps_total, :description, :commentaires, :tag_list, :repeter, :début_prévue, :fin_prévue, :meteo, photos: [], agent_ids: [], tool_ids: [], photos_demande: [])
     permitted.merge!(params.require(:intervention).permit(:note, :avis)) if current_user.adhérent? || current_user.manager_or_admin?
     permitted
   end
@@ -595,5 +609,53 @@ class InterventionsController < ApplicationController
     redirect_to @intervention,
                 alert: "L'intervention n'est pas valide, elle ne peut pas être #{etat} : #{motifs}"
     true
+  end
+
+  # Combine la date l'heure et la minute pour les 4 dates différentes (début_prévue fin_prévue début fin)
+  def format_datetime_from_form
+    %i[début_prévue fin_prévue début fin].each do |champ_date|
+      # Permet de ne pas écraser la date si elle n'est pas dans params
+      next unless dates_params.key?(champ_date)
+
+      nouvelle_date = combine_datetime(champ_date)
+
+      if heure_incomplète?(champ_date) || only_seconds_changed?(champ_date, nouvelle_date)
+        # On supprime la date dans les params pour ne pas la prendre en compte
+        params[:intervention].delete(champ_date)
+      else # Sinon on modifie la date
+        params[:intervention][champ_date] = nouvelle_date
+      end
+    end
+  end
+
+  # Vérifie si uniquement les secondes de la dates ont changées
+  def only_seconds_changed?(champ_date, nouvelle_date)
+    actuelle = @intervention&.public_send(champ_date)
+    return false if actuelle.blank? || nouvelle_date.blank?
+
+    # Dates à 0 secondes (Ex: actuelle(14h12m50s -> 14h12m00s), nouvelle_date(14h12m00s -> 14h12m00s))
+    actuelle.change(sec: 0) == nouvelle_date.change(sec: 0)
+  end
+
+  # Combine la date, l'heure et la minute passé par la formulaire de l'intervention
+  def combine_datetime(champ_date)
+    date = dates_params[champ_date]
+    return if date.blank?
+
+    date = DateTime.parse(date.to_s)
+    heure = dates_params["#{champ_date}_hour"].presence || date.hour
+    minute = dates_params["#{champ_date}_minute"].presence || date.minute
+
+    Time.zone.local(date.year, date.month, date.day, heure.to_i, minute.to_i)
+  end
+
+  def dates_params
+    params.require(:intervention).permit(:début, :début_hour, :début_minute, :fin, :fin_hour, :fin_minute, :début_prévue, :début_prévue_hour, :début_prévue_minute, :fin_prévue, :fin_prévue_hour, :fin_prévue_minute)
+  end
+
+  # Le formulaire poste l'heure à part : vide, `date.hour` en ferait minuit.
+  def heure_incomplète?(champ_date)
+    dates_params[champ_date].present? && dates_params.key?("#{champ_date}_hour") &&
+      (dates_params["#{champ_date}_hour"].blank? || dates_params["#{champ_date}_minute"].blank?)
   end
 end

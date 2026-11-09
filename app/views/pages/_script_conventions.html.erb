@@ -1,0 +1,276 @@
+<script>
+  (function () {
+    const donnees = JSON.parse(document.getElementById('donnees-conventions').textContent)
+    const bloc = document.querySelector('[data-conventions]')
+    const JOUR = 86400000
+    const LARGEUR_LIBELLE = 140
+    const instances = []
+
+    function versHex(couleur) {
+      const contexte = document.createElement('canvas').getContext('2d')
+      contexte.fillStyle = '#000000'
+      contexte.fillStyle = couleur
+      contexte.fillRect(0, 0, 1, 1)
+      const [r, g, b] = contexte.getImageData(0, 0, 1, 1).data
+      return '#' + [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('')
+    }
+
+    const couleurTheme = nom => versHex(getComputedStyle(document.documentElement).getPropertyValue(`--color-${nom}`).trim() || '#000000')
+    const canal = (hex, rang) => parseInt(hex.slice(1 + rang, 3 + rang), 16)
+    const melange = (dessus, dessous, part) => '#' + [0, 2, 4]
+      .map(rang => Math.round(canal(dessus, rang) * part + canal(dessous, rang) * (1 - part)).toString(16).padStart(2, '0')).join('')
+    const TEXTE = couleurTheme('base-content')
+    const RESTANT = melange(TEXTE, '#ffffff', 0.1)
+    // Avance des heures consommées sur le temps écoulé, en points de pourcentage de l'année : vert jusqu'au premier
+    // seuil, sous-consommation comprise, jaune jusqu'au second, orange au-delà ; rouge dès que le forfait est dépassé.
+    const SEUILS = [10, 20]
+    const COULEURS = [couleurTheme('success'), couleurTheme('warning'), melange(couleurTheme('warning'), couleurTheme('error'), 0.5)]
+    const ROUGE = couleurTheme('error')
+    const GRIS = melange(TEXTE, '#ffffff', 0.45)
+    // Diagonale du motif de 6 px des hachures, prolongée aux deux autres coins pour se raccorder d'un motif à l'autre.
+    const HACHURE = 'M0 0L6 6M4 -2L8 2M-2 4L2 8'
+    const LEGENDE = [['temps consommé', GRIS],
+                     ['temps prévu', `url('data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="6" height="6"><path d="${HACHURE}" stroke="${GRIS}"/></svg>`)}') 0 0 / 6px 6px, ${RESTANT}`],
+                     ['temps disponible', RESTANT]]
+    const PAS = 16
+    const EPAISSEUR_MAX = 24
+    // Sur téléphone, la hauteur d'un libellé posé au-dessus de sa barre, marge comprise.
+    const AU_DESSUS = 15
+
+    const nombre = (valeur, decimales = 0) => Number(valeur).toLocaleString('fr-FR', { maximumFractionDigits: decimales })
+    const heures = valeur => `${nombre(valeur, 1)} h`
+    const pourcent = valeur => `${nombre(valeur, 1)} %`
+    const arrondi = valeur => Math.round(valeur * 10) / 10
+    const date = jour => Date.parse(`${jour}T00:00:00Z`)
+    const jours = (du, au) => Math.round((date(au) - date(du)) / JOUR) + 1
+    const jourLisible = jour => new Date(typeof jour === 'string' ? date(jour) : jour)
+      .toLocaleDateString('fr-FR', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric' })
+    const echapper = texte => String(texte).replace(/[&<>"']/g,
+      caractere => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[caractere])
+    // ApexCharts aligne les libellés 15 px avant les barres et les tronque mal (137 px mesurés pour 125 de place) : ils débordaient à gauche.
+    const RETRAIT_LIBELLE = 20
+    const mesureur = document.createElement('canvas').getContext('2d')
+    const largeurTexte = texte => {
+      mesureur.font = `11px ${getComputedStyle(bloc).fontFamily}`
+      return Math.ceil(mesureur.measureText(texte).width)
+    }
+    function tronquer(libelle) {
+      let texte = String(libelle).trim()
+      if (largeurTexte(texte) <= LARGEUR_LIBELLE - RETRAIT_LIBELLE) return texte
+      while (texte && largeurTexte(`${texte}…`) > LARGEUR_LIBELLE - RETRAIT_LIBELLE) texte = texte.slice(0, -1)
+      return `${texte.trimEnd()}…`
+    }
+
+    // La projection linéaire n'a de sens qu'après un début de consommation : deux semaines et 5 % de la durée.
+    function mesurer(convention) {
+      const m = Object.assign({}, convention)
+      m.total = jours(m.du, m.au)
+      m.ecoules = Math.min(m.total, Math.max(0, jours(m.du, donnees.aujourdhui)))
+      m.tempsPct = 100 * m.ecoules / m.total
+      m.forfait = m.conventionnees > 0 ? m.conventionnees : 0
+      m.consoPct = m.forfait ? 100 * m.consommees / m.forfait : 0
+      m.prevuesPct = m.forfait ? 100 * m.prevues / m.forfait : 0
+      m.restantes = Math.max(0, m.forfait - m.consommees - m.prevues)
+      const projetable = m.forfait && m.ecoules >= 14 && m.ecoules >= 0.05 * m.total
+      m.projectionH = projetable ? m.consommees * m.total / m.ecoules : null
+      m.projectionPct = projetable ? 100 * m.projectionH / m.forfait : null
+      m.epuisement = projetable && m.consommees > 0 ? new Date(date(m.du) + Math.round(m.ecoules * m.forfait / m.consommees) * JOUR) : null
+      m.ecart = m.consoPct - m.tempsPct
+      const palier = SEUILS.findIndex(seuil => m.ecart <= seuil)
+      m.couleur = m.consoPct > 100 ? ROUGE : COULEURS[palier === -1 ? 2 : palier]
+      m.previsionnel = m.consoPct + m.prevuesPct
+      return m
+    }
+
+    const toutes = donnees.conventions.map(mesurer)
+    const annee = new Date(date(donnees.aujourdhui)).getUTCFullYear()
+    const joursAnnee = jours(`${annee}-01-01`, `${annee}-12-31`)
+    const aujourdhuiPct = 100 * jours(`${annee}-01-01`, donnees.aujourdhui) / joursAnnee
+
+    function infobulle(m) {
+      const lignes = [
+        ['heures consommées', `${heures(m.consommees)} / ${heures(m.forfait)} (${pourcent(m.consoPct)})`],
+        m.prevues > 0 ? ['heures planifiées', `${heures(m.prevues)} (${pourcent(m.prevuesPct)})`] : null,
+        ['heures restantes', heures(m.restantes)],
+        ['temps écoulé', pourcent(m.tempsPct)],
+        ['écart avec le temps écoulé', `${m.ecart > 0 ? '+' : ''}${nombre(m.ecart)} points`],
+        ['consommation prévue (h)', m.projectionH === null ? 'trop tôt' : heures(m.projectionH)],
+        ['consommation prévue %', m.projectionPct === null ? 'trop tôt' : pourcent(m.projectionPct)],
+        m.epuisement && m.epuisement.toISOString().slice(0, 10) < m.au ? ['épuisement estimé', jourLisible(m.epuisement)] : null
+      ].filter(Boolean)
+      return `<div class="p-3 text-xs flex flex-col gap-1 text-base-content">
+        <div class="font-semibold">${['adherent', 'service'].filter(cle => cle !== donnees.implicite).map(cle => echapper(m[cle])).join(' · ')}</div>
+        <div class="text-base-content/60">${jourLisible(m.du)} → ${jourLisible(m.au)}</div>
+        ${lignes.map(([cle, valeur]) => `<div class="flex justify-between gap-4"><span class="text-base-content/70">${cle}</span><b>${valeur}</b></div>`).join('')}
+      </div>`
+    }
+
+    // strokeHeight est une demi-hauteur : ApexCharts trace le trait de part et d'autre du centre de la barre.
+    const repere = (valeur, tirets, epaisseur) => ({ value: arrondi(Math.min(valeur, 100)), strokeWidth: 2, strokeHeight: epaisseur / 2, strokeColor: TEXTE, strokeDashArray: tirets })
+    const reperes = (m, epaisseur) => [repere(m.consoPct, 0, epaisseur)].concat(m.prevues > 0 ? [repere(m.previsionnel, 2, epaisseur)] : [])
+
+    // L'infobulle vit hors de la zone qui défile, sinon celle des premières lignes serait coupée en haut.
+    const bulle = bloc.querySelector('[data-infobulle]')
+    function montrerInfobulle(evenement, m) {
+      bulle.innerHTML = infobulle(m)
+      bulle.classList.remove('hidden')
+      const cadre = bloc.getBoundingClientRect()
+      let x = evenement.clientX - cadre.left + 12
+      let y = evenement.clientY - cadre.top + 12
+      if (x + bulle.offsetWidth > cadre.width) x = Math.max(0, evenement.clientX - cadre.left - bulle.offsetWidth - 12)
+      if (y + bulle.offsetHeight > cadre.height) y = Math.max(0, evenement.clientY - cadre.top - bulle.offsetHeight - 12)
+      bulle.style.left = `${x}px`
+      bulle.style.top = `${y}px`
+    }
+    const cacherInfobulle = () => bulle.classList.add('hidden')
+
+    // Le trait de l'année s'aligne sur la zone des barres du premier graphe : même largeur de libellés partout.
+    function positionnerAnnee(graphe) {
+      const ligne = bloc.querySelector('[data-ligne]')
+      ligne.style.marginLeft = `${graphe.w.globals.translateX}px`
+      ligne.style.width = `${graphe.w.globals.gridWidth}px`
+    }
+
+    // ApexCharts ne trace que la diagonale de son motif : rognée aux coins, elle donne des tirets au lieu de traits continus.
+    const raccorderHachures = graphe => graphe.el.querySelectorAll('pattern > line').forEach(trait => {
+      const hachure = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      hachure.setAttribute('d', HACHURE)
+      hachure.setAttribute('stroke', trait.getAttribute('stroke'))
+      hachure.setAttribute('stroke-width', trait.getAttribute('stroke-width'))
+      trait.replaceWith(hachure)
+    })
+
+    function groupesDe(cle) {
+      const autre = cle === 'service' ? 'adherent' : 'service'
+      const groupes = new Map()
+      toutes.forEach(m => groupes.set(m[cle], (groupes.get(m[cle]) || []).concat([m])))
+      return [...groupes.entries()].sort(([a], [b]) => a.localeCompare(b, 'fr'))
+        .map(([nom, lignes]) => ({ nom, libelle: m => m[autre], lignes: lignes.sort((a, b) => b.consoPct + b.prevuesPct - a.consoPct - a.prevuesPct) }))
+    }
+
+    // Seuls les groupes visibles sans défiler sont dessinés d'emblée, animés ; les autres le sont à l'approche, sans animation.
+    const defilement = bloc.querySelector('[data-defilement]')
+    const differes = new WeakMap()
+    const observateur = new IntersectionObserver(entrees => entrees.filter(entree => entree.isIntersecting).forEach(({ target }) => {
+      observateur.unobserve(target)
+      differes.get(target)(false)
+    }), { root: defilement, rootMargin: '150px 0px' })
+
+    // Une ligne de 16 px au moins par convention, dont la barre occupe les trois quarts, comme celle de la liste des conventions ;
+    // sur téléphone, la barre prend toute la largeur et son libellé passe au-dessus.
+    function dessinerGroupe(groupe, element, rang, pas, etroit, anime) {
+      const lignes = groupe.lignes
+      const hauteur = pas * lignes.length + 15
+      // ApexCharts ne garde que la partie entière du pourcentage de barHeight.
+      const pourcent = Math.floor(100 * Math.min(EPAISSEUR_MAX, etroit ? pas - 2 * AU_DESSUS : 0.75 * pas) / pas)
+      const epaisseur = pourcent * pas / 100
+      // Sans autre groupe à qui s'aligner, la colonne des libellés se règle sur le plus long.
+      const colonne = donnees.implicite ? Math.min(LARGEUR_LIBELLE, Math.max(...lignes.map(m => largeurTexte(tronquer(groupe.libelle(m))))) + RETRAIT_LIBELLE)
+                                        : LARGEUR_LIBELLE
+      const cible = element.querySelector('[data-graphe]')
+      cible.style.minHeight = `${hauteur}px`
+      // ApexCharts n'arrondit jamais le début d'une pile dans un graphe d'une seule ligne : une ligne vide, rejetée sous le cadre, lui en donne deux.
+      const fantome = lignes.length === 1 ? [{ x: '', y: null }] : []
+      const point = (m, valeur, fillColor) => ({ x: groupe.libelle(m), y: arrondi(valeur), fillColor })
+      const retoucher = graphe => {
+        raccorderHachures(graphe)
+        if (rang === 0) positionnerAnnee(graphe)
+      }
+      const options = {
+        chart: { id: `conventions-${rang}`, type: 'bar', stacked: true, height: hauteur, fontFamily: 'inherit',
+                 background: 'transparent', toolbar: { show: false }, zoom: { enabled: false }, parentHeightOffset: 0,
+                 events: { dataPointMouseEnter: (evenement, _, { dataPointIndex }) => montrerInfobulle(evenement, lignes[dataPointIndex]),
+                           dataPointMouseLeave: cacherInfobulle, mouseLeave: cacherInfobulle, mounted: retoucher, updated: retoucher } },
+        series: [
+          { name: 'Heures consommées', data: lignes.map(m => point(m, Math.min(m.consoPct, 100), m.couleur)).concat(fantome) },
+          { name: 'Heures planifiées', data: lignes.map(m => point(m, Math.max(0, Math.min(m.previsionnel, 100) - Math.min(m.consoPct, 100)), m.previsionnel > 100 ? ROUGE : m.couleur)).concat(fantome) },
+          // Les repères vont sur la dernière série : ApexCharts peint chaque série par-dessus le trait des précédentes.
+          { name: 'Heures restantes', data: lignes.map(m => Object.assign(point(m, Math.max(0, 100 - m.previsionnel), RESTANT), { goals: reperes(m, epaisseur) })).concat(fantome) }
+        ],
+        colors: [TEXTE, TEXTE, RESTANT],
+        fill: { type: ['solid', 'pattern', 'solid'], opacity: 1, pattern: { style: 'slantedLines', width: 6, height: 6, strokeWidth: 2 } },
+        plotOptions: { bar: { horizontal: true, barHeight: `${pourcent}%`, borderRadius: epaisseur / 2, borderRadiusApplication: 'end', borderRadiusWhenStacked: 'last' } },
+        stroke: { width: 0 },
+        dataLabels: { enabled: false },
+        legend: { show: false },
+        // Même sans axe des libellés, ApexCharts laisse 15 px à gauche des barres.
+        grid: { show: false, padding: { top: -20, bottom: -10 - pas * fantome.length, left: etroit ? -15 : 0, right: 2 } },
+        xaxis: { min: 0, max: 100, labels: { show: false }, axisBorder: { show: false }, axisTicks: { show: false }, tooltip: { enabled: false } },
+        yaxis: etroit ? { show: false } : { labels: { minWidth: colonne, maxWidth: colonne, formatter: tronquer, style: { colors: TEXTE, fontSize: '11px' } } },
+        tooltip: { enabled: false },
+        states: { hover: { filter: { type: 'none' } }, active: { filter: { type: 'none' } } }
+      }
+      const creer = anime => {
+        options.chart.animations = { enabled: anime }
+        const graphe = new ApexCharts(cible, options)
+        graphe.render().then(() => {
+          if (!etroit) return
+          const { gridHeight, translateY } = graphe.w.globals
+          const bande = gridHeight / (lignes.length + fantome.length)
+          element.querySelector('[data-libelles]').innerHTML = lignes.map((m, i) => `<span class="absolute inset-x-0 truncate text-[11px] leading-[13px]"
+            style="top: ${translateY + bande * (i + 0.5) - epaisseur / 2 - AU_DESSUS}px">${echapper(groupe.libelle(m))}</span>`).join('')
+        })
+        instances.push(graphe)
+      }
+      if (cible.getBoundingClientRect().top < defilement.getBoundingClientRect().bottom) {
+        creer(anime)
+      } else {
+        differes.set(cible, creer)
+        observateur.observe(cible)
+      }
+    }
+
+    const large = matchMedia('(min-width: 40rem)')
+    const mesurerTaille = () => `${large.matches} ${defilement.clientHeight}`
+    let taille
+
+    // Les barres s'épaississent puis s'espacent jusqu'à remplir la hauteur du bloc ; au-delà, la zone défile.
+    function dessiner(anime = true) {
+      const conteneur = bloc.querySelector('[data-groupes]')
+      instances.splice(0).forEach(graphe => graphe.destroy())
+      observateur.disconnect()
+      conteneur.innerHTML = ''
+      taille = mesurerTaille()
+      if (!toutes.length) {
+        conteneur.innerHTML = '<p class="text-slate-500 text-sm">Aucune convention cette année</p>'
+        return
+      }
+      const etroit = !large.matches
+      const groupes = groupesDe(donnees.implicite || bloc.querySelector('[data-groupement] input:checked').value)
+      conteneur.innerHTML = groupes.map(groupe => `<div>
+        ${donnees.implicite ? '' : `<p class="text-xs font-semibold text-base-content/60 truncate" title="${echapper(groupe.nom)}">${echapper(groupe.nom)}</p>`}
+        <div class="relative"><div data-graphe></div><div class="absolute inset-0 pointer-events-none text-base-content" data-libelles></div></div></div>`).join('')
+      const libre = defilement.clientHeight - bloc.querySelector('[data-annee]').offsetHeight - conteneur.offsetHeight - 15 * groupes.length
+      const pas = Math.max(etroit ? 0.75 * PAS + 2 * AU_DESSUS : PAS, Math.floor(libre / toutes.length))
+      groupes.forEach((groupe, rang) => dessinerGroupe(groupe, conteneur.children[rang], rang, pas, etroit, anime))
+    }
+
+    bloc.querySelector('[data-legende]').innerHTML = LEGENDE.map(([libelle, fond]) => `<span class="flex items-center gap-1">
+      <span class="size-3 rounded-full shrink-0" style="background: ${fond}"></span>${libelle}</span>`).join('')
+
+    bloc.querySelector('[data-ecoule]').style.width = `${aujourdhuiPct}%`
+    bloc.querySelector('[data-restant]').style.left = `${aujourdhuiPct}%`
+    bloc.querySelector('[data-aujourdhui]').style.left = `${aujourdhuiPct}%`
+    // Borné pour ne pas déborder du bloc près des bords de l'année.
+    bloc.querySelector('[data-libelle-aujourdhui]').style.left = `clamp(1.75rem, ${aujourdhuiPct}%, calc(100% - 1.75rem))`
+    const onglets = [...bloc.querySelectorAll('[data-groupement] input')]
+    onglets.forEach(onglet => onglet.addEventListener('change', () => {
+      onglets.forEach(autre => ['btn-active', 'text-white!'].forEach(classe => autre.parentElement.classList.toggle(classe, autre.checked)))
+      dessiner()
+    }))
+    // Une rotation ou un redimensionnement refait la répartition des barres, sans animation.
+    let minuterie
+    const surveillance = new ResizeObserver(() => {
+      if (!bloc.isConnected) return surveillance.disconnect()
+      if (mesurerTaille() === taille) return
+      clearTimeout(minuterie)
+      minuterie = setTimeout(() => dessiner(false), 150)
+    })
+    // Après une visite Turbo, la balise d'ApexCharts est recréée et se charge après ce script ; les libellés se mesurent dans la police chargée.
+    const apexcharts = window.ApexCharts || new Promise(charge => document.querySelector('script[src*="apexcharts-6"]').addEventListener('load', charge))
+    Promise.all([apexcharts, document.fonts.load(`11px ${getComputedStyle(bloc).fontFamily}`).catch(() => null)]).then(() => {
+      dessiner()
+      surveillance.observe(defilement)
+    })
+  })()
+</script>

@@ -111,15 +111,26 @@ module InterventionsHelper
       (intervention.nouveau? && terminaison_demandee)
   end
 
-  # --- Heures des formulaires ---
+  # --- Heures réelles (début, fin) ---
 
-  # L'accesseur virtuel d'abord : il porte la saisie même quand la date qui
-  # l'accompagne est absente, donc quand `combine_datetime` n'a rien pu fusionner.
-  def heure_saisie(intervention, champ)
-    intervention.public_send(:"#{champ}_hour").presence || intervention.public_send(champ)&.hour
+  # Une fille de pointage garde l'heure exacte du scan.
+  def heures_proposées(intervention)
+    plage = intervention.template_slug.blank? ? (5..18) : (0..23)
+    plage.map { |h| [format('%02d', h), h] }
   end
 
-  def minute_saisie(intervention, champ)
-    intervention.public_send(:"#{champ}_minute").presence || intervention.public_send(champ)&.min
+  def minutes_proposées(intervention)
+    plage = intervention.template_slug.blank? ? (0..59).step(15) : (0..59)
+    plage.map { |m| [format('%02d', m), m] }
+  end
+
+  def minute_présélectionnée(intervention, date)
+    return if date.blank?
+
+    intervention.template_slug.blank? ? date.min - date.min % 15 : date.min
+  end
+
+  def date_intervention(intervention, neuve: nil)
+    (intervention.début || intervention.fin)&.to_date || (neuve if intervention.new_record?)
   end
 end

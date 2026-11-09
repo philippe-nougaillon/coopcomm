@@ -1,0 +1,58 @@
+<% en_tete = 'font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap' %>
+<% lignes = @activite_agents[:lignes] %>
+<% maximum = [lignes.map { |ligne| ligne[:temps] }.max.to_f, 1].max %>
+<%= turbo_frame_tag 'activite-agents', class: 'min-h-0 flex flex-col', data: { turbo_action: 'advance' } do %>
+<section class="w-full flex-1 min-h-0 <%= classes_carte %> p-2 sm:p-3 flex flex-col gap-2" data-carte="activiteAgents">
+  <div class="flex flex-wrap items-start justify-between gap-2">
+    <h2 class="text-lg font-bold uppercase">Agents</h2>
+    <div class="flex flex-wrap items-center justify-end gap-2 max-sm:contents">
+      <div class="join" data-mesure>
+        <label class="btn btn-primary btn-outline join-item btn-active text-white!">
+          <input type="radio" name="mesure-agents" value="temps" class="hidden" checked>
+          <span class="text-[11px] font-medium">Temps</span>
+        </label>
+        <label class="btn btn-primary btn-outline join-item">
+          <input type="radio" name="mesure-agents" value="nb" class="hidden">
+          <span class="text-[11px] font-medium">Interventions</span>
+        </label>
+      </div>
+      <%= form_tag dashboard_path(anchor: 'activite-agents'), method: :get, class: 'flex flex-wrap items-center gap-2 max-sm:w-full', data: { turbo: false } do %>
+        <% request.query_parameters.except('agents_service', 'agents_periode').each do |clé, valeurs| %>
+          <%= safe_join(Array(valeurs).map { |valeur| hidden_field_tag(valeurs.is_a?(Array) ? "#{clé}[]" : clé, valeur, id: nil) }) %>
+        <% end %>
+        <%= filtre_services_graphe('activiteAgents', @donnees_graphes[:services], @activite_agents[:service],
+                                   name: 'agents_service', onchange: 'this.form.requestSubmit()') %>
+        <%= filtre_periode_graphe('activiteAgents', @donnees_graphes[:mois], @activite_agents[:periode],
+                                  name: 'agents_periode', onchange: 'this.form.requestSubmit()') %>
+      <% end %>
+    </div>
+  </div>
+  <svg class="absolute size-0" aria-hidden="true">
+    <defs>
+      <linearGradient id="degrade-etincelle" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" style="stop-color: var(--color-aikku)" stop-opacity="0.35"/>
+        <stop offset="1" style="stop-color: var(--color-aikku)" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <div class="flex-1 min-h-0 overflow-auto max-lg:max-h-[28rem] [scrollbar-gutter:stable]">
+    <table class="table table-sm table-pin-rows table-zebra w-full [&_td]:py-1 [&_td]:px-3 [&_th]:px-3 [&_thead_tr]:bg-slate-100" data-tranches="<%= @activite_agents[:tranches].to_json %>">
+      <thead>
+        <tr>
+          <%= th_tri 'Agent', colonne: 'agents.nom', ancre: 'activite-agents', class: en_tete %>
+          <%= th_tri 'Temps', colonne: 'agents.temps', ancre: 'activite-agents', class: "#{en_tete} text-right" %>
+          <%= th_tri 'Interv.', colonne: 'agents.interventions', ancre: 'activite-agents', class: "#{en_tete} text-right" %>
+          <%= th_tri 'Validées', colonne: 'agents.validees', ancre: 'activite-agents', class: en_tete %>
+          <%= th_tri 'Note', colonne: 'agents.note', ancre: 'activite-agents', class: en_tete %>
+        </tr>
+      </thead>
+      <tbody>
+        <% if lignes.empty? %>
+          <tr><td colspan="5" class="text-base-content/50">Aucun intervenant sur ces services.</td></tr>
+        <% end %>
+        <%= render partial: 'dashboard/activite_agents_ligne', collection: lignes, as: :ligne, locals: { maximum: maximum } %>
+      </tbody>
+    </table>
+  </div>
+</section>
+<% end %>

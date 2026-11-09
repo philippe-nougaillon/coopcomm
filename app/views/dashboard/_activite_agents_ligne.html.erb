@@ -1,0 +1,75 @@
+<% agent = ligne[:agent] %>
+<% inactif = ligne[:temps].zero? && ligne[:nb].zero? %>
+<% repartition = { 'terminée' => ligne[:terminees], 'validée' => ligne[:validees], 'refusée' => ligne[:refusees], 'archivée' => ligne[:archivees] }
+                   .select { |_, nombre| nombre.positive? }.map { |etat, nombre| pluralize(nombre, etat) }.join(' · ') %>
+<% prenom = agent.administrateur? ? 'font-bold bg-aikku-violet-100 rounded-sm px-1 w-fit' : ('font-bold' if agent.manager?) %>
+<tr class="hover:bg-base-300 transition-colors duration-150 <%= 'opacity-50' if inactif %>" data-agent="<%= agent.id %>">
+  <td>
+    <div class="flex items-center gap-2">
+      <% if agent.discarded? %>
+        <div class="avatar avatar-placeholder">
+          <div class="bg-base-300 text-base-content/50 w-8 rounded-full">
+            <%= embedded_svg 'icons/person_off.svg', class: 'w-4 h-4 fill-current' %>
+          </div>
+        </div>
+        <span class="flex flex-col leading-tight text-base-content/50 whitespace-nowrap">
+          <% ligne[:libellé].split(' ', 2).each do |mot| %><span><%= mot %></span><% end %>
+        </span>
+      <% else %>
+        <%= render partial: 'partials/user_profile_picture', locals: { user: agent, taille: 'w-8' } %>
+        <%= link_to_if policy(agent).show?,
+                       safe_join([tag.span(truncate(agent.nom, length: 12, omission: '…')),
+                                  tag.span(truncate(agent.prénom, length: 12, omission: '…'), class: prenom)]),
+                       agent, class: 'flex flex-col leading-tight font-medium whitespace-nowrap hover:underline', data: { turbo_frame: '_top' },
+                       title: [ligne[:libellé], (agent.rôle.humanize if agent.manager_or_admin?)].compact.join(' · ') %>
+      <% end %>
+    </div>
+  </td>
+  <td class="text-right whitespace-nowrap">
+    <div class="flex flex-col items-end gap-1">
+      <span class="font-medium tabular-nums"><%= number_with_precision(ligne[:temps], precision: 1, strip_insignificant_zeros: true) %> h</span>
+      <span class="w-16 h-1.5 rounded-full bg-base-300 overflow-hidden">
+        <span class="block h-full rounded-full bg-aikku" style="width: <%= (100 * ligne[:temps] / maximum).round %>%"></span>
+      </span>
+    </div>
+  </td>
+  <td class="text-right whitespace-nowrap" title="<%= repartition %>">
+    <div class="flex items-center justify-end gap-1">
+      <% unless inactif %>
+        <%= tag.div class: 'h-8 w-24', data: { etincelle: agent.id, temps: ligne[:temps_courbe], nb: ligne[:nb_courbe] } %>
+      <% end %>
+      <span class="font-medium tabular-nums"><%= ligne[:nb] %></span>
+    </div>
+  </td>
+  <td class="whitespace-nowrap">
+    <% if ligne[:nb].positive? %>
+      <% taux = (100.0 * ligne[:validees] / ligne[:nb]).round %>
+      <div class="flex flex-col items-start gap-1">
+        <span class="font-medium tabular-nums"><%= taux %> %</span>
+        <span class="w-16 h-1.5 rounded-full bg-base-300 overflow-hidden">
+          <span class="block h-full rounded-full bg-success" style="width: <%= taux %>%"></span>
+        </span>
+      </div>
+    <% else %>
+      <span class="text-base-content/40">–</span>
+    <% end %>
+  </td>
+  <td class="whitespace-nowrap">
+    <% if ligne[:note] %>
+      <span class="inline-flex items-center gap-1.5" title="<%= number_with_precision(ligne[:note], precision: 1) %> / 5 · <%= pluralize(ligne[:avis], 'avis') %>">
+        <span class="relative inline-grid">
+          <span class="rating rating-xs">
+            <% 5.times do %><span class="mask mask-star-2 bg-base-300"></span><% end %>
+          </span>
+          <span class="rating rating-xs absolute inset-y-0 left-0 overflow-hidden" style="width: <%= (20 * ligne[:note]).round %>%">
+            <% 5.times do %><span class="mask mask-star-2 bg-warning shrink-0"></span><% end %>
+          </span>
+        </span>
+        <span class="font-medium tabular-nums"><%= number_with_precision(ligne[:note], precision: 1) %></span>
+        <span class="text-xs text-base-content/50">(<%= ligne[:avis] %>)</span>
+      </span>
+    <% else %>
+      <span class="text-base-content/40">non noté</span>
+    <% end %>
+  </td>
+</tr>

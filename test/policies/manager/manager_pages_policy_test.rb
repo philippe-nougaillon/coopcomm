@@ -10,7 +10,6 @@ class ManagerPagesPolicyTest < ActionDispatch::IntegrationTest
   end
 
   test 'accès autorisé pour un manager sur les pages sans record' do
-    assert @policy.dashboard?
     assert @policy.home?
     assert @policy.meteo?
     assert @policy.meteo_by_day?

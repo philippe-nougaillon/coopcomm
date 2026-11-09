@@ -102,7 +102,7 @@ class WikiPageTest < ActiveSupport::TestCase
   # autorisés (sécurité) ou trop volumineux (stockage) directement dans le
   # rich text, un point d'entrée distinct de `document` et `photo`.
 
-  test 'refuse un nouveau fichier de format non autorisé collé dans le contenu' do
+  test 'un nouveau fichier de format non autorisé collé dans le contenu d’une documentation est refusé' do
     blob = blob_attaché(nom_fichier: 'virus.exe', content_type: 'application/x-msdownload')
     page = wiki_page_valide(contenu: html_attachment_pour(blob))
 
@@ -110,7 +110,7 @@ class WikiPageTest < ActiveSupport::TestCase
     assert_includes page.errors.full_messages.join(' '), 'format non pris en charge'
   end
 
-  test 'refuse un nouveau fichier trop volumineux collé dans le contenu' do
+  test 'un nouveau fichier trop volumineux collé dans le contenu d’une documentation est refusé' do
     blob = blob_attaché(nom_fichier: 'gros.pdf', content_type: 'application/pdf', octets: 111.megabytes)
     page = wiki_page_valide(contenu: html_attachment_pour(blob))
 
@@ -118,14 +118,14 @@ class WikiPageTest < ActiveSupport::TestCase
     assert_includes page.errors.full_messages.join(' '), 'trop volumineux'
   end
 
-  test 'accepte un fichier valide (PDF, taille correcte) collé dans le contenu' do
+  test 'un PDF de taille correcte collé dans le contenu d’une documentation est accepté' do
     blob = blob_attaché(nom_fichier: 'note.pdf', content_type: 'application/pdf', octets: 1.megabyte)
     page = wiki_page_valide(contenu: html_attachment_pour(blob))
 
     assert page.valid?, page.errors.full_messages.to_sentence
   end
 
-  test 'ne revalide pas un fichier déjà présent quand on ne touche que le titre' do
+  test 'un fichier déjà présent dans le contenu d’une documentation n’est pas revalidé quand seul le titre change' do
     page = wiki_page_valide(contenu: 'Contenu initial')
     page.save!
 
@@ -138,7 +138,7 @@ class WikiPageTest < ActiveSupport::TestCase
     assert page.valid?, page.errors.full_messages.to_sentence
   end
 
-  test 'revalide si on ajoute un nouveau fichier invalide à un contenu existant valide' do
+  test 'un nouveau fichier invalide ajouté à un contenu existant valide est refusé' do
     blob_valide = blob_attaché(nom_fichier: 'ok.pdf', content_type: 'application/pdf')
     page = wiki_page_valide(contenu: html_attachment_pour(blob_valide))
     page.save!

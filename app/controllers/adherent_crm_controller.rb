@@ -53,19 +53,10 @@ class AdherentCrmController < ApplicationController
              .kept
              .includes(:adherent, :service, :organisation)
              .ordered
+    @cotations = apply_filters(base, 'cotations')
 
-    # Un adhérent doit voir toutes ses cotations, même si elles ne sont pas de son service
-    if current_user.adhérent?
-      @cotations = base
-      service_ids = base.reorder(nil).distinct.pluck(:service_id)
-      @services   = Service.where(id: service_ids).ordered
-    else
-      @services  = current_user.get_services_by_role
-      @adhérents = User.by_service(@services).adhérent
-      @cotations = base.where(service: @services)
-    end
-
-    @cotations = apply_filters(@cotations, 'cotations')
+    service_ids = base.reorder(nil).distinct.pluck(:service_id)
+    @services = Service.where(id: service_ids).ordered
 
     @pagy, @cotations = pagy(trier(@cotations), items: 10)
 
@@ -83,20 +74,10 @@ class AdherentCrmController < ApplicationController
              .kept
              .includes(:adherent, :service, :organisation)
              .ordered
+    @commandes = apply_filters(base, 'commandes')
 
-    if current_user.adhérent?
-      @commandes = base
-      service_ids = base.reorder(nil).distinct.pluck(:service_id)
-      @services   = Service.where(id: service_ids).ordered
-    else
-      @services   = current_user.get_services_by_role
-      @adhérents  = User.by_service(@services).adhérent
-      @commandes  = base.where(service: @services)
-    end
-
-    @commandes = apply_filters(@commandes, 'commandes')
-
-    @commandes = @commandes.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
+    service_ids = base.reorder(nil).distinct.pluck(:service_id)
+    @services = Service.where(id: service_ids).ordered
 
     @pagy, @commandes = pagy(trier(@commandes), items: 10)
   end
@@ -106,20 +87,10 @@ class AdherentCrmController < ApplicationController
              .kept
              .includes(:adherent, :service, :organisation)
              .ordered
+    @factures = apply_filters(base, 'factures')
 
-    if current_user.adhérent?
-      @factures = base
-      service_ids = base.reorder(nil).distinct.pluck(:service_id)
-      @services  = Service.where(id: service_ids).ordered
-    else
-      @services  = current_user.get_services_by_role
-      @adhérents = User.by_service(@services).adhérent
-      @factures  = base.where(service: @services)
-    end
-
-    @factures = apply_filters(@factures, 'factures')
-
-    @factures = @factures.where(adherent_id: params[:adherent_id]) if params[:adherent_id].present?
+    service_ids = base.reorder(nil).distinct.pluck(:service_id)
+    @services = Service.where(id: service_ids).ordered
 
     @pagy, @factures = pagy(trier(@factures), items: 10)
   end

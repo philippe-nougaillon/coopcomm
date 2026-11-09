@@ -20,7 +20,7 @@
         <div>
           <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Service</span>
           <span class="inline-block bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full whitespace-nowrap shadow-sm">
-            <%= intervention.service.nom %>
+            <%= intervention.service&.nom || '-' %>
           </span>
         </div>
       </div>
