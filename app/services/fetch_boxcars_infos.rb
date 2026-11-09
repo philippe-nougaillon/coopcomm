@@ -27,20 +27,17 @@ class FetchBoxcarsInfos < ApplicationService
   end
 
   def MODELS
-    [User, InterventionForBoxcars]
+    [UserForBoxcars, InterventionForBoxcars]
   end
 
   def ACTIVERECORD_CONTEXT
     <<~ACTIVERECORD_CONTEXT
       Date now : #{DateTime.now}
-      Intervention workflow states : #{Intervention.workflow_spec.state_names}
-      User rôles : #{User.rôles}
 
-      Intervention belongs_to :adherent, class_name: :User, foreign_key: :adherent_id
-    
-      Never answer a different question than the one asked: do not replace the requested data with similar data from another model.
+      More informations about the model UserForBoxcars: #{UserForBoxcars.semantic_informations}
+      More informations about the model InterventionForBoxcars: #{InterventionForBoxcars.semantic_informations}
       
-
+      Never answer a different question than the one asked: do not replace the requested data with similar data from another model.
     ACTIVERECORD_CONTEXT
   end
 
