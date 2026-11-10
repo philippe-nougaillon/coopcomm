@@ -1,19 +1,12 @@
 <% user = User.with_discarded.find_by(id: message.from_id) %>
-<div class="flex flex-wrap lg:flex-nowrap items-center gap-4 border px-4 py-4">
-  <div class="w-10">
-    <% if user %>
-      <%= render partial: 'partials/user_profile_picture', locals: {user: user} %>
-    <% else %>
-          <%= embedded_svg "icons/chat.svg", class: "text-primary", title: "chat" %>
-    <% end %>
-  </div>
-  <div>
-    <b class="lg:line-clamp-2"><%= link_to_if user&.id, truncate(message.moderation, length: 100), (user ? messagerie_conversation_path(user.slug) : messagerie_path), class:'hover:underline hover:text-primary' %></b>
-    <div>
-      <small>
-        il y a <%= time_ago_in_words message.created_at %>
-      </small>
-    </div>
-    <%= user&.nom_prenom_role || "Message automatique" %>
+<div class="flex flex-wrap lg:flex-nowrap items-center gap-4  p-4">
+  <%= render partial: 'partials/user_profile_picture', locals: { user: user } %>
+  <div class="flex flex-col">
+    <span class="text-xs whitespace-nowrap italic text-slate-400">
+      Il y a <%= time_ago_in_words(message.created_at) %> 
+    </span>
+    <b class="lg:line-clamp-2">
+      <%= link_to_if user&.id, truncate(message.moderation, length: 100), (user ? messagerie_conversation_path(user.slug) : messagerie_path), class:'hover:underline hover:text-primary' %>
+    </b>
   </div>
 </div>
