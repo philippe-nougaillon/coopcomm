@@ -11,8 +11,8 @@ class UserForBoxcars < ApplicationRecord
   def self.semantic_informations
     {
       rôle: {
-        Description: "A rôle defines the kind of user. An adhérent is the user how have many demands of interventions.",
-        Model_specifications: "Column has valid values: #{User.rôles.keys}"
+        Description: "The field 'rôle' defines a kind of user. The 'rôle' named 'adhérent' is the user with many demands of interventions.",
+        Model_specifications: "The field has only these valid values: #{User.rôles.keys}"
       },
       interventions_adherent: {
         Description: "Interventions requested by an adherent.",

@@ -3,18 +3,16 @@
 # Appel de boxcars pour répondre aux demandes de l'utilisateur via AÏBBO
 class FetchBoxcarsInfos < ApplicationService
   def initialize
-    engine = get_engine
-
     # Outils boxcars utilisé pour le train
     boxcars = [Boxcars::ActiveRecord.new(
                   name: "AÏBBO",
                   models: self.MODELS,
                   context: self.ACTIVERECORD_CONTEXT,
-                  engine: engine
+                  engine: get_engine
                 )]
 
     # Train permet de rebondir sur les réponses du LLM pour avoir une réponse épurée pour l'utilisateur
-    @boxcars_builder = Boxcars.train.new(boxcars: boxcars, engine: engine)
+    @boxcars_builder = Boxcars.train.new(boxcars: boxcars, engine: get_engine)
   end
 
   def call(current_user, user_request)
@@ -34,10 +32,11 @@ class FetchBoxcarsInfos < ApplicationService
     <<~ACTIVERECORD_CONTEXT
       Date now : #{DateTime.now}
 
-      More informations about the model UserForBoxcars: #{UserForBoxcars.semantic_informations}
-      More informations about the model InterventionForBoxcars: #{InterventionForBoxcars.semantic_informations}
+      More UserForBoxcars's descriptions here: #{UserForBoxcars.semantic_informations}
+      More InterventionForBoxcars's descriptions here: #{InterventionForBoxcars.semantic_informations}
       
-      Never answer a different question than the one asked: do not replace the requested data with similar data from another model.
+      Never answer a different question than the one asked.
+      Do not replace the requested data with similar data from another model.
     ACTIVERECORD_CONTEXT
   end
 
