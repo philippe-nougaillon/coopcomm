@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_09_124352) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_04_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -724,49 +724,4 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_09_124352) do
   SQL
   add_index "dashboard_intervention_stats", ["organisation_id", "service_id", "adherent_id", "mois", "workflow_state"], name: "idx_dashboard_intervention_stats_unique", unique: true
 
-  create_view "intervention_for_boxcars", sql_definition: <<-SQL
-      SELECT interventions.id,
-      interventions."début",
-      interventions.fin,
-      interventions.temps_de_pause,
-      interventions.description,
-      interventions.workflow_state,
-      interventions.created_at,
-      interventions.updated_at,
-      interventions.adherent_id,
-      interventions.temps_total,
-      interventions.commentaires,
-      interventions.note,
-      interventions.avis,
-      interventions.slug,
-      interventions.repeter,
-      interventions.template_slug,
-      interventions."début_prévue",
-      interventions."fin_prévue",
-      interventions.meteo,
-      interventions.co2,
-      interventions.trajet,
-      interventions.service_id,
-      interventions.localisation
-     FROM (interventions
-       JOIN services ON ((services.id = interventions.service_id)))
-    WHERE (services.organisation_id = (NULLIF(current_setting('app.organisation_id'::text, true), ''::text))::bigint);
-  SQL
-  create_view "user_for_boxcars", sql_definition: <<-SQL
-      SELECT id,
-      nom,
-      "prénom",
-      email,
-      "téléphone",
-      "rôle",
-      address,
-      memo,
-      created_at,
-      updated_at
-     FROM users
-    WHERE ((discarded_at IS NULL) AND (EXISTS ( SELECT 1
-             FROM (user_services
-               JOIN services ON ((services.id = user_services.service_id)))
-            WHERE ((user_services.user_id = users.id) AND (services.organisation_id = (NULLIF(current_setting('app.organisation_id'::text, true), ''::text))::bigint)))));
-  SQL
 end

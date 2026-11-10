@@ -16,25 +16,18 @@ class FetchBoxcarsInfos < ApplicationService
   end
 
   def call(current_user, user_request)
-    limit_to_organisation(current_user.organisation)
-
     # Lance le train Boxcars pour renvoyer la réponse du LLM
     { response: @boxcars_builder.run(self.REQUEST_CONTEXT(user_request, current_user)) }
-  ensure
-    remove_limit_to_organisation
   end
 
   def MODELS
-    [UserForBoxcars, InterventionForBoxcars]
+    [User, Intervention]
   end
 
   def ACTIVERECORD_CONTEXT
     <<~ACTIVERECORD_CONTEXT
       Date now : #{DateTime.now}
 
-      More UserForBoxcars's descriptions here: #{UserForBoxcars.semantic_informations}
-      More InterventionForBoxcars's descriptions here: #{InterventionForBoxcars.semantic_informations}
-      
       Never answer a different question than the one asked.
       Do not replace the requested data with similar data from another model.
     ACTIVERECORD_CONTEXT
@@ -70,15 +63,5 @@ class FetchBoxcarsInfos < ApplicationService
     "http://#{ENV.fetch('AIBOT_HOST')}:#{ENV.fetch('AIBOT_PORT')}/v1"
   end
 
-  # Configure la variable organisation_id dans le thread SQL de l'utilisateur
-  def limit_to_organisation(organisation)
-    ActiveRecord::Base.lease_connection.execute(
-      ActiveRecord::Base.sanitize_sql_array(["SELECT set_config('app.organisation_id', ?, false)", organisation.id.to_s])
-    )
-  end
-
-  # Supprime la variable organisation_id du thread SQL
-  def remove_limit_to_organisation
-    ActiveRecord::Base.lease_connection.execute("RESET app.organisation_id")
-  end
+  
 end
