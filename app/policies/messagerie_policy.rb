@@ -26,4 +26,15 @@ class MessageriePolicy < ApplicationPolicy
   def mark_as_read?
     index?
   end
+
+  # Le record est le service dont on lit les annonces, ou l'organisation pour les annonces générales
+  def annonces?
+    return false if adhérent?
+
+    record.is_a?(Service) ? user.get_services_by_role.exists?(record.id) : record == user.organisation
+  end
+
+  def send_annonce?
+    annonces? && (administrateur? || (user.manager? && record.is_a?(Service)))
+  end
 end

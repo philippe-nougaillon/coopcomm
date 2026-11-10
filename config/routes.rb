@@ -192,9 +192,11 @@ Rails.application.routes.draw do
   namespace :messagerie do
     get '/', to: 'index', as: ''
     get 'conversation/:to_user_slug', to: 'conversation', as: 'conversation'
+    get 'annonces(/:service_slug)', to: 'annonces', as: 'annonces'
     post :mark_as_read
     post :send_message
     post :search_contact
+    post :send_annonce
   end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

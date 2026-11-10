@@ -330,6 +330,36 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
                     conventionnees: 100.0, consommees: 6.0, prevues: 0.0 }], assigns(:conventions)
   end
 
+  # ==================== TESTS CRITIQUES ====================
+  # Les annonces de la page d'accueil suivent la visibilité des canaux : les services de l'utilisateur,
+  # jamais une autre organisation, rien pour un adhérent ; et un id de service peut être celui d'un utilisateur.
+  test 'la page d’accueil porte les trois dernières annonces visibles, de la plus récente à la plus ancienne (critique)' do
+    sign_in users(:hidalgo)
+
+    get home_url
+
+    assert_equal [messages(:annonce_informatique), messages(:annonce_générale_paris), messages(:annonce_technique)],
+                 assigns(:annonces)
+  end
+
+  test 'la page d’accueil d’un adhérent ne porte aucune annonce (critique)' do
+    sign_in users(:weil)
+
+    get home_url
+
+    assert_empty assigns(:annonces)
+  end
+
+  test 'les messages non lus de la page d’accueil ignorent les annonces portant l’id de l’utilisateur (critique)' do
+    sign_in users(:martin_technique_paris)
+
+    get home_url
+
+    assert_empty assigns(:messages)
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
   test 'la page météo est affichée avec des prévisions' do
     sign_in users(:hidalgo)
 

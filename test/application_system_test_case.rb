@@ -163,4 +163,9 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   rescue Capybara::ElementNotFound
     fail "Le bloc d'erreur du formulaire doit apparaitre"
   end
+
+  # En largeur téléphone, la liste de la messagerie est un tiroir fermé.
+  def ouvrir_contacts
+    find('label[for="messagerie-drawer"]', text: 'Contacts').click unless has_field?('query', wait: 0)
+  end
 end

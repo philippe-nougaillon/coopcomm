@@ -1,13 +1,14 @@
-<% 
+<%
   is_my = defined?(my_message) ? my_message : (message.from_id == current_user.id)
-  is_unread = (!is_my && message.read_at.nil?) 
+  is_unread = (!is_my && message.read_at.nil? && message.message?)
 %>
-<div id="<%= dom_id message %>" 
-     class="mt-2 message-wrapper" 
-     data-message-id="<%= message.id %>" 
+<div id="<%= dom_id message %>"
+     class="mt-2 message-wrapper"
+     data-message-id="<%= message.id %>"
+     data-from-id="<%= message.from_id %>"
      data-unread="<%= is_unread ? 'true' : 'false' %>">
-  <div class="chat <%= is_my ? "chat-end" : "chat-start" %>">
-    <div class="chat-bubble  <%= is_my ? "chat-bubble-info" : "bg-gray-200" %> <%= "font-semibold" if is_unread %> max-w-full">
+  <div class="chat group <%= is_my ? "chat-end" : "chat-start" %>">
+    <div class="chat-bubble bg-gray-200 group-[.chat-end]:bg-info group-[.chat-end]:text-info-content <%= "font-semibold" if is_unread %> max-w-full">
       <div class=" flex flex-col">
         <% text = message.moderation %>
             <p class="text-base break-words mb-0.5">
@@ -15,7 +16,7 @@
               <% truncated = text.truncate(800, omission: '', separator: ' ') %>
               <span class="truncated-text"><%= truncated %></span>
               <button type="button"
-                      class="see-more-btn inline cursor-pointer font-bold hover:underline <%= is_my ? 'text-cyan-200' : 'text-[#191a29]' %>"
+                      class="see-more-btn inline cursor-pointer font-bold hover:underline text-[#191a29] group-[.chat-end]:text-cyan-200"
                       onclick="this.style.display='none'; this.nextElementSibling.style.display='inline';">
                   Voir plus
               </button>
@@ -24,7 +25,7 @@
               <%= text %>
             <% end %>
           </p>
-        <span class="flex flex-end items-end justify-end text-xs <%= is_my ? "text-white/80" : "text-slate-400" %>">
+        <span class="flex flex-end items-end justify-end text-xs text-slate-400 group-[.chat-end]:text-white/80">
           <%= message.created_at.strftime("%H:%M")%>
         </span>
       </div>

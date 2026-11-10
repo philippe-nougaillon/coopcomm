@@ -42,7 +42,7 @@ class User < ApplicationRecord
   has_many :factures_adherent, class_name: 'Facture', foreign_key: :adherent_id, dependent: :destroy
   has_many :agent_interventions, foreign_key: :agent_id, class_name: 'AgentIntervention', dependent: :destroy
   has_many :interventions, through: :agent_interventions
-  has_many :messages, dependent: :destroy, foreign_key: :to_id, class_name: 'Message'
+  has_many :messages, -> { message }, dependent: :destroy, foreign_key: :to_id, class_name: 'Message'
   has_many :absences, dependent: :destroy
   has_many :conventions, dependent: :destroy
   has_many :user_services, dependent: :destroy
@@ -235,7 +235,7 @@ class User < ApplicationRecord
 
   def new_messages?
     # On récupère les messages de l'utilisateur non lues. Filtrage des from_id par service pour éviter les utilisateurs supprimés.
-    Message.where(to_id: id, from_id: User.by_service(services).ids, read_at: nil).any?
+    Message.message.where(to_id: id, from_id: User.by_service(services).ids, read_at: nil).any?
   end
 
   def current_absence(date = Date.today, periode = nil)

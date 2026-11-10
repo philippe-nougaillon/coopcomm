@@ -9,7 +9,7 @@ import { Controller } from "@hotwired/stimulus"
 // possède son propre overflow-y-auto (layout flex avec header/footer fixes).
 export default class extends Controller {
   static targets = ["container", "badge", "input"]
-  static values = { toUserSlug: String }
+  static values = { toUserSlug: String, serviceSlug: String, url: String, currentUserId: Number }
 
   connect() {
     this.scrollToCorrectPosition()
@@ -68,14 +68,14 @@ export default class extends Controller {
 
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
 
-    fetch("/messagerie/send_message", {
+    fetch(this.urlValue, {
       method: "POST",
       headers: {
         "X-CSRF-Token": csrfToken,
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify({ message, to_user_slug: this.toUserSlugValue }),
+      body: JSON.stringify({ message, to_user_slug: this.toUserSlugValue, service_slug: this.serviceSlugValue }),
     }).then((response) => {
       if (response.ok) {
         this.inputTarget.value = ""
@@ -92,6 +92,11 @@ export default class extends Controller {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
           if (node.nodeType !== Node.ELEMENT_NODE) return
+
+          // Une annonce arrive dans la même forme chez tous : l'auteur remet la sienne de son côté.
+          if (Number(node.dataset?.fromId) === this.currentUserIdValue) {
+            node.querySelector(".chat")?.classList.replace("chat-start", "chat-end")
+          }
 
           const isMyMessage =
             node.classList.contains("chat-end") || node.querySelector(".chat-end") !== null
