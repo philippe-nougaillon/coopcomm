@@ -76,3 +76,15 @@ blog_de_l_administrateur:
   poids: 6
   slug: billet-signe-par-l-administrateur
   user: administrateur_paris
+
+blog_retiré:
+  titre: Billet retiré de la documentation
+  sous_titre: Retiré par son auteur
+  catégorie: blog
+  publiée: true
+  private: false
+  épinglée: false
+  poids: 7
+  slug: billet-retire-de-la-documentation
+  user: hidalgo
+  discarded_at: 2024-12-01 10:00:00

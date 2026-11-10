@@ -1,0 +1,11 @@
+<h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">
+  Bienvenue <%= @user.prénom %> !
+</h2>
+
+<p style="color: #475569; margin-bottom: 24px;">
+  Votre compte CoopComm a bien été créé.
+</p>
+
+<p style="color: #475569; margin-bottom: 24px;">
+  Vous pouvez dès à présent <%= link_to "vous connecter à votre espace CoopComm", new_user_session_url, style: "color: #2563eb; text-decoration: underline;", target: "_blank" %>.
+</p>

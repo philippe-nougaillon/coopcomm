@@ -8,6 +8,7 @@ require_relative '../support/lecture_pdf'
 # une sous-classe, dont on prend celle qui porte le trait visé par le test.
 class TransformToPdfBasePdfForCrmTest < ActiveSupport::TestCase
   include LecturePdf
+  include ActionDispatch::TestProcess::FixtureFile
 
   setup do
     @cotation = cotations(:cotation_paris)
@@ -60,6 +61,23 @@ class TransformToPdfBasePdfForCrmTest < ActiveSupport::TestCase
 
     assert_match(/Devis Marseille/i, texte)
     assert_no_match(/Devis nettoyage trimestriel/i, texte)
+  end
+
+  test 'un document ne porte pas le logo d’une autre organisation (critique)' do
+    organisations(:mairie_paris).logo.attach(fixture_file_upload('logo_organisation.png', 'image/png'))
+
+    document = TransformToPdf::Facture.call(factures(:facture_marseille))
+
+    assert_equal [DIMENSIONS_LOGO_COOPCOMM], dimensions_images_pdf(document)
+  end
+
+  test 'un logo illisible laisse le document s’imprimer, avec le logo de CoopComm (critique)' do
+    @cotation.organisation.logo.attach(fixture_file_upload('exemple.png', 'image/png'))
+
+    document = TransformToPdf::Cotation.call(@cotation)
+
+    assert_equal [DIMENSIONS_LOGO_COOPCOMM], dimensions_images_pdf(document)
+    assert_includes texte_pdf(document), 'Total HT : 76,50 €'
   end
 
   # ==================== /TESTS CRITIQUES ====================
@@ -149,6 +167,22 @@ class TransformToPdfBasePdfForCrmTest < ActiveSupport::TestCase
     texte = texte_pdf(TransformToPdf::Cotation.call(@cotation.reload))
 
     assert_match(/Entretien des espaces verts/i, texte)
+  end
+
+  test 'le logo de l’organisation du document est imprimé dans un cadre de 80 points de haut' do
+    @cotation.organisation.logo.attach(fixture_file_upload('logo_organisation.png', 'image/png'))
+
+    document = TransformToPdf::Cotation.call(@cotation)
+
+    assert_equal [DIMENSIONS_LOGO_ORGANISATION], dimensions_images_pdf(document)
+    assert_equal [[160.0, 80.0]], tailles_images_pdf(document)
+  end
+
+  test 'sans logo d’organisation, le logo de CoopComm est imprimé sur 200 points de large' do
+    document = TransformToPdf::Cotation.call(@cotation)
+
+    assert_equal [DIMENSIONS_LOGO_COOPCOMM], dimensions_images_pdf(document)
+    assert_equal 200.0, tailles_images_pdf(document).first.first
   end
 
   private

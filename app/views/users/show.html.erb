@@ -244,6 +244,23 @@
           Désactiver l'utilisateur
         </button>
       <% end %>
+
+      <% if demo_instance? && policy(@user).voir_desactiver_compte? %>
+        <% if policy(@user).desactiver_compte? %>
+          <button class="btn btn-soft btn-error hover:!text-white" onclick="delete_account_modal.showModal()">
+            <%= embedded_svg "icons/person_off.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
+            Désactiver mon compte
+          </button>
+        <% else %>
+          <%# Un btn désactivé est en pointer-events: none (daisyUI) : le survol, et donc le title, passent par l'enveloppe. %>
+          <div class="tooltip tooltip-error [&::before]:!text-white" data-tip="Vous êtes le dernier administrateur de votre organisation : nommez-en un autre avant de désactiver votre compte.">
+            <button class="btn btn-soft btn-error w-full" disabled title="Vous êtes le dernier administrateur de votre organisation : nommez-en un autre avant de désactiver votre compte.">
+              <%= embedded_svg "icons/person_off.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
+              Désactiver mon compte
+            </button>
+          </div>
+        <% end %>
+      <% end %>
     </div>
 
   </div>
@@ -273,6 +290,34 @@
       <button>Fermer</button>
     </form>
   </dialog>
+
+  <% if demo_instance? && policy(@user).desactiver_compte? %>
+    <dialog id="delete_account_modal" class="modal">
+      <div class="modal-box">
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 class="text-lg font-bold text-error flex items-center gap-2">
+          <%= embedded_svg "icons/warning.svg", title: "Désactiver mon compte" %>
+          Désactiver mon compte
+        </h3>
+        <p class="py-4 text-sm text-slate-600">
+          Êtes-vous certain(e) de vouloir désactiver votre compte ? Vous serez déconnecté(e) et ne pourrez plus vous connecter ; un autre administrateur de votre organisation pourra réactiver votre compte.
+        </p>
+        <div class="modal-action">
+          <form method="dialog">
+            <button class="btn btn-ghost">Annuler</button>
+          </form>
+          <%= link_to user_registration_path, data: { turbo_method: :delete }, class: "btn btn-error text-white" do %>
+            Oui, désactiver mon compte
+          <% end %>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>Fermer</button>
+      </form>
+    </dialog>
+  <% end %>
 
   <div class="my-10">
     <%= link_to users_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>

@@ -36,7 +36,7 @@ module TransformToPdf
       Prawn::Fonts::AFM.hide_m17n_warning = true
       @margin_down = 15
       @image_path = "#{Rails.root}/app/assets/images"
-      @logo_organisation = "#{@image_path}/Logo_CC_MAd_et_Moselle.jpg"
+      @logo_organisation = LogoOrganisation.call(intervention.organisation)
       @logo_coopcomm = "#{@image_path}/CoopComm.png"
     end
 
@@ -53,7 +53,7 @@ module TransformToPdf
     # Logo de l'organisation, centré en haut de la page.
     def add_logo
       move_down @margin_down
-      image @logo_organisation, width: 90, position: :center if File.exist?(@logo_organisation)
+      image @logo_organisation, fit: [180, 90], position: :center
       move_down @margin_down * 4
     end
 

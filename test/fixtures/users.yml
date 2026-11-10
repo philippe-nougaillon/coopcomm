@@ -221,3 +221,20 @@ emmanuel_valls:
   rôle: adhérent
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 33872d35-052f-427c-9181-e5aff5db1853
+
+administrateur_seul:
+  nom: Seul
+  prénom: Admin
+  email: administrateur_seul@aikku.eu
+  rôle: administrateur
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
+  slug: <%= SecureRandom.uuid %>
+
+administrateur_desactive:
+  nom: Retraité
+  prénom: Ancien
+  email: administrateur_desactive@aikku.eu
+  rôle: administrateur
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
+  slug: <%= SecureRandom.uuid %>
+  discarded_at: 2025-01-15 09:00:00

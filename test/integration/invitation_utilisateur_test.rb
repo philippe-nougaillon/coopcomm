@@ -56,6 +56,14 @@ class InvitationUtilisateurTest < ActionDispatch::IntegrationTest
     assert_equal [adherent_créé.email], ActionMailer::Base.deliveries.last.to
   end
 
+  test "En tant qu'administrateur, je veux que l'invitation de l'utilisateur que je crée porte le logo de mon organisation" do
+    @admin.organisation.logo.attach(fixture_file_upload('logo_organisation.png', 'image/png'))
+
+    créer_adherent
+
+    assert_includes ActionMailer::Base.deliveries.last.html_part.body.decoded, '/logo_organisation.png'
+  end
+
   private
 
   def créer_adherent

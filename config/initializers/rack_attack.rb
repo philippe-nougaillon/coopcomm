@@ -81,7 +81,8 @@ class Rack::Attack
   #
   # Key: "rack::attack:#{Time.now.to_i/:period}:devise/ip:#{req.ip}"
   throttle('devise/ip', limit: 20, period: 1.minute) do |req|
-    if req.path.start_with?('/users/sign_in', '/users/sign_out', '/users/password', '/users/invitation', '/users/sign_up')
+    if req.path.start_with?('/users/sign_in', '/users/sign_out', '/users/password', '/users/invitation', '/users/sign_up',
+                            '/users/confirmation')
       req.ip
     end
   end
@@ -91,6 +92,16 @@ class Rack::Attack
   # Key: "rack::attack:#{Time.now.to_i/:period}:sign_ups/ip:#{req.ip}"
   throttle('sign_ups/ip', limit: 5, period: 15.minutes) do |req|
     if req.path == '/users' && req.post?
+      req.ip
+    end
+  end
+
+  # Throttle POST requests to /users/confirmation by IP address — chaque demande
+  # de renvoi part en mail réel.
+  #
+  # Key: "rack::attack:#{Time.now.to_i/:period}:confirmations/ip:#{req.ip}"
+  throttle('confirmations/ip', limit: 5, period: 15.minutes) do |req|
+    if req.path == '/users/confirmation' && req.post?
       req.ip
     end
   end

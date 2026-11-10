@@ -42,33 +42,7 @@
     </div>
   <% end %>
 
-  <div class="mt-6 border-b border-slate-200">
-    <nav class="flex gap-1" aria-label="Sections des paramètres">
-      <%= link_to url_for(safe_params.merge(tab: 'services')), 
-                  class: "px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors #{current_tab == 'services' ? 'text-primary border-primary' : 'text-slate-500 hover:text-slate-800 border-transparent'}" do %>
-        Services
-        <span class="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-semibold #{current_tab == 'services' ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-500'}">
-          <%= @services_count %>
-        </span>
-      <% end %>
-
-      <%= link_to url_for(safe_params.merge(tab: 'sites')), 
-                  class: "px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors #{current_tab == 'sites' ? 'text-primary border-primary' : 'text-slate-500 hover:text-slate-800 border-transparent'}" do %>
-        Sites
-        <span class="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-semibold #{current_tab == 'sites' ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-500'}">
-          <%= @warehouses_count %>
-        </span>
-      <% end %>
-
-      <%= link_to url_for(safe_params.merge(tab: 'prestations')), 
-                  class: "px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors #{current_tab == 'prestations' ? 'text-primary border-primary' : 'text-slate-500 hover:text-slate-800 border-transparent'}" do %>
-        Prestations
-        <span class="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-semibold #{current_tab == 'prestations' ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-500'}">
-          <%= @prestations_count %>
-        </span>
-      <% end %>
-    </nav>
-  </div>
+  <%= render 'admin/onglets_parametres', current_tab: current_tab %>
 
   <div class="mt-6">
     <% case current_tab %>

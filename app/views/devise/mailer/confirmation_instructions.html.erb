@@ -1,7 +1,5 @@
-<% user_name = @resource.email.split('@').humanize %>
-
 <h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">
-  <%= t('.greeting', recipient: user_name) %>
+  <%= t('.greeting') %>
 </h2>
 
 <p style="color: #475569; margin-bottom: 24px; font-size: 15px; line-height: 1.6;">
@@ -16,6 +14,6 @@
 
 <div style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 0 4px 4px 0;">
   <p style="margin: 0; font-size: 13px; color: #64748b;">
-    En cas d'erreur, rapprochez-vous de votre gestionnaire.
+    Si vous n'êtes pas à l'origine de cette inscription, ignorez ce message.
   </p>
 </div>

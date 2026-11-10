@@ -36,6 +36,11 @@ class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
   test 'accès interdit pour un manager sur un user de son service' do
     refute @policy.edit_password?
     refute @policy.update_password?
+    refute @policy.desactiver_compte?
+  end
+
+  test 'affichage interdit pour un manager sur un user de son service' do
+    refute @policy.voir_desactiver_compte?
   end
 
   test "accès interdit pour un manager sur un user d'un service qu'il ne gère pas" do
@@ -92,5 +97,10 @@ class ManagerUserPolicyTest < ActionDispatch::IntegrationTest
   test 'accès interdit pour un manager sur sa propre fiche' do
     refute @policy_user_myself.destroy?
     refute @policy_user_myself.inviter?
+    refute @policy_user_myself.desactiver_compte?
+  end
+
+  test 'affichage interdit pour un manager sur sa propre fiche' do
+    refute @policy_user_myself.voir_desactiver_compte?
   end
 end

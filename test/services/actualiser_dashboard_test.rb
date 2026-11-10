@@ -24,4 +24,55 @@ class ActualiserDashboardTest < ActiveSupport::TestCase
 
     assert_in_delta attendu, DashboardAgentStat.sum(:temps_total).to_f, 0.01
   end
+
+  test 'un bloc regroupé ne rafraîchit les vues qu’une seule fois, à sa fin' do
+    base = Minitest::Mock.new
+    ActualiserDashboard::VUES.each { |vue| base.expect(:refresh_materialized_view, nil, [vue], concurrently: true) }
+
+    Scenic.stub(:database, base) do
+      ActualiserDashboard.regrouper do
+        3.times { ActualiserDashboard.call }
+        assert_raises(MockExpectationError) { base.verify }
+      end
+    end
+
+    assert_mock base
+  end
+
+  test 'un bloc regroupé imbriqué dans un autre ne rafraîchit les vues qu’à la fin du bloc extérieur' do
+    base = Minitest::Mock.new
+    ActualiserDashboard::VUES.each { |vue| base.expect(:refresh_materialized_view, nil, [vue], concurrently: true) }
+
+    Scenic.stub(:database, base) do
+      ActualiserDashboard.regrouper do
+        ActualiserDashboard.regrouper { ActualiserDashboard.call }
+        assert_raises(MockExpectationError) { base.verify }
+      end
+    end
+
+    assert_mock base
+  end
+
+  test 'un bloc regroupé interrompu par une erreur rafraîchit quand même les vues' do
+    base = Minitest::Mock.new
+    ActualiserDashboard::VUES.each { |vue| base.expect(:refresh_materialized_view, nil, [vue], concurrently: true) }
+
+    Scenic.stub(:database, base) do
+      assert_raises(RuntimeError) { ActualiserDashboard.regrouper { raise 'interrompu' } }
+    end
+
+    assert_mock base
+  end
+
+  test 'après un bloc regroupé, chaque appel rafraîchit de nouveau les vues' do
+    base = Minitest::Mock.new
+    2.times { ActualiserDashboard::VUES.each { |vue| base.expect(:refresh_materialized_view, nil, [vue], concurrently: true) } }
+
+    Scenic.stub(:database, base) do
+      ActualiserDashboard.regrouper { nil }
+      ActualiserDashboard.call
+    end
+
+    assert_mock base
+  end
 end

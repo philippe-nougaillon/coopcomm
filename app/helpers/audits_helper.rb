@@ -27,6 +27,9 @@ module AuditsHelper
     invited_by_type
     invitations_count
     invitation_limit
+    confirmation_token
+    confirmation_sent_at
+    confirmed_at
   ].freeze
 
   # Champs dont la valeur est elle-même une liste : sur un audit de création ou

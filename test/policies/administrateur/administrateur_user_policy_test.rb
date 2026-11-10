@@ -14,6 +14,7 @@ class AdministrateurUserPolicyTest < ActionDispatch::IntegrationTest
     @policy_autre_service = UserPolicy.new(administrateur, user_hors_de_ses_services)
     @policy_autre_org = UserPolicy.new(administrateur, user_autre_org)
     @policy_user_myself = UserPolicy.new(administrateur, administrateur)
+    @policy_dernier_administrateur = UserPolicy.new(users(:administrateur_seul), users(:administrateur_seul))
   end
 
   test 'accès autorisé pour un administrateur sur un user de son organisation' do
@@ -34,6 +35,11 @@ class AdministrateurUserPolicyTest < ActionDispatch::IntegrationTest
   test 'accès interdit pour un administrateur sur un user de son organisation' do
     refute @policy.edit_password?
     refute @policy.update_password?
+    refute @policy.desactiver_compte?
+  end
+
+  test 'affichage interdit pour un administrateur sur un user de son organisation' do
+    refute @policy.voir_desactiver_compte?
   end
 
   test 'accès autorisé pour un administrateur sur un user de son organisation hors de ses services' do
@@ -61,10 +67,23 @@ class AdministrateurUserPolicyTest < ActionDispatch::IntegrationTest
     assert @policy_user_myself.edit_password?
     assert @policy_user_myself.update_password?
     assert @policy_user_myself.reactivate?
+    assert @policy_user_myself.desactiver_compte?
   end
 
   test 'accès interdit pour un administrateur sur sa propre fiche' do
     refute @policy_user_myself.destroy?
     refute @policy_user_myself.inviter?
+  end
+
+  test 'affichage autorisé pour un administrateur sur sa propre fiche' do
+    assert @policy_user_myself.voir_desactiver_compte?
+  end
+
+  test 'accès interdit pour un administrateur, dernier de son organisation, sur sa propre fiche' do
+    refute @policy_dernier_administrateur.desactiver_compte?
+  end
+
+  test 'affichage autorisé pour un administrateur, dernier de son organisation, sur sa propre fiche' do
+    assert @policy_dernier_administrateur.voir_desactiver_compte?
   end
 end

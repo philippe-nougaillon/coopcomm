@@ -44,7 +44,7 @@
           Organisation <span class="text-red-500">*</span>
         <% end %>
         <%= form.text_field :nom_organisation,
-              value: params.dig(:user, :nom_organisation),
+              value: params.dig(:user, :nom_organisation) || "EPCI##{rand(10_000..99_999)}",
               autocomplete: "organization",
               required: true,
               class: "input input-bordered w-full focus:input-primary" %>
@@ -54,7 +54,7 @@
         <%= form.label :noms_services, class: "label font-semibold text-slate-700" do %>
           Service(s) <span class="text-red-500">*</span>
         <% end %>
-        <% noms_services = Array(params.dig(:user, :noms_services)).compact_blank %>
+        <% noms_services = Array(params.dig(:user, :noms_services) || ['Technique']).compact_blank %>
         <%= form.select :noms_services, options_for_select(noms_services, noms_services), {},
               { multiple: true,
                 required: true,

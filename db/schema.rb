@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_23_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_09_163000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -290,6 +290,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_130000) do
   create_table "messages", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "from_id"
+    t.integer "genre", default: 0, null: false
     t.text "message"
     t.datetime "read_at"
     t.bigint "to_id"
@@ -545,6 +546,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_130000) do
   create_table "users", force: :cascade do |t|
     t.string "address"
     t.string "color"
+    t.datetime "confirmation_sent_at"
+    t.string "confirmation_token"
+    t.datetime "confirmed_at", default: -> { "CURRENT_TIMESTAMP" }
     t.integer "consumed_timestep"
     t.datetime "created_at", null: false
     t.datetime "current_sign_in_at"
@@ -585,6 +589,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_130000) do
     t.string "unlock_token"
     t.datetime "updated_at", null: false
     t.bigint "warehouse_id"
+    t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["discarded_at"], name: "index_users_on_discarded_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true

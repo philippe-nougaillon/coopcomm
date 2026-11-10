@@ -117,6 +117,37 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_match 'secteur-nord', response.body
   end
 
+  test 'la fiche de l’administrateur connecté propose de désactiver son compte sur l’instance de démonstration' do
+    sur_l_instance('demo') { get user_url(users(:administrateur_paris)) }
+
+    assert_dom 'a[href=?][data-turbo-method=delete]', user_registration_path
+  end
+
+  test 'la fiche d’un autre utilisateur ne propose pas la désactivation du compte' do
+    sur_l_instance('demo') { get user_url(@user) }
+
+    assert_dom 'a[href=?][data-turbo-method=delete]', user_registration_path, count: 0
+  end
+
+  test 'la fiche de l’administrateur connecté ne propose pas la désactivation de son compte hors de l’instance de démonstration' do
+    sur_l_instance('production') { get user_url(users(:administrateur_paris)) }
+
+    assert_dom 'a[href=?][data-turbo-method=delete]', user_registration_path, count: 0
+  end
+
+  test 'la fiche du dernier administrateur connecté rend inactif le bouton de désactivation et en explique la raison' do
+    dernier_administrateur = users(:administrateur_seul)
+    sign_in dernier_administrateur
+
+    sur_l_instance('demo') { get user_url(dernier_administrateur) }
+
+    raison = 'Vous êtes le dernier administrateur de votre organisation : nommez-en un autre avant de désactiver votre compte.'
+    assert_dom 'div.tooltip[data-tip=?]', raison do
+      assert_dom 'button[disabled][title=?]', raison, text: /Désactiver mon compte/
+    end
+    assert_dom 'a[href=?][data-turbo-method=delete]', user_registration_path, count: 0
+  end
+
   test 'la liste des services du formulaire de création ne propose aucune option vide' do
     get admin_create_new_user_url
 
@@ -627,6 +658,12 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_empty agent.reload.tag_list
   end
 
+  test 'un email modifié est enregistré sans attendre de confirmation de la nouvelle adresse' do
+    patch user_url(@user), params: { user: { email: 'nouvelle.adresse@exemple.fr' } }
+
+    assert_equal 'nouvelle.adresse@exemple.fr', @user.reload.email
+  end
+
   # ==================== TESTS CRITIQUES ====================
 
   test 'un administrateur ne peut ni afficher ni modifier un utilisateur d’une autre organisation (critique)' do
@@ -797,5 +834,14 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     sign_in connecté if connecté
     post admin_create_new_user_do_url, params: { user: ATTRIBUTS_BASE.merge(attributs) }
     User.find_by(email: ATTRIBUTS_BASE[:email])
+  end
+
+  # APP_INSTANCE est lue par le code de production : posée le temps du bloc, puis restaurée.
+  def sur_l_instance(nom)
+    app_instance = ENV.fetch('APP_INSTANCE', nil)
+    ENV['APP_INSTANCE'] = nom
+    yield
+  ensure
+    ENV['APP_INSTANCE'] = app_instance
   end
 end

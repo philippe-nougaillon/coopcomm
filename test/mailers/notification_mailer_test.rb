@@ -26,4 +26,17 @@ class NotificationMailerTest < ActionMailer::TestCase
 
     assert_nil mail.cc
   end
+
+  test 'le mail de bienvenue à l’inscription part de MAIL_FROM vers l’inscrit, le salue par son prénom et mène à la connexion' do
+    inscrit = users(:administrateur_paris)
+    mail = NotificationMailer.welcome_inscription(inscrit)
+
+    assert_equal ENV.fetch('MAIL_FROM'), mail[:from].value
+    assert_equal [inscrit.email], mail.to
+    assert_equal '[COOPCOMM] Bienvenue !', mail.subject
+
+    corps = Nokogiri::HTML((mail.html_part || mail).body.to_s).at_css('.email-body')
+    assert_equal 'Bienvenue Paris !', corps.at_css('h2').text.squish
+    assert_equal 'http://www.example.com/users/sign_in', corps.at_css('a')['href']
+  end
 end

@@ -131,3 +131,11 @@ adherent_nom_long_service_marseille:
 george_lucas_comptabilite:
   user: george_lucas
   service: comptabilite
+
+administrateur_seul_service_unique:
+  user: administrateur_seul
+  service: service_unique
+
+administrateur_desactive_service_unique:
+  user: administrateur_desactive
+  service: service_unique

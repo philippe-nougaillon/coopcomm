@@ -1,7 +1,5 @@
-<% user_name = @resource.email.split('@').first.capitalize %>
-
 <h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">
-  <%= t("devise.mailer.invitation_instructions.hello", email: user_name) %>
+  <%= t("devise.mailer.invitation_instructions.hello") %>
 </h2>
 
 <p style="color: #475569; margin-bottom: 24px; font-size: 15px; line-height: 1.6;">

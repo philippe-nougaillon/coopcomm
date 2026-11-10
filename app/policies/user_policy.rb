@@ -64,6 +64,14 @@ class UserPolicy < ApplicationPolicy
     can_manage_record?
   end
 
+  def voir_desactiver_compte?
+    is_myself? && administrateur?
+  end
+
+  def desactiver_compte?
+    voir_desactiver_compte? && !record.dernier_administrateur?
+  end
+
   private
 
   # Un administrateur porte toute son organisation, un manager ses seuls services

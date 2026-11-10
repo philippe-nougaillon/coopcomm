@@ -5,6 +5,7 @@ require_relative '../support/lecture_pdf'
 
 class TransformToPdfQrcodeModeleInterventionTest < ActiveSupport::TestCase
   include LecturePdf
+  include ActionDispatch::TestProcess::FixtureFile
 
   setup do
     @intervention_modèle = interventions(:intervention_repete)
@@ -19,6 +20,13 @@ class TransformToPdfQrcodeModeleInterventionTest < ActiveSupport::TestCase
                     'le QRCode doit dessiner plus de rectangles que sa matrice n’a de lignes'
   end
 
+  test 'une affiche ne porte pas le logo d’une autre organisation (critique)' do
+    organisations(:mairie_paris).logo.attach(fixture_file_upload('logo_organisation.png', 'image/png'))
+
+    assert_includes dimensions_images_pdf(pdf_qrcode_genere(interventions(:nettoyage_port))), DIMENSIONS_LOGO_COOPCOMM
+    refute_includes dimensions_images_pdf(pdf_qrcode_genere(interventions(:nettoyage_port))), DIMENSIONS_LOGO_ORGANISATION
+  end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'la description du modèle est imprimée en capitales' do
@@ -29,8 +37,17 @@ class TransformToPdfQrcodeModeleInterventionTest < ActiveSupport::TestCase
     assert_includes texte_pdf(pdf_qrcode_genere(@intervention_modèle)), 'Scanner pour accéder'
   end
 
-  test 'le logo de l’organisation est intégré à l’affiche' do
-    assert_includes pdf_qrcode_genere(@intervention_modèle).render, '/DCTDecode'
+  test 'le logo de l’organisation est intégré à l’affiche dans un cadre de 90 points de haut' do
+    @intervention_modèle.organisation.logo.attach(fixture_file_upload('logo_organisation.png', 'image/png'))
+
+    document = pdf_qrcode_genere(@intervention_modèle)
+
+    assert_includes dimensions_images_pdf(document), DIMENSIONS_LOGO_ORGANISATION
+    assert_includes tailles_images_pdf(document), [180.0, 90.0]
+  end
+
+  test 'sans logo d’organisation, le logo de CoopComm est intégré à l’affiche' do
+    assert_includes dimensions_images_pdf(pdf_qrcode_genere(@intervention_modèle)), DIMENSIONS_LOGO_COOPCOMM
   end
 
   test 'le pied de page porte la date de création' do

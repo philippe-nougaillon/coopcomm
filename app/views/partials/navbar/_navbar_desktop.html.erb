@@ -176,7 +176,7 @@
               <ul tabindex="0" class="dropdown-content z-[210] menu p-0! py-2 shadow bg-base-100 rounded-box w-56 border border-slate-200 text-slate-700 left-0! top-full mt-0!" style="margin-left: 0px;">
                 <% if policy(:admin).parametres? %>
                   <li>
-                    <%= link_to admin_parametres_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres'))}" do %>
+                    <%= link_to admin_parametres_path, class: "py-2 px-3 flex items-center gap-1.5 rounded-none focus:bg-base-300! focus:outline-none! navbar-icon-trigger #{'bg-slate-100 text-primary font-semibold' if (['services', 'warehouses', 'organisations'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres'))}" do %>
                       <%= embedded_svg "icons/settings.svg", class: "w-5 h-5 fill-current" %> <span>Paramètres</span>
                     <% end %>
                   </li>

@@ -5,6 +5,7 @@ require_relative '../support/lecture_pdf'
 
 class TransformToPdfInterventionTest < ActiveSupport::TestCase
   include LecturePdf
+  include ActionDispatch::TestProcess::FixtureFile
 
   setup do
     @manager = users(:hidalgo)
@@ -56,6 +57,14 @@ class TransformToPdfInterventionTest < ActiveSupport::TestCase
     texte = fiche(@intervention, users(:martin_technique_paris))
 
     refute_includes texte, 'Note / Évaluation'
+  end
+
+  test "une fiche ne porte pas le logo d'une autre organisation (critique)" do
+    organisations(:mairie_paris).logo.attach(fixture_file_upload('logo_organisation.png', 'image/png'))
+
+    document = TransformToPdf::Intervention.call(interventions(:nettoyage_port), users(:manager_marseille))
+
+    assert_equal [DIMENSIONS_LOGO_COOPCOMM], dimensions_images_pdf(document)
   end
 
   # ==================== /TESTS CRITIQUES ====================
@@ -218,6 +227,29 @@ class TransformToPdfInterventionTest < ActiveSupport::TestCase
 
     refute_includes texte_pdf(document), 'Aperçu indisponible'
     assert_operator document.render.scan('/Subtype /Image').size, :>=, 2
+  end
+
+  test "le logo de l'organisation de l'intervention est imprimé dans un cadre de 80 points de haut" do
+    @intervention.organisation.logo.attach(fixture_file_upload('logo_organisation.png', 'image/png'))
+
+    document = TransformToPdf::Intervention.call(@intervention, @manager)
+
+    assert_equal [DIMENSIONS_LOGO_ORGANISATION], dimensions_images_pdf(document)
+    assert_equal [[160.0, 80.0]], tailles_images_pdf(document)
+  end
+
+  test "sans logo d'organisation, le logo de CoopComm est imprimé sur 200 points de large" do
+    document = TransformToPdf::Intervention.call(@intervention, @manager)
+
+    assert_equal [DIMENSIONS_LOGO_COOPCOMM], dimensions_images_pdf(document)
+    assert_equal 200.0, tailles_images_pdf(document).first.first
+  end
+
+  test "une demande née sans service porte le logo de l'organisation de son adhérent" do
+    demande = interventions(:demande_par_mail)
+    demande.adherent.organisation.logo.attach(fixture_file_upload('logo_organisation.png', 'image/png'))
+
+    assert_equal [DIMENSIONS_LOGO_ORGANISATION], dimensions_images_pdf(TransformToPdf::Intervention.call(demande, @manager))
   end
 
   private

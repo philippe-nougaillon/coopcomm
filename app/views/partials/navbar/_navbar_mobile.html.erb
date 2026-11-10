@@ -74,7 +74,7 @@
               <li class="menu-title px-4 py-1 text-xs uppercase font-bold text-slate-400">Admin</li>
               <% if policy(:admin).parametres? %>
                 <li>
-                  <%= link_to admin_parametres_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if (['services', 'warehouses'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres'))}" do %>
+                  <%= link_to admin_parametres_path, class: "py-3 #{'bg-slate-100 text-primary font-semibold' if (['services', 'warehouses', 'organisations'].include?(params[:controller]) || (params[:controller] == 'admin' && params[:action] == 'parametres'))}" do %>
                     <%= embedded_svg "icons/settings.svg", class: "w-5 h-5 inline mr-2" %> Paramètres
                   <% end %>
                 </li>

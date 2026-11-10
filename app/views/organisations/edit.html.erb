@@ -1,0 +1,45 @@
+<div class="mx-auto w-full max-w-2xl ">
+  <h1 class="text-primary font-bold text-2xl md:text-4xl text-center my-8">
+    <%= page_title!('Modifier cette organisation') %>
+  </h1>
+  <div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 md:p-8">
+    <%= form_with(model: current_organisation, url: organisation_path, class: "flex flex-col gap-2", html: { autocomplete: "off" }) do |form| %>
+      <% if current_organisation.errors.any? %>
+        <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
+          <h2 class="font-black!">
+            <%= pluralize(current_organisation.errors.count, "erreur") %> empêche(nt) cette organisation d'être sauvegardée :
+          </h2>
+          <ul class="list-disc list-inside">
+            <% current_organisation.errors.each do |error| %>
+              <li><%= error.full_message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+      <div class="w-full">
+        <%= form.label :nom, class:'label font-semibold text-slate-700', style: "display: block" do %>
+          <span>Nom <span class="text-red-500">*</span></span>
+        <% end %>
+        <%= form.text_field :nom, class: 'input input-bordered w-full focus:input-primary', required: true %>
+      </div>
+      <%= render "shared/file_dropzone",
+                 form: form,
+                 attribute: :logo,
+                 placeholder: "Glissez un logo ici ou cliquez pour parcourir",
+                 label: "Logo" %>
+      <div class="flex flex-row gap-3 mt-4 pt-4">
+        <%= button_tag "Annuler", type: "button", onclick: "history.back();",
+              class: "btn w-1/3 sm:w-1/4 shrink-0" %>
+
+        <%= form.submit "Enregistrer",
+              class: "btn btn-primary text-white font-bold flex-1 shadow-md hover:shadow-lg transition-all" %>
+      </div>
+    <% end %>
+    <div class="pt-6">
+      <%= link_to organisation_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+        <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour" %>
+        Retour aux paramètres
+      <% end %>
+    </div>
+  </div>
+</div>

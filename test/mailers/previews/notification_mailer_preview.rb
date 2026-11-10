@@ -46,4 +46,8 @@ class NotificationMailerPreview < ActionMailer::Preview
   def intervention_pointage_terminee_automatiquement
     NotificationMailer.intervention_pointage_terminee_automatiquement(Intervention.where.not(template_slug:nil).where.not(fin:nil).last, User.last.email)
   end
+
+  def welcome_inscription
+    NotificationMailer.welcome_inscription(User.last)
+  end
 end

@@ -23,12 +23,9 @@ module TransformToPdf
     # Mesurés depuis le bas réel du texte, et non déduits de la hauteur des boîtes.
     ESPACE_SURTITRE_TITRE = 16
     ESPACE_TITRE_BADGE = 4
-    COTE_LOGO = 80
+    LARGEUR_LOGO = 200
+    HAUTEUR_LOGO = 80
     MARGE_LOGO = 20
-    # Le fichier du logo porte 17 px de blanc sur 200 au-dessus du dessin : sans
-    # ce décalage, le titre paraît plus haut que lui alors que les deux partent
-    # de la même ordonnée.
-    BLANC_HAUT_LOGO = 7
     MARGE_BASSE = 55
     HAUTEUR_FOOTER = 18
 
@@ -61,7 +58,7 @@ module TransformToPdf
       @policy = InterventionPolicy.new(user, intervention)
 
       Prawn::Fonts::AFM.hide_m17n_warning = true
-      @logo = Rails.root.join('app/assets/images/Logo_CC_MAd_et_Moselle.jpg').to_s
+      @logo = LogoOrganisation.call(intervention.organisation)
     end
 
     def call
@@ -84,12 +81,11 @@ module TransformToPdf
     # démarre à la même hauteur que le logo, et le filet passe sous le plus bas des deux.
     def add_header
       haut = cursor
-      logo = File.exist?(@logo)
-      image @logo, height: COTE_LOGO, position: :right if logo
+      logo = image @logo, fit: [LARGEUR_LOGO, HAUTEUR_LOGO], position: :right
       bas_logo = cursor
-      move_cursor_to haut - (logo ? BLANC_HAUT_LOGO : 0)
+      move_cursor_to haut
 
-      largeur = bounds.width - COTE_LOGO - MARGE_LOGO
+      largeur = bounds.width - logo.scaled_width - MARGE_LOGO
       text_box "Bon d'intervention", at: [0, cursor], width: largeur, height: HAUTEUR_SURTITRE,
                                      size: TAILLE_SURTITRE, overflow: :shrink_to_fit
       move_cursor_to cursor - hauteur_ligne(TAILLE_SURTITRE) - ESPACE_SURTITRE_TITRE

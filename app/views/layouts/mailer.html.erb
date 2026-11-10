@@ -60,7 +60,16 @@
       <div class="email-card">
 
         <div class="email-header">
-          <img src="<%= image_url('/madmoselle-badge.png') %>" alt="Mad & Moselle" style="height: 90px; width: auto; max-width: 100%; display: inline-block; vertical-align: middle;" />
+          <% organisation = @organisation || @resource&.organisation %>
+          <% logo = organisation.logo if organisation&.logo&.variable? && organisation.logo.metadata[:width] %>
+          <% largeur, hauteur = logo ? logo.metadata.values_at(:width, :height) : [2878, 550] %>
+          <% échelle = [550.0 / largeur, 90.0 / hauteur, 1].min %>
+          <img width="<%= (largeur * échelle).round %>"
+            height="<%= (hauteur * échelle).round %>"
+            src="<%= logo ? rails_blob_representation_proxy_url(logo.signed_id, logo.variant(:entete).variation.key, "#{logo.filename.base}.png") : image_url('/CoopComm.png') %>" 
+            alt="<%= logo ? organisation.nom : 'CoopComm' %>" 
+            style="height: auto; width: auto; max-height: 90px; max-width: 100%; display: inline-block; vertical-align: middle;" 
+          />
         </div>
 
         <div class="email-body">

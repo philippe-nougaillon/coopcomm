@@ -22,6 +22,7 @@ Rails.application.routes.draw do
 
     get 'users/sign_up', to: 'users/registrations#new', as: :new_user_registration
     post 'users', to: 'users/registrations#create', as: :user_registration
+    delete 'users', to: 'users/registrations#destroy'
   end
 
   resources :absences, only: [:destroy]
@@ -41,6 +42,10 @@ Rails.application.routes.draw do
       get :import
       post :import_do
     end
+  end
+
+  resource :organisation, only: %i[show edit update destroy] do
+    delete :purge_logo
   end
 
   resources :mail_logs do

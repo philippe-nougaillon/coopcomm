@@ -83,6 +83,15 @@ class AuditsHelperTest < ActionView::TestCase
     assert_match 'alert(1)', html
   end
 
+  test 'la création d\'un compte n\'affiche ni sa date de confirmation ni son jeton de confirmation' do
+    html = audit_details(audit(type: 'User', action: 'create',
+                               changes: { 'email' => 'a@b.fr', 'confirmed_at' => '2026-07-01 10:00:00',
+                                          'confirmation_token' => 'jeton', 'confirmation_sent_at' => '2026-07-01 10:00:00' }), nil)
+
+    assert_match 'a@b.fr', html
+    assert_no_match(/2026|jeton/, html)
+  end
+
   # ==================== BLOC A — libellé du badge ====================
 
   test 'chaque action sur une absence porte son propre libellé de badge' do

@@ -9,6 +9,9 @@
 # séparateur à l'intérieur d'un bloc, et l'espace entre deux blocs.
 module LecturePdf
   ESPACE_INSECABLE = "\u00A0"
+  # Dimensions en pixels de test/fixtures/files/logo_organisation.png et du repli de TransformToPdf::LogoOrganisation.
+  DIMENSIONS_LOGO_ORGANISATION = [60, 30].freeze
+  DIMENSIONS_LOGO_COOPCOMM = [800, 153].freeze
 
   def texte_pdf(document)
     octets = document.respond_to?(:render) ? document.render : document
@@ -23,5 +26,18 @@ module LecturePdf
          .tr(ESPACE_INSECABLE, ' ')
          .squeeze(' ')
          .strip
+  end
+
+  # [largeur, hauteur] en pixels de chaque image : Prawn écrit son dictionnaire en clair, clés triées.
+  def dimensions_images_pdf(document)
+    document.render.dup.force_encoding(Encoding::BINARY)
+            .scan(%r{/Height (\d+)\s+/Length \d+\s+(?:/SMask \d+ 0 R\s+)?/Subtype /Image\s+/Type /XObject\s+/Width (\d+)})
+            .map { |hauteur, largeur| [largeur.to_i, hauteur.to_i] }
+  end
+
+  # [largeur, hauteur] en points de chaque image dessinée, lues dans l'opérateur `cm` qui précède `Do`.
+  def tailles_images_pdf(document)
+    document.render.dup.force_encoding(Encoding::BINARY)
+            .scan(%r{([\d.]+) 0\.0+ 0\.0+ ([\d.]+) [\d.]+ [\d.]+ cm\s+/I\d+ Do}).map { |taille| taille.map(&:to_f) }
   end
 end

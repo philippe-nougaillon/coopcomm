@@ -11,3 +11,6 @@ organisation_sans_manager:
 
 organisation_sans_intervention:
   nom: Organisation sans intervention
+
+organisation_un_seul_administrateur:
+  nom: Mairie d'un seul administrateur

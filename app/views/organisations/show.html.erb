@@ -1,0 +1,118 @@
+<div class="flex flex-col">
+  <div class="flex flex-row justify-between items-center my-4 gap-2">
+    <h1 class="text-4xl text-primary font-bold">
+      <%= page_title!('Paramètres') %>
+    </h1>
+  </div>
+
+  <%= render 'admin/onglets_parametres', current_tab: 'organisation' %>
+
+  <section id="organisation" class="mt-6 animate-fade-in w-full md:max-w-2xl">
+    <div class="bg-white border border-slate-200 rounded-2xl w-full" style="padding: 1.25rem;">
+      <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Organisation</p>
+      <div class="grid text-sm" style="grid-template-columns: auto 1fr; gap: 0;">
+        <div class="flex items-center gap-2 py-2.5 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
+          <%= embedded_svg "icons/store.svg", title: "Nom" %> Nom
+        </div>
+        <div class="py-2.5 border-b border-slate-100 break-all flex justify-end items-center">
+          <span class="text-slate-800"><%= current_organisation.nom %></span>
+        </div>
+
+        <div class="flex items-center gap-2 py-2.5 text-slate-500" style="padding-right: 2rem;">
+          <%= embedded_svg "icons/images.svg", title: "Logo" %> Logo
+        </div>
+        <div class="py-2.5 flex justify-end items-center">
+          <% if current_organisation.logo.attached? %>
+            <div class="relative">
+              <%= image_tag current_organisation.logo.variable? ? current_organisation.logo.variant(:entete) : current_organisation.logo, alt: current_organisation.nom, class: "max-h-16 max-w-full object-contain" %>
+              <% if policy(current_organisation).update? %>
+                <button type="button"
+                        onclick="delete_logo_modal.showModal()"
+                        class="absolute -top-2 -right-2 bg-white text-red-500 rounded-full p-1.5 shadow-md border border-slate-200 hover:bg-red-50 hover:text-red-600 transition-all z-10"
+                        title="Supprimer le logo"
+                        data-testid="supprimer_logo">
+                  <%= embedded_svg "icons/delete.svg", class: "w-3.5 h-3.5", title: "Supprimer le logo" %>
+                </button>
+              <% end %>
+            </div>
+          <% else %>
+            <span class="text-slate-400 italic text-xs">Non renseigné : logo de CoopComm</span>
+          <% end %>
+        </div>
+      </div>
+      <p class="text-xs text-slate-400 mt-3">Le logo figure en tête des mails et des documents PDF de l'organisation.</p>
+    </div>
+
+    <div class="flex flex-wrap flex-col md:flex-row gap-2 justify-end mt-4">
+      <% if policy(current_organisation).edit? %>
+        <%= link_to edit_organisation_path, class: "btn" do %>
+          <%= embedded_svg "icons/edit.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
+          Modifier
+        <% end %>
+      <% end %>
+
+      <% if demo_instance? && policy(current_organisation).destroy? %>
+        <button class="btn btn-soft btn-error hover:!text-white" onclick="delete_organisation_modal.showModal()">
+          <%= embedded_svg "icons/delete.svg", class: "w-6 h-6 fill-current transition-colors duration-200 text-sm" %>
+          Supprimer mon organisation
+        </button>
+      <% end %>
+    </div>
+  </section>
+
+  <% if current_organisation.logo.attached? && policy(current_organisation).update? %>
+    <dialog id="delete_logo_modal" class="modal">
+      <div class="modal-box">
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 class="text-lg font-bold text-error flex items-center gap-2">
+          <%= embedded_svg "icons/warning.svg", title: "Supprimer le logo" %>
+          Supprimer le logo
+        </h3>
+        <p class="py-4 text-sm text-slate-600 text-left">
+          Êtes-vous certain(e) de vouloir supprimer le logo ? Les mails et les documents PDF reprendront celui de CoopComm.
+        </p>
+        <div class="modal-action">
+          <form method="dialog">
+            <button class="btn btn-ghost">Annuler</button>
+          </form>
+          <%= button_to purge_logo_organisation_path, method: :delete, class: "btn btn-error text-white" do %>
+            Oui, supprimer
+          <% end %>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>Fermer</button>
+      </form>
+    </dialog>
+  <% end %>
+
+  <% if demo_instance? && policy(current_organisation).destroy? %>
+    <dialog id="delete_organisation_modal" class="modal">
+      <div class="modal-box">
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 class="text-lg font-bold text-error flex items-center gap-2">
+          <%= embedded_svg "icons/warning.svg", title: "Supprimer mon organisation" %>
+          Supprimer mon organisation
+        </h3>
+        <p class="py-4 text-sm text-slate-600">
+          Êtes-vous certain(e) de vouloir supprimer l'organisation « <%= current_organisation.nom %> » ? Cette action est définitive : ses services, ses utilisateurs, ses interventions, son matériel, ses devis, commandes, factures et conventions seront effacés, et vous serez déconnecté(e).
+        </p>
+        <div class="modal-action">
+          <form method="dialog">
+            <button class="btn btn-ghost">Annuler</button>
+          </form>
+          <%= link_to organisation_path, data: { turbo_method: :delete, turbo_confirm: "Supprimer définitivement l'organisation « #{current_organisation.nom} » ?" }, class: "btn btn-error text-white" do %>
+            Oui, supprimer l'organisation
+          <% end %>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>Fermer</button>
+      </form>
+    </dialog>
+  <% end %>
+</div>

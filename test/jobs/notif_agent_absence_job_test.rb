@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class NotifAgentAbsenceJobTest < ActiveJob::TestCase
+  include ActionDispatch::TestProcess::FixtureFile
+
   setup do
     @agent = users(:bond)
     @manager = users(:hidalgo)
@@ -49,5 +51,13 @@ class NotifAgentAbsenceJobTest < ActiveJob::TestCase
                                      @agent.organisation.id, nil)
 
     assert_equal 0, MailLog.order(:created_at).last.user_id
+  end
+
+  test 'le mail porte le logo de l’organisation transmise au job' do
+    @agent.organisation.logo.attach(fixture_file_upload('logo_organisation.png', 'image/png'))
+
+    NotifAgentAbsenceJob.perform_now('créée', @resume, nil, @agent.email, @agent.organisation.id, @manager.id)
+
+    assert_includes ActionMailer::Base.deliveries.last.body.to_s, '/logo_organisation.png'
   end
 end

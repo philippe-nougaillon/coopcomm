@@ -10,9 +10,12 @@ class AdministrateurPagesPolicyTest < ActionDispatch::IntegrationTest
   end
 
   test 'accès autorisé pour un administrateur sur les pages sans record' do
-    assert @policy.assistant?
     assert @policy.home?
     assert @policy.meteo?
     assert @policy.meteo_by_day?
+  end
+
+  test 'accès interdit pour un administrateur sur les pages sans record' do
+    refute @policy.assistant?
   end
 end

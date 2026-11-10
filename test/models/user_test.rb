@@ -5,6 +5,60 @@ require 'test_helper'
 class UserTest < ActiveSupport::TestCase
   include ActionMailer::TestHelper
 
+  test 'un compte créé hors de l’inscription est confirmé d’office, sans jeton ni mail de confirmation, sans mail de bienvenue' do
+    compte = nouveau(rôle: :agent, service_ids: [services(:informatique).id])
+
+    assert_no_emails do
+      assert_no_enqueued_jobs only: WelcomeInscriptionNotificationJob do
+        compte.save!
+      end
+    end
+
+    compte.reload
+    assert compte.confirmed?
+    assert_nil compte.confirmation_token
+  end
+
+  test 'la suppression d’un utilisateur emporte les messages qu’il a envoyés' do
+    message = messages(:one)
+
+    users(:hidalgo).destroy!
+
+    assert_nil Message.find_by(id: message.id)
+  end
+
+  test 'la suppression d’un utilisateur emporte ses mouvements' do
+    mouvement = mouvements(:mouvement_tondeuse)
+
+    users(:bond).destroy!
+
+    assert_nil Mouvement.find_by(id: mouvement.id)
+  end
+
+  test 'la suppression d’un utilisateur emporte ses journaux d’exports' do
+    export_log = export_logs(:one)
+
+    users(:hidalgo).destroy!
+
+    assert_nil ExportLog.find_by(id: export_log.id)
+  end
+
+  test 'la suppression d’un utilisateur emporte ses pages de documentation, retirées comprises' do
+    page = wiki_pages(:blog_public)
+    page_retirée = wiki_pages(:blog_retiré)
+
+    users(:hidalgo).destroy!
+
+    assert_nil WikiPage.with_discarded.find_by(id: page.id)
+    assert_nil WikiPage.with_discarded.find_by(id: page_retirée.id)
+  end
+
+  test 'la suppression d’un utilisateur laisse à l’organisation les interventions qu’il a demandées' do
+    users(:weil).destroy!
+
+    assert Intervention.exists?(interventions(:tonte_locaux).id)
+  end
+
   test 'une absence sans dates saisie en même temps que le compte est ignorée' do
     agent = users(:bond)
 
@@ -412,6 +466,10 @@ class UserTest < ActiveSupport::TestCase
     assert_nil users(:john_wick).intervention_en_cours
   end
 
+  test 'le modèle XLS des utilisateurs a des en-têtes figées' do
+    assert_equal %w[Nom Prénom Email Téléphone Service Mémo], User.xls_headers
+  end
+
   test 'un mot de passe engendré fait douze caractères, un de chaque famille, sans caractère ambigu' do
     mot_de_passe = User.generate_random_password
 
@@ -421,6 +479,17 @@ class UserTest < ActiveSupport::TestCase
     assert_match(/[1-9]/, mot_de_passe)
     assert_match(/[!@\#$%&*\-+=?]/, mot_de_passe)
     assert_no_match(/[lOI0]/, mot_de_passe)
+  end
+
+  test 'un mot de passe engendré satisfait la politique de complexité' do
+    mot_de_passe = User.generate_random_password
+
+    candidat = User.new(nom: 'DURAND', prénom: 'Marie', email: 'marie.durand@example.test',
+                        rôle: 'agent', password: mot_de_passe)
+    candidat.user_services.build(service: services(:informatique))
+
+    assert_equal 12, mot_de_passe.length
+    assert candidat.valid?, candidat.errors.full_messages.join(', ')
   end
 
   test 'un manager et un administrateur sont des gestionnaires, un agent et un adhérent non' do
@@ -497,26 +566,48 @@ class UserTest < ActiveSupport::TestCase
     assert_equal récente, agent.find_current_intervention(mère.slug)
   end
 
+  test 'la suppression d’un utilisateur ne rafraîchit le tableau de bord qu’une seule fois' do
+    base = Minitest::Mock.new
+    ActualiserDashboard::VUES.each { |vue| base.expect(:refresh_materialized_view, nil, [vue], concurrently: true) }
+
+    Scenic.stub(:database, base) { users(:bond).destroy! }
+
+    assert_mock base
+  end
+
+  # ==================== TESTS CRITIQUES ====================
+  # Le dernier administrateur actif d'une organisation ne peut pas désactiver son compte : la
+  # règle compte les administrateurs de toute l'organisation, dérivée des services, pas des siens.
+
+  test 'un administrateur est le dernier quand aucun autre administrateur actif n’est rattaché à son organisation, un administrateur désactivé ne comptant pas (critique)' do
+    assert users(:administrateur_seul).dernier_administrateur?
+  end
+
+  test 'un administrateur n’est pas le dernier quand un autre administrateur actif est rattaché à un autre service de son organisation (critique)' do
+    assert_not users(:administrateur_paris).dernier_administrateur?
+  end
+
+  test 'un manager n’est jamais le dernier administrateur (critique)' do
+    assert_not users(:hidalgo).dernier_administrateur?
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
+  test 'la confirmation de l’adresse met en file le mail de bienvenue' do
+    inscrit = nouveau(rôle: :administrateur, service_ids: [services(:informatique).id])
+    inscrit.save!
+    inscrit.update!(confirmed_at: nil)
+
+    assert_enqueued_with(job: WelcomeInscriptionNotificationJob, args: [inscrit]) do
+      inscrit.confirm
+    end
+  end
+
   private
 
   def nouveau(rôle:, service_ids: [])
     User.new(nom: 'Essai', prénom: 'Service', email: "essai-#{SecureRandom.hex(4)}@example.test",
              rôle: rôle, password: 'qtDug$d843sqACz?V', service_ids: service_ids,
              address: 'Mairie de Paris', latitude: 48.85, longitude: 2.35)
-  end
-
-  test 'le modèle XLS des utilisateurs a des en-têtes figées' do
-    assert_equal %w[Nom Prénom Email Téléphone Service Mémo], User.xls_headers
-  end
-
-  test 'un mot de passe engendré satisfait la politique de complexité' do
-    mot_de_passe = User.generate_random_password
-
-    candidat = User.new(nom: 'DURAND', prénom: 'Marie', email: 'marie.durand@example.test',
-                        rôle: 'agent', password: mot_de_passe)
-    candidat.user_services.build(service: services(:informatique))
-
-    assert_equal 12, mot_de_passe.length
-    assert candidat.valid?, candidat.errors.full_messages.join(', ')
   end
 end

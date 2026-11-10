@@ -10,7 +10,7 @@ class Service < ApplicationRecord
 
   has_many :user_services, dependent: :destroy
   has_many :users, through: :user_services
-  has_many :interventions
+  has_many :interventions, dependent: :destroy
   has_many :conventions, dependent: :destroy
   has_many :cotations, dependent: :destroy
   has_many :commandes, dependent: :destroy

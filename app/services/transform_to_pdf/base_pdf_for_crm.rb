@@ -17,8 +17,7 @@ module TransformToPdf
       # Les polices intégrées de Prawn gèrent les accents français (Windows-1252)
       Prawn::Fonts::AFM.hide_m17n_warning = true
       
-      # Chemin vers le logo officiel de l'établissement
-      @logo = Rails.root.join('app/assets/images/Logo_CC_MAd_et_Moselle.jpg').to_s
+      @logo = LogoOrganisation.call(record.organisation)
     end
 
     def call
@@ -45,7 +44,7 @@ module TransformToPdf
 
     # En-tête du document avec le logo à droite et le titre avec référence
     def add_header
-      image @logo, height: 80, position: :right if File.exist?(@logo)
+      image @logo, fit: [200, 80], position: :right
       text "#{document_title} n°#{@record.ref}", size: 16, style: :bold
       move_down 10
       stroke_horizontal_rule

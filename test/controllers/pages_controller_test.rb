@@ -6,14 +6,18 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   setup do
     @clé_mistral_initiale = ENV.fetch('MISTRAL_AI_API_KEY', nil)
     ENV['MISTRAL_AI_API_KEY'] = 'clé-de-test'
+    @super_admin_initial = ENV.fetch('SUPER_ADMIN', nil)
+    ENV['SUPER_ADMIN'] = users(:philippe_super_admin).email
   end
 
   teardown do
     ENV['MISTRAL_AI_API_KEY'] = @clé_mistral_initiale
+    ENV['SUPER_ADMIN'] = @super_admin_initial
+    ENV.delete('SUPER_ADMIN') if @super_admin_initial.nil?
   end
 
   test 'l’assistant n’affiche aucune proposition sans soumission' do
-    sign_in users(:administrateur_paris)
+    sign_in users(:philippe_super_admin)
 
     get assistant_url
 
@@ -22,7 +26,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'l’assistant ne sollicite pas le LLM sans clic sur le bouton de génération' do
-    sign_in users(:administrateur_paris)
+    sign_in users(:philippe_super_admin)
     llm_called = false
 
     Langchain::LLM::MistralAI.stub(:new, ->(*) { llm_called = true; FakeLlm.new }) do
@@ -35,7 +39,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'l’assistant signale le manque d’interventions sans solliciter le LLM' do
-    sign_in users(:administrateur_paris)
+    sign_in users(:philippe_super_admin)
     llm_called = false
 
     Langchain::LLM::MistralAI.stub(:new, ->(*) { llm_called = true; FakeLlm.new }) do
@@ -48,7 +52,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'l’assistant refuse de générer en dessous du minimum d’interventions' do
-    sign_in users(:administrateur_paris)
+    sign_in users(:philippe_super_admin)
 
     get assistant_url(commit: 'Générer')
 
@@ -57,7 +61,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'la proposition du LLM est affichée mise en forme' do
-    sign_in users(:administrateur_paris)
+    sign_in users(:philippe_super_admin)
     cree_interventions_planifiees(10)
     stub_request(:post, %r{api\.mistral\.ai})
       .to_return(status: 200,
@@ -78,7 +82,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'un échec du LLM est signalé sans planter' do
-    sign_in users(:administrateur_paris)
+    sign_in users(:philippe_super_admin)
     cree_interventions_planifiees(10)
     stub_request(:post, %r{api\.mistral\.ai}).to_return(status: 500, body: 'boom')
 

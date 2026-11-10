@@ -27,6 +27,11 @@ class AdherentUserPolicyTest < ActionDispatch::IntegrationTest
     refute @policy.import_do?
     refute @policy.edit_password?
     refute @policy.update_password?
+    refute @policy.desactiver_compte?
+  end
+
+  test 'affichage interdit pour un adhérent sur un user de son organisation' do
+    refute @policy.voir_desactiver_compte?
   end
 
   test 'accès autorisé pour un adhérent sur sa propre fiche' do
@@ -41,5 +46,10 @@ class AdherentUserPolicyTest < ActionDispatch::IntegrationTest
     refute @policy_user_myself.destroy?
     refute @policy_user_myself.inviter?
     refute @policy_user_myself.reactivate?
+    refute @policy_user_myself.desactiver_compte?
+  end
+
+  test 'affichage interdit pour un adhérent sur sa propre fiche' do
+    refute @policy_user_myself.voir_desactiver_compte?
   end
 end

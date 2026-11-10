@@ -19,13 +19,12 @@ class UserFlowOnInscriptionsTest < ApplicationSystemTestCase
     fill_in 'user_nom', with: 'Dupont'
     fill_in 'user_email', with: 'jeanne.dupont@exemple.fr'
     fill_in 'user_nom_organisation', with: 'Mairie de Test'
-    ajouter_service 'Technique'
     ajouter_service 'Voirie'
     fill_in 'user_password', with: 'Motdepasse12!'
     fill_in 'user_password_confirmation', with: 'Motdepasse12!'
     cliquer_bouton "S'inscrire"
 
-    assert_notification 'Bienvenue ! Votre compte a bien été créé.'
+    assert_notification 'Un message avec un lien de confirmation vous a été envoyé par mail.'
     assert_equal %w[Technique Voirie], User.find_by!(email: 'jeanne.dupont@exemple.fr').services.map(&:nom).sort
   end
 
@@ -36,7 +35,6 @@ class UserFlowOnInscriptionsTest < ApplicationSystemTestCase
     fill_in 'user_nom', with: 'Dupont'
     fill_in 'user_email', with: users(:hidalgo).email
     fill_in 'user_nom_organisation', with: 'Mairie de Test'
-    ajouter_service 'Technique'
     fill_in 'user_password', with: 'Motdepasse12!'
     fill_in 'user_password_confirmation', with: 'Motdepasse13!'
     cliquer_bouton "S'inscrire"
@@ -55,7 +53,6 @@ class UserFlowOnInscriptionsTest < ApplicationSystemTestCase
     fill_in 'user_nom', with: 'Dupont'
     fill_in 'user_email', with: 'jeanne.dupont@exemple.fr'
     fill_in 'user_nom_organisation', with: '   '
-    ajouter_service 'Technique'
     fill_in 'user_password', with: 'Motdepasse12!'
     fill_in 'user_password_confirmation', with: 'Motdepasse12!'
     cliquer_bouton "S'inscrire"

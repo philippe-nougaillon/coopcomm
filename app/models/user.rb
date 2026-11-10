@@ -13,7 +13,7 @@ class User < ApplicationRecord
   audited except: :messages_last_seen_at
 
   # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :timeoutable
+  # :lockable, :timeoutable
   devise :database_authenticatable,
          :recoverable,
          #  :validatable,
@@ -22,9 +22,13 @@ class User < ApplicationRecord
          :secure_validatable,
          :invitable,
          :rememberable,
-         :registerable
+         :registerable,
+         :confirmable
   #  :omniauthable,
   #  omniauth_providers: [:google_oauth2]
+
+  # Seule l'inscription publique (Users::RegistrationsController) demande de confirmer l'adresse.
+  attribute :confirmed_at, default: -> { Time.current }
 
   has_one_attached :profile_picture
 
@@ -46,6 +50,10 @@ class User < ApplicationRecord
 
   # L'utilisateur n'est associé qu'à une seule organisation, via ses services
   has_many :organisations, -> { limit(1) }, through: :services
+  has_many :messages_envoyés, class_name: 'Message', foreign_key: :from_id, dependent: :destroy
+  has_many :mouvements, dependent: :destroy
+  has_many :export_logs, dependent: :destroy
+  has_many :wiki_pages, -> { with_discarded }, dependent: :destroy
 
   accepts_nested_attributes_for :absences,
                                 allow_destroy: true,
@@ -389,6 +397,14 @@ class User < ApplicationRecord
     end
   end
 
+  def destroy
+    ActualiserDashboard.regrouper { super }
+  end
+
+  def dernier_administrateur?
+    administrateur? && User.administrateur.by_service(organisation&.services).where.not(id: id).none?
+  end
+
   private
 
   def slug_candidates
@@ -411,5 +427,9 @@ class User < ApplicationRecord
     return if services_restants.size <= 1
 
     errors.add(:services, 'ne doit comporter qu\'un seul service pour un agent')
+  end
+
+  def after_confirmation
+    WelcomeInscriptionNotificationJob.perform_later(self)
   end
 end

@@ -153,6 +153,14 @@ class ServiceTest < ActiveSupport::TestCase
     assert_includes texte, 'des utilisateurs non administrateurs'
   end
 
+  test 'la suppression d’un service emporte ses interventions (critique)' do
+    intervention = interventions(:intervention_with_location)
+
+    services(:service_with_location).destroy!
+
+    assert_nil Intervention.find_by(id: intervention.id)
+  end
+
   # ==================== /TESTS CRITIQUES ====================
 
   private

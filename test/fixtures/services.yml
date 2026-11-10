@@ -50,3 +50,8 @@ service_with_location:
   organisation: mairie_paris
   slug: <%= SecureRandom.uuid %>
   calculate_distance: true
+
+service_unique:
+  nom: Service unique
+  organisation: organisation_un_seul_administrateur
+  slug: <%= SecureRandom.uuid %>

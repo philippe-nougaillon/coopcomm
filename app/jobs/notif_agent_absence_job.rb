@@ -4,7 +4,7 @@ class NotifAgentAbsenceJob < ApplicationJob
   queue_as :default
 
   def perform(action, resume, resume_avant, email, organisation_id, auteur_id)
-    mailer_response = NotificationMailer.absence_notification(action, resume, resume_avant, email).deliver_now
+    mailer_response = NotificationMailer.absence_notification(action, resume, resume_avant, email, organisation_id).deliver_now
 
     MailLog.create(organisation_id: organisation_id, user_id: auteur_id || 0,
                    message_id: mailer_response.message_id, to: email,
