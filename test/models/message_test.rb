@@ -60,6 +60,22 @@ class MessageTest < ActiveSupport::TestCase
     assert_includes message.errors[:base], 'Destinataire injoignable'
   end
 
+  test 'un message à un utilisateur inexistant est refusé' do
+    message = Message.new(from_user: users(:hidalgo), to_id: 0, message: 'x')
+
+    assert_not message.valid?
+    assert_includes message.errors[:base], 'Destinataire injoignable'
+  end
+
+  # AÏBBO n'a pas d'organisation : la conversation avec lui échappe au contrôle du destinataire, dans les deux sens.
+  test "un message d'AÏBBO à un utilisateur est accepté" do
+    assert Message.new(from_user: users(:AIBBO), to_user: users(:hidalgo), message: 'x').valid?
+  end
+
+  test 'un message à AÏBBO est accepté' do
+    assert Message.new(from_user: users(:hidalgo), to_user: users(:AIBBO), message: 'x').valid?
+  end
+
   # ==================== TESTS CRITIQUES ====================
   # Le filet sous le contrôleur vaut pour les trois genres : jamais d'annonce vers une autre organisation.
   test "une annonce à un service de l'organisation de l'auteur est acceptée (critique)" do
@@ -79,7 +95,15 @@ class MessageTest < ActiveSupport::TestCase
     assert_not message.valid?
     assert_includes message.errors[:base], 'Destinataire injoignable'
   end
+  
+  # Le to_id d'une annonce désigne un service : qu'il vaille l'id d'AÏBBO ne doit pas lever le contrôle.
+  test "une annonce dont le to_id vaut l'id d'AÏBBO reste soumise au contrôle du destinataire (critique)" do
+    message = Message.new(from_user: users(:hidalgo), genre: :annonce, to_id: users(:AIBBO).id, message: 'x')
 
+    assert_not message.valid?
+    assert_includes message.errors[:base], 'Destinataire injoignable'
+  end
+  
   test "une annonce générale à l'organisation de l'auteur est acceptée (critique)" do
     assert Message.new(from_user: users(:administrateur_paris), genre: :annonce_générale,
                        to_id: organisations(:mairie_paris).id, message: 'x').valid?

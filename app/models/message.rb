@@ -20,7 +20,7 @@ class Message < ApplicationRecord
 
   def destinataire_de_la_même_organisation
     return if from_user.nil?
-    return if from_user.is_aibot? || to_user.is_aibot?
+    return if from_user.is_aibot? || (message? && to_user&.is_aibot?)
 
     organisation = annonce_générale? ? destinataire : destinataire&.organisation
     return if organisation.present? && organisation == from_user.organisation
