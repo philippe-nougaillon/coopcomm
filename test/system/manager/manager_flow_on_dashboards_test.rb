@@ -12,7 +12,7 @@ class ManagerFlowOnDashboardsTest < ApplicationSystemTestCase
     intervention_de(agent_technique(0), temps: 3)
     refresh_dashboard_views!
 
-    cliquer_lien_navbar 'Tableaux de bord'
+    cliquer_lien_navbar 'Tableau de bord'
 
     assert_current_path dashboard_path
     %w[etatsParMois crm].each do |carte|
@@ -32,7 +32,7 @@ class ManagerFlowOnDashboardsTest < ApplicationSystemTestCase
     intervention_du_10_fevrier_2022(users(:agent_whatsapp), service: services(:service_paris), adherent: users(:patrick_adherent_paris))
     refresh_dashboard_views!
 
-    cliquer_lien_navbar 'Tableaux de bord'
+    cliquer_lien_navbar 'Tableau de bord'
 
     within 'section[data-carte="activiteAgents"]' do
       assert_text 'Poireau Hercule', normalize_ws: true
@@ -53,7 +53,7 @@ class ManagerFlowOnDashboardsTest < ApplicationSystemTestCase
     refresh_dashboard_views!
     courbe = "JSON.parse(document.querySelector(\"[data-etincelle='#{users(:martin_technique_paris).id}']\").dataset.valeurs)"
 
-    cliquer_lien_navbar 'Tableaux de bord'
+    cliquer_lien_navbar 'Tableau de bord'
 
     assert_selector "section[data-carte='activiteAgents'] [data-etincelle='#{users(:martin_technique_paris).id}'] svg"
     assert_equal [0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], page.evaluate_script(courbe)
@@ -68,7 +68,7 @@ class ManagerFlowOnDashboardsTest < ApplicationSystemTestCase
     deux_tontes_du_10_fevrier_2022
     refresh_dashboard_views!
 
-    cliquer_lien_navbar 'Tableaux de bord'
+    cliquer_lien_navbar 'Tableau de bord'
     assert_current_path dashboard_path
     page.current_window.resize_to(*self.class.taille_pc)
     visit current_url
@@ -89,7 +89,7 @@ class ManagerFlowOnDashboardsTest < ApplicationSystemTestCase
     Mouvement.create!(tool: tools(:rateau), user: users(:bond), état: :réservé, date: Date.new(2022, 2, 12))
     Mouvement.create!(tool: tools(:rateau), user: users(:bond), état: :réservé, date: Date.new(2022, 2, 13))
 
-    cliquer_lien_navbar 'Tableaux de bord'
+    cliquer_lien_navbar 'Tableau de bord'
     within '[data-carte="reservations"]' do
       assert_text '3 réservations en 2022'
       assert_selector '.apexcharts-yaxis-label', text: 'sam.'
@@ -109,7 +109,7 @@ class ManagerFlowOnDashboardsTest < ApplicationSystemTestCase
   test "En tant que manager, je veux lire le calendrier des outils en grandes cases ouvert sur aujourd'hui, ou en petites cases qui tiennent dans la tuile" do
     travel_to Time.zone.local(2022, 8, 16, 12)
 
-    cliquer_lien_navbar 'Tableaux de bord'
+    cliquer_lien_navbar 'Tableau de bord'
     assert_current_path dashboard_path
     page.current_window.resize_to(*self.class.taille_pc)
     visit current_url
@@ -135,7 +135,7 @@ class ManagerFlowOnDashboardsTest < ApplicationSystemTestCase
     intervention_du_10_fevrier_2022(users(:martin_technique_paris), service: services(:technique), adherent: users(:weil))
     refresh_dashboard_views!
 
-    cliquer_lien_navbar 'Tableaux de bord'
+    cliquer_lien_navbar 'Tableau de bord'
     page.execute_script('window.temoin = 42')
     premier = find('turbo-frame#activite-agents tbody tr[data-agent]', match: :first).text(normalize_ws: true)
     assert_includes premier, 'Martin Michel'
