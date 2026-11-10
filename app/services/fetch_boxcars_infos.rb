@@ -74,7 +74,7 @@ class FetchBoxcarsInfos < ApplicationService
       },
       interventions_adherent: {
         Description: "Interventions requested by an adherent.",
-        Model_specifications: "UserForBoxcars has_many :interventions_adherent, class_name: :InterventionForBoxcars, foreign_key: :adherent_id"
+        Model_specifications: "User has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id"
       },
       nom: {
         Description: "The field nom is the last name of the user."
@@ -88,34 +88,40 @@ class FetchBoxcarsInfos < ApplicationService
   def intervention_semantic_informations
     {
       workflow_state: {
-        Description: "A workflow_state define the statement of one Intervention.",
+        Description: "A 'workflow_state' define the statement of one Intervention.",
         Usage: "workflow_state='pointage activé' corresponds to a master Intervention",
         Model_specifications: "Column has valid values: #{Intervention.workflow_spec.state_names}"
       },
       adherent:  {
-        Description: "An adherent is a User how demand Interventions.",
+        Description: "An 'adherent' is a User how demand Interventions.",
         Model_specifications: "Intervention belongs_to :adherent, class_name: :User, foreign_key: :adherent_id"
       },
       description:  {
-        Description: "A description is the name of an Intervention. It may consist of a '#' symbol and numbers corresponding to an Intervention identifier."
+        Description: "A 'description' is the name of an Intervention. It may consist of a '#' symbol and numbers corresponding to an Intervention identifier."
       },
       début_prévue:  {
-        Description: "The field début_prévue is a date to plan an Intervention. To be used for an Intervention in the future."
+        Description: "The field 'début_prévue' is a date to plan an Intervention. To be used for an Intervention in the future."
       },
       fin_prévue:  {
-        Description: "The field fin_prévue is a date to plan an Intervention. To be used for an Intervention in the future."
+        Description: "The field 'fin_prévue' is a date to plan an Intervention. To be used for an Intervention in the future."
       },
       début: {
-        Description: "The field début is a date defined by an agent after doing an Intervention. To be used for an Intervention in the past."
+        Description: "The field 'début' is a date defined by an 'agent' after doing an Intervention. To be used for an Intervention in the past."
       },
       fin: {
-        Description: "The field fin is a date defined by an agent after doing an Intervention. To be used for an Intervention in the past."
+        Description: "The field 'fin' is a date defined by an 'agent' after doing an Intervention. To be used for an Intervention in the past."
       },
       template_slug: {
         Description: "Set only a slave (Intervention, named pointage). This slug corresponding of its master Intervention (workflow_state: 'pointage activé').
         The value is an opaque UUID, never a name or a description.",
-        Usage: "Never compare template_slug with a text. To get the slaves of a master Intervention with its name use: Intervention.find_by(workflow_state: 'pointage activé', description: 'Nettoyage').pointages",
+        Usage: "Never compare 'template_slug' with a text. To get the slaves of a master Intervention with its name use: Intervention.find_by(workflow_state: 'pointage activé', description: 'Nettoyage').pointages",
       },
+      temps_de_pause: {
+        Description: "Break time indicated by an 'agent' after doing an Intervention"
+      },
+      temps_total: {
+        Description: "Total time spent on an Intervention."
+      }
     }
   end
 end
