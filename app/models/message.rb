@@ -18,15 +18,9 @@ class Message < ApplicationRecord
   # Filet de sécurité sous le contrôleur : jamais de message inter-organisations
   validate :destinataire_de_la_même_organisation
 
-  def interlocuteurs_de_la_même_organisation
-    return if from_user.nil? || to_user.nil?
-    return if from_user.is_aibot? || to_user.is_aibot?
-    return if from_user.organisation == to_user.organisation
-      
-  end
-  
   def destinataire_de_la_même_organisation
     return if from_user.nil?
+    return if from_user.is_aibot? || to_user.is_aibot?
 
     organisation = annonce_générale? ? destinataire : destinataire&.organisation
     return if organisation.present? && organisation == from_user.organisation

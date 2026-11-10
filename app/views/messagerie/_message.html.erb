@@ -8,7 +8,7 @@
      data-from-id="<%= message.from_id %>"
      data-unread="<%= is_unread ? 'true' : 'false' %>">
   <div class="chat group <%= is_my ? "chat-end" : "chat-start" %>">
-    <div class="chat-bubble bg-gray-200 group-[.chat-end]:bg-info group-[.chat-end]:text-info-content <%= "font-semibold" if is_unread %> max-w-full">
+    <div class="chat-bubble bg-gray-200 group-[.chat-start]:bg-info group-[.chat-start]:text-info-content <%= "font-semibold" if is_unread %> max-w-full">
       <div class=" flex flex-col">
         <% text = message.moderation %>
             <p class="text-base break-words mb-0.5">
@@ -16,7 +16,7 @@
               <% truncated = text.truncate(800, omission: '', separator: ' ') %>
               <span class="truncated-text"><%= truncated %></span>
               <button type="button"
-                      class="see-more-btn inline cursor-pointer font-bold hover:underline text-[#191a29] group-[.chat-end]:text-cyan-200"
+                      class="see-more-btn inline cursor-pointer font-bold hover:underline text-[#191a29] group-[.chat-start]:text-cyan-200"
                       onclick="this.style.display='none'; this.nextElementSibling.style.display='inline';">
                   Voir plus
               </button>
@@ -25,7 +25,7 @@
               <%= text %>
             <% end %>
           </p>
-        <span class="flex flex-end items-end justify-end text-xs text-slate-400 group-[.chat-end]:text-white/80">
+        <span class="flex flex-end items-end justify-end text-xs text-slate-400 group-[.chat-start]:text-white/80">
           <%= message.created_at.strftime("%H:%M")%>
         </span>
       </div>
