@@ -121,6 +121,11 @@ class FetchBoxcarsInfos < ApplicationService
       },
       temps_total: {
         Description: "Total time spent on an Intervention."
+      },
+      agents: {
+        Description: "An Intervention has many agents.",
+        Usage: "To get the agents of an Intervention: Intervention.find_by(description: 'Nettoyage').agents",
+        Model_specifications: "Intervention has_many :agents, through: :agent_interventions, class_name: 'User', dependent: :destroy"
       }
     }
   end
