@@ -122,6 +122,7 @@ class FetchBoxcarsInfos < ApplicationService
       workflow_state: {
         meaning: "Current state of the Intervention. 'nouveau': to do, not done yet. " \
                   "'pointage activé': master Intervention used for time tracking (see template_slug). " \
+                  "A master is not a pointage: never count masters to answer a question about pointages. " \
                   "'terminé': done by the agents, awaiting review. 'validé' / 'refusé': reviewed. 'archivé': archived.",
         values: Intervention.workflow_spec.state_names.map(&:to_s)
       },
@@ -154,7 +155,6 @@ class FetchBoxcarsInfos < ApplicationService
         meaning: "Only set on a pointage: a time-tracking Intervention created by an agent from a master Intervention " \
                 "('pointage activé'). It holds the slug of that master: an opaque UUID, never a name or a description.",
         usage: "Never compare template_slug with a text. Pointages of a master: " \
-                "Intervention.find_by(workflow_state: 'pointage activé', description: 'Nettoyage').pointages. " \
                 "Master of a pointage: pointage.intervention_mère."
       },
       adherent: {
@@ -195,6 +195,12 @@ class FetchBoxcarsInfos < ApplicationService
         meaning: "Interventions performed by the users whose nom, prénom or both match, ignoring case and accents.",
         usage: "'Combien d'interventions a fait Mario ?' -> Intervention.by_agent('mario').count. " \
                 "'Est-ce que Mario est intervenu à Viarmes ?' -> Intervention.by_agent('mario').by_adherent('viarmes').exists?"
+      },
+      pointages: {
+        type: "method",
+        meaning: "Pointages of a master Intervention: the time-tracking Interventions that agents created from it.",
+        usage: "'Combien de pointages sur l'intervention Nettoyage ?' -> " \
+                "Intervention.find_by(workflow_state: 'pointage activé', description: 'Nettoyage').pointages.count"
       }
     }
   end
