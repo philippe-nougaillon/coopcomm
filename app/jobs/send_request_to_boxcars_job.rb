@@ -19,7 +19,7 @@ class SendRequestToBoxcarsJob < ApplicationJob
       success = true
     end
 
-    response_boxcars = FetchBoxcarsInfos.new.call(user_sender, request_message.message)
+    response_boxcars = FetchBoxcarsInfos.new.call(user_sender, request_message)
 
     # Création du message vers l'utilisateur avec la réponse de AÏBBO
     response_message = Message.create!(message: response_boxcars[:response], from_id: ENV["UUID_AIBOT"], to_id: user_sender.id)

@@ -2,6 +2,8 @@
 
 # Appel de boxcars pour répondre aux demandes de l'utilisateur via AÏBBO
 class FetchBoxcarsInfos < ApplicationService
+  HISTORY_SIZE = 10
+
   def initialize
     # Outils boxcars utilisé pour le train
     boxcars = [Boxcars::ActiveRecord.new(
@@ -15,9 +17,10 @@ class FetchBoxcarsInfos < ApplicationService
     @boxcars_builder = Boxcars.train.new(boxcars: boxcars, engine: get_engine)
   end
 
-  def call(current_user, user_request)
+  def call(current_user, request_message)
     # Lance le train Boxcars pour renvoyer la réponse du LLM
-    { response: @boxcars_builder.run(self.REQUEST_CONTEXT(user_request, current_user)) }
+    @boxcars_builder.prompt.add_history(history_lines(current_user, request_message))
+    { response: @boxcars_builder.run(self.REQUEST_CONTEXT(request_message.message, current_user)) }
   end
 
   def MODELS
@@ -171,5 +174,23 @@ class FetchBoxcarsInfos < ApplicationService
                 "'Est-ce que Mario est intervenu à Viarmes ?' -> Intervention.by_agent('mario').by_adherent('viarmes').exists?"
       }
     }
+  end
+
+  # Derniers échanges avec AÏBBO, mis au format que le train ZeroShot attend
+  def history_lines(current_user, request_message)
+    train = @boxcars_builder
+    bot_id = ENV["UUID_AIBOT"]
+    Message.where(from_id: current_user.id, to_id: bot_id)
+          .or(Message.where(from_id: bot_id, to_id: current_user.id))
+          .message
+          .where(created_at: ...request_message.created_at) # exclut la question en cours
+          .order(created_at: :desc).limit(HISTORY_SIZE).reverse
+          .map do |m|
+            if m.from_id == current_user.id
+              [:user, "#{train.question_prefix}#{m.message}"]
+            else
+              [:assistant, "#{train.thought_prefix}I know the final answer\n#{train.final_answer_prefix}#{m.message}"]
+            end
+          end
   end
 end
