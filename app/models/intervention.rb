@@ -532,6 +532,16 @@ class Intervention < ApplicationRecord
     super || adherent&.organisation
   end
 
+  # Retourne les adhérents avec un nom générique
+  def self.by_adherent(nom)
+    where(adherent: User.adhérent.search_with_generic_name(nom))
+  end
+
+  # Retourne les interventions des agents avec un nom générique
+  def self.by_agent(nom)
+    where(id: AgentIntervention.where(agent: User.intervenants.search_with_generic_name(nom)).select(:intervention_id))
+  end
+
   private
 
   def slug_candidates

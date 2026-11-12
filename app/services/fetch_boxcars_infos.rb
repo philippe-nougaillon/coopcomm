@@ -157,6 +157,18 @@ class FetchBoxcarsInfos < ApplicationService
                   "so never filter them with User.agent.",
         association: "Intervention has_many :agents, through: :agent_interventions, class_name: 'User'",
         usage: "Intervention.find_by(description: 'Nettoyage').agents"
+      },
+      by_adherent: {
+        type: "scope",
+        meaning: "Interventions requested by the adhérents whose name matches, ignoring case and accents. " \
+                  "Pass only the proper name, without generic words.",
+        usage: "'Quelles interventions a demandées la mairie de Viarmes ?' -> Intervention.by_adherent('viarmes')"
+      },
+      by_agent: {
+        type: "scope",
+        meaning: "Interventions performed by the users whose nom, prénom or both match, ignoring case and accents.",
+        usage: "'Combien d'interventions a fait Mario ?' -> Intervention.by_agent('mario').count. " \
+                "'Est-ce que Mario est intervenu à Viarmes ?' -> Intervention.by_agent('mario').by_adherent('viarmes').exists?"
       }
     }
   end
