@@ -106,44 +106,55 @@ class FetchBoxcarsInfos < ApplicationService
   def intervention_semantic_informations
     {
       workflow_state: {
-        Description: "A 'workflow_state' define the statement of one Intervention.",
-        Usage: "workflow_state='pointage activé' corresponds to a master Intervention",
-        Model_specifications: "Column has valid values: #{Intervention.workflow_spec.state_names}"
-      },
-      adherent:  {
-        Description: "An 'adherent' is a User how demand Interventions.",
-        Model_specifications: "Intervention belongs_to :adherent, class_name: :User, foreign_key: :adherent_id"
+        meaning: "Current state of the Intervention. 'nouveau': to do, not done yet. " \
+                  "'pointage activé': master Intervention used for time tracking (see template_slug). " \
+                  "'terminé': done by the agents, awaiting review. 'validé' / 'refusé': reviewed. 'archivé': archived.",
+        values: Intervention.workflow_spec.state_names.map(&:to_s)
       },
       description:  {
-        Description: "A 'description' is the name of an Intervention. It may consist of a '#' symbol and numbers corresponding to an Intervention identifier."
+        meaning: "Title of the Intervention. When created without a title, it is '#' followed by the Intervention id (e.g. '#42')."
       },
       début_prévue:  {
-        Description: "The field 'début_prévue' is a date to plan an Intervention. To be used for an Intervention in the future."
+        meaning: "Planned start of the Intervention. Use it for questions about what is planned."
       },
       fin_prévue:  {
-        Description: "The field 'fin_prévue' is a date to plan an Intervention. To be used for an Intervention in the future."
+        meaning: "Planned end of the Intervention. Use it for questions about what is planned."
       },
       début: {
-        Description: "The field 'début' is a date defined by an 'agent' after doing an Intervention. To be used for an Intervention in the past."
+        meaning: "Actual start of the Intervention, filled in by an agent. Use it for questions about what has been done. " \
+                  "Never in the future."
       },
       fin: {
-        Description: "The field 'fin' is a date defined by an 'agent' after doing an Intervention. To be used for an Intervention in the past."
-      },
-      template_slug: {
-        Description: "Set only a slave (Intervention, named pointage). This slug corresponding of its master Intervention (workflow_state: 'pointage activé').
-        The value is an opaque UUID, never a name or a description.",
-        Usage: "Never compare 'template_slug' with a text. To get the slaves of a master Intervention with its name use: Intervention.find_by(workflow_state: 'pointage activé', description: 'Nettoyage').pointages",
+        meaning: "Actual end of the Intervention, filled in by an agent. Use it for questions about what has been done. " \
+                  "Never in the future. Empty on a pointage still in progress."
       },
       temps_de_pause: {
-        Description: "Break time indicated by an 'agent' after doing an Intervention"
+        meaning: "Break time in hours, filled in by an agent."
       },
       temps_total: {
-        Description: "Total time spent on an Intervention."
+        meaning: "Work time in hours, computed automatically: (fin - début - temps_de_pause) x number of agents. " \
+                  "It is the time of all agents added together, and 0 when début or fin is empty.",
+        usage: "Time of one agent on an Intervention: intervention.temps_par_agent (= temps_total / agents.count)."
+      },
+      template_slug: {
+        meaning: "Only set on a pointage: a time-tracking Intervention created by an agent from a master Intervention " \
+                "('pointage activé'). It holds the slug of that master: an opaque UUID, never a name or a description.",
+        usage: "Never compare template_slug with a text. Pointages of a master: " \
+                "Intervention.find_by(workflow_state: 'pointage activé', description: 'Nettoyage').pointages. " \
+                "Master of a pointage: pointage.intervention_mère."
+      },
+      adherent: {
+        type: "association",
+        meaning: "User with the rôle 'adhérent' who requested the Intervention.",
+        association: "Intervention belongs_to :adherent, class_name: 'User', foreign_key: :adherent_id",
+        usage: "Intervention.find_by(description: 'Nettoyage').adherent"
       },
       agents: {
-        Description: "An Intervention has many agents.",
-        Usage: "To get the agents of an Intervention: Intervention.find_by(description: 'Nettoyage').agents",
-        Model_specifications: "Intervention has_many :agents, through: :agent_interventions, class_name: 'User', dependent: :destroy"
+        type: "association",
+        meaning: "Users who perform the Intervention. Usually 'agent', but a 'manager' or an 'administrateur' can also be one, " \
+                  "so never filter them with User.agent.",
+        association: "Intervention has_many :agents, through: :agent_interventions, class_name: 'User'",
+        usage: "Intervention.find_by(description: 'Nettoyage').agents"
       }
     }
   end
