@@ -236,6 +236,22 @@ class ToolTest < ActiveSupport::TestCase
     assert_not @outil.est_encore_en_panne_le(Date.new(2026, 6, 4))
   end
 
+  test 'la recherche de matériel par nom ignore la casse et les accents' do
+    assert_equal [tools(:outil_adherent)], Tool.by_nom('RESERVE').to_a
+  end
+
+  test 'la recherche de matériel par nom retient tout le matériel dont le nom contient le texte' do
+    assert_equal [tools(:outil_paris), tools(:outil_marseille)].sort_by(&:id), Tool.by_nom('outil de').sort_by(&:id)
+  end
+
+  test 'la recherche de matériel par nom traite un joker SQL saisi comme un caractère ordinaire' do
+    assert_empty Tool.by_nom('%')
+  end
+
+  test 'la recherche de matériel par nom ignore les espaces autour du texte saisi' do
+    assert_equal [tools(:camion)], Tool.by_nom('  camion  ').to_a
+  end
+
   private
 
   def png

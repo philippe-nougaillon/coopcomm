@@ -176,7 +176,7 @@ class FetchBoxcarsInfos < ApplicationService
                   "Empty only for a request received by email from an adhérent of several services, until an administrateur assigns it.",
         association: "Intervention belongs_to :service, optional: true",
         usage: "'Combien d'interventions pour le service ménage ?' -> " \
-                "Intervention.where(service: Service.where('unaccent(nom) ILIKE unaccent(?)', '%menage%')).count"
+                "Intervention.where(service: Service.by_nom('menage')).count"
       },
       tools: {
         type: "association",
@@ -204,8 +204,7 @@ class FetchBoxcarsInfos < ApplicationService
       nom: {
         meaning: "Name of the service: a department of the organisation in charge of one field of activity " \
                   "(e.g. 'Ménage', 'Périscolaire'). Accents are kept.",
-        usage: "Never search a name with find_by(nom: ...): ignore case and accents. " \
-                "Service.where('unaccent(nom) ILIKE unaccent(?)', '%menage%')"
+        usage: "Never search a name with find_by(nom: ...) or where('nom ILIKE ...'): use Service.by_nom."
       },
       calculate_distance: {
         meaning: "When true, the travel distance and time to the adhérent are computed for the Interventions of this service."
@@ -214,8 +213,8 @@ class FetchBoxcarsInfos < ApplicationService
         type: "association",
         meaning: "Interventions handled by the service. An Intervention belongs to one service at most (see Intervention service).",
         association: "Service has_many :interventions",
-        usage: "'Combien d'interventions à faire pour le périscolaire ?' -> " \
-                "Intervention.where(service: Service.where('unaccent(nom) ILIKE unaccent(?)', '%periscolaire%')).count"
+        usage: "'Combien d'interventions pour le périscolaire ?' -> " \
+                "Service.by_nom('periscolaire').map { |s| [s.nom, s.interventions.count] }"
       },
       users: {
         type: "association",
@@ -228,6 +227,12 @@ class FetchBoxcarsInfos < ApplicationService
         meaning: "Members of the service with the rôle 'manager'. They handle many services, includes agents, tools, and interventions.",
         association: "Service has_many :managers, -> { manager }, through: :user_services, source: :user",
         usage: "Manager handle the service: service.managers"
+      },
+      by_nom: {
+        type: "scope",
+        meaning: "Services whose name contains the given text, ignoring case and accents. " \
+                  "Pass only the proper name, without generic words.",
+        usage: "'Est-ce qu'il y a un service ménage ?' -> Service.by_nom('menage').pluck(:nom)"
       }
     }
   end
@@ -236,8 +241,7 @@ class FetchBoxcarsInfos < ApplicationService
     {
       name: {
         meaning: "Name of the tool or vehicle, called 'matériel' by the users (e.g. 'Tondeuse', 'Camion benne'). Case varies.",
-        usage: "Never search a name with find_by(name: ...): ignore case and accents. " \
-                "Tool.where('unaccent(name) ILIKE unaccent(?)', '%tondeuse%')"
+        usage: "Never search a name with find_by(name: ...) or where('name ILIKE ...'): use Tool.by_nom."
       },
       description: {
         meaning: "Free notes on the tool: characteristics, accessories, conditions of use."
@@ -265,6 +269,13 @@ class FetchBoxcarsInfos < ApplicationService
                 "tool.mouvements.réservé.where(date: Date.new(2026, 11, 20)).map { |m| m.user.nom_prénom }. " \
                 "Is the tool broken on a day: tool.est_encore_en_panne_le(Date.new(2026, 11, 20)). " \
                 "A tool is free on a day only if it is not broken, has no 'réservé' mouvement and no Intervention that day."
+      },
+      by_nom: {
+        type: "scope",
+        meaning: "Tools whose name contains the given text, ignoring case and accents. " \
+                  "Pass only the proper name, without generic words.",
+        usage: "'Est-ce que la tondeuse est en panne le 20 novembre ?' -> " \
+                "Tool.by_nom('tondeuse').map { |t| [t.name, t.est_encore_en_panne_le(Date.new(2026, 11, 20))] }"
       }
     }
   end

@@ -66,6 +66,10 @@ class Service < ApplicationRecord
     "Impossible de supprimer ce service car il est encore lié à #{reasons.to_sentence(locale: :fr)}."
   end
 
+  def self.by_nom(nom)
+    where('unaccent(services.nom) ILIKE unaccent(?)', "%#{sanitize_sql_like(nom.strip)}%")
+  end
+
   private
 
   def slug_candidates

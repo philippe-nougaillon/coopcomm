@@ -119,6 +119,10 @@ class Tool < ApplicationRecord
               .pick(:état) == "panne" # Prend la première panne trouvée
   end
 
+  def self.by_nom(nom)
+    where('unaccent(tools.name) ILIKE unaccent(?)', "%#{sanitize_sql_like(nom.strip)}%")
+  end
+
   private
 
   def create_mouvement
