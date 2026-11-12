@@ -66,22 +66,40 @@ class FetchBoxcarsInfos < ApplicationService
     "http://#{ENV.fetch('AIBOT_HOST')}:#{ENV.fetch('AIBOT_PORT')}/v1"
   end
 
+  # Chaque entrée suit le même gabarit, lu tel quel par le LLM :
+  #   meaning     : ce que représente la donnée, et quand s'en servir
+  #   values      : valeurs autorisées (colonnes à valeurs fermées)
+  #   association : déclaration Rails (associations)
+  #   usage       : exemple d'ARCode ou piège à éviter
   def user_semantic_informations
     {
       rôle: {
-        Description: "The field 'rôle' defines a kind of user. The 'rôle' named 'adhérent' is the user with many demands of interventions.",
-        Model_specifications: "The field has only these valid values: #{User.rôles.keys}"
-      },
-      interventions_adherent: {
-        Description: "Interventions requested by an adherent.",
-        Model_specifications: "User has_many :interventions_adherent, class_name: :Intervention, foreign_key: :adherent_id"
+        meaning: "Kind of user. 'adhérent': member structure (client) that requests Interventions. " \
+                  "'agent': field worker who performs Interventions. 'manager': manages one or more services in the organisation. " \
+                  "'administrateur': manages the whole organisation.",
+        values: User.rôles.keys,
+        usage: "Each value is also a scope: User.adhérent, User.agent, User.manager, User.administrateur."
       },
       nom: {
-        Description: "The field nom is the last name of the user."
+        meaning: "Last name of the user, stored in uppercase. For an 'adhérent', it is the name of the member structure.",
+        usage: "For a partial or case-insensitive match: User.where('nom ILIKE ?', '%dupont%')."
       },
       prénom: {
-        Description: "The field prénom is the first name of the user. The 'rôle' named 'adhérent' has never 'prénom' defined."
+        meaning: "First name of the user. Always empty for an 'adhérent'."
       },
+      interventions: {
+        type: "association",
+        meaning: "Interventions performed by the user as one of their agents (any rôle except 'adhérent'). " \
+                  "Use it for questions about the work done by an agent.",
+        association: "User has_many :interventions, through: :agent_interventions",
+        usage: "User.find_by(nom: 'DUPONT').interventions"
+      },
+      interventions_adherent: {
+        type: "association",
+        meaning: "Interventions requested by the user as 'adhérent'. Use it for questions about the requests of an adhérent.",
+        association: "User has_many :interventions_adherent, class_name: 'Intervention', foreign_key: :adherent_id",
+        usage: "User.adhérent.find_by(nom: 'MAIRIE').interventions_adherent"
+      }
     }
   end
 
