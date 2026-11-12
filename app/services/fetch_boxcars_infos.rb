@@ -78,27 +78,29 @@ class FetchBoxcarsInfos < ApplicationService
                   "'agent': field worker who performs Interventions. 'manager': manages one or more services in the organisation. " \
                   "'administrateur': manages the whole organisation.",
         values: User.rôles.keys,
-        usage: "Each value is also a scope: User.adhérent, User.agent, User.manager, User.administrateur."
+        usage: "Each value is also a scope: User.adhérent, User.agent, User.manager, User.administrateur. " \
+                "User.intervenants returns every user who can perform Interventions (agent, manager, administrateur)."
       },
       nom: {
         meaning: "Last name of the user, stored in uppercase. For an 'adhérent', it is the name of the member structure.",
-        usage: "For a partial or case-insensitive match: User.where('nom ILIKE ?', '%dupont%')."
+        usage: "Never search a name with find_by(nom: ...) or where('nom ILIKE ...'): use User.search_with_generic_name, " \
+                "which matches nom, prénom or both, ignoring case and accents. " \
+                "'Est-ce qu'il y a un utilisateur qui s'appelle Mario ?' -> User.search_with_generic_name('mario').pluck(:nom, :prénom, :rôle)"
       },
       prénom: {
         meaning: "First name of the user. Always empty for an 'adhérent'."
       },
       interventions: {
         type: "association",
-        meaning: "Interventions performed by the user as one of their agents (any rôle except 'adhérent'). " \
-                  "Use it for questions about the work done by an agent.",
+        meaning: "Interventions performed by the user as one of their agents (any rôle except 'adhérent'). ",
         association: "User has_many :interventions, through: :agent_interventions",
-        usage: "User.find_by(nom: 'DUPONT').interventions"
+        usage: "To filter Interventions by the name of an agent, use Intervention.by_agent instead."
       },
       interventions_adherent: {
         type: "association",
         meaning: "Interventions requested by the user as 'adhérent'. Use it for questions about the requests of an adhérent.",
         association: "User has_many :interventions_adherent, class_name: 'Intervention', foreign_key: :adherent_id",
-        usage: "User.adhérent.find_by(nom: 'MAIRIE').interventions_adherent"
+        usage: "To filter Interventions by the name of an adhérent, use Intervention.by_adherent instead."
       }
     }
   end
