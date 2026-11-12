@@ -24,7 +24,7 @@ class FetchBoxcarsInfos < ApplicationService
   end
 
   def MODELS
-    [User, Intervention]
+    [User, Intervention, Service, Tool]
   end
 
   def ACTIVERECORD_CONTEXT
@@ -33,7 +33,9 @@ class FetchBoxcarsInfos < ApplicationService
 
       More User's descriptions here: #{self.user_semantic_informations}
       More Intervention's descriptions here: #{self.intervention_semantic_informations}
-      
+      More Service's descriptions here: #{self.service_semantic_informations}
+      More Tool's descriptions here: #{self.tool_semantic_informations}
+
       Never answer a different question than the one asked.
       Do not replace the requested data with similar data from another model.
     ACTIVERECORD_CONTEXT
@@ -104,6 +106,13 @@ class FetchBoxcarsInfos < ApplicationService
         meaning: "Interventions requested by the user as 'adhérent'. Use it for questions about the requests of an adhérent.",
         association: "User has_many :interventions_adherent, class_name: 'Intervention', foreign_key: :adherent_id",
         usage: "To filter Interventions by the name of an adhérent, use Intervention.by_adherent instead."
+      },
+      services: {
+        type: "association",
+        meaning: "Services the user belongs to, whatever their rôle. A user can belong to several services.",
+        association: "User has_many :services, through: :user_services",
+        usage: "'Dans quel service travaille Mario ?' -> " \
+                "User.search_with_generic_name('mario').map { |u| [u.nom_prénom, u.services.pluck(:nom)] }"
       }
     }
   end
@@ -161,6 +170,20 @@ class FetchBoxcarsInfos < ApplicationService
         association: "Intervention has_many :agents, through: :agent_interventions, class_name: 'User'",
         usage: "Intervention.find_by(description: 'Nettoyage').agents"
       },
+      service: {
+        type: "association",
+        meaning: "Service in charge of the Intervention. The adhérent and every agent of the Intervention belong to this service. " \
+                  "Empty only for a request received by email from an adhérent of several services, until an administrateur assigns it.",
+        association: "Intervention belongs_to :service, optional: true",
+        usage: "'Combien d'interventions pour le service ménage ?' -> " \
+                "Intervention.where(service: Service.where('unaccent(nom) ILIKE unaccent(?)', '%menage%')).count"
+      },
+      tools: {
+        type: "association",
+        meaning: "Tools ('matériel') booked for the Intervention, for the whole duration of the Intervention.",
+        association: "Intervention has_many :tools, through: :tool_interventions",
+        usage: "Intervention.find_by(description: 'Nettoyage').tools.pluck(:name)"
+      },
       by_adherent: {
         type: "scope",
         meaning: "Interventions requested by the adhérents whose name matches, ignoring case and accents. " \
@@ -172,6 +195,76 @@ class FetchBoxcarsInfos < ApplicationService
         meaning: "Interventions performed by the users whose nom, prénom or both match, ignoring case and accents.",
         usage: "'Combien d'interventions a fait Mario ?' -> Intervention.by_agent('mario').count. " \
                 "'Est-ce que Mario est intervenu à Viarmes ?' -> Intervention.by_agent('mario').by_adherent('viarmes').exists?"
+      }
+    }
+  end
+
+  def service_semantic_informations
+    {
+      nom: {
+        meaning: "Name of the service: a department of the organisation in charge of one field of activity " \
+                  "(e.g. 'Ménage', 'Périscolaire'). Accents are kept.",
+        usage: "Never search a name with find_by(nom: ...): ignore case and accents. " \
+                "Service.where('unaccent(nom) ILIKE unaccent(?)', '%menage%')"
+      },
+      calculate_distance: {
+        meaning: "When true, the travel distance and time to the adhérent are computed for the Interventions of this service."
+      },
+      interventions: {
+        type: "association",
+        meaning: "Interventions handled by the service. An Intervention belongs to one service at most (see Intervention service).",
+        association: "Service has_many :interventions",
+        usage: "'Combien d'interventions à faire pour le périscolaire ?' -> " \
+                "Intervention.where(service: Service.where('unaccent(nom) ILIKE unaccent(?)', '%periscolaire%')).count"
+      },
+      users: {
+        type: "association",
+        meaning: "Members of the service, whatever their rôle. A user can belong to several services.",
+        association: "Service has_many :users, through: :user_services",
+        usage: "Adhérents of a service: service.users.adhérent. Users who can perform its Interventions: service.users.intervenants."
+      },
+      managers: {
+        type: "association",
+        meaning: "Members of the service with the rôle 'manager'. They handle many services, includes agents, tools, and interventions.",
+        association: "Service has_many :managers, -> { manager }, through: :user_services, source: :user",
+        usage: "Manager handle the service: service.managers"
+      }
+    }
+  end
+
+  def tool_semantic_informations
+    {
+      name: {
+        meaning: "Name of the tool or vehicle, called 'matériel' by the users (e.g. 'Tondeuse', 'Camion benne'). Case varies.",
+        usage: "Never search a name with find_by(name: ...): ignore case and accents. " \
+                "Tool.where('unaccent(name) ILIKE unaccent(?)', '%tondeuse%')"
+      },
+      description: {
+        meaning: "Free notes on the tool: characteristics, accessories, conditions of use."
+      },
+      marque: {
+        meaning: "Brand of the tool. Often empty."
+      },
+      modèle: {
+        meaning: "Model of the tool. Often empty."
+      },
+      interventions: {
+        type: "association",
+        meaning: "Interventions the tool is booked for. The booking lasts as long as the Intervention: " \
+                  "from début (or début_prévue when empty) to fin (or fin_prévue when empty).",
+        association: "Tool has_many :interventions, through: :tool_interventions",
+        usage: "Interventions using the tool: tool.interventions"
+      },
+      mouvements: {
+        type: "association",
+        meaning: "Day-by-day log of the tool: bookings made directly on the tool, breakdowns and repairs. " \
+                  "Columns: date (a day, without time), état, user_id (who booked or declared), commentaires. " \
+                  "état 'réservé': booked by user_id for that day. 'panne': broken from that day. 'fin_de_panne': repaired that day.",
+        association: "Tool has_many :mouvements",
+        usage: "Each état is also a scope. Who booked the tool on a day: " \
+                "tool.mouvements.réservé.where(date: Date.new(2026, 11, 20)).map { |m| m.user.nom_prénom }. " \
+                "Is the tool broken on a day: tool.est_encore_en_panne_le(Date.new(2026, 11, 20)). " \
+                "A tool is free on a day only if it is not broken, has no 'réservé' mouvement and no Intervention that day."
       }
     }
   end
