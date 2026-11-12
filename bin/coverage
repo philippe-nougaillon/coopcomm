@@ -4,10 +4,11 @@
 # `rails test:all` boote l'application AVANT de charger test_helper : tout
 # fichier chargé au boot (ApplicationController, les helpers via
 # include_all_helpers, les initializers) est alors invisible pour Coverage et
-# rapporté à 0 %. On précharge donc SimpleCov, et on repart d'un dossier
-# coverage/ vide pour ne pas fusionner le résultat d'un run précédent.
+# rapporté à 0 %. On précharge donc SimpleCov (bin/rails le démarre quand
+# RAILS_ENV vaut test), et on repart d'un dossier coverage/ vide pour ne pas
+# fusionner le résultat d'un run précédent.
 set -e
 
 cd "$(dirname "$0")/.."
 rm -rf coverage
-RUBYOPT="-r$(pwd)/test/simplecov_boot ${RUBYOPT}" exec bundle exec rails test:all "$@"
+RAILS_ENV=test exec bundle exec rails test:all "$@"
