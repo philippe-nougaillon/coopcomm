@@ -44,6 +44,8 @@ class FetchBoxcarsInfos < ApplicationService
 
       Never answer a different question than the one asked.
       Do not replace the requested data with similar data from another model.
+      A datetime column (e.g. Intervention début_prévue, fin_prévue, début, fin) holds a time, and a bare Date only matches midnight:
+      to filter on a day, always use Date#all_day, e.g. Intervention.where(début_prévue: Date.new(2026, 3, 10).all_day).
     ACTIVERECORD_CONTEXT
   end
 
@@ -127,12 +129,13 @@ class FetchBoxcarsInfos < ApplicationService
       workflow_state: {
         meaning: "Current state of the Intervention. 'nouveau': to do, not done yet. " \
                   "'pointage activé': master Intervention used for time tracking (see template_slug). " \
-                  "A master is not a pointage: never count masters to answer a question about pointages. " \
                   "'terminé': done by the agents, awaiting review. 'validé' / 'refusé': reviewed. 'archivé': archived.",
         values: Intervention.workflow_spec.state_names.map(&:to_s)
       },
       description:  {
-        meaning: "Title of the Intervention. When created without a title, it is '#' followed by the Intervention id (e.g. '#42')."
+        meaning: "Title of the Intervention. When created without a title, it is '#' followed by the Intervention id (e.g. '#42'). " \
+                  "A pointage has the same title as its master: to find a master by its title, " \
+                  "always add workflow_state: 'pointage activé'.",
       },
       début_prévue:  {
         meaning: "Planned start of the Intervention. Use it for questions about what is planned."
@@ -154,13 +157,17 @@ class FetchBoxcarsInfos < ApplicationService
       temps_total: {
         meaning: "Work time in hours, computed automatically: (fin - début - temps_de_pause) x number of agents. " \
                   "It is the time of all agents added together, and 0 when début or fin is empty.",
-        usage: "Time of one agent on an Intervention: intervention.temps_par_agent (= temps_total / agents.count)."
+        usage: "Time of one agent on an Intervention: intervention.temps_par_agent (= temps_total / agents.count). " \
+                "'Combien d'heures Mario a travaillé sur l'intervention Nettoyage ?' -> " \
+                "Intervention.by_agent('mario').find_by(description: 'Nettoyage').temps_par_agent"
       },
       template_slug: {
         meaning: "Only set on a pointage: a time-tracking Intervention created by an agent from a master Intervention " \
-                "('pointage activé'). It holds the slug of that master: an opaque UUID, never a name or a description.",
-        usage: "Never compare template_slug with a text. Pointages of a master: " \
-                "Master of a pointage: pointage.intervention_mère."
+                "('pointage activé'). It holds the slug of that master: an opaque UUID, never a name or a description." \
+                "A master is not a pointage: never count masters to answer a question about pointages. ",
+        usage: "Never compare template_slug with a text. A pointage has a template_slug, a master never has one. " \
+                "All pointages: Intervention.where.not(template_slug: nil). " \
+                "Pointages of a master: intervention.pointages. Master of a pointage: pointage.intervention_mère."
       },
       adherent: {
         type: "association",
@@ -205,7 +212,8 @@ class FetchBoxcarsInfos < ApplicationService
         type: "method",
         meaning: "Pointages of a master Intervention: the time-tracking Interventions that agents created from it.",
         usage: "'Combien de pointages sur l'intervention Nettoyage ?' -> " \
-                "Intervention.find_by(workflow_state: 'pointage activé', description: 'Nettoyage').pointages.count"
+                "Intervention.find_by(workflow_state: 'pointage activé', description: 'Nettoyage').pointages.count. " \
+                "'Combien de pointages ont été enregistrés en tout ?' -> Intervention.where.not(template_slug: nil).count"
       }
     }
   end

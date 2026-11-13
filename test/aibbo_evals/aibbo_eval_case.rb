@@ -19,7 +19,7 @@ class AibboEvalCase < ActiveSupport::TestCase
     
     Boxcars.configuration.logger = nil
     Boxcars.configuration.log_generated = true
-    normaliser_les_noms_comme_en_production
+    normalize_forgotten_string_fixtures
   end
 
   teardown do

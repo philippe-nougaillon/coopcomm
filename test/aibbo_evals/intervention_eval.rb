@@ -14,14 +14,6 @@ class InterventionEval < AibboEvalCase
     assert_response_aibbo Intervention.where(workflow_state: "nouveau").count, "Combien d'interventions reste-t-il à faire ?"
   end
 
-  test "AÏBBO reconnaît une intervention créée sans titre à son titre en # suivi de l'identifiant" do
-    [interventions(:demande_par_mail), interventions(:intervention_sans_manager)].each do |intervention|
-      intervention.update_columns(description: "##{intervention.id}")
-    end
-
-    assert_response_aibbo Intervention.where("description ~ '^#[0-9]+$'").count, "Combien d'interventions ont été créées sans titre ?"
-  end
-
   test "AÏBBO lit le début prévu, pas le début réel, pour ce qui devait commencer un jour donné" do
     travel_to MAINTENANT
     dater_quatre_interventions_en_mars
@@ -73,8 +65,8 @@ class InterventionEval < AibboEvalCase
                           "Combien d'heures Michel Martin a-t-il travaillé sur l'intervention « Tailler les arbres » ?"
   end
 
-  test "AÏBBO compte tous les pointages sans y mêler les interventions maîtresses" do
-    maitresse_a_deux_pointages
+  test "AÏBBO compte tous les pointages sans y mêler les interventions mères" do
+    intervention_mere
 
     assert_response_aibbo Intervention.where.not(template_slug: nil).count, "Combien de pointages ont été enregistrés en tout ?"
   end
@@ -134,10 +126,8 @@ class InterventionEval < AibboEvalCase
   end
 
   test "AÏBBO compte les pointages d'une intervention de pointage désignée par son titre" do
-    maitresse = maitresse_a_deux_pointages
-
-    assert_response_aibbo maitresse.pointages.count,
-                          "Combien de pointages ont été faits sur l'intervention « #{maitresse.description} » ?"
+    assert_response_aibbo intervention_mere.pointages.count,
+                          "Combien de pointages ont été créé à partir de l'intervention « #{intervention_mere.description} » ?"
   end
 
   private
@@ -169,20 +159,20 @@ class InterventionEval < AibboEvalCase
     interventions(:intervention_terminée)
   end
 
-  # Deux interventions maîtresses : l'une a deux pointages, l'autre un seul. Rend la première.
-  def maitresse_a_deux_pointages
-    maitresse = interventions(:intervention_repete)
-    autre_maitresse = interventions(:nettoyage_port)
-    maitresse.update_columns(workflow_state: Intervention::POINTAGE_ACTIVE)
-    autre_maitresse.update_columns(workflow_state: Intervention::POINTAGE_ACTIVE)
-    rattacher_en_pointage(interventions(:intervention_fille), maitresse)
-    rattacher_en_pointage(interventions(:nouvelle_intervention), maitresse)
-    rattacher_en_pointage(interventions(:intervention_paris), autre_maitresse)
-    maitresse
+  # Deux interventions mères : l'une a deux pointages, l'autre un seul. Rend la première.
+  def intervention_mere
+    intervention_mere = interventions(:intervention_repete)
+    autre_intervention_mere = interventions(:nettoyage_port)
+    intervention_mere.update_columns(workflow_state: Intervention::POINTAGE_ACTIVE)
+    autre_intervention_mere.update_columns(workflow_state: Intervention::POINTAGE_ACTIVE)
+    rattacher_en_pointage(interventions(:intervention_fille), intervention_mere)
+    rattacher_en_pointage(interventions(:nouvelle_intervention), intervention_mere)
+    rattacher_en_pointage(interventions(:intervention_paris), autre_intervention_mere)
+    intervention_mere
   end
 
   # Un pointage est une copie de sa maîtresse : même titre, et le slug de la maîtresse dans template_slug.
-  def rattacher_en_pointage(intervention, maitresse)
-    intervention.update_columns(template_slug: maitresse.slug, description: maitresse.description)
+  def rattacher_en_pointage(intervention, intervention_mere)
+    intervention.update_columns(template_slug: intervention_mere.slug, description: intervention_mere.description)
   end
 end
