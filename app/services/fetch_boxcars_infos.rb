@@ -30,7 +30,7 @@ class FetchBoxcarsInfos < ApplicationService
   private
 
   def MODELS
-    [User, Intervention, Service, Tool]
+    [User, Intervention, Service, Tool, Convention, Cotation, CotationLigne, Commande, CommandeLigne, Facture, FactureLigne]
   end
 
   def ACTIVERECORD_CONTEXT
@@ -41,6 +41,18 @@ class FetchBoxcarsInfos < ApplicationService
       More Intervention's descriptions here: #{self.intervention_semantic_informations}
       More Service's descriptions here: #{self.service_semantic_informations}
       More Tool's descriptions here: #{self.tool_semantic_informations}
+      More Convention's descriptions here: #{self.convention_semantic_informations}
+
+      Cotation, Commande and Facture are the CRM documents: occasional, one-off work sold to an adhérent by a service.
+      Each one is created from the previous one: Cotation (quote, 'devis') -> Commande (order) -> Facture (invoice).
+      The new document copies adherent, service, intitulé, mémo, date_livraison_souhaitée and the lines of the previous one,
+      but no column links one document to another: never look for a cotation_id on a Commande nor a commande_id on a Facture
+      (the lignes do carry the id of their own document: cotation_lignes.cotation_id, commande_lignes.commande_id, facture_lignes.facture_id).
+      Each document lists its own lines: the work ('prestations') the agents must carry out, with quantity and price.
+      Soft-deleted documents have discarded_at set: always start from Cotation.kept, Commande.kept or Facture.kept.
+      More Cotation's descriptions here: #{self.cotation_semantic_informations}
+      More Commande's descriptions here: #{self.commande_semantic_informations}
+      More Facture's descriptions here: #{self.facture_semantic_informations}
 
       Never answer a different question than the one asked.
       Do not replace the requested data with similar data from another model.
@@ -302,6 +314,150 @@ class FetchBoxcarsInfos < ApplicationService
         meaning: "Tools whose name contains the given text, ignoring case and accents. " \
                   "Pass only the proper name, without generic words.",
         usage: "'Est-ce que la tondeuse existe ?' -> Tool.by_nom('tondeuse').exists?"
+      }
+    }
+  end
+
+  def convention_semantic_informations
+    {
+      ref: {
+        meaning: "Reference of the Convention, e.g. 'CONV-2026-3'. A Convention is a regular, recurring contract: " \
+                  "the time a service spends at an adhérent's over a period. It is the frequent case, " \
+                  "unlike the occasional CRM documents (Cotation, Commande, Facture)."
+      },
+      date_début: {
+        meaning: "First day of the Convention (a day, without time)."
+      },
+      date_fin_prévue: {
+        meaning: "Last day of the Convention (a day, without time). A Convention is current on a day " \
+                  "when date_début <= day <= date_fin_prévue.",
+        usage: "Current Conventions: Convention.where('date_début <= :d AND date_fin_prévue >= :d', d: Date.current)"
+      },
+      heures_conventionnees: {
+        meaning: "Hours of work the service owes the adhérent over the whole Convention."
+      },
+      heures_consommees: {
+        type: "method",
+        meaning: "Hours already worked: sum of temps_total of the Interventions of the same adhérent and service " \
+                  "that started between date_début and date_fin_prévue.",
+        usage: "Never read the heures_consommees column in SQL (where, sum, order, pluck): it is never updated. " \
+                "Always call the method on each record. Remaining hours: c.heures_conventionnees - c.heures_consommees."
+      },
+      mémo: {
+        meaning: "Free notes on the Convention."
+      },
+      user: {
+        type: "association",
+        meaning: "The adhérent who signed the Convention. An adhérent has at most one Convention per service over a period.",
+        association: "Convention belongs_to :user; User has_many :conventions",
+        usage: "'Quelle convention a la mairie de Viarmes ?' -> " \
+                "Convention.where(user: User.adhérent.search_with_generic_name('viarmes')).joins(:service).pluck(:ref, 'services.nom')"
+      },
+      service: {
+        type: "association",
+        meaning: "Service that provides the hours of the Convention.",
+        association: "Convention belongs_to :service; Service has_many :conventions",
+        usage: "Convention.where(service: Service.by_nom('menage'))"
+      },
+      interventions: {
+        type: "method",
+        meaning: "Interventions counted in the Convention: same adhérent, same service, début between date_début and date_fin_prévue.",
+        usage: "convention.interventions.count"
+      }
+    }
+  end
+
+  def cotation_semantic_informations
+    crm_document_semantic_informations(
+      Cotation,
+      "CO-2026-4",
+      "Quote ('devis', 'cotation') proposed to the adhérent. First CRM document, a Commande is created from it.",
+      "'créé': draft written by a manager or an administrateur, not visible to the adhérent yet. " \
+      "'envoyé': sent to the adhérent, awaiting their answer. " \
+      "'signé': signed online by the adhérent (see signee_le), awaiting validation by a manager or an administrateur. " \
+      "'validé': accepted by the organisation, a Commande can be created from it. " \
+      "'refusé': refused by the adhérent or by the organisation; it can be corrected and sent again ('envoyé') or archived. " \
+      "'archivé': closed, final. " \
+      "Transitions: créé -> envoyé; envoyé -> signé or refusé; signé -> validé or refusé; validé -> archivé; " \
+      "refusé -> envoyé or archivé.",
+      :cotation_lignes
+    ).merge(
+      signee_le: {
+        meaning: "When the adhérent signed the Cotation online. Empty when not signed."
+      }
+    )
+  end
+
+  def commande_semantic_informations
+    crm_document_semantic_informations(
+      Commande,
+      "CM-2026-2",
+      "Order ('commande') created from a Cotation. Second CRM document, a Facture is created from it.",
+      "'créé': draft, not visible to the adhérent yet. 'envoyé': sent to the adhérent, awaiting validation. " \
+      "'validé': accepted, a Facture can be created from it. " \
+      "'refusé': refused; it can be corrected and sent again ('envoyé') or archived. 'archivé': closed, final. " \
+      "Transitions: créé -> envoyé; envoyé -> validé or refusé; validé -> archivé; refusé -> envoyé or archivé. " \
+      "There is no 'signé' state on a Commande.",
+      :commande_lignes
+    )
+  end
+
+  def facture_semantic_informations
+    crm_document_semantic_informations(
+      Facture,
+      "FA-2026-7",
+      "Invoice ('facture') created from a Commande. Last CRM document.",
+      "'créé': draft, not visible to the adhérent yet. 'envoyé': sent to the adhérent, awaiting validation. " \
+      "'validé': accepted. 'refusé': refused; it can be corrected and sent again ('envoyé') or archived. " \
+      "'archivé': closed, final. " \
+      "Transitions: créé -> envoyé; envoyé -> validé or refusé; validé -> archivé; refusé -> envoyé or archivé. " \
+      "There is no 'signé' and no 'payé' state on a Facture.",
+      :facture_lignes
+    )
+  end
+
+  # Gabarit commun à Cotation, Commande et Facture, qui partagent les mêmes colonnes
+  def crm_document_semantic_informations(model, ref_example, document_meaning, states_meaning, lignes)
+    {
+      ref: {
+        meaning: "Reference of the document, e.g. '#{ref_example}'. #{document_meaning}"
+      },
+      intitulé: {
+        meaning: "Title of the document."
+      },
+      workflow_state: {
+        meaning: states_meaning,
+        values: model.workflow_spec.state_names.map(&:to_s)
+      },
+      total_ht: {
+        meaning: "Total amount before tax, in euros: sum of total_ht of the lines.",
+        usage: "Turnover of a service: #{model}.kept.where(service: Service.by_nom('menage')).sum(:total_ht)"
+      },
+      date_livraison_souhaitée: {
+        meaning: "Day the adhérent wishes the work to be done. Often empty."
+      },
+      mémo: {
+        meaning: "Free notes on the document."
+      },
+      adherent: {
+        type: "association",
+        meaning: "User with the rôle 'adhérent' the document is addressed to.",
+        association: "#{model} belongs_to :adherent, class_name: 'User'; User has_many :#{model.name.underscore.pluralize}_adherent",
+        usage: "#{model}.kept.where(adherent: User.adhérent.search_with_generic_name('viarmes'))"
+      },
+      service: {
+        type: "association",
+        meaning: "Service that provides the work.",
+        association: "#{model} belongs_to :service; Service has_many :#{model.name.underscore.pluralize}"
+      },
+      lignes => {
+        type: "association",
+        meaning: "Lines of the document, one per prestation: intitulé (label of the work), qté (quantity), " \
+                  "prix_ht (unit price before tax) and total_ht (= prix_ht x qté). " \
+                  "Never use prestation_id nor the Prestation model: the label to give is the intitulé of the line.",
+        association: "#{model} has_many :#{lignes}",
+        usage: "'Que contient le document #{ref_example} ?' -> " \
+                "#{model}.kept.find_by(ref: '#{ref_example}').#{lignes}.pluck(:intitulé, :qté, :total_ht)"
       }
     }
   end
