@@ -6,12 +6,12 @@ class InterventionEval < AibboEvalCase
   MAINTENANT = Time.zone.local(2026, 3, 13, 18)
 
   test "AÏBBO distingue les interventions terminées de celles déjà validées" do
-    assert_aibbo_repond Intervention.where(workflow_state: "terminé").count,
-                        "Combien d'interventions sont terminées et attendent d'être validées ?"
+    assert_response_aibbo Intervention.where(workflow_state: "terminé").count,
+                          "Combien d'interventions sont terminées et attendent d'être validées ?"
   end
 
   test "AÏBBO compte les interventions qui restent à faire" do
-    assert_aibbo_repond Intervention.where(workflow_state: "nouveau").count, "Combien d'interventions reste-t-il à faire ?"
+    assert_response_aibbo Intervention.where(workflow_state: "nouveau").count, "Combien d'interventions reste-t-il à faire ?"
   end
 
   test "AÏBBO reconnaît une intervention créée sans titre à son titre en # suivi de l'identifiant" do
@@ -19,96 +19,96 @@ class InterventionEval < AibboEvalCase
       intervention.update_columns(description: "##{intervention.id}")
     end
 
-    assert_aibbo_repond Intervention.where("description ~ '^#[0-9]+$'").count, "Combien d'interventions ont été créées sans titre ?"
+    assert_response_aibbo Intervention.where("description ~ '^#[0-9]+$'").count, "Combien d'interventions ont été créées sans titre ?"
   end
 
   test "AÏBBO lit le début prévu, pas le début réel, pour ce qui devait commencer un jour donné" do
     travel_to MAINTENANT
     dater_quatre_interventions_en_mars
 
-    assert_aibbo_repond Intervention.where(début_prévue: Date.new(2026, 3, 10).all_day).count,
-                        "Combien d'interventions devaient commencer le 10 mars 2026 ?"
+    assert_response_aibbo Intervention.where(début_prévue: Date.new(2026, 3, 10).all_day).count,
+                          "Combien d'interventions devaient commencer le 10 mars 2026 ?"
   end
 
   test "AÏBBO lit la fin prévue, pas la fin réelle, pour ce qui devait se terminer un jour donné" do
     travel_to MAINTENANT
     dater_quatre_interventions_en_mars
 
-    assert_aibbo_repond Intervention.where(fin_prévue: Date.new(2026, 3, 11).all_day).count,
-                        "Combien d'interventions devaient se terminer le 11 mars 2026 ?"
+    assert_response_aibbo Intervention.where(fin_prévue: Date.new(2026, 3, 11).all_day).count,
+                          "Combien d'interventions devaient se terminer le 11 mars 2026 ?"
   end
 
   test "AÏBBO lit le début réel, pas le début prévu, pour ce qui a commencé un jour donné" do
     travel_to MAINTENANT
     dater_quatre_interventions_en_mars
 
-    assert_aibbo_repond Intervention.where(début: Date.new(2026, 3, 12).all_day).count,
-                        "Combien d'interventions ont commencé le 12 mars 2026 ?"
+    assert_response_aibbo Intervention.where(début: Date.new(2026, 3, 12).all_day).count,
+                          "Combien d'interventions ont commencé le 12 mars 2026 ?"
   end
 
   test "AÏBBO lit la fin réelle, pas la fin prévue, pour ce qui s'est terminé un jour donné" do
     travel_to MAINTENANT
     dater_quatre_interventions_en_mars
 
-    assert_aibbo_repond Intervention.where(fin: Date.new(2026, 3, 12).all_day).count,
-                        "Combien d'interventions se sont terminées le 12 mars 2026 ?"
+    assert_response_aibbo Intervention.where(fin: Date.new(2026, 3, 12).all_day).count,
+                          "Combien d'interventions se sont terminées le 12 mars 2026 ?"
   end
 
   test "AÏBBO donne le temps de pause d'une intervention" do
-    assert_aibbo_repond interventions(:tonte_locaux).temps_de_pause,
-                        "Combien d'heures de pause ont été prises sur l'intervention « Tonte locaux » ?"
+    assert_response_aibbo interventions(:tonte_locaux).temps_de_pause,
+                          "Combien d'heures de pause ont été prises sur l'intervention « Tonte locaux » ?"
   end
 
   test "AÏBBO donne le temps total d'une intervention, tous agents additionnés" do
     intervention = tailler_les_arbres_a_deux_agents_huit_heures_chacun
 
-    assert_aibbo_repond intervention.temps_total,
-                        "Combien d'heures de travail ont été passées sur l'intervention « Tailler les arbres », tous agents confondus ?"
+    assert_response_aibbo intervention.temps_total,
+                          "Combien d'heures de travail ont été passées sur l'intervention « Tailler les arbres », tous agents confondus ?"
   end
 
   test "AÏBBO divise le temps total par le nombre d'agents pour le temps d'un seul agent" do
     intervention = tailler_les_arbres_a_deux_agents_huit_heures_chacun
 
-    assert_aibbo_repond intervention.temps_par_agent,
-                        "Combien d'heures Michel Martin a-t-il travaillé sur l'intervention « Tailler les arbres » ?"
+    assert_response_aibbo intervention.temps_par_agent,
+                          "Combien d'heures Michel Martin a-t-il travaillé sur l'intervention « Tailler les arbres » ?"
   end
 
   test "AÏBBO compte tous les pointages sans y mêler les interventions maîtresses" do
     maitresse_a_deux_pointages
 
-    assert_aibbo_repond Intervention.where.not(template_slug: nil).count, "Combien de pointages ont été enregistrés en tout ?"
+    assert_response_aibbo Intervention.where.not(template_slug: nil).count, "Combien de pointages ont été enregistrés en tout ?"
   end
 
   test "AÏBBO nomme l'adhérent qui a demandé une intervention" do
-    assert_aibbo_cite [interventions(:nettoyage_port).adherent.nom], "Quel adhérent a demandé l'intervention « Nettoyage Marseille » ?"
+    assert_response_aibbo_contain [interventions(:nettoyage_port).adherent.nom], "Quel adhérent a demandé l'intervention « Nettoyage Marseille » ?"
   end
 
   test "AÏBBO compte parmi les intervenants d'une intervention le manager qui y a travaillé" do
     intervention = tailler_les_arbres_avec_un_manager_parmi_les_agents
 
-    assert_aibbo_repond intervention.agents.count, "Combien de personnes ont travaillé sur l'intervention « Tailler les arbres » ?"
+    assert_response_aibbo intervention.agents.count, "Combien de personnes ont travaillé sur l'intervention « Tailler les arbres » ?"
   end
 
   test "AÏBBO nomme tous les intervenants d'une intervention, manager compris" do
     intervention = tailler_les_arbres_avec_un_manager_parmi_les_agents
 
-    assert_aibbo_cite intervention.agents.pluck(:nom), "Qui a travaillé sur l'intervention « Tailler les arbres » ?"
+    assert_response_aibbo_contain intervention.agents.pluck(:nom), "Qui a travaillé sur l'intervention « Tailler les arbres » ?"
   end
 
   test "AÏBBO compte les interventions d'un service" do
-    assert_aibbo_repond Intervention.where(service: Service.by_nom("technique")).count,
-                        "Combien d'interventions pour le service technique ?"
+    assert_response_aibbo Intervention.where(service: Service.by_nom("technique")).count,
+                          "Combien d'interventions pour le service technique ?"
   end
 
   test "AÏBBO retrouve le service d'une intervention quand son nom est écrit sans accent" do
     interventions(:intervention_validé).update_columns(service_id: services(:periscolaire).id)
 
-    assert_aibbo_repond Intervention.where(service: Service.by_nom("periscolaire")).count,
-                        "Combien d'interventions pour le service periscolaire ?"
+    assert_response_aibbo Intervention.where(service: Service.by_nom("periscolaire")).count,
+                          "Combien d'interventions pour le service periscolaire ?"
   end
 
   test "AÏBBO nomme le matériel réservé pour une intervention" do
-    assert_aibbo_cite interventions(:tonte_locaux).tools.pluck(:name), "Quel matériel est réservé pour l'intervention « Tonte locaux » ?"
+    assert_response_aibbo_contain interventions(:tonte_locaux).tools.pluck(:name), "Quel matériel est réservé pour l'intervention « Tonte locaux » ?"
   end
 
   test "AÏBBO retrouve un adhérent désigné par « la mairie de » et écrit sans accent" do
@@ -116,28 +116,28 @@ class InterventionEval < AibboEvalCase
       intervention.update_columns(adherent_id: users(:adherent_nom_long).id)
     end
 
-    assert_aibbo_repond Intervention.by_adherent("thiaucourt-regnieville").count,
-                        "Combien d'interventions a demandées la mairie de Thiaucourt-Regnieville ?"
+    assert_response_aibbo Intervention.by_adherent("thiaucourt-regnieville").count,
+                          "Combien d'interventions a demandées la mairie de Thiaucourt-Regnieville ?"
   end
 
   test "AÏBBO retrouve un adhérent désigné par « la commune de »" do
-    assert_aibbo_repond Intervention.by_adherent("berthout").count, "Combien d'interventions a demandées la commune de Berthout ?"
+    assert_response_aibbo Intervention.by_adherent("berthout").count, "Combien d'interventions a demandées la commune de Berthout ?"
   end
 
   test "AÏBBO compte les interventions d'un agent dont le prénom est écrit sans accent" do
-    assert_aibbo_repond Intervention.by_agent("rene").count, "Combien d'interventions a faites Rene ?"
+    assert_response_aibbo Intervention.by_agent("rene").count, "Combien d'interventions a faites Rene ?"
   end
 
   test "AÏBBO croise les interventions d'un agent avec celles d'un adhérent" do
-    assert_aibbo_repond Intervention.by_agent("james bond").by_adherent("weil").count,
-                        "Combien d'interventions James Bond a-t-il faites pour Weil ?"
+    assert_response_aibbo Intervention.by_agent("james bond").by_adherent("weil").count,
+                          "Combien d'interventions James Bond a-t-il faites pour Weil ?"
   end
 
   test "AÏBBO compte les pointages d'une intervention de pointage désignée par son titre" do
     maitresse = maitresse_a_deux_pointages
 
-    assert_aibbo_repond maitresse.pointages.count,
-                        "Combien de pointages ont été faits sur l'intervention « #{maitresse.description} » ?"
+    assert_response_aibbo maitresse.pointages.count,
+                          "Combien de pointages ont été faits sur l'intervention « #{maitresse.description} » ?"
   end
 
   private

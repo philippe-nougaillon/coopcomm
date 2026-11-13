@@ -6,12 +6,7 @@ class FetchBoxcarsInfos < ApplicationService
 
   def initialize
     # Outils boxcars utilisé pour le train
-    boxcars = [Boxcars::ActiveRecord.new(
-                  name: "AÏBBO",
-                  models: self.MODELS,
-                  context: self.ACTIVERECORD_CONTEXT,
-                  engine: get_engine
-                )]
+    boxcars = [get_tool_boxcars_AR]
 
     # Train permet de rebondir sur les réponses du LLM pour avoir une réponse épurée pour l'utilisateur
     @boxcars_builder = Boxcars.train.new(boxcars: boxcars, engine: get_engine)
@@ -22,6 +17,17 @@ class FetchBoxcarsInfos < ApplicationService
     @boxcars_builder.prompt.add_history(history_lines(current_user, request_message))
     { response: @boxcars_builder.run(self.REQUEST_CONTEXT(request_message.message, current_user)) }
   end
+
+  def get_tool_boxcars_AR
+    Boxcars::ActiveRecord.new(
+      name: "AÏBBO",
+      models: self.MODELS,
+      context: self.ACTIVERECORD_CONTEXT,
+      engine: get_engine
+    )
+  end
+
+  private
 
   def MODELS
     [User, Intervention, Service, Tool]
@@ -55,7 +61,6 @@ class FetchBoxcarsInfos < ApplicationService
     REQUEST_CONTEXT
   end
 
-  private
 
   # Utilisation de AÏKKU AI ou de GPT
   def get_engine
