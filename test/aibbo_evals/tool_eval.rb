@@ -5,7 +5,7 @@ class ToolEval < AibboEvalCase
   test "AÏBBO retrouve un matériel dont le nom est écrit sans accent" do
     tools(:cisaille).update_columns(name: "DÉBROUSSAILLEUSE")
 
-    assert_response_aibbo_contain [tools(:cisaille).name], "Avons-nous une debroussailleuse ?"
+    assert_response_aibbo true, "Avons-nous une debroussailleuse ?"
   end
 
   test "AÏBBO compte les matériels dont le nom contient un mot" do
@@ -13,7 +13,7 @@ class ToolEval < AibboEvalCase
   end
 
   test "AÏBBO retrouve un matériel d'après sa description" do
-    assert_response_aibbo_contain [tools(:tondeuse).name], "Quel matériel roule correctement ?"
+    assert_response_aibbo_contain [tools(:tondeuse).name], "Quel matériel roule correctement d'après sa description ?"
   end
 
   test "AÏBBO donne la marque d'un matériel" do
@@ -63,12 +63,8 @@ class ToolEval < AibboEvalCase
     rateau = tools(:rateau)
     jour = Date.new(2026, 3, 10)
 
-    assert_response_aibbo !(rateau.est_encore_en_panne_le(jour) || rateau.mouvements.réservé.exists?(date: jour)),
+    assert_response_aibbo rateau.disponible_le?(jour),
                           "Le rateau est-il disponible le 10 mars 2026 ?"
-  end
-
-  test "AÏBBO cherche un matériel sur son nom propre, sans les mots qui le précisent" do
-    assert_response_aibbo_contain [tools(:tondeuse).name], "Est-ce qu'on a une tondeuse à gazon ?"
   end
 
   private

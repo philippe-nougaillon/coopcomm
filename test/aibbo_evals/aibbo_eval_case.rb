@@ -1,5 +1,5 @@
 # Base des évals du LLM utilisé par AÏBBO
-# Lancé séparement de test:all via la commande suivante: PARALLEL_WORKERS=1 bin/rails test test/evals/*_eval.rb
+# Lancé séparement de test:all via la commande suivante: PARALLEL_WORKERS=1 bin/rails test test/aibbo_evals/*_eval.rb
 require "test_helper"
 
 class AibboEvalCase < ActiveSupport::TestCase
@@ -100,7 +100,7 @@ class AibboEvalCase < ActiveSupport::TestCase
   # TODO: Il faudrait peut etre forcer dans le contexte de AR de retourner uniquement un boolean si la question suppose un vrai ou faux
   def boolean_or_number(reponse, attendu)
     booleen = [true, false].include?(attendu)
-    response_flatted(reponse).select { |valeur| booleen ? [true, false].include?(valeur) : valeur.is_a?(Numeric) }
+    response_flatted(unwrap_falsy_answer(reponse)).select { |valeur| booleen ? [true, false].include?(valeur) : valeur.is_a?(Numeric) }
   end
 
   # Retourne la réponse sous forme de string en minuscule
@@ -116,5 +116,14 @@ class AibboEvalCase < ActiveSupport::TestCase
     end
     Service.find_each { |service| service.update_columns(nom: Service.normalize_value_for(:nom, service.nom)) }
     Tool.find_each { |outil| outil.update_columns(name: Tool.normalize_value_for(:name, outil.name)) }
+  end
+
+  # Boxcars remplace une réponse false ou nil par son explication (Result#initialize : `answer || explanation`).
+  def unwrap_falsy_answer(reponse)
+    case reponse
+    when "Answer: false" then false
+    when "Answer: null" then nil
+    else reponse
+    end
   end
 end

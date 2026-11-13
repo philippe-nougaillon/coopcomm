@@ -119,6 +119,13 @@ class Tool < ApplicationRecord
               .pick(:état) == "panne" # Prend la première panne trouvée
   end
 
+  def disponible_le?(date)
+    !est_encore_en_panne_le(date) &&
+      !mouvements.réservé.exists?(date: date) &&
+      !interventions.where('COALESCE(début, début_prévue) <= ? AND COALESCE(fin, fin_prévue) >= ?',
+                           date.end_of_day, date.beginning_of_day).exists?
+  end
+
   def self.by_nom(nom)
     where('unaccent(tools.name) ILIKE unaccent(?)', "%#{sanitize_sql_like(nom.strip)}%")
   end

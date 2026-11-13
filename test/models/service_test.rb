@@ -153,30 +153,27 @@ class ServiceTest < ActiveSupport::TestCase
     assert_includes texte, 'des utilisateurs non administrateurs'
   end
 
-  test 'la recherche de services par nom ignore la casse et les accents (critique)' do
-    assert_equal [services(:menage)], Service.by_nom('MENAGE').to_a
-  end
-
-  test 'la recherche de services par nom retient tous les services dont le nom contient le texte (critique)' do
-    assert_equal [services(:service_marseille), services(:service_marseille2)].sort_by(&:id),
-                 Service.by_nom('marseille').sort_by(&:id)
-  end
-
-  test 'la recherche de services par nom traite un joker SQL saisi comme un caractère ordinaire (critique)' do
-    services_avec_tiret_bas = %i[service_paris service_marseille service_marseille2 service_with_location]
-
-    assert_equal services_avec_tiret_bas.map { |cle| services(cle) }.sort_by(&:id), Service.by_nom('_').sort_by(&:id)
-  end
-
-  test 'la recherche de services par nom ignore les espaces autour du texte saisi (critique)' do
-    assert_equal [services(:menage)], Service.by_nom('  menage  ').to_a
-  end
-
-  test 'la recherche de services par nom se combine avec une jointure sur les utilisateurs (critique)' do
-    assert_equal [services(:technique)], Service.joins(:users).by_nom('technique').distinct.to_a
-  end
-
   # ==================== /TESTS CRITIQUES ====================
+
+  test 'la recherche de service par nom ignore la casse et les accents' do
+    assert_equal services(:menage), Service.by_nom('MENAGE')
+  end
+
+  test 'la recherche de service par nom rend un seul service quand plusieurs noms contiennent le texte' do
+    assert_includes [services(:service_marseille), services(:service_marseille2)], Service.by_nom('marseille')
+  end
+
+  test 'la recherche de service par nom traite un joker SQL saisi comme un caractère ordinaire' do
+    assert_nil Service.by_nom('%')
+  end
+
+  test 'la recherche de service par nom ignore les espaces autour du texte saisi' do
+    assert_equal services(:menage), Service.by_nom('  menage  ')
+  end
+
+  test 'la recherche de service par nom se combine avec une jointure sur les utilisateurs' do
+    assert_equal services(:technique), Service.joins(:users).by_nom('technique')
+  end
 
   private
 

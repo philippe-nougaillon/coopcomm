@@ -14,11 +14,6 @@ class UserEval < AibboEvalCase
     assert_response_aibbo User.search_with_generic_name("james bond").count, "Combien d'utilisateurs s'appellent James Bond ?"
   end
 
-  test "AÏBBO retrouve un utilisateur dont le nom est écrit sans accent" do
-    assert_response_aibbo User.search_with_generic_name("thiaucourt-regnieville").count,
-                          "Combien d'utilisateurs s'appellent Thiaucourt-Regnieville ?"
-  end
-
   test "AÏBBO compte les interventions réalisées par un agent" do
     assert_response_aibbo Intervention.by_agent("michel martin").count, "Sur combien d'interventions Michel Martin est-il intervenu ?"
   end

@@ -505,6 +505,10 @@ class UserTest < ActiveSupport::TestCase
     assert_equal récente, agent.find_current_intervention(mère.slug)
   end
 
+  test "la recherche d'utilisateur par nom se combine avec une jointure sur les services" do
+    assert_equal [users(:hidalgo)], User.search_with_generic_name('hidalgo').joins(:services).distinct.to_a
+  end
+
   private
 
   def nouveau(rôle:, service_ids: [])

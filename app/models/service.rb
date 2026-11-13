@@ -67,7 +67,7 @@ class Service < ApplicationRecord
   end
 
   def self.by_nom(nom)
-    where('unaccent(services.nom) ILIKE unaccent(?)', "%#{sanitize_sql_like(nom.strip)}%")
+    find_by('unaccent(services.nom) ILIKE unaccent(?)', "%#{sanitize_sql_like(nom.strip)}%")
   end
 
   private

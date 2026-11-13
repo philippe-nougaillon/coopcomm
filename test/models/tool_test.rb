@@ -236,6 +236,39 @@ class ToolTest < ActiveSupport::TestCase
     assert_not @outil.est_encore_en_panne_le(Date.new(2026, 6, 4))
   end
 
+  test 'un outil sans panne, sans réservation et sans intervention un jour donné est disponible ce jour-là' do
+    caler_l_intervention_de_la_cisaille_au_10_juin
+
+    assert @outil.disponible_le?(Date.new(2026, 6, 4))
+  end
+
+  test "un outil en panne un jour donné n'est pas disponible ce jour-là" do
+    caler_l_intervention_de_la_cisaille_au_10_juin
+    panne('2026-06-02')
+
+    assert_not @outil.disponible_le?(Date.new(2026, 6, 4))
+  end
+
+  test "un outil réservé par un mouvement un jour donné n'est pas disponible ce jour-là" do
+    caler_l_intervention_de_la_cisaille_au_10_juin
+    reservation('2026-06-04', @autre)
+
+    assert_not @outil.disponible_le?(Date.new(2026, 6, 4))
+  end
+
+  test "un outil pris par une intervention n'est pas disponible pendant celle-ci" do
+    caler_l_intervention_de_la_cisaille_au_10_juin
+
+    assert_not @outil.disponible_le?(Date.new(2026, 6, 10))
+  end
+
+  test "un outil pris par une intervention pas encore commencée n'est pas disponible entre son début et sa fin prévus" do
+    caler_l_intervention_de_la_cisaille_au_10_juin
+    interventions(:intervention_terminée).update_columns(début: nil, fin: nil)
+
+    assert_not @outil.disponible_le?(Date.new(2026, 6, 10))
+  end
+
   test 'la recherche de matériel par nom ignore la casse et les accents' do
     assert_equal [tools(:outil_adherent)], Tool.by_nom('RESERVE').to_a
   end
@@ -284,5 +317,11 @@ class ToolTest < ActiveSupport::TestCase
 
   def reservation(jour, qui, outil = @outil)
     Mouvement.create!(tool: outil, user: qui, état: :réservé, date: t(jour))
+  end
+
+  # L'unique intervention de la cisaille (fixture), calée sur le seul 10 juin 2026 : les autres jours testés sont libres.
+  def caler_l_intervention_de_la_cisaille_au_10_juin
+    interventions(:intervention_terminée).update_columns(début: t('2026-06-10'), fin: t('2026-06-10') + 8.hours,
+                                                         début_prévue: t('2026-06-10'), fin_prévue: t('2026-06-10') + 8.hours)
   end
 end

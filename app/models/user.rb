@@ -396,7 +396,7 @@ class User < ApplicationRecord
   # Recherche souple pour AÏBBO : nom, prénom ou les deux, sans tenir compte de la casse ni des accents.
   # Peut retourner plusieurs utilisateurs avec le nom/prénom donné
   def self.search_with_generic_name(texte)
-    where("unaccent(CONCAT(nom, ' ', prénom, ' ', nom)) ILIKE unaccent(?)", "%#{sanitize_sql_like(texte.strip)}%")
+    where("unaccent(CONCAT(users.nom, ' ', users.prénom, ' ', users.nom)) ILIKE unaccent(?)", "%#{sanitize_sql_like(texte.strip)}%")
   end
 
   private

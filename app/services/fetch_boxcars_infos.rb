@@ -119,7 +119,7 @@ class FetchBoxcarsInfos < ApplicationService
         meaning: "Services the user belongs to, whatever their rôle. A user can belong to several services.",
         association: "User has_many :services, through: :user_services",
         usage: "'Dans quel service travaille Mario ?' -> " \
-                "User.where(id: User.search_with_generic_name('mario').select(:id)).joins(:services).pluck(:nom, :prénom, 'services.nom')"
+                "User.search_with_generic_name('mario').joins(:services).pluck(:nom, :prénom, 'services.nom')"
       }
     }
   end
@@ -233,7 +233,7 @@ class FetchBoxcarsInfos < ApplicationService
         meaning: "Interventions handled by the service. An Intervention belongs to one service at most (see Intervention service).",
         association: "Service has_many :interventions",
         usage: "'Combien d'interventions pour le périscolaire ?' -> " \
-                "Service.by_nom('periscolaire').left_joins(:interventions).group(:nom).count('interventions.id')"
+                "Service.by_nom('periscolaire').interventions.count"
       },
       users: {
         type: "association",
@@ -249,9 +249,9 @@ class FetchBoxcarsInfos < ApplicationService
       },
       by_nom: {
         type: "scope",
-        meaning: "Services whose name contains the given text, ignoring case and accents. " \
+        meaning: "The single service whose name contains the given text, ignoring case and accents, or nil when none matches. " \
                   "Pass only the proper name, without generic words.",
-        usage: "'Est-ce qu'il y a un service ménage ?' -> Service.by_nom('menage').pluck(:nom)"
+        usage: "'Est-ce que le service ménage existe ?' -> Service.by_nom('menage').present?"
       }
     }
   end
@@ -276,20 +276,26 @@ class FetchBoxcarsInfos < ApplicationService
         meaning: "Interventions the tool is booked for. The booking lasts as long as the Intervention: " \
                   "from début (or début_prévue when empty) to fin (or fin_prévue when empty).",
         association: "Tool has_many :interventions, through: :tool_interventions",
-        usage: "Interventions using the tool: tool.interventions"
+        usage: "Interventions using the tool: tool.interventions. " \
+                "'Pour combien d'interventions le camion est-il réservé le 20 novembre ?' -> " \
+                "Tool.by_nom('camion').first.interventions.where('COALESCE(début, début_prévue) <= ? AND COALESCE(fin, fin_prévue) >= ?', " \
+                "Date.new(2026, 11, 20).end_of_day, Date.new(2026, 11, 20).beginning_of_day).count"
       },
       mouvements: {
         type: "association",
         meaning: "Day-by-day log of the tool: bookings made directly on the tool, breakdowns and repairs. " \
                   "Columns: date (a day, without time), état, user_id (who booked or declared), commentaires. " \
-                  "état 'réservé': booked by user_id for that day. 'panne': broken from that day. 'fin_de_panne': repaired that day.",
+                  "user_id is an opaque id: to say who, never answer with user_id, always give the User's nom and prénom. " \
+                  "état 'réservé': booked by user_id for that day. 'panne': broken from that day. 'fin_de_panne': repaired that day. " \
+                  "A breakdown writes no mouvement on the following days: to know if a tool is broken on a day, " \
+                  "never filter mouvements.panne by date, always call est_encore_en_panne_le.",
         association: "Tool has_many :mouvements",
-        usage: "Each état is also a scope. Who booked the tool on a day: " \
-                "User.where(id: tool.mouvements.réservé.where(date: Date.new(2026, 11, 20)).select(:user_id)).pluck(:nom, :prénom). " \
-                "'Est-ce que la tondeuse est en panne le 20 novembre ?' -> " \
-                "Tool.by_nom('tondeuse').first.est_encore_en_panne_le(Date.new(2026, 11, 20)). " \
-                "'Disponible' (available) means neither booked nor broken: a tool is available on a day only if it is not broken, " \
-                "has no 'réservé' mouvement and no Intervention that day."
+        usage: "Each état is also a scope. " \
+                "'Qui a réservé la tondeuse le 20 novembre ?' -> " \
+                "User.where(id: Tool.by_nom('tondeuse').first.mouvements.réservé.where(date: Date.new(2026, 11, 20)).select(:user_id)).pluck(:nom, :prénom). " \
+                "'Est-ce que la tondeuse est en panne le 20 novembre ?' -> Tool.by_nom('tondeuse').first.est_encore_en_panne_le(Date.new(2026, 11, 20)). " \
+                "'Est-ce que la tondeuse est disponible le 20 novembre ?' -> Tool.by_nom('tondeuse').first.disponible_le?(Date.new(2026, 11, 20)): " \
+                "'disponible' (available) means neither booked by a mouvement, nor broken, nor taken by an Intervention that day."
       },
       by_nom: {
         type: "scope",
