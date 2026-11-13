@@ -119,7 +119,7 @@ class FetchBoxcarsInfos < ApplicationService
         meaning: "Services the user belongs to, whatever their rôle. A user can belong to several services.",
         association: "User has_many :services, through: :user_services",
         usage: "'Dans quel service travaille Mario ?' -> " \
-                "User.search_with_generic_name('mario').map { |u| [u.nom_prénom, u.services.pluck(:nom)] }"
+                "User.where(id: User.search_with_generic_name('mario').select(:id)).joins(:services).pluck(:nom, :prénom, 'services.nom')"
       }
     }
   end
@@ -233,7 +233,7 @@ class FetchBoxcarsInfos < ApplicationService
         meaning: "Interventions handled by the service. An Intervention belongs to one service at most (see Intervention service).",
         association: "Service has_many :interventions",
         usage: "'Combien d'interventions pour le périscolaire ?' -> " \
-                "Service.by_nom('periscolaire').map { |s| [s.nom, s.interventions.count] }"
+                "Service.by_nom('periscolaire').left_joins(:interventions).group(:nom).count('interventions.id')"
       },
       users: {
         type: "association",
@@ -285,20 +285,21 @@ class FetchBoxcarsInfos < ApplicationService
                   "état 'réservé': booked by user_id for that day. 'panne': broken from that day. 'fin_de_panne': repaired that day.",
         association: "Tool has_many :mouvements",
         usage: "Each état is also a scope. Who booked the tool on a day: " \
-                "tool.mouvements.réservé.where(date: Date.new(2026, 11, 20)).map { |m| m.user.nom_prénom }. " \
-                "Is the tool broken on a day: tool.est_encore_en_panne_le(Date.new(2026, 11, 20)). " \
-                "A tool is free on a day only if it is not broken, has no 'réservé' mouvement and no Intervention that day."
+                "User.where(id: tool.mouvements.réservé.where(date: Date.new(2026, 11, 20)).select(:user_id)).pluck(:nom, :prénom). " \
+                "'Est-ce que la tondeuse est en panne le 20 novembre ?' -> " \
+                "Tool.by_nom('tondeuse').first.est_encore_en_panne_le(Date.new(2026, 11, 20)). " \
+                "'Disponible' (available) means neither booked nor broken: a tool is available on a day only if it is not broken, " \
+                "has no 'réservé' mouvement and no Intervention that day."
       },
       by_nom: {
         type: "scope",
         meaning: "Tools whose name contains the given text, ignoring case and accents. " \
                   "Pass only the proper name, without generic words.",
-        usage: "'Est-ce que la tondeuse est en panne le 20 novembre ?' -> " \
-                "Tool.by_nom('tondeuse').map { |t| [t.name, t.est_encore_en_panne_le(Date.new(2026, 11, 20))] }"
+        usage: "'Est-ce que la tondeuse existe ?' -> Tool.by_nom('tondeuse').exists?"
       }
     }
   end
-
+  
   # Derniers échanges avec AÏBBO, mis au format que le train ZeroShot attend
   def history_lines(current_user, request_message)
     train = @boxcars_builder
