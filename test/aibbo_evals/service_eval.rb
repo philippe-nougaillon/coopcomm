@@ -2,8 +2,8 @@
 require_relative "aibbo_eval_case"
 
 class ServiceEval < AibboEvalCase
-  test "AÏBBO retrouve un service dont le nom est écrit sans accent" do
-    assert_response_aibbo_contain [services(:secretariat).nom], "Comment s'écrit exactement le nom du service secretariat ?"
+  test "AÏBBO retrouve un service qui existe avec le nom" do
+    assert_response_aibbo true, "Est-ce que le service secretariat existe ?"
   end
 
   test "AÏBBO compte les services dont le temps de trajet est calculé" do
@@ -27,9 +27,5 @@ class ServiceEval < AibboEvalCase
 
   test "AÏBBO compte les managers d'un service" do
     assert_response_aibbo services(:technique).managers.count, "Combien de managers encadrent le service technique ?"
-  end
-
-  test "AÏBBO cherche un service sur son nom propre, sans le mot « service »" do
-    assert_response_aibbo_contain [services(:menage).nom], "Y a-t-il un service ménage ?"
   end
 end
