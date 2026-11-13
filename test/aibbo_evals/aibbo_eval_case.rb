@@ -1,4 +1,5 @@
-# Base des évals d'AÏBBO contre le vrai LLM (payant, non déterministe), hors de test:all : PARALLEL_WORKERS=1 bin/rails test test/evals/*_eval.rb
+# Base des évals du LLM utilisé par AÏBBO
+# Lancé séparement de test:all via la commande suivante: PARALLEL_WORKERS=1 bin/rails test test/evals/*_eval.rb
 require "test_helper"
 
 class AibboEvalCase < ActiveSupport::TestCase
