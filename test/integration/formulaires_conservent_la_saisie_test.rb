@@ -186,7 +186,7 @@ class FormulairesConserventLaSaisieTest < ActionDispatch::IntegrationTest
   test "En tant qu'administrateur, je veux garder ma saisie quand ma création de convention est refusée" do
     sign_in users(:administrateur_paris)
     soumis = { user_id: users(:weil).id, service_id: services(:technique).id,
-               date_début: '2026-09-01', date_fin_prévue: '',
+               date_début: '2026-09-01', date_fin_prévue: '2026-08-01',
                heures_conventionnees: 42, mémo: 'Mémo de la convention' }
 
     post conventions_url, params: { convention: soumis }

@@ -6,6 +6,7 @@ class ConventionTest < ActiveSupport::TestCase
   setup do
     @adherent = users(:patrick_adherent_paris)
     @service  = services(:service_paris)
+    travel_to Time.zone.local(2026, 10, 26, 12)
   end
 
   DANS_LA_PÉRIODE_DE_CONVENTION_PARIS = Time.zone.parse('2026-03-02 09:00:00')
@@ -62,6 +63,40 @@ class ConventionTest < ActiveSupport::TestCase
     assert convention.valid?
   end
 
+  test 'une convention sans date de fin est refusée lorsqu’une autre convention du même adhérent sur le même service se termine après son début' do
+    build_convention.save!
+
+    sans_fin = build_convention(date_début: Date.new(2026, 6, 1), date_fin_prévue: nil)
+
+    assert_not sans_fin.valid?
+    assert sans_fin.errors[:base].any?
+  end
+
+  test 'une convention sans date de fin est acceptée lorsqu’elle commence après la fin de la précédente' do
+    build_convention.save!
+
+    sans_fin = build_convention(date_début: Date.new(2027, 1, 1), date_fin_prévue: nil)
+
+    assert sans_fin.valid?
+  end
+
+  test 'une convention est refusée lorsqu’une convention sans date de fin du même adhérent sur le même service a commencé avant sa fin' do
+    build_convention(date_fin_prévue: nil).save!
+
+    suivante = build_convention(date_début: Date.new(2027, 1, 1), date_fin_prévue: Date.new(2027, 12, 31))
+
+    assert_not suivante.valid?
+    assert suivante.errors[:base].any?
+  end
+
+  test 'une convention qui se termine avant le début d’une convention sans date de fin est acceptée' do
+    build_convention(date_fin_prévue: nil).save!
+
+    précédente = build_convention(date_début: Date.new(2025, 1, 1), date_fin_prévue: Date.new(2025, 12, 31))
+
+    assert précédente.valid?
+  end
+
   test "une convention sur un service de l'adhérent est acceptée" do
     assert build_convention.valid?
   end
@@ -88,6 +123,10 @@ class ConventionTest < ActiveSupport::TestCase
 
     assert_not convention.valid?
     assert convention.errors[:date_fin_prévue].any?
+  end
+
+  test 'une convention sans date de fin est acceptée' do
+    assert build_convention(date_fin_prévue: nil).valid?
   end
 
   test 'une convention créée reçoit une référence au format CONV-AAAA-N' do
@@ -179,6 +218,27 @@ class ConventionTest < ActiveSupport::TestCase
     assert_not_includes interventions, hors_période
   end
 
+  test "les interventions d'une convention sans date de fin sont celles de l'adhérent depuis son début, pas celles d'avant" do
+    convention = conventions(:convention_sans_fin)
+    des_mois_après = Intervention.create!(
+      description: 'Intervention sous convention',
+      adherent_id: convention.user_id, service_id: convention.service_id,
+      workflow_state: 'nouveau', début: convention.date_début.beginning_of_day + 17.months,
+      slug: SecureRandom.uuid
+    )
+    avant_le_début = Intervention.create!(
+      description: 'Intervention hors convention',
+      adherent_id: convention.user_id, service_id: convention.service_id,
+      workflow_state: 'nouveau', début: convention.date_début.beginning_of_day - 2.days,
+      slug: SecureRandom.uuid
+    )
+
+    interventions = convention.interventions
+
+    assert_includes interventions, des_mois_après
+    assert_not_includes interventions, avant_le_début
+  end
+
   test "les heures consommées d'une convention sont la somme du temps total de ses interventions" do
     convention = conventions(:convention_paris)
     intervention_conventionnee(heures: 3)
@@ -226,6 +286,16 @@ class ConventionTest < ActiveSupport::TestCase
     intervention_conventionnee(heures: 3).destroy!
 
     assert_equal 0, convention.heures_consommees
+  end
+
+  test "les heures consommées d'une convention sans date de fin sont celles de l'année en cours, pas celles des années précédentes" do
+    convention = conventions(:convention_sans_fin)
+    intervention_conventionnee(heures: 4, adherent_id: convention.user_id, service: convention.service,
+                               agents: [users(:john_wick)], début: Time.zone.local(2025, 6, 2, 9))
+    intervention_conventionnee(heures: 3, adherent_id: convention.user_id, service: convention.service,
+                               agents: [users(:john_wick)])
+
+    assert_equal 3, convention.heures_consommees
   end
 
   private

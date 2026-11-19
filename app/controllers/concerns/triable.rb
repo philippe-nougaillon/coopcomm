@@ -118,6 +118,7 @@ module Triable
     case tri[:colonnes][colonne]
     when :texte then TriTextuel.expression(colonne)
     when :brut  then colonne
+    when Proc   then tri[:colonnes][colonne].call
     else tri[:colonnes][colonne]
     end
   end

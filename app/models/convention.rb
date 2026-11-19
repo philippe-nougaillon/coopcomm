@@ -17,7 +17,7 @@ class Convention < ApplicationRecord
 
   valide_document :document
 
-  validates :date_début, :date_fin_prévue, presence: true
+  validates :date_début, presence: true
   validates :heures_conventionnees, numericality: { greater_than: 0 }
   validate :one_convention_per_service
   validate :service_must_belong_to_adherent
@@ -31,11 +31,11 @@ class Convention < ApplicationRecord
               'conventions.ref' => :texte,
               'conventions.service' => ColonnesTri.service('conventions.service_id'),
               'conventions.date_début' => :brut,
-              'conventions.heures_consommees' => '(SELECT COALESCE(SUM(interventions.temps_total), 0) FROM interventions ' \
+              'conventions.heures_consommees' => -> { '(SELECT COALESCE(SUM(interventions.temps_total), 0) FROM interventions ' \
                                                  'WHERE interventions.adherent_id = conventions.user_id ' \
                                                  'AND interventions.service_id = conventions.service_id ' \
-                                                 'AND interventions.début >= conventions.date_début ' \
-                                                 'AND interventions.début < conventions.date_fin_prévue + 1)',
+                                                 "AND interventions.début >= GREATEST(conventions.date_début, '#{Date.current.beginning_of_year}') " \
+                                                 "AND interventions.début < LEAST(conventions.date_fin_prévue, '#{Date.current.end_of_year}') + 1)" },
               'conventions.document' => "(SELECT #{TriTextuel.expression('active_storage_blobs.filename')} " \
                                         'FROM active_storage_attachments ' \
                                         'INNER JOIN active_storage_blobs ON active_storage_blobs.id = active_storage_attachments.blob_id ' \
@@ -59,11 +59,11 @@ class Convention < ApplicationRecord
   def interventions
     Intervention
         .where(adherent_id: user_id, service_id: service_id)
-        .where(début: date_début.beginning_of_day..date_fin_prévue.end_of_day)
+        .where(début: date_début.beginning_of_day..date_fin_prévue&.end_of_day)
   end
 
   def heures_consommees
-    self.interventions.sum(:temps_total)
+    self.interventions.where(début: Time.current.all_year).sum(:temps_total)
   end
 
   # Nom du fichier PDF (utilisé dans l'URL et l'en-tête Content-Disposition)
@@ -79,7 +79,7 @@ class Convention < ApplicationRecord
     exists = Convention.where(user_id: user_id, service_id: service_id)
                        .where.not(id: id)
                        .where(date_début: ..date_fin_prévue) # La date de fin ne doit pas chevaucher la date de début
-                       .where(date_fin_prévue: date_début..) # Inversement
+                       .where(date_fin_prévue: [nil, date_début..]) # Inversement
                        .exists?
     return unless exists
 

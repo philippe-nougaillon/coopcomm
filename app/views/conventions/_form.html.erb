@@ -62,7 +62,7 @@
       </div>
       <div class="form-control w-full">
         <%= f.label :date_fin_prévue, "Date de fin ", class: "label font-semibold text-slate-700" do %>
-          Date de fin  <span class="text-red-500">*</span>
+          Date de fin
         <% end %>
         <div class="flex items-center gap-2 h-10 rounded-lg border border-slate-200">
           <div class="w-full flex-1 cursor-pointer"
@@ -70,7 +70,6 @@
               data-action="click->date-picker#open">
             <%= f.date_field :date_fin_prévue,
                               class: "w-full bg-transparent border-none outline-hidden text-sm",
-                              required: true,
                               data: { 'date-picker-target': "input" } %>
           </div>
         </div>

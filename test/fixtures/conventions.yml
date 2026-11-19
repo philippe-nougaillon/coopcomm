@@ -6,7 +6,6 @@ convention_paris:
   date_début: 2026-01-01
   date_fin_prévue: 2026-12-31
   heures_conventionnees: 100
-  heures_consommees: 0
   slug: <%= SecureRandom.uuid %>
 
 convention_marseille:
@@ -15,5 +14,11 @@ convention_marseille:
   date_début: 2026-01-01
   date_fin_prévue: 2026-12-31
   heures_conventionnees: 100
-  heures_consommees: 0
+  slug: <%= SecureRandom.uuid %>
+
+convention_sans_fin:
+  user: george_lucas
+  service: comptabilite
+  date_début: 2025-01-01
+  heures_conventionnees: 200
   slug: <%= SecureRandom.uuid %>

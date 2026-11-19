@@ -136,6 +136,19 @@ class TrisTest < ActionDispatch::IntegrationTest
     assert_equal ids.uniq, ids
   end
 
+  test 'le tri des conventions par heures consommées range en tête la plus consommée de l’année en cours' do
+    travel_to Time.zone.local(2026, 10, 26, 12)
+    plus_consommée = conventions(:convention_sans_fin)
+    Intervention.create!(description: 'Intervention sous convention', adherent_id: plus_consommée.user_id,
+                         service: plus_consommée.service, début: Time.zone.local(2026, 3, 10, 9),
+                         slug: SecureRandom.uuid).update_columns(temps_total: 4)
+    sign_in users(:administrateur_paris)
+
+    get conventions_path(column: 'conventions.heures_consommees', direction: 'desc')
+
+    assert_equal [plus_consommée, conventions(:convention_paris)], assigns(:conventions).to_a
+  end
+
   private
 
   # [libellé, contrôleur, modèle trié, utilisateur, chemin]

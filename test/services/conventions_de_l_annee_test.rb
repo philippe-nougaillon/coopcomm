@@ -35,11 +35,42 @@ class ConventionsDeLAnneeTest < ActiveSupport::TestCase
     end
   end
 
+  test 'les heures consommées et prévues d’une convention sans date de fin sont celles de l’année en cours (critique)' do
+    Intervention.create!(adherent: users(:george_lucas), service: services(:comptabilite), description: 'Bilan fait l’an passé',
+                         début: Time.zone.local(2025, 11, 12, 9), workflow_state: Intervention::VALIDE).update_columns(temps_total: 7)
+    Intervention.create!(adherent: users(:george_lucas), service: services(:comptabilite), description: 'Bilan fait cette année',
+                         début: Time.zone.local(2026, 3, 10, 9), workflow_state: Intervention::VALIDE).update_columns(temps_total: 4)
+    Intervention.create!(adherent: users(:george_lucas), service: services(:comptabilite), description: 'Clôture prévue cette année',
+                         début_prévue: Time.zone.local(2026, 11, 10, 9), fin_prévue: Time.zone.local(2026, 11, 10, 11),
+                         workflow_state: Intervention::NOUVEAU)
+    Intervention.create!(adherent: users(:george_lucas), service: services(:comptabilite), description: 'Clôture prévue l’an prochain',
+                         début_prévue: Time.zone.local(2027, 1, 12, 9), fin_prévue: Time.zone.local(2027, 1, 12, 12),
+                         workflow_state: Intervention::NOUVEAU)
+
+    mesures = travel_to(Time.zone.local(2026, 10, 26, 12)) { ConventionsDeLAnnee.call(users(:george_lucas)) }
+
+    assert_equal 1, mesures.size
+    assert_in_delta 4.0, mesures.first[:consommees]
+    assert_in_delta 2.0, mesures.first[:prevues]
+  end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'une convention qui ne recouvre pas l’année en cours n’est pas retenue' do
     travel_to Time.zone.local(2027, 3, 1, 12) do
       assert_empty ConventionsDeLAnnee.call(users(:hidalgo))
+    end
+  end
+
+  test 'une convention sans date de fin est retenue chaque année, bornée à l’année en cours' do
+    mesures = travel_to(Time.zone.local(2027, 3, 1, 12)) { ConventionsDeLAnnee.call(users(:george_lucas)) }
+
+    assert_equal [%w[2027-01-01 2027-12-31]], mesures.map { |mesure| mesure.values_at(:du, :au) }
+  end
+
+  test 'une convention sans date de fin n’est pas retenue avant l’année de son début' do
+    travel_to Time.zone.local(2024, 6, 3, 12) do
+      assert_empty ConventionsDeLAnnee.call(users(:george_lucas))
     end
   end
 end

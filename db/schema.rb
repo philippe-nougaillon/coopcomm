@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_04_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_10_140100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -143,7 +143,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_160000) do
     t.datetime "created_at", null: false
     t.date "date_début"
     t.date "date_fin_prévue"
-    t.decimal "heures_consommees", precision: 8, scale: 2, default: "0.0"
     t.decimal "heures_conventionnees", precision: 10, scale: 2, default: "0.0"
     t.text "mémo"
     t.string "ref"
