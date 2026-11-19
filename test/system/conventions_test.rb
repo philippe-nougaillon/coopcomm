@@ -143,6 +143,19 @@ class ConventionsTest < ApplicationSystemTestCase
     assert_no_selector "[data-controller='dropzone'][data-dropzone-state='error']"
   end
 
+  test "En tant qu'administrateur, je veux enregistrer une convention sans date de fin" do
+    visit new_convention_path
+    select_option '#convention_user_id', 'Patrick'
+    assert_selector '#convention_service_id option', text: 'Service_Paris', visible: false, wait: 5
+    select_option '#convention_service_id', 'Service_Paris'
+    fill_in 'convention_heures_conventionnees', with: 10
+
+    cliquer_bouton 'Enregistrer'
+
+    assert_current_path conventions_path
+    assert_nil users(:patrick_adherent_paris).conventions.last.date_fin_prévue
+  end
+
   # --- Liste de services dépendante de l'adhérent (controller dynamic-select) ---
 
   test "En tant qu'administrateur, je veux voir la liste des services se remplir selon l'adhérent choisi" do

@@ -56,15 +56,23 @@ class ColonnesTriablesTest < ActiveSupport::TestCase
   end
 
   test 'la clé de tri « heures consommées » reflète la somme calculée par la convention' do
+    travel_to Time.zone.local(2026, 10, 26, 12)
     convention = conventions(:convention_paris)
     début = Time.zone.parse('2026-03-02 09:00:00')
     Intervention.create!(description: 'Intervention sous convention', adherent_id: convention.user_id,
                          service: convention.service, agents: [users(:hidalgo)], temps_de_pause: 0,
                          début: début, fin: début + 3.hours, slug: SecureRandom.uuid)
+    sans_fin = conventions(:convention_sans_fin)
+    Intervention.create!(description: 'Intervention de l’année précédente', adherent_id: sans_fin.user_id,
+                         service: sans_fin.service, début: Time.zone.parse('2025-06-02 09:00:00'),
+                         slug: SecureRandom.uuid).update_columns(temps_total: 5)
+    Intervention.create!(description: 'Intervention de l’année en cours', adherent_id: sans_fin.user_id,
+                         service: sans_fin.service, début: Time.zone.parse('2026-06-02 09:00:00'),
+                         slug: SecureRandom.uuid).update_columns(temps_total: 2)
 
     attendu = Convention.all.to_h { |c| [c.id, c.heures_consommees.to_f] }
 
-    assert_equal({ convention.id => 3.0 }, attendu.slice(convention.id))
+    assert_equal({ convention.id => 3.0, sans_fin.id => 2.0 }, attendu.slice(convention.id, sans_fin.id))
     assert_equal attendu, clés_sql(Convention, 'conventions.heures_consommees', &:to_f)
   end
 
@@ -89,6 +97,7 @@ class ColonnesTriablesTest < ActiveSupport::TestCase
     expression = case modele.colonnes_triables[colonne]
                  when :texte then TriTextuel.expression(colonne)
                  when :brut  then colonne
+                 when Proc   then modele.colonnes_triables[colonne].call
                  else modele.colonnes_triables[colonne]
                  end
 

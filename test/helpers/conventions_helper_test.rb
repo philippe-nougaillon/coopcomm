@@ -3,6 +3,10 @@
 require 'test_helper'
 
 class ConventionsHelperTest < ActionView::TestCase
+  setup do
+    travel_to Time.zone.local(2026, 7, 1, 12)
+  end
+
   test 'une convention à venir est annoncée à 0 % avec la couleur info' do
     prog = convention_progress(convention(Date.new(2026, 7, 1), Date.new(2026, 12, 31)),
                                today: Date.new(2026, 6, 1))
@@ -19,10 +23,9 @@ class ConventionsHelperTest < ActionView::TestCase
     refute prog[:indeterminate]
   end
 
-  test "une convention proche de l'échéance passe en couleur warning au-delà de 80 %" do
-    prog = convention_progress(convention(Date.new(2026, 1, 1), Date.new(2026, 12, 31)),
-                               today: Date.new(2026, 12, 1))
-    assert_operator prog[:percent], :>=, 80
+  test "une convention consommée en avance de 10 % sur le rythme de l'année passe en couleur warning" do
+    prog = convention_progress(convention(Date.new(2026, 1, 1), nil, conventionnees: 365, consommees: 110),
+                               today: Date.new(2026, 4, 10))
     assert_equal 'progress-warning', prog[:color]
   end
 
@@ -38,6 +41,45 @@ class ConventionsHelperTest < ActionView::TestCase
     same = Date.new(2026, 6, 8)
     assert_equal 100, convention_progress(convention(same, same), today: same)[:percent]
     assert_equal 0,   convention_progress(convention(same, same), today: same - 1)[:percent]
+  end
+
+  test "une convention sans date de fin avance avec l'année en cours" do
+    prog = convention_progress(convention(Date.new(2024, 3, 1), nil), today: Date.new(2026, 7, 1))
+    assert_equal 50, prog[:percent]
+    assert_equal 'progress-success', prog[:color]
+  end
+
+  test "une convention commencée en cours d'année avance sur la part de l'année qu'elle couvre" do
+    prog = convention_progress(convention(Date.new(2026, 7, 1), nil), today: Date.new(2026, 10, 1))
+    assert_equal 50, prog[:percent]
+  end
+
+  test 'une convention expirée une année précédente est annoncée à 100 % avec la couleur error' do
+    prog = convention_progress(convention(Date.new(2024, 1, 1), Date.new(2024, 12, 31)),
+                               today: Date.new(2026, 7, 1))
+    assert_equal 100, prog[:percent]
+    assert_equal 'Expirée', prog[:label]
+    assert_equal 'progress-error', prog[:color]
+  end
+
+  test 'une convention qui commence une année suivante reste annoncée à venir le 31 décembre' do
+    prog = convention_progress(convention(Date.new(2027, 3, 1), nil), today: Date.new(2026, 12, 31))
+    assert_equal 0, prog[:percent]
+    assert_equal 'À venir', prog[:label]
+  end
+
+  test "une convention consommée en avance de moins de 10 % sur le rythme de l'année reste en couleur success" do
+    prog = convention_progress(convention(Date.new(2026, 1, 1), nil, conventionnees: 365, consommees: 109),
+                               today: Date.new(2026, 4, 10))
+    assert_equal 'progress-success', prog[:color]
+  end
+
+  test 'une convention dont les heures conventionnées sont dépassées passe en couleur error' do
+    assert_equal 'progress-error', heures(conventionnees: 10, consommees: 15)[:color]
+  end
+
+  test 'une convention dont les heures consommées égalent les heures conventionnées ne passe pas en couleur error' do
+    assert_equal 'progress-warning', heures(conventionnees: 10, consommees: 10)[:color]
   end
 
   # ==================== Indicateur d'heures consommées ====================

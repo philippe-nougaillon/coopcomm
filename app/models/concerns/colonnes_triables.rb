@@ -10,7 +10,8 @@
 #
 # `:texte` ignore accents et majuscules, `:brut` trie la colonne telle quelle,
 # une chaîne est une expression SQL libre — sous-requête scalaire de préférence,
-# pour ne jamais dupliquer de ligne.
+# pour ne jamais dupliquer de ligne —, une lambda rend cette chaîne à chaque
+# requête, quand l'expression dépend de la date du jour.
 module ColonnesTriables
   extend ActiveSupport::Concern
 
