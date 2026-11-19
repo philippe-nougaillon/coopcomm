@@ -14,8 +14,7 @@ module TransformToPdf
       # Renommé en @record pour éviter tout conflit de nom avec le document Prawn de Prawn::View
       @record = record
 
-      # Les polices intégrées de Prawn gèrent les accents français (Windows-1252)
-      Prawn::Fonts::AFM.hide_m17n_warning = true
+      Polices.call(document)
       
       # Chemin vers le logo officiel de l'établissement
       @logo = Rails.root.join('app/assets/images/Logo_CC_MAd_et_Moselle.jpg').to_s

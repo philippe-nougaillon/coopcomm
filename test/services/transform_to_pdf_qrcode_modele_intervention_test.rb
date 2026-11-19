@@ -29,6 +29,12 @@ class TransformToPdfQrcodeModeleInterventionTest < ActiveSupport::TestCase
     assert_includes texte_pdf(pdf_qrcode_genere(@intervention_modèle)), 'Scanner pour accéder'
   end
 
+  test 'une description hors de l’alphabet latin est imprimée telle quelle' do
+    @intervention_modèle.update_column(:description, 'Tonte ☀ chez Łukasz')
+
+    assert_includes texte_pdf(pdf_qrcode_genere(@intervention_modèle)), 'TONTE ☀ CHEZ ŁUKASZ'
+  end
+
   test 'le logo de l’organisation est intégré à l’affiche' do
     assert_includes pdf_qrcode_genere(@intervention_modèle).render, '/DCTDecode'
   end

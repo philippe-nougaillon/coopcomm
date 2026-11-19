@@ -23,17 +23,7 @@ module TransformToPdf
 
       @intervention = intervention
 
-      # Assests à récupérer si besoin dans un autre projet
-      # self.font_families.update("OpenSans" => {
-      #   :normal => Rails.root.join("vendor/assets/fonts/Open_Sans/static/OpenSans/OpenSans-Regular.ttf"),
-      #   :italic => Rails.root.join("vendor/assets/fonts/Open_Sans/static/OpenSans/OpenSans-Italic.ttf"),
-      #   :bold => Rails.root.join("vendor/assets/fonts/Open_Sans/static/OpenSans/OpenSans-Bold.ttf"),
-      #   :bold_italic => Rails.root.join("vendor/assets/fonts/Open_Sans/static/OpenSans/OpenSans-BoldItalic.ttf")
-      # })
-
-      # Les polices intégrées de Prawn gèrent les accents français (Windows-1252) ;
-      # on masque l'avertissement m17n non bloquant.
-      Prawn::Fonts::AFM.hide_m17n_warning = true
+      Polices.call(document)
       @margin_down = 15
       @image_path = "#{Rails.root}/app/assets/images"
       @logo_organisation = "#{@image_path}/Logo_CC_MAd_et_Moselle.jpg"

@@ -146,10 +146,10 @@ class TransformToPdfInterventionTest < ActiveSupport::TestCase
     assert_includes texte, 'Distance: 50 km'
   end
 
-  test 'un caractère absent du jeu latin ne fait pas échouer la génération' do
+  test 'un caractère hors de l’alphabet latin est imprimé tel quel' do
     @intervention.update_column(:description, 'Tonte du parc ☀ terminée')
 
-    assert_includes fiche(@intervention, @manager), 'Tonte du parc'
+    assert_includes fiche(@intervention, @manager), 'Tonte du parc ☀ terminée'
   end
 
   test "l'historique traduit les champs modifiés plutôt que d'imprimer leur nom technique" do
@@ -158,7 +158,7 @@ class TransformToPdfInterventionTest < ActiveSupport::TestCase
 
     texte = fiche(@intervention, @manager)
 
-    assert_includes texte, 'Statut : nouveau -> terminé'
+    assert_includes texte, 'Statut : nouveau → terminé'
   end
 
   test "l'historique nomme l'agent rattaché sans répéter le numéro de l'intervention" do
@@ -231,13 +231,8 @@ class TransformToPdfInterventionTest < ActiveSupport::TestCase
   end
 
   def lignes_du_pdf(document)
-    document.render.dup.force_encoding(Encoding::BINARY).scan(/BT(.*?)ET/m).filter_map do |(bloc)|
-      position = bloc.match(/([\d.]+) ([\d.]+) Td/)
-      next if position.nil?
-
-      texte = bloc.scan(/<([0-9A-Fa-f]+)>/).map { |(hexa)| [hexa].pack('H*') }.join
-      { x: position[1].to_f, y: position[2].to_f, taille: bloc[%r{/F[\w.]+ ([\d.]+) Tf}, 1].to_f,
-        texte: texte.force_encoding('Windows-1252').encode('UTF-8') }
+    PDF::Reader.new(StringIO.new(document.render)).pages.flat_map(&:runs).map do |ligne|
+      { x: ligne.x, y: ligne.y, taille: ligne.font_size, texte: ligne.text }
     end
   end
 

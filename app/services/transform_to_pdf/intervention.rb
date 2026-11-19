@@ -41,11 +41,6 @@ module TransformToPdf
       'neutral' => '000000'
     }.freeze
 
-    # Les polices intégrées de Prawn ne connaissent que Windows-1252 et lèvent
-    # sur tout le reste. Le texte du trajet porte « CO₂ », et une saisie mobile
-    # peut porter n'importe quoi.
-    SUBSTITUTIONS = { '₂' => '2', '→' => '->' }.freeze
-
     # Marge basse élargie : elle réserve la bande du pied de page, que le flux
     # de contenu ne peut alors plus atteindre — Prawn ouvre une page plutôt que
     # de descendre sous `bounds`.
@@ -60,7 +55,7 @@ module TransformToPdf
       @user = user
       @policy = InterventionPolicy.new(user, intervention)
 
-      Prawn::Fonts::AFM.hide_m17n_warning = true
+      Polices.call(document)
       @logo = Rails.root.join('app/assets/images/Logo_CC_MAd_et_Moselle.jpg').to_s
     end
 
@@ -103,8 +98,8 @@ module TransformToPdf
 
     # Le titre porte la couleur de l'état ; le badge se pose sous lui.
     def add_titre_et_badge(largeur)
-      libellé = texte_sûr(@intervention.description.to_s.humanize)
-      état = texte_sûr(@intervention.workflow_state.to_s.humanize.upcase)
+      libellé = @intervention.description.to_s.humanize
+      état = @intervention.workflow_state.to_s.humanize.upcase
       couleur = couleur_état
 
       # `text` et non `text_box` : il revient à la ligne et descend le curseur de
@@ -212,7 +207,7 @@ module TransformToPdf
       text 'Commentaires', size: 10, style: :bold
 
       move_down 4
-      text texte_sûr(@intervention.commentaires.presence || 'Aucun commentaire.'), size: 10, align: :justify
+      text @intervention.commentaires.presence || 'Aucun commentaire.', size: 10, align: :justify
     end
 
     def add_temps_seuls
@@ -383,7 +378,7 @@ module TransformToPdf
           if donnees
             image donnees, fit: [TAILLE_VIGNETTE, TAILLE_VIGNETTE]
           else
-            text texte_sûr("Aperçu indisponible (#{piece.filename})"), size: 7, style: :italic
+            text "Aperçu indisponible (#{piece.filename})", size: 7, style: :italic
           end
         end
       end
@@ -411,31 +406,18 @@ module TransformToPdf
     def table_infos(lignes)
       return if lignes.empty?
 
-      table(assainir(lignes), width: bounds.width, cell_style: { border_width: 0, padding: 4, size: 10 }) do
+      table(lignes, width: bounds.width, cell_style: { border_width: 0, padding: 4, size: 10 }) do
         column(0).font_style = :bold
         column(0).width = LARGEUR_LIBELLE
       end
     end
 
     def table_donnees(lignes, colonnes: nil)
-      table(assainir(lignes), header: true, width: bounds.width, cell_style: { padding: 5, size: 8 }) do |t|
+      table(lignes, header: true, width: bounds.width, cell_style: { padding: 5, size: 8 }) do |t|
         t.row(0).font_style = :bold
         t.row(0).background_color = 'EEEEEE'
         t.column_widths = colonnes if colonnes
       end
-    end
-
-    def assainir(lignes)
-      lignes.map { |ligne| ligne.map { |cellule| texte_sûr(cellule) } }
-    end
-
-    # Traduit les caractères connus puis remplace par « ? » tout ce qui reste
-    # hors Windows-1252 : Prawn ne dégrade pas ces caractères, il lève, et toute
-    # la génération tombe avec eux.
-    def texte_sûr(valeur)
-      texte = valeur.to_s
-      SUBSTITUTIONS.each { |source, cible| texte = texte.gsub(source, cible) }
-      texte.encode('Windows-1252', invalid: :replace, undef: :replace, replace: '?').encode('UTF-8')
     end
 
     def date_ou(valeur, defaut, format: :long)

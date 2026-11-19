@@ -151,6 +151,17 @@ class TransformToPdfBasePdfForCrmTest < ActiveSupport::TestCase
     assert_match(/Entretien des espaces verts/i, texte)
   end
 
+  test 'les caractères hors de l’alphabet latin sont imprimés dans les métadonnées, les lignes et le mémo' do
+    @cotation.update_columns(intitulé: 'Tonte ☀ du parc', mémo: 'Contact : Łukasz Wiśniewski')
+    @cotation.cotation_lignes.first.update_columns(intitulé: 'Débroussaillage → tonte')
+
+    texte = texte_pdf(TransformToPdf::Cotation.call(@cotation.reload))
+
+    assert_includes texte, 'Intitulé : Tonte ☀ du parc'
+    assert_includes texte, 'Débroussaillage → tonte'
+    assert_includes texte, 'Contact : Łukasz Wiśniewski'
+  end
+
   private
 
   # Le pad de signature transmet un SVG encodé en base64 dans une data URI.

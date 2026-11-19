@@ -84,6 +84,7 @@ group :test do
   gem 'simplecov', require: false
   gem 'minitest-mock'
   gem 'webmock'
+  gem 'pdf-reader'
 end
 
 gem 'devise', '~> 4.9'
