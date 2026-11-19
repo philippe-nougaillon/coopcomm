@@ -255,7 +255,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
       get home_url
     end
 
-    assert_equal ['Weil Ariel'], assigns(:conventions).map { |convention| convention[:adherent] }
+    assert_equal %w[Comptabilité Informatique], assigns(:conventions).map { |convention| convention[:service] }.sort
   end
 
   test 'la page d’accueil d’un adhérent porte ses conventions de l’année (critique)' do

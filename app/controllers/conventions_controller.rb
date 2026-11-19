@@ -47,7 +47,7 @@ class ConventionsController < ApplicationController
 
   # GET /conventions/new
   def new
-    @convention = Convention.new
+    @convention = Convention.new(date_début: Date.current.beginning_of_year)
     @convention.user = find_adherent(params[:adherent_id]) if params[:adherent_id].present?
     set_form_collections
   end

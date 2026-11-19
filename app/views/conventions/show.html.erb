@@ -61,12 +61,12 @@
             <progress class="progress <%= prog[:color] %> w-full h-4" value="<%= prog[:percent] %>" max="100"></progress>
           </div>
           <span class="text-xs text-slate-500">
-            <% if prog[:percent] == 100 %>
+            <% if prog[:label] == 'Expirée' %>
               La convention est <strong>expirée</strong>.
-            <% elsif prog[:percent] == 0 %>
+            <% elsif prog[:label] == 'À venir' %>
               La convention est <strong>à venir</strong>.
             <% else %>
-              <strong><%= prog[:label] %></strong> du temps total du contrat se sont écoulés.
+              <strong><%= prog[:label] %></strong> du temps de la convention sur l'année en cours se sont écoulés.
             <% end %>
           </span>
         </div>

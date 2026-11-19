@@ -4,6 +4,7 @@ require 'test_helper'
 
 class ConventionsControllerTest < ActionDispatch::IntegrationTest
   setup do
+    travel_to Time.zone.local(2026, 10, 26, 12)
     @admin = users(:administrateur_paris)
     @adherent = users(:patrick_adherent_paris)
     @service = services(:service_paris)
@@ -49,6 +50,13 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes assigns(:conventions), @convention
   end
 
+  test 'la liste filtrée par date retient une convention sans date de fin commencée avant cette date' do
+    get conventions_url(active_on: '2030-05-06')
+
+    assert_includes assigns(:conventions), conventions(:convention_sans_fin)
+    assert_not_includes assigns(:conventions), @convention
+  end
+
   test 'une convention est affichée avec succès' do
     get convention_url(@convention)
 
@@ -65,6 +73,15 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select 'h2', text: 'Activité'
     assert_select 'td', text: /Note de suivi/
+  end
+
+  test 'une convention sans date de fin est affichée avec succès' do
+    sans_fin = conventions(:convention_sans_fin)
+
+    get convention_url(sans_fin)
+
+    assert_response :success
+    assert_match sans_fin.service.nom, response.body
   end
 
   test 'le formulaire de création est affiché avec succès' do
@@ -88,6 +105,12 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes assigns(:adherents), users(:weil)
     assert_not_includes assigns(:adherents), users(:adherent_marseille)
+  end
+
+  test 'la date de début du formulaire de création est préremplie au 1ᵉʳ janvier de l’année en cours' do
+    get new_convention_url
+
+    assert_equal Date.new(2026, 1, 1), assigns(:convention).date_début
   end
 
   test 'une convention est créée lorsque les paramètres sont valides' do
@@ -146,6 +169,35 @@ class ConventionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_content
+  end
+
+  test 'une convention est créée sans date de fin' do
+    assert_difference('Convention.count') do
+      post conventions_url, params: { convention: params_valides.merge(date_fin_prévue: '') }
+    end
+
+    assert_redirected_to conventions_path
+    assert_nil @adherent.conventions.last.date_fin_prévue
+  end
+
+  test 'le formulaire de modification est affiché avec succès' do
+    get edit_convention_url(@convention)
+
+    assert_response :success
+  end
+
+  test 'une convention perd sa date de fin lorsqu’elle est vidée à la modification' do
+    patch convention_url(@convention), params: { convention: { date_fin_prévue: '' } }
+
+    assert_redirected_to conventions_path
+    assert_nil @convention.reload.date_fin_prévue
+  end
+
+  test 'une convention n’est pas modifiée avec zéro heure conventionnée' do
+    patch convention_url(@convention), params: { convention: { heures_conventionnees: 0 } }
+
+    assert_response :unprocessable_content
+    assert_equal 100, @convention.reload.heures_conventionnees
   end
 
   test 'une convention est supprimée' do
