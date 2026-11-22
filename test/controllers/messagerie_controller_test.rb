@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require_relative '../support/compte_aibbo'
 
 class MessagerieControllerTest < ActionDispatch::IntegrationTest
+  include CompteAibbo
+
   setup do
     @current_user = users(:hidalgo)
 
@@ -104,6 +107,37 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'une réponse d’AÏBBO est affichée mise en forme dans la conversation' do
+    reponse = Message.create!(from_user: users(:AIBBO), to_user: @current_user, message: "**Six** interventions :\n- une taille de haie")
+
+    get messagerie_conversation_url(users(:AIBBO).slug)
+
+    assert_dom "#message_#{reponse.id} strong", text: 'Six'
+    assert_dom "#message_#{reponse.id} li", text: 'une taille de haie'
+  end
+
+  test 'le message d’une personne est affiché tel qu’elle l’a écrit, sans mise en forme' do
+    message = Message.create!(from_user: @interlocutor_user, to_user: @current_user, message: 'Rendez-vous à **8 h**')
+
+    get messagerie_conversation_url(@interlocutor_user.slug)
+
+    assert_dom "#message_#{message.id} p", text: 'Rendez-vous à **8 h**'
+    assert_dom "#message_#{message.id} strong", count: 0
+  end
+
+  test 'une conversation avec AÏBBO propose ses niveaux de réflexion, équilibré par défaut' do
+    get messagerie_conversation_url(users(:AIBBO).slug)
+
+    assert_equal %w[rapide équilibré approfondi], css_select('select[name=niveau] option').map { |option| option['value'] }
+    assert_dom 'select[name=niveau] option[selected]', text: 'Équilibré'
+  end
+
+  test 'une conversation avec une personne ne propose aucun niveau de réflexion' do
+    get messagerie_conversation_url(@interlocutor_user.slug)
+
+    assert_dom 'select[name=niveau]', count: 0
+  end
+
   # ==================== TESTS CRITIQUES ====================
 
   test 'une conversation avec un utilisateur d’une autre organisation ramène à la messagerie (critique)' do
@@ -140,6 +174,18 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :success
+  end
+
+  test 'un message envoyé à AÏBBO lui est transmis avec le niveau de réflexion choisi' do
+    post messagerie_send_message_url, params: { message: 'Combien d’interventions ?', to_user_slug: users(:AIBBO).slug, niveau: 'approfondi' }
+
+    assert_enqueued_with(job: RepondreAibboJob, args: [@current_user, Message.last, 'approfondi'])
+  end
+
+  test 'un message envoyé à AÏBBO avec un niveau de réflexion inconnu lui est transmis sans niveau' do
+    post messagerie_send_message_url, params: { message: 'Combien d’interventions ?', to_user_slug: users(:AIBBO).slug, niveau: 'inconnu' }
+
+    assert_enqueued_with(job: RepondreAibboJob, args: [@current_user, Message.last, nil])
   end
 
   # ==================== TESTS CRITIQUES ====================

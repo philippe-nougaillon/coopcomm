@@ -195,6 +195,17 @@ adherent_nom_long:
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: b740618c-0461-4dc2-82b5-41d71dbe44dd
 
+adherent_marseille_avec_adresse_et_memo:
+  nom: COMMUNE AVEC ADRESSE
+  email: commune-avec-adresse@gmail.commmmm
+  rôle: adhérent
+  address: 1 rue de l'Exemple, 13000 Marseille
+  latitude: 43.296482
+  longitude: 5.369780
+  memo: Prévenir la mairie la veille de chaque intervention
+  encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
+  slug: 6f1d2c3b-4a5e-4f60-9b7a-8c9d0e1f2a3b
+
 # Organisation sans manager
 
 john_wick:
@@ -223,7 +234,6 @@ emmanuel_valls:
   slug: 33872d35-052f-427c-9181-e5aff5db1853
 
 AIBBO:
-  id: <%= ENV["UUID_AIBOT"] %>
   nom: AÏBBO
   slug: <%= SecureRandom.uuid %>
   email: aibbo@gmail.commmmmm

@@ -399,6 +399,17 @@ class User < ApplicationRecord
     where("unaccent(CONCAT(users.nom, ' ', users.prénom, ' ', users.nom)) ILIKE unaccent(?)", "%#{sanitize_sql_like(texte.strip)}%")
   end
 
+  # Les comptes dont `UserPolicy#show?` ouvre la fiche.
+  def self.visible_to(user)
+    if user.administrateur?
+      by_service(Service.where(organisation_id: user.organisation&.id))
+    elsif user.manager?
+      by_service(user.services)
+    else
+      where(id: user.id)
+    end
+  end
+
   private
 
   def slug_candidates

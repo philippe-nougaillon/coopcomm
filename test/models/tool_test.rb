@@ -285,6 +285,25 @@ class ToolTest < ActiveSupport::TestCase
     assert_equal [tools(:camion)], Tool.by_nom('  camion  ').to_a
   end
 
+  # ==================== TESTS CRITIQUES ====================
+  # Le matériel qu'un rôle peut lire par AÏBBO : celui dont il ouvre déjà la fiche.
+  test 'un agent voit le matériel de son organisation et lui seul (critique)' do
+    visibles = Tool.visible_to(users(:bond))
+
+    assert_equal tools(:tondeuse, :rateau, :cisaille, :outil_paris, :outil_adherent, :taille_haie_en_panne_en_mai_2024,
+                       :souffleur_reserve_en_mai_2024).sort_by(&:id), visibles.sort_by(&:id)
+  end
+
+  test 'un manager ne voit aucun matériel d’une autre organisation (critique)' do
+    assert_empty Tool.visible_to(users(:hidalgo)) & tools(:camion, :outil_marseille)
+  end
+
+  test 'un adhérent ne voit aucun matériel (critique)' do
+    assert_empty Tool.visible_to(users(:weil))
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
   private
 
   def png

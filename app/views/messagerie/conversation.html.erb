@@ -75,7 +75,11 @@
             </div>
           </div>
           <% if @peut_ecrire %>
-          <form data-action="submit->conversation#send" class="flex gap-2 items-center w-full p-4 md:px-2 ">
+          <form data-action="submit->conversation#send" class="flex flex-wrap gap-2 items-center w-full p-4 md:px-2 ">
+            <% if @destinataire&.is_aibot? %>
+              <%= select_tag :niveau, options_for_select(Aibbo::Repondre::NIVEAUX.keys.map { |niveau| [niveau.capitalize, niveau] }, session[:niveau_aibbo] || 'équilibré'),
+                             class: 'select select-bordered w-auto h-auto min-h-10 self-stretch flex-shrink-0 rounded-xl shadow-sm', 'aria-label': 'Niveau de réflexion', data: { conversation_target: 'niveau' } %>
+            <% end %>
             <input
               data-conversation-target="input"
               type="text"

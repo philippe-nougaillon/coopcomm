@@ -1,8 +1,14 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require_relative '../support/compte_aibbo'
 
 class PagesControllerTest < ActionDispatch::IntegrationTest
+  include CompteAibbo
+
+  # La seule adresse que WebMock laisse répondre : toute autre requête vers Mistral fait tomber le test.
+  ADRESSE_DU_MODELE = 'https://api.eu.mistral.ai/v1/chat/completions'
+
   setup do
     @clé_mistral_initiale = ENV.fetch('MISTRAL_AI_API_KEY', nil)
     ENV['MISTRAL_AI_API_KEY'] = 'clé-de-test'
@@ -23,27 +29,21 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
 
   test 'l’assistant ne sollicite pas le LLM sans clic sur le bouton de génération' do
     sign_in users(:administrateur_paris)
-    llm_called = false
 
-    Langchain::LLM::MistralAI.stub(:new, ->(*) { llm_called = true; FakeLlm.new }) do
-      get assistant_url
-    end
+    get assistant_url
 
     assert_response :success
-    assert_not llm_called, 'le LLM ne doit pas être sollicité sans clic sur le bouton'
+    assert_not_requested :post, ADRESSE_DU_MODELE
     assert_nil assigns(:results)
   end
 
   test 'l’assistant signale le manque d’interventions sans solliciter le LLM' do
     sign_in users(:administrateur_paris)
-    llm_called = false
 
-    Langchain::LLM::MistralAI.stub(:new, ->(*) { llm_called = true; FakeLlm.new }) do
-      get assistant_url, params: { commit: 'Lancer la génération de propositions' }
-    end
+    get assistant_url, params: { commit: 'Lancer la génération de propositions' }
 
     assert_response :success
-    assert_not llm_called, 'sous le minimum, aucun appel LLM'
+    assert_not_requested :post, ADRESSE_DU_MODELE
     assert_match(/pas encore assez/, assigns(:results))
   end
 
@@ -56,10 +56,21 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_match(/pas encore assez d'interventions/i, assigns(:results))
   end
 
+  test 'l’assistant n’envoie les intitulés des interventions qu’au point d’accès européen de Mistral (critique)' do
+    sign_in users(:administrateur_paris)
+    cree_interventions_planifiees(10)
+    stub_request(:post, ADRESSE_DU_MODELE)
+      .to_return(status: 200, headers: { 'Content-Type' => 'application/json' }, body: file_fixture('responseMistralReponse.json').read)
+
+    get assistant_url(commit: 'Générer')
+
+    assert_requested(:post, ADRESSE_DU_MODELE, times: 1) { |requete| requete.body.include?('Intervention planifiée 0') }
+  end
+
   test 'la proposition du LLM est affichée mise en forme' do
     sign_in users(:administrateur_paris)
     cree_interventions_planifiees(10)
-    stub_request(:post, %r{api\.mistral\.ai})
+    stub_request(:post, ADRESSE_DU_MODELE)
       .to_return(status: 200,
                  headers: { 'Content-Type' => 'application/json' },
                  body: {
@@ -80,13 +91,46 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
   test 'un échec du LLM est signalé sans planter' do
     sign_in users(:administrateur_paris)
     cree_interventions_planifiees(10)
-    stub_request(:post, %r{api\.mistral\.ai}).to_return(status: 500, body: 'boom')
+    stub_request(:post, ADRESSE_DU_MODELE).to_return(status: 500, body: 'boom')
 
     get assistant_url(commit: 'Générer')
 
     assert_response :success
     assert assigns(:is_failed)
     assert_match(/Veuillez attendre/i, assigns(:results))
+  end
+
+  test 'une image écrite par le LLM dans sa proposition n’est pas affichée (critique)' do
+    sign_in users(:administrateur_paris)
+    cree_interventions_planifiees(10)
+    stub_request(:post, ADRESSE_DU_MODELE)
+      .to_return(status: 200,
+                 headers: { 'Content-Type' => 'application/json' },
+                 body: {
+                   id: 'cmpl-test', object: 'chat.completion', created: 1, model: 'mistral-large-latest',
+                   choices: [{ index: 0, message: { role: 'assistant', content: 'Tailler ![x](https://exemple.test/?q=secret)' },
+                               finish_reason: 'stop' }],
+                   usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 }
+                 }.to_json)
+
+    get assistant_url(commit: 'Générer')
+
+    assert_dom 'p', text: /Tailler/
+    assert_dom 'img[src*="exemple.test"]', count: 0
+  end
+
+  test 'l’assistant annonce le modèle qui a répondu' do
+    sign_in users(:administrateur_paris)
+    cree_interventions_planifiees(10)
+    modele_interroge = nil
+    stub_request(:post, ADRESSE_DU_MODELE)
+      .with { |requete| modele_interroge = JSON.parse(requete.body)['model'] }
+      .to_return(status: 200, headers: { 'Content-Type' => 'application/json' }, body: file_fixture('responseMistralReponse.json').read)
+
+    get assistant_url(commit: 'Générer')
+
+    assert_not_nil modele_interroge
+    assert_dom 'span', text: "(#{modele_interroge})"
   end
 
   test 'les mentions légales sont affichées sans être connecté' do
@@ -356,6 +400,16 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
 
   # ==================== /TESTS CRITIQUES ====================
 
+  test 'une réponse d’AÏBBO non lue est résumée sur la page d’accueil sans ses marques de mise en forme' do
+    sign_in users(:hidalgo)
+    Message.create!(from_user: users(:AIBBO), to_user: users(:hidalgo), message: "**Six** interventions :\n- une taille de haie")
+
+    get home_url
+
+    assert_dom "a[href='#{messagerie_conversation_path(users(:AIBBO).slug)}']", text: 'Six interventions : une taille de haie'
+    assert_dom "a[href='#{messagerie_conversation_path(users(:AIBBO).slug)}'] *", count: 0
+  end
+
   test 'la page météo est affichée avec des prévisions' do
     sign_in users(:hidalgo)
 
@@ -383,16 +437,6 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal({}, JSON.parse(response.body))
-  end
-
-  # Fake LLM minimal : reproduit le contrat utilisé par le contrôleur
-  # (chat(...).chat_completion) sans jamais toucher l'API Mistral.
-  class FakeLlm
-    Response = Struct.new(:chat_completion)
-
-    def chat(*)
-      Response.new('# Proposition\nContenu généré')
-    end
   end
 
   private

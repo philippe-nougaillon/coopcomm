@@ -509,6 +509,38 @@ class UserTest < ActiveSupport::TestCase
     assert_equal [users(:hidalgo)], User.search_with_generic_name('hidalgo').joins(:services).distinct.to_a
   end
 
+  # ==================== TESTS CRITIQUES ====================
+  # Les comptes qu'un rôle peut lire par AÏBBO : ceux dont il ouvre déjà la fiche, par ses services.
+  test 'un administrateur voit les comptes d’un service de son organisation dont il n’est pas membre (critique)' do
+    assert_includes User.visible_to(users(:administrateur_paris)), users(:agent_with_location)
+  end
+
+  test 'un administrateur ne voit aucun compte d’une autre organisation (critique)' do
+    assert_empty User.visible_to(users(:administrateur_paris)) & users(:agent_marseille, :manager_marseille, :adherent_marseille)
+  end
+
+  test 'un manager ne voit que les comptes de ses services (critique)' do
+    visibles = User.visible_to(users(:manager_marseille))
+
+    assert_equal users(:adherent_marseille, :adherent_nom_long, :adherent_marseille_avec_adresse_et_memo, :agent_marseille, :manager_marseille,
+                       :nettoyeur_marseille).sort_by(&:id),
+                 visibles.sort_by(&:id)
+  end
+
+  test 'un manager ne voit pas un compte d’un service de son organisation qu’il n’encadre pas (critique)' do
+    assert_not_includes User.visible_to(users(:manager_paris)), users(:bond)
+  end
+
+  test 'un agent ne voit que son propre compte (critique)' do
+    assert_equal [users(:bond)], User.visible_to(users(:bond)).to_a
+  end
+
+  test 'un adhérent ne voit que son propre compte (critique)' do
+    assert_equal [users(:weil)], User.visible_to(users(:weil)).to_a
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
   private
 
   def nouveau(rôle:, service_ids: [])

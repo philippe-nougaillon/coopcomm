@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require_relative '../support/compte_aibbo'
 
 class MessageTest < ActiveSupport::TestCase
   include ActionCable::TestHelper
+  include CompteAibbo
 
   test 'les messages sont triés du plus récent au plus ancien' do
     ancien = Message.create!(from_user: users(:hidalgo), to_user: users(:weil), message: 'Ancien',

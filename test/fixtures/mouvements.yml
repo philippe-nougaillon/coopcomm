@@ -25,3 +25,21 @@ mouvement_adherent:
   user: weil
   état: 0
   date: <%= 3.days.ago %>
+
+panne_taille_haie_mai_2024:
+  tool: taille_haie_en_panne_en_mai_2024
+  user: bond
+  état: 1
+  date: 2024-05-06
+
+fin_de_panne_taille_haie_mai_2024:
+  tool: taille_haie_en_panne_en_mai_2024
+  user: bond
+  état: 2
+  date: 2024-05-10
+
+reservation_souffleur_mai_2024:
+  tool: souffleur_reserve_en_mai_2024
+  user: martin_technique_paris
+  état: 0
+  date: 2024-05-07

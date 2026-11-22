@@ -158,3 +158,14 @@ demande_par_mail_marseille:
   description: "[MAIL] Lampadaire en panne"
   workflow_state: nouveau
   slug: 1b9e7a2c-5d3f-4e8b-a6c0-9f4d2e1b7c3a
+
+intervention_en_retard_avril_2024:
+  adherent: george_lucas
+  description: Souffler les allées
+  workflow_state: archivé
+  slug: 5c7e9a1b-3d2f-4b6a-8e0c-1f2a3b4c5d6e
+  service: comptabilite
+  début_prévue: 2024-04-22 08:00:00
+  fin_prévue: 2024-04-22 12:00:00
+  début: 2024-04-24 08:00:00
+  fin: 2024-04-24 12:00:00

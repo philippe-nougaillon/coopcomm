@@ -130,6 +130,11 @@ class Tool < ApplicationRecord
     where('unaccent(tools.name) ILIKE unaccent(?)', "%#{sanitize_sql_like(nom.strip)}%")
   end
 
+  # Le matériel dont `ToolPolicy#show?` ouvre la fiche : celui de l'organisation, jamais pour un adhérent.
+  def self.visible_to(user)
+    user.adhérent? ? none : where(organisation: user.organisation)
+  end
+
   private
 
   def create_mouvement

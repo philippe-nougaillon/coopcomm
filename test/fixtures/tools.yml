@@ -43,3 +43,13 @@ outil_adherent:
   name: Outil réservé par un adhérent
   organisation: mairie_paris
   slug: 6b0a1c2d-3e4f-4a5b-8c9d-0e1f2a3b4c5d
+
+taille_haie_en_panne_en_mai_2024:
+  name: Taille-haie
+  organisation: mairie_paris
+  slug: 3f1c2a7e-5b64-4d0a-9c1e-7a2b8c9d0e1f
+
+souffleur_reserve_en_mai_2024:
+  name: Souffleur
+  organisation: mairie_paris
+  slug: 8d2e4f6a-1b3c-4e5f-a7b8-c9d0e1f2a3b4

@@ -42,11 +42,10 @@
     <div class="mb-4 animate-fade-in">
       <h3 class="text-xl font-semibold mb-4">
         Propositions de l'IA
-        <span class="text-sm font-normal text-slate-400">(mistral-medium-2508)</span>
+        <span class="text-sm font-normal text-slate-400">(<%= ChatMistral::MODELE %>)</span>
       </h3>
-      <%# Version Mistral — sanitize en 2e barrière derrière filter_html (injection de prompt) %>
       <div class="prose max-w-none typewriter">
-        <%= sanitize(@results) %>
+        <%= @results %>
       </div>
     </div>
   <% end %>

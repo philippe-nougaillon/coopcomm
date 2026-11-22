@@ -115,6 +115,7 @@ gem 'aws-sdk-s3', require: false
 gem 'langchainrb', '~> 0.13.4'
 
 gem 'mistral-ai', '~> 1.2'
+gem 'ruby-openai', '~> 7.1'
 
 gem 'csv', '~> 3.3'
 gem 'tiktoken_ruby', '~> 0.0.9'
@@ -179,12 +180,12 @@ gem 'capture_stdout', '~> 0.0.1'
 
 gem 'devise_invitable', '~> 2.0'
 
-gem 'boxcars'
-
-gem 'openai'
-
 group :development do
   gem 'htmlbeautifier'
 end
 
 gem "rack-attack", "~> 6.8"
+
+gem 'ruby_llm', '~> 2.1.1'
+# json 3 est incompatible avec ActiveSupport tant que Rails est sous 8.1.4
+gem 'json', '< 3'

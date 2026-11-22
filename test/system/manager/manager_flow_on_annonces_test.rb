@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 require 'application_system_test_case'
+require_relative '../../support/compte_aibbo'
 
 class ManagerFlowOnAnnoncesTest < ApplicationSystemTestCase
+  include CompteAibbo
+
   setup do
     login(users(:hidalgo))
   end

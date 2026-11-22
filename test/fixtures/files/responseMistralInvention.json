@@ -1,0 +1,12 @@
+{
+  "id": "requete-invention",
+  "model": "mistral-large-4",
+  "choices": [
+    {
+      "index": 0,
+      "finish_reason": "stop",
+      "message": { "role": "assistant", "content": "Votre intervention suivante est celle du 18 novembre 2026 à Charey, de 9h00 à 11h30." }
+    }
+  ],
+  "usage": { "prompt_tokens": 150, "completion_tokens": 20, "total_tokens": 170 }
+}
