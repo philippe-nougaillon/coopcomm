@@ -17,7 +17,7 @@ class UsersController < ApplicationController
     # Périmètre de services filtré (menu + pré-filtre admin), cf. ApplicationController.
     @users = User.by_service(scoped_services(:services))
 
-    @users = @users.unscoped.discarded if params[:discarded].present?
+    @users = @users.with_discarded.discarded if params[:discarded].present?
     @users = @users.ordered
 
     if params[:search].present?

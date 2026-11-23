@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_10_140100) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_16_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -140,19 +140,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_140100) do
   end
 
   create_table "conventions", force: :cascade do |t|
+    t.jsonb "analyse"
     t.datetime "created_at", null: false
     t.date "date_début"
     t.date "date_fin_prévue"
+    t.date "date_signature"
+    t.bigint "deposant_id"
     t.decimal "heures_conventionnees", precision: 10, scale: 2, default: "0.0"
     t.text "mémo"
     t.string "ref"
-    t.bigint "service_id", null: false
+    t.text "résumé"
+    t.bigint "service_id"
     t.string "slug"
     t.datetime "updated_at", null: false
-    t.bigint "user_id", null: false
+    t.bigint "user_id"
+    t.string "workflow_state", default: "validé", null: false
+    t.index ["deposant_id"], name: "index_conventions_on_deposant_id"
     t.index ["service_id"], name: "index_conventions_on_service_id"
-    t.index ["user_id", "service_id", "date_début", "date_fin_prévue"], name: "index_conventions_on_user_id_service_id_and_dates", unique: true
+    t.index ["user_id", "service_id", "date_début", "date_fin_prévue"], name: "index_conventions_on_user_id_service_id_and_dates", unique: true, where: "((workflow_state)::text = 'validé'::text)"
     t.index ["user_id"], name: "index_conventions_on_user_id"
+    t.check_constraint "workflow_state::text <> 'validé'::text OR user_id IS NOT NULL AND service_id IS NOT NULL", name: "convention_validee_complete"
   end
 
   create_table "cotation_lignes", force: :cascade do |t|
@@ -636,6 +643,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_140100) do
   add_foreign_key "commandes", "users", column: "adherent_id"
   add_foreign_key "conventions", "services"
   add_foreign_key "conventions", "users"
+  add_foreign_key "conventions", "users", column: "deposant_id"
   add_foreign_key "cotation_lignes", "cotations"
   add_foreign_key "cotation_lignes", "prestations"
   add_foreign_key "cotations", "services"

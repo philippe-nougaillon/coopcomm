@@ -221,3 +221,13 @@ emmanuel_valls:
   rôle: adhérent
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 33872d35-052f-427c-9181-e5aff5db1853
+
+adherent_avec_adresse:
+  nom: Factice
+  prénom: Claire
+  email: claire.factice@gmail.commmmm
+  rôle: adhérent
+  address: 1 place de la Mairie, 54990 Testville-sur-Orne, France
+  latitude: 48.850
+  longitude: 6.100
+  slug: 6c1f0a52-3f0e-4d52-9a47-2f6f0d0b7a11

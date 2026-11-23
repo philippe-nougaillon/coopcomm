@@ -128,6 +128,35 @@ class ConventionsHelperTest < ActionView::TestCase
     assert_match 'temps total positif', prog[:indicateur_label]
   end
 
+  test 'une date de début lue dans le document n’est pas une déduction, même égale à la date de signature' do
+    analyse = conventions(:analyse_de_weil)
+    analyse.date_début = analyse.date_signature
+
+    assert_nil debut_deduit(analyse)
+  end
+
+  test 'une date de début égale à la date de signature, sans ligne lue, est annoncée reprise de la signature' do
+    assert_equal 'début repris de la date de signature', debut_deduit(conventions(:analyse_sans_adherent))
+  end
+
+  test 'une date de début au 1ᵉʳ janvier de l’année du dépôt, sans ligne lue ni signature, est annoncée posée faute de date' do
+    analyse = conventions(:analyse_sans_adherent)
+    analyse.assign_attributes(date_début: Date.new(2026, 1, 1), date_signature: nil)
+
+    assert_equal 'début posé au 1ᵉʳ janvier, faute de date dans le document', debut_deduit(analyse)
+  end
+
+  test 'une date de début saisie depuis l’analyse n’est plus une déduction' do
+    analyse = conventions(:analyse_sans_adherent)
+    analyse.date_début = Date.new(2025, 3, 1)
+
+    assert_nil debut_deduit(analyse)
+  end
+
+  test 'une analyse sans date de début n’a rien de déduit' do
+    assert_nil debut_deduit(conventions(:analyse_en_echec))
+  end
+
   private
 
   def convention(start_date, end_date, conventionnees: nil, consommees: nil)

@@ -27,6 +27,7 @@ module AuditsHelper
     invited_by_type
     invitations_count
     invitation_limit
+    analyse
   ].freeze
 
   # Champs dont la valeur est elle-même une liste : sur un audit de création ou
@@ -143,7 +144,8 @@ module AuditsHelper
       'qté' => 'Quantité',
       'prix_ht' => 'Prix HT',
       'total_ht' => 'Total HT',
-      'tag_list' => 'Mots clés'
+      'tag_list' => 'Mots clés',
+      'deposant_id' => 'Déposant'
     }.fetch(key, key.humanize)
   end
 
@@ -279,7 +281,7 @@ module AuditsHelper
     when 'tool_id'
       Tool.find_by(id: value)&.name || nom_dans_audits('Tool', value, %w[name]) || "Outil ##{value}"
 
-    when 'user_id', 'agent_id', 'invited_by_id'
+    when 'user_id', 'agent_id', 'invited_by_id', 'deposant_id'
       utilisateur_label(value)
 
     when 'service_id'
@@ -302,6 +304,10 @@ module AuditsHelper
 
     when 'prestation_id'
       Prestation.find_by(id: value)&.libellé || nom_dans_audits('Prestation', value, %w[libellé code]) || "Prestation ##{value}"
+
+    when 'workflow_state'
+      modèle = auditable_type.to_s.safe_constantize
+      (modèle.workflow_spec.states[value.to_sym]&.meta&.dig(:libelle) if modèle.respond_to?(:workflow_spec)) || value.to_s
 
     else
       value.to_s

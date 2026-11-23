@@ -41,6 +41,7 @@ class User < ApplicationRecord
   has_many :messages, -> { message }, dependent: :destroy, foreign_key: :to_id, class_name: 'Message'
   has_many :absences, dependent: :destroy
   has_many :conventions, dependent: :destroy
+  has_many :conventions_deposees, class_name: 'Convention', foreign_key: :deposant_id, dependent: :nullify, inverse_of: :deposant
   has_many :user_services, dependent: :destroy
   has_many :services, through: :user_services, dependent: :destroy
 

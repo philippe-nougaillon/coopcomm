@@ -1,0 +1,6 @@
+<%# La conversation ouverte (@destinataire) ne compte pas : ses messages passent en lus à l'écran %>
+<% non_lus = current_user.messages_non_lus.where.not(from_user: @destinataire).count %>
+<span class="relative flex">
+  <%= embedded_svg "icons/chat.svg", class: "w-6 h-6 fill-current transition-colors duration-200" %>
+  <%= render 'partials/pastille', nombre: non_lus, classes: 'absolute -top-2 left-3.5 bg-aikku-rose text-white' %>
+</span>

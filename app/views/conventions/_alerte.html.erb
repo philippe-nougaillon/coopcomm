@@ -1,0 +1,18 @@
+<%# locals: (ton:, titre:, detail: nil, liste: []) %>
+<% couleurs = { info: "bg-sky-50 border-sky-200 text-sky-800", attention: "bg-amber-50 border-amber-200 text-amber-800", erreur: "bg-red-50 border-red-200 text-red-800" } %>
+<div class="alert <%= couleurs.fetch(ton) %> border rounded-xl p-4 flex items-start gap-3">
+  <%= embedded_svg (ton == :info ? "icons/info.svg" : "icons/warning.svg"), class: "w-5 h-5 shrink-0 mt-0.5" %>
+  <div>
+    <p class="font-semibold"><%= titre %></p>
+    <% if detail.present? %>
+      <p class="text-sm mt-1"><%= detail %></p>
+    <% end %>
+    <% if liste.any? %>
+      <ul class="list-disc list-inside text-sm mt-1">
+        <% liste.each do |element| %>
+          <li><%= element %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+</div>

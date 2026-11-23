@@ -1,0 +1,15 @@
+<div id="etat_ia">
+  <% if InstanceIa::EN_PAUSE.include?(etat) %>
+    <%= render "conventions/alerte", ton: :attention, titre: "L'IA est en pause",
+          detail: "Un dépôt la réveille : comptez environ 30 minutes ; elle se remettra en pause dès la fin des analyses." %>
+  <% elsif InstanceIa::REVEIL.include?(etat) %>
+    <%= render "conventions/alerte", ton: :info, titre: "L'IA démarre",
+          detail: "Les documents sont en attente d'analyse." %>
+  <% elsif InstanceIa::MISE_EN_PAUSE.include?(etat) %>
+    <%= render "conventions/alerte", ton: :attention, titre: "L'IA se met en pause",
+          detail: "Attendez qu'elle le soit pour déposer : un document déposé maintenant passerait en échec." %>
+  <% elsif etat && etat != "ACTIVE" %>
+    <%= render "conventions/alerte", ton: :attention, titre: "L'IA est indisponible pour le moment",
+          detail: "État signalé par OVH : « #{etat} »." %>
+  <% end %>
+</div>

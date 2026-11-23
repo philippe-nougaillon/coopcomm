@@ -24,11 +24,13 @@ class ConventionPolicy < ApplicationPolicy
   end
 
   def show?
+    return analyste? unless record.validé?
+
     manage? || (adhérent? && record.user == user)
   end
 
   def edit?
-    manage?
+    record.validé? ? manage? : analyste?
   end
 
   def update?
@@ -36,11 +38,34 @@ class ConventionPolicy < ApplicationPolicy
   end
 
   def destroy?
-    manage?
+    edit?
   end
 
-  def pdf? 
-    show?
-  end  
-  
+  def pdf?
+    record.validé? && show?
+  end
+
+  def analyser?
+    manager_or_admin?
+  end
+
+  def analyses?
+    analyser?
+  end
+
+  def relancer?
+    analyste?
+  end
+
+  # Un manager ne valide que sur ses services : son formulaire ne lui en propose pas d'autre.
+  def valider?
+    analyste? && (administrateur? || user.services.include?(record.service))
+  end
+
+  private
+
+  # Le déposant d'une analyse, ou un administrateur de son organisation.
+  def analyste?
+    user.present? && (record.deposant == user || (administrateur? && record.organisation_du_deposant == user.organisation))
+  end
 end

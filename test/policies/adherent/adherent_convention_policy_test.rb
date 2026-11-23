@@ -10,12 +10,14 @@ class AdherentConventionPolicyTest < ActionDispatch::IntegrationTest
     convention_autre_adherent = conventions(:convention_marseille)
 
     @policy = ConventionPolicy.new(@adherent, convention)
+    @policy_analyse = ConventionPolicy.new(@adherent, conventions(:analyse_de_weil))
     @policy_autre_adherent = ConventionPolicy.new(@adherent, convention_autre_adherent)
   end
 
   test 'accès autorisé pour un adhérent sur une convention dont il est titulaire' do
     assert @policy.index?
     assert @policy.show?
+    assert @policy.pdf?
   end
 
   test 'accès interdit pour un adhérent sur une convention dont il est titulaire' do
@@ -25,6 +27,18 @@ class AdherentConventionPolicyTest < ActionDispatch::IntegrationTest
     refute @policy.edit?
     refute @policy.update?
     refute @policy.destroy?
+    refute @policy.analyser?
+    refute @policy.analyses?
+  end
+
+  test 'accès interdit pour un adhérent sur une analyse qui le nomme' do
+    refute @policy_analyse.show?
+    refute @policy_analyse.edit?
+    refute @policy_analyse.update?
+    refute @policy_analyse.destroy?
+    refute @policy_analyse.pdf?
+    refute @policy_analyse.relancer?
+    refute @policy_analyse.valider?
   end
 
   test "accès interdit pour un adhérent sur une convention d'un autre titulaire" do

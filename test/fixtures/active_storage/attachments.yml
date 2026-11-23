@@ -1,0 +1,8 @@
+<% %w[analyse_de_weil analyse_sans_adherent analyse_en_echec analyse_en_attente analyse_de_manager_paris analyse_de_l_administrateur_paris analyse_d_un_compte_desactive
+      analyse_de_marseille analyse_deja_conventionnee analyse_citant_un_service_de_marseille analyse_hors_des_services_de_hidalgo analyse_de_patrick
+      analyse_sur_un_service_hors_de_l_adherent analyse_a_marseille].each do |analyse| %>
+document_de_<%= analyse %>:
+  name: document
+  record: <%= analyse %> (Convention)
+  blob: convention_deposee
+<% end %>

@@ -54,6 +54,13 @@ class ConventionsDeLAnneeTest < ActiveSupport::TestCase
     assert_in_delta 2.0, mesures.first[:prevues]
   end
 
+  test 'une analyse qui attend d’être validée n’est jamais comptée, même active dans l’année (critique)' do
+    mesures = travel_to(Time.zone.local(2026, 10, 26, 12)) { ConventionsDeLAnnee.call(users(:administrateur_paris)) }
+
+    assert_equal [%w[Informatique Weil], %w[Comptabilité Lucas]].sort,
+                 mesures.map { |mesure| [mesure[:service], mesure[:adherent].split.first] }.sort
+  end
+
   # ==================== /TESTS CRITIQUES ====================
 
   test 'une convention qui ne recouvre pas l’année en cours n’est pas retenue' do

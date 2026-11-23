@@ -57,4 +57,12 @@ module ConventionsHelper
 
     { percent: percent, label: label, color: color,indeterminate: false, indicateur: indicateur, indicateur_label: indicateur_label, indicateur_color: indicateur_color, depassement: depassement }
   end
+
+  # Ce qu'ImporterConvention a posé comme date de début quand le document n'en donnait pas ; rien si elle a été lue, ou changée depuis.
+  def debut_deduit(convention)
+    return if convention.date_début.nil? || convention.analyse&.dig('date_debut', 'extrait').present?
+    return 'début repris de la date de signature' if convention.date_début == convention.date_signature
+
+    'début posé au 1ᵉʳ janvier, faute de date dans le document' if convention.date_début == convention.created_at.to_date.beginning_of_year
+  end
 end

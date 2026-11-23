@@ -1,179 +1,219 @@
-<div class="mx-auto lg:w-2/3 w-full mt-8">
+<% lu = @convention.analyse || {} %>
+<% if @convention.validé? %>
   <% page_title!("Convention — #{@convention.user&.nom_prénom}") %>
-  
-  <div class="flex flex-row justify-between items-start gap-3 mb-8">
-    <h1 class="text-2xl sm:text-3xl text-primary font-bold sm:whitespace-nowrap">
-      <% if current_user.manager_or_admin? %>
+  <% prog = convention_progress(@convention) %>
+<% else %>
+  <%= turbo_stream_from @convention %>
+  <% page_title!("Analyse — #{@convention.document.filename}") %>
+<% end %>
+<div class="mx-auto lg:w-2/3 w-full mt-8">
+  <div class="flex flex-row justify-between items-start gap-3 <%= @convention.validé? ? "mb-8" : "mb-4" %>">
+    <h1 class="text-2xl sm:text-3xl text-primary font-bold <%= @convention.validé? ? "sm:whitespace-nowrap" : "break-all" %>">
+      <% if !@convention.validé? %>
+        <%= @convention.document.filename %>
+      <% elsif current_user.manager_or_admin? %>
         Convention — <%= @convention.user&.nom_prénom %>
       <% else %>
         Convention — <%= @convention.ref %>
       <% end %>
     </h1>
-  
-    <div class="flex justify-end w-full sm:w-auto gap-2">
-      <% if policy(@convention).update? %>
-            <%= link_to edit_convention_path(@convention), class: "btn" do %>
-              <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
-              <span class="hidden lg:inline">Modifier</span>
-            <% end %>
-          <% end %>
+
+    <div class="flex justify-end gap-2 <%= "w-full sm:w-auto" if @convention.validé? %>">
+      <% if @convention.validé? ? policy(@convention).update? : @convention.can_valider? %>
+        <%= link_to edit_convention_path(@convention), class: "btn" do %>
+          <%= embedded_svg "icons/edit.svg", class: "w-5 h-5 fill-current" %>
+          <span class="hidden lg:inline">Modifier</span>
+        <% end %>
+      <% end %>
+      <% if @convention.échec? %>
+        <%= button_to "Relancer", relancer_convention_path(@convention), class: "btn btn-outline btn-primary" %>
+      <% end %>
     </div>
-  </div> 
+  </div>
 
+  <% unless @convention.validé? %>
+    <div class="flex flex-wrap items-center gap-3">
+      <span class="badge text-nowrap font-bold <%= @convention.style %>"><%= @convention.libelle %></span>
+      <span class="text-xs text-slate-400">
+        Déposé par <%= @convention.deposant&.nom_prénom&.strip %> le <%= l(@convention.created_at, format: :short) %>
+      </span>
+    </div>
 
- 
+    <% if @convention.échec? %>
+      <div class="mt-4">
+        <%= render "alerte", ton: :erreur, titre: "L'analyse a échoué", detail: lu["erreur"] %>
+      </div>
+    <% end %>
+
+    <% if @convention.can_valider? %>
+      <% erreurs = @convention.erreurs_de_validation %>
+      <% concurrente = @convention.concurrente %>
+      <% raison = erreurs.full_messages.to_sentence.presence || ("Seul un administrateur peut valider une convention d'un service que vous ne gérez pas." unless policy(@convention).valider?) %>
+      <% if erreurs.any? %>
+        <div class="mt-6">
+          <%= render "alerte", ton: :attention, titre: "Cette convention ne peut pas encore être validée", liste: erreurs.full_messages %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
 
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary font-semibold">Informations</h2>
   </div>
 
-<div class="flex flex-col md:flex-row gap-6 items-stretch">
-
-  <div class="w-full bg-white border border-slate-200 rounded-xl md:rounded-xl shadow-sm">
-     <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
-        <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
-        <span>Faire glisser pour voir plus</span>
-      </div>
-
-      <div class="grid text-sm overflow-x-auto p-4" style="grid-template-columns: 250px 1fr;">
-        <div class="flex flex-row items-center gap-2 pb-4 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-          <%= embedded_svg "icons/account_circle.svg", class: "text-base", title: "Adhérent" %> Adhérent
-        </div>
-        <div class="pb-4 text-slate-800 border-b border-slate-100 font-semibold">
-          <%= link_to @convention.user.nom_prénom, user_path(@convention.user), class: "text-primary hover:underline" if @convention.user %>
+  <div class="flex flex-col <%= @convention.validé? ? "md:flex-row" : "xl:flex-row" %> gap-6 items-stretch">
+    <div class="w-full min-w-0 bg-white border border-slate-200 rounded-xl md:rounded-xl shadow-sm">
+      <% if @convention.validé? || @convention.can_valider? %>
+        <div class="flex items-center gap-1 text-xs text-slate-400 px-4 py-2 bg-slate-50/50 border-b border-slate-100 md:hidden">
+          <%= embedded_svg "icons/swipe.svg", class: "text-sm", title: "Faire glisser" %>
+          <span>Faire glisser pour voir plus</span>
         </div>
 
-        <div class="flex items-center gap-2 py-4 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-          <%= embedded_svg "icons/store.svg", class: "text-base", title: "Service" %> Service
-        </div>
-        <div class="py-4 text-slate-800 border-b border-slate-100"><%= @convention.service&.nom %></div>
+        <div class="grid text-sm overflow-x-auto px-4" style="grid-template-columns: <%= @convention.validé? ? "250px 1fr" : "minmax(9rem, 220px) minmax(9rem, 1fr) minmax(9rem, 1fr)" %>;">
+          <% unless @convention.validé? %>
+            <div class="pt-4"></div>
+            <div class="pt-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Valeur retenue</div>
+            <div class="pt-4 text-xs font-semibold text-slate-500 uppercase tracking-wider" style="padding-left: 2rem;">Basé sur</div>
+          <% end %>
 
-        <div class="flex items-center gap-2 py-4 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-          <%= embedded_svg "icons/calendar_today.svg", class: "text-base", title: "Période" %> Période
-        </div>
-        <div class="py-4 text-slate-800 border-b border-slate-100">
-          <% prog = convention_progress(@convention) %>
-          <%= l(@convention.date_début, format: :long) if @convention.date_début %>
-          <span class="text-slate-400">→</span>
-          <%= @convention.date_fin_prévue ? l(@convention.date_fin_prévue, format: :long) : "—" %>
-          <br>
-          <div class="relative w-60 flex items-center h-6">
-            <progress class="progress <%= prog[:color] %> w-full h-4" value="<%= prog[:percent] %>" max="100"></progress>
-          </div>
-          <span class="text-xs text-slate-500">
-            <% if prog[:label] == 'Expirée' %>
-              La convention est <strong>expirée</strong>.
-            <% elsif prog[:label] == 'À venir' %>
-              La convention est <strong>à venir</strong>.
+          <%= render layout: "champ", locals: { libelle: "Adhérent", icone: "account_circle", lus: [lu["adherent"]] } do %>
+            <% if @convention.user %>
+              <%= link_to @convention.user.nom_prénom, user_path(@convention.user), class: "text-primary hover:underline font-semibold" %>
             <% else %>
-              <strong><%= prog[:label] %></strong> du temps de la convention sur l'année en cours se sont écoulés.
-            <% end %>
-          </span>
-        </div>
-
-        <div class="flex items-center gap-2 py-4 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-          <%= embedded_svg "icons/schedule.svg", class: "text-base", title: "Heures consommées" %>Heures consommées
-        </div>
-        <div class="py-4 text-slate-800 border-b border-slate-100">
-          <% 
-            consommes = @convention.heures_consommees.round(1)
-            prevus = @convention.heures_conventionnees
-            depasse = consommes > prevus
-            taux_consommation = prevus.positive? ? ((consommes / prevus) * 100).round : 0
-            surplus_heures = (consommes - prevus).round(1)
-          %>
-          <div class="flex flex-col gap-0.5">
-            <div class="font-medium text-slate-800">
-              <span class="<%= depasse ? 'text-error font-bold' : 'text-slate-700' %>">
-                <%= consommes %> h
-              </span>
-              <span class="text-slate-400 font-normal">/ <%= prevus %> h</span>
-            </div>
-
-            <div class="relative w-60 flex items-center h-6">
-              <progress class="progress <%= prog[:color] %> w-full h-4" value="0" max="100"></progress>
-              <div class="absolute top-0 bottom-0 w-1 <%= prog[:indicateur_color] %> rounded dashed tooltip tooltip-secondary z-10" 
-                  style="left: <%= prog[:indicateur] %>%;" 
-                  data-tip="<%= prog[:indicateur_label] %> ">
-              </div>
-            </div>
-            
-            <div class="flex items-center gap-1.5 text-xs mt-1">
-              <% if depasse %>
-                <span class="badge badge-error badge-soft gap-1.5 !px-2 !py-2">       
-                  <%= embedded_svg "icons/warning.svg", class: "text-base" %>
-                  Dépassement de <%= surplus_heures %> h
-                </span>
+              <span class="bg-warning/20 rounded px-2 py-0.5 font-semibold">⚠ Adhérent à confirmer<%= " — lu : #{lu["nom_adherent"]}" if lu["nom_adherent"] %>.</span>
+              <% if current_user.administrateur? %>
+                <br>
+                <%= link_to "Créer l'adhérent", admin_create_new_user_path(convention_id: @convention.slug), class: "btn btn-sm btn-outline btn-primary mt-2" %>
               <% else %>
-                <span class="text-slate-500 font-medium">
-                  <%= taux_consommation %>% consommé
-                </span>
+                <span>S'il n'existe pas, demandez à un administrateur de le créer.</span>
               <% end %>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-2 py-4 text-slate-500 border-b border-slate-100" style="padding-right: 2rem;">
-          <%= embedded_svg "icons/article.svg", class: "text-base", title: "Document" %> Document
-        </div>
-        <div class="py-4 text-slate-800 border-b border-slate-100">
-          <% if @convention.document.attached? %>
-            <%= link_to rails_blob_path(@convention.document, disposition: "inline"), target: "_blank", title: @convention.document.filename.to_s, class: "inline-flex items-center gap-2 text-primary hover:underline" do %>
-              <%= embedded_svg "icons/article.svg", class: "text-base" %>
-              <span class="text-sm truncate max-w-xs"><%= @convention.document.filename %></span>
             <% end %>
-          <% else %>
-            <span class="text-slate-400 italic text-xs">Aucun document</span>
           <% end %>
-        </div>
 
-        <div class="flex items-start gap-2 pt-4 text-slate-500" style="padding-right: 2rem;">
-          <%= embedded_svg "icons/sticky_note_2.svg", class: "text-base", title: "Mémo" %> Mémo
-        </div>
-        <div class="pt-4 text-slate-800">
-          <% if @convention.mémo.present? %>
-            <%= simple_format(@convention.mémo) %>
-          <% else %>
-            <span class="text-slate-400 italic text-xs">Aucun mémo</span>
+          <%= render layout: "champ", locals: { libelle: "Service", icone: "store", lus: [lu["service"]] } do %>
+            <% if @convention.service %>
+              <span class="inline-block bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full whitespace-nowrap shadow-sm"><%= @convention.service.nom %></span>
+            <% else %>
+              <span class="bg-warning/20 rounded px-2 py-0.5 font-semibold">⚠ À confirmer</span>
+            <% end %>
+          <% end %>
+
+          <% unless @convention.validé? %>
+            <%= render layout: "champ", locals: { libelle: "Heures conventionnées", icone: "schedule", lus: [lu["service"]] } do %>
+              <% if @convention.heures_conventionnees.to_f.positive? %>
+                <%= number_with_precision(@convention.heures_conventionnees, precision: 2, strip_insignificant_zeros: true) %> h
+              <% else %>
+                <span class="bg-warning/20 rounded px-2 py-0.5 font-semibold">⚠ À confirmer</span>
+              <% end %>
+            <% end %>
+          <% end %>
+
+          <%= render layout: "champ", locals: { libelle: "Période", icone: "calendar_today", lus: [lu["date_debut"], lu["date_fin"]], deduit: (debut_deduit(@convention) unless @convention.validé?) } do %>
+            <%= @convention.date_début ? l(@convention.date_début, format: :long) : "—" %>
+            <span class="text-slate-400">→</span>
+            <%= @convention.date_fin_prévue ? l(@convention.date_fin_prévue, format: :long) : "—" %>
+            <% if @convention.validé? %>
+              <br>
+              <div class="relative w-60 flex items-center h-6">
+                <progress class="progress <%= prog[:color] %> w-full h-4" value="<%= prog[:percent] %>" max="100"></progress>
+              </div>
+              <span class="text-xs text-slate-500">
+                <% if prog[:label] == 'Expirée' %>
+                  La convention est <strong>expirée</strong>.
+                <% elsif prog[:label] == 'À venir' %>
+                  La convention est <strong>à venir</strong>.
+                <% else %>
+                  <strong><%= prog[:label] %></strong> du temps de la convention sur l'année en cours se sont écoulés.
+                <% end %>
+              </span>
+            <% end %>
+          <% end %>
+
+          <%= render layout: "champ", locals: { libelle: "Date de signature", icone: "signature", lus: [lu["date_signature"]] } do %>
+            <% if @convention.date_signature %>
+              <%= l(@convention.date_signature, format: :long) %>
+            <% else %>
+              <span class="text-slate-400 italic text-xs">Non renseignée</span>
+            <% end %>
+          <% end %>
+
+          <% if @convention.validé? %>
+            <%= render layout: "champ", locals: { libelle: "Heures consommées", icone: "schedule" } do %>
+              <%
+                consommes = @convention.heures_consommees.round(1)
+                prevus = @convention.heures_conventionnees
+                depasse = consommes > prevus
+                taux_consommation = prevus.positive? ? ((consommes / prevus) * 100).round : 0
+                surplus_heures = (consommes - prevus).round(1)
+              %>
+              <div class="flex flex-col gap-0.5">
+                <div class="font-medium text-slate-800">
+                  <span class="<%= depasse ? 'text-error font-bold' : 'text-slate-700' %>">
+                    <%= consommes %> h
+                  </span>
+                  <span class="text-slate-400 font-normal">/ <%= prevus %> h</span>
+                </div>
+
+                <div class="relative w-60 flex items-center h-6">
+                  <progress class="progress <%= prog[:color] %> w-full h-4" value="0" max="100"></progress>
+                  <div class="absolute top-0 bottom-0 w-1 <%= prog[:indicateur_color] %> rounded dashed tooltip tooltip-secondary z-10"
+                      style="left: <%= prog[:indicateur] %>%;"
+                      data-tip="<%= prog[:indicateur_label] %> ">
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1.5 text-xs mt-1">
+                  <% if depasse %>
+                    <span class="badge badge-error badge-soft gap-1.5 !px-2 !py-2">
+                      <%= embedded_svg "icons/warning.svg", class: "text-base" %>
+                      Dépassement de <%= surplus_heures %> h
+                    </span>
+                  <% else %>
+                    <span class="text-slate-500 font-medium">
+                      <%= taux_consommation %>% consommé
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+
+          <%= render layout: "champ", locals: { libelle: "Document", icone: "article" } do %>
+            <% if @convention.document.attached? %>
+              <%= link_to rails_blob_path(@convention.document, disposition: "inline"), target: "_blank", title: @convention.document.filename.to_s, class: "inline-flex items-center gap-2 text-primary hover:underline" do %>
+                <%= embedded_svg "icons/article.svg", class: "text-base" %>
+                <span class="text-sm truncate max-w-xs"><%= @convention.document.filename %></span>
+              <% end %>
+            <% else %>
+              <span class="text-slate-400 italic text-xs">Aucun document</span>
+            <% end %>
+          <% end %>
+
+          <%= render layout: "champ", locals: { libelle: "Résumé", icone: "description", haut: true, large: true } do %>
+            <% if @convention.résumé.present? %>
+              <%= simple_format(@convention.résumé) %>
+            <% else %>
+              <span class="text-slate-400 italic text-xs">Aucun résumé</span>
+            <% end %>
+          <% end %>
+
+          <%= render layout: "champ", locals: { libelle: "Mémo", icone: "sticky_note_2", haut: true, dernier: true, large: true } do %>
+            <% if @convention.mémo.present? %>
+              <%= simple_format(@convention.mémo) %>
+            <% else %>
+              <span class="text-slate-400 italic text-xs">Aucun mémo</span>
+            <% end %>
           <% end %>
         </div>
-      </div>
+      <% else %>
+        <p class="p-4 text-sm text-slate-500 italic">L'analyse n'est pas terminée : cette page se met à jour toute seule.</p>
+      <% end %>
     </div>
 
-    <% if @convention.document.attached? %>
-    <% doc = @convention.document %>
-    <div class="w-full md:w-64 flex-shrink-0">
-      <div class="w-full h-full min-h-64 border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white flex flex-col">
-        <% if doc.content_type == "application/pdf" %>
-          <iframe src="<%= rails_blob_path(doc, disposition: "inline") %>#toolbar=0&navpanes=0&scrollbar=0"
-                  class="w-full flex-1 border-0"
-                  title="<%= doc.filename %>">
-          </iframe>
-          <%= link_to doc.filename.to_s, rails_blob_path(doc, disposition: "inline"),
-                  target: "_blank",
-                  class: "flex items-center gap-2 px-3 py-2 text-xs text-primary hover:underline border-t border-slate-100 truncate" %>
-        <% elsif doc.representable? %>
-          <%= link_to rails_blob_path(doc, disposition: "inline"),
-                  target: "_blank", title: doc.filename.to_s,
-                  class: "block w-full h-full" do %>
-            <%= image_tag doc.representation(resize_to_limit: [400, 500]),
-                    alt: doc.filename.to_s,
-                    class: "w-full h-full object-contain" %>
-          <% end %>
-        <% else %>
-           <%= link_to rails_blob_path(doc, disposition: "inline"),
-                  target: "_blank", title: doc.filename.to_s,
-                  class: "flex flex-col items-center justify-center gap-2 p-4 h-full text-slate-700 hover:bg-slate-50 transition" do %>
-            <%= embedded_svg "icons/article.svg", class: "text-3xl" %>
-            <span class="text-xs text-center truncate max-w-full"><%= doc.filename %></span>
-          <% end %>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
+    <%= render "apercu_document" %>
+  </div>
 
-</div>
-
+  <%= render "boutons", concurrente: concurrente, raison: raison unless @convention.validé? %>
 
   <div class="flex justify-between flex-wrap items-center mt-8 mb-4">
     <h2 class="text-2xl text-secondary font-semibold">Activité</h2>
@@ -221,44 +261,10 @@
     <% end %>
   </div>
 
-  <div class="flex gap-2.5 pt-4 items-center justify-end mt-6 border-t border-slate-200">
-
-    <% if policy(@convention).destroy? %>
-      <button class="btn btn-soft btn-error hover:!text-white" onclick="delete_convention_modal_<%= @convention.id %>.showModal()" title="Supprimer">
-        <%= embedded_svg "icons/delete.svg", class: "w-4 h-4 fill-current transition-colors duration-200" %>
-        <span>Supprimer la convention</span>
-      </button>
-
-      <dialog id="delete_convention_modal_<%= @convention.id %>" class="modal">
-        <div class="modal-box">
-          <form method="dialog">
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-          </form>
-          <h3 class="text-lg font-bold text-error flex items-center gap-2">
-            <%= embedded_svg "icons/warning.svg", title: "Supprimer la convention" %>
-            Supprimer la convention
-          </h3>
-          <p class="py-4 text-sm text-slate-600 text-left">
-            Êtes-vous certain(e) de vouloir supprimer cette convention ? Cette action est irréversible.
-          </p>
-          <div class="modal-action">
-            <form method="dialog">
-              <button class="btn btn-ghost">Annuler</button>
-            </form>
-            <%= button_to convention_path(@convention), method: :delete, class: "btn btn-error text-white" do %>
-              Oui, supprimer
-            <% end %>
-          </div>
-        </div>
-        <form method="dialog" class="modal-backdrop">
-          <button>Fermer</button>
-        </form>
-      </dialog>
-    <% end %>
-  </div>
+  <%= render "boutons" if @convention.validé? %>
 
   <div class="my-10">
-    <%= link_to conventions_path, class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
+    <%= link_to (@convention.validé? ? conventions_path : analyses_conventions_path), class: "inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-primary transition group" do %>
       <%= embedded_svg "icons/arrow_back.svg", class: "text-base transition-transform group-hover:-translate-x-1", title: "Retour à la liste" %>
       Retour à la liste
     <% end %>

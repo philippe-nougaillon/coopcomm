@@ -1,7 +1,14 @@
 <div class="flex flex-col">
   <div class="flex flex-row justify-between items-center my-4 gap-2">
-    <h1 class="text-4xl text-primary font-bold">
+    <h1 class="text-3xl sm:text-4xl text-primary font-bold mr-auto">
       <%= page_title!("Conventions") %></h1>
+    <% if policy(Convention).analyser? && InterrogerIa.configuree? %>
+      <%= link_to analyses_conventions_path, class: "btn btn-outline btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm",
+            title: "Importation de conventions en masse" do %>
+        <%= embedded_svg "icons/smart_toy.svg", class: "w-6 h-6 fill-current" %>
+        <span class="hidden md:block">Importation des conventions</span>
+      <% end %>
+    <% end %>
     <% if policy(Convention).new? %>
       <%= link_to new_convention_path,
             class: "btn btn-primary btn-md rounded flex items-center justify-center gap-2 text-sm text-white border border-primary hover:bg-transparent hover:text-primary hover:border-primary",

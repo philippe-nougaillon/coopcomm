@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Les conventions visibles d'un utilisateur, comme sur leur liste, actives dans l'année en cours, avec leurs
+# Les conventions validées visibles d'un utilisateur, actives dans l'année en cours, avec leurs
 # heures : bloc « Suivi des heures » de l'accueil et tuile du tableau de bord adhérent.
 class ConventionsDeLAnnee < ApplicationService
   def initialize(user)
@@ -9,7 +9,7 @@ class ConventionsDeLAnnee < ApplicationService
 
   def call
     annee = Date.current.all_year
-    avec_heures(Convention.visible_to(@user)
+    avec_heures(Convention.visible_to(@user).with_validé_state
                           .where('conventions.date_début <= ? AND (conventions.date_fin_prévue IS NULL OR conventions.date_fin_prévue >= ?)', annee.end, annee.begin), annee)
       .map do |convention|
         { adherent: convention.user.nom_prénom, service: convention.service.nom,

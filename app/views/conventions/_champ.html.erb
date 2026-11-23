@@ -1,0 +1,23 @@
+<%# locals: (libelle:, icone:, haut: false, dernier: false, lus: [], deduit: nil, large: false) %>
+<% bordure = "border-b border-slate-100" unless dernier %>
+<div class="flex <%= haut || !@convention.validé? ? "items-start" : "items-center" %> gap-2 py-4 text-slate-500 <%= bordure %>" style="padding-right: 2rem;">
+  <%= embedded_svg "icons/#{icone}.svg", class: "text-base shrink-0", title: libelle %> <%= libelle %>
+</div>
+<div class="py-4 text-slate-800 <%= bordure %> <%= "col-span-2" if large && !@convention.validé? %>">
+  <%= yield %>
+</div>
+<% unless @convention.validé? || large %>
+  <div class="py-4 text-xs text-slate-500 <%= bordure %>" style="padding-left: 2rem;">
+    <% lus.compact.select { |lu| lu["extrait"].present? }.each do |lu| %>
+      <p>
+        « <%= lu["extrait"].squish %> »
+        <% if lu["retrouve"] == false %>
+          <span class="inline-block bg-warning/20 rounded px-2 py-0.5 font-semibold">⚠ extrait introuvable dans le texte</span>
+        <% end %>
+      </p>
+    <% end %>
+    <% if deduit %>
+      <span class="inline-block bg-warning/20 rounded px-2 py-0.5 font-semibold">⚠ Déduit : <%= deduit %></span>
+    <% end %>
+  </div>
+<% end %>

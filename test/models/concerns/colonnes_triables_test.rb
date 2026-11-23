@@ -70,10 +70,11 @@ class ColonnesTriablesTest < ActiveSupport::TestCase
                          service: sans_fin.service, début: Time.zone.parse('2026-06-02 09:00:00'),
                          slug: SecureRandom.uuid).update_columns(temps_total: 2)
 
-    attendu = Convention.all.to_h { |c| [c.id, c.heures_consommees.to_f] }
+    validées = Convention.with_validé_state
+    attendu = validées.to_h { |c| [c.id, c.heures_consommees.to_f] }
 
     assert_equal({ convention.id => 3.0, sans_fin.id => 2.0 }, attendu.slice(convention.id, sans_fin.id))
-    assert_equal attendu, clés_sql(Convention, 'conventions.heures_consommees', &:to_f)
+    assert_equal attendu, clés_sql(validées, 'conventions.heures_consommees', &:to_f)
   end
 
   test 'toute colonne de tri déclarée a une expression exécutable en base' do

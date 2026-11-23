@@ -154,11 +154,15 @@ Rails.application.routes.draw do
   resources :conventions do
     collection do
       get :services_for_adherent
+      get :analyses
+      post :analyses, action: :analyser
     end
 
     member do
       # Ajout de constraints: { filename: /.*/ } pour accepter les points (ex: .pdf) dans l'URL
       get 'pdf(/*filename)', action: :pdf, as: :pdf, format: false, constraints: { filename: /.*/ }
+      post :relancer
+      patch :valider
     end
   end
 

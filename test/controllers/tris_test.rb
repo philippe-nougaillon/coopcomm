@@ -1,21 +1,27 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require_relative '../support/faux_modele'
 
 # Sentinelle des tris : chaque colonne déclarée par un contrôleur est exercée sur
 # la page qui l'affiche, dans les deux sens. Une colonne ajoutée plus tard entre
 # automatiquement dans le test.
 class TrisTest < ActionDispatch::IntegrationTest
+  include FauxModele
+
   # `super_admin?` lit une variable d'environnement, absente de la CI : sans ça
-  # l'index des newsletters y répond une redirection Pundit.
+  # l'index des newsletters y répond une redirection Pundit. De même, sans IA
+  # configurée, l'index des analyses de conventions renvoie aux conventions.
   setup do
     @super_admin_initial = ENV.fetch('SUPER_ADMIN', nil)
     ENV['SUPER_ADMIN'] = users(:philippe_super_admin).email
+    brancher_faux_modele
   end
 
   teardown do
     ENV['SUPER_ADMIN'] = @super_admin_initial
     ENV.delete('SUPER_ADMIN') if @super_admin_initial.nil?
+    debrancher_faux_modele
   end
 
   test 'chaque colonne déclarée répond dans les deux sens sur la page qui l\'affiche' do
@@ -149,6 +155,18 @@ class TrisTest < ActionDispatch::IntegrationTest
     assert_equal [plus_consommée, conventions(:convention_paris)], assigns(:conventions).to_a
   end
 
+  test 'un second tableau du même modèle porte son propre tri par défaut, sans changer celui du premier' do
+    sign_in users(:administrateur_paris)
+    plus_ancienne_mise_a_jour_recente = conventions(:analyse_sur_un_service_hors_de_l_adherent)
+    plus_ancienne_mise_a_jour_recente.update!(mémo: 'Relue')
+
+    get analyses_conventions_path
+    assert_equal plus_ancienne_mise_a_jour_recente, assigns(:analyses).first
+
+    get conventions_path
+    assert_equal [conventions(:convention_paris), conventions(:convention_sans_fin)], assigns(:conventions).to_a
+  end
+
   private
 
   # [libellé, contrôleur, modèle trié, utilisateur, chemin]
@@ -188,6 +206,7 @@ class TrisTest < ActionDispatch::IntegrationTest
       ['conventions', ConventionsController, 'Convention', users(:hidalgo), conventions_path],
       ['activité d\'une convention', ConventionsController, 'Audited::Audit', users(:hidalgo),
        convention_path(conventions(:convention_paris))],
+      ['analyses de conventions', ConventionsController, 'Convention', users(:hidalgo), analyses_conventions_path],
       ['notifications', MailLogsController, 'MailLog', users(:hidalgo), mail_logs_path],
       ['newsletters', NewslettersController, 'Newsletter', users(:philippe_super_admin), newsletters_path],
       ['CRM adhérent : devis', AdherentCrmController, 'Cotation', users(:weil), adherent_crm_path],

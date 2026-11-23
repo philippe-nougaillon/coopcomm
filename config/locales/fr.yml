@@ -28,6 +28,8 @@ fr:
         total_ht: Total HT
         adherent: Adhérent
         service: Service
+      convention:
+        user: Adhérent
       cotation_ligne:
         prestation: Prestation
         intitulé: Intitulé

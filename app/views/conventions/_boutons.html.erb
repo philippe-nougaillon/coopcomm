@@ -1,0 +1,45 @@
+<%# locals: (concurrente: nil, raison: nil) %>
+<% objet = @convention.validé? ? "la convention" : "l'analyse" %>
+<div class="flex flex-wrap gap-2.5 pt-4 items-center justify-end mt-6 border-t border-slate-200">
+  <% if concurrente %>
+    <%= link_to "Voir la convention existante", convention_path(concurrente), class: "link link-primary text-sm font-semibold" %>
+  <% end %>
+
+  <% if policy(@convention).destroy? %>
+    <button class="btn btn-soft btn-error hover:!text-white" onclick="delete_convention_modal_<%= @convention.id %>.showModal()" title="Supprimer">
+      <%= embedded_svg "icons/delete.svg", class: "w-4 h-4 fill-current transition-colors duration-200" %>
+      <span>Supprimer <%= objet %></span>
+    </button>
+
+    <dialog id="delete_convention_modal_<%= @convention.id %>" class="modal">
+      <div class="modal-box">
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 class="text-lg font-bold text-error flex items-center gap-2">
+          <%= embedded_svg "icons/warning.svg", title: "Supprimer #{objet}" %>
+          Supprimer <%= objet %>
+        </h3>
+        <p class="py-4 text-sm text-slate-600 text-left">
+          Êtes-vous certain(e) de vouloir supprimer <%= @convention.validé? ? "cette convention" : "cette analyse et ce que l'IA y a lu" %> ? Cette action est irréversible.
+        </p>
+        <div class="modal-action">
+          <form method="dialog">
+            <button class="btn btn-ghost">Annuler</button>
+          </form>
+          <%= button_to convention_path(@convention), method: :delete, class: "btn btn-error text-white" do %>
+            Oui, supprimer
+          <% end %>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>Fermer</button>
+      </form>
+    </dialog>
+  <% end %>
+
+  <% if @convention.can_valider? %>
+    <%= button_to "Valider la convention", valider_convention_path(@convention), method: :patch, disabled: raison.present?, title: raison,
+          class: class_names("btn btn-primary font-bold", "text-white" => raison.blank?) %>
+  <% end %>
+</div>

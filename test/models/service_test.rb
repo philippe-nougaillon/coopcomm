@@ -56,6 +56,21 @@ class ServiceTest < ActiveSupport::TestCase
     assert_operator noms.index('Élagage'), :<, noms.index('Zonage')
   end
 
+  test "un service qui est le seul service d'un utilisateur n'est pas supprimé (critique)" do
+    administrateur = users(:philippe_super_admin)
+    service = service_unique_de(administrateur)
+
+    assert_not service.destroy
+    assert_equal [service], administrateur.reload.services
+  end
+
+  test 'un service dont les utilisateurs gardent un autre service est supprimé (critique)' do
+    service = service_vide_avec_administrateur
+
+    assert service.destroy
+    assert_not Service.exists?(service.id)
+  end
+
   test "la liste des managers et administrateurs d'un service exclut ses agents (critique)" do
     encadrants = services(:technique).managers_and_admin
 
@@ -108,18 +123,32 @@ class ServiceTest < ActiveSupport::TestCase
     assert_includes service.text_for_unauthorized_destroy, 'des factures'
   end
 
-  test 'un service rattaché à un utilisateur non administrateur ne peut pas être supprimé (critique)' do
-    service = services(:menage)
-    service.users << users(:weil)
+  test "un service qui est le seul service d'un utilisateur ne peut pas être supprimé (critique)" do
+    service = service_unique_de(users(:agent_whatsapp))
 
-    assert_not service.reload.can_be_destroyed?
-    assert_includes service.text_for_unauthorized_destroy, 'des utilisateurs non administrateurs'
+    assert_not service.can_be_destroyed?
+    assert_includes service.text_for_unauthorized_destroy, "des utilisateurs dont c'est le seul service"
   end
 
-  # Un administrateur ne compte pas : il peut être rattaché à tous les services de son
-  # organisation sans pour autant les rendre indestructibles.
-  test 'un service rattaché à un seul administrateur peut être supprimé (critique)' do
-    assert service_vide_avec_administrateur.reload.can_be_destroyed?
+  test "un service qui est le seul service d'un administrateur ne peut pas être supprimé (critique)" do
+    service = service_unique_de(users(:philippe_super_admin))
+
+    assert_not service.can_be_destroyed?
+    assert_includes service.text_for_unauthorized_destroy, "des utilisateurs dont c'est le seul service"
+  end
+
+  test "un service qui est le seul service d'un compte désactivé ne peut pas être supprimé (critique)" do
+    service = service_unique_de(users(:agent_discarded_paris))
+
+    assert_not service.can_be_destroyed?
+    assert_includes service.text_for_unauthorized_destroy, "des comptes désactivés dont c'est le seul service"
+  end
+
+  test 'un service dont les utilisateurs gardent un autre service peut être supprimé (critique)' do
+    service = service_vide_avec_administrateur
+    service.users << users(:weil)
+
+    assert service.reload.can_be_destroyed?
   end
 
   test 'le texte de refus de suppression est vide pour un service supprimable (critique)' do
@@ -127,11 +156,12 @@ class ServiceTest < ActiveSupport::TestCase
   end
 
   test 'le texte de refus de suppression nomme le seul motif présent et aucun autre (critique)' do
-    texte = services(:service_paris).text_for_unauthorized_destroy
+    texte = service_unique_de(users(:agent_whatsapp)).text_for_unauthorized_destroy
 
     assert_includes texte, 'Impossible de supprimer ce service'
-    assert_includes texte, 'des utilisateurs non administrateurs'
+    assert_includes texte, "des utilisateurs dont c'est le seul service"
     assert_not_includes texte, 'des interventions'
+    assert_not_includes texte, 'des comptes désactivés'
   end
 
   test 'le texte de refus de suppression énumère tous les rattachements du service (critique)' do
@@ -141,7 +171,8 @@ class ServiceTest < ActiveSupport::TestCase
     Cotation.create!(adherent: @administrateur, service: service, intitulé: 'Devis')
     Commande.create!(adherent: @administrateur, service: service, intitulé: 'Commande')
     Facture.create!(adherent: @administrateur, service: service, intitulé: 'Facture')
-    service.users << users(:weil)
+    service_unique_de(users(:agent_whatsapp))
+    service_unique_de(users(:agent_discarded_paris))
 
     texte = service.reload.text_for_unauthorized_destroy
 
@@ -150,7 +181,8 @@ class ServiceTest < ActiveSupport::TestCase
     assert_includes texte, 'des cotations'
     assert_includes texte, 'des commandes'
     assert_includes texte, 'des factures'
-    assert_includes texte, 'des utilisateurs non administrateurs'
+    assert_includes texte, "des utilisateurs dont c'est le seul service"
+    assert_includes texte, "des comptes désactivés dont c'est le seul service"
   end
 
   # ==================== /TESTS CRITIQUES ====================
@@ -158,11 +190,16 @@ class ServiceTest < ActiveSupport::TestCase
   private
 
   # `menage` n'a aucun rattachement en fixture. L'administrateur y est ajouté parce que
-  # l'intervention et la convention exigent un adhérent membre du service, et qu'un
-  # administrateur n'entre pas dans le décompte des utilisateurs bloquants.
+  # l'intervention et la convention exigent un adhérent membre du service, et que,
+  # gardant ses autres services, il n'entre pas dans le décompte des utilisateurs bloquants.
   def service_vide_avec_administrateur
     @administrateur = users(:administrateur_paris)
     services(:menage).tap { |service| service.users << @administrateur }
+  end
+
+  # Déplace sur `menage` l'unique rattachement de l'utilisateur.
+  def service_unique_de(user)
+    services(:menage).tap { |service| user.user_services.sole.update!(service: service) }
   end
 
   def creer_intervention(service)

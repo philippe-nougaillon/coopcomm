@@ -202,6 +202,8 @@ GEM
       multipart-post (~> 2.0)
     faraday-net_http (3.4.4)
       net-http (~> 0.5)
+    faraday-retry (2.4.0)
+      faraday (~> 2.0)
     faraday-typhoeus (1.1.0)
       faraday (~> 2.0)
       typhoeus (~> 1.4)
@@ -536,10 +538,21 @@ GEM
     ruby-vips (2.3.0)
       ffi (~> 1.12)
       logger
+    ruby_llm (2.1.1)
+      base64
+      faraday (>= 1.10.0, != 2.0.0)
+      faraday-multipart (>= 1)
+      faraday-net_http (>= 1)
+      faraday-retry (>= 1)
+      json (< 4)
+      marcel (>= 1.0, < 3)
+      schematist (~> 1.1)
+      zeitwerk (~> 2)
     rubyzip (3.4.1)
     scenic (1.9.0)
       activerecord (>= 4.0.0)
       railties (>= 4.0.0)
+    schematist (1.1.0)
     securerandom (0.4.1)
     seed_dump (3.4.2)
       activerecord (>= 4)
@@ -689,6 +702,7 @@ DEPENDENCIES
   image_processing (~> 1.2)
   importmap-rails
   jbuilder
+  json (< 3)
   langchainrb (~> 0.13.4)
   letter_opener
   letter_opener_web
@@ -721,6 +735,7 @@ DEPENDENCIES
   redcarpet (~> 3.6)
   rqrcode (~> 2.2)
   ruby-openai (~> 7.1)
+  ruby_llm (~> 2.1.1)
   scenic (~> 1.8)
   seed_dump (~> 3.3)
   selenium-webdriver

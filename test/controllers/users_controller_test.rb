@@ -86,6 +86,31 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'application/xls', response.content_type
   end
 
+  test 'la liste des comptes désactivés ne retourne que les comptes désactivés' do
+    get users_url(discarded: true)
+
+    assert_includes assigns(:users), users(:agent_discarded_paris)
+    assert_not_includes assigns(:users), @user
+  end
+
+  test 'la liste des comptes désactivés exclut ceux d’une autre organisation (critique)' do
+    desactive_marseille = users(:agent_marseille)
+    desactive_marseille.discard
+
+    get users_url(discarded: true)
+
+    assert_not_includes assigns(:users), desactive_marseille
+  end
+
+  test 'la liste des comptes désactivés exclut ceux d’un service hors périmètre' do
+    desactive_comptabilite = users(:john_wick)
+    desactive_comptabilite.discard
+
+    get users_url(discarded: true)
+
+    assert_not_includes assigns(:users), desactive_comptabilite
+  end
+
   # Show
   test 'un utilisateur est affiché avec succès' do
     get user_url(@user)
@@ -198,6 +223,53 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
     assert_select 'form[action=?][method=?]', admin_create_new_user_do_path, 'post'
   end
+
+  test 'le formulaire de création ouvert depuis l’analyse d’une convention s’ouvre sur le rôle adhérent et le nom lu' do
+    get admin_create_new_user_url(convention_id: conventions(:analyse_sans_adherent).slug)
+
+    assert_response :success
+    assert_equal %w[adhérent BEAUMONT], [assigns(:user).rôle, assigns(:user).nom]
+  end
+
+  test 'l’analyse d’une convention déposée dans une autre organisation ne préremplit pas le formulaire de création (critique)' do
+    get admin_create_new_user_url(convention_id: conventions(:analyse_a_marseille).slug)
+
+    assert_response :success
+    assert_equal ['agent', nil, []], [assigns(:user).rôle, assigns(:user).nom, assigns(:user).services.to_a]
+  end
+
+  test 'une convention dont l’analyse n’est pas terminée ne préremplit pas le formulaire de création' do
+    get admin_create_new_user_url(convention_id: conventions(:analyse_en_attente).slug)
+
+    assert_equal ['agent', nil], [assigns(:user).rôle, assigns(:user).nom]
+  end
+
+  test 'le formulaire de création ouvert par un manager depuis l’analyse d’une convention n’est pas prérempli' do
+    sign_in users(:hidalgo)
+
+    get admin_create_new_user_url(convention_id: conventions(:analyse_sans_adherent).slug)
+
+    assert_equal ['agent', nil], [assigns(:user).rôle, assigns(:user).nom]
+  end
+
+  # ==================== TESTS CRITIQUES ====================
+  # Les services présélectionnés deviennent ceux de l'adhérent créé, donc son organisation : ils ne viennent que de
+  # l'analyse, et jamais d'une autre organisation.
+  test 'le formulaire de création ouvert depuis l’analyse d’une convention présélectionne les services lus (critique)' do
+    get admin_create_new_user_url(convention_id: conventions(:analyse_sans_adherent).slug)
+
+    assert_equal [services(:informatique), services(:technique)].sort_by(&:id), assigns(:user).services.sort_by(&:id)
+    assert_equal [services(:informatique).id, services(:technique).id].sort,
+                 css_select('select#user_service_ids option[selected]').map { |option| option['value'].to_i }.sort
+  end
+
+  test 'le formulaire de création ouvert depuis l’analyse d’une convention ne présélectionne aucun service d’une autre organisation (critique)' do
+    get admin_create_new_user_url(convention_id: conventions(:analyse_citant_un_service_de_marseille).slug)
+
+    assert_equal [services(:technique)], assigns(:user).services.to_a
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
 
   # ==================== TESTS CRITIQUES ====================
 
