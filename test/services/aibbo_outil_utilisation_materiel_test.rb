@@ -131,4 +131,70 @@ class AibboOutilUtilisationMaterielTest < ActiveSupport::TestCase
     assert_match(/400 jours/, resultat[:erreur])
     assert_nil resultat[:matériel]
   end
+
+  test 'les heures en intervention d’un matériel sont celles d’un seul agent, pas la somme de tous ses agents' do
+    intervention = intervention_du_souffleur(Time.zone.local(2024, 5, 14, 9), Time.zone.local(2024, 5, 14, 13),
+                                             users(:bond, :martin_technique_paris))
+
+    assert_in_delta 8.0, intervention.temps_total
+    assert_equal [1, 4.0, 4.0], souffleur_mi_mai_2024.values_at(:interventions_réalisées, :heures_en_intervention, :heures_par_intervention)
+  end
+
+  test 'la moyenne par intervention divise les heures d’un agent par le nombre d’interventions réalisées' do
+    intervention_du_souffleur(Time.zone.local(2024, 5, 14, 9), Time.zone.local(2024, 5, 14, 13), users(:bond, :martin_technique_paris))
+    intervention_du_souffleur(Time.zone.local(2024, 5, 15, 9), Time.zone.local(2024, 5, 15, 11), [users(:bond)])
+
+    assert_equal [2, 6.0, 3.0], souffleur_mi_mai_2024.values_at(:interventions_réalisées, :heures_en_intervention, :heures_par_intervention)
+  end
+
+  test 'une intervention pas encore commencée ne compte pas dans les heures en intervention' do
+    Intervention.create!(adherent: users(:weil), service: services(:technique), description: 'Soufflage prévu', agents: [users(:bond)],
+                         tools: [tools(:souffleur_reserve_en_mai_2024)], workflow_state: Intervention::NOUVEAU,
+                         début_prévue: Time.zone.local(2024, 5, 16, 9), fin_prévue: Time.zone.local(2024, 5, 16, 12))
+
+    assert_equal [0, 0.0, 0.0], souffleur_mi_mai_2024.values_at(:interventions_réalisées, :heures_en_intervention, :heures_par_intervention)
+  end
+
+  test 'une intervention commencée mais pas terminée ne fait pas baisser la moyenne par intervention' do
+    intervention_du_souffleur(Time.zone.local(2024, 5, 14, 9), Time.zone.local(2024, 5, 14, 13), [users(:bond)])
+    Intervention.create!(adherent: users(:weil), service: services(:technique), description: 'Soufflage commencé', agents: [users(:bond)],
+                         tools: [tools(:souffleur_reserve_en_mai_2024)], workflow_state: Intervention::NOUVEAU,
+                         début: Time.zone.local(2024, 5, 16, 9))
+
+    assert_equal [1, 4.0, 4.0], souffleur_mi_mai_2024.values_at(:interventions_réalisées, :heures_en_intervention, :heures_par_intervention)
+  end
+
+  test 'un agent désactivé garde sa part du temps total, comme dans son calcul' do
+    intervention_du_souffleur(Time.zone.local(2024, 5, 14, 9), Time.zone.local(2024, 5, 14, 13), users(:bond, :martin_technique_paris))
+    users(:martin_technique_paris).discard
+
+    assert_equal 4.0, souffleur_mi_mai_2024[:heures_en_intervention]
+  end
+
+  test 'le classement par heures place en tête le matériel qui a fait le plus d’heures en intervention' do
+    intervention_du_souffleur(Time.zone.local(2024, 5, 14, 9), Time.zone.local(2024, 5, 14, 13), [users(:bond)])
+    [[14, 14], [15, 9]].each do |jour, heure|
+      Intervention.create!(adherent: users(:weil), service: services(:technique), description: 'Taille courte', agents: [users(:bond)],
+                           tools: [tools(:cisaille)], workflow_state: Intervention::VALIDE,
+                           début: Time.zone.local(2024, 5, jour, heure), fin: Time.zone.local(2024, 5, jour, heure + 1))
+    end
+
+    resultat = Aibbo::OutilUtilisationMateriel.new(@manager).call(du: '2024-05-13', au: '2024-05-17', trier_par: 'heures')
+
+    assert_equal [[tools(:souffleur_reserve_en_mai_2024).name, 1, 4.0], [tools(:cisaille).name, 2, 2.0]],
+                 resultat[:matériel].first(2).map { |materiel| materiel.values_at(:nom, :jours_d_emploi, :heures_en_intervention) }
+  end
+
+  private
+
+  # Une intervention réalisée avec le souffleur, créée comme par le formulaire : son temps total est calculé par l'application.
+  def intervention_du_souffleur(debut, fin, agents)
+    Intervention.create!(adherent: users(:weil), service: services(:technique), description: 'Soufflage des feuilles', agents: agents,
+                         tools: [tools(:souffleur_reserve_en_mai_2024)], workflow_state: Intervention::VALIDE, début: debut, fin: fin)
+  end
+
+  # La ligne du souffleur pour la semaine du 13 mai 2024, où aucune fixture ne l'emploie.
+  def souffleur_mi_mai_2024
+    Aibbo::OutilUtilisationMateriel.new(@manager).call(du: '2024-05-13', au: '2024-05-17', nom: 'souffleur')[:matériel].first
+  end
 end

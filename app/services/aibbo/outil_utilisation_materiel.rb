@@ -4,11 +4,13 @@ module Aibbo
   # Ce qu'AÏBBO lit de l'emploi du matériel sur une période : jours d'emploi, pannes, emploi simultané d'un groupe, retards, répartition par adhérent.
   class OutilUtilisationMateriel < Outil
     JOURS = 400
-    TRIS = { 'utilisation' => :jours_d_emploi, 'pannes' => :jours_de_panne }.freeze
+    TRIS = { 'utilisation' => :jours_d_emploi, 'pannes' => :jours_de_panne, 'heures' => :heures_en_intervention }.freeze
 
     description "Mesure l'emploi du matériel sur une période, pour juger s'il en manque ou s'il y en a trop. Par matériel : les jours ouvrés " \
-                "(du lundi au vendredi) où il a servi, par réservation ou par intervention, ses jours ouvrés de panne, le nombre de ses pannes " \
-                "et son taux d'occupation. Pour l'ensemble des matériels retenus, par exemple toutes les tondeuses : combien ont servi " \
+                "(du lundi au vendredi) où il a servi, par réservation ou par intervention, ses jours ouvrés de panne, le nombre de ses pannes, " \
+                "son taux d'occupation, et ses heures en intervention : le temps de travail d'un seul agent, pause déduite, " \
+                "sur les interventions commencées dans la période et terminées, au total et en moyenne par intervention. " \
+                "Pour l'ensemble des matériels retenus, par exemple toutes les tondeuses : combien ont servi " \
                 "le même jour, les jours où aucun n'était libre, mois par mois aussi, et le retard au démarrage des interventions qui les emploient, " \
                 "parmi celles que l'utilisateur peut consulter. " \
                 "Avec par_adherent, pour chaque matériel : les jours d'emploi de chaque adhérent de ses interventions et leur part des jours " \
@@ -21,8 +23,8 @@ module Aibbo
       string :au, required: false, description: "Dernier jour de la période, inclus, au format AAAA-MM-JJ ; sans lui, et au plus tard, aujourd'hui"
       string :nom, required: false, description: 'Nom ou partie du nom du matériel, par exemple tondeuse ; sans lui, tout le matériel'
       string :trier_par, required: false, enum: TRIS.keys,
-                         description: "Classement des matériels, du plus élevé au plus bas : « utilisation » (jours d'emploi, valeur par défaut) " \
-                                      'ou « pannes » (jours de panne)'
+                         description: "Classement des matériels, du plus élevé au plus bas : « utilisation » (jours d'emploi, valeur par défaut), " \
+                                      '« pannes » (jours de panne) ou « heures » (heures en intervention)'
       boolean :par_adherent, required: false,
                              description: "Pour répartir les jours d'emploi de chaque matériel entre les adhérents (communes ou structures) " \
                                           'de ses interventions, avec à part les jours réservés sans intervention'
@@ -48,10 +50,14 @@ module Aibbo
       ouvres = (debut..fin).select(&:on_weekday?)
       emplois = materiels.to_h { |materiel| [materiel, emploi(materiel, debut, fin)] }
       noms = noms_des_adherents(emplois) if par_adherent
+      heures = heures_en_intervention(materiels, debut, fin)
       lignes = emplois.map do |materiel, emploi|
         servis = ouvres.count { |jour| emploi[:servi].include?(jour) }
+        nombre, total = heures.fetch(materiel.id, [0, 0.0])
         ligne = { nom: materiel.name, jours_d_emploi: servis, jours_de_panne: ouvres.count { |jour| emploi[:panne].include?(jour) },
-                  pannes: emploi[:pannes], taux_d_occupation: ouvres.any? ? (100.0 * servis / ouvres.size).round(1) : 0.0 }
+                  pannes: emploi[:pannes], taux_d_occupation: ouvres.any? ? (100.0 * servis / ouvres.size).round(1) : 0.0,
+                  interventions_réalisées: nombre, heures_en_intervention: total.round(2),
+                  heures_par_intervention: nombre.positive? ? (total / nombre).round(2) : 0.0 }
         par_adherent ? ligne.merge(repartition(emploi, ouvres, servis, noms)) : ligne
       end
       en_service = ouvres.index_with { |jour| emplois.count { |_, emploi| emploi[:servi].include?(jour) } }
@@ -111,6 +117,16 @@ module Aibbo
       sans_intervention = ouvres.count { |jour| emploi[:reserve_seul].include?(jour) }
       { par_adhérent: adherents.select { |adherent| adherent[:jours_d_emploi].positive? }.sort_by { |adherent| [-adherent[:jours_d_emploi], adherent[:adhérent]] },
         réservations_sans_intervention: { jours_d_emploi: sans_intervention, part: part.call(sans_intervention) } }
+    end
+
+    # Par matériel : [interventions qui ont au moins un agent, heures d'un seul agent] ; sans agent, la part vaut NULL et ne compte pas.
+    def heures_en_intervention(materiels, debut, fin)
+      part = OutilInterventions::PART_DE_L_AGENT
+      Intervention.joins(:tool_interventions).where(tool_interventions: { tool_id: materiels.map(&:id) })
+                  .where(début: debut.beginning_of_day..fin.end_of_day).where.not(fin: nil)
+                  .group('tool_interventions.tool_id')
+                  .pluck(Arel.sql('tool_interventions.tool_id'), Arel.sql("COUNT(#{part})"), Arel.sql("COALESCE(SUM(#{part}), 0)"))
+                  .to_h { |tool_id, nombre, heures| [tool_id, [nombre, heures.to_f]] }
     end
   end
 end
