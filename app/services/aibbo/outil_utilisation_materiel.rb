@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Aibbo
-  # Ce qu'AÏBBO lit de l'emploi du matériel sur une période : jours d'emploi, pannes, emploi simultané d'un groupe, retards.
+  # Ce qu'AÏBBO lit de l'emploi du matériel sur une période : jours d'emploi, pannes, emploi simultané d'un groupe, retards, répartition par adhérent.
   class OutilUtilisationMateriel < Outil
     JOURS = 400
     TRIS = { 'utilisation' => :jours_d_emploi, 'pannes' => :jours_de_panne }.freeze
@@ -11,6 +11,8 @@ module Aibbo
                 "et son taux d'occupation. Pour l'ensemble des matériels retenus, par exemple toutes les tondeuses : combien ont servi " \
                 "le même jour, les jours où aucun n'était libre, mois par mois aussi, et le retard au démarrage des interventions qui les emploient, " \
                 "parmi celles que l'utilisateur peut consulter. " \
+                "Avec par_adherent, pour chaque matériel : les jours d'emploi de chaque adhérent de ses interventions et leur part des jours " \
+                "d'emploi du matériel, un jour partagé par deux adhérents comptant pour chacun, et à part les jours réservés sans intervention. " \
                 'Sans période, les douze derniers mois, qui couvrent toutes les saisons : la bonne base pour juger un achat ou une vente. ' \
                 "La période s'arrête au plus tard aujourd'hui. Une clé « erreur » dit ce qu'il faut demander à l'utilisateur."
 
@@ -21,13 +23,16 @@ module Aibbo
       string :trier_par, required: false, enum: TRIS.keys,
                          description: "Classement des matériels, du plus élevé au plus bas : « utilisation » (jours d'emploi, valeur par défaut) " \
                                       'ou « pannes » (jours de panne)'
+      boolean :par_adherent, required: false,
+                             description: "Pour répartir les jours d'emploi de chaque matériel entre les adhérents (communes ou structures) " \
+                                          'de ses interventions, avec à part les jours réservés sans intervention'
     end
 
     def name
       'utilisation_materiel'
     end
 
-    def execute(du: nil, au: nil, nom: nil, trier_par: nil)
+    def execute(du: nil, au: nil, nom: nil, trier_par: nil, par_adherent: nil)
       fin = [au.present? ? jour(au).to_date : Date.current, Date.current].min
       debut = du.present? ? jour(du).to_date : fin - 1.year + 1.day
       raise Refus, "La période doit commencer au plus tard aujourd'hui, et avant son dernier jour." if fin < debut
@@ -42,10 +47,12 @@ module Aibbo
 
       ouvres = (debut..fin).select(&:on_weekday?)
       emplois = materiels.to_h { |materiel| [materiel, emploi(materiel, debut, fin)] }
+      noms = noms_des_adherents(emplois) if par_adherent
       lignes = emplois.map do |materiel, emploi|
         servis = ouvres.count { |jour| emploi[:servi].include?(jour) }
-        { nom: materiel.name, jours_d_emploi: servis, jours_de_panne: ouvres.count { |jour| emploi[:panne].include?(jour) },
-          pannes: emploi[:pannes], taux_d_occupation: ouvres.any? ? (100.0 * servis / ouvres.size).round(1) : 0.0 }
+        ligne = { nom: materiel.name, jours_d_emploi: servis, jours_de_panne: ouvres.count { |jour| emploi[:panne].include?(jour) },
+                  pannes: emploi[:pannes], taux_d_occupation: ouvres.any? ? (100.0 * servis / ouvres.size).round(1) : 0.0 }
+        par_adherent ? ligne.merge(repartition(emploi, ouvres, servis, noms)) : ligne
       end
       en_service = ouvres.index_with { |jour| emplois.count { |_, emploi| emploi[:servi].include?(jour) } }
       sans_libre = ouvres.select { |jour| emplois.all? { |_, emploi| emploi[:servi].include?(jour) || emploi[:panne].include?(jour) } }.to_set
@@ -71,11 +78,15 @@ module Aibbo
     def emploi(materiel, debut, fin)
       evenements = materiel.mouvements.where(état: %w[panne fin_de_panne]).where(date: ..fin).order(date: :desc, id: :desc).pluck(:date, :état)
       panne = (debut..fin).select { |jour| evenements.find { |date, _| date <= jour }&.last == 'panne' }.to_set
-      reserves = materiel.mouvements.réservé.where(date: debut..fin).pluck(:date)
-      en_intervention = materiel.interventions.where('COALESCE(début, début_prévue) <= ? AND COALESCE(fin, fin_prévue) >= ?',
-                                                     fin.end_of_day, debut.beginning_of_day)
-                                .flat_map { |intervention| (intervention.effective_début.to_date..intervention.effective_fin.to_date).to_a }
-      { servi: (reserves + en_intervention).to_set - panne, panne: panne,
+      reserves = materiel.mouvements.réservé.where(date: debut..fin).pluck(:date).to_set
+      par_adherent = materiel.interventions.where('COALESCE(début, début_prévue) <= ? AND COALESCE(fin, fin_prévue) >= ?',
+                                                  fin.end_of_day, debut.beginning_of_day)
+                             .group_by(&:adherent_id)
+                             .transform_values do |siennes|
+                               siennes.flat_map { |intervention| (intervention.effective_début.to_date..intervention.effective_fin.to_date).to_a }.to_set - panne
+                             end
+      en_intervention = par_adherent.values.reduce(Set.new, :|)
+      { servi: (reserves | en_intervention) - panne, panne: panne, par_adherent: par_adherent, reserve_seul: reserves - en_intervention - panne,
         pannes: evenements.count { |date, etat| etat == 'panne' && date >= debut } }
     end
 
@@ -83,6 +94,23 @@ module Aibbo
       Intervention.visible_to(@utilisateur).where(id: ToolIntervention.where(tool_id: materiels.map(&:id)).select(:intervention_id))
                   .where(début: debut.beginning_of_day..fin.end_of_day).where.not(début_prévue: nil)
                   .pluck(:début_prévue, :début).map { |prevu, reel| (reel.to_date - prevu.to_date).to_i }
+    end
+
+    def noms_des_adherents(emplois)
+      User.where(id: emplois.values.flat_map { |emploi| emploi[:par_adherent].keys }.compact).to_h { |adherent| [adherent.id, adherent.nom_prénom.strip] }
+    end
+
+    # Un jour partagé par deux adhérents compte pour chacun : les parts peuvent dépasser cent pour cent au total.
+    def repartition(emploi, ouvres, servis, noms)
+      part = ->(jours) { servis.positive? ? (100.0 * jours / servis).round(1) : 0.0 }
+      adherents = emploi[:par_adherent].group_by { |adherent_id, _| adherent_id ? noms.fetch(adherent_id, 'Compte désactivé') : 'Sans adhérent' }
+                                       .map do |nom, paires|
+        jours = ouvres.count { |jour| paires.any? { |_, siens| siens.include?(jour) } }
+        { adhérent: nom, jours_d_emploi: jours, part: part.call(jours) }
+      end
+      sans_intervention = ouvres.count { |jour| emploi[:reserve_seul].include?(jour) }
+      { par_adhérent: adherents.select { |adherent| adherent[:jours_d_emploi].positive? }.sort_by { |adherent| [-adherent[:jours_d_emploi], adherent[:adhérent]] },
+        réservations_sans_intervention: { jours_d_emploi: sans_intervention, part: part.call(sans_intervention) } }
     end
   end
 end
