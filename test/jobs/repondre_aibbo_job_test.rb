@@ -6,7 +6,7 @@ require_relative '../support/compte_aibbo'
 class RepondreAibboJobTest < ActiveJob::TestCase
   include CompteAibbo
 
-  VARIABLES_ENV = %w[MISTRAL_AI_API_KEY AIBBO_MODELE DEBUG_AIBOT].freeze
+  VARIABLES_ENV = %w[MISTRAL_AI_API_KEY AIBBO_MODELE DEBUG_AIBOT DEBUG_AIBOT_MAIL].freeze
   # La seule adresse que WebMock laisse répondre : toute autre requête fait tomber le test.
   ADRESSE_DU_MODELE = 'https://api.eu.mistral.ai/v1/chat/completions'
 
@@ -15,6 +15,7 @@ class RepondreAibboJobTest < ActiveJob::TestCase
     ENV['MISTRAL_AI_API_KEY'] = 'cle-de-test'
     ENV.delete('AIBBO_MODELE')
     ENV.delete('DEBUG_AIBOT')
+    ENV.delete('DEBUG_AIBOT_MAIL')
     @agent = users(:bond)
     @question = Message.create!(from_user: @agent, to_user: users(:AIBBO), message: 'Combien d’interventions terminées ?')
   end
@@ -70,6 +71,25 @@ class RepondreAibboJobTest < ActiveJob::TestCase
     RepondreAibboJob.perform_now(@agent, @question)
 
     assert_nil AibotLog.find_by(request_message: @question)
+  end
+
+  test 'l’aibot log est envoyé par mail lorsque le mail du journal est activé' do
+    ENV['DEBUG_AIBOT'] = 'true'
+    ENV['DEBUG_AIBOT_MAIL'] = 'true'
+    modele_repondant
+
+    RepondreAibboJob.perform_now(@agent, @question)
+
+    assert_enqueued_with(job: NotifAibboRequestJob, args: [AibotLog.find_by(request_message: @question)])
+  end
+
+  test 'l’aibot log n’est pas envoyé par mail lorsque seul le journal est activé' do
+    ENV['DEBUG_AIBOT'] = 'true'
+    modele_repondant
+
+    assert_no_enqueued_jobs only: NotifAibboRequestJob do
+      RepondreAibboJob.perform_now(@agent, @question)
+    end
   end
 
   test 'la question est posée au modèle du niveau choisi par l’utilisateur' do

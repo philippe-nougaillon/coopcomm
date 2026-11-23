@@ -31,7 +31,7 @@ class RepondreAibboJob < ApplicationJob
       aibot_log = AibotLog.create!(user: user_sender, request_message: request_message, response_message: response_message, succes: success, log_stream: trace)
 
       # Envoie du mail sur le log AÏBBO créé
-      Events.instance.publish('aibbo.request', payload: { aibot_log_id: aibot_log.id }) if Rails.env.production?
+      Events.instance.publish('aibbo.request', payload: { aibot_log_id: aibot_log.id }) if ENV["DEBUG_AIBOT_MAIL"] == "true"
     end
   end
 end
