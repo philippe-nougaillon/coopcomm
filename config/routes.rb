@@ -66,9 +66,14 @@ Rails.application.routes.draw do
     member do
       delete :purge_photo
       delete :purge_document
+      get :copie
+      post :copier
     end
   end
   match 'doc', to: redirect('/documentation'), via: :get
+  resources :copies_wiki, only: :create do
+    get :auteurs, on: :collection
+  end
 
   resources :interventions do
     member do

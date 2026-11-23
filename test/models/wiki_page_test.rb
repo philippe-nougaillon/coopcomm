@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class WikiPageTest < ActiveSupport::TestCase
+  include ActionDispatch::TestProcess::FixtureFile
+
   test 'la recherche retrouve une documentation par un mot de son titre' do
     résultats = WikiPage.search_titre_and_contenu('Réserver')
 
@@ -151,6 +153,15 @@ class WikiPageTest < ActiveSupport::TestCase
   end
 
   # ==================== /PIÈCES JOINTES DANS LE CONTENU (TRIX) ====================
+
+  test 'un commentaire d’audit posé avant l’enregistrement est gardé devant les pièces jointes ajoutées' do
+    page = wiki_page_valide(photo: fixture_file_upload('exemple.png', 'image/png'))
+    page.audit_comment = 'Copiée depuis demo.exemple.fr'
+
+    page.save!
+
+    assert_equal 'Copiée depuis demo.exemple.fr ; 1 photo ajoutée', page.audits.last.comment
+  end
 
   private
 

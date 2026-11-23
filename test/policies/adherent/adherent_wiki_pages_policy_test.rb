@@ -25,6 +25,8 @@ class AdherentWikiPagesPolicyTest < ActionDispatch::IntegrationTest
     refute @policy.edit?
     refute @policy.update?
     refute @policy.destroy?
+    refute @policy.copie?
+    refute @policy.copier?
   end
 
   test 'accès autorisé pour un adhérent sur une documentation privée' do
