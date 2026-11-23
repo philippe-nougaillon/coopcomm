@@ -2,7 +2,7 @@
 
 class WikiPagesController < ApplicationController
   skip_before_action :authenticate_user!, only: %i[index show blog guide faq]
-  before_action :set_wiki_page, only: %i[show edit update destroy purge_photo purge_document]
+  before_action :set_wiki_page, only: %i[show edit update destroy purge_photo purge_document copie copier]
   before_action :is_user_authorized
 
   # GET /documentation
@@ -100,6 +100,31 @@ class WikiPagesController < ApplicationController
     redirect_to documentation_path(@wiki_page), notice: "Le document a été supprimé."
   end
 
+  # GET /documentation/1/copie
+  def copie
+    @instances = instances_cibles
+    @instance = @instances.find { |instance| instance[:nom] == params[:instance] }
+    @auteurs = AppelerInstance.call(@instance[:url], '/copies_wiki/auteurs') if @instance
+  rescue AppelerInstance::Erreur => e
+    flash.now[:alert] = e.message
+  end
+
+  # POST /documentation/1/copier
+  def copier
+    instance = instances_cibles.find { |cible| cible[:nom] == params[:instance] }
+    return redirect_to copie_documentation_path(@wiki_page), alert: 'Instance inconnue.' unless instance
+
+    page_copiée = AppelerInstance.call(instance[:url], '/copies_wiki',
+                                       { page: ExporterPageWiki.call(@wiki_page), auteur: params[:auteur],
+                                         publiée: params[:publiée] == '1',
+                                         origine: { instance: ENV['HOST_URL'], slug: @wiki_page.slug,
+                                                    par: current_user.email } })
+    redirect_to URI.join(instance[:url], documentation_path(page_copiée['slug'])).to_s,
+                allow_other_host: true, status: :see_other
+  rescue AppelerInstance::Erreur => e
+    redirect_to copie_documentation_path(@wiki_page, instance: instance[:nom]), alert: e.message
+  end
+
   private
 
   # Use callbacks to share common setup or constraints between actions.
@@ -117,6 +142,14 @@ class WikiPagesController < ApplicationController
 
   def is_user_authorized
     authorize @wiki_page || WikiPage
+  end
+
+  # INSTANCES_COOPCOMM : « Nom=https://hôte,Nom=https://hôte », la même sur toutes les instances
+  def instances_cibles
+    ENV['INSTANCES_COOPCOMM'].to_s.split(',').filter_map do |instance|
+      nom, url = instance.split('=', 2).map(&:strip)
+      { nom: nom, url: url } if url.present? && URI(url).host != ENV['HOST_URL']
+    end
   end
 
 end

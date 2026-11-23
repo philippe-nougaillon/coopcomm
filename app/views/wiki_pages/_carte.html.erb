@@ -58,7 +58,7 @@
       </h3>
 
       <p class="my-2 text-sm text-slate-600 leading-relaxed line-clamp-2">
-        <%= wiki_page.sous_titre.presence.upcase_first %>
+        <%= wiki_page.sous_titre.presence&.upcase_first %>
       </p>
 
       <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">

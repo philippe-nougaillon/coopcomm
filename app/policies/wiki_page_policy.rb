@@ -55,5 +55,13 @@ class WikiPagePolicy < ApplicationPolicy
   def purge_document?
     destroy?
   end
-  
+
+  def copie?
+    user&.super_admin?
+  end
+
+  def copier?
+    copie?
+  end
+
 end

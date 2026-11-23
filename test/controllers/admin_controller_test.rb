@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require_relative '../support/page_wiki_exportee'
 
 # `stats` est réservé au super administrateur, donc hors périmètre.
 class AdminControllerTest < ActionDispatch::IntegrationTest
+  include PageWikiExportee
+
   setup do
     @audit = Audited::Audit.create!(auditable: users(:bond), user: users(:hidalgo), action: 'update',
                                     audited_changes: { 'nom' => %w[AVANT SONDEAUDIT] })
@@ -57,6 +60,15 @@ class AdminControllerTest < ActionDispatch::IntegrationTest
 
     get admin_audits_url(action_name: ['destroy'])
     assert_not_includes assigns(:audits), @audit
+  end
+
+  test 'la création d’une page wiki reçue d’une autre instance n’apparaît pas dans la liste des audits' do
+    page = ImporterPageWiki.call(page_wiki_exportée, auteur: users(:administrateur_paris), publiée: true,
+                                                     origine: { 'instance' => 'demo.exemple.fr', 'slug' => 'reserver-une-benne' })
+
+    get admin_audits_url(type: ['WikiPage'])
+
+    assert_not_includes assigns(:audits), page.audits.find_by!(action: 'create')
   end
 
   test 'la page des paramètres est affichée avec succès' do
