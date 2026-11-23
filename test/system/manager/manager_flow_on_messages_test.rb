@@ -17,4 +17,28 @@ class ManagerFlowOnMessagesTest < ApplicationSystemTestCase
 
     assert_link 'Weil Ariel'
   end
+
+  test "En tant que manager, je veux retrouver un groupe de contacts replié en revenant sur la messagerie" do
+    visit messagerie_path
+    ouvrir_contacts
+    cliquer_element(find('summary', text: 'Agent'))
+    assert_no_link 'Martin Michel'
+
+    visit messagerie_path
+    ouvrir_contacts
+
+    assert_link 'Weil Ariel'
+    assert_no_link 'Martin Michel'
+  end
+
+  test "En tant que manager, je veux trouver un contact par la recherche quand son groupe est replié" do
+    visit messagerie_path
+    ouvrir_contacts
+    cliquer_element(find('summary', text: 'Adhérent'))
+    assert_no_link 'Weil Ariel'
+
+    fill_in 'query', with: 'Weil'
+
+    assert_link 'Weil Ariel'
+  end
 end

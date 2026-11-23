@@ -81,11 +81,9 @@ class PagesController < ApplicationController
                      .includes(:service, :organisation)
                      .first(2)
 
-    @messages = current_user.messages
-                            .where(read_at: nil)
-                            .joins(:from_user)
-                            .ordered
-                            .first(3)
+    @discussions = DiscussionsRecentes.call(current_user)
+                                      .select { |discussion| discussion[:unread_count].positive? }
+                                      .first(3)
 
     @annonces = Message.annonces_pour(current_user).ordered.first(3)
 

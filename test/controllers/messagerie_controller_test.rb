@@ -28,16 +28,77 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
     assert_includes assigns(:users), désactivé
   end
 
+  test 'les contacts de la messagerie présentent le groupe d’un rôle sans membre' do
+    sign_in users(:nettoyeur_marseille)
+
+    get messagerie_url
+
+    assert_dom 'details div', text: 'Aucun administrateur'
+  end
+
+  test 'les contacts de la messagerie sont groupés par rôle, de l’administrateur à l’agent' do
+    get messagerie_url
+
+    assert_equal %w[Administrateur Manager Adhérent Agent], css_select('#users-list summary').map { |titre| titre.text.strip }
+  end
+
+  test 'un contact de la messagerie porte le nombre de ses messages non lus' do
+    2.times { Message.create!(message: 'Bonjour', from_id: @interlocutor_user.id, to_id: @current_user.id) }
+
+    get messagerie_url
+
+    assert_dom '#users-list a[href=?] .pastille', messagerie_conversation_path(@interlocutor_user.slug), text: '2'
+  end
+
+  test 'le groupe d’un rôle porte le total des messages non lus de ses contacts' do
+    2.times { Message.create!(message: 'Bonjour', from_id: @interlocutor_user.id, to_id: @current_user.id) }
+    Message.create!(message: 'Bonjour', from_id: users(:martin_technique_paris).id, to_id: @current_user.id)
+
+    get messagerie_url
+
+    assert_dom '#users-list summary', text: /\AAgent\s+3\z/
+  end
+
+  test 'les messages privés portent le total des messages non lus' do
+    2.times { Message.create!(message: 'Bonjour', from_id: @interlocutor_user.id, to_id: @current_user.id) }
+    Message.create!(message: 'Bonjour', from_id: users(:manager_paris).id, to_id: @current_user.id)
+
+    get messagerie_url
+
+    assert_dom '#message-prive > summary .pastille', text: '3'
+  end
+
+  test 'les contacts d’un rôle sont rangés de la conversation la plus récente à la plus ancienne' do
+    Message.create!(message: 'Bonjour', from_id: users(:agent_whatsapp).id, to_id: @current_user.id,
+                    created_at: Time.zone.local(2026, 4, 3, 9))
+    messages(:one).update!(created_at: Time.zone.local(2026, 4, 2, 9))
+    Message.create!(message: 'Bonjour', from_id: @current_user.id, to_id: users(:nettoyage).id,
+                    created_at: Time.zone.local(2026, 4, 1, 9))
+
+    get messagerie_url
+
+    assert_equal [users(:agent_whatsapp), users(:bond), users(:nettoyage)], assigns(:users).select(&:agent?).first(3)
+  end
+
+  test 'les contacts d’un rôle sans conversation suivent, par ordre alphabétique' do
+    Message.create!(message: 'Bonjour', from_id: users(:nettoyage).id, to_id: @current_user.id,
+                    created_at: Time.zone.local(2026, 4, 1, 9))
+
+    get messagerie_url
+
+    assert_equal [users(:martin_technique_paris), users(:agent_whatsapp), users(:électricité)],
+                 assigns(:users).select(&:agent?).last(3)
+  end
+
   # ==================== TESTS CRITIQUES ====================
   # Un identifiant de service peut être celui d'un utilisateur : sans le genre, une annonce
-  # passerait pour un message reçu. Les canaux proposés dérivent des services, selon le rôle.
+  # passerait pour un message reçu. Les canaux et les annonces proposés dérivent des services, selon le rôle.
   test 'les discussions récentes ignorent les annonces portant l’id de l’utilisateur (critique)' do
     sign_in users(:martin_technique_paris)
 
     get messagerie_url
 
-    assert_empty assigns(:recent_conversations)
-    assert_empty assigns(:unread_counts)
+    assert_empty assigns(:discussions)
   end
 
   test 'la sidebar propose à un manager les annonces de ses seuls services (critique)' do
@@ -63,7 +124,72 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
     assert_nil assigns(:services_annonces)
   end
 
+  test 'une annonce portant l’id d’un contact ne le fait pas remonter dans les contacts (critique)' do
+    messages(:one).update!(created_at: messages(:annonce_piège).created_at - 1.day)
+
+    get messagerie_url
+
+    assert_equal [users(:bond), users(:martin_technique_paris), users(:agent_whatsapp), users(:électricité), users(:nettoyage)],
+                 assigns(:users).select(&:agent?)
+  end
+
+  test 'l’accueil de la messagerie propose à un manager la dernière annonce de chacun de ses seuls services, la plus récente en tête (critique)' do
+    get messagerie_url
+
+    assert_equal [messages(:annonce_informatique), messages(:annonce_technique), messages(:annonce_service_paris)],
+                 assigns(:annonces).to_a
+  end
+
+  test 'l’accueil de la messagerie ne propose que la plus récente des annonces d’un service (critique)' do
+    plus_récente = Message.annonce.create!(message: 'Coupure du réseau', from_id: @current_user.id,
+                                           to_id: services(:technique).id, created_at: Time.zone.local(2026, 3, 10, 9))
+
+    get messagerie_url
+
+    assert_equal [plus_récente, messages(:annonce_informatique), messages(:annonce_service_paris)], assigns(:annonces).to_a
+  end
+
+  test 'l’accueil de la messagerie propose à un administrateur la dernière annonce de chaque service de son organisation (critique)' do
+    sign_in users(:administrateur_paris)
+
+    get messagerie_url
+
+    assert_equal [messages(:annonce_piège), messages(:annonce_informatique), messages(:annonce_secretariat),
+                  messages(:annonce_technique), messages(:annonce_service_paris)], assigns(:annonces).to_a
+  end
+
+  test 'l’accueil de la messagerie ne propose aucune annonce à un adhérent (critique)' do
+    sign_in users(:weil)
+
+    get messagerie_url
+
+    assert_empty assigns(:annonces)
+  end
+
   # ==================== /TESTS CRITIQUES ====================
+
+  test 'l’accueil de la messagerie est affiché quand l’auteur d’une annonce a disparu' do
+    sign_in users(:michael_jackson)
+
+    get messagerie_url
+
+    assert_response :success
+    assert_equal [messages(:annonce_d_un_auteur_disparu)], assigns(:annonces).to_a
+  end
+
+  test 'l’accueil de la messagerie porte aussi les discussions sans message non lu' do
+    get messagerie_url
+
+    assert_equal [[users(:bond), 0]], assigns(:discussions).map { |discussion| discussion.values_at(:user, :unread_count) }
+  end
+
+  test 'une discussion de l’accueil de la messagerie porte le nombre de ses messages non lus' do
+    2.times { Message.create!(message: 'Bonjour', from_id: @interlocutor_user.id, to_id: @current_user.id) }
+
+    get messagerie_url
+
+    assert_dom 'a.card[href=?] .pastille', messagerie_conversation_path(@interlocutor_user.slug), text: '2'
+  end
 
   test 'une conversation est affichée avec succès' do
     get messagerie_conversation_url(@interlocutor_user.slug)
@@ -119,6 +245,17 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
   end
 
   # ==================== /TESTS CRITIQUES ====================
+
+  test 'les messages non lus de la conversation ouverte ne comptent ni dans la pastille de la messagerie ni sur leur contact' do
+    2.times { Message.create!(message: 'Bonjour', from_id: @interlocutor_user.id, to_id: @current_user.id) }
+    Message.create!(message: 'Bonjour', from_id: users(:manager_paris).id, to_id: @current_user.id)
+
+    get messagerie_conversation_url(@interlocutor_user.slug)
+
+    assert_dom 'a[title=?]', 'Messagerie', text: '1', count: 2
+    assert_dom '#users-list a[href=?] .pastille', messagerie_conversation_path(@interlocutor_user.slug), count: 0
+    assert_dom '#users-list a[href=?] .pastille', messagerie_conversation_path(users(:manager_paris).slug), text: '1'
+  end
 
   test 'un message envoyé à un interlocuteur est créé' do
     assert_difference('Message.count') do
@@ -226,6 +363,23 @@ class MessagerieControllerTest < ActionDispatch::IntegrationTest
 
     post messagerie_search_contact_url, params: { query: désactivé.nom }
     assert_includes assigns(:users), désactivé
+  end
+
+  test 'la recherche de contact porte le nombre de messages non lus du contact' do
+    Message.create!(message: 'Bonjour', from_id: @interlocutor_user.id, to_id: @current_user.id)
+
+    post messagerie_search_contact_url, params: { query: 'Bond' }
+
+    assert_dom 'a[href=?] .pastille', messagerie_conversation_path(@interlocutor_user.slug), text: '1'
+  end
+
+  test 'la recherche de contact range les contacts trouvés de la conversation la plus récente à la plus ancienne' do
+    Message.create!(message: 'Bonjour', from_id: users(:nettoyage).id, to_id: @current_user.id,
+                    created_at: Time.zone.local(2026, 4, 1, 9))
+
+    post messagerie_search_contact_url, params: { query: 'Team' }
+
+    assert_equal [users(:nettoyage), users(:électricité)], assigns(:users).to_a
   end
 
   test 'les annonces générales sont affichées avec succès' do

@@ -5,13 +5,15 @@
     Messages
   </h2>
 
-  <% if @annonces.any? || @messages.any? %>
+  <% if @annonces.any? || @discussions.any? %>
     <div class="divide-y divide-slate-100">
       <% @annonces.each do |annonce| %>
-        <%= render partial: 'annonce', locals: { message: annonce } %>
+        <%= render partial: 'messagerie/annonce', locals: { message: annonce } %>
       <% end %>
-      <% @messages.each do |message| %>
-        <%= render partial: 'message', locals: { message: message } %>
+    </div>
+    <div class="flex flex-col gap-3 mt-4">
+      <% @discussions.each do |discussion| %>
+        <%= render 'messagerie/discussion', **discussion %>
       <% end %>
     </div>
   <% else %>

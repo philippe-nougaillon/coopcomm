@@ -313,19 +313,36 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test 'un message reçu non lu compte comme nouveau message' do
-    Message.create!(from_user: users(:hidalgo), to_user: users(:weil), message: 'Bonjour', read_at: nil)
+    message = Message.create!(from_user: users(:hidalgo), to_user: users(:weil), message: 'Bonjour', read_at: nil)
 
-    assert users(:weil).new_messages?
+    assert_equal [message], users(:weil).messages_non_lus.to_a
   end
 
   test 'un message déjà lu ne compte pas comme nouveau message' do
     Message.create!(from_user: users(:hidalgo), to_user: users(:weil), message: 'Bonjour', read_at: Time.current)
 
-    assert_not users(:weil).new_messages?
+    assert_empty users(:weil).messages_non_lus
   end
 
+  # ==================== TESTS CRITIQUES ====================
+  # Un identifiant de service peut être celui d'un utilisateur, et un expéditeur sorti des services
+  # de l'utilisateur n'est plus joignable : ni l'annonce ni son message ne comptent.
   test "une annonce adressée à un service portant l'id de l'utilisateur ne compte pas comme nouveau message (critique)" do
-    assert_not users(:martin_technique_paris).new_messages?
+    assert_empty users(:martin_technique_paris).messages_non_lus
+  end
+
+  test "un message d'un expéditeur sans service commun ne compte pas comme nouveau message (critique)" do
+    Message.create!(from_user: users(:john_wick), to_user: users(:weil), message: 'Bonjour')
+
+    assert_empty users(:weil).messages_non_lus
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
+  test "un message d'un expéditeur désactivé ne compte pas comme nouveau message" do
+    Message.create!(from_user: users(:agent_discarded_paris), to_user: users(:hidalgo), message: 'Bonjour')
+
+    assert_empty users(:hidalgo).messages_non_lus
   end
 
   test "l'absence du jour est trouvée sans préciser de période" do

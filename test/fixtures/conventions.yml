@@ -9,8 +9,8 @@ convention_paris:
   slug: <%= SecureRandom.uuid %>
 
 convention_marseille:
-  user: michael_jackson
-  service: service_marseille
+  user: emmanuel_valls
+  service: service_marseille2
   date_début: 2026-01-01
   date_fin_prévue: 2026-12-31
   heures_conventionnees: 100

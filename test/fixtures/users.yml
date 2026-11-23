@@ -37,6 +37,9 @@ weil:
   téléphone: 0123456789
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: fba70281-7004-405d-8afa-153355373125
+  address: 2 place de la Mairie, 54700 Fictimont, France
+  latitude: 48.905
+  longitude: 6.056
 
 berthout:
   nom: Berthout
@@ -45,6 +48,9 @@ berthout:
   rôle: adhérent
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 193866f0-bff9-4ec8-978c-c2c77b948f32
+  address: 5 rue de la Mairie, 54470 Testbourg, France
+  latitude: 48.953
+  longitude: 5.878
 
 nettoyage:
   nom: Team
@@ -97,6 +103,9 @@ patrick_adherent_paris:
   rôle: adhérent
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: e2845be0-8193-4771-9e99-94b692ad8c5f
+  address: 1 rue de l'Église, 57680 Fictiville, France
+  latitude: 49.017
+  longitude: 6.023
 
 user_paris:
   nom: user
@@ -104,6 +113,9 @@ user_paris:
   rôle: adhérent
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 7b53b6a3-cf0a-43ec-bb03-7af8d36781d1
+  address: 8 grande rue, 54530 Testmont, France
+  latitude: 48.994
+  longitude: 5.962
 
 philippe_super_admin:
   nom: Nougaillon
@@ -119,6 +131,9 @@ adhérent_sans_intervention:
   rôle: adhérent
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: f0595980-a28d-4424-82db-ee89e6eadc7d
+  address: 3 place de la Mairie, 54380 Fictival, France
+  latitude: 48.873
+  longitude: 6.070
 
 agent_whatsapp:
   nom: Poireau
@@ -136,6 +151,7 @@ adherent_with_location:
   téléphone: 0123456789
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: fba70284-7004-405d-8afa-153355373125
+  address: Place de l'Hôtel de Ville, 75004 Paris, France
   latitude: 48.85685812374327
   longitude: 2.351386343078722
 
@@ -187,6 +203,9 @@ adherent_marseille:
   rôle: adhérent
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: ee438223-a203-43f4-9d97-1654c24d2520
+  address: 1 place de la Mairie, 57130 Testange, France
+  latitude: 49.070
+  longitude: 6.000
 
 adherent_nom_long:
   nom: THIAUCOURT-REGNIÉVILLE
@@ -194,6 +213,9 @@ adherent_nom_long:
   rôle: adhérent
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: b740618c-0461-4dc2-82b5-41d71dbe44dd
+  address: 6 rue de la Mairie, 54470 Fictiaucourt, France
+  latitude: 48.956
+  longitude: 5.859
 
 # Organisation sans manager
 
@@ -211,6 +233,9 @@ george_lucas:
   rôle: adhérent
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: d2a62448-e26a-4a7b-8c07-81f3815825ac
+  address: 7 rue de la Mairie, 57420 Testy, France
+  latitude: 49.006
+  longitude: 6.135
 
 # Organisation sans intervention
 
@@ -219,5 +244,8 @@ emmanuel_valls:
   nom: Valls
   email: valls.emmanuel@gmail.commmmmm
   rôle: adhérent
+  address: 9 place de la Mairie, 54530 Fictigny, France
+  latitude: 48.977
+  longitude: 5.993
   encrypted_password: "$2a$12$wUPQBoF.qOQFwEShvv.4ZOpHEuH82EJwyCRd2zgajRlYzpO8n277q"
   slug: 33872d35-052f-427c-9181-e5aff5db1853

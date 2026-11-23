@@ -346,15 +346,38 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_empty assigns(:annonces)
   end
 
-  test 'les messages non lus de la page d’accueil ignorent les annonces portant l’id de l’utilisateur (critique)' do
+  test 'les discussions de la page d’accueil ignorent les annonces portant l’id de l’utilisateur (critique)' do
     sign_in users(:martin_technique_paris)
 
     get home_url
 
-    assert_empty assigns(:messages)
+    assert_empty assigns(:discussions)
   end
 
   # ==================== /TESTS CRITIQUES ====================
+
+  test 'la page d’accueil porte les trois discussions les plus récentes qui ont un message non lu' do
+    hidalgo = users(:hidalgo)
+    sign_in hidalgo
+    %i[weil martin_technique_paris manager_paris administrateur_paris].each.with_index(1) do |expéditeur, jour|
+      Message.create!(from_user: users(expéditeur), to_user: hidalgo, message: 'Bonjour',
+                      created_at: Time.zone.local(2026, 3, jour, 9))
+    end
+
+    get home_url
+
+    assert_equal [users(:administrateur_paris), users(:manager_paris), users(:martin_technique_paris)],
+                 assigns(:discussions).map { |discussion| discussion[:user] }
+  end
+
+  test 'la page d’accueil est affichée quand l’auteur d’une annonce a disparu' do
+    sign_in users(:michael_jackson)
+
+    get home_url
+
+    assert_response :success
+    assert_includes assigns(:annonces), messages(:annonce_d_un_auteur_disparu)
+  end
 
   test 'la page météo est affichée avec des prévisions' do
     sign_in users(:hidalgo)

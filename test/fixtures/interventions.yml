@@ -43,7 +43,7 @@ intervention_terminée:
   service: technique
 
 intervention_validé:
-  adherent_id: weil
+  adherent: weil
   début: 2025-05-05 16:16:27
   description: Débrousailler la mairie
   workflow_state: validé
@@ -137,12 +137,12 @@ nettoyage_port:
 # Organisation sans manager
 
 intervention_sans_manager:
-  adherent_id: george_lucas
+  adherent: george_lucas
   début: 2025-04-23 12:26:45
   description: Intervention sans manager
   workflow_state: nouveau
   slug: 8f69ed4e-cc58-4ecc-ab2b-57377f525bd4
-  service: service_marseille
+  service: comptabilite
 
 # Demandes arrivées par mail d'un adhérent à plusieurs services : sans service
 

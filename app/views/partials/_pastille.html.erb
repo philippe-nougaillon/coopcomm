@@ -1,0 +1,7 @@
+<%# locals: (nombre:, classes:) %>
+<% if nombre.positive? %>
+  <%# Pastille iPhone : police système, chiffre centré sur sa hauteur de capitale %>
+  <span class="pastille inline-flex items-center justify-center h-[18px] min-w-[18px] px-[5px] rounded-full text-[13px] font-normal leading-none [font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif] <%= classes %>">
+    <span class="[text-box:trim-both_cap_alphabetic]"><%= nombre > 99 ? '99+' : nombre %></span>
+  </span>
+<% end %>

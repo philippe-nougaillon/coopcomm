@@ -225,9 +225,9 @@ class User < ApplicationRecord
     end
   end
 
-  def new_messages?
+  def messages_non_lus
     # On récupère les messages de l'utilisateur non lues. Filtrage des from_id par service pour éviter les utilisateurs supprimés.
-    Message.message.where(to_id: id, from_id: User.by_service(services).ids, read_at: nil).any?
+    Message.message.where(to_id: id, from_id: User.by_service(services), read_at: nil)
   end
 
   def current_absence(date = Date.today, periode = nil)

@@ -217,7 +217,7 @@
 
         <li>
           <%= link_to messagerie_path, class: class_names("h-16 py-0 flex items-center text-secondary hover:border-b-2 border-primary focus:bg-base-300! focus:outline-none! navbar-icon-trigger", "menu-active text-primary! border-b-2 #{demo_instance? ? 'bg-indigo-100!' : 'bg-base-100!'}" => params[:controller] == 'messagerie'), title: 'Messagerie', 'data-turbo': false do %>
-            <%= embedded_svg "icons/chat.svg", class: "w-6 h-6 fill-current transition-colors duration-200 #{'text-error' if current_user.new_messages?}" %>
+            <%= render 'partials/navbar/icone_messagerie' %>
           <% end %>
         </li>
         <% if policy(WikiPage).index? %>

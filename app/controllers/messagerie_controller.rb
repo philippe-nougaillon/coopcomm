@@ -8,34 +8,14 @@ class MessagerieController < ApplicationController
 
   # Accueil de la messagerie : liste des discussions récentes (sans interlocuteur sélectionné)
   def index
-    recent_messages = Message
-                      .where(from_id: current_user.id)
-                      .or(Message.where(to_id: current_user.id))
-                      .message
-                      .order(created_at: :desc)
+    @discussions = DiscussionsRecentes.call(current_user)
 
-    @last_messages = {}
-    ordered_user_ids = []
-
-    recent_messages.each do |notif|
-      # Détermine qui est l'interlocuteur avec l'utilisateur courant
-      interlocutor_id = notif.from_id == current_user.id ? notif.to_id : notif.from_id
-
-      unless @last_messages.key?(interlocutor_id)
-        @last_messages[interlocutor_id] = notif
-        ordered_user_ids << interlocutor_id
-      end
-    end
-
-    users_by_id = User
-                  .where(id: ordered_user_ids)
-                  .with_attached_profile_picture
-                  .index_by(&:id)
-
-    @recent_conversations = ordered_user_ids.map { |id| users_by_id[id] }.compact
-
-    # Compte les messages non lus envoyés par chaque utilisateur à l'utilisateur actuel
-    @unread_counts = Message.message.where(to_id: current_user.id, read_at: nil).group(:from_id).count
+    dernières_par_service = Message
+                            .annonces_pour(current_user)
+                            .annonce
+                            .select('DISTINCT ON (to_id) id')
+                            .order(:to_id, created_at: :desc)
+    @annonces = Message.where(id: dernières_par_service).ordered
   end
 
   # Conversation avec un interlocuteur donné
@@ -90,6 +70,7 @@ class MessagerieController < ApplicationController
     @users = User
              .by_service(current_user.services)
              .where.not(id: current_user.id)
+             .order(conversation_la_plus_récente_en_tête)
              .ordered
 
     if params[:query].present?
@@ -98,7 +79,7 @@ class MessagerieController < ApplicationController
 
     @users = @users.with_attached_profile_picture
 
-    render partial: 'users_list', locals: { users: @users }
+    render partial: 'users_list', locals: { users: @users, non_lus: current_user.messages_non_lus.group(:from_id).count }
   end
 
   # Annonces d'un service, ou générales à l'organisation sans slug de service ; même page que la conversation
@@ -134,6 +115,7 @@ class MessagerieController < ApplicationController
     @users = User
              .by_service(current_user.services)
              .where.not(id: current_user.id)
+             .order(conversation_la_plus_récente_en_tête)
              .ordered
              .with_attached_profile_picture
 
@@ -149,5 +131,14 @@ class MessagerieController < ApplicationController
     @cible = params[:service_slug].blank? ? current_organisation : current_organisation.services.find_by(slug: params[:service_slug])
 
     redirect_to messagerie_path if @cible.nil?
+  end
+
+  def conversation_la_plus_récente_en_tête
+    dernier_message = Message.message
+                             .where('(messages.from_id = users.id AND messages.to_id = :moi) OR (messages.from_id = :moi AND messages.to_id = users.id)',
+                                    moi: current_user.id)
+                             .select('MAX(messages.created_at)')
+
+    Arel.sql("(#{dernier_message.to_sql}) DESC NULLS LAST")
   end
 end

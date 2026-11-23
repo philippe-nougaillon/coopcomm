@@ -67,3 +67,10 @@ message_piège:
   from_id: <%= ActiveRecord::FixtureSet.identify(:hidalgo) %>
   to_id: <%= ActiveRecord::FixtureSet.identify(:technique) %>
   created_at: 2026-03-09 09:00:00
+
+annonce_d_un_auteur_disparu:
+  message: "Annonce dont l'auteur n'existe plus"
+  genre: annonce
+  from_id: <%= ActiveRecord::FixtureSet.identify(:auteur_disparu) %>
+  to_id: <%= ActiveRecord::FixtureSet.identify(:service_marseille2) %>
+  created_at: 2026-03-10 09:00:00

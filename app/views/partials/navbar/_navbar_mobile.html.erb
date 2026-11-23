@@ -8,7 +8,7 @@
   <% end %>
 
   <%= link_to messagerie_path, class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if params[:controller] == 'messagerie'}", title: 'Messagerie', 'data-turbo': false do %>
-    <%= embedded_svg "icons/chat.svg", class: "w-6 h-6 fill-current transition-colors duration-200 #{'text-error' if current_user.new_messages?}" %>
+    <%= render 'partials/navbar/icone_messagerie' %>
   <% end %>
 
   <%= link_to user_path(current_user), class: "text-secondary hover-active hover:shadow #{'dock-active shadow text-primary!' if (params[:controller] == 'users' && params[:action] != 'agent_calendrier' && params[:id] == current_user.slug)}", title: "Mon profil" do %>
