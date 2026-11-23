@@ -25,6 +25,11 @@ class AdministrateurWikiPagesPolicyTest < ActionDispatch::IntegrationTest
     assert @policy.destroy?
   end
 
+  test 'accès interdit pour un administrateur sur une documentation dont il est l’auteur' do
+    refute @policy.copie?
+    refute @policy.copier?
+  end
+
   test 'accès autorisé pour un administrateur sur une documentation privée' do
     assert @policy_privée.show?
     assert @policy_privée.edit?

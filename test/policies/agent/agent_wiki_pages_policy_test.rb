@@ -25,6 +25,8 @@ class AgentWikiPagesPolicyTest < ActionDispatch::IntegrationTest
     refute @policy.edit?
     refute @policy.update?
     refute @policy.destroy?
+    refute @policy.copie?
+    refute @policy.copier?
   end
 
   # ==================== TESTS CRITIQUES ====================

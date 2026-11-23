@@ -95,10 +95,18 @@ module ActiveSupport
         .to_return(
           status: 200,
           body: File.read('test/fixtures/files/responseRoutesInfos.json'),
-          headers: { 
+          headers: {
             'Content-Type' => 'application/json',
           }
         )
+
+      # Simule une autre instance de CoopComm, destinataire des copies de pages wiki
+      stub_request(:get, 'https://autre-instance.exemple.fr/copies_wiki/auteurs')
+        .to_return(status: 200, body: File.read('test/fixtures/files/responseInstanceAuteurs.json'),
+                   headers: { 'Content-Type' => 'application/json' })
+      stub_request(:post, 'https://autre-instance.exemple.fr/copies_wiki')
+        .to_return(status: 201, body: File.read('test/fixtures/files/responseInstanceCopie.json'),
+                   headers: { 'Content-Type' => 'application/json' })
     end
 
     def login(user)

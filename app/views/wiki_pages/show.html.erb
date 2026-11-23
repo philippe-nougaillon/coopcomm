@@ -136,6 +136,13 @@
             <% end %>
           </div>
         <% end %>
+
+        <% if policy(@wiki_page).copie? %>
+          <%= link_to copie_documentation_path(@wiki_page), class: "btn" do %>
+            <%= embedded_svg "icons/content_copy.svg", class: "w-5 h-5 fill-current" %>
+            Copier vers une autre instance
+          <% end %>
+        <% end %>
       </div>
 
       <div class="mt-6">

@@ -8,7 +8,17 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
     @documentation = wiki_pages(:blog_de_l_administrateur)
     @documentation_privée = wiki_pages(:blog_privé)
     @documentation_non_publiée = wiki_pages(:blog_non_publié)
+    @super_admin = users(:philippe_super_admin)
+    @env_initial = ENV.to_h.slice('INSTANCES_COOPCOMM', 'JETON_INSTANCES', 'HOST_URL', 'SUPER_ADMIN')
+    ENV['INSTANCES_COOPCOMM'] = 'Autre instance=https://autre-instance.exemple.fr,Instance courante=https://demo.exemple.fr'
+    ENV['JETON_INSTANCES'] = 'jeton-de-test'
+    ENV['HOST_URL'] = 'demo.exemple.fr'
+    ENV['SUPER_ADMIN'] = @super_admin.email
     sign_in @administrateur
+  end
+
+  teardown do
+    %w[INSTANCES_COOPCOMM JETON_INSTANCES HOST_URL SUPER_ADMIN].each { |nom| ENV[nom] = @env_initial[nom] }
   end
 
   test 'la page principale de la documentation est affichée' do
@@ -77,6 +87,16 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
         assert_dom 'h3', text: documentation.titre
       end
     end
+  end
+
+  test 'la page principale affiche une documentation avec photo et sans sous-titre' do
+    documentation = créer_documentation(titre: 'Documentation illustrée sans sous-titre')
+    documentation.update!(épinglée: true, photo: fixture_file_upload('exemple.png', 'image/png'))
+
+    get documentation_index_url
+
+    assert_response :success
+    assert_dom 'a.card[href=?]', documentation_path(documentation)
   end
 
   # ==================== TESTS CRITIQUES ====================
@@ -233,6 +253,72 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
     assert_template :index_by_categorie
     assert_includes assigns(:wiki_pages), wiki_pages(:faq_publique)
     assert_not_includes assigns(:wiki_pages), wiki_pages(:blog_public)
+  end
+
+  test 'le formulaire de copie propose les instances configurées, sans l’instance courante' do
+    sign_in @super_admin
+
+    get copie_documentation_url(@documentation)
+
+    assert_response :success
+    assert_equal [{ nom: 'Autre instance', url: 'https://autre-instance.exemple.fr' }], assigns(:instances)
+  end
+
+  test 'le formulaire de copie propose les auteurs de l’instance choisie' do
+    sign_in @super_admin
+
+    get copie_documentation_url(@documentation, instance: 'Autre instance')
+
+    assert_response :success
+    assert_equal ['camille.martin@autre-instance.exemple.fr'], assigns(:auteurs).pluck('email')
+  end
+
+  test 'le formulaire de copie reste affiché avec une alerte quand l’instance ne répond pas (critique)' do
+    stub_request(:get, 'https://autre-instance.exemple.fr/copies_wiki/auteurs').to_timeout
+    sign_in @super_admin
+
+    get copie_documentation_url(@documentation, instance: 'Autre instance')
+
+    assert_response :success
+    assert_match 'autre-instance.exemple.fr ne répond pas', flash[:alert]
+  end
+
+  test 'une page copiée mène à sa copie sur l’autre instance' do
+    sign_in @super_admin
+
+    post copier_documentation_url(@documentation),
+         params: { instance: 'Autre instance', auteur: 'camille.martin@autre-instance.exemple.fr', publiée: '1' }
+
+    assert_redirected_to 'https://autre-instance.exemple.fr/documentation/reserver-un-outil-copie'
+    assert_requested(:post, 'https://autre-instance.exemple.fr/copies_wiki') do |requête|
+      corps = JSON.parse(requête.body)
+      corps['page']['titre'] == @documentation.titre && corps['auteur'] == 'camille.martin@autre-instance.exemple.fr' &&
+        corps['publiée'] == true &&
+        corps['origine'] == { 'instance' => 'demo.exemple.fr', 'slug' => @documentation.slug, 'par' => @super_admin.email }
+    end
+  end
+
+  test 'une copie refusée par l’autre instance ramène au formulaire avec son motif' do
+    stub_request(:post, 'https://autre-instance.exemple.fr/copies_wiki')
+      .to_return(status: 422, body: { erreur: 'auteur inconnu' }.to_json)
+    sign_in @super_admin
+
+    post copier_documentation_url(@documentation), params: { instance: 'Autre instance', auteur: 'inconnu@exemple.fr' }
+
+    assert_redirected_to copie_documentation_path(@documentation, instance: 'Autre instance')
+    assert_equal 'autre-instance.exemple.fr a refusé la demande : auteur inconnu', flash[:alert]
+  end
+
+  test 'une instance absente de la configuration ne reçoit ni la page ni le jeton (critique)' do
+    stub_request(:post, 'https://pirate.exemple.fr/copies_wiki')
+    sign_in @super_admin
+
+    post copier_documentation_url(@documentation), params: { instance: 'https://pirate.exemple.fr', auteur: 'x@exemple.fr' }
+
+    assert_redirected_to copie_documentation_path(@documentation)
+    assert_equal 'Instance inconnue.', flash[:alert]
+    assert_not_requested :post, 'https://pirate.exemple.fr/copies_wiki'
+    assert_not_requested :post, 'https://autre-instance.exemple.fr/copies_wiki'
   end
 
   test 'un slug de documentation inconnu redirige sans planter' do

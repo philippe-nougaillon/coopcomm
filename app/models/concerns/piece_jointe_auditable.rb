@@ -26,7 +26,8 @@ module PieceJointeAuditable
     ajouts = pieces_jointes_ajoutees
     return if ajouts.empty?
 
-    self.audit_comment = ajouts.map { |nom, nombre| libelle_piece_jointe(nom, nombre) }.join(', ')
+    self.audit_comment = [audit_comment, ajouts.map { |nom, nombre| libelle_piece_jointe(nom, nombre) }.join(', ')]
+                         .compact_blank.join(' ; ')
   end
 
   def pieces_jointes_ajoutees
