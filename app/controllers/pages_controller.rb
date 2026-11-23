@@ -34,12 +34,8 @@ class PagesController < ApplicationController
       end
 
       begin
-        llm = Langchain::LLM::MistralAI.new(api_key: ENV['MISTRAL_AI_API_KEY'])
-        @results = llm.chat(messages: [{ role: 'user',
-                                         content: "Génère moi des nouvelles tâches en te basant sur cette liste : #{description_list.join(', ')}" }]).chat_completion
-        # filter_html : la sortie du LLM est influençable par les descriptions
-        # d'interventions (injection de prompt) — jamais de HTML brut depuis le LLM.
-        @results = Redcarpet::Markdown.new(Redcarpet::Render::HTML.new(filter_html: true, safe_links_only: true), {}).render(@results)
+        @results = ChatMistral.call.ask("Génère moi des nouvelles tâches en te basant sur cette liste : #{description_list.join(', ')}").content
+        @results = MettreEnFormeReponseIa.call(@results)
       rescue StandardError
         @is_failed = true
         @results = 'Veuillez attendre quelques secondes avant de réessayer'

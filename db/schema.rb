@@ -85,6 +85,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_140100) do
     t.index ["intervention_id"], name: "index_agent_interventions_on_intervention_id"
   end
 
+  create_table "aibot_logs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "log_stream"
+    t.bigint "request_message_id", null: false
+    t.bigint "response_message_id", null: false
+    t.string "slug"
+    t.string "string"
+    t.boolean "succes", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["request_message_id"], name: "index_aibot_logs_on_request_message_id"
+    t.index ["response_message_id"], name: "index_aibot_logs_on_response_message_id"
+    t.index ["user_id"], name: "index_aibot_logs_on_user_id"
+  end
+
   create_table "audits", force: :cascade do |t|
     t.string "action"
     t.integer "associated_id"
@@ -630,6 +645,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_140100) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "agent_interventions", "interventions"
   add_foreign_key "agent_interventions", "users", column: "agent_id"
+  add_foreign_key "aibot_logs", "messages", column: "request_message_id", on_delete: :cascade
+  add_foreign_key "aibot_logs", "messages", column: "response_message_id", on_delete: :cascade
+  add_foreign_key "aibot_logs", "users", on_delete: :cascade
   add_foreign_key "commande_lignes", "commandes"
   add_foreign_key "commande_lignes", "prestations"
   add_foreign_key "commandes", "services"

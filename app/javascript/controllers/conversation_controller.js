@@ -8,7 +8,7 @@ import { Controller } from "@hotwired/stimulus"
 // Le scroll se fait sur containerTarget (et non sur window), car ce conteneur
 // possède son propre overflow-y-auto (layout flex avec header/footer fixes).
 export default class extends Controller {
-  static targets = ["container", "badge", "input"]
+  static targets = ["container", "badge", "input", "niveau"]
   static values = { toUserSlug: String, serviceSlug: String, url: String, currentUserId: Number }
 
   connect() {
@@ -75,7 +75,7 @@ export default class extends Controller {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify({ message, to_user_slug: this.toUserSlugValue, service_slug: this.serviceSlugValue }),
+      body: JSON.stringify({ message, to_user_slug: this.toUserSlugValue, service_slug: this.serviceSlugValue, niveau: this.hasNiveauTarget ? this.niveauTarget.value : undefined }),
     }).then((response) => {
       if (response.ok) {
         this.inputTarget.value = ""

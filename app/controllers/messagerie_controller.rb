@@ -20,7 +20,7 @@ class MessagerieController < ApplicationController
 
   # Conversation avec un interlocuteur donné
   def conversation
-    @destinataire = joignables.find_by(slug: params[:to_user_slug])
+    @destinataire = joinables_et_aibot.find_by(slug: params[:to_user_slug])
 
     # Interlocuteur inexistant ou soi-même → retour à l'accueil de la messagerie
     return redirect_to(messagerie_path) if @destinataire.nil? || @destinataire.id == current_user.id
@@ -31,6 +31,11 @@ class MessagerieController < ApplicationController
                 .or(Message.where(from_id: @destinataire.id, to_id: current_user.id))
                 .message
                 .order(:created_at)
+
+    # Message de bienvenue d'aibot pour la première fois
+    if @messages.empty? && @destinataire.is_aibot?
+      Message.create(message: "Bonjour #{current_user.nom_prénom}, je m'appelle AÏBBO. Je réponds à vos questions sur les interventions que vous pouvez voir dans CoopComm.\nComment puis-je vous aider ?\nVous pouvez me demander par exemple : « Combien d'interventions ont été terminées ce mois-ci ? »", from_id: ENV["UUID_AIBOT"], to_id: current_user.id)
+    end
 
     unread_messages = @messages.select { |n| n.to_id == current_user.id && n.read_at.nil? }
 
@@ -46,10 +51,21 @@ class MessagerieController < ApplicationController
     return unless params[:message].present? && params[:to_user_slug].present? && (params[:to_user_slug] != current_user.slug)
 
     # Le destinataire doit être joignable (to_id forgeable : inter-organisations sinon)
-    destinataire = joignables.find_by(slug: params[:to_user_slug])
+    destinataire = joinables_et_aibot.find_by(slug: params[:to_user_slug])
     return if destinataire.nil?
 
-    Message.create!(message: params[:message], from_id: current_user.id, to_id: destinataire.id)
+    message = Message.create!(message: params[:message], from_id: current_user.id, to_id: destinataire.id)
+    
+    if message.valid?
+      if destinataire.is_aibot?
+        session[:niveau_aibbo] = params[:niveau] if Aibbo::Repondre::NIVEAUX.key?(params[:niveau])
+        RepondreAibboJob.perform_later(current_user, message, session[:niveau_aibbo])
+      end
+
+      head :created
+    else
+      head :bad_request
+    end
   end
 
   def mark_as_read
@@ -67,8 +83,7 @@ class MessagerieController < ApplicationController
   end
 
   def search_contact
-    @users = User
-             .by_service(current_user.services)
+    @users = joignables
              .where.not(id: current_user.id)
              .order(conversation_la_plus_récente_en_tête)
              .ordered
@@ -104,16 +119,18 @@ class MessagerieController < ApplicationController
 
   private
 
-  # Le même périmètre que la sidebar et la recherche : on ne peut ni écrire à,
-  # ni lire une conversation avec, un utilisateur hors de ses services.
+  # Renvoie les utilisateurs joignables (du même service)
   def joignables
     User.by_service(current_user.services)
   end
 
-  # Utilisateurs joignables, affichés dans la sidebar partagée (accueil + conversation)
+  def joinables_et_aibot
+    joignables.or(User.where(id: ENV["UUID_AIBOT"]))
+  end
+
+  # Utilisateurs joignables, affichés dans la sidebar des contacts de la messagerie
   def set_sidebar_users
-    @users = User
-             .by_service(current_user.services)
+    @users = joignables
              .where.not(id: current_user.id)
              .order(conversation_la_plus_récente_en_tête)
              .ordered

@@ -1,0 +1,19 @@
+<h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">
+  Requête AÏBBO #<%= @aibot_log.id %> (<%= @aibot_log.user.nom_prénom %>, <%= @aibot_log.user.rôle %>)
+</h2>
+
+<p style="color: #475569; margin-bottom: 8px;">
+  
+</p>
+
+<p style="background: #f1f5f9; color: #0f172a; padding: 12px; border-radius: 6px; font-size: 13px; margin-bottom: 24px; font-weight: bold;"><%= @aibot_log.request_message.message %></p>
+
+<p style="color: #475569; margin-bottom: 8px;">
+  Réponse d'AÏBBO :
+</p>
+
+<p style="background: #f1f5f9; color: #0f172a; padding: 12px; border-radius: 6px; font-size: 13px; white-space: pre-wrap; word-break: break-word; margin-bottom: 24px; font-weight: bold;"><%= @aibot_log.response_message.message %></p>
+
+<%= link_to @aibot_log do %>
+  Voir le débug complet du log AÏBBO
+<% end %>

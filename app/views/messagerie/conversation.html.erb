@@ -15,11 +15,22 @@
         </div>
         <div class="flex items-center gap-4">
           <% if @destinataire %>
-            <%= link_to user_path(@destinataire), class: "flex items-center gap-4 " do %>
-              <%= render partial: "partials/user_profile_picture", locals: { user: @destinataire } %>
-              <h1 class="text-xl sm:text-2xl text-primary font-bold truncate hover:underline hover:underline-primary">
+            <% if @destinataire.is_aibot? %>
+              <div class="avatar">
+                <div class="w-10 rounded-full">
+                  <%= image_tag "aibot.png" %>
+                </div>
+              </div>  
+              <h1 class="text-xl sm:text-2xl text-primary font-bold truncate">
                 <span class="block"><%= @destinataire.nom_prénom %></span>
               </h1>
+            <% else %>
+              <%= link_to user_path(@destinataire), class: "flex items-center gap-4 " do %>
+                <%= render partial: "partials/user_profile_picture", locals: { user: @destinataire } %>
+                <h1 class="text-xl sm:text-2xl text-primary font-bold truncate hover:underline hover:underline-primary">
+                  <span class="block"><%= @destinataire.nom_prénom %></span>
+                </h1>
+              <% end %>
             <% end %>
           <% else %>
             <%= embedded_svg "icons/campaign.svg", class: "w-10 h-10 fill-current text-primary flex-shrink-0" %>
@@ -64,7 +75,11 @@
             </div>
           </div>
           <% if @peut_ecrire %>
-          <form data-action="submit->conversation#send" class="flex gap-2 items-center w-full p-4 md:px-2 ">
+          <form data-action="submit->conversation#send" class="flex flex-wrap gap-2 items-center w-full p-4 md:px-2 ">
+            <% if @destinataire&.is_aibot? %>
+              <%= select_tag :niveau, options_for_select(Aibbo::Repondre::NIVEAUX.keys.map { |niveau| [niveau.capitalize, niveau] }, session[:niveau_aibbo] || 'équilibré'),
+                             class: 'select select-bordered w-auto h-auto min-h-10 self-stretch flex-shrink-0 rounded-xl shadow-sm', 'aria-label': 'Niveau de réflexion', data: { conversation_target: 'niveau' } %>
+            <% end %>
             <input
               data-conversation-target="input"
               type="text"

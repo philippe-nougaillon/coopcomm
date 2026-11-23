@@ -1,0 +1,22 @@
+{
+  "id": "requete-outil",
+  "model": "mistral-large-4",
+  "choices": [
+    {
+      "index": 0,
+      "finish_reason": "tool_calls",
+      "message": {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "id": "appel0001",
+            "type": "function",
+            "function": { "name": "interventions", "arguments": "{\"etat\": \"terminé\"}" }
+          }
+        ]
+      }
+    }
+  ],
+  "usage": { "prompt_tokens": 100, "completion_tokens": 10, "total_tokens": 110 }
+}

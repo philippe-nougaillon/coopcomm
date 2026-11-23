@@ -389,6 +389,27 @@ class User < ApplicationRecord
     end
   end
 
+  def is_aibot?
+    self.id == ENV["UUID_AIBOT"].to_i
+  end
+
+  # Recherche souple pour AÏBBO : nom, prénom ou les deux, sans tenir compte de la casse ni des accents.
+  # Peut retourner plusieurs utilisateurs avec le nom/prénom donné
+  def self.search_with_generic_name(texte)
+    where("unaccent(CONCAT(users.nom, ' ', users.prénom, ' ', users.nom)) ILIKE unaccent(?)", "%#{sanitize_sql_like(texte.strip)}%")
+  end
+
+  # Les comptes dont `UserPolicy#show?` ouvre la fiche.
+  def self.visible_to(user)
+    if user.administrateur?
+      by_service(Service.where(organisation_id: user.organisation&.id))
+    elsif user.manager?
+      by_service(user.services)
+    else
+      where(id: user.id)
+    end
+  end
+
   private
 
   def slug_candidates

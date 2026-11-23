@@ -636,6 +636,45 @@ class InterventionTest < ActiveSupport::TestCase
     assert_nil Intervention.dernière_en_cours(Intervention.where(id: interventions(:nouvelle_intervention).id))
   end
 
+  # ==================== TESTS CRITIQUES ====================
+  # Le périmètre des interventions par rôle : ce qu'AÏBBO a le droit de lire en dérive.
+  test 'un administrateur voit les interventions d’un service de son organisation dont il n’est pas membre (critique)' do
+    assert_includes Intervention.visible_to(users(:administrateur_paris)), interventions(:intervention_with_location)
+  end
+
+  test 'un administrateur voit la demande sans service d’un adhérent de son organisation (critique)' do
+    assert_includes Intervention.visible_to(users(:administrateur_paris)), interventions(:demande_par_mail)
+  end
+
+  test 'un administrateur ne voit aucune intervention d’une autre organisation (critique)' do
+    visibles = Intervention.visible_to(users(:administrateur_paris))
+
+    assert_empty visibles & interventions(:nettoyage_port, :demande_par_mail_marseille)
+  end
+
+  test 'un manager ne voit que les interventions de ses services (critique)' do
+    visibles = Intervention.visible_to(users(:manager_marseille))
+
+    assert_equal [interventions(:nettoyage_port)], visibles.to_a
+  end
+
+  test 'un manager ne voit pas les interventions d’un service de son organisation qu’il n’encadre pas (critique)' do
+    assert_not_includes Intervention.visible_to(users(:manager_paris)), interventions(:nouvelle_intervention)
+  end
+
+  test 'un adhérent ne voit que les interventions qu’il a demandées (critique)' do
+    assert_equal [interventions(:intervention_autre_adhérent)], Intervention.visible_to(users(:berthout)).to_a
+  end
+
+  test 'un agent ne voit que les interventions auxquelles il est affecté (critique)' do
+    visibles = Intervention.visible_to(users(:bond))
+
+    assert_equal interventions(:tonte_locaux, :nouvelle_intervention, :intervention_terminée, :intervention_autre_adhérent,
+                               :intervention_repete).sort_by(&:id), visibles.sort_by(&:id)
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
   test 'une intervention complète est diffusée à son organisation, son service, son adhérent et ses agents' do
     intervention = interventions(:tonte_locaux)
 

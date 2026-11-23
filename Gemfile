@@ -186,3 +186,7 @@ group :development do
 end
 
 gem "rack-attack", "~> 6.8"
+
+gem 'ruby_llm', '~> 2.1.1'
+# json 3 est incompatible avec ActiveSupport tant que Rails est sous 8.1.4
+gem 'json', '< 3'

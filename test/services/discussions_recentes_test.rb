@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require_relative '../support/compte_aibbo'
 
 class DiscussionsRecentesTest < ActiveSupport::TestCase
+  include CompteAibbo
+
   setup do
     @administrateur = users(:administrateur_paris)
     Message.create!(from_user: users(:weil), to_user: @administrateur, message: 'Déjà lu',
@@ -48,6 +51,14 @@ class DiscussionsRecentesTest < ActiveSupport::TestCase
     users(:martin_technique_paris).update!(service_ids: [services(:secretariat).id])
 
     assert_equal [users(:weil)], DiscussionsRecentes.call(@administrateur).map { |discussion| discussion[:user] }
+  end
+
+  test 'les discussions écartent la conversation avec AÏBBO' do
+    Message.create!(from_user: users(:AIBBO), to_user: @administrateur, message: 'Six interventions',
+                    created_at: Time.zone.local(2026, 3, 4, 9))
+
+    assert_equal [users(:martin_technique_paris), users(:weil)],
+                 DiscussionsRecentes.call(@administrateur).map { |discussion| discussion[:user] }
   end
 
   test 'une discussion compte les messages de l’interlocuteur restés non lus' do

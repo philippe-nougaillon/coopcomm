@@ -236,6 +236,74 @@ class ToolTest < ActiveSupport::TestCase
     assert_not @outil.est_encore_en_panne_le(Date.new(2026, 6, 4))
   end
 
+  test 'un outil sans panne, sans réservation et sans intervention un jour donné est disponible ce jour-là' do
+    caler_l_intervention_de_la_cisaille_au_10_juin
+
+    assert @outil.disponible_le?(Date.new(2026, 6, 4))
+  end
+
+  test "un outil en panne un jour donné n'est pas disponible ce jour-là" do
+    caler_l_intervention_de_la_cisaille_au_10_juin
+    panne('2026-06-02')
+
+    assert_not @outil.disponible_le?(Date.new(2026, 6, 4))
+  end
+
+  test "un outil réservé par un mouvement un jour donné n'est pas disponible ce jour-là" do
+    caler_l_intervention_de_la_cisaille_au_10_juin
+    reservation('2026-06-04', @autre)
+
+    assert_not @outil.disponible_le?(Date.new(2026, 6, 4))
+  end
+
+  test "un outil pris par une intervention n'est pas disponible pendant celle-ci" do
+    caler_l_intervention_de_la_cisaille_au_10_juin
+
+    assert_not @outil.disponible_le?(Date.new(2026, 6, 10))
+  end
+
+  test "un outil pris par une intervention pas encore commencée n'est pas disponible entre son début et sa fin prévus" do
+    caler_l_intervention_de_la_cisaille_au_10_juin
+    interventions(:intervention_terminée).update_columns(début: nil, fin: nil)
+
+    assert_not @outil.disponible_le?(Date.new(2026, 6, 10))
+  end
+
+  test 'la recherche de matériel par nom ignore la casse et les accents' do
+    assert_equal [tools(:outil_adherent)], Tool.by_nom('RESERVE').to_a
+  end
+
+  test 'la recherche de matériel par nom retient tout le matériel dont le nom contient le texte' do
+    assert_equal [tools(:outil_paris), tools(:outil_marseille)].sort_by(&:id), Tool.by_nom('outil de').sort_by(&:id)
+  end
+
+  test 'la recherche de matériel par nom traite un joker SQL saisi comme un caractère ordinaire' do
+    assert_empty Tool.by_nom('%')
+  end
+
+  test 'la recherche de matériel par nom ignore les espaces autour du texte saisi' do
+    assert_equal [tools(:camion)], Tool.by_nom('  camion  ').to_a
+  end
+
+  # ==================== TESTS CRITIQUES ====================
+  # Le matériel qu'un rôle peut lire par AÏBBO : celui dont il ouvre déjà la fiche.
+  test 'un agent voit le matériel de son organisation et lui seul (critique)' do
+    visibles = Tool.visible_to(users(:bond))
+
+    assert_equal tools(:tondeuse, :rateau, :cisaille, :outil_paris, :outil_adherent, :taille_haie_en_panne_en_mai_2024,
+                       :souffleur_reserve_en_mai_2024).sort_by(&:id), visibles.sort_by(&:id)
+  end
+
+  test 'un manager ne voit aucun matériel d’une autre organisation (critique)' do
+    assert_empty Tool.visible_to(users(:hidalgo)) & tools(:camion, :outil_marseille)
+  end
+
+  test 'un adhérent ne voit aucun matériel (critique)' do
+    assert_empty Tool.visible_to(users(:weil))
+  end
+
+  # ==================== /TESTS CRITIQUES ====================
+
   private
 
   def png
@@ -268,5 +336,11 @@ class ToolTest < ActiveSupport::TestCase
 
   def reservation(jour, qui, outil = @outil)
     Mouvement.create!(tool: outil, user: qui, état: :réservé, date: t(jour))
+  end
+
+  # L'unique intervention de la cisaille (fixture), calée sur le seul 10 juin 2026 : les autres jours testés sont libres.
+  def caler_l_intervention_de_la_cisaille_au_10_juin
+    interventions(:intervention_terminée).update_columns(début: t('2026-06-10'), fin: t('2026-06-10') + 8.hours,
+                                                         début_prévue: t('2026-06-10'), fin_prévue: t('2026-06-10') + 8.hours)
   end
 end

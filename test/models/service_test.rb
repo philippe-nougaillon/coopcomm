@@ -155,6 +155,26 @@ class ServiceTest < ActiveSupport::TestCase
 
   # ==================== /TESTS CRITIQUES ====================
 
+  test 'la recherche de service par nom ignore la casse et les accents' do
+    assert_equal services(:menage), Service.by_nom('MENAGE')
+  end
+
+  test 'la recherche de service par nom rend un seul service quand plusieurs noms contiennent le texte' do
+    assert_includes [services(:service_marseille), services(:service_marseille2)], Service.by_nom('marseille')
+  end
+
+  test 'la recherche de service par nom traite un joker SQL saisi comme un caractère ordinaire' do
+    assert_nil Service.by_nom('%')
+  end
+
+  test 'la recherche de service par nom ignore les espaces autour du texte saisi' do
+    assert_equal services(:menage), Service.by_nom('  menage  ')
+  end
+
+  test 'la recherche de service par nom se combine avec une jointure sur les utilisateurs' do
+    assert_equal services(:technique), Service.joins(:users).by_nom('technique')
+  end
+
   private
 
   # `menage` n'a aucun rattachement en fixture. L'administrateur y est ajouté parce que

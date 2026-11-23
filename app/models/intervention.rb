@@ -532,6 +532,30 @@ class Intervention < ApplicationRecord
     super || adherent&.organisation
   end
 
+  # Retourne les adhérents avec un nom générique
+  def self.by_adherent(nom)
+    where(adherent: User.adhérent.search_with_generic_name(nom))
+  end
+
+  # Retourne les interventions des agents avec un nom générique
+  def self.by_agent(nom)
+    where(id: AgentIntervention.where(agent: User.intervenants.search_with_generic_name(nom)).select(:intervention_id))
+  end
+
+  # Le périmètre de la liste des interventions (`InterventionsController#index`), rôle par rôle.
+  def self.visible_to(user)
+    if user.administrateur?
+      services = Service.where(organisation_id: user.organisation&.id)
+      where(service: services).or(where(service: nil, adherent: User.by_service(services)))
+    elsif user.manager?
+      where(service: user.services)
+    elsif user.adhérent?
+      where(adherent: user)
+    else
+      where(id: user.interventions)
+    end
+  end
+
   private
 
   def slug_candidates
