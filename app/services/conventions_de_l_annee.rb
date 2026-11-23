@@ -9,21 +9,19 @@ class ConventionsDeLAnnee < ApplicationService
 
   def call
     annee = Date.current.all_year
-    avec_heures(Convention.visible_to(@user)
-                          .where('conventions.date_début <= ? AND conventions.date_fin_prévue >= ?', annee.end, annee.begin))
-      .map do |convention|
-        { adherent: convention.user.nom_prénom, service: convention.service.nom,
-          du: convention.date_début.iso8601, au: convention.date_fin_prévue.iso8601,
-          conventionnees: convention.heures_conventionnees, consommees: convention.consommees, prevues: convention.prevues }
-          .transform_values { |valeur| valeur.is_a?(BigDecimal) ? valeur.to_f : valeur }
-      end
+    self.class.avec_heures(Convention.visible_to(@user)
+                                     .where('conventions.date_début <= ? AND conventions.date_fin_prévue >= ?', annee.end, annee.begin))
+        .map do |convention|
+          { adherent: convention.user.nom_prénom, service: convention.service.nom,
+            du: convention.date_début.iso8601, au: convention.date_fin_prévue.iso8601,
+            conventionnees: convention.heures_conventionnees, consommees: convention.consommees, prevues: convention.prevues }
+            .transform_values { |valeur| valeur.is_a?(BigDecimal) ? valeur.to_f : valeur }
+        end
   end
-
-  private
 
   # Heures consommées de toute la convention, comme sur la liste des conventions (même jointure que son tri) ;
   # heures planifiées : interventions pas encore commencées, hors modèles de pointage, durée prévue × agents affectés.
-  def avec_heures(conventions)
+  def self.avec_heures(conventions)
     prevues = 'COALESCE((SELECT SUM(EXTRACT(EPOCH FROM (prevues.fin_prévue - prevues.début_prévue)) / 3600 ' \
               '* GREATEST((SELECT COUNT(*) FROM agent_interventions WHERE agent_interventions.intervention_id = prevues.id), 1)) ' \
               'FROM interventions prevues WHERE prevues.adherent_id = conventions.user_id AND prevues.service_id = conventions.service_id ' \

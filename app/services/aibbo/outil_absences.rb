@@ -5,7 +5,8 @@ module Aibbo
   class OutilAbsences < Outil
     LIGNES = 50
 
-    description "Donne les absences des personnes des services de l'utilisateur sur une période : qui, du premier au dernier jour, " \
+    description "Donne les absences sur une période : à un manager ou à un administrateur, celles des personnes de ses services ; " \
+                "à un agent, les siennes seules, jamais celles de ses collègues. Pour chacune : qui, du premier au dernier jour, " \
                 "journée entière ou demi-journée, et le motif. Sans période, les #{LIGNES} premières absences connues. " \
                 "Une clé « erreur » dit ce qu'il faut demander à l'utilisateur."
 

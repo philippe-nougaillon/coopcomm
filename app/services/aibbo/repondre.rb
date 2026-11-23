@@ -22,9 +22,9 @@ module Aibbo
 
     def call
       outils = [OutilInterventions.new(@utilisateur), OutilPersonnes.new(@utilisateur)]
-      outils += [OutilMateriel.new(@utilisateur), OutilUtilisationMateriel.new(@utilisateur)] unless @utilisateur.adhérent?
-      outils << OutilCrm.new(@utilisateur) unless @utilisateur.agent?
-      outils += [OutilDisponibilites.new(@utilisateur), OutilAbsences.new(@utilisateur), OutilFaisabilite.new(@utilisateur)] if @utilisateur.manager_or_admin?
+      outils += [OutilMateriel.new(@utilisateur), OutilUtilisationMateriel.new(@utilisateur), OutilAbsences.new(@utilisateur)] unless @utilisateur.adhérent?
+      outils += [OutilCrm.new(@utilisateur), OutilConventions.new(@utilisateur)] unless @utilisateur.agent?
+      outils += [OutilDisponibilites.new(@utilisateur), OutilFaisabilite.new(@utilisateur)] if @utilisateur.manager_or_admin?
       chat = ChatMistral.call(NIVEAUX[@niveau] || ENV.fetch('AIBBO_MODELE', ChatMistral::MODELE)).with_instructions(consigne).with_tools(*outils)
       messages_precedents.each do |precedent|
         chat.add_message(role: precedent.from_id == @utilisateur.id ? :user : :assistant, content: precedent.message)

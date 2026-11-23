@@ -41,20 +41,20 @@ class AibboRepondreTest < ActiveSupport::TestCase
     assert_not_includes @envois.join, interventions(:intervention_autre_agent).description
   end
 
-  test 'un agent ne se voit proposer que les interventions, le matériel, son emploi et les personnes (critique)' do
+  test 'un agent ne se voit proposer que les interventions, le matériel, son emploi, les personnes et ses absences (critique)' do
     modele_repondant('responseMistralReponse.json')
 
     Aibbo::Repondre.call(@agent, question_de(@agent))
 
-    assert_equal %w[interventions materiel personnes utilisation_materiel], outils_proposes.sort
+    assert_equal %w[absences interventions materiel personnes utilisation_materiel], outils_proposes.sort
   end
 
-  test 'un adhérent ne se voit proposer que les interventions, les personnes et ses devis, commandes et factures (critique)' do
+  test 'un adhérent ne se voit proposer que les interventions, les personnes, ses devis, commandes et factures et ses conventions (critique)' do
     modele_repondant('responseMistralReponse.json')
 
     Aibbo::Repondre.call(users(:weil), question_de(users(:weil)))
 
-    assert_equal %w[devis_commandes_factures interventions personnes], outils_proposes.sort
+    assert_equal %w[conventions devis_commandes_factures interventions personnes], outils_proposes.sort
   end
 
   test 'une suite d’appels d’outils sans fin est interrompue, et l’utilisateur reçoit le message de repli (critique)' do
@@ -107,12 +107,13 @@ class AibboRepondreTest < ActiveSupport::TestCase
     assert_match(/résultat \{"total":2/, reponse.trace)
   end
 
-  test 'un manager se voit proposer aussi la disponibilité des agents, les absences et la faisabilité d’un chantier' do
+  test 'un manager se voit proposer aussi la disponibilité des agents et la faisabilité d’un chantier' do
     modele_repondant('responseMistralReponse.json')
 
     Aibbo::Repondre.call(users(:hidalgo), question_de(users(:hidalgo)))
 
-    assert_equal %w[absences devis_commandes_factures disponibilite_agents faisabilite_chantier interventions materiel personnes utilisation_materiel],
+    assert_equal %w[absences conventions devis_commandes_factures disponibilite_agents faisabilite_chantier interventions materiel personnes
+                    utilisation_materiel],
                  outils_proposes.sort
   end
 

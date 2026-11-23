@@ -56,4 +56,11 @@ class AibboOutilAbsencesTest < ActiveSupport::TestCase
     assert_equal 1, absence['jours']
     assert_equal 'Journée entière', absence['période']
   end
+
+  test 'un agent reçoit ses propres absences' do
+    resultat = Aibbo::OutilAbsences.new(users(:bond)).call
+
+    assert_equal [absences(:one).du, absences(:two).du], resultat[:absences].pluck('du')
+    assert_equal [users(:bond).nom_prénom.strip], resultat[:absences].pluck('personne').uniq
+  end
 end
