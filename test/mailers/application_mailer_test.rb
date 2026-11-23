@@ -138,12 +138,12 @@ class ApplicationMailerTest < ActionMailer::TestCase
     assert_equal %w[180 90], [largeur, hauteur]
   end
 
-  test 'un logo très large est borné à la largeur de l’en-tête du mail' do
+  test 'un logo très large est borné en largeur dans l’en-tête du mail' do
     @paris.logo.attach(fixture_file_upload('logo_tres_large.png', 'image/png'))
 
     _, _, largeur, hauteur = logo_du_mail(NotificationMailer.relance(interventions(:intervention_paris)))
 
-    assert_equal %w[550 45], [largeur, hauteur]
+    assert_equal %w[250 20], [largeur, hauteur]
   end
 
   test 'le mail d’une organisation dont le logo n’a pas de dimensions porte le logo de CoopComm' do
@@ -159,7 +159,7 @@ class ApplicationMailerTest < ActionMailer::TestCase
   test 'le logo de CoopComm porte en attributs sa taille d’affichage' do
     _, _, largeur, hauteur = logo_du_mail(NotificationMailer.relance(interventions(:intervention_paris)))
 
-    assert_equal %w[471 90], [largeur, hauteur]
+    assert_equal %w[250 48], [largeur, hauteur]
   end
 
   private

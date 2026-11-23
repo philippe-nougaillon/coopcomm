@@ -39,4 +39,26 @@ class NotificationMailerTest < ActionMailer::TestCase
     assert_equal 'Bienvenue Paris !', corps.at_css('h2').text.squish
     assert_equal 'http://www.example.com/users/sign_in', corps.at_css('a')['href']
   end
+
+  test 'le mail de bienvenue à l’inscription part en copie cachée aux super-administrateurs' do
+    précédent = ENV.fetch('SUPER_ADMIN', nil)
+    ENV['SUPER_ADMIN'] = 'super-admin@example.test,autre-super-admin@example.test'
+
+    mail = NotificationMailer.welcome_inscription(users(:administrateur_paris))
+
+    assert_equal ['super-admin@example.test', 'autre-super-admin@example.test'], mail.bcc
+  ensure
+    ENV['SUPER_ADMIN'] = précédent
+  end
+
+  test 'le mail de bienvenue à l’inscription ne met personne en copie cachée quand la variable SUPER_ADMIN est vide' do
+    précédent = ENV.fetch('SUPER_ADMIN', nil)
+    ENV['SUPER_ADMIN'] = ''
+
+    mail = NotificationMailer.welcome_inscription(users(:administrateur_paris))
+
+    assert_nil mail.bcc
+  ensure
+    ENV['SUPER_ADMIN'] = précédent
+  end
 end

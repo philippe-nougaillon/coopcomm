@@ -214,6 +214,6 @@ class NotificationMailer < ApplicationMailer
 
   def welcome_inscription(user)
     @user = user
-    mail(to: @user.email, subject: '[COOPCOMM] Bienvenue !')
+    mail(to: @user.email, bcc: ENV['SUPER_ADMIN'].presence, subject: '[COOPCOMM] Bienvenue !')
   end
 end
