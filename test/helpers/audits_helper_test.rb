@@ -298,7 +298,8 @@ class AuditsHelperTest < ActionView::TestCase
   # ==================== BLOC D — formatage des valeurs ====================
 
   test 'les champs techniques ne sont jamais présentés à l\'utilisateur' do
-    changes = { 'updated_at' => %w[a b], 'slug' => %w[a b], 'encrypted_password' => %w[a b], 'template_slug' => %w[a b] }
+    changes = { 'updated_at' => %w[a b], 'slug' => %w[a b], 'encrypted_password' => %w[a b], 'template_slug' => %w[a b],
+                'analyse' => [nil, { 'pages' => 2 }] }
 
     assert_empty humanize_changes(changes)
   end
@@ -372,6 +373,16 @@ class AuditsHelperTest < ActionView::TestCase
   test 'un utilisateur est identifié par nom et prénom' do
     assert_equal 'Bond James', format_audit_value('user_id', users(:bond).id)
     assert_equal 'Utilisateur #999999', format_audit_value('user_id', 999_999)
+  end
+
+  test 'le déposant d’une convention est identifié par nom et prénom' do
+    assert_equal [{ label: 'Déposant', from: '—', to: 'Hidalgo Anne' }], humanize_changes({ 'deposant_id' => [nil, users(:hidalgo).id] }, 'Convention')
+  end
+
+  test 'l’état d’une convention est rendu par son libellé, celui d’un modèle sans libellé reste brut' do
+    assert_equal "En attente de l'IA", format_audit_value('workflow_state', Convention::ATTENTE_IA, 'Convention')
+    assert_equal 'accepté', format_audit_value('workflow_state', 'accepté', 'Intervention')
+    assert_equal 'inconnu', format_audit_value('workflow_state', 'inconnu', 'Convention')
   end
 
   test 'un service est identifié par son nom, un identifiant orphelin par son numéro' do

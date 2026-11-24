@@ -135,3 +135,7 @@ george_lucas_comptabilite:
 adherent_marseille_avec_adresse_et_memo_service_marseille:
   user: adherent_marseille_avec_adresse_et_memo
   service: service_marseille
+
+adherent_avec_adresse_service_marseille2:
+  user: adherent_avec_adresse
+  service: service_marseille2

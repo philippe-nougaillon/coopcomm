@@ -3,7 +3,7 @@
     <div class="font-semibold text-slate-700 text-xs sm:text-sm leading-tight">
       Il y a <%= time_ago_in_words(audit.created_at) %>
     </div>
-    <div class="py-4 px-4 text-sm whitespace-nowrap">
+    <div class="text-slate-400 text-xs mt-1">
       <%= l(audit.created_at, format: :long) %>
     </div>
   </td>

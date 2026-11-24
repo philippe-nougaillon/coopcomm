@@ -1,0 +1,44 @@
+<tr id="<%= dom_id(convention) %>" class="hover:bg-base-200/60 transition-colors duration-150 align-middle">
+  <td class="px-4 py-3 text-sm text-nowrap">Il y a <%= time_ago_in_words convention.updated_at %></td>
+  <td class="px-4 py-3 text-sm"> <%= convention.document.filename %></td>
+  <td class="px-4 py-3 text-sm text-nowrap"><%= l(convention.created_at, format: :short) %></td>
+  <td class="px-4 py-3 text-base"><%= convention.deposant&.nom_prénom&.strip %></td>
+  <% if convention.échec? %>
+    <td colspan="3" class="px-4 py-3 text-sm text-error font-medium"><%= convention.analyse&.dig("erreur") %></td>
+  <% elsif convention.analysé? %>
+    <td class="px-4 py-3 text-base">
+      <% if convention.user %>
+        <%= convention.user.nom_prénom.strip %>
+      <% else %>
+        <span class="bg-warning/20 rounded px-2 py-0.5 font-semibold">⚠ À confirmer<%= " : #{convention.analyse["nom_adherent"]}" if convention.analyse&.dig("nom_adherent") %></span>
+      <% end %>
+    </td>
+    <td class="px-4 py-3 text-base">
+      <% if convention.service %>
+        <span class="inline-block bg-white border border-slate-200 text-slate-600 text-sm px-2.5 py-1 rounded-full whitespace-nowrap shadow-sm"><%= convention.service.nom %></span>
+      <% else %>
+        <span class="bg-warning/20 rounded px-2 py-0.5 font-semibold text-nowrap">⚠ À confirmer</span>
+      <% end %>
+    </td>
+    <td class="px-4 py-3 text-base text-nowrap">
+      <% if convention.heures_conventionnees.to_f.positive? %>
+        <%= number_with_precision(convention.heures_conventionnees, precision: 2, strip_insignificant_zeros: true) %> h
+      <% else %>
+        <span class="bg-warning/20 rounded px-2 py-0.5 font-semibold text-nowrap">⚠ À confirmer</span>
+      <% end %>
+    </td>
+  <% else %>
+    <td colspan="3" class="px-4 py-3 text-slate-400">—</td>
+  <% end %>
+  <td class="px-4 py-3">
+    <span class="badge text-nowrap font-bold <%= convention.style %>"><%= convention.libelle %></span>
+  </td>
+  <td class="px-4 py-3">
+    <div class="flex flex-wrap items-center justify-end gap-2">
+      <% if convention.échec? %>
+        <%= button_to "Relancer", relancer_convention_path(convention), class: "btn btn-sm btn-outline btn-primary" %>
+      <% end %>
+      <%= link_to "Ouvrir", convention_path(convention), class: "btn btn-sm btn-outline" %>
+    </div>
+  </td>
+</tr>

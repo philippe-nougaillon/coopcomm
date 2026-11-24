@@ -22,3 +22,177 @@ convention_sans_fin:
   date_début: 2025-01-01
   heures_conventionnees: 200
   slug: <%= SecureRandom.uuid %>
+analyse_de_weil:
+  user: weil
+  service: technique
+  deposant: hidalgo
+  workflow_state: analysé
+  date_début: 2025-01-01
+  date_signature: 2024-12-16
+  heures_conventionnees: 350
+  mémo: "Durée : Elle est conclue pour une durée de trois ans."
+  slug: analyse-de-weil
+  created_at: 2026-10-05 10:00:00
+  updated_at: 2026-10-05 10:01:00
+  analyse:
+    pages: 2
+    pages_ocr: 2
+    pages_transcrites: 0
+    nom_adherent: Ariel Weil
+    adherent: { extrait: "et Ariel Weil, adhérent", retrouve: true }
+    date_debut: { extrait: prend effet le 1er janvier 2025, retrouve: true }
+    date_signature: { extrait: "Fait à Valfictif, le [incertain : 16] décembre 2024", retrouve: false }
+    date_fin: { extrait: null, retrouve: null }
+    service: { extrait: un volume annuel de 350 heures, retrouve: true }
+    services: [<%= ActiveRecord::FixtureSet.identify(:technique) %>, <%= ActiveRecord::FixtureSet.identify(:secretariat) %>]
+
+analyse_sans_adherent:
+  service: technique
+  deposant: hidalgo
+  workflow_state: analysé
+  date_début: 2024-12-16
+  date_signature: 2024-12-16
+  heures_conventionnees: 350
+  mémo: "Durée : Elle est conclue pour une durée de trois ans.\nTarif : Le coût unitaire est fixé à 34 euros par heure."
+  résumé: La Communauté de Communes met ses services technique et informatique à la disposition de la commune de Beaumont.
+  slug: analyse-sans-adherent
+  created_at: 2026-09-30 10:00:00
+  updated_at: 2026-09-30 10:01:00
+  analyse:
+    pages: 2
+    pages_ocr: null
+    pages_transcrites: 0
+    nom_adherent: Beaumont
+    adherent: { extrait: ET la commune de Beaumont, retrouve: true }
+    date_debut: { extrait: null, retrouve: null }
+    date_signature: { extrait: "Fait à Valfictif, le 16 décembre 2024", retrouve: true }
+    date_fin: { extrait: null, retrouve: null }
+    service: { extrait: Service technique 350 heures, retrouve: true }
+    services: [<%= ActiveRecord::FixtureSet.identify(:technique) %>, <%= ActiveRecord::FixtureSet.identify(:informatique) %>]
+
+analyse_en_echec:
+  deposant: hidalgo
+  workflow_state: échec
+  slug: analyse-en-echec
+  created_at: 2026-10-05 11:00:00
+  updated_at: 2026-10-05 11:01:00
+  analyse: { erreur: IA injoignable }
+
+analyse_en_attente:
+  deposant: hidalgo
+  workflow_state: en_attente
+  slug: analyse-en-attente
+  created_at: 2026-10-05 12:00:00
+  updated_at: 2026-10-05 12:00:00
+
+analyse_de_manager_paris:
+  deposant: manager_paris
+  workflow_state: en_attente
+  slug: analyse-de-manager-paris
+  created_at: 2026-10-06 10:00:00
+  updated_at: 2026-10-06 10:00:00
+
+analyse_de_l_administrateur_paris:
+  deposant: administrateur_paris
+  workflow_state: en_attente
+  slug: analyse-de-l-administrateur-paris
+  created_at: 2026-10-07 10:00:00
+  updated_at: 2026-10-07 10:00:00
+
+analyse_d_un_compte_desactive:
+  deposant: agent_discarded_paris
+  workflow_state: en_attente
+  slug: analyse-d-un-compte-desactive
+  created_at: 2026-10-08 10:00:00
+  updated_at: 2026-10-08 10:00:00
+
+analyse_de_marseille:
+  deposant: manager_marseille
+  workflow_state: en_attente
+  slug: analyse-de-marseille
+  created_at: 2026-10-09 10:00:00
+  updated_at: 2026-10-09 10:00:00
+
+analyse_deja_conventionnee:
+  user: weil
+  service: informatique
+  deposant: hidalgo
+  workflow_state: analysé
+  date_début: 2026-03-01
+  heures_conventionnees: 120
+  slug: analyse-deja-conventionnee
+  created_at: 2026-09-29 10:00:00
+  updated_at: 2026-09-29 10:01:00
+  analyse:
+    pages: 2
+    pages_ocr: null
+    pages_transcrites: 0
+    nom_adherent: Ariel Weil
+    adherent: { extrait: "et Ariel Weil, adhérent", retrouve: true }
+    date_debut: { extrait: prend effet le 1er mars 2026, retrouve: true }
+    date_signature: { extrait: null, retrouve: null }
+    date_fin: { extrait: null, retrouve: null }
+    service: { extrait: Service informatique 120 heures, retrouve: true }
+    services: [<%= ActiveRecord::FixtureSet.identify(:informatique) %>]
+
+analyse_citant_un_service_de_marseille:
+  deposant: hidalgo
+  workflow_state: analysé
+  slug: analyse-citant-un-service-de-marseille
+  created_at: 2026-09-28 10:00:00
+  updated_at: 2026-09-28 10:01:00
+  analyse:
+    pages: 2
+    pages_ocr: null
+    pages_transcrites: 0
+    nom_adherent: Beaumont
+    adherent: { extrait: ET la commune de Beaumont, retrouve: true }
+    services: [<%= ActiveRecord::FixtureSet.identify(:technique) %>, <%= ActiveRecord::FixtureSet.identify(:service_marseille) %>]
+
+analyse_hors_des_services_de_hidalgo:
+  user: george_lucas
+  service: comptabilite
+  deposant: hidalgo
+  workflow_state: analysé
+  date_début: 2024-01-01
+  date_fin_prévue: 2024-12-31
+  heures_conventionnees: 60
+  slug: analyse-hors-des-services-de-hidalgo
+  created_at: 2026-10-02 10:00:00
+  updated_at: 2026-10-02 10:01:00
+
+analyse_de_patrick:
+  user: patrick_adherent_paris
+  service: service_paris
+  deposant: hidalgo
+  workflow_state: analysé
+  date_début: 2025-01-01
+  heures_conventionnees: 40
+  slug: analyse-de-patrick
+  created_at: 2026-10-01 10:00:00
+  updated_at: 2026-10-01 10:01:00
+
+analyse_sur_un_service_hors_de_l_adherent:
+  user: weil
+  service: secretariat
+  deposant: hidalgo
+  workflow_state: analysé
+  date_début: 2025-01-01
+  heures_conventionnees: 40
+  slug: analyse-sur-un-service-hors-de-l-adherent
+  created_at: 2026-09-27 10:00:00
+  updated_at: 2026-09-27 10:01:00
+
+analyse_a_marseille:
+  user: adherent_marseille
+  service: service_marseille
+  deposant: manager_marseille
+  workflow_state: analysé
+  date_début: 2025-01-01
+  heures_conventionnees: 120
+  slug: analyse-a-marseille
+  created_at: 2026-10-10 10:00:00
+  updated_at: 2026-10-10 10:01:00
+  analyse:
+    nom_adherent: Tapie
+    services: [<%= ActiveRecord::FixtureSet.identify(:service_marseille) %>]

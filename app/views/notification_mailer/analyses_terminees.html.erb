@@ -1,0 +1,8 @@
+<h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">Bonjour,</h2>
+
+<p style="color: #475569; margin-bottom: 24px;">
+L'IA a fini de lire les conventions que vous avez déposées :
+<b><%= pluralize(@a_valider, "convention") %> à valider</b><% if @en_echec.positive? %>, <b><%= @en_echec %> en échec</b><% end %>.
+<br><br>
+Relisez ce qu'elle y a lu avant de valider chaque convention : <%= link_to "Voir les analyses", analyses_conventions_url %>
+</p>

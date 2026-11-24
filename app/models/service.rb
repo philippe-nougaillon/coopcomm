@@ -6,6 +6,9 @@ class Service < ApplicationRecord
 
   audited
 
+  # Avant le dependent: :destroy des rattachements, qui viderait users_without_other_service.
+  before_destroy :must_not_leave_users_without_service
+
   belongs_to :organisation
 
   has_many :user_services, dependent: :destroy
@@ -40,14 +43,14 @@ class Service < ApplicationRecord
   end
 
   # Vérifie que le service n'a pas de relations avec des 
-  # interventions, conventions, cotations, commandes, factures ni d'utillisateurs autre qu'administrateur
+  # interventions, conventions, cotations, commandes, factures ni d'utilisateurs dont il est le seul service
   def can_be_destroyed?
     self.interventions.empty? && 
     self.conventions.empty? && 
     self.cotations.empty? && 
     self.commandes.empty? && 
     self.factures.empty? && 
-    self.users.where.not(rôle: "administrateur").empty?
+    self.users_without_other_service.empty?
   end
 
   # TODO : Fusionner avec can_be_destroyed? ?
@@ -61,7 +64,8 @@ class Service < ApplicationRecord
     reasons << "des cotations"     if cotations.any?
     reasons << "des commandes"     if commandes.any?
     reasons << "des factures"      if factures.any?
-    reasons << "des utilisateurs non administrateurs" if users.where.not(rôle: "administrateur").any?
+    reasons << "des utilisateurs dont c'est le seul service" if users_without_other_service.kept.any?
+    reasons << "des comptes désactivés dont c'est le seul service" if users_without_other_service.discarded.any?
 
     "Impossible de supprimer ce service car il est encore lié à #{reasons.to_sentence(locale: :fr)}."
   end
@@ -74,5 +78,16 @@ class Service < ApplicationRecord
 
   def slug_candidates
     [SecureRandom.uuid]
+  end
+
+  def users_without_other_service
+    users.with_discarded.where.not(id: UserService.where.not(service_id: id).select(:user_id))
+  end
+
+  def must_not_leave_users_without_service
+    return if users_without_other_service.empty?
+
+    errors.add(:base, "Des utilisateurs n'ont que ce service.")
+    throw(:abort)
   end
 end

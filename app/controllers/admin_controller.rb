@@ -40,6 +40,8 @@ class AdminController < ApplicationController
 
   def create_new_user
     @user = User.new(rôle: :agent)
+    lu = policy_scope(Convention).with_analysé_state.find_by(slug: params[:convention_id])&.analyse if current_user.administrateur?
+    @user = User.new(rôle: :adhérent, nom: lu['nom_adherent'], services: current_organisation.services.where(id: lu['services'])) if lu
   end
 
   # `POST /users` est réservé par Devise dès que :registerable est réactivé, d'où

@@ -205,4 +205,19 @@ class NotificationMailer < ApplicationMailer
       }
     end
   end
+
+  def analyses_terminees(deposant)
+    @deposant = deposant
+    @organisation = deposant.organisation
+    @a_valider = deposant.conventions_deposees.with_analysé_state.count
+    @en_echec = deposant.conventions_deposees.with_échec_state.count
+
+    mail(to: deposant.email,
+         bcc: ENV['BCC_NOTIFICATION_EMAILS'].presence,
+         subject: '[COOPCOMM] Analyse des conventions terminée').tap do |message|
+      message.mailgun_options = {
+        'tag' => ['analyse des conventions']
+      }
+    end
+  end
 end

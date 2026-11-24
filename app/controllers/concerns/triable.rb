@@ -11,6 +11,7 @@
 #   trie User, defaut: 'users.nom'      # une ligne par tableau affiché
 #   …
 #   @users = trier(@users)              # le modèle est déduit de la relation
+#   trier(@analyses, defaut: 'conventions.updated_at', sens: :desc)   # second tableau du même modèle
 #
 # Pour un modèle qui ne nous appartient pas (audits), les colonnes se passent en
 # argument.
@@ -50,8 +51,9 @@ module Triable
     colonne.present? && tris.values.any? { |tri| tri[:colonnes].key?(colonne) }
   end
 
-  def trier(relation)
+  def trier(relation, defaut: nil, sens: :asc)
     tri = tris.fetch(relation.klass.name)
+    tri = tri.merge(defaut: defaut, sens: sens.to_s) if defaut
     colonne, sens = colonne_et_sens(tri)
     expressions = expressions_utilisables(relation, tri, colonne)
 

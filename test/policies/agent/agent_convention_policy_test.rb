@@ -20,6 +20,11 @@ class AgentConventionPolicyTest < ActionDispatch::IntegrationTest
     refute @policy.edit?
     refute @policy.update?
     refute @policy.destroy?
+    refute @policy.pdf?
+    refute @policy.analyser?
+    refute @policy.analyses?
+    refute @policy.relancer?
+    refute @policy.valider?
   end
 
   test 'scope : un agent ne voit aucune convention' do

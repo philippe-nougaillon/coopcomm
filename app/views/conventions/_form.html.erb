@@ -15,12 +15,12 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"
          data-controller="dynamic-select"
          data-dynamic-select-url-value="<%= services_for_adherent_conventions_path %>">
-      <%# Adhérent : figé en modification %>
+      <%# Adhérent : figé une fois la convention validée %>
       <div class="form-control w-full">
         <%= f.label :user_id, "Adhérent", class: "label font-semibold text-slate-700" do %>
           Adhérent <span class="text-red-500">*</span>
         <% end %>
-        <% if @convention.persisted? %>
+        <% if @convention.persisted? && @convention.validé? %>
           <input type="text" value="<%= @convention.user&.nom_prénom %>" class="input input-bordered w-full focus:input-primary" disabled>
           <%= f.hidden_field :user_id %>
         <% else %>
@@ -30,12 +30,12 @@
                   data: { controller: "slim-select", dynamic_select_target: "adherent", action: "change->dynamic-select#updateServices" } } %>
         <% end %>
       </div>
-      <%# Service : figé en modification (clé d'unicité) ; sinon dépend de l'adhérent choisi %>
+      <%# Service : figé une fois la convention validée (clé d'unicité) ; sinon dépend de l'adhérent choisi %>
       <div class="form-control w-full">
         <%= f.label :service_id, "Service", class: "label font-semibold text-slate-700" do %>
           Service <span class="text-red-500">*</span>
         <% end %>
-        <% if @convention.persisted? %>
+        <% if @convention.persisted? && @convention.validé? %>
           <input type="text" value="<%= @convention.service&.nom %>" class="input input-bordered w-full focus:input-primary" disabled>
           <%= f.hidden_field :service_id %>
         <% else %>
@@ -74,11 +74,27 @@
           </div>
         </div>
       </div>
-      <div class="form-control w-full sm:col-span-2">
+      <div class="form-control w-full">
+        <%= f.label :date_signature, "Date de signature", class: "label font-semibold text-slate-700" %>
+        <div class="flex items-center gap-2 h-10 rounded-lg border border-slate-200">
+          <div class="w-full flex-1 cursor-pointer"
+              data-controller="date-picker"
+              data-action="click->date-picker#open">
+            <%= f.date_field :date_signature,
+                              class: "w-full bg-transparent border-none outline-hidden text-sm",
+                              data: { 'date-picker-target': "input" } %>
+          </div>
+        </div>
+      </div>
+      <div class="form-control w-full">
         <%= f.label :heures_conventionnees, "Heures conventionnées", class: "label font-semibold text-slate-700" do %>
           Heures conventionnées <span class="text-red-500">*</span>
         <% end %>
         <%= f.number_field :heures_conventionnees, min:"1", class: "input input-bordered w-full focus:input-primary ", required: true %>
+      </div>
+      <div class="form-control w-full sm:col-span-2">
+        <%= f.label :résumé, "Résumé", class: "label font-semibold text-slate-700" %>
+        <%= f.text_area :résumé, rows: 3, class: "textarea textarea-bordered w-full focus:textarea-primary" %>
       </div>
       <div class="form-control w-full sm:col-span-2">
         <%= f.label :mémo, "Mémo", class: "label font-semibold text-slate-700" %>
